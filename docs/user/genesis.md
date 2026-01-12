@@ -252,7 +252,7 @@ This document exists to ensure that context survives.
 
 - [Charter](charter.md) — The covenant itself
 - [Lineage](lineage.md) — Heritage documentation
-- [Concepts](concepts/) — The three concerns explained
+- [Concepts](concepts/README.md) — The three concerns explained
 - Original sources in AirlineOps:
   - `docs/governance/GovZero/charter.md`
   - `docs/governance/GovZero/adr-lifecycle.md`
