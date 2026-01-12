@@ -33,12 +33,22 @@ gzkit is a Development Covenant for Human-AI Collaboration—cognitive infrastru
 
 ```bash
 uv sync                              # Hydrate environment
+uv sync --extra docs                 # Include docs dependencies
 uv run -m gzkit --help               # CLI entry point
 uvx ruff check src tests             # Lint
 uvx ruff format --check .            # Format check
 uvx ty check src                     # Type check
 uv run -m unittest discover tests    # Run tests
 ```
+
+## Documentation
+
+```bash
+uv run mkdocs serve                  # Local dev server at localhost:8000
+uv run mkdocs build                  # Build static site to site/
+```
+
+Site hosted at https://gzkit.org (MkDocs Material theme).
 
 ## Architecture
 
