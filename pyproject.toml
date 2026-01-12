@@ -29,13 +29,17 @@ dependencies = [
 dev = [
     "ruff>=0.8",
 ]
+docs = [
+    "mkdocs>=1.6",
+    "mkdocs-material>=9.5",
+]
 
 [project.scripts]
 gz = "gzkit.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/tvproductions/gzkit"
-Documentation = "https://github.com/tvproductions/gzkit#readme"
+Homepage = "https://gzkit.org"
+Documentation = "https://gzkit.org"
 Repository = "https://github.com/tvproductions/gzkit"
 
 [build-system]

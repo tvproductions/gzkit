@@ -46,3 +46,6 @@ Thumbs.db
 
 # gzkit
 .gzkit.yaml.local
+
+# MkDocs
+site/

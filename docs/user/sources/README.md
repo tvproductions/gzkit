@@ -27,4 +27,4 @@ These are historical reference documents. The authoritative gzkit documentation 
 
 - [charter.md](../charter.md) — The gzkit covenant (evolved from GovZero Charter)
 - [lineage.md](../lineage.md) — Heritage documentation
-- [concepts/](../concepts/) — The three concerns explained
+- [Concepts](../concepts/README.md) — The three concerns explained
