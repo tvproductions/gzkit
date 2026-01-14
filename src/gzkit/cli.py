@@ -25,7 +25,7 @@ def main() -> None:
 def init(mode: str) -> None:
     """Initialize gzkit in the current project."""
     click.echo(f"Initializing gzkit in {mode} mode...")
-    click.echo("Created .gzkit.yaml")
+    click.echo("Created .gzkit.json")
     click.echo("Created docs/canon/ directory")
     click.echo("Created docs/adr/ directory")
 

@@ -97,7 +97,7 @@ Templates include required sections per GovZero doctrine.
 ```
 .gzkit/
 ├── ledger.jsonl
-└── config.yaml
+└── config.json
 .claude/
 ├── settings.json
 └── hooks/
@@ -126,16 +126,19 @@ gz status [--json]                  # Gate status
 gz attest [--force] [--reason]      # Record attestation
 ```
 
-### Config (`.gzkit/config.yaml`)
+### Config (`.gzkit/config.json`)
 
-```yaml
-mode: lite  # or heavy
-paths:
-  prd: docs/prd
-  constitutions: docs/constitutions
-  briefs: docs/briefs
-  adr: docs/adr
-  audit: docs/audit
+```json
+{
+  "mode": "lite",
+  "paths": {
+    "prd": "docs/prd",
+    "constitutions": "docs/constitutions",
+    "briefs": "docs/briefs",
+    "adr": "docs/adr",
+    "audit": "docs/audit"
+  }
+}
 ```
 
 ### Ledger Schema (`gzkit.ledger.v1`)
@@ -205,7 +208,7 @@ SQLite cache can be added in future if query performance becomes an issue.
 
 - [ ] `gz init test-project` creates all directories
 - [ ] `.gzkit/ledger.jsonl` created and empty
-- [ ] `.gzkit/config.yaml` created with defaults
+- [ ] `.gzkit/config.json` created with defaults
 - [ ] `.claude/settings.json` created with hook config
 - [ ] `.claude/hooks/ledger-writer.py` created and executable
 - [ ] `project_init` event appended to ledger
