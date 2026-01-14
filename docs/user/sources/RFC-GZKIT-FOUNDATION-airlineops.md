@@ -9,7 +9,7 @@ linkage** and **north-star constitutions** for both AirlineOps and future projec
 
 **Critical Governance Evolution (v0.1.9+):** Gates 3 (Docs) and 5 (Human
 Attestation) are no longer separate concerns. User documentation IS the Gate 5
-proof. See [operator_runbook.md](../../user/operator_runbook.md) for exemplar
+proof. See `operator_runbook.md` (external) for exemplar
 demonstrating determinism, auditability, recoverability, completeness, and
 trustworthiness.
 
@@ -61,8 +61,10 @@ The framework should remain human-centric, auditable, and version-controlled.
 
 Configuration key:
 
-```yaml
-mode: lite   # or heavy
+```json
+{
+  "mode": "lite"
+}
 ```
 
 ### Prompt Lifecycle (GZKit Canonical Summary)
@@ -145,29 +147,36 @@ Adapted from Nate B. Jones (AI News & Strategy Daily).
 
 Aliasing (configurable):
 
-```yaml
-aliases:
-  specify: [spec]
-  analyze: [audit, attest]
+```json
+{
+  "aliases": {
+    "specify": ["spec"],
+    "analyze": ["audit", "attest"]
+  }
+}
 ```
 
 ---
 
 ## 5. Config Schema (draft)
 
-`.gzkit.yaml`
+`.gzkit.json`
 
-```yaml
-mode: lite
-paths:
-  specs: docs/briefs
-  adrs: docs/adr
-  audits: docs/audit
-aliases:
-  specify: [spec]
-  analyze: [audit]
-license: internal
-tag_style: vX.Y.Z
+```json
+{
+  "mode": "lite",
+  "paths": {
+    "specs": "docs/briefs",
+    "adrs": "docs/adr",
+    "audits": "docs/audit"
+  },
+  "aliases": {
+    "specify": ["spec"],
+    "analyze": ["audit"]
+  },
+  "license": "internal",
+  "tag_style": "vX.Y.Z"
+}
 ```
 
 ---
@@ -179,7 +188,7 @@ tag_style: vX.Y.Z
 Each ADR `## Evidence` block must contain BOTH:
 
 ```markdown
-Verified under Gate-3 (Docs): [operator_runbook.md](../../user/operator_runbook.md) § [relevant section]
+Verified under Gate-3 (Docs): operator_runbook.md § [relevant section]
 Verified under Gate-5 (Human): docs/design/audit/ADR-x.y.z/AUDIT.md
 ```
 
@@ -200,7 +209,7 @@ gzkit will check and insert these lines automatically if missing.
 - Tests: 1223/1223 passing
 
 ### Gate 3: Docs
-- User guide: [operator_runbook.md](../../user/operator_runbook.md) § "Gate 5: Human Attestation — Complete Workflows"
+- User guide: operator_runbook.md § "Gate 5: Human Attestation — Complete Workflows"
 - Markdown lint: PASS
 - mkdocs build: PASS
 
@@ -354,7 +363,7 @@ ADR (intent) + Receipt (human attestation) + Signatures = Proof
 **Structured formats for:**
 
 - ✅ Ledgers: JSONL (append-only audit trail)
-- ✅ Configs: YAML (validated schemas)
+- ✅ Configs: JSON (validated schemas)
 - ✅ Test data: CSV, JSON (deterministic fixtures)
 - ✅ Specs: YAML (machine-readable contracts, if Spec-Kit-aligned)
 
@@ -386,7 +395,7 @@ ADR (intent) + Receipt (human attestation) + Signatures = Proof
 
 ## 12. Open Questions
 
-- Config placement: root `.gzkit.yaml` or under `governance/`?
+- Config placement: root `.gzkit.json` or under `governance/`?
 - Default mode: `lite` for students or `heavy` for internal use?
 - How to display gate status visually (`gz status` command vs table in docs)?
 - Should gzkit auto-generate Spec-Kit-compatible metadata for future interop?
@@ -399,8 +408,8 @@ ADR (intent) + Receipt (human attestation) + Signatures = Proof
 
 - GitHub Spec-Kit docs & examples
 - GovZero v4/v5 Charters with Five Gates
-- [ADR-0.1.9-aviation-core-cemented](../../design/adr/adr-0.1.x/ADR-0.1.9-aviation-core-cemented.md) — Canonical example of Five Gates in practice (OBPI-13, OBPI-52, OBPI-53)
-- [operator_runbook.md](../../user/operator_runbook.md) — Gate 3-5 Linkage exemplar (comprehensive human attestation)
+- ADR-0.1.9-aviation-core-cemented (external) — Canonical example of Five Gates in practice (OBPI-13, OBPI-52, OBPI-53)
+- operator_runbook.md (external) — Gate 3-5 Linkage exemplar (comprehensive human attestation)
 - Gate-5 Charter (2025-10 edition, updated for Gate 3-5 linkage 2025-12)
 
 ---
