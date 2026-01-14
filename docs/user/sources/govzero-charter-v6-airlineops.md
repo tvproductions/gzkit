@@ -104,9 +104,9 @@ These terms are canonical. Other terms (accept, approve, sign off) are not valid
 
 ## References
 
-- ADR lifecycle and status mapping: [adr-lifecycle.md](adr-lifecycle.md)
-- ADR status table: [adr-status.md](adr-status.md)
-- Closeout ceremony behavior: [audit-protocol.md](audit-protocol.md)
-- ADR/OBPI/GHI/audit linkage: [adr-obpi-ghi-audit-linkage.md](adr-obpi-ghi-audit-linkage.md)
+- ADR lifecycle and status mapping: [govzero-adr-lifecycle-airlineops.md](govzero-adr-lifecycle-airlineops.md)
+- ADR status table: Upstream ADR status table (see the [sources index](README.md))
+- Closeout ceremony behavior: Upstream audit protocol (see the [sources index](README.md))
+- ADR/OBPI/GHI/audit linkage: Upstream linkage doc (see the [sources index](README.md))
 - Agent contract: [/AGENTS.md](/AGENTS.md)
 - Machine-readable governance: [/config/governance_manifest.json](/config/governance_manifest.json)

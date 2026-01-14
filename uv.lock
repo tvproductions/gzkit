@@ -114,7 +114,6 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "click" },
-    { name = "pyyaml" },
     { name = "rich" },
 ]
 
@@ -132,7 +131,6 @@ requires-dist = [
     { name = "click", specifier = ">=8.1" },
     { name = "mkdocs", marker = "extra == 'docs'", specifier = ">=1.6" },
     { name = "mkdocs-material", marker = "extra == 'docs'", specifier = ">=9.5" },
-    { name = "pyyaml", specifier = ">=6.0" },
     { name = "rich", specifier = ">=13.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8" },
 ]

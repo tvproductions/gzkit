@@ -103,14 +103,17 @@ gz verify
 
 ## Configuration
 
-gzkit uses `.gzkit.yaml` for project configuration:
+gzkit uses `.gzkit.json` for project configuration:
 
-```yaml
-mode: lite  # or heavy
-paths:
-  canon: docs/canon
-  adrs: docs/adr
-  specs: docs/specs
+```json
+{
+  "mode": "lite",
+  "paths": {
+    "canon": "docs/canon",
+    "adrs": "docs/adr",
+    "specs": "docs/specs"
+  }
+}
 ```
 
 ## Documentation

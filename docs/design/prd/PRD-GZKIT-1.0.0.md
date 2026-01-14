@@ -77,7 +77,7 @@ gzkit is the extracted governance methodology from AirlineOps, intended as a sta
 
 **Phase Commands:**
 
-- `gz init` — scaffold project structure, `.gzkit.yaml`, and ledger
+- `gz init` — scaffold project structure, `.gzkit.json`, and ledger
 - `gz prd` — create/manage PRD from template (Major intent carrier)
 - `gz constitute` — create/validate constitution artifacts
 - `gz specify <brief>` — create brief from template
@@ -111,7 +111,7 @@ gzkit is the extracted governance methodology from AirlineOps, intended as a sta
 
 **Configuration:**
 
-- `.gzkit.yaml` configuration with Lite/Heavy mode
+- `.gzkit.json` configuration with Lite/Heavy mode
 - Template customization
 - Path configuration for artifacts
 
@@ -166,7 +166,7 @@ gz analyze                            # Day N: generate audit
 
 `gz init [project-name]` SHALL:
 
-- Create `.gzkit.yaml` configuration file with sensible defaults
+- Create `.gzkit.json` configuration file with sensible defaults
 - Create `.gzkit/ledger.jsonl` (empty ledger file)
 - Create `.claude/settings.json` with hook configuration
 - Create `.claude/hooks/` directory with ledger-writer script
@@ -368,7 +368,7 @@ PreToolUse hooks MAY:
 | Python 3.13.x | Runtime |
 | Click | CLI framework |
 | Pydantic | Configuration validation |
-| PyYAML | YAML parsing |
+| json (stdlib) | JSON parsing |
 
 ### Development
 
@@ -409,9 +409,9 @@ PreToolUse hooks MAY:
 
 ### AC-001: Initialization
 
-- [ ] `gz init test-project` creates all required directories and `.gzkit.yaml`
+- [ ] `gz init test-project` creates all required directories and `.gzkit.json`
 - [ ] `gz init` in existing gzkit project fails with clear error
-- [ ] Generated `.gzkit.yaml` is valid and parseable
+- [ ] Generated `.gzkit.json` is valid and parseable
 
 ### AC-002: Constitution
 

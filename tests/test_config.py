@@ -30,16 +30,13 @@ class TestGzkitConfig(unittest.TestCase):
 
     def test_load__missing_file__returns_defaults(self) -> None:
         """Loading from missing file returns defaults."""
-        config = GzkitConfig.load(Path("/nonexistent/.gzkit.yaml"))
+        config = GzkitConfig.load(Path("/nonexistent/.gzkit.json"))
         self.assertEqual(config.mode, "lite")
 
     def test_load__valid_file__parses_correctly(self) -> None:
         """Loading from valid file parses configuration."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-            f.write("mode: heavy\n")
-            f.write("paths:\n")
-            f.write("  canon: custom/canon\n")
-            f.write("  adrs: custom/adr\n")
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            f.write('{"mode":"heavy","paths":{"canon":"custom/canon","adrs":"custom/adr"}}')
             f.flush()
 
             config = GzkitConfig.load(Path(f.name))
@@ -50,7 +47,7 @@ class TestGzkitConfig(unittest.TestCase):
     def test_save__roundtrip(self) -> None:
         """Saved config can be loaded back."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            config_path = Path(tmpdir) / ".gzkit.yaml"
+            config_path = Path(tmpdir) / ".gzkit.json"
 
             original = GzkitConfig(
                 mode="heavy",

@@ -56,7 +56,7 @@ Site hosted at https://gzkit.org (MkDocs Material theme).
 src/gzkit/
 ├── __init__.py
 ├── cli.py              # Click-based CLI entry point
-├── config.py           # .gzkit.yaml parsing
+├── config.py           # .gzkit.json parsing
 ├── gates/              # Gate implementations
 │   ├── adr.py          # Gate 1: ADR management
 │   ├── tdd.py          # Gate 2: Test verification

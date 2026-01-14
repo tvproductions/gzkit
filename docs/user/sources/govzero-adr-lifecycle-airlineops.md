@@ -5,7 +5,7 @@ Last reviewed: 2026-01-11
 Authority: Canon (defines ADR lifecycle states and closeout-to-status mapping)
 
 This document canonizes ADR lifecycle states and their relationship to Gate 5 closeout attestation.
-For gate definitions, see [charter.md](charter.md). For closeout ceremony behavior, see [audit-protocol.md](audit-protocol.md).
+For gate definitions, see [GovZero Charter v6](govzero-charter-v6-airlineops.md). For closeout ceremony behavior, see the upstream audit protocol referenced in the [sources index](README.md).
 
 ---
 
@@ -69,7 +69,7 @@ The following terms have been used historically but are **not canonical**:
 
 ## ADR Status Table
 
-The authoritative ADR status table lives at [adr-status.md](adr-status.md) (colocated in GovZero).
+The authoritative ADR status table lives upstream in GovZero (see the [sources index](README.md)).
 
 That table MUST use only the lifecycle states defined in this document.
 Status values in that table are derived from this canon; if conflict exists, this document governs.
@@ -78,7 +78,7 @@ Status values in that table are derived from this canon; if conflict exists, thi
 
 ## References
 
-- Gate definitions: [charter.md](charter.md)
-- Closeout ceremony: [audit-protocol.md](audit-protocol.md)
-- Disposition rubric: [../ADR_DISPOSITION_RUBRIC.md](../ADR_DISPOSITION_RUBRIC.md)
-- ADR status table: [adr-status.md](adr-status.md)
+- Gate definitions: [GovZero Charter v6](govzero-charter-v6-airlineops.md)
+- Closeout ceremony: Upstream audit protocol (see the [sources index](README.md))
+- Disposition rubric: Upstream ADR disposition rubric (see the [sources index](README.md))
+- ADR status table: Upstream ADR status table (see the [sources index](README.md))

@@ -1,13 +1,12 @@
 """Configuration management for gzkit.
 
-Handles .gzkit.yaml parsing and project configuration.
+Handles .gzkit.json parsing and project configuration.
 """
 
 from dataclasses import dataclass, field
+import json
 from pathlib import Path
 from typing import Literal
-
-import yaml
 
 
 @dataclass
@@ -29,21 +28,22 @@ class GzkitConfig:
 
     @classmethod
     def load(cls, path: Path | None = None) -> "GzkitConfig":
-        """Load configuration from .gzkit.yaml.
+        """Load configuration from .gzkit.json.
 
         Args:
-            path: Path to config file. Defaults to .gzkit.yaml in current directory.
+            path: Path to config file. Defaults to .gzkit.json in current directory.
 
         Returns:
             Parsed configuration, or defaults if file not found.
         """
-        config_path = path or Path(".gzkit.yaml")
+        config_path = path or Path(".gzkit.json")
 
         if not config_path.exists():
             return cls()
 
         with open(config_path) as f:
-            data = yaml.safe_load(f) or {}
+            content = f.read().strip()
+            data = json.loads(content) if content else {}
 
         paths_data = data.get("paths", {})
         paths = PathConfig(
@@ -59,12 +59,12 @@ class GzkitConfig:
         )
 
     def save(self, path: Path | None = None) -> None:
-        """Save configuration to .gzkit.yaml.
+        """Save configuration to .gzkit.json.
 
         Args:
-            path: Path to config file. Defaults to .gzkit.yaml in current directory.
+            path: Path to config file. Defaults to .gzkit.json in current directory.
         """
-        config_path = path or Path(".gzkit.yaml")
+        config_path = path or Path(".gzkit.json")
 
         data = {
             "mode": self.mode,
@@ -77,4 +77,5 @@ class GzkitConfig:
         }
 
         with open(config_path, "w") as f:
-            yaml.dump(data, f, default_flow_style=False, sort_keys=False)
+            json.dump(data, f, indent=2)
+            f.write("\n")
