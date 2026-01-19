@@ -1,48 +1,37 @@
 ---
 name: commit
-description: Stage, commit, and push changes. Use when committing code changes.
+description: Review, commit, and push changes. Use when committing code changes.
 ---
 
 # Git Commit Ritual
 
-Stage, commit, and push changes.
+Review changes, create a meaningful commit, and push.
 
-## Instructions
+## Workflow
 
-1. **Review changes** - Run `git status` and `git diff` to understand all changes
+1. **Explore** - Run `git status` and `git diff` to understand all changes in the working tree
 
-2. **Stage files** - Use `git add <files>` to stage relevant changes (be selective, not `git add -A`)
+2. **Clarify** - If anything is unclear about intent or scope, ask the user
 
-3. **Confirm staged** - Run `git diff --cached` to verify what will be committed
+3. **Categorize** - Group related changes and craft a meaningful commit message that captures the "why"
 
-4. **Draft commit message** following Conventional Commits:
-   - Format: `type(scope): description` (72 char max first line)
-   - Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
-   - Scope: module or area affected (e.g., `gates`, `cli`, `config`)
-   - Description: imperative mood, lowercase, no period
+4. **Stage and commit** - Stage relevant files with `git add` and commit (pre-commit hooks will run for hygiene/tidy)
 
-5. **Commit** using HEREDOC for proper formatting:
+5. **Fix** - If pre-commit hooks fail, fix the issues and retry the commit
 
-   ```bash
-   git commit -m "$(cat <<'EOF'
-   type(scope): short description
+6. **Push** - Once commit succeeds, push to origin
 
-   Optional body with more detail if needed.
-   EOF
-   )"
-   ```
+## Commit Message Format
 
-6. **Push** to origin
+Conventional commits: `type(scope): description`
 
-7. **Verify** with `git log -1 --oneline`
+- Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
+- 72 char max first line, imperative mood, lowercase, no period
 
 ## Policy
 
 - Do NOT add Co-Authored-By trailers
-- Do NOT use `--amend` unless explicitly requested
-- Do NOT use `--force` push
-- Do NOT stage unrelated or sensitive files
-- If pre-commit hooks fail, fix issues and retry
+- Do NOT use `--amend` or `--force`
 
 ## Examples
 
