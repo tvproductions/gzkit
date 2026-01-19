@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gzkit.agents.v1",
+  "title": "gzkit AGENTS.md Schema",
+  "description": "Schema for AGENTS.md universal agent contract.",
+  "type": "object",
+  "required": ["headers"],
+  "properties": {
+    "headers": {
+      "type": "array",
+      "description": "Required Markdown headers",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required_headers": [
+    "Project Identity",
+    "Behavior Rules",
+    "Pattern Discovery",
+    "Gate Covenant",
+    "Execution Rules"
+  ]
+}

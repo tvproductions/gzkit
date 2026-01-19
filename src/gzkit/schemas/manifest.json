@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gzkit.manifest.v1",
+  "title": "gzkit Governance Manifest",
+  "description": "Machine-readable contract for governance structure and verification commands.",
+  "type": "object",
+  "required": ["schema", "structure", "artifacts", "control_surfaces", "verification", "gates"],
+  "properties": {
+    "schema": {
+      "type": "string",
+      "const": "gzkit.manifest.v1",
+      "description": "Schema version identifier"
+    },
+    "structure": {
+      "type": "object",
+      "description": "Project directory structure",
+      "required": ["source_root", "tests_root", "docs_root", "design_root"],
+      "properties": {
+        "source_root": {
+          "type": "string",
+          "description": "Root directory for source code"
+        },
+        "tests_root": {
+          "type": "string",
+          "description": "Root directory for tests"
+        },
+        "docs_root": {
+          "type": "string",
+          "description": "Root directory for documentation"
+        },
+        "design_root": {
+          "type": "string",
+          "description": "Root directory for design artifacts"
+        }
+      },
+      "additionalProperties": false
+    },
+    "artifacts": {
+      "type": "object",
+      "description": "Governance artifact locations and schemas",
+      "required": ["prd", "constitution", "brief", "adr"],
+      "properties": {
+        "prd": {
+          "$ref": "#/$defs/artifactConfig"
+        },
+        "constitution": {
+          "$ref": "#/$defs/artifactConfig"
+        },
+        "brief": {
+          "$ref": "#/$defs/artifactConfig"
+        },
+        "adr": {
+          "$ref": "#/$defs/artifactConfig"
+        }
+      },
+      "additionalProperties": false
+    },
+    "control_surfaces": {
+      "type": "object",
+      "description": "Agent control surface file locations",
+      "required": ["agents_md", "claude_md", "hooks", "skills"],
+      "properties": {
+        "agents_md": {
+          "type": "string",
+          "description": "Path to AGENTS.md"
+        },
+        "claude_md": {
+          "type": "string",
+          "description": "Path to CLAUDE.md"
+        },
+        "hooks": {
+          "type": "string",
+          "description": "Directory for hook scripts"
+        },
+        "skills": {
+          "type": "string",
+          "description": "Directory for skill definitions"
+        }
+      },
+      "additionalProperties": false
+    },
+    "verification": {
+      "type": "object",
+      "description": "Commands for verification gates",
+      "required": ["lint", "format", "typecheck", "test"],
+      "properties": {
+        "lint": {
+          "type": "string",
+          "description": "Linting command"
+        },
+        "format": {
+          "type": "string",
+          "description": "Format check command"
+        },
+        "typecheck": {
+          "type": "string",
+          "description": "Type checking command"
+        },
+        "test": {
+          "type": "string",
+          "description": "Test execution command"
+        }
+      },
+      "additionalProperties": false
+    },
+    "gates": {
+      "type": "object",
+      "description": "Gate configurations by lane",
+      "required": ["lite", "heavy"],
+      "properties": {
+        "lite": {
+          "type": "array",
+          "items": {"type": "integer", "minimum": 1, "maximum": 5},
+          "description": "Gates required for lite lane"
+        },
+        "heavy": {
+          "type": "array",
+          "items": {"type": "integer", "minimum": 1, "maximum": 5},
+          "description": "Gates required for heavy lane"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "artifactConfig": {
+      "type": "object",
+      "required": ["path", "schema"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Relative path to artifact directory"
+        },
+        "schema": {
+          "type": "string",
+          "description": "Schema identifier for this artifact type"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
