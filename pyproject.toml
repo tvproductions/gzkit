@@ -69,6 +69,5 @@ select = [
 quote-style = "double"
 indent-style = "space"
 
-[tool.ty]
-python_version = "3.13"
-strict = true
+[tool.ty.environment]
+python-version = "3.13"

@@ -1,0 +1,86 @@
+default_stages: [pre-commit]
+fail_fast: true
+
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check (lint)
+        entry: uvx ruff check --fix
+        language: system
+        pass_filenames: true
+        types: [python]
+        exclude: ^site/
+
+      - id: ruff-format
+        name: ruff format
+        entry: uvx ruff format
+        language: system
+        pass_filenames: true
+        types: [python]
+        exclude: ^site/
+
+      - id: ty-check
+        name: ty (static type check)
+        entry: uvx ty check src/
+        language: system
+        pass_filenames: false
+        types: [python]
+        exclude: ^site/
+
+      - id: unittest
+        name: unittest
+        entry: uv run -m unittest discover -q tests
+        language: system
+        pass_filenames: false
+        types: [python]
+
+      - id: forbid-pytest
+        name: forbid pytest (unittest-only policy)
+        entry: uv run -m gzkit.hooks.guards
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+
+      - id: xenon-complexity
+        name: xenon (enforce C/C/C complexity ceiling)
+        entry: uvx xenon --max-absolute C --max-modules C --max-average C src/
+        language: system
+        pass_filenames: false
+        types: [python]
+        stages: [pre-commit]
+
+      - id: interrogate
+        name: interrogate (docstring coverage)
+        entry: uvx interrogate -v -f 50 src/
+        language: system
+        pass_filenames: false
+        types: [python]
+        stages: [pre-commit]
+
+      - id: check-todos-fixmes
+        name: check TODO/FIXME (flagged, informational)
+        entry: bash -c 'grep -r "TODO\|FIXME" src/ tests/ --include="*.py" 2>/dev/null || true'
+        language: system
+        pass_filenames: false
+        types: [python]
+        stages: [pre-commit]
+        always_run: true
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: end-of-file-fixer
+        exclude: ^site/
+      - id: trailing-whitespace
+        exclude: ^site/
+      - id: check-merge-conflict
+
+  - repo: local
+    hooks:
+      - id: gitleaks
+        name: gitleaks (secrets scanner)
+        entry: gitleaks protect --staged --redact
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
