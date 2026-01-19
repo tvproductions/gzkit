@@ -1,23 +1,28 @@
 ---
 name: commit
-description: Create a conventional commit and push. Use when committing code changes.
+description: Stage, commit, and push changes. Use when committing code changes.
 ---
 
 # Git Commit Ritual
 
-Create a conventional commit for staged changes and push.
+Stage, commit, and push changes.
 
 ## Instructions
 
-1. **Check status and diff** - Run `git status` and `git diff --cached` to understand what's staged
+1. **Review changes** - Run `git status` and `git diff` to understand all changes
 
-2. **Draft commit message** following Conventional Commits:
+2. **Stage files** - Use `git add <files>` to stage relevant changes (be selective, not `git add -A`)
+
+3. **Confirm staged** - Run `git diff --cached` to verify what will be committed
+
+4. **Draft commit message** following Conventional Commits:
    - Format: `type(scope): description` (72 char max first line)
    - Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
    - Scope: module or area affected (e.g., `gates`, `cli`, `config`)
    - Description: imperative mood, lowercase, no period
 
-3. **Commit** using HEREDOC for proper formatting:
+5. **Commit** using HEREDOC for proper formatting:
+
    ```bash
    git commit -m "$(cat <<'EOF'
    type(scope): short description
@@ -27,15 +32,16 @@ Create a conventional commit for staged changes and push.
    )"
    ```
 
-4. **Push** to origin
+6. **Push** to origin
 
-5. **Verify** with `git log -1 --oneline`
+7. **Verify** with `git log -1 --oneline`
 
 ## Policy
 
 - Do NOT add Co-Authored-By trailers
 - Do NOT use `--amend` unless explicitly requested
 - Do NOT use `--force` push
+- Do NOT stage unrelated or sensitive files
 - If pre-commit hooks fail, fix issues and retry
 
 ## Examples
