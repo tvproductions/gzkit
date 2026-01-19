@@ -1,11 +1,11 @@
 ---
 name: commit
-description: Create a conventional commit for staged changes. Use when committing code changes.
+description: Create a conventional commit and push. Use when committing code changes.
 ---
 
 # Git Commit Ritual
 
-Create a conventional commit for staged changes.
+Create a conventional commit for staged changes and push.
 
 ## Instructions
 
@@ -27,18 +27,20 @@ Create a conventional commit for staged changes.
    )"
    ```
 
-4. **Verify** with `git log -1 --oneline`
+4. **Push** to origin
+
+5. **Verify** with `git log -1 --oneline`
 
 ## Policy
 
 - Do NOT add Co-Authored-By trailers
 - Do NOT use `--amend` unless explicitly requested
-- Do NOT push unless explicitly requested
+- Do NOT use `--force` push
 - If pre-commit hooks fail, fix issues and retry
 
 ## Examples
 
-```
+```text
 feat(gates): add ADR validation logic
 fix(cli): handle missing config file gracefully
 docs(readme): update installation instructions
