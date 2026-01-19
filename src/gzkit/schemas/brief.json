@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gzkit.brief.v1",
+  "title": "gzkit Brief Schema",
+  "description": "Schema for Implementation Briefs - frontmatter and required headers.",
+  "type": "object",
+  "required": ["frontmatter", "headers"],
+  "properties": {
+    "frontmatter": {
+      "type": "object",
+      "description": "Required YAML frontmatter fields",
+      "required": ["id", "status", "parent", "lane"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^BRIEF-[a-z0-9-]+$",
+          "description": "Brief identifier (e.g., BRIEF-core-feature)"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Draft", "Active", "Completed", "Abandoned"],
+          "description": "Document status"
+        },
+        "parent": {
+          "type": "string",
+          "description": "Parent PRD or constitution identifier"
+        },
+        "lane": {
+          "type": "string",
+          "enum": ["lite", "heavy"],
+          "description": "Governance lane"
+        }
+      },
+      "additionalProperties": true
+    },
+    "headers": {
+      "type": "array",
+      "description": "Required Markdown headers (## level)",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required_headers": [
+    "Objective",
+    "Allowed Paths",
+    "Denied Paths",
+    "Quality Gates",
+    "Acceptance Criteria"
+  ]
+}

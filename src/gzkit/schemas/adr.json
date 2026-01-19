@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gzkit.adr.v1",
+  "title": "gzkit ADR Schema",
+  "description": "Schema for Architecture Decision Records - frontmatter and required headers.",
+  "type": "object",
+  "required": ["frontmatter", "headers"],
+  "properties": {
+    "frontmatter": {
+      "type": "object",
+      "description": "Required YAML frontmatter fields",
+      "required": ["id", "status", "semver", "lane", "parent", "date"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^ADR-[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "description": "ADR identifier (e.g., ADR-0.1.0)"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Draft", "Proposed", "Accepted", "Superseded", "Deprecated"],
+          "description": "Document status"
+        },
+        "semver": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "description": "Semantic version"
+        },
+        "lane": {
+          "type": "string",
+          "enum": ["lite", "heavy"],
+          "description": "Governance lane"
+        },
+        "parent": {
+          "type": "string",
+          "description": "Parent brief identifier"
+        },
+        "date": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+          "description": "ISO 8601 date"
+        }
+      },
+      "additionalProperties": true
+    },
+    "headers": {
+      "type": "array",
+      "description": "Required Markdown headers (## level)",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required_headers": [
+    "Intent",
+    "Decision",
+    "Consequences",
+    "OBPIs",
+    "Evidence",
+    "Attestation Block"
+  ]
+}
