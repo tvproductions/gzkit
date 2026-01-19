@@ -1,0 +1,4 @@
+# Ty configuration for gzkit
+
+[environment]
+python-version = "3.13"
