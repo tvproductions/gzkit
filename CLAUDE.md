@@ -100,6 +100,16 @@ Conventional Commits: `feat(gates): add ADR validation` (72 char wrap)
 
 Do NOT add Co-Authored-By trailers.
 
+## Forbidden Practices
+
+These are treated as dirty words—never use them:
+
+- `pytest` — use unittest only
+- `--no-verify` — fix issues, don't bypass pre-commit
+- `--force` push — protect shared history
+
+If something is broken, fix it. Don't bypass or ignore problems.
+
 ## Key Invariants
 
 1. **Markdown-primary**: All governance artifacts are Markdown; structured data (YAML/JSON) only where necessary
