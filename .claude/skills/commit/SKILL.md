@@ -13,9 +13,9 @@ Review changes, create a meaningful commit, and push.
 
 2. **Clarify** - If anything is unclear about intent or scope, ask the user
 
-3. **Categorize** - Group related changes and craft a meaningful commit message that captures the "why"
+3. **Categorize** - Summarize changes and craft a meaningful commit message that captures the "why"
 
-4. **Stage and commit** - Stage relevant files with `git add` and commit (pre-commit hooks will run for hygiene/tidy)
+4. **Stage all and commit** - Run `git add -A` then commit (pre-commit hooks run for hygiene/tidy)
 
 5. **Fix** - If pre-commit hooks fail, fix the issues and retry the commit
 

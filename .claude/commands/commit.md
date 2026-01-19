@@ -12,8 +12,8 @@ Review my changes and commit them:
 
 1. **Explore** - Look at `git status` and `git diff` to understand all changes
 2. **Clarify** - If anything is unclear, ask me about intent or scope
-3. **Categorize** - Group related changes and summarize for a meaningful commit message
-4. **Stage and commit** - Stage relevant files and commit (pre-commit hooks will run)
+3. **Categorize** - Summarize changes for a meaningful commit message
+4. **Stage all and commit** - Run `git add -A` then commit (pre-commit hooks run for hygiene)
 5. **Fix** - If pre-commit fails, fix/tidy as needed and retry
 6. **Push** - Once commit succeeds, push to origin
 
