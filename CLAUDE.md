@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code when working with the gzkit codebase.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
 
@@ -22,7 +22,7 @@ gzkit is a Development Covenant for Human-AI Collaboration—cognitive infrastru
 
 - **uv** — Package/environment management
 - **ruff** — Linting and formatting
-- **ty** — Type checking (strict: error-on-warning)
+- **ty** — Type checking (config in ty.toml)
 - **unittest** — Testing (NOT pytest)
 
 **NEVER** use pip, poetry, mypy, black, isort, pyright, pytest, or any other tools.
@@ -38,61 +38,55 @@ uv run -m gzkit --help               # CLI entry point
 uvx ruff check src tests             # Lint
 uvx ruff format --check .            # Format check
 uvx ty check src                     # Type check
-uv run -m unittest discover tests    # Run tests
+uv run -m unittest discover tests    # Run all tests
+uv run -m unittest tests.test_config # Run single test module
+uv run -m unittest tests.test_config.TestGzkitConfig.test_load__valid_config  # Run single test
 ```
 
-## Documentation
+## Pre-commit Hooks
 
-```bash
-uv run mkdocs serve                  # Local dev server at localhost:8000
-uv run mkdocs build                  # Build static site to site/
-```
-
-Site hosted at https://gzkit.org (MkDocs Material theme).
+Pre-commit runs automatically on commit: ruff, ty, unittest, xenon (complexity C/C/C), interrogate (docstrings), gitleaks (secrets), unittest-only enforcement.
 
 ## Architecture
 
-```
+```text
 src/gzkit/
-├── __init__.py
 ├── cli.py              # Click-based CLI entry point
-├── config.py           # .gzkit.json parsing
-├── gates/              # Gate implementations
-│   ├── adr.py          # Gate 1: ADR management
-│   ├── tdd.py          # Gate 2: Test verification
-│   ├── docs.py         # Gate 3: Documentation checks
-│   ├── bdd.py          # Gate 4: Behavior verification
-│   └── human.py        # Gate 5: Attestation tracking
-├── phases/             # Spec-kit phase model
-│   ├── constitute.py   # Define constitutions/canon
-│   ├── specify.py      # Create specs/briefs
-│   ├── plan.py         # ADR and linkage
-│   ├── implement.py    # Verification orchestration
-│   └── analyze.py      # Audit and attestation
-└── templates/          # Markdown templates for scaffolding
+├── config.py           # .gzkit.json parsing and GzkitConfig dataclass
+├── hooks/              # Git and agent hook infrastructure
+│   ├── guards.py       # Policy enforcement (unittest-only)
+│   ├── claude.py       # Claude Code hook generation
+│   ├── copilot.py      # GitHub Copilot hook generation
+│   └── core.py         # Shared hook utilities, ledger recording
+├── schemas/            # JSON schemas for artifact validation
+├── templates/          # Markdown templates for scaffolding
+├── interview.py        # Interactive prompts for artifact creation
+├── ledger.py           # Append-only governance event log
+├── quality.py          # Code quality checks
+├── skills.py           # Skill file management
+├── sync.py             # Control surface synchronization
+└── validate.py         # Schema validation utilities
 ```
+
+## The Three Concerns
+
+| Concern | Agent-facing? | Examples |
+| ------- | ------------- | -------- |
+| **Specification** | Yes | Canon validation, constraint checking, acceptance criteria |
+| **Methodology** | Shared | Phase transitions, gate sequencing, workflow state |
+| **Governance** | No (human) | Attestation recording, audit trails, authority checks |
+
+Agent-facing code: **constraint-forward** (explicit rules, declarative intent, verification loops).
+
+Human-facing code: **ceremony-aware** (clear prompts, attestation recording, audit formatting).
 
 ## Coding Conventions
 
 - Ruff defaults: 4-space indent, 100-char lines, double quotes
 - `snake_case` for modules/functions, `PascalCase` for classes
 - Type annotations on all public functions
-- Dataclasses or Pydantic for structured data
+- Dataclasses for structured data
 - No magic—explicit is better than implicit
-
-## The Three Concerns
-
-When implementing features, consider which concern is primary:
-
-| Concern | Agent-facing? | Examples |
-|---------|---------------|----------|
-| **Specification** | Yes | Canon validation, constraint checking, acceptance criteria |
-| **Methodology** | Shared | Phase transitions, gate sequencing, workflow state |
-| **Governance** | No (human) | Attestation recording, audit trails, authority checks |
-
-Agent-facing code should be **constraint-forward**: explicit rules, declarative intent, verification loops.
-
-Human-facing code should be **ceremony-aware**: clear prompts, attestation recording, audit formatting.
 
 ## Commit Style
 
@@ -119,7 +113,7 @@ If something is broken, fix it. Don't bypass or ignore problems.
 
 ## Testing Conventions
 
-- Test files mirror source: `tests/gates/test_adr.py` for `src/gzkit/gates/adr.py`
+- Test files mirror source: `tests/test_config.py` for `src/gzkit/config.py`
 - Test method naming: `test_<behavior>__<expectation>`
 - Use unittest only—no pytest
 - Mock external dependencies; no network calls in tests
