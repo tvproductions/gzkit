@@ -13,13 +13,15 @@ Review changes, create a meaningful commit, and push.
 
 2. **Clarify** - If anything is unclear about intent or scope, ask the user
 
-3. **Categorize** - Summarize changes and craft a meaningful commit message that captures the "why"
+3. **Fix first** - If anything is broken, weird, or unusual, fix it now (it's all our work, not "someone else's problem")
 
-4. **Stage all and commit** - Run `git add -A` then commit (pre-commit hooks run for hygiene/tidy)
+4. **Categorize** - Summarize changes and craft a meaningful commit message that captures the "why"
 
-5. **Fix** - If pre-commit hooks fail, fix the issues and retry the commit
+5. **Stage all and commit** - Run `git add -A` then commit (pre-commit hooks run for hygiene/tidy)
 
-6. **Push** - Once commit succeeds, push to origin
+6. **Fix and retry** - If pre-commit hooks fail, fix the issues and retry (no `--no-verify`)
+
+7. **Push** - Once commit succeeds, push to origin
 
 ## Commit Message Format
 
@@ -30,8 +32,10 @@ Conventional commits: `type(scope): description`
 
 ## Policy
 
-- Do NOT add Co-Authored-By trailers
+- Fix issues we find - don't bypass or ignore them
+- NEVER use `--no-verify` (treat it like a forbidden word)
 - Do NOT use `--amend` or `--force`
+- Do NOT add Co-Authored-By trailers
 
 ## Examples
 
