@@ -5,8 +5,8 @@
 - Product/Feature Name: gzkit (GovZero Kit) 1.0.0
 - Author(s): JB
 - Date Created: 2026-01-13
-- Last Updated: 2026-01-13
-- Version: 0.2 (Draft)
+- Last Updated: 2026-01-22
+- Version: 0.3 (Draft - GovZero Depth Expansion)
 - Constitution: [gzkit Charter](../../user/charter.md)
 - Lane: Heavy (external CLI contract)
 
@@ -78,13 +78,59 @@ gzkit is the extracted governance methodology from AirlineOps, intended as a sta
 **Phase Commands:**
 
 - `gz init` — scaffold project structure, `.gzkit.json`, and ledger
-- `gz prd` — create/manage PRD from template (Major intent carrier)
+- `gz prd` — create PRD via mandatory Q&A interview (Major intent carrier)
 - `gz constitute` — create/validate constitution artifacts
 - `gz specify <brief>` — create brief from template
-- `gz plan <adr>` — create ADR linked to brief
+- `gz plan <adr>` — create ADR via mandatory Q&A interview, scaffold ADR folder structure
+- `gz obpi <adr>` — generate OBPI briefs from ADR checklist (One Brief Per Item)
 - `gz implement` — verify gates (tests, docs, BDD)
-- `gz analyze` — generate audit artifacts
-- `gz attest` — record human attestation
+- `gz closeout <adr>` — execute closeout ceremony protocol (agent becomes passive presenter)
+- `gz attest` — record human attestation after direct observation
+- `gz analyze` — generate audit artifacts (post-attestation)
+
+**OBPI Discipline (One Brief Per Item):**
+
+- Each ADR checklist item maps to exactly one OBPI brief
+- Sequential, zero-gap numbering: `OBPI-0.1.0-01`, `OBPI-0.1.0-02`, etc.
+- Pre-release identifiers: `0.1.0-obpi.03` (SemVer compliant)
+- OBPIs are planned work; GHIs (GitHub Issues) are emergent work discovered during execution
+- `gz obpi` generates compliant briefs from ADR checklist
+
+**Mandatory Q&A Interview:**
+
+- PRD and ADR creation REQUIRE structured interview process
+- Interview shapes/steers document content (not just metadata collection)
+- Q&A transcript preserved as artifact alongside document
+- Transcript stored in `.gzkit/transcripts/{document-id}-interview.md`
+
+**Closeout Ceremony Protocol:**
+
+- Triggered by `gz closeout <adr>` or human phrase ("begin closeout")
+- Agent becomes passive presenter (mode transition)
+- Agent presents paths and commands ONLY, never outcomes or summaries
+- Human executes commands and observes directly (no mediated observation)
+- Human provides explicit attestation: Completed | Completed—Partial | Dropped
+- Audit runs AFTER attestation (reconciliation only, not proof)
+
+**ADR Folder Structure (ADR-Contained Layout):**
+
+```
+docs/design/adr/adr-X.Y.x/ADR-X.Y.Z-{slug}/
+  ADR-X.Y.Z-{slug}.md           # Intent document
+  ADR-CLOSEOUT-FORM.md          # Closeout ceremony workspace
+  briefs/
+    OBPI-X.Y.Z-01-*.md          # One per checklist item
+    OBPI-X.Y.Z-02-*.md
+  audit/
+    AUDIT.md                    # Post-attestation audit log
+```
+
+**Control Surface Generation:**
+
+- `gz sync` generates agent control surfaces from governance canon
+- CLAUDE.md — Claude Code contract (constraint-forward)
+- AGENTS.md — Universal agent contract (all vendors)
+- Precedence hierarchy: AGENTS.md > vendor-specific > task prompt > skills
 
 **State & Inspection:**
 
@@ -182,11 +228,14 @@ gz analyze                            # Day N: generate audit
 
 `gz prd [name]` SHALL:
 
-- Create PRD from hardened template if not exists
-- Validate PRD structure if exists
+- Run mandatory Q&A interview to shape PRD content
+- Create PRD from hardened template populated with interview answers
+- Save Q&A transcript to `.gzkit/transcripts/{prd-id}-interview.md`
+- Embed transcript in PRD Q&A section
 - Link PRD to constitution
 - Append `prd_created` event to ledger
 - Support `--template` flag for custom templates
+- Refuse to create PRD without completing interview (no `--skip-interview`)
 
 ### FR-003: Constitution Management
 
@@ -212,12 +261,53 @@ gz analyze                            # Day N: generate audit
 
 `gz plan <adr-name>` SHALL:
 
-- Create ADR from template in configured ADR directory
+- Run mandatory Q&A interview to shape ADR content (including checklist items)
+- Create ADR folder structure: `docs/design/adr/adr-X.Y.x/ADR-X.Y.Z-{slug}/`
+- Create ADR document from template populated with interview answers
+- Create `briefs/` subdirectory for OBPIs
+- Create `audit/` subdirectory for post-attestation audit
+- Create `ADR-CLOSEOUT-FORM.md` template
+- Save Q&A transcript to `.gzkit/transcripts/{adr-id}-interview.md`
+- Embed transcript in ADR Q&A section
 - Link to specified brief(s) via `--brief` flag
-- Insert gate evidence placeholders
-- Determine lane (Lite/Heavy) from scope declaration
+- Determine lane (Lite/Heavy) from interview
 - Append `adr_created` event to ledger with `parent` and `blocks` references
 - Fail if referenced brief does not exist
+- Refuse to create ADR without completing interview
+
+### FR-005a: OBPI Generation
+
+`gz obpi <adr-id>` SHALL:
+
+- Parse ADR checklist items from ADR document
+- Generate one OBPI brief per checklist item (One Brief Per Item discipline)
+- Use sequential, zero-gap numbering: `OBPI-X.Y.Z-01`, `OBPI-X.Y.Z-02`, etc.
+- Place briefs in `docs/design/adr/adr-X.Y.x/ADR-X.Y.Z-{slug}/briefs/`
+- Populate OBPI template with:
+  - Parent ADR reference
+  - Checklist item number and description
+  - Lane (inherited from ADR)
+  - Gate evidence placeholders
+- Append `obpi_created` events to ledger for each OBPI
+- Support `--item <n>` to generate specific OBPI only
+- Fail if ADR has no checklist items
+
+### FR-005b: Closeout Ceremony
+
+`gz closeout <adr-id>` SHALL:
+
+- Verify all OBPIs are complete (acceptance criteria met)
+- Enter closeout mode (agent behavior transition)
+- Present evidence paths and commands ONLY (no outcomes):
+  - Gate 1: ADR document path
+  - Gate 2: Test command (`uv run -m unittest`)
+  - Gate 3: Docs command (`uv run mkdocs build --strict`) (Heavy only)
+  - Gate 4: BDD command (`uv run behave`) (Heavy only)
+  - Gate 5: Awaiting human attestation (Heavy only)
+- Wait for explicit human attestation term
+- Record attestation in ADR-CLOSEOUT-FORM.md
+- Append `closeout_initiated` event to ledger
+- NOT run audit (audit is post-attestation via `gz analyze`)
 
 ### FR-006: Gate Verification
 
@@ -428,11 +518,36 @@ PreToolUse hooks MAY:
 
 ### AC-004: ADR Creation
 
-- [ ] `gz plan ADR-0.1.0 --brief my-feature` creates ADR
+- [ ] `gz plan ADR-0.1.0 --brief my-feature` runs mandatory Q&A interview
+- [ ] Interview answers populate ADR template
+- [ ] Q&A transcript saved to `.gzkit/transcripts/ADR-0.1.0-interview.md`
+- [ ] ADR folder structure created: `docs/design/adr/adr-0.1.x/ADR-0.1.0-{slug}/`
+- [ ] `briefs/` and `audit/` subdirectories created
+- [ ] `ADR-CLOSEOUT-FORM.md` template created
 - [ ] ADR contains brief linkage
-- [ ] ADR contains gate evidence placeholders
-- [ ] ADR declares lane (Lite/Heavy)
+- [ ] ADR contains checklist items from interview
+- [ ] ADR declares lane (Lite/Heavy) from interview
 - [ ] Command fails if referenced brief does not exist
+- [ ] Command fails if interview not completed (no skip option)
+
+### AC-004a: OBPI Generation
+
+- [ ] `gz obpi ADR-0.1.0` parses checklist items from ADR
+- [ ] One OBPI brief created per checklist item
+- [ ] OBPIs numbered sequentially: `OBPI-0.1.0-01`, `OBPI-0.1.0-02`, etc.
+- [ ] OBPIs placed in `docs/design/adr/adr-0.1.x/ADR-0.1.0-{slug}/briefs/`
+- [ ] Each OBPI contains parent ADR reference and checklist item mapping
+- [ ] `obpi_created` events appended to ledger
+- [ ] Command fails if ADR has no checklist items
+
+### AC-004b: Closeout Ceremony
+
+- [ ] `gz closeout ADR-0.1.0` verifies all OBPIs complete
+- [ ] Closeout presents evidence paths and commands only (no outcomes)
+- [ ] Closeout waits for explicit human attestation term
+- [ ] Attestation term recorded in ADR-CLOSEOUT-FORM.md
+- [ ] `closeout_initiated` event appended to ledger
+- [ ] Audit does NOT run during closeout (post-attestation only)
 
 ### AC-005: Gate Verification
 
@@ -462,10 +577,14 @@ PreToolUse hooks MAY:
 
 ### AC-009: PRD Management
 
-- [ ] `gz prd PRD-GZKIT-1.0.0` creates PRD from hardened template
+- [ ] `gz prd PRD-GZKIT-1.0.0` runs mandatory Q&A interview
+- [ ] Interview answers populate PRD template
+- [ ] Q&A transcript saved to `.gzkit/transcripts/PRD-GZKIT-1.0.0-interview.md`
+- [ ] Transcript embedded in PRD Q&A section
 - [ ] PRD contains all hardened sections (invariants, gate mapping, Q&A, attestation)
 - [ ] `prd_created` event appended to ledger
 - [ ] PRD links to constitution
+- [ ] Command fails if interview not completed (no skip option)
 
 ### AC-010: State Management
 
@@ -589,7 +708,7 @@ These constraints are non-negotiable. Agents MUST reason against them.
 | INV-004 | ADRs MUST link to briefs |
 | INV-005 | Attestation terms MUST be canonical (Completed / Partial / Dropped) |
 | INV-006 | All commands MUST be deterministic (same input → same output, except timestamps) |
-| INV-007 | Lite lane MUST enforce Gates 1-2; Heavy lane MUST enforce Gates 1-5 |
+| INV-007 | Lite lane enforces Gates 1-2 ONLY; Heavy lane enforces Gates 1-5; Gate 5 is Heavy-only |
 | INV-008 | Gate failures MUST include file:line evidence |
 | INV-009 | Ledger MUST be append-only; existing events CANNOT be modified |
 | INV-010 | All `gz` commands MUST append events to ledger implicitly |
@@ -597,6 +716,15 @@ These constraints are non-negotiable. Agents MUST reason against them.
 | INV-012 | Claude hooks MUST NOT block on ledger write failure (best-effort) |
 | INV-013 | PRDs MUST be bound to Major versions |
 | INV-014 | ADRs MUST link to parent PRD or Brief |
+| INV-015 | PRD and ADR creation MUST use mandatory Q&A interview |
+| INV-016 | Q&A transcripts MUST be preserved as artifacts |
+| INV-017 | Each ADR checklist item MUST map to exactly one OBPI (One Brief Per Item) |
+| INV-018 | OBPI numbering MUST be sequential with zero gaps |
+| INV-019 | Closeout ceremony MUST precede attestation for Heavy lane |
+| INV-020 | During closeout, agent MUST present paths/commands only, NEVER outcomes |
+| INV-021 | Human MUST observe directly during closeout (no mediated observation) |
+| INV-022 | Audit runs AFTER attestation (reconciliation, not proof) |
+| INV-023 | Alignment chain MUST hold: Intent (ADR/OBPI) ↔ Code (behavior) ↔ Docs (claims) |
 
 ---
 
@@ -629,6 +757,15 @@ Q&A that shaped this PRD (per Human Discipline):
 | 2026-01-13 | Should gzkit track state like BEADS/GSD? | Yes; JSONL ledger with `gz state` to query | Human |
 | 2026-01-13 | How to prevent agent forgetting ledger? | Implicit writes from all `gz` commands + Claude hooks | Agent |
 | 2026-01-13 | Should we use SQLite cache like BEADS? | Uncertain; JSONL sufficient for MVP, SQLite optional | Human |
+| 2026-01-13 | How to track ADR/OBPI/GHI closure? | Claude hooks (PostToolUse) append to ledger on artifact edits | Human |
+| 2026-01-22 | Does Lite lane include Gate 5? | NO. Lite = Gates 1-2 only. Gate 5 is Heavy-only. | Human |
+| 2026-01-22 | What is an OBPI? | One Brief Per Item - atomic work unit mapping 1:1 to ADR checklist item | Agent (from airlineops) |
+| 2026-01-22 | What is closeout ceremony? | Mode transition where agent becomes passive presenter; human observes directly | Agent (from airlineops) |
+| 2026-01-22 | Should Q&A interview be mandatory? | YES. Interview shapes PRD/ADR; transcript preserved as artifact | Human |
+| 2026-01-22 | Should gzkit mirror airlineops patterns or innovate? | COMBINE: mandatory Q&A (gzkit innovation) + extract airlineops patterns (OBPI, closeout, etc.) | Human |
+| 2026-01-22 | What's the test progression for gzkit? | gzkit (dogfood) → flightops (apply) → airlineops (re-integrate to genesis) | Human |
+| 2026-01-22 | Should we update PRD or create ADRs for new requirements? | Update PRD first. PRDs expand TOWARDS Major; ADRs implement PRD requirements. | Agent (per GovZero guidance) |
+| 2026-01-22 | What is the alignment chain? | Intent (ADR/OBPI) ↔ Code (behavior) ↔ Docs (claims) - all three must hold | Agent (from airlineops) |
 | 2026-01-13 | How to track ADR/OBPI/GHI closure? | Claude hooks (PostToolUse) append to ledger on artifact edits | Human |
 
 ---

@@ -1,0 +1,53 @@
+{
+  "schema": "gzkit.manifest.v1",
+  "structure": {
+    "source_root": "src",
+    "tests_root": "tests",
+    "docs_root": "docs",
+    "design_root": "docs/design"
+  },
+  "artifacts": {
+    "prd": {
+      "path": "docs/design/prd",
+      "schema": "gzkit.prd.v1"
+    },
+    "constitution": {
+      "path": "docs/design/constitutions",
+      "schema": "gzkit.constitution.v1"
+    },
+    "brief": {
+      "path": "docs/design/briefs",
+      "schema": "gzkit.brief.v1"
+    },
+    "adr": {
+      "path": "docs/design/adr",
+      "schema": "gzkit.adr.v1"
+    }
+  },
+  "control_surfaces": {
+    "agents_md": "AGENTS.md",
+    "claude_md": "CLAUDE.md",
+    "hooks": ".claude/hooks",
+    "skills": ".github/skills"
+  },
+  "verification": {
+    "lint": "uvx ruff check src tests",
+    "format": "uvx ruff format --check .",
+    "typecheck": "uvx ty check src",
+    "test": "uv run -m unittest discover tests"
+  },
+  "gates": {
+    "lite": [
+      1,
+      2,
+      5
+    ],
+    "heavy": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  }
+}
