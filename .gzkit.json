@@ -1,0 +1,14 @@
+{
+  "mode": "lite",
+  "paths": {
+    "prd": "docs/design/prd",
+    "constitutions": "docs/design/constitutions",
+    "briefs": "docs/design/briefs",
+    "adrs": "docs/design/adr",
+    "source_root": "src",
+    "tests_root": "tests",
+    "docs_root": "docs",
+    "design_root": "docs/design"
+  },
+  "project_name": "gzkit"
+}

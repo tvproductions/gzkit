@@ -252,7 +252,8 @@ This document exists to ensure that context survives.
 
 - [Charter](charter.md) — The covenant itself
 - [Lineage](lineage.md) — Heritage documentation
-- [Concepts](concepts/README.md) — The three concerns explained
+- [Gates](../concepts/gates.md) — The five verification gates
+- [Lanes](../concepts/lanes.md) — Lite and Heavy lanes
 - Original sources in AirlineOps:
   - `docs/governance/GovZero/charter.md`
   - `docs/governance/GovZero/adr-lifecycle.md`

@@ -11,60 +11,44 @@ date: {date}
 
 ## Intent
 
-<!-- What are we trying to achieve? What problem does this solve? -->
+{intent}
 
 ## Decision
 
-<!-- What did we decide? Be specific about the approach chosen. -->
+{decision}
 
 ## Consequences
 
 ### Positive
 
-<!-- What good things result from this decision? -->
-
-- Consequence 1
-- Consequence 2
+{positive_consequences}
 
 ### Negative
 
-<!-- What tradeoffs or downsides come with this decision? -->
+{negative_consequences}
 
-- Tradeoff 1
-- Tradeoff 2
+## Checklist
 
-### Neutral
+<!-- Each item becomes an OBPI (One Brief Per Item). Sequential numbering, no gaps. -->
 
-<!-- What changes that are neither good nor bad? -->
+{checklist}
 
-- Change 1
+## Q&A Transcript
 
-## OBPIs
+<!-- Interview transcript preserved for context -->
 
-<!-- Observable Behavior Performance Indicators - how do we verify this works? -->
-
-| OBPI | Metric | Target | Actual |
-|------|--------|--------|--------|
-| OBPI-1 | Description | Target value | |
-| OBPI-2 | Description | Target value | |
+{qa_transcript}
 
 ## Evidence
 
 <!-- Links to tests, documentation, and other artifacts that prove completion -->
 
-- [ ] Tests: `tests/path/to/test.py`
-- [ ] Docs: `docs/path/to/doc.md`
-- [ ] Other: Description
+- [ ] Tests: `tests/`
+- [ ] Docs: `docs/`
 
 ## Alternatives Considered
 
-### Alternative 1: [Name]
-
-**Pros**: [Benefits]
-
-**Cons**: [Drawbacks]
-
-**Why rejected**: [Reason]
+{alternatives}
 
 ## Attestation Block
 

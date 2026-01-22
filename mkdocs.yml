@@ -1,6 +1,6 @@
 site_name: gzkit
 site_url: https://gzkit.org
-site_description: "GovZero Kit: A Development Covenant for Human-AI Collaboration"
+site_description: "Keep humans in the loop when AI writes your code"
 site_author: Jeffry Babb
 docs_dir: docs/user
 
@@ -40,22 +40,28 @@ theme:
 
 nav:
   - Home: index.md
-  - Charter: charter.md
-  - Lineage: lineage.md
+  - Quickstart: quickstart.md
+  - Why gzkit?: why.md
   - Concepts:
-    - Overview: concepts/README.md
-    - Specification: concepts/specification.md
-    - Methodology: concepts/methodology.md
-    - Governance: concepts/governance.md
-  - Genesis:
-    - Story: genesis.md
-    - Transcript: genesis-transcript.md
-  - Sources:
-    - Overview: sources/README.md
-    - RFC Foundation: sources/RFC-GZKIT-FOUNDATION-airlineops.md
-    - Charter v6: sources/govzero-charter-v6-airlineops.md
-    - ADR Lifecycle: sources/govzero-adr-lifecycle-airlineops.md
-    - Release Doctrine: sources/govzero-release-doctrine-airlineops.md
+    - Gates: concepts/gates.md
+    - Lanes: concepts/lanes.md
+    - OBPIs: concepts/obpis.md
+    - Closeout Ceremony: concepts/closeout.md
+    - Daily Workflow: concepts/workflow.md
+  - Commands:
+    - Overview: commands/index.md
+    - gz init: commands/init.md
+    - gz prd: commands/prd.md
+    - gz specify: commands/specify.md
+    - gz plan: commands/plan.md
+    - gz status: commands/status.md
+    - gz state: commands/state.md
+    - gz attest: commands/attest.md
+  - Reference:
+    - Charter: reference/charter.md
+    - Lineage: reference/lineage.md
+    - Genesis: reference/genesis.md
+    - AirlineOps Exploration: reference/airlineops-exploration-verbatim.md
 
 markdown_extensions:
   - tables

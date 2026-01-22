@@ -87,6 +87,7 @@ class TestCheckInterviewComplete(unittest.TestCase):
             "problem_statement": "Test problem",
             "north_star": "Test goal",
             "invariants": "Test invariants",
+            "out_of_scope": "Test out of scope",
         }
         result = check_interview_complete("prd", answers)
         self.assertTrue(result.complete)

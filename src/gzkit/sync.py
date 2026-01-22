@@ -66,6 +66,92 @@ def detect_project_structure(project_root: Path) -> dict[str, str]:
     return structure
 
 
+def scan_existing_artifacts(project_root: Path, design_root: str) -> dict[str, list[Path]]:
+    """Scan for existing PRD and ADR files in the design directory.
+
+    Args:
+        project_root: Project root directory.
+        design_root: Relative path to design directory (e.g., "design" or "docs/design").
+
+    Returns:
+        Dictionary with "prds" and "adrs" keys containing lists of found file paths.
+    """
+    result: dict[str, list[Path]] = {"prds": [], "adrs": []}
+    design_path = project_root / design_root
+
+    if not design_path.exists():
+        return result
+
+    # Scan for PRDs (PRD-*.md pattern)
+    prd_dir = design_path / "prd"
+    if prd_dir.exists():
+        for prd_file in prd_dir.rglob("PRD-*.md"):
+            result["prds"].append(prd_file)
+
+    # Scan for ADRs (ADR-*.md pattern)
+    adr_dir = design_path / "adr"
+    if adr_dir.exists():
+        for adr_file in adr_dir.rglob("ADR-*.md"):
+            result["adrs"].append(adr_file)
+
+    return result
+
+
+def extract_artifact_id(file_path: Path) -> str:
+    """Extract artifact ID from a file path.
+
+    Args:
+        file_path: Path to artifact file.
+
+    Returns:
+        Artifact ID (e.g., "PRD-GZKIT-1.0.0" from "PRD-GZKIT-1.0.0.md").
+    """
+    # Remove .md extension and any path components
+    return file_path.stem
+
+
+def parse_artifact_metadata(file_path: Path) -> dict[str, str]:
+    """Parse artifact metadata from file content.
+
+    Extracts:
+    - id: Canonical ID from header (e.g., "ADR-0.1.0" from "# ADR-0.1.0: description")
+    - parent: Parent artifact ID from "**Parent PRD:**" or "**Parent:**" lines
+
+    Args:
+        file_path: Path to artifact file.
+
+    Returns:
+        Dictionary with "id" and optionally "parent" keys.
+    """
+    import re
+
+    result: dict[str, str] = {"id": file_path.stem}
+
+    try:
+        content = file_path.read_text()
+    except OSError:
+        return result
+
+    lines = content.split("\n")
+
+    for line in lines[:20]:  # Only check first 20 lines for frontmatter
+        # Extract canonical ID from header: "# ADR-0.1.0: description" -> "ADR-0.1.0"
+        if line.startswith("# ADR-") or line.startswith("# PRD-"):
+            # Match "# ADR-X.Y.Z" or "# PRD-NAME-X.Y.Z" before any colon or space
+            match = re.match(r"^#\s+((?:ADR|PRD)-[^\s:]+)", line)
+            if match:
+                result["id"] = match.group(1)
+
+        # Extract parent from "**Parent PRD:** [PRD-NAME](link)" or "**Parent:** [ID](link)"
+        if "**Parent" in line and "[" in line:
+            # Match markdown link: [TEXT](url)
+            match = re.search(r"\[((?:PRD|ADR|BRIEF)-[^\]]+)\]", line)
+            if match:
+                result["parent"] = match.group(1)
+
+    return result
+
+
 def detect_project_name(project_root: Path) -> str:
     """Detect project name from pyproject.toml or directory name.
 

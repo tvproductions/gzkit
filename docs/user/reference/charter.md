@@ -297,4 +297,5 @@ These opinions exist because decision fatigue is real and bike-shedding is expen
 ## References
 
 - [Lineage](lineage.md) — Heritage from spec-kit and GovZero
-- [Concepts](concepts/README.md) — Deep dives on the three concerns
+- [Gates](../concepts/gates.md) — The five verification gates
+- [Lanes](../concepts/lanes.md) — Lite and Heavy lanes
