@@ -9,36 +9,31 @@ date: {date}
 
 ## Problem Statement
 
-<!-- What problem does this solve? Who has this problem? Why does it matter? -->
+{problem_statement}
 
 ## North Star
 
-<!-- What does success look like? How will we know when we've achieved it? -->
+{north_star}
 
 ## Invariants
 
-<!-- What must always be true? What constraints are non-negotiable? -->
-
-1. **Invariant 1**: Description
-2. **Invariant 2**: Description
+{invariants}
 
 ## Gate Mapping
 
 | Gate | Lane | Requirement |
 |------|------|-------------|
-| Gate 1 (ADR) | Both | All changes have ADRs |
-| Gate 2 (TDD) | Both | Tests pass |
+| Gate 1 (ADR) | All | All changes have ADRs |
+| Gate 2 (TDD) | All | Tests pass |
 | Gate 3 (Docs) | Heavy | Documentation updated |
 | Gate 4 (BDD) | Heavy | Behavior tests pass |
-| Gate 5 (Human) | Both | Human attestation recorded |
+| Gate 5 (Human) | Heavy | Human attestation recorded |
 
-## Q&A Log
+## Q&A Transcript
 
-<!-- Record key questions and answers during specification -->
+<!-- Interview transcript preserved for context -->
 
-### Q1: [Question]
-
-**A**: [Answer]
+{qa_transcript}
 
 ## Attestation Block
 

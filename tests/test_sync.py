@@ -8,7 +8,10 @@ from gzkit.config import GzkitConfig
 from gzkit.sync import (
     detect_project_name,
     detect_project_structure,
+    extract_artifact_id,
     generate_manifest,
+    parse_artifact_metadata,
+    scan_existing_artifacts,
 )
 
 
@@ -112,6 +115,168 @@ class TestGenerateManifest(unittest.TestCase):
             self.assertIn("format", verification)
             self.assertIn("typecheck", verification)
             self.assertIn("test", verification)
+
+
+class TestScanExistingArtifacts(unittest.TestCase):
+    """Tests for existing artifact scanning."""
+
+    def test_scan_empty_directory__returns_empty_lists(self) -> None:
+        """Returns empty lists when design directory doesn't exist."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+
+            result = scan_existing_artifacts(project_root, "design")
+
+            self.assertEqual(result["prds"], [])
+            self.assertEqual(result["adrs"], [])
+
+    def test_scan_finds_prd_files(self) -> None:
+        """Finds PRD files in design/prd directory."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            prd_dir = project_root / "design" / "prd"
+            prd_dir.mkdir(parents=True)
+            (prd_dir / "PRD-TEST-1.0.0.md").write_text("# PRD")
+
+            result = scan_existing_artifacts(project_root, "design")
+
+            self.assertEqual(len(result["prds"]), 1)
+            self.assertTrue(result["prds"][0].name == "PRD-TEST-1.0.0.md")
+
+    def test_scan_finds_adr_files(self) -> None:
+        """Finds ADR files in design/adr directory."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            adr_dir = project_root / "design" / "adr"
+            adr_dir.mkdir(parents=True)
+            (adr_dir / "ADR-0.1.0.md").write_text("# ADR")
+
+            result = scan_existing_artifacts(project_root, "design")
+
+            self.assertEqual(len(result["adrs"]), 1)
+            self.assertTrue(result["adrs"][0].name == "ADR-0.1.0.md")
+
+    def test_scan_finds_nested_adrs(self) -> None:
+        """Finds ADR files in subdirectories (e.g., adr-0.1.x/)."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            adr_subdir = project_root / "design" / "adr" / "adr-0.1.x"
+            adr_subdir.mkdir(parents=True)
+            (adr_subdir / "ADR-0.1.0-test.md").write_text("# ADR")
+
+            result = scan_existing_artifacts(project_root, "design")
+
+            self.assertEqual(len(result["adrs"]), 1)
+            self.assertTrue(result["adrs"][0].name == "ADR-0.1.0-test.md")
+
+    def test_scan_with_docs_design_root(self) -> None:
+        """Works with docs/design as design root."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            prd_dir = project_root / "docs" / "design" / "prd"
+            prd_dir.mkdir(parents=True)
+            (prd_dir / "PRD-MYAPP-1.0.0.md").write_text("# PRD")
+
+            result = scan_existing_artifacts(project_root, "docs/design")
+
+            self.assertEqual(len(result["prds"]), 1)
+
+    def test_scan_ignores_non_matching_files(self) -> None:
+        """Ignores files that don't match PRD-/ADR- patterns."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            prd_dir = project_root / "design" / "prd"
+            prd_dir.mkdir(parents=True)
+            (prd_dir / "PRD-VALID.md").write_text("# PRD")
+            (prd_dir / "README.md").write_text("# README")
+            (prd_dir / "notes.txt").write_text("notes")
+
+            result = scan_existing_artifacts(project_root, "design")
+
+            self.assertEqual(len(result["prds"]), 1)
+            self.assertEqual(result["prds"][0].name, "PRD-VALID.md")
+
+
+class TestExtractArtifactId(unittest.TestCase):
+    """Tests for artifact ID extraction."""
+
+    def test_extract_prd_id(self) -> None:
+        """Extracts PRD ID from filename."""
+        path = Path("/some/path/PRD-GZKIT-1.0.0.md")
+        result = extract_artifact_id(path)
+        self.assertEqual(result, "PRD-GZKIT-1.0.0")
+
+    def test_extract_adr_id(self) -> None:
+        """Extracts ADR ID from filename."""
+        path = Path("/design/adr/ADR-0.1.0.md")
+        result = extract_artifact_id(path)
+        self.assertEqual(result, "ADR-0.1.0")
+
+    def test_extract_adr_id_with_suffix(self) -> None:
+        """Extracts ADR ID from filename with descriptive suffix."""
+        path = Path("/design/adr/adr-0.1.x/ADR-0.1.0-enforced-governance.md")
+        result = extract_artifact_id(path)
+        self.assertEqual(result, "ADR-0.1.0-enforced-governance")
+
+
+class TestParseArtifactMetadata(unittest.TestCase):
+    """Tests for artifact metadata parsing."""
+
+    def test_parse_adr_with_header_and_parent(self) -> None:
+        """Parses canonical ID from header and parent from frontmatter."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            adr_path = Path(tmpdir) / "ADR-0.1.0-test-description.md"
+            adr_path.write_text(
+                "# ADR-0.1.0: test description\n\n"
+                "**Status:** Draft\n"
+                "**Parent PRD:** [PRD-MYAPP-1.0.0](../prd/PRD-MYAPP-1.0.0.md)\n"
+            )
+
+            result = parse_artifact_metadata(adr_path)
+
+            self.assertEqual(result["id"], "ADR-0.1.0")
+            self.assertEqual(result["parent"], "PRD-MYAPP-1.0.0")
+
+    def test_parse_adr_no_parent__uses_filename(self) -> None:
+        """Falls back to filename when no parent found."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            adr_path = Path(tmpdir) / "ADR-0.2.0-orphan.md"
+            adr_path.write_text("# ADR-0.2.0: orphan\n\n**Status:** Draft\n")
+
+            result = parse_artifact_metadata(adr_path)
+
+            self.assertEqual(result["id"], "ADR-0.2.0")
+            self.assertNotIn("parent", result)
+
+    def test_parse_prd_extracts_id_from_header(self) -> None:
+        """Extracts PRD ID from header."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            prd_path = Path(tmpdir) / "PRD-MYAPP-1.0.0.md"
+            prd_path.write_text("# PRD-MYAPP-1.0.0: My Application\n\n## Overview\n")
+
+            result = parse_artifact_metadata(prd_path)
+
+            self.assertEqual(result["id"], "PRD-MYAPP-1.0.0")
+
+    def test_parse_nonexistent_file__returns_filename_stem(self) -> None:
+        """Returns filename stem when file can't be read."""
+        path = Path("/nonexistent/ADR-0.1.0-missing.md")
+
+        result = parse_artifact_metadata(path)
+
+        self.assertEqual(result["id"], "ADR-0.1.0-missing")
+
+    def test_parse_parent_with_brief(self) -> None:
+        """Parses parent when it's a BRIEF reference."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            adr_path = Path(tmpdir) / "ADR-0.3.0.md"
+            adr_path.write_text(
+                "# ADR-0.3.0: feature\n\n**Parent:** [BRIEF-core](../briefs/BRIEF-core.md)\n"
+            )
+
+            result = parse_artifact_metadata(adr_path)
+
+            self.assertEqual(result["parent"], "BRIEF-core")
 
 
 if __name__ == "__main__":

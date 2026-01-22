@@ -20,6 +20,7 @@ from gzkit.hooks.copilot import setup_copilot_hooks, setup_copilotignore
 from gzkit.interview import (
     check_interview_complete,
     format_answers_for_template,
+    format_transcript,
     get_interview_questions,
 )
 from gzkit.ledger import (
@@ -43,6 +44,8 @@ from gzkit.sync import (
     detect_project_name,
     detect_project_structure,
     generate_manifest,
+    parse_artifact_metadata,
+    scan_existing_artifacts,
     sync_all,
     write_manifest,
 )
@@ -79,6 +82,141 @@ def get_git_user() -> str:
         return "unknown"
 
 
+def run_interview(document_type: str) -> dict[str, str]:
+    """Run a mandatory Q&A interview for document creation.
+
+    Args:
+        document_type: Type of document (prd, adr, brief).
+
+    Returns:
+        Dictionary of question_id -> answer.
+
+    Raises:
+        click.Abort: If user cancels the interview.
+    """
+    console.print(f"\n[bold]Q&A Interview for {document_type.upper()}[/bold]")
+    console.print("The interview shapes the document. Answer each question.\n")
+    console.print("[dim]Press Enter for empty, Ctrl+C to cancel.[/dim]\n")
+
+    questions = get_interview_questions(document_type)
+    answers: dict[str, str] = {}
+
+    for q in questions:
+        # Show example if available
+        if q.example:
+            console.print(f"[dim]Example: {q.example}[/dim]")
+
+        # For multiline questions, show hint
+        if q.multiline:
+            console.print("[dim](Multi-line: separate items with newlines)[/dim]")
+
+        while True:
+            try:
+                answer = click.prompt(q.prompt, default="", show_default=False)
+            except click.Abort:
+                console.print("\n[yellow]Interview cancelled.[/yellow]")
+                raise
+
+            if q.validator and answer and not q.validator(answer):
+                console.print("[red]Invalid answer. Please try again.[/red]")
+                continue
+            break
+
+        answers[q.id] = answer
+        console.print()  # Spacing between questions
+
+    return answers
+
+
+def save_transcript(
+    project_root: Path,
+    document_type: str,
+    document_id: str,
+    answers: dict[str, str],
+) -> Path:
+    """Save the Q&A transcript as a separate artifact.
+
+    Args:
+        project_root: Project root directory.
+        document_type: Type of document (prd, adr).
+        document_id: The document identifier.
+        answers: Interview answers.
+
+    Returns:
+        Path to the saved transcript.
+    """
+    transcript = format_transcript(document_type, answers)
+
+    # Save in .gzkit/transcripts/
+    transcript_dir = project_root / ".gzkit" / "transcripts"
+    transcript_dir.mkdir(parents=True, exist_ok=True)
+    transcript_file = transcript_dir / f"{document_id}-interview.md"
+    transcript_file.write_text(f"# Q&A Transcript: {document_id}\n\n{transcript}")
+
+    return transcript_file
+
+
+def _setup_init_hooks(project_root: Path, config: GzkitConfig) -> None:
+    """Set up hooks during initialization."""
+    claude_files = setup_claude_hooks(project_root, config)
+    for path in claude_files:
+        console.print(f"  Created {path}")
+
+    copilot_files = setup_copilot_hooks(project_root, config)
+    for path in copilot_files:
+        console.print(f"  Created {path}")
+
+    setup_copilotignore(project_root)
+    console.print("  Created .copilotignore")
+
+
+def _register_existing_artifacts(
+    project_root: Path,
+    design_root: str,
+    ledger: Ledger,
+    mode: str,
+) -> bool:
+    """Scan and register existing artifacts. Returns True if registered."""
+    existing = scan_existing_artifacts(project_root, design_root)
+    prd_metadata = [parse_artifact_metadata(p) for p in existing["prds"]]
+    adr_metadata = [parse_artifact_metadata(p) for p in existing["adrs"]]
+
+    if not prd_metadata and not adr_metadata:
+        return False
+
+    console.print("\n[bold]Found existing artifacts:[/bold]")
+    if prd_metadata:
+        console.print("\n  PRDs:")
+        for meta in prd_metadata:
+            console.print(f"    - {meta['id']}")
+    if adr_metadata:
+        console.print("\n  ADRs:")
+        for meta in adr_metadata:
+            parent = meta.get("parent", "(no parent found)")
+            console.print(f"    - {meta['id']} → parent: {parent}")
+
+    console.print()
+    if not click.confirm("Register these artifacts in the ledger?", default=True):
+        return False
+
+    # Register PRDs
+    prd_ids = []
+    for meta in prd_metadata:
+        prd_id = meta["id"]
+        ledger.append(prd_created_event(prd_id))
+        prd_ids.append(prd_id)
+        console.print(f"  Registered PRD: {prd_id}")
+
+    # Register ADRs
+    for meta in adr_metadata:
+        adr_id = meta["id"]
+        parent = meta.get("parent", prd_ids[0] if prd_ids else "")
+        ledger.append(adr_created_event(adr_id, parent, mode))
+        console.print(f"  Registered ADR: {adr_id} (parent: {parent or 'none'})")
+
+    return True
+
+
 @click.group()
 @click.version_option(version=__version__, prog_name="gzkit")
 def main() -> None:
@@ -110,6 +248,7 @@ def init(mode: str, force: bool) -> None:
     # Detect project structure
     structure = detect_project_structure(project_root)
     project_name = detect_project_name(project_root)
+    design_root = structure.get("design_root", "design")
 
     console.print(f"Initializing gzkit for [bold]{project_name}[/bold] in {mode} mode...")
 
@@ -120,20 +259,30 @@ def init(mode: str, force: bool) -> None:
     ledger_path = gzkit_dir / "ledger.jsonl"
     ledger_path.touch()
 
-    # Create config
+    # Create config with detected paths
     mode_literal = cast(Literal["lite", "heavy"], mode)
     config = GzkitConfig(mode=mode_literal, project_name=project_name)
+    # Update paths based on detected structure
+    config.paths.design_root = design_root
+    config.paths.prd = f"{design_root}/prd"
+    config.paths.constitutions = f"{design_root}/constitutions"
+    config.paths.briefs = f"{design_root}/briefs"
+    config.paths.adrs = f"{design_root}/adr"
+    config.paths.source_root = structure.get("source_root", "src")
+    config.paths.tests_root = structure.get("tests_root", "tests")
+    config.paths.docs_root = structure.get("docs_root", "docs")
     config.save(project_root / ".gzkit.json")
 
     # Generate manifest
     manifest = generate_manifest(project_root, config, structure)
     write_manifest(project_root, manifest)
 
-    # Create governance directories
+    # Create governance directories (only if they don't exist)
     for dir_name in ["prd", "constitutions", "briefs", "adr"]:
-        dir_path = project_root / "design" / dir_name
-        dir_path.mkdir(parents=True, exist_ok=True)
-        console.print(f"  Created design/{dir_name}/")
+        dir_path = project_root / design_root / dir_name
+        if not dir_path.exists():
+            dir_path.mkdir(parents=True, exist_ok=True)
+            console.print(f"  Created {design_root}/{dir_name}/")
 
     # Sync control surfaces
     updated = sync_all(project_root, config)
@@ -141,16 +290,7 @@ def init(mode: str, force: bool) -> None:
         console.print(f"  Generated {path}")
 
     # Set up hooks
-    claude_files = setup_claude_hooks(project_root, config)
-    for path in claude_files:
-        console.print(f"  Created {path}")
-
-    copilot_files = setup_copilot_hooks(project_root, config)
-    for path in copilot_files:
-        console.print(f"  Created {path}")
-
-    setup_copilotignore(project_root)
-    console.print("  Created .copilotignore")
+    _setup_init_hooks(project_root, config)
 
     # Scaffold core skills
     skills = scaffold_core_skills(project_root, config)
@@ -159,6 +299,11 @@ def init(mode: str, force: bool) -> None:
     # Record init event
     ledger = Ledger(ledger_path)
     ledger.append(project_init_event(project_name, mode))
+
+    # Register existing artifacts
+    registered = _register_existing_artifacts(project_root, design_root, ledger, mode)
+    if not registered:
+        console.print("  (No existing artifacts to register)")
 
     console.print("\n[green]gzkit initialized successfully![/green]")
     console.print("\nNext steps:")
