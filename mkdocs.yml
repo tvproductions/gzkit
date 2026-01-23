@@ -45,6 +45,7 @@ nav:
   - Concepts:
     - Gates: concepts/gates.md
     - Lanes: concepts/lanes.md
+    - Lifecycle: concepts/lifecycle.md
     - OBPIs: concepts/obpis.md
     - Closeout Ceremony: concepts/closeout.md
     - Daily Workflow: concepts/workflow.md

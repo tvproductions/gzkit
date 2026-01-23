@@ -141,6 +141,7 @@ All three must align. If your OBPI says "add auth endpoints" but the code doesn'
 
 ## Related
 
+- [Lifecycle](lifecycle.md) — ADR states and pool system
 - [Gates](gates.md) — What gets verified
 - [Lanes](lanes.md) — Lite vs Heavy requirements
 - [Closeout](closeout.md) — Completing an ADR

@@ -2,7 +2,7 @@
 
 **Status:** Draft
 **SemVer:** 0.1.0
-**Parent PRD:** [PRD-GZKIT-1.0.0](../../prd/PRD-GZKIT-1.0.0.md)
+**Parent PRD:** [PRD-GZKIT-1.0.0](../../../prd/PRD-GZKIT-1.0.0.md)
 **Date Added:** 2026-01-13
 **Lane:** Heavy (external CLI contract)
 
@@ -265,20 +265,20 @@ SQLite cache can be added in future if query performance becomes an issue.
 
 ## OBPIs
 
-Work items derived from this ADR:
+Work items derived from this ADR (One Brief Per Item):
 
 | ID | Description | Status |
 |----|-------------|--------|
-| OBPI-0.1.0-001 | Implement `gz init` with ledger and hooks scaffolding | Pending |
-| OBPI-0.1.0-002 | Implement `gz prd` with hardened template | Pending |
-| OBPI-0.1.0-003 | Implement `gz constitute` with template | Pending |
-| OBPI-0.1.0-004 | Implement `gz specify` with parent linking | Pending |
-| OBPI-0.1.0-005 | Implement `gz plan` with brief linking | Pending |
-| OBPI-0.1.0-006 | Implement `gz state` with ledger parsing | Pending |
-| OBPI-0.1.0-007 | Implement `gz status` for gate display | Pending |
-| OBPI-0.1.0-008 | Implement `gz attest` with ledger write | Pending |
-| OBPI-0.1.0-009 | Implement ledger-writer hook script | Pending |
-| OBPI-0.1.0-010 | Create minimal templates (PRD, constitution, brief, ADR) | Pending |
+| [OBPI-0.1.0-01](briefs/OBPI-0.1.0-01-gz-init.md) | Implement `gz init` with ledger and hooks scaffolding | Pending |
+| [OBPI-0.1.0-02](briefs/OBPI-0.1.0-02-gz-prd.md) | Implement `gz prd` with hardened template | Pending |
+| [OBPI-0.1.0-03](briefs/OBPI-0.1.0-03-gz-constitute.md) | Implement `gz constitute` with template | Pending |
+| [OBPI-0.1.0-04](briefs/OBPI-0.1.0-04-gz-specify.md) | Implement `gz specify` with parent linking | Pending |
+| [OBPI-0.1.0-05](briefs/OBPI-0.1.0-05-gz-plan.md) | Implement `gz plan` with brief linking | Pending |
+| [OBPI-0.1.0-06](briefs/OBPI-0.1.0-06-gz-state.md) | Implement `gz state` with ledger parsing | Pending |
+| [OBPI-0.1.0-07](briefs/OBPI-0.1.0-07-gz-status.md) | Implement `gz status` for gate display | Pending |
+| [OBPI-0.1.0-08](briefs/OBPI-0.1.0-08-gz-attest.md) | Implement `gz attest` with ledger write | Pending |
+| [OBPI-0.1.0-09](briefs/OBPI-0.1.0-09-ledger-writer-hook.md) | Implement ledger-writer hook script | Pending |
+| [OBPI-0.1.0-10](briefs/OBPI-0.1.0-10-templates.md) | Create minimal templates (PRD, constitution, brief, ADR) | Pending |
 
 ---
 
@@ -287,7 +287,8 @@ Work items derived from this ADR:
 ### Gate 1 (ADR)
 
 - This document
-- Parent: [PRD-GZKIT-1.0.0](../../prd/PRD-GZKIT-1.0.0.md)
+- Parent: [PRD-GZKIT-1.0.0](../../../prd/PRD-GZKIT-1.0.0.md)
+- Closeout Form: [ADR-CLOSEOUT-FORM.md](ADR-CLOSEOUT-FORM.md)
 
 ### Gate 2 (TDD)
 
