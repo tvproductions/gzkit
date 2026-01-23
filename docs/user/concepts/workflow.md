@@ -215,6 +215,7 @@ Documentation IS the Gate 5 artifact. No docs, no completion.
 
 ## Related
 
+- [Lifecycle](lifecycle.md) — ADR states and pool system
 - [Gates](gates.md) — What gets verified
 - [Lanes](lanes.md) — Lite vs Heavy
 - [OBPIs](obpis.md) — Atomic work units

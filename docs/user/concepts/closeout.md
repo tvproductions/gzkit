@@ -167,6 +167,7 @@ You saw the tests pass. Your attestation means something.
 
 ## Related
 
+- [Lifecycle](lifecycle.md) — ADR states and transitions
 - [Gates](gates.md) — What each gate verifies
 - [OBPIs](obpis.md) — Atomic work units
 - [gz attest](../commands/attest.md) — Recording attestation
