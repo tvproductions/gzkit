@@ -43,7 +43,7 @@ class TestInitCommand(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             self.assertTrue(Path("design/prd").exists())
             self.assertTrue(Path("design/constitutions").exists())
-            self.assertTrue(Path("design/briefs").exists())
+            self.assertTrue(Path("design/obpis").exists())
             self.assertTrue(Path("design/adr").exists())
 
     def test_init_fails_if_already_initialized(self) -> None:
@@ -90,13 +90,13 @@ class TestSpecifyCommand(unittest.TestCase):
     """Tests for gz specify command."""
 
     def test_specify_creates_file(self) -> None:
-        """specify creates brief file."""
+        """specify creates OBPI file."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             runner.invoke(main, ["init"])
-            result = runner.invoke(main, ["specify", "core-feature", "--parent", "PRD-TEST"])
+            result = runner.invoke(main, ["specify", "core-feature", "--parent", "ADR-0.1.0"])
             self.assertEqual(result.exit_code, 0)
-            self.assertTrue(Path("design/briefs/BRIEF-core-feature.md").exists())
+            self.assertTrue(Path("design/obpis/OBPI-core-feature.md").exists())
 
 
 class TestPlanCommand(unittest.TestCase):
@@ -107,7 +107,7 @@ class TestPlanCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             runner.invoke(main, ["init"])
-            result = runner.invoke(main, ["plan", "0.1.0", "--brief", "BRIEF-core"])
+            result = runner.invoke(main, ["plan", "0.1.0"])
             self.assertEqual(result.exit_code, 0)
             self.assertTrue(Path("design/adr/ADR-0.1.0.md").exists())
 
@@ -129,7 +129,7 @@ class TestStatusCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             runner.invoke(main, ["init"])
-            runner.invoke(main, ["plan", "0.1.0", "--brief", "BRIEF-core"])
+            runner.invoke(main, ["plan", "0.1.0"])
             result = runner.invoke(main, ["status"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("ADR-0.1.0", result.output)

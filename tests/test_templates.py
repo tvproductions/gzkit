@@ -21,9 +21,9 @@ class TestLoadTemplate(unittest.TestCase):
         self.assertIn("Intent", content)
         self.assertIn("Decision", content)
 
-    def test_load_brief_template(self) -> None:
-        """Can load brief template."""
-        content = load_template("brief")
+    def test_load_obpi_template(self) -> None:
+        """Can load OBPI template."""
+        content = load_template("obpi")
         self.assertIn("{id}", content)
         self.assertIn("Objective", content)
 
@@ -62,13 +62,13 @@ class TestRenderTemplate(unittest.TestCase):
     def test_render_preserves_unknown_placeholders(self) -> None:
         """Render preserves placeholders for unknown keys."""
         content = render_template(
-            "brief",
-            id="BRIEF-test",
-            title="Test Brief",
-            # parent not provided
+            "obpi",
+            id="OBPI-test",
+            title="Test OBPI",
+            # parent_adr not provided
         )
         # Unknown placeholders preserved
-        self.assertIn("{parent}", content)
+        self.assertIn("{parent_adr}", content)
 
 
 class TestListTemplates(unittest.TestCase):
@@ -79,7 +79,7 @@ class TestListTemplates(unittest.TestCase):
         templates = list_templates()
         self.assertIn("prd", templates)
         self.assertIn("adr", templates)
-        self.assertIn("brief", templates)
+        self.assertIn("obpi", templates)
         self.assertIn("constitution", templates)
         self.assertIn("agents", templates)
 

@@ -3,7 +3,7 @@
   "paths": {
     "prd": "docs/design/prd",
     "constitutions": "docs/design/constitutions",
-    "briefs": "docs/design/briefs",
+    "obpis": "docs/design/obpis",
     "adrs": "docs/design/adr",
     "source_root": "src",
     "tests_root": "tests",

@@ -22,9 +22,9 @@ class TestIsGovernanceArtifact(unittest.TestCase):
         """Detects ADR in design directory."""
         self.assertTrue(is_governance_artifact("design/adr/ADR-0.1.0.md"))
 
-    def test_design_briefs(self) -> None:
-        """Detects brief in design directory."""
-        self.assertTrue(is_governance_artifact("design/briefs/BRIEF-core.md"))
+    def test_design_obpis(self) -> None:
+        """Detects OBPI in design directory."""
+        self.assertTrue(is_governance_artifact("design/obpis/OBPI-core.md"))
 
     def test_docs_adr(self) -> None:
         """Detects ADR in docs directory."""

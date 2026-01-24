@@ -98,7 +98,7 @@ id: ADR-0.1.0
 status: Draft
 semver: 0.1.0
 lane: lite
-parent: BRIEF-core
+parent: OBPI-core
 date: 2026-01-01
 ---
 
@@ -158,7 +158,7 @@ id: ADR-0.1.0
 status: Draft
 semver: 0.1.0
 lane: lite
-parent: BRIEF-core
+parent: OBPI-core
 date: 2026-01-01
 ---
 
@@ -197,7 +197,7 @@ class TestValidateManifest(unittest.TestCase):
             "artifacts": {
                 "prd": {"path": "design/prd", "schema": "gzkit.prd.v1"},
                 "constitution": {"path": "design/constitutions", "schema": "gzkit.constitution.v1"},
-                "brief": {"path": "design/briefs", "schema": "gzkit.brief.v1"},
+                "obpi": {"path": "design/obpis", "schema": "gzkit.obpi.v1"},
                 "adr": {"path": "design/adr", "schema": "gzkit.adr.v1"},
             },
             "control_surfaces": {
