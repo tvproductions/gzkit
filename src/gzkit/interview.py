@@ -212,25 +212,31 @@ ADR_QUESTIONS = [
 ]
 
 
-# Brief Interview Questions
-BRIEF_QUESTIONS = [
+# OBPI Interview Questions
+OBPI_QUESTIONS = [
     Question(
         id="id",
-        prompt="What is the brief identifier? (e.g., BRIEF-feature-name)",
+        prompt="What is the OBPI identifier? (e.g., OBPI-feature-name)",
         section="frontmatter",
-        example="BRIEF-user-auth",
+        example="OBPI-user-auth",
     ),
     Question(
         id="title",
-        prompt="What is the title of this brief?",
+        prompt="What is the title of this OBPI?",
         section="frontmatter",
         example="Implement User Authentication",
     ),
     Question(
         id="parent",
-        prompt="What is the parent PRD or constitution ID?",
+        prompt="What is the parent ADR ID?",
         section="frontmatter",
-        example="PRD-MYPROJECT-1.0.0",
+        example="ADR-0.1.0",
+    ),
+    Question(
+        id="item",
+        prompt="Which checklist item number from the parent ADR?",
+        section="frontmatter",
+        example="1",
     ),
     Question(
         id="lane",
@@ -241,7 +247,7 @@ BRIEF_QUESTIONS = [
     ),
     Question(
         id="objective",
-        prompt="What specific outcome does this brief target? Be concrete.",
+        prompt="What specific outcome does this OBPI target? Be concrete.",
         section="Objective",
         example=(
             "Implement secure user login with email/password. "
@@ -273,7 +279,7 @@ BRIEF_QUESTIONS = [
     ),
     Question(
         id="acceptance_criteria",
-        prompt="When is this brief complete? List specific, testable criteria.",
+        prompt="When is this OBPI complete? List specific, testable criteria.",
         section="Acceptance Criteria",
         example=(
             "1. User can register with email/password\n"
@@ -289,7 +295,7 @@ BRIEF_QUESTIONS = [
 INTERVIEWS = {
     "prd": PRD_QUESTIONS,
     "adr": ADR_QUESTIONS,
-    "brief": BRIEF_QUESTIONS,
+    "obpi": OBPI_QUESTIONS,
 }
 
 
@@ -431,7 +437,7 @@ def format_answers_for_template(
                     formatted.append(f"- [ ] {item}")
             template_vars["checklist"] = "\n".join(formatted)
 
-    if document_type == "brief" and "lane" in template_vars:
+    if document_type == "obpi" and "lane" in template_vars:
         template_vars["lane"] = template_vars["lane"].lower()
         # Set gate requirements based on lane
         is_heavy = template_vars["lane"] == "heavy"

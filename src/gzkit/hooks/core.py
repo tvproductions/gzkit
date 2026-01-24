@@ -13,10 +13,11 @@ from gzkit.ledger import Ledger, artifact_edited_event
 GOVERNANCE_PATTERNS = [
     r"^design/prd/.*\.md$",
     r"^design/constitutions/.*\.md$",
-    r"^design/briefs/.*\.md$",
+    r"^design/obpis/.*\.md$",
     r"^design/adr/.*\.md$",
     r"^docs/prd/.*\.md$",
     r"^docs/adr/.*\.md$",
+    r"^docs/design/obpis/.*\.md$",
     r"^AGENTS\.md$",
     r"^CLAUDE\.md$",
 ]

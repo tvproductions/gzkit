@@ -97,11 +97,11 @@ def constitution_created_event(constitution_id: str) -> LedgerEvent:
     )
 
 
-def brief_created_event(brief_id: str, parent: str) -> LedgerEvent:
-    """Create a brief created event."""
+def obpi_created_event(obpi_id: str, parent: str) -> LedgerEvent:
+    """Create an OBPI created event."""
     return LedgerEvent(
-        event="brief_created",
-        id=brief_id,
+        event="obpi_created",
+        id=obpi_id,
         parent=parent,
     )
 
@@ -248,7 +248,7 @@ class Ledger:
         creation_events = (
             "prd_created",
             "constitution_created",
-            "brief_created",
+            "obpi_created",
             "adr_created",
         )
         for event in self.read_all():

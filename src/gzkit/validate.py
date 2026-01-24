@@ -213,7 +213,7 @@ def validate_document(path: Path, schema_name: str) -> list[ValidationError]:
 
     Args:
         path: Path to the Markdown document.
-        schema_name: Name of schema to validate against (e.g., 'prd', 'adr', 'brief').
+        schema_name: Name of schema to validate against (e.g., 'prd', 'adr', 'obpi').
 
     Returns:
         List of validation errors (empty if valid).
@@ -346,7 +346,7 @@ def validate_manifest(manifest_path: Path) -> list[ValidationError]:
             )
 
     artifacts = manifest.get("artifacts", {})
-    for artifact_type in ["prd", "constitution", "brief", "adr"]:
+    for artifact_type in ["prd", "constitution", "obpi", "adr"]:
         if artifact_type not in artifacts:
             errors.append(
                 ValidationError(

@@ -145,7 +145,7 @@ def parse_artifact_metadata(file_path: Path) -> dict[str, str]:
         # Extract parent from "**Parent PRD:** [PRD-NAME](link)" or "**Parent:** [ID](link)"
         if "**Parent" in line and "[" in line:
             # Match markdown link: [TEXT](url)
-            match = re.search(r"\[((?:PRD|ADR|BRIEF)-[^\]]+)\]", line)
+            match = re.search(r"\[((?:PRD|ADR|OBPI)-[^\]]+)\]", line)
             if match:
                 result["parent"] = match.group(1)
 
@@ -202,7 +202,7 @@ def generate_manifest(
         "artifacts": {
             "prd": {"path": config.paths.prd, "schema": "gzkit.prd.v1"},
             "constitution": {"path": config.paths.constitutions, "schema": "gzkit.constitution.v1"},
-            "brief": {"path": config.paths.briefs, "schema": "gzkit.brief.v1"},
+            "obpi": {"path": config.paths.obpis, "schema": "gzkit.obpi.v1"},
             "adr": {"path": config.paths.adrs, "schema": "gzkit.adr.v1"},
         },
         "control_surfaces": {

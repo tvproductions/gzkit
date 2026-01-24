@@ -14,10 +14,10 @@ from gzkit.templates import render_template
 CORE_SKILLS = {
     "gz-adr-manager": {
         "skill_name": "ADR Manager",
-        "skill_description": "Create and manage ADRs with OBPI briefs.",
+        "skill_description": "Create and manage ADRs with OBPIs.",
         "trigger_description": "When creating a feature or making architecture decisions.",
         "behavior_description": "Guide ADR creation, ensuring all required sections.",
-        "prerequisites": "Active brief exists in the ledger",
+        "prerequisites": "Active OBPI exists in the ledger",
     },
     "gz-adr-audit": {
         "skill_name": "ADR Audit",

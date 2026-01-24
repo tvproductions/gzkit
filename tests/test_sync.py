@@ -99,7 +99,7 @@ class TestGenerateManifest(unittest.TestCase):
             artifacts = manifest["artifacts"]
             self.assertIn("prd", artifacts)
             self.assertIn("constitution", artifacts)
-            self.assertIn("brief", artifacts)
+            self.assertIn("obpi", artifacts)
             self.assertIn("adr", artifacts)
 
     def test_manifest_has_verification_commands(self) -> None:
@@ -266,17 +266,17 @@ class TestParseArtifactMetadata(unittest.TestCase):
 
         self.assertEqual(result["id"], "ADR-0.1.0-missing")
 
-    def test_parse_parent_with_brief(self) -> None:
-        """Parses parent when it's a BRIEF reference."""
+    def test_parse_parent_with_obpi(self) -> None:
+        """Parses parent when it's an OBPI reference."""
         with tempfile.TemporaryDirectory() as tmpdir:
             adr_path = Path(tmpdir) / "ADR-0.3.0.md"
             adr_path.write_text(
-                "# ADR-0.3.0: feature\n\n**Parent:** [BRIEF-core](../briefs/BRIEF-core.md)\n"
+                "# ADR-0.3.0: feature\n\n**Parent:** [OBPI-core](../obpis/OBPI-core.md)\n"
             )
 
             result = parse_artifact_metadata(adr_path)
 
-            self.assertEqual(result["parent"], "BRIEF-core")
+            self.assertEqual(result["parent"], "OBPI-core")
 
 
 if __name__ == "__main__":

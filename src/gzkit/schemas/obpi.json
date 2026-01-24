@@ -1,34 +1,38 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "gzkit.brief.v1",
-  "title": "gzkit Brief Schema",
-  "description": "Schema for Implementation Briefs - frontmatter and required headers.",
+  "$id": "gzkit.obpi.v1",
+  "title": "gzkit OBPI Schema",
+  "description": "Schema for One-Box-Per-Item work units - frontmatter and required headers.",
   "type": "object",
   "required": ["frontmatter", "headers"],
   "properties": {
     "frontmatter": {
       "type": "object",
       "description": "Required YAML frontmatter fields",
-      "required": ["id", "status", "parent", "lane"],
+      "required": ["id", "parent", "item", "lane", "status"],
       "properties": {
         "id": {
           "type": "string",
-          "pattern": "^BRIEF-[a-z0-9-]+$",
-          "description": "Brief identifier (e.g., BRIEF-core-feature)"
-        },
-        "status": {
-          "type": "string",
-          "enum": ["Draft", "Active", "Completed", "Abandoned"],
-          "description": "Document status"
+          "pattern": "^OBPI-[a-z0-9-]+$",
+          "description": "OBPI identifier (e.g., OBPI-feature-name)"
         },
         "parent": {
           "type": "string",
-          "description": "Parent PRD or constitution identifier"
+          "description": "Parent ADR identifier"
+        },
+        "item": {
+          "type": ["string", "integer"],
+          "description": "Checklist item number from parent ADR"
         },
         "lane": {
           "type": "string",
           "enum": ["lite", "heavy"],
           "description": "Governance lane"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Draft", "Active", "Completed", "Abandoned"],
+          "description": "Document status"
         }
       },
       "additionalProperties": true
@@ -43,9 +47,12 @@
   },
   "required_headers": [
     "Objective",
+    "Parent ADR",
+    "Lane",
     "Allowed Paths",
     "Denied Paths",
-    "Quality Gates",
-    "Acceptance Criteria"
+    "Requirements",
+    "Acceptance Criteria",
+    "Gate Evidence"
   ]
 }
