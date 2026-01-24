@@ -1,4 +1,35 @@
+---
+id: PRD-GZKIT-1.0.0
+status: Draft
+semver: 1.0.0
+date: 2026-01-22
+---
+
 # Product Requirements Document: gzkit 1.0.0
+
+## Problem Statement
+
+AI-assisted development creates a drift problem: humans approve work they didn't verify, attest to artifacts they didn't read, and gradually become rubber stamps for agent-generated output. Existing tools either ignore governance entirely or bury it in ceremony that agents route around.
+
+gzkit exists to keep the human at index zero—first in priority, final in authority.
+
+## North Star
+
+A governance-aware CLI that makes human oversight the path of least resistance—where attestation is meaningful, traceability is automatic, and agents operate within explicit architectural constraints.
+
+## Invariants
+
+See [Section 15: Invariants](#15-invariants) for the complete list of non-negotiable constraints.
+
+## Gate Mapping
+
+See [Section 16: Gate Mapping](#16-gate-mapping) for verification requirements.
+
+## Attestation Block
+
+See [Section 18: Attestation Block](#18-attestation-block) for attestation status.
+
+---
 
 ## 1. Document Information
 
@@ -17,12 +48,6 @@
 ### Summary
 
 gzkit is a Python CLI that implements the GovZero development covenant methodology. It provides spec-kit-inspired phase commands (constitute, specify, plan, implement, analyze) with Five Gates enforcement, enabling humans to maintain architectural authority over AI-assisted development.
-
-### Problem Statement
-
-AI-assisted development creates a drift problem: humans approve work they didn't verify, attest to artifacts they didn't read, and gradually become rubber stamps for agent-generated output. Existing tools either ignore governance entirely or bury it in ceremony that agents route around.
-
-gzkit exists to keep the human at index zero—first in priority, final in authority.
 
 ### Goals & Objectives
 
