@@ -27,8 +27,8 @@ from gzkit.ledger import (
     Ledger,
     adr_created_event,
     attested_event,
-    brief_created_event,
     constitution_created_event,
+    obpi_created_event,
     prd_created_event,
     project_init_event,
 )
@@ -86,7 +86,7 @@ def run_interview(document_type: str) -> dict[str, str]:
     """Run a mandatory Q&A interview for document creation.
 
     Args:
-        document_type: Type of document (prd, adr, brief).
+        document_type: Type of document (prd, adr, obpi).
 
     Returns:
         Dictionary of question_id -> answer.
@@ -266,7 +266,7 @@ def init(mode: str, force: bool) -> None:
     config.paths.design_root = design_root
     config.paths.prd = f"{design_root}/prd"
     config.paths.constitutions = f"{design_root}/constitutions"
-    config.paths.briefs = f"{design_root}/briefs"
+    config.paths.obpis = f"{design_root}/obpis"
     config.paths.adrs = f"{design_root}/adr"
     config.paths.source_root = structure.get("source_root", "src")
     config.paths.tests_root = structure.get("tests_root", "tests")
@@ -278,7 +278,7 @@ def init(mode: str, force: bool) -> None:
     write_manifest(project_root, manifest)
 
     # Create governance directories (only if they don't exist)
-    for dir_name in ["prd", "constitutions", "briefs", "adr"]:
+    for dir_name in ["prd", "constitutions", "obpis", "adr"]:
         dir_path = project_root / design_root / dir_name
         if not dir_path.exists():
             dir_path.mkdir(parents=True, exist_ok=True)
@@ -386,48 +386,54 @@ def constitute(name: str, title: str | None) -> None:
 
 @main.command()
 @click.argument("name")
-@click.option("--parent", required=True, help="Parent PRD or constitution ID")
+@click.option("--parent", required=True, help="Parent ADR ID")
+@click.option("--item", type=int, default=1, help="Checklist item number from parent ADR")
 @click.option("--lane", type=click.Choice(["lite", "heavy"]), default="lite")
-@click.option("--title", help="Brief title")
-def specify(name: str, parent: str, lane: str, title: str | None) -> None:
-    """Create a new implementation brief."""
+@click.option("--title", help="OBPI title")
+def specify(name: str, parent: str, item: int, lane: str, title: str | None) -> None:
+    """Create a new OBPI (One-Box-Per-Item work unit)."""
     config = ensure_initialized()
     project_root = get_project_root()
 
-    brief_id = f"BRIEF-{name}" if not name.startswith("BRIEF-") else name
-    brief_title = title or name.replace("-", " ").title()
+    obpi_id = f"OBPI-{name}" if not name.startswith("OBPI-") else name
+    obpi_title = title or name.replace("-", " ").title()
 
-    is_heavy = lane == "heavy"
-    content = render_template(
-        "brief",
-        id=brief_id,
-        title=brief_title,
-        parent=parent,
-        lane=lane,
-        status="Draft",
-        docs_required="Yes" if is_heavy else "No",
-        bdd_required="Yes" if is_heavy else "No",
+    lane_requirements = (
+        "All 5 gates required: ADR, TDD, Docs, BDD, Human attestation"
+        if lane == "heavy"
+        else "Gates 1, 2, 5 required: ADR, TDD, Human attestation"
     )
 
-    brief_dir = project_root / config.paths.briefs
-    brief_dir.mkdir(parents=True, exist_ok=True)
-    brief_file = brief_dir / f"{brief_id}.md"
-    brief_file.write_text(content)
+    content = render_template(
+        "obpi",
+        id=obpi_id,
+        title=obpi_title,
+        parent_adr=parent,
+        item_number=str(item),
+        lane=lane,
+        objective="TBD",
+        lane_requirements=lane_requirements,
+    )
+
+    obpi_dir = project_root / config.paths.obpis
+    obpi_dir.mkdir(parents=True, exist_ok=True)
+    obpi_file = obpi_dir / f"{obpi_id}.md"
+    obpi_file.write_text(content)
 
     ledger = Ledger(project_root / config.paths.ledger)
-    ledger.append(brief_created_event(brief_id, parent))
+    ledger.append(obpi_created_event(obpi_id, parent))
 
-    console.print(f"Created brief: {brief_file}")
+    console.print(f"Created OBPI: {obpi_file}")
 
 
 @main.command("plan")
 @click.argument("name")
-@click.option("--brief", "parent_brief", required=True, help="Parent brief ID")
+@click.option("--obpi", "parent_obpi", help="Parent OBPI ID (optional)")
 @click.option("--semver", default="0.1.0", help="Semantic version")
 @click.option("--lane", type=click.Choice(["lite", "heavy"]), default="lite")
 @click.option("--title", help="ADR title")
-def plan_cmd(name: str, parent_brief: str, semver: str, lane: str, title: str | None) -> None:
-    """Create a new ADR linked to a brief."""
+def plan_cmd(name: str, parent_obpi: str | None, semver: str, lane: str, title: str | None) -> None:
+    """Create a new ADR (optionally linked to an OBPI)."""
     config = ensure_initialized()
     project_root = get_project_root()
 
@@ -440,7 +446,7 @@ def plan_cmd(name: str, parent_brief: str, semver: str, lane: str, title: str | 
         title=adr_title,
         semver=semver,
         lane=lane,
-        parent=parent_brief,
+        parent=parent_obpi or "",
         status="Draft",
         date=date.today().isoformat(),
     )
@@ -451,7 +457,7 @@ def plan_cmd(name: str, parent_brief: str, semver: str, lane: str, title: str | 
     adr_file.write_text(content)
 
     ledger = Ledger(project_root / config.paths.ledger)
-    ledger.append(adr_created_event(adr_id, parent_brief, lane))
+    ledger.append(adr_created_event(adr_id, parent_obpi or "", lane))
 
     console.print(f"Created ADR: {adr_file}")
 
@@ -706,16 +712,16 @@ def tidy(check_only: bool, fix: bool) -> None:
     ledger = Ledger(project_root / config.paths.ledger)
     graph = ledger.get_artifact_graph()
 
-    # Find briefs without ADRs
-    briefs_with_adrs = {info["parent"] for info in graph.values() if info.get("parent")}
-    orphan_briefs = [
-        k for k, v in graph.items() if v.get("type") == "brief" and k not in briefs_with_adrs
+    # Find OBPIs without ADRs
+    obpis_with_adrs = {info["parent"] for info in graph.values() if info.get("parent")}
+    orphan_obpis = [
+        k for k, v in graph.items() if v.get("type") == "obpi" and k not in obpis_with_adrs
     ]
 
-    if orphan_briefs:
-        console.print("\n[yellow]Orphaned briefs (no ADRs):[/yellow]")
-        for brief_id in orphan_briefs:
-            console.print(f"  {brief_id}")
+    if orphan_obpis:
+        console.print("\n[yellow]Orphaned OBPIs (no ADRs):[/yellow]")
+        for obpi_id in orphan_obpis:
+            console.print(f"  {obpi_id}")
 
     # Find ADRs without attestation
     pending = ledger.get_pending_attestations()
@@ -729,7 +735,7 @@ def tidy(check_only: bool, fix: bool) -> None:
         sync_all(project_root, config)
         console.print("\n[green]Synced control surfaces.[/green]")
 
-    if not result.errors and not orphan_briefs and not pending:
+    if not result.errors and not orphan_obpis and not pending:
         console.print("[green]All checks passed. Project is tidy.[/green]")
 
 
@@ -900,7 +906,7 @@ def skill_list() -> None:
 
 
 @main.command()
-@click.argument("document_type", type=click.Choice(["prd", "adr", "brief"]))
+@click.argument("document_type", type=click.Choice(["prd", "adr", "obpi"]))
 def interview(document_type: str) -> None:
     """Interactive Q&A mode for document creation."""
     config = ensure_initialized()
@@ -953,8 +959,8 @@ def interview(document_type: str) -> None:
         doc_dir = project_root / config.paths.adrs
         doc_id = answers.get("id", "ADR-DRAFT")
     else:
-        doc_dir = project_root / config.paths.briefs
-        doc_id = answers.get("id", "BRIEF-DRAFT")
+        doc_dir = project_root / config.paths.obpis
+        doc_id = answers.get("id", "OBPI-DRAFT")
 
     doc_dir.mkdir(parents=True, exist_ok=True)
     doc_file = doc_dir / f"{doc_id}.md"
@@ -970,7 +976,7 @@ def interview(document_type: str) -> None:
         ledger.append(adr_created_event(doc_id, parent, lane))
     else:
         parent = answers.get("parent", "")
-        ledger.append(brief_created_event(doc_id, parent))
+        ledger.append(obpi_created_event(doc_id, parent))
 
     console.print(f"\n[green]Created {document_type.upper()}: {doc_file}[/green]")
 

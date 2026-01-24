@@ -33,7 +33,7 @@
         },
         "parent": {
           "type": "string",
-          "description": "Parent brief identifier"
+          "description": "Parent OBPI identifier"
         },
         "date": {
           "type": "string",

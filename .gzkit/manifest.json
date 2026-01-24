@@ -15,9 +15,9 @@
       "path": "docs/design/constitutions",
       "schema": "gzkit.constitution.v1"
     },
-    "brief": {
-      "path": "docs/design/briefs",
-      "schema": "gzkit.brief.v1"
+    "obpi": {
+      "path": "docs/design/obpis",
+      "schema": "gzkit.obpi.v1"
     },
     "adr": {
       "path": "docs/design/adr",

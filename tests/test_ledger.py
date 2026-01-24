@@ -9,8 +9,8 @@ from gzkit.ledger import (
     LedgerEvent,
     adr_created_event,
     attested_event,
-    brief_created_event,
     constitution_created_event,
+    obpi_created_event,
     prd_created_event,
     project_init_event,
 )
@@ -38,13 +38,13 @@ class TestLedgerEvent(unittest.TestCase):
             "event": "adr_created",
             "id": "ADR-0.1.0",
             "ts": "2026-01-01T00:00:00+00:00",
-            "parent": "BRIEF-core",
+            "parent": "OBPI-core",
             "lane": "lite",
         }
         event = LedgerEvent.from_dict(data)
         self.assertEqual(event.event, "adr_created")
         self.assertEqual(event.id, "ADR-0.1.0")
-        self.assertEqual(event.parent, "BRIEF-core")
+        self.assertEqual(event.parent, "OBPI-core")
         self.assertEqual(event.extra["lane"], "lite")
 
 
@@ -70,19 +70,19 @@ class TestEventFactories(unittest.TestCase):
         self.assertEqual(event.event, "constitution_created")
         self.assertEqual(event.id, "charter")
 
-    def test_brief_created_event(self) -> None:
-        """brief_created_event creates correct event with parent."""
-        event = brief_created_event("BRIEF-core", "PRD-TEST-1.0.0")
-        self.assertEqual(event.event, "brief_created")
-        self.assertEqual(event.id, "BRIEF-core")
-        self.assertEqual(event.parent, "PRD-TEST-1.0.0")
+    def test_obpi_created_event(self) -> None:
+        """obpi_created_event creates correct event with parent."""
+        event = obpi_created_event("OBPI-core", "ADR-0.1.0")
+        self.assertEqual(event.event, "obpi_created")
+        self.assertEqual(event.id, "OBPI-core")
+        self.assertEqual(event.parent, "ADR-0.1.0")
 
     def test_adr_created_event(self) -> None:
         """adr_created_event creates correct event with parent and lane."""
-        event = adr_created_event("ADR-0.1.0", "BRIEF-core", "lite")
+        event = adr_created_event("ADR-0.1.0", "OBPI-core", "lite")
         self.assertEqual(event.event, "adr_created")
         self.assertEqual(event.id, "ADR-0.1.0")
-        self.assertEqual(event.parent, "BRIEF-core")
+        self.assertEqual(event.parent, "OBPI-core")
         self.assertEqual(event.extra["lane"], "lite")
 
     def test_attested_event(self) -> None:
@@ -113,7 +113,7 @@ class TestLedger(unittest.TestCase):
             ledger = Ledger(ledger_path)
 
             event1 = prd_created_event("PRD-1")
-            event2 = brief_created_event("BRIEF-1", "PRD-1")
+            event2 = obpi_created_event("OBPI-1", "ADR-0.1.0")
 
             ledger.append(event1)
             ledger.append(event2)
@@ -121,7 +121,7 @@ class TestLedger(unittest.TestCase):
             events = ledger.read_all()
             self.assertEqual(len(events), 2)
             self.assertEqual(events[0].id, "PRD-1")
-            self.assertEqual(events[1].id, "BRIEF-1")
+            self.assertEqual(events[1].id, "OBPI-1")
 
     def test_query_by_type(self) -> None:
         """Ledger queries events by type."""
@@ -130,8 +130,8 @@ class TestLedger(unittest.TestCase):
             ledger = Ledger(ledger_path)
 
             ledger.append(prd_created_event("PRD-1"))
-            ledger.append(brief_created_event("BRIEF-1", "PRD-1"))
-            ledger.append(adr_created_event("ADR-0.1.0", "BRIEF-1", "lite"))
+            ledger.append(obpi_created_event("OBPI-1", "ADR-0.1.0"))
+            ledger.append(adr_created_event("ADR-0.1.0", "OBPI-1", "lite"))
 
             prds = ledger.query(event_type="prd_created")
             self.assertEqual(len(prds), 1)
@@ -143,7 +143,7 @@ class TestLedger(unittest.TestCase):
             ledger_path = Path(tmpdir) / "ledger.jsonl"
             ledger = Ledger(ledger_path)
 
-            ledger.append(adr_created_event("ADR-0.1.0", "BRIEF-1", "lite"))
+            ledger.append(adr_created_event("ADR-0.1.0", "OBPI-1", "lite"))
             ledger.append(attested_event("ADR-0.1.0", "completed", "user"))
 
             events = ledger.query(artifact_id="ADR-0.1.0")
@@ -156,13 +156,13 @@ class TestLedger(unittest.TestCase):
             ledger = Ledger(ledger_path)
 
             ledger.append(prd_created_event("PRD-1"))
-            ledger.append(brief_created_event("BRIEF-1", "PRD-1"))
-            ledger.append(adr_created_event("ADR-0.1.0", "BRIEF-1", "lite"))
+            ledger.append(obpi_created_event("OBPI-1", "ADR-0.1.0"))
+            ledger.append(adr_created_event("ADR-0.1.0", "OBPI-1", "lite"))
             ledger.append(attested_event("ADR-0.1.0", "completed", "user"))
 
             graph = ledger.get_artifact_graph()
             self.assertIn("PRD-1", graph)
-            self.assertIn("BRIEF-1", graph)
+            self.assertIn("OBPI-1", graph)
             self.assertIn("ADR-0.1.0", graph)
             self.assertTrue(graph["ADR-0.1.0"]["attested"])
 
@@ -172,8 +172,8 @@ class TestLedger(unittest.TestCase):
             ledger_path = Path(tmpdir) / "ledger.jsonl"
             ledger = Ledger(ledger_path)
 
-            ledger.append(adr_created_event("ADR-0.1.0", "BRIEF-1", "lite"))
-            ledger.append(adr_created_event("ADR-0.2.0", "BRIEF-1", "lite"))
+            ledger.append(adr_created_event("ADR-0.1.0", "OBPI-1", "lite"))
+            ledger.append(adr_created_event("ADR-0.2.0", "OBPI-1", "lite"))
             ledger.append(attested_event("ADR-0.1.0", "completed", "user"))
 
             pending = ledger.get_pending_attestations()

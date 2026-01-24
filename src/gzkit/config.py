@@ -16,7 +16,7 @@ class PathConfig:
     # Design artifacts
     prd: str = "design/prd"
     constitutions: str = "design/constitutions"
-    briefs: str = "design/briefs"
+    obpis: str = "design/obpis"
     adrs: str = "design/adr"
 
     # Project structure
@@ -72,7 +72,7 @@ class GzkitConfig:
             # Design artifacts
             prd=paths_data.get("prd", "design/prd"),
             constitutions=paths_data.get("constitutions", "design/constitutions"),
-            briefs=paths_data.get("briefs", "design/briefs"),
+            obpis=paths_data.get("obpis", "design/obpis"),
             adrs=paths_data.get("adrs", "design/adr"),
             # Project structure
             source_root=paths_data.get("source_root", "src"),
@@ -114,7 +114,7 @@ class GzkitConfig:
             "paths": {
                 "prd": self.paths.prd,
                 "constitutions": self.paths.constitutions,
-                "briefs": self.paths.briefs,
+                "obpis": self.paths.obpis,
                 "adrs": self.paths.adrs,
                 "source_root": self.paths.source_root,
                 "tests_root": self.paths.tests_root,

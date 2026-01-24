@@ -30,9 +30,9 @@ class TestGetInterviewQuestions(unittest.TestCase):
         self.assertIn("intent", ids)
         self.assertIn("decision", ids)
 
-    def test_brief_questions(self) -> None:
-        """Gets brief interview questions."""
-        questions = get_interview_questions("brief")
+    def test_obpi_questions(self) -> None:
+        """Gets OBPI interview questions."""
+        questions = get_interview_questions("obpi")
         self.assertTrue(len(questions) > 0)
         ids = [q.id for q in questions]
         self.assertIn("id", ids)
@@ -103,15 +103,15 @@ class TestFormatAnswersForTemplate(unittest.TestCase):
         formatted = format_answers_for_template("adr", answers)
         self.assertEqual(formatted["lane"], "lite")
 
-    def test_brief_gate_requirements(self) -> None:
-        """Brief sets gate requirements based on lane."""
+    def test_obpi_gate_requirements(self) -> None:
+        """OBPI sets gate requirements based on lane."""
         answers_lite = {"lane": "lite"}
-        formatted_lite = format_answers_for_template("brief", answers_lite)
+        formatted_lite = format_answers_for_template("obpi", answers_lite)
         self.assertEqual(formatted_lite["docs_required"], "No")
         self.assertEqual(formatted_lite["bdd_required"], "No")
 
         answers_heavy = {"lane": "heavy"}
-        formatted_heavy = format_answers_for_template("brief", answers_heavy)
+        formatted_heavy = format_answers_for_template("obpi", answers_heavy)
         self.assertEqual(formatted_heavy["docs_required"], "Yes")
         self.assertEqual(formatted_heavy["bdd_required"], "Yes")
 

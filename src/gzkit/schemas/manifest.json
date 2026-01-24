@@ -38,7 +38,7 @@
     "artifacts": {
       "type": "object",
       "description": "Governance artifact locations and schemas",
-      "required": ["prd", "constitution", "brief", "adr"],
+      "required": ["prd", "constitution", "obpi", "adr"],
       "properties": {
         "prd": {
           "$ref": "#/$defs/artifactConfig"
@@ -46,7 +46,7 @@
         "constitution": {
           "$ref": "#/$defs/artifactConfig"
         },
-        "brief": {
+        "obpi": {
           "$ref": "#/$defs/artifactConfig"
         },
         "adr": {
