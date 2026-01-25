@@ -40,3 +40,11 @@ Project 0.0.z series (project foundations)
     ↓ enables
 Project 0.1.x+ (product features)
 ```
+
+## Example: Foundational ADR Pattern
+
+See [ADR-0.0.1: Canonical GovZero Parity](../design/adr/adr-0.0.x/ADR-0.0.1-canonical-govzero-parity/ADR-0.0.1-canonical-govzero-parity.md) for an example of a foundational ADR that:
+
+- Establishes canonical sources (AirlineOps as GovZero reference implementation)
+- Authorizes work without implementing it (8 OBPIs pending)
+- Uses Foundational lane semantics (Gates 1, 3, 5 only)

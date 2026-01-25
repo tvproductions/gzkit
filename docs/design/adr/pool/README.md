@@ -50,3 +50,9 @@ PRD-GZKIT-1.0.0
 ├── ADR-0.4.0-pool.audit-system (Phase 4)
 └── ADR-1.0.0-pool.release-hardening (Phase 5)
 ```
+
+## Foundational ADRs (0.0.x)
+
+Foundational ADRs in the 0.0.x series do NOT appear in the pool. They establish governance and constraints that feature ADRs must follow. See:
+
+- [ADR-0.0.1: Canonical GovZero Parity](../adr-0.0.x/ADR-0.0.1-canonical-govzero-parity/ADR-0.0.1-canonical-govzero-parity.md) — locks AirlineOps as canonical
