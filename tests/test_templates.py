@@ -26,6 +26,8 @@ class TestLoadTemplate(unittest.TestCase):
         content = load_template("obpi")
         self.assertIn("{id}", content)
         self.assertIn("Objective", content)
+        self.assertIn("Requirements (FAIL-CLOSED)", content)
+        self.assertIn("Discovery Checklist", content)
 
     def test_load_nonexistent_template(self) -> None:
         """Loading nonexistent template raises error."""
@@ -63,7 +65,7 @@ class TestRenderTemplate(unittest.TestCase):
         """Render preserves placeholders for unknown keys."""
         content = render_template(
             "obpi",
-            id="OBPI-test",
+            id="OBPI-0.1.0-01-test",
             title="Test OBPI",
             # parent_adr not provided
         )

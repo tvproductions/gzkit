@@ -391,13 +391,16 @@ def constitute(name: str, title: str | None) -> None:
 @click.option("--lane", type=click.Choice(["lite", "heavy"]), default="lite")
 @click.option("--title", help="OBPI title")
 def specify(name: str, parent: str, item: int, lane: str, title: str | None) -> None:
-    """Create a new OBPI (One-Box-Per-Item work unit)."""
+    """Create a new OBPI (One Brief Per Item)."""
     config = ensure_initialized()
     project_root = get_project_root()
 
-    obpi_id = f"OBPI-{name}" if not name.startswith("OBPI-") else name
+    # Extract version from parent ADR (e.g., ADR-0.1.0 -> 0.1.0) for airlineops-style ID
+    version = parent.replace("ADR-", "").split("-")[0] if parent.startswith("ADR-") else "0.1.0"
+    obpi_id = f"OBPI-{version}-{item:02d}-{name}"
     obpi_title = title or name.replace("-", " ").title()
 
+    lane_cap = lane.capitalize()
     lane_requirements = (
         "All 5 gates required: ADR, TDD, Docs, BDD, Human attestation"
         if lane == "heavy"
@@ -409,8 +412,11 @@ def specify(name: str, parent: str, item: int, lane: str, title: str | None) -> 
         id=obpi_id,
         title=obpi_title,
         parent_adr=parent,
+        parent_adr_path=f"docs/design/adr/{parent}.md",
         item_number=str(item),
-        lane=lane,
+        checklist_item_text="TBD",
+        lane=lane_cap,
+        lane_rationale="TBD",
         objective="TBD",
         lane_requirements=lane_requirements,
     )
