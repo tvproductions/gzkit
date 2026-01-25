@@ -89,14 +89,16 @@ class TestPrdCommand(unittest.TestCase):
 class TestSpecifyCommand(unittest.TestCase):
     """Tests for gz specify command."""
 
-    def test_specify_creates_file(self) -> None:
+    def test_specify_creates_obpi_file(self) -> None:
         """specify creates OBPI file."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             runner.invoke(main, ["init"])
-            result = runner.invoke(main, ["specify", "core-feature", "--parent", "ADR-0.1.0"])
+            result = runner.invoke(
+                main, ["specify", "core-feature", "--parent", "ADR-0.1.0", "--item", "1"]
+            )
             self.assertEqual(result.exit_code, 0)
-            self.assertTrue(Path("design/obpis/OBPI-core-feature.md").exists())
+            self.assertTrue(Path("design/obpis/OBPI-0.1.0-01-core-feature.md").exists())
 
 
 class TestPlanCommand(unittest.TestCase):
