@@ -8,6 +8,7 @@ These are the philosophical, constitutional, and guiding principles that define 
 
 | Document | Purpose |
 |----------|---------|
+| [GovZero Doctrine](govzero-doctrine.md) | SPRINT/DRIFT, GovZero purpose, gzkit as material enabler |
 | [Foundational ADR Pattern](foundational-adr-pattern.md) | The 0.0.z series and ADR-0.0.0 requirement |
 | [Project Structure](project-structure.md) | Canonical directory layout for gzkit-governed projects |
 
