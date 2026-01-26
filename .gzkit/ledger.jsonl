@@ -1,3 +1,5 @@
 {"schema":"gzkit.ledger.v1","event":"project_init","id":"gzkit","ts":"2026-01-22T10:29:54.383207+00:00","mode":"lite"}
 {"schema":"gzkit.ledger.v1","event":"prd_created","id":"PRD-GZKIT-1.0.0","ts":"2026-01-22T10:29:54.384608+00:00"}
 {"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-0.1.0","ts":"2026-01-22T10:29:54.384727+00:00","parent":"PRD-GZKIT-1.0.0","lane":"lite"}
+{"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-0.2.1-pool.gz-chores-system","ts":"2026-01-26T19:13:58.742852+00:00","lane":"heavy"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.2.1-01-chores-system-core","ts":"2026-01-26T19:14:31.537951+00:00","parent":"ADR-0.2.1-pool.gz-chores-system"}
