@@ -4,6 +4,10 @@ This directory contains the **foundational canon** for gzkit-governed projects.
 
 These are the philosophical, constitutional, and guiding principles that define what gzkit is and how gzkit-governed projects must operate. They are not suggestions—they are invariants.
 
+## Canonical Source
+
+**AirlineOps (`../airlineops/`) is the canonical GovZero implementation.** All governance concepts in gzkit derive from AirlineOps; divergence requires explicit ADR authorization. See [GovZero Doctrine](govzero-doctrine.md) for the full canonical source specification.
+
 ## Documents
 
 | Document | Purpose |

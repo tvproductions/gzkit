@@ -14,7 +14,38 @@ The system’s organizing doctrine is **SPRINT / DRIFT**, adapted from anti-subm
 
 ---
 
-## 1. GovZero’s Purpose and Vision
+## Canonical Source
+
+**AirlineOps is the canonical reference implementation of GovZero.**
+
+GovZero emerged inside AirlineOps under operational pressure, not as a designed framework. Its durability comes from enforcement machinery, not documentation. Treating AirlineOps as precedent rather than canon produces silent drift and false confidence.
+
+### Location
+
+AirlineOps lives at `../airlineops/` relative to gzkit (sibling directory under the same parent).
+
+### Authoritative Artifacts
+
+| Location | Contains |
+|----------|----------|
+| `../airlineops/.github/skills/gz-*` | GovZero agent skills (OBPI, ADR, sync, audit) |
+| `../airlineops/docs/governance/GovZero/*` | Governance documentation |
+
+### Divergence Rule
+
+For any governance concept present in AirlineOps, gzkit MUST:
+
+1. Treat AirlineOps as the source of truth
+2. Preserve both structure *and* enforcement machinery
+3. Reject divergent or weakened translations
+
+**Divergence from AirlineOps requires explicit ADR authorization.** No silent reinterpretation.
+
+Where AirlineOps has no corresponding concept, gzkit may introduce one only explicitly and additively (documented in an ADR).
+
+---
+
+## 1. GovZero's Purpose and Vision
 
 **GovZero** is a governance framework **and** a cooperative design system. It exists to protect **human appraisal, appreciation, and judgment** when working daily with fast, unreliable collaborators.
 
