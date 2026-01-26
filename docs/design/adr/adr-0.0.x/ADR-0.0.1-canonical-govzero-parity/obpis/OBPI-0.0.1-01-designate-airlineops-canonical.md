@@ -56,37 +56,41 @@ If an assumption is questioned or a file/config is missing, STOP and emit a BLOC
 
 **Governance (read once, cache):**
 
-- [ ] Parent ADR: `ADR-0.0.1-canonical-govzero-parity.md`
+- [x] Parent ADR: `ADR-0.0.1-canonical-govzero-parity.md`
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] AirlineOps exists at `../airlineops/`
-- [ ] AirlineOps has `.github/skills/gz-obpi-brief/`
+- [x] AirlineOps exists at `../airlineops/`
+- [x] AirlineOps has `.github/skills/gz-obpi-brief/`
 
 ## QUALITY GATES (Foundational)
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief (Level 2 WBS)
-- [ ] Parent ADR OBPI entry referenced (Level 1 WBS linkage)
+- [x] Intent and scope recorded in this OBPI brief (Level 2 WBS)
+- [x] Parent ADR OBPI entry referenced (Level 1 WBS linkage)
 
 ### Gate 3: Docs
 
-- [ ] Lodestar document updated to name AirlineOps as canonical
-- [ ] Documentation is complete and accurate
+- [x] Lodestar document updated to name AirlineOps as canonical
+- [x] Documentation is complete and accurate
 
 ### Gate 5: Human Attestation
 
-- [ ] Human attests documentation sufficiency
-- [ ] Human attests doctrinal coherence
+- [x] Human attests documentation sufficiency
+- [x] Human attests doctrinal coherence
+
+**Attestation Evidence:** https://github.com/tvproductions/gzkit/issues/1
 
 ## COMPLETION CHECKLIST (Foundational)
 
-- [ ] Lodestar document updated to name AirlineOps as canonical
-- [ ] README references cite AirlineOps as authority
-- [ ] Gates 1, 3 evidence recorded
-- [ ] Gate 5 attestation received
+- [x] Lodestar document updated to name AirlineOps as canonical
+- [x] README references cite AirlineOps as authority
+- [x] Gates 1, 3 evidence recorded
+- [x] Gate 5 attestation received
 
 ## ACCEPTANCE NOTES
 
-- Status: **Pending**
+- Status: **Complete**
+- Attestation: https://github.com/tvproductions/gzkit/issues/1
+- Pattern established: GitHub Issue as durable attestation artifact for Foundational lane Gate 5 close-out.
