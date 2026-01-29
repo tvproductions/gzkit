@@ -28,6 +28,7 @@ gz plan <name> --brief <BRIEF-ID> [OPTIONS]
 | `--semver` | string | `0.1.0` | Semantic version |
 | `--lane` | `lite` \| `heavy` | `lite` | Governance lane |
 | `--title` | string | — | ADR title |
+| `--dry-run` | flag | — | Show actions without writing |
 
 ---
 
@@ -48,6 +49,9 @@ gz plan login-impl --brief BRIEF-add-login
 
 # With options
 gz plan login-impl --brief BRIEF-add-login --semver 0.2.0 --lane heavy --title "Login Implementation"
+
+# Dry run
+gz plan login-impl --brief BRIEF-add-login --dry-run
 ```
 
 ---

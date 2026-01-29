@@ -53,7 +53,7 @@ PRD → Constitution → Brief → ADR → Implementation → Attestation
 
 ### Lane Rules
 
-- **lite**: Gates 1, 2, 5 required
+- **lite**: Gates 1, 2 required
 - **heavy**: All gates required
 
 ## Execution Rules

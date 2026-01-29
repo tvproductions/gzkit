@@ -27,6 +27,7 @@ gz specify <name> --parent <PARENT-ID> [OPTIONS]
 | `--parent` | string | required | Parent PRD or constitution ID |
 | `--lane` | `lite` \| `heavy` | `lite` | Governance lane |
 | `--title` | string | — | Brief title |
+| `--dry-run` | flag | — | Show actions without writing |
 
 ---
 
@@ -47,6 +48,9 @@ gz specify add-login --parent PRD-my-feature-1.0.0
 
 # With options
 gz specify add-login --parent PRD-my-feature-1.0.0 --lane heavy --title "Add Login Button"
+
+# Dry run
+gz specify add-login --parent PRD-my-feature-1.0.0 --dry-run
 ```
 
 ---

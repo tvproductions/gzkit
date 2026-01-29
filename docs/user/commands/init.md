@@ -18,6 +18,7 @@ gz init [OPTIONS]
 |--------|------|---------|-------------|
 | `--mode` | `lite` \| `heavy` | `lite` | Governance mode |
 | `--force` | flag | — | Overwrite existing initialization |
+| `--dry-run` | flag | — | Show actions without writing |
 
 ---
 
@@ -69,6 +70,9 @@ gz init --mode heavy
 
 # Reinitialize (overwrites existing)
 gz init --force
+
+# Dry run
+gz init --dry-run
 ```
 
 ---

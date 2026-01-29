@@ -145,6 +145,30 @@ def attested_event(
     )
 
 
+def gate_checked_event(
+    adr_id: str,
+    gate: int,
+    status: str,
+    command: str,
+    returncode: int,
+    evidence: str | None = None,
+) -> LedgerEvent:
+    """Create a gate checked event."""
+    extra: dict[str, Any] = {
+        "gate": gate,
+        "status": status,
+        "command": command,
+        "returncode": returncode,
+    }
+    if evidence:
+        extra["evidence"] = evidence
+    return LedgerEvent(
+        event="gate_checked",
+        id=adr_id,
+        extra=extra,
+    )
+
+
 class Ledger:
     """Append-only ledger for governance events.
 

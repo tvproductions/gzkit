@@ -114,6 +114,57 @@ class TestPlanCommand(unittest.TestCase):
             self.assertTrue(Path("design/adr/ADR-0.1.0.md").exists())
 
 
+class TestDryRunCommands(unittest.TestCase):
+    """Tests for dry-run behavior."""
+
+    def test_init_dry_run_creates_nothing(self) -> None:
+        """init --dry-run does not create files."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(main, ["init", "--dry-run"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertFalse(Path(".gzkit").exists())
+
+    def test_prd_dry_run_does_not_write(self) -> None:
+        """prd --dry-run does not create PRD or ledger event."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            result = runner.invoke(main, ["prd", "TEST-1.0.0", "--dry-run"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertFalse(Path("design/prd/PRD-TEST-1.0.0.md").exists())
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text()
+            self.assertNotIn("prd_created", ledger_content)
+
+    def test_attest_dry_run_does_not_write(self) -> None:
+        """attest --dry-run does not record attestation."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            result = runner.invoke(
+                main, ["attest", "ADR-0.1.0", "--status", "completed", "--dry-run"]
+            )
+            self.assertEqual(result.exit_code, 0)
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text()
+            self.assertNotIn("attested", ledger_content)
+
+
+class TestGateCommands(unittest.TestCase):
+    """Tests for gate verification commands."""
+
+    def test_gates_gate1_records_event(self) -> None:
+        """gates --gate 1 records gate_checked event."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            result = runner.invoke(main, ["gates", "--gate", "1"])
+            self.assertEqual(result.exit_code, 0)
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text()
+            self.assertIn("gate_checked", ledger_content)
+
+
 class TestStatusCommand(unittest.TestCase):
     """Tests for gz status command."""
 

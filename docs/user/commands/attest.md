@@ -27,6 +27,7 @@ gz attest <ADR> --status <STATUS> [OPTIONS]
 | `--status` | `completed` \| `partial` \| `dropped` | Yes | Attestation status |
 | `--reason` | string | If partial/dropped | Reason for status |
 | `--force` | flag | No | Skip prerequisite gate checks |
+| `--dry-run` | flag | No | Show actions without writing |
 
 ---
 
@@ -67,6 +68,9 @@ gz attest ADR-0.1.0 --status dropped --reason "Requirements changed, approach ob
 
 # Force attestation (skip gate checks)
 gz attest ADR-0.1.0 --status completed --force
+
+# Dry run
+gz attest ADR-0.1.0 --status completed --dry-run
 ```
 
 ---
