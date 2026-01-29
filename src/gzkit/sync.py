@@ -218,7 +218,7 @@ def generate_manifest(
             "test": "uv run -m unittest discover tests",
         },
         "gates": {
-            "lite": [1, 2, 5],
+            "lite": [1, 2],
             "heavy": [1, 2, 3, 4, 5],
         },
     }

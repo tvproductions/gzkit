@@ -7,7 +7,7 @@ import json
 import subprocess
 from datetime import date
 from pathlib import Path
-from typing import Literal, cast
+from typing import Any, Literal, cast
 
 import click
 from rich.console import Console
@@ -28,12 +28,14 @@ from gzkit.ledger import (
     adr_created_event,
     attested_event,
     constitution_created_event,
+    gate_checked_event,
     obpi_created_event,
     prd_created_event,
     project_init_event,
 )
 from gzkit.quality import (
     run_all_checks,
+    run_command,
     run_format,
     run_lint,
     run_tests,
@@ -68,6 +70,14 @@ def ensure_initialized() -> GzkitConfig:
     return GzkitConfig.load(config_path)
 
 
+def load_manifest(project_root: Path) -> dict[str, Any]:
+    """Load the gzkit manifest."""
+    manifest_path = project_root / ".gzkit" / "manifest.json"
+    if not manifest_path.exists():
+        raise click.ClickException("Missing .gzkit/manifest.json")
+    return json.loads(manifest_path.read_text())
+
+
 def get_git_user() -> str:
     """Get the current git user for attestations."""
     try:
@@ -80,6 +90,62 @@ def get_git_user() -> str:
         return result.stdout.strip()
     except (subprocess.CalledProcessError, FileNotFoundError):
         return "unknown"
+
+
+def resolve_target_adr(
+    project_root: Path,
+    config: GzkitConfig,
+    ledger: Ledger,
+    adr: str | None,
+) -> str:
+    """Resolve ADR id for gate operations."""
+    if adr is None:
+        pending = ledger.get_pending_attestations()
+        if len(pending) == 1:
+            adr = pending[0]
+        elif not pending:
+            raise click.ClickException("No pending ADRs found. Use --adr to specify one.")
+        else:
+            raise click.ClickException("Multiple pending ADRs found. Use --adr to specify one.")
+
+    _adr_file, adr_id = resolve_adr_file(project_root, config, adr)
+    return adr_id
+
+
+def resolve_adr_file(project_root: Path, config: GzkitConfig, adr: str) -> tuple[Path, str]:
+    """Resolve an ADR file path from an ID, supporting nested layouts."""
+    adr_id = adr if adr.startswith("ADR-") else f"ADR-{adr}"
+    adr_dir = project_root / config.paths.adrs
+
+    candidates = [adr_dir / f"{adr}.md"]
+    if adr_id != adr:
+        candidates.append(adr_dir / f"{adr_id}.md")
+
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate, adr_id
+
+    artifacts = scan_existing_artifacts(project_root, config.paths.design_root)
+    matches = []
+    for adr_file in artifacts.get("adrs", []):
+        metadata = parse_artifact_metadata(adr_file)
+        if metadata.get("id") == adr_id:
+            matches.append(adr_file)
+
+    if len(matches) == 1:
+        return matches[0], adr_id
+    if len(matches) > 1:
+        # Prefer non-pool ADRs when duplicates exist
+        non_pool = [p for p in matches if "docs/design/adr/pool" not in str(p)]
+        if len(non_pool) == 1:
+            return non_pool[0], adr_id
+        if len(non_pool) > 1:
+            rels = ", ".join(str(p.relative_to(project_root)) for p in non_pool)
+            raise click.ClickException(f"Multiple ADR files found for {adr_id}: {rels}")
+        rels = ", ".join(str(p.relative_to(project_root)) for p in matches)
+        raise click.ClickException(f"Multiple ADR files found for {adr_id}: {rels}")
+
+    raise click.ClickException(f"ADR not found: {adr_id}")
 
 
 def run_interview(document_type: str) -> dict[str, str]:
@@ -234,10 +300,11 @@ def main() -> None:
     "--mode",
     type=click.Choice(["lite", "heavy"]),
     default="lite",
-    help="Governance mode (lite: gates 1,2,5; heavy: all gates)",
+    help="Governance mode (lite: gates 1,2; heavy: all gates)",
 )
 @click.option("--force", is_flag=True, help="Overwrite existing initialization")
-def init(mode: str, force: bool) -> None:
+@click.option("--dry-run", is_flag=True, help="Show actions without writing")
+def init(mode: str, force: bool, dry_run: bool) -> None:
     """Initialize gzkit in the current project."""
     project_root = get_project_root()
     gzkit_dir = project_root / ".gzkit"
@@ -251,6 +318,19 @@ def init(mode: str, force: bool) -> None:
     design_root = structure.get("design_root", "design")
 
     console.print(f"Initializing gzkit for [bold]{project_name}[/bold] in {mode} mode...")
+
+    if dry_run:
+        console.print("[yellow]Dry run:[/yellow] no files will be written.")
+        console.print(f"  Would create {gzkit_dir}")
+        console.print("  Would create .gzkit/ledger.jsonl")
+        console.print("  Would create .gzkit.json")
+        console.print("  Would generate .gzkit/manifest.json")
+        console.print("  Would create governance directories (prd, constitutions, obpis, adr)")
+        console.print("  Would generate control surfaces (AGENTS.md, CLAUDE.md, etc.)")
+        console.print("  Would set up hooks and scaffold core skills")
+        console.print("  Would append ledger event: project_init")
+        console.print("  Would register existing artifacts (if any)")
+        return
 
     # Create .gzkit directory
     gzkit_dir.mkdir(exist_ok=True)
@@ -315,7 +395,8 @@ def init(mode: str, force: bool) -> None:
 @main.command()
 @click.argument("name")
 @click.option("--title", help="PRD title")
-def prd(name: str, title: str | None) -> None:
+@click.option("--dry-run", is_flag=True, help="Show actions without writing")
+def prd(name: str, title: str | None, dry_run: bool) -> None:
     """Create a new PRD."""
     config = ensure_initialized()
     project_root = get_project_root()
@@ -341,10 +422,17 @@ def prd(name: str, title: str | None) -> None:
         date=date.today().isoformat(),
     )
 
-    # Write file
     prd_dir = project_root / config.paths.prd
-    prd_dir.mkdir(parents=True, exist_ok=True)
     prd_file = prd_dir / f"{prd_id}.md"
+
+    if dry_run:
+        console.print("[yellow]Dry run:[/yellow] no files will be written.")
+        console.print(f"  Would create PRD: {prd_file}")
+        console.print(f"  Would append ledger event: prd_created ({prd_id})")
+        return
+
+    # Write file
+    prd_dir.mkdir(parents=True, exist_ok=True)
     prd_file.write_text(content)
 
     # Record event
@@ -357,7 +445,8 @@ def prd(name: str, title: str | None) -> None:
 @main.command()
 @click.argument("name")
 @click.option("--title", help="Constitution title")
-def constitute(name: str, title: str | None) -> None:
+@click.option("--dry-run", is_flag=True, help="Show actions without writing")
+def constitute(name: str, title: str | None, dry_run: bool) -> None:
     """Create a new constitution."""
     config = ensure_initialized()
     project_root = get_project_root()
@@ -374,8 +463,15 @@ def constitute(name: str, title: str | None) -> None:
     )
 
     constitution_dir = project_root / config.paths.constitutions
-    constitution_dir.mkdir(parents=True, exist_ok=True)
     constitution_file = constitution_dir / f"{constitution_id}.md"
+
+    if dry_run:
+        console.print("[yellow]Dry run:[/yellow] no files will be written.")
+        console.print(f"  Would create constitution: {constitution_file}")
+        console.print(f"  Would append ledger event: constitution_created ({constitution_id})")
+        return
+
+    constitution_dir.mkdir(parents=True, exist_ok=True)
     constitution_file.write_text(content)
 
     ledger = Ledger(project_root / config.paths.ledger)
@@ -390,7 +486,15 @@ def constitute(name: str, title: str | None) -> None:
 @click.option("--item", type=int, default=1, help="Checklist item number from parent ADR")
 @click.option("--lane", type=click.Choice(["lite", "heavy"]), default="lite")
 @click.option("--title", help="OBPI title")
-def specify(name: str, parent: str, item: int, lane: str, title: str | None) -> None:
+@click.option("--dry-run", is_flag=True, help="Show actions without writing")
+def specify(
+    name: str,
+    parent: str,
+    item: int,
+    lane: str,
+    title: str | None,
+    dry_run: bool,
+) -> None:
     """Create a new OBPI (One Brief Per Item)."""
     config = ensure_initialized()
     project_root = get_project_root()
@@ -404,7 +508,7 @@ def specify(name: str, parent: str, item: int, lane: str, title: str | None) -> 
     lane_requirements = (
         "All 5 gates required: ADR, TDD, Docs, BDD, Human attestation"
         if lane == "heavy"
-        else "Gates 1, 2, 5 required: ADR, TDD, Human attestation"
+        else "Gates 1, 2 required: ADR, TDD"
     )
 
     content = render_template(
@@ -422,8 +526,15 @@ def specify(name: str, parent: str, item: int, lane: str, title: str | None) -> 
     )
 
     obpi_dir = project_root / config.paths.obpis
-    obpi_dir.mkdir(parents=True, exist_ok=True)
     obpi_file = obpi_dir / f"{obpi_id}.md"
+
+    if dry_run:
+        console.print("[yellow]Dry run:[/yellow] no files will be written.")
+        console.print(f"  Would create OBPI: {obpi_file}")
+        console.print(f"  Would append ledger event: obpi_created ({obpi_id})")
+        return
+
+    obpi_dir.mkdir(parents=True, exist_ok=True)
     obpi_file.write_text(content)
 
     ledger = Ledger(project_root / config.paths.ledger)
@@ -438,7 +549,15 @@ def specify(name: str, parent: str, item: int, lane: str, title: str | None) -> 
 @click.option("--semver", default="0.1.0", help="Semantic version")
 @click.option("--lane", type=click.Choice(["lite", "heavy"]), default="lite")
 @click.option("--title", help="ADR title")
-def plan_cmd(name: str, parent_obpi: str | None, semver: str, lane: str, title: str | None) -> None:
+@click.option("--dry-run", is_flag=True, help="Show actions without writing")
+def plan_cmd(
+    name: str,
+    parent_obpi: str | None,
+    semver: str,
+    lane: str,
+    title: str | None,
+    dry_run: bool,
+) -> None:
     """Create a new ADR (optionally linked to an OBPI)."""
     config = ensure_initialized()
     project_root = get_project_root()
@@ -458,8 +577,15 @@ def plan_cmd(name: str, parent_obpi: str | None, semver: str, lane: str, title: 
     )
 
     adr_dir = project_root / config.paths.adrs
-    adr_dir.mkdir(parents=True, exist_ok=True)
     adr_file = adr_dir / f"{adr_id}.md"
+
+    if dry_run:
+        console.print("[yellow]Dry run:[/yellow] no files will be written.")
+        console.print(f"  Would create ADR: {adr_file}")
+        console.print(f"  Would append ledger event: adr_created ({adr_id})")
+        return
+
+    adr_dir.mkdir(parents=True, exist_ok=True)
     adr_file.write_text(content)
 
     ledger = Ledger(project_root / config.paths.ledger)
@@ -559,13 +685,215 @@ def status(as_json: bool) -> None:
             console.print("  Gate 3 (Docs):  [yellow]PENDING[/yellow]")
             console.print("  Gate 4 (BDD):   [yellow]PENDING[/yellow]")
 
-        # Gate 5: Human attestation
-        if attested:
-            console.print("  Gate 5 (Human): [green]PASS[/green]")
-        else:
-            console.print("  Gate 5 (Human): [yellow]PENDING[/yellow]")
+            # Gate 5: Human attestation (heavy only)
+            if attested:
+                console.print("  Gate 5 (Human): [green]PASS[/green]")
+            else:
+                console.print("  Gate 5 (Human): [yellow]PENDING[/yellow]")
 
         console.print()
+
+
+def _record_gate_result(
+    ledger: Ledger,
+    adr_id: str,
+    gate: int,
+    status: str,
+    command: str,
+    returncode: int,
+    evidence: str | None = None,
+) -> None:
+    ledger.append(
+        gate_checked_event(
+            adr_id=adr_id,
+            gate=gate,
+            status=status,
+            command=command,
+            returncode=returncode,
+            evidence=evidence,
+        )
+    )
+
+
+def _print_command_output(result: Any) -> None:
+    if result.stdout:
+        console.print(result.stdout)
+    if result.stderr:
+        console.print(result.stderr)
+
+
+def _run_gate_1(project_root: Path, config: GzkitConfig, ledger: Ledger, adr_id: str) -> bool:
+    try:
+        adr_file, _ = resolve_adr_file(project_root, config, adr_id)
+        evidence = str(adr_file.relative_to(project_root))
+        _record_gate_result(ledger, adr_id, 1, "pass", "ADR exists", 0, evidence)
+        console.print(f"Gate 1 (ADR): [green]PASS[/green] ({evidence})")
+        return True
+    except click.ClickException as exc:
+        _record_gate_result(ledger, adr_id, 1, "fail", "ADR exists", 1, str(exc))
+        console.print(f"Gate 1 (ADR): [red]FAIL[/red] ({exc})")
+        return False
+
+
+def _run_gate_2(
+    project_root: Path,
+    ledger: Ledger,
+    adr_id: str,
+    command: str,
+    label: str = "Gate 2 (TDD):",
+) -> bool:
+    console.print(f"{label} {command}")
+    result = run_command(command, cwd=project_root)
+    _print_command_output(result)
+    status = "pass" if result.success else "fail"
+    _record_gate_result(
+        ledger,
+        adr_id,
+        2,
+        status,
+        command,
+        result.returncode,
+        "stdout/stderr captured",
+    )
+    if result.success:
+        console.print("Gate 2 (TDD): [green]PASS[/green]")
+        return True
+    console.print("Gate 2 (TDD): [red]FAIL[/red]")
+    return False
+
+
+def _run_gate_3(project_root: Path, ledger: Ledger, adr_id: str, command: str) -> bool:
+    mkdocs_path = project_root / "mkdocs.yml"
+    if not mkdocs_path.exists():
+        _record_gate_result(ledger, adr_id, 3, "fail", command, 1, "mkdocs.yml not found")
+        console.print("Gate 3 (Docs): [red]FAIL[/red] (mkdocs.yml not found)")
+        return False
+
+    console.print(f"Gate 3 (Docs): {command}")
+    result = run_command(command, cwd=project_root)
+    _print_command_output(result)
+    status = "pass" if result.success else "fail"
+    _record_gate_result(
+        ledger,
+        adr_id,
+        3,
+        status,
+        command,
+        result.returncode,
+        "stdout/stderr captured",
+    )
+    if result.success:
+        console.print("Gate 3 (Docs): [green]PASS[/green]")
+        return True
+    console.print("Gate 3 (Docs): [red]FAIL[/red]")
+    return False
+
+
+def _run_gate_4(project_root: Path, ledger: Ledger, adr_id: str, command: str) -> bool:
+    features_dir = project_root / "features"
+    if not features_dir.exists():
+        _record_gate_result(ledger, adr_id, 4, "fail", command, 1, "features/ not found")
+        console.print("Gate 4 (BDD): [red]FAIL[/red] (features/ not found)")
+        return False
+
+    console.print(f"Gate 4 (BDD): {command}")
+    result = run_command(command, cwd=project_root)
+    _print_command_output(result)
+    status = "pass" if result.success else "fail"
+    _record_gate_result(
+        ledger,
+        adr_id,
+        4,
+        status,
+        command,
+        result.returncode,
+        "stdout/stderr captured",
+    )
+    if result.success:
+        console.print("Gate 4 (BDD): [green]PASS[/green]")
+        return True
+    console.print("Gate 4 (BDD): [red]FAIL[/red]")
+    return False
+
+
+def _run_gate_5() -> bool:
+    console.print("Gate 5 (Human): [yellow]PENDING[/yellow] (manual)")
+    return True
+
+
+@main.command("implement")
+@click.option("--adr", help="ADR ID to associate gate results with")
+def implement_cmd(adr: str | None) -> None:
+    """Run Gate 2 (tests) and record results."""
+    config = ensure_initialized()
+    project_root = get_project_root()
+
+    ledger = Ledger(project_root / config.paths.ledger)
+    adr_id = resolve_target_adr(project_root, config, ledger, adr)
+    manifest = load_manifest(project_root)
+
+    test_command = manifest.get("verification", {}).get("test", "uv run -m unittest discover tests")
+    if not _run_gate_2(
+        project_root,
+        ledger,
+        adr_id,
+        test_command,
+        label="[bold]Gate 2 (TDD):[/bold]",
+    ):
+        raise SystemExit(1)
+
+
+@main.command("gates")
+@click.option("--gate", "gate_number", type=int, help="Run a specific gate")
+@click.option("--adr", help="ADR ID to associate gate results with")
+def gates_cmd(gate_number: int | None, adr: str | None) -> None:
+    """Run applicable gates for the current lane and record results."""
+    config = ensure_initialized()
+    project_root = get_project_root()
+
+    ledger = Ledger(project_root / config.paths.ledger)
+    adr_id = resolve_target_adr(project_root, config, ledger, adr)
+    manifest = load_manifest(project_root)
+
+    gates_for_lane = manifest.get("gates", {}).get(config.mode, [1, 2])
+    gate_list = [gate_number] if gate_number is not None else list(gates_for_lane)
+
+    failures = 0
+
+    gate_handlers = {
+        1: lambda: _run_gate_1(project_root, config, ledger, adr_id),
+        2: lambda: _run_gate_2(
+            project_root,
+            ledger,
+            adr_id,
+            manifest.get("verification", {}).get("test", "uv run -m unittest discover tests"),
+        ),
+        3: lambda: _run_gate_3(
+            project_root,
+            ledger,
+            adr_id,
+            manifest.get("verification", {}).get("docs", "uv run mkdocs build --strict"),
+        ),
+        4: lambda: _run_gate_4(
+            project_root,
+            ledger,
+            adr_id,
+            manifest.get("verification", {}).get("bdd", "uv run -m behave features/"),
+        ),
+        5: _run_gate_5,
+    }
+
+    for gate in gate_list:
+        handler = gate_handlers.get(gate)
+        if not handler:
+            console.print(f"Unknown gate: {gate}")
+            failures += 1
+            continue
+        if not handler():
+            failures += 1
+
+    if failures:
+        raise SystemExit(1)
 
 
 @main.command()
@@ -578,7 +906,14 @@ def status(as_json: bool) -> None:
 )
 @click.option("--reason", help="Reason for partial/dropped status")
 @click.option("--force", is_flag=True, help="Skip prerequisite gate checks")
-def attest(adr: str, attest_status: str, reason: str | None, force: bool) -> None:
+@click.option("--dry-run", is_flag=True, help="Show actions without writing")
+def attest(
+    adr: str,
+    attest_status: str,
+    reason: str | None,
+    force: bool,
+    dry_run: bool,
+) -> None:
     """Record human attestation for an ADR."""
     config = ensure_initialized()
     project_root = get_project_root()
@@ -586,14 +921,8 @@ def attest(adr: str, attest_status: str, reason: str | None, force: bool) -> Non
     if attest_status in ("partial", "dropped") and not reason:
         raise click.ClickException(f"--reason required for {attest_status} status")
 
-    # Verify ADR exists
-    adr_dir = project_root / config.paths.adrs
-    adr_file = adr_dir / f"{adr}.md"
-    if not adr_file.exists():
-        # Try with ADR- prefix
-        adr_file = adr_dir / f"ADR-{adr}.md"
-        if not adr_file.exists():
-            raise click.ClickException(f"ADR not found: {adr}")
+    # Verify ADR exists (support nested ADR layout)
+    adr_file, adr_id = resolve_adr_file(project_root, config, adr)
 
     if not force:
         # Check prerequisite gates (simplified check)
@@ -603,15 +932,25 @@ def attest(adr: str, attest_status: str, reason: str | None, force: bool) -> Non
     # Get attester identity
     attester = get_git_user()
 
-    # Record attestation
     ledger = Ledger(project_root / config.paths.ledger)
-    ledger.append(attested_event(adr, attest_status, attester, reason))
+
+    if dry_run:
+        console.print("[yellow]Dry run:[/yellow] no ledger event will be written.")
+        console.print(f"  Would attest ADR: {adr_id}")
+        console.print(f"  Status: {attest_status}")
+        console.print(f"  By: {attester}")
+        if reason:
+            console.print(f"  Reason: {reason}")
+        return
+
+    # Record attestation
+    ledger.append(attested_event(adr_id, attest_status, attester, reason))
 
     # Update ADR file attestation block (simplified)
     # In a full implementation, we would parse and update the table
     today = date.today().isoformat()
     console.print("\n[green]Attestation recorded:[/green]")
-    console.print(f"  ADR: {adr}")
+    console.print(f"  ADR: {adr_id}")
     console.print(f"  Status: {attest_status}")
     console.print(f"  By: {attester}")
     console.print(f"  Date: {today}")
@@ -682,10 +1021,22 @@ def validate(
 
 
 @main.command()
-def sync() -> None:
+@click.option("--dry-run", is_flag=True, help="Show actions without writing")
+def sync(dry_run: bool) -> None:
     """Regenerate control surfaces from governance canon."""
     config = ensure_initialized()
     project_root = get_project_root()
+
+    if dry_run:
+        console.print("[yellow]Dry run:[/yellow] no files will be written.")
+        console.print("Would update control surfaces:")
+        console.print("  .gzkit/manifest.json")
+        console.print(f"  {config.paths.agents_md}")
+        console.print(f"  {config.paths.claude_md}")
+        console.print(f"  {config.paths.copilot_instructions}")
+        console.print(f"  {config.paths.claude_settings}")
+        console.print("  .copilotignore")
+        return
 
     console.print("Syncing control surfaces...")
     updated = sync_all(project_root, config)
@@ -699,7 +1050,8 @@ def sync() -> None:
 @main.command()
 @click.option("--check", "check_only", is_flag=True, help="Report only, don't fix")
 @click.option("--fix", is_flag=True, help="Auto-fix safe issues")
-def tidy(check_only: bool, fix: bool) -> None:
+@click.option("--dry-run", is_flag=True, help="Show actions without writing")
+def tidy(check_only: bool, fix: bool, dry_run: bool) -> None:
     """Run maintenance checks and cleanup."""
     config = ensure_initialized()
     project_root = get_project_root()
@@ -737,9 +1089,12 @@ def tidy(check_only: bool, fix: bool) -> None:
             console.print(f"  {adr_id}")
 
     if fix:
-        # Run sync to fix surface alignment
-        sync_all(project_root, config)
-        console.print("\n[green]Synced control surfaces.[/green]")
+        if dry_run:
+            console.print("\n[yellow]Dry run:[/yellow] would sync control surfaces.")
+        else:
+            # Run sync to fix surface alignment
+            sync_all(project_root, config)
+            console.print("\n[green]Synced control surfaces.[/green]")
 
     if not result.errors and not orphan_obpis and not pending:
         console.print("[green]All checks passed. Project is tidy.[/green]")

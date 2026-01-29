@@ -3,3 +3,14 @@
 {"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-0.1.0","ts":"2026-01-22T10:29:54.384727+00:00","parent":"PRD-GZKIT-1.0.0","lane":"lite"}
 {"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-0.2.1-pool.gz-chores-system","ts":"2026-01-26T19:13:58.742852+00:00","lane":"heavy"}
 {"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.2.1-01-chores-system-core","ts":"2026-01-26T19:14:31.537951+00:00","parent":"ADR-0.2.1-pool.gz-chores-system"}
+{"schema":"gzkit.ledger.v1","event":"attested","id":"ADR-0.1.0","ts":"2026-01-29T22:00:59.219856+00:00","status":"completed","by":"Jeffry Babb"}
+{"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-0.2.0","ts":"2026-01-29T22:08:03.790609+00:00","lane":"heavy"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.2.0-01-gate-verification","ts":"2026-01-29T22:11:22.687783+00:00","parent":"ADR-0.2.0"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.2.0-02-dry-run-options","ts":"2026-01-29T22:13:22.233547+00:00","parent":"ADR-0.2.0"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.2.0-03-docs-updates","ts":"2026-01-29T22:14:54.810304+00:00","parent":"ADR-0.2.0"}
+{"schema":"gzkit.ledger.v1","event":"gate_checked","id":"ADR-0.2.0","ts":"2026-01-29T22:46:13.017337+00:00","gate":1,"status":"pass","command":"ADR exists","returncode":0,"evidence":"docs/design/adr/adr-0.2.x/ADR-0.2.0-gate-verification/ADR-0.2.0-gate-verification.md"}
+{"schema":"gzkit.ledger.v1","event":"gate_checked","id":"ADR-0.2.0","ts":"2026-01-29T22:48:05.383885+00:00","gate":1,"status":"pass","command":"ADR exists","returncode":0,"evidence":"docs/design/adr/adr-0.2.x/ADR-0.2.0-gate-verification/ADR-0.2.0-gate-verification.md"}
+{"schema":"gzkit.ledger.v1","event":"gate_checked","id":"ADR-0.2.0","ts":"2026-01-29T22:48:05.629785+00:00","gate":2,"status":"pass","command":"uv run -m unittest discover tests","returncode":0,"evidence":"stdout/stderr captured"}
+{"schema":"gzkit.ledger.v1","event":"gate_checked","id":"ADR-0.2.0","ts":"2026-01-29T22:57:50.703329+00:00","gate":1,"status":"pass","command":"ADR exists","returncode":0,"evidence":"docs/design/adr/adr-0.2.x/ADR-0.2.0-gate-verification/ADR-0.2.0-gate-verification.md"}
+{"schema":"gzkit.ledger.v1","event":"gate_checked","id":"ADR-0.2.0","ts":"2026-01-29T22:57:51.308605+00:00","gate":2,"status":"pass","command":"uv run -m unittest discover tests","returncode":0,"evidence":"stdout/stderr captured"}
+{"schema":"gzkit.ledger.v1","event":"attested","id":"ADR-0.2.0","ts":"2026-01-29T22:59:26.415412+00:00","status":"completed","by":"Jeffry Babb"}
