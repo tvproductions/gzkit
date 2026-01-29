@@ -31,7 +31,6 @@ When a pool entry is prioritized:
 
 | Entry | Target | Status | Dependency |
 |-------|--------|--------|------------|
-| [ADR-0.2.0-pool.gate-verification](ADR-0.2.0-pool.gate-verification.md) | 0.2.x | Waiting | ADR-0.1.0 |
 | [ADR-0.3.0-pool.heavy-lane](ADR-0.3.0-pool.heavy-lane.md) | 0.3.x | Waiting | ADR-0.2.0 |
 | [ADR-0.4.0-pool.audit-system](ADR-0.4.0-pool.audit-system.md) | 0.4.x | Waiting | ADR-0.3.0 |
 | [ADR-1.0.0-pool.release-hardening](ADR-1.0.0-pool.release-hardening.md) | 1.0.0 | Waiting | ADR-0.4.0 |
@@ -45,7 +44,7 @@ Pool entries derive from PRD phases:
 ```
 PRD-GZKIT-1.0.0
 ├── ADR-0.1.0 (Phase 1: MVP) ← Active
-├── ADR-0.2.0-pool.gate-verification (Phase 2)
+├── [ADR-0.2.0](../adr-0.2.x/ADR-0.2.0-gate-verification/ADR-0.2.0-gate-verification.md) (Phase 2: Gates) ← Active
 ├── ADR-0.3.0-pool.heavy-lane (Phase 3)
 ├── ADR-0.4.0-pool.audit-system (Phase 4)
 └── ADR-1.0.0-pool.release-hardening (Phase 5)

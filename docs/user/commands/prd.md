@@ -25,6 +25,7 @@ gz prd <name> [OPTIONS]
 | Option | Type | Description |
 |--------|------|-------------|
 | `--title` | string | PRD title (defaults to name) |
+| `--dry-run` | flag | Show actions without writing |
 
 ---
 
@@ -44,6 +45,9 @@ gz prd my-feature-1.0.0
 
 # With title
 gz prd my-feature-1.0.0 --title "My Awesome Feature"
+
+# Dry run
+gz prd my-feature-1.0.0 --dry-run
 ```
 
 ---

@@ -96,6 +96,12 @@ ADR → TDD → Docs → BDD → Human
 # See current gate status
 gz status
 
+# Run Gate 2 (tests)
+gz implement
+
+# Run all required gates
+gz gates
+
 # Validate artifacts
 gz validate
 ```

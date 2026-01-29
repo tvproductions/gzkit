@@ -10,8 +10,11 @@ All commands use the `gz` prefix.
 |---------|-------------|
 | [`gz init`](init.md) | Initialize gzkit in your project |
 | [`gz prd`](prd.md) | Create a Product Requirements Document |
+| [`gz constitute`](constitute.md) | Create a constitution |
 | [`gz specify`](specify.md) | Create an implementation brief |
 | [`gz plan`](plan.md) | Create an Architecture Decision Record |
+| [`gz implement`](implement.md) | Run Gate 2 (tests) and record results |
+| [`gz gates`](gates.md) | Run applicable gates for the current lane |
 | [`gz status`](status.md) | Show gate status for current work |
 | [`gz state`](state.md) | Query ledger and artifact relationships |
 | [`gz attest`](attest.md) | Record human attestation |
