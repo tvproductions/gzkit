@@ -1,4 +1,4 @@
-# ADR-0.3.0: pool.heavy-lane
+# ADR-0.4.0: pool.heavy-lane
 
 ## Status
 
@@ -10,7 +10,7 @@ Proposed
 
 ## Parent PRD
 
-[PRD-GZKIT-1.0.0](../../prd/PRD-GZKIT-1.0.0.md) — Phase 3: Heavy Lane
+[PRD-GZKIT-1.0.0](../../prd/PRD-GZKIT-1.0.0.md) — Phase 4: Heavy Lane
 
 ---
 
@@ -33,14 +33,14 @@ Implement Heavy lane enforcement with Gate 3 (Docs) and Gate 4 (BDD) verificatio
 
 ## Dependencies
 
-- **Blocks on**: ADR-0.2.0 (gate verification foundation)
-- **Blocked by**: ADR-0.2.0
+- **Blocks on**: ADR-0.3.0 (airlineops canon reconciliation)
+- **Blocked by**: ADR-0.3.0
 
 ---
 
 ## Notes
 
-- Phase 3 per PRD rollout plan
+- Phase 4 per PRD rollout plan
 - Gate 5 (Human) is Heavy-only; Lite lane stops at Gate 2
 - Closeout ceremony: agent becomes passive presenter, human observes directly
 - Consider: should lane be auto-detected or always explicit?

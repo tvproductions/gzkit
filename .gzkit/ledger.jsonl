@@ -14,3 +14,7 @@
 {"schema":"gzkit.ledger.v1","event":"gate_checked","id":"ADR-0.2.0","ts":"2026-01-29T22:57:50.703329+00:00","gate":1,"status":"pass","command":"ADR exists","returncode":0,"evidence":"docs/design/adr/adr-0.2.x/ADR-0.2.0-gate-verification/ADR-0.2.0-gate-verification.md"}
 {"schema":"gzkit.ledger.v1","event":"gate_checked","id":"ADR-0.2.0","ts":"2026-01-29T22:57:51.308605+00:00","gate":2,"status":"pass","command":"uv run -m unittest discover tests","returncode":0,"evidence":"stdout/stderr captured"}
 {"schema":"gzkit.ledger.v1","event":"attested","id":"ADR-0.2.0","ts":"2026-01-29T22:59:26.415412+00:00","status":"completed","by":"Jeffry Babb"}
+{"schema":"gzkit.ledger.v1","event":"gate_checked","id":"ADR-0.1.0","ts":"2026-02-06T01:20:41.053784+00:00","gate":2,"status":"pass","command":"uv run -m unittest discover tests","returncode":0,"evidence":"stdout/stderr captured"}
+{"schema":"gzkit.ledger.v1","event":"artifact_renamed","id":"ADR-0.2.1-pool.gz-chores-system","ts":"2026-02-07T19:28:12.823587+00:00","new_id":"ADR-0.6.0-pool.gz-chores-system","reason":"semver_minor_sequence_migration"}
+{"schema":"gzkit.ledger.v1","event":"artifact_renamed","id":"OBPI-0.2.1-01-chores-system-core","ts":"2026-02-07T19:28:12.825063+00:00","new_id":"OBPI-0.6.0-01-chores-system-core","reason":"semver_minor_sequence_migration"}
+{"schema":"gzkit.ledger.v1","event":"gate_checked","id":"ADR-0.6.0-pool.gz-chores-system","ts":"2026-02-07T20:05:45.437572+00:00","gate":2,"status":"pass","command":"uv run -m unittest discover tests","returncode":0,"evidence":"stdout/stderr captured"}

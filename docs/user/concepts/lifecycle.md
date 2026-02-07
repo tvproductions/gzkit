@@ -124,9 +124,11 @@ PRDs drive ADR creation:
 PRD-1.0.0
   ├── ADR-0.1.0 (Phase 1: MVP)
   ├── ADR-0.2.0-pool.gates (Phase 2)
-  ├── ADR-0.3.0-pool.heavy-lane (Phase 3)
-  ├── ADR-0.4.0-pool.audit (Phase 4)
-  └── ADR-1.0.0-pool.release (Phase 5)
+  ├── ADR-0.3.0-pool.airlineops-canon-reconciliation (Phase 3)
+  ├── ADR-0.4.0-pool.heavy-lane (Phase 4)
+  ├── ADR-0.5.0-pool.audit-system (Phase 5)
+  ├── ADR-0.6.0-pool.gz-chores-system (Parity backlog)
+  └── ADR-1.0.0-pool.release-hardening (Phase 6)
 ```
 
 The PRD defines the roadmap. Pool entries stage the work. ADRs execute it.

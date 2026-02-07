@@ -1,11 +1,14 @@
 """Tests for gzkit CLI integration."""
 
+import subprocess
 import unittest
 from pathlib import Path
 
 from click.testing import CliRunner
 
-from gzkit.cli import main
+from gzkit.cli import main, resolve_adr_file
+from gzkit.config import GzkitConfig
+from gzkit.ledger import Ledger, adr_created_event, gate_checked_event
 
 
 class TestInitCommand(unittest.TestCase):
@@ -186,6 +189,129 @@ class TestStatusCommand(unittest.TestCase):
             result = runner.invoke(main, ["status"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("ADR-0.1.0", result.output)
+
+    def test_status_shows_gate2_pass_from_ledger(self) -> None:
+        """status shows Gate 2 PASS when latest gate check passed."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
+
+            result = runner.invoke(main, ["status"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("Gate 2 (TDD):   PASS", result.output)
+
+    def test_status_shows_gate2_fail_from_ledger(self) -> None:
+        """status shows Gate 2 FAIL when latest gate check failed."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
+            ledger.append(gate_checked_event("ADR-0.1.0", 2, "fail", "test", 1))
+
+            result = runner.invoke(main, ["status"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("Gate 2 (TDD):   FAIL", result.output)
+
+
+class TestMigrateSemverCommand(unittest.TestCase):
+    """Tests for gz migrate-semver command."""
+
+    def test_migrate_semver_renames_status_output(self) -> None:
+        """migrate-semver records rename events used by status."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(adr_created_event("ADR-0.2.1-pool.gz-chores-system", "", "heavy"))
+
+            migrate_result = runner.invoke(main, ["migrate-semver"])
+            self.assertEqual(migrate_result.exit_code, 0)
+            self.assertIn(
+                "ADR-0.2.1-pool.gz-chores-system -> ADR-0.6.0-pool.gz-chores-system",
+                migrate_result.output,
+            )
+
+            status_result = runner.invoke(main, ["status"])
+            self.assertEqual(status_result.exit_code, 0)
+            self.assertIn("ADR-0.6.0-pool.gz-chores-system", status_result.output)
+            self.assertNotIn("ADR-0.2.1-pool.gz-chores-system", status_result.output)
+
+
+class TestGitSyncCommand(unittest.TestCase):
+    """Tests for git sync ritual commands."""
+
+    def test_git_sync_fails_outside_git_repo(self) -> None:
+        """git-sync returns error when cwd is not a git repo."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            result = runner.invoke(main, ["git-sync"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("not a git repository", result.output.lower())
+
+    def test_git_sync_dry_run_in_git_repo(self) -> None:
+        """git-sync dry-run works in a local git repo."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            subprocess.run(["git", "init"], check=True, capture_output=True, text=True)
+            subprocess.run(
+                ["git", "config", "user.email", "test@example.com"],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            subprocess.run(
+                ["git", "config", "user.name", "Test User"],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            subprocess.run(["git", "add", "-A"], check=True, capture_output=True, text=True)
+            subprocess.run(
+                ["git", "commit", "-m", "chore: initial"],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+
+            result = runner.invoke(main, ["git-sync"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("Git sync plan", result.output)
+
+            alias_result = runner.invoke(main, ["sync-repo"])
+            self.assertEqual(alias_result.exit_code, 0)
+            self.assertIn("Git sync plan", alias_result.output)
+
+
+class TestAdrResolution(unittest.TestCase):
+    """Tests for ADR file resolution."""
+
+    def test_resolve_adr_file_matches_suffixed_filename(self) -> None:
+        """Resolves nested ADR files by stem when header uses short SemVer ID."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+
+            adr_dir = Path(config.paths.adrs) / "pool"
+            adr_dir.mkdir(parents=True, exist_ok=True)
+            adr_path = adr_dir / "ADR-0.6.0-pool.gz-chores-system.md"
+            adr_path.write_text("# ADR-0.6.0: pool.gz-chores-system\n")
+
+            resolved_path, resolved_id = resolve_adr_file(
+                Path.cwd(), config, "ADR-0.6.0-pool.gz-chores-system"
+            )
+
+            self.assertEqual(resolved_path.resolve(), adr_path.resolve())
+            self.assertEqual(resolved_id, "ADR-0.6.0-pool.gz-chores-system")
 
 
 class TestValidateCommand(unittest.TestCase):

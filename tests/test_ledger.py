@@ -8,8 +8,10 @@ from gzkit.ledger import (
     Ledger,
     LedgerEvent,
     adr_created_event,
+    artifact_renamed_event,
     attested_event,
     constitution_created_event,
+    gate_checked_event,
     obpi_created_event,
     prd_created_event,
     project_init_event,
@@ -93,6 +95,18 @@ class TestEventFactories(unittest.TestCase):
         self.assertEqual(event.extra["status"], "completed")
         self.assertEqual(event.extra["by"], "testuser")
         self.assertEqual(event.extra["reason"], "All done")
+
+    def test_artifact_renamed_event(self) -> None:
+        """artifact_renamed_event captures old/new IDs."""
+        event = artifact_renamed_event(
+            "ADR-0.2.1-pool.gz-chores-system",
+            "ADR-0.6.0-pool.gz-chores-system",
+            "semver migration",
+        )
+        self.assertEqual(event.event, "artifact_renamed")
+        self.assertEqual(event.id, "ADR-0.2.1-pool.gz-chores-system")
+        self.assertEqual(event.extra["new_id"], "ADR-0.6.0-pool.gz-chores-system")
+        self.assertEqual(event.extra["reason"], "semver migration")
 
 
 class TestLedger(unittest.TestCase):
@@ -178,6 +192,59 @@ class TestLedger(unittest.TestCase):
 
             pending = ledger.get_pending_attestations()
             self.assertEqual(pending, ["ADR-0.2.0"])
+
+    def test_get_latest_gate_statuses_uses_latest_event(self) -> None:
+        """Latest gate_checked event wins per gate."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ledger_path = Path(tmpdir) / "ledger.jsonl"
+            ledger = Ledger(ledger_path)
+
+            ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
+            ledger.append(gate_checked_event("ADR-0.1.0", 2, "fail", "test", 1))
+            ledger.append(gate_checked_event("ADR-0.1.0", 1, "pass", "test", 0))
+            ledger.append(gate_checked_event("ADR-0.2.0", 2, "pass", "test", 0))
+
+            statuses = ledger.get_latest_gate_statuses("ADR-0.1.0")
+            self.assertEqual(statuses, {1: "pass", 2: "fail"})
+
+    def test_get_artifact_graph_collapses_renamed_ids(self) -> None:
+        """Renamed artifact IDs collapse to canonical ID in graph output."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ledger_path = Path(tmpdir) / "ledger.jsonl"
+            ledger = Ledger(ledger_path)
+
+            ledger.append(adr_created_event("ADR-0.2.1-pool.gz-chores-system", "", "heavy"))
+            ledger.append(
+                artifact_renamed_event(
+                    "ADR-0.2.1-pool.gz-chores-system",
+                    "ADR-0.6.0-pool.gz-chores-system",
+                )
+            )
+            ledger.append(attested_event("ADR-0.2.1-pool.gz-chores-system", "completed", "user"))
+
+            graph = ledger.get_artifact_graph()
+            self.assertIn("ADR-0.6.0-pool.gz-chores-system", graph)
+            self.assertNotIn("ADR-0.2.1-pool.gz-chores-system", graph)
+            self.assertTrue(graph["ADR-0.6.0-pool.gz-chores-system"]["attested"])
+
+    def test_get_latest_gate_statuses_resolves_renamed_ids(self) -> None:
+        """Gate status query resolves old IDs through rename events."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ledger_path = Path(tmpdir) / "ledger.jsonl"
+            ledger = Ledger(ledger_path)
+
+            ledger.append(
+                gate_checked_event("ADR-0.2.1-pool.gz-chores-system", 2, "pass", "test", 0)
+            )
+            ledger.append(
+                artifact_renamed_event(
+                    "ADR-0.2.1-pool.gz-chores-system",
+                    "ADR-0.6.0-pool.gz-chores-system",
+                )
+            )
+
+            statuses = ledger.get_latest_gate_statuses("ADR-0.6.0-pool.gz-chores-system")
+            self.assertEqual(statuses, {2: "pass"})
 
 
 if __name__ == "__main__":

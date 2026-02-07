@@ -41,6 +41,7 @@ theme:
 nav:
   - Home: index.md
   - Quickstart: quickstart.md
+  - Runbook: runbook.md
   - Why gzkit?: why.md
   - Concepts:
     - Gates: concepts/gates.md
@@ -57,7 +58,9 @@ nav:
     - gz plan: commands/plan.md
     - gz status: commands/status.md
     - gz state: commands/state.md
+    - gz git-sync: commands/git-sync.md
     - gz attest: commands/attest.md
+    - gz migrate-semver: commands/migrate-semver.md
   - Reference:
     - Charter: reference/charter.md
     - Lineage: reference/lineage.md
