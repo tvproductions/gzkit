@@ -117,6 +117,8 @@ Gate 3 requires docs to be updated. This means:
 - Docstrings match actual behavior
 - CLI help text is current
 - User guides reflect changes
+- Command manpages reflect current flags and workflows
+- Operator runbook steps are current and executable
 - Links and anchors are valid
 
 Run to verify:
@@ -168,6 +170,12 @@ The agent won't ask unprompted. You must demand the conversation.
 gz status          # What's pending?
 gz state --blocked # What's stuck?
 ```
+
+### Weekly parity sync
+
+Use `$airlineops-parity-scan` and write a dated report:
+
+`docs/proposals/REPORT-airlineops-parity-YYYY-MM-DD.md`
 
 ### Before committing
 

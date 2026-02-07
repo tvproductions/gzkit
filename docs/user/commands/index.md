@@ -2,6 +2,8 @@
 
 All commands use the `gz` prefix.
 
+Command reference pages are gzkit's manpages and are part of Gate 3 proof.
+
 ---
 
 ## Governance
@@ -17,7 +19,9 @@ All commands use the `gz` prefix.
 | [`gz gates`](gates.md) | Run applicable gates for the current lane |
 | [`gz status`](status.md) | Show gate status for current work |
 | [`gz state`](state.md) | Query ledger and artifact relationships |
+| [`gz git-sync`](git-sync.md) | Sync branch with guarded lint/test/git ritual |
 | [`gz attest`](attest.md) | Record human attestation |
+| [`gz migrate-semver`](migrate-semver.md) | Record SemVer ID renames in the ledger |
 
 ---
 

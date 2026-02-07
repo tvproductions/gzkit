@@ -1,4 +1,4 @@
-# ADR-0.2.1: pool.gz-chores-system
+# ADR-0.6.0: pool.gz-chores-system
 
 ## Status
 
@@ -26,6 +26,7 @@ from AirlineOps without copying bespoke opsdev tooling.
 - Add a `gz chores` command group that can list, plan, run, and audit chores (minimal viable surface).
 - Define a config-first chore registry with lanes, evidence commands, and acceptance checks.
 - Add per-chore logs and plan templates under a gzkit-owned path.
+- Keep user docs, command manpages, and operator runbook synchronized for chores workflows.
 - Produce migration guidance and seed a portable chore set.
 
 ---
@@ -52,7 +53,7 @@ from AirlineOps without copying bespoke opsdev tooling.
 
 ## Proposed OBPI
 
-- `OBPI-0.2.1-01-chores-system-core`
+- `OBPI-0.6.0-01-chores-system-core`
 
 ---
 

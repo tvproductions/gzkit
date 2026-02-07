@@ -169,6 +169,18 @@ def gate_checked_event(
     )
 
 
+def artifact_renamed_event(old_id: str, new_id: str, reason: str | None = None) -> LedgerEvent:
+    """Create an artifact rename event used for ID migrations."""
+    extra: dict[str, Any] = {"new_id": new_id}
+    if reason:
+        extra["reason"] = reason
+    return LedgerEvent(
+        event="artifact_renamed",
+        id=old_id,
+        extra=extra,
+    )
+
+
 class Ledger:
     """Append-only ledger for governance events.
 
@@ -261,6 +273,72 @@ class Ledger:
         events = self.query(artifact_id=artifact_id)
         return events[-1] if events else None
 
+    @staticmethod
+    def _build_rename_map(events: list[LedgerEvent]) -> dict[str, str]:
+        """Build old->new artifact ID mapping from rename events."""
+        rename_map: dict[str, str] = {}
+        for event in events:
+            if event.event != "artifact_renamed":
+                continue
+            new_id = event.extra.get("new_id")
+            if isinstance(new_id, str) and new_id and new_id != event.id:
+                rename_map[event.id] = new_id
+        return rename_map
+
+    @staticmethod
+    def _canonicalize_with_map(artifact_id: str, rename_map: dict[str, str]) -> str:
+        """Resolve an artifact ID through any rename chain."""
+        current = artifact_id
+        seen: set[str] = set()
+        while current in rename_map and current not in seen:
+            seen.add(current)
+            current = rename_map[current]
+        return current
+
+    def canonicalize_id(self, artifact_id: str) -> str:
+        """Resolve an artifact ID to the latest canonical identifier."""
+        events = self.read_all()
+        rename_map = self._build_rename_map(events)
+        return self._canonicalize_with_map(artifact_id, rename_map)
+
+    def get_latest_gate_statuses(self, adr_id: str) -> dict[int, str]:
+        """Get the latest recorded gate status for an ADR.
+
+        For each gate number, the most recent `gate_checked` event wins.
+
+        Args:
+            adr_id: ADR identifier.
+
+        Returns:
+            Mapping of gate number to latest status ("pass"/"fail").
+        """
+        latest: dict[int, str] = {}
+        events = self.read_all()
+        rename_map = self._build_rename_map(events)
+        target_id = self._canonicalize_with_map(adr_id, rename_map)
+
+        for event in events:
+            if event.event != "gate_checked":
+                continue
+            if self._canonicalize_with_map(event.id, rename_map) != target_id:
+                continue
+
+            gate_value = event.extra.get("gate")
+            status = event.extra.get("status")
+
+            gate: int | None = None
+            if isinstance(gate_value, int):
+                gate = gate_value
+            elif isinstance(gate_value, str) and gate_value.isdigit():
+                gate = int(gate_value)
+
+            if gate is None or not isinstance(status, str):
+                continue
+
+            latest[gate] = status
+
+        return latest
+
     def get_artifact_graph(self) -> dict[str, dict[str, Any]]:
         """Build a graph of artifacts and their relationships.
 
@@ -268,35 +346,42 @@ class Ledger:
             Dictionary mapping artifact IDs to their info and relationships.
         """
         graph: dict[str, dict[str, Any]] = {}
-
+        events = self.read_all()
+        rename_map = self._build_rename_map(events)
         creation_events = (
             "prd_created",
             "constitution_created",
             "obpi_created",
             "adr_created",
         )
-        for event in self.read_all():
-            if event.event in creation_events and event.id not in graph:
-                graph[event.id] = {
+
+        for event in events:
+            canonical_id = self._canonicalize_with_map(event.id, rename_map)
+            canonical_parent = (
+                self._canonicalize_with_map(event.parent, rename_map) if event.parent else None
+            )
+
+            if event.event in creation_events and canonical_id not in graph:
+                graph[canonical_id] = {
                     "type": event.event.replace("_created", ""),
                     "created": event.ts,
-                    "parent": event.parent,
+                    "parent": canonical_parent,
                     "children": [],
                     "attested": False,
                 }
 
             # Track parent-child relationships
             if (
-                event.parent
-                and event.parent in graph
-                and event.id not in graph[event.parent]["children"]
+                canonical_parent
+                and canonical_parent in graph
+                and canonical_id not in graph[canonical_parent]["children"]
             ):
-                graph[event.parent]["children"].append(event.id)
+                graph[canonical_parent]["children"].append(canonical_id)
 
-            if event.event == "attested" and event.id in graph:
-                graph[event.id]["attested"] = True
-                graph[event.id]["attestation_status"] = event.extra.get("status")
-                graph[event.id]["attestation_by"] = event.extra.get("by")
+            if event.event == "attested" and canonical_id in graph:
+                graph[canonical_id]["attested"] = True
+                graph[canonical_id]["attestation_status"] = event.extra.get("status")
+                graph[canonical_id]["attestation_by"] = event.extra.get("by")
 
         return graph
 

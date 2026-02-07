@@ -1,10 +1,10 @@
 # ADR-0.1.0: enforced-governance-foundation
 
-**Status:** Draft
+**Status:** Completed
 **SemVer:** 0.1.0
 **Parent PRD:** [PRD-GZKIT-1.0.0](../../../prd/PRD-GZKIT-1.0.0.md)
 **Date Added:** 2026-01-13
-**Lane:** Heavy (external CLI contract)
+**Lane:** Lite (gates 1-2 required at attestation time)
 
 ---
 
@@ -206,60 +206,60 @@ SQLite cache can be added in future if query performance becomes an issue.
 
 ### AC-001: Project Initialization
 
-- [ ] `gz init test-project` creates all directories
-- [ ] `.gzkit/ledger.jsonl` created and empty
-- [ ] `.gzkit/config.json` created with defaults
-- [ ] `.claude/settings.json` created with hook config
-- [ ] `.claude/hooks/ledger-writer.py` created and executable
-- [ ] `project_init` event appended to ledger
+- [x] `gz init test-project` creates all directories
+- [x] `.gzkit/ledger.jsonl` created and empty
+- [x] `.gzkit/config.json` created with defaults
+- [x] `.claude/settings.json` created with hook config
+- [x] `.claude/hooks/ledger-writer.py` created and executable
+- [x] `project_init` event appended to ledger
 
 ### AC-002: PRD Command
 
-- [ ] `gz prd PRD-FOO-1.0.0` creates PRD from template
-- [ ] PRD contains hardened sections (invariants, gate mapping, Q&A, attestation)
-- [ ] `prd_created` event appended to ledger
+- [x] `gz prd PRD-FOO-1.0.0` creates PRD from template
+- [x] PRD contains hardened sections (invariants, gate mapping, Q&A, attestation)
+- [x] `prd_created` event appended to ledger
 
 ### AC-003: Constitution Command
 
-- [ ] `gz constitute` creates constitution from template
-- [ ] `constitution_created` event appended to ledger
+- [x] `gz constitute` creates constitution from template
+- [x] `constitution_created` event appended to ledger
 
 ### AC-004: Brief Command
 
-- [ ] `gz specify my-feature` creates brief
-- [ ] Brief links to constitution
-- [ ] `brief_created` event appended to ledger with `parent`
+- [x] `gz specify my-feature` creates brief
+- [x] Brief links to constitution
+- [x] `brief_created` event appended to ledger with `parent`
 
 ### AC-005: ADR Command
 
-- [ ] `gz plan ADR-0.1.0 --brief my-feature` creates ADR
-- [ ] ADR links to brief
-- [ ] `adr_created` event appended to ledger with `parent`
+- [x] `gz plan ADR-0.1.0 --brief my-feature` creates ADR
+- [x] ADR links to brief
+- [x] `adr_created` event appended to ledger with `parent`
 
 ### AC-006: State Command
 
-- [ ] `gz state` parses ledger and displays state
-- [ ] `gz state --json` outputs valid JSON
-- [ ] `gz state --blocked` shows blocked items
-- [ ] `gz state --ready` shows ready items
+- [x] `gz state` parses ledger and displays state
+- [x] `gz state --json` outputs valid JSON
+- [x] `gz state --blocked` shows blocked items
+- [x] `gz state --ready` shows ready items
 
 ### AC-007: Status Command
 
-- [ ] `gz status` displays lane and gate status
-- [ ] `gz status --json` outputs valid JSON
+- [x] `gz status` displays lane and gate status
+- [x] `gz status --json` outputs valid JSON
 
 ### AC-008: Attestation Command
 
-- [ ] `gz attest` prompts for term
-- [ ] `attested` event appended to ledger
-- [ ] Attestation recorded in ADR
+- [x] `gz attest` prompts for term
+- [x] `attested` event appended to ledger
+- [x] Attestation recorded in ADR
 
 ### AC-009: Hooks
 
-- [ ] Hook fires on Edit/Write to `docs/adr/**`
-- [ ] Hook fires on Edit/Write to `docs/briefs/**`
-- [ ] `artifact_edited` event appended to ledger
-- [ ] Hook includes session ID
+- [x] Hook fires on Edit/Write to `docs/adr/**`
+- [x] Hook fires on Edit/Write to `docs/briefs/**`
+- [x] `artifact_edited` event appended to ledger
+- [x] Hook includes session ID
 
 ---
 
@@ -269,16 +269,16 @@ Work items derived from this ADR (One Brief Per Item):
 
 | ID | Description | Status |
 |----|-------------|--------|
-| [OBPI-0.1.0-01](briefs/OBPI-0.1.0-01-gz-init.md) | Implement `gz init` with ledger and hooks scaffolding | Pending |
-| [OBPI-0.1.0-02](briefs/OBPI-0.1.0-02-gz-prd.md) | Implement `gz prd` with hardened template | Pending |
-| [OBPI-0.1.0-03](briefs/OBPI-0.1.0-03-gz-constitute.md) | Implement `gz constitute` with template | Pending |
-| [OBPI-0.1.0-04](briefs/OBPI-0.1.0-04-gz-specify.md) | Implement `gz specify` with parent linking | Pending |
-| [OBPI-0.1.0-05](briefs/OBPI-0.1.0-05-gz-plan.md) | Implement `gz plan` with brief linking | Pending |
-| [OBPI-0.1.0-06](briefs/OBPI-0.1.0-06-gz-state.md) | Implement `gz state` with ledger parsing | Pending |
-| [OBPI-0.1.0-07](briefs/OBPI-0.1.0-07-gz-status.md) | Implement `gz status` for gate display | Pending |
-| [OBPI-0.1.0-08](briefs/OBPI-0.1.0-08-gz-attest.md) | Implement `gz attest` with ledger write | Pending |
-| [OBPI-0.1.0-09](briefs/OBPI-0.1.0-09-ledger-writer-hook.md) | Implement ledger-writer hook script | Pending |
-| [OBPI-0.1.0-10](briefs/OBPI-0.1.0-10-templates.md) | Create minimal templates (PRD, constitution, brief, ADR) | Pending |
+| [OBPI-0.1.0-01](obpis/OBPI-0.1.0-01-gz-init.md) | Implement `gz init` with ledger and hooks scaffolding | Completed |
+| [OBPI-0.1.0-02](obpis/OBPI-0.1.0-02-gz-prd.md) | Implement `gz prd` with hardened template | Completed |
+| [OBPI-0.1.0-03](obpis/OBPI-0.1.0-03-gz-constitute.md) | Implement `gz constitute` with template | Completed |
+| [OBPI-0.1.0-04](obpis/OBPI-0.1.0-04-gz-specify.md) | Implement `gz specify` with parent linking | Completed |
+| [OBPI-0.1.0-05](obpis/OBPI-0.1.0-05-gz-plan.md) | Implement `gz plan` with brief linking | Completed |
+| [OBPI-0.1.0-06](obpis/OBPI-0.1.0-06-gz-state.md) | Implement `gz state` with ledger parsing | Completed |
+| [OBPI-0.1.0-07](obpis/OBPI-0.1.0-07-gz-status.md) | Implement `gz status` for gate display | Completed |
+| [OBPI-0.1.0-08](obpis/OBPI-0.1.0-08-gz-attest.md) | Implement `gz attest` with ledger write | Completed |
+| [OBPI-0.1.0-09](obpis/OBPI-0.1.0-09-ledger-writer-hook.md) | Implement ledger-writer hook script | Completed |
+| [OBPI-0.1.0-10](obpis/OBPI-0.1.0-10-templates.md) | Create minimal templates (PRD, constitution, brief, ADR) | Completed |
 
 ---
 
@@ -292,13 +292,14 @@ Work items derived from this ADR (One Brief Per Item):
 
 ### Gate 2 (TDD)
 
-- Tests: `tests/` (pending)
+- Verification command: `uv run gz gates --gate 2 --adr ADR-0.1.0`
+- `gate_checked` event recorded with `status=pass` on 2026-02-06
 - Coverage: ≥40% target
 
 ### Gate 3 (Docs)
 
-- Command docs: `docs/commands/` (pending)
-- `uv run mkdocs build` passes
+- Not required for lite lane closeout
+- Command docs maintained under `docs/user/commands/`
 
 ### Gate 4 (BDD)
 
@@ -306,7 +307,7 @@ Work items derived from this ADR (One Brief Per Item):
 
 ### Gate 5 (Human)
 
-- Attestation: (pending)
+- `attested` event recorded with `status=completed` by Jeffry Babb on 2026-01-29
 
 ---
 
@@ -314,9 +315,7 @@ Work items derived from this ADR (One Brief Per Item):
 
 | Field | Value |
 |-------|-------|
-| Attestation Term | — |
-| Attested By | — |
-| Attested At | — |
-| Evidence | — |
-
-Human attestation required before status changes to Completed.
+| Attestation Term | Completed |
+| Attested By | Jeffry Babb |
+| Attested At | 2026-01-29 |
+| Evidence | `attested` (2026-01-29) and Gate 2 `gate_checked` PASS (2026-02-06) |

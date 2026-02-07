@@ -175,7 +175,7 @@ All work flows through gates. Gates are verification checkpoints, not bureaucrat
 
 **Purpose:** Ensure documentation accurately describes behavior.
 
-**Artifact:** Documentation that builds, links resolve, content matches code.
+**Artifact:** User documentation, command manpages, and an operator runbook that build cleanly, resolve links, and match code behavior.
 
 **Applies to:** Heavy lane only.
 
@@ -286,7 +286,7 @@ Like Django, Rails, and other opinionated tools, gzkit makes choices so you don'
 | **Lite lane is default** | Most work doesn't need five gates. Escalate when contracts change. |
 | **ADRs before code** | Intent recorded before implementation prevents drift. |
 | **Tests are non-negotiable** | Gate 2 applies to all lanes. No exceptions. |
-| **Docs are proof** | Gate 3 exists because documentation IS the verification. |
+| **Docs are proof** | Gate 3 proof comes from user docs, manpages, and runbook fidelity to real behavior. |
 | **Humans must observe** | Gate 5 cannot be automated. That's the point. |
 | **Q&A must be adversarial** | Polite questions get polite non-answers. Push back. |
 

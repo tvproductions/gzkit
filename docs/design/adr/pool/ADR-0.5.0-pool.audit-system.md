@@ -1,4 +1,4 @@
-# ADR-0.4.0: pool.audit-system
+# ADR-0.5.0: pool.audit-system
 
 ## Status
 
@@ -10,7 +10,7 @@ Proposed
 
 ## Parent PRD
 
-[PRD-GZKIT-1.0.0](../../prd/PRD-GZKIT-1.0.0.md) — Phase 4: Audit
+[PRD-GZKIT-1.0.0](../../prd/PRD-GZKIT-1.0.0.md) — Phase 5: Audit
 
 ---
 
@@ -33,14 +33,14 @@ Implement audit generation (`gz analyze`) that produces post-attestation audit a
 
 ## Dependencies
 
-- **Blocks on**: ADR-0.3.0 (Heavy lane and closeout ceremony)
-- **Blocked by**: ADR-0.3.0
+- **Blocks on**: ADR-0.4.0 (Heavy lane and closeout ceremony)
+- **Blocked by**: ADR-0.4.0
 
 ---
 
 ## Notes
 
-- Phase 4 per PRD rollout plan
+- Phase 5 per PRD rollout plan
 - Audit runs AFTER attestation (reconciliation, not proof)
 - Audit directory: `docs/design/adr/adr-X.Y.x/ADR-X.Y.Z-{slug}/audit/`
 - Consider: audit artifact format (markdown vs structured data)

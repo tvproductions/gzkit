@@ -26,6 +26,7 @@ from gzkit.interview import (
 from gzkit.ledger import (
     Ledger,
     adr_created_event,
+    artifact_renamed_event,
     attested_event,
     constitution_created_event,
     gate_checked_event,
@@ -55,6 +56,17 @@ from gzkit.templates import render_template
 from gzkit.validate import validate_all, validate_document, validate_manifest, validate_surfaces
 
 console = Console()
+
+SEMVER_ID_RENAMES: tuple[tuple[str, str], ...] = (
+    (
+        "ADR-0.2.0-pool.airlineops-canon-reconciliation",
+        "ADR-0.3.0-pool.airlineops-canon-reconciliation",
+    ),
+    ("ADR-0.3.0-pool.heavy-lane", "ADR-0.4.0-pool.heavy-lane"),
+    ("ADR-0.4.0-pool.audit-system", "ADR-0.5.0-pool.audit-system"),
+    ("ADR-0.2.1-pool.gz-chores-system", "ADR-0.6.0-pool.gz-chores-system"),
+    ("OBPI-0.2.1-01-chores-system-core", "OBPI-0.6.0-01-chores-system-core"),
+)
 
 
 def get_project_root() -> Path:
@@ -92,6 +104,312 @@ def get_git_user() -> str:
         return "unknown"
 
 
+def _run_exec(cmd: list[str], cwd: Path, timeout: int | None = None) -> tuple[int, str, str]:
+    """Run a subprocess command and return (rc, stdout, stderr)."""
+    try:
+        result = subprocess.run(
+            cmd,
+            cwd=cwd,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+        return result.returncode, result.stdout.strip(), result.stderr.strip()
+    except subprocess.TimeoutExpired:
+        return 124, "", f"TIMEOUT after {timeout}s"
+    except FileNotFoundError:
+        return 127, "", f"Command not found: {cmd[0]}"
+
+
+def _git_cmd(project_root: Path, *args: str) -> tuple[int, str, str]:
+    """Run git command in project root."""
+    return _run_exec(["git", *args], cwd=project_root)
+
+
+def _compute_git_sync_state(project_root: Path, branch: str, remote: str) -> dict[str, Any]:
+    """Compute ahead/behind/divergence against remote branch."""
+    warnings: list[str] = []
+    ahead = 0
+    behind = 0
+    diverged = False
+
+    rc_head, head, err_head = _git_cmd(project_root, "rev-parse", branch)
+    if rc_head != 0:
+        warnings.append(err_head or f"Could not resolve local branch: {branch}")
+        return {
+            "head": None,
+            "remote_head": None,
+            "ahead": ahead,
+            "behind": behind,
+            "diverged": diverged,
+            "warnings": warnings,
+        }
+
+    rc_remote, remote_head, err_remote = _git_cmd(project_root, "rev-parse", f"{remote}/{branch}")
+    if rc_remote != 0:
+        warnings.append(err_remote or f"Could not resolve remote branch: {remote}/{branch}")
+        return {
+            "head": head,
+            "remote_head": None,
+            "ahead": ahead,
+            "behind": behind,
+            "diverged": diverged,
+            "warnings": warnings,
+        }
+
+    rc_ahead, ahead_s, _ = _git_cmd(
+        project_root, "rev-list", "--count", f"{remote}/{branch}..{branch}"
+    )
+    rc_behind, behind_s, _ = _git_cmd(
+        project_root, "rev-list", "--count", f"{branch}..{remote}/{branch}"
+    )
+    if rc_ahead == 0 and ahead_s.isdigit():
+        ahead = int(ahead_s)
+    if rc_behind == 0 and behind_s.isdigit():
+        behind = int(behind_s)
+    diverged = ahead > 0 and behind > 0
+
+    return {
+        "head": head,
+        "remote_head": remote_head,
+        "ahead": ahead,
+        "behind": behind,
+        "diverged": diverged,
+        "warnings": warnings,
+    }
+
+
+def _head_is_merge_commit(project_root: Path) -> bool:
+    """Return True when HEAD itself is a merge commit."""
+    rc_merge, merge_head, _ = _git_cmd(
+        project_root, "rev-list", "--max-count=1", "--merges", "HEAD"
+    )
+    rc_head, head_sha, _ = _git_cmd(project_root, "rev-parse", "HEAD")
+    return rc_merge == 0 and rc_head == 0 and bool(merge_head) and merge_head == head_sha
+
+
+def _git_status_lines(project_root: Path) -> tuple[list[str], str | None]:
+    """Return porcelain status lines, or an error if status can't be read."""
+    rc_status, status_out, err_status = _git_cmd(project_root, "status", "--porcelain")
+    if rc_status != 0:
+        return [], err_status or "Could not read git status."
+    lines = [line for line in status_out.splitlines() if line.strip()]
+    return lines, None
+
+
+def _plan_git_sync(
+    project_root: Path,
+    current_branch: str,
+    target_branch: str,
+    remote: str,
+    apply: bool,
+    auto_add: bool,
+    allow_push: bool,
+) -> dict[str, Any]:
+    """Build sync plan and compute branch state/blockers."""
+    actions: list[str] = []
+    blockers: list[str] = []
+    warnings: list[str] = []
+
+    if current_branch != target_branch:
+        blockers.append(f"Not on branch {target_branch} (current: {current_branch})")
+
+    if _head_is_merge_commit(project_root):
+        blockers.append("Merge commit at HEAD. Linearize history before git-sync.")
+
+    status_lines, status_error = _git_status_lines(project_root)
+    if status_error:
+        blockers.append(status_error)
+    dirty = bool(status_lines)
+
+    if dirty and auto_add:
+        actions.append("git add -A")
+
+    actions.append(f"git fetch --prune {remote}")
+
+    if apply and not blockers:
+        rc_fetch, _out_fetch, err_fetch = _git_cmd(project_root, "fetch", "--prune", remote)
+        if rc_fetch != 0:
+            blockers.append(err_fetch or f"Fetch failed for remote {remote}.")
+
+    sync_state = _compute_git_sync_state(project_root, target_branch, remote)
+    warnings.extend(sync_state["warnings"])
+    ahead = sync_state["ahead"]
+    behind = sync_state["behind"]
+    diverged = sync_state["diverged"]
+
+    if diverged:
+        actions.append(f"git pull --rebase {remote} {target_branch}")
+    elif behind > 0:
+        actions.append(f"git pull --ff-only {remote} {target_branch}")
+
+    if allow_push and (ahead > 0 or diverged):
+        actions.append(f"git push {remote} {target_branch}")
+
+    if not apply and dirty and not auto_add:
+        blockers.append("Working tree is dirty. Use --auto-add or clean it before applying sync.")
+
+    return {
+        "dirty": dirty,
+        "ahead": ahead,
+        "behind": behind,
+        "diverged": diverged,
+        "actions": actions,
+        "blockers": blockers,
+        "warnings": warnings,
+    }
+
+
+def _run_sync_prechecks(
+    project_root: Path,
+    run_lint_gate: bool,
+    run_test_gate: bool,
+    blockers: list[str],
+    executed: list[str],
+) -> None:
+    """Run lint/test guardrails before git mutation steps."""
+    if run_lint_gate and not blockers:
+        lint_result = run_lint(project_root)
+        if lint_result.success:
+            executed.append("gz lint (pre-sync)")
+        else:
+            blockers.append("Lint failed before sync.")
+
+    if run_test_gate and not blockers:
+        test_result = run_tests(project_root)
+        if test_result.success:
+            executed.append("gz test (pre-sync)")
+        else:
+            blockers.append("Tests failed before sync.")
+
+
+def _commit_staged_changes(project_root: Path, blockers: list[str], executed: list[str]) -> None:
+    """Create sync auto-commit when staged changes are present."""
+    if blockers:
+        return
+
+    rc_staged, staged_out, _err_staged = _git_cmd(project_root, "diff", "--cached", "--name-only")
+    if rc_staged != 0 or not staged_out.strip():
+        return
+
+    rc_commit, _out_commit, err_commit = _git_cmd(
+        project_root,
+        "commit",
+        "-m",
+        "chore: auto-commit staged changes (gz git-sync)",
+    )
+    if rc_commit == 0:
+        executed.append("git commit")
+    else:
+        blockers.append(err_commit or "Auto-commit failed.")
+
+
+def _pull_if_needed(
+    project_root: Path,
+    remote: str,
+    target_branch: str,
+    diverged: bool,
+    behind: int,
+    blockers: list[str],
+    executed: list[str],
+) -> None:
+    """Pull branch updates if local branch is behind/diverged."""
+    if blockers or not (diverged or behind > 0):
+        return
+
+    if diverged:
+        rc_pull, _out_pull, err_pull = _git_cmd(
+            project_root, "pull", "--rebase", remote, target_branch
+        )
+        pull_cmd = f"git pull --rebase {remote} {target_branch}"
+    else:
+        rc_pull, _out_pull, err_pull = _git_cmd(
+            project_root, "pull", "--ff-only", remote, target_branch
+        )
+        pull_cmd = f"git pull --ff-only {remote} {target_branch}"
+
+    if rc_pull == 0:
+        executed.append(pull_cmd)
+    else:
+        blockers.append(err_pull or "Pull failed.")
+
+
+def _push_if_ahead(
+    project_root: Path,
+    remote: str,
+    target_branch: str,
+    allow_push: bool,
+    blockers: list[str],
+    executed: list[str],
+) -> None:
+    """Push only when branch is ahead after sync actions."""
+    if blockers or not allow_push:
+        return
+
+    post_state = _compute_git_sync_state(project_root, target_branch, remote)
+    if post_state["ahead"] <= 0:
+        return
+
+    rc_push, _out_push, err_push = _git_cmd(project_root, "push", remote, target_branch)
+    if rc_push == 0:
+        executed.append(f"git push {remote} {target_branch}")
+    else:
+        blockers.append(err_push or "Push failed.")
+
+
+def _run_post_sync_lint(
+    project_root: Path,
+    run_lint_gate: bool,
+    blockers: list[str],
+    executed: list[str],
+    warnings: list[str],
+) -> None:
+    """Run lint once more to confirm repository is clean after sync."""
+    if blockers or not run_lint_gate:
+        return
+
+    lint_post = run_lint(project_root)
+    if lint_post.success:
+        executed.append("gz lint (post-sync)")
+    else:
+        warnings.append("Post-sync lint failed.")
+
+
+def _execute_git_sync(
+    project_root: Path,
+    dirty: bool,
+    auto_add: bool,
+    run_lint_gate: bool,
+    run_test_gate: bool,
+    allow_push: bool,
+    diverged: bool,
+    behind: int,
+    remote: str,
+    target_branch: str,
+    blockers: list[str],
+    warnings: list[str],
+) -> list[str]:
+    """Execute apply-mode sync steps and return executed command list."""
+    executed: list[str] = []
+    if blockers:
+        return executed
+
+    if dirty and auto_add:
+        rc_add, _out_add, err_add = _git_cmd(project_root, "add", "-A")
+        if rc_add == 0:
+            executed.append("git add -A")
+        else:
+            blockers.append(err_add or "git add -A failed.")
+
+    _run_sync_prechecks(project_root, run_lint_gate, run_test_gate, blockers, executed)
+    _commit_staged_changes(project_root, blockers, executed)
+    _pull_if_needed(project_root, remote, target_branch, diverged, behind, blockers, executed)
+    _push_if_ahead(project_root, remote, target_branch, allow_push, blockers, executed)
+    _run_post_sync_lint(project_root, run_lint_gate, blockers, executed, warnings)
+
+    return executed
+
+
 def resolve_target_adr(
     project_root: Path,
     config: GzkitConfig,
@@ -108,8 +426,11 @@ def resolve_target_adr(
         else:
             raise click.ClickException("Multiple pending ADRs found. Use --adr to specify one.")
 
-    _adr_file, adr_id = resolve_adr_file(project_root, config, adr)
-    return adr_id
+    adr_id = adr if adr.startswith("ADR-") else f"ADR-{adr}"
+    canonical_adr_id = ledger.canonicalize_id(adr_id)
+
+    _adr_file, resolved_adr_id = resolve_adr_file(project_root, config, canonical_adr_id)
+    return resolved_adr_id
 
 
 def resolve_adr_file(project_root: Path, config: GzkitConfig, adr: str) -> tuple[Path, str]:
@@ -129,7 +450,9 @@ def resolve_adr_file(project_root: Path, config: GzkitConfig, adr: str) -> tuple
     matches = []
     for adr_file in artifacts.get("adrs", []):
         metadata = parse_artifact_metadata(adr_file)
-        if metadata.get("id") == adr_id:
+        # Prefer explicit metadata IDs, but also match filename stems for
+        # suffixed IDs like ADR-0.6.0-pool.* when headers use ADR-0.6.0.
+        if metadata.get("id") == adr_id or adr_file.stem == adr_id:
             matches.append(adr_file)
 
     if len(matches) == 1:
@@ -669,21 +992,29 @@ def status(as_json: bool) -> None:
         console.print("No ADRs found. Create one with 'gz plan'.")
         return
 
+    def render_gate_status(gate_status: str | None) -> str:
+        if gate_status == "pass":
+            return "[green]PASS[/green]"
+        if gate_status == "fail":
+            return "[red]FAIL[/red]"
+        return "[yellow]PENDING[/yellow]"
+
     for adr_id, info in sorted(adrs.items()):
         attested = info.get("attested", False)
         status_str = info.get("attestation_status", "Pending") if attested else "Pending"
+        gate_statuses = ledger.get_latest_gate_statuses(adr_id)
 
         console.print(f"[bold]{adr_id}[/bold] ({status_str})")
 
         # Gate 1: ADR exists (always pass if we're here)
         console.print("  Gate 1 (ADR):   [green]PASS[/green]")
 
-        # Gate 2: TDD - check if tests exist and pass
-        console.print("  Gate 2 (TDD):   [yellow]PENDING[/yellow]")
+        # Gate 2: TDD - derived from latest gate_checked event
+        console.print(f"  Gate 2 (TDD):   {render_gate_status(gate_statuses.get(2))}")
 
         if config.mode == "heavy":
-            console.print("  Gate 3 (Docs):  [yellow]PENDING[/yellow]")
-            console.print("  Gate 4 (BDD):   [yellow]PENDING[/yellow]")
+            console.print(f"  Gate 3 (Docs):  {render_gate_status(gate_statuses.get(3))}")
+            console.print(f"  Gate 4 (BDD):   {render_gate_status(gate_statuses.get(4))}")
 
             # Gate 5: Human attestation (heavy only)
             if attested:
@@ -692,6 +1023,217 @@ def status(as_json: bool) -> None:
                 console.print("  Gate 5 (Human): [yellow]PENDING[/yellow]")
 
         console.print()
+
+
+@main.command("git-sync")
+@click.option("--branch", help="Branch to sync (default: current branch)")
+@click.option("--remote", default="origin", show_default=True, help="Remote name")
+@click.option("--apply", is_flag=True, help="Execute sync actions (dry-run by default)")
+@click.option("--lint/--no-lint", "run_lint_gate", default=True, show_default=True)
+@click.option("--test/--no-test", "run_test_gate", default=True, show_default=True)
+@click.option("--auto-add/--no-auto-add", default=True, show_default=True)
+@click.option("--push/--no-push", "allow_push", default=True, show_default=True)
+@click.option("--json", "as_json", is_flag=True, help="Output as JSON")
+def git_sync(
+    branch: str | None,
+    remote: str,
+    apply: bool,
+    run_lint_gate: bool,
+    run_test_gate: bool,
+    auto_add: bool,
+    allow_push: bool,
+    as_json: bool,
+) -> None:
+    """Sync local branch with remote using a guarded git ritual."""
+    _config = ensure_initialized()
+    project_root = get_project_root()
+
+    rc_repo, inside, err_repo = _git_cmd(project_root, "rev-parse", "--is-inside-work-tree")
+    if rc_repo != 0 or inside != "true":
+        raise click.ClickException(err_repo or "Not a git repository.")
+
+    rc_branch, current_branch, err_branch = _git_cmd(
+        project_root, "rev-parse", "--abbrev-ref", "HEAD"
+    )
+    if rc_branch != 0:
+        raise click.ClickException(err_branch or "Could not determine current branch.")
+
+    target_branch = branch or current_branch
+    plan = _plan_git_sync(
+        project_root=project_root,
+        current_branch=current_branch,
+        target_branch=target_branch,
+        remote=remote,
+        apply=apply,
+        auto_add=auto_add,
+        allow_push=allow_push,
+    )
+    dirty = cast(bool, plan["dirty"])
+    ahead = cast(int, plan["ahead"])
+    behind = cast(int, plan["behind"])
+    diverged = cast(bool, plan["diverged"])
+    actions = cast(list[str], plan["actions"])
+    blockers = cast(list[str], plan["blockers"])
+    warnings = cast(list[str], plan["warnings"])
+
+    executed: list[str] = []
+    if apply:
+        executed = _execute_git_sync(
+            project_root=project_root,
+            dirty=dirty,
+            auto_add=auto_add,
+            run_lint_gate=run_lint_gate,
+            run_test_gate=run_test_gate,
+            allow_push=allow_push,
+            diverged=diverged,
+            behind=behind,
+            remote=remote,
+            target_branch=target_branch,
+            blockers=blockers,
+            warnings=warnings,
+        )
+
+    result: dict[str, Any] = {
+        "branch": target_branch,
+        "remote": remote,
+        "apply": apply,
+        "dirty": dirty,
+        "ahead": ahead,
+        "behind": behind,
+        "diverged": diverged,
+        "actions": actions,
+        "executed": executed,
+        "blockers": blockers,
+        "warnings": warnings,
+    }
+
+    if as_json:
+        click.echo(json.dumps(result, indent=2))
+        if blockers:
+            raise SystemExit(1)
+        return
+
+    if not apply:
+        console.print("[bold]Git sync plan (dry-run)[/bold]")
+    else:
+        console.print("[bold]Git sync execution[/bold]")
+    console.print(f"  Branch: {target_branch}")
+    console.print(f"  Remote: {remote}")
+    console.print(f"  ahead={ahead} behind={behind} diverged={diverged} dirty={dirty}")
+
+    console.print("  Actions:")
+    for action in actions:
+        console.print(f"    - {action}")
+
+    if executed:
+        console.print("  Executed:")
+        for item in executed:
+            console.print(f"    - {item}")
+
+    if warnings:
+        console.print("  Warnings:")
+        for warning in warnings:
+            console.print(f"    - {warning}")
+
+    if blockers:
+        console.print("  Blockers:")
+        for blocker in blockers:
+            console.print(f"    - {blocker}")
+        raise SystemExit(1)
+
+    if apply:
+        console.print("[green]Git sync completed.[/green]")
+    else:
+        console.print("  Use --apply to execute.")
+
+
+@main.command("sync-repo")
+@click.option("--branch", help="Branch to sync (default: current branch)")
+@click.option("--remote", default="origin", show_default=True, help="Remote name")
+@click.option("--apply", is_flag=True, help="Execute sync actions (dry-run by default)")
+@click.option("--lint/--no-lint", "run_lint_gate", default=True, show_default=True)
+@click.option("--test/--no-test", "run_test_gate", default=True, show_default=True)
+@click.option("--auto-add/--no-auto-add", default=True, show_default=True)
+@click.option("--push/--no-push", "allow_push", default=True, show_default=True)
+@click.option("--json", "as_json", is_flag=True, help="Output as JSON")
+@click.pass_context
+def sync_repo(
+    ctx: click.Context,
+    branch: str | None,
+    remote: str,
+    apply: bool,
+    run_lint_gate: bool,
+    run_test_gate: bool,
+    auto_add: bool,
+    allow_push: bool,
+    as_json: bool,
+) -> None:
+    """Alias for git-sync (AirlineOps parity)."""
+    ctx.invoke(
+        git_sync,
+        branch=branch,
+        remote=remote,
+        apply=apply,
+        run_lint_gate=run_lint_gate,
+        run_test_gate=run_test_gate,
+        auto_add=auto_add,
+        allow_push=allow_push,
+        as_json=as_json,
+    )
+
+
+@main.command("migrate-semver")
+@click.option("--dry-run", is_flag=True, help="Show migration events without writing")
+def migrate_semver(dry_run: bool) -> None:
+    """Record SemVer artifact ID renames in the append-only ledger."""
+    config = ensure_initialized()
+    project_root = get_project_root()
+    ledger = Ledger(project_root / config.paths.ledger)
+    events = ledger.read_all()
+
+    existing_renames: set[tuple[str, str]] = set()
+    touched_ids: set[str] = set()
+    for event in events:
+        touched_ids.add(event.id)
+        if event.parent:
+            touched_ids.add(event.parent)
+        if event.event != "artifact_renamed":
+            continue
+        new_id = event.extra.get("new_id")
+        if isinstance(new_id, str):
+            existing_renames.add((event.id, new_id))
+
+    pending: list[tuple[str, str]] = []
+    for old_id, new_id in SEMVER_ID_RENAMES:
+        if (old_id, new_id) in existing_renames:
+            continue
+        if old_id not in touched_ids:
+            continue
+        pending.append((old_id, new_id))
+
+    if not pending:
+        console.print("No applicable SemVer ID migrations found.")
+        return
+
+    if dry_run:
+        console.print("[yellow]Dry run:[/yellow] no ledger events will be written.")
+        for old_id, new_id in pending:
+            console.print(f"  Would append artifact_renamed: {old_id} -> {new_id}")
+        return
+
+    for old_id, new_id in pending:
+        ledger.append(
+            artifact_renamed_event(
+                old_id=old_id,
+                new_id=new_id,
+                reason="semver_minor_sequence_migration",
+            )
+        )
+        console.print(f"Renamed {old_id} -> {new_id}")
+
+    console.print(
+        f"\n[green]SemVer migration complete:[/green] {len(pending)} rename event(s) recorded."
+    )
 
 
 def _record_gate_result(
@@ -921,8 +1463,12 @@ def attest(
     if attest_status in ("partial", "dropped") and not reason:
         raise click.ClickException(f"--reason required for {attest_status} status")
 
+    ledger = Ledger(project_root / config.paths.ledger)
+    adr_input = adr if adr.startswith("ADR-") else f"ADR-{adr}"
+    canonical_adr = ledger.canonicalize_id(adr_input)
+
     # Verify ADR exists (support nested ADR layout)
-    adr_file, adr_id = resolve_adr_file(project_root, config, adr)
+    adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
 
     if not force:
         # Check prerequisite gates (simplified check)
@@ -931,8 +1477,6 @@ def attest(
 
     # Get attester identity
     attester = get_git_user()
-
-    ledger = Ledger(project_root / config.paths.ledger)
 
     if dry_run:
         console.print("[yellow]Dry run:[/yellow] no ledger event will be written.")

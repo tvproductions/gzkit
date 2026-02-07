@@ -42,7 +42,7 @@ Gates are verification checkpoints. Work cannot proceed until gates pass.
 
 **Why**: Docs are proof of completion. If you can't document it, you don't understand it.
 
-**Artifact**: Documentation that builds, links resolve, content matches code.
+**Artifact**: User documentation, command manpages, and an operator runbook that build cleanly, resolve links, and match code behavior.
 
 **Applies to**: Heavy lane only (external contract changes).
 

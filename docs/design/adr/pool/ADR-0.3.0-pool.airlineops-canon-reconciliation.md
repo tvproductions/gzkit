@@ -1,12 +1,12 @@
 ---
-id: ADR-0.2.0-pool.airlineops-canon-reconciliation
+id: ADR-0.3.0-pool.airlineops-canon-reconciliation
 status: Pool
 parent: PRD-GZKIT-1.0.0
 lane: Heavy
 enabler: ADR-0.0.1
 ---
 
-# ADR-0.2.0: Airlineops Canon Reconciliation
+# ADR-0.3.0: Airlineops Canon Reconciliation
 
 ## Problem Statement
 
