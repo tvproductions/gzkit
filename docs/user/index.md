@@ -35,6 +35,7 @@ The AI can't skip gates. Neither can you.
 ## Next Steps
 
 - [**Quickstart**](quickstart.md) — Try it in 5 minutes
+- [**Runbook**](runbook.md) — Operational proof workflow
 - [**Why gzkit?**](why.md) — The problem in detail
 - [**Commands**](commands/index.md) — Full reference
 

@@ -672,21 +672,27 @@ Target: Graduate course demo
 - Gate evidence linking
 - `gate_checked` events in ledger
 
-### Phase 3: Heavy Lane (0.3.0)
+### Phase 3: Canon Extraction (0.3.0)
+
+- Reconcile governance artifacts with airlineops canonical GovZero patterns
+- Port canonical templates with 1:1 fidelity and identify drift
+- Establish a sync mechanism so canon updates flow without manual translation
+
+### Phase 4: Heavy Lane (0.4.0)
 
 - Gate 3 (Docs) verification
 - Gate 4 (BDD) verification
 - Lane detection and enforcement
 - PreToolUse hooks for constraint enforcement
 
-### Phase 4: Audit (0.4.0)
+### Phase 5: Audit (0.5.0)
 
 - `gz analyze` with audit generation
 - Audit templates
 - Evidence aggregation from ledger
 - `audit_generated` events
 
-### Phase 5: Release (1.0.0)
+### Phase 6: Release (1.0.0)
 
 - All 11 commands functional
 - Templates hardened
@@ -750,6 +756,7 @@ These constraints are non-negotiable. Agents MUST reason against them.
 | INV-021 | Human MUST observe directly during closeout (no mediated observation) |
 | INV-022 | Audit runs AFTER attestation (reconciliation, not proof) |
 | INV-023 | Alignment chain MUST hold: Intent (ADR/OBPI) ↔ Code (behavior) ↔ Docs (claims) |
+| INV-024 | Primary proof artifacts MUST be user documentation, command manpages, and an operator runbook |
 
 ---
 
@@ -761,7 +768,7 @@ This PRD is verified through the following gates:
 |------|----------|
 | Gate 1 (ADR) | This PRD + downstream ADRs |
 | Gate 2 (TDD) | `uv run -m unittest discover tests` passes; ≥40% coverage |
-| Gate 3 (Docs) | `uv run mkdocs build` passes; command docs present |
+| Gate 3 (Docs) | `uv run mkdocs build` passes; user docs, command manpages, and operator runbook are current |
 | Gate 4 (BDD) | CLI contract scenarios pass (Heavy lane) |
 | Gate 5 (Human) | Attestation block below completed by human |
 
