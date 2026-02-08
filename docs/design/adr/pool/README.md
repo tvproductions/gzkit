@@ -35,7 +35,7 @@ When a pool entry is prioritized:
 | [ADR-0.4.0-pool.heavy-lane](ADR-0.4.0-pool.heavy-lane.md) | 0.4.x | Waiting | ADR-0.3.0 |
 | [ADR-0.5.0-pool.audit-system](ADR-0.5.0-pool.audit-system.md) | 0.5.x | Waiting | ADR-0.4.0 |
 | [ADR-0.6.0-pool.gz-chores-system](ADR-0.6.0-pool.gz-chores-system.md) | 0.6.x | Waiting | ADR-0.2.0 |
-| [ADR-1.0.0-pool.release-hardening](ADR-1.0.0-pool.release-hardening.md) | 1.0.0 | Waiting | ADR-0.5.0 |
+| [ADR-0.7.0-pool.release-hardening](ADR-0.7.0-pool.release-hardening.md) | 0.7.x | Waiting | ADR-0.5.0 |
 
 ---
 
@@ -51,7 +51,7 @@ PRD-GZKIT-1.0.0
 ├── ADR-0.4.0-pool.heavy-lane (Phase 4)
 ├── ADR-0.5.0-pool.audit-system (Phase 5)
 ├── ADR-0.6.0-pool.gz-chores-system (Parity backlog)
-└── ADR-1.0.0-pool.release-hardening (Phase 6)
+└── ADR-0.7.0-pool.release-hardening (Phase 6)
 ```
 
 ## Foundational ADRs (0.0.x)

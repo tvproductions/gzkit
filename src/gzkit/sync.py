@@ -5,12 +5,18 @@ Control surfaces are agent-specific files generated from governance canon.
 """
 
 import json
+import re
 from datetime import date
 from pathlib import Path
 from typing import Any
 
 from gzkit.config import GzkitConfig
 from gzkit.templates import render_template
+
+HEADER_ID_RE = re.compile(r"^#\s+((?:ADR|PRD)-[^\s:]+)")
+PARENT_LINK_RE = re.compile(r"\[((?:PRD|ADR|OBPI)-[^\]]+)\]")
+ALLOWED_ID_PREFIXES = ("ADR-", "PRD-", "OBPI-")
+ALLOWED_LANES = {"lite", "heavy"}
 
 
 def detect_project_structure(project_root: Path) -> dict[str, str]:
@@ -110,6 +116,62 @@ def extract_artifact_id(file_path: Path) -> str:
     return file_path.stem
 
 
+def _parse_frontmatter(lines: list[str], result: dict[str, str]) -> bool:
+    """Parse YAML-style frontmatter and merge known metadata fields."""
+    if not lines or lines[0].strip() != "---":
+        return False
+
+    has_frontmatter_id = False
+    for idx in range(1, len(lines)):
+        line = lines[idx].strip()
+        if line == "---":
+            break
+        if ":" not in line:
+            continue
+
+        key, _, value = line.partition(":")
+        normalized_key = key.strip().lower()
+        normalized_value = value.strip().strip("\"'")
+        if not normalized_value:
+            continue
+
+        if normalized_key == "id" and normalized_value.startswith(ALLOWED_ID_PREFIXES):
+            result["id"] = normalized_value
+            has_frontmatter_id = True
+            continue
+
+        if normalized_key == "parent" and normalized_value.startswith(ALLOWED_ID_PREFIXES):
+            result["parent"] = normalized_value
+            continue
+
+        if normalized_key == "lane":
+            lane = normalized_value.lower()
+            if lane in ALLOWED_LANES:
+                result["lane"] = lane
+
+    return has_frontmatter_id
+
+
+def _parse_header_fallback(
+    lines: list[str],
+    result: dict[str, str],
+    has_frontmatter_id: bool,
+) -> None:
+    """Parse ID and parent from markdown header/body fallback."""
+    for line in lines[:20]:
+        if not has_frontmatter_id and (line.startswith("# ADR-") or line.startswith("# PRD-")):
+            match = HEADER_ID_RE.match(line)
+            if match:
+                result["id"] = match.group(1)
+
+        if "parent" in result or "**Parent" not in line or "[" not in line:
+            continue
+
+        match = PARENT_LINK_RE.search(line)
+        if match:
+            result["parent"] = match.group(1)
+
+
 def parse_artifact_metadata(file_path: Path) -> dict[str, str]:
     """Parse artifact metadata from file content.
 
@@ -123,8 +185,6 @@ def parse_artifact_metadata(file_path: Path) -> dict[str, str]:
     Returns:
         Dictionary with "id" and optionally "parent" keys.
     """
-    import re
-
     result: dict[str, str] = {"id": file_path.stem}
 
     try:
@@ -133,21 +193,8 @@ def parse_artifact_metadata(file_path: Path) -> dict[str, str]:
         return result
 
     lines = content.split("\n")
-
-    for line in lines[:20]:  # Only check first 20 lines for frontmatter
-        # Extract canonical ID from header: "# ADR-0.1.0: description" -> "ADR-0.1.0"
-        if line.startswith("# ADR-") or line.startswith("# PRD-"):
-            # Match "# ADR-X.Y.Z" or "# PRD-NAME-X.Y.Z" before any colon or space
-            match = re.match(r"^#\s+((?:ADR|PRD)-[^\s:]+)", line)
-            if match:
-                result["id"] = match.group(1)
-
-        # Extract parent from "**Parent PRD:** [PRD-NAME](link)" or "**Parent:** [ID](link)"
-        if "**Parent" in line and "[" in line:
-            # Match markdown link: [TEXT](url)
-            match = re.search(r"\[((?:PRD|ADR|OBPI)-[^\]]+)\]", line)
-            if match:
-                result["parent"] = match.group(1)
+    has_frontmatter_id = _parse_frontmatter(lines, result)
+    _parse_header_fallback(lines, result, has_frontmatter_id)
 
     return result
 

@@ -128,7 +128,7 @@ PRD-1.0.0
   ├── ADR-0.4.0-pool.heavy-lane (Phase 4)
   ├── ADR-0.5.0-pool.audit-system (Phase 5)
   ├── ADR-0.6.0-pool.gz-chores-system (Parity backlog)
-  └── ADR-1.0.0-pool.release-hardening (Phase 6)
+  └── ADR-0.7.0-pool.release-hardening (Phase 6)
 ```
 
 The PRD defines the roadmap. Pool entries stage the work. ADRs execute it.
