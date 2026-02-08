@@ -1,14 +1,52 @@
 """Tests for gzkit CLI integration."""
 
+import io
+import os
 import subprocess
+import tempfile
 import unittest
+from contextlib import contextmanager, redirect_stderr, redirect_stdout
+from dataclasses import dataclass
 from pathlib import Path
-
-from click.testing import CliRunner
 
 from gzkit.cli import main, resolve_adr_file
 from gzkit.config import GzkitConfig
 from gzkit.ledger import Ledger, adr_created_event, gate_checked_event
+
+
+@dataclass
+class CliResult:
+    """Simple CLI invocation result."""
+
+    exit_code: int
+    output: str
+
+
+class CliRunner:
+    """Minimal stdlib-only CLI test runner."""
+
+    @contextmanager
+    def isolated_filesystem(self):
+        cwd = Path.cwd()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            os.chdir(tmpdir)
+            try:
+                yield
+            finally:
+                os.chdir(cwd)
+
+    def invoke(self, command, args):
+        output = io.StringIO()
+        with redirect_stdout(output), redirect_stderr(output):
+            try:
+                exit_code = command(args)
+            except SystemExit as exc:
+                code = exc.code
+                exit_code = code if isinstance(code, int) else 1
+        return CliResult(
+            exit_code=0 if exit_code is None else int(exit_code),
+            output=output.getvalue(),
+        )
 
 
 class TestInitCommand(unittest.TestCase):
@@ -353,15 +391,35 @@ Rules here
 
 
 class TestSyncCommand(unittest.TestCase):
-    """Tests for gz sync command."""
+    """Tests for control-surface sync commands."""
 
-    def test_sync_updates_surfaces(self) -> None:
-        """sync updates control surfaces."""
+    def test_agent_sync_control_surfaces_updates_surfaces(self) -> None:
+        """agent sync control-surfaces is the canonical command."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            result = runner.invoke(main, ["agent", "sync", "control-surfaces"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("Sync complete", result.output)
+
+    def test_sync_alias_still_works(self) -> None:
+        """sync alias routes to canonical command."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             runner.invoke(main, ["init"])
             result = runner.invoke(main, ["sync"])
             self.assertEqual(result.exit_code, 0)
+            self.assertIn("deprecated", result.output.lower())
+            self.assertIn("Sync complete", result.output)
+
+    def test_agent_control_sync_alias_still_works(self) -> None:
+        """agent-control-sync alias routes to canonical command."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            result = runner.invoke(main, ["agent-control-sync"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("deprecated", result.output.lower())
             self.assertIn("Sync complete", result.output)
 
 

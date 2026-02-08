@@ -3,13 +3,13 @@
 A Development Covenant for Human-AI Collaboration.
 """
 
+import argparse
 import json
 import subprocess
 from datetime import date
 from pathlib import Path
 from typing import Any, Literal, cast
 
-import click
 from rich.console import Console
 from rich.table import Table
 
@@ -55,6 +55,33 @@ from gzkit.sync import (
 from gzkit.templates import render_template
 from gzkit.validate import validate_all, validate_document, validate_manifest, validate_surfaces
 
+
+class GzCliError(Exception):
+    """User-facing CLI error."""
+
+
+def _prompt_text(prompt: str, default: str = "") -> str:
+    """Prompt for a text response via stdin."""
+    suffix = f" [{default}]" if default else ""
+    try:
+        answer = input(f"{prompt}{suffix}: ")
+    except (EOFError, KeyboardInterrupt):
+        raise KeyboardInterrupt from None
+    return answer if answer else default
+
+
+def _confirm(prompt: str, default: bool = True) -> bool:
+    """Prompt for a yes/no confirmation via stdin."""
+    suffix = " [Y/n] " if default else " [y/N] "
+    try:
+        answer = input(f"{prompt}{suffix}").strip().lower()
+    except (EOFError, KeyboardInterrupt):
+        raise KeyboardInterrupt from None
+    if not answer:
+        return default
+    return answer in {"y", "yes"}
+
+
 console = Console()
 
 SEMVER_ID_RENAMES: tuple[tuple[str, str], ...] = (
@@ -78,7 +105,7 @@ def ensure_initialized() -> GzkitConfig:
     """Ensure gzkit is initialized and return config."""
     config_path = get_project_root() / ".gzkit.json"
     if not config_path.exists():
-        raise click.ClickException("gzkit not initialized. Run 'gz init' first.")
+        raise GzCliError("gzkit not initialized. Run 'gz init' first.")
     return GzkitConfig.load(config_path)
 
 
@@ -86,7 +113,7 @@ def load_manifest(project_root: Path) -> dict[str, Any]:
     """Load the gzkit manifest."""
     manifest_path = project_root / ".gzkit" / "manifest.json"
     if not manifest_path.exists():
-        raise click.ClickException("Missing .gzkit/manifest.json")
+        raise GzCliError("Missing .gzkit/manifest.json")
     return json.loads(manifest_path.read_text())
 
 
@@ -422,9 +449,9 @@ def resolve_target_adr(
         if len(pending) == 1:
             adr = pending[0]
         elif not pending:
-            raise click.ClickException("No pending ADRs found. Use --adr to specify one.")
+            raise GzCliError("No pending ADRs found. Use --adr to specify one.")
         else:
-            raise click.ClickException("Multiple pending ADRs found. Use --adr to specify one.")
+            raise GzCliError("Multiple pending ADRs found. Use --adr to specify one.")
 
     adr_id = adr if adr.startswith("ADR-") else f"ADR-{adr}"
     canonical_adr_id = ledger.canonicalize_id(adr_id)
@@ -464,11 +491,11 @@ def resolve_adr_file(project_root: Path, config: GzkitConfig, adr: str) -> tuple
             return non_pool[0], adr_id
         if len(non_pool) > 1:
             rels = ", ".join(str(p.relative_to(project_root)) for p in non_pool)
-            raise click.ClickException(f"Multiple ADR files found for {adr_id}: {rels}")
+            raise GzCliError(f"Multiple ADR files found for {adr_id}: {rels}")
         rels = ", ".join(str(p.relative_to(project_root)) for p in matches)
-        raise click.ClickException(f"Multiple ADR files found for {adr_id}: {rels}")
+        raise GzCliError(f"Multiple ADR files found for {adr_id}: {rels}")
 
-    raise click.ClickException(f"ADR not found: {adr_id}")
+    raise GzCliError(f"ADR not found: {adr_id}")
 
 
 def run_interview(document_type: str) -> dict[str, str]:
@@ -481,7 +508,7 @@ def run_interview(document_type: str) -> dict[str, str]:
         Dictionary of question_id -> answer.
 
     Raises:
-        click.Abort: If user cancels the interview.
+        KeyboardInterrupt: If user cancels the interview.
     """
     console.print(f"\n[bold]Q&A Interview for {document_type.upper()}[/bold]")
     console.print("The interview shapes the document. Answer each question.\n")
@@ -501,8 +528,8 @@ def run_interview(document_type: str) -> dict[str, str]:
 
         while True:
             try:
-                answer = click.prompt(q.prompt, default="", show_default=False)
-            except click.Abort:
+                answer = _prompt_text(q.prompt, default="")
+            except KeyboardInterrupt:
                 console.print("\n[yellow]Interview cancelled.[/yellow]")
                 raise
 
@@ -585,7 +612,7 @@ def _register_existing_artifacts(
             console.print(f"    - {meta['id']} → parent: {parent}")
 
     console.print()
-    if not click.confirm("Register these artifacts in the ledger?", default=True):
+    if not _confirm("Register these artifacts in the ledger?", default=True):
         return False
 
     # Register PRDs
@@ -606,34 +633,18 @@ def _register_existing_artifacts(
     return True
 
 
-@click.group()
-@click.version_option(version=__version__, prog_name="gzkit")
-def main() -> None:
-    """gzkit: A Development Covenant for Human-AI Collaboration."""
-    pass
-
-
 # =============================================================================
 # Governance Commands
 # =============================================================================
 
 
-@main.command()
-@click.option(
-    "--mode",
-    type=click.Choice(["lite", "heavy"]),
-    default="lite",
-    help="Governance mode (lite: gates 1,2; heavy: all gates)",
-)
-@click.option("--force", is_flag=True, help="Overwrite existing initialization")
-@click.option("--dry-run", is_flag=True, help="Show actions without writing")
 def init(mode: str, force: bool, dry_run: bool) -> None:
     """Initialize gzkit in the current project."""
     project_root = get_project_root()
     gzkit_dir = project_root / ".gzkit"
 
     if gzkit_dir.exists() and not force:
-        raise click.ClickException("Project already initialized. Use --force to reinitialize.")
+        raise GzCliError("Project already initialized. Use --force to reinitialize.")
 
     # Detect project structure
     structure = detect_project_structure(project_root)
@@ -687,17 +698,17 @@ def init(mode: str, force: bool, dry_run: bool) -> None:
             dir_path.mkdir(parents=True, exist_ok=True)
             console.print(f"  Created {design_root}/{dir_name}/")
 
-    # Sync control surfaces
+    # Scaffold core skills
+    skills = scaffold_core_skills(project_root, config)
+    console.print(f"  Scaffolded {len(skills)} core skills")
+
+    # Sync control surfaces (including skill mirrors)
     updated = sync_all(project_root, config)
     for path in updated:
         console.print(f"  Generated {path}")
 
     # Set up hooks
     _setup_init_hooks(project_root, config)
-
-    # Scaffold core skills
-    skills = scaffold_core_skills(project_root, config)
-    console.print(f"  Scaffolded {len(skills)} core skills")
 
     # Record init event
     ledger = Ledger(ledger_path)
@@ -715,10 +726,6 @@ def init(mode: str, force: bool, dry_run: bool) -> None:
     console.print("  gz validate         Validate artifacts")
 
 
-@main.command()
-@click.argument("name")
-@click.option("--title", help="PRD title")
-@click.option("--dry-run", is_flag=True, help="Show actions without writing")
 def prd(name: str, title: str | None, dry_run: bool) -> None:
     """Create a new PRD."""
     config = ensure_initialized()
@@ -765,10 +772,6 @@ def prd(name: str, title: str | None, dry_run: bool) -> None:
     console.print(f"Created PRD: {prd_file}")
 
 
-@main.command()
-@click.argument("name")
-@click.option("--title", help="Constitution title")
-@click.option("--dry-run", is_flag=True, help="Show actions without writing")
 def constitute(name: str, title: str | None, dry_run: bool) -> None:
     """Create a new constitution."""
     config = ensure_initialized()
@@ -803,13 +806,6 @@ def constitute(name: str, title: str | None, dry_run: bool) -> None:
     console.print(f"Created constitution: {constitution_file}")
 
 
-@main.command()
-@click.argument("name")
-@click.option("--parent", required=True, help="Parent ADR ID")
-@click.option("--item", type=int, default=1, help="Checklist item number from parent ADR")
-@click.option("--lane", type=click.Choice(["lite", "heavy"]), default="lite")
-@click.option("--title", help="OBPI title")
-@click.option("--dry-run", is_flag=True, help="Show actions without writing")
 def specify(
     name: str,
     parent: str,
@@ -866,13 +862,6 @@ def specify(
     console.print(f"Created OBPI: {obpi_file}")
 
 
-@main.command("plan")
-@click.argument("name")
-@click.option("--obpi", "parent_obpi", help="Parent OBPI ID (optional)")
-@click.option("--semver", default="0.1.0", help="Semantic version")
-@click.option("--lane", type=click.Choice(["lite", "heavy"]), default="lite")
-@click.option("--title", help="ADR title")
-@click.option("--dry-run", is_flag=True, help="Show actions without writing")
 def plan_cmd(
     name: str,
     parent_obpi: str | None,
@@ -917,10 +906,6 @@ def plan_cmd(
     console.print(f"Created ADR: {adr_file}")
 
 
-@main.command()
-@click.option("--json", "as_json", is_flag=True, help="Output as JSON")
-@click.option("--blocked", is_flag=True, help="Show only blocked artifacts")
-@click.option("--ready", is_flag=True, help="Show only artifacts ready for attestation")
 def state(as_json: bool, blocked: bool, ready: bool) -> None:
     """Query ledger state and artifact relationships."""
     config = ensure_initialized()
@@ -930,7 +915,7 @@ def state(as_json: bool, blocked: bool, ready: bool) -> None:
     graph = ledger.get_artifact_graph()
 
     if as_json:
-        click.echo(json.dumps(graph, indent=2))
+        print(json.dumps(graph, indent=2))
         return
 
     # Filter if requested
@@ -963,8 +948,6 @@ def state(as_json: bool, blocked: bool, ready: bool) -> None:
     console.print(table)
 
 
-@main.command()
-@click.option("--json", "as_json", is_flag=True, help="Output as JSON")
 def status(as_json: bool) -> None:
     """Display gate status for current work."""
     config = ensure_initialized()
@@ -983,7 +966,7 @@ def status(as_json: bool) -> None:
             "adrs": adrs,
             "pending_attestations": pending,
         }
-        click.echo(json.dumps(result, indent=2))
+        print(json.dumps(result, indent=2))
         return
 
     console.print(f"[bold]Lane: {config.mode}[/bold]\n")
@@ -1025,15 +1008,6 @@ def status(as_json: bool) -> None:
         console.print()
 
 
-@main.command("git-sync")
-@click.option("--branch", help="Branch to sync (default: current branch)")
-@click.option("--remote", default="origin", show_default=True, help="Remote name")
-@click.option("--apply", is_flag=True, help="Execute sync actions (dry-run by default)")
-@click.option("--lint/--no-lint", "run_lint_gate", default=True, show_default=True)
-@click.option("--test/--no-test", "run_test_gate", default=True, show_default=True)
-@click.option("--auto-add/--no-auto-add", default=True, show_default=True)
-@click.option("--push/--no-push", "allow_push", default=True, show_default=True)
-@click.option("--json", "as_json", is_flag=True, help="Output as JSON")
 def git_sync(
     branch: str | None,
     remote: str,
@@ -1050,13 +1024,13 @@ def git_sync(
 
     rc_repo, inside, err_repo = _git_cmd(project_root, "rev-parse", "--is-inside-work-tree")
     if rc_repo != 0 or inside != "true":
-        raise click.ClickException(err_repo or "Not a git repository.")
+        raise GzCliError(err_repo or "Not a git repository.")
 
     rc_branch, current_branch, err_branch = _git_cmd(
         project_root, "rev-parse", "--abbrev-ref", "HEAD"
     )
     if rc_branch != 0:
-        raise click.ClickException(err_branch or "Could not determine current branch.")
+        raise GzCliError(err_branch or "Could not determine current branch.")
 
     target_branch = branch or current_branch
     plan = _plan_git_sync(
@@ -1108,7 +1082,7 @@ def git_sync(
     }
 
     if as_json:
-        click.echo(json.dumps(result, indent=2))
+        print(json.dumps(result, indent=2))
         if blockers:
             raise SystemExit(1)
         return
@@ -1147,18 +1121,7 @@ def git_sync(
         console.print("  Use --apply to execute.")
 
 
-@main.command("sync-repo")
-@click.option("--branch", help="Branch to sync (default: current branch)")
-@click.option("--remote", default="origin", show_default=True, help="Remote name")
-@click.option("--apply", is_flag=True, help="Execute sync actions (dry-run by default)")
-@click.option("--lint/--no-lint", "run_lint_gate", default=True, show_default=True)
-@click.option("--test/--no-test", "run_test_gate", default=True, show_default=True)
-@click.option("--auto-add/--no-auto-add", default=True, show_default=True)
-@click.option("--push/--no-push", "allow_push", default=True, show_default=True)
-@click.option("--json", "as_json", is_flag=True, help="Output as JSON")
-@click.pass_context
 def sync_repo(
-    ctx: click.Context,
     branch: str | None,
     remote: str,
     apply: bool,
@@ -1169,8 +1132,7 @@ def sync_repo(
     as_json: bool,
 ) -> None:
     """Alias for git-sync (AirlineOps parity)."""
-    ctx.invoke(
-        git_sync,
+    git_sync(
         branch=branch,
         remote=remote,
         apply=apply,
@@ -1182,8 +1144,6 @@ def sync_repo(
     )
 
 
-@main.command("migrate-semver")
-@click.option("--dry-run", is_flag=True, help="Show migration events without writing")
 def migrate_semver(dry_run: bool) -> None:
     """Record SemVer artifact ID renames in the append-only ledger."""
     config = ensure_initialized()
@@ -1271,7 +1231,7 @@ def _run_gate_1(project_root: Path, config: GzkitConfig, ledger: Ledger, adr_id:
         _record_gate_result(ledger, adr_id, 1, "pass", "ADR exists", 0, evidence)
         console.print(f"Gate 1 (ADR): [green]PASS[/green] ({evidence})")
         return True
-    except click.ClickException as exc:
+    except GzCliError as exc:
         _record_gate_result(ledger, adr_id, 1, "fail", "ADR exists", 1, str(exc))
         console.print(f"Gate 1 (ADR): [red]FAIL[/red] ({exc})")
         return False
@@ -1363,8 +1323,6 @@ def _run_gate_5() -> bool:
     return True
 
 
-@main.command("implement")
-@click.option("--adr", help="ADR ID to associate gate results with")
 def implement_cmd(adr: str | None) -> None:
     """Run Gate 2 (tests) and record results."""
     config = ensure_initialized()
@@ -1385,9 +1343,6 @@ def implement_cmd(adr: str | None) -> None:
         raise SystemExit(1)
 
 
-@main.command("gates")
-@click.option("--gate", "gate_number", type=int, help="Run a specific gate")
-@click.option("--adr", help="ADR ID to associate gate results with")
 def gates_cmd(gate_number: int | None, adr: str | None) -> None:
     """Run applicable gates for the current lane and record results."""
     config = ensure_initialized()
@@ -1438,17 +1393,6 @@ def gates_cmd(gate_number: int | None, adr: str | None) -> None:
         raise SystemExit(1)
 
 
-@main.command()
-@click.argument("adr")
-@click.option(
-    "--status",
-    "attest_status",
-    type=click.Choice(["completed", "partial", "dropped"]),
-    required=True,
-)
-@click.option("--reason", help="Reason for partial/dropped status")
-@click.option("--force", is_flag=True, help="Skip prerequisite gate checks")
-@click.option("--dry-run", is_flag=True, help="Show actions without writing")
 def attest(
     adr: str,
     attest_status: str,
@@ -1461,7 +1405,7 @@ def attest(
     project_root = get_project_root()
 
     if attest_status in ("partial", "dropped") and not reason:
-        raise click.ClickException(f"--reason required for {attest_status} status")
+        raise GzCliError(f"--reason required for {attest_status} status")
 
     ledger = Ledger(project_root / config.paths.ledger)
     adr_input = adr if adr.startswith("ADR-") else f"ADR-{adr}"
@@ -1507,11 +1451,6 @@ def attest(
 # =============================================================================
 
 
-@main.command()
-@click.option("--manifest", "check_manifest", is_flag=True, help="Check manifest only")
-@click.option("--documents", "check_documents", is_flag=True, help="Check documents only")
-@click.option("--surfaces", "check_surfaces", is_flag=True, help="Check control surfaces only")
-@click.option("--json", "as_json", is_flag=True, help="Output as JSON")
 def validate(
     check_manifest: bool, check_documents: bool, check_surfaces: bool, as_json: bool
 ) -> None:
@@ -1548,7 +1487,7 @@ def validate(
             "valid": len(errors) == 0,
             "errors": [e.to_dict() for e in errors],
         }
-        click.echo(json.dumps(result, indent=2))
+        print(json.dumps(result, indent=2))
         return
 
     if errors:
@@ -1564,10 +1503,8 @@ def validate(
         console.print("[green]All validations passed.[/green]")
 
 
-@main.command()
-@click.option("--dry-run", is_flag=True, help="Show actions without writing")
-def sync(dry_run: bool) -> None:
-    """Regenerate control surfaces from governance canon."""
+def _run_agent_control_sync(dry_run: bool) -> None:
+    """Execute control-surface regeneration flow."""
     config = ensure_initialized()
     project_root = get_project_root()
 
@@ -1580,6 +1517,7 @@ def sync(dry_run: bool) -> None:
         console.print(f"  {config.paths.copilot_instructions}")
         console.print(f"  {config.paths.claude_settings}")
         console.print("  .copilotignore")
+        console.print(f"  {config.paths.claude_skills}/**")
         return
 
     console.print("Syncing control surfaces...")
@@ -1591,10 +1529,26 @@ def sync(dry_run: bool) -> None:
     console.print("\n[green]Sync complete.[/green]")
 
 
-@main.command()
-@click.option("--check", "check_only", is_flag=True, help="Report only, don't fix")
-@click.option("--fix", is_flag=True, help="Auto-fix safe issues")
-@click.option("--dry-run", is_flag=True, help="Show actions without writing")
+def agent_control_sync(dry_run: bool) -> None:
+    """Deprecated alias for `agent sync control-surfaces`."""
+    console.print(
+        "[yellow]`gz agent-control-sync` is deprecated; use "
+        "`gz agent sync control-surfaces`.[/yellow]"
+    )
+    _run_agent_control_sync(dry_run)
+
+
+def sync_alias(dry_run: bool) -> None:
+    """Deprecated alias for `agent sync control-surfaces`."""
+    console.print("[yellow]`gz sync` is deprecated; use `gz agent sync control-surfaces`.[/yellow]")
+    _run_agent_control_sync(dry_run)
+
+
+def sync_control_surfaces(dry_run: bool) -> None:
+    """Regenerate agent control surfaces from governance canon."""
+    _run_agent_control_sync(dry_run)
+
+
 def tidy(check_only: bool, fix: bool, dry_run: bool) -> None:
     """Run maintenance checks and cleanup."""
     config = ensure_initialized()
@@ -1649,7 +1603,6 @@ def tidy(check_only: bool, fix: bool, dry_run: bool) -> None:
 # =============================================================================
 
 
-@main.command()
 def lint() -> None:
     """Run code linting (ruff + pymarkdown)."""
     project_root = get_project_root()
@@ -1669,7 +1622,6 @@ def lint() -> None:
         raise SystemExit(result.returncode)
 
 
-@main.command("format")
 def format_cmd() -> None:
     """Auto-format code with ruff."""
     project_root = get_project_root()
@@ -1689,7 +1641,6 @@ def format_cmd() -> None:
         raise SystemExit(result.returncode)
 
 
-@main.command()
 def test() -> None:
     """Run unit tests."""
     project_root = get_project_root()
@@ -1709,7 +1660,6 @@ def test() -> None:
         raise SystemExit(result.returncode)
 
 
-@main.command()
 def typecheck() -> None:
     """Run type checking with ty."""
     project_root = get_project_root()
@@ -1729,7 +1679,6 @@ def typecheck() -> None:
         raise SystemExit(result.returncode)
 
 
-@main.command()
 def check() -> None:
     """Run all quality checks (lint + format + typecheck + test)."""
     project_root = get_project_root()
@@ -1761,15 +1710,6 @@ def check() -> None:
 # =============================================================================
 
 
-@main.group()
-def skill() -> None:
-    """Skills management commands."""
-    pass
-
-
-@skill.command("new")
-@click.argument("name")
-@click.option("--description", help="Skill description")
 def skill_new(name: str, description: str | None) -> None:
     """Create a new skill."""
     config = ensure_initialized()
@@ -1783,7 +1723,6 @@ def skill_new(name: str, description: str | None) -> None:
     console.print(f"Created skill: {skill_file}")
 
 
-@skill.command("list")
 def skill_list() -> None:
     """List all skills."""
     config = ensure_initialized()
@@ -1810,8 +1749,6 @@ def skill_list() -> None:
 # =============================================================================
 
 
-@main.command()
-@click.argument("document_type", type=click.Choice(["prd", "adr", "obpi"]))
 def interview(document_type: str) -> None:
     """Interactive Q&A mode for document creation."""
     config = ensure_initialized()
@@ -1829,7 +1766,7 @@ def interview(document_type: str) -> None:
                 console.print(f"[dim]Example: {q.example}[/dim]")
 
             while True:
-                answer = click.prompt(q.prompt, default="", show_default=False)
+                answer = _prompt_text(q.prompt, default="")
                 if q.validator and answer and not q.validator(answer):
                     console.print("[red]Invalid answer. Please try again.[/red]")
                     continue
@@ -1837,7 +1774,7 @@ def interview(document_type: str) -> None:
 
             answers[q.id] = answer
 
-    except click.Abort:
+    except KeyboardInterrupt:
         console.print("\n[yellow]Interview cancelled.[/yellow]")
         return
 
@@ -1846,7 +1783,7 @@ def interview(document_type: str) -> None:
 
     if not result.complete:
         console.print(f"\n[yellow]Missing required fields: {result.missing}[/yellow]")
-        if not click.confirm("Create document anyway?"):
+        if not _confirm("Create document anyway?"):
             return
 
     # Format and create document
@@ -1886,5 +1823,270 @@ def interview(document_type: str) -> None:
     console.print(f"\n[green]Created {document_type.upper()}: {doc_file}[/green]")
 
 
+def _add_git_sync_options(parser: argparse.ArgumentParser) -> None:
+    """Register common git-sync CLI flags."""
+    parser.add_argument("--branch", help="Branch to sync (default: current branch)")
+    parser.add_argument("--remote", default="origin", help="Remote name")
+    parser.add_argument(
+        "--apply",
+        action="store_true",
+        help="Execute sync actions (dry-run by default)",
+    )
+    parser.add_argument("--lint", dest="run_lint_gate", action="store_true", default=True)
+    parser.add_argument("--no-lint", dest="run_lint_gate", action="store_false")
+    parser.add_argument("--test", dest="run_test_gate", action="store_true", default=True)
+    parser.add_argument("--no-test", dest="run_test_gate", action="store_false")
+    parser.add_argument("--auto-add", dest="auto_add", action="store_true", default=True)
+    parser.add_argument("--no-auto-add", dest="auto_add", action="store_false")
+    parser.add_argument("--push", dest="allow_push", action="store_true", default=True)
+    parser.add_argument("--no-push", dest="allow_push", action="store_false")
+    parser.add_argument("--json", dest="as_json", action="store_true", help="Output as JSON")
+
+
+def _build_parser() -> argparse.ArgumentParser:
+    """Build argparse parser tree for gz CLI."""
+    parser = argparse.ArgumentParser(
+        prog="gz",
+        description="gzkit: A Development Covenant for Human-AI Collaboration.",
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"gzkit {__version__}",
+    )
+
+    commands = parser.add_subparsers(dest="command")
+    commands.required = True
+
+    p_init = commands.add_parser("init", help="Initialize gzkit in the current project")
+    p_init.add_argument("--mode", choices=["lite", "heavy"], default="lite")
+    p_init.add_argument("--force", action="store_true")
+    p_init.add_argument("--dry-run", action="store_true")
+    p_init.set_defaults(func=lambda a: init(mode=a.mode, force=a.force, dry_run=a.dry_run))
+
+    p_prd = commands.add_parser("prd", help="Create a new PRD")
+    p_prd.add_argument("name")
+    p_prd.add_argument("--title")
+    p_prd.add_argument("--dry-run", action="store_true")
+    p_prd.set_defaults(func=lambda a: prd(name=a.name, title=a.title, dry_run=a.dry_run))
+
+    p_constitute = commands.add_parser("constitute", help="Create a new constitution")
+    p_constitute.add_argument("name")
+    p_constitute.add_argument("--title")
+    p_constitute.add_argument("--dry-run", action="store_true")
+    p_constitute.set_defaults(
+        func=lambda a: constitute(name=a.name, title=a.title, dry_run=a.dry_run)
+    )
+
+    p_specify = commands.add_parser("specify", help="Create a new OBPI")
+    p_specify.add_argument("name")
+    p_specify.add_argument("--parent", required=True)
+    p_specify.add_argument("--item", type=int, default=1)
+    p_specify.add_argument("--lane", choices=["lite", "heavy"], default="lite")
+    p_specify.add_argument("--title")
+    p_specify.add_argument("--dry-run", action="store_true")
+    p_specify.set_defaults(
+        func=lambda a: specify(
+            name=a.name,
+            parent=a.parent,
+            item=a.item,
+            lane=a.lane,
+            title=a.title,
+            dry_run=a.dry_run,
+        )
+    )
+
+    p_plan = commands.add_parser("plan", help="Create a new ADR")
+    p_plan.add_argument("name")
+    p_plan.add_argument("--obpi", dest="parent_obpi")
+    p_plan.add_argument("--semver", default="0.1.0")
+    p_plan.add_argument("--lane", choices=["lite", "heavy"], default="lite")
+    p_plan.add_argument("--title")
+    p_plan.add_argument("--dry-run", action="store_true")
+    p_plan.set_defaults(
+        func=lambda a: plan_cmd(
+            name=a.name,
+            parent_obpi=a.parent_obpi,
+            semver=a.semver,
+            lane=a.lane,
+            title=a.title,
+            dry_run=a.dry_run,
+        )
+    )
+
+    p_state = commands.add_parser("state", help="Query ledger state and relationships")
+    p_state.add_argument("--json", dest="as_json", action="store_true")
+    p_state.add_argument("--blocked", action="store_true")
+    p_state.add_argument("--ready", action="store_true")
+    p_state.set_defaults(func=lambda a: state(as_json=a.as_json, blocked=a.blocked, ready=a.ready))
+
+    p_status = commands.add_parser("status", help="Show gate status")
+    p_status.add_argument("--json", dest="as_json", action="store_true")
+    p_status.set_defaults(func=lambda a: status(as_json=a.as_json))
+
+    p_git_sync = commands.add_parser("git-sync", help="Sync branch with guarded ritual")
+    _add_git_sync_options(p_git_sync)
+    p_git_sync.set_defaults(
+        func=lambda a: git_sync(
+            branch=a.branch,
+            remote=a.remote,
+            apply=a.apply,
+            run_lint_gate=a.run_lint_gate,
+            run_test_gate=a.run_test_gate,
+            auto_add=a.auto_add,
+            allow_push=a.allow_push,
+            as_json=a.as_json,
+        )
+    )
+
+    p_sync_repo = commands.add_parser("sync-repo", help="Alias for git-sync")
+    _add_git_sync_options(p_sync_repo)
+    p_sync_repo.set_defaults(
+        func=lambda a: sync_repo(
+            branch=a.branch,
+            remote=a.remote,
+            apply=a.apply,
+            run_lint_gate=a.run_lint_gate,
+            run_test_gate=a.run_test_gate,
+            auto_add=a.auto_add,
+            allow_push=a.allow_push,
+            as_json=a.as_json,
+        )
+    )
+
+    p_migrate = commands.add_parser("migrate-semver", help="Record SemVer ID rename events")
+    p_migrate.add_argument("--dry-run", action="store_true")
+    p_migrate.set_defaults(func=lambda a: migrate_semver(dry_run=a.dry_run))
+
+    p_implement = commands.add_parser("implement", help="Run Gate 2 and record result")
+    p_implement.add_argument("--adr")
+    p_implement.set_defaults(func=lambda a: implement_cmd(adr=a.adr))
+
+    p_gates = commands.add_parser("gates", help="Run lane-required gates")
+    p_gates.add_argument("--gate", dest="gate_number", type=int)
+    p_gates.add_argument("--adr")
+    p_gates.set_defaults(func=lambda a: gates_cmd(gate_number=a.gate_number, adr=a.adr))
+
+    p_attest = commands.add_parser("attest", help="Record human attestation")
+    p_attest.add_argument("adr")
+    p_attest.add_argument(
+        "--status",
+        dest="attest_status",
+        required=True,
+        choices=["completed", "partial", "dropped"],
+    )
+    p_attest.add_argument("--reason")
+    p_attest.add_argument("--force", action="store_true")
+    p_attest.add_argument("--dry-run", action="store_true")
+    p_attest.set_defaults(
+        func=lambda a: attest(
+            adr=a.adr,
+            attest_status=a.attest_status,
+            reason=a.reason,
+            force=a.force,
+            dry_run=a.dry_run,
+        )
+    )
+
+    p_validate = commands.add_parser("validate", help="Validate governance artifacts")
+    p_validate.add_argument("--manifest", dest="check_manifest", action="store_true")
+    p_validate.add_argument("--documents", dest="check_documents", action="store_true")
+    p_validate.add_argument("--surfaces", dest="check_surfaces", action="store_true")
+    p_validate.add_argument("--json", dest="as_json", action="store_true")
+    p_validate.set_defaults(
+        func=lambda a: validate(
+            check_manifest=a.check_manifest,
+            check_documents=a.check_documents,
+            check_surfaces=a.check_surfaces,
+            as_json=a.as_json,
+        )
+    )
+
+    p_tidy = commands.add_parser("tidy", help="Run maintenance checks and cleanup")
+    p_tidy.add_argument("--check", dest="check_only", action="store_true")
+    p_tidy.add_argument("--fix", action="store_true")
+    p_tidy.add_argument("--dry-run", action="store_true")
+    p_tidy.set_defaults(func=lambda a: tidy(check_only=a.check_only, fix=a.fix, dry_run=a.dry_run))
+
+    commands.add_parser("lint", help="Run lint checks").set_defaults(func=lambda a: lint())
+    commands.add_parser("format", help="Run formatter").set_defaults(func=lambda a: format_cmd())
+    commands.add_parser("test", help="Run tests").set_defaults(func=lambda a: test())
+    commands.add_parser("typecheck", help="Run type checks").set_defaults(
+        func=lambda a: typecheck()
+    )
+    commands.add_parser("check", help="Run all quality checks").set_defaults(func=lambda a: check())
+
+    p_skill = commands.add_parser("skill", help="Skill management commands")
+    skill_commands = p_skill.add_subparsers(dest="skill_command")
+    skill_commands.required = True
+
+    p_skill_new = skill_commands.add_parser("new", help="Create a new skill")
+    p_skill_new.add_argument("name")
+    p_skill_new.add_argument("--description")
+    p_skill_new.set_defaults(func=lambda a: skill_new(name=a.name, description=a.description))
+
+    skill_commands.add_parser("list", help="List all skills").set_defaults(
+        func=lambda a: skill_list()
+    )
+
+    p_interview = commands.add_parser("interview", help="Interactive document interview")
+    p_interview.add_argument("document_type", choices=["prd", "adr", "obpi"])
+    p_interview.set_defaults(func=lambda a: interview(document_type=a.document_type))
+
+    p_agent = commands.add_parser("agent", help="Agent-specific operations")
+    agent_commands = p_agent.add_subparsers(dest="agent_command")
+    agent_commands.required = True
+
+    p_agent_sync = agent_commands.add_parser("sync", help="Agent synchronization commands")
+    agent_sync_commands = p_agent_sync.add_subparsers(dest="agent_sync_command")
+    agent_sync_commands.required = True
+
+    p_control_surfaces = agent_sync_commands.add_parser(
+        "control-surfaces",
+        help="Regenerate agent control surfaces from governance canon",
+    )
+    p_control_surfaces.add_argument("--dry-run", action="store_true")
+    p_control_surfaces.set_defaults(func=lambda a: sync_control_surfaces(dry_run=a.dry_run))
+
+    p_agent_control_sync = commands.add_parser(
+        "agent-control-sync",
+        help="Deprecated alias for `agent sync control-surfaces`",
+    )
+    p_agent_control_sync.add_argument("--dry-run", action="store_true")
+    p_agent_control_sync.set_defaults(func=lambda a: agent_control_sync(dry_run=a.dry_run))
+
+    p_sync_alias = commands.add_parser("sync", help="Deprecated alias for agent sync command")
+    p_sync_alias.add_argument("--dry-run", action="store_true")
+    p_sync_alias.set_defaults(func=lambda a: sync_alias(dry_run=a.dry_run))
+
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    """argparse-based gz entrypoint."""
+    parser = _build_parser()
+    try:
+        args = parser.parse_args(argv)
+    except SystemExit as exc:
+        return int(exc.code) if isinstance(exc.code, int) else 1
+
+    handler = getattr(args, "func", None)
+    if handler is None:
+        parser.print_help()
+        return 2
+
+    try:
+        handler(args)
+        return 0
+    except GzCliError as exc:
+        console.print(f"[red]{exc}[/red]")
+        return 2
+    except SystemExit as exc:
+        return int(exc.code) if isinstance(exc.code, int) else 1
+    except KeyboardInterrupt:
+        console.print("[yellow]Interrupted.[/yellow]")
+        return 130
+
+
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

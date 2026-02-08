@@ -6,6 +6,12 @@ Instructions for GitHub Copilot when working with {project_name}.
 
 {project_purpose}
 
+## Canonical Contract
+
+`AGENTS.md` is the source of truth for governance behavior.
+
+If these instructions drift from `AGENTS.md`, follow `AGENTS.md` and run `gz agent sync control-surfaces`.
+
 ## Tech Stack
 
 {tech_stack}
@@ -28,8 +34,19 @@ Before suggesting code:
 This project uses gzkit for governance. Key commands:
 
 - `gz status` - Check what gates are pending
-- `gz validate` - Validate governance artifacts
+- `gz validate --documents` - Validate governance artifacts
 - `gz check` - Run all quality checks
+
+## Skills
+
+Use the canonical skill catalog and keep mirrors synced via `gz agent sync control-surfaces`:
+
+- Canonical skills: `{skills_canon_path}`
+- Claude skill mirror: `{skills_claude_path}`
+
+### Available Skills
+
+{skills_catalog}
 
 ## Build Commands
 

@@ -75,7 +75,7 @@ Runs lint, format, typecheck, and tests. Gate 2 requires tests to pass.
 If you've updated governance docs:
 
 ```bash
-gz sync
+gz agent sync control-surfaces
 ```
 
 Regenerates CLAUDE.md and other control surfaces from canon.

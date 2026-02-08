@@ -1,7 +1,7 @@
 """Sync module for regenerating control surfaces from canon.
 
 Control surfaces are agent-specific files generated from governance canon.
-`gz sync` regenerates these files to ensure alignment with current state.
+`gz agent sync control-surfaces` regenerates these files to ensure alignment with current state.
 """
 
 import json
@@ -210,6 +210,7 @@ def generate_manifest(
             "claude_md": config.paths.claude_md,
             "hooks": config.paths.claude_hooks,
             "skills": config.paths.skills,
+            "claude_skills": config.paths.claude_skills,
         },
         "verification": {
             "lint": "uvx ruff check src tests",
@@ -254,6 +255,116 @@ def load_local_content(project_root: Path) -> str:
     return ""
 
 
+def _extract_skill_description(skill_file: Path) -> str:
+    """Extract a short skill description from SKILL.md.
+
+    Args:
+        skill_file: Path to SKILL.md.
+
+    Returns:
+        First non-empty non-heading line, or a fallback description.
+    """
+    for line in skill_file.read_text().splitlines():
+        stripped = line.strip()
+        if stripped and not stripped.startswith("#"):
+            return stripped
+    return "No description provided."
+
+
+def collect_skills_catalog(
+    project_root: Path,
+    skills_dir: str,
+) -> list[dict[str, str]]:
+    """Collect canonical skill metadata from the configured skills directory.
+
+    Args:
+        project_root: Project root directory.
+        skills_dir: Relative path to canonical skills directory.
+
+    Returns:
+        Sorted list of skill metadata records.
+    """
+    skills_path = project_root / skills_dir
+    if not skills_path.exists():
+        return []
+
+    skills: list[dict[str, str]] = []
+    for skill_dir in sorted(skills_path.iterdir()):
+        skill_file = skill_dir / "SKILL.md"
+        if not skill_dir.is_dir() or not skill_file.exists():
+            continue
+
+        skills.append(
+            {
+                "name": skill_dir.name,
+                "description": _extract_skill_description(skill_file),
+                "path": skill_file.relative_to(project_root).as_posix(),
+            }
+        )
+
+    return skills
+
+
+def render_skills_catalog(skills: list[dict[str, str]]) -> str:
+    """Render a markdown bullet list for available skills.
+
+    Args:
+        skills: Skill metadata records.
+
+    Returns:
+        Markdown list text.
+    """
+    if not skills:
+        return "- No local skills found. Create one with `gz skill new <name>`."
+
+    lines = []
+    for skill in skills:
+        lines.append(f"- `{skill['name']}`: {skill['description']} (`{skill['path']}`)")
+    return "\n".join(lines)
+
+
+def sync_skill_mirror(
+    project_root: Path,
+    source_dir: str,
+    target_dir: str,
+) -> list[str]:
+    """Copy canonical skills into a tool-local mirror directory.
+
+    This is intentionally additive/non-destructive: files are copied/updated,
+    but extra files already present in the mirror are preserved.
+
+    Args:
+        project_root: Project root directory.
+        source_dir: Canonical skills path.
+        target_dir: Tool-local mirrored skills path.
+
+    Returns:
+        List of mirrored files that were written.
+    """
+    source_root = project_root / source_dir
+    target_root = project_root / target_dir
+    if not source_root.exists():
+        return []
+
+    updated: list[str] = []
+    for source_file in sorted(source_root.rglob("*")):
+        if not source_file.is_file():
+            continue
+
+        relative_path = source_file.relative_to(source_root)
+        target_file = target_root / relative_path
+        target_file.parent.mkdir(parents=True, exist_ok=True)
+
+        source_bytes = source_file.read_bytes()
+        if target_file.exists() and target_file.read_bytes() == source_bytes:
+            continue
+
+        target_file.write_bytes(source_bytes)
+        updated.append(target_file.relative_to(project_root).as_posix())
+
+    return updated
+
+
 def get_project_context(project_root: Path, config: GzkitConfig) -> dict[str, str]:
     """Build context for template rendering.
 
@@ -283,6 +394,9 @@ uv run -m unittest discover tests    # Run tests""".format(module=project_name.r
     # Note: Could read existing CLAUDE.md here to preserve context
     # For now, we regenerate from templates
 
+    skills = collect_skills_catalog(project_root, config.paths.skills)
+    skills_catalog = render_skills_catalog(skills)
+
     return {
         "project_name": project_name,
         "project_purpose": purpose,
@@ -293,6 +407,9 @@ uv run -m unittest discover tests    # Run tests""".format(module=project_name.r
         "invariants": invariants,
         "sync_date": date.today().isoformat(),
         "local_content": load_local_content(project_root),
+        "skills_canon_path": config.paths.skills,
+        "skills_claude_path": config.paths.claude_skills,
+        "skills_catalog": skills_catalog,
     }
 
 
@@ -382,6 +499,19 @@ AGENTS.md
     copilotignore_path.write_text(ignore_content)
 
 
+def sync_claude_skills(project_root: Path, config: GzkitConfig) -> list[str]:
+    """Mirror canonical skills into Claude-local skills path.
+
+    Args:
+        project_root: Project root directory.
+        config: Project configuration.
+
+    Returns:
+        List of mirrored files written.
+    """
+    return sync_skill_mirror(project_root, config.paths.skills, config.paths.claude_skills)
+
+
 def sync_all(project_root: Path, config: GzkitConfig | None = None) -> list[str]:
     """Regenerate all control surfaces.
 
@@ -417,5 +547,8 @@ def sync_all(project_root: Path, config: GzkitConfig | None = None) -> list[str]
 
     sync_copilotignore(project_root)
     updated.append(".copilotignore")
+
+    mirrored = sync_claude_skills(project_root, config)
+    updated.extend(mirrored)
 
     return updated
