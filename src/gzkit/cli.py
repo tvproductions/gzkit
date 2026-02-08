@@ -1199,21 +1199,7 @@ def migrate_semver(dry_run: bool) -> None:
     )
 
 
-@main.command("register-adrs")
-@click.option(
-    "--lane",
-    type=click.Choice(["lite", "heavy"]),
-    help="Default lane to use when ADR metadata has no lane",
-)
-@click.option(
-    "--pool-only/--all",
-    "pool_only",
-    default=True,
-    show_default=True,
-    help="Register only pool ADRs by default",
-)
-@click.option("--dry-run", is_flag=True, help="Show registration actions without writing")
-def register_adrs(lane: str | None, pool_only: bool, dry_run: bool) -> None:
+def register_adrs(lane: str | None, pool_only: bool = True, dry_run: bool = False) -> None:
     """Register ADR files that exist in canon but are missing from ledger state."""
     config = ensure_initialized()
     project_root = get_project_root()
@@ -2042,6 +2028,37 @@ def _build_parser() -> argparse.ArgumentParser:
     p_migrate = commands.add_parser("migrate-semver", help="Record SemVer ID rename events")
     p_migrate.add_argument("--dry-run", action="store_true")
     p_migrate.set_defaults(func=lambda a: migrate_semver(dry_run=a.dry_run))
+
+    p_register_adrs = commands.add_parser(
+        "register-adrs",
+        help="Register ADR files that exist in canon but are missing from ledger state",
+    )
+    p_register_adrs.add_argument(
+        "--lane",
+        choices=["lite", "heavy"],
+        help="Default lane to use when ADR metadata has no lane",
+    )
+    p_register_adrs.add_argument(
+        "--pool-only",
+        dest="pool_only",
+        action="store_true",
+        default=True,
+        help="Register only pool ADRs (default)",
+    )
+    p_register_adrs.add_argument(
+        "--all",
+        dest="pool_only",
+        action="store_false",
+        help="Register all SemVer ADRs",
+    )
+    p_register_adrs.add_argument("--dry-run", action="store_true")
+    p_register_adrs.set_defaults(
+        func=lambda a: register_adrs(
+            lane=a.lane,
+            pool_only=a.pool_only,
+            dry_run=a.dry_run,
+        )
+    )
 
     p_implement = commands.add_parser("implement", help="Run Gate 2 and record result")
     p_implement.add_argument("--adr")
