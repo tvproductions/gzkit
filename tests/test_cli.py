@@ -281,6 +281,91 @@ class TestMigrateSemverCommand(unittest.TestCase):
             self.assertIn("ADR-0.6.0-pool.gz-chores-system", status_result.output)
             self.assertNotIn("ADR-0.2.1-pool.gz-chores-system", status_result.output)
 
+    def test_migrate_semver_renames_release_hardening_to_minor_sequence(self) -> None:
+        """migrate-semver rewrites 1.0.0 pool ADR into 0.x minor sequence."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(adr_created_event("ADR-1.0.0-pool.release-hardening", "", "lite"))
+
+            migrate_result = runner.invoke(main, ["migrate-semver"])
+            self.assertEqual(migrate_result.exit_code, 0)
+            self.assertIn(
+                "ADR-1.0.0-pool.release-hardening -> ADR-0.7.0-pool.release-hardening",
+                migrate_result.output,
+            )
+
+            status_result = runner.invoke(main, ["status"])
+            self.assertEqual(status_result.exit_code, 0)
+            self.assertIn("ADR-0.7.0-pool.release-hardening", status_result.output)
+            self.assertNotIn("ADR-1.0.0-pool.release-hardening", status_result.output)
+
+
+class TestRegisterAdrsCommand(unittest.TestCase):
+    """Tests for gz register-adrs command."""
+
+    def test_register_adrs_registers_missing_pool_adr(self) -> None:
+        """register-adrs appends adr_created for unregistered ADR files."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+
+            adr_dir = Path(config.paths.adrs) / "pool"
+            adr_dir.mkdir(parents=True, exist_ok=True)
+            adr_file = adr_dir / "ADR-0.3.0-pool.sample.md"
+            adr_file.write_text(
+                "---\n"
+                "id: ADR-0.3.0-pool.sample\n"
+                "parent: PRD-GZKIT-1.0.0\n"
+                "lane: heavy\n"
+                "---\n\n"
+                "# ADR-0.3.0: pool.sample\n"
+            )
+
+            dry_run = runner.invoke(main, ["register-adrs", "--dry-run"])
+            self.assertEqual(dry_run.exit_code, 0)
+            self.assertIn("Would append adr_created: ADR-0.3.0-pool.sample", dry_run.output)
+
+            result = runner.invoke(main, ["register-adrs"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("Registered ADR: ADR-0.3.0-pool.sample", result.output)
+
+            state_result = runner.invoke(main, ["state"])
+            self.assertEqual(state_result.exit_code, 0)
+            self.assertIn("ADR-0.3.0-pool.sample", state_result.output)
+
+            repeat = runner.invoke(main, ["register-adrs"])
+            self.assertEqual(repeat.exit_code, 0)
+            self.assertIn("No unregistered ADRs found.", repeat.output)
+
+    def test_register_adrs_uses_stem_for_short_header_and_skips_non_semver(self) -> None:
+        """register-adrs preserves suffixed IDs and ignores non-semver ADR files."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+
+            adr_dir = Path(config.paths.adrs) / "pool"
+            adr_dir.mkdir(parents=True, exist_ok=True)
+
+            suffixed = adr_dir / "ADR-0.4.0-pool.heavy-lane.md"
+            suffixed.write_text("# ADR-0.4.0: pool.heavy-lane\n")
+
+            closeout = Path(config.paths.adrs) / "ADR-CLOSEOUT-FORM.md"
+            closeout.write_text("# ADR Closeout Form\n")
+
+            result = runner.invoke(main, ["register-adrs"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("Registered ADR: ADR-0.4.0-pool.heavy-lane", result.output)
+            self.assertNotIn("ADR-CLOSEOUT-FORM", result.output)
+
+            state_result = runner.invoke(main, ["state"])
+            self.assertEqual(state_result.exit_code, 0)
+            self.assertIn("ADR-0.4.0-pool.heavy-lane", state_result.output)
+            self.assertNotIn("ADR-CLOSEOUT-FORM", state_result.output)
+
 
 class TestGitSyncCommand(unittest.TestCase):
     """Tests for git sync ritual commands."""

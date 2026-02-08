@@ -279,6 +279,37 @@ class TestParseArtifactMetadata(unittest.TestCase):
 
             self.assertEqual(result["parent"], "OBPI-core")
 
+    def test_parse_frontmatter_id_parent_and_lane(self) -> None:
+        """Uses frontmatter metadata when present."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            adr_path = Path(tmpdir) / "ADR-0.3.0-pool.sample.md"
+            adr_path.write_text(
+                "---\n"
+                "id: ADR-0.3.0-pool.sample\n"
+                "parent: PRD-GZKIT-1.0.0\n"
+                "lane: Heavy\n"
+                "---\n\n"
+                "# ADR-0.3.0: pool.sample\n"
+            )
+
+            result = parse_artifact_metadata(adr_path)
+
+            self.assertEqual(result["id"], "ADR-0.3.0-pool.sample")
+            self.assertEqual(result["parent"], "PRD-GZKIT-1.0.0")
+            self.assertEqual(result["lane"], "heavy")
+
+    def test_frontmatter_id_takes_precedence_over_short_header(self) -> None:
+        """Keeps full frontmatter ID even when header only has semver."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            adr_path = Path(tmpdir) / "ADR-0.4.0-pool.heavy-lane.md"
+            adr_path.write_text(
+                "---\nid: ADR-0.4.0-pool.heavy-lane\n---\n\n# ADR-0.4.0: pool.heavy-lane\n"
+            )
+
+            result = parse_artifact_metadata(adr_path)
+
+            self.assertEqual(result["id"], "ADR-0.4.0-pool.heavy-lane")
+
 
 class TestSyncControlSurfaces(unittest.TestCase):
     """Tests for full control-surface synchronization."""

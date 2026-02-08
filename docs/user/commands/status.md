@@ -57,7 +57,7 @@ For heavy lane:
 ```
 Lane: heavy
 
-ADR-1.0.0 (Pending)
+ADR-0.7.0 (Pending)
   Gate 1 (ADR):   PASS
   Gate 2 (TDD):   PASS
   Gate 3 (Docs):  PENDING

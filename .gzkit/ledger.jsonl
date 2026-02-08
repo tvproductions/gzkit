@@ -18,4 +18,9 @@
 {"schema":"gzkit.ledger.v1","event":"artifact_renamed","id":"ADR-0.2.1-pool.gz-chores-system","ts":"2026-02-07T19:28:12.823587+00:00","new_id":"ADR-0.6.0-pool.gz-chores-system","reason":"semver_minor_sequence_migration"}
 {"schema":"gzkit.ledger.v1","event":"artifact_renamed","id":"OBPI-0.2.1-01-chores-system-core","ts":"2026-02-07T19:28:12.825063+00:00","new_id":"OBPI-0.6.0-01-chores-system-core","reason":"semver_minor_sequence_migration"}
 {"schema":"gzkit.ledger.v1","event":"gate_checked","id":"ADR-0.6.0-pool.gz-chores-system","ts":"2026-02-07T20:05:45.437572+00:00","gate":2,"status":"pass","command":"uv run -m unittest discover tests","returncode":0,"evidence":"stdout/stderr captured"}
+{"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-0.3.0-pool.airlineops-canon-reconciliation","ts":"2026-02-07T20:16:00.420632+00:00","parent":"PRD-GZKIT-1.0.0","lane":"heavy"}
+{"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-0.4.0-pool.heavy-lane","ts":"2026-02-07T20:16:00.422316+00:00","lane":"lite"}
+{"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-0.5.0-pool.audit-system","ts":"2026-02-07T20:16:00.422744+00:00","lane":"lite"}
+{"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-1.0.0-pool.release-hardening","ts":"2026-02-07T20:16:00.423063+00:00","lane":"lite"}
+{"schema":"gzkit.ledger.v1","event":"artifact_renamed","id":"ADR-1.0.0-pool.release-hardening","ts":"2026-02-07T20:19:52.574590+00:00","new_id":"ADR-0.7.0-pool.release-hardening","reason":"semver_minor_sequence_migration"}
 {"schema":"gzkit.ledger.v1","event":"attested","id":"ADR-0.6.0-pool.gz-chores-system","ts":"2026-02-08T00:10:57.162163+00:00","status":"completed","by":"Jeffry Babb"}

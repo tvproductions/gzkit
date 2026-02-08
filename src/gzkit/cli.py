@@ -5,6 +5,7 @@ A Development Covenant for Human-AI Collaboration.
 
 import argparse
 import json
+import re
 import subprocess
 from datetime import date
 from pathlib import Path
@@ -93,7 +94,9 @@ SEMVER_ID_RENAMES: tuple[tuple[str, str], ...] = (
     ("ADR-0.4.0-pool.audit-system", "ADR-0.5.0-pool.audit-system"),
     ("ADR-0.2.1-pool.gz-chores-system", "ADR-0.6.0-pool.gz-chores-system"),
     ("OBPI-0.2.1-01-chores-system-core", "OBPI-0.6.0-01-chores-system-core"),
+    ("ADR-1.0.0-pool.release-hardening", "ADR-0.7.0-pool.release-hardening"),
 )
+ADR_SEMVER_ID_RE = re.compile(r"^ADR-\d+\.\d+\.\d+(?:[.-][A-Za-z0-9][A-Za-z0-9.-]*)?$")
 
 
 def get_project_root() -> Path:
@@ -1193,6 +1196,88 @@ def migrate_semver(dry_run: bool) -> None:
 
     console.print(
         f"\n[green]SemVer migration complete:[/green] {len(pending)} rename event(s) recorded."
+    )
+
+
+@main.command("register-adrs")
+@click.option(
+    "--lane",
+    type=click.Choice(["lite", "heavy"]),
+    help="Default lane to use when ADR metadata has no lane",
+)
+@click.option(
+    "--pool-only/--all",
+    "pool_only",
+    default=True,
+    show_default=True,
+    help="Register only pool ADRs by default",
+)
+@click.option("--dry-run", is_flag=True, help="Show registration actions without writing")
+def register_adrs(lane: str | None, pool_only: bool, dry_run: bool) -> None:
+    """Register ADR files that exist in canon but are missing from ledger state."""
+    config = ensure_initialized()
+    project_root = get_project_root()
+    ledger = Ledger(project_root / config.paths.ledger)
+
+    artifacts = scan_existing_artifacts(project_root, config.paths.design_root)
+    existing_graph = ledger.get_artifact_graph()
+    known_adrs = {
+        artifact_id for artifact_id, info in existing_graph.items() if info.get("type") == "adr"
+    }
+
+    default_lane = lane or config.mode
+    to_register: list[tuple[str, str, str]] = []
+    for adr_file in artifacts.get("adrs", []):
+        metadata = parse_artifact_metadata(adr_file)
+        stem_id = adr_file.stem
+        parsed_id = metadata.get("id", stem_id)
+        canonical_candidates = {
+            ledger.canonicalize_id(parsed_id),
+            ledger.canonicalize_id(stem_id),
+        }
+        if known_adrs.intersection(canonical_candidates):
+            continue
+
+        adr_id = parsed_id
+        if parsed_id != stem_id and stem_id.startswith(f"{parsed_id}-"):
+            # Keep descriptive suffixes when headers only declare ADR-x.y.z.
+            adr_id = stem_id
+
+        if not ADR_SEMVER_ID_RE.match(adr_id):
+            continue
+
+        if pool_only and "-pool." not in adr_id:
+            continue
+
+        parent = metadata.get("parent", "")
+        raw_lane = metadata.get("lane", default_lane).lower()
+        resolved_lane = raw_lane if raw_lane in {"lite", "heavy"} else default_lane
+        to_register.append((adr_id, parent, resolved_lane))
+
+    if not to_register:
+        console.print("No unregistered ADRs found.")
+        return
+
+    to_register.sort(key=lambda item: item[0])
+
+    if dry_run:
+        console.print("[yellow]Dry run:[/yellow] no ledger events will be written.")
+        for adr_id, parent, adr_lane in to_register:
+            parent_display = parent or "(none)"
+            console.print(
+                f"  Would append adr_created: {adr_id} (parent: {parent_display}, lane: {adr_lane})"
+            )
+        return
+
+    for adr_id, parent, adr_lane in to_register:
+        ledger.append(adr_created_event(adr_id, parent, adr_lane))
+        known_adrs.add(ledger.canonicalize_id(adr_id))
+        parent_display = parent or "(none)"
+        console.print(f"Registered ADR: {adr_id} (parent: {parent_display}, lane: {adr_lane})")
+
+    console.print(
+        f"\n[green]ADR registration complete:[/green] "
+        f"{len(to_register)} adr_created event(s) recorded."
     )
 
 

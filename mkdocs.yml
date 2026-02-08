@@ -61,6 +61,7 @@ nav:
     - gz git-sync: commands/git-sync.md
     - gz attest: commands/attest.md
     - gz migrate-semver: commands/migrate-semver.md
+    - gz register-adrs: commands/register-adrs.md
   - Reference:
     - Charter: reference/charter.md
     - Lineage: reference/lineage.md
