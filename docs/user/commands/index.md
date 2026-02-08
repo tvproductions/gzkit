@@ -22,6 +22,7 @@ Command reference pages are gzkit's manpages and are part of Gate 3 proof.
 | [`gz git-sync`](git-sync.md) | Sync branch with guarded lint/test/git ritual |
 | [`gz attest`](attest.md) | Record human attestation |
 | [`gz migrate-semver`](migrate-semver.md) | Record SemVer ID renames in the ledger |
+| [`gz register-adrs`](register-adrs.md) | Register existing ADR files missing from ledger |
 
 ---
 

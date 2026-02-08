@@ -1,4 +1,4 @@
-# ADR-1.0.0: pool.release-hardening
+# ADR-0.7.0: pool.release-hardening
 
 ## Status
 
