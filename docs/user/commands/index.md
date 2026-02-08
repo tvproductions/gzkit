@@ -42,8 +42,11 @@ Command reference pages are gzkit's manpages and are part of Gate 3 proof.
 | Command | Description |
 |---------|-------------|
 | `gz validate` | Validate governance artifacts |
-| `gz sync` | Regenerate control surfaces |
+| `gz agent sync control-surfaces` | Regenerate control surfaces |
 | `gz tidy` | Run maintenance checks |
+
+Compatibility aliases:
+`gz sync` and `gz agent-control-sync` map to `gz agent sync control-surfaces` and print deprecation guidance.
 
 ---
 

@@ -12,6 +12,7 @@ from gzkit.sync import (
     generate_manifest,
     parse_artifact_metadata,
     scan_existing_artifacts,
+    sync_all,
 )
 
 
@@ -277,6 +278,51 @@ class TestParseArtifactMetadata(unittest.TestCase):
             result = parse_artifact_metadata(adr_path)
 
             self.assertEqual(result["parent"], "OBPI-core")
+
+
+class TestSyncControlSurfaces(unittest.TestCase):
+    """Tests for full control-surface synchronization."""
+
+    def test_sync_includes_skills_in_generated_surfaces(self) -> None:
+        """Generated AGENTS/CLAUDE/Copilot files include the skill catalog."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            skill_dir = project_root / config.paths.skills / "demo-skill"
+            skill_dir.mkdir(parents=True, exist_ok=True)
+            (skill_dir / "SKILL.md").write_text(
+                "# SKILL.md\n\n## Demo Skill\n\nRun the demo command.\n"
+            )
+
+            sync_all(project_root, config)
+
+            agents = (project_root / config.paths.agents_md).read_text()
+            claude = (project_root / config.paths.claude_md).read_text()
+            copilot = (project_root / config.paths.copilot_instructions).read_text()
+
+            self.assertIn("`demo-skill`", agents)
+            self.assertIn(".github/skills/demo-skill/SKILL.md", agents)
+            self.assertIn("`demo-skill`", claude)
+            self.assertIn("`demo-skill`", copilot)
+
+    def test_sync_mirrors_skills_into_claude_directory(self) -> None:
+        """Canonical skills are mirrored into Claude's local skills path."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            skill_dir = project_root / config.paths.skills / "audit-skill"
+            skill_dir.mkdir(parents=True, exist_ok=True)
+            source_file = skill_dir / "SKILL.md"
+            source_file.write_text("# SKILL.md\n\n## Audit Skill\n\nAudit behavior.\n")
+
+            updated = sync_all(project_root, config)
+            mirrored_file = project_root / config.paths.claude_skills / "audit-skill" / "SKILL.md"
+
+            self.assertTrue(mirrored_file.exists())
+            self.assertEqual(mirrored_file.read_text(), source_file.read_text())
+            self.assertIn(".claude/skills/audit-skill/SKILL.md", updated)
 
 
 if __name__ == "__main__":

@@ -113,7 +113,6 @@ name = "gzkit"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
-    { name = "click" },
     { name = "rich" },
 ]
 
@@ -128,7 +127,6 @@ docs = [
 
 [package.metadata]
 requires-dist = [
-    { name = "click", specifier = ">=8.1" },
     { name = "mkdocs", marker = "extra == 'docs'", specifier = ">=1.6" },
     { name = "mkdocs-material", marker = "extra == 'docs'", specifier = ">=9.5" },
     { name = "rich", specifier = ">=13.0" },
