@@ -1,12 +1,15 @@
 ---
-id: ADR-0.3.0-pool.airlineops-canon-reconciliation
-status: Pool
+id: ADR-pool.airlineops-canon-reconciliation
+status: Superseded
 parent: PRD-GZKIT-1.0.0
 lane: Heavy
 enabler: ADR-0.0.1
+promoted_to: ADR-0.3.0
 ---
 
-# ADR-0.3.0: Airlineops Canon Reconciliation
+# ADR-pool.airlineops-canon-reconciliation: Airlineops Canon Reconciliation
+
+> Promoted to `ADR-0.3.0` on 2026-02-13. This pool file is retained as historical intake context.
 
 ## Problem Statement
 

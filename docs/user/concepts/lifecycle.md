@@ -53,10 +53,13 @@ Pool is the staging area for planned work. Pool entries are lightweight—just i
 **Pool entry naming:**
 
 ```
-ADR-{major}.{minor}.0-pool.{slug}.md
+ADR-pool.{slug}.md
 ```
 
-Example: `ADR-0.2.0-pool.gate-verification.md`
+Example: `ADR-pool.gate-verification.md`
+
+Legacy note: older pool entries may still use semver-labeled IDs such as
+`ADR-pool.gz-chores-system`. New pool entries should not use semver labels.
 
 **Pool location:**
 
@@ -91,7 +94,7 @@ Work items use SemVer-compliant identifiers:
 
 | Type | Purpose | Example |
 |------|---------|---------|
-| `pool.{slug}` | Planned ADR in pool | `0.2.0-pool.gate-verification` |
+| `pool.{slug}` | Planned ADR in pool | `ADR-pool.gate-verification` |
 | `obpi.{nn}` | OBPI in progress | `0.1.5-obpi.03` |
 | `ghi.{nn}` | GitHub issue discovered | `0.1.5-ghi.42` |
 
@@ -123,12 +126,12 @@ PRDs drive ADR creation:
 ```
 PRD-1.0.0
   ├── ADR-0.1.0 (Phase 1: MVP)
-  ├── ADR-0.2.0-pool.gates (Phase 2)
-  ├── ADR-0.3.0-pool.airlineops-canon-reconciliation (Phase 3)
-  ├── ADR-0.4.0-pool.heavy-lane (Phase 4)
-  ├── ADR-0.5.0-pool.audit-system (Phase 5)
-  ├── ADR-0.6.0-pool.gz-chores-system (Parity backlog)
-  └── ADR-0.7.0-pool.release-hardening (Phase 6)
+  ├── ADR-pool.gates (Phase 2)
+  ├── ADR-pool.airlineops-canon-reconciliation (Phase 3)
+  ├── ADR-pool.heavy-lane (Phase 4)
+  ├── ADR-pool.audit-system (Phase 5)
+  ├── ADR-pool.gz-chores-system (Parity backlog)
+  └── ADR-pool.release-hardening (Phase 6)
 ```
 
 The PRD defines the roadmap. Pool entries stage the work. ADRs execute it.
@@ -149,7 +152,7 @@ Gate 5 attestation determines final status:
 
 ## Example Lifecycle
 
-1. **Pool**: `ADR-0.2.0-pool.gate-verification` created
+1. **Pool**: `ADR-pool.gate-verification` created
 2. **Draft**: Prioritized, becomes `ADR-0.2.0-gate-verification`, folder created, OBPIs written
 3. **Proposed**: Author declares ready for review
 4. **Accepted**: Human approves, implementation begins

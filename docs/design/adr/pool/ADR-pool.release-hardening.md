@@ -1,4 +1,4 @@
-# ADR-0.7.0: pool.release-hardening
+# ADR-pool.release-hardening: Release Hardening
 
 ## Status
 
@@ -35,8 +35,8 @@ Harden gzkit for 1.0.0 release. All 11 commands functional, templates hardened, 
 
 ## Dependencies
 
-- **Blocks on**: ADR-0.5.0 (audit system)
-- **Blocked by**: ADR-0.5.0
+- **Blocks on**: ADR-pool.audit-system
+- **Blocked by**: ADR-pool.audit-system
 
 ---
 
