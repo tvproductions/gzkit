@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.6.0-01-chores-system-core
-parent: ADR-0.6.0-pool.gz-chores-system
+parent: ADR-pool.gz-chores-system
 item: 1
 lane: Heavy
 status: Draft
@@ -10,7 +10,7 @@ status: Draft
 
 ## ADR Item
 
-- **Source ADR:** `docs/design/adr/pool/ADR-0.6.0-pool.gz-chores-system.md`
+- **Source ADR:** `docs/design/adr/pool/ADR-pool.gz-chores-system.md`
 - **Checklist Item:** #1 -- "Stand up a minimal gz chores system (registry + list/plan/run/audit)."
 
 **Status:** Draft
@@ -53,7 +53,7 @@ commands, capture evidence, and write a per-chore log entry.
 **Governance (read once, cache):**
 
 - [ ] `AGENTS.md` / `CLAUDE.md` -- agent operating contract
-- [ ] Parent ADR: `docs/design/adr/pool/ADR-0.6.0-pool.gz-chores-system.md`
+- [ ] Parent ADR: `docs/design/adr/pool/ADR-pool.gz-chores-system.md`
 - [ ] Migration report: `docs/design/briefs/REPORT-airlineops-chores-migration.md`
 
 **Existing Code (understand current state):**

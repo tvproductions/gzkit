@@ -1,4 +1,4 @@
-# ADR-0.5.0: pool.audit-system
+# ADR-pool.audit-system: Audit System
 
 ## Status
 
@@ -33,8 +33,8 @@ Implement audit generation (`gz analyze`) that produces post-attestation audit a
 
 ## Dependencies
 
-- **Blocks on**: ADR-0.4.0 (Heavy lane and closeout ceremony)
-- **Blocked by**: ADR-0.4.0
+- **Blocks on**: ADR-pool.heavy-lane
+- **Blocked by**: ADR-pool.heavy-lane
 
 ---
 

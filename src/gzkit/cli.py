@@ -84,19 +84,39 @@ def _confirm(prompt: str, default: bool = True) -> bool:
 
 
 console = Console()
+GIT_SYNC_SKILL_PATH = ".github/skills/git-sync/SKILL.md"
 
 SEMVER_ID_RENAMES: tuple[tuple[str, str], ...] = (
+    # Historical OBPI relabeling migration.
+    ("OBPI-0.2.1-01-chores-system-core", "OBPI-0.6.0-01-chores-system-core"),
+    # Pool ADR migration: semver-labeled IDs -> non-semver ADR-pool.* IDs.
     (
         "ADR-0.2.0-pool.airlineops-canon-reconciliation",
-        "ADR-0.3.0-pool.airlineops-canon-reconciliation",
+        "ADR-pool.airlineops-canon-reconciliation",
     ),
-    ("ADR-0.3.0-pool.heavy-lane", "ADR-0.4.0-pool.heavy-lane"),
-    ("ADR-0.4.0-pool.audit-system", "ADR-0.5.0-pool.audit-system"),
-    ("ADR-0.2.1-pool.gz-chores-system", "ADR-0.6.0-pool.gz-chores-system"),
-    ("OBPI-0.2.1-01-chores-system-core", "OBPI-0.6.0-01-chores-system-core"),
-    ("ADR-1.0.0-pool.release-hardening", "ADR-0.7.0-pool.release-hardening"),
+    (
+        "ADR-0.3.0-pool.airlineops-canon-reconciliation",
+        "ADR-pool.airlineops-canon-reconciliation",
+    ),
+    ("ADR-0.3.0-pool.heavy-lane", "ADR-pool.heavy-lane"),
+    ("ADR-0.4.0-pool.heavy-lane", "ADR-pool.heavy-lane"),
+    ("ADR-0.4.0-pool.audit-system", "ADR-pool.audit-system"),
+    ("ADR-0.5.0-pool.audit-system", "ADR-pool.audit-system"),
+    ("ADR-0.2.1-pool.gz-chores-system", "ADR-pool.gz-chores-system"),
+    ("ADR-0.6.0-pool.gz-chores-system", "ADR-pool.gz-chores-system"),
+    ("ADR-1.0.0-pool.release-hardening", "ADR-pool.release-hardening"),
+    ("ADR-0.7.0-pool.release-hardening", "ADR-pool.release-hardening"),
 )
 ADR_SEMVER_ID_RE = re.compile(r"^ADR-\d+\.\d+\.\d+(?:[.-][A-Za-z0-9][A-Za-z0-9.-]*)?$")
+ADR_POOL_ID_RE = re.compile(r"^ADR-pool\.[A-Za-z0-9][A-Za-z0-9.-]*$")
+
+
+def _is_pool_adr_id(adr_id: str) -> bool:
+    """Return True when an ADR identifier represents a pool entry.
+
+    Supports both legacy semver-labeled pool IDs and current non-semver pool IDs.
+    """
+    return ADR_POOL_ID_RE.match(adr_id) is not None or "-pool." in adr_id
 
 
 def get_project_root() -> Path:
@@ -1020,8 +1040,13 @@ def git_sync(
     auto_add: bool,
     allow_push: bool,
     as_json: bool,
+    show_skill: bool = False,
 ) -> None:
     """Sync local branch with remote using a guarded git ritual."""
+    if show_skill:
+        print(GIT_SYNC_SKILL_PATH)
+        return
+
     _config = ensure_initialized()
     project_root = get_project_root()
 
@@ -1133,6 +1158,7 @@ def sync_repo(
     auto_add: bool,
     allow_push: bool,
     as_json: bool,
+    show_skill: bool = False,
 ) -> None:
     """Alias for git-sync (AirlineOps parity)."""
     git_sync(
@@ -1144,6 +1170,7 @@ def sync_repo(
         auto_add=auto_add,
         allow_push=allow_push,
         as_json=as_json,
+        show_skill=show_skill,
     )
 
 
@@ -1229,10 +1256,12 @@ def register_adrs(lane: str | None, pool_only: bool = True, dry_run: bool = Fals
             # Keep descriptive suffixes when headers only declare ADR-x.y.z.
             adr_id = stem_id
 
-        if not ADR_SEMVER_ID_RE.match(adr_id):
+        is_semver_adr = ADR_SEMVER_ID_RE.match(adr_id) is not None
+        is_pool_adr = _is_pool_adr_id(adr_id)
+        if not (is_semver_adr or is_pool_adr):
             continue
 
-        if pool_only and "-pool." not in adr_id:
+        if pool_only and not is_pool_adr:
             continue
 
         parent = metadata.get("parent", "")
@@ -1896,6 +1925,11 @@ def interview(document_type: str) -> None:
 
 def _add_git_sync_options(parser: argparse.ArgumentParser) -> None:
     """Register common git-sync CLI flags."""
+    parser.add_argument(
+        "--skill",
+        action="store_true",
+        help="Print path to paired skill file and exit",
+    )
     parser.add_argument("--branch", help="Branch to sync (default: current branch)")
     parser.add_argument("--remote", default="origin", help="Remote name")
     parser.add_argument(
@@ -2007,6 +2041,7 @@ def _build_parser() -> argparse.ArgumentParser:
             auto_add=a.auto_add,
             allow_push=a.allow_push,
             as_json=a.as_json,
+            show_skill=a.skill,
         )
     )
 
@@ -2022,6 +2057,7 @@ def _build_parser() -> argparse.ArgumentParser:
             auto_add=a.auto_add,
             allow_push=a.allow_push,
             as_json=a.as_json,
+            show_skill=a.skill,
         )
     )
 
@@ -2049,7 +2085,7 @@ def _build_parser() -> argparse.ArgumentParser:
         "--all",
         dest="pool_only",
         action="store_false",
-        help="Register all SemVer ADRs",
+        help="Register all ADRs (pool + non-pool)",
     )
     p_register_adrs.add_argument("--dry-run", action="store_true")
     p_register_adrs.set_defaults(

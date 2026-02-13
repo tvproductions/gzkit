@@ -1,6 +1,6 @@
 # gz migrate-semver
 
-Record SemVer artifact ID renames in the append-only ledger.
+Record artifact ID rename migrations in the append-only ledger.
 
 ---
 
@@ -22,7 +22,7 @@ gz migrate-semver [OPTIONS]
 
 ## What It Does
 
-1. Scans ledger history for known old artifact IDs.
+1. Scans ledger history for known old artifact IDs (including legacy SemVer pool IDs).
 2. Appends `artifact_renamed` events for matching IDs.
 3. Keeps ledger append-only (no rewrites).
 4. Makes `gz state` and `gz status` resolve renamed IDs to canonical IDs.
@@ -44,4 +44,4 @@ gz migrate-semver
 ## Notes
 
 - Safe to run repeatedly: existing rename events are skipped.
-- This is the supported path for SemVer ID migrations; do not edit `.gzkit/ledger.jsonl` manually.
+- This is the supported path for ID migrations (SemVer and pool ADR naming); do not edit `.gzkit/ledger.jsonl` manually.
