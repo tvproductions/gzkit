@@ -44,7 +44,7 @@
 - Evidence: skill directory listing diff (`15` canonical `gz-*` skills vs `2` governance `gz-*` skills in gzkit).
 - Proposed remediation: implement `ADR-0.3.0` Phase 2 gap audit and explicitly queue missing skills into OBPIs.
 - Target SemVer minor: `0.3.x`
-- ADR/OBPI linkage: `ADR-0.3.0-pool.airlineops-canon-reconciliation`
+- ADR/OBPI linkage: `ADR-pool.airlineops-canon-reconciliation`
 
 ### F-002
 
@@ -55,7 +55,7 @@
 - Evidence: canonical files exist in AirlineOps; gzkit coverage is distributed across multiple concept pages.
 - Proposed remediation: produce canonical mapping and delta table per document.
 - Target SemVer minor: `0.3.x`
-- ADR/OBPI linkage: `ADR-0.3.0-pool.airlineops-canon-reconciliation`
+- ADR/OBPI linkage: `ADR-pool.airlineops-canon-reconciliation`
 
 ---
 
@@ -74,11 +74,11 @@ Notes: Doctrine is now explicit in PRD invariants and runbook gate checklist.
 ## Next Actions
 
 1. Action: Create and run `0.3.0` OBPIs for canon extraction phases (template port, full gap audit, sync mechanism decision).
-   Parent ADR: `ADR-0.3.0-pool.airlineops-canon-reconciliation`
+   Parent ADR: `ADR-pool.airlineops-canon-reconciliation`
    OBPI: `OBPI-0.3.0-01..03` (to create)
    Owner: Human + Agent
 2. Action: Run this parity scan weekly and before any pool promotion.
-   Parent ADR: `ADR-0.3.0-pool.airlineops-canon-reconciliation`
+   Parent ADR: `ADR-pool.airlineops-canon-reconciliation`
    OBPI: parity-scan cadence item (to create under 0.3.0 or 0.6.0 governance chores)
    Owner: Human + Agent
 

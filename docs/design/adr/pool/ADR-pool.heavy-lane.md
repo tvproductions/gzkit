@@ -1,4 +1,4 @@
-# ADR-0.4.0: pool.heavy-lane
+# ADR-pool.heavy-lane: Heavy Lane
 
 ## Status
 
@@ -33,7 +33,7 @@ Implement Heavy lane enforcement with Gate 3 (Docs) and Gate 4 (BDD) verificatio
 
 ## Dependencies
 
-- **Blocks on**: ADR-0.3.0 (airlineops canon reconciliation)
+- **Blocks on**: ADR-0.3.0
 - **Blocked by**: ADR-0.3.0
 
 ---

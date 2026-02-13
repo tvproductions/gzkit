@@ -24,3 +24,17 @@
 {"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-1.0.0-pool.release-hardening","ts":"2026-02-07T20:16:00.423063+00:00","lane":"lite"}
 {"schema":"gzkit.ledger.v1","event":"artifact_renamed","id":"ADR-1.0.0-pool.release-hardening","ts":"2026-02-07T20:19:52.574590+00:00","new_id":"ADR-0.7.0-pool.release-hardening","reason":"semver_minor_sequence_migration"}
 {"schema":"gzkit.ledger.v1","event":"attested","id":"ADR-0.6.0-pool.gz-chores-system","ts":"2026-02-08T00:10:57.162163+00:00","status":"completed","by":"Jeffry Babb"}
+{"schema":"gzkit.ledger.v1","event":"artifact_renamed","id":"ADR-0.3.0-pool.airlineops-canon-reconciliation","ts":"2026-02-12T11:14:05.505206+00:00","new_id":"ADR-pool.airlineops-canon-reconciliation","reason":"semver_minor_sequence_migration"}
+{"schema":"gzkit.ledger.v1","event":"artifact_renamed","id":"ADR-0.4.0-pool.heavy-lane","ts":"2026-02-12T11:14:05.506384+00:00","new_id":"ADR-pool.heavy-lane","reason":"semver_minor_sequence_migration"}
+{"schema":"gzkit.ledger.v1","event":"artifact_renamed","id":"ADR-0.5.0-pool.audit-system","ts":"2026-02-12T11:14:05.506571+00:00","new_id":"ADR-pool.audit-system","reason":"semver_minor_sequence_migration"}
+{"schema":"gzkit.ledger.v1","event":"artifact_renamed","id":"ADR-0.2.1-pool.gz-chores-system","ts":"2026-02-12T11:14:05.506704+00:00","new_id":"ADR-pool.gz-chores-system","reason":"semver_minor_sequence_migration"}
+{"schema":"gzkit.ledger.v1","event":"artifact_renamed","id":"ADR-0.6.0-pool.gz-chores-system","ts":"2026-02-12T11:14:05.506829+00:00","new_id":"ADR-pool.gz-chores-system","reason":"semver_minor_sequence_migration"}
+{"schema":"gzkit.ledger.v1","event":"artifact_renamed","id":"ADR-1.0.0-pool.release-hardening","ts":"2026-02-12T11:14:05.506945+00:00","new_id":"ADR-pool.release-hardening","reason":"semver_minor_sequence_migration"}
+{"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-pool.go-runtime-parity","ts":"2026-02-13T01:54:06.616933+00:00","parent":"PRD-GZKIT-1.0.0","lane":"heavy"}
+{"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-0.3.0","ts":"2026-02-13T08:12:13.195046+00:00","parent":"PRD-GZKIT-1.0.0","lane":"heavy"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.3.0-01-skills-surface-parity","ts":"2026-02-13T08:12:57.074719+00:00","parent":"ADR-0.3.0"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.3.0-02-divergent-skill-reconciliation","ts":"2026-02-13T08:12:57.153540+00:00","parent":"ADR-0.3.0"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.3.0-03-govzero-canonical-doc-surface","ts":"2026-02-13T08:12:57.227700+00:00","parent":"ADR-0.3.0"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.3.0-04-core-semantics-reconciliation","ts":"2026-02-13T08:12:57.298495+00:00","parent":"ADR-0.3.0"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.3.0-05-parity-scan-path-hardening","ts":"2026-02-13T08:12:57.368349+00:00","parent":"ADR-0.3.0"}
+{"schema":"gzkit.ledger.v1","event":"gate_checked","id":"ADR-0.3.0","ts":"2026-02-13T09:50:05.835495+00:00","gate":2,"status":"pass","command":"uv run -m unittest discover tests","returncode":0,"evidence":"stdout/stderr captured"}

@@ -272,17 +272,17 @@ class TestMigrateSemverCommand(unittest.TestCase):
             migrate_result = runner.invoke(main, ["migrate-semver"])
             self.assertEqual(migrate_result.exit_code, 0)
             self.assertIn(
-                "ADR-0.2.1-pool.gz-chores-system -> ADR-0.6.0-pool.gz-chores-system",
+                "ADR-0.2.1-pool.gz-chores-system -> ADR-pool.gz-chores-system",
                 migrate_result.output,
             )
 
             status_result = runner.invoke(main, ["status"])
             self.assertEqual(status_result.exit_code, 0)
-            self.assertIn("ADR-0.6.0-pool.gz-chores-system", status_result.output)
+            self.assertIn("ADR-pool.gz-chores-system", status_result.output)
             self.assertNotIn("ADR-0.2.1-pool.gz-chores-system", status_result.output)
 
-    def test_migrate_semver_renames_release_hardening_to_minor_sequence(self) -> None:
-        """migrate-semver rewrites 1.0.0 pool ADR into 0.x minor sequence."""
+    def test_migrate_semver_renames_release_hardening_to_non_semver_pool_id(self) -> None:
+        """migrate-semver rewrites 1.0.0 pool ADR into ADR-pool.* ID."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             runner.invoke(main, ["init"])
@@ -292,14 +292,34 @@ class TestMigrateSemverCommand(unittest.TestCase):
             migrate_result = runner.invoke(main, ["migrate-semver"])
             self.assertEqual(migrate_result.exit_code, 0)
             self.assertIn(
-                "ADR-1.0.0-pool.release-hardening -> ADR-0.7.0-pool.release-hardening",
+                "ADR-1.0.0-pool.release-hardening -> ADR-pool.release-hardening",
                 migrate_result.output,
             )
 
             status_result = runner.invoke(main, ["status"])
             self.assertEqual(status_result.exit_code, 0)
-            self.assertIn("ADR-0.7.0-pool.release-hardening", status_result.output)
+            self.assertIn("ADR-pool.release-hardening", status_result.output)
             self.assertNotIn("ADR-1.0.0-pool.release-hardening", status_result.output)
+
+    def test_migrate_semver_renames_pool_semver_ids_to_non_semver_ids(self) -> None:
+        """migrate-semver migrates semver-labeled pool ADR IDs to ADR-pool.* IDs."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(adr_created_event("ADR-0.6.0-pool.gz-chores-system", "", "heavy"))
+
+            migrate_result = runner.invoke(main, ["migrate-semver"])
+            self.assertEqual(migrate_result.exit_code, 0)
+            self.assertIn(
+                "ADR-0.6.0-pool.gz-chores-system -> ADR-pool.gz-chores-system",
+                migrate_result.output,
+            )
+
+            status_result = runner.invoke(main, ["status"])
+            self.assertEqual(status_result.exit_code, 0)
+            self.assertIn("ADR-pool.gz-chores-system", status_result.output)
+            self.assertNotIn("ADR-0.6.0-pool.gz-chores-system", status_result.output)
 
 
 class TestRegisterAdrsCommand(unittest.TestCase):
@@ -340,8 +360,8 @@ class TestRegisterAdrsCommand(unittest.TestCase):
             self.assertEqual(repeat.exit_code, 0)
             self.assertIn("No unregistered ADRs found.", repeat.output)
 
-    def test_register_adrs_uses_stem_for_short_header_and_skips_non_semver(self) -> None:
-        """register-adrs preserves suffixed IDs and ignores non-semver ADR files."""
+    def test_register_adrs_keeps_suffixed_id_and_registers_non_semver_pool(self) -> None:
+        """register-adrs keeps suffixed IDs and accepts non-semver pool IDs."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             runner.invoke(main, ["init"])
@@ -353,22 +373,46 @@ class TestRegisterAdrsCommand(unittest.TestCase):
             suffixed = adr_dir / "ADR-0.4.0-pool.heavy-lane.md"
             suffixed.write_text("# ADR-0.4.0: pool.heavy-lane\n")
 
+            non_semver_pool = adr_dir / "ADR-pool.go-runtime-parity.md"
+            non_semver_pool.write_text(
+                "---\n"
+                "id: ADR-pool.go-runtime-parity\n"
+                "parent: PRD-GZKIT-1.0.0\n"
+                "lane: lite\n"
+                "---\n\n"
+                "# ADR: pool.go-runtime-parity\n"
+            )
+
             closeout = Path(config.paths.adrs) / "ADR-CLOSEOUT-FORM.md"
             closeout.write_text("# ADR Closeout Form\n")
 
             result = runner.invoke(main, ["register-adrs"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("Registered ADR: ADR-0.4.0-pool.heavy-lane", result.output)
+            self.assertIn("Registered ADR: ADR-pool.go-runtime-parity", result.output)
             self.assertNotIn("ADR-CLOSEOUT-FORM", result.output)
 
             state_result = runner.invoke(main, ["state"])
             self.assertEqual(state_result.exit_code, 0)
             self.assertIn("ADR-0.4.0-pool.heavy-lane", state_result.output)
+            self.assertIn("ADR-pool.go-runtime-parity", state_result.output)
             self.assertNotIn("ADR-CLOSEOUT-FORM", state_result.output)
 
 
 class TestGitSyncCommand(unittest.TestCase):
     """Tests for git sync ritual commands."""
+
+    def test_git_sync_skill_flag_prints_skill_path(self) -> None:
+        """git-sync --skill prints paired skill path without repo checks."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(main, ["git-sync", "--skill"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertEqual(result.output.strip(), ".github/skills/git-sync/SKILL.md")
+
+            alias_result = runner.invoke(main, ["sync-repo", "--skill"])
+            self.assertEqual(alias_result.exit_code, 0)
+            self.assertEqual(alias_result.output.strip(), ".github/skills/git-sync/SKILL.md")
 
     def test_git_sync_fails_outside_git_repo(self) -> None:
         """git-sync returns error when cwd is not a git repo."""

@@ -1,4 +1,4 @@
-# ADR-0.6.0: pool.gz-chores-system
+# ADR-pool.gz-chores-system: gz Chores System
 
 ## Status
 
