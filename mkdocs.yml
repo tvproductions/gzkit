@@ -2,7 +2,7 @@ site_name: gzkit
 site_url: https://gzkit.org
 site_description: "Keep humans in the loop when AI writes your code"
 site_author: Jeffry Babb
-docs_dir: docs/user
+docs_dir: docs
 
 repo_url: https://github.com/tvproductions/gzkit
 repo_name: tvproductions/gzkit
@@ -39,34 +39,84 @@ theme:
     code: JetBrains Mono
 
 nav:
-  - Home: index.md
-  - Quickstart: quickstart.md
-  - Runbook: runbook.md
-  - Why gzkit?: why.md
+  - Home: user/index.md
+  - Quickstart: user/quickstart.md
+  - Runbook: user/runbook.md
+  - Why gzkit?: user/why.md
   - Concepts:
-    - Gates: concepts/gates.md
-    - Lanes: concepts/lanes.md
-    - Lifecycle: concepts/lifecycle.md
-    - OBPIs: concepts/obpis.md
-    - Closeout Ceremony: concepts/closeout.md
-    - Daily Workflow: concepts/workflow.md
+    - Gates: user/concepts/gates.md
+    - Lanes: user/concepts/lanes.md
+    - Lifecycle: user/concepts/lifecycle.md
+    - OBPIs: user/concepts/obpis.md
+    - Closeout Ceremony: user/concepts/closeout.md
+    - Daily Workflow: user/concepts/workflow.md
   - Commands:
-    - Overview: commands/index.md
-    - gz init: commands/init.md
-    - gz prd: commands/prd.md
-    - gz specify: commands/specify.md
-    - gz plan: commands/plan.md
-    - gz status: commands/status.md
-    - gz state: commands/state.md
-    - gz git-sync: commands/git-sync.md
-    - gz attest: commands/attest.md
-    - gz migrate-semver: commands/migrate-semver.md
-    - gz register-adrs: commands/register-adrs.md
+    - Overview: user/commands/index.md
+    - gz init: user/commands/init.md
+    - gz prd: user/commands/prd.md
+    - gz constitute: user/commands/constitute.md
+    - gz specify: user/commands/specify.md
+    - gz plan: user/commands/plan.md
+    - gz implement: user/commands/implement.md
+    - gz gates: user/commands/gates.md
+    - gz status: user/commands/status.md
+    - gz state: user/commands/state.md
+    - gz adr status: user/commands/adr-status.md
+    - gz adr audit-check: user/commands/adr-audit-check.md
+    - gz adr emit-receipt: user/commands/adr-emit-receipt.md
+    - gz closeout: user/commands/closeout.md
+    - gz audit: user/commands/audit.md
+    - gz git-sync: user/commands/git-sync.md
+    - gz attest: user/commands/attest.md
+    - gz migrate-semver: user/commands/migrate-semver.md
+    - gz register-adrs: user/commands/register-adrs.md
+    - gz check-config-paths: user/commands/check-config-paths.md
+    - gz cli audit: user/commands/cli-audit.md
+  - Governance (Canonical):
+    - Charter: governance/GovZero/charter.md
+    - ADR Lifecycle: governance/GovZero/adr-lifecycle.md
+    - ADR/OBPI/GHI/Audit Linkage: governance/GovZero/adr-obpi-ghi-audit-linkage.md
+    - ADR Status: governance/GovZero/adr-status.md
+    - Audit Protocol: governance/GovZero/audit-protocol.md
+    - Gate 5 Architecture: governance/GovZero/gate5-architecture.md
+    - Architectural Enforcement: governance/GovZero/architectural-enforcement.md
+    - Gzkit Structure: governance/GovZero/gzkit-structure.md
+    - Layered Trust: governance/GovZero/layered-trust.md
+    - Ledger Schema: governance/GovZero/ledger-schema.md
+    - Session Handoff Obligations: governance/GovZero/session-handoff-obligations.md
+    - Session Handoff Schema: governance/GovZero/session-handoff-schema.md
+    - Handoff Chaining: governance/GovZero/handoff-chaining.md
+    - Handoff Validation: governance/GovZero/handoff-validation.md
+    - Staleness Classification: governance/GovZero/staleness-classification.md
+    - Validation Receipts: governance/GovZero/validation-receipts.md
+    - Releases:
+      - Overview: governance/GovZero/releases/README.md
+      - Major Release: governance/GovZero/releases/major-release.md
+      - Minor Release: governance/GovZero/releases/minor-release.md
+      - Patch Release: governance/GovZero/releases/patch-release.md
+    - Audits:
+      - Harmonization Brief: governance/GovZero/audits/AUDIT-BRIEF-governance-harmonization.md
+      - Harmonization Audit: governance/GovZero/audits/governance-harmonization-2026-01-11.md
   - Reference:
-    - Charter: reference/charter.md
-    - Lineage: reference/lineage.md
-    - Genesis: reference/genesis.md
-    - AirlineOps Exploration: reference/airlineops-exploration-verbatim.md
+    - Charter: user/reference/charter.md
+    - Lineage: user/reference/lineage.md
+    - Genesis: user/reference/genesis.md
+    - AirlineOps Exploration: user/reference/airlineops-exploration-verbatim.md
+
+exclude_docs: |
+  design/**
+  proposals/**
+  lodestar/**
+  developer/**
+
+validation:
+  nav:
+    omitted_files: info
+  links:
+    not_found: ignore
+    absolute_links: info
+    unrecognized_links: info
+    anchors: info
 
 markdown_extensions:
   - tables

@@ -39,7 +39,7 @@
 
 - Type: Missing
 - Canonical artifact: AirlineOps `gz-*` governance skills (OBPI sync/reconcile + ADR sync/verification suite)
-- gzkit artifact: only `gz-adr-manager`, `gz-adr-audit`, and generic lint/test/format
+- gzkit artifact: only `gz-adr-create`, `gz-adr-audit`, and generic lint/test/format
 - Why it matters: gzkit cannot yet enforce canon parity mechanics that exist in AirlineOps.
 - Evidence: skill directory listing diff (`15` canonical `gz-*` skills vs `2` governance `gz-*` skills in gzkit).
 - Proposed remediation: implement `ADR-0.3.0` Phase 2 gap audit and explicitly queue missing skills into OBPIs.

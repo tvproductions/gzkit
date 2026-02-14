@@ -16,13 +16,13 @@ Proposed
 
 ## Intent
 
-Implement audit generation (`gz analyze`) that produces post-attestation audit artifacts. Audits reconcile records after human attestation—they are not proof of completion.
+Implement audit generation (`gz audit`) that produces post-attestation audit artifacts. Audits reconcile records after human attestation—they are not proof of completion.
 
 ---
 
 ## Target Scope
 
-- `gz analyze` — generate audit artifact from ADR and gate evidence
+- `gz audit` — generate audit artifact from ADR and gate evidence
 - Audit includes attestation record, gate results, evidence links
 - `audit_generated` event appended to ledger
 - Audit templates

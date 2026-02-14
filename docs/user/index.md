@@ -1,57 +1,33 @@
 # gzkit
 
-**Keep humans in the loop when AI writes your code.**
+Keep humans in the loop when AI writes code.
 
 ---
 
-## The Problem
+## Operational Contract
 
-You're using Claude Code (or Copilot, or Cursor). Week one, you're the architect. Week four, you're approving PRs you didn't read.
+gzkit enforces a ledger-first GovZero workflow:
 
-gzkit prevents that drift.
+1. Record intent (`gz specify`, `gz plan`)
+2. Execute and verify (`gz gates`, tests/docs checks)
+3. Present closeout evidence (`gz closeout`)
+4. Record human attestation (`gz attest`)
+5. Reconcile post-attestation (`gz audit`)
+6. Record receipts/accounting (`gz adr emit-receipt`)
 
 ---
 
-## Install
+## Start Here
 
-```bash
-uv tool install gzkit
+- [Quickstart](quickstart.md)
+- [Runbook](runbook.md)
+- [Commands](commands/index.md)
+- [Canonical GovZero docs](../governance/GovZero/charter.md)
+
+---
+
+## Flow
+
+```text
+gz init -> gz specify -> gz plan -> implement/verify -> gz closeout -> gz attest -> gz audit -> gz adr emit-receipt
 ```
-
----
-
-## 30-Second Overview
-
-gzkit adds **gates** between you and shipped code:
-
-1. **Record intent** before implementation (`gz specify`, `gz plan`)
-2. **Track progress** across sessions (`gz status`, `gz state`)
-3. **Require attestation** before shipping (`gz attest`)
-
-The AI can't skip gates. Neither can you.
-
----
-
-## Next Steps
-
-- [**Quickstart**](quickstart.md) — Try it in 5 minutes
-- [**Runbook**](runbook.md) — Operational proof workflow
-- [**Why gzkit?**](why.md) — The problem in detail
-- [**Commands**](commands/index.md) — Full reference
-
----
-
-## How It Works
-
-```
-gz init → gz specify → gz plan → gz obpi → Claude → gz check → closeout → gz attest
- (setup)   (intent)     (ADR)    (items)   (code)   (quality)  (observe)   (human)
-```
-
-Every decision gets recorded. Work breaks into observable units (OBPIs). Nothing ships without you observing the evidence and explicitly attesting.
-
----
-
-<p style="text-align: center; color: #666; font-style: italic;">
-The human is index zero.
-</p>

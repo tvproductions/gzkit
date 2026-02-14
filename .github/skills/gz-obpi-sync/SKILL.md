@@ -151,7 +151,7 @@ ADR table synced with brief source files.
 | gz-obpi-audit | Layer 1 | Verify evidence, write ledger entries |
 | gz-adr-recon | Layer 2 | Proof-based ADR table sync from ledger |
 | gz-obpi-reconcile | Layer 2 | Orchestrate audit + sync workflow |
-| gz-adr-manager | — | Create/book ADRs |
+| gz-adr-create | — | Create/book ADRs |
 | gz-adr-sync | Layer 3 | Sync ADR index/status from ADR files |
 | gz-obpi-brief | — | Create OBPI briefs |
 | gz-adr-audit | Layer 2 | Gate 5 verification |

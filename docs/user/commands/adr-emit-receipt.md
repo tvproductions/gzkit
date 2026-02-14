@@ -1,0 +1,33 @@
+# gz adr emit-receipt
+
+Emit a receipt event (`completed` or `validated`) for an ADR.
+
+---
+
+## Usage
+
+```bash
+gz adr emit-receipt <ADR-ID> --event {completed,validated} --attestor <text> [--evidence-json <json>] [--dry-run]
+```
+
+---
+
+## Runtime Behavior
+
+- Validates receipt event choice.
+- Validates `--evidence-json` as a JSON object (when provided).
+- Appends `audit_receipt_emitted` to the ledger (unless `--dry-run`).
+
+Use evidence scope fields when recording OBPI-level completion under an ADR, for example:
+
+- `scope: "OBPI-..."`
+- `adr_completion: "not_completed"`
+- `obpi_completion: "attested_completed"`
+
+---
+
+## Example
+
+```bash
+uv run gz adr emit-receipt ADR-0.3.0 --event validated --attestor "Jeffry Babb" --evidence-json '{"scope":"OBPI-0.3.0-04","adr_completion":"not_completed","obpi_completion":"attested_completed"}'
+```

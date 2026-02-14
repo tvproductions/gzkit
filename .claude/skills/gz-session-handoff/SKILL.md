@@ -250,6 +250,6 @@ for h in handoffs:
 
 | Skill | Relationship |
 |-------|-------------|
-| `gz-adr-manager` | Creates ADR packages where handoffs are stored |
+| `gz-adr-create` | Creates ADR packages where handoffs are stored |
 | `gz-obpi-brief` | OBPI briefs that handoffs may reference |
 | `gz-adr-closeout-ceremony` | Closeout may reference handoff chain as evidence |

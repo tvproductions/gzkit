@@ -173,7 +173,7 @@ docs/design/adr/adr-X.Y.x/ADR-X.Y.Z-{slug}/
 
 Available as reusable procedures in `.github/skills/`:
 
-1. **gz-adr-manager** (`SKILL.md`)
+1. **gz-adr-create** (`SKILL.md`)
    - Create/update ADR documents
    - Structure ADR folder, initialize briefs, update registries
 

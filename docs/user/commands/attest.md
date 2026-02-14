@@ -7,103 +7,62 @@ Record human attestation for an ADR.
 ## Usage
 
 ```bash
-gz attest <ADR> --status <STATUS> [OPTIONS]
+gz attest <ADR> --status {completed,partial,dropped} [--reason <text>] [--force] [--dry-run]
 ```
 
 ---
 
-## Arguments
+## Runtime Behavior
 
-| Argument | Required | Description |
-|----------|----------|-------------|
-| `ADR` | Yes | ADR identifier (e.g., `ADR-0.1.0`) |
+`gz attest` enforces prerequisite gates before writing an attestation event.
 
----
+- Lite lane: Gate 2 must be `pass`.
+- Heavy lane: Gate 2 and Gate 3 must be `pass`.
+- Heavy lane Gate 4: must be `pass` when `features/` exists; otherwise Gate 4 is treated as N/A with explicit rationale.
 
-## Options
+If prerequisites fail, the command exits non-zero.
 
-| Option | Type | Required | Description |
-|--------|------|----------|-------------|
-| `--status` | `completed` \| `partial` \| `dropped` | Yes | Attestation status |
-| `--reason` | string | If partial/dropped | Reason for status |
-| `--force` | flag | No | Skip prerequisite gate checks |
-| `--dry-run` | flag | No | Show actions without writing |
+`--force` bypasses failed prerequisites, but `--reason` is mandatory when bypassing.
 
 ---
 
-## Attestation Status
+## Canonical Term Mapping
 
-| Status | Meaning |
-|--------|---------|
-| `completed` | Work finished; all claims verified |
-| `partial` | Subset accepted; remainder deferred |
-| `dropped` | Work rejected; rationale provided |
+Input status tokens stay stable for CLI compatibility, but outputs map to canonical terms:
 
----
+| Input token | Canonical term |
+|-------------|----------------|
+| `completed` | `Completed` |
+| `partial` | `Completed — Partial` |
+| `dropped` | `Dropped` |
 
-## What It Does
-
-1. Verifies the ADR exists
-2. Checks prerequisite gates (unless `--force`)
-3. Records attestation in the ledger with:
-   - ADR ID
-   - Status
-   - Attester (from git config)
-   - Timestamp
-   - Reason (if provided)
+`partial` and `dropped` always require `--reason`.
 
 ---
 
-## Example
+## Examples
 
 ```bash
-# Complete attestation
-gz attest ADR-0.1.0 --status completed
+# Standard completion
+gz attest ADR-0.3.0 --status completed
 
-# Partial attestation
-gz attest ADR-0.1.0 --status partial --reason "Auth flow done, password reset deferred"
+# Partial completion with rationale
+gz attest ADR-0.3.0 --status partial --reason "Scope reduced to runtime parity"
 
-# Drop an ADR
-gz attest ADR-0.1.0 --status dropped --reason "Requirements changed, approach obsolete"
+# Dropped with rationale
+gz attest ADR-0.3.0 --status dropped --reason "Superseded by newer ADR"
 
-# Force attestation (skip gate checks)
-gz attest ADR-0.1.0 --status completed --force
+# Force bypass with explicit accountability rationale
+gz attest ADR-0.3.0 --status completed --force --reason "Emergency override after manual verification"
 
-# Dry run
-gz attest ADR-0.1.0 --status completed --dry-run
+# Preview only
+gz attest ADR-0.3.0 --status completed --dry-run
 ```
 
 ---
 
-## Output
+## Notes
 
-```
-Checking prerequisite gates...
-
-Attestation recorded:
-  ADR: ADR-0.1.0
-  Status: completed
-  By: Your Name
-  Date: 2024-01-15
-```
-
----
-
-## Important
-
-- This is **Gate 5**: the human verification gate
-- It cannot be automated or skipped (without `--force`)
-- The attester is recorded from `git config user.name`
-- Partial and dropped statuses require `--reason`
-
----
-
-## Why Manual?
-
-Attestation is intentionally manual because:
-
-1. It proves a human reviewed the work
-2. It creates an audit trail
-3. It prevents rubber-stamping
-
-If you find yourself wanting to automate this, you're missing the point.
+- Attestation writes an `attested` ledger event.
+- `gz status` and `gz adr status` display canonical lifecycle/term overlays derived from ledger events.
+- Human attestation remains explicit and manual.

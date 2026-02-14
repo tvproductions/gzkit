@@ -1,6 +1,7 @@
 """Tests for gzkit CLI integration."""
 
 import io
+import json
 import os
 import subprocess
 import tempfile
@@ -9,9 +10,15 @@ from contextlib import contextmanager, redirect_stderr, redirect_stdout
 from dataclasses import dataclass
 from pathlib import Path
 
-from gzkit.cli import main, resolve_adr_file
+from gzkit.cli import COMMAND_DOCS, main, resolve_adr_file
 from gzkit.config import GzkitConfig
-from gzkit.ledger import Ledger, adr_created_event, gate_checked_event
+from gzkit.ledger import (
+    Ledger,
+    adr_created_event,
+    attested_event,
+    audit_receipt_emitted_event,
+    gate_checked_event,
+)
 
 
 @dataclass
@@ -183,12 +190,86 @@ class TestDryRunCommands(unittest.TestCase):
         with runner.isolated_filesystem():
             runner.invoke(main, ["init"])
             runner.invoke(main, ["plan", "0.1.0"])
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
             result = runner.invoke(
                 main, ["attest", "ADR-0.1.0", "--status", "completed", "--dry-run"]
             )
             self.assertEqual(result.exit_code, 0)
             ledger_content = Path(".gzkit/ledger.jsonl").read_text()
             self.assertNotIn("attested", ledger_content)
+
+
+class TestAttestSemantics(unittest.TestCase):
+    """Tests for strict attestation prerequisites and canonical term mapping."""
+
+    def test_attest_lite_requires_gate2(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            result = runner.invoke(main, ["attest", "ADR-0.1.0", "--status", "completed"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("Gate 2 must pass", result.output)
+
+    def test_attest_heavy_requires_gate3(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init", "--mode", "heavy"])
+            runner.invoke(main, ["plan", "0.1.0", "--lane", "heavy"])
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
+
+            result = runner.invoke(main, ["attest", "ADR-0.1.0", "--status", "completed"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("Gate 3 must pass", result.output)
+
+    def test_attest_heavy_allows_gate4_na_when_features_missing(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init", "--mode", "heavy"])
+            runner.invoke(main, ["plan", "0.1.0", "--lane", "heavy"])
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
+            ledger.append(gate_checked_event("ADR-0.1.0", 3, "pass", "docs", 0))
+
+            result = runner.invoke(main, ["attest", "ADR-0.1.0", "--status", "completed"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("Term: Completed", result.output)
+
+    def test_attest_force_bypass_requires_reason(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            result = runner.invoke(
+                main,
+                ["attest", "ADR-0.1.0", "--status", "completed", "--force"],
+            )
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("--reason required", result.output)
+
+    def test_attest_force_with_reason_records_event(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            result = runner.invoke(
+                main,
+                [
+                    "attest",
+                    "ADR-0.1.0",
+                    "--status",
+                    "completed",
+                    "--force",
+                    "--reason",
+                    "manual override for reconciliation",
+                ],
+            )
+            self.assertEqual(result.exit_code, 0)
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text()
+            self.assertIn("attested", ledger_content)
+            self.assertIn("manual override for reconciliation", ledger_content)
 
 
 class TestGateCommands(unittest.TestCase):
@@ -518,6 +599,30 @@ Rules here
             # May have some validation issues but should not crash
             self.assertIn("validation", result.output.lower())
 
+    def test_validate_ledger_flag_fails_on_invalid_ledger(self) -> None:
+        """--ledger performs strict ledger JSONL validation."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            with open(".gzkit/ledger.jsonl", "a") as ledger_file:
+                ledger_file.write("{not-json}\n")
+
+            result = runner.invoke(main, ["validate", "--ledger"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("Invalid JSON", result.output)
+
+    def test_validate_all_includes_ledger_checks(self) -> None:
+        """Default validate mode includes ledger validation."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            with open(".gzkit/ledger.jsonl", "a") as ledger_file:
+                ledger_file.write("{not-json}\n")
+
+            result = runner.invoke(main, ["validate"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("Invalid JSON", result.output)
+
 
 class TestSyncCommand(unittest.TestCase):
     """Tests for control-surface sync commands."""
@@ -580,6 +685,8 @@ class TestSkillCommands(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             # Should show core skills from init
             self.assertIn("lint", result.output)
+            self.assertIn("gz-adr-create", result.output)
+            self.assertNotIn("gz-adr-manager", result.output)
 
     def test_skill_new(self) -> None:
         """skill new creates skill."""
@@ -589,6 +696,457 @@ class TestSkillCommands(unittest.TestCase):
             result = runner.invoke(main, ["skill", "new", "my-skill"])
             self.assertEqual(result.exit_code, 0)
             self.assertTrue(Path(".github/skills/my-skill/SKILL.md").exists())
+
+    def test_init_scaffolds_adr_create_and_removes_adr_manager(self) -> None:
+        """core skill scaffolding uses gz-adr-create hard cutover."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            self.assertTrue(Path(".github/skills/gz-adr-create/SKILL.md").exists())
+            self.assertFalse(Path(".github/skills/gz-adr-manager").exists())
+
+
+class TestNewCommandParsers(unittest.TestCase):
+    """Parser-level tests for new command surfaces."""
+
+    def test_new_commands_help(self) -> None:
+        """All new command surfaces parse and return help."""
+        runner = CliRunner()
+        commands = [
+            ["closeout", "--help"],
+            ["audit", "--help"],
+            ["adr", "--help"],
+            ["adr", "status", "--help"],
+            ["adr", "audit-check", "--help"],
+            ["adr", "emit-receipt", "--help"],
+            ["check-config-paths", "--help"],
+            ["cli", "--help"],
+            ["cli", "audit", "--help"],
+        ]
+        for args in commands:
+            result = runner.invoke(main, args)
+            self.assertEqual(result.exit_code, 0, msg=f"help failed for: {args}")
+
+
+class TestAdrRuntimeCommands(unittest.TestCase):
+    """Behavioral tests for closeout/audit-check/emit-receipt runtime surfaces."""
+
+    @staticmethod
+    def _write_obpi(path: Path, status: str, brief_status: str, implementation_line: str) -> None:
+        path.write_text(
+            "\n".join(
+                [
+                    "---",
+                    "id: OBPI-0.1.0-01-demo",
+                    "parent: ADR-0.1.0",
+                    "item: 1",
+                    "lane: Lite",
+                    f"status: {status}",
+                    "---",
+                    "",
+                    "# OBPI-0.1.0-01-demo: Demo",
+                    "",
+                    f"**Brief Status:** {brief_status}",
+                    "",
+                    "## Evidence",
+                    "",
+                    "### Implementation Summary",
+                    f"- Files created/modified: {implementation_line}",
+                    "- Validation commands run: uv run -m unittest discover tests",
+                    "- Date completed: 2026-02-14",
+                    "",
+                ]
+            )
+            + "\n"
+        )
+
+    @staticmethod
+    def _set_manifest_verification_noop() -> None:
+        manifest_path = Path(".gzkit/manifest.json")
+        manifest = json.loads(manifest_path.read_text())
+        manifest["verification"] = {
+            "test": "python -c \"print('ok')\"",
+            "lint": "python -c \"print('ok')\"",
+            "typecheck": "python -c \"print('ok')\"",
+            "docs": "python -c \"print('ok')\"",
+            "bdd": "python -c \"print('ok')\"",
+        }
+        manifest_path.write_text(json.dumps(manifest, indent=2))
+
+    def test_closeout_missing_adr_fails(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            result = runner.invoke(main, ["closeout", "ADR-9.9.9"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("ADR not found", result.output)
+
+    def test_closeout_records_event(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            result = runner.invoke(main, ["closeout", "ADR-0.1.0"])
+            self.assertEqual(result.exit_code, 0)
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text()
+            self.assertIn("closeout_initiated", ledger_content)
+
+    def test_closeout_dry_run_writes_nothing(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            result = runner.invoke(main, ["closeout", "ADR-0.1.0", "--dry-run"])
+            self.assertEqual(result.exit_code, 0)
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text()
+            self.assertNotIn("closeout_initiated", ledger_content)
+
+    def test_closeout_includes_canonical_attestation_choices(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            result = runner.invoke(main, ["closeout", "ADR-0.1.0", "--dry-run"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("Completed — Partial: [reason]", result.output)
+            self.assertIn("Dropped — [reason]", result.output)
+
+    def test_closeout_heavy_shows_gate4_na_when_features_missing(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init", "--mode", "heavy"])
+            runner.invoke(main, ["plan", "0.1.0", "--lane", "heavy"])
+            result = runner.invoke(main, ["closeout", "ADR-0.1.0", "--dry-run"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("Gate 4 (BDD): N/A", result.output)
+
+    def test_closeout_heavy_includes_bdd_command_when_features_exist(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init", "--mode", "heavy"])
+            runner.invoke(main, ["plan", "0.1.0", "--lane", "heavy"])
+            Path("features").mkdir(exist_ok=True)
+            result = runner.invoke(main, ["closeout", "ADR-0.1.0", "--dry-run"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("Gate 4 (BDD):", result.output)
+            self.assertIn("uv run -m behave features/", result.output)
+
+    def test_audit_pre_attestation_fails(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            result = runner.invoke(main, ["audit", "ADR-0.1.0"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("Audit blocked", result.output)
+
+    def test_audit_after_attestation_writes_artifacts(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            self._set_manifest_verification_noop()
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
+            attestation = runner.invoke(main, ["attest", "ADR-0.1.0", "--status", "completed"])
+            self.assertEqual(attestation.exit_code, 0)
+
+            result = runner.invoke(main, ["audit", "ADR-0.1.0"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertTrue(Path("design/adr/audit/AUDIT.md").exists())
+            self.assertTrue(Path("design/adr/audit/AUDIT_PLAN.md").exists())
+            self.assertTrue(Path("design/adr/audit/proofs/test.txt").exists())
+
+    def test_audit_dry_run_after_attestation_writes_nothing(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            self._set_manifest_verification_noop()
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
+            attestation = runner.invoke(main, ["attest", "ADR-0.1.0", "--status", "completed"])
+            self.assertEqual(attestation.exit_code, 0)
+
+            result = runner.invoke(main, ["audit", "ADR-0.1.0", "--dry-run"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertFalse(Path("design/adr/audit").exists())
+
+    def test_adr_audit_check_passes_for_completed_obpi_with_evidence(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.obpis) / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            self._write_obpi(
+                path=obpi_path,
+                status="Completed",
+                brief_status="Completed",
+                implementation_line="src/module.py",
+            )
+            result = runner.invoke(main, ["adr", "audit-check", "ADR-0.1.0"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("PASS", result.output)
+
+    def test_adr_audit_check_fails_for_incomplete_obpi(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.obpis) / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            self._write_obpi(
+                path=obpi_path,
+                status="Draft",
+                brief_status="Draft",
+                implementation_line="",
+            )
+            result = runner.invoke(main, ["adr", "audit-check", "ADR-0.1.0"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("FAIL", result.output)
+
+    def test_adr_emit_receipt_records_event(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            result = runner.invoke(
+                main,
+                [
+                    "adr",
+                    "emit-receipt",
+                    "ADR-0.1.0",
+                    "--event",
+                    "validated",
+                    "--attestor",
+                    "human:jeff",
+                    "--evidence-json",
+                    '{"gate":5}',
+                ],
+            )
+            self.assertEqual(result.exit_code, 0)
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text()
+            self.assertIn("audit_receipt_emitted", ledger_content)
+
+    def test_adr_emit_receipt_invalid_json_fails(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            result = runner.invoke(
+                main,
+                [
+                    "adr",
+                    "emit-receipt",
+                    "ADR-0.1.0",
+                    "--event",
+                    "completed",
+                    "--attestor",
+                    "human:jeff",
+                    "--evidence-json",
+                    "{bad json}",
+                ],
+            )
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("Invalid --evidence-json", result.output)
+
+    def test_adr_emit_receipt_dry_run_writes_nothing(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            result = runner.invoke(
+                main,
+                [
+                    "adr",
+                    "emit-receipt",
+                    "ADR-0.1.0",
+                    "--event",
+                    "completed",
+                    "--attestor",
+                    "human:jeff",
+                    "--dry-run",
+                ],
+            )
+            self.assertEqual(result.exit_code, 0)
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text()
+            self.assertNotIn("audit_receipt_emitted", ledger_content)
+
+
+class TestLifecycleStatusSemantics(unittest.TestCase):
+    """Tests for derived lifecycle semantics on status/state surfaces."""
+
+    def test_adr_status_json_completed(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(attested_event("ADR-0.1.0", "completed", "human"))
+
+            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0", "--json"])
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            self.assertEqual(payload["lifecycle_status"], "Completed")
+            self.assertEqual(payload["closeout_phase"], "attested")
+            self.assertEqual(payload["attestation_term"], "Completed")
+
+    def test_adr_status_json_validated(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(attested_event("ADR-0.1.0", "completed", "human"))
+            ledger.append(audit_receipt_emitted_event("ADR-0.1.0", "validated", "human"))
+
+            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0", "--json"])
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            self.assertEqual(payload["lifecycle_status"], "Validated")
+            self.assertEqual(payload["closeout_phase"], "validated")
+            self.assertTrue(payload["validated"])
+
+    def test_adr_status_json_abandoned(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(attested_event("ADR-0.1.0", "dropped", "human", "out of scope"))
+
+            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0", "--json"])
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            self.assertEqual(payload["lifecycle_status"], "Abandoned")
+            self.assertEqual(payload["attestation_term"], "Dropped")
+
+    def test_obpi_scoped_validated_receipt_does_not_set_validated_lifecycle(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(
+                audit_receipt_emitted_event(
+                    "ADR-0.1.0",
+                    "validated",
+                    "human",
+                    evidence={
+                        "scope": "OBPI-0.1.0-01",
+                        "adr_completion": "not_completed",
+                        "obpi_completion": "attested_completed",
+                    },
+                )
+            )
+
+            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0", "--json"])
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            self.assertEqual(payload["lifecycle_status"], "Pending")
+            self.assertEqual(payload["closeout_phase"], "pre_closeout")
+            self.assertFalse(payload["validated"])
+
+    def test_status_json_includes_lifecycle_fields(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(attested_event("ADR-0.1.0", "partial", "human", "staged rollout"))
+
+            result = runner.invoke(main, ["status", "--json"])
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            adr_payload = payload["adrs"]["ADR-0.1.0"]
+            self.assertEqual(adr_payload["lifecycle_status"], "Completed")
+            self.assertEqual(adr_payload["attestation_term"], "Completed — Partial")
+
+    def test_state_ready_json_only_includes_gate_ready_unattested_adrs(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "0.2.0"])
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
+
+            result = runner.invoke(main, ["state", "--ready", "--json"])
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            self.assertIn("ADR-0.1.0", payload)
+            self.assertNotIn("ADR-0.2.0", payload)
+
+
+class TestConfigAndCliAuditCommands(unittest.TestCase):
+    """Tests for check-config-paths and cli audit commands."""
+
+    @staticmethod
+    def _prepare_docs_surface() -> None:
+        index_path = Path("docs/user/commands/index.md")
+        index_path.parent.mkdir(parents=True, exist_ok=True)
+        links: list[str] = []
+        for command_name, doc_rel in COMMAND_DOCS.items():
+            doc_path = Path(doc_rel)
+            doc_path.parent.mkdir(parents=True, exist_ok=True)
+            doc_path.write_text(f"# gz {command_name}\n\nStub\n")
+            links.append(f"- {doc_path.name}")
+        index_path.write_text("# Commands Index\n\n" + "\n".join(links) + "\n")
+
+    def test_check_config_paths_passes_for_valid_layout(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            Path("src").mkdir(exist_ok=True)
+            Path("tests").mkdir(exist_ok=True)
+            Path("docs").mkdir(exist_ok=True)
+            result = runner.invoke(main, ["check-config-paths"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("passed", result.output.lower())
+
+    def test_check_config_paths_detects_missing_path(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            Path("src").mkdir(exist_ok=True)
+            Path("tests").mkdir(exist_ok=True)
+            Path("docs").mkdir(exist_ok=True)
+            # Break a required path.
+            skill_dir = Path(".github/skills")
+            if skill_dir.exists():
+                for path in sorted(skill_dir.glob("**/*"), reverse=True):
+                    if path.is_file():
+                        path.unlink()
+                    elif path.is_dir():
+                        path.rmdir()
+                skill_dir.rmdir()
+            result = runner.invoke(main, ["check-config-paths"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("failed", result.output.lower())
+
+    def test_cli_audit_passes_with_synchronized_docs(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            self._prepare_docs_surface()
+            result = runner.invoke(main, ["cli", "audit"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("passed", result.output.lower())
+
+    def test_cli_audit_detects_mismatch(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            self._prepare_docs_surface()
+            # Corrupt one heading to trigger mismatch.
+            doc_rel = COMMAND_DOCS["closeout"]
+            Path(doc_rel).write_text("# wrong heading\n")
+            result = runner.invoke(main, ["cli", "audit"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("failed", result.output.lower())
 
 
 if __name__ == "__main__":

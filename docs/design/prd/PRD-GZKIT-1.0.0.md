@@ -107,11 +107,11 @@ gzkit is the extracted governance methodology from AirlineOps, intended as a sta
 - `gz constitute` — create/validate constitution artifacts
 - `gz specify <brief>` — create brief from template
 - `gz plan <adr>` — create ADR via mandatory Q&A interview, scaffold ADR folder structure
-- `gz obpi <adr>` — generate OBPI briefs from ADR checklist (One Brief Per Item)
+- `gz specify <brief> --parent <adr> --item <n>` — create one OBPI brief per ADR checklist item (One Brief Per Item)
 - `gz implement` — verify gates (tests, docs, BDD)
 - `gz closeout <adr>` — execute closeout ceremony protocol (agent becomes passive presenter)
 - `gz attest` — record human attestation after direct observation
-- `gz analyze` — generate audit artifacts (post-attestation)
+- `gz audit` — generate audit artifacts (post-attestation)
 
 **OBPI Discipline (One Brief Per Item):**
 
@@ -119,7 +119,7 @@ gzkit is the extracted governance methodology from AirlineOps, intended as a sta
 - Sequential, zero-gap numbering: `OBPI-0.1.0-01`, `OBPI-0.1.0-02`, etc.
 - Pre-release identifiers: `0.1.0-obpi.03` (SemVer compliant)
 - OBPIs are planned work; GHIs (GitHub Issues) are emergent work discovered during execution
-- `gz obpi` generates compliant briefs from ADR checklist
+- `gz specify --parent ADR-... --item <n>` creates compliant OBPI briefs from ADR checklist items
 
 **Mandatory Q&A Interview:**
 
@@ -224,7 +224,7 @@ gz plan ADR-0.1.0 --brief add-user-auth   # Day 1: design decision
 gz status                             # Day N: check progress
 gz gates                              # Day N: verify compliance
 gz attest                             # Day N: human closeout
-gz analyze                            # Day N: generate audit
+gz audit ADR-0.1.0                    # Day N: generate audit
 ```
 
 **Outcome**: Complete traceability from intent to attestation.
@@ -300,12 +300,12 @@ gz analyze                            # Day N: generate audit
 - Fail if referenced brief does not exist
 - Refuse to create ADR without completing interview
 
-### FR-005a: OBPI Generation
+### FR-005a: OBPI Brief Creation
 
-`gz obpi <adr-id>` SHALL:
+`gz specify <brief-name> --parent <adr-id> --item <n>` SHALL:
 
 - Parse ADR checklist items from ADR document
-- Generate one OBPI brief per checklist item (One Brief Per Item discipline)
+- Generate one OBPI brief for the selected checklist item (One Brief Per Item discipline)
 - Use sequential, zero-gap numbering: `OBPI-X.Y.Z-01`, `OBPI-X.Y.Z-02`, etc.
 - Place briefs in `docs/design/adr/adr-X.Y.x/ADR-X.Y.Z-{slug}/briefs/`
 - Populate OBPI template with:
@@ -314,7 +314,7 @@ gz analyze                            # Day N: generate audit
   - Lane (inherited from ADR)
   - Gate evidence placeholders
 - Append `obpi_created` events to ledger for each OBPI
-- Support `--item <n>` to generate specific OBPI only
+- Require `--item <n>` for checklist mapping
 - Fail if ADR has no checklist items
 
 ### FR-005b: Closeout Ceremony
@@ -332,7 +332,7 @@ gz analyze                            # Day N: generate audit
 - Wait for explicit human attestation term
 - Record attestation in ADR-CLOSEOUT-FORM.md
 - Append `closeout_initiated` event to ledger
-- NOT run audit (audit is post-attestation via `gz analyze`)
+- NOT run audit (audit is post-attestation via `gz audit`)
 
 ### FR-006: Gate Verification
 
@@ -385,7 +385,7 @@ gz analyze                            # Day N: generate audit
 
 ### FR-010: Audit Generation
 
-`gz analyze` SHALL:
+`gz audit` SHALL:
 
 - Generate audit artifact from ADR and gate evidence
 - Include attestation record
@@ -416,7 +416,7 @@ The ledger system SHALL:
 | `adr_created` | `id`, `parent`, `blocks`, `ts` | `gz plan` |
 | `gate_checked` | `adr`, `gate`, `status`, `evidence`, `ts` | `gz implement`, `gz gates` |
 | `attested` | `adr`, `term`, `by`, `ts` | `gz attest` |
-| `audit_generated` | `adr`, `path`, `ts` | `gz analyze` |
+| `audit_generated` | `adr`, `path`, `ts` | `gz audit` |
 | `artifact_edited` | `path`, `session`, `ts` | Claude hook (PostToolUse) |
 
 ### FR-012: Claude Hooks Integration
@@ -557,7 +557,7 @@ PreToolUse hooks MAY:
 
 ### AC-004a: OBPI Generation
 
-- [ ] `gz obpi ADR-0.1.0` parses checklist items from ADR
+- [ ] `gz specify setup-db --parent ADR-0.1.0 --item 1` parses checklist item mapping from ADR
 - [ ] One OBPI brief created per checklist item
 - [ ] OBPIs numbered sequentially: `OBPI-0.1.0-01`, `OBPI-0.1.0-02`, etc.
 - [ ] OBPIs placed in `docs/design/adr/adr-0.1.x/ADR-0.1.0-{slug}/briefs/`
@@ -596,7 +596,7 @@ PreToolUse hooks MAY:
 
 ### AC-008: Audit Generation
 
-- [ ] `gz analyze` generates audit artifact
+- [ ] `gz audit ADR-0.1.0` generates audit artifact
 - [ ] Audit includes attestation record
 - [ ] Audit includes gate evidence links
 
@@ -641,7 +641,7 @@ PreToolUse hooks MAY:
 
 | Metric | Target |
 |--------|--------|
-| Commands functional | 11/11 (init, prd, constitute, specify, plan, implement, gates, state, status, attest, analyze) |
+| Commands functional | 11/11 (init, prd, constitute, specify, plan, implement, gates, state, status, attest, audit) |
 | Ledger operational | All commands append events |
 | Hooks operational | PostToolUse fires on governance artifact edits |
 | Test coverage | ≥40% |
@@ -687,7 +687,7 @@ Target: Graduate course demo
 
 ### Phase 5: Audit (0.5.0)
 
-- `gz analyze` with audit generation
+- `gz audit` with audit generation
 - Audit templates
 - Evidence aggregation from ledger
 - `audit_generated` events
