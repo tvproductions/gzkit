@@ -21,7 +21,7 @@ The objective is to restore governance extraction fidelity from AirlineOps witho
 Execute reconciliation in five controlled work packages, each mapped 1:1 to an OBPI:
 
 1. Port missing canonical `gz-*` skill surfaces.
-2. Reconcile divergent shared skills (`gz-adr-audit`, `gz-adr-manager`) to canonical behavior.
+2. Reconcile divergent shared skills (`gz-adr-audit`, `gz-adr-create`) to canonical behavior.
 3. Introduce canonical `docs/governance/GovZero/` documentation surface and import missing files.
 4. Reconcile charter/lifecycle/linkage/closeout semantics so gzkit concept docs are additive overlays.
 5. Harden parity scan path resolution for worktree and non-worktree execution contexts.
@@ -57,11 +57,11 @@ Scope constraints:
 ## Evidence
 
 - [x] Parity scan baseline and post-OBPI-0.3.0-01 update: `docs/proposals/REPORT-airlineops-parity-2026-02-13.md`
-- [ ] OBPI implementation evidence captured in each brief (OBPI-0.3.0-01 completed, OBPI-0.3.0-02..05 pending)
+- [ ] OBPI implementation evidence captured in each brief (OBPI-0.3.0-01..03 completed; OBPI-0.3.0-04..05 pending)
 - [x] `gz status` shows Gate 2 pass for ADR-0.3.0
 - [ ] Human attestation recorded after heavy-lane gates are satisfied
 
-Current note: OBPI-0.3.0-01 is completed; next critical path is OBPI-0.3.0-02 (shared skill divergence reconciliation).
+Current note: OBPI-0.3.0-01..03 are completed; next critical path is OBPI-0.3.0-04/05 for semantic reconciliation and parity-scan hardening.
 
 ## Attestation Block
 

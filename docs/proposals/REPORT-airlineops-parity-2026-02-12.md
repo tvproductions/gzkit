@@ -14,7 +14,7 @@
 - Overall parity status: Partial (high drift risk)
 - Critical gaps:
   - P1 Missing: 14 of 16 canonical `gz-*` skills are absent in gzkit.
-  - P1 Divergent: the 2 shared `gz-*` skills (`gz-adr-audit`, `gz-adr-manager`) are reduced stubs versus canon.
+  - P1 Divergent: the 2 shared `gz-*` skills (`gz-adr-audit`, `gz-adr-create`) are reduced stubs versus canon.
   - P1 Missing: 11 of 12 canonical `docs/governance/GovZero/*.md` files are not present as canonical files in gzkit.
 - Recommended next minor(s): 0.3.x (canon reconciliation execution), with low-priority spillover into 0.4.x only if 0.3.x capacity is exhausted.
 
@@ -26,7 +26,7 @@
 |---|---|---|---|---|
 | `/Users/jeff/Documents/Code/airlineops/.github/skills/gz-*` (16 dirs) | `.github/skills/gz-*` (2 dirs) | Partial | P1 | `find .../airlineops/.github/skills -name 'gz-*'` vs `find .github/skills -name 'gz-*'` |
 | `.../skills/gz-adr-audit/SKILL.md` | `.github/skills/gz-adr-audit/SKILL.md` | Divergent | P1 | `diff -u` shows canonical 272 lines vs gzkit 41 lines with missing Layer-2 trust/audit procedure |
-| `.../skills/gz-adr-manager/SKILL.md` | `.github/skills/gz-adr-manager/SKILL.md` | Divergent | P1 | `diff -u` shows canonical 229 lines vs gzkit 41 lines with missing lifecycle/compliance rules |
+| `.../skills/gz-adr-create/SKILL.md` | `.github/skills/gz-adr-create/SKILL.md` | Divergent | P1 | `diff -u` shows canonical 229 lines vs gzkit 41 lines with missing lifecycle/compliance rules |
 | `/Users/jeff/Documents/Code/airlineops/docs/governance/GovZero/*.md` (12 files) | `docs/user/*`, `docs/design/*`, `docs/lodestar/*` | Missing | P1 | Exact-name match check returns only `charter.md`; 11 canonical files absent as canonical docs |
 | `.../GovZero/charter.md` | `docs/user/reference/charter.md` | Divergent | P2 | Both exist, but semantics and structure differ materially |
 | `.../GovZero/adr-lifecycle.md` + `.../adr-obpi-ghi-audit-linkage.md` + `.../audit-protocol.md` | `docs/user/concepts/lifecycle.md`, `docs/user/concepts/obpis.md`, `docs/user/concepts/closeout.md` | Partial | P2 | Concepts exist, but canonical naming/constraints and closeout semantics are not 1:1 |
@@ -50,8 +50,8 @@
 ### F-002
 
 - Type: Divergent
-- Canonical artifact: `.../gz-adr-audit/SKILL.md`, `.../gz-adr-manager/SKILL.md`
-- gzkit artifact: `.github/skills/gz-adr-audit/SKILL.md`, `.github/skills/gz-adr-manager/SKILL.md`
+- Canonical artifact: `.../gz-adr-audit/SKILL.md`, `.../gz-adr-create/SKILL.md`
+- gzkit artifact: `.github/skills/gz-adr-audit/SKILL.md`, `.github/skills/gz-adr-create/SKILL.md`
 - Why it matters: Shared skill names mask major behavior loss, producing false confidence in parity.
 - Evidence: Line-level `diff -u` shows canonical full governance procedure replaced by placeholder-style steps.
 - Proposed remediation: Restore canonical structure (frontmatter metadata, governance constraints, step procedures, and assets references) or explicitly declare intentional divergence via ADR.
@@ -119,7 +119,7 @@ Notes: Proof surfaces exist in gzkit, but canonical GovZero source docs are not 
    Parent ADR: `docs/design/adr/pool/ADR-pool.airlineops-canon-reconciliation.md`
    OBPI: Create initial 0.3.x OBPI set on promotion
    Owner: Human
-2. Action: Port missing canonical `gz-*` skills and reconcile `gz-adr-audit`/`gz-adr-manager` to canonical behavior.
+2. Action: Port missing canonical `gz-*` skills and reconcile `gz-adr-audit`/`gz-adr-create` to canonical behavior.
    Parent ADR: `docs/design/adr/pool/ADR-pool.airlineops-canon-reconciliation.md`
    OBPI: Proposed `skills-parity` OBPI group (Phase 2 checklist)
    Owner: Human + Agent

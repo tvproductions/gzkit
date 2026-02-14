@@ -116,7 +116,7 @@ uv run -m unittest discover tests
     - Canonical count 16 vs local `.github/skills` count 16
     - Missing canonical skill directories after import: none
     - Imported 14 skill directories diff-clean vs AirlineOps commit `1ad9637da`
-    - No overwrite of existing `gz-adr-audit`/`gz-adr-manager` (SHA unchanged)
+    - No overwrite of existing `gz-adr-audit`/`gz-adr-create` (SHA unchanged)
 - Date completed: 2026-02-13
 
 ---

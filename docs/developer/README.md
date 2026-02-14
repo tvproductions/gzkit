@@ -7,3 +7,4 @@ Internal documentation for gzkit development and operations.
 ## Contents
 
 - [deployment.md](deployment.md) — VPS setup, Caddy config, deploy process
+- [release_process.md](release_process.md) — Release checklist (SemVer + tags + GitHub release)

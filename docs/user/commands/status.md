@@ -1,100 +1,42 @@
 # gz status
 
-Display gate status for current work.
+Display gate and lifecycle status across ADRs.
 
 ---
 
 ## Usage
 
 ```bash
-gz status [OPTIONS]
+gz status [--json]
 ```
 
 ---
 
-## Options
+## Runtime Behavior
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `--json` | flag | Output as JSON |
+`gz status` derives ADR lifecycle from ledger events and keeps gate output additive/backward-compatible.
+
+Per ADR it reports:
+
+- Gate summaries (`1..5` where lane-applicable)
+- Canonical lifecycle (`Pending`, `Completed`, `Validated`, `Abandoned`)
+- Canonical attestation term when attested
+- Heavy-lane Gate 4 N/A rationale when `features/` is absent
+
+`Validated` applies to ADR-level validation receipts. OBPI-scoped receipts marked with
+`adr_completion: not_completed` do not mark the parent ADR as validated.
 
 ---
 
-## What It Does
+## JSON Output
 
-Shows the current state of all ADRs and their gate progress:
-
-- Which gates have passed
-- Which gates are pending
-- Overall lane (lite or heavy)
+`--json` includes the existing top-level shape plus enriched per-ADR data (`gates`, `lane`, `lifecycle_status`, `attestation_term`, `closeout_phase`, and related additive fields).
 
 ---
 
 ## Example
 
 ```bash
-gz status
+uv run gz status
+uv run gz status --json
 ```
-
----
-
-## Output
-
-```
-Lane: lite
-
-ADR-0.1.0 (Pending)
-  Gate 1 (ADR):   PASS
-  Gate 2 (TDD):   PENDING
-
-ADR-0.2.0 (Completed)
-  Gate 1 (ADR):   PASS
-  Gate 2 (TDD):   PASS
-```
-
-For heavy lane:
-
-```
-Lane: heavy
-
-ADR-0.7.0 (Pending)
-  Gate 1 (ADR):   PASS
-  Gate 2 (TDD):   PASS
-  Gate 3 (Docs):  PENDING
-  Gate 4 (BDD):   PENDING
-  Gate 5 (Human): PENDING
-```
-
----
-
-## JSON Output
-
-```bash
-gz status --json
-```
-
-```json
-{
-  "mode": "lite",
-  "adrs": {
-    "ADR-0.1.0": {
-      "type": "adr",
-      "parent": "BRIEF-add-login",
-      "attested": false
-    }
-  },
-  "pending_attestations": ["ADR-0.1.0"]
-}
-```
-
----
-
-## Gates
-
-| Gate | Name | What It Checks | Lane |
-|------|------|----------------|------|
-| 1 | ADR | ADR document exists | All |
-| 2 | TDD | Tests exist and pass | All |
-| 3 | Docs | Documentation updated | Heavy |
-| 4 | BDD | Acceptance tests pass | Heavy |
-| 5 | Human | Explicit attestation recorded | Heavy |

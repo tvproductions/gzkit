@@ -1,8 +1,8 @@
 # Commands
 
-All commands use the `gz` prefix.
+All command surfaces use `gz [subcommand] [*] [*]`.
 
-Command reference pages are gzkit's manpages and are part of Gate 3 proof.
+Command reference pages are operator manpages and part of Gate 3 proof.
 
 ---
 
@@ -10,54 +10,54 @@ Command reference pages are gzkit's manpages and are part of Gate 3 proof.
 
 | Command | Description |
 |---------|-------------|
-| [`gz init`](init.md) | Initialize gzkit in your project |
+| [`gz init`](init.md) | Initialize gzkit in a repository |
 | [`gz prd`](prd.md) | Create a Product Requirements Document |
-| [`gz constitute`](constitute.md) | Create a constitution |
-| [`gz specify`](specify.md) | Create an implementation brief |
-| [`gz plan`](plan.md) | Create an Architecture Decision Record |
-| [`gz implement`](implement.md) | Run Gate 2 (tests) and record results |
-| [`gz gates`](gates.md) | Run applicable gates for the current lane |
-| [`gz status`](status.md) | Show gate status for current work |
-| [`gz state`](state.md) | Query ledger and artifact relationships |
-| [`gz git-sync`](git-sync.md) | Sync branch with guarded lint/test/git ritual |
-| [`gz attest`](attest.md) | Record human attestation |
-| [`gz migrate-semver`](migrate-semver.md) | Record SemVer ID renames in the ledger |
-| [`gz register-adrs`](register-adrs.md) | Register existing ADR files missing from ledger |
+| [`gz constitute`](constitute.md) | Create a constitution artifact |
+| [`gz specify`](specify.md) | Create an implementation brief (including OBPIs) |
+| [`gz plan`](plan.md) | Create an ADR |
+| [`gz implement`](implement.md) | Run Gate 2 and record results |
+| [`gz gates`](gates.md) | Run lane-required gates |
+| [`gz status`](status.md) | Show multi-ADR gate and lifecycle status |
+| [`gz state`](state.md) | Show artifact graph and readiness filters |
+| [`gz adr status`](adr-status.md) | Show focused status for one ADR |
+| [`gz adr audit-check`](adr-audit-check.md) | Verify OBPI completeness/evidence for one ADR |
+| [`gz closeout`](closeout.md) | Present closeout paths/commands and record closeout initiation |
+| [`gz attest`](attest.md) | Record human attestation with prerequisite enforcement |
+| [`gz audit`](audit.md) | Run strict post-attestation audit reconciliation |
+| [`gz adr emit-receipt`](adr-emit-receipt.md) | Emit completed/validated receipt with optional evidence scope |
+| [`gz git-sync`](git-sync.md) | Run guarded sync ritual |
+| [`gz migrate-semver`](migrate-semver.md) | Record SemVer ID rename events |
+| [`gz register-adrs`](register-adrs.md) | Register existing ADR files into ledger |
 
 ---
 
-## Quality
+## Validation And Maintenance
 
 | Command | Description |
 |---------|-------------|
-| `gz check` | Run all quality checks |
-| `gz lint` | Run linting |
+| `gz check` | Run quality checks |
+| `gz lint` | Run lint checks |
 | `gz format` | Auto-format code |
-| `gz test` | Run tests |
-| `gz typecheck` | Run type checking |
-
----
-
-## Maintenance
-
-| Command | Description |
-|---------|-------------|
+| `gz test` | Run unit tests |
+| `gz typecheck` | Run type checks |
 | `gz validate` | Validate governance artifacts |
+| [`gz check-config-paths`](check-config-paths.md) | Validate configured + manifest path coherence |
+| [`gz cli audit`](cli-audit.md) | Validate CLI docs/manpage coverage |
 | `gz agent sync control-surfaces` | Regenerate control surfaces |
-| `gz tidy` | Run maintenance checks |
-
-Compatibility aliases:
-`gz sync` and `gz agent-control-sync` map to `gz agent sync control-surfaces` and print deprecation guidance.
+| `gz tidy` | Run maintenance checks and cleanup |
 
 ---
 
-## Utilities
+## Operator Sequence
 
-| Command | Description |
-|---------|-------------|
-| `gz interview <type>` | Guided document creation |
-| `gz skill new <name>` | Create a new skill |
-| `gz skill list` | List available skills |
+Canonical execution order for heavy-lane closeout:
+
+1. Orientation and scope checks (`gz status`, `gz adr audit-check`)
+2. Tool use and verification commands
+3. Closeout presentation (`gz closeout`)
+4. Human attestation (`gz attest`)
+5. Post-attestation audit (`gz audit`)
+6. Receipt/accounting (`gz adr emit-receipt`)
 
 ---
 
@@ -65,7 +65,5 @@ Compatibility aliases:
 
 All commands support:
 
-| Option | Description |
-|--------|-------------|
-| `--help` | Show command help |
-| `--version` | Show gzkit version |
+- `--help`
+- `--version`

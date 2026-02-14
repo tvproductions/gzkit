@@ -1,6 +1,6 @@
 [project]
 name = "gzkit"
-version = "0.1.0"
+version = "0.3.1"
 description = "GovZero Kit: A Development Covenant for Human-AI Collaboration"
 readme = "README.md"
 license = "MIT"

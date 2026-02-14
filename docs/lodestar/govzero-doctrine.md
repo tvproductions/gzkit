@@ -31,6 +31,33 @@ AirlineOps lives at `../airlineops/` relative to gzkit (sibling directory under 
 | `../airlineops/.github/skills/gz-*` | GovZero agent skills (OBPI, ADR, sync, audit) |
 | `../airlineops/docs/governance/GovZero/*` | Governance documentation |
 
+### Operational Identity Equation
+
+For extraction and parity work, use this operational identity:
+
+`GovZero = AirlineOps - (AirlineOps product capabilities)`
+
+Implication:
+
+- If it is a process habit, structure, rule, ritual, or attestation norm in AirlineOps, treat it as GovZero.
+- Parity scans MUST evaluate these habits across all relevant execution surfaces, not only governance docs or skill files.
+- gzkit exists to facilitate and enforce these GovZero structures, rules, and habits.
+
+### GovZero Mining Scope
+
+GovZero extraction from AirlineOps is a mining task across process-control surfaces, not a single-folder copy.
+
+Minimum canonical mining scope:
+
+- `AGENTS.md`, `CLAUDE.md`
+- `.github/**`
+- `.claude/**`
+- `.codex/**`
+- `.gzkit/**`
+- `docs/governance/GovZero/**`
+
+If a process norm appears in those surfaces and is not a product capability, it is GovZero parity scope for gzkit.
+
 ### Divergence Rule
 
 For any governance concept present in AirlineOps, gzkit MUST:

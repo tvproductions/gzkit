@@ -1,18 +1,10 @@
 # Quickstart
 
-Add a feature to your project with gzkit governance in 5 minutes.
+Run one governed ADR cycle with canonical closeout semantics.
 
 ---
 
-## Prerequisites
-
-- Python 3.13+
-- [uv](https://docs.astral.sh/uv/)
-- A project with git initialized
-
----
-
-## 1. Install and Initialize
+## 1. Initialize
 
 ```bash
 uv tool install gzkit
@@ -20,162 +12,73 @@ cd your-project
 gz init
 ```
 
-This creates:
-
-- `.gzkit/` — Ledger and state
-- `.gzkit.json` — Configuration
-- `CLAUDE.md` — Agent constraints (auto-generated)
-- `design/` — Governance documents
-
 ---
 
-## 2. Record Your Intent
-
-Create a brief describing what you want to build:
+## 2. Create Intent Artifacts
 
 ```bash
-gz specify add-login --parent PRD-1.0.0 --title "Add login button"
+gz prd GZKIT-1.0.0
+gz plan 0.1.0 --title "Example governed increment"
 ```
 
-Edit `design/briefs/BRIEF-add-login.md` to describe:
-
-- What you want
-- Acceptance criteria
-- What's out of scope
+Create OBPIs for ADR checklist items as needed.
 
 ---
 
-## 3. Create an ADR
-
-Before implementation, record your technical decision:
+## 3. Implement And Verify
 
 ```bash
-gz plan login-impl --brief BRIEF-add-login --title "Login implementation"
+uv run gz gates --adr ADR-0.1.0
 ```
 
-Edit `design/adr/ADR-0.1.0.md` to capture:
-
-- Problem statement
-- Decision
-- Checklist of items to implement
-
----
-
-## 4. Create OBPIs (for multi-item ADRs)
-
-If your ADR has multiple checklist items, create an OBPI for each:
+For heavy lane also run docs checks:
 
 ```bash
-gz obpi ADR-0.1.0 --item 1 --title "Create login form component"
-gz obpi ADR-0.1.0 --item 2 --title "Add authentication API"
-gz obpi ADR-0.1.0 --item 3 --title "Write login tests"
+uv run mkdocs build --strict
+uv run gz lint
 ```
-
-Each OBPI is one atomic piece of work.
 
 ---
 
-## 5. Implement with Claude
-
-Tell Claude what to work on:
-
-```
-Implement OBPI-0.1.0-01 (login form) following ADR-0.1.0
-```
-
-Claude has access to:
-
-- Your intent (the brief)
-- Your decision (the ADR)
-- Your constraints (CLAUDE.md)
-- The specific scope (the OBPI)
-
----
-
-## 6. Check Progress
+## 4. Closeout Presentation
 
 ```bash
-gz status
+uv run gz closeout ADR-0.1.0
 ```
 
-Output (for heavy lane work):
-
-```
-Lane: heavy
-
-ADR-0.1.0 (Pending)
-  Gate 1 (ADR):   PASS
-  Gate 2 (TDD):   PENDING
-  Gate 3 (Docs):  PENDING
-  Gate 4 (BDD):   PENDING
-  Gate 5 (Human): PENDING
-```
-
-For lite lane (internal work), only Gates 1 and 2 apply—no closeout ceremony needed.
+Run the presented commands and observe results directly.
 
 ---
 
-## 7. Run Quality Checks
+## 5. Human Attestation
 
 ```bash
-gz check
+uv run gz attest ADR-0.1.0 --status completed
 ```
-
-Runs lint, format, typecheck, and tests. Gate 2 requires tests to pass.
 
 ---
 
-## 8. Closeout Ceremony
-
-When all OBPIs are complete, trigger the closeout:
-
-```
-Begin closeout for ADR-0.1.0
-```
-
-The agent presents commands for you to run. **You observe directly**—don't trust summaries.
-
----
-
-## 9. Attest and Ship
-
-After observing that all gates pass:
+## 6. Post-Attestation Audit
 
 ```bash
-gz attest ADR-0.1.0 --status completed
+uv run gz audit ADR-0.1.0
 ```
-
-This records your explicit sign-off. The ADR is now closed.
 
 ---
 
-## What Just Happened?
+## 7. Receipt Accounting
 
-1. **Intent recorded** — Brief captured what you wanted
-2. **Decision captured** — ADR documented the approach
-3. **Work atomized** — OBPIs broke it into observable units
-4. **Constraints enforced** — Claude worked within boundaries
-5. **Gates verified** — Quality checks passed
-6. **Human attested** — You observed and signed off
+```bash
+uv run gz adr emit-receipt ADR-0.1.0 --event validated --attestor "<Human Name>" --evidence-json '{"scope":"OBPI-0.1.0-01","adr_completion":"not_completed","obpi_completion":"attested_completed"}'
+```
 
-The ledger (`gz state`) shows the full history.
+Use OBPI-scoped evidence when recording OBPI completion without claiming ADR completion.
 
 ---
 
-## The Flow
+## Next
 
-```
-gz init → gz specify → gz plan → gz obpi → Claude → gz check → closeout → gz attest
-```
-
-Every decision recorded. Every change verified. Nothing ships without you.
-
----
-
-## Next Steps
-
-- [Why gzkit?](why.md) — The philosophy
-- [OBPIs](concepts/obpis.md) — Atomic work units
-- [Closeout](concepts/closeout.md) — The attestation ceremony
-- [Workflow](concepts/workflow.md) — Daily habits
-- [Commands](commands/index.md) — Full reference
+- [Runbook](runbook.md)
+- [Lifecycle](concepts/lifecycle.md)
+- [Closeout](concepts/closeout.md)
+- [Command reference](commands/index.md)
