@@ -1,171 +1,66 @@
 # Lifecycle
 
-ADRs move through defined states. Understanding the lifecycle prevents confusion about what's ready for work, what's in progress, and what's done.
+ADRs are tracked from ledger events first, with docs as narrative overlay.
+
+Canonical GovZero source: [`docs/governance/GovZero/adr-lifecycle.md`](../../governance/GovZero/adr-lifecycle.md).
 
 ---
 
-## States
+## Canonical Lifecycle Outcomes
 
-| State | Meaning |
-|-------|---------|
-| **Pool** | Planned intent, awaiting prioritization |
-| **Draft** | Being authored, not ready for review |
-| **Proposed** | Submitted for review |
-| **Accepted** | Approved, implementation may begin |
-| **Completed** | Implementation finished, Gate 5 attestation received |
-| **Validated** | Post-attestation audit passed |
-| **Superseded** | Replaced by a newer ADR |
-| **Abandoned** | Work stopped, rationale documented |
+| Lifecycle | Meaning |
+|----------|---------|
+| `Pending` | Not yet attested |
+| `Completed` | Attested as `completed` or `partial` |
+| `Abandoned` | Attested as `dropped` |
+| `Validated` | ADR-level receipt emitted with `receipt_event=validated` |
 
----
-
-## State Flow
-
-```
-Pool → Draft → Proposed → Accepted → [implement] → Completed → Validated
-                                                 ↘
-                                                  Abandoned (if Dropped)
-                                                 ↘
-                                                  Superseded (if replaced)
-```
+`gz status` and `gz adr status` derive these values from ledger events.
+OBPI-scoped receipts that explicitly declare `adr_completion: not_completed` do not promote ADR lifecycle to `Validated`.
 
 ---
 
-## Pool State
+## Derived Closeout Phase
 
-Pool is the staging area for planned work. Pool entries are lightweight—just intent, not full ADRs.
+Runtime also exposes closeout progression:
 
-**What a pool entry contains:**
+| Closeout phase | Trigger |
+|---------------|---------|
+| `pre_closeout` | No closeout initiation yet |
+| `closeout_initiated` | `closeout_initiated` event recorded |
+| `attested` | `attested` event recorded |
+| `validated` | `audit_receipt_emitted` with `validated` |
 
-- Status (always "Proposed" while in pool)
-- Intent statement
-- Target scope (bullets)
-- Dependencies (blocking ADRs)
-- Notes (design questions, rough sizing)
-
-**What a pool entry does NOT contain:**
-
-- Feature checklist
-- OBPIs
-- Folder structure
-- Detailed rationale
-
-**Pool entry naming:**
-
-```
-ADR-pool.{slug}.md
-```
-
-Example: `ADR-pool.gate-verification.md`
-
-Legacy note: older pool entries may still use semver-labeled IDs such as
-`ADR-pool.gz-chores-system`. New pool entries should not use semver labels.
-
-**Pool location:**
-
-```
-docs/design/adr/pool/
-```
+This phase model is additive and does not replace canonical lifecycle terms.
 
 ---
 
-## Promotion from Pool
+## Attestation Mapping
 
-When a pool entry is prioritized:
+CLI attestation tokens remain stable, but presentations map to canonical terms:
 
-1. Assign the next available version (e.g., `0.1.5`)
-2. Create the full ADR folder structure
-3. Write the complete ADR with feature checklist
-4. Co-create all OBPIs (one per checklist item)
-5. Move or delete the pool file
-6. Update registries
-
-The key rule: **OBPIs are co-created with the ADR, not deferred.**
+| Token | Canonical term | Lifecycle effect |
+|------|-----------------|------------------|
+| `completed` | `Completed` | `Completed` |
+| `partial` | `Completed — Partial` | `Completed` |
+| `dropped` | `Dropped` | `Abandoned` |
 
 ---
 
-## Pre-Release Identifiers
+## Operational Sequence
 
-Work items use SemVer-compliant identifiers:
-
-```
-{major}.{minor}.{patch}[-{type}.{identifier}]
-```
-
-| Type | Purpose | Example |
-|------|---------|---------|
-| `pool.{slug}` | Planned ADR in pool | `ADR-pool.gate-verification` |
-| `obpi.{nn}` | OBPI in progress | `0.1.5-obpi.03` |
-| `ghi.{nn}` | GitHub issue discovered | `0.1.5-ghi.42` |
-
-**Precedence:**
-
-```
-0.1.5-obpi.01 < 0.1.5-obpi.02 < 0.1.5-ghi.42 < 0.1.5
-```
-
-When an ADR completes, all work items roll up into that version.
-
----
-
-## OBPIs vs GHIs
-
-| Type | Nature | Origin |
-|------|--------|--------|
-| **OBPI** | Planned work | Scoped at ADR creation |
-| **GHI** | Emergent work | Discovered during implementation |
-
-OBPIs map 1:1 to ADR checklist items. GHIs are surprises found along the way.
-
----
-
-## PRD to Pool Relationship
-
-PRDs drive ADR creation:
-
-```
-PRD-1.0.0
-  ├── ADR-0.1.0 (Phase 1: MVP)
-  ├── ADR-pool.gates (Phase 2)
-  ├── ADR-pool.airlineops-canon-reconciliation (Phase 3)
-  ├── ADR-pool.heavy-lane (Phase 4)
-  ├── ADR-pool.audit-system (Phase 5)
-  ├── ADR-pool.gz-chores-system (Parity backlog)
-  └── ADR-pool.release-hardening (Phase 6)
-```
-
-The PRD defines the roadmap. Pool entries stage the work. ADRs execute it.
-
----
-
-## Attestation to Status Mapping
-
-Gate 5 attestation determines final status:
-
-| Attestation | Status | Meaning |
-|-------------|--------|---------|
-| "Completed" | Completed | All work finished |
-| "Completed—Partial: [reason]" | Completed | Subset done, deferrals documented |
-| "Dropped—[reason]" | Abandoned | Work stopped, rationale recorded |
-
----
-
-## Example Lifecycle
-
-1. **Pool**: `ADR-pool.gate-verification` created
-2. **Draft**: Prioritized, becomes `ADR-0.2.0-gate-verification`, folder created, OBPIs written
-3. **Proposed**: Author declares ready for review
-4. **Accepted**: Human approves, implementation begins
-5. **[Implementation]**: OBPIs completed one by one
-6. **Closeout**: Ceremony triggered, human observes directly
-7. **Completed**: Human attests "Completed"
-8. **Validated**: Post-attestation audit reconciles records
+1. Orientation and scope (`gz status`, `gz adr audit-check`)
+2. Verification/tool use
+3. Closeout presentation (`gz closeout`)
+4. Human attestation (`gz attest`)
+5. Post-attestation audit (`gz audit`)
+6. Receipts/accounting (`gz adr emit-receipt`)
 
 ---
 
 ## Related
 
-- [Workflow](workflow.md) — Daily development patterns
-- [OBPIs](obpis.md) — Atomic work units
-- [Closeout](closeout.md) — Completing ADRs
-- [gz plan](../commands/plan.md) — Create ADRs
+- [Closeout](closeout.md)
+- [Workflow](workflow.md)
+- [gz adr status](../commands/adr-status.md)
+- [gz status](../commands/status.md)

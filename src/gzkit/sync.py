@@ -73,16 +73,16 @@ def detect_project_structure(project_root: Path) -> dict[str, str]:
 
 
 def scan_existing_artifacts(project_root: Path, design_root: str) -> dict[str, list[Path]]:
-    """Scan for existing PRD and ADR files in the design directory.
+    """Scan for existing PRD, ADR, and OBPI files in the design directory.
 
     Args:
         project_root: Project root directory.
         design_root: Relative path to design directory (e.g., "design" or "docs/design").
 
     Returns:
-        Dictionary with "prds" and "adrs" keys containing lists of found file paths.
+        Dictionary with "prds", "adrs", and "obpis" keys containing lists of found file paths.
     """
-    result: dict[str, list[Path]] = {"prds": [], "adrs": []}
+    result: dict[str, list[Path]] = {"prds": [], "adrs": [], "obpis": []}
     design_path = project_root / design_root
 
     if not design_path.exists():
@@ -99,6 +99,24 @@ def scan_existing_artifacts(project_root: Path, design_root: str) -> dict[str, l
     if adr_dir.exists():
         for adr_file in adr_dir.rglob("ADR-*.md"):
             result["adrs"].append(adr_file)
+
+    # Scan for OBPIs (OBPI-*.md pattern). OBPI briefs may live in design/obpis
+    # or nested under ADR directories (e.g., design/adr/**/obpis).
+    obpi_candidates: list[Path] = []
+    obpi_dir = design_path / "obpis"
+    if obpi_dir.exists():
+        obpi_candidates.extend(obpi_dir.rglob("OBPI-*.md"))
+
+    if adr_dir.exists():
+        obpi_candidates.extend(adr_dir.rglob("OBPI-*.md"))
+
+    seen: set[Path] = set()
+    for obpi_file in obpi_candidates:
+        resolved = obpi_file.resolve()
+        if resolved in seen:
+            continue
+        seen.add(resolved)
+        result["obpis"].append(obpi_file)
 
     return result
 

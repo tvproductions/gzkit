@@ -13,6 +13,13 @@ from typing import Any
 LEDGER_SCHEMA = "gzkit.ledger.v1"
 
 
+ATTESTATION_CANONICAL_TERMS: dict[str, str] = {
+    "completed": "Completed",
+    "partial": "Completed — Partial",
+    "dropped": "Dropped",
+}
+
+
 @dataclass
 class LedgerEvent:
     """A governance event recorded in the ledger.
@@ -164,6 +171,40 @@ def gate_checked_event(
         extra["evidence"] = evidence
     return LedgerEvent(
         event="gate_checked",
+        id=adr_id,
+        extra=extra,
+    )
+
+
+def closeout_initiated_event(
+    adr_id: str,
+    by: str,
+    mode: str,
+    evidence: dict[str, Any] | None = None,
+) -> LedgerEvent:
+    """Create a closeout initiation event."""
+    extra: dict[str, Any] = {"by": by, "mode": mode}
+    if evidence is not None:
+        extra["evidence"] = evidence
+    return LedgerEvent(
+        event="closeout_initiated",
+        id=adr_id,
+        extra=extra,
+    )
+
+
+def audit_receipt_emitted_event(
+    adr_id: str,
+    receipt_event: str,
+    attestor: str,
+    evidence: dict[str, Any] | None = None,
+) -> LedgerEvent:
+    """Create an audit receipt event."""
+    extra: dict[str, Any] = {"receipt_event": receipt_event, "attestor": attestor}
+    if evidence is not None:
+        extra["evidence"] = evidence
+    return LedgerEvent(
+        event="audit_receipt_emitted",
         id=adr_id,
         extra=extra,
     )
@@ -362,13 +403,22 @@ class Ledger:
             )
 
             if event.event in creation_events and canonical_id not in graph:
-                graph[canonical_id] = {
+                entry: dict[str, Any] = {
                     "type": event.event.replace("_created", ""),
                     "created": event.ts,
                     "parent": canonical_parent,
                     "children": [],
                     "attested": False,
                 }
+                if event.event == "adr_created":
+                    entry["lane"] = event.extra.get("lane")
+                    entry["closeout_initiated"] = False
+                    entry["closeout_by"] = None
+                    entry["closeout_mode"] = None
+                    entry["closeout_evidence"] = None
+                    entry["latest_receipt_event"] = None
+                    entry["validated"] = False
+                graph[canonical_id] = entry
 
             # Track parent-child relationships
             if (
@@ -378,10 +428,32 @@ class Ledger:
             ):
                 graph[canonical_parent]["children"].append(canonical_id)
 
+            if event.event == "adr_created" and canonical_id in graph:
+                # Preserve lane metadata even if graph node already existed.
+                graph[canonical_id]["lane"] = event.extra.get(
+                    "lane", graph[canonical_id].get("lane")
+                )
+
             if event.event == "attested" and canonical_id in graph:
                 graph[canonical_id]["attested"] = True
                 graph[canonical_id]["attestation_status"] = event.extra.get("status")
                 graph[canonical_id]["attestation_by"] = event.extra.get("by")
+
+            if event.event == "closeout_initiated" and canonical_id in graph:
+                graph[canonical_id]["closeout_initiated"] = True
+                graph[canonical_id]["closeout_by"] = event.extra.get("by")
+                graph[canonical_id]["closeout_mode"] = event.extra.get("mode")
+                graph[canonical_id]["closeout_evidence"] = event.extra.get("evidence")
+
+            if event.event == "audit_receipt_emitted" and canonical_id in graph:
+                receipt_event = event.extra.get("receipt_event")
+                graph[canonical_id]["latest_receipt_event"] = receipt_event
+                evidence = event.extra.get("evidence")
+                adr_completion = (
+                    evidence.get("adr_completion") if isinstance(evidence, dict) else None
+                )
+                if receipt_event == "validated" and adr_completion != "not_completed":
+                    graph[canonical_id]["validated"] = True
 
         return graph
 
@@ -397,3 +469,41 @@ class Ledger:
             for artifact_id, info in graph.items()
             if info["type"] == "adr" and not info["attested"]
         ]
+
+    @staticmethod
+    def canonical_attestation_term(status: str | None) -> str | None:
+        """Map internal attestation token to canonical display term."""
+        if status is None:
+            return None
+        return ATTESTATION_CANONICAL_TERMS.get(status, status)
+
+    @classmethod
+    def derive_adr_semantics(cls, info: dict[str, Any]) -> dict[str, Any]:
+        """Derive canonical lifecycle and closeout-phase semantics for ADR status surfaces."""
+        attestation_status = info.get("attestation_status")
+        validated = bool(info.get("validated"))
+        closeout_initiated = bool(info.get("closeout_initiated"))
+
+        if validated:
+            lifecycle_status = "Validated"
+            closeout_phase = "validated"
+        elif attestation_status == "dropped":
+            lifecycle_status = "Abandoned"
+            closeout_phase = "attested"
+        elif attestation_status in {"completed", "partial"}:
+            lifecycle_status = "Completed"
+            closeout_phase = "attested"
+        elif closeout_initiated:
+            lifecycle_status = "Pending"
+            closeout_phase = "closeout_initiated"
+        else:
+            lifecycle_status = "Pending"
+            closeout_phase = "pre_closeout"
+
+        return {
+            "lifecycle_status": lifecycle_status,
+            "closeout_phase": closeout_phase,
+            "attestation_term": cls.canonical_attestation_term(
+                attestation_status if isinstance(attestation_status, str) else None
+            ),
+        }

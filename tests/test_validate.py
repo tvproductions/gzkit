@@ -1,5 +1,6 @@
 """Tests for gzkit validation engine."""
 
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -8,6 +9,7 @@ from gzkit.validate import (
     extract_headers,
     parse_frontmatter,
     validate_document,
+    validate_ledger,
     validate_manifest,
 )
 
@@ -223,6 +225,98 @@ class TestValidateManifest(unittest.TestCase):
             f.flush()
             errors = validate_manifest(Path(f.name))
             self.assertEqual(errors, [])
+
+
+class TestValidateLedger(unittest.TestCase):
+    """Tests for ledger validation."""
+
+    def test_missing_ledger(self) -> None:
+        """Missing ledger returns error."""
+        errors = validate_ledger(Path("/nonexistent/ledger.jsonl"))
+        self.assertEqual(len(errors), 1)
+        self.assertEqual(errors[0].type, "ledger")
+        self.assertIn("does not exist", errors[0].message)
+
+    def test_valid_ledger(self) -> None:
+        """Valid ledger events pass validation."""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
+            entries = [
+                {
+                    "schema": "gzkit.ledger.v1",
+                    "event": "project_init",
+                    "id": "gzkit",
+                    "ts": "2026-02-14T00:00:00+00:00",
+                    "mode": "lite",
+                },
+                {
+                    "schema": "gzkit.ledger.v1",
+                    "event": "adr_created",
+                    "id": "ADR-0.3.0",
+                    "ts": "2026-02-14T00:00:01+00:00",
+                    "lane": "heavy",
+                },
+                {
+                    "schema": "gzkit.ledger.v1",
+                    "event": "audit_receipt_emitted",
+                    "id": "ADR-0.3.0",
+                    "ts": "2026-02-14T00:00:02+00:00",
+                    "receipt_event": "completed",
+                    "attestor": "human:jeff",
+                    "evidence": {"scope": "OBPI-0.3.0-04"},
+                },
+            ]
+            for entry in entries:
+                f.write(json.dumps(entry) + "\n")
+            f.flush()
+            errors = validate_ledger(Path(f.name))
+            self.assertEqual(errors, [])
+
+    def test_invalid_json_line(self) -> None:
+        """Malformed JSON line returns ledger validation error."""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
+            f.write("{not-json}\n")
+            f.flush()
+            errors = validate_ledger(Path(f.name))
+            self.assertTrue(any("Invalid JSON" in error.message for error in errors))
+
+    def test_unknown_event_rejected(self) -> None:
+        """Unknown event type fails closed."""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
+            f.write(
+                json.dumps(
+                    {
+                        "schema": "gzkit.ledger.v1",
+                        "event": "mystery_event",
+                        "id": "ADR-0.3.0",
+                        "ts": "2026-02-14T00:00:00+00:00",
+                    }
+                )
+                + "\n"
+            )
+            f.flush()
+            errors = validate_ledger(Path(f.name))
+            self.assertTrue(any("Unknown event type" in error.message for error in errors))
+
+    def test_invalid_event_field_type_rejected(self) -> None:
+        """Event field type violations are reported with line context."""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
+            f.write(
+                json.dumps(
+                    {
+                        "schema": "gzkit.ledger.v1",
+                        "event": "audit_receipt_emitted",
+                        "id": "ADR-0.3.0",
+                        "ts": "2026-02-14T00:00:00+00:00",
+                        "receipt_event": "completed",
+                        "attestor": "human:jeff",
+                        "evidence": ["not", "an", "object"],
+                    }
+                )
+                + "\n"
+            )
+            f.flush()
+            errors = validate_ledger(Path(f.name))
+            self.assertTrue(any("must be an object" in error.message for error in errors))
 
 
 if __name__ == "__main__":

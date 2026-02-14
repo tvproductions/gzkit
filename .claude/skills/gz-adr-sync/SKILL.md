@@ -107,7 +107,7 @@ gz-adr-sync
 
 | Skill | Purpose |
 |-------|---------|
-| gz-adr-manager | Create/book ADRs |
+| gz-adr-create | Create/book ADRs |
 | gz-obpi-sync | Sync OBPI status in ADR table from briefs |
 | gz-obpi-brief | Create OBPI briefs |
 | gz-adr-audit | Gate 5 verification |

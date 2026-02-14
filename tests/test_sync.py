@@ -130,6 +130,7 @@ class TestScanExistingArtifacts(unittest.TestCase):
 
             self.assertEqual(result["prds"], [])
             self.assertEqual(result["adrs"], [])
+            self.assertEqual(result["obpis"], [])
 
     def test_scan_finds_prd_files(self) -> None:
         """Finds PRD files in design/prd directory."""
@@ -169,6 +170,32 @@ class TestScanExistingArtifacts(unittest.TestCase):
 
             self.assertEqual(len(result["adrs"]), 1)
             self.assertTrue(result["adrs"][0].name == "ADR-0.1.0-test.md")
+
+    def test_scan_finds_obpi_files(self) -> None:
+        """Finds OBPI files in design/obpis directory."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            obpi_dir = project_root / "design" / "obpis"
+            obpi_dir.mkdir(parents=True)
+            (obpi_dir / "OBPI-0.1.0-01-demo.md").write_text("# OBPI")
+
+            result = scan_existing_artifacts(project_root, "design")
+
+            self.assertEqual(len(result["obpis"]), 1)
+            self.assertTrue(result["obpis"][0].name == "OBPI-0.1.0-01-demo.md")
+
+    def test_scan_finds_obpi_files_nested_under_adr(self) -> None:
+        """Finds OBPI files nested under ADR directories."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            obpi_dir = project_root / "design" / "adr" / "adr-0.1.x" / "ADR-0.1.0-demo" / "obpis"
+            obpi_dir.mkdir(parents=True)
+            (obpi_dir / "OBPI-0.1.0-02-nested.md").write_text("# OBPI")
+
+            result = scan_existing_artifacts(project_root, "design")
+
+            self.assertEqual(len(result["obpis"]), 1)
+            self.assertTrue(result["obpis"][0].name == "OBPI-0.1.0-02-nested.md")
 
     def test_scan_with_docs_design_root(self) -> None:
         """Works with docs/design as design root."""

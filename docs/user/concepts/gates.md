@@ -1,115 +1,46 @@
 # Gates
 
-Gates are verification checkpoints. Work cannot proceed until gates pass.
+Gates are verification checkpoints in the covenant.
 
 ---
 
-## The Five Gates
+## Gate Set
 
-| Gate | Name | Purpose | Applies To |
-|------|------|---------|------------|
-| 1 | **ADR** | Record intent before implementation | All lanes |
-| 2 | **TDD** | Verify correctness through tests | All lanes |
-| 3 | **Docs** | Ensure documentation matches code | Heavy lane |
-| 4 | **BDD** | Verify external contract behavior | Heavy lane |
-| 5 | **Human** | Explicit human attestation | Heavy lane |
-
----
-
-## Gate 1: ADR (Intent)
-
-**What**: An Architecture Decision Record exists.
-
-**Why**: Intent must be recorded before implementation. This prevents scope creep and provides context for future readers.
-
-**Artifact**: ADR document with problem statement, decision, and consequences.
+| Gate | Name | Applies |
+|------|------|---------|
+| 1 | ADR | Lite, Heavy |
+| 2 | TDD | Lite, Heavy |
+| 3 | Docs | Heavy |
+| 4 | BDD | Heavy |
+| 5 | Human Attestation | Heavy |
 
 ---
 
-## Gate 2: TDD (Tests)
+## Enforcement Notes
 
-**What**: Tests exist and pass.
-
-**Why**: Automated verification that code does what it claims.
-
-**Artifact**: Passing test suite with reasonable coverage.
-
----
-
-## Gate 3: Docs (Documentation)
-
-**What**: Documentation accurately describes behavior.
-
-**Why**: Docs are proof of completion. If you can't document it, you don't understand it.
-
-**Artifact**: User documentation, command manpages, and an operator runbook that build cleanly, resolve links, and match code behavior.
-
-**Applies to**: Heavy lane only (external contract changes).
+- `gz attest` enforces prerequisite gates by default.
+- Lite lane attestation requires Gate 2 pass.
+- Heavy lane attestation requires Gate 2 and Gate 3 pass.
+- Heavy lane Gate 4 must pass when `features/` exists; otherwise explicit N/A rationale applies.
+- `--force` exists for accountable overrides and requires rationale when bypassing failed prerequisites.
 
 ---
 
-## Gate 4: BDD (Behavior)
+## Gate 5 Authority
 
-**What**: Acceptance tests verify external contracts.
+Gate 5 is explicit human attestation.
 
-**Why**: API/CLI/schema changes need black-box verification.
+- Agents present evidence.
+- Humans observe evidence.
+- Humans record attestation.
 
-**Artifact**: Passing acceptance scenarios.
-
-**Applies to**: Heavy lane only.
-
----
-
-## Gate 5: Human (Attestation)
-
-**What**: A human explicitly signs off on the work.
-
-**Why**: This is the whole point. Humans must verify, not rubber-stamp.
-
-**Artifact**: Attestation record with status, attester, and timestamp.
-
-**Cannot be automated**. That's intentional.
-
----
-
-## Gate Flow
-
-**Lite lane** (internal changes):
-
-```
-ADR → TDD
- 1     2
-```
-
-**Heavy lane** (external contracts):
-
-```
-ADR → TDD → Docs → BDD → Human
- 1     2     3      4      5
-```
-
----
-
-## Checking Gates
-
-```bash
-# See current gate status
-gz status
-
-# Run Gate 2 (tests)
-gz implement
-
-# Run all required gates
-gz gates
-
-# Validate artifacts
-gz validate
-```
+Audit and receipts are downstream accounting, not substitutes for human attestation.
 
 ---
 
 ## Related
 
-- [Lanes](lanes.md) — Which gates apply when
-- [gz status](../commands/status.md) — Check gate progress
-- [gz attest](../commands/attest.md) — Pass Gate 5
+- [Lanes](lanes.md)
+- [Closeout](closeout.md)
+- [gz attest](../commands/attest.md)
+- [gz audit](../commands/audit.md)

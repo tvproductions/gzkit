@@ -1,113 +1,40 @@
 # gz state
 
-Query ledger state and artifact relationships.
+Query ledger artifact relationships and derived ADR semantics.
 
 ---
 
 ## Usage
 
 ```bash
-gz state [OPTIONS]
-```
-
----
-
-## Options
-
-| Option | Type | Description |
-|--------|------|-------------|
-| `--json` | flag | Output as JSON |
-| `--blocked` | flag | Show only unattested artifacts |
-| `--ready` | flag | Show only artifacts ready for attestation |
-
----
-
-## What It Does
-
-Shows the full artifact graph:
-
-- All PRDs, briefs, and ADRs
-- Parent-child relationships
-- Attestation status
-
----
-
-## Example
-
-```bash
-gz state
-```
-
----
-
-## Output
-
-```
-┌────────────────────────────────────────────────┐
-│               Artifact State                    │
-├──────────────────┬──────┬────────────┬─────────┤
-│ ID               │ Type │ Parent     │ Attested│
-├──────────────────┼──────┼────────────┼─────────┤
-│ PRD-my-feature   │ prd  │ -          │ Yes     │
-│ BRIEF-add-login  │ brief│ PRD-my-... │ No      │
-│ ADR-0.1.0        │ adr  │ BRIEF-add..│ No      │
-└──────────────────┴──────┴────────────┴─────────┘
+gz state [--json] [--blocked] [--ready]
 ```
 
 ---
 
 ## Filters
 
-### Blocked only
+- `--blocked`: show unattested artifacts.
+- `--ready`: show ADRs that are genuinely ready for attestation.
 
-```bash
-gz state --blocked
-```
+`--ready` means:
 
-Shows artifacts that haven't been attested.
+- ADR is unattested, and
+- prerequisite gates required by lane are satisfied.
 
-### Ready only
-
-```bash
-gz state --ready
-```
-
-Shows ADRs that are ready for attestation (all prerequisite gates passed).
+It is not just "pending attestation".
 
 ---
 
-## JSON Output
+## Derived ADR Fields
 
-```bash
-gz state --json
-```
-
-```json
-{
-  "PRD-my-feature-1.0.0": {
-    "type": "prd",
-    "parent": null,
-    "attested": true
-  },
-  "BRIEF-add-login": {
-    "type": "brief",
-    "parent": "PRD-my-feature-1.0.0",
-    "attested": false
-  },
-  "ADR-0.1.0": {
-    "type": "adr",
-    "parent": "BRIEF-add-login",
-    "attested": false,
-    "lane": "lite"
-  }
-}
-```
+ADR entries include additive derived semantics (for example `lifecycle_status`, `closeout_phase`, `attestation_term`) based on ledger events.
 
 ---
 
-## Use Cases
+## Example
 
-1. **See what's pending**: `gz state --blocked`
-2. **Find what to attest next**: `gz state --ready`
-3. **Export for tooling**: `gz state --json`
-4. **Understand artifact hierarchy**: `gz state`
+```bash
+uv run gz state --ready
+uv run gz state --ready --json
+```

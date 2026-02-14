@@ -1,0 +1,85 @@
+{
+  "ledger_schema": "gzkit.ledger.v1",
+  "required": ["schema", "event", "id", "ts"],
+  "events": {
+    "project_init": {
+      "required": ["mode"],
+      "properties": {
+        "mode": { "type": "string", "enum": ["lite", "heavy"] }
+      }
+    },
+    "prd_created": {
+      "required": []
+    },
+    "constitution_created": {
+      "required": []
+    },
+    "obpi_created": {
+      "required": ["parent"],
+      "properties": {
+        "parent": { "type": "string", "min_length": 1 }
+      }
+    },
+    "adr_created": {
+      "required": ["lane"],
+      "properties": {
+        "lane": { "type": "string", "enum": ["lite", "heavy"] },
+        "parent": { "type": "string" }
+      }
+    },
+    "artifact_edited": {
+      "required": ["path"],
+      "properties": {
+        "path": { "type": "string", "min_length": 1 },
+        "session": { "type": "string", "min_length": 1 }
+      }
+    },
+    "attested": {
+      "required": ["status", "by"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["completed", "partial", "dropped"]
+        },
+        "by": { "type": "string", "min_length": 1 },
+        "reason": { "type": "string", "min_length": 1 }
+      }
+    },
+    "gate_checked": {
+      "required": ["gate", "status", "command", "returncode"],
+      "properties": {
+        "gate": { "type": "integer", "min": 1 },
+        "status": {
+          "type": "string",
+          "enum": ["pass", "fail", "pending", "n/a"]
+        },
+        "command": { "type": "string", "min_length": 1 },
+        "returncode": { "type": "integer" },
+        "evidence": { "type": "string" }
+      }
+    },
+    "closeout_initiated": {
+      "required": ["by", "mode"],
+      "properties": {
+        "by": { "type": "string", "min_length": 1 },
+        "mode": { "type": "string", "enum": ["lite", "heavy"] },
+        "evidence": { "type": "object" }
+      }
+    },
+    "audit_receipt_emitted": {
+      "required": ["receipt_event", "attestor"],
+      "properties": {
+        "receipt_event": { "type": "string", "enum": ["completed", "validated"] },
+        "attestor": { "type": "string", "min_length": 1 },
+        "evidence": { "type": "object" }
+      }
+    },
+    "artifact_renamed": {
+      "required": ["new_id"],
+      "properties": {
+        "new_id": { "type": "string", "min_length": 1 },
+        "reason": { "type": "string", "min_length": 1 }
+      }
+    }
+  }
+}

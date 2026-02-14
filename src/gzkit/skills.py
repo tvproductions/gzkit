@@ -12,9 +12,9 @@ from gzkit.templates import render_template
 
 # Core skills that are scaffolded by `gz init`
 CORE_SKILLS = {
-    "gz-adr-manager": {
-        "skill_name": "ADR Manager",
-        "skill_description": "Create and manage ADRs with OBPIs.",
+    "gz-adr-create": {
+        "skill_name": "ADR Create",
+        "skill_description": "Create ADRs with OBPI briefs.",
         "trigger_description": "When creating a feature or making architecture decisions.",
         "behavior_description": "Guide ADR creation, ensuring all required sections.",
         "prerequisites": "Active OBPI exists in the ledger",

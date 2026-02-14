@@ -34,7 +34,7 @@ Port the battle-tested templates from airlineops to gzkit verbatim:
 **Source Files:**
 - `/Users/jeff/Documents/Code/airlineops/.github/skills/gz-obpi-brief/assets/COPILOT_BRIEF-template.md`
 - `/Users/jeff/Documents/Code/airlineops/.github/skills/gz-obpi-brief/assets/HEAVY_LANE_PLAN_TEMPLATE.md`
-- `/Users/jeff/Documents/Code/airlineops/.github/skills/gz-adr-manager/assets/ADR_TEMPLATE_SEMVER.md`
+- `/Users/jeff/Documents/Code/airlineops/.github/skills/gz-adr-create/assets/ADR_TEMPLATE_SEMVER.md`
 - `/Users/jeff/Documents/Code/airlineops/.github/skills/gz-adr-audit/assets/AUDIT.template.md`
 - `/Users/jeff/Documents/Code/airlineops/.github/skills/gz-adr-audit/assets/AUDIT_PLAN.template.md`
 
@@ -55,7 +55,7 @@ Systematic comparison of all airlineops governance infrastructure:
 **Skills to audit:**
 - [ ] `gz-obpi-brief` — OBPI creation
 - [ ] `gz-obpi-sync` — OBPI↔ADR parity enforcement
-- [ ] `gz-adr-manager` — ADR lifecycle
+- [ ] `gz-adr-create` — ADR lifecycle
 - [ ] `gz-adr-sync` — ADR index/status sync
 - [ ] `gz-adr-verification` — ADR→tests traceability (@covers)
 - [ ] `gz-adr-audit` — Gate 5 audit protocol

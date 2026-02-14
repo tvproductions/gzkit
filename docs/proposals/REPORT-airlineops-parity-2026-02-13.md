@@ -15,7 +15,7 @@
 
 - Overall parity status: Partial (improving)
 - Critical gaps (current):
-  - P1 Divergent: shared `gz-adr-audit` and `gz-adr-manager` remain reduced stubs versus canon.
+  - P1 Divergent: shared `gz-adr-audit` and `gz-adr-create` remain reduced stubs versus canon.
   - P1 Missing: canonical `docs/governance/GovZero/*.md` surface is still absent (15 of 16 filenames missing).
   - P2 Partial: parity scan path assumptions and lifecycle/linkage semantic overlays still need reconciliation.
 - Completed this cycle:
@@ -30,7 +30,7 @@
 |---|---|---|---|---|
 | `/Users/jeff/Documents/Code/airlineops/.github/skills/gz-*` (16 dirs) | `.github/skills/gz-*` (16 dirs) | Parity | P3 | Canonical/local count both 16; `comm` missing set empty |
 | `.../skills/gz-adr-audit/SKILL.md` | `.github/skills/gz-adr-audit/SKILL.md` | Divergent | P1 | Canonical 272 lines vs gzkit 41 lines; non-equivalent |
-| `.../skills/gz-adr-manager/SKILL.md` | `.github/skills/gz-adr-manager/SKILL.md` | Divergent | P1 | Canonical 229 lines vs gzkit 41 lines; non-equivalent |
+| `.../skills/gz-adr-create/SKILL.md` | `.github/skills/gz-adr-create/SKILL.md` | Divergent | P1 | Canonical 229 lines vs gzkit 41 lines; non-equivalent |
 | `/Users/jeff/Documents/Code/airlineops/docs/governance/GovZero/*.md` (16 files) | `docs/user/*`, `docs/design/*`, `docs/lodestar/*` | Missing | P1 | Basename match still finds only `charter.md`; `docs/governance/GovZero/` absent |
 | `.../GovZero/charter.md` | `docs/user/reference/charter.md` | Divergent | P2 | Both exist but content differs; canonical 112 lines vs gzkit 301 lines |
 | `.../GovZero/adr-lifecycle.md`, `.../adr-obpi-ghi-audit-linkage.md`, `.../audit-protocol.md` | `docs/user/concepts/lifecycle.md`, `docs/user/concepts/obpis.md`, `docs/user/concepts/closeout.md` | Partial | P2 | Topic overlap exists; canonical constraints are not yet mirrored 1:1 |
@@ -64,8 +64,8 @@ Resolved since baseline:
 ### F-002
 
 - Type: Divergent
-- Canonical artifact: `/Users/jeff/Documents/Code/airlineops/.github/skills/gz-adr-audit/SKILL.md`, `/Users/jeff/Documents/Code/airlineops/.github/skills/gz-adr-manager/SKILL.md`
-- gzkit artifact: `/Users/jeff/.codex/worktrees/ba0b/gzkit/.github/skills/gz-adr-audit/SKILL.md`, `/Users/jeff/.codex/worktrees/ba0b/gzkit/.github/skills/gz-adr-manager/SKILL.md`
+- Canonical artifact: `/Users/jeff/Documents/Code/airlineops/.github/skills/gz-adr-audit/SKILL.md`, `/Users/jeff/Documents/Code/airlineops/.github/skills/gz-adr-create/SKILL.md`
+- gzkit artifact: `/Users/jeff/.codex/worktrees/ba0b/gzkit/.github/skills/gz-adr-audit/SKILL.md`, `/Users/jeff/.codex/worktrees/ba0b/gzkit/.github/skills/gz-adr-create/SKILL.md`
 - Why it matters: Shared names currently imply false governance parity.
 - Evidence: Canonical files are 272/229 lines; gzkit files are 41/41 lines and omit canonical trust-model/compliance sections.
 - Proposed remediation: Execute OBPI-0.3.0-02 to restore canonical structure and procedure depth.
@@ -140,7 +140,7 @@ Notes: Proof surfaces exist and skill-surface parity improved, but canonical Gov
 
 ## Next Actions (Required ADR/OBPI Follow-up)
 
-1. Action: Execute `OBPI-0.3.0-02-divergent-skill-reconciliation` for `gz-adr-audit` and `gz-adr-manager`.
+1. Action: Execute `OBPI-0.3.0-02-divergent-skill-reconciliation` for `gz-adr-audit` and `gz-adr-create`.
    Parent ADR: `ADR-0.3.0`
    OBPI: `OBPI-0.3.0-02-divergent-skill-reconciliation`
    Owner: Human + Agent
@@ -156,7 +156,7 @@ Notes: Proof surfaces exist and skill-surface parity improved, but canonical Gov
    Parent ADR: `ADR-0.3.0`
    OBPI: `OBPI-0.3.0-05-parity-scan-path-hardening`
    Owner: Agent
-5. Action: Start OBPI-0.3.0-02 implementation with `gz-adr-audit` and `gz-adr-manager` canonical reconciliation as first patch set.
+5. Action: Start OBPI-0.3.0-02 implementation with `gz-adr-audit` and `gz-adr-create` canonical reconciliation as first patch set.
    Parent ADR: `ADR-0.3.0`
    OBPI: `OBPI-0.3.0-02-divergent-skill-reconciliation`
    Owner: Human + Agent

@@ -29,6 +29,8 @@ from gzkit.ledger import (
     adr_created_event,
     artifact_renamed_event,
     attested_event,
+    audit_receipt_emitted_event,
+    closeout_initiated_event,
     constitution_created_event,
     gate_checked_event,
     obpi_created_event,
@@ -54,7 +56,13 @@ from gzkit.sync import (
     write_manifest,
 )
 from gzkit.templates import render_template
-from gzkit.validate import validate_all, validate_document, validate_manifest, validate_surfaces
+from gzkit.validate import (
+    validate_all,
+    validate_document,
+    validate_ledger,
+    validate_manifest,
+    validate_surfaces,
+)
 
 
 class GzCliError(Exception):
@@ -85,6 +93,28 @@ def _confirm(prompt: str, default: bool = True) -> bool:
 
 console = Console()
 GIT_SYNC_SKILL_PATH = ".github/skills/git-sync/SKILL.md"
+COMMAND_DOCS: dict[str, str] = {
+    "init": "docs/user/commands/init.md",
+    "prd": "docs/user/commands/prd.md",
+    "constitute": "docs/user/commands/constitute.md",
+    "specify": "docs/user/commands/specify.md",
+    "plan": "docs/user/commands/plan.md",
+    "status": "docs/user/commands/status.md",
+    "state": "docs/user/commands/state.md",
+    "git-sync": "docs/user/commands/git-sync.md",
+    "attest": "docs/user/commands/attest.md",
+    "implement": "docs/user/commands/implement.md",
+    "gates": "docs/user/commands/gates.md",
+    "migrate-semver": "docs/user/commands/migrate-semver.md",
+    "register-adrs": "docs/user/commands/register-adrs.md",
+    "closeout": "docs/user/commands/closeout.md",
+    "audit": "docs/user/commands/audit.md",
+    "check-config-paths": "docs/user/commands/check-config-paths.md",
+    "cli audit": "docs/user/commands/cli-audit.md",
+    "adr status": "docs/user/commands/adr-status.md",
+    "adr audit-check": "docs/user/commands/adr-audit-check.md",
+    "adr emit-receipt": "docs/user/commands/adr-emit-receipt.md",
+}
 
 SEMVER_ID_RENAMES: tuple[tuple[str, str], ...] = (
     # Historical OBPI relabeling migration.
@@ -152,6 +182,67 @@ def get_git_user() -> str:
         return result.stdout.strip()
     except (subprocess.CalledProcessError, FileNotFoundError):
         return "unknown"
+
+
+def _resolve_adr_lane(info: dict[str, Any], default_mode: str) -> str:
+    """Resolve lane from ADR metadata with mode fallback."""
+    lane = str(info.get("lane") or default_mode).lower()
+    return lane if lane in {"lite", "heavy"} else default_mode
+
+
+def _gate4_na_reason(project_root: Path, lane: str) -> str | None:
+    """Return explicit Gate 4 N/A rationale when BDD suite is not applicable."""
+    if lane != "heavy":
+        return "Gate 4 applies to heavy lane only."
+    if not (project_root / "features").exists():
+        return "features/ not found; Gate 4 is N/A for this repository."
+    return None
+
+
+def _attestation_gate_snapshot(
+    project_root: Path,
+    config: GzkitConfig,
+    ledger: Ledger,
+    adr_id: str,
+) -> dict[str, Any]:
+    """Compute attestation prerequisite state for one ADR."""
+    graph = ledger.get_artifact_graph()
+    info = graph.get(adr_id, {})
+    lane = _resolve_adr_lane(info, config.mode)
+    gate_statuses = ledger.get_latest_gate_statuses(adr_id)
+
+    gate2 = gate_statuses.get(2, "pending")
+    gate3 = gate_statuses.get(3, "pending")
+    gate4 = gate_statuses.get(4, "pending")
+    gate4_na = _gate4_na_reason(project_root, lane)
+
+    blockers: list[str] = []
+    if gate2 != "pass":
+        blockers.append(f"Gate 2 must pass (current: {gate2}).")
+
+    if lane == "heavy":
+        if gate3 != "pass":
+            blockers.append(f"Gate 3 must pass (current: {gate3}).")
+        if gate4_na is None and gate4 != "pass":
+            blockers.append(f"Gate 4 must pass when features/ exists (current: {gate4}).")
+
+    return {
+        "lane": lane,
+        "gate2": gate2,
+        "gate3": gate3 if lane == "heavy" else "n/a",
+        "gate4": "n/a" if gate4_na is not None else gate4,
+        "gate4_na_reason": gate4_na,
+        "ready": not blockers,
+        "blockers": blockers,
+    }
+
+
+def _canonical_attestation_term(attest_status: str, reason: str | None = None) -> str:
+    """Render canonical attestation term from stable CLI status token."""
+    base = Ledger.canonical_attestation_term(attest_status) or attest_status
+    if attest_status in {"partial", "dropped"} and reason:
+        return f"{base}: {reason}"
+    return base
 
 
 def _run_exec(cmd: list[str], cwd: Path, timeout: int | None = None) -> tuple[int, str, str]:
@@ -935,18 +1026,28 @@ def state(as_json: bool, blocked: bool, ready: bool) -> None:
     project_root = get_project_root()
 
     ledger = Ledger(project_root / config.paths.ledger)
-    graph = ledger.get_artifact_graph()
-
-    if as_json:
-        print(json.dumps(graph, indent=2))
-        return
+    raw_graph = ledger.get_artifact_graph()
+    graph = {artifact_id: dict(info) for artifact_id, info in raw_graph.items()}
+    for _artifact_id, info in graph.items():
+        if info.get("type") == "adr":
+            info.update(Ledger.derive_adr_semantics(info))
 
     # Filter if requested
     if blocked:
         graph = {k: v for k, v in graph.items() if not v.get("attested")}
     if ready:
-        pending = ledger.get_pending_attestations()
-        graph = {k: v for k, v in graph.items() if k in pending}
+        ready_ids: set[str] = set()
+        for artifact_id, info in graph.items():
+            if info.get("type") != "adr" or info.get("attested"):
+                continue
+            snapshot = _attestation_gate_snapshot(project_root, config, ledger, artifact_id)
+            if snapshot["ready"]:
+                ready_ids.add(artifact_id)
+        graph = {k: v for k, v in graph.items() if k in ready_ids}
+
+    if as_json:
+        print(json.dumps(graph, indent=2))
+        return
 
     if not graph:
         console.print("No artifacts found.")
@@ -971,6 +1072,16 @@ def state(as_json: bool, blocked: bool, ready: bool) -> None:
     console.print(table)
 
 
+def _render_gate_status(gate_status: str | None) -> str:
+    if gate_status == "pass":
+        return "[green]PASS[/green]"
+    if gate_status == "fail":
+        return "[red]FAIL[/red]"
+    if gate_status == "n/a":
+        return "[cyan]N/A[/cyan]"
+    return "[yellow]PENDING[/yellow]"
+
+
 def status(as_json: bool) -> None:
     """Display gate status for current work."""
     config = ensure_initialized()
@@ -980,8 +1091,27 @@ def status(as_json: bool) -> None:
     pending = ledger.get_pending_attestations()
     graph = ledger.get_artifact_graph()
 
-    # Get ADRs and their gate status
-    adrs = {k: v for k, v in graph.items() if v.get("type") == "adr"}
+    # Get ADRs and their derived lifecycle/gate status.
+    adrs: dict[str, dict[str, Any]] = {}
+    for adr_id, info in graph.items():
+        if info.get("type") != "adr":
+            continue
+        entry = dict(info)
+        lane = _resolve_adr_lane(entry, config.mode)
+        gate_statuses = ledger.get_latest_gate_statuses(adr_id)
+        gate4_na = _gate4_na_reason(project_root, lane)
+        entry["lane"] = lane
+        entry["gates"] = {
+            "1": "pass",
+            "2": gate_statuses.get(2, "pending"),
+            "3": gate_statuses.get(3, "pending") if lane == "heavy" else "n/a",
+            "4": "n/a" if gate4_na is not None else gate_statuses.get(4, "pending"),
+            "5": "pass" if entry.get("attested") else "pending",
+        }
+        if gate4_na is not None:
+            entry["gate4_na_reason"] = gate4_na
+        entry.update(Ledger.derive_adr_semantics(entry))
+        adrs[adr_id] = entry
 
     if as_json:
         result = {
@@ -998,37 +1128,265 @@ def status(as_json: bool) -> None:
         console.print("No ADRs found. Create one with 'gz plan'.")
         return
 
-    def render_gate_status(gate_status: str | None) -> str:
-        if gate_status == "pass":
-            return "[green]PASS[/green]"
-        if gate_status == "fail":
-            return "[red]FAIL[/red]"
-        return "[yellow]PENDING[/yellow]"
-
     for adr_id, info in sorted(adrs.items()):
-        attested = info.get("attested", False)
-        status_str = info.get("attestation_status", "Pending") if attested else "Pending"
-        gate_statuses = ledger.get_latest_gate_statuses(adr_id)
+        attested = bool(info.get("attested", False))
+        lifecycle_status = info.get("lifecycle_status", "Pending")
+        lane = cast(str, info.get("lane", config.mode))
+        gates = cast(dict[str, str], info.get("gates", {}))
+        attestation_term = info.get("attestation_term")
 
-        console.print(f"[bold]{adr_id}[/bold] ({status_str})")
+        console.print(f"[bold]{adr_id}[/bold] ({lifecycle_status})")
 
         # Gate 1: ADR exists (always pass if we're here)
         console.print("  Gate 1 (ADR):   [green]PASS[/green]")
 
-        # Gate 2: TDD - derived from latest gate_checked event
-        console.print(f"  Gate 2 (TDD):   {render_gate_status(gate_statuses.get(2))}")
+        # Gate 2: TDD - derived from latest gate_checked event.
+        console.print(f"  Gate 2 (TDD):   {_render_gate_status(gates.get('2'))}")
 
-        if config.mode == "heavy":
-            console.print(f"  Gate 3 (Docs):  {render_gate_status(gate_statuses.get(3))}")
-            console.print(f"  Gate 4 (BDD):   {render_gate_status(gate_statuses.get(4))}")
+        if lane == "heavy":
+            console.print(f"  Gate 3 (Docs):  {_render_gate_status(gates.get('3'))}")
+            console.print(f"  Gate 4 (BDD):   {_render_gate_status(gates.get('4'))}")
+            if gates.get("4") == "n/a":
+                console.print(f"                 ({info.get('gate4_na_reason')})")
 
             # Gate 5: Human attestation (heavy only)
             if attested:
-                console.print("  Gate 5 (Human): [green]PASS[/green]")
+                detail = f" ({attestation_term})" if attestation_term else ""
+                console.print(f"  Gate 5 (Human): [green]PASS[/green]{detail}")
             else:
                 console.print("  Gate 5 (Human): [yellow]PENDING[/yellow]")
 
         console.print()
+
+
+def _parse_frontmatter_value(content: str, key: str) -> str | None:
+    lines = content.splitlines()
+    if not lines or lines[0].strip() != "---":
+        return None
+
+    for line in lines[1:]:
+        if line.strip() == "---":
+            break
+        if ":" not in line:
+            continue
+        raw_key, _, raw_value = line.partition(":")
+        if raw_key.strip() != key:
+            continue
+        return raw_value.strip().strip("\"'")
+    return None
+
+
+def _markdown_label_value(content: str, label: str) -> str | None:
+    pattern = rf"^\*\*{re.escape(label)}:\*\*\s*(.+)$"
+    match = re.search(pattern, content, flags=re.MULTILINE)
+    if not match:
+        return None
+    return match.group(1).strip()
+
+
+def _has_substantive_implementation_summary(content: str) -> bool:
+    match = re.search(
+        r"^### Implementation Summary\s*$([\s\S]*?)(?:^### |\n---|\Z)",
+        content,
+        flags=re.MULTILINE,
+    )
+    if not match:
+        return False
+
+    section = match.group(1)
+    bullet_matches = re.findall(r"^- [^:\n]+:\s*(.+)$", section, flags=re.MULTILINE)
+    for value in bullet_matches:
+        normalized = value.strip().lower()
+        if normalized and normalized not in {"-", "—", "tbd", "(none)", "n/a"}:
+            return True
+    return False
+
+
+def _inspect_obpi_brief(obpi_file: Path) -> dict[str, Any]:
+    content = obpi_file.read_text()
+    frontmatter_status = (_parse_frontmatter_value(content, "status") or "").strip().lower()
+    brief_status = (_markdown_label_value(content, "Brief Status") or "").strip().lower()
+    completed = frontmatter_status == "completed" or brief_status == "completed"
+    evidence_ok = _has_substantive_implementation_summary(content)
+
+    reasons: list[str] = []
+    if not completed:
+        reasons.append("status is not Completed")
+    if not evidence_ok:
+        reasons.append("implementation evidence is missing or placeholder")
+
+    return {
+        "completed": completed,
+        "evidence_ok": evidence_ok,
+        "frontmatter_status": frontmatter_status or None,
+        "brief_status": brief_status or None,
+        "reasons": reasons,
+    }
+
+
+def _collect_obpi_files_for_adr(
+    project_root: Path,
+    config: GzkitConfig,
+    ledger: Ledger,
+    adr_id: str,
+) -> tuple[dict[str, Path], list[str]]:
+    canonical_adr = ledger.canonicalize_id(adr_id)
+    graph = ledger.get_artifact_graph()
+    adr_info = graph.get(canonical_adr, {})
+    expected_obpis = [
+        child_id
+        for child_id in adr_info.get("children", [])
+        if graph.get(child_id, {}).get("type") == "obpi"
+    ]
+
+    artifacts = scan_existing_artifacts(project_root, config.paths.design_root)
+    obpi_files: dict[str, Path] = {}
+    for obpi_file in artifacts.get("obpis", []):
+        metadata = parse_artifact_metadata(obpi_file)
+        obpi_id = ledger.canonicalize_id(metadata.get("id", obpi_file.stem))
+        parent = metadata.get("parent", "")
+        canonical_parent = ledger.canonicalize_id(parent) if parent else ""
+        if canonical_parent == canonical_adr or obpi_id in expected_obpis:
+            obpi_files[obpi_id] = obpi_file
+
+    return obpi_files, expected_obpis
+
+
+def adr_audit_check(adr: str, as_json: bool) -> None:
+    """Verify linked OBPIs are complete and contain implementation evidence."""
+    config = ensure_initialized()
+    project_root = get_project_root()
+    ledger = Ledger(project_root / config.paths.ledger)
+
+    adr_input = adr if adr.startswith("ADR-") else f"ADR-{adr}"
+    canonical_adr = ledger.canonicalize_id(adr_input)
+    _adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
+
+    obpi_files, expected_obpis = _collect_obpi_files_for_adr(project_root, config, ledger, adr_id)
+    findings: list[dict[str, Any]] = []
+    complete: list[str] = []
+
+    if not expected_obpis and not obpi_files:
+        findings.append(
+            {
+                "id": None,
+                "issue": "No OBPI briefs are linked to this ADR.",
+            }
+        )
+
+    for expected_id in expected_obpis:
+        if expected_id not in obpi_files:
+            findings.append(
+                {
+                    "id": expected_id,
+                    "issue": "Linked in ledger but no OBPI file found.",
+                }
+            )
+
+    for obpi_id, obpi_file in sorted(obpi_files.items()):
+        inspection = _inspect_obpi_brief(obpi_file)
+        if inspection["reasons"]:
+            findings.append(
+                {
+                    "id": obpi_id,
+                    "file": str(obpi_file.relative_to(project_root)),
+                    "issue": "; ".join(inspection["reasons"]),
+                    "frontmatter_status": inspection["frontmatter_status"],
+                    "brief_status": inspection["brief_status"],
+                }
+            )
+        else:
+            complete.append(obpi_id)
+
+    passed = not findings
+    result = {
+        "adr": adr_id,
+        "passed": passed,
+        "checked_obpis": sorted(obpi_files.keys()),
+        "complete_obpis": complete,
+        "findings": findings,
+    }
+
+    if as_json:
+        print(json.dumps(result, indent=2))
+    else:
+        console.print(f"[bold]ADR audit-check:[/bold] {adr_id}")
+        if passed:
+            console.print("[green]PASS[/green] All linked OBPIs are completed with evidence.")
+            if complete:
+                for obpi_id in complete:
+                    console.print(f"  - {obpi_id}")
+        else:
+            console.print("[red]FAIL[/red] OBPI completeness/evidence gaps found:")
+            for finding in findings:
+                finding_id = finding.get("id") or "(none)"
+                issue = finding.get("issue", "")
+                console.print(f"  - {finding_id}: {issue}")
+
+    if not passed:
+        raise SystemExit(1)
+
+
+def adr_status_cmd(adr: str, as_json: bool) -> None:
+    """Display focused gate and attestation status for one ADR."""
+    config = ensure_initialized()
+    project_root = get_project_root()
+    ledger = Ledger(project_root / config.paths.ledger)
+
+    adr_input = adr if adr.startswith("ADR-") else f"ADR-{adr}"
+    canonical_adr = ledger.canonicalize_id(adr_input)
+    _adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
+    graph = ledger.get_artifact_graph()
+    info = graph.get(adr_id)
+    if not info or info.get("type") != "adr":
+        raise GzCliError(f"ADR not found in ledger: {adr_id}")
+
+    lane = _resolve_adr_lane(info, config.mode)
+    gate_statuses = ledger.get_latest_gate_statuses(adr_id)
+    gate4_na = _gate4_na_reason(project_root, lane)
+    semantics = Ledger.derive_adr_semantics(info)
+    result = {
+        "adr": adr_id,
+        "mode": config.mode,
+        "lane": lane,
+        "attested": bool(info.get("attested")),
+        "attestation_status": info.get("attestation_status"),
+        "attestation_term": semantics["attestation_term"],
+        "lifecycle_status": semantics["lifecycle_status"],
+        "closeout_phase": semantics["closeout_phase"],
+        "closeout_initiated": bool(info.get("closeout_initiated")),
+        "validated": bool(info.get("validated")),
+        "gates": {
+            "1": "pass",
+            "2": gate_statuses.get(2, "pending"),
+            "3": gate_statuses.get(3, "pending") if lane == "heavy" else "n/a",
+            "4": "n/a" if gate4_na is not None else gate_statuses.get(4, "pending"),
+            "5": "pass" if info.get("attested") else "pending",
+        },
+    }
+    if gate4_na is not None:
+        result["gate4_na_reason"] = gate4_na
+
+    if as_json:
+        print(json.dumps(result, indent=2))
+        return
+
+    console.print(f"[bold]{adr_id}[/bold]")
+    console.print(f"  Lifecycle: {result['lifecycle_status']}")
+    console.print(f"  Closeout Phase: {result['closeout_phase']}")
+    console.print("  Gate 1 (ADR):   [green]PASS[/green]")
+    console.print(f"  Gate 2 (TDD):   {_render_gate_status(result['gates'].get('2'))}")
+    if lane == "heavy":
+        console.print(f"  Gate 3 (Docs):  {_render_gate_status(result['gates'].get('3'))}")
+        console.print(f"  Gate 4 (BDD):   {_render_gate_status(result['gates'].get('4'))}")
+        if result["gates"].get("4") == "n/a":
+            console.print(f"                 ({gate4_na})")
+        gate5_detail = f" ({result['attestation_term']})" if result.get("attestation_term") else ""
+        console.print(
+            "  Gate 5 (Human): "
+            + ("[green]PASS[/green]" if info.get("attested") else "[yellow]PENDING[/yellow]")
+            + (gate5_detail if info.get("attested") else "")
+        )
 
 
 def git_sync(
@@ -1514,18 +1872,34 @@ def attest(
     # Verify ADR exists (support nested ADR layout)
     adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
 
+    snapshot = _attestation_gate_snapshot(project_root, config, ledger, adr_id)
+    if force and not snapshot["ready"] and not reason:
+        raise GzCliError("--reason required when --force bypasses failing gate prerequisites")
+
+    if not force and not snapshot["ready"]:
+        blockers = "\n".join(f"- {blocker}" for blocker in snapshot["blockers"])
+        raise GzCliError(
+            "Attestation blocked by prerequisite gates:\n"
+            f"{blockers}\n"
+            "Run required gate commands first, or use --force with --reason."
+        )
+
     if not force:
-        # Check prerequisite gates (simplified check)
         console.print("Checking prerequisite gates...")
-        # In a full implementation, this would verify TDD, docs, etc.
+    elif not snapshot["ready"]:
+        console.print(
+            "[yellow]Force override:[/yellow] bypassing failed prerequisites with recorded reason."
+        )
 
     # Get attester identity
     attester = get_git_user()
+    canonical_term = _canonical_attestation_term(attest_status, reason)
 
     if dry_run:
         console.print("[yellow]Dry run:[/yellow] no ledger event will be written.")
         console.print(f"  Would attest ADR: {adr_id}")
-        console.print(f"  Status: {attest_status}")
+        console.print(f"  Term: {canonical_term}")
+        console.print(f"  Raw status token: {attest_status}")
         console.print(f"  By: {attester}")
         if reason:
             console.print(f"  Reason: {reason}")
@@ -1539,11 +1913,495 @@ def attest(
     today = date.today().isoformat()
     console.print("\n[green]Attestation recorded:[/green]")
     console.print(f"  ADR: {adr_id}")
-    console.print(f"  Status: {attest_status}")
+    console.print(f"  Term: {canonical_term}")
+    console.print(f"  Raw status token: {attest_status}")
     console.print(f"  By: {attester}")
     console.print(f"  Date: {today}")
     if reason:
         console.print(f"  Reason: {reason}")
+
+
+# =============================================================================
+# ADR Runtime Commands
+# =============================================================================
+
+
+def _manifest_verification_commands(
+    manifest: dict[str, Any], include_docs: bool = True
+) -> list[tuple[str, str]]:
+    verification = manifest.get("verification", {})
+    commands: list[tuple[str, str]] = [
+        ("test", verification.get("test", "uv run -m unittest discover tests")),
+        ("lint", verification.get("lint", "uv run gz lint")),
+        ("typecheck", verification.get("typecheck", "uv run gz typecheck")),
+    ]
+    if include_docs:
+        commands.append(("docs", verification.get("docs", "uv run mkdocs build --strict")))
+    return commands
+
+
+def _closeout_verification_steps(
+    manifest: dict[str, Any], lane: str, project_root: Path
+) -> tuple[list[tuple[str, str]], str | None]:
+    verification = manifest.get("verification", {})
+    steps: list[tuple[str, str]] = [
+        ("Gate 2 (TDD)", verification.get("test", "uv run -m unittest discover tests")),
+        ("Quality (Lint)", verification.get("lint", "uv run gz lint")),
+        ("Quality (Typecheck)", verification.get("typecheck", "uv run gz typecheck")),
+    ]
+    if lane != "heavy":
+        return steps, None
+
+    steps.append(("Gate 3 (Docs)", verification.get("docs", "uv run mkdocs build --strict")))
+    gate4_na_reason = _gate4_na_reason(project_root, lane)
+    if gate4_na_reason is None:
+        steps.append(("Gate 4 (BDD)", verification.get("bdd", "uv run -m behave features/")))
+    return steps, gate4_na_reason
+
+
+def _closeout_result_payload(
+    adr_id: str,
+    lane: str,
+    dry_run: bool,
+    event: dict[str, Any],
+    gate_1_path: str,
+    verification_steps: list[tuple[str, str]],
+    gate4_na_reason: str | None,
+    attestation_choices: list[str],
+) -> dict[str, Any]:
+    rendered_steps = [{"label": label, "command": command} for label, command in verification_steps]
+    return {
+        "adr": adr_id,
+        "mode": lane,
+        "dry_run": dry_run,
+        "event": event,
+        "gate_1_path": gate_1_path,
+        "verification_commands": [command for _label, command in verification_steps],
+        "verification_steps": rendered_steps,
+        "gate4_na_reason": gate4_na_reason,
+        "attestation_choices": attestation_choices,
+    }
+
+
+def _render_closeout_output(result: dict[str, Any], dry_run: bool) -> None:
+    adr_id = result["adr"]
+    lane = result["mode"]
+    gate_1_path = result["gate_1_path"]
+    gate4_na_reason = result.get("gate4_na_reason")
+    attestation_choices = result.get("attestation_choices", [])
+    steps = result.get("verification_steps", [])
+
+    if dry_run:
+        console.print("[yellow]Dry run:[/yellow] no ledger event will be written.")
+        console.print(f"  Would initiate closeout for: {adr_id}")
+        console.print(f"  Gate 1 (ADR): {gate_1_path}")
+        for step in steps:
+            console.print(f"  {step['label']}: {step['command']}")
+        if gate4_na_reason is not None and lane == "heavy":
+            console.print(f"  Gate 4 (BDD): N/A ({gate4_na_reason})")
+        console.print("  Gate 5 (Human): Awaiting explicit attestation")
+        for choice in attestation_choices:
+            console.print(f"    - {choice}", markup=False)
+        return
+
+    console.print(f"[green]Closeout initiated:[/green] {adr_id}")
+    console.print(f"Gate 1 (ADR): {gate_1_path}")
+    for step in steps:
+        console.print(f"{step['label']}: {step['command']}")
+    if gate4_na_reason is not None and lane == "heavy":
+        console.print(f"Gate 4 (BDD): N/A ({gate4_na_reason})")
+    console.print("Gate 5 (Human): Awaiting explicit attestation")
+    console.print("Attestation choices:")
+    for choice in attestation_choices:
+        console.print(f"  - {choice}", markup=False)
+    console.print(f"Record attestation command: uv run gz attest {adr_id} --status completed")
+
+
+def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
+    """Initiate closeout mode for an ADR and record a closeout event."""
+    config = ensure_initialized()
+    project_root = get_project_root()
+    manifest = load_manifest(project_root)
+    ledger = Ledger(project_root / config.paths.ledger)
+
+    adr_input = adr if adr.startswith("ADR-") else f"ADR-{adr}"
+    canonical_adr = ledger.canonicalize_id(adr_input)
+    adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
+    graph = ledger.get_artifact_graph()
+    adr_info = graph.get(adr_id, {})
+    lane = _resolve_adr_lane(adr_info, config.mode)
+
+    verification_steps, gate4_na_reason = _closeout_verification_steps(manifest, lane, project_root)
+    obpi_files, _expected = _collect_obpi_files_for_adr(project_root, config, ledger, adr_id)
+
+    closeout_form = adr_file.parent / "ADR-CLOSEOUT-FORM.md"
+    gate_1_path = str(adr_file.relative_to(project_root))
+    attestation_choices = ["Completed", "Completed — Partial: [reason]", "Dropped — [reason]"]
+    evidence = {
+        "adr_file": gate_1_path,
+        "closeout_form": (
+            str(closeout_form.relative_to(project_root)) if closeout_form.exists() else None
+        ),
+        "obpi_files": [str(path.relative_to(project_root)) for path in obpi_files.values()],
+        "verification_commands": [command for _label, command in verification_steps],
+        "verification_steps": [
+            {"label": label, "command": command} for label, command in verification_steps
+        ],
+        "gate4_na_reason": gate4_na_reason,
+        "attestation_choices": attestation_choices,
+    }
+    event = closeout_initiated_event(
+        adr_id=adr_id,
+        by=get_git_user(),
+        mode=lane,
+        evidence=evidence,
+    )
+
+    result = _closeout_result_payload(
+        adr_id=adr_id,
+        lane=lane,
+        dry_run=dry_run,
+        event=event.to_dict(),
+        gate_1_path=gate_1_path,
+        verification_steps=verification_steps,
+        gate4_na_reason=gate4_na_reason,
+        attestation_choices=attestation_choices,
+    )
+
+    if dry_run:
+        if as_json:
+            print(json.dumps(result, indent=2))
+            return
+        _render_closeout_output(result, dry_run=True)
+        return
+
+    ledger.append(event)
+
+    if as_json:
+        print(json.dumps(result, indent=2))
+        return
+
+    _render_closeout_output(result, dry_run=False)
+
+
+def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
+    """Run an ADR audit routine and store proof artifacts."""
+    config = ensure_initialized()
+    project_root = get_project_root()
+    manifest = load_manifest(project_root)
+    ledger = Ledger(project_root / config.paths.ledger)
+
+    adr_input = adr if adr.startswith("ADR-") else f"ADR-{adr}"
+    canonical_adr = ledger.canonicalize_id(adr_input)
+    adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
+    graph = ledger.get_artifact_graph()
+    adr_info = graph.get(adr_id)
+    if not adr_info or adr_info.get("type") != "adr":
+        raise GzCliError(f"ADR not found in ledger: {adr_id}")
+    if not adr_info.get("attested"):
+        blocker = {
+            "adr": adr_id,
+            "allowed": False,
+            "reason": "gz audit requires human attestation first (Gate 5).",
+            "next_steps": [
+                f"uv run gz closeout {adr_id}",
+                f"uv run gz attest {adr_id} --status completed",
+            ],
+            "dry_run": dry_run,
+        }
+        if as_json:
+            print(json.dumps(blocker, indent=2))
+        else:
+            console.print("[red]Audit blocked:[/red] human attestation is required first.")
+            console.print(f"  - Run: uv run gz closeout {adr_id}")
+            console.print(f"  - Run: uv run gz attest {adr_id} --status completed")
+        raise SystemExit(1)
+
+    audit_dir = adr_file.parent / "audit"
+    proofs_dir = audit_dir / "proofs"
+    include_docs = (project_root / "mkdocs.yml").exists()
+    commands = _manifest_verification_commands(manifest, include_docs=include_docs)
+
+    if dry_run:
+        if as_json:
+            print(
+                json.dumps(
+                    {
+                        "adr": adr_id,
+                        "dry_run": True,
+                        "audit_dir": str(audit_dir.relative_to(project_root)),
+                        "proofs_dir": str(proofs_dir.relative_to(project_root)),
+                        "commands": [command for _label, command in commands],
+                    },
+                    indent=2,
+                )
+            )
+            return
+        console.print("[yellow]Dry run:[/yellow] no files will be written.")
+        console.print(f"  Would create: {audit_dir.relative_to(project_root)}")
+        console.print(f"  Would create: {proofs_dir.relative_to(project_root)}")
+        for _label, command in commands:
+            console.print(f"  Would run: {command}")
+        return
+
+    proofs_dir.mkdir(parents=True, exist_ok=True)
+    result_rows: list[dict[str, Any]] = []
+    failures = 0
+    for label, command in commands:
+        result = run_command(command, cwd=project_root)
+        proof_file = proofs_dir / f"{label}.txt"
+        proof_file.write_text(
+            f"$ {command}\n\n[returncode] {result.returncode}\n\n"
+            f"[stdout]\n{result.stdout}\n\n[stderr]\n{result.stderr}\n"
+        )
+        result_rows.append(
+            {
+                "label": label,
+                "command": command,
+                "returncode": result.returncode,
+                "success": result.success,
+                "proof_file": str(proof_file.relative_to(project_root)),
+            }
+        )
+        if not result.success:
+            failures += 1
+
+    plan_file = audit_dir / "AUDIT_PLAN.md"
+    plan_file.write_text(
+        "\n".join(
+            [
+                f"# Audit Plan: {adr_id}",
+                "",
+                "## Scope",
+                f"- ADR: `{adr_file.relative_to(project_root)}`",
+                "",
+                "## Verification Commands",
+            ]
+            + [f"- `{row['command']}`" for row in result_rows]
+            + [
+                "",
+                "## Proof Output",
+                f"- Directory: `{proofs_dir.relative_to(project_root)}`",
+            ]
+        )
+        + "\n"
+    )
+
+    audit_file = audit_dir / "AUDIT.md"
+    audit_lines = [
+        f"# Audit: {adr_id}",
+        "",
+        f"- ADR: `{adr_file.relative_to(project_root)}`",
+        "",
+        "## Results",
+    ]
+    for row in result_rows:
+        status = "PASS" if row["success"] else "FAIL"
+        audit_lines.append(
+            f"- **{row['label']}**: {status} (`{row['command']}`) -> `{row['proof_file']}`"
+        )
+    audit_file.write_text("\n".join(audit_lines) + "\n")
+
+    output = {
+        "adr": adr_id,
+        "audit_file": str(audit_file.relative_to(project_root)),
+        "audit_plan_file": str(plan_file.relative_to(project_root)),
+        "results": result_rows,
+        "passed": failures == 0,
+    }
+    if as_json:
+        print(json.dumps(output, indent=2))
+    else:
+        console.print(f"[bold]Audit results for {adr_id}[/bold]")
+        for row in result_rows:
+            status = "[green]PASS[/green]" if row["success"] else "[red]FAIL[/red]"
+            console.print(f"  {row['label']}: {status}")
+        console.print(f"Audit plan: {plan_file.relative_to(project_root)}")
+        console.print(f"Audit report: {audit_file.relative_to(project_root)}")
+
+    if failures:
+        raise SystemExit(1)
+
+
+def adr_emit_receipt_cmd(
+    adr: str,
+    receipt_event: str,
+    attestor: str,
+    evidence_json: str | None,
+    dry_run: bool,
+) -> None:
+    """Emit an ADR audit receipt event anchored in the ledger."""
+    config = ensure_initialized()
+    project_root = get_project_root()
+    ledger = Ledger(project_root / config.paths.ledger)
+
+    adr_input = adr if adr.startswith("ADR-") else f"ADR-{adr}"
+    canonical_adr = ledger.canonicalize_id(adr_input)
+    _adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
+
+    evidence: dict[str, Any] | None = None
+    if evidence_json:
+        try:
+            parsed = json.loads(evidence_json)
+        except json.JSONDecodeError as exc:
+            raise GzCliError(f"Invalid --evidence-json: {exc}") from exc
+        if not isinstance(parsed, dict):
+            raise GzCliError("--evidence-json must decode to a JSON object")
+        evidence = parsed
+
+    event = audit_receipt_emitted_event(
+        adr_id=adr_id,
+        receipt_event=receipt_event,
+        attestor=attestor,
+        evidence=evidence,
+    )
+
+    if dry_run:
+        console.print("[yellow]Dry run:[/yellow] no ledger event will be written.")
+        console.print(json.dumps(event.to_dict(), indent=2))
+        return
+
+    ledger.append(event)
+    console.print("[green]Audit receipt emitted.[/green]")
+    console.print(f"  ADR: {adr_id}")
+    console.print(f"  Event: {receipt_event}")
+    console.print(f"  Attestor: {attestor}")
+
+
+def check_config_paths_cmd(as_json: bool) -> None:
+    """Validate that configured and manifest-declared paths exist and are coherent."""
+    config = ensure_initialized()
+    project_root = get_project_root()
+    manifest = load_manifest(project_root)
+
+    issues: list[dict[str, str]] = []
+
+    required_dirs = {
+        "paths.prd": config.paths.prd,
+        "paths.constitutions": config.paths.constitutions,
+        "paths.obpis": config.paths.obpis,
+        "paths.adrs": config.paths.adrs,
+        "paths.source_root": config.paths.source_root,
+        "paths.tests_root": config.paths.tests_root,
+        "paths.docs_root": config.paths.docs_root,
+        "paths.skills": config.paths.skills,
+        "paths.claude_skills": config.paths.claude_skills,
+    }
+    required_files = {
+        "paths.ledger": config.paths.ledger,
+        "paths.manifest": config.paths.manifest,
+        "paths.agents_md": config.paths.agents_md,
+        "paths.claude_md": config.paths.claude_md,
+        "paths.copilot_instructions": config.paths.copilot_instructions,
+    }
+
+    for label, rel_path in required_dirs.items():
+        path = project_root / rel_path
+        if not path.exists():
+            issues.append({"path": rel_path, "issue": f"{label} does not exist"})
+        elif not path.is_dir():
+            issues.append({"path": rel_path, "issue": f"{label} is not a directory"})
+
+    for label, rel_path in required_files.items():
+        path = project_root / rel_path
+        if not path.exists():
+            issues.append({"path": rel_path, "issue": f"{label} does not exist"})
+        elif not path.is_file():
+            issues.append({"path": rel_path, "issue": f"{label} is not a file"})
+
+    for artifact_name, artifact_cfg in manifest.get("artifacts", {}).items():
+        artifact_path = project_root / artifact_cfg.get("path", "")
+        if not artifact_path.exists():
+            issues.append(
+                {
+                    "path": str(artifact_path.relative_to(project_root)),
+                    "issue": f"manifest.artifacts.{artifact_name}.path missing",
+                }
+            )
+
+    for control_name, control_path in manifest.get("control_surfaces", {}).items():
+        path = project_root / control_path
+        should_be_dir = control_name in {"hooks", "skills", "claude_skills"}
+        if not path.exists():
+            issues.append(
+                {
+                    "path": control_path,
+                    "issue": f"manifest.control_surfaces.{control_name} missing",
+                }
+            )
+        elif should_be_dir and not path.is_dir():
+            issues.append(
+                {
+                    "path": control_path,
+                    "issue": f"manifest.control_surfaces.{control_name} should be a directory",
+                }
+            )
+        elif not should_be_dir and not path.is_file():
+            issues.append(
+                {
+                    "path": control_path,
+                    "issue": f"manifest.control_surfaces.{control_name} should be a file",
+                }
+            )
+
+    result = {"valid": not issues, "issues": issues}
+    if as_json:
+        print(json.dumps(result, indent=2))
+    elif not issues:
+        console.print("[green]Config-path audit passed.[/green]")
+    else:
+        console.print("[red]Config-path audit failed.[/red]")
+        for issue in issues:
+            console.print(f"  - {issue['path']}: {issue['issue']}")
+
+    if issues:
+        raise SystemExit(1)
+
+
+def cli_audit_cmd(as_json: bool) -> None:
+    """Validate CLI manpage/doc coverage for command surfaces."""
+    project_root = get_project_root()
+    issues: list[dict[str, str]] = []
+
+    index_path = project_root / "docs/user/commands/index.md"
+    index_content = index_path.read_text() if index_path.exists() else ""
+    if not index_path.exists():
+        issues.append({"path": "docs/user/commands/index.md", "issue": "commands index missing"})
+
+    for command_name, doc_rel in COMMAND_DOCS.items():
+        doc_path = project_root / doc_rel
+        if not doc_path.exists():
+            issues.append({"path": doc_rel, "issue": f"missing doc for `{command_name}`"})
+            continue
+
+        content = doc_path.read_text()
+        expected_heading = f"# gz {command_name}"
+        if not content.lstrip().startswith(expected_heading):
+            issues.append(
+                {
+                    "path": doc_rel,
+                    "issue": f"expected heading `{expected_heading}`",
+                }
+            )
+
+        basename = Path(doc_rel).name
+        if index_content and basename not in index_content:
+            issues.append(
+                {"path": "docs/user/commands/index.md", "issue": f"missing link to {basename}"}
+            )
+
+    result = {"valid": not issues, "issues": issues}
+    if as_json:
+        print(json.dumps(result, indent=2))
+    elif not issues:
+        console.print("[green]CLI audit passed.[/green]")
+    else:
+        console.print("[red]CLI audit failed.[/red]")
+        for issue in issues:
+            console.print(f"  - {issue['path']}: {issue['issue']}")
+
+    if issues:
+        raise SystemExit(1)
 
 
 # =============================================================================
@@ -1552,13 +2410,17 @@ def attest(
 
 
 def validate(
-    check_manifest: bool, check_documents: bool, check_surfaces: bool, as_json: bool
+    check_manifest: bool,
+    check_documents: bool,
+    check_surfaces: bool,
+    check_ledger: bool,
+    as_json: bool,
 ) -> None:
     """Validate governance artifacts against schemas."""
     project_root = get_project_root()
 
     # If no specific check requested, run all
-    run_all = not any([check_manifest, check_documents, check_surfaces])
+    run_all = not any([check_manifest, check_documents, check_surfaces, check_ledger])
 
     errors = []
 
@@ -1568,6 +2430,10 @@ def validate(
 
     if run_all or check_surfaces:
         errors.extend(validate_surfaces(project_root))
+
+    if run_all or check_ledger:
+        ledger_path = project_root / ".gzkit" / "ledger.jsonl"
+        errors.extend(validate_ledger(ledger_path))
 
     if run_all or check_documents:
         # Validate documents based on manifest
@@ -2029,6 +2895,71 @@ def _build_parser() -> argparse.ArgumentParser:
     p_status.add_argument("--json", dest="as_json", action="store_true")
     p_status.set_defaults(func=lambda a: status(as_json=a.as_json))
 
+    p_closeout = commands.add_parser(
+        "closeout", help="Initiate closeout mode and record closeout event"
+    )
+    p_closeout.add_argument("adr")
+    p_closeout.add_argument("--json", dest="as_json", action="store_true")
+    p_closeout.add_argument("--dry-run", action="store_true")
+    p_closeout.set_defaults(
+        func=lambda a: closeout_cmd(adr=a.adr, as_json=a.as_json, dry_run=a.dry_run)
+    )
+
+    p_audit = commands.add_parser("audit", help="Run ADR audit routine and persist proof artifacts")
+    p_audit.add_argument("adr")
+    p_audit.add_argument("--json", dest="as_json", action="store_true")
+    p_audit.add_argument("--dry-run", action="store_true")
+    p_audit.set_defaults(func=lambda a: audit_cmd(adr=a.adr, as_json=a.as_json, dry_run=a.dry_run))
+
+    p_adr = commands.add_parser("adr", help="ADR-focused governance commands")
+    adr_commands = p_adr.add_subparsers(dest="adr_command")
+    adr_commands.required = True
+
+    p_adr_status = adr_commands.add_parser("status", help="Show focused status for one ADR")
+    p_adr_status.add_argument("adr")
+    p_adr_status.add_argument("--json", dest="as_json", action="store_true")
+    p_adr_status.set_defaults(func=lambda a: adr_status_cmd(adr=a.adr, as_json=a.as_json))
+
+    p_adr_audit_check = adr_commands.add_parser(
+        "audit-check", help="Verify linked OBPIs are complete with evidence"
+    )
+    p_adr_audit_check.add_argument("adr")
+    p_adr_audit_check.add_argument("--json", dest="as_json", action="store_true")
+    p_adr_audit_check.set_defaults(func=lambda a: adr_audit_check(adr=a.adr, as_json=a.as_json))
+
+    p_adr_emit = adr_commands.add_parser(
+        "emit-receipt", help="Emit completed/validated receipt event for an ADR"
+    )
+    p_adr_emit.add_argument("adr")
+    p_adr_emit.add_argument(
+        "--event", dest="receipt_event", required=True, choices=["completed", "validated"]
+    )
+    p_adr_emit.add_argument("--attestor", required=True)
+    p_adr_emit.add_argument("--evidence-json")
+    p_adr_emit.add_argument("--dry-run", action="store_true")
+    p_adr_emit.set_defaults(
+        func=lambda a: adr_emit_receipt_cmd(
+            adr=a.adr,
+            receipt_event=a.receipt_event,
+            attestor=a.attestor,
+            evidence_json=a.evidence_json,
+            dry_run=a.dry_run,
+        )
+    )
+
+    p_check_paths = commands.add_parser(
+        "check-config-paths", help="Validate config/manifest paths are coherent"
+    )
+    p_check_paths.add_argument("--json", dest="as_json", action="store_true")
+    p_check_paths.set_defaults(func=lambda a: check_config_paths_cmd(as_json=a.as_json))
+
+    p_cli = commands.add_parser("cli", help="CLI governance commands")
+    cli_commands = p_cli.add_subparsers(dest="cli_command")
+    cli_commands.required = True
+    p_cli_audit = cli_commands.add_parser("audit", help="Audit CLI docs/manpage coverage")
+    p_cli_audit.add_argument("--json", dest="as_json", action="store_true")
+    p_cli_audit.set_defaults(func=lambda a: cli_audit_cmd(as_json=a.as_json))
+
     p_git_sync = commands.add_parser("git-sync", help="Sync branch with guarded ritual")
     _add_git_sync_options(p_git_sync)
     p_git_sync.set_defaults(
@@ -2130,12 +3061,14 @@ def _build_parser() -> argparse.ArgumentParser:
     p_validate.add_argument("--manifest", dest="check_manifest", action="store_true")
     p_validate.add_argument("--documents", dest="check_documents", action="store_true")
     p_validate.add_argument("--surfaces", dest="check_surfaces", action="store_true")
+    p_validate.add_argument("--ledger", dest="check_ledger", action="store_true")
     p_validate.add_argument("--json", dest="as_json", action="store_true")
     p_validate.set_defaults(
         func=lambda a: validate(
             check_manifest=a.check_manifest,
             check_documents=a.check_documents,
             check_surfaces=a.check_surfaces,
+            check_ledger=a.check_ledger,
             as_json=a.as_json,
         )
     )

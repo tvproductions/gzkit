@@ -2,6 +2,18 @@
 
 **GovZero Kit: A Development Covenant for Human-AI Collaboration**
 
+[![Version](https://img.shields.io/badge/version-0.3.1-blue.svg)](RELEASE_NOTES.md)
+[![Python 3.13+](https://img.shields.io/badge/python-3.13+-3776ab.svg?logo=python&logoColor=white)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![Docs CI](https://img.shields.io/github/actions/workflow/status/tvproductions/gzkit/docs.yml?branch=main&logo=github&label=Docs%20CI)](https://github.com/tvproductions/gzkit/actions/workflows/docs.yml)
+[![Docs](https://img.shields.io/badge/docs-MkDocs-blue.svg?logo=readthedocs)](https://gzkit.org)
+[![Code Style: Ruff](https://img.shields.io/badge/code%20style-ruff-261230.svg?logo=ruff)](https://github.com/astral-sh/ruff)
+[![Package Manager: uv](https://img.shields.io/badge/package%20manager-uv-de5fe9.svg?logo=astral)](https://github.com/astral-sh/uv)
+
+[Documentation](https://gzkit.org)
+[Release Notes](RELEASE_NOTES.md)
+[Roadmap](docs/design/roadmap/ROADMAP-GZKIT.md)
+
 gzkit is cognitive infrastructure for extended human-AI collaboration—a protocol that preserves human intent across agent context boundaries, gives agents constraints to reason against, creates verification loops both parties trust, and reserves final judgment for humans.
 
 ## Why gzkit?
@@ -118,11 +130,10 @@ gzkit uses `.gzkit.json` for project configuration:
 
 ## Documentation
 
-- [Charter](docs/charter.md) — The covenant itself
-- [Lineage](docs/lineage.md) — Heritage from spec-kit and GovZero
-- [Concepts](docs/concepts/) — The three concerns explained
-- [Genesis](docs/genesis.md) — Origin story and founding conversation
-- [Sources](docs/sources/) — Original AirlineOps documents
+- [Charter](docs/user/reference/charter.md) — The covenant itself
+- [Lineage](docs/user/reference/lineage.md) — Heritage from spec-kit and GovZero
+- [Concepts](docs/user/concepts/) — The three concerns explained
+- [Genesis](docs/user/reference/genesis.md) — Origin story and founding conversation
 
 ## Philosophy
 

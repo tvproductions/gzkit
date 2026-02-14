@@ -10,6 +10,8 @@ from gzkit.ledger import (
     adr_created_event,
     artifact_renamed_event,
     attested_event,
+    audit_receipt_emitted_event,
+    closeout_initiated_event,
     constitution_created_event,
     gate_checked_event,
     obpi_created_event,
@@ -245,6 +247,64 @@ class TestLedger(unittest.TestCase):
 
             statuses = ledger.get_latest_gate_statuses("ADR-0.6.0-pool.gz-chores-system")
             self.assertEqual(statuses, {2: "pass"})
+
+    def test_get_artifact_graph_tracks_closeout_and_validation_receipt(self) -> None:
+        """Graph captures closeout initiation and validation receipts for ADR semantics."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ledger_path = Path(tmpdir) / "ledger.jsonl"
+            ledger = Ledger(ledger_path)
+
+            ledger.append(adr_created_event("ADR-0.1.0", "", "heavy"))
+            ledger.append(closeout_initiated_event("ADR-0.1.0", "human", "heavy"))
+            ledger.append(attested_event("ADR-0.1.0", "completed", "human"))
+            ledger.append(audit_receipt_emitted_event("ADR-0.1.0", "validated", "human"))
+
+            graph = ledger.get_artifact_graph()
+            adr = graph["ADR-0.1.0"]
+            self.assertTrue(adr["closeout_initiated"])
+            self.assertEqual(adr["latest_receipt_event"], "validated")
+            self.assertTrue(adr["validated"])
+
+    def test_obpi_scoped_validation_receipt_does_not_mark_adr_validated(self) -> None:
+        """OBPI-scoped receipts must not imply ADR-level validation."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ledger_path = Path(tmpdir) / "ledger.jsonl"
+            ledger = Ledger(ledger_path)
+
+            ledger.append(adr_created_event("ADR-0.1.0", "", "heavy"))
+            ledger.append(
+                audit_receipt_emitted_event(
+                    "ADR-0.1.0",
+                    "validated",
+                    "human",
+                    evidence={
+                        "scope": "OBPI-0.1.0-01",
+                        "adr_completion": "not_completed",
+                        "obpi_completion": "attested_completed",
+                    },
+                )
+            )
+
+            graph = ledger.get_artifact_graph()
+            adr = graph["ADR-0.1.0"]
+            self.assertEqual(adr["latest_receipt_event"], "validated")
+            self.assertFalse(adr["validated"])
+
+    def test_derive_adr_semantics_maps_lifecycle_and_terms(self) -> None:
+        """Derived semantics map attestation and receipts to canonical lifecycle fields."""
+        completed = Ledger.derive_adr_semantics({"attestation_status": "completed"})
+        self.assertEqual(completed["lifecycle_status"], "Completed")
+        self.assertEqual(completed["attestation_term"], "Completed")
+
+        abandoned = Ledger.derive_adr_semantics({"attestation_status": "dropped"})
+        self.assertEqual(abandoned["lifecycle_status"], "Abandoned")
+        self.assertEqual(abandoned["attestation_term"], "Dropped")
+
+        validated = Ledger.derive_adr_semantics(
+            {"attestation_status": "completed", "validated": True}
+        )
+        self.assertEqual(validated["lifecycle_status"], "Validated")
+        self.assertEqual(validated["closeout_phase"], "validated")
 
 
 if __name__ == "__main__":
