@@ -46,6 +46,18 @@ uv run gz adr emit-receipt ADR-<X.Y.Z> --event validated --attestor "<Human Name
 
 ---
 
+## AirlineOps Parity Scan Canonical-Root Rules
+
+When running parity scans, canonical root resolution is deterministic and fail-closed:
+
+1. explicit override (if provided)
+2. sibling path `../airlineops`
+3. absolute fallback `/Users/jeff/Documents/Code/airlineops`
+
+If none resolve, stop and report blockers. Do not claim parity completion without canonical-root evidence.
+
+---
+
 ## Notes
 
 - Do not run `gz audit` pre-attestation.
