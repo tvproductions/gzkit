@@ -1,0 +1,18 @@
+$ uv run mkdocs build --strict
+
+[returncode] 0
+
+[stdout]
+
+
+[stderr]
+INFO    -  Cleaning site directory
+INFO    -  Building documentation to directory: /Users/jeff/Documents/Code/gzkit/site
+INFO    -  The following pages exist in the docs directory, but are not included in the "nav" configuration:
+  - README.md
+  - user/reference/genesis-transcript.md
+INFO    -  Doc file 'governance/GovZero/architectural-enforcement.md' contains an unrecognized relative link '../../design/adr/adr-0.1.x/ADR-0.1.16-unified-adapter-architecture/', it was left as is.
+INFO    -  Doc file 'governance/GovZero/audit-protocol.md' contains an absolute link '/AGENTS.md', it was left as is.
+INFO    -  Doc file 'governance/GovZero/charter.md' contains an absolute link '/AGENTS.md', it was left as is.
+INFO    -  Doc file 'governance/GovZero/charter.md' contains an absolute link '/config/governance_manifest.json', it was left as is.
+INFO    -  Documentation built in 0.46 seconds

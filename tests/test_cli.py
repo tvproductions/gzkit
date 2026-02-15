@@ -18,6 +18,7 @@ from gzkit.ledger import (
     attested_event,
     audit_receipt_emitted_event,
     gate_checked_event,
+    obpi_created_event,
 )
 
 
@@ -270,6 +271,39 @@ class TestAttestSemantics(unittest.TestCase):
             ledger_content = Path(".gzkit/ledger.jsonl").read_text()
             self.assertIn("attested", ledger_content)
             self.assertIn("manual override for reconciliation", ledger_content)
+
+    def test_attest_rejects_pool_adr(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            pool_dir = Path(config.paths.adrs) / "pool"
+            pool_dir.mkdir(parents=True, exist_ok=True)
+            pool_adr = pool_dir / "ADR-pool.sample.md"
+            pool_adr.write_text("---\nid: ADR-pool.sample\n---\n\n# ADR-pool.sample\n")
+
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(adr_created_event("ADR-pool.sample", "", "heavy"))
+            ledger.append(gate_checked_event("ADR-pool.sample", 2, "pass", "test", 0))
+            ledger.append(gate_checked_event("ADR-pool.sample", 3, "pass", "docs", 0))
+
+            result = runner.invoke(
+                main,
+                [
+                    "attest",
+                    "ADR-pool.sample",
+                    "--status",
+                    "completed",
+                    "--force",
+                    "--reason",
+                    "override",
+                ],
+            )
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("Pool ADRs cannot be attested", result.output)
+
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text()
+            self.assertNotIn('"event":"attested","id":"ADR-pool.sample"', ledger_content)
 
 
 class TestGateCommands(unittest.TestCase):
@@ -1064,6 +1098,98 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
             adr_payload = payload["adrs"]["ADR-0.1.0"]
             self.assertEqual(adr_payload["lifecycle_status"], "Completed")
             self.assertEqual(adr_payload["attestation_term"], "Completed — Partial")
+
+    def test_adr_status_json_pool_adr_ignores_attestation_for_lifecycle(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            pool_dir = Path(config.paths.adrs) / "pool"
+            pool_dir.mkdir(parents=True, exist_ok=True)
+            pool_adr = pool_dir / "ADR-pool.sample.md"
+            pool_adr.write_text("---\nid: ADR-pool.sample\n---\n\n# ADR-pool.sample\n")
+
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(adr_created_event("ADR-pool.sample", "", "heavy"))
+            ledger.append(attested_event("ADR-pool.sample", "completed", "human"))
+
+            result = runner.invoke(main, ["adr", "status", "ADR-pool.sample", "--json"])
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            self.assertEqual(payload["lifecycle_status"], "Pending")
+            self.assertEqual(payload["closeout_phase"], "pre_closeout")
+            self.assertIsNone(payload["attestation_term"])
+            self.assertFalse(payload["attested"])
+            self.assertEqual(payload["gates"]["5"], "pending")
+
+    def test_status_json_pool_adr_ignores_attestation_for_lifecycle(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            pool_dir = Path(config.paths.adrs) / "pool"
+            pool_dir.mkdir(parents=True, exist_ok=True)
+            pool_adr = pool_dir / "ADR-pool.sample.md"
+            pool_adr.write_text("---\nid: ADR-pool.sample\n---\n\n# ADR-pool.sample\n")
+
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(adr_created_event("ADR-pool.sample", "", "heavy"))
+            ledger.append(attested_event("ADR-pool.sample", "completed", "human"))
+
+            result = runner.invoke(main, ["status", "--json"])
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            adr_payload = payload["adrs"]["ADR-pool.sample"]
+            self.assertEqual(adr_payload["lifecycle_status"], "Pending")
+            self.assertEqual(adr_payload["closeout_phase"], "pre_closeout")
+            self.assertIsNone(adr_payload["attestation_term"])
+            self.assertFalse(adr_payload["attested"])
+            self.assertEqual(adr_payload["gates"]["5"], "pending")
+
+    def test_adr_status_json_includes_obpi_rows(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.obpis) / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            TestAdrRuntimeCommands._write_obpi(
+                path=obpi_path,
+                status="Completed",
+                brief_status="Completed",
+                implementation_line="src/module.py",
+            )
+
+            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0", "--json"])
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            self.assertIn("obpis", payload)
+            self.assertEqual(len(payload["obpis"]), 1)
+            row = payload["obpis"][0]
+            self.assertEqual(row["id"], "OBPI-0.1.0-01-demo")
+            self.assertTrue(row["found_file"])
+            self.assertTrue(row["completed"])
+            self.assertTrue(row["evidence_ok"])
+            self.assertEqual(row["issues"], [])
+
+    def test_adr_status_json_reports_missing_linked_obpi_file(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-core-feature", "ADR-0.1.0"))
+
+            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0", "--json"])
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            self.assertIn("obpis", payload)
+            self.assertEqual(len(payload["obpis"]), 1)
+            row = payload["obpis"][0]
+            self.assertEqual(row["id"], "OBPI-0.1.0-01-core-feature")
+            self.assertFalse(row["found_file"])
+            self.assertIn("linked in ledger but no OBPI file found", row["issues"])
 
     def test_state_ready_json_only_includes_gate_ready_unattested_adrs(self) -> None:
         runner = CliRunner()

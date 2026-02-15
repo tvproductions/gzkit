@@ -4,7 +4,7 @@
 
 - Date: YYYY-MM-DD
 - Scanner: Human + Agent
-- Canonical Source: `../airlineops`
+- Canonical Source: `<resolved canonical root>`
 - Scope: GovZero governance tools, rules, policies, and proof surfaces
 - Identity rule: `GovZero = AirlineOps - (AirlineOps product capabilities)`
 
@@ -15,6 +15,21 @@
 - Overall parity status:
 - Critical gaps:
 - Recommended next minor(s):
+
+---
+
+## Canonical-Root Resolution Evidence (Required)
+
+- Resolution order used:
+  1. explicit override (if provided)
+  2. sibling path `../airlineops`
+  3. absolute fallback `/Users/jeff/Documents/Code/airlineops`
+- Selected canonical root:
+- Fallback engaged (yes/no):
+- Fail-closed behavior statement: if no candidate resolves, stop and report blockers; do not emit parity conclusions.
+- Evidence commands:
+  - `test -d ../airlineops && echo "sibling present" || echo "sibling missing"`
+  - `test -d /Users/jeff/Documents/Code/airlineops && echo "absolute fallback present" || echo "absolute fallback missing"`
 
 ---
 
@@ -42,6 +57,20 @@
 | Verification | closeout/audit procedures | `gz adr audit-check`, closeout docs, proofs |  |  |  |
 | Presentation | runbooks, manpages, operator narratives | `docs/user/commands/*`, `docs/user/runbook.md`, references |  |  |  |
 | Human authority boundary | Gate 5 attestation doctrine | attestation steps and OBPI/ADR completion language |  |  |  |
+
+---
+
+## Habit Parity Matrix (Required)
+
+| Habit Class | Canonical Source Signal | gzkit Surface(s) | Status (Parity/Partial/Missing/Divergent) | Severity (P0-P3) | Evidence |
+|---|---|---|---|---|---|
+| Pre-tool orientation |  |  |  |  |  |
+| Tool-use control surfaces |  |  |  |  |  |
+| Post-tool accounting |  |  |  |  |  |
+| Validation |  |  |  |  |  |
+| Verification |  |  |  |  |  |
+| Presentation for humans |  |  |  |  |  |
+| Human authority boundary |  |  |  |  |  |
 
 ---
 

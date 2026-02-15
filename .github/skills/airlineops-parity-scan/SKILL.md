@@ -41,6 +41,7 @@ GovZero mining rule:
    - sibling path `../airlineops`
    - absolute fallback `/Users/jeff/Documents/Code/airlineops`
    Fail closed if none resolve.
+   Record canonical-root evidence in the parity report.
 3. Read canonical source declarations:
    `docs/lodestar/govzero-doctrine.md`, `docs/lodestar/README.md`, `AGENTS.md`.
 4. Build a behavior/procedure source matrix from canonical and extraction surfaces:

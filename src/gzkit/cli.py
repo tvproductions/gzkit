@@ -149,6 +149,23 @@ def _is_pool_adr_id(adr_id: str) -> bool:
     return ADR_POOL_ID_RE.match(adr_id) is not None or "-pool." in adr_id
 
 
+def _apply_pool_adr_status_overrides(adr_id: str, payload: dict[str, Any]) -> None:
+    """Force pool ADRs to remain backlog-style on status surfaces."""
+    if not _is_pool_adr_id(adr_id):
+        return
+
+    payload["attested"] = False
+    payload["attestation_status"] = None
+    payload["attestation_term"] = None
+    payload["validated"] = False
+    payload["lifecycle_status"] = "Pending"
+    payload["closeout_phase"] = "pre_closeout"
+
+    gates = cast(dict[str, str], payload.get("gates", {}))
+    if gates:
+        gates["5"] = "pending"
+
+
 def get_project_root() -> Path:
     """Get the project root directory."""
     return Path.cwd()
@@ -1111,6 +1128,7 @@ def status(as_json: bool) -> None:
         if gate4_na is not None:
             entry["gate4_na_reason"] = gate4_na
         entry.update(Ledger.derive_adr_semantics(entry))
+        _apply_pool_adr_status_overrides(adr_id, entry)
         adrs[adr_id] = entry
 
     if as_json:
@@ -1252,6 +1270,52 @@ def _collect_obpi_files_for_adr(
     return obpi_files, expected_obpis
 
 
+def _adr_obpi_status_rows(
+    project_root: Path,
+    config: GzkitConfig,
+    ledger: Ledger,
+    adr_id: str,
+) -> list[dict[str, Any]]:
+    """Build per-OBPI status rows for a target ADR."""
+    obpi_files, expected_obpis = _collect_obpi_files_for_adr(project_root, config, ledger, adr_id)
+    rows: list[dict[str, Any]] = []
+
+    for expected_id in sorted(expected_obpis):
+        if expected_id in obpi_files:
+            continue
+        rows.append(
+            {
+                "id": expected_id,
+                "linked_in_ledger": True,
+                "found_file": False,
+                "file": None,
+                "completed": False,
+                "evidence_ok": False,
+                "frontmatter_status": None,
+                "brief_status": None,
+                "issues": ["linked in ledger but no OBPI file found"],
+            }
+        )
+
+    for obpi_id, obpi_file in sorted(obpi_files.items()):
+        inspection = _inspect_obpi_brief(obpi_file)
+        rows.append(
+            {
+                "id": obpi_id,
+                "linked_in_ledger": obpi_id in expected_obpis,
+                "found_file": True,
+                "file": str(obpi_file.relative_to(project_root)),
+                "completed": bool(inspection["completed"]),
+                "evidence_ok": bool(inspection["evidence_ok"]),
+                "frontmatter_status": inspection["frontmatter_status"],
+                "brief_status": inspection["brief_status"],
+                "issues": list(inspection["reasons"]),
+            }
+        )
+
+    return sorted(rows, key=lambda row: cast(str, row.get("id", "")))
+
+
 def adr_audit_check(adr: str, as_json: bool) -> None:
     """Verify linked OBPIs are complete and contain implementation evidence."""
     config = ensure_initialized()
@@ -1364,6 +1428,8 @@ def adr_status_cmd(adr: str, as_json: bool) -> None:
             "5": "pass" if info.get("attested") else "pending",
         },
     }
+    _apply_pool_adr_status_overrides(adr_id, result)
+    result["obpis"] = _adr_obpi_status_rows(project_root, config, ledger, adr_id)
     if gate4_na is not None:
         result["gate4_na_reason"] = gate4_na
 
@@ -1381,12 +1447,28 @@ def adr_status_cmd(adr: str, as_json: bool) -> None:
         console.print(f"  Gate 4 (BDD):   {_render_gate_status(result['gates'].get('4'))}")
         if result["gates"].get("4") == "n/a":
             console.print(f"                 ({gate4_na})")
+        is_attested = bool(result.get("attested"))
         gate5_detail = f" ({result['attestation_term']})" if result.get("attestation_term") else ""
         console.print(
             "  Gate 5 (Human): "
-            + ("[green]PASS[/green]" if info.get("attested") else "[yellow]PENDING[/yellow]")
-            + (gate5_detail if info.get("attested") else "")
+            + ("[green]PASS[/green]" if is_attested else "[yellow]PENDING[/yellow]")
+            + (gate5_detail if is_attested else "")
         )
+    console.print("  OBPIs:")
+    obpi_rows = cast(list[dict[str, Any]], result.get("obpis", []))
+    if not obpi_rows:
+        console.print("    - none linked")
+        return
+    for row in obpi_rows:
+        obpi_id = cast(str, row.get("id", "(unknown)"))
+        if not row.get("found_file"):
+            console.print(f"    - {obpi_id}: [red]MISSING FILE[/red]")
+            continue
+        if row.get("completed") and row.get("evidence_ok"):
+            console.print(f"    - {obpi_id}: [green]COMPLETED[/green] + evidence")
+            continue
+        issues = ", ".join(cast(list[str], row.get("issues", [])))
+        console.print(f"    - {obpi_id}: [yellow]INCOMPLETE[/yellow] ({issues})")
 
 
 def git_sync(
@@ -1870,7 +1952,11 @@ def attest(
     canonical_adr = ledger.canonicalize_id(adr_input)
 
     # Verify ADR exists (support nested ADR layout)
-    adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
+    _adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
+    if _is_pool_adr_id(adr_id):
+        raise GzCliError(
+            f"Pool ADRs cannot be attested: {adr_id}. Promote this ADR from pool first."
+        )
 
     snapshot = _attestation_gate_snapshot(project_root, config, ledger, adr_id)
     if force and not snapshot["ready"] and not reason:

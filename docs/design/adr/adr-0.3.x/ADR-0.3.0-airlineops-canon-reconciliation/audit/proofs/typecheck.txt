@@ -1,0 +1,9 @@
+$ uvx ty check src
+
+[returncode] 0
+
+[stdout]
+All checks passed!
+
+
+[stderr]
