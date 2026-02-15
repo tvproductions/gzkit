@@ -3,7 +3,7 @@ id: OBPI-0.3.0-05-parity-scan-path-hardening
 parent: ADR-0.3.0
 item: 5
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.3.0-05-parity-scan-path-hardening: Parity Scan Path Hardening
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/adr-0.3.x/ADR-0.3.0-airlineops-canon-reconciliation/ADR-0.3.0-airlineops-canon-reconciliation.md`
 - **Checklist Item:** #5 — "Harden parity scan path resolution for worktree and non-worktree execution contexts."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -54,31 +54,31 @@ Make parity scan execution deterministic across worktree layouts by adding canon
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] Tests pass: `uv run -m unittest discover tests`
+- [x] Tests pass: `uv run -m unittest discover tests`
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Format clean: `uv run gz format --check` (or equivalent non-mutating check)
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Format clean: `uv run gz format --check` (or equivalent non-mutating check)
+- [x] Type check clean: `uv run gz typecheck`
 
 ### Gate 3: Docs (Heavy only)
 
-- [ ] Docs lint/build checks pass for changed docs
-- [ ] Parity report template includes habit-class matrix expectations
+- [x] Docs lint/build checks pass for changed docs
+- [x] Parity report template includes habit-class matrix expectations
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] Contract-level behavior checks executed or explicitly marked N/A with rationale
+- [x] Contract-level behavior checks executed or explicitly marked N/A with rationale
 
 ### Gate 5: Human (Heavy only)
 
-- [ ] Human attestation recorded after observing deterministic scan behavior in at least one non-sibling context
+- [x] Human attestation recorded after observing deterministic scan behavior in at least one non-sibling context
 
 ## Verification
 
@@ -92,19 +92,38 @@ uv run gz validate --documents
 
 ## Acceptance Criteria
 
-- [ ] Parity scan instructions document robust canonical path discovery.
-- [ ] Automation runs no longer block solely due to worktree-relative path assumptions.
-- [ ] Parity report generation remains dated, repeatable, and evidence-based.
-- [ ] Each parity report includes habit-class status and required follow-up linkage.
+- [x] Parity scan instructions document robust canonical path discovery.
+- [x] Automation runs no longer block solely due to worktree-relative path assumptions.
+- [x] Parity report generation remains dated, repeatable, and evidence-based.
+- [x] Each parity report includes habit-class status and required follow-up linkage.
 
 ## Evidence
 
 ### Implementation Summary
 
 - Files created/modified:
+  - `.github/skills/airlineops-parity-scan/SKILL.md`
+  - `docs/proposals/REPORT-TEMPLATE-airlineops-parity.md`
+  - `docs/proposals/REPORT-airlineops-parity-2026-02-15-obpi-05.md`
+  - `docs/proposals/REPORT-airlineops-habit-parity-2026-02-15-obpi-05.md`
+  - `docs/user/runbook.md`
+  - `docs/design/adr/adr-0.3.x/ADR-0.3.0-airlineops-canon-reconciliation/obpis/OBPI-0.3.0-05-parity-scan-path-hardening.md`
 - Validation commands run:
+  - `test -d ../airlineops && echo "sibling present"`
+  - `test -d /Users/jeff/Documents/Code/airlineops && echo "absolute fallback present"`
+  - `rg -n "Habit Parity Matrix|canonical-root|fail closed" .github/skills/airlineops-parity-scan/SKILL.md docs/proposals/REPORT-TEMPLATE-airlineops-parity.md docs/proposals/REPORT-airlineops-habit-parity-*.md`
+  - `uv run -m unittest discover tests`
+  - `uv run gz lint`
+  - `uv run gz typecheck`
+  - `uv run mkdocs build --strict`
+  - `uv run gz validate --documents`
+  - `uv run gz adr audit-check ADR-0.3.0`
+  - `uv run gz adr status ADR-0.3.0 --json`
+  - `uv run gz status`
+  - `uv run gz adr emit-receipt ADR-0.3.0 --event validated --attestor "Jeffry Babb" --evidence-json '{"scope":"OBPI-0.3.0-05","adr_completion":"not_completed","obpi_completion":"attested_completed","attestation":"I attest I understand the completion of OBPI-0.3.0-05.","date":"2026-02-15"}'`
 - Date completed:
+  - 2026-02-15
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
