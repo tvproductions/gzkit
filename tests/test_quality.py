@@ -1,5 +1,6 @@
 """Tests for gzkit quality module."""
 
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -44,9 +45,10 @@ class TestRunCommand(unittest.TestCase):
     def test_command_with_cwd(self) -> None:
         """Command runs in specified directory."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            result = run_command("pwd", cwd=Path(tmpdir))
+            command = f'"{sys.executable}" -c "import os; print(os.getcwd())"'
+            result = run_command(command, cwd=Path(tmpdir))
             self.assertTrue(result.success)
-            self.assertIn(tmpdir, result.stdout)
+            self.assertEqual(Path(result.stdout.strip()).resolve(), Path(tmpdir).resolve())
 
 
 if __name__ == "__main__":
