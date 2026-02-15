@@ -1,5 +1,6 @@
 """Tests for gzkit hooks module."""
 
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -82,6 +83,8 @@ class TestWriteHookScript(unittest.TestCase):
 
     def test_makes_executable(self) -> None:
         """Hook script is executable."""
+        if os.name == "nt":
+            self.skipTest("Executable bit is not meaningful on Windows")
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
             script_path = write_hook_script(project_root, "claude", ".claude/hooks")

@@ -74,7 +74,7 @@ class TestGzkitConfig(unittest.TestCase):
         config = GzkitConfig()
         path = config.get_path("prd")
         self.assertIsInstance(path, Path)
-        self.assertEqual(str(path), "design/prd")
+        self.assertEqual(path.as_posix(), "design/prd")
 
 
 if __name__ == "__main__":
