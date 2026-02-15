@@ -1,6 +1,7 @@
 """Tests for gzkit template system."""
 
 import unittest
+from pathlib import Path
 
 from gzkit.templates import list_templates, load_template, render_template
 
@@ -79,11 +80,12 @@ class TestListTemplates(unittest.TestCase):
     def test_lists_core_templates(self) -> None:
         """Lists all core templates."""
         templates = list_templates()
-        self.assertIn("prd", templates)
-        self.assertIn("adr", templates)
-        self.assertIn("obpi", templates)
-        self.assertIn("constitution", templates)
-        self.assertIn("agents", templates)
+        names = {Path(template).stem for template in templates}
+        self.assertIn("prd", names)
+        self.assertIn("adr", names)
+        self.assertIn("obpi", names)
+        self.assertIn("constitution", names)
+        self.assertIn("agents", names)
 
 
 if __name__ == "__main__":
