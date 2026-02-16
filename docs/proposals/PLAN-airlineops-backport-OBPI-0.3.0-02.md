@@ -7,17 +7,17 @@ Apply the gzkit OBPI-0.3.0-02 parity outcomes back into AirlineOps to preserve b
 ## Required Backport Changes
 
 1. Rename skill surface:
-- `gz-adr-manager` -> `gz-adr-create`
-- Update skill directory names in `.github/skills/` and `.claude/skills/`
-- Update references in `AGENTS.md`, `CLAUDE.md`, GovZero docs, and skill cross-links
+   - `gz-adr-manager` -> `gz-adr-create`
+   - Update skill directory names in `.github/skills/` and `.claude/skills/`
+   - Update references in `AGENTS.md`, `CLAUDE.md`, GovZero docs, and skill cross-links
 
 2. Preserve full-depth skill behavior:
-- Keep canonical `gz-adr-audit` procedure depth and assets
-- Keep canonical create workflow under renamed `gz-adr-create`
+   - Keep canonical `gz-adr-audit` procedure depth and assets
+   - Keep canonical create workflow under renamed `gz-adr-create`
 
 3. Runtime/doc alignment:
-- Ensure command references in skills map to active AirlineOps runtime command surface
-- Update command manpages/runbook links to renamed skill
+   - Ensure command references in skills map to active AirlineOps runtime command surface
+   - Update command manpages/runbook links to renamed skill
 
 ## Suggested Sequencing
 
