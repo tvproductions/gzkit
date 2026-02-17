@@ -546,7 +546,7 @@ PreToolUse hooks MAY:
 - [ ] `gz plan ADR-0.1.0 --brief my-feature` runs mandatory Q&A interview
 - [ ] Interview answers populate ADR template
 - [ ] Q&A transcript saved to `.gzkit/transcripts/ADR-0.1.0-interview.md`
-- [ ] ADR folder structure created: `docs/design/adr/adr-0.1.x/ADR-0.1.0-{slug}/`
+- [ ] ADR folder structure created: `docs/design/adr/pre-release/adr-0.1.x/ADR-0.1.0-{slug}/`
 - [ ] `briefs/` and `audit/` subdirectories created
 - [ ] `ADR-CLOSEOUT-FORM.md` template created
 - [ ] ADR contains brief linkage
@@ -560,7 +560,7 @@ PreToolUse hooks MAY:
 - [ ] `gz specify setup-db --parent ADR-0.1.0 --item 1` parses checklist item mapping from ADR
 - [ ] One OBPI brief created per checklist item
 - [ ] OBPIs numbered sequentially: `OBPI-0.1.0-01`, `OBPI-0.1.0-02`, etc.
-- [ ] OBPIs placed in `docs/design/adr/adr-0.1.x/ADR-0.1.0-{slug}/briefs/`
+- [ ] OBPIs placed in `docs/design/adr/pre-release/adr-0.1.x/ADR-0.1.0-{slug}/briefs/`
 - [ ] Each OBPI contains parent ADR reference and checklist item mapping
 - [ ] `obpi_created` events appended to ledger
 - [ ] Command fails if ADR has no checklist items
