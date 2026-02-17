@@ -1,0 +1,4 @@
+interface:
+  display_name: "gz tidy"
+  short_description: "Operate the gz tidy workflow"
+  default_prompt: "Use $gz-tidy to run gz tidy for this task."

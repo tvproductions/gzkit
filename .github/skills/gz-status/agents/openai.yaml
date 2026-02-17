@@ -1,0 +1,4 @@
+interface:
+  display_name: "gz status"
+  short_description: "Operate the gz status workflow"
+  default_prompt: "Use $gz-status to run gz status for this task."

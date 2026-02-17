@@ -1,41 +1,25 @@
-# SKILL.md
+---
+name: gz-audit
+description: Run strict post-attestation reconciliation audits. Use after attestation to produce and verify audit artifacts.
+---
 
-## gz audit
+# gz audit
 
-Run strict post-attestation audit reconciliation.
+## Overview
 
-## Trigger
+Operate the gz audit command surface as a reusable governance workflow.
 
-When attestation is complete and audit artifacts must be generated.
+## Workflow
 
-## Behavior
+1. Confirm target context, IDs, and lane assumptions.
+2. Run uv run gz audit with the required options.
+3. Summarize results, including evidence and any follow-up gates.
 
-Run uv run gz audit for the target ADR and report findings and artifacts.
+## Validation
 
-## Prerequisites
+- Verify command output reflects the requested scope.
+- If governance state changed, confirm with uv run gz status or uv run gz state.
 
-Attestation prerequisites are satisfied.
+## Example
 
-## Steps
-
-1. Confirm target context and IDs.
-2. Run the command with the correct flags.
-3. Report outcome and any follow-up actions.
-
-## Examples
-
-### Example 1
-
-**Input**: Run audit for ADR-0.4.0.
-
-**Output**: Command executed and summarized with pass/fail details.
-
-## Constraints
-
-- Use uv run for command execution.
-- Do not claim completion without checking command output.
-
-## Related Skills
-
-- gz-adr-create
-- gz-adr-audit
+Use $gz-audit to run audit for the target ADR..

@@ -1,41 +1,25 @@
-# SKILL.md
+---
+name: gz-register-adrs
+description: Register existing ADR files missing from ledger state. Use when reconciling on-disk ADRs with governance state.
+---
 
-## gz register-adrs
+# gz register-adrs
 
-Register existing ADR files missing from ledger state.
+## Overview
 
-## Trigger
+Operate the gz register-adrs command surface as a reusable governance workflow.
 
-When ADR files exist on disk but are absent from governance state.
+## Workflow
 
-## Behavior
+1. Confirm target context, IDs, and lane assumptions.
+2. Run uv run gz register-adrs with the required options.
+3. Summarize results, including evidence and any follow-up gates.
 
-Run uv run gz register-adrs with scope flags and confirm created events.
+## Validation
 
-## Prerequisites
+- Verify command output reflects the requested scope.
+- If governance state changed, confirm with uv run gz status or uv run gz state.
 
-ADR files are discoverable in design roots.
+## Example
 
-## Steps
-
-1. Confirm target context and IDs.
-2. Run the command with the correct flags.
-3. Report outcome and any follow-up actions.
-
-## Examples
-
-### Example 1
-
-**Input**: Register pool ADRs only.
-
-**Output**: Command executed and summarized with pass/fail details.
-
-## Constraints
-
-- Use uv run for command execution.
-- Do not claim completion without checking command output.
-
-## Related Skills
-
-- gz-adr-create
-- gz-adr-audit
+Use $gz-register-adrs to register pool or full ADR sets..

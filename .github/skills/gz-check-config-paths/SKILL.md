@@ -1,41 +1,25 @@
-# SKILL.md
+---
+name: gz-check-config-paths
+description: Validate configured and manifest path coherence. Use when diagnosing control-surface or path drift.
+---
 
-## gz check-config-paths
+# gz check-config-paths
 
-Validate config and manifest path coherence.
+## Overview
 
-## Trigger
+Operate the gz check-config-paths command surface as a reusable governance workflow.
 
-When config or manifest path issues are suspected.
+## Workflow
 
-## Behavior
+1. Confirm target context, IDs, and lane assumptions.
+2. Run uv run gz check-config-paths with the required options.
+3. Summarize results, including evidence and any follow-up gates.
 
-Run uv run gz check-config-paths and report mismatches.
+## Validation
 
-## Prerequisites
+- Verify command output reflects the requested scope.
+- If governance state changed, confirm with uv run gz status or uv run gz state.
 
-Repository is initialized with config and manifest.
+## Example
 
-## Steps
-
-1. Confirm target context and IDs.
-2. Run the command with the correct flags.
-3. Report outcome and any follow-up actions.
-
-## Examples
-
-### Example 1
-
-**Input**: Check config path coherence.
-
-**Output**: Command executed and summarized with pass/fail details.
-
-## Constraints
-
-- Use uv run for command execution.
-- Do not claim completion without checking command output.
-
-## Related Skills
-
-- gz-adr-create
-- gz-adr-audit
+Use $gz-check-config-paths to validate config and manifest paths..

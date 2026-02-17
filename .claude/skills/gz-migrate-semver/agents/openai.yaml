@@ -1,0 +1,4 @@
+interface:
+  display_name: "gz migrate-semver"
+  short_description: "Operate the gz migrate-semver workflow"
+  default_prompt: "Use $gz-migrate-semver to run gz migrate-semver for this task."

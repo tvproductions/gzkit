@@ -1,41 +1,25 @@
-# SKILL.md
+---
+name: gz-check
+description: Run full quality checks in one pass. Use for pre-merge or pre-attestation quality verification.
+---
 
-## gz check
+# gz check
 
-Run all quality checks in one command.
+## Overview
 
-## Trigger
+Operate the gz check command surface as a reusable governance workflow.
 
-When performing full pre-merge quality verification.
+## Workflow
 
-## Behavior
+1. Confirm target context, IDs, and lane assumptions.
+2. Run uv run gz check with the required options.
+3. Summarize results, including evidence and any follow-up gates.
 
-Run uv run gz check and summarize lint, format, type, and test results.
+## Validation
 
-## Prerequisites
+- Verify command output reflects the requested scope.
+- If governance state changed, confirm with uv run gz status or uv run gz state.
 
-Project dependencies and test surfaces are available.
+## Example
 
-## Steps
-
-1. Confirm target context and IDs.
-2. Run the command with the correct flags.
-3. Report outcome and any follow-up actions.
-
-## Examples
-
-### Example 1
-
-**Input**: Run full quality check.
-
-**Output**: Command executed and summarized with pass/fail details.
-
-## Constraints
-
-- Use uv run for command execution.
-- Do not claim completion without checking command output.
-
-## Related Skills
-
-- gz-adr-create
-- gz-adr-audit
+Use $gz-check to run all quality checks for the repository..
