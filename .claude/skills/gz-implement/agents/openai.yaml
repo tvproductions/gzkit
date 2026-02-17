@@ -1,0 +1,4 @@
+interface:
+  display_name: "gz implement"
+  short_description: "Operate the gz implement workflow"
+  default_prompt: "Use $gz-implement to run gz implement for this task."

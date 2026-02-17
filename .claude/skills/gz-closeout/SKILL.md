@@ -1,41 +1,25 @@
-# SKILL.md
+---
+name: gz-closeout
+description: Initiate ADR closeout with evidence context. Use when preparing an ADR for attestation and audit steps.
+---
 
-## gz closeout
+# gz closeout
 
-Initiate ADR closeout with evidence context.
+## Overview
 
-## Trigger
+Operate the gz closeout command surface as a reusable governance workflow.
 
-When preparing an ADR for attestation and audit sequence.
+## Workflow
 
-## Behavior
+1. Confirm target context, IDs, and lane assumptions.
+2. Run uv run gz closeout with the required options.
+3. Summarize results, including evidence and any follow-up gates.
 
-Run uv run gz closeout and verify closeout initiation event.
+## Validation
 
-## Prerequisites
+- Verify command output reflects the requested scope.
+- If governance state changed, confirm with uv run gz status or uv run gz state.
 
-Target ADR and evidence surfaces exist.
+## Example
 
-## Steps
-
-1. Confirm target context and IDs.
-2. Run the command with the correct flags.
-3. Report outcome and any follow-up actions.
-
-## Examples
-
-### Example 1
-
-**Input**: Start closeout for ADR-0.4.0.
-
-**Output**: Command executed and summarized with pass/fail details.
-
-## Constraints
-
-- Use uv run for command execution.
-- Do not claim completion without checking command output.
-
-## Related Skills
-
-- gz-adr-create
-- gz-adr-audit
+Use $gz-closeout to start ADR closeout preparation..

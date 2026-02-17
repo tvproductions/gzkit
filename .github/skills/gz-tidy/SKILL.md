@@ -1,41 +1,25 @@
-# SKILL.md
+---
+name: gz-tidy
+description: Run maintenance checks and cleanup routines. Use for repository hygiene and governance maintenance operations.
+---
 
-## gz tidy
+# gz tidy
 
-Run maintenance checks and cleanup routines.
+## Overview
 
-## Trigger
+Operate the gz tidy command surface as a reusable governance workflow.
 
-When performing repository hygiene or governance maintenance operations.
+## Workflow
 
-## Behavior
+1. Confirm target context, IDs, and lane assumptions.
+2. Run uv run gz tidy with the required options.
+3. Summarize results, including evidence and any follow-up gates.
 
-Run uv run gz tidy with requested flags and summarize changes and findings.
+## Validation
 
-## Prerequisites
+- Verify command output reflects the requested scope.
+- If governance state changed, confirm with uv run gz status or uv run gz state.
 
-Repository is initialized with governance config.
+## Example
 
-## Steps
-
-1. Confirm target context and IDs.
-2. Run the command with the correct flags.
-3. Report outcome and any follow-up actions.
-
-## Examples
-
-### Example 1
-
-**Input**: Run tidy maintenance checks.
-
-**Output**: Command executed and summarized with pass/fail details.
-
-## Constraints
-
-- Use uv run for command execution.
-- Do not claim completion without checking command output.
-
-## Related Skills
-
-- gz-adr-create
-- gz-adr-audit
+Use $gz-tidy to run tidy maintenance workflows..
