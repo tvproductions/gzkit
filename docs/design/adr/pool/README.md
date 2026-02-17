@@ -20,7 +20,7 @@ Planned ADRs awaiting prioritization. Pool entries are lightweight intent docume
 When a pool entry is prioritized:
 
 1. Assign next available version in the target series
-2. Create full ADR folder: `docs/design/adr/{foundation|pre-release|<major>}/ADR-X.Y.Z-{slug}/`
+2. Create full ADR folder: `docs/design/adr/{foundation|pre-release|<major>.0}/ADR-X.Y.Z-{slug}/`
 3. Write complete ADR with feature checklist
 4. Co-create all OBPIs (one per checklist item)
 5. Delete or archive the pool file

@@ -28,10 +28,10 @@ This roadmap is the execution view of PRD Section 12. The PRD defines intent; th
 
 | Phase | Version | Capability | Planned Artifact |
 |------|---------|------------|------------------|
-| 1 | 0.1.0 | MVP governance core | [ADR-0.1.0](../adr/adr-0.1.x/ADR-0.1.0-enforced-governance-foundation/ADR-0.1.0-enforced-governance-foundation.md) |
-| 2 | 0.2.0 | Gate verification | [ADR-0.2.0](../adr/adr-0.2.x/ADR-0.2.0-gate-verification/ADR-0.2.0-gate-verification.md) |
-| 3 | 0.3.0 | Canon extraction and parity | [ADR-pool.airlineops-canon-reconciliation](../adr/pool/ADR-pool.airlineops-canon-reconciliation.md) |
-| 4 | 0.4.0 | Heavy lane enforcement | [ADR-pool.heavy-lane](../adr/pool/ADR-pool.heavy-lane.md) |
+| 1 | 0.1.0 | MVP governance core | [ADR-0.1.0](../adr/pre-release/ADR-0.1.0-enforced-governance-foundation/ADR-0.1.0-enforced-governance-foundation.md) |
+| 2 | 0.2.0 | Gate verification | [ADR-0.2.0](../adr/pre-release/ADR-0.2.0-gate-verification/ADR-0.2.0-gate-verification.md) |
+| 3 | 0.3.0 | Canon extraction and parity | [ADR-0.3.0](../adr/pre-release/ADR-0.3.0-airlineops-canon-reconciliation/ADR-0.3.0-airlineops-canon-reconciliation.md) |
+| 4 | 0.4.0 | Skill capability mirroring | [ADR-0.4.0](../adr/pre-release/ADR-0.4.0-skill-capability-mirroring/ADR-0.4.0-skill-capability-mirroring.md) |
 | 5 | 0.5.0 | Audit system | [ADR-pool.audit-system](../adr/pool/ADR-pool.audit-system.md) |
 | 6 | 1.0.0 | Release hardening | [ADR-pool.release-hardening](../adr/pool/ADR-pool.release-hardening.md) |
 | 7 | 1.1.0 | AI runtime foundations | [ADR-pool.ai-runtime-foundations](../adr/pool/ADR-pool.ai-runtime-foundations.md) |

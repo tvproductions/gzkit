@@ -42,5 +42,5 @@ Implement audit generation (`gz audit`) that produces post-attestation audit art
 
 - Phase 5 per PRD rollout plan
 - Audit runs AFTER attestation (reconciliation, not proof)
-- Audit directory: `docs/design/adr/{foundation|pre-release|<major>}/ADR-X.Y.Z-{slug}/audit/`
+- Audit directory: `docs/design/adr/{foundation|pre-release|<major>.0}/ADR-X.Y.Z-{slug}/audit/`
 - Consider: audit artifact format (markdown vs structured data)
