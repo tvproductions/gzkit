@@ -24,7 +24,7 @@ gz specify <name> --parent <PARENT-ID> [OPTIONS]
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `--parent` | string | required | Parent PRD or constitution ID |
+| `--parent` | string | required | Parent ADR ID |
 | `--lane` | `lite` \| `heavy` | `lite` | Governance lane |
 | `--title` | string | — | Brief title |
 | `--dry-run` | flag | — | Show actions without writing |
@@ -37,6 +37,8 @@ gz specify <name> --parent <PARENT-ID> [OPTIONS]
 2. Links it to the parent PRD or constitution
 3. Records the creation event in the ledger
 4. Configures lane-specific requirements (docs, BDD)
+
+Pool ADRs (`ADR-pool.*` or legacy `ADR-*.pool.*`) are blocked as parents until promoted.
 
 ---
 

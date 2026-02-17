@@ -136,10 +136,6 @@ SEMVER_ID_RENAMES: tuple[tuple[str, str], ...] = (
     ("ADR-0.6.0-pool.gz-chores-system", "ADR-pool.gz-chores-system"),
     ("ADR-1.0.0-pool.release-hardening", "ADR-pool.release-hardening"),
     ("ADR-0.7.0-pool.release-hardening", "ADR-pool.release-hardening"),
-    (
-        "OBPI-pool.skill-01-skill-source-centralization",
-        "OBPI-0.8.0-01-skill-source-centralization",
-    ),
 )
 ADR_SEMVER_ID_RE = re.compile(r"^ADR-\d+\.\d+\.\d+(?:[.-][A-Za-z0-9][A-Za-z0-9.-]*)?$")
 ADR_POOL_ID_RE = re.compile(r"^ADR-pool\.[A-Za-z0-9][A-Za-z0-9.-]*$")
@@ -959,6 +955,10 @@ def specify(
     """Create a new OBPI (One Brief Per Item)."""
     config = ensure_initialized()
     project_root = get_project_root()
+    ledger = Ledger(project_root / config.paths.ledger)
+    canonical_parent = ledger.canonicalize_id(parent)
+    if _is_pool_adr_id(canonical_parent):
+        raise GzCliError(f"Pool ADRs cannot receive OBPIs until promoted: {canonical_parent}.")
 
     # Extract version from parent ADR (e.g., ADR-0.1.0 -> 0.1.0) for airlineops-style ID
     version = parent.replace("ADR-", "").split("-")[0] if parent.startswith("ADR-") else "0.1.0"
@@ -998,7 +998,6 @@ def specify(
     obpi_dir.mkdir(parents=True, exist_ok=True)
     obpi_file.write_text(content)
 
-    ledger = Ledger(project_root / config.paths.ledger)
     ledger.append(obpi_created_event(obpi_id, parent))
 
     console.print(f"Created OBPI: {obpi_file}")
@@ -1259,6 +1258,9 @@ def _collect_obpi_files_for_adr(
     ledger: Ledger,
     adr_id: str,
 ) -> tuple[dict[str, Path], list[str]]:
+    if _is_pool_adr_id(adr_id):
+        return {}, []
+
     canonical_adr = ledger.canonicalize_id(adr_id)
     graph = ledger.get_artifact_graph()
     adr_info = graph.get(canonical_adr, {})
@@ -1336,6 +1338,7 @@ def adr_audit_check(adr: str, as_json: bool) -> None:
     adr_input = adr if adr.startswith("ADR-") else f"ADR-{adr}"
     canonical_adr = ledger.canonicalize_id(adr_input)
     _adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
+    _reject_pool_adr_for_lifecycle(adr_id, "audit-checked")
 
     obpi_files, expected_obpis = _collect_obpi_files_for_adr(project_root, config, ledger, adr_id)
     findings: list[dict[str, Any]] = []
