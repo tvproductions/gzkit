@@ -39,7 +39,6 @@ When a pool entry is prioritized:
 | [ADR-pool.go-runtime-parity](ADR-pool.go-runtime-parity.md) | Foundation | Waiting | ADR-0.3.0 |
 | [ADR-pool.obpi-first-operations](ADR-pool.obpi-first-operations.md) | Governance parity | Waiting | ADR-0.3.0 |
 | [ADR-pool.obpi-runtime-surface](ADR-pool.obpi-runtime-surface.md) | Runtime ergonomics | Waiting | ADR-pool.obpi-first-operations |
-| [ADR-pool.skill-capability-mirroring](ADR-pool.skill-capability-mirroring.md) | Skill parity | Waiting | ADR-pool.obpi-first-operations |
 
 ---
 
@@ -48,6 +47,7 @@ When a pool entry is prioritized:
 | Pool Entry | Promoted ADR | Date |
 |---|---|---|
 | [ADR-pool.airlineops-canon-reconciliation](ADR-pool.airlineops-canon-reconciliation.md) | [ADR-0.3.0](../adr-0.3.x/ADR-0.3.0-airlineops-canon-reconciliation/ADR-0.3.0-airlineops-canon-reconciliation.md) | 2026-02-13 |
+| ADR-pool.skill-capability-mirroring | [ADR-0.4.0](../adr-0.4.x/ADR-0.4.0-skill-capability-mirroring/ADR-0.4.0-skill-capability-mirroring.md) | 2026-02-17 |
 
 ---
 
@@ -67,7 +67,6 @@ PRD-GZKIT-1.0.0
 ├── ADR-pool.go-runtime-parity (Foundation runtime track)
 └── ADR-pool.obpi-first-operations (OBPI-first governance track)
     ├── ADR-pool.obpi-runtime-surface (OBPI-native runtime surfaces)
-    └── ADR-pool.skill-capability-mirroring (command-skill parity track)
 ```
 
 ## Foundational ADRs (0.0.x)

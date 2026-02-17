@@ -136,6 +136,13 @@ SEMVER_ID_RENAMES: tuple[tuple[str, str], ...] = (
     ("ADR-0.6.0-pool.gz-chores-system", "ADR-pool.gz-chores-system"),
     ("ADR-1.0.0-pool.release-hardening", "ADR-pool.release-hardening"),
     ("ADR-0.7.0-pool.release-hardening", "ADR-pool.release-hardening"),
+    # Pool promotion migrations.
+    ("ADR-pool.skill-capability-mirroring", "ADR-0.4.0-skill-capability-mirroring"),
+    (
+        "OBPI-pool.skill-01-skill-source-centralization",
+        "OBPI-0.4.0-01-skill-source-centralization",
+    ),
+    ("OBPI-0.8.0-01-skill-source-centralization", "OBPI-0.4.0-01-skill-source-centralization"),
 )
 ADR_SEMVER_ID_RE = re.compile(r"^ADR-\d+\.\d+\.\d+(?:[.-][A-Za-z0-9][A-Za-z0-9.-]*)?$")
 ADR_POOL_ID_RE = re.compile(r"^ADR-pool\.[A-Za-z0-9][A-Za-z0-9.-]*$")
