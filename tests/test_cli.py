@@ -149,6 +149,18 @@ class TestSpecifyCommand(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             self.assertTrue(Path("design/obpis/OBPI-0.1.0-01-core-feature.md").exists())
 
+    def test_specify_rejects_pool_parent(self) -> None:
+        """specify blocks pool ADR parents until promotion."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            result = runner.invoke(
+                main,
+                ["specify", "core-feature", "--parent", "ADR-pool.sample", "--item", "1"],
+            )
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("Pool ADRs cannot receive OBPIs until promoted", result.output)
+
 
 class TestPlanCommand(unittest.TestCase):
     """Tests for gz plan command."""
@@ -972,6 +984,15 @@ class TestAdrRuntimeCommands(unittest.TestCase):
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("FAIL", result.output)
 
+    def test_adr_audit_check_rejects_pool_adr(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init", "--mode", "heavy"])
+            self._create_pool_adr()
+            result = runner.invoke(main, ["adr", "audit-check", "ADR-pool.sample"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("Pool ADRs cannot be audit-checked", result.output)
+
     def test_adr_emit_receipt_records_event(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -1171,6 +1192,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
             self.assertIsNone(payload["attestation_term"])
             self.assertFalse(payload["attested"])
             self.assertEqual(payload["gates"]["5"], "pending")
+            self.assertEqual(payload["obpis"], [])
 
     def test_status_json_pool_adr_ignores_attestation_for_lifecycle(self) -> None:
         runner = CliRunner()
