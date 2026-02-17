@@ -1,0 +1,4 @@
+interface:
+  display_name: "gz plan"
+  short_description: "Operate the gz plan workflow"
+  default_prompt: "Use $gz-plan to run gz plan for this task."

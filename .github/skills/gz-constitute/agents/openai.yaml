@@ -1,0 +1,4 @@
+interface:
+  display_name: "gz constitute"
+  short_description: "Operate the gz constitute workflow"
+  default_prompt: "Use $gz-constitute to run gz constitute for this task."

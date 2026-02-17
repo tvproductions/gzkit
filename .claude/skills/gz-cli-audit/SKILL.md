@@ -1,41 +1,25 @@
-# SKILL.md
+---
+name: gz-cli-audit
+description: Audit CLI documentation coverage and headings. Use when verifying command manpage and index parity.
+---
 
-## gz cli audit
+# gz cli audit
 
-Audit CLI docs and manpage coverage for command surfaces.
+## Overview
 
-## Trigger
+Operate the gz cli audit command surface as a reusable governance workflow.
 
-When validating command documentation coverage and heading consistency.
+## Workflow
 
-## Behavior
+1. Confirm target context, IDs, and lane assumptions.
+2. Run uv run gz cli audit with the required options.
+3. Summarize results, including evidence and any follow-up gates.
 
-Run uv run gz cli audit and report missing or mismatched command docs.
+## Validation
 
-## Prerequisites
+- Verify command output reflects the requested scope.
+- If governance state changed, confirm with uv run gz status or uv run gz state.
 
-Command docs index and pages are present.
+## Example
 
-## Steps
-
-1. Confirm target context and IDs.
-2. Run the command with the correct flags.
-3. Report outcome and any follow-up actions.
-
-## Examples
-
-### Example 1
-
-**Input**: Audit CLI docs coverage.
-
-**Output**: Command executed and summarized with pass/fail details.
-
-## Constraints
-
-- Use uv run for command execution.
-- Do not claim completion without checking command output.
-
-## Related Skills
-
-- gz-adr-create
-- gz-adr-audit
+Use $gz-cli-audit to audit command docs and coverage..

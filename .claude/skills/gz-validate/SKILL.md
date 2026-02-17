@@ -1,41 +1,25 @@
-# SKILL.md
+---
+name: gz-validate
+description: Validate governance artifacts against schema rules. Use when checking manifest, ledger, document, or surface validity.
+---
 
-## gz validate
+# gz validate
 
-Validate governance artifacts and schemas.
+## Overview
 
-## Trigger
+Operate the gz validate command surface as a reusable governance workflow.
 
-When checking manifest, ledger, documents, or control-surface validity.
+## Workflow
 
-## Behavior
+1. Confirm target context, IDs, and lane assumptions.
+2. Run uv run gz validate with the required options.
+3. Summarize results, including evidence and any follow-up gates.
 
-Run uv run gz validate with requested scopes and summarize violations.
+## Validation
 
-## Prerequisites
+- Verify command output reflects the requested scope.
+- If governance state changed, confirm with uv run gz status or uv run gz state.
 
-Schemas and artifact roots are present.
+## Example
 
-## Steps
-
-1. Confirm target context and IDs.
-2. Run the command with the correct flags.
-3. Report outcome and any follow-up actions.
-
-## Examples
-
-### Example 1
-
-**Input**: Validate documents and ledger.
-
-**Output**: Command executed and summarized with pass/fail details.
-
-## Constraints
-
-- Use uv run for command execution.
-- Do not claim completion without checking command output.
-
-## Related Skills
-
-- gz-adr-create
-- gz-adr-audit
+Use $gz-validate to run requested governance validations..

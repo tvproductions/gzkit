@@ -1,41 +1,25 @@
-# SKILL.md
+---
+name: gz-implement
+description: Run Gate 2 verification and record result events. Use when validating implementation progress for an ADR.
+---
 
-## gz implement
+# gz implement
 
-Run Gate 2 tests and record gate results.
+## Overview
 
-## Trigger
+Operate the gz implement command surface as a reusable governance workflow.
 
-When validating implementation progress before closeout.
+## Workflow
 
-## Behavior
+1. Confirm target context, IDs, and lane assumptions.
+2. Run uv run gz implement with the required options.
+3. Summarize results, including evidence and any follow-up gates.
 
-Run uv run gz implement for target ADR and summarize Gate 2 result.
+## Validation
 
-## Prerequisites
+- Verify command output reflects the requested scope.
+- If governance state changed, confirm with uv run gz status or uv run gz state.
 
-Tests are available and verification.test is valid.
+## Example
 
-## Steps
-
-1. Confirm target context and IDs.
-2. Run the command with the correct flags.
-3. Report outcome and any follow-up actions.
-
-## Examples
-
-### Example 1
-
-**Input**: Run implement for ADR-0.4.0.
-
-**Output**: Command executed and summarized with pass/fail details.
-
-## Constraints
-
-- Use uv run for command execution.
-- Do not claim completion without checking command output.
-
-## Related Skills
-
-- gz-adr-create
-- gz-adr-audit
+Use $gz-implement to run Gate 2 implementation checks..

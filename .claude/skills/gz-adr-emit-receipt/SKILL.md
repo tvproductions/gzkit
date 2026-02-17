@@ -1,41 +1,25 @@
-# SKILL.md
+---
+name: gz-adr-emit-receipt
+description: Emit ADR receipt events with scoped evidence payloads. Use when recording completed or validated accounting events.
+---
 
-## gz adr emit-receipt
+# gz adr emit-receipt
 
-Emit ADR receipt events with optional scoped evidence.
+## Overview
 
-## Trigger
+Operate the gz adr emit-receipt command surface as a reusable governance workflow.
 
-When recording completed or validated accounting events or OBPI-scoped receipts.
+## Workflow
 
-## Behavior
+1. Confirm target context, IDs, and lane assumptions.
+2. Run uv run gz adr emit-receipt with the required options.
+3. Summarize results, including evidence and any follow-up gates.
 
-Run uv run gz adr emit-receipt with event, attestor, and evidence JSON.
+## Validation
 
-## Prerequisites
+- Verify command output reflects the requested scope.
+- If governance state changed, confirm with uv run gz status or uv run gz state.
 
-Target ADR exists and receipt intent is explicit.
+## Example
 
-## Steps
-
-1. Confirm target context and IDs.
-2. Run the command with the correct flags.
-3. Report outcome and any follow-up actions.
-
-## Examples
-
-### Example 1
-
-**Input**: Emit an OBPI-scoped completed receipt under ADR-0.4.0.
-
-**Output**: Command executed and summarized with pass/fail details.
-
-## Constraints
-
-- Use uv run for command execution.
-- Do not claim completion without checking command output.
-
-## Related Skills
-
-- gz-adr-create
-- gz-adr-audit
+Use $gz-adr-emit-receipt to emit a receipt event with evidence JSON..

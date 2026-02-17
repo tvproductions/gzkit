@@ -1,0 +1,4 @@
+interface:
+  display_name: "gz agent sync control-surfaces"
+  short_description: "Operate the gz agent sync control-surfaces workflow"
+  default_prompt: "Use $gz-agent-sync to run gz agent sync control-surfaces for this task."

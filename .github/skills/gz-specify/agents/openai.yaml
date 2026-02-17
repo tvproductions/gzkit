@@ -1,0 +1,4 @@
+interface:
+  display_name: "gz specify"
+  short_description: "Operate the gz specify workflow"
+  default_prompt: "Use $gz-specify to run gz specify for this task."

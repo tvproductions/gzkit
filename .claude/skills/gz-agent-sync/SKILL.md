@@ -1,41 +1,25 @@
-# SKILL.md
+---
+name: gz-agent-sync
+description: Synchronize generated control surfaces and skill mirrors. Use after skill or governance-surface updates.
+---
 
-## gz agent sync control-surfaces
+# gz agent sync control-surfaces
 
-Sync AGENTS and CLAUDE control surfaces from governance canon.
+## Overview
 
-## Trigger
+Operate the gz agent sync control-surfaces command surface as a reusable governance workflow.
 
-When skills or control-surface content changes and mirrors must be regenerated.
+## Workflow
 
-## Behavior
+1. Confirm target context, IDs, and lane assumptions.
+2. Run uv run gz agent sync control-surfaces with the required options.
+3. Summarize results, including evidence and any follow-up gates.
 
-Run uv run gz agent sync control-surfaces and confirm updated surfaces.
+## Validation
 
-## Prerequisites
+- Verify command output reflects the requested scope.
+- If governance state changed, confirm with uv run gz status or uv run gz state.
 
-Manifest and config paths are valid.
+## Example
 
-## Steps
-
-1. Confirm target context and IDs.
-2. Run the command with the correct flags.
-3. Report outcome and any follow-up actions.
-
-## Examples
-
-### Example 1
-
-**Input**: Sync control surfaces after adding skills.
-
-**Output**: Command executed and summarized with pass/fail details.
-
-## Constraints
-
-- Use uv run for command execution.
-- Do not claim completion without checking command output.
-
-## Related Skills
-
-- gz-adr-create
-- gz-adr-audit
+Use $gz-agent-sync to sync control surfaces and mirrors..

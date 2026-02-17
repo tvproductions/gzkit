@@ -1,0 +1,4 @@
+interface:
+  display_name: "gz init"
+  short_description: "Operate the gz init workflow"
+  default_prompt: "Use $gz-init to run gz init for this task."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "gz audit"
+  short_description: "Operate the gz audit workflow"
+  default_prompt: "Use $gz-audit to run gz audit for this task."
