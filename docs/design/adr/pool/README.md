@@ -60,6 +60,7 @@ PRD-GZKIT-1.0.0
 ├── ADR-0.1.0 (Phase 1: MVP) ← Active
 ├── [ADR-0.2.0](../adr-0.2.x/ADR-0.2.0-gate-verification/ADR-0.2.0-gate-verification.md) (Phase 2: Gates) ← Active
 ├── [ADR-0.3.0](../adr-0.3.x/ADR-0.3.0-airlineops-canon-reconciliation/ADR-0.3.0-airlineops-canon-reconciliation.md) (Phase 3) ← Active
+├── [ADR-0.4.0](../adr-0.4.x/ADR-0.4.0-skill-capability-mirroring/ADR-0.4.0-skill-capability-mirroring.md) (Phase 4: Skill parity) ← Active
 ├── ADR-pool.heavy-lane (Phase 4)
 ├── ADR-pool.audit-system (Phase 5)
 ├── ADR-pool.gz-chores-system (Parity backlog)
@@ -68,6 +69,11 @@ PRD-GZKIT-1.0.0
 └── ADR-pool.obpi-first-operations (OBPI-first governance track)
     ├── ADR-pool.obpi-runtime-surface (OBPI-native runtime surfaces)
 ```
+
+Parenting model:
+
+- Non-foundation ADRs should chain by ADR parent (`ADR-0.y.z -> ADR-0.(y-1).z`).
+- Foundation ADRs remain in `0.0.z` series.
 
 ## Foundational ADRs (0.0.x)
 
