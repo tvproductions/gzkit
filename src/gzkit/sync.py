@@ -276,6 +276,8 @@ def generate_manifest(
             "hooks": config.paths.claude_hooks,
             "skills": config.paths.skills,
             "claude_skills": config.paths.claude_skills,
+            "codex_skills": config.paths.codex_skills,
+            "copilot_skills": config.paths.copilot_skills,
         },
         "verification": {
             "lint": "uvx ruff check src tests",
@@ -430,6 +432,47 @@ def sync_skill_mirror(
     return updated
 
 
+def _has_skill_files(path: Path) -> bool:
+    """Check whether a directory contains at least one SKILL.md file."""
+    if not path.exists():
+        return False
+    return any(path.rglob("SKILL.md"))
+
+
+def bootstrap_canonical_skills(project_root: Path, config: GzkitConfig) -> list[str]:
+    """Seed canonical skills from legacy mirrors when canonical path is empty.
+
+    This supports migration from older layouts where `.github/skills` was canonical.
+    """
+    canonical_root = project_root / config.paths.skills
+    if _has_skill_files(canonical_root):
+        return []
+
+    canonical_root.mkdir(parents=True, exist_ok=True)
+
+    candidate_paths = [
+        config.paths.copilot_skills,
+        ".github/skills",
+        config.paths.claude_skills,
+        config.paths.codex_skills,
+    ]
+    seen: set[str] = set()
+    for candidate in candidate_paths:
+        if candidate in seen:
+            continue
+        seen.add(candidate)
+        if candidate == config.paths.skills:
+            continue
+
+        candidate_root = project_root / candidate
+        if not _has_skill_files(candidate_root):
+            continue
+
+        return sync_skill_mirror(project_root, candidate, config.paths.skills)
+
+    return []
+
+
 def get_project_context(project_root: Path, config: GzkitConfig) -> dict[str, str]:
     """Build context for template rendering.
 
@@ -474,6 +517,8 @@ uv run -m unittest discover tests    # Run tests""".format(module=project_name.r
         "local_content": load_local_content(project_root),
         "skills_canon_path": config.paths.skills,
         "skills_claude_path": config.paths.claude_skills,
+        "skills_codex_path": config.paths.codex_skills,
+        "skills_copilot_path": config.paths.copilot_skills,
         "skills_catalog": skills_catalog,
     }
 
@@ -564,8 +609,8 @@ AGENTS.md
     copilotignore_path.write_text(ignore_content)
 
 
-def sync_claude_skills(project_root: Path, config: GzkitConfig) -> list[str]:
-    """Mirror canonical skills into Claude-local skills path.
+def sync_skill_mirrors(project_root: Path, config: GzkitConfig) -> list[str]:
+    """Mirror canonical skills into all tool-local mirror paths.
 
     Args:
         project_root: Project root directory.
@@ -574,6 +619,19 @@ def sync_claude_skills(project_root: Path, config: GzkitConfig) -> list[str]:
     Returns:
         List of mirrored files written.
     """
+    updated: list[str] = []
+    targets = [config.paths.claude_skills, config.paths.codex_skills, config.paths.copilot_skills]
+    seen: set[str] = set()
+    for target in targets:
+        if target in seen or target == config.paths.skills:
+            continue
+        seen.add(target)
+        updated.extend(sync_skill_mirror(project_root, config.paths.skills, target))
+    return updated
+
+
+def sync_claude_skills(project_root: Path, config: GzkitConfig) -> list[str]:
+    """Backward-compatible wrapper for older call sites."""
     return sync_skill_mirror(project_root, config.paths.skills, config.paths.claude_skills)
 
 
@@ -597,6 +655,9 @@ def sync_all(project_root: Path, config: GzkitConfig | None = None) -> list[str]
     write_manifest(project_root, manifest)
     updated.append(".gzkit/manifest.json")
 
+    # Migrate legacy skill layouts into canonical path when needed.
+    updated.extend(bootstrap_canonical_skills(project_root, config))
+
     # Generate control surfaces
     sync_agents_md(project_root, config)
     updated.append(config.paths.agents_md)
@@ -613,7 +674,7 @@ def sync_all(project_root: Path, config: GzkitConfig | None = None) -> list[str]
     sync_copilotignore(project_root)
     updated.append(".copilotignore")
 
-    mirrored = sync_claude_skills(project_root, config)
+    mirrored = sync_skill_mirrors(project_root, config)
     updated.extend(mirrored)
 
     return updated

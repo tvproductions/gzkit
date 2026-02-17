@@ -1,0 +1,4 @@
+interface:
+  display_name: "gz adr emit-receipt"
+  short_description: "Operate the gz adr emit-receipt workflow"
+  default_prompt: "Use $gz-adr-emit-receipt to run gz adr emit-receipt for this task."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "gz gates"
+  short_description: "Operate the gz gates workflow"
+  default_prompt: "Use $gz-gates to run gz gates for this task."

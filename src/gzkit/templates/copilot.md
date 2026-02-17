@@ -43,6 +43,8 @@ Use the canonical skill catalog and keep mirrors synced via `gz agent sync contr
 
 - Canonical skills: `{skills_canon_path}`
 - Claude skill mirror: `{skills_claude_path}`
+- Codex skill mirror: `{skills_codex_path}`
+- Copilot skill mirror: `{skills_copilot_path}`
 
 ### Available Skills
 

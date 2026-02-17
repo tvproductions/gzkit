@@ -1,0 +1,4 @@
+interface:
+  display_name: "gz validate"
+  short_description: "Operate the gz validate workflow"
+  default_prompt: "Use $gz-validate to run gz validate for this task."

@@ -26,7 +26,10 @@ class TestPathConfig(unittest.TestCase):
         self.assertEqual(config.gzkit_dir, ".gzkit")
         self.assertEqual(config.ledger, ".gzkit/ledger.jsonl")
         self.assertEqual(config.manifest, ".gzkit/manifest.json")
+        self.assertEqual(config.skills, ".gzkit/skills")
         self.assertEqual(config.claude_skills, ".claude/skills")
+        self.assertEqual(config.codex_skills, ".codex/skills")
+        self.assertEqual(config.copilot_skills, ".github/skills")
 
 
 class TestGzkitConfig(unittest.TestCase):

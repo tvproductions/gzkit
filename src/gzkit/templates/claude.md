@@ -57,10 +57,12 @@ Follow the gzkit gate covenant for all changes:
 
 ## Skills
 
-Skills are synced into Claude's local path while keeping a canonical source:
+Skills are centralized under `.gzkit` and mirrored to tool-local paths:
 
 - Canonical skills: `{skills_canon_path}`
 - Claude skill mirror: `{skills_claude_path}`
+- Codex skill mirror: `{skills_codex_path}`
+- Copilot skill mirror: `{skills_copilot_path}`
 
 ### Available Skills
 
