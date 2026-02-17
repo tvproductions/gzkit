@@ -48,16 +48,21 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 
 ---
 
-## Operator Sequence
+## Operator Sequences
 
-Canonical execution order for heavy-lane closeout:
+Primary daily loop (OBPI-first):
 
-1. Orientation and scope checks (`gz status`, `gz adr audit-check`)
-2. Tool use and verification commands
-3. Closeout presentation (`gz closeout`)
-4. Human attestation (`gz attest`)
-5. Post-attestation audit (`gz audit`)
-6. Receipt/accounting (`gz adr emit-receipt`)
+1. Orientation and ADR context (`gz status`, `gz adr status`)
+2. One OBPI increment implementation and verification (`gz implement`, optional Gate 3 docs check)
+3. OBPI evidence update in brief + optional OBPI-scoped receipt under parent ADR (`gz adr emit-receipt` with `adr_completion: not_completed`)
+
+ADR closeout loop (after OBPI batch completion):
+
+1. ADR/OBPI reconciliation (`gz adr audit-check`)
+2. Closeout presentation (`gz closeout`)
+3. Human attestation (`gz attest`)
+4. Post-attestation audit (`gz audit`)
+5. ADR-level receipt/accounting (`gz adr emit-receipt`)
 
 ---
 

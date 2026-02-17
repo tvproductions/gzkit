@@ -8,6 +8,8 @@ Canonical GovZero source: [`docs/governance/GovZero/adr-obpi-ghi-audit-linkage.m
 
 ## Purpose
 
+OBPI is the operational unit of completion in gzkit.
+
 Each OBPI represents one ADR checklist value increment and should include:
 
 1. Work execution on scoped paths
@@ -16,6 +18,8 @@ Each OBPI represents one ADR checklist value increment and should include:
 4. Narrative justification and evidence
 
 This keeps parity with GovZero skill discipline: pre-orientation, tool use, post-accounting, validation, verification, and presentation.
+
+ADR lifecycle state should be treated as a roll-up of OBPI increments, not a substitute for OBPI-level execution evidence.
 
 ---
 

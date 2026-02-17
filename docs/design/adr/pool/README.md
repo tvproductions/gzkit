@@ -37,6 +37,9 @@ When a pool entry is prioritized:
 | [ADR-pool.gz-chores-system](ADR-pool.gz-chores-system.md) | 0.6.x | Waiting | ADR-0.2.0 |
 | [ADR-pool.release-hardening](ADR-pool.release-hardening.md) | 0.7.x | Waiting | ADR-pool.audit-system |
 | [ADR-pool.go-runtime-parity](ADR-pool.go-runtime-parity.md) | Foundation | Waiting | ADR-0.3.0 |
+| [ADR-pool.obpi-first-operations](ADR-pool.obpi-first-operations.md) | Governance parity | Waiting | ADR-0.3.0 |
+| [ADR-pool.obpi-runtime-surface](ADR-pool.obpi-runtime-surface.md) | Runtime ergonomics | Waiting | ADR-pool.obpi-first-operations |
+| [ADR-pool.skill-capability-mirroring](ADR-pool.skill-capability-mirroring.md) | Skill parity | Waiting | ADR-pool.obpi-first-operations |
 
 ---
 
@@ -61,7 +64,10 @@ PRD-GZKIT-1.0.0
 ├── ADR-pool.audit-system (Phase 5)
 ├── ADR-pool.gz-chores-system (Parity backlog)
 ├── ADR-pool.release-hardening (Phase 6)
-└── ADR-pool.go-runtime-parity (Foundation runtime track)
+├── ADR-pool.go-runtime-parity (Foundation runtime track)
+└── ADR-pool.obpi-first-operations (OBPI-first governance track)
+    ├── ADR-pool.obpi-runtime-surface (OBPI-native runtime surfaces)
+    └── ADR-pool.skill-capability-mirroring (command-skill parity track)
 ```
 
 ## Foundational ADRs (0.0.x)
