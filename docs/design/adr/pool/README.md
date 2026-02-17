@@ -72,8 +72,8 @@ PRD-GZKIT-1.0.0
 
 Parenting model:
 
-- Non-foundation ADRs should chain by ADR parent (`ADR-0.y.z -> ADR-0.(y-1).z`).
-- Foundation ADRs remain in `0.0.z` series.
+- Foundation ADRs: `ADR-0.0.z`.
+- Pre-release ADRs: `ADR-0.y.z` (where `y > 0`) and should chain by ADR parent (`ADR-0.y.z -> ADR-0.(y-1).z`).
 
 ## Foundational ADRs (0.0.x)
 
