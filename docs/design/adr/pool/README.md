@@ -46,8 +46,8 @@ When a pool entry is prioritized:
 
 | Pool Entry | Promoted ADR | Date |
 |---|---|---|
-| [ADR-pool.airlineops-canon-reconciliation](ADR-pool.airlineops-canon-reconciliation.md) | [ADR-0.3.0](../adr-0.3.x/ADR-0.3.0-airlineops-canon-reconciliation/ADR-0.3.0-airlineops-canon-reconciliation.md) | 2026-02-13 |
-| ADR-pool.skill-capability-mirroring | [ADR-0.4.0](../adr-0.4.x/ADR-0.4.0-skill-capability-mirroring/ADR-0.4.0-skill-capability-mirroring.md) | 2026-02-17 |
+| [ADR-pool.airlineops-canon-reconciliation](ADR-pool.airlineops-canon-reconciliation.md) | [ADR-0.3.0](../pre-release/adr-0.3.x/ADR-0.3.0-airlineops-canon-reconciliation/ADR-0.3.0-airlineops-canon-reconciliation.md) | 2026-02-13 |
+| ADR-pool.skill-capability-mirroring | [ADR-0.4.0](../pre-release/adr-0.4.x/ADR-0.4.0-skill-capability-mirroring/ADR-0.4.0-skill-capability-mirroring.md) | 2026-02-17 |
 
 ---
 
@@ -58,9 +58,9 @@ Pool entries derive from PRD phases:
 ```
 PRD-GZKIT-1.0.0
 ├── ADR-0.1.0 (Phase 1: MVP) ← Active
-├── [ADR-0.2.0](../adr-0.2.x/ADR-0.2.0-gate-verification/ADR-0.2.0-gate-verification.md) (Phase 2: Gates) ← Active
-├── [ADR-0.3.0](../adr-0.3.x/ADR-0.3.0-airlineops-canon-reconciliation/ADR-0.3.0-airlineops-canon-reconciliation.md) (Phase 3) ← Active
-├── [ADR-0.4.0](../adr-0.4.x/ADR-0.4.0-skill-capability-mirroring/ADR-0.4.0-skill-capability-mirroring.md) (Phase 4: Skill parity) ← Active
+├── [ADR-0.2.0](../pre-release/adr-0.2.x/ADR-0.2.0-gate-verification/ADR-0.2.0-gate-verification.md) (Phase 2: Gates) ← Active
+├── [ADR-0.3.0](../pre-release/adr-0.3.x/ADR-0.3.0-airlineops-canon-reconciliation/ADR-0.3.0-airlineops-canon-reconciliation.md) (Phase 3) ← Active
+├── [ADR-0.4.0](../pre-release/adr-0.4.x/ADR-0.4.0-skill-capability-mirroring/ADR-0.4.0-skill-capability-mirroring.md) (Phase 4: Skill parity) ← Active
 ├── ADR-pool.heavy-lane (Phase 4)
 ├── ADR-pool.audit-system (Phase 5)
 ├── ADR-pool.gz-chores-system (Parity backlog)
@@ -74,9 +74,10 @@ Parenting model:
 
 - Foundation ADRs: `ADR-0.0.z`.
 - Pre-release ADRs: `ADR-0.y.z` (where `y > 0`) and should chain by ADR parent (`ADR-0.y.z -> ADR-0.(y-1).z`).
+- Release ADRs follow major-version progression: `ADR-1.y.z`, `ADR-2.y.z`, ...
 
 ## Foundational ADRs (0.0.x)
 
 Foundational ADRs in the 0.0.x series do NOT appear in the pool. They establish governance and constraints that feature ADRs must follow. See:
 
-- [ADR-0.0.1: Canonical GovZero Parity](../adr-0.0.x/ADR-0.0.1-canonical-govzero-parity/ADR-0.0.1-canonical-govzero-parity.md) — locks AirlineOps as canonical
+- [ADR-0.0.1: Canonical GovZero Parity](../foundation/adr-0.0.x/ADR-0.0.1-canonical-govzero-parity/ADR-0.0.1-canonical-govzero-parity.md) — locks AirlineOps as canonical
