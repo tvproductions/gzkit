@@ -20,7 +20,7 @@ Planned ADRs awaiting prioritization. Pool entries are lightweight intent docume
 When a pool entry is prioritized:
 
 1. Assign next available version in the target series
-2. Create full ADR folder: `docs/design/adr/adr-X.Y.x/ADR-X.Y.Z-{slug}/`
+2. Create full ADR folder: `docs/design/adr/{foundation|pre-release|<major>}/ADR-X.Y.Z-{slug}/`
 3. Write complete ADR with feature checklist
 4. Co-create all OBPIs (one per checklist item)
 5. Delete or archive the pool file
@@ -46,8 +46,8 @@ When a pool entry is prioritized:
 
 | Pool Entry | Promoted ADR | Date |
 |---|---|---|
-| [ADR-pool.airlineops-canon-reconciliation](ADR-pool.airlineops-canon-reconciliation.md) | [ADR-0.3.0](../pre-release/adr-0.3.x/ADR-0.3.0-airlineops-canon-reconciliation/ADR-0.3.0-airlineops-canon-reconciliation.md) | 2026-02-13 |
-| ADR-pool.skill-capability-mirroring | [ADR-0.4.0](../pre-release/adr-0.4.x/ADR-0.4.0-skill-capability-mirroring/ADR-0.4.0-skill-capability-mirroring.md) | 2026-02-17 |
+| [ADR-pool.airlineops-canon-reconciliation](ADR-pool.airlineops-canon-reconciliation.md) | [ADR-0.3.0](../pre-release/ADR-0.3.0-airlineops-canon-reconciliation/ADR-0.3.0-airlineops-canon-reconciliation.md) | 2026-02-13 |
+| ADR-pool.skill-capability-mirroring | [ADR-0.4.0](../pre-release/ADR-0.4.0-skill-capability-mirroring/ADR-0.4.0-skill-capability-mirroring.md) | 2026-02-17 |
 
 ---
 
@@ -58,9 +58,9 @@ Pool entries derive from PRD phases:
 ```
 PRD-GZKIT-1.0.0
 ├── ADR-0.1.0 (Phase 1: MVP) ← Active
-├── [ADR-0.2.0](../pre-release/adr-0.2.x/ADR-0.2.0-gate-verification/ADR-0.2.0-gate-verification.md) (Phase 2: Gates) ← Active
-├── [ADR-0.3.0](../pre-release/adr-0.3.x/ADR-0.3.0-airlineops-canon-reconciliation/ADR-0.3.0-airlineops-canon-reconciliation.md) (Phase 3) ← Active
-├── [ADR-0.4.0](../pre-release/adr-0.4.x/ADR-0.4.0-skill-capability-mirroring/ADR-0.4.0-skill-capability-mirroring.md) (Phase 4: Skill parity) ← Active
+├── [ADR-0.2.0](../pre-release/ADR-0.2.0-gate-verification/ADR-0.2.0-gate-verification.md) (Phase 2: Gates) ← Active
+├── [ADR-0.3.0](../pre-release/ADR-0.3.0-airlineops-canon-reconciliation/ADR-0.3.0-airlineops-canon-reconciliation.md) (Phase 3) ← Active
+├── [ADR-0.4.0](../pre-release/ADR-0.4.0-skill-capability-mirroring/ADR-0.4.0-skill-capability-mirroring.md) (Phase 4: Skill parity) ← Active
 ├── ADR-pool.heavy-lane (Phase 4)
 ├── ADR-pool.audit-system (Phase 5)
 ├── ADR-pool.gz-chores-system (Parity backlog)
@@ -80,4 +80,4 @@ Parenting model:
 
 Foundational ADRs in the 0.0.x series do NOT appear in the pool. They establish governance and constraints that feature ADRs must follow. See:
 
-- [ADR-0.0.1: Canonical GovZero Parity](../foundation/adr-0.0.x/ADR-0.0.1-canonical-govzero-parity/ADR-0.0.1-canonical-govzero-parity.md) — locks AirlineOps as canonical
+- [ADR-0.0.1: Canonical GovZero Parity](../foundation/ADR-0.0.1-canonical-govzero-parity/ADR-0.0.1-canonical-govzero-parity.md) — locks AirlineOps as canonical

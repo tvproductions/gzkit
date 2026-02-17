@@ -140,10 +140,10 @@ gzkit is the extracted governance methodology from AirlineOps, intended as a sta
 **ADR Folder Structure (ADR-Contained Layout):**
 
 ```
-docs/design/adr/adr-X.Y.x/ADR-X.Y.Z-{slug}/
+docs/design/adr/{foundation|pre-release|<major>}/ADR-X.Y.Z-{slug}/
   ADR-X.Y.Z-{slug}.md           # Intent document
   ADR-CLOSEOUT-FORM.md          # Closeout ceremony workspace
-  briefs/
+  obpis/
     OBPI-X.Y.Z-01-*.md          # One per checklist item
     OBPI-X.Y.Z-02-*.md
   audit/
@@ -287,9 +287,9 @@ gz audit ADR-0.1.0                    # Day N: generate audit
 `gz plan <adr-name>` SHALL:
 
 - Run mandatory Q&A interview to shape ADR content (including checklist items)
-- Create ADR folder structure: `docs/design/adr/adr-X.Y.x/ADR-X.Y.Z-{slug}/`
+- Create ADR folder structure: `docs/design/adr/{foundation|pre-release|<major>}/ADR-X.Y.Z-{slug}/`
 - Create ADR document from template populated with interview answers
-- Create `briefs/` subdirectory for OBPIs
+- Create `obpis/` subdirectory for OBPIs
 - Create `audit/` subdirectory for post-attestation audit
 - Create `ADR-CLOSEOUT-FORM.md` template
 - Save Q&A transcript to `.gzkit/transcripts/{adr-id}-interview.md`
@@ -307,7 +307,7 @@ gz audit ADR-0.1.0                    # Day N: generate audit
 - Parse ADR checklist items from ADR document
 - Generate one OBPI brief for the selected checklist item (One Brief Per Item discipline)
 - Use sequential, zero-gap numbering: `OBPI-X.Y.Z-01`, `OBPI-X.Y.Z-02`, etc.
-- Place briefs in `docs/design/adr/adr-X.Y.x/ADR-X.Y.Z-{slug}/briefs/`
+- Place OBPIs in `docs/design/adr/{foundation|pre-release|<major>}/ADR-X.Y.Z-{slug}/obpis/`
 - Populate OBPI template with:
   - Parent ADR reference
   - Checklist item number and description
@@ -546,8 +546,8 @@ PreToolUse hooks MAY:
 - [ ] `gz plan ADR-0.1.0 --brief my-feature` runs mandatory Q&A interview
 - [ ] Interview answers populate ADR template
 - [ ] Q&A transcript saved to `.gzkit/transcripts/ADR-0.1.0-interview.md`
-- [ ] ADR folder structure created: `docs/design/adr/pre-release/adr-0.1.x/ADR-0.1.0-{slug}/`
-- [ ] `briefs/` and `audit/` subdirectories created
+- [ ] ADR folder structure created: `docs/design/adr/pre-release/ADR-0.1.0-{slug}/`
+- [ ] `obpis/` and `audit/` subdirectories created
 - [ ] `ADR-CLOSEOUT-FORM.md` template created
 - [ ] ADR contains brief linkage
 - [ ] ADR contains checklist items from interview
@@ -560,7 +560,7 @@ PreToolUse hooks MAY:
 - [ ] `gz specify setup-db --parent ADR-0.1.0 --item 1` parses checklist item mapping from ADR
 - [ ] One OBPI brief created per checklist item
 - [ ] OBPIs numbered sequentially: `OBPI-0.1.0-01`, `OBPI-0.1.0-02`, etc.
-- [ ] OBPIs placed in `docs/design/adr/pre-release/adr-0.1.x/ADR-0.1.0-{slug}/briefs/`
+- [ ] OBPIs placed in `docs/design/adr/pre-release/ADR-0.1.0-{slug}/obpis/`
 - [ ] Each OBPI contains parent ADR reference and checklist item mapping
 - [ ] `obpi_created` events appended to ledger
 - [ ] Command fails if ADR has no checklist items
