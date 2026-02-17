@@ -1,6 +1,7 @@
 # Lifecycle
 
 ADRs are tracked from ledger events first, with docs as narrative overlay.
+Operational delivery still happens at OBPI scope, with ADR lifecycle as roll-up state.
 
 Canonical GovZero source: [`docs/governance/GovZero/adr-lifecycle.md`](../../governance/GovZero/adr-lifecycle.md).
 
@@ -49,12 +50,12 @@ CLI attestation tokens remain stable, but presentations map to canonical terms:
 
 ## Operational Sequence
 
-1. Orientation and scope (`gz status`, `gz adr audit-check`)
-2. Verification/tool use
-3. Closeout presentation (`gz closeout`)
-4. Human attestation (`gz attest`)
-5. Post-attestation audit (`gz audit`)
-6. Receipts/accounting (`gz adr emit-receipt`)
+1. Run OBPI increments repeatedly (implement, verify, brief evidence update)
+2. Record optional OBPI-scoped receipts under parent ADR with `adr_completion: not_completed`
+3. Reconcile OBPI completeness at ADR boundary (`gz adr audit-check`)
+4. Perform ADR closeout and attestation (`gz closeout`, `gz attest`)
+5. Run post-attestation audit (`gz audit`)
+6. Emit ADR-level receipt/accounting (`gz adr emit-receipt`)
 
 ---
 
