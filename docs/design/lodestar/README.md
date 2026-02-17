@@ -15,6 +15,7 @@ These are the philosophical, constitutional, and guiding principles that define 
 | [GovZero Doctrine](govzero-doctrine.md) | SPRINT/DRIFT, GovZero purpose, gzkit as material enabler |
 | [Foundational ADR Pattern](foundational-adr-pattern.md) | The 0.0.z series and ADR-0.0.0 requirement |
 | [Project Structure](project-structure.md) | Canonical directory layout for gzkit-governed projects |
+| [ADR Structure Notes](../adr/README.md) | Current ADR taxonomy and migration rules in this repo |
 
 ## What Belongs Here
 
@@ -47,7 +48,7 @@ Project 0.1.x+ (product features)
 
 ## Example: Foundational ADR Pattern
 
-See [ADR-0.0.1: Canonical GovZero Parity](../design/adr/adr-0.0.x/ADR-0.0.1-canonical-govzero-parity/ADR-0.0.1-canonical-govzero-parity.md) for an example of a foundational ADR that:
+See [ADR-0.0.1: Canonical GovZero Parity](../adr/foundation/ADR-0.0.1-canonical-govzero-parity/ADR-0.0.1-canonical-govzero-parity.md) for an example of a foundational ADR that:
 
 - Establishes canonical sources (AirlineOps as GovZero reference implementation)
 - Authorizes work without implementing it (8 OBPIs pending)
