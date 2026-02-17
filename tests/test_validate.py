@@ -206,7 +206,10 @@ class TestValidateManifest(unittest.TestCase):
                 "agents_md": "AGENTS.md",
                 "claude_md": "CLAUDE.md",
                 "hooks": ".claude/hooks",
-                "skills": ".github/skills",
+                "skills": ".gzkit/skills",
+                "claude_skills": ".claude/skills",
+                "codex_skills": ".codex/skills",
+                "copilot_skills": ".github/skills",
             },
             "verification": {
                 "lint": "uvx ruff check src tests",

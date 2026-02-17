@@ -16,6 +16,7 @@ gz adr emit-receipt <ADR-ID> --event {completed,validated} --attestor <text> [--
 
 - Validates receipt event choice.
 - Validates `--evidence-json` as a JSON object (when provided).
+- Blocks pool ADRs (`ADR-pool.*`) until promoted out of pool.
 - Appends `audit_receipt_emitted` to the ledger (unless `--dry-run`).
 
 Use evidence scope fields when recording OBPI-level completion under an ADR, for example:

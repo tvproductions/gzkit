@@ -92,7 +92,7 @@ def _confirm(prompt: str, default: bool = True) -> bool:
 
 
 console = Console()
-GIT_SYNC_SKILL_PATH = ".github/skills/git-sync/SKILL.md"
+GIT_SYNC_SKILL_PATH = ".gzkit/skills/git-sync/SKILL.md"
 COMMAND_DOCS: dict[str, str] = {
     "init": "docs/user/commands/init.md",
     "prd": "docs/user/commands/prd.md",
@@ -136,6 +136,10 @@ SEMVER_ID_RENAMES: tuple[tuple[str, str], ...] = (
     ("ADR-0.6.0-pool.gz-chores-system", "ADR-pool.gz-chores-system"),
     ("ADR-1.0.0-pool.release-hardening", "ADR-pool.release-hardening"),
     ("ADR-0.7.0-pool.release-hardening", "ADR-pool.release-hardening"),
+    (
+        "OBPI-pool.skill-01-skill-source-centralization",
+        "OBPI-0.8.0-01-skill-source-centralization",
+    ),
 )
 ADR_SEMVER_ID_RE = re.compile(r"^ADR-\d+\.\d+\.\d+(?:[.-][A-Za-z0-9][A-Za-z0-9.-]*)?$")
 ADR_POOL_ID_RE = re.compile(r"^ADR-pool\.[A-Za-z0-9][A-Za-z0-9.-]*$")
@@ -164,6 +168,13 @@ def _apply_pool_adr_status_overrides(adr_id: str, payload: dict[str, Any]) -> No
     gates = cast(dict[str, str], payload.get("gates", {}))
     if gates:
         gates["5"] = "pending"
+
+
+def _reject_pool_adr_for_lifecycle(adr_id: str, action: str) -> None:
+    """Block closeout lifecycle operations for pool ADRs."""
+    if not _is_pool_adr_id(adr_id):
+        return
+    raise GzCliError(f"Pool ADRs cannot be {action}: {adr_id}. Promote this ADR from pool first.")
 
 
 def get_project_root() -> Path:
@@ -2113,6 +2124,7 @@ def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
     adr_input = adr if adr.startswith("ADR-") else f"ADR-{adr}"
     canonical_adr = ledger.canonicalize_id(adr_input)
     adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
+    _reject_pool_adr_for_lifecycle(adr_id, "closed out")
     graph = ledger.get_artifact_graph()
     adr_info = graph.get(adr_id, {})
     lane = _resolve_adr_lane(adr_info, config.mode)
@@ -2180,6 +2192,7 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
     adr_input = adr if adr.startswith("ADR-") else f"ADR-{adr}"
     canonical_adr = ledger.canonicalize_id(adr_input)
     adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
+    _reject_pool_adr_for_lifecycle(adr_id, "audited")
     graph = ledger.get_artifact_graph()
     adr_info = graph.get(adr_id)
     if not adr_info or adr_info.get("type") != "adr":
@@ -2324,6 +2337,7 @@ def adr_emit_receipt_cmd(
     adr_input = adr if adr.startswith("ADR-") else f"ADR-{adr}"
     canonical_adr = ledger.canonicalize_id(adr_input)
     _adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
+    _reject_pool_adr_for_lifecycle(adr_id, "issued receipts")
 
     evidence: dict[str, Any] | None = None
     if evidence_json:
@@ -2372,6 +2386,8 @@ def check_config_paths_cmd(as_json: bool) -> None:
         "paths.docs_root": config.paths.docs_root,
         "paths.skills": config.paths.skills,
         "paths.claude_skills": config.paths.claude_skills,
+        "paths.codex_skills": config.paths.codex_skills,
+        "paths.copilot_skills": config.paths.copilot_skills,
     }
     required_files = {
         "paths.ledger": config.paths.ledger,
@@ -2407,7 +2423,13 @@ def check_config_paths_cmd(as_json: bool) -> None:
 
     for control_name, control_path in manifest.get("control_surfaces", {}).items():
         path = project_root / control_path
-        should_be_dir = control_name in {"hooks", "skills", "claude_skills"}
+        should_be_dir = control_name in {
+            "hooks",
+            "skills",
+            "claude_skills",
+            "codex_skills",
+            "copilot_skills",
+        }
         if not path.exists():
             issues.append(
                 {
@@ -2570,6 +2592,8 @@ def _run_agent_control_sync(dry_run: bool) -> None:
         console.print(f"  {config.paths.claude_settings}")
         console.print("  .copilotignore")
         console.print(f"  {config.paths.claude_skills}/**")
+        console.print(f"  {config.paths.codex_skills}/**")
+        console.print(f"  {config.paths.copilot_skills}/**")
         return
 
     console.print("Syncing control surfaces...")

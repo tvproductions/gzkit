@@ -1,0 +1,4 @@
+interface:
+  display_name: "gz check-config-paths"
+  short_description: "Operate the gz check-config-paths workflow"
+  default_prompt: "Use $gz-check-config-paths to run gz check-config-paths for this task."

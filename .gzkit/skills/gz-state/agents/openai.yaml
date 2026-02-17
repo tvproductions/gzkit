@@ -1,0 +1,4 @@
+interface:
+  display_name: "gz state"
+  short_description: "Operate the gz state workflow"
+  default_prompt: "Use $gz-state to run gz state for this task."

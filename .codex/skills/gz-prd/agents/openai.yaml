@@ -1,0 +1,4 @@
+interface:
+  display_name: "gz prd"
+  short_description: "Operate the gz prd workflow"
+  default_prompt: "Use $gz-prd to run gz prd for this task."

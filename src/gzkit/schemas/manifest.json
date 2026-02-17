@@ -58,7 +58,15 @@
     "control_surfaces": {
       "type": "object",
       "description": "Agent control surface file locations",
-      "required": ["agents_md", "claude_md", "hooks", "skills"],
+      "required": [
+        "agents_md",
+        "claude_md",
+        "hooks",
+        "skills",
+        "claude_skills",
+        "codex_skills",
+        "copilot_skills"
+      ],
       "properties": {
         "agents_md": {
           "type": "string",
@@ -75,6 +83,18 @@
         "skills": {
           "type": "string",
           "description": "Directory for skill definitions"
+        },
+        "claude_skills": {
+          "type": "string",
+          "description": "Directory for Claude skill mirror"
+        },
+        "codex_skills": {
+          "type": "string",
+          "description": "Directory for Codex skill mirror"
+        },
+        "copilot_skills": {
+          "type": "string",
+          "description": "Directory for Copilot skill mirror"
         }
       },
       "additionalProperties": false

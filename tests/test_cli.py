@@ -523,11 +523,11 @@ class TestGitSyncCommand(unittest.TestCase):
         with runner.isolated_filesystem():
             result = runner.invoke(main, ["git-sync", "--skill"])
             self.assertEqual(result.exit_code, 0)
-            self.assertEqual(result.output.strip(), ".github/skills/git-sync/SKILL.md")
+            self.assertEqual(result.output.strip(), ".gzkit/skills/git-sync/SKILL.md")
 
             alias_result = runner.invoke(main, ["sync-repo", "--skill"])
             self.assertEqual(alias_result.exit_code, 0)
-            self.assertEqual(alias_result.output.strip(), ".github/skills/git-sync/SKILL.md")
+            self.assertEqual(alias_result.output.strip(), ".gzkit/skills/git-sync/SKILL.md")
 
     def test_git_sync_fails_outside_git_repo(self) -> None:
         """git-sync returns error when cwd is not a git repo."""
@@ -729,15 +729,15 @@ class TestSkillCommands(unittest.TestCase):
             runner.invoke(main, ["init"])
             result = runner.invoke(main, ["skill", "new", "my-skill"])
             self.assertEqual(result.exit_code, 0)
-            self.assertTrue(Path(".github/skills/my-skill/SKILL.md").exists())
+            self.assertTrue(Path(".gzkit/skills/my-skill/SKILL.md").exists())
 
     def test_init_scaffolds_adr_create_and_removes_adr_manager(self) -> None:
         """core skill scaffolding uses gz-adr-create hard cutover."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             runner.invoke(main, ["init"])
-            self.assertTrue(Path(".github/skills/gz-adr-create/SKILL.md").exists())
-            self.assertFalse(Path(".github/skills/gz-adr-manager").exists())
+            self.assertTrue(Path(".gzkit/skills/gz-adr-create/SKILL.md").exists())
+            self.assertFalse(Path(".gzkit/skills/gz-adr-manager").exists())
 
 
 class TestNewCommandParsers(unittest.TestCase):
@@ -807,6 +807,16 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         }
         manifest_path.write_text(json.dumps(manifest, indent=2))
 
+    @staticmethod
+    def _create_pool_adr(adr_id: str = "ADR-pool.sample") -> None:
+        config = GzkitConfig.load(Path(".gzkit.json"))
+        pool_dir = Path(config.paths.adrs) / "pool"
+        pool_dir.mkdir(parents=True, exist_ok=True)
+        pool_adr = pool_dir / f"{adr_id}.md"
+        pool_adr.write_text(f"---\nid: {adr_id}\n---\n\n# {adr_id}\n")
+        ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+        ledger.append(adr_created_event(adr_id, "", "heavy"))
+
     def test_closeout_missing_adr_fails(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -865,6 +875,17 @@ class TestAdrRuntimeCommands(unittest.TestCase):
             self.assertIn("Gate 4 (BDD):", result.output)
             self.assertIn("uv run -m behave features/", result.output)
 
+    def test_closeout_rejects_pool_adr(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init", "--mode", "heavy"])
+            self._create_pool_adr()
+            result = runner.invoke(main, ["closeout", "ADR-pool.sample"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("Pool ADRs cannot be closed out", result.output)
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text()
+            self.assertNotIn('"event":"closeout_initiated","id":"ADR-pool.sample"', ledger_content)
+
     def test_audit_pre_attestation_fails(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -905,6 +926,15 @@ class TestAdrRuntimeCommands(unittest.TestCase):
             result = runner.invoke(main, ["audit", "ADR-0.1.0", "--dry-run"])
             self.assertEqual(result.exit_code, 0)
             self.assertFalse(Path("design/adr/audit").exists())
+
+    def test_audit_rejects_pool_adr(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init", "--mode", "heavy"])
+            self._create_pool_adr()
+            result = runner.invoke(main, ["audit", "ADR-pool.sample"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("Pool ADRs cannot be audited", result.output)
 
     def test_adr_audit_check_passes_for_completed_obpi_with_evidence(self) -> None:
         runner = CliRunner()
@@ -1008,6 +1038,26 @@ class TestAdrRuntimeCommands(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             ledger_content = Path(".gzkit/ledger.jsonl").read_text()
             self.assertNotIn("audit_receipt_emitted", ledger_content)
+
+    def test_adr_emit_receipt_rejects_pool_adr(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init", "--mode", "heavy"])
+            self._create_pool_adr()
+            result = runner.invoke(
+                main,
+                [
+                    "adr",
+                    "emit-receipt",
+                    "ADR-pool.sample",
+                    "--event",
+                    "completed",
+                    "--attestor",
+                    "human:jeff",
+                ],
+            )
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("Pool ADRs cannot be issued receipts", result.output)
 
 
 class TestLifecycleStatusSemantics(unittest.TestCase):
