@@ -3,7 +3,7 @@ id: ADR-0.4.0-skill-capability-mirroring
 status: Proposed
 semver: 0.4.0
 lane: heavy
-parent: PRD-GZKIT-1.0.0
+parent: ADR-0.3.0
 date: 2026-02-17
 promoted_from: ADR-pool.skill-capability-mirroring
 ---
