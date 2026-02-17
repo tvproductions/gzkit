@@ -1,0 +1,4 @@
+interface:
+  display_name: "gz check"
+  short_description: "Operate the gz check workflow"
+  default_prompt: "Use $gz-check to run gz check for this task."

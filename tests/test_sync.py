@@ -360,12 +360,12 @@ class TestSyncControlSurfaces(unittest.TestCase):
             copilot = (project_root / config.paths.copilot_instructions).read_text()
 
             self.assertIn("`demo-skill`", agents)
-            self.assertIn(".github/skills/demo-skill/SKILL.md", agents)
+            self.assertIn(".gzkit/skills/demo-skill/SKILL.md", agents)
             self.assertIn("`demo-skill`", claude)
             self.assertIn("`demo-skill`", copilot)
 
-    def test_sync_mirrors_skills_into_claude_directory(self) -> None:
-        """Canonical skills are mirrored into Claude's local skills path."""
+    def test_sync_mirrors_skills_into_all_tool_directories(self) -> None:
+        """Canonical skills are mirrored into Claude, Codex, and Copilot paths."""
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
             config = GzkitConfig(project_name="gzkit-test")
@@ -376,11 +376,34 @@ class TestSyncControlSurfaces(unittest.TestCase):
             source_file.write_text("# SKILL.md\n\n## Audit Skill\n\nAudit behavior.\n")
 
             updated = sync_all(project_root, config)
-            mirrored_file = project_root / config.paths.claude_skills / "audit-skill" / "SKILL.md"
+            claude_mirror = project_root / config.paths.claude_skills / "audit-skill" / "SKILL.md"
+            codex_mirror = project_root / config.paths.codex_skills / "audit-skill" / "SKILL.md"
+            copilot_mirror = project_root / config.paths.copilot_skills / "audit-skill" / "SKILL.md"
 
-            self.assertTrue(mirrored_file.exists())
-            self.assertEqual(mirrored_file.read_text(), source_file.read_text())
+            self.assertTrue(claude_mirror.exists())
+            self.assertTrue(codex_mirror.exists())
+            self.assertTrue(copilot_mirror.exists())
+            self.assertEqual(claude_mirror.read_text(), source_file.read_text())
+            self.assertEqual(codex_mirror.read_text(), source_file.read_text())
+            self.assertEqual(copilot_mirror.read_text(), source_file.read_text())
             self.assertIn(".claude/skills/audit-skill/SKILL.md", updated)
+            self.assertIn(".codex/skills/audit-skill/SKILL.md", updated)
+            self.assertIn(".github/skills/audit-skill/SKILL.md", updated)
+
+    def test_sync_bootstraps_canonical_from_legacy_copilot_mirror(self) -> None:
+        """When canonical is empty, sync seeds it from legacy Copilot skills."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            legacy_skill = project_root / config.paths.copilot_skills / "legacy-skill"
+            legacy_skill.mkdir(parents=True, exist_ok=True)
+            (legacy_skill / "SKILL.md").write_text("# SKILL.md\n\n## Legacy Skill\n")
+
+            sync_all(project_root, config)
+
+            canonical_file = project_root / config.paths.skills / "legacy-skill" / "SKILL.md"
+            self.assertTrue(canonical_file.exists())
 
 
 if __name__ == "__main__":

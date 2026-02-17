@@ -15,6 +15,7 @@ gz audit <ADR-ID> [--json] [--dry-run]
 ## Runtime Behavior
 
 `gz audit` is strict post-attestation.
+Pool ADRs (`ADR-pool.*`) are blocked from audit until promoted out of pool.
 
 - If the target ADR has no human attestation event, the command exits non-zero.
 - The failure response includes explicit next steps (`gz closeout`, then `gz attest`).

@@ -57,3 +57,5 @@
 {"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-pool.obpi-first-operations","ts":"2026-02-17T07:07:45.242213+00:00","parent":"PRD-GZKIT-1.0.0","lane":"heavy"}
 {"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-pool.obpi-runtime-surface","ts":"2026-02-17T07:07:45.242472+00:00","parent":"PRD-GZKIT-1.0.0","lane":"heavy"}
 {"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-pool.skill-capability-mirroring","ts":"2026-02-17T07:16:49.966339+00:00","parent":"PRD-GZKIT-1.0.0","lane":"heavy"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-pool.skill-01-skill-source-centralization","ts":"2026-02-17T07:58:46.459397+00:00","parent":"ADR-pool.skill-capability-mirroring"}
+{"schema":"gzkit.ledger.v1","event":"artifact_renamed","id":"OBPI-pool.skill-01-skill-source-centralization","ts":"2026-02-17T08:03:55.389410+00:00","new_id":"OBPI-0.8.0-01-skill-source-centralization","reason":"semver_minor_sequence_migration"}

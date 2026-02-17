@@ -15,6 +15,7 @@ gz closeout <ADR-ID> [--json] [--dry-run]
 ## Runtime Behavior
 
 `gz closeout` is a presentation step. It emits paths and commands only.
+Pool ADRs (`ADR-pool.*`) are blocked from closeout until promoted out of pool.
 
 Output includes:
 
