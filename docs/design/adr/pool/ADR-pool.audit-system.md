@@ -10,7 +10,7 @@ Proposed
 
 ## Parent PRD
 
-[PRD-GZKIT-1.0.0](../../prd/PRD-GZKIT-1.0.0.md) — Phase 5: Audit
+[PRD-GZKIT-1.0.0](../../prd/PRD-GZKIT-1.0.0.md) — Phase 6: Audit
 
 ---
 
@@ -40,7 +40,7 @@ Implement audit generation (`gz audit`) that produces post-attestation audit art
 
 ## Notes
 
-- Phase 5 per PRD rollout plan
+- Phase 6 per PRD rollout plan
 - Audit runs AFTER attestation (reconciliation, not proof)
 - Audit directory: `docs/design/adr/{foundation|pre-release|<major>.0}/ADR-X.Y.Z-{slug}/audit/`
 - Consider: audit artifact format (markdown vs structured data)

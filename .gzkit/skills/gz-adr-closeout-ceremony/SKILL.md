@@ -9,6 +9,9 @@ metadata:
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
   govzero-gates-covered: "Gate 5 (Human Attestation)"
   govzero_layer: "Layer 2 — Ledger Consumption"
+lifecycle_state: active
+owner: gzkit-governance
+last_reviewed: 2026-02-18
 ---
 
 # gz-adr-closeout-ceremony

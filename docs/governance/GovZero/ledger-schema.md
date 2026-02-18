@@ -292,49 +292,33 @@ entry type from content:
 ### Python
 
 ```python
-from opsdev.lib.ledger_schema import (
-    validate_ledger_entry,
-    is_valid_ledger_entry,
-    parse_ledger_entry,
-    LedgerValidationError,
-)
+from pathlib import Path
 
-# Validate and raise on error
-entry = {"type": "obpi-audit", ...}
-try:
-    validate_ledger_entry(entry)  # Returns True or raises
-except LedgerValidationError as e:
-    print(f"Validation failed: {e}")
+from gzkit.validate import validate_ledger
 
-# Check validity without exception
-if is_valid_ledger_entry(entry):
-    print("Valid")
-
-# Parse into typed model
-parsed = parse_ledger_entry(entry)
-print(f"Type: {parsed.type}, OBPI: {parsed.obpi_id}")
+errors = validate_ledger(Path(".gzkit/ledger.jsonl"))
+if errors:
+    for error in errors:
+        print(error.message)
+else:
+    print("Ledger is valid.")
 ```
 
 ### Creating Entries
 
 ```python
-from opsdev.lib.ledger_schema import (
-    ObpiAuditEntry,
-    create_timestamp,
+from gzkit.ledger import gate_checked_event
+
+entry = gate_checked_event(
+    adr_id="ADR-0.3.0",
+    gate=2,
+    status="pass",
+    command="uv run gz test",
+    returncode=0,
 )
 
-entry = ObpiAuditEntry(
-    timestamp=create_timestamp(),
-    obpi_id="OBPI-0.0.21-01",
-    adr_id="ADR-0.0.21",
-    brief_status="Completed",
-    lane="Lite",
-    action_taken="brief_updated",
-)
-
-# Serialize to JSON for JSONL
-import json
-line = json.dumps(entry.model_dump(mode="json"))
+# Serialize to JSON for JSONL append
+line = entry.to_dict()
 ```
 
 ---
@@ -391,4 +375,4 @@ To add a new entry type:
 - [ADR-0.0.21](../../design/adr/adr-0.0.x/ADR-0.0.21-govzero-tooling-layered-trust/ADR-0.0.21-govzero-tooling-layered-trust.md) — Architecture decision record
 - [GovZero Charter](charter.md) — Gate definitions and authority
 - [ADR Lifecycle](adr-lifecycle.md) — Status transitions
-- Python module: `src/opsdev/lib/ledger_schema.py`
+- Python modules: `src/gzkit/validate.py`, `src/gzkit/ledger.py`

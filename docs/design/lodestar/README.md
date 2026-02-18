@@ -15,7 +15,7 @@ These are the philosophical, constitutional, and guiding principles that define 
 | [GovZero Doctrine](govzero-doctrine.md) | SPRINT/DRIFT, GovZero purpose, gzkit as material enabler |
 | [Foundational ADR Pattern](foundational-adr-pattern.md) | The 0.0.z series and ADR-0.0.0 requirement |
 | [Project Structure](project-structure.md) | Canonical directory layout for gzkit-governed projects |
-| [ADR Structure Notes](../adr/README.md) | Current ADR taxonomy and migration rules in this repo |
+| [ADR Structure Notes](../adr/meta/README.md) | Current ADR taxonomy and migration rules in this repo |
 
 ## What Belongs Here
 

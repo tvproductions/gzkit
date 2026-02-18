@@ -1,6 +1,9 @@
 ---
 name: git-sync
 description: Run the guarded repository sync ritual with lint/test gates.
+lifecycle_state: active
+owner: gzkit-governance
+last_reviewed: 2026-02-18
 ---
 
 # SKILL.md

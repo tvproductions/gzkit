@@ -10,7 +10,7 @@ Proposed
 
 ## Parent PRD
 
-[PRD-GZKIT-1.0.0](../../prd/PRD-GZKIT-1.0.0.md) — Phase 6: Release
+[PRD-GZKIT-1.0.0](../../prd/PRD-GZKIT-1.0.0.md) — Phase 7: Release
 
 ---
 
@@ -42,7 +42,7 @@ Harden gzkit for 1.0.0 release. All 11 commands functional, templates hardened, 
 
 ## Notes
 
-- Phase 6 per PRD rollout plan
+- Phase 7 per PRD rollout plan
 - This is the release gate—no 1.0.0 without completing this ADR
 - Success metric: student can complete demo workflow unassisted
 - Consider: should 1.0.0 require BDD scenarios for CLI contract?

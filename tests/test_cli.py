@@ -92,7 +92,6 @@ class TestInitCommand(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             self.assertTrue(Path("design/prd").exists())
             self.assertTrue(Path("design/constitutions").exists())
-            self.assertTrue(Path("design/obpis").exists())
             self.assertTrue(Path("design/adr").exists())
 
     def test_init_fails_if_already_initialized(self) -> None:
@@ -143,11 +142,12 @@ class TestSpecifyCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
             result = runner.invoke(
                 main, ["specify", "core-feature", "--parent", "ADR-0.1.0", "--item", "1"]
             )
             self.assertEqual(result.exit_code, 0)
-            self.assertTrue(Path("design/obpis/OBPI-0.1.0-01-core-feature.md").exists())
+            self.assertTrue(Path("design/adr/obpis/OBPI-0.1.0-01-core-feature.md").exists())
 
     def test_specify_rejects_pool_parent(self) -> None:
         """specify blocks pool ADR parents until promotion."""
@@ -751,6 +751,15 @@ class TestSkillCommands(unittest.TestCase):
             self.assertTrue(Path(".gzkit/skills/gz-adr-create/SKILL.md").exists())
             self.assertFalse(Path(".gzkit/skills/gz-adr-manager").exists())
 
+    def test_skill_audit_passes_after_init(self) -> None:
+        """skill audit passes for freshly initialized project."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            result = runner.invoke(main, ["skill", "audit"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("passed", result.output.lower())
+
 
 class TestNewCommandParsers(unittest.TestCase):
     """Parser-level tests for new command surfaces."""
@@ -768,6 +777,7 @@ class TestNewCommandParsers(unittest.TestCase):
             ["check-config-paths", "--help"],
             ["cli", "--help"],
             ["cli", "audit", "--help"],
+            ["skill", "audit", "--help"],
         ]
         for args in commands:
             result = runner.invoke(main, args)
@@ -954,7 +964,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
             runner.invoke(main, ["init"])
             runner.invoke(main, ["plan", "0.1.0"])
             config = GzkitConfig.load(Path(".gzkit.json"))
-            obpi_path = Path(config.paths.obpis) / "OBPI-0.1.0-01-demo.md"
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
             self._write_obpi(
                 path=obpi_path,
@@ -972,7 +982,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
             runner.invoke(main, ["init"])
             runner.invoke(main, ["plan", "0.1.0"])
             config = GzkitConfig.load(Path(".gzkit.json"))
-            obpi_path = Path(config.paths.obpis) / "OBPI-0.1.0-01-demo.md"
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
             self._write_obpi(
                 path=obpi_path,
@@ -1224,7 +1234,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
             runner.invoke(main, ["init"])
             runner.invoke(main, ["plan", "0.1.0"])
             config = GzkitConfig.load(Path(".gzkit.json"))
-            obpi_path = Path(config.paths.obpis) / "OBPI-0.1.0-01-demo.md"
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
             obpi_path.parent.mkdir(parents=True, exist_ok=True)
             TestAdrRuntimeCommands._write_obpi(
                 path=obpi_path,
@@ -1324,6 +1334,32 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
             result = runner.invoke(main, ["check-config-paths"])
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("failed", result.output.lower())
+
+    def test_check_config_paths_rejects_legacy_global_obpi_path(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            config_path = Path(".gzkit.json")
+            config = json.loads(config_path.read_text())
+            config["paths"]["obpis"] = "design/obpis"
+            config_path.write_text(json.dumps(config, indent=2) + "\n")
+            Path("design/obpis").mkdir(parents=True, exist_ok=True)
+
+            result = runner.invoke(main, ["check-config-paths"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("deprecated global obpi path", result.output.lower())
+
+    def test_check_config_paths_rejects_legacy_global_obpi_files(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            legacy_file = Path("design/obpis/OBPI-0.1.0-01-legacy.md")
+            legacy_file.parent.mkdir(parents=True, exist_ok=True)
+            legacy_file.write_text("# legacy\n")
+
+            result = runner.invoke(main, ["check-config-paths"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("legacy global obpi directory contains obpi files", result.output.lower())
 
     def test_cli_audit_passes_with_synchronized_docs(self) -> None:
         runner = CliRunner()

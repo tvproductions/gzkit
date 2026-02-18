@@ -16,7 +16,7 @@
       "schema": "gzkit.constitution.v1"
     },
     "obpi": {
-      "path": "docs/design/obpis",
+      "path": "docs/design/adr",
       "schema": "gzkit.obpi.v1"
     },
     "adr": {

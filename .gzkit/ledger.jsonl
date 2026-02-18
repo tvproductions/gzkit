@@ -61,3 +61,13 @@
 {"schema":"gzkit.ledger.v1","event":"artifact_renamed","id":"OBPI-pool.skill-01-skill-source-centralization","ts":"2026-02-17T08:03:55.389410+00:00","new_id":"OBPI-0.8.0-01-skill-source-centralization","reason":"semver_minor_sequence_migration"}
 {"schema":"gzkit.ledger.v1","event":"artifact_renamed","id":"ADR-pool.skill-capability-mirroring","ts":"2026-02-17T11:11:21.627981+00:00","new_id":"ADR-0.4.0-skill-capability-mirroring","reason":"semver_minor_sequence_migration"}
 {"schema":"gzkit.ledger.v1","event":"artifact_renamed","id":"OBPI-pool.skill-01-skill-source-centralization","ts":"2026-02-17T11:11:39.804888+00:00","new_id":"OBPI-0.4.0-01-skill-source-centralization","reason":"semver_minor_sequence_migration"}
+{"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-0.0.1-canonical-govzero-parity","ts":"2026-02-18T11:04:19.694261+00:00","lane":"lite"}
+{"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-0.0.2-stdlib-cli-and-agent-sync","ts":"2026-02-18T11:04:19.695585+00:00","lane":"lite"}
+{"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-0.5.0-skill-lifecycle-governance","ts":"2026-02-18T11:04:19.695892+00:00","parent":"ADR-0.4.0-skill-capability-mirroring","lane":"heavy"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.4.0-02-agent-native-mirror-contracts","ts":"2026-02-18T11:04:27.679974+00:00","parent":"ADR-0.4.0-skill-capability-mirroring"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.4.0-03-sync-determinism-and-recovery","ts":"2026-02-18T11:04:27.751978+00:00","parent":"ADR-0.4.0-skill-capability-mirroring"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.4.0-04-mirror-compat-migration","ts":"2026-02-18T11:04:27.820453+00:00","parent":"ADR-0.4.0-skill-capability-mirroring"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.5.0-01-skill-taxonomy-and-capability-model","ts":"2026-02-18T11:04:27.889704+00:00","parent":"ADR-0.5.0-skill-lifecycle-governance"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.5.0-02-parity-verification-policy","ts":"2026-02-18T11:04:27.956660+00:00","parent":"ADR-0.5.0-skill-lifecycle-governance"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.5.0-03-lifecycle-state-transitions","ts":"2026-02-18T11:04:28.024839+00:00","parent":"ADR-0.5.0-skill-lifecycle-governance"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.5.0-04-maintenance-and-deprecation-operations","ts":"2026-02-18T11:04:28.094184+00:00","parent":"ADR-0.5.0-skill-lifecycle-governance"}

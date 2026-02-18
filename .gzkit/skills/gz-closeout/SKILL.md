@@ -1,6 +1,9 @@
 ---
 name: gz-closeout
 description: Initiate ADR closeout with evidence context. Use when preparing an ADR for attestation and audit steps.
+lifecycle_state: active
+owner: gzkit-governance
+last_reviewed: 2026-02-18
 ---
 
 # gz closeout

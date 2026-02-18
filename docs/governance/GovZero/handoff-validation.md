@@ -105,43 +105,26 @@ Heuristics skip non-path content:
 ## Python API
 
 ```python
-from opsdev.governance.handoff_validation import (
-    validate_handoff_document,
-    parse_frontmatter,
-    HandoffFrontmatter,
-    HandoffValidationError,
-)
 from pathlib import Path
 
-# Full validation (returns list of error strings)
-content = Path("handoffs/session.md").read_text()
-errors = validate_handoff_document(content, base_path=Path("."))
-if errors:
-    for e in errors:
-        print(f"  - {e}")
-else:
-    print("Document is valid.")
+from gzkit.validate import extract_headers, parse_frontmatter
 
-# Parse frontmatter only
-data = parse_frontmatter(content)
-fm = HandoffFrontmatter(**data)
-print(fm.mode, fm.adr_id)
+content = Path("handoffs/session.md").read_text()
+frontmatter, body = parse_frontmatter(content)
+headers = extract_headers(body)
+
+print(frontmatter.get("schema"))
+print(headers)
 ```
 
-### Individual Validators
+### Operational Validation
 
-```python
-from opsdev.governance.handoff_validation import (
-    validate_no_placeholders,
-    validate_no_secrets,
-    validate_sections_present,
-    validate_referenced_files,
-)
+```bash
+# Validate governance documents and surfaces
+uv run gz validate --documents --surfaces
 
-violations = validate_no_placeholders(content)
-violations = validate_no_secrets(content)
-missing = validate_sections_present(content)
-missing_files = validate_referenced_files(content, Path("."))
+# Run interactive handoff interview flow
+uv run gz interview handoff
 ```
 
 ---
@@ -169,5 +152,5 @@ missing_files = validate_referenced_files(content, Path("."))
 - [Session Handoff Schema](session-handoff-schema.md) -- Schema specification
 - [Staleness Classification](staleness-classification.md) -- Multi-factor staleness system
 - [ADR-0.0.25](../../design/adr/adr-0.0.x/ADR-0.0.25-compounding-engineering-session-handoff-contract/ADR-0.0.25-compounding-engineering-session-handoff-contract.md) -- Architecture decision record
-- Source: `src/opsdev/governance/handoff_validation.py`
+- Sources: `src/gzkit/validate.py`, `src/gzkit/interview.py`
 - Tests: `tests/governance/test_handoff_validation.py`

@@ -17,6 +17,7 @@ gz check-config-paths [--json]
 - Required configured directories and files exist
 - Manifest artifact paths exist
 - Manifest control-surface paths exist with expected type (file vs directory)
+- Legacy global OBPI path usage (`docs/design/obpis`) is rejected
 
 ---
 

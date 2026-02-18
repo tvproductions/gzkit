@@ -34,7 +34,7 @@ gz specify <name> --parent <PARENT-ID> [OPTIONS]
 ## What It Does
 
 1. Creates a brief document from template
-2. Links it to the parent PRD or constitution
+2. Resolves the parent ADR and writes the OBPI under that ADR package `obpis/` directory
 3. Records the creation event in the ledger
 4. Configures lane-specific requirements (docs, BDD)
 
@@ -46,10 +46,10 @@ Pool ADRs (`ADR-pool.*` or legacy `ADR-*.pool.*`) are blocked as parents until p
 
 ```bash
 # Basic usage
-gz specify add-login --parent PRD-my-feature-1.0.0
+gz specify add-login --parent ADR-0.4.0-skill-capability-mirroring
 
 # With options
-gz specify add-login --parent PRD-my-feature-1.0.0 --lane heavy --title "Add Login Button"
+gz specify add-login --parent ADR-0.4.0-skill-capability-mirroring --lane heavy --title "Add Login Button"
 
 # Dry run
 gz specify add-login --parent PRD-my-feature-1.0.0 --dry-run
@@ -60,7 +60,7 @@ gz specify add-login --parent PRD-my-feature-1.0.0 --dry-run
 ## Output
 
 ```
-Created brief: design/briefs/BRIEF-add-login.md
+Created OBPI: docs/design/adr/pre-release/ADR-0.4.0-skill-capability-mirroring/obpis/OBPI-0.4.0-02-add-login.md
 ```
 
 ---
@@ -97,7 +97,7 @@ The created brief contains:
 ## Workflow
 
 1. (Optional) Create a PRD with `gz prd`
-2. Create a brief with `gz specify` (this command)
-3. Create an ADR with `gz plan --brief BRIEF-...`
+2. Create an ADR with `gz plan`
+3. Create an OBPI with `gz specify --parent ADR-...`
 4. Implement the solution
 5. Attest with `gz attest`

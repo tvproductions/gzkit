@@ -15,7 +15,7 @@ class TestPathConfig(unittest.TestCase):
         config = PathConfig()
         self.assertEqual(config.prd, "design/prd")
         self.assertEqual(config.constitutions, "design/constitutions")
-        self.assertEqual(config.obpis, "design/obpis")
+        self.assertEqual(config.obpis, "design/adr")
         self.assertEqual(config.adrs, "design/adr")
         self.assertEqual(config.source_root, "src")
         self.assertEqual(config.tests_root, "tests")

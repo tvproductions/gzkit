@@ -264,7 +264,7 @@
    - Priority files (governance/skills):
      - `.github/skills/adr-docs/SKILL.md`
      - `.github/skills/adr-manager/SKILL.md`
-     - `src/opsdev/lib/adr.py`
+     - `src/gzkit/cli.py`
      - `docs/governance/GOVZERO-GATE-3-5-AUDIT-FORM-ISSUE.md`
 
 ### Near-term (Version Alignment)
@@ -310,8 +310,8 @@ Files referencing old `docs/design/adr/adr_status.md` path (35 total):
 **Active/Normative (priority update):**
 - `.github/skills/adr-docs/SKILL.md`
 - `.github/skills/adr-manager/SKILL.md`
-- `src/opsdev/lib/adr.py`
-- `src/opsdev/commands/tasks.py`
+- `src/gzkit/cli.py`
+- `src/gzkit/cli.py`
 - `docs/governance/GOVZERO-GATE-3-5-AUDIT-FORM-ISSUE.md`
 - `ARCHITECTURE.md`
 - `docs/user/index.md`

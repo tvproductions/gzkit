@@ -171,8 +171,8 @@ class TestScanExistingArtifacts(unittest.TestCase):
             self.assertEqual(len(result["adrs"]), 1)
             self.assertTrue(result["adrs"][0].name == "ADR-0.1.0-test.md")
 
-    def test_scan_finds_obpi_files(self) -> None:
-        """Finds OBPI files in design/obpis directory."""
+    def test_scan_ignores_legacy_global_obpi_directory(self) -> None:
+        """Does not discover OBPI files in legacy design/obpis directory."""
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
             obpi_dir = project_root / "design" / "obpis"
@@ -181,8 +181,7 @@ class TestScanExistingArtifacts(unittest.TestCase):
 
             result = scan_existing_artifacts(project_root, "design")
 
-            self.assertEqual(len(result["obpis"]), 1)
-            self.assertTrue(result["obpis"][0].name == "OBPI-0.1.0-01-demo.md")
+            self.assertEqual(result["obpis"], [])
 
     def test_scan_finds_obpi_files_nested_under_adr(self) -> None:
         """Finds OBPI files nested under ADR directories."""

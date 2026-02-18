@@ -1,6 +1,9 @@
 ---
 name: gz-check
 description: Run full quality checks in one pass. Use for pre-merge or pre-attestation quality verification.
+lifecycle_state: active
+owner: gzkit-governance
+last_reviewed: 2026-02-18
 ---
 
 # gz check

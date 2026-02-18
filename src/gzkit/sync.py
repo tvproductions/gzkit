@@ -100,13 +100,8 @@ def scan_existing_artifacts(project_root: Path, design_root: str) -> dict[str, l
         for adr_file in adr_dir.rglob("ADR-*.md"):
             result["adrs"].append(adr_file)
 
-    # Scan for OBPIs (OBPI-*.md pattern). OBPI briefs may live in design/obpis
-    # or nested under ADR directories (e.g., design/adr/**/obpis).
+    # Scan for OBPIs (OBPI-*.md pattern) nested under ADR directories.
     obpi_candidates: list[Path] = []
-    obpi_dir = design_path / "obpis"
-    if obpi_dir.exists():
-        obpi_candidates.extend(obpi_dir.rglob("OBPI-*.md"))
-
     if adr_dir.exists():
         obpi_candidates.extend(adr_dir.rglob("OBPI-*.md"))
 
@@ -267,7 +262,7 @@ def generate_manifest(
         "artifacts": {
             "prd": {"path": config.paths.prd, "schema": "gzkit.prd.v1"},
             "constitution": {"path": config.paths.constitutions, "schema": "gzkit.constitution.v1"},
-            "obpi": {"path": config.paths.obpis, "schema": "gzkit.obpi.v1"},
+            "obpi": {"path": config.paths.adrs, "schema": "gzkit.obpi.v1"},
             "adr": {"path": config.paths.adrs, "schema": "gzkit.adr.v1"},
         },
         "control_surfaces": {

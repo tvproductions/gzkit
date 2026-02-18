@@ -1,6 +1,9 @@
 ---
 name: airlineops-parity-scan
 description: Run a repeatable governance parity scan between ../airlineops (canon) and gzkit (extraction).
+lifecycle_state: active
+owner: gzkit-governance
+last_reviewed: 2026-02-18
 ---
 
 # SKILL.md

@@ -132,11 +132,11 @@ class TestAdapterArchitecturalCompliance(unittest.TestCase):
 
 ---
 
-### Layer 3: Architectural Compliance Chore (Skill)
+### Layer 3: Architectural Compliance Check (Skill)
 
 **What:** A runnable chore that audits the codebase against `config/architecture.json`.
 
-**Location:** `config/opsdev/chores.json` entry + implementation
+**Location:** `docs/governance/GovZero/` policy + `gz` quality/validation commands
 
 **Chore definition:**
 
@@ -144,7 +144,7 @@ class TestAdapterArchitecturalCompliance(unittest.TestCase):
 {
   "architectural-compliance-audit": {
     "description": "Audit code against architecture.json invariants",
-    "command": "uv run -m opsdev chores run architectural-compliance-audit",
+    "command": "uv run gz check",
     "checks": [
       "adapter_delegation_rule",
       "bounded_context_imports",
