@@ -33,9 +33,9 @@ When a pool entry is prioritized:
 | Entry | Target | Status | Dependency |
 |-------|--------|--------|------------|
 | [ADR-pool.heavy-lane](ADR-pool.heavy-lane.md) | 0.4.x | Waiting | ADR-0.3.0 |
-| [ADR-pool.audit-system](ADR-pool.audit-system.md) | 0.5.x | Waiting | ADR-pool.heavy-lane |
-| [ADR-pool.gz-chores-system](ADR-pool.gz-chores-system.md) | 0.6.x | Waiting | ADR-0.2.0 |
-| [ADR-pool.release-hardening](ADR-pool.release-hardening.md) | 0.7.x | Waiting | ADR-pool.audit-system |
+| [ADR-pool.audit-system](ADR-pool.audit-system.md) | 0.6.x | Waiting | ADR-pool.heavy-lane |
+| [ADR-pool.gz-chores-system](ADR-pool.gz-chores-system.md) | 0.7.x | Waiting | ADR-0.2.0 |
+| [ADR-pool.release-hardening](ADR-pool.release-hardening.md) | 1.0.x | Waiting | ADR-pool.audit-system |
 | [ADR-pool.go-runtime-parity](ADR-pool.go-runtime-parity.md) | Foundation | Waiting | ADR-0.3.0 |
 | [ADR-pool.obpi-first-operations](ADR-pool.obpi-first-operations.md) | Governance parity | Waiting | ADR-0.3.0 |
 | [ADR-pool.obpi-runtime-surface](ADR-pool.obpi-runtime-surface.md) | Runtime ergonomics | Waiting | ADR-pool.obpi-first-operations |
@@ -61,10 +61,11 @@ PRD-GZKIT-1.0.0
 ├── [ADR-0.2.0](../pre-release/ADR-0.2.0-gate-verification/ADR-0.2.0-gate-verification.md) (Phase 2: Gates) ← Active
 ├── [ADR-0.3.0](../pre-release/ADR-0.3.0-airlineops-canon-reconciliation/ADR-0.3.0-airlineops-canon-reconciliation.md) (Phase 3) ← Active
 ├── [ADR-0.4.0](../pre-release/ADR-0.4.0-skill-capability-mirroring/ADR-0.4.0-skill-capability-mirroring.md) (Phase 4: Skill parity) ← Active
-├── ADR-pool.heavy-lane (Phase 4)
-├── ADR-pool.audit-system (Phase 5)
+├── [ADR-0.5.0](../pre-release/ADR-0.5.0-skill-lifecycle-governance/ADR-0.5.0-skill-lifecycle-governance.md) (Phase 5: Skill lifecycle governance) ← Active
+├── ADR-pool.heavy-lane (Backlog)
+├── ADR-pool.audit-system (Phase 6)
 ├── ADR-pool.gz-chores-system (Parity backlog)
-├── ADR-pool.release-hardening (Phase 6)
+├── ADR-pool.release-hardening (Phase 7)
 ├── ADR-pool.go-runtime-parity (Foundation runtime track)
 └── ADR-pool.obpi-first-operations (OBPI-first governance track)
     ├── ADR-pool.obpi-runtime-surface (OBPI-native runtime surfaces)

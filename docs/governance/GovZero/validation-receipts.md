@@ -135,46 +135,34 @@ docs/design/adr/adr-0.0.x/ADR-0.0.24-validation-receipt-temporal-anchoring/logs/
 ### Creating and Writing Receipts
 
 ```python
-from opsdev.lib.validation_receipt import (
-    ValidationAnchor,
-    ValidationReceipt,
-    create_timestamp,
-    write_receipt,
-)
 from pathlib import Path
 
-receipt = ValidationReceipt(
-    timestamp=create_timestamp(),
-    adr_id="ADR-0.0.24",
-    event="validated",
-    anchor=ValidationAnchor(
-        commit="de80292",
-        tag="v0.0.24",
-        semver="0.0.24",
-    ),
-    evidence={"tests_passed": True, "coverage_percent": 48.5},
-    attestor="human:jeff",
-    agent="claude-code",
-    session_id="2026-02-10-session",
-)
+from gzkit.ledger import Ledger, audit_receipt_emitted_event
 
-ledger_path = Path("docs/design/adr/adr-0.0.x/ADR-0.0.24-.../logs/adr-validation.jsonl")
-write_receipt(receipt, ledger_path)
+ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+event = audit_receipt_emitted_event(
+    adr_id="ADR-0.3.0",
+    receipt_event="validated",
+    attestor="Jeffry Babb",
+    evidence={"scope": "ADR", "adr_completion": "completed"},
+)
+ledger.append(event)
 ```
 
 ### Reading Receipts
 
 ```python
-from opsdev.lib.validation_receipt import read_receipts
 from pathlib import Path
 
-ledger_path = Path("docs/design/adr/adr-0.0.x/ADR-0.0.24-.../logs/adr-validation.jsonl")
+from gzkit.ledger import Ledger
 
-# Read all receipts
-all_receipts = read_receipts(ledger_path)
+ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+
+# Read all audit receipt events
+all_receipts = ledger.query(event_type="audit_receipt_emitted")
 
 # Filter by ADR
-adr_receipts = read_receipts(ledger_path, adr_id="ADR-0.0.24")
+adr_receipts = ledger.query(event_type="audit_receipt_emitted", artifact_id="ADR-0.3.0")
 ```
 
 ---
@@ -184,4 +172,4 @@ adr_receipts = read_receipts(ledger_path, adr_id="ADR-0.0.24")
 - [Ledger Schema](ledger-schema.md) — Base schema and OBPI audit entry types
 - [Layered Trust Architecture](layered-trust.md) — Tool layer model
 - [ADR Lifecycle](adr-lifecycle.md) — Status transitions
-- Python module: `src/opsdev/lib/validation_receipt.py`
+- Python module: `src/gzkit/ledger.py`
