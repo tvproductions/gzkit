@@ -66,7 +66,7 @@ Skills are centralized under `.gzkit` and mirrored to tool-local paths:
 
 - Canonical skills: `.gzkit/skills`
 - Claude skill mirror: `.claude/skills`
-- Codex skill mirror: `.codex/skills`
+- Codex skill mirror: `.agents/skills`
 - Copilot skill mirror: `.github/skills`
 
 ### Available Skills

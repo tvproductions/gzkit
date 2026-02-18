@@ -208,7 +208,7 @@ class TestValidateManifest(unittest.TestCase):
                 "hooks": ".claude/hooks",
                 "skills": ".gzkit/skills",
                 "claude_skills": ".claude/skills",
-                "codex_skills": ".codex/skills",
+                "codex_skills": ".agents/skills",
                 "copilot_skills": ".github/skills",
             },
             "verification": {

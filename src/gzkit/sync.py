@@ -455,6 +455,7 @@ def bootstrap_canonical_skills(project_root: Path, config: GzkitConfig) -> list[
         ".github/skills",
         config.paths.claude_skills,
         config.paths.codex_skills,
+        ".codex/skills",
     ]
     seen: set[str] = set()
     for candidate in candidate_paths:

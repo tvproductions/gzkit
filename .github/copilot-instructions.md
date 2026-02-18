@@ -43,7 +43,7 @@ Use the canonical skill catalog and keep mirrors synced via `gz agent sync contr
 
 - Canonical skills: `.gzkit/skills`
 - Claude skill mirror: `.claude/skills`
-- Codex skill mirror: `.codex/skills`
+- Codex skill mirror: `.agents/skills`
 - Copilot skill mirror: `.github/skills`
 
 ### Available Skills

@@ -387,7 +387,7 @@ class TestSyncControlSurfaces(unittest.TestCase):
             self.assertEqual(codex_mirror.read_text(), source_file.read_text())
             self.assertEqual(copilot_mirror.read_text(), source_file.read_text())
             self.assertIn(".claude/skills/audit-skill/SKILL.md", updated)
-            self.assertIn(".codex/skills/audit-skill/SKILL.md", updated)
+            self.assertIn(".agents/skills/audit-skill/SKILL.md", updated)
             self.assertIn(".github/skills/audit-skill/SKILL.md", updated)
 
     def test_sync_bootstraps_canonical_from_legacy_copilot_mirror(self) -> None:
