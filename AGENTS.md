@@ -49,7 +49,7 @@ Skill behavior is standardized and synchronized by `gz agent sync control-surfac
 
 - Canonical skills: `.gzkit/skills`
 - Claude skill mirror: `.claude/skills`
-- Codex skill mirror: `.codex/skills`
+- Codex skill mirror: `.agents/skills`
 - Copilot skill mirror: `.github/skills`
 
 ### Skills Protocol

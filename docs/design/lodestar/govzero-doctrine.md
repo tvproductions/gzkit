@@ -52,7 +52,7 @@ Minimum canonical mining scope:
 - `AGENTS.md`, `CLAUDE.md`
 - `.github/**`
 - `.claude/**`
-- `.codex/**`
+- `.agents/**`
 - `.gzkit/**`
 - `docs/governance/GovZero/**`
 

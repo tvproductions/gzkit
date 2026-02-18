@@ -18,7 +18,7 @@ status: Completed
 ## Objective
 
 Shift the canonical skills root to `.gzkit/skills`, mirror skills to `.claude/skills`,
-`.codex/skills`, and `.github/skills`, and keep generated control surfaces aligned.
+`.agents/skills`, and `.github/skills`, and keep generated control surfaces aligned.
 
 ## Lane
 
