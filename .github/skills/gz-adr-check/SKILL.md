@@ -1,135 +1,40 @@
 ---
 name: gz-adr-check
-description: Blocking ADR evidence audit — fails if any ADR has insufficient evidence.
-compatibility: GovZero v6 framework; CI gate for ADR evidence completeness
+description: Run blocking ADR evidence checks for a target ADR.
+compatibility: GovZero v6 framework; CI-capable evidence gate
 metadata:
-  skill-version: "1.0.0"
+  skill-version: "1.1.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero_layer: "Layer 1 — Evidence Gathering"
-opsdev_command: adr check
-invocation: uv run -m opsdev adr check
+gz_command: adr audit-check
+invocation: uv run gz adr audit-check <ADR-ID>
 ---
 
 # gz-adr-check
 
-Blocking ADR evidence audit — fails if any ADR has insufficient evidence.
-
-**Command:** `uv run -m opsdev adr check`
-
-**Layer:** Layer 1 — Evidence Gathering
-
----
+Run the ADR evidence gate using `gz adr audit-check`.
 
 ## When to Use
 
-- As CI gate before merging PRs
-- Before marking an ADR as Completed
-- To verify all ADRs have required evidence
-- During governance reviews
-
----
+- Before marking an ADR Completed/Validated
+- During CI checks for a target ADR
+- Before `gz closeout`, `gz attest`, or `gz audit`
 
 ## Invocation
 
-```text
-/gz-adr-check
-```
-
-**CLI equivalent:**
-
 ```bash
-uv run -m opsdev adr check
+uv run gz adr audit-check ADR-0.3.0
+uv run gz adr audit-check ADR-0.3.0 --json
 ```
 
----
+## Behavior
 
-## What It Checks
-
-For each ADR in Accepted/Completed status:
-
-| Check | Requirement |
-|-------|-------------|
-| Test coverage | At least one test with @covers decorator |
-| OBPI completion | All briefs in Completed status |
-| Documentation | Required sections present |
-| Evidence artifacts | Proof files exist in audit/ directory |
-
----
-
-## Exit Codes
-
-| Code | Meaning |
-|------|---------|
-| 0 | All ADRs have sufficient evidence |
-| 1 | One or more ADRs have insufficient evidence |
-
----
-
-## Output Example
-
-### Passing
-
-```text
-ADR Evidence Check: PASS
-
-Checked 12 ADRs:
-  - 10 Validated (skipped)
-  - 2 Completed (verified)
-
-All ADRs have sufficient evidence.
-```
-
-### Failing
-
-```text
-ADR Evidence Check: FAIL
-
-ADR-0.0.21 (Hexagonal Architecture):
-  ✗ Missing test coverage (0 @covers tests)
-  ✗ OBPI incomplete (7/9 briefs completed)
-
-ADR-0.1.15 (Fleet Optimization):
-  ✗ Missing audit artifacts
-
-Fix these issues before proceeding.
-```
-
----
-
-## Difference from Related Tools
-
-| Tool | Purpose |
-|------|---------|
-| `gz-adr-check` | **Blocking gate** — fails CI if evidence missing |
-| `gz-adr-verification` | **Report** — shows coverage without failing |
-| `gz-adr-audit` | **Procedure** — full Gate 5 audit workflow |
-| `gz-adr-map` | **Discovery** — infers ADR→artifact mappings |
-
----
-
-## CI Integration
-
-Add to CI workflow:
-
-```yaml
-- name: ADR Evidence Gate
-  run: uv run -m opsdev adr check
-```
-
----
-
-## Related Skills
-
-| Skill | Purpose |
-|-------|---------|
-| gz-adr-verification | Non-blocking coverage report |
-| gz-adr-audit | Full Gate 5 audit procedure |
-| gz-obpi-audit | Audit individual OBPI briefs |
-
----
+- Verifies linked OBPI briefs are complete and evidence-ready
+- Returns non-zero on missing evidence or incomplete briefs
+- Produces JSON output for automation when `--json` is used
 
 ## References
 
-- Command: `src/opsdev/commands/adr_subcommands.py`
-- Related: `uv run -m opsdev audit` (broader governance audit)
+- Command implementation: `src/gzkit/cli.py`
+- User docs: `docs/user/commands/adr-audit-check.md`

@@ -1,112 +1,51 @@
 ---
 name: gz-adr-status
-description: Generate ADR status table or display terminal summary. GovZero v6 skill.
-compatibility: GovZero v6 framework; generates ADR lifecycle status tracking
+description: Show focused status for one ADR, or global status across ADRs.
+compatibility: GovZero v6 framework; uses gz CLI status surfaces
 metadata:
-  skill-version: "1.0.0"
+  skill-version: "1.1.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero_layer: "Layer 1 — Evidence Gathering"
-opsdev_command: adr status
-invocation: uv run -m opsdev adr status
+gz_command: adr status
+invocation: uv run gz adr status <ADR-ID>
 ---
 
 # gz-adr-status
 
-Generate ADR status table or display rich terminal summary.
-
-**Command:** `uv run -m opsdev adr status`
-
-**Layer:** Layer 1 — Evidence Gathering
-
----
+Show ADR status using the current `gz` command surface.
 
 ## When to Use
 
-- To check current status of all ADRs
-- Before starting work on an ADR
-- During governance reviews
-- To identify ADRs needing attention (Draft, Proposed, Completed)
-
----
+- Check one ADR before implementation or closeout
+- Inspect all ADRs for pending gates
+- Confirm lane and lifecycle state
 
 ## Invocation
 
 ```text
-/gz-adr-status
+/gz-adr-status ADR-0.3.0
 /gz-adr-status --summary
 ```
 
-**CLI equivalent:**
+CLI equivalents:
 
 ```bash
-# Write status table to docs/design/adr/adr_status.md
-uv run -m opsdev adr status
+# Focused ADR status
+uv run gz adr status ADR-0.3.0
+uv run gz adr status ADR-0.3.0 --json
 
-# Display rich terminal summary (no file write)
-uv run -m opsdev adr status --summary
+# Multi-ADR summary
+uv run gz status
+uv run gz status --json
 ```
 
----
+## Notes
 
-## Flags
-
-| Flag | Default | Purpose |
-|------|---------|---------|
-| `--summary` | `false` | Display rich terminal summary instead of writing file |
-
----
-
-## Output
-
-### File Mode (default)
-
-Writes `docs/design/adr/adr_status.md` with:
-
-- All ADRs grouped by series (0.0.x, 0.1.x, etc.)
-- Current status for each ADR
-- Last modified date
-- OBPI completion counts
-
-### Summary Mode (`--summary`)
-
-Displays rich terminal table with:
-
-- ADR ID and title
-- Current status (color-coded)
-- OBPI progress (e.g., "7/9 complete")
-- Staleness indicators
-
----
-
-## Status Values
-
-Per [adr-lifecycle.md](docs/governance/GovZero/adr-lifecycle.md):
-
-| Status | Meaning |
-|--------|---------|
-| Pool | Idea captured, not yet drafted |
-| Draft | Being written, not ready for review |
-| Proposed | Ready for review/approval |
-| Accepted | Approved, work can begin |
-| Completed | All work done, awaiting audit |
-| Validated | Audited and attested |
-| Superseded | Replaced by newer ADR |
-| Abandoned | Work stopped, not proceeding |
-
----
-
-## Related Skills
-
-| Skill | Purpose |
-|-------|---------|
-| gz-adr-sync | Regenerate index + status files |
-| gz-adr-check | Blocking evidence audit |
-| gz-adr-audit | Gate 5 verification procedure |
-
----
+- `gz adr status` requires an ADR identifier.
+- Use `gz status` for repository-wide lifecycle and gate summary.
 
 ## References
 
-- Command: `src/opsdev/commands/adr_subcommands.py`
-- Output: `docs/design/adr/adr_status.md`
+- Command implementation: `src/gzkit/cli.py`
+- User docs: `docs/user/commands/adr-status.md`, `docs/user/commands/status.md`
