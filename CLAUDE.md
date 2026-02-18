@@ -71,9 +71,9 @@ Skills are centralized under `.gzkit` and mirrored to tool-local paths:
 
 ### Available Skills
 
-- `airlineops-parity-scan`: Run a repeatable governance parity scan between `../airlineops` (canon) and gzkit (extraction). (`.gzkit/skills/airlineops-parity-scan/SKILL.md`)
-- `format`: Auto-format code with Ruff. (`.gzkit/skills/format/SKILL.md`)
-- `git-sync`: Run the guarded repository sync ritual with lint/test gates. (`.gzkit/skills/git-sync/SKILL.md`)
+- `airlineops-parity-scan`: --- (`.gzkit/skills/airlineops-parity-scan/SKILL.md`)
+- `format`: --- (`.gzkit/skills/format/SKILL.md`)
+- `git-sync`: --- (`.gzkit/skills/git-sync/SKILL.md`)
 - `gz-adr-audit`: --- (`.gzkit/skills/gz-adr-audit/SKILL.md`)
 - `gz-adr-autolink`: --- (`.gzkit/skills/gz-adr-autolink/SKILL.md`)
 - `gz-adr-check`: --- (`.gzkit/skills/gz-adr-check/SKILL.md`)
@@ -113,8 +113,8 @@ Skills are centralized under `.gzkit` and mirrored to tool-local paths:
 - `gz-tidy`: --- (`.gzkit/skills/gz-tidy/SKILL.md`)
 - `gz-typecheck`: --- (`.gzkit/skills/gz-typecheck/SKILL.md`)
 - `gz-validate`: --- (`.gzkit/skills/gz-validate/SKILL.md`)
-- `lint`: Run code linting with Ruff and PyMarkdown. (`.gzkit/skills/lint/SKILL.md`)
-- `test`: Run unit tests with unittest. (`.gzkit/skills/test/SKILL.md`)
+- `lint`: --- (`.gzkit/skills/lint/SKILL.md`)
+- `test`: --- (`.gzkit/skills/test/SKILL.md`)
 
 ## Control Surfaces
 
