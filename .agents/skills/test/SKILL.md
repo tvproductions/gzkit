@@ -1,3 +1,8 @@
+---
+name: test
+description: Run unit tests with unittest.
+---
+
 # SKILL.md
 
 ## Test
