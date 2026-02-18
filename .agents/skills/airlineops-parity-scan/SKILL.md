@@ -1,3 +1,8 @@
+---
+name: airlineops-parity-scan
+description: Run a repeatable governance parity scan between ../airlineops (canon) and gzkit (extraction).
+---
+
 # SKILL.md
 
 ## AirlineOps Parity Scan
