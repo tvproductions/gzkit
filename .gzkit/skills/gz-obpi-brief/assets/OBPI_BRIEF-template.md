@@ -668,7 +668,7 @@ Same as Lite, PLUS:
 - **No example-only BDD:** All Behave scenarios must have complete step implementations (not left for later).
 - **No placeholder examples:** Documentation examples must be tested and accurate; not generic or simplified for brevity.
 - **No deferred docs:** Manpages, runbooks, and help text must be complete before Gate 3 closes; no "update docs separately" deferrals.
-- **Complete Gate 5 artifacts:** Present CLI/opsdev commands that **actually work** on the current codebase; never use hypothetical or not-yet-implemented commands.
+- **Complete Gate 5 artifacts:** Present CLI/gz commands that **actually work** on the current codebase; never use hypothetical or not-yet-implemented commands.
 
 If an example cannot be tested or a BDD scenario cannot be implemented immediately, STOP and emit a BLOCKERS output.
 

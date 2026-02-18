@@ -41,7 +41,7 @@ Example (adapt to ADR):
 | (ADR-specific check 1) | (command) | (expected outcome) | Pending |
 | (ADR-specific check 2) | (command) | (expected outcome) | Pending |
 | Docs build (if docs changed) | `uv run mkdocs build -q -f mkdocs.yml` | Build clean | Pending |
-| Markdown lint (if docs changed) | `uv run -m opsdev md-docs` | Zero violations | Pending |
+| Markdown lint (if docs changed) | `uv run gz md-docs` | Zero violations | Pending |
 | (Add more checks as needed) | | | Pending |
 
 ## Risk Focus

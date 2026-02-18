@@ -1,3 +1,8 @@
+---
+name: git-sync
+description: Run the guarded repository sync ritual with lint/test gates.
+---
+
 # SKILL.md
 
 ## Git Sync

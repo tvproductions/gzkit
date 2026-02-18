@@ -1,3 +1,8 @@
+---
+name: lint
+description: Run code linting with Ruff and PyMarkdown.
+---
+
 # SKILL.md
 
 ## Lint

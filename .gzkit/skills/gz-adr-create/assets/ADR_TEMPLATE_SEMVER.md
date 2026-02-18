@@ -208,7 +208,7 @@ The brief elaborates the "how" while this table defines the "what."
 
 ### Scripts & Guards
 
-- `scripts/*.py`, `python -m opsdev {cmd}`
+- `scripts/*.py`, `uv run gz {cmd}`
 
 ### Outputs (human-observed)
 

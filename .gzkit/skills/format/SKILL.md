@@ -1,3 +1,8 @@
+---
+name: format
+description: Auto-format code with Ruff.
+---
+
 # SKILL.md
 
 ## Format

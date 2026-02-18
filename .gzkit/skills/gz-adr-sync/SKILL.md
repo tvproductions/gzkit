@@ -1,121 +1,43 @@
 ---
 name: gz-adr-sync
-description: Sync ADR index and status tables from ADR source files. Detects drift and reconciles.
-compatibility: GovZero v6 framework; maintains canonical ADR registry and lifecycle state tables
+description: Reconcile ADR files with ledger registration and status views.
+compatibility: GovZero v6 framework; uses register-adrs + status commands
 metadata:
-  skill-version: "6.0.0"
+  skill-version: "6.1.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
-  govzero-spec-references: "docs/governance/GovZero/adr-lifecycle.md, docs/governance/GovZero/adr-obpi-ghi-audit-linkage.md"
-  govzero-gates-covered: "All (registry maintenance)"
   govzero_layer: "Layer 3 — File Sync"
-opsdev_command: adr-docs
-invocation: uv run -m opsdev adr-docs
+gz_command: register-adrs
+invocation: uv run gz register-adrs
 ---
 
-# gz-adr-sync (v6.0.0)
+# gz-adr-sync
 
-Sync ADR index and status tables from ADR source files.
-
----
+Sync ADR governance state using current `gz` capabilities.
 
 ## Semantics
 
-Like `uv sync` — make derived state match source of truth.
-
-| Source of Truth | Derived |
-|-----------------|---------|
-| `ADR-*.md` files | `adr_index.md`, `adr_status.md` |
-
----
-
-## Trust Model
-
-**Layer 3 — File Sync:** This tool syncs files without verification.
-
-- **Reads:** ADR markdown files (Status, Date fields)
-- **Writes:** `adr_index.md`, `adr_status.md`
-- **Does NOT verify:** ADR content correctness, OBPI completion
-- **Does NOT touch:** Ledger files
-
----
-
-## When to Use
-
-- After adding or updating ADRs
-- When ADR status changes
-- As part of docs composite
-
----
-
-## Invocation
-
-```text
-/gz-adr-sync
-```
-
----
+In gzkit, ADR sync is ledger registration plus status refresh.
 
 ## Procedure
 
-### Step 1: Sync ADR Index + Status Table
-
 ```bash
-uv run -m opsdev adr-docs
+# Preview ADR registration drift
+uv run gz register-adrs --dry-run
+
+# Register ADR files missing from ledger state
+uv run gz register-adrs
+
+# Confirm reconciled status
+uv run gz status
 ```
 
-This updates `docs/design/adr/adr_index.md` and `docs/design/adr/adr_status.md`.
+## Notes
 
----
-
-## Flags
-
-| Flag | Default | Purpose |
-|------|---------|---------|
-| `--quiet` | `false` | Suppress non-essential output |
-
----
-
-## Sequence
-
-```text
-gz-adr-sync
-├── generate_adr_index() → adr_index.md
-└── generate_adr_status_table() → adr_status.md
-```
-
----
-
-## Policy
-
-- Regenerates from source ADR files
-- Updates are idempotent
-- Part of docs composite with `--adr` flag
-
----
-
-## Failure Modes
-
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| Parse error | Invalid ADR format | Fix ADR frontmatter |
-| Missing file | ADR directory issue | Check ADR paths |
-
----
-
-## Related Skills
-
-| Skill | Purpose |
-|-------|---------|
-| gz-adr-create | Create/book ADRs |
-| gz-obpi-sync | Sync OBPI status in ADR table from briefs |
-| gz-obpi-brief | Create OBPI briefs |
-| gz-adr-audit | Gate 5 verification |
-
----
+- `gzkit` does not expose a standalone `adr-docs` command.
+- Use this workflow after adding/moving ADR files or importing pool ADRs.
 
 ## References
 
-- Command: `src/opsdev/commands/adr_tools.py`
-- Library: `src/opsdev/lib/adr.py`
-- Output: `docs/design/adr/adr_index.md`, `docs/design/adr/adr_status.md`
+- Command implementation: `src/gzkit/cli.py`
+- User docs: `docs/user/commands/register-adrs.md`, `docs/user/commands/status.md`
