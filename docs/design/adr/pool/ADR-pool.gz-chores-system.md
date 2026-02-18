@@ -53,7 +53,7 @@ from AirlineOps without copying bespoke opsdev tooling.
 
 ## Proposed OBPI
 
-- `OBPI-0.6.0-01-chores-system-core`
+- `OBPI-0.7.0-01-chores-system-core`
 
 ---
 

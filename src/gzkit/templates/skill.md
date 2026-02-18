@@ -1,3 +1,11 @@
+---
+name: {skill_slug}
+description: {skill_description}
+lifecycle_state: {lifecycle_state}
+owner: {owner}
+last_reviewed: {last_reviewed}
+---
+
 # SKILL.md
 
 ## {skill_name}

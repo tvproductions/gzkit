@@ -45,7 +45,7 @@ from gzkit.quality import (
     run_tests,
     run_typecheck,
 )
-from gzkit.skills import list_skills, scaffold_core_skills, scaffold_skill
+from gzkit.skills import audit_skills, list_skills, scaffold_core_skills, scaffold_skill
 from gzkit.sync import (
     detect_project_name,
     detect_project_structure,
@@ -107,6 +107,7 @@ COMMAND_DOCS: dict[str, str] = {
     "gates": "docs/user/commands/gates.md",
     "migrate-semver": "docs/user/commands/migrate-semver.md",
     "register-adrs": "docs/user/commands/register-adrs.md",
+    "skill audit": "docs/user/commands/skill-audit.md",
     "closeout": "docs/user/commands/closeout.md",
     "audit": "docs/user/commands/audit.md",
     "check-config-paths": "docs/user/commands/check-config-paths.md",
@@ -804,7 +805,7 @@ def init(mode: str, force: bool, dry_run: bool) -> None:
         console.print("  Would create .gzkit/ledger.jsonl")
         console.print("  Would create .gzkit.json")
         console.print("  Would generate .gzkit/manifest.json")
-        console.print("  Would create governance directories (prd, constitutions, obpis, adr)")
+        console.print("  Would create governance directories (prd, constitutions, adr)")
         console.print("  Would generate control surfaces (AGENTS.md, CLAUDE.md, etc.)")
         console.print("  Would set up hooks and scaffold core skills")
         console.print("  Would append ledger event: project_init")
@@ -825,7 +826,7 @@ def init(mode: str, force: bool, dry_run: bool) -> None:
     config.paths.design_root = design_root
     config.paths.prd = f"{design_root}/prd"
     config.paths.constitutions = f"{design_root}/constitutions"
-    config.paths.obpis = f"{design_root}/obpis"
+    config.paths.obpis = f"{design_root}/adr"
     config.paths.adrs = f"{design_root}/adr"
     config.paths.source_root = structure.get("source_root", "src")
     config.paths.tests_root = structure.get("tests_root", "tests")
@@ -837,7 +838,7 @@ def init(mode: str, force: bool, dry_run: bool) -> None:
     write_manifest(project_root, manifest)
 
     # Create governance directories (only if they don't exist)
-    for dir_name in ["prd", "constitutions", "obpis", "adr"]:
+    for dir_name in ["prd", "constitutions", "adr"]:
         dir_path = project_root / design_root / dir_name
         if not dir_path.exists():
             dir_path.mkdir(parents=True, exist_ok=True)
@@ -963,12 +964,14 @@ def specify(
     config = ensure_initialized()
     project_root = get_project_root()
     ledger = Ledger(project_root / config.paths.ledger)
-    canonical_parent = ledger.canonicalize_id(parent)
+    parent_input = parent if parent.startswith("ADR-") else f"ADR-{parent}"
+    canonical_parent = ledger.canonicalize_id(parent_input)
     if _is_pool_adr_id(canonical_parent):
         raise GzCliError(f"Pool ADRs cannot receive OBPIs until promoted: {canonical_parent}.")
+    adr_file, resolved_parent = resolve_adr_file(project_root, config, canonical_parent)
 
-    # Extract version from parent ADR (e.g., ADR-0.1.0 -> 0.1.0) for airlineops-style ID
-    version = parent.replace("ADR-", "").split("-")[0] if parent.startswith("ADR-") else "0.1.0"
+    # Extract semver from parent ADR ID (e.g., ADR-0.4.0-slug -> 0.4.0).
+    version = resolved_parent.replace("ADR-", "").split("-")[0]
     obpi_id = f"OBPI-{version}-{item:02d}-{name}"
     obpi_title = title or name.replace("-", " ").title()
 
@@ -983,8 +986,8 @@ def specify(
         "obpi",
         id=obpi_id,
         title=obpi_title,
-        parent_adr=parent,
-        parent_adr_path=f"docs/design/adr/{parent}.md",
+        parent_adr=resolved_parent,
+        parent_adr_path=str(adr_file.relative_to(project_root)),
         item_number=str(item),
         checklist_item_text="TBD",
         lane=lane_cap,
@@ -993,7 +996,7 @@ def specify(
         lane_requirements=lane_requirements,
     )
 
-    obpi_dir = project_root / config.paths.obpis
+    obpi_dir = adr_file.parent / "obpis"
     obpi_file = obpi_dir / f"{obpi_id}.md"
 
     if dry_run:
@@ -1005,7 +1008,7 @@ def specify(
     obpi_dir.mkdir(parents=True, exist_ok=True)
     obpi_file.write_text(content)
 
-    ledger.append(obpi_created_event(obpi_id, parent))
+    ledger.append(obpi_created_event(obpi_id, resolved_parent))
 
     console.print(f"Created OBPI: {obpi_file}")
 
@@ -2378,13 +2381,137 @@ def adr_emit_receipt_cmd(
     console.print(f"  Attestor: {attestor}")
 
 
+def _append_path_issue(issues: list[dict[str, str]], path: str, issue: str) -> None:
+    """Append a config-path issue row."""
+    issues.append({"path": path, "issue": issue})
+
+
+def _collect_required_path_issues(
+    project_root: Path,
+    required_dirs: dict[str, str],
+    required_files: dict[str, str],
+) -> list[dict[str, str]]:
+    """Collect required path existence/type issues."""
+    issues: list[dict[str, str]] = []
+
+    for label, rel_path in required_dirs.items():
+        path = project_root / rel_path
+        if not path.exists():
+            _append_path_issue(issues, rel_path, f"{label} does not exist")
+        elif not path.is_dir():
+            _append_path_issue(issues, rel_path, f"{label} is not a directory")
+
+    for label, rel_path in required_files.items():
+        path = project_root / rel_path
+        if not path.exists():
+            _append_path_issue(issues, rel_path, f"{label} does not exist")
+        elif not path.is_file():
+            _append_path_issue(issues, rel_path, f"{label} is not a file")
+
+    return issues
+
+
+def _collect_manifest_artifact_issues(
+    project_root: Path,
+    manifest: dict[str, Any],
+    legacy_obpi_path: str,
+) -> list[dict[str, str]]:
+    """Collect manifest artifact path issues."""
+    issues: list[dict[str, str]] = []
+
+    for artifact_name, artifact_cfg in manifest.get("artifacts", {}).items():
+        artifact_path = project_root / artifact_cfg.get("path", "")
+        if not artifact_path.exists():
+            rel = str(artifact_path.relative_to(project_root))
+            _append_path_issue(issues, rel, f"manifest.artifacts.{artifact_name}.path missing")
+
+        if artifact_name != "obpi":
+            continue
+
+        manifest_obpi_path = artifact_cfg.get("path", "").strip("/").replace("\\", "/")
+        if manifest_obpi_path == legacy_obpi_path:
+            _append_path_issue(
+                issues,
+                artifact_cfg.get("path", ""),
+                (
+                    "manifest.artifacts.obpi.path points to deprecated global "
+                    "OBPI path; use ADR root"
+                ),
+            )
+
+    return issues
+
+
+def _collect_control_surface_issues(
+    project_root: Path,
+    manifest: dict[str, Any],
+) -> list[dict[str, str]]:
+    """Collect manifest control-surface path issues."""
+    issues: list[dict[str, str]] = []
+    dir_controls = {"hooks", "skills", "claude_skills", "codex_skills", "copilot_skills"}
+
+    for control_name, control_path in manifest.get("control_surfaces", {}).items():
+        path = project_root / control_path
+        if not path.exists():
+            _append_path_issue(
+                issues,
+                control_path,
+                f"manifest.control_surfaces.{control_name} missing",
+            )
+            continue
+
+        is_dir_control = control_name in dir_controls
+        if is_dir_control and not path.is_dir():
+            _append_path_issue(
+                issues,
+                control_path,
+                f"manifest.control_surfaces.{control_name} should be a directory",
+            )
+        elif not is_dir_control and not path.is_file():
+            _append_path_issue(
+                issues,
+                control_path,
+                f"manifest.control_surfaces.{control_name} should be a file",
+            )
+
+    return issues
+
+
+def _collect_obpi_path_contract_issues(
+    project_root: Path,
+    config: GzkitConfig,
+    legacy_obpi_path: str,
+) -> list[dict[str, str]]:
+    """Collect issues that enforce ADR-local OBPI placement."""
+    issues: list[dict[str, str]] = []
+    normalized_obpi_path = config.paths.obpis.strip("/").replace("\\", "/")
+    if normalized_obpi_path == legacy_obpi_path:
+        _append_path_issue(
+            issues,
+            config.paths.obpis,
+            "paths.obpis points to deprecated global OBPI path; use ADR-local OBPIs",
+        )
+
+    legacy_obpi_dir = project_root / config.paths.design_root / "obpis"
+    if not legacy_obpi_dir.exists():
+        return issues
+
+    legacy_obpi_files = sorted(legacy_obpi_dir.glob("OBPI-*.md"))
+    if legacy_obpi_files:
+        _append_path_issue(
+            issues,
+            str(legacy_obpi_dir.relative_to(project_root)),
+            ("legacy global OBPI directory contains OBPI files; move them under ADR-local obpis/"),
+        )
+
+    return issues
+
+
 def check_config_paths_cmd(as_json: bool) -> None:
     """Validate that configured and manifest-declared paths exist and are coherent."""
     config = ensure_initialized()
     project_root = get_project_root()
     manifest = load_manifest(project_root)
-
-    issues: list[dict[str, str]] = []
 
     required_dirs = {
         "paths.prd": config.paths.prd,
@@ -2407,60 +2534,11 @@ def check_config_paths_cmd(as_json: bool) -> None:
         "paths.copilot_instructions": config.paths.copilot_instructions,
     }
 
-    for label, rel_path in required_dirs.items():
-        path = project_root / rel_path
-        if not path.exists():
-            issues.append({"path": rel_path, "issue": f"{label} does not exist"})
-        elif not path.is_dir():
-            issues.append({"path": rel_path, "issue": f"{label} is not a directory"})
-
-    for label, rel_path in required_files.items():
-        path = project_root / rel_path
-        if not path.exists():
-            issues.append({"path": rel_path, "issue": f"{label} does not exist"})
-        elif not path.is_file():
-            issues.append({"path": rel_path, "issue": f"{label} is not a file"})
-
-    for artifact_name, artifact_cfg in manifest.get("artifacts", {}).items():
-        artifact_path = project_root / artifact_cfg.get("path", "")
-        if not artifact_path.exists():
-            issues.append(
-                {
-                    "path": str(artifact_path.relative_to(project_root)),
-                    "issue": f"manifest.artifacts.{artifact_name}.path missing",
-                }
-            )
-
-    for control_name, control_path in manifest.get("control_surfaces", {}).items():
-        path = project_root / control_path
-        should_be_dir = control_name in {
-            "hooks",
-            "skills",
-            "claude_skills",
-            "codex_skills",
-            "copilot_skills",
-        }
-        if not path.exists():
-            issues.append(
-                {
-                    "path": control_path,
-                    "issue": f"manifest.control_surfaces.{control_name} missing",
-                }
-            )
-        elif should_be_dir and not path.is_dir():
-            issues.append(
-                {
-                    "path": control_path,
-                    "issue": f"manifest.control_surfaces.{control_name} should be a directory",
-                }
-            )
-        elif not should_be_dir and not path.is_file():
-            issues.append(
-                {
-                    "path": control_path,
-                    "issue": f"manifest.control_surfaces.{control_name} should be a file",
-                }
-            )
+    legacy_obpi_path = f"{config.paths.design_root}/obpis"
+    issues = _collect_required_path_issues(project_root, required_dirs, required_files)
+    issues.extend(_collect_manifest_artifact_issues(project_root, manifest, legacy_obpi_path))
+    issues.extend(_collect_control_surface_issues(project_root, manifest))
+    issues.extend(_collect_obpi_path_contract_issues(project_root, config, legacy_obpi_path))
 
     result = {"valid": not issues, "issues": issues}
     if as_json:
@@ -2766,7 +2844,7 @@ def typecheck() -> None:
 
 
 def check() -> None:
-    """Run all quality checks (lint + format + typecheck + test)."""
+    """Run all quality checks (lint + format + typecheck + test + skill audit)."""
     project_root = get_project_root()
 
     console.print("Running all quality checks...\n")
@@ -2783,6 +2861,9 @@ def check() -> None:
 
     # Test
     console.print("[bold]Test:[/bold]", "PASS" if result.test.success else "FAIL")
+
+    # Skill audit
+    console.print("[bold]Skill audit:[/bold]", "PASS" if result.skill_audit.success else "FAIL")
 
     if result.success:
         console.print("\n[green]All checks passed.[/green]")
@@ -2828,6 +2909,47 @@ def skill_list() -> None:
         table.add_row(s.name, s.description)
 
     console.print(table)
+
+
+def skill_audit_cmd(as_json: bool, strict: bool) -> None:
+    """Audit skill naming, metadata, and mirror parity."""
+    config = ensure_initialized()
+    project_root = get_project_root()
+    report = audit_skills(project_root, config)
+
+    warning_count = sum(1 for issue in report.issues if issue.severity == "warning")
+    error_count = sum(1 for issue in report.issues if issue.severity == "error")
+    success = report.valid and (warning_count == 0 or not strict)
+
+    if as_json:
+        payload = report.to_dict()
+        payload["strict"] = strict
+        payload["success"] = success
+        payload["error_count"] = error_count
+        payload["warning_count"] = warning_count
+        print(json.dumps(payload, indent=2))
+        if not success:
+            raise SystemExit(1)
+        return
+
+    if success:
+        console.print("[green]Skill audit passed.[/green]")
+        root_count = len(report.checked_roots)
+        console.print(
+            f"Checked {report.checked_skills} canonical skills across {root_count} roots."
+        )
+        if warning_count:
+            console.print(f"[yellow]{warning_count} warning(s) found (non-blocking).[/yellow]")
+        return
+
+    console.print("[red]Skill audit failed.[/red]")
+    console.print(f"Errors: {error_count}  Warnings: {warning_count}")
+    for issue in report.issues:
+        style = "red" if issue.severity == "error" else "yellow"
+        console.print(
+            f"  [{style}]{issue.severity.upper()}[/{style}] {issue.path}: {issue.message}"
+        )
+    raise SystemExit(1)
 
 
 # =============================================================================
@@ -2877,9 +2999,10 @@ def interview(document_type: str) -> None:
     template_vars["date"] = date.today().isoformat()
     template_vars["status"] = "Draft"
 
-    content = render_template(document_type, **template_vars)
-
     # Determine output path
+    ledger = Ledger(project_root / config.paths.ledger)
+    resolved_obpi_parent = answers.get("parent", "")
+
     if document_type == "prd":
         doc_dir = project_root / config.paths.prd
         doc_id = answers.get("id", "PRD-DRAFT")
@@ -2887,15 +3010,26 @@ def interview(document_type: str) -> None:
         doc_dir = project_root / config.paths.adrs
         doc_id = answers.get("id", "ADR-DRAFT")
     else:
-        doc_dir = project_root / config.paths.obpis
+        parent_input = answers.get("parent", "").strip()
+        if not parent_input:
+            raise GzCliError("OBPI interview requires a parent ADR ID.")
+        parent_adr = parent_input if parent_input.startswith("ADR-") else f"ADR-{parent_input}"
+        canonical_parent = ledger.canonicalize_id(parent_adr)
+        adr_file, resolved_parent = resolve_adr_file(project_root, config, canonical_parent)
+        template_vars["parent"] = resolved_parent
+        template_vars["parent_adr"] = resolved_parent
+        template_vars["parent_adr_path"] = str(adr_file.relative_to(project_root))
+        resolved_obpi_parent = resolved_parent
+        doc_dir = adr_file.parent / "obpis"
         doc_id = answers.get("id", "OBPI-DRAFT")
+
+    content = render_template(document_type, **template_vars)
 
     doc_dir.mkdir(parents=True, exist_ok=True)
     doc_file = doc_dir / f"{doc_id}.md"
     doc_file.write_text(content)
 
     # Record event
-    ledger = Ledger(project_root / config.paths.ledger)
     if document_type == "prd":
         ledger.append(prd_created_event(doc_id))
     elif document_type == "adr":
@@ -2903,8 +3037,7 @@ def interview(document_type: str) -> None:
         lane = answers.get("lane", "lite")
         ledger.append(adr_created_event(doc_id, parent, lane))
     else:
-        parent = answers.get("parent", "")
-        ledger.append(obpi_created_event(doc_id, parent))
+        ledger.append(obpi_created_event(doc_id, resolved_obpi_parent))
 
     console.print(f"\n[green]Created {document_type.upper()}: {doc_file}[/green]")
 
@@ -3219,6 +3352,17 @@ def _build_parser() -> argparse.ArgumentParser:
     skill_commands.add_parser("list", help="List all skills").set_defaults(
         func=lambda a: skill_list()
     )
+    p_skill_audit = skill_commands.add_parser(
+        "audit",
+        help="Audit skill lifecycle and mirror parity",
+    )
+    p_skill_audit.add_argument("--json", action="store_true", dest="as_json")
+    p_skill_audit.add_argument(
+        "--strict",
+        action="store_true",
+        help="Treat warnings as blocking failures.",
+    )
+    p_skill_audit.set_defaults(func=lambda a: skill_audit_cmd(as_json=a.as_json, strict=a.strict))
 
     p_interview = commands.add_parser("interview", help="Interactive document interview")
     p_interview.add_argument("document_type", choices=["prd", "adr", "obpi"])

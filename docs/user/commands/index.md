@@ -41,6 +41,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | `gz test` | Run unit tests |
 | `gz typecheck` | Run type checks |
 | `gz validate` | Validate governance artifacts |
+| [`gz skill audit`](skill-audit.md) | Audit skill lifecycle metadata and mirror parity |
 | [`gz check-config-paths`](check-config-paths.md) | Validate configured + manifest path coherence |
 | [`gz cli audit`](cli-audit.md) | Validate CLI docs/manpage coverage |
 | `gz agent sync control-surfaces` | Regenerate control surfaces |

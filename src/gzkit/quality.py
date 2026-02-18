@@ -239,6 +239,7 @@ class CheckResult:
     format: QualityResult
     typecheck: QualityResult
     test: QualityResult
+    skill_audit: QualityResult
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
@@ -248,6 +249,7 @@ class CheckResult:
             "format": self.format.to_dict(),
             "typecheck": self.typecheck.to_dict(),
             "test": self.test.to_dict(),
+            "skill_audit": self.skill_audit.to_dict(),
         }
 
 
@@ -264,13 +266,25 @@ def run_all_checks(project_root: Path) -> CheckResult:
     format_check = run_format_check(project_root)
     typecheck = run_typecheck(project_root)
     test = run_tests(project_root)
+    skill_audit = run_skill_audit(project_root)
+
+    success = all(
+        [
+            lint.success,
+            format_check.success,
+            typecheck.success,
+            test.success,
+            skill_audit.success,
+        ]
+    )
 
     return CheckResult(
-        success=all([lint.success, format_check.success, typecheck.success, test.success]),
+        success=success,
         lint=lint,
         format=format_check,
         typecheck=typecheck,
         test=test,
+        skill_audit=skill_audit,
     )
 
 
@@ -284,3 +298,8 @@ def run_pymarkdown(project_root: Path) -> QualityResult:
         QualityResult from PyMarkdown.
     """
     return run_command("uv run -m pymarkdown scan docs/", cwd=project_root)
+
+
+def run_skill_audit(project_root: Path) -> QualityResult:
+    """Run skill lifecycle/parity audit."""
+    return run_command("uv run gz skill audit", cwd=project_root)

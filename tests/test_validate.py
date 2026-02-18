@@ -199,7 +199,7 @@ class TestValidateManifest(unittest.TestCase):
             "artifacts": {
                 "prd": {"path": "design/prd", "schema": "gzkit.prd.v1"},
                 "constitution": {"path": "design/constitutions", "schema": "gzkit.constitution.v1"},
-                "obpi": {"path": "design/obpis", "schema": "gzkit.obpi.v1"},
+                "obpi": {"path": "design/adr", "schema": "gzkit.obpi.v1"},
                 "adr": {"path": "design/adr", "schema": "gzkit.adr.v1"},
             },
             "control_surfaces": {

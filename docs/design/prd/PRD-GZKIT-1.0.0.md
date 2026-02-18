@@ -678,21 +678,26 @@ Target: Graduate course demo
 - Port canonical templates with 1:1 fidelity and identify drift
 - Establish a sync mechanism so canon updates flow without manual translation
 
-### Phase 4: Heavy Lane (0.4.0)
+### Phase 4: Skill Capability Mirroring (0.4.0)
 
-- Gate 3 (Docs) verification
-- Gate 4 (BDD) verification
-- Lane detection and enforcement
-- PreToolUse hooks for constraint enforcement
+- Canonical skill source in `.gzkit/skills`
+- Agent-native mirror propagation (`.agents`, `.claude`, `.github`)
+- Sync behavior and control-surface path hardening
 
-### Phase 5: Audit (0.5.0)
+### Phase 5: Skill Lifecycle Governance (0.5.0)
+
+- Skill taxonomy and lifecycle metadata contract
+- Policy-backed parity verification (`gz skill audit`)
+- Lifecycle transition and maintenance/deprecation operations
+
+### Phase 6: Audit (0.6.0)
 
 - `gz audit` with audit generation
 - Audit templates
 - Evidence aggregation from ledger
 - `audit_generated` events
 
-### Phase 6: Release (1.0.0)
+### Phase 7: Release (1.0.0)
 
 - All 11 commands functional
 - Templates hardened

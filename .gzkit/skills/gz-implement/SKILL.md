@@ -1,6 +1,9 @@
 ---
 name: gz-implement
 description: Run Gate 2 verification and record result events. Use when validating implementation progress for an ADR.
+lifecycle_state: active
+owner: gzkit-governance
+last_reviewed: 2026-02-18
 ---
 
 # gz implement

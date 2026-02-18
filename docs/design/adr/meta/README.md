@@ -33,7 +33,7 @@ docs/design/adr/
    - Foundation: `ADR-0.0.z`
    - Pre-release: `ADR-0.y.z` where `y > 0`
 5. Release sequencing after pre-release follows major buckets (`1.0/`, `2.0/`, ...) containing ADRs like `ADR-1.y.z-*`.
-6. `docs/design/obpis/` is deprecated for new work. New OBPIs must be ADR-local under `.../obpis/`.
+6. `docs/design/obpis/` must not be used for OBPI authoring. OBPIs must be ADR-local under `.../obpis/`.
 
 ## Migration Guidance
 
@@ -53,7 +53,7 @@ When moving or promoting ADRs:
 
 ## Decisions (2026-02-17)
 
-1. `docs/design/obpis/` is formally deprecated for authoring. ADR-local `obpis/` is canonical.
+1. `docs/design/obpis/` is formally disallowed for OBPI authoring. ADR-local `obpis/` is canonical.
 2. Lint now includes a hard ADR path-contract check that fails on legacy series-folder link forms (`adr-*.x` paths).
 3. Release buckets are numeric major/minor directories: `1.0/`, `2.0/`, ...
 4. This restructure is documentation and operations alignment work; no separate pool ADR closeout is required.

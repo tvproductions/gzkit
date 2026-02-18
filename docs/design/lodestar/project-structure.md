@@ -44,10 +44,9 @@ Pool entries stay as single markdown files under `docs/design/adr/pool/` and do 
 
 ## OBPI Placement
 
-Preferred location: `docs/design/adr/<bucket>/ADR-.../obpis/`.
+Canonical location: `docs/design/adr/<bucket>/ADR-.../obpis/`.
 
-`docs/design/obpis/` is deprecated for new authoring. New OBPIs belong in ADR-local `obpis/` directories.
-Compatibility note: tooling may still read legacy `docs/design/obpis/` files during migration.
+`docs/design/obpis/` is forbidden for OBPI authoring and must not contain active OBPI files.
 
 ## Invariants
 
@@ -60,4 +59,4 @@ Compatibility note: tooling may still read legacy `docs/design/obpis/` files dur
 
 ## Reference
 
-For migration details and settled restructuring decisions, see `docs/design/adr/README.md`.
+For migration details and settled restructuring decisions, see `docs/design/adr/meta/README.md`.
