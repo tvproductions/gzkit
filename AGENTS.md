@@ -10,6 +10,10 @@ Universal agent contract for gzkit.
 
 **Tech Stack**: Python 3.13+ with uv, ruff, ty
 
+## Prime Directive
+
+Preserve human intent across context boundaries.
+
 ## Behavior Rules
 
 ### Always

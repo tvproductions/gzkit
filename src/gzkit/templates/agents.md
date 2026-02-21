@@ -10,6 +10,10 @@ Universal agent contract for {project_name}.
 
 **Tech Stack**: {tech_stack}
 
+## Prime Directive
+
+Preserve human intent across context boundaries.
+
 ## Behavior Rules
 
 ### Always
