@@ -6,14 +6,30 @@ from pathlib import Path
 
 from gzkit.config import GzkitConfig
 from gzkit.sync import (
+    collect_canonical_sync_blockers,
     detect_project_name,
     detect_project_structure,
     extract_artifact_id,
+    find_stale_mirror_paths,
     generate_manifest,
     parse_artifact_metadata,
     scan_existing_artifacts,
     sync_all,
 )
+
+
+def _skill_markdown(name: str) -> str:
+    return (
+        "---\n"
+        f"name: {name}\n"
+        "description: Demo skill\n"
+        "lifecycle_state: active\n"
+        "owner: gzkit-governance\n"
+        "last_reviewed: 2026-02-21\n"
+        "---\n\n"
+        "# SKILL.md\n\n"
+        "Skill body.\n"
+    )
 
 
 class TestDetectProjectStructure(unittest.TestCase):
@@ -403,6 +419,81 @@ class TestSyncControlSurfaces(unittest.TestCase):
 
             canonical_file = project_root / config.paths.skills / "legacy-skill" / "SKILL.md"
             self.assertTrue(canonical_file.exists())
+
+    def test_sync_outputs_deterministic_updated_paths_for_unchanged_inputs(self) -> None:
+        """Second and third sync runs on unchanged input return identical updated lists."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            skill_dir = project_root / config.paths.skills / "demo-skill"
+            skill_dir.mkdir(parents=True, exist_ok=True)
+            (skill_dir / "SKILL.md").write_text(_skill_markdown("demo-skill"))
+            (skill_dir / "notes.md").write_text("extra canonical file\n")
+
+            sync_all(project_root, config)
+            second = sync_all(project_root, config)
+            third = sync_all(project_root, config)
+
+            self.assertEqual(second, third)
+            self.assertEqual(second, sorted(second))
+
+    def test_find_stale_mirror_paths_is_explicit_and_non_destructive(self) -> None:
+        """Stale mirror paths are detected and preserved for manual recovery."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            canonical_skill = project_root / config.paths.skills / "demo-skill"
+            canonical_skill.mkdir(parents=True, exist_ok=True)
+            (canonical_skill / "SKILL.md").write_text(_skill_markdown("demo-skill"))
+
+            stale_dir = project_root / config.paths.claude_skills / "stale-skill"
+            stale_dir.mkdir(parents=True, exist_ok=True)
+            (stale_dir / "SKILL.md").write_text(_skill_markdown("stale-skill"))
+
+            stale_file = project_root / config.paths.codex_skills / "demo-skill" / "extra.txt"
+            stale_file.parent.mkdir(parents=True, exist_ok=True)
+            stale_file.write_text("stale file\n")
+
+            sync_all(project_root, config)
+            stale_paths = find_stale_mirror_paths(project_root, config)
+
+            self.assertIn(".claude/skills/stale-skill", stale_paths)
+            self.assertIn(".agents/skills/demo-skill/extra.txt", stale_paths)
+            self.assertTrue(stale_dir.exists())
+            self.assertTrue(stale_file.exists())
+
+    def test_canonical_sync_preflight_blocks_missing_skill_frontmatter(self) -> None:
+        """Canonical corruption is reported as a blocking preflight error."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            broken_skill = project_root / config.paths.skills / "broken-skill"
+            broken_skill.mkdir(parents=True, exist_ok=True)
+            (broken_skill / "SKILL.md").write_text("# SKILL.md\n\nMissing frontmatter.\n")
+
+            blockers = collect_canonical_sync_blockers(project_root, config)
+            self.assertTrue(
+                any(
+                    blocker.endswith("broken-skill/SKILL.md: missing YAML frontmatter.")
+                    for blocker in blockers
+                )
+            )
+
+    def test_canonical_sync_preflight_allows_bootstrap_candidate_when_canonical_empty(self) -> None:
+        """Empty canonical root is non-blocking when a legacy bootstrap candidate exists."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            legacy_skill = project_root / config.paths.copilot_skills / "legacy-skill"
+            legacy_skill.mkdir(parents=True, exist_ok=True)
+            (legacy_skill / "SKILL.md").write_text(_skill_markdown("legacy-skill"))
+
+            blockers = collect_canonical_sync_blockers(project_root, config)
+            self.assertEqual(blockers, [])
 
 
 if __name__ == "__main__":

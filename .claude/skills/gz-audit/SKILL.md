@@ -1,6 +1,9 @@
 ---
 name: gz-audit
 description: Run strict post-attestation reconciliation audits. Use after attestation to produce and verify audit artifacts.
+lifecycle_state: active
+owner: gzkit-governance
+last_reviewed: 2026-02-18
 ---
 
 # gz audit

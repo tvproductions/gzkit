@@ -9,6 +9,9 @@ metadata:
   govzero_layer: "Layer 1 — Evidence Gathering"
 gz_command: state
 invocation: uv run gz state --json
+lifecycle_state: active
+owner: gzkit-governance
+last_reviewed: 2026-02-18
 ---
 
 # gz-adr-map

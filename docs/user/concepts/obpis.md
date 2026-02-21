@@ -33,6 +33,23 @@ An OBPI is operationally complete when:
 
 `gz adr audit-check` validates these conditions per linked ADR.
 
+## Acceptance Protocol
+
+OBPI closure follows a ceremony, not just a checklist:
+
+1. Present a value narrative (problem before, capability now)
+2. Present one key proof example (CLI/code/behavior)
+3. Present verification evidence (tests, commands, outputs)
+4. Wait for explicit human acceptance
+5. Only then set `Brief Status: Completed`
+
+Lane inheritance applies:
+
+- Parent ADR lane `Heavy` or Foundation (`0.0.x`) requires human attestation before OBPI completion.
+- Parent ADR lane `Lite` may be self-closeable after evidence is presented.
+
+Reference: `AGENTS.md` section `OBPI Acceptance Protocol`.
+
 ---
 
 ## OBPI Receipt Practice

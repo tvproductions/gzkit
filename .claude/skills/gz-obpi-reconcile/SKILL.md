@@ -9,6 +9,9 @@ metadata:
   skill-type: "orchestrator"
   govzero_layer: "Layer 2 — Ledger Consumption"
   orchestrates: ["gz-obpi-audit"]
+lifecycle_state: active
+owner: gzkit-governance
+last_reviewed: 2026-02-18
 ---
 
 # gz-obpi-reconcile (v2.0.0)

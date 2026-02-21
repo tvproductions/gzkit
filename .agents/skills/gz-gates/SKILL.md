@@ -1,6 +1,9 @@
 ---
 name: gz-gates
 description: Run lane-required gates or specific gate checks. Use when verifying governance gate compliance for an ADR.
+lifecycle_state: active
+owner: gzkit-governance
+last_reviewed: 2026-02-18
 ---
 
 # gz gates

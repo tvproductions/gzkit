@@ -9,6 +9,9 @@ metadata:
   govzero_layer: "Layer 1 — Evidence Gathering"
 gz_command: workflow
 invocation: rg -n '@covers\("ADR-' tests
+lifecycle_state: active
+owner: gzkit-governance
+last_reviewed: 2026-02-18
 ---
 
 # gz-adr-autolink

@@ -53,6 +53,7 @@ CORE_SKILLS = {
 
 KEBAB_CASE_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 LIFECYCLE_STATES = {"draft", "active", "deprecated", "retired"}
+SKILL_IDENTITY_FIELDS = ("name", "description", "lifecycle_state", "owner", "last_reviewed")
 
 
 @dataclass
@@ -492,7 +493,7 @@ def _validate_mirror_root(
         )
 
     shared_names = sorted(canonical_names & mirror_names)
-    mirrored_fields = ("name", "description", "lifecycle_state", "owner", "last_reviewed")
+    mirrored_fields = SKILL_IDENTITY_FIELDS
     for name in shared_names:
         canonical_file = canonical_dirs[name] / "SKILL.md"
         mirror_file = mirror_dirs[name] / "SKILL.md"
@@ -508,6 +509,37 @@ def _validate_mirror_root(
 
         canonical_frontmatter = _read_frontmatter(canonical_file)
         mirror_frontmatter = _read_frontmatter(mirror_file)
+        if not mirror_frontmatter:
+            _append_audit_issue(
+                issues,
+                project_root,
+                "error",
+                mirror_file,
+                "Missing YAML frontmatter in mirrored SKILL.md.",
+            )
+            continue
+
+        mirror_name = mirror_frontmatter.get("name", "")
+        if not mirror_name:
+            _append_audit_issue(
+                issues,
+                project_root,
+                "error",
+                mirror_file,
+                "Missing frontmatter field: name in mirrored SKILL.md.",
+            )
+        elif mirror_name != name:
+            _append_audit_issue(
+                issues,
+                project_root,
+                "error",
+                mirror_file,
+                (
+                    f"Mirror frontmatter name '{mirror_name}' "
+                    f"must match mirrored directory name '{name}'."
+                ),
+            )
+
         for field in mirrored_fields:
             if canonical_frontmatter.get(field) == mirror_frontmatter.get(field):
                 continue

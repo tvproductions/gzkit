@@ -9,6 +9,9 @@ metadata:
   govzero_layer: "Layer 3 — File Sync"
 gz_command: register-adrs
 invocation: uv run gz register-adrs
+lifecycle_state: active
+owner: gzkit-governance
+last_reviewed: 2026-02-18
 ---
 
 # gz-adr-sync

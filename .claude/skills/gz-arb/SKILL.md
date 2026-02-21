@@ -11,6 +11,9 @@ metadata:
   effective-date: "2026-02-18"
 gz_command: check
 invocation: uv run gz check
+lifecycle_state: active
+owner: gzkit-governance
+last_reviewed: 2026-02-18
 ---
 
 # gz-arb

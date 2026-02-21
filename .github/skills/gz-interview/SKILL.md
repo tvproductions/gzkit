@@ -1,6 +1,9 @@
 ---
 name: gz-interview
 description: Run interactive governance interviews. Use when gathering structured inputs for governance artifacts.
+lifecycle_state: active
+owner: gzkit-governance
+last_reviewed: 2026-02-18
 ---
 
 # gz interview

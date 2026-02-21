@@ -17,6 +17,16 @@ HEADER_ID_RE = re.compile(r"^#\s+((?:ADR|PRD)-[^\s:]+)")
 PARENT_LINK_RE = re.compile(r"\[((?:PRD|ADR|OBPI)-[^\]]+)\]")
 ALLOWED_ID_PREFIXES = ("ADR-", "PRD-", "OBPI-")
 ALLOWED_LANES = {"lite", "heavy"}
+SKILL_NAME_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+SKILL_LAST_REVIEWED_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+SKILL_REQUIRED_FRONTMATTER_FIELDS = (
+    "name",
+    "description",
+    "lifecycle_state",
+    "owner",
+    "last_reviewed",
+)
+SKILL_LIFECYCLE_STATES = {"draft", "active", "deprecated", "retired"}
 
 
 def detect_project_structure(project_root: Path) -> dict[str, str]:
@@ -434,6 +444,139 @@ def _has_skill_files(path: Path) -> bool:
     return any(path.rglob("SKILL.md"))
 
 
+def _legacy_skill_candidate_paths(config: GzkitConfig) -> list[str]:
+    """Return ordered legacy skill roots used for bootstrap fallback."""
+    return [
+        config.paths.copilot_skills,
+        ".github/skills",
+        config.paths.claude_skills,
+        config.paths.codex_skills,
+        ".codex/skills",
+    ]
+
+
+def _has_skill_bootstrap_candidate(project_root: Path, config: GzkitConfig) -> bool:
+    """Return True when at least one legacy mirror can seed canonical skills."""
+    seen: set[str] = set()
+    for candidate in _legacy_skill_candidate_paths(config):
+        if candidate in seen or candidate == config.paths.skills:
+            continue
+        seen.add(candidate)
+        if _has_skill_files(project_root / candidate):
+            return True
+    return False
+
+
+def _parse_skill_frontmatter(skill_file: Path) -> dict[str, str]:
+    """Parse top-level YAML frontmatter key-values from one SKILL.md."""
+    try:
+        lines = skill_file.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return {}
+
+    if not lines or lines[0].strip() != "---":
+        return {}
+
+    frontmatter: dict[str, str] = {}
+    for raw in lines[1:]:
+        stripped = raw.strip()
+        if stripped == "---":
+            return frontmatter
+        if not stripped or raw.lstrip().startswith("#"):
+            continue
+        if raw.startswith((" ", "\t")) or ":" not in raw:
+            continue
+        key, value = raw.split(":", 1)
+        frontmatter[key.strip()] = value.strip().strip("\"'")
+
+    return {}
+
+
+def _canonical_skill_dirs(project_root: Path, config: GzkitConfig) -> tuple[list[Path], list[str]]:
+    """Resolve canonical skill directories or return fail-closed blockers."""
+    canonical_root = project_root / config.paths.skills
+    if not canonical_root.exists():
+        if _has_skill_bootstrap_candidate(project_root, config):
+            return [], []
+        return [], [f"{config.paths.skills}: canonical skills root does not exist."]
+
+    skill_dirs = sorted(path for path in canonical_root.iterdir() if path.is_dir())
+    if skill_dirs:
+        return skill_dirs, []
+    if _has_skill_bootstrap_candidate(project_root, config):
+        return [], []
+    return [], [f"{config.paths.skills}: canonical skills root has no skill directories."]
+
+
+def _validate_skill_frontmatter(
+    frontmatter: dict[str, str], rel_file: str, skill_name: str
+) -> list[str]:
+    """Collect canonical frontmatter validation errors for one skill file."""
+    errors: list[str] = []
+    for field in SKILL_REQUIRED_FRONTMATTER_FIELDS:
+        if not frontmatter.get(field, ""):
+            errors.append(f"{rel_file}: missing frontmatter field '{field}'.")
+
+    declared_name = frontmatter.get("name", "")
+    if declared_name and declared_name != skill_name:
+        errors.append(
+            f"{rel_file}: frontmatter name '{declared_name}' must match directory '{skill_name}'."
+        )
+    elif declared_name and not SKILL_NAME_RE.match(declared_name):
+        errors.append(f"{rel_file}: frontmatter name must be kebab-case.")
+
+    lifecycle_state = frontmatter.get("lifecycle_state", "")
+    if lifecycle_state and lifecycle_state not in SKILL_LIFECYCLE_STATES:
+        allowed = ", ".join(sorted(SKILL_LIFECYCLE_STATES))
+        errors.append(
+            f"{rel_file}: invalid lifecycle_state '{lifecycle_state}' (allowed: {allowed})."
+        )
+
+    last_reviewed = frontmatter.get("last_reviewed", "")
+    if last_reviewed and not SKILL_LAST_REVIEWED_RE.match(last_reviewed):
+        errors.append(f"{rel_file}: invalid last_reviewed '{last_reviewed}' (YYYY-MM-DD).")
+
+    return errors
+
+
+def _collect_skill_dir_blockers(project_root: Path, skill_dir: Path) -> list[str]:
+    """Collect canonical corruption blockers for one skill directory."""
+    errors: list[str] = []
+    rel_dir = skill_dir.relative_to(project_root).as_posix()
+    skill_name = skill_dir.name
+    if not SKILL_NAME_RE.match(skill_name):
+        errors.append(f"{rel_dir}: skill directory name must be kebab-case.")
+
+    skill_file = skill_dir / "SKILL.md"
+    if not skill_file.exists():
+        errors.append(f"{rel_dir}: missing SKILL.md file.")
+        return errors
+
+    frontmatter = _parse_skill_frontmatter(skill_file)
+    rel_file = skill_file.relative_to(project_root).as_posix()
+    if not frontmatter:
+        errors.append(f"{rel_file}: missing YAML frontmatter.")
+        return errors
+
+    errors.extend(_validate_skill_frontmatter(frontmatter, rel_file, skill_name))
+    return errors
+
+
+def collect_canonical_sync_blockers(project_root: Path, config: GzkitConfig) -> list[str]:
+    """Collect fail-closed canonical corruption blockers before mirror propagation."""
+    skill_dirs, root_errors = _canonical_skill_dirs(project_root, config)
+    if root_errors:
+        return root_errors
+    if not skill_dirs:
+        return []
+
+    errors: list[str] = []
+    for skill_dir in skill_dirs:
+        errors.extend(_collect_skill_dir_blockers(project_root, skill_dir))
+
+    return sorted(set(errors))
+
+
 def bootstrap_canonical_skills(project_root: Path, config: GzkitConfig) -> list[str]:
     """Seed canonical skills from legacy mirrors when canonical path is empty.
 
@@ -445,15 +588,8 @@ def bootstrap_canonical_skills(project_root: Path, config: GzkitConfig) -> list[
 
     canonical_root.mkdir(parents=True, exist_ok=True)
 
-    candidate_paths = [
-        config.paths.copilot_skills,
-        ".github/skills",
-        config.paths.claude_skills,
-        config.paths.codex_skills,
-        ".codex/skills",
-    ]
     seen: set[str] = set()
-    for candidate in candidate_paths:
+    for candidate in _legacy_skill_candidate_paths(config):
         if candidate in seen:
             continue
         seen.add(candidate)
@@ -467,6 +603,50 @@ def bootstrap_canonical_skills(project_root: Path, config: GzkitConfig) -> list[
         return sync_skill_mirror(project_root, candidate, config.paths.skills)
 
     return []
+
+
+def _mirror_roots(project_root: Path, config: GzkitConfig) -> list[Path]:
+    """Return unique mirror roots in deterministic order."""
+    roots = [config.paths.codex_skills, config.paths.claude_skills, config.paths.copilot_skills]
+    seen: set[str] = set()
+    result: list[Path] = []
+    for root in roots:
+        if root in seen or root == config.paths.skills:
+            continue
+        seen.add(root)
+        result.append(project_root / root)
+    return result
+
+
+def find_stale_mirror_paths(project_root: Path, config: GzkitConfig | None = None) -> list[str]:
+    """Find mirror-only files/directories not present in canonical skills root."""
+    if config is None:
+        config = GzkitConfig.load(project_root / ".gzkit.json")
+
+    canonical_root = project_root / config.paths.skills
+    if not canonical_root.exists():
+        return []
+
+    stale_paths: list[str] = []
+    for mirror_root in _mirror_roots(project_root, config):
+        if not mirror_root.exists():
+            continue
+
+        entries = sorted(
+            (path for path in mirror_root.rglob("*") if path.is_dir() or path.is_file()),
+            key=lambda path: (len(path.relative_to(mirror_root).parts), path.as_posix()),
+        )
+        for mirror_entry in entries:
+            rel = mirror_entry.relative_to(mirror_root)
+            if (canonical_root / rel).exists():
+                continue
+
+            rel_project = mirror_entry.relative_to(project_root).as_posix()
+            if any(rel_project.startswith(f"{parent}/") for parent in stale_paths):
+                continue
+            stale_paths.append(rel_project)
+
+    return sorted(stale_paths)
 
 
 def get_project_context(project_root: Path, config: GzkitConfig) -> dict[str, str]:
@@ -673,4 +853,4 @@ def sync_all(project_root: Path, config: GzkitConfig | None = None) -> list[str]
     mirrored = sync_skill_mirrors(project_root, config)
     updated.extend(mirrored)
 
-    return updated
+    return sorted(set(updated))

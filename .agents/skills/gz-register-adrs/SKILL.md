@@ -1,6 +1,9 @@
 ---
 name: gz-register-adrs
 description: Register existing ADR files missing from ledger state. Use when reconciling on-disk ADRs with governance state.
+lifecycle_state: active
+owner: gzkit-governance
+last_reviewed: 2026-02-18
 ---
 
 # gz register-adrs
