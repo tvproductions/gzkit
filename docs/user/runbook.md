@@ -28,8 +28,8 @@ uv run gz lint
 # 4) Update the OBPI brief with substantive implementation evidence
 #    (status Completed + concrete summary, not placeholders)
 
-# 5) Record OBPI-scoped receipt evidence under the ADR
-uv run gz adr emit-receipt ADR-<X.Y.Z> --event completed --attestor "<Human Name>" --evidence-json '{"scope":"OBPI-<X.Y.Z-NN>","adr_completion":"not_completed","obpi_completion":"attested_completed","attestation":"I attest I understand the completion of OBPI-<X.Y.Z-NN>.","date":"YYYY-MM-DD"}'
+# 5) Record OBPI-scoped receipt evidence on the OBPI itself
+uv run gz obpi emit-receipt OBPI-<X.Y.Z-NN>-<slug> --event completed --attestor "<Human Name>" --evidence-json '{"attestation":"I attest I understand the completion of OBPI-<X.Y.Z-NN>.","date":"YYYY-MM-DD"}'
 ```
 
 ---
@@ -88,5 +88,6 @@ If none resolve, stop and report blockers. Do not claim parity completion withou
 
 - Do not run `gz audit` pre-attestation.
 - Do not use OBPI-scoped receipt emission as a substitute for ADR completion attestation.
+- `gz adr emit-receipt` remains available for ADR-level accounting and legacy scoped payload flows.
 - For heavy lane without `features/`, Gate 4 is reported N/A with explicit rationale.
 - Historical files under `docs/user/reference/**` are archival and may contain legacy command examples; active operator command contracts are in `docs/user/commands/**` and CLI help output.

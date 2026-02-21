@@ -101,6 +101,27 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
                 )
             )
 
+    def test_mirror_directory_name_must_be_kebab_case(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            _write_skill(project_root, config.paths.skills, "demo-skill")
+            _write_skill(project_root, config.paths.codex_skills, "demo-skill")
+            _write_skill(project_root, config.paths.claude_skills, "demo-skill")
+            _write_skill(project_root, config.paths.copilot_skills, "demo-skill")
+            _write_skill(project_root, config.paths.claude_skills, "DemoSkill")
+
+            report = audit_skills(project_root, config)
+            self.assertFalse(report.valid)
+            self.assertTrue(
+                any(
+                    issue.path.endswith(".claude/skills/DemoSkill")
+                    and "Mirrored skill directory name must be kebab-case." in issue.message
+                    for issue in report.issues
+                )
+            )
+
     def test_missing_mirror_skill_file_blocks_audit(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)

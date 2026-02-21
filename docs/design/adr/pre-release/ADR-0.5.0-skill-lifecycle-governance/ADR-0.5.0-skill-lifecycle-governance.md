@@ -17,12 +17,13 @@ Define the lifecycle contract for skills as first-class governance artifacts so 
 
 Adopt a lifecycle-governance model for canonical skills and mirrors covering taxonomy, parity verification policy, state transitions, and maintenance/deprecation operations.
 
-Execution is decomposed into four OBPIs:
+Execution is decomposed into five OBPIs:
 
 1. Skill taxonomy and capability model (`OBPI-0.5.0-01`).
 2. Parity verification policy and runtime checks (`OBPI-0.5.0-02`).
 3. Lifecycle transition semantics and evidence (`OBPI-0.5.0-03`).
 4. Ongoing maintenance and deprecation operations (`OBPI-0.5.0-04`).
+5. OBPI acceptance protocol runtime parity (`OBPI-0.5.0-05`).
 
 ## Consequences
 
@@ -43,6 +44,7 @@ Execution is decomposed into four OBPIs:
 2. [`OBPI-0.5.0-02-parity-verification-policy`](obpis/OBPI-0.5.0-02-parity-verification-policy.md)
 3. [`OBPI-0.5.0-03-lifecycle-state-transitions`](obpis/OBPI-0.5.0-03-lifecycle-state-transitions.md)
 4. [`OBPI-0.5.0-04-maintenance-and-deprecation-operations`](obpis/OBPI-0.5.0-04-maintenance-and-deprecation-operations.md)
+5. [`OBPI-0.5.0-05-obpi-acceptance-protocol-runtime-parity`](obpis/OBPI-0.5.0-05-obpi-acceptance-protocol-runtime-parity.md)
 
 ## Evidence
 
@@ -50,6 +52,7 @@ Execution is decomposed into four OBPIs:
 - [ ] Parity verification policy is executable and integrated with quality checks.
 - [ ] Lifecycle transitions are documented with explicit operator evidence requirements.
 - [ ] Maintenance and deprecation runbooks are documented and validated.
+- [ ] OBPI completion runtime parity is aligned to AirlineOps acceptance protocol.
 - [ ] Human attestation recorded after heavy-lane closeout flow.
 
 ## Attestation Block

@@ -3,7 +3,7 @@ id: ADR-pool.obpi-runtime-surface
 status: Pool
 parent: PRD-GZKIT-1.0.0
 lane: heavy
-enabler: ADR-pool.obpi-first-operations
+enabler: ADR-0.7.0-obpi-first-operations
 ---
 
 # ADR-pool.obpi-runtime-surface: OBPI Runtime Surfaces
@@ -48,8 +48,8 @@ Add first-class OBPI runtime surfaces so operators can execute, verify, and reco
 
 ## Dependencies
 
-- **Blocks on**: ADR-pool.obpi-first-operations
-- **Blocked by**: ADR-pool.obpi-first-operations
+- **Blocks on**: ADR-0.7.0-obpi-first-operations
+- **Blocked by**: ADR-0.7.0-obpi-first-operations
 
 ---
 

@@ -76,3 +76,18 @@
 {"schema":"gzkit.ledger.v1","event":"gate_checked","id":"ADR-0.4.0-skill-capability-mirroring","ts":"2026-02-21T14:38:31.859802+00:00","gate":3,"status":"pass","command":"uv run mkdocs build --strict","returncode":0,"evidence":"stdout/stderr captured"}
 {"schema":"gzkit.ledger.v1","event":"attested","id":"ADR-0.4.0-skill-capability-mirroring","ts":"2026-02-21T14:38:36.120139+00:00","status":"completed","by":"Test User"}
 {"schema":"gzkit.ledger.v1","event":"audit_receipt_emitted","id":"ADR-0.4.0-skill-capability-mirroring","ts":"2026-02-21T14:45:51.615275+00:00","receipt_event":"validated","attestor":"human:Jeff"}
+{"schema":"gzkit.ledger.v1","event":"attested","id":"ADR-0.4.0-skill-capability-mirroring","ts":"2026-02-21T22:09:08.530524+00:00","status":"completed","by":"Test User"}
+{"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-pool.pool-promotion-protocol","ts":"2026-02-21T22:20:33.134707+00:00","parent":"ADR-0.5.0-skill-lifecycle-governance","lane":"heavy"}
+{"schema":"gzkit.ledger.v1","event":"artifact_renamed","id":"ADR-pool.pool-promotion-protocol","ts":"2026-02-21T22:20:38.179476+00:00","new_id":"ADR-0.6.0-pool-promotion-protocol","reason":"pool_promotion"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.6.0-01-pool-source-contract","ts":"2026-02-21T22:21:10.420290+00:00","parent":"ADR-0.6.0-pool-promotion-protocol"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.6.0-02-promotion-command-lineage","ts":"2026-02-21T22:21:10.420692+00:00","parent":"ADR-0.6.0-pool-promotion-protocol"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.6.0-03-operator-narratives-and-auditability","ts":"2026-02-21T22:21:10.423029+00:00","parent":"ADR-0.6.0-pool-promotion-protocol"}
+{"schema":"gzkit.ledger.v1","event":"gate_checked","id":"ADR-0.6.0-pool-promotion-protocol","ts":"2026-02-21T22:24:24.277152+00:00","gate":1,"status":"pass","command":"ADR exists","returncode":0,"evidence":"docs/design/adr/pre-release/ADR-0.6.0-pool-promotion-protocol/ADR-0.6.0-pool-promotion-protocol.md"}
+{"schema":"gzkit.ledger.v1","event":"gate_checked","id":"ADR-0.6.0-pool-promotion-protocol","ts":"2026-02-21T22:24:26.043026+00:00","gate":2,"status":"pass","command":"uv run -m unittest discover tests","returncode":0,"evidence":"stdout/stderr captured"}
+{"schema":"gzkit.ledger.v1","event":"gate_checked","id":"ADR-0.6.0-pool-promotion-protocol","ts":"2026-02-21T22:24:30.919624+00:00","gate":3,"status":"pass","command":"uv run mkdocs build --strict","returncode":0,"evidence":"stdout/stderr captured"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.5.0-05-obpi-acceptance-protocol-runtime-parity","ts":"2026-02-21T23:05:11.489962+00:00","parent":"ADR-0.5.0-skill-lifecycle-governance"}
+{"schema":"gzkit.ledger.v1","event":"artifact_renamed","id":"ADR-pool.obpi-first-operations","ts":"2026-02-21T23:05:11.492819+00:00","new_id":"ADR-0.7.0-obpi-first-operations","reason":"pool_promotion"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.7.0-02-obpi-completion-recorder-and-anchor","ts":"2026-02-21T23:05:31.506869+00:00","parent":"ADR-0.7.0-obpi-first-operations"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.7.0-01-obpi-completion-validator-gate","ts":"2026-02-21T23:05:31.507095+00:00","parent":"ADR-0.7.0-obpi-first-operations"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.7.0-03-ledger-first-obpi-audit-consumption","ts":"2026-02-21T23:05:31.509415+00:00","parent":"ADR-0.7.0-obpi-first-operations"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.7.0-04-obpi-drift-and-status-reconciliation","ts":"2026-02-21T23:05:35.658958+00:00","parent":"ADR-0.7.0-obpi-first-operations"}

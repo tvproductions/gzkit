@@ -11,7 +11,7 @@ Planned ADRs awaiting prioritization. Pool entries are lightweight intent docume
 3. **No folder structure** until promoted
 4. **Naming (current)**: `ADR-pool.{slug}.md`
 5. **Legacy compatibility**: semver-labeled pool IDs are tolerated for older entries
-6. **Status**: "Proposed" while active in pool; promoted entries become archived/superseded records
+6. **Status**: "Pool" while active in pool; promoted entries become archived/superseded records
 
 ---
 
@@ -26,6 +26,12 @@ When a pool entry is prioritized:
 5. Delete or archive the pool file
 6. Update registries
 
+Canonical command:
+
+```bash
+uv run gz adr promote ADR-pool.<slug> --semver X.Y.Z [--dry-run]
+```
+
 ---
 
 ## Current Pool
@@ -37,8 +43,7 @@ When a pool entry is prioritized:
 | [ADR-pool.gz-chores-system](ADR-pool.gz-chores-system.md) | 0.7.x | Waiting | ADR-0.2.0 |
 | [ADR-pool.release-hardening](ADR-pool.release-hardening.md) | 1.0.x | Waiting | ADR-pool.audit-system |
 | [ADR-pool.go-runtime-parity](ADR-pool.go-runtime-parity.md) | Foundation | Waiting | ADR-0.3.0 |
-| [ADR-pool.obpi-first-operations](ADR-pool.obpi-first-operations.md) | Governance parity | Waiting | ADR-0.3.0 |
-| [ADR-pool.obpi-runtime-surface](ADR-pool.obpi-runtime-surface.md) | Runtime ergonomics | Waiting | ADR-pool.obpi-first-operations |
+| [ADR-pool.obpi-runtime-surface](ADR-pool.obpi-runtime-surface.md) | Runtime ergonomics | Waiting | ADR-0.7.0-obpi-first-operations |
 
 ---
 
@@ -48,6 +53,8 @@ When a pool entry is prioritized:
 |---|---|---|
 | [ADR-pool.airlineops-canon-reconciliation](ADR-pool.airlineops-canon-reconciliation.md) | [ADR-0.3.0](../pre-release/ADR-0.3.0-airlineops-canon-reconciliation/ADR-0.3.0-airlineops-canon-reconciliation.md) | 2026-02-13 |
 | ADR-pool.skill-capability-mirroring | [ADR-0.4.0](../pre-release/ADR-0.4.0-skill-capability-mirroring/ADR-0.4.0-skill-capability-mirroring.md) | 2026-02-17 |
+| [ADR-pool.pool-promotion-protocol](ADR-pool.pool-promotion-protocol.md) | [ADR-0.6.0-pool-promotion-protocol](../pre-release/ADR-0.6.0-pool-promotion-protocol/ADR-0.6.0-pool-promotion-protocol.md) | 2026-02-21 |
+| [ADR-pool.obpi-first-operations](ADR-pool.obpi-first-operations.md) | [ADR-0.7.0-obpi-first-operations](../pre-release/ADR-0.7.0-obpi-first-operations/ADR-0.7.0-obpi-first-operations.md) | 2026-02-21 |
 
 ---
 
@@ -62,13 +69,14 @@ PRD-GZKIT-1.0.0
 ├── [ADR-0.3.0](../pre-release/ADR-0.3.0-airlineops-canon-reconciliation/ADR-0.3.0-airlineops-canon-reconciliation.md) (Phase 3) ← Active
 ├── [ADR-0.4.0](../pre-release/ADR-0.4.0-skill-capability-mirroring/ADR-0.4.0-skill-capability-mirroring.md) (Phase 4: Skill parity) ← Active
 ├── [ADR-0.5.0](../pre-release/ADR-0.5.0-skill-lifecycle-governance/ADR-0.5.0-skill-lifecycle-governance.md) (Phase 5: Skill lifecycle governance) ← Active
+├── [ADR-0.6.0](../pre-release/ADR-0.6.0-pool-promotion-protocol/ADR-0.6.0-pool-promotion-protocol.md) (Pool promotion protocol) ← Active
 ├── ADR-pool.heavy-lane (Backlog)
 ├── ADR-pool.audit-system (Phase 6)
 ├── ADR-pool.gz-chores-system (Parity backlog)
 ├── ADR-pool.release-hardening (Phase 7)
 ├── ADR-pool.go-runtime-parity (Foundation runtime track)
-└── ADR-pool.obpi-first-operations (OBPI-first governance track)
-    ├── ADR-pool.obpi-runtime-surface (OBPI-native runtime surfaces)
+├── [ADR-0.7.0](../pre-release/ADR-0.7.0-obpi-first-operations/ADR-0.7.0-obpi-first-operations.md) (OBPI-first governance track) ← Active
+└── ADR-pool.obpi-runtime-surface (OBPI-native runtime surfaces)
 ```
 
 Parenting model:

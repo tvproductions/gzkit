@@ -74,6 +74,14 @@
         "evidence": { "type": "object" }
       }
     },
+    "obpi_receipt_emitted": {
+      "required": ["receipt_event", "attestor"],
+      "properties": {
+        "receipt_event": { "type": "string", "enum": ["completed", "validated"] },
+        "attestor": { "type": "string", "min_length": 1 },
+        "evidence": { "type": "object" }
+      }
+    },
     "artifact_renamed": {
       "required": ["new_id"],
       "properties": {
