@@ -17,9 +17,9 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz plan`](plan.md) | Create an ADR |
 | [`gz implement`](implement.md) | Run Gate 2 and record results |
 | [`gz gates`](gates.md) | Run lane-required gates |
-| [`gz status`](status.md) | Show multi-ADR gate and lifecycle status |
+| [`gz status`](status.md) | Show multi-ADR OBPI progress and lifecycle status |
 | [`gz state`](state.md) | Show artifact graph and readiness filters |
-| [`gz adr status`](adr-status.md) | Show focused status for one ADR |
+| [`gz adr status`](adr-status.md) | Show focused OBPI progress for one ADR |
 | [`gz adr audit-check`](adr-audit-check.md) | Verify OBPI completeness/evidence for one ADR |
 | [`gz closeout`](closeout.md) | Present closeout paths/commands and record closeout initiation |
 | [`gz attest`](attest.md) | Record human attestation with prerequisite enforcement |
@@ -44,7 +44,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz skill audit`](skill-audit.md) | Audit skill lifecycle metadata and mirror parity |
 | [`gz check-config-paths`](check-config-paths.md) | Validate configured + manifest path coherence |
 | [`gz cli audit`](cli-audit.md) | Validate CLI docs/manpage coverage |
-| `gz agent sync control-surfaces` | Regenerate control surfaces |
+| [`gz agent sync control-surfaces`](agent-sync-control-surfaces.md) | Regenerate control surfaces |
 | `gz tidy` | Run maintenance checks and cleanup |
 
 ---

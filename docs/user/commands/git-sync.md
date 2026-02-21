@@ -1,6 +1,6 @@
 # gz git-sync
 
-Guarded git sync ritual borrowed from AirlineOps and adapted for gzkit.
+Guarded git sync ritual for gzkit repositories.
 
 ---
 
@@ -8,12 +8,6 @@ Guarded git sync ritual borrowed from AirlineOps and adapted for gzkit.
 
 ```bash
 gz git-sync [OPTIONS]
-```
-
-Alias:
-
-```bash
-gz sync-repo [OPTIONS]
 ```
 
 ---
@@ -51,7 +45,4 @@ gz git-sync
 
 # Full ritual with guardrails
 gz git-sync --apply --lint --test
-
-# AirlineOps-style alias
-gz sync-repo --apply
 ```

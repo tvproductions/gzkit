@@ -1,6 +1,9 @@
 ---
 name: git-sync
 description: Run the guarded repository sync ritual with lint/test gates.
+lifecycle_state: active
+owner: gzkit-governance
+last_reviewed: 2026-02-21
 ---
 
 # SKILL.md
@@ -11,7 +14,7 @@ Run the guarded repository sync ritual with lint/test gates.
 
 ## Trigger
 
-- User asks to "git sync", "sync repo", or "push with guards"
+- User asks to "git sync" or "push with guards"
 - End-of-task reconciliation before handoff
 - Branch drift recovery after remote updates
 

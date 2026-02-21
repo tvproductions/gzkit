@@ -37,6 +37,16 @@ This project uses gzkit for governance. Key commands:
 - `gz validate --documents` - Validate governance artifacts
 - `gz check` - Run all quality checks
 
+## OBPI Acceptance
+
+When completing an OBPI brief:
+
+1. Provide value narrative + one key proof example
+2. Provide verification evidence (tests/commands/output)
+3. Wait for explicit human acceptance before setting `Completed` for Heavy/Foundation parent ADR work
+
+Reference: `AGENTS.md` section `OBPI Acceptance Protocol`.
+
 ## Skills
 
 Use the canonical skill catalog and keep mirrors synced via `gz agent sync control-surfaces`:

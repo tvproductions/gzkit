@@ -89,3 +89,4 @@ If none resolve, stop and report blockers. Do not claim parity completion withou
 - Do not run `gz audit` pre-attestation.
 - Do not use OBPI-scoped receipt emission as a substitute for ADR completion attestation.
 - For heavy lane without `features/`, Gate 4 is reported N/A with explicit rationale.
+- Historical files under `docs/user/reference/**` are archival and may contain legacy command examples; active operator command contracts are in `docs/user/commands/**` and CLI help output.

@@ -1,6 +1,9 @@
 ---
 name: gz-check-config-paths
 description: Validate configured and manifest path coherence. Use when diagnosing control-surface or path drift.
+lifecycle_state: active
+owner: gzkit-governance
+last_reviewed: 2026-02-18
 ---
 
 # gz check-config-paths

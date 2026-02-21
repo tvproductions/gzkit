@@ -60,6 +60,18 @@ Follow the gzkit gate covenant for all changes:
 5. Validate: `gz validate --documents && gz check`
 6. Request attestation: Human runs `gz attest`
 
+## OBPI Acceptance
+
+OBPI closure follows `AGENTS.md` and is attestation-first:
+
+1. Present value narrative
+2. Present key proof
+3. Present verification evidence
+4. Wait for explicit human acceptance
+5. Only then mark brief status `Completed`
+
+Reference: `AGENTS.md` section `OBPI Acceptance Protocol`.
+
 ## Skills
 
 Skills are centralized under `.gzkit` and mirrored to tool-local paths:
