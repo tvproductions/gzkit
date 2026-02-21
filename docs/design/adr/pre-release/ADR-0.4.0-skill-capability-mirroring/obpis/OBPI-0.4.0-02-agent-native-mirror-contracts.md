@@ -3,10 +3,12 @@ id: OBPI-0.4.0-02-agent-native-mirror-contracts
 parent: ADR-0.4.0-skill-capability-mirroring
 item: 2
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.4.0-02-agent-native-mirror-contracts
+
+**Brief Status:** Completed
 
 ## ADR Item
 
@@ -52,11 +54,11 @@ Define a deterministic mirror contract for `.agents`, `.claude`, and `.github` s
 
 ### Gate 2: TDD
 
-- [ ] Command and module tests added for mirror contract checks.
+- [x] Command and module tests added for mirror contract checks.
 
 ### Gate 3: Docs
 
-- [ ] Operator docs updated for mirror contract behavior.
+- [x] Operator docs updated for mirror contract behavior.
 
 ### Gate 4: BDD
 
@@ -68,6 +70,16 @@ Define a deterministic mirror contract for `.agents`, `.claude`, and `.github` s
 
 ## Acceptance Criteria
 
-- [ ] Mirror contract rules are documented and enforced.
-- [ ] Drift between canonical and mirror metadata is blocking.
-- [ ] Contract behavior is covered by tests.
+- [x] Mirror contract rules are documented and enforced.
+- [x] Drift between canonical and mirror metadata is blocking.
+- [x] Contract behavior is covered by tests.
+
+## Evidence
+
+### Implementation Summary
+
+- Files created/modified: `src/gzkit/skills.py`, `tests/test_skills_audit.py`, `docs/user/commands/skill-audit.md`, `.agents/skills/**/SKILL.md`, `.claude/skills/**/SKILL.md`, `.github/skills/**/SKILL.md`
+- Contract enforcement: mirror identity fields (`name`, `description`, `lifecycle_state`, `owner`, `last_reviewed`) are fail-closed parity checks; mirror name must match mirror directory name
+- Drift remediation: ran `uv run gz agent sync control-surfaces` and removed legacy mirror-only `.claude/skills/commit`
+- Validation commands run: `uv run -m unittest tests.test_skills_audit tests.test_cli.TestSkillCommands tests.test_sync.TestSyncControlSurfaces`, `uv run gz skill audit --json`, `uv run gz lint`, `uv run gz typecheck`, `uv run -m unittest`
+- Date completed: 2026-02-21

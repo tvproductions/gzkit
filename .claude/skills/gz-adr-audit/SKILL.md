@@ -12,6 +12,9 @@ metadata:
   trust_model: "Trusts Layer 1 ledger proof; does NOT re-verify evidence"
 gz_command: audit
 invocation: uv run gz audit <adr-id>
+lifecycle_state: active
+owner: gzkit-governance
+last_reviewed: 2026-02-18
 ---
 
 # gz-adr-audit

@@ -9,6 +9,9 @@ metadata:
   govzero_layer: "Layer 1 — Evidence Gathering"
 gz_command: adr status
 invocation: uv run gz adr status <ADR-ID>
+lifecycle_state: active
+owner: gzkit-governance
+last_reviewed: 2026-02-18
 ---
 
 # gz-adr-status

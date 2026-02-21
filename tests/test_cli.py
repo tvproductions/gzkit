@@ -355,8 +355,8 @@ class TestStatusCommand(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             self.assertIn("ADR-0.1.0", result.output)
 
-    def test_status_shows_gate2_pass_from_ledger(self) -> None:
-        """status shows Gate 2 PASS when latest gate check passed."""
+    def test_status_show_gates_shows_gate2_pass_from_ledger(self) -> None:
+        """status --show-gates shows Gate 2 PASS when latest gate check passed."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             runner.invoke(main, ["init"])
@@ -365,12 +365,12 @@ class TestStatusCommand(unittest.TestCase):
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
 
-            result = runner.invoke(main, ["status"])
+            result = runner.invoke(main, ["status", "--show-gates"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("Gate 2 (TDD):   PASS", result.output)
 
-    def test_status_shows_gate2_fail_from_ledger(self) -> None:
-        """status shows Gate 2 FAIL when latest gate check failed."""
+    def test_status_show_gates_shows_gate2_fail_from_ledger(self) -> None:
+        """status --show-gates shows Gate 2 FAIL when latest gate check failed."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             runner.invoke(main, ["init"])
@@ -380,9 +380,61 @@ class TestStatusCommand(unittest.TestCase):
             ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
             ledger.append(gate_checked_event("ADR-0.1.0", 2, "fail", "test", 1))
 
-            result = runner.invoke(main, ["status"])
+            result = runner.invoke(main, ["status", "--show-gates"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("Gate 2 (TDD):   FAIL", result.output)
+
+    def test_status_default_hides_gate_breakdown(self) -> None:
+        """status output is OBPI/QC centric by default without gate rows."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+
+            result = runner.invoke(main, ["status"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("QC Readiness:", result.output)
+            self.assertNotIn("Gate 2 (TDD):", result.output)
+
+    def test_status_shows_obpi_completion_summary(self) -> None:
+        """status renders OBPI completion as the primary unit."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            obpi_path.write_text(
+                "\n".join(
+                    [
+                        "---",
+                        "id: OBPI-0.1.0-01-demo",
+                        "parent: ADR-0.1.0",
+                        "item: 1",
+                        "lane: Lite",
+                        "status: Completed",
+                        "---",
+                        "",
+                        "# OBPI-0.1.0-01-demo: Demo",
+                        "",
+                        "**Brief Status:** Completed",
+                        "",
+                        "## Evidence",
+                        "",
+                        "### Implementation Summary",
+                        "- Files created/modified: src/module.py",
+                        "",
+                    ]
+                )
+                + "\n"
+            )
+
+            result = runner.invoke(main, ["status"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("OBPI Unit:       COMPLETED", result.output)
+            self.assertIn("OBPI Completion: 1/1 complete", result.output)
+            self.assertIn("all linked OBPIs completed with evidence", result.output)
 
 
 class TestMigrateSemverCommand(unittest.TestCase):
@@ -537,9 +589,13 @@ class TestGitSyncCommand(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             self.assertEqual(result.output.strip(), ".gzkit/skills/git-sync/SKILL.md")
 
-            alias_result = runner.invoke(main, ["sync-repo", "--skill"])
-            self.assertEqual(alias_result.exit_code, 0)
-            self.assertEqual(alias_result.output.strip(), ".gzkit/skills/git-sync/SKILL.md")
+    def test_sync_repo_alias_is_removed(self) -> None:
+        """sync-repo alias is no longer accepted after hard cutover."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(main, ["sync-repo", "--skill"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("invalid choice", result.output.lower())
 
     def test_git_sync_fails_outside_git_repo(self) -> None:
         """git-sync returns error when cwd is not a git repo."""
@@ -581,8 +637,8 @@ class TestGitSyncCommand(unittest.TestCase):
             self.assertIn("Git sync plan", result.output)
 
             alias_result = runner.invoke(main, ["sync-repo"])
-            self.assertEqual(alias_result.exit_code, 0)
-            self.assertIn("Git sync plan", alias_result.output)
+            self.assertNotEqual(alias_result.exit_code, 0)
+            self.assertIn("invalid choice", alias_result.output.lower())
 
 
 class TestAdrResolution(unittest.TestCase):
@@ -682,25 +738,74 @@ class TestSyncCommand(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             self.assertIn("Sync complete", result.output)
 
-    def test_sync_alias_still_works(self) -> None:
-        """sync alias routes to canonical command."""
+    def test_sync_alias_is_removed(self) -> None:
+        """sync top-level alias is no longer accepted after hard cutover."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             runner.invoke(main, ["init"])
             result = runner.invoke(main, ["sync"])
-            self.assertEqual(result.exit_code, 0)
-            self.assertIn("deprecated", result.output.lower())
-            self.assertIn("Sync complete", result.output)
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("invalid choice", result.output.lower())
 
-    def test_agent_control_sync_alias_still_works(self) -> None:
-        """agent-control-sync alias routes to canonical command."""
+    def test_agent_control_sync_alias_is_removed(self) -> None:
+        """agent-control-sync alias is no longer accepted after hard cutover."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             runner.invoke(main, ["init"])
             result = runner.invoke(main, ["agent-control-sync"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("invalid choice", result.output.lower())
+
+    def test_agent_sync_fails_closed_on_canonical_skill_corruption(self) -> None:
+        """Sync blocks mirror propagation when canonical SKILL metadata is invalid."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            Path(".gzkit/skills/lint/SKILL.md").write_text("# SKILL.md\n\nbroken\n")
+
+            result = runner.invoke(main, ["agent", "sync", "control-surfaces"])
+
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("preflight failed", result.output.lower())
+            self.assertIn(".gzkit/skills/lint/SKILL.md", result.output)
+
+    def test_agent_sync_reports_stale_mirror_recovery_non_destructively(self) -> None:
+        """Sync warns on stale mirror-only paths and preserves them for manual cleanup."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            stale_skill = Path(".claude/skills/stale-skill")
+            stale_skill.mkdir(parents=True, exist_ok=True)
+            (stale_skill / "SKILL.md").write_text(
+                "---\n"
+                "name: stale-skill\n"
+                "description: stale\n"
+                "lifecycle_state: active\n"
+                "owner: gzkit-governance\n"
+                "last_reviewed: 2026-02-21\n"
+                "---\n\n"
+                "# SKILL.md\n"
+            )
+
+            result = runner.invoke(main, ["agent", "sync", "control-surfaces"])
+
             self.assertEqual(result.exit_code, 0)
-            self.assertIn("deprecated", result.output.lower())
-            self.assertIn("Sync complete", result.output)
+            self.assertIn("Recovery required", result.output)
+            self.assertIn(".claude/skills/stale-skill", result.output)
+            self.assertTrue(stale_skill.exists())
+
+    def test_agent_sync_output_is_deterministic_across_repeated_runs(self) -> None:
+        """Repeated sync command output is stable for unchanged inputs."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+
+            first = runner.invoke(main, ["agent", "sync", "control-surfaces"])
+            second = runner.invoke(main, ["agent", "sync", "control-surfaces"])
+
+            self.assertEqual(first.exit_code, 0)
+            self.assertEqual(second.exit_code, 0)
+            self.assertEqual(first.output, second.output)
 
 
 class TestLintCommand(unittest.TestCase):
@@ -1094,6 +1199,27 @@ class TestAdrRuntimeCommands(unittest.TestCase):
 class TestLifecycleStatusSemantics(unittest.TestCase):
     """Tests for derived lifecycle semantics on status/state surfaces."""
 
+    def test_adr_status_default_hides_gate_breakdown(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+
+            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("QC Readiness:", result.output)
+            self.assertNotIn("Gate 2 (TDD):", result.output)
+
+    def test_adr_status_show_gates_includes_gate_breakdown(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+
+            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0", "--show-gates"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("Gate 2 (TDD):", result.output)
+
     def test_adr_status_json_completed(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -1108,6 +1234,31 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
             self.assertEqual(payload["lifecycle_status"], "Completed")
             self.assertEqual(payload["closeout_phase"], "attested")
             self.assertEqual(payload["attestation_term"], "Completed")
+
+    def test_adr_status_json_obpi_incomplete_overrides_completed_lifecycle(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            TestAdrRuntimeCommands._write_obpi(
+                path=obpi_path,
+                status="Draft",
+                brief_status="Draft",
+                implementation_line="",
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(attested_event("ADR-0.1.0", "completed", "human"))
+
+            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0", "--json"])
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            self.assertEqual(payload["lifecycle_status"], "Pending")
+            self.assertEqual(payload["closeout_phase"], "attested")
+            self.assertEqual(payload["attestation_term"], "Completed")
+            self.assertEqual(payload["obpi_summary"]["unit_status"], "pending")
 
     def test_adr_status_json_validated(self) -> None:
         runner = CliRunner()
@@ -1179,6 +1330,57 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
             adr_payload = payload["adrs"]["ADR-0.1.0"]
             self.assertEqual(adr_payload["lifecycle_status"], "Completed")
             self.assertEqual(adr_payload["attestation_term"], "Completed — Partial")
+
+    def test_status_json_obpi_incomplete_overrides_completed_lifecycle(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            TestAdrRuntimeCommands._write_obpi(
+                path=obpi_path,
+                status="Draft",
+                brief_status="Draft",
+                implementation_line="",
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(attested_event("ADR-0.1.0", "completed", "human"))
+
+            result = runner.invoke(main, ["status", "--json"])
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            adr_payload = payload["adrs"]["ADR-0.1.0"]
+            self.assertEqual(adr_payload["lifecycle_status"], "Pending")
+            self.assertEqual(adr_payload["closeout_phase"], "attested")
+            self.assertEqual(adr_payload["attestation_term"], "Completed")
+            self.assertEqual(adr_payload["obpi_summary"]["unit_status"], "pending")
+
+    def test_status_json_includes_obpi_summary_fields(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            TestAdrRuntimeCommands._write_obpi(
+                path=obpi_path,
+                status="Draft",
+                brief_status="Draft",
+                implementation_line="",
+            )
+
+            result = runner.invoke(main, ["status", "--json"])
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            adr_payload = payload["adrs"]["ADR-0.1.0"]
+            self.assertIn("obpis", adr_payload)
+            self.assertIn("obpi_summary", adr_payload)
+            self.assertEqual(adr_payload["obpi_summary"]["total"], 1)
+            self.assertEqual(adr_payload["obpi_summary"]["completed"], 0)
+            self.assertEqual(adr_payload["obpi_summary"]["unit_status"], "pending")
 
     def test_adr_status_json_pool_adr_ignores_attestation_for_lifecycle(self) -> None:
         runner = CliRunner()

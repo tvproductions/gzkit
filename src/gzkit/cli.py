@@ -47,8 +47,10 @@ from gzkit.quality import (
 )
 from gzkit.skills import audit_skills, list_skills, scaffold_core_skills, scaffold_skill
 from gzkit.sync import (
+    collect_canonical_sync_blockers,
     detect_project_name,
     detect_project_structure,
+    find_stale_mirror_paths,
     generate_manifest,
     parse_artifact_metadata,
     scan_existing_artifacts,
@@ -115,6 +117,7 @@ COMMAND_DOCS: dict[str, str] = {
     "adr status": "docs/user/commands/adr-status.md",
     "adr audit-check": "docs/user/commands/adr-audit-check.md",
     "adr emit-receipt": "docs/user/commands/adr-emit-receipt.md",
+    "agent sync control-surfaces": "docs/user/commands/agent-sync-control-surfaces.md",
 }
 
 SEMVER_ID_RENAMES: tuple[tuple[str, str], ...] = (
@@ -868,7 +871,7 @@ def init(mode: str, force: bool, dry_run: bool) -> None:
     console.print("\n[green]gzkit initialized successfully![/green]")
     console.print("\nNext steps:")
     console.print("  gz prd <name>       Create a PRD")
-    console.print("  gz status           Check gate status")
+    console.print("  gz status           Check OBPI progress and lifecycle status")
     console.print("  gz validate         Validate artifacts")
 
 
@@ -1119,37 +1122,160 @@ def _render_gate_status(gate_status: str | None) -> str:
     return "[yellow]PENDING[/yellow]"
 
 
-def status(as_json: bool) -> None:
-    """Display gate status for current work."""
+def _qc_readiness(gates: dict[str, str], lane: str) -> tuple[str, list[str]]:
+    """Derive summarized QC readiness and pending checkpoints from gate statuses."""
+    blockers: list[str] = []
+    if gates.get("2") != "pass":
+        blockers.append("TDD")
+    if lane == "heavy":
+        if gates.get("3") != "pass":
+            blockers.append("Docs")
+        if gates.get("4") not in {"pass", "n/a"}:
+            blockers.append("BDD")
+        if gates.get("5") != "pass":
+            blockers.append("Human attestation")
+    readiness = "ready" if not blockers else "pending"
+    return readiness, blockers
+
+
+def _render_qc_readiness(readiness: str, blockers: list[str]) -> str:
+    if readiness == "ready":
+        return "[green]READY[/green]"
+    return f"[yellow]PENDING[/yellow] (pending: {', '.join(blockers)})"
+
+
+def _build_adr_status_entry(
+    project_root: Path,
+    config: GzkitConfig,
+    ledger: Ledger,
+    adr_id: str,
+    info: dict[str, Any],
+) -> dict[str, Any]:
+    """Build enriched ADR status payload for one ADR."""
+    entry = dict(info)
+    lane = _resolve_adr_lane(entry, config.mode)
+    gate_statuses = ledger.get_latest_gate_statuses(adr_id)
+    gate4_na = _gate4_na_reason(project_root, lane)
+    entry["lane"] = lane
+    entry["gates"] = {
+        "1": "pass",
+        "2": gate_statuses.get(2, "pending"),
+        "3": gate_statuses.get(3, "pending") if lane == "heavy" else "n/a",
+        "4": "n/a" if gate4_na is not None else gate_statuses.get(4, "pending"),
+        "5": "pass" if entry.get("attested") else "pending",
+    }
+    if gate4_na is not None:
+        entry["gate4_na_reason"] = gate4_na
+
+    obpi_rows = _adr_obpi_status_rows(project_root, config, ledger, adr_id)
+    entry.update(Ledger.derive_adr_semantics(entry))
+    _apply_pool_adr_status_overrides(adr_id, entry)
+    entry["obpis"] = obpi_rows
+    obpi_summary = _summarize_obpi_rows(obpi_rows)
+    entry["obpi_summary"] = obpi_summary
+    _apply_obpi_lifecycle_overrides(adr_id, entry, obpi_summary)
+    return entry
+
+
+def _collect_adr_statuses(
+    project_root: Path,
+    config: GzkitConfig,
+    ledger: Ledger,
+    graph: dict[str, dict[str, Any]],
+) -> dict[str, dict[str, Any]]:
+    """Collect enriched status payload for each ADR in the graph."""
+    adrs: dict[str, dict[str, Any]] = {}
+    for adr_id, info in graph.items():
+        if info.get("type") != "adr":
+            continue
+        adrs[adr_id] = _build_adr_status_entry(project_root, config, ledger, adr_id, info)
+    return adrs
+
+
+def _print_status_obpi_section(
+    obpi_rows: list[dict[str, Any]],
+    obpi_summary: dict[str, Any],
+) -> None:
+    """Render OBPI completion block for one ADR status row."""
+    obpi_total = cast(int, obpi_summary.get("total", 0))
+    obpi_completed = cast(int, obpi_summary.get("completed", 0))
+    obpi_unit_status = cast(str, obpi_summary.get("unit_status", "unscoped"))
+    obpi_open_rows = [row for row in obpi_rows if not _obpi_row_complete(row)]
+
+    console.print(f"  OBPI Unit:       {_render_obpi_unit_status(obpi_unit_status)}")
+    console.print(f"  OBPI Completion: {obpi_completed}/{obpi_total} complete")
+    if obpi_total == 0:
+        console.print("  OBPIs:           none linked")
+        return
+    if not obpi_open_rows:
+        console.print("  OBPIs:           all linked OBPIs completed with evidence")
+        return
+
+    console.print(f"  OBPI Open:       {len(obpi_open_rows)} remaining")
+    preview_rows = obpi_open_rows[:3]
+    for row in preview_rows:
+        console.print(f"    - {_render_obpi_row_status(row)}")
+    hidden_count = len(obpi_open_rows) - len(preview_rows)
+    if hidden_count > 0:
+        console.print(f"    - ... and {hidden_count} more")
+
+
+def _print_status_gate_section(
+    info: dict[str, Any],
+    lane: str,
+    gates: dict[str, str],
+    attested: bool,
+    attestation_term: Any,
+) -> None:
+    """Render optional gate-by-gate diagnostics for one ADR."""
+    console.print("  Gate 1 (ADR):   [green]PASS[/green]")
+    console.print(f"  Gate 2 (TDD):   {_render_gate_status(gates.get('2'))}")
+    if lane != "heavy":
+        return
+
+    console.print(f"  Gate 3 (Docs):  {_render_gate_status(gates.get('3'))}")
+    console.print(f"  Gate 4 (BDD):   {_render_gate_status(gates.get('4'))}")
+    if gates.get("4") == "n/a":
+        console.print(f"                 ({info.get('gate4_na_reason')})")
+
+    if attested:
+        detail = f" ({attestation_term})" if attestation_term else ""
+        console.print(f"  Gate 5 (Human): [green]PASS[/green]{detail}")
+        return
+    console.print("  Gate 5 (Human): [yellow]PENDING[/yellow]")
+
+
+def _render_status_row(
+    adr_id: str, info: dict[str, Any], default_mode: str, show_gates: bool
+) -> None:
+    """Render one ADR row for text status output."""
+    attested = bool(info.get("attested", False))
+    lifecycle_status = info.get("lifecycle_status", "Pending")
+    lane = cast(str, info.get("lane", default_mode))
+    gates = cast(dict[str, str], info.get("gates", {}))
+    attestation_term = info.get("attestation_term")
+    obpi_rows = cast(list[dict[str, Any]], info.get("obpis", []))
+    obpi_summary = cast(dict[str, Any], info.get("obpi_summary", {}))
+
+    console.print(f"[bold]{adr_id}[/bold] ({lifecycle_status})")
+    _print_status_obpi_section(obpi_rows, obpi_summary)
+
+    qc_readiness, qc_blockers = _qc_readiness(gates, lane)
+    console.print(f"  QC Readiness:   {_render_qc_readiness(qc_readiness, qc_blockers)}")
+    if show_gates:
+        _print_status_gate_section(info, lane, gates, attested, attestation_term)
+    console.print()
+
+
+def status(as_json: bool, show_gates: bool) -> None:
+    """Display OBPI progress, lifecycle, and gate readiness across ADRs."""
     config = ensure_initialized()
     project_root = get_project_root()
 
     ledger = Ledger(project_root / config.paths.ledger)
     pending = ledger.get_pending_attestations()
     graph = ledger.get_artifact_graph()
-
-    # Get ADRs and their derived lifecycle/gate status.
-    adrs: dict[str, dict[str, Any]] = {}
-    for adr_id, info in graph.items():
-        if info.get("type") != "adr":
-            continue
-        entry = dict(info)
-        lane = _resolve_adr_lane(entry, config.mode)
-        gate_statuses = ledger.get_latest_gate_statuses(adr_id)
-        gate4_na = _gate4_na_reason(project_root, lane)
-        entry["lane"] = lane
-        entry["gates"] = {
-            "1": "pass",
-            "2": gate_statuses.get(2, "pending"),
-            "3": gate_statuses.get(3, "pending") if lane == "heavy" else "n/a",
-            "4": "n/a" if gate4_na is not None else gate_statuses.get(4, "pending"),
-            "5": "pass" if entry.get("attested") else "pending",
-        }
-        if gate4_na is not None:
-            entry["gate4_na_reason"] = gate4_na
-        entry.update(Ledger.derive_adr_semantics(entry))
-        _apply_pool_adr_status_overrides(adr_id, entry)
-        adrs[adr_id] = entry
+    adrs = _collect_adr_statuses(project_root, config, ledger, graph)
 
     if as_json:
         result = {
@@ -1167,34 +1293,7 @@ def status(as_json: bool) -> None:
         return
 
     for adr_id, info in sorted(adrs.items()):
-        attested = bool(info.get("attested", False))
-        lifecycle_status = info.get("lifecycle_status", "Pending")
-        lane = cast(str, info.get("lane", config.mode))
-        gates = cast(dict[str, str], info.get("gates", {}))
-        attestation_term = info.get("attestation_term")
-
-        console.print(f"[bold]{adr_id}[/bold] ({lifecycle_status})")
-
-        # Gate 1: ADR exists (always pass if we're here)
-        console.print("  Gate 1 (ADR):   [green]PASS[/green]")
-
-        # Gate 2: TDD - derived from latest gate_checked event.
-        console.print(f"  Gate 2 (TDD):   {_render_gate_status(gates.get('2'))}")
-
-        if lane == "heavy":
-            console.print(f"  Gate 3 (Docs):  {_render_gate_status(gates.get('3'))}")
-            console.print(f"  Gate 4 (BDD):   {_render_gate_status(gates.get('4'))}")
-            if gates.get("4") == "n/a":
-                console.print(f"                 ({info.get('gate4_na_reason')})")
-
-            # Gate 5: Human attestation (heavy only)
-            if attested:
-                detail = f" ({attestation_term})" if attestation_term else ""
-                console.print(f"  Gate 5 (Human): [green]PASS[/green]{detail}")
-            else:
-                console.print("  Gate 5 (Human): [yellow]PENDING[/yellow]")
-
-        console.print()
+        _render_status_row(adr_id, info, config.mode, show_gates)
 
 
 def _parse_frontmatter_value(content: str, key: str) -> str | None:
@@ -1339,6 +1438,74 @@ def _adr_obpi_status_rows(
     return sorted(rows, key=lambda row: cast(str, row.get("id", "")))
 
 
+def _obpi_row_complete(row: dict[str, Any]) -> bool:
+    """Return True when an OBPI row is complete with implementation evidence."""
+    return (
+        bool(row.get("found_file")) and bool(row.get("completed")) and bool(row.get("evidence_ok"))
+    )
+
+
+def _summarize_obpi_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Derive completion summary for a collection of OBPI status rows."""
+    total = len(rows)
+    completed = sum(1 for row in rows if _obpi_row_complete(row))
+    missing_files = sum(1 for row in rows if not row.get("found_file"))
+    outstanding_ids = [cast(str, row.get("id", "")) for row in rows if not _obpi_row_complete(row)]
+
+    if total == 0:
+        unit_status = "unscoped"
+    elif completed == total:
+        unit_status = "completed"
+    elif completed == 0:
+        unit_status = "pending"
+    else:
+        unit_status = "in_progress"
+
+    return {
+        "total": total,
+        "completed": completed,
+        "incomplete": total - completed,
+        "missing_files": missing_files,
+        "unit_status": unit_status,
+        "outstanding_ids": sorted(outstanding_ids),
+    }
+
+
+def _render_obpi_unit_status(unit_status: str) -> str:
+    if unit_status == "completed":
+        return "[green]COMPLETED[/green]"
+    if unit_status == "in_progress":
+        return "[yellow]IN PROGRESS[/yellow]"
+    if unit_status == "pending":
+        return "[yellow]PENDING[/yellow]"
+    return "[cyan]UNSCOPED[/cyan]"
+
+
+def _render_obpi_row_status(row: dict[str, Any]) -> str:
+    obpi_id = cast(str, row.get("id", "(unknown)"))
+    if not row.get("found_file"):
+        return f"{obpi_id}: [red]MISSING FILE[/red]"
+    if _obpi_row_complete(row):
+        return f"{obpi_id}: [green]COMPLETED[/green] + evidence"
+    issues = ", ".join(cast(list[str], row.get("issues", [])))
+    return f"{obpi_id}: [yellow]INCOMPLETE[/yellow] ({issues})"
+
+
+def _apply_obpi_lifecycle_overrides(
+    adr_id: str, payload: dict[str, Any], obpi_summary: dict[str, Any]
+) -> None:
+    """Enforce OBPI-first completion semantics on lifecycle status surfaces."""
+    if _is_pool_adr_id(adr_id):
+        return
+
+    total = int(obpi_summary.get("total", 0))
+    unit_status = str(obpi_summary.get("unit_status", "unscoped"))
+    lifecycle_status = str(payload.get("lifecycle_status", "Pending"))
+
+    if total > 0 and unit_status != "completed" and lifecycle_status in {"Completed", "Validated"}:
+        payload["lifecycle_status"] = "Pending"
+
+
 def adr_audit_check(adr: str, as_json: bool) -> None:
     """Verify linked OBPIs are complete and contain implementation evidence."""
     config = ensure_initialized()
@@ -1415,8 +1582,8 @@ def adr_audit_check(adr: str, as_json: bool) -> None:
         raise SystemExit(1)
 
 
-def adr_status_cmd(adr: str, as_json: bool) -> None:
-    """Display focused gate and attestation status for one ADR."""
+def adr_status_cmd(adr: str, as_json: bool, show_gates: bool) -> None:
+    """Display focused OBPI progress, lifecycle, and gate readiness for one ADR."""
     config = ensure_initialized()
     project_root = get_project_root()
     ledger = Ledger(project_root / config.paths.ledger)
@@ -1452,8 +1619,12 @@ def adr_status_cmd(adr: str, as_json: bool) -> None:
             "5": "pass" if info.get("attested") else "pending",
         },
     }
+    obpi_rows = _adr_obpi_status_rows(project_root, config, ledger, adr_id)
     _apply_pool_adr_status_overrides(adr_id, result)
-    result["obpis"] = _adr_obpi_status_rows(project_root, config, ledger, adr_id)
+    result["obpis"] = obpi_rows
+    obpi_summary = _summarize_obpi_rows(obpi_rows)
+    result["obpi_summary"] = obpi_summary
+    _apply_obpi_lifecycle_overrides(adr_id, result, obpi_summary)
     if gate4_na is not None:
         result["gate4_na_reason"] = gate4_na
 
@@ -1464,35 +1635,41 @@ def adr_status_cmd(adr: str, as_json: bool) -> None:
     console.print(f"[bold]{adr_id}[/bold]")
     console.print(f"  Lifecycle: {result['lifecycle_status']}")
     console.print(f"  Closeout Phase: {result['closeout_phase']}")
-    console.print("  Gate 1 (ADR):   [green]PASS[/green]")
-    console.print(f"  Gate 2 (TDD):   {_render_gate_status(result['gates'].get('2'))}")
-    if lane == "heavy":
-        console.print(f"  Gate 3 (Docs):  {_render_gate_status(result['gates'].get('3'))}")
-        console.print(f"  Gate 4 (BDD):   {_render_gate_status(result['gates'].get('4'))}")
-        if result["gates"].get("4") == "n/a":
-            console.print(f"                 ({gate4_na})")
-        is_attested = bool(result.get("attested"))
-        gate5_detail = f" ({result['attestation_term']})" if result.get("attestation_term") else ""
-        console.print(
-            "  Gate 5 (Human): "
-            + ("[green]PASS[/green]" if is_attested else "[yellow]PENDING[/yellow]")
-            + (gate5_detail if is_attested else "")
-        )
+    obpi_summary = cast(dict[str, Any], result.get("obpi_summary", {}))
+    obpi_total = cast(int, obpi_summary.get("total", 0))
+    obpi_completed = cast(int, obpi_summary.get("completed", 0))
+    obpi_unit_status = cast(str, obpi_summary.get("unit_status", "unscoped"))
+    console.print(f"  OBPI Unit: {_render_obpi_unit_status(obpi_unit_status)}")
+    console.print(f"  OBPI Completion: {obpi_completed}/{obpi_total} complete")
     console.print("  OBPIs:")
     obpi_rows = cast(list[dict[str, Any]], result.get("obpis", []))
     if not obpi_rows:
         console.print("    - none linked")
-        return
-    for row in obpi_rows:
-        obpi_id = cast(str, row.get("id", "(unknown)"))
-        if not row.get("found_file"):
-            console.print(f"    - {obpi_id}: [red]MISSING FILE[/red]")
-            continue
-        if row.get("completed") and row.get("evidence_ok"):
-            console.print(f"    - {obpi_id}: [green]COMPLETED[/green] + evidence")
-            continue
-        issues = ", ".join(cast(list[str], row.get("issues", [])))
-        console.print(f"    - {obpi_id}: [yellow]INCOMPLETE[/yellow] ({issues})")
+    else:
+        for row in obpi_rows:
+            console.print(f"    - {_render_obpi_row_status(row)}")
+
+    gates = cast(dict[str, str], result.get("gates", {}))
+    qc_readiness, qc_blockers = _qc_readiness(gates, lane)
+    console.print(f"  QC Readiness: {_render_qc_readiness(qc_readiness, qc_blockers)}")
+
+    if show_gates:
+        console.print("  Gate 1 (ADR):   [green]PASS[/green]")
+        console.print(f"  Gate 2 (TDD):   {_render_gate_status(result['gates'].get('2'))}")
+        if lane == "heavy":
+            console.print(f"  Gate 3 (Docs):  {_render_gate_status(result['gates'].get('3'))}")
+            console.print(f"  Gate 4 (BDD):   {_render_gate_status(result['gates'].get('4'))}")
+            if result["gates"].get("4") == "n/a":
+                console.print(f"                 ({gate4_na})")
+            is_attested = bool(result.get("attested"))
+            gate5_detail = (
+                f" ({result['attestation_term']})" if result.get("attestation_term") else ""
+            )
+            console.print(
+                "  Gate 5 (Human): "
+                + ("[green]PASS[/green]" if is_attested else "[yellow]PENDING[/yellow]")
+                + (gate5_detail if is_attested else "")
+            )
 
 
 def git_sync(
@@ -1611,31 +1788,6 @@ def git_sync(
         console.print("[green]Git sync completed.[/green]")
     else:
         console.print("  Use --apply to execute.")
-
-
-def sync_repo(
-    branch: str | None,
-    remote: str,
-    apply: bool,
-    run_lint_gate: bool,
-    run_test_gate: bool,
-    auto_add: bool,
-    allow_push: bool,
-    as_json: bool,
-    show_skill: bool = False,
-) -> None:
-    """Alias for git-sync (AirlineOps parity)."""
-    git_sync(
-        branch=branch,
-        remote=remote,
-        apply=apply,
-        run_lint_gate=run_lint_gate,
-        run_test_gate=run_test_gate,
-        auto_add=auto_add,
-        allow_push=allow_push,
-        as_json=as_json,
-        show_skill=show_skill,
-    )
 
 
 def migrate_semver(dry_run: bool) -> None:
@@ -2665,6 +2817,25 @@ def validate(
         console.print("[green]All validations passed.[/green]")
 
 
+def _is_path_within_root(path: str, root: str) -> bool:
+    """Return True when a project-relative path is equal to or nested under root."""
+    normalized_root = root.rstrip("/")
+    return path == normalized_root or path.startswith(f"{normalized_root}/")
+
+
+def _is_recoverable_stale_mirror_issue(path: str, message: str, config: GzkitConfig) -> bool:
+    """Classify stale mirror-only directory findings as recovery warnings."""
+    if message != "Unexpected skill directory not in canonical root.":
+        return False
+
+    mirror_roots = (
+        config.paths.codex_skills,
+        config.paths.claude_skills,
+        config.paths.copilot_skills,
+    )
+    return any(_is_path_within_root(path, root) for root in mirror_roots)
+
+
 def _run_agent_control_sync(dry_run: bool) -> None:
     """Execute control-surface regeneration flow."""
     config = ensure_initialized()
@@ -2684,28 +2855,51 @@ def _run_agent_control_sync(dry_run: bool) -> None:
         console.print(f"  {config.paths.copilot_skills}/**")
         return
 
+    preflight_blockers = collect_canonical_sync_blockers(project_root, config)
+    if preflight_blockers:
+        console.print("[red]Sync preflight failed: canonical skills state is corrupted.[/red]")
+        for blocker in preflight_blockers:
+            console.print(f"  - {blocker}")
+        console.print("\nRecovery:")
+        console.print("  1. Fix canonical skills under .gzkit/skills")
+        console.print("  2. Run: uv run gz skill audit --json")
+        console.print("  3. Re-run: uv run gz agent sync control-surfaces")
+        raise SystemExit(1)
+
     console.print("Syncing control surfaces...")
     updated = sync_all(project_root, config)
 
     for path in updated:
         console.print(f"  Updated {path}")
 
-    console.print("\n[green]Sync complete.[/green]")
-
-
-def agent_control_sync(dry_run: bool) -> None:
-    """Deprecated alias for `agent sync control-surfaces`."""
-    console.print(
-        "[yellow]`gz agent-control-sync` is deprecated; use "
-        "`gz agent sync control-surfaces`.[/yellow]"
+    report = audit_skills(project_root, config)
+    blocking_errors = sorted(
+        [
+            issue
+            for issue in report.issues
+            if issue.severity == "error"
+            and not _is_recoverable_stale_mirror_issue(issue.path, issue.message, config)
+        ],
+        key=lambda issue: (issue.path, issue.message),
     )
-    _run_agent_control_sync(dry_run)
+    if blocking_errors:
+        console.print("\n[red]Sync post-check failed: unresolved skill parity errors.[/red]")
+        for issue in blocking_errors:
+            console.print(f"  [red]ERROR[/red] {issue.path}: {issue.message}")
+        raise SystemExit(1)
 
+    stale_paths = find_stale_mirror_paths(project_root, config)
+    if stale_paths:
+        console.print("\n[yellow]Recovery required: stale mirror-only paths detected.[/yellow]")
+        for path in stale_paths:
+            console.print(f"  - {path}")
+        console.print("\nNon-destructive recovery protocol:")
+        console.print("  1. Run: uv run gz skill audit --json")
+        console.print("  2. Remove the stale mirror-only paths listed above")
+        console.print("  3. Run: uv run gz agent sync control-surfaces")
+        console.print("  4. Re-run: uv run gz skill audit")
 
-def sync_alias(dry_run: bool) -> None:
-    """Deprecated alias for `agent sync control-surfaces`."""
-    console.print("[yellow]`gz sync` is deprecated; use `gz agent sync control-surfaces`.[/yellow]")
-    _run_agent_control_sync(dry_run)
+    console.print("\n[green]Sync complete.[/green]")
 
 
 def sync_control_surfaces(dry_run: bool) -> None:
@@ -3144,9 +3338,14 @@ def _build_parser() -> argparse.ArgumentParser:
     p_state.add_argument("--ready", action="store_true")
     p_state.set_defaults(func=lambda a: state(as_json=a.as_json, blocked=a.blocked, ready=a.ready))
 
-    p_status = commands.add_parser("status", help="Show gate status")
+    p_status = commands.add_parser("status", help="Show OBPI progress and ADR lifecycle status")
     p_status.add_argument("--json", dest="as_json", action="store_true")
-    p_status.set_defaults(func=lambda a: status(as_json=a.as_json))
+    p_status.add_argument(
+        "--show-gates",
+        action="store_true",
+        help="Show detailed gate-level QC breakdown (internal diagnostics).",
+    )
+    p_status.set_defaults(func=lambda a: status(as_json=a.as_json, show_gates=a.show_gates))
 
     p_closeout = commands.add_parser(
         "closeout", help="Initiate closeout mode and record closeout event"
@@ -3168,10 +3367,17 @@ def _build_parser() -> argparse.ArgumentParser:
     adr_commands = p_adr.add_subparsers(dest="adr_command")
     adr_commands.required = True
 
-    p_adr_status = adr_commands.add_parser("status", help="Show focused status for one ADR")
+    p_adr_status = adr_commands.add_parser("status", help="Show focused OBPI progress for one ADR")
     p_adr_status.add_argument("adr")
     p_adr_status.add_argument("--json", dest="as_json", action="store_true")
-    p_adr_status.set_defaults(func=lambda a: adr_status_cmd(adr=a.adr, as_json=a.as_json))
+    p_adr_status.add_argument(
+        "--show-gates",
+        action="store_true",
+        help="Show detailed gate-level QC breakdown (internal diagnostics).",
+    )
+    p_adr_status.set_defaults(
+        func=lambda a: adr_status_cmd(adr=a.adr, as_json=a.as_json, show_gates=a.show_gates)
+    )
 
     p_adr_audit_check = adr_commands.add_parser(
         "audit-check", help="Verify linked OBPIs are complete with evidence"
@@ -3217,22 +3423,6 @@ def _build_parser() -> argparse.ArgumentParser:
     _add_git_sync_options(p_git_sync)
     p_git_sync.set_defaults(
         func=lambda a: git_sync(
-            branch=a.branch,
-            remote=a.remote,
-            apply=a.apply,
-            run_lint_gate=a.run_lint_gate,
-            run_test_gate=a.run_test_gate,
-            auto_add=a.auto_add,
-            allow_push=a.allow_push,
-            as_json=a.as_json,
-            show_skill=a.skill,
-        )
-    )
-
-    p_sync_repo = commands.add_parser("sync-repo", help="Alias for git-sync")
-    _add_git_sync_options(p_sync_repo)
-    p_sync_repo.set_defaults(
-        func=lambda a: sync_repo(
             branch=a.branch,
             remote=a.remote,
             apply=a.apply,
@@ -3382,17 +3572,6 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p_control_surfaces.add_argument("--dry-run", action="store_true")
     p_control_surfaces.set_defaults(func=lambda a: sync_control_surfaces(dry_run=a.dry_run))
-
-    p_agent_control_sync = commands.add_parser(
-        "agent-control-sync",
-        help="Deprecated alias for `agent sync control-surfaces`",
-    )
-    p_agent_control_sync.add_argument("--dry-run", action="store_true")
-    p_agent_control_sync.set_defaults(func=lambda a: agent_control_sync(dry_run=a.dry_run))
-
-    p_sync_alias = commands.add_parser("sync", help="Deprecated alias for agent sync command")
-    p_sync_alias.add_argument("--dry-run", action="store_true")
-    p_sync_alias.set_defaults(func=lambda a: sync_alias(dry_run=a.dry_run))
 
     return parser
 

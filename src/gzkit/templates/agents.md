@@ -78,6 +78,32 @@ Skill behavior is standardized and synchronized by `gz agent sync control-surfac
 - **lite**: Gates 1, 2 required
 - **heavy**: All gates required
 
+## OBPI Acceptance Protocol
+
+**Agent MUST NOT mark an OBPI brief as `Completed` without explicit human attestation when parent ADR lane is Heavy or Foundational (0.0.x).**
+
+### Ceremony Steps
+
+1. **Present value narrative**: Explain what problem existed before this OBPI and what capability exists now.
+2. **Present key proof**: Show one concrete usage example (code, CLI, or before/after behavior).
+3. **Present evidence**: Include verification command outputs, tests, and implementation summary.
+4. **Wait for human review**: Do not proceed until human acknowledges the evidence.
+5. **Receive explicit attestation**: Human responds with acceptance (`Accepted`, `Completed`, or equivalent).
+6. **Only then update status**: Record narrative, proof, and attestation in the brief; then set status to `Completed`.
+
+### Lane Inheritance Rule
+
+| Parent ADR Lane | OBPI Attestation Requirement |
+|-----------------|------------------------------|
+| Heavy/Foundation | Human attestation required before `Completed` |
+| Lite | May be self-closeable after evidence is presented |
+
+An OBPI inside a Heavy or Foundation ADR inherits the parent's attestation rigor, regardless of the OBPI's own lane designation.
+
+### Failure Mode Prevented
+
+This protocol prevents agents from presenting OBPI completion as fait accompli without human oversight.
+
 ## Execution Rules
 
 ### Command Execution

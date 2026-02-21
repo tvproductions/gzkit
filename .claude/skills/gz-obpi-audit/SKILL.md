@@ -9,6 +9,9 @@ metadata:
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/adr-obpi-ghi-audit-linkage.md"
   govzero-gates-covered: "Gate 2 (TDD), brief status integrity"
   govzero_layer: "Layer 1 — Evidence Gathering"
+lifecycle_state: active
+owner: gzkit-governance
+last_reviewed: 2026-02-18
 ---
 
 # gz-obpi-audit (v1.1.0)
