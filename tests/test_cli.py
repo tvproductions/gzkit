@@ -578,6 +578,90 @@ class TestRegisterAdrsCommand(unittest.TestCase):
             self.assertNotIn("ADR-CLOSEOUT-FORM", state_result.output)
 
 
+class TestAdrPromoteCommand(unittest.TestCase):
+    """Tests for pool ADR promotion protocol and tooling."""
+
+    @staticmethod
+    def _seed_pool_adr(config: GzkitConfig, adr_id: str = "ADR-pool.sample-work") -> Path:
+        pool_dir = Path(config.paths.adrs) / "pool"
+        pool_dir.mkdir(parents=True, exist_ok=True)
+        pool_file = pool_dir / f"{adr_id}.md"
+        pool_file.write_text(
+            "---\n"
+            f"id: {adr_id}\n"
+            "status: Pool\n"
+            "parent: PRD-GZKIT-1.0.0\n"
+            "lane: heavy\n"
+            "---\n\n"
+            f"# {adr_id}: Sample Work\n"
+        )
+        return pool_file
+
+    def test_adr_promote_dry_run_reports_actions(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            self._seed_pool_adr(config)
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(adr_created_event("ADR-pool.sample-work", "", "heavy"))
+
+            result = runner.invoke(
+                main,
+                ["adr", "promote", "ADR-pool.sample-work", "--semver", "0.6.0", "--dry-run"],
+            )
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("Would append artifact_renamed", result.output)
+            self.assertIn("ADR-pool.sample-work -> ADR-0.6.0-sample-work", result.output)
+
+    def test_adr_promote_writes_files_and_ledger_rename(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            pool_file = self._seed_pool_adr(config)
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(adr_created_event("ADR-pool.sample-work", "", "heavy"))
+
+            result = runner.invoke(
+                main,
+                ["adr", "promote", "ADR-pool.sample-work", "--semver", "0.6.0"],
+            )
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("Promoted pool ADR", result.output)
+
+            target_file = (
+                Path(config.paths.adrs)
+                / "pre-release"
+                / "ADR-0.6.0-sample-work"
+                / "ADR-0.6.0-sample-work.md"
+            )
+            self.assertTrue(target_file.exists())
+            target_content = target_file.read_text()
+            self.assertIn("promoted_from: ADR-pool.sample-work", target_content)
+
+            updated_pool = pool_file.read_text()
+            self.assertIn("status: Superseded", updated_pool)
+            self.assertIn("promoted_to: ADR-0.6.0-sample-work", updated_pool)
+
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text()
+            self.assertIn('"event":"artifact_renamed"', ledger_content)
+            self.assertIn('"id":"ADR-pool.sample-work"', ledger_content)
+            self.assertIn('"new_id":"ADR-0.6.0-sample-work"', ledger_content)
+
+    def test_adr_promote_rejects_non_pool_source(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.6.0"])
+            result = runner.invoke(
+                main,
+                ["adr", "promote", "ADR-0.6.0", "--semver", "0.6.1"],
+            )
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("not a pool entry", result.output)
+
+
 class TestGitSyncCommand(unittest.TestCase):
     """Tests for git sync ritual commands."""
 
@@ -877,8 +961,11 @@ class TestNewCommandParsers(unittest.TestCase):
             ["audit", "--help"],
             ["adr", "--help"],
             ["adr", "status", "--help"],
+            ["adr", "promote", "--help"],
             ["adr", "audit-check", "--help"],
             ["adr", "emit-receipt", "--help"],
+            ["obpi", "--help"],
+            ["obpi", "emit-receipt", "--help"],
             ["check-config-paths", "--help"],
             ["cli", "--help"],
             ["cli", "audit", "--help"],
@@ -1194,6 +1281,113 @@ class TestAdrRuntimeCommands(unittest.TestCase):
             )
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("Pool ADRs cannot be issued receipts", result.output)
+
+    def test_obpi_emit_receipt_records_event(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0"])
+            result = runner.invoke(
+                main,
+                [
+                    "obpi",
+                    "emit-receipt",
+                    "OBPI-0.1.0-01-demo",
+                    "--event",
+                    "validated",
+                    "--attestor",
+                    "human:jeff",
+                    "--evidence-json",
+                    '{"acceptance":"observed"}',
+                ],
+            )
+            self.assertEqual(result.exit_code, 0)
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text()
+            self.assertIn("obpi_receipt_emitted", ledger_content)
+            self.assertIn('"id":"OBPI-0.1.0-01-demo"', ledger_content)
+
+    def test_obpi_emit_receipt_invalid_json_fails(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0"])
+            result = runner.invoke(
+                main,
+                [
+                    "obpi",
+                    "emit-receipt",
+                    "OBPI-0.1.0-01-demo",
+                    "--event",
+                    "completed",
+                    "--attestor",
+                    "human:jeff",
+                    "--evidence-json",
+                    "{bad json}",
+                ],
+            )
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("Invalid --evidence-json", result.output)
+
+    def test_obpi_emit_receipt_dry_run_writes_nothing(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0"])
+            result = runner.invoke(
+                main,
+                [
+                    "obpi",
+                    "emit-receipt",
+                    "OBPI-0.1.0-01-demo",
+                    "--event",
+                    "completed",
+                    "--attestor",
+                    "human:jeff",
+                    "--dry-run",
+                ],
+            )
+            self.assertEqual(result.exit_code, 0)
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text()
+            self.assertNotIn("obpi_receipt_emitted", ledger_content)
+
+    def test_obpi_emit_receipt_rejects_pool_linked_obpi(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init", "--mode", "heavy"])
+            self._create_pool_adr()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "pool" / "OBPI-pool.sample-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            obpi_path.write_text(
+                "---\n"
+                "id: OBPI-pool.sample-01-demo\n"
+                "parent: ADR-pool.sample\n"
+                "item: 1\n"
+                "lane: Heavy\n"
+                "status: Completed\n"
+                "---\n\n"
+                "# OBPI-pool.sample-01-demo\n"
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(obpi_created_event("OBPI-pool.sample-01-demo", "ADR-pool.sample"))
+
+            result = runner.invoke(
+                main,
+                [
+                    "obpi",
+                    "emit-receipt",
+                    "OBPI-pool.sample-01-demo",
+                    "--event",
+                    "completed",
+                    "--attestor",
+                    "human:jeff",
+                ],
+            )
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("Pool-linked OBPIs cannot be issued receipts", result.output)
 
 
 class TestLifecycleStatusSemantics(unittest.TestCase):

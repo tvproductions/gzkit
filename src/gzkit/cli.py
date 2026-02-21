@@ -34,6 +34,7 @@ from gzkit.ledger import (
     constitution_created_event,
     gate_checked_event,
     obpi_created_event,
+    obpi_receipt_emitted_event,
     prd_created_event,
     project_init_event,
 )
@@ -115,8 +116,10 @@ COMMAND_DOCS: dict[str, str] = {
     "check-config-paths": "docs/user/commands/check-config-paths.md",
     "cli audit": "docs/user/commands/cli-audit.md",
     "adr status": "docs/user/commands/adr-status.md",
+    "adr promote": "docs/user/commands/adr-promote.md",
     "adr audit-check": "docs/user/commands/adr-audit-check.md",
     "adr emit-receipt": "docs/user/commands/adr-emit-receipt.md",
+    "obpi emit-receipt": "docs/user/commands/obpi-emit-receipt.md",
     "agent sync control-surfaces": "docs/user/commands/agent-sync-control-surfaces.md",
 }
 
@@ -150,6 +153,8 @@ SEMVER_ID_RENAMES: tuple[tuple[str, str], ...] = (
 )
 ADR_SEMVER_ID_RE = re.compile(r"^ADR-\d+\.\d+\.\d+(?:[.-][A-Za-z0-9][A-Za-z0-9.-]*)?$")
 ADR_POOL_ID_RE = re.compile(r"^ADR-pool\.[A-Za-z0-9][A-Za-z0-9.-]*$")
+SEMVER_ONLY_RE = re.compile(r"^\d+\.\d+\.\d+$")
+ADR_SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
 def _is_pool_adr_id(adr_id: str) -> bool:
@@ -645,6 +650,38 @@ def resolve_adr_file(project_root: Path, config: GzkitConfig, adr: str) -> tuple
         raise GzCliError(f"Multiple ADR files found for {adr_id}: {rels}")
 
     raise GzCliError(f"ADR not found: {adr_id}")
+
+
+def resolve_obpi_file(
+    project_root: Path,
+    config: GzkitConfig,
+    ledger: Ledger,
+    obpi: str,
+) -> tuple[Path, str]:
+    """Resolve an OBPI file path from an ID, supporting rename chains."""
+    obpi_input = obpi if obpi.startswith("OBPI-") else f"OBPI-{obpi}"
+    canonical_obpi = ledger.canonicalize_id(obpi_input)
+    graph = ledger.get_artifact_graph()
+
+    info = graph.get(canonical_obpi)
+    if not info or info.get("type") != "obpi":
+        raise GzCliError(f"OBPI not found in ledger: {canonical_obpi}")
+
+    artifacts = scan_existing_artifacts(project_root, config.paths.design_root)
+    matches: list[Path] = []
+    for obpi_file in artifacts.get("obpis", []):
+        metadata = parse_artifact_metadata(obpi_file)
+        file_id = metadata.get("id", obpi_file.stem)
+        if ledger.canonicalize_id(file_id) == canonical_obpi:
+            matches.append(obpi_file)
+
+    if len(matches) == 1:
+        return matches[0], canonical_obpi
+    if len(matches) > 1:
+        rels = ", ".join(str(path.relative_to(project_root)) for path in matches)
+        raise GzCliError(f"Multiple OBPI files found for {canonical_obpi}: {rels}")
+
+    raise GzCliError(f"OBPI file not found for {canonical_obpi}")
 
 
 def run_interview(document_type: str) -> dict[str, str]:
@@ -1313,6 +1350,159 @@ def _parse_frontmatter_value(content: str, key: str) -> str | None:
     return None
 
 
+def _upsert_frontmatter_value(content: str, key: str, value: str) -> str:
+    """Set or insert a top-level frontmatter key/value pair."""
+    lines = content.splitlines()
+    if not lines:
+        return f"---\n{key}: {value}\n---\n"
+
+    if lines[0].strip() != "---":
+        prefixed = ["---", f"{key}: {value}", "---", "", *lines]
+        return "\n".join(prefixed).rstrip() + "\n"
+
+    end_idx = None
+    for idx in range(1, len(lines)):
+        if lines[idx].strip() == "---":
+            end_idx = idx
+            break
+    if end_idx is None:
+        lines.extend([f"{key}: {value}", "---"])
+        return "\n".join(lines).rstrip() + "\n"
+
+    replaced = False
+    for idx in range(1, end_idx):
+        raw_key, sep, _raw_value = lines[idx].partition(":")
+        if sep and raw_key.strip() == key:
+            lines[idx] = f"{key}: {value}"
+            replaced = True
+            break
+
+    if not replaced:
+        lines.insert(end_idx, f"{key}: {value}")
+
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def _pool_title_from_content(content: str) -> str | None:
+    """Extract a human-readable title from the first markdown H1."""
+    for line in content.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("# "):
+            continue
+        heading = stripped[2:].strip()
+        if ":" in heading:
+            _prefix, _sep, suffix = heading.partition(":")
+            if suffix.strip():
+                return suffix.strip()
+        if heading:
+            return heading
+    return None
+
+
+def _derive_slug_from_pool_id(pool_id: str) -> str:
+    """Derive a kebab-case ADR slug from a pool ADR identifier."""
+    if pool_id.startswith("ADR-pool."):
+        raw_slug = pool_id.split("ADR-pool.", 1)[1]
+    elif "-pool." in pool_id:
+        raw_slug = pool_id.split("-pool.", 1)[1]
+    else:
+        raw_slug = pool_id.removeprefix("ADR-")
+    candidate = raw_slug.replace(".", "-").lower()
+    if not ADR_SLUG_RE.match(candidate):
+        raise GzCliError(
+            f"Could not derive kebab-case slug from pool ADR id: {pool_id}. "
+            "Use --slug to provide one."
+        )
+    return candidate
+
+
+def _parse_semver_triplet(semver: str) -> tuple[int, int, int]:
+    """Parse strict X.Y.Z semantic version string into integer triplet."""
+    if not SEMVER_ONLY_RE.match(semver):
+        raise GzCliError(f"Invalid --semver '{semver}'. Expected format X.Y.Z.")
+    major_s, minor_s, patch_s = semver.split(".")
+    return int(major_s), int(minor_s), int(patch_s)
+
+
+def _adr_bucket_for_semver(semver: str) -> str:
+    """Return canonical ADR directory bucket for a semantic version."""
+    major, minor, _patch = _parse_semver_triplet(semver)
+    if major == 0 and minor == 0:
+        return "foundation"
+    if major == 0:
+        return "pre-release"
+    return f"{major}.0"
+
+
+def _mark_pool_adr_promoted(content: str, target_adr_id: str, promote_date: str) -> str:
+    """Mark pool ADR frontmatter and body as promoted archive context."""
+    updated = _upsert_frontmatter_value(content, "status", "Superseded")
+    updated = _upsert_frontmatter_value(updated, "promoted_to", target_adr_id)
+
+    note = (
+        f"> Promoted to `{target_adr_id}` on {promote_date}. "
+        "This pool file is retained as historical intake context."
+    )
+    lines = updated.splitlines()
+    if any(note in line for line in lines):
+        return updated
+
+    for idx, line in enumerate(lines):
+        if not line.startswith("# "):
+            continue
+        insert_at = idx + 1
+        if insert_at < len(lines) and lines[insert_at].strip():
+            lines.insert(insert_at, "")
+            insert_at += 1
+        lines.insert(insert_at, note)
+        lines.insert(insert_at + 1, "")
+        break
+
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def _render_promoted_adr_content(
+    pool_adr_id: str,
+    target_adr_id: str,
+    semver: str,
+    lane: str,
+    parent: str,
+    title: str,
+    status: str,
+    promote_date: str,
+) -> str:
+    """Render promoted ADR scaffold seeded from a pool ADR source."""
+    content = render_template(
+        "adr",
+        id=target_adr_id,
+        status=status,
+        semver=semver,
+        lane=lane,
+        parent=parent,
+        date=promote_date,
+        title=title,
+        intent=(
+            f"Promoted from `{pool_adr_id}`. Replace this seeded intent with concrete "
+            "problem framing and implementation scope."
+        ),
+        decision=(
+            "Promotion from pool is accepted for active planning and implementation. "
+            "Replace with the final ADR decision statement."
+        ),
+        positive_consequences=(
+            "- Work moves from backlog intent to an executable ADR package.\n"
+            "- This ADR can now receive OBPI briefs and lifecycle gate evidence."
+        ),
+        negative_consequences=(
+            "- Promotion increases governance and delivery obligations immediately."
+        ),
+        checklist="- [ ] Define OBPI-01 scope and acceptance criteria",
+        qa_transcript="Promotion seeded via `gz adr promote`; interview transcript not captured.",
+        alternatives="- Keep this work in pool until reprioritized.",
+    )
+    return _upsert_frontmatter_value(content, "promoted_from", pool_adr_id)
+
+
 def _markdown_label_value(content: str, label: str) -> str | None:
     pattern = rf"^\*\*{re.escape(label)}:\*\*\s*(.+)$"
     match = re.search(pattern, content, flags=re.MULTILINE)
@@ -1670,6 +1860,131 @@ def adr_status_cmd(adr: str, as_json: bool, show_gates: bool) -> None:
                 + ("[green]PASS[/green]" if is_attested else "[yellow]PENDING[/yellow]")
                 + (gate5_detail if is_attested else "")
             )
+
+
+def adr_promote_cmd(
+    pool_adr: str,
+    semver: str,
+    slug: str | None,
+    title: str | None,
+    parent: str | None,
+    lane: str | None,
+    target_status: str,
+    as_json: bool,
+    dry_run: bool,
+) -> None:
+    """Promote a pool ADR into canonical ADR package structure."""
+    config = ensure_initialized()
+    project_root = get_project_root()
+    ledger = Ledger(project_root / config.paths.ledger)
+
+    pool_input = pool_adr if pool_adr.startswith("ADR-") else f"ADR-{pool_adr}"
+    if not _is_pool_adr_id(pool_input):
+        raise GzCliError(f"Source ADR is not a pool entry: {pool_input}")
+
+    pool_file, _resolved_pool = resolve_adr_file(project_root, config, pool_input)
+    pool_metadata = parse_artifact_metadata(pool_file)
+    pool_adr_id = pool_metadata.get("id", pool_file.stem)
+    if not _is_pool_adr_id(pool_adr_id):
+        raise GzCliError(f"Resolved ADR is not a pool entry: {pool_adr_id}")
+
+    if ledger.canonicalize_id(pool_adr_id) != pool_adr_id:
+        raise GzCliError(f"Pool ADR already promoted or renamed in ledger state: {pool_adr_id}")
+
+    pool_content = pool_file.read_text()
+    existing_promoted_to = _parse_frontmatter_value(pool_content, "promoted_to")
+    if existing_promoted_to:
+        raise GzCliError(
+            f"Pool ADR already records promotion target '{existing_promoted_to}': {pool_adr_id}"
+        )
+
+    _parse_semver_triplet(semver)
+    target_slug = slug or _derive_slug_from_pool_id(pool_adr_id)
+    if not ADR_SLUG_RE.match(target_slug):
+        raise GzCliError(
+            f"Invalid --slug '{target_slug}'. Expected kebab-case like 'gz-chores-system'."
+        )
+    target_adr_id = f"ADR-{semver}-{target_slug}"
+
+    if target_adr_id in ledger.get_artifact_graph():
+        raise GzCliError(f"Target ADR already exists in ledger: {target_adr_id}")
+
+    adr_root = project_root / config.paths.adrs
+    target_bucket = _adr_bucket_for_semver(semver)
+    target_dir = adr_root / target_bucket / target_adr_id
+    target_file = target_dir / f"{target_adr_id}.md"
+    if target_file.exists():
+        raise GzCliError(f"Target ADR file already exists: {target_file.relative_to(project_root)}")
+
+    promoted_parent = parent or pool_metadata.get("parent", "")
+    if promoted_parent and not promoted_parent.startswith(("ADR-", "PRD-", "OBPI-")):
+        promoted_parent = f"ADR-{promoted_parent}"
+
+    raw_lane = (lane or pool_metadata.get("lane") or config.mode).lower()
+    promoted_lane = raw_lane if raw_lane in {"lite", "heavy"} else config.mode
+
+    target_title = (
+        title or _pool_title_from_content(pool_content) or target_slug.replace("-", " ").title()
+    )
+    promoted_status = target_status.capitalize()
+    promote_date = date.today().isoformat()
+    promoted_content = _render_promoted_adr_content(
+        pool_adr_id=pool_adr_id,
+        target_adr_id=target_adr_id,
+        semver=semver,
+        lane=promoted_lane,
+        parent=promoted_parent,
+        title=target_title,
+        status=promoted_status,
+        promote_date=promote_date,
+    )
+    updated_pool_content = _mark_pool_adr_promoted(pool_content, target_adr_id, promote_date)
+
+    result = {
+        "pool_adr": pool_adr_id,
+        "target_adr": target_adr_id,
+        "target_bucket": target_bucket,
+        "target_status": promoted_status,
+        "lane": promoted_lane,
+        "parent": promoted_parent,
+        "pool_file": str(pool_file.relative_to(project_root)),
+        "target_file": str(target_file.relative_to(project_root)),
+        "dry_run": dry_run,
+    }
+
+    if as_json:
+        print(json.dumps(result, indent=2))
+        if dry_run:
+            return
+
+    if dry_run:
+        console.print("[yellow]Dry run:[/yellow] no files or ledger events will be written.")
+        console.print(f"  Pool ADR: {pool_adr_id}")
+        console.print(f"  Target ADR: {target_adr_id}")
+        console.print(f"  Target file: {target_file.relative_to(project_root)}")
+        console.print(f"  Would update pool file: {pool_file.relative_to(project_root)}")
+        console.print(
+            "  Would append artifact_renamed: "
+            f"{pool_adr_id} -> {target_adr_id} (reason: pool_promotion)"
+        )
+        return
+
+    target_dir.mkdir(parents=True, exist_ok=True)
+    (target_dir / "obpis").mkdir(parents=True, exist_ok=True)
+    target_file.write_text(promoted_content)
+    pool_file.write_text(updated_pool_content)
+
+    ledger.append(
+        artifact_renamed_event(
+            old_id=pool_adr_id,
+            new_id=target_adr_id,
+            reason="pool_promotion",
+        )
+    )
+
+    console.print(f"[green]Promoted pool ADR:[/green] {pool_adr_id} -> {target_adr_id}")
+    console.print(f"  Created: {target_file.relative_to(project_root)}")
+    console.print(f"  Updated: {pool_file.relative_to(project_root)}")
 
 
 def git_sync(
@@ -2533,6 +2848,60 @@ def adr_emit_receipt_cmd(
     console.print(f"  Attestor: {attestor}")
 
 
+def obpi_emit_receipt_cmd(
+    obpi: str,
+    receipt_event: str,
+    attestor: str,
+    evidence_json: str | None,
+    dry_run: bool,
+) -> None:
+    """Emit an OBPI receipt event anchored in the ledger."""
+    config = ensure_initialized()
+    project_root = get_project_root()
+    ledger = Ledger(project_root / config.paths.ledger)
+
+    _obpi_file, obpi_id = resolve_obpi_file(project_root, config, ledger, obpi)
+    graph = ledger.get_artifact_graph()
+    obpi_info = graph.get(obpi_id, {})
+    parent_adr = obpi_info.get("parent")
+    if isinstance(parent_adr, str) and _is_pool_adr_id(parent_adr):
+        raise GzCliError(
+            "Pool-linked OBPIs cannot be issued receipts: "
+            f"{obpi_id} (parent: {parent_adr}). Promote parent ADR first."
+        )
+
+    evidence: dict[str, Any] | None = None
+    if evidence_json:
+        try:
+            parsed = json.loads(evidence_json)
+        except json.JSONDecodeError as exc:
+            raise GzCliError(f"Invalid --evidence-json: {exc}") from exc
+        if not isinstance(parsed, dict):
+            raise GzCliError("--evidence-json must decode to a JSON object")
+        evidence = parsed
+
+    event = obpi_receipt_emitted_event(
+        obpi_id=obpi_id,
+        receipt_event=receipt_event,
+        attestor=attestor,
+        evidence=evidence,
+        parent_adr=parent_adr if isinstance(parent_adr, str) else None,
+    )
+
+    if dry_run:
+        console.print("[yellow]Dry run:[/yellow] no ledger event will be written.")
+        console.print(json.dumps(event.to_dict(), indent=2))
+        return
+
+    ledger.append(event)
+    console.print("[green]OBPI receipt emitted.[/green]")
+    console.print(f"  OBPI: {obpi_id}")
+    if isinstance(parent_adr, str) and parent_adr:
+        console.print(f"  Parent ADR: {parent_adr}")
+    console.print(f"  Event: {receipt_event}")
+    console.print(f"  Attestor: {attestor}")
+
+
 def _append_path_issue(issues: list[dict[str, str]], path: str, issue: str) -> None:
     """Append a config-path issue row."""
     issues.append({"path": path, "issue": issue})
@@ -3379,6 +3748,52 @@ def _build_parser() -> argparse.ArgumentParser:
         func=lambda a: adr_status_cmd(adr=a.adr, as_json=a.as_json, show_gates=a.show_gates)
     )
 
+    p_adr_promote = adr_commands.add_parser(
+        "promote", help="Promote a pool ADR into canonical ADR package structure"
+    )
+    p_adr_promote.add_argument("pool_adr", help="Pool ADR id (e.g., ADR-pool.gz-chores-system)")
+    p_adr_promote.add_argument(
+        "--semver",
+        required=True,
+        help="Target ADR semantic version (X.Y.Z)",
+    )
+    p_adr_promote.add_argument(
+        "--slug",
+        help="Target ADR slug (kebab-case). Defaults to slug derived from pool ADR id.",
+    )
+    p_adr_promote.add_argument("--title", help="Target ADR title override")
+    p_adr_promote.add_argument(
+        "--parent",
+        help="Target ADR parent override (defaults to pool ADR parent metadata)",
+    )
+    p_adr_promote.add_argument(
+        "--lane",
+        choices=["lite", "heavy"],
+        help="Target ADR lane override (defaults to pool ADR lane metadata)",
+    )
+    p_adr_promote.add_argument(
+        "--status",
+        dest="target_status",
+        choices=["draft", "proposed"],
+        default="proposed",
+        help="Initial promoted ADR status (default: proposed)",
+    )
+    p_adr_promote.add_argument("--json", dest="as_json", action="store_true")
+    p_adr_promote.add_argument("--dry-run", action="store_true")
+    p_adr_promote.set_defaults(
+        func=lambda a: adr_promote_cmd(
+            pool_adr=a.pool_adr,
+            semver=a.semver,
+            slug=a.slug,
+            title=a.title,
+            parent=a.parent,
+            lane=a.lane,
+            target_status=a.target_status,
+            as_json=a.as_json,
+            dry_run=a.dry_run,
+        )
+    )
+
     p_adr_audit_check = adr_commands.add_parser(
         "audit-check", help="Verify linked OBPIs are complete with evidence"
     )
@@ -3399,6 +3814,30 @@ def _build_parser() -> argparse.ArgumentParser:
     p_adr_emit.set_defaults(
         func=lambda a: adr_emit_receipt_cmd(
             adr=a.adr,
+            receipt_event=a.receipt_event,
+            attestor=a.attestor,
+            evidence_json=a.evidence_json,
+            dry_run=a.dry_run,
+        )
+    )
+
+    p_obpi = commands.add_parser("obpi", help="OBPI-focused governance commands")
+    obpi_commands = p_obpi.add_subparsers(dest="obpi_command")
+    obpi_commands.required = True
+
+    p_obpi_emit = obpi_commands.add_parser(
+        "emit-receipt", help="Emit completed/validated receipt event for an OBPI"
+    )
+    p_obpi_emit.add_argument("obpi")
+    p_obpi_emit.add_argument(
+        "--event", dest="receipt_event", required=True, choices=["completed", "validated"]
+    )
+    p_obpi_emit.add_argument("--attestor", required=True)
+    p_obpi_emit.add_argument("--evidence-json")
+    p_obpi_emit.add_argument("--dry-run", action="store_true")
+    p_obpi_emit.set_defaults(
+        func=lambda a: obpi_emit_receipt_cmd(
+            obpi=a.obpi,
             receipt_event=a.receipt_event,
             attestor=a.attestor,
             evidence_json=a.evidence_json,

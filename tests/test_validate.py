@@ -267,6 +267,16 @@ class TestValidateLedger(unittest.TestCase):
                     "attestor": "human:jeff",
                     "evidence": {"scope": "OBPI-0.3.0-04"},
                 },
+                {
+                    "schema": "gzkit.ledger.v1",
+                    "event": "obpi_receipt_emitted",
+                    "id": "OBPI-0.3.0-04-demo",
+                    "parent": "ADR-0.3.0",
+                    "ts": "2026-02-14T00:00:03+00:00",
+                    "receipt_event": "validated",
+                    "attestor": "human:jeff",
+                    "evidence": {"acceptance": "observed"},
+                },
             ]
             for entry in entries:
                 f.write(json.dumps(entry) + "\n")
