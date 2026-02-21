@@ -210,6 +210,25 @@ def audit_receipt_emitted_event(
     )
 
 
+def obpi_receipt_emitted_event(
+    obpi_id: str,
+    receipt_event: str,
+    attestor: str,
+    evidence: dict[str, Any] | None = None,
+    parent_adr: str | None = None,
+) -> LedgerEvent:
+    """Create an OBPI receipt event."""
+    extra: dict[str, Any] = {"receipt_event": receipt_event, "attestor": attestor}
+    if evidence is not None:
+        extra["evidence"] = evidence
+    return LedgerEvent(
+        event="obpi_receipt_emitted",
+        id=obpi_id,
+        parent=parent_adr,
+        extra=extra,
+    )
+
+
 def artifact_renamed_event(old_id: str, new_id: str, reason: str | None = None) -> LedgerEvent:
     """Create an artifact rename event used for ID migrations."""
     extra: dict[str, Any] = {"new_id": new_id}
@@ -410,6 +429,9 @@ class Ledger:
                     "children": [],
                     "attested": False,
                 }
+                if event.event == "obpi_created":
+                    entry["latest_receipt_event"] = None
+                    entry["validated"] = False
                 if event.event == "adr_created":
                     entry["lane"] = event.extra.get("lane")
                     entry["closeout_initiated"] = False
@@ -453,6 +475,16 @@ class Ledger:
                     evidence.get("adr_completion") if isinstance(evidence, dict) else None
                 )
                 if receipt_event == "validated" and adr_completion != "not_completed":
+                    graph[canonical_id]["validated"] = True
+
+            if (
+                event.event == "obpi_receipt_emitted"
+                and canonical_id in graph
+                and graph[canonical_id].get("type") == "obpi"
+            ):
+                receipt_event = event.extra.get("receipt_event")
+                graph[canonical_id]["latest_receipt_event"] = receipt_event
+                if receipt_event == "validated":
                     graph[canonical_id]["validated"] = True
 
         return graph

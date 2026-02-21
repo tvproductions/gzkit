@@ -472,6 +472,17 @@ def _validate_mirror_root(
 ) -> None:
     """Validate mirror parity for one mirror root."""
     mirror_dirs = _skill_dirs(mirror_root)
+    for name, path in sorted(mirror_dirs.items()):
+        if KEBAB_CASE_RE.match(name):
+            continue
+        _append_audit_issue(
+            issues,
+            project_root,
+            "error",
+            path,
+            "Mirrored skill directory name must be kebab-case.",
+        )
+
     canonical_names = set(canonical_dirs.keys())
     mirror_names = set(mirror_dirs.keys())
 

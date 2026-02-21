@@ -15,6 +15,7 @@ from gzkit.ledger import (
     constitution_created_event,
     gate_checked_event,
     obpi_created_event,
+    obpi_receipt_emitted_event,
     prd_created_event,
     project_init_event,
 )
@@ -109,6 +110,21 @@ class TestEventFactories(unittest.TestCase):
         self.assertEqual(event.id, "ADR-0.2.1-pool.gz-chores-system")
         self.assertEqual(event.extra["new_id"], "ADR-0.6.0-pool.gz-chores-system")
         self.assertEqual(event.extra["reason"], "semver migration")
+
+    def test_obpi_receipt_emitted_event(self) -> None:
+        """obpi_receipt_emitted_event creates correct event payload."""
+        event = obpi_receipt_emitted_event(
+            "OBPI-0.6.0-01-demo",
+            "validated",
+            "human:jeff",
+            {"note": "observed"},
+            parent_adr="ADR-0.6.0-demo",
+        )
+        self.assertEqual(event.event, "obpi_receipt_emitted")
+        self.assertEqual(event.id, "OBPI-0.6.0-01-demo")
+        self.assertEqual(event.parent, "ADR-0.6.0-demo")
+        self.assertEqual(event.extra["receipt_event"], "validated")
+        self.assertEqual(event.extra["attestor"], "human:jeff")
 
 
 class TestLedger(unittest.TestCase):
@@ -289,6 +305,28 @@ class TestLedger(unittest.TestCase):
             adr = graph["ADR-0.1.0"]
             self.assertEqual(adr["latest_receipt_event"], "validated")
             self.assertFalse(adr["validated"])
+
+    def test_get_artifact_graph_tracks_obpi_validation_receipt(self) -> None:
+        """Graph captures OBPI receipt state independently from ADR lifecycle."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ledger_path = Path(tmpdir) / "ledger.jsonl"
+            ledger = Ledger(ledger_path)
+
+            ledger.append(adr_created_event("ADR-0.6.0-demo", "", "heavy"))
+            ledger.append(obpi_created_event("OBPI-0.6.0-01-demo", "ADR-0.6.0-demo"))
+            ledger.append(
+                obpi_receipt_emitted_event(
+                    "OBPI-0.6.0-01-demo",
+                    "validated",
+                    "human:jeff",
+                    {"acceptance": "observed"},
+                )
+            )
+
+            graph = ledger.get_artifact_graph()
+            obpi = graph["OBPI-0.6.0-01-demo"]
+            self.assertEqual(obpi["latest_receipt_event"], "validated")
+            self.assertTrue(obpi["validated"])
 
     def test_derive_adr_semantics_maps_lifecycle_and_terms(self) -> None:
         """Derived semantics map attestation and receipts to canonical lifecycle fields."""

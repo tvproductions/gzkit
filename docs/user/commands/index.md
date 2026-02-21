@@ -20,11 +20,13 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz status`](status.md) | Show multi-ADR OBPI progress and lifecycle status |
 | [`gz state`](state.md) | Show artifact graph and readiness filters |
 | [`gz adr status`](adr-status.md) | Show focused OBPI progress for one ADR |
+| [`gz adr promote`](adr-promote.md) | Promote a pool ADR into canonical ADR package structure |
 | [`gz adr audit-check`](adr-audit-check.md) | Verify OBPI completeness/evidence for one ADR |
 | [`gz closeout`](closeout.md) | Present closeout paths/commands and record closeout initiation |
 | [`gz attest`](attest.md) | Record human attestation with prerequisite enforcement |
 | [`gz audit`](audit.md) | Run strict post-attestation audit reconciliation |
 | [`gz adr emit-receipt`](adr-emit-receipt.md) | Emit completed/validated receipt with optional evidence scope |
+| [`gz obpi emit-receipt`](obpi-emit-receipt.md) | Emit completed/validated receipt for one OBPI |
 | [`gz git-sync`](git-sync.md) | Run guarded sync ritual |
 | [`gz migrate-semver`](migrate-semver.md) | Record SemVer ID rename events |
 | [`gz register-adrs`](register-adrs.md) | Register existing ADR files into ledger |
@@ -55,7 +57,7 @@ Primary daily loop (OBPI-first):
 
 1. Orientation and ADR context (`gz status`, `gz adr status`)
 2. One OBPI increment implementation and verification (`gz implement`, optional Gate 3 docs check)
-3. OBPI evidence update in brief + optional OBPI-scoped receipt under parent ADR (`gz adr emit-receipt` with `adr_completion: not_completed`)
+3. OBPI evidence update in brief + OBPI receipt (`gz obpi emit-receipt`)
 
 ADR closeout loop (after OBPI batch completion):
 

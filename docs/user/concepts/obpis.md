@@ -54,13 +54,12 @@ Reference: `AGENTS.md` section `OBPI Acceptance Protocol`.
 
 ## OBPI Receipt Practice
 
-When recording OBPI completion before ADR completion, use ADR receipt events with explicit evidence scope:
+When recording OBPI completion before ADR completion, emit an OBPI-native receipt:
 
-- `scope: "OBPI-..."`
-- `adr_completion: "not_completed"`
-- `obpi_completion: "attested_completed"`
+- `uv run gz obpi emit-receipt OBPI-... --event completed|validated ...`
 
-This records accountability without claiming the parent ADR is done.
+This records accountability at OBPI scope without claiming the parent ADR is done.
+`gz adr emit-receipt` remains available for ADR-level accounting and legacy scoped payloads.
 
 ---
 
@@ -69,4 +68,5 @@ This records accountability without claiming the parent ADR is done.
 - [Lifecycle](lifecycle.md)
 - [Workflow](workflow.md)
 - [gz adr audit-check](../commands/adr-audit-check.md)
+- [gz obpi emit-receipt](../commands/obpi-emit-receipt.md)
 - [gz adr emit-receipt](../commands/adr-emit-receipt.md)

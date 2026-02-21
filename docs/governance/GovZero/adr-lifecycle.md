@@ -118,6 +118,20 @@ When pulled from pool:
 4. Write OBPI briefs (required before `Accepted`)
 5. Delete or archive the pool file
 
+### Pool Promotion Tooling
+
+Use the canonical promotion command:
+
+```bash
+uv run gz adr promote ADR-pool.<slug> --semver X.Y.Z [--dry-run]
+```
+
+The command enforces protocol and writes lineage evidence:
+
+- Creates promoted ADR package path by SemVer bucket (`foundation/`, `pre-release/`, `<major>.0/`)
+- Marks pool source file as archived context (`status: Superseded`, `promoted_to: ADR-X.Y.Z-slug`)
+- Appends `artifact_renamed` ledger event with reason `pool_promotion`
+
 ---
 
 ## Closeout Attestation to Status Mapping

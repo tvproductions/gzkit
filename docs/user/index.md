@@ -13,7 +13,7 @@ gzkit enforces a ledger-first GovZero workflow:
 3. Present closeout evidence (`gz closeout`)
 4. Record human attestation (`gz attest`)
 5. Reconcile post-attestation (`gz audit`)
-6. Record receipts/accounting (`gz adr emit-receipt`)
+6. Record receipts/accounting (`gz obpi emit-receipt` for OBPI scope, `gz adr emit-receipt` for ADR scope)
 
 ---
 
@@ -29,5 +29,5 @@ gzkit enforces a ledger-first GovZero workflow:
 ## Flow
 
 ```text
-gz init -> gz specify -> gz plan -> implement/verify -> gz closeout -> gz attest -> gz audit -> gz adr emit-receipt
+gz init -> gz specify -> gz plan -> implement/verify -> gz obpi emit-receipt -> gz closeout -> gz attest -> gz audit -> gz adr emit-receipt
 ```

@@ -25,7 +25,7 @@ This is the operator habit loop for gzkit-first GovZero parity.
 4. **Document completion evidence**
    - set OBPI brief to `Completed` with substantive implementation summary
 5. **Record OBPI-scoped accountability evidence**
-   - `uv run gz adr emit-receipt ADR-<X.Y.Z> --event completed --evidence-json '{"scope":"OBPI-...","adr_completion":"not_completed","obpi_completion":"attested_completed"}'`
+   - `uv run gz obpi emit-receipt OBPI-<X.Y.Z-NN>-<slug> --event completed --attestor "<Human Name>" --evidence-json '{"attestation":"observed"}'`
 6. **Repeat for next OBPI**
 
 ---

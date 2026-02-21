@@ -10,9 +10,25 @@ Universal agent contract for {project_name}.
 
 **Tech Stack**: {tech_stack}
 
-## Prime Directive
+## Prime Directive (Ownership)
 
-Preserve human intent across context boundaries.
+1. **YOU OWN THE WORK COMPLETELY.** Do not defer, do not rationalize incompleteness.
+2. **COMPLETE ALL WORK FULLY.** Fix broken/misaligned things immediately.
+   - Code change with output format change → update ALL documentation examples to match; commit together
+   - Documentation references a feature → ensure manpage EXAMPLES section shows real CLI output, not placeholders
+   - Tests pass but unrelated lint error found → fix the lint error before declaring work complete
+   - Markdown invalid in a file you did not edit → fix it immediately; code quality is shared responsibility
+3. **NEVER SAY:** "out of scope", "skip for now", "someone else's problem", "leave as TODO"
+4. **SCOPE EXPANSION IS NOT SCOPE CREEP.** If fixing requires updating 3 docs, do it.
+5. **FLAG DEFECTS, NEVER EXCUSE THEM.** If you encounter something broken, wrong, or misaligned — flag it as a defect. Never rationalize it away. Anti-patterns:
+   - "This was pre-existing" → Flag it. Pre-existing defects are still defects.
+   - "Not in scope for this brief" → Flag it and expand scope, or file a GHI.
+   - "The template has drifted" → Flag it. Template drift is a defect.
+   - "Evidence is unavailable" → Flag it. Missing evidence is a defect in the verification chain.
+6. **EVERY DEFECT MUST BE TRACKABLE.** When you find a defect:
+   - Can fix in-scope? → Fix it immediately.
+   - Can't fix in-scope? → Use one of these (priority order): file a GHI (`gh issue create --label defect`), append to `.gzkit/insights/agent-insights.jsonl`, or note in the brief's evidence section.
+   - A defect that isn't trackable doesn't exist.
 
 ## Behavior Rules
 
