@@ -724,6 +724,24 @@ class TestGitSyncCommand(unittest.TestCase):
             self.assertNotEqual(alias_result.exit_code, 0)
             self.assertIn("invalid choice", alias_result.output.lower())
 
+    def test_git_sync_rejects_skip_that_disables_xenon(self) -> None:
+        """git-sync blocks SKIP values that can bypass xenon complexity checks."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            original_skip = os.environ.get("SKIP")
+            os.environ["SKIP"] = "xenon-complexity"
+            try:
+                result = runner.invoke(main, ["git-sync"])
+            finally:
+                if original_skip is None:
+                    os.environ.pop("SKIP", None)
+                else:
+                    os.environ["SKIP"] = original_skip
+
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("Refusing git-sync with SKIP", result.output)
+
 
 class TestAdrResolution(unittest.TestCase):
     """Tests for ADR file resolution."""
