@@ -17,6 +17,7 @@ This runbook is a proof surface and must match executable runtime behavior.
 ```bash
 # 1) Orientation + parent ADR context
 uv run gz status
+uv run gz status --table
 uv run gz adr status ADR-<X.Y.Z> --json
 
 # 2) Implement one OBPI increment (code + docs as needed)
@@ -67,6 +68,7 @@ Use an active ADR with incomplete OBPIs:
 
 ```bash
 uv run gz adr status ADR-0.5.0-skill-lifecycle-governance --json
+uv run gz status --table
 ```
 
 Output excerpt:
