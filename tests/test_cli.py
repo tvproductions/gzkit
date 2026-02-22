@@ -396,6 +396,24 @@ class TestStatusCommand(unittest.TestCase):
             self.assertIn("QC Readiness:", result.output)
             self.assertNotIn("Gate 2 (TDD):", result.output)
 
+    def test_status_table_shows_adr_status_columns(self) -> None:
+        """status --table renders a stable ADR summary table."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+
+            result = runner.invoke(main, ["status", "--table"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("ADR Status", result.output)
+            self.assertIn("Lifecycle", result.output)
+            self.assertIn("Lane", result.output)
+            self.assertIn("OBPI Unit", result.output)
+            self.assertIn("Pending Checks", result.output)
+            self.assertIn("ADR-0.1.0", result.output)
+            self.assertIn("0/0", result.output)
+            self.assertIn("TDD", result.output)
+
     def test_status_shows_obpi_completion_summary(self) -> None:
         """status renders OBPI completion as the primary unit."""
         runner = CliRunner()
