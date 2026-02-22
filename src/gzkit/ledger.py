@@ -399,6 +399,143 @@ class Ledger:
 
         return latest
 
+    @staticmethod
+    def _artifact_creation_entry(
+        event: LedgerEvent,
+        canonical_parent: str | None,
+    ) -> dict[str, Any]:
+        """Create the initial graph entry for an artifact creation event."""
+        entry: dict[str, Any] = {
+            "type": event.event.replace("_created", ""),
+            "created": event.ts,
+            "parent": canonical_parent,
+            "children": [],
+            "attested": False,
+        }
+        if event.event == "obpi_created":
+            entry["latest_receipt_event"] = None
+            entry["validated"] = False
+        if event.event == "adr_created":
+            entry["lane"] = event.extra.get("lane")
+            entry["closeout_initiated"] = False
+            entry["closeout_by"] = None
+            entry["closeout_mode"] = None
+            entry["closeout_evidence"] = None
+            entry["latest_receipt_event"] = None
+            entry["validated"] = False
+        return entry
+
+    @classmethod
+    def _ensure_artifact_entry(
+        cls,
+        graph: dict[str, dict[str, Any]],
+        event: LedgerEvent,
+        canonical_id: str,
+        canonical_parent: str | None,
+    ) -> None:
+        """Create graph node on first creation event for an artifact."""
+        creation_events = {
+            "prd_created",
+            "constitution_created",
+            "obpi_created",
+            "adr_created",
+        }
+        if event.event not in creation_events or canonical_id in graph:
+            return
+        graph[canonical_id] = cls._artifact_creation_entry(event, canonical_parent)
+
+    @staticmethod
+    def _record_parent_child_relationship(
+        graph: dict[str, dict[str, Any]],
+        canonical_parent: str | None,
+        canonical_id: str,
+    ) -> None:
+        """Attach child to parent node if both are represented in the graph."""
+        if not canonical_parent or canonical_parent not in graph:
+            return
+        children = graph[canonical_parent]["children"]
+        if canonical_id not in children:
+            children.append(canonical_id)
+
+    @staticmethod
+    def _apply_adr_created_metadata(
+        graph: dict[str, dict[str, Any]],
+        canonical_id: str,
+        event: LedgerEvent,
+    ) -> None:
+        if event.event != "adr_created" or canonical_id not in graph:
+            return
+        graph[canonical_id]["lane"] = event.extra.get("lane", graph[canonical_id].get("lane"))
+
+    @staticmethod
+    def _apply_attestation_metadata(
+        graph: dict[str, dict[str, Any]],
+        canonical_id: str,
+        event: LedgerEvent,
+    ) -> None:
+        if event.event != "attested" or canonical_id not in graph:
+            return
+        graph[canonical_id]["attested"] = True
+        graph[canonical_id]["attestation_status"] = event.extra.get("status")
+        graph[canonical_id]["attestation_by"] = event.extra.get("by")
+
+    @staticmethod
+    def _apply_closeout_metadata(
+        graph: dict[str, dict[str, Any]],
+        canonical_id: str,
+        event: LedgerEvent,
+    ) -> None:
+        if event.event != "closeout_initiated" or canonical_id not in graph:
+            return
+        graph[canonical_id]["closeout_initiated"] = True
+        graph[canonical_id]["closeout_by"] = event.extra.get("by")
+        graph[canonical_id]["closeout_mode"] = event.extra.get("mode")
+        graph[canonical_id]["closeout_evidence"] = event.extra.get("evidence")
+
+    @staticmethod
+    def _apply_audit_receipt_metadata(
+        graph: dict[str, dict[str, Any]],
+        canonical_id: str,
+        event: LedgerEvent,
+    ) -> None:
+        if event.event != "audit_receipt_emitted" or canonical_id not in graph:
+            return
+        receipt_event = event.extra.get("receipt_event")
+        graph[canonical_id]["latest_receipt_event"] = receipt_event
+        evidence = event.extra.get("evidence")
+        adr_completion = evidence.get("adr_completion") if isinstance(evidence, dict) else None
+        if receipt_event == "validated" and adr_completion != "not_completed":
+            graph[canonical_id]["validated"] = True
+
+    @staticmethod
+    def _apply_obpi_receipt_metadata(
+        graph: dict[str, dict[str, Any]],
+        canonical_id: str,
+        event: LedgerEvent,
+    ) -> None:
+        if event.event != "obpi_receipt_emitted" or canonical_id not in graph:
+            return
+        if graph[canonical_id].get("type") != "obpi":
+            return
+        receipt_event = event.extra.get("receipt_event")
+        graph[canonical_id]["latest_receipt_event"] = receipt_event
+        if receipt_event == "validated":
+            graph[canonical_id]["validated"] = True
+
+    @classmethod
+    def _apply_graph_event_metadata(
+        cls,
+        graph: dict[str, dict[str, Any]],
+        canonical_id: str,
+        event: LedgerEvent,
+    ) -> None:
+        """Apply non-creation metadata for a ledger event."""
+        cls._apply_adr_created_metadata(graph, canonical_id, event)
+        cls._apply_attestation_metadata(graph, canonical_id, event)
+        cls._apply_closeout_metadata(graph, canonical_id, event)
+        cls._apply_audit_receipt_metadata(graph, canonical_id, event)
+        cls._apply_obpi_receipt_metadata(graph, canonical_id, event)
+
     def get_artifact_graph(self) -> dict[str, dict[str, Any]]:
         """Build a graph of artifacts and their relationships.
 
@@ -408,12 +545,6 @@ class Ledger:
         graph: dict[str, dict[str, Any]] = {}
         events = self.read_all()
         rename_map = self._build_rename_map(events)
-        creation_events = (
-            "prd_created",
-            "constitution_created",
-            "obpi_created",
-            "adr_created",
-        )
 
         for event in events:
             canonical_id = self._canonicalize_with_map(event.id, rename_map)
@@ -421,71 +552,9 @@ class Ledger:
                 self._canonicalize_with_map(event.parent, rename_map) if event.parent else None
             )
 
-            if event.event in creation_events and canonical_id not in graph:
-                entry: dict[str, Any] = {
-                    "type": event.event.replace("_created", ""),
-                    "created": event.ts,
-                    "parent": canonical_parent,
-                    "children": [],
-                    "attested": False,
-                }
-                if event.event == "obpi_created":
-                    entry["latest_receipt_event"] = None
-                    entry["validated"] = False
-                if event.event == "adr_created":
-                    entry["lane"] = event.extra.get("lane")
-                    entry["closeout_initiated"] = False
-                    entry["closeout_by"] = None
-                    entry["closeout_mode"] = None
-                    entry["closeout_evidence"] = None
-                    entry["latest_receipt_event"] = None
-                    entry["validated"] = False
-                graph[canonical_id] = entry
-
-            # Track parent-child relationships
-            if (
-                canonical_parent
-                and canonical_parent in graph
-                and canonical_id not in graph[canonical_parent]["children"]
-            ):
-                graph[canonical_parent]["children"].append(canonical_id)
-
-            if event.event == "adr_created" and canonical_id in graph:
-                # Preserve lane metadata even if graph node already existed.
-                graph[canonical_id]["lane"] = event.extra.get(
-                    "lane", graph[canonical_id].get("lane")
-                )
-
-            if event.event == "attested" and canonical_id in graph:
-                graph[canonical_id]["attested"] = True
-                graph[canonical_id]["attestation_status"] = event.extra.get("status")
-                graph[canonical_id]["attestation_by"] = event.extra.get("by")
-
-            if event.event == "closeout_initiated" and canonical_id in graph:
-                graph[canonical_id]["closeout_initiated"] = True
-                graph[canonical_id]["closeout_by"] = event.extra.get("by")
-                graph[canonical_id]["closeout_mode"] = event.extra.get("mode")
-                graph[canonical_id]["closeout_evidence"] = event.extra.get("evidence")
-
-            if event.event == "audit_receipt_emitted" and canonical_id in graph:
-                receipt_event = event.extra.get("receipt_event")
-                graph[canonical_id]["latest_receipt_event"] = receipt_event
-                evidence = event.extra.get("evidence")
-                adr_completion = (
-                    evidence.get("adr_completion") if isinstance(evidence, dict) else None
-                )
-                if receipt_event == "validated" and adr_completion != "not_completed":
-                    graph[canonical_id]["validated"] = True
-
-            if (
-                event.event == "obpi_receipt_emitted"
-                and canonical_id in graph
-                and graph[canonical_id].get("type") == "obpi"
-            ):
-                receipt_event = event.extra.get("receipt_event")
-                graph[canonical_id]["latest_receipt_event"] = receipt_event
-                if receipt_event == "validated":
-                    graph[canonical_id]["validated"] = True
+            self._ensure_artifact_entry(graph, event, canonical_id, canonical_parent)
+            self._record_parent_child_relationship(graph, canonical_parent, canonical_id)
+            self._apply_graph_event_metadata(graph, canonical_id, event)
 
         return graph
 

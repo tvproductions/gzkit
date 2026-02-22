@@ -1862,32 +1862,27 @@ def adr_status_cmd(adr: str, as_json: bool, show_gates: bool) -> None:
             )
 
 
-def adr_promote_cmd(
-    pool_adr: str,
-    semver: str,
-    slug: str | None,
-    title: str | None,
-    parent: str | None,
-    lane: str | None,
-    target_status: str,
-    as_json: bool,
-    dry_run: bool,
-) -> None:
-    """Promote a pool ADR into canonical ADR package structure."""
-    config = ensure_initialized()
-    project_root = get_project_root()
-    ledger = Ledger(project_root / config.paths.ledger)
-
+def _normalize_pool_adr_input(pool_adr: str) -> str:
+    """Normalize user ADR argument into an explicit pool ADR identifier."""
     pool_input = pool_adr if pool_adr.startswith("ADR-") else f"ADR-{pool_adr}"
     if not _is_pool_adr_id(pool_input):
         raise GzCliError(f"Source ADR is not a pool entry: {pool_input}")
+    return pool_input
 
+
+def _resolve_pool_adr_source(
+    project_root: Path,
+    config: GzkitConfig,
+    ledger: Ledger,
+    pool_adr: str,
+) -> tuple[Path, str, dict[str, str], str]:
+    """Resolve and validate the source pool ADR artifact and content."""
+    pool_input = _normalize_pool_adr_input(pool_adr)
     pool_file, _resolved_pool = resolve_adr_file(project_root, config, pool_input)
     pool_metadata = parse_artifact_metadata(pool_file)
-    pool_adr_id = pool_metadata.get("id", pool_file.stem)
+    pool_adr_id = cast(str, pool_metadata.get("id", pool_file.stem))
     if not _is_pool_adr_id(pool_adr_id):
         raise GzCliError(f"Resolved ADR is not a pool entry: {pool_adr_id}")
-
     if ledger.canonicalize_id(pool_adr_id) != pool_adr_id:
         raise GzCliError(f"Pool ADR already promoted or renamed in ledger state: {pool_adr_id}")
 
@@ -1897,32 +1892,68 @@ def adr_promote_cmd(
         raise GzCliError(
             f"Pool ADR already records promotion target '{existing_promoted_to}': {pool_adr_id}"
         )
+    return pool_file, pool_adr_id, pool_metadata, pool_content
 
-    _parse_semver_triplet(semver)
+
+def _resolve_promotion_slug(pool_adr_id: str, slug: str | None) -> str:
+    """Resolve and validate target ADR slug for pool promotion."""
     target_slug = slug or _derive_slug_from_pool_id(pool_adr_id)
     if not ADR_SLUG_RE.match(target_slug):
         raise GzCliError(
             f"Invalid --slug '{target_slug}'. Expected kebab-case like 'gz-chores-system'."
         )
-    target_adr_id = f"ADR-{semver}-{target_slug}"
+    return target_slug
 
-    if target_adr_id in ledger.get_artifact_graph():
-        raise GzCliError(f"Target ADR already exists in ledger: {target_adr_id}")
 
-    adr_root = project_root / config.paths.adrs
-    target_bucket = _adr_bucket_for_semver(semver)
-    target_dir = adr_root / target_bucket / target_adr_id
-    target_file = target_dir / f"{target_adr_id}.md"
-    if target_file.exists():
-        raise GzCliError(f"Target ADR file already exists: {target_file.relative_to(project_root)}")
-
+def _resolve_promotion_parent(parent: str | None, pool_metadata: dict[str, str]) -> str:
+    """Resolve ADR parent link for promoted ADR scaffold."""
     promoted_parent = parent or pool_metadata.get("parent", "")
     if promoted_parent and not promoted_parent.startswith(("ADR-", "PRD-", "OBPI-")):
         promoted_parent = f"ADR-{promoted_parent}"
+    return promoted_parent
 
-    raw_lane = (lane or pool_metadata.get("lane") or config.mode).lower()
-    promoted_lane = raw_lane if raw_lane in {"lite", "heavy"} else config.mode
 
+def _resolve_promotion_lane(
+    lane: str | None,
+    pool_metadata: dict[str, str],
+    default_lane: str,
+) -> str:
+    """Resolve lane metadata for promoted ADR scaffold."""
+    raw_lane = (lane or pool_metadata.get("lane") or default_lane).lower()
+    return raw_lane if raw_lane in {"lite", "heavy"} else default_lane
+
+
+def _build_adr_promotion_plan(
+    project_root: Path,
+    config: GzkitConfig,
+    ledger: Ledger,
+    pool_file: Path,
+    pool_adr_id: str,
+    pool_metadata: dict[str, str],
+    pool_content: str,
+    semver: str,
+    slug: str | None,
+    title: str | None,
+    parent: str | None,
+    lane: str | None,
+    target_status: str,
+) -> dict[str, Any]:
+    """Construct validated promotion plan and rendered file content."""
+    _parse_semver_triplet(semver)
+    target_slug = _resolve_promotion_slug(pool_adr_id, slug)
+    target_adr_id = f"ADR-{semver}-{target_slug}"
+    if target_adr_id in ledger.get_artifact_graph():
+        raise GzCliError(f"Target ADR already exists in ledger: {target_adr_id}")
+
+    target_bucket = _adr_bucket_for_semver(semver)
+    target_dir = project_root / config.paths.adrs / target_bucket / target_adr_id
+    target_file = target_dir / f"{target_adr_id}.md"
+    if target_file.exists():
+        rel_path = target_file.relative_to(project_root)
+        raise GzCliError(f"Target ADR file already exists: {rel_path}")
+
+    promoted_parent = _resolve_promotion_parent(parent, pool_metadata)
+    promoted_lane = _resolve_promotion_lane(lane, pool_metadata, config.mode)
     target_title = (
         title or _pool_title_from_content(pool_content) or target_slug.replace("-", " ").title()
     )
@@ -1939,18 +1970,122 @@ def adr_promote_cmd(
         promote_date=promote_date,
     )
     updated_pool_content = _mark_pool_adr_promoted(pool_content, target_adr_id, promote_date)
-
-    result = {
-        "pool_adr": pool_adr_id,
-        "target_adr": target_adr_id,
+    return {
+        "pool_file": pool_file,
+        "pool_adr_id": pool_adr_id,
+        "target_adr_id": target_adr_id,
         "target_bucket": target_bucket,
-        "target_status": promoted_status,
-        "lane": promoted_lane,
-        "parent": promoted_parent,
+        "target_dir": target_dir,
+        "target_file": target_file,
+        "promoted_parent": promoted_parent,
+        "promoted_lane": promoted_lane,
+        "promoted_status": promoted_status,
+        "promoted_content": promoted_content,
+        "updated_pool_content": updated_pool_content,
+    }
+
+
+def _adr_promotion_result(
+    project_root: Path, promotion_plan: dict[str, Any], dry_run: bool
+) -> dict[str, Any]:
+    """Build command result payload for text or JSON output."""
+    pool_file = cast(Path, promotion_plan["pool_file"])
+    target_file = cast(Path, promotion_plan["target_file"])
+    return {
+        "pool_adr": promotion_plan["pool_adr_id"],
+        "target_adr": promotion_plan["target_adr_id"],
+        "target_bucket": promotion_plan["target_bucket"],
+        "target_status": promotion_plan["promoted_status"],
+        "lane": promotion_plan["promoted_lane"],
+        "parent": promotion_plan["promoted_parent"],
         "pool_file": str(pool_file.relative_to(project_root)),
         "target_file": str(target_file.relative_to(project_root)),
         "dry_run": dry_run,
     }
+
+
+def _print_adr_promotion_dry_run(project_root: Path, promotion_plan: dict[str, Any]) -> None:
+    """Render dry-run summary for ADR promotion."""
+    pool_file = cast(Path, promotion_plan["pool_file"])
+    target_file = cast(Path, promotion_plan["target_file"])
+    pool_adr_id = cast(str, promotion_plan["pool_adr_id"])
+    target_adr_id = cast(str, promotion_plan["target_adr_id"])
+
+    console.print("[yellow]Dry run:[/yellow] no files or ledger events will be written.")
+    console.print(f"  Pool ADR: {pool_adr_id}")
+    console.print(f"  Target ADR: {target_adr_id}")
+    console.print(f"  Target file: {target_file.relative_to(project_root)}")
+    console.print(f"  Would update pool file: {pool_file.relative_to(project_root)}")
+    console.print(
+        "  Would append artifact_renamed: "
+        f"{pool_adr_id} -> {target_adr_id} (reason: pool_promotion)"
+    )
+
+
+def _apply_adr_promotion(ledger: Ledger, promotion_plan: dict[str, Any]) -> None:
+    """Write promoted ADR files and append ledger rename event."""
+    target_dir = cast(Path, promotion_plan["target_dir"])
+    target_file = cast(Path, promotion_plan["target_file"])
+    pool_file = cast(Path, promotion_plan["pool_file"])
+    target_dir.mkdir(parents=True, exist_ok=True)
+    (target_dir / "obpis").mkdir(parents=True, exist_ok=True)
+    target_file.write_text(cast(str, promotion_plan["promoted_content"]))
+    pool_file.write_text(cast(str, promotion_plan["updated_pool_content"]))
+    ledger.append(
+        artifact_renamed_event(
+            old_id=cast(str, promotion_plan["pool_adr_id"]),
+            new_id=cast(str, promotion_plan["target_adr_id"]),
+            reason="pool_promotion",
+        )
+    )
+
+
+def _print_adr_promotion_applied(project_root: Path, promotion_plan: dict[str, Any]) -> None:
+    """Render post-apply summary for ADR promotion."""
+    pool_adr_id = cast(str, promotion_plan["pool_adr_id"])
+    target_adr_id = cast(str, promotion_plan["target_adr_id"])
+    target_file = cast(Path, promotion_plan["target_file"])
+    pool_file = cast(Path, promotion_plan["pool_file"])
+    console.print(f"[green]Promoted pool ADR:[/green] {pool_adr_id} -> {target_adr_id}")
+    console.print(f"  Created: {target_file.relative_to(project_root)}")
+    console.print(f"  Updated: {pool_file.relative_to(project_root)}")
+
+
+def adr_promote_cmd(
+    pool_adr: str,
+    semver: str,
+    slug: str | None,
+    title: str | None,
+    parent: str | None,
+    lane: str | None,
+    target_status: str,
+    as_json: bool,
+    dry_run: bool,
+) -> None:
+    """Promote a pool ADR into canonical ADR package structure."""
+    config = ensure_initialized()
+    project_root = get_project_root()
+    ledger = Ledger(project_root / config.paths.ledger)
+
+    pool_file, pool_adr_id, pool_metadata, pool_content = _resolve_pool_adr_source(
+        project_root, config, ledger, pool_adr
+    )
+    promotion_plan = _build_adr_promotion_plan(
+        project_root=project_root,
+        config=config,
+        ledger=ledger,
+        pool_file=pool_file,
+        pool_adr_id=pool_adr_id,
+        pool_metadata=pool_metadata,
+        pool_content=pool_content,
+        semver=semver,
+        slug=slug,
+        title=title,
+        parent=parent,
+        lane=lane,
+        target_status=target_status,
+    )
+    result = _adr_promotion_result(project_root, promotion_plan, dry_run)
 
     if as_json:
         print(json.dumps(result, indent=2))
@@ -1958,33 +2093,11 @@ def adr_promote_cmd(
             return
 
     if dry_run:
-        console.print("[yellow]Dry run:[/yellow] no files or ledger events will be written.")
-        console.print(f"  Pool ADR: {pool_adr_id}")
-        console.print(f"  Target ADR: {target_adr_id}")
-        console.print(f"  Target file: {target_file.relative_to(project_root)}")
-        console.print(f"  Would update pool file: {pool_file.relative_to(project_root)}")
-        console.print(
-            "  Would append artifact_renamed: "
-            f"{pool_adr_id} -> {target_adr_id} (reason: pool_promotion)"
-        )
+        _print_adr_promotion_dry_run(project_root, promotion_plan)
         return
 
-    target_dir.mkdir(parents=True, exist_ok=True)
-    (target_dir / "obpis").mkdir(parents=True, exist_ok=True)
-    target_file.write_text(promoted_content)
-    pool_file.write_text(updated_pool_content)
-
-    ledger.append(
-        artifact_renamed_event(
-            old_id=pool_adr_id,
-            new_id=target_adr_id,
-            reason="pool_promotion",
-        )
-    )
-
-    console.print(f"[green]Promoted pool ADR:[/green] {pool_adr_id} -> {target_adr_id}")
-    console.print(f"  Created: {target_file.relative_to(project_root)}")
-    console.print(f"  Updated: {pool_file.relative_to(project_root)}")
+    _apply_adr_promotion(ledger, promotion_plan)
+    _print_adr_promotion_applied(project_root, promotion_plan)
 
 
 def git_sync(
