@@ -3,7 +3,7 @@ id: OBPI-0.1.0-03
 parent: ADR-0.1.0
 item: 3
 lane: Heavy
-status: Pending
+status: Completed
 ---
 
 # OBPI-0.1.0-03: Implement gz constitute
@@ -50,3 +50,10 @@ Implement `gz constitute` command that creates/validates constitution artifacts.
 | Gate | Evidence | Command/Path |
 |------|----------|--------------|
 | Gate 2 (TDD) | Tests pass | `uv run -m unittest tests/test_cli.py` |
+
+## Evidence
+
+### Implementation Summary
+
+- Completion evidence: Capability is implemented in the current `gz` runtime and validated by repository quality gates.
+- Reconciliation date: 2026-02-22
