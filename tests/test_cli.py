@@ -414,6 +414,49 @@ class TestStatusCommand(unittest.TestCase):
             self.assertIn("0/0", result.output)
             self.assertIn("TDD", result.output)
 
+    def test_status_table_blocks_ready_on_incomplete_obpis(self) -> None:
+        """status --table marks QC pending when linked OBPIs are incomplete."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            obpi_path.write_text(
+                "\n".join(
+                    [
+                        "---",
+                        "id: OBPI-0.1.0-01-demo",
+                        "parent: ADR-0.1.0",
+                        "item: 1",
+                        "lane: Lite",
+                        "status: Draft",
+                        "---",
+                        "",
+                        "# OBPI-0.1.0-01-demo: Demo",
+                        "",
+                        "**Brief Status:** Draft",
+                        "",
+                        "## Evidence",
+                        "",
+                        "### Implementation Summary",
+                        "- Placeholder",
+                        "",
+                    ]
+                )
+                + "\n"
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
+
+            result = runner.invoke(main, ["status", "--table"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn(
+                "| ADR-0.1.0 | Pending | LITE | 0/1 | PENDING | PENDING | OBPI completion |",
+                result.output,
+            )
+
     def test_status_shows_obpi_completion_summary(self) -> None:
         """status renders OBPI completion as the primary unit."""
         runner = CliRunner()
@@ -1489,6 +1532,27 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
             self.assertEqual(payload["closeout_phase"], "attested")
             self.assertEqual(payload["attestation_term"], "Completed")
             self.assertEqual(payload["obpi_summary"]["unit_status"], "pending")
+
+    def test_adr_status_qc_readiness_includes_obpi_completion_blocker(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            TestAdrRuntimeCommands._write_obpi(
+                path=obpi_path,
+                status="Draft",
+                brief_status="Draft",
+                implementation_line="",
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
+
+            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("QC Readiness: PENDING (pending: OBPI completion)", result.output)
 
     def test_adr_status_json_validated(self) -> None:
         runner = CliRunner()
