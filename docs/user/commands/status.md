@@ -35,6 +35,10 @@ Per ADR it reports:
 - QC readiness
 - pending check categories
 
+QC readiness is fail-closed for OBPI-first delivery:
+- when linked OBPIs exist and OBPI unit is not `completed`, `QC` reports `PENDING`
+- `Pending Checks` includes `OBPI completion` even if gate checks are otherwise passing
+
 `Validated` applies to ADR-level validation receipts. OBPI-scoped receipts marked with
 `adr_completion: not_completed` do not mark the parent ADR as validated.
 
