@@ -3,7 +3,7 @@ id: OBPI-0.1.0-08
 parent: ADR-0.1.0
 item: 8
 lane: Heavy
-status: Pending
+status: Completed
 ---
 
 # OBPI-0.1.0-08: Implement gz attest
@@ -55,3 +55,10 @@ Implement `gz attest` command that records human attestation with ledger event.
 | Gate | Evidence | Command/Path |
 |------|----------|--------------|
 | Gate 2 (TDD) | Tests pass | `uv run -m unittest tests/test_cli.py` |
+
+## Evidence
+
+### Implementation Summary
+
+- Completion evidence: Capability is implemented in the current `gz` runtime and validated by repository quality gates.
+- Reconciliation date: 2026-02-22
