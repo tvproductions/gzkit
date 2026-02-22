@@ -1191,9 +1191,16 @@ def _render_gate_status(gate_status: str | None) -> str:
     return "[yellow]PENDING[/yellow]"
 
 
-def _qc_readiness(gates: dict[str, str], lane: str) -> tuple[str, list[str]]:
+def _qc_readiness(
+    gates: dict[str, str], lane: str, obpi_summary: dict[str, Any]
+) -> tuple[str, list[str]]:
     """Derive summarized QC readiness and pending checkpoints from gate statuses."""
     blockers: list[str] = []
+    obpi_total = int(obpi_summary.get("total", 0))
+    obpi_unit_status = str(obpi_summary.get("unit_status", "unscoped"))
+    if obpi_total > 0 and obpi_unit_status != "completed":
+        blockers.append("OBPI completion")
+
     if gates.get("2") != "pass":
         blockers.append("TDD")
     if lane == "heavy":
@@ -1329,7 +1336,7 @@ def _render_status_row(
     console.print(f"[bold]{adr_id}[/bold] ({lifecycle_status})")
     _print_status_obpi_section(obpi_rows, obpi_summary)
 
-    qc_readiness, qc_blockers = _qc_readiness(gates, lane)
+    qc_readiness, qc_blockers = _qc_readiness(gates, lane, obpi_summary)
     console.print(f"  QC Readiness:   {_render_qc_readiness(qc_readiness, qc_blockers)}")
     if show_gates:
         _print_status_gate_section(info, lane, gates, attested, attestation_term)
@@ -1350,7 +1357,7 @@ def _render_status_table(adrs: dict[str, dict[str, Any]], default_mode: str) -> 
         obpi_total = cast(int, obpi_summary.get("total", 0))
         obpi_completed = cast(int, obpi_summary.get("completed", 0))
         obpi_unit_status = cast(str, obpi_summary.get("unit_status", "unscoped"))
-        qc_readiness, qc_blockers = _qc_readiness(gates, lane)
+        qc_readiness, qc_blockers = _qc_readiness(gates, lane, obpi_summary)
         qc_label = "READY" if qc_readiness == "ready" else "PENDING"
 
         rows.append(
@@ -1365,21 +1372,11 @@ def _render_status_table(adrs: dict[str, dict[str, Any]], default_mode: str) -> 
             ]
         )
 
-    widths = [len(header) for header in headers]
-    for row in rows:
-        for idx, cell in enumerate(row):
-            widths[idx] = max(widths[idx], len(cell))
-
-    def _fmt_row(cells: list[str]) -> str:
-        padded = [cell.ljust(widths[idx]) for idx, cell in enumerate(cells)]
-        return "| " + " | ".join(padded) + " |"
-
-    divider = "| " + " | ".join("-" * width for width in widths) + " |"
     print("ADR Status")
-    print(_fmt_row(headers))
-    print(divider)
+    print("| " + " | ".join(headers) + " |")
+    print("| " + " | ".join("---" for _ in headers) + " |")
     for row in rows:
-        print(_fmt_row(row))
+        print("| " + " | ".join(row) + " |")
 
 
 def status(as_json: bool, show_gates: bool, as_table: bool) -> None:
@@ -1922,7 +1919,7 @@ def adr_status_cmd(adr: str, as_json: bool, show_gates: bool) -> None:
             console.print(f"    - {_render_obpi_row_status(row)}")
 
     gates = cast(dict[str, str], result.get("gates", {}))
-    qc_readiness, qc_blockers = _qc_readiness(gates, lane)
+    qc_readiness, qc_blockers = _qc_readiness(gates, lane, obpi_summary)
     console.print(f"  QC Readiness: {_render_qc_readiness(qc_readiness, qc_blockers)}")
 
     if show_gates:

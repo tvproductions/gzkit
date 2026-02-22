@@ -29,6 +29,8 @@ It keeps existing compatibility fields and adds derived semantics:
 - `gate4_na_reason` (when applicable)
 
 Default text output is OBPI-first and shows a summarized QC readiness line.
+QC readiness is fail-closed on OBPI completion: when linked OBPIs exist and unit status is not
+`completed`, readiness is `PENDING` with `OBPI completion` in pending checkpoints.
 Use `--show-gates` for full gate-by-gate diagnostics.
 
 Lifecycle is derived from `attested`, `closeout_initiated`, and `audit_receipt_emitted` events.
