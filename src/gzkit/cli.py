@@ -1336,7 +1336,53 @@ def _render_status_row(
     console.print()
 
 
-def status(as_json: bool, show_gates: bool) -> None:
+def _render_status_table(adrs: dict[str, dict[str, Any]], default_mode: str) -> None:
+    """Render ADR status as a stable tabular summary."""
+    headers = ["ADR", "Lifecycle", "Lane", "OBPI", "OBPI Unit", "QC", "Pending Checks"]
+    rows: list[list[str]] = []
+
+    for adr_id, info in sorted(adrs.items()):
+        lane = cast(str, info.get("lane", default_mode))
+        gates = cast(dict[str, str], info.get("gates", {}))
+        obpi_summary = cast(dict[str, Any], info.get("obpi_summary", {}))
+        lifecycle_status = cast(str, info.get("lifecycle_status", "Pending"))
+
+        obpi_total = cast(int, obpi_summary.get("total", 0))
+        obpi_completed = cast(int, obpi_summary.get("completed", 0))
+        obpi_unit_status = cast(str, obpi_summary.get("unit_status", "unscoped"))
+        qc_readiness, qc_blockers = _qc_readiness(gates, lane)
+        qc_label = "READY" if qc_readiness == "ready" else "PENDING"
+
+        rows.append(
+            [
+                adr_id,
+                lifecycle_status,
+                lane.upper(),
+                f"{obpi_completed}/{obpi_total}",
+                obpi_unit_status.upper(),
+                qc_label,
+                ", ".join(qc_blockers) if qc_blockers else "-",
+            ]
+        )
+
+    widths = [len(header) for header in headers]
+    for row in rows:
+        for idx, cell in enumerate(row):
+            widths[idx] = max(widths[idx], len(cell))
+
+    def _fmt_row(cells: list[str]) -> str:
+        padded = [cell.ljust(widths[idx]) for idx, cell in enumerate(cells)]
+        return "| " + " | ".join(padded) + " |"
+
+    divider = "| " + " | ".join("-" * width for width in widths) + " |"
+    print("ADR Status")
+    print(_fmt_row(headers))
+    print(divider)
+    for row in rows:
+        print(_fmt_row(row))
+
+
+def status(as_json: bool, show_gates: bool, as_table: bool) -> None:
     """Display OBPI progress, lifecycle, and gate readiness across ADRs."""
     config = ensure_initialized()
     project_root = get_project_root()
@@ -1359,6 +1405,10 @@ def status(as_json: bool, show_gates: bool) -> None:
 
     if not adrs:
         console.print("No ADRs found. Create one with 'gz plan'.")
+        return
+
+    if as_table:
+        _render_status_table(adrs, config.mode)
         return
 
     for adr_id, info in sorted(adrs.items()):
@@ -1912,7 +1962,7 @@ def _resolve_pool_adr_source(
     pool_input = _normalize_pool_adr_input(pool_adr)
     pool_file, _resolved_pool = resolve_adr_file(project_root, config, pool_input)
     pool_metadata = parse_artifact_metadata(pool_file)
-    pool_adr_id = cast(str, pool_metadata.get("id", pool_file.stem))
+    pool_adr_id = pool_metadata.get("id", pool_file.stem)
     if not _is_pool_adr_id(pool_adr_id):
         raise GzCliError(f"Resolved ADR is not a pool entry: {pool_adr_id}")
     if ledger.canonicalize_id(pool_adr_id) != pool_adr_id:
@@ -3856,11 +3906,18 @@ def _build_parser() -> argparse.ArgumentParser:
     p_status = commands.add_parser("status", help="Show OBPI progress and ADR lifecycle status")
     p_status.add_argument("--json", dest="as_json", action="store_true")
     p_status.add_argument(
+        "--table",
+        action="store_true",
+        help="Show a tabular ADR summary (ADR, lifecycle, lane, OBPI, QC).",
+    )
+    p_status.add_argument(
         "--show-gates",
         action="store_true",
         help="Show detailed gate-level QC breakdown (internal diagnostics).",
     )
-    p_status.set_defaults(func=lambda a: status(as_json=a.as_json, show_gates=a.show_gates))
+    p_status.set_defaults(
+        func=lambda a: status(as_json=a.as_json, show_gates=a.show_gates, as_table=a.table)
+    )
 
     p_closeout = commands.add_parser(
         "closeout", help="Initiate closeout mode and record closeout event"
