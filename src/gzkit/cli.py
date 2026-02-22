@@ -5,6 +5,7 @@ A Development Covenant for Human-AI Collaboration.
 
 import argparse
 import json
+import os
 import re
 import subprocess
 from datetime import date
@@ -439,6 +440,37 @@ def _plan_git_sync(
         "blockers": blockers,
         "warnings": warnings,
     }
+
+
+def _skip_tokens(skip_value: str) -> set[str]:
+    """Parse pre-commit SKIP env format into normalized token set."""
+    tokens: set[str] = set()
+    for chunk in skip_value.split(","):
+        for token in chunk.split():
+            normalized = token.strip().lower()
+            if normalized:
+                tokens.add(normalized)
+    return tokens
+
+
+def _skip_disables_xenon(skip_tokens: set[str]) -> bool:
+    """Return True when SKIP tokens can disable xenon complexity hooks."""
+    if not skip_tokens:
+        return False
+    if "all" in skip_tokens or "xenon-complexity" in skip_tokens:
+        return True
+    return any(token.startswith("xenon") for token in skip_tokens)
+
+
+def _enforce_git_sync_skip_policy() -> None:
+    """Block git-sync when SKIP can bypass xenon complexity enforcement."""
+    skip_raw = os.environ.get("SKIP", "")
+    tokens = _skip_tokens(skip_raw)
+    if not _skip_disables_xenon(tokens):
+        return
+    raise GzCliError(
+        "Refusing git-sync with SKIP that can bypass xenon complexity checks. Unset SKIP and rerun."
+    )
 
 
 def _run_sync_prechecks(
@@ -2116,6 +2148,7 @@ def git_sync(
         print(GIT_SYNC_SKILL_PATH)
         return
 
+    _enforce_git_sync_skip_policy()
     _config = ensure_initialized()
     project_root = get_project_root()
 

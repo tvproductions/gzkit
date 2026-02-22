@@ -57,6 +57,108 @@ uv run gz adr emit-receipt ADR-<X.Y.Z> --event validated --attestor "<Human Name
 
 ---
 
+## Normal Use Flows (Concrete Example, Captured 2026-02-22)
+
+These are copy/paste examples from this repository using real IDs and current CLI output.
+
+### Flow 1: Daily OBPI Work (In-Progress ADR)
+
+Use an active ADR with incomplete OBPIs:
+
+```bash
+uv run gz adr status ADR-0.5.0-skill-lifecycle-governance --json
+```
+
+Output excerpt:
+
+```json
+{
+  "adr": "ADR-0.5.0-skill-lifecycle-governance",
+  "lifecycle_status": "Pending",
+  "gates": {
+    "1": "pass",
+    "2": "pending",
+    "3": "pending",
+    "4": "n/a",
+    "5": "pending"
+  },
+  "obpi_summary": {
+    "total": 5,
+    "completed": 0,
+    "incomplete": 5,
+    "unit_status": "pending"
+  }
+}
+```
+
+Run implementation and verification for one increment:
+
+```bash
+uv run gz implement --adr ADR-0.5.0-skill-lifecycle-governance
+uv run gz gates --gate 3 --adr ADR-0.5.0-skill-lifecycle-governance
+uv run gz lint
+```
+
+After brief evidence is updated, emit OBPI receipt:
+
+```bash
+uv run gz obpi emit-receipt OBPI-0.5.0-05-obpi-acceptance-protocol-runtime-parity --event completed --attestor "Jeffry Babb" --evidence-json '{"attestation":"I attest I understand the completion of OBPI-0.5.0-05.","date":"2026-02-22"}'
+```
+
+### Flow 2: ADR Closeout (OBPIs Completed)
+
+Use an ADR whose OBPIs are completed:
+
+```bash
+uv run gz adr audit-check ADR-0.6.0-pool-promotion-protocol
+```
+
+Output:
+
+```text
+ADR audit-check: ADR-0.6.0-pool-promotion-protocol
+PASS All linked OBPIs are completed with evidence.
+  - OBPI-0.6.0-01-pool-source-contract
+  - OBPI-0.6.0-02-promotion-command-lineage
+  - OBPI-0.6.0-03-operator-narratives-and-auditability
+```
+
+Dry-run closeout and attestation first:
+
+```bash
+uv run gz closeout ADR-0.6.0-pool-promotion-protocol --dry-run
+uv run gz attest ADR-0.6.0-pool-promotion-protocol --status completed --dry-run
+```
+
+Closeout dry-run excerpt:
+
+```text
+Dry run: no ledger event will be written.
+  Would initiate closeout for: ADR-0.6.0-pool-promotion-protocol
+  Gate 2 (TDD): uv run -m unittest discover tests
+  Gate 3 (Docs): uv run mkdocs build --strict
+  Gate 4 (BDD): N/A (features/ not found; Gate 4 is N/A for this repository.)
+  Gate 5 (Human): Awaiting explicit attestation
+```
+
+Then run non-dry commands and record receipts:
+
+```bash
+uv run gz closeout ADR-0.6.0-pool-promotion-protocol
+uv run gz attest ADR-0.6.0-pool-promotion-protocol --status completed
+uv run gz audit ADR-0.6.0-pool-promotion-protocol
+uv run gz adr emit-receipt ADR-0.6.0-pool-promotion-protocol --event validated --attestor "Jeffry Babb" --evidence-json '{"scope":"ADR-0.6.0-pool-promotion-protocol","date":"2026-02-22"}'
+```
+
+If you want to inspect receipt payloads before writing events:
+
+```bash
+uv run gz obpi emit-receipt OBPI-0.6.0-03-operator-narratives-and-auditability --event completed --attestor "Jeffry Babb" --evidence-json '{"attestation":"I attest I understand the completion of OBPI-0.6.0-03.","date":"2026-02-22"}' --dry-run
+uv run gz adr emit-receipt ADR-0.6.0-pool-promotion-protocol --event validated --attestor "Jeffry Babb" --evidence-json '{"scope":"ADR-0.6.0-pool-promotion-protocol","date":"2026-02-22"}' --dry-run
+```
+
+---
+
 ## Verification Checklist (OBPI + ADR)
 
 - `uv run -m unittest discover tests`
