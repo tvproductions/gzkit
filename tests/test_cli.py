@@ -1676,6 +1676,52 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
             self.assertEqual(adr_payload["obpi_summary"]["completed"], 0)
             self.assertEqual(adr_payload["obpi_summary"]["unit_status"], "pending")
 
+    def test_status_json_completed_status_with_empty_summary_stays_incomplete(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            obpi_path.write_text(
+                "\n".join(
+                    [
+                        "---",
+                        "id: OBPI-0.1.0-01-demo",
+                        "parent: ADR-0.1.0",
+                        "item: 1",
+                        "lane: Lite",
+                        "status: Completed",
+                        "---",
+                        "",
+                        "# OBPI-0.1.0-01-demo: Demo",
+                        "",
+                        "**Brief Status:** Completed",
+                        "",
+                        "## Evidence",
+                        "",
+                        "### Implementation Summary",
+                        "- Files created/modified:",
+                        "- Tests added:",
+                        "- Date completed:",
+                        "",
+                    ]
+                )
+                + "\n"
+            )
+
+            result = runner.invoke(main, ["status", "--json"])
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            adr_payload = payload["adrs"]["ADR-0.1.0"]
+            self.assertEqual(adr_payload["obpi_summary"]["completed"], 0)
+            self.assertEqual(adr_payload["obpi_summary"]["unit_status"], "pending")
+            self.assertIn(
+                "implementation evidence is missing or placeholder",
+                adr_payload["obpis"][0]["issues"],
+            )
+
     def test_adr_status_json_pool_adr_ignores_attestation_for_lifecycle(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():

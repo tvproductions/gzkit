@@ -1600,7 +1600,8 @@ def _has_substantive_implementation_summary(content: str) -> bool:
         return False
 
     section = match.group(1)
-    bullet_matches = re.findall(r"^- [^:\n]+:\s*(.+)$", section, flags=re.MULTILINE)
+    # Keep matching line-local so empty values cannot borrow content from the next line.
+    bullet_matches = re.findall(r"^- [^:\n]+:[ \t]*(.+)$", section, flags=re.MULTILINE)
     for value in bullet_matches:
         normalized = value.strip().lower()
         if normalized and normalized not in {"-", "—", "tbd", "(none)", "n/a"}:

@@ -3,7 +3,7 @@ id: OBPI-0.2.0-02-dry-run-options
 parent: ADR-0.2.0
 item: 2
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.2.0-02-dry-run-options: Add dry-run support for mutation commands
@@ -13,8 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.2.0-gate-verification/ADR-0.2.0-gate-verification.md`
 - **Checklist Item:** #2 — "Add `--dry-run` to mutation commands listed above with no side effects."
 
-**Status:** Draft
-
+**Status:** Completed
 ## Objective
 
 Provide `--dry-run` on mutation commands so humans can rehearse governance workflows without writing files or appending to the ledger.
@@ -143,14 +142,12 @@ uv run gz plan demo --semver 0.2.0 --dry-run
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
+- Files created/modified: src/gzkit/cli.py, docs/user/commands/implement.md, docs/user/commands/gates.md
+- Tests added: tests/test_cli.py
+- Date completed: 2026-02-22 (historical reconciliation)
 
 ---
 
-**Brief Status:** Draft
-
-**Date Completed:** —
-
-**Evidence Hash:** —
+**Brief Status:** Completed
+**Date Completed:** 2026-02-22
+**Evidence Hash:** reconciled-2026-02-22

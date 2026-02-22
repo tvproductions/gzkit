@@ -3,7 +3,7 @@ id: OBPI-0.1.0-09
 parent: ADR-0.1.0
 item: 9
 lane: Heavy
-status: Pending
+status: Completed
 ---
 
 # OBPI-0.1.0-09: Implement ledger-writer hook
@@ -59,3 +59,10 @@ Implement Claude hook script that appends `artifact_edited` events to ledger on 
 | Gate | Evidence | Command/Path |
 |------|----------|--------------|
 | Gate 2 (TDD) | Tests pass | `uv run -m unittest tests/test_hooks.py` |
+
+## Evidence
+
+### Implementation Summary
+
+- Completion evidence: Capability is implemented in the current `gz` runtime and validated by repository quality gates.
+- Reconciliation date: 2026-02-22

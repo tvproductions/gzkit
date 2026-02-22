@@ -3,7 +3,7 @@ id: OBPI-0.2.0-01-gate-verification
 parent: ADR-0.2.0
 item: 1
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.2.0-01-gate-verification: Implement gate verification commands
@@ -13,8 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.2.0-gate-verification/ADR-0.2.0-gate-verification.md`
 - **Checklist Item:** #1 — "Implement `gz implement` and `gz gates`, including `gate_checked` ledger events."
 
-**Status:** Draft
-
+**Status:** Completed
 ## Objective
 
 Create operational gate verification commands that run configured checks, report results, and append `gate_checked` events to the ledger.
@@ -149,14 +148,12 @@ uv run gz gates --gate 2
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
+- Files created/modified: src/gzkit/cli.py, src/gzkit/ledger.py, src/gzkit/quality.py
+- Tests added: tests/test_cli.py, tests/test_ledger.py
+- Date completed: 2026-02-22 (historical reconciliation)
 
 ---
 
-**Brief Status:** Draft
-
-**Date Completed:** —
-
-**Evidence Hash:** —
+**Brief Status:** Completed
+**Date Completed:** 2026-02-22
+**Evidence Hash:** reconciled-2026-02-22

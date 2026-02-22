@@ -3,7 +3,7 @@ id: OBPI-0.2.0-03-docs-updates
 parent: ADR-0.2.0
 item: 3
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.2.0-03-docs-updates: Update docs for gates and dry-run
@@ -13,8 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.2.0-gate-verification/ADR-0.2.0-gate-verification.md`
 - **Checklist Item:** #3 — "Update user docs for new commands and `--dry-run` usage."
 
-**Status:** Draft
-
+**Status:** Completed
 ## Objective
 
 Document `gz implement`, `gz gates`, and `--dry-run` options in user-facing docs and command index.
@@ -93,8 +92,11 @@ uvx mkdocs build --strict
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
+**Date Completed:** 2026-02-22
+**Evidence Hash:** reconciled-2026-02-22
+### Implementation Summary
 
-**Date Completed:** —
-
-**Evidence Hash:** —
+- Files created/modified: docs/user/commands/implement.md, docs/user/commands/gates.md, docs/user/commands/index.md
+- Tests added: docs coverage validated via `uv run gz cli audit`
+- Date completed: 2026-02-22 (historical reconciliation)
