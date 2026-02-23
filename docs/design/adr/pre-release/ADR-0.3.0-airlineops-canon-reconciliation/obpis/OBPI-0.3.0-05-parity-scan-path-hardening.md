@@ -121,8 +121,7 @@ uv run gz validate --documents
   - `uv run gz adr status ADR-0.3.0 --json`
   - `uv run gz status`
   - `uv run gz adr emit-receipt ADR-0.3.0 --event validated --attestor "Jeffry Babb" --evidence-json '{"scope":"OBPI-0.3.0-05","adr_completion":"not_completed","obpi_completion":"attested_completed","attestation":"I attest I understand the completion of OBPI-0.3.0-05.","date":"2026-02-15"}'`
-- Date completed:
-  - 2026-02-15
+- Date completed: 2026-02-15
 
 ---
 

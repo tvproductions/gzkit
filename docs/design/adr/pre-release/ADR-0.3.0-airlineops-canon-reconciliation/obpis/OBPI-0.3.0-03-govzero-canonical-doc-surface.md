@@ -132,8 +132,7 @@ uv run ruff format --check .
   - Ledger evidence (observation context): `uv run gz adr emit-receipt ADR-0.3.0 --event validated --attestor "Jeffry Babb" --evidence-json '{"scope":"OBPI-0.3.0-03","adr_completion":"not_completed","obpi_completion":"completed_by_observation","observation":"there are habits there that we need","date":"2026-02-14"}'` (PASS)
   - Attestor statement: "I attest I understand the completion of OBPI-0.3.0-03."
   - Ledger evidence (attestation): `uv run gz adr emit-receipt ADR-0.3.0 --event validated --attestor "Jeffry Babb" --evidence-json '{"scope":"OBPI-0.3.0-03","adr_completion":"not_completed","obpi_completion":"attested_completed","attestation":"I attest I understand the completion of OBPI-0.3.0-03.","date":"2026-02-14"}'` (PASS)
-- Date completed:
-  - 2026-02-14
+- Date completed: 2026-02-14
 
 ---
 
