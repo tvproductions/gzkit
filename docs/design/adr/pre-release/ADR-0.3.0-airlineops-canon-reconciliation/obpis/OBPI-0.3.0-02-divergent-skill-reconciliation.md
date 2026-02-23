@@ -147,8 +147,7 @@ uv run gz status --json
   - Ledger evidence (attestation): `uv run gz adr emit-receipt ADR-0.3.0 --event validated --attestor "Jeffry Babb" --evidence-json '{"scope":"OBPI-0.3.0-02","adr_completion":"not_completed","obpi_completion":"attested_completed","attestation":"I attest I understand the completion of OBPI-0.3.0-02.","date":"2026-02-14"}'` (PASS)
   - Prior context receipt: `uv run gz adr emit-receipt ADR-0.3.0 --event validated --attestor "Jeffry Babb" --evidence-json '{"scope":"OBPI-0.3.0-02","correction":"Supersedes prior completed receipt emitted in error at 2026-02-14T11:34:29.927845+00:00.","adr_completion":"not_completed","obpi_completion":"completed_by_observation","observation":"no, we close the obpi with my observation","date":"2026-02-14"}'` (PASS)
   - Note: ADR-0.3.0 closeout remains open until remaining OBPIs are completed.
-- Date completed:
-  - 2026-02-14
+- Date completed: 2026-02-14
 
 ---
 

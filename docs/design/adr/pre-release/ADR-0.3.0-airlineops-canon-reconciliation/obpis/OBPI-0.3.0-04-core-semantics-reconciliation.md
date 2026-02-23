@@ -158,8 +158,7 @@ uv run gz status --json
   - `uv run gz audit ADR-0.3.0 --dry-run` (EXPECTED FAIL; blocked pre-attestation)
   - `uv run gz attest ADR-0.3.0 --status completed --dry-run` (EXPECTED FAIL; Gate 3 pending)
   - `uv run gz adr emit-receipt ADR-0.3.0 --event validated ...` (PASS; OBPI scope recorded with `adr_completion: not_completed`)
-- Date completed:
-  - 2026-02-14
+- Date completed: 2026-02-14
 
 ---
 

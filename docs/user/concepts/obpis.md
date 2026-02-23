@@ -31,6 +31,10 @@ An OBPI is operationally complete when:
 - Implementation summary evidence is substantive (not placeholder)
 - Linked runtime/doc changes are verifiable
 
+For parser-safe evidence detection, keep `### Implementation Summary` as inline
+`- key: value` bullets (for example, `- Date completed: 2026-02-23`) rather than
+splitting values onto nested bullet lines.
+
 `gz adr audit-check` validates these conditions per linked ADR.
 
 ## Acceptance Protocol

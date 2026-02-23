@@ -28,10 +28,39 @@ uv run gz lint
 
 # 4) Update the OBPI brief with substantive implementation evidence
 #    (status Completed + concrete summary, not placeholders)
+#    Use parser-safe inline bullets in "Implementation Summary":
+#      - Files created/modified: <paths>
+#      - Tests added: <files or (none)>
+#      - Date completed: YYYY-MM-DD
+#    (Do not split values onto nested bullet lines.)
 
 # 5) Record OBPI-scoped receipt evidence on the OBPI itself
 uv run gz obpi emit-receipt OBPI-<X.Y.Z-NN>-<slug> --event completed --attestor "<Human Name>" --evidence-json '{"attestation":"I attest I understand the completion of OBPI-<X.Y.Z-NN>.","date":"YYYY-MM-DD"}'
 ```
+
+---
+
+## Drift Control (Required Before Closeout)
+
+Until ledger-derived brief sync is automated, treat OBPI brief status/date fields as drift-prone and
+always recompute truth from `gz` status surfaces before closeout:
+
+```bash
+# 1) Ledger-first recompute view
+uv run gz adr status ADR-<X.Y.Z> --json
+uv run gz status --table
+
+# 2) Fail-closed audit of linked OBPIs
+uv run gz adr audit-check ADR-<X.Y.Z>
+```
+
+If `gz adr audit-check` reports missing or placeholder implementation evidence:
+
+1. Fix the OBPI brief `### Implementation Summary` with inline `- key: value` entries.
+2. Re-run `uv run gz adr status ADR-<X.Y.Z> --json`.
+3. Re-run `uv run gz adr audit-check ADR-<X.Y.Z>` until PASS.
+
+Tracked automation defect: `https://github.com/tvproductions/gzkit/issues/3`.
 
 ---
 
