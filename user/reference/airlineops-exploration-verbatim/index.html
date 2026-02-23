@@ -1,0 +1,2939 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Keep humans in the loop when AI writes your code">
+      
+      
+        <meta name="author" content="Jeffry Babb">
+      
+      
+        <link rel="canonical" href="https://gzkit.org/user/reference/airlineops-exploration-verbatim/">
+      
+      
+        <link rel="prev" href="../genesis/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>AirlineOps Exploration - gzkit</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="deep-orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#airlineops-govzero-exploration-verbatim" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="gzkit" class="md-header__button md-logo" aria-label="gzkit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            gzkit
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              AirlineOps Exploration
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/tvproductions/gzkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tvproductions/gzkit
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="gzkit" class="md-nav__button md-logo" aria-label="gzkit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    gzkit
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/tvproductions/gzkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tvproductions/gzkit
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbook/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runbook
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../why/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Why gzkit?
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concepts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Concepts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/gates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/lanes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lanes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/lifecycle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lifecycle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/obpis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OBPIs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/closeout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Closeout Ceremony
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Daily Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Commands
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Commands
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/init/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz init
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/prd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz prd
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/constitute/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz constitute
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/specify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz specify
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/implement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz implement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/gates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz gates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/state/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz state
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/adr-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/adr-audit-check/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr audit-check
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/adr-emit-receipt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr emit-receipt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/closeout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz closeout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/git-sync/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz git-sync
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/attest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz attest
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/migrate-semver/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz migrate-semver
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/register-adrs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz register-adrs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/check-config-paths/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz check-config-paths
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/cli-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz cli audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Governance (Canonical)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Governance (Canonical)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../governance/GovZero/charter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Charter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../governance/GovZero/adr-lifecycle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Lifecycle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../governance/GovZero/adr-obpi-ghi-audit-linkage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR/OBPI/GHI/Audit Linkage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../governance/GovZero/adr-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../governance/GovZero/audit-protocol/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Audit Protocol
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../governance/GovZero/gate5-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gate 5 Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../governance/GovZero/architectural-enforcement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architectural Enforcement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../governance/GovZero/gzkit-structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gzkit Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../governance/GovZero/layered-trust/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Layered Trust
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../governance/GovZero/ledger-schema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ledger Schema
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../governance/GovZero/session-handoff-obligations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Session Handoff Obligations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../governance/GovZero/session-handoff-schema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Session Handoff Schema
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../governance/GovZero/handoff-chaining/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Handoff Chaining
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../governance/GovZero/handoff-validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Handoff Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../governance/GovZero/staleness-classification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Staleness Classification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../governance/GovZero/validation-receipts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validation Receipts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_17" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_17" id="__nav_7_17_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releases
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_17">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Releases
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../governance/GovZero/releases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../governance/GovZero/releases/major-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Major Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../governance/GovZero/releases/minor-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Minor Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../governance/GovZero/releases/patch-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Patch Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_18" id="__nav_7_18_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Audits
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_18">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Audits
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../governance/GovZero/audits/AUDIT-BRIEF-governance-harmonization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Harmonization Brief
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../governance/GovZero/audits/governance-harmonization-2026-01-11/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Harmonization Audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../charter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Charter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lineage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lineage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../genesis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Genesis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AirlineOps Exploration
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AirlineOps Exploration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#summary-governance-concepts-from-airlineops-that-gzkit-should-document" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary: Governance Concepts from AirlineOps That gzkit Should Document
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Summary: Governance Concepts from AirlineOps That gzkit Should Document">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-obpis-observable-behavioral-progress-indicators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. OBPIs (Observable Behavioral Progress Indicators)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-closeout-ceremonies-hard-mode-attestation-protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Closeout Ceremonies (Hard-Mode Attestation Protocol)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-daily-workflow-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Daily Workflow Patterns
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-adrobpighiaudit-linkage-and-topology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. ADR/OBPI/GHI/Audit Linkage and Topology
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-tooling-and-commands-for-managing-adrsobpis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Tooling and Commands for Managing ADRs/OBPIs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-five-gates-framework" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Five Gates Framework
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-key-invariants-and-governance-philosophy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Key Invariants and Governance Philosophy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-referenced-key-documents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Referenced Key Documents
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-takeaways-for-gzkit-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Takeaways for gzkit Documentation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files-for-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Files for Reference
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#summary-governance-concepts-from-airlineops-that-gzkit-should-document" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary: Governance Concepts from AirlineOps That gzkit Should Document
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Summary: Governance Concepts from AirlineOps That gzkit Should Document">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-obpis-observable-behavioral-progress-indicators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. OBPIs (Observable Behavioral Progress Indicators)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-closeout-ceremonies-hard-mode-attestation-protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Closeout Ceremonies (Hard-Mode Attestation Protocol)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-daily-workflow-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Daily Workflow Patterns
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-adrobpighiaudit-linkage-and-topology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. ADR/OBPI/GHI/Audit Linkage and Topology
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-tooling-and-commands-for-managing-adrsobpis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Tooling and Commands for Managing ADRs/OBPIs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-five-gates-framework" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Five Gates Framework
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-key-invariants-and-governance-philosophy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Key Invariants and Governance Philosophy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-referenced-key-documents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Referenced Key Documents
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-takeaways-for-gzkit-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Takeaways for gzkit Documentation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files-for-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Files for Reference
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="airlineops-govzero-exploration-verbatim">AirlineOps GovZero Exploration — Verbatim<a class="headerlink" href="#airlineops-govzero-exploration-verbatim" title="Permanent link">&para;</a></h1>
+<p><strong>Date:</strong> 2026-01-22
+<strong>Context:</strong> Raw output from exploring airlineops codebase to understand GovZero in practice</p>
+<hr />
+<h2 id="summary-governance-concepts-from-airlineops-that-gzkit-should-document">Summary: Governance Concepts from AirlineOps That gzkit Should Document<a class="headerlink" href="#summary-governance-concepts-from-airlineops-that-gzkit-should-document" title="Permanent link">&para;</a></h2>
+<p>Based on my thorough search of the airlineops codebase, here are the key governance concepts and practices that gzkit should document:</p>
+<hr />
+<h3 id="1-obpis-observable-behavioral-progress-indicators">1. OBPIs (Observable Behavioral Progress Indicators)<a class="headerlink" href="#1-obpis-observable-behavioral-progress-indicators" title="Permanent link">&para;</a></h3>
+<p><strong>What they are:</strong>
+- OBPI = "One Brief Per Item"
+- Atomic implementation units that map 1:1 to ADR checklist items
+- Each OBPI is a single markdown brief document describing exactly one piece of work
+- Located in <code>docs/design/adr/{adr-folder}/briefs/</code> or <code>docs/design/briefs/{adr-path}/</code></p>
+<p><strong>Numbering discipline (mandatory):</strong>
+- Sequential, zero-gap numbering: <code>OBPI-0.0.19-01</code>, <code>OBPI-0.0.19-02</code>, <code>OBPI-0.0.19-03</code>
+- If an ADR has 19 checklist items → OBPIs 01 through 19 (no gaps, no categorical grouping)
+- Pre-release identifier scheme: <code>0.1.15-obpi.03</code> (SemVer compliant)</p>
+<p><strong>OBPI anatomy:</strong>
+- Parent ADR reference and checklist item mapping
+- Objective statement
+- Lane designation (Lite/Heavy)
+- Allowed/Denied paths (scope boundaries)
+- Requirements (fail-closed)
+- Acceptance Criteria
+- Gate evidence (what commands/artifacts prove completion)</p>
+<p><strong>Example:</strong> <code>/Users/jeff/Documents/Code/airlineops/docs/design/adr/adr-0.0.x/ADR-0.0.19-AIRAC-orchestrated-warehouse-pipeline/briefs/OBPI-0.0.19-01-canonicalize-librarian.md</code></p>
+<hr />
+<h3 id="2-closeout-ceremonies-hard-mode-attestation-protocol">2. Closeout Ceremonies (Hard-Mode Attestation Protocol)<a class="headerlink" href="#2-closeout-ceremonies-hard-mode-attestation-protocol" title="Permanent link">&para;</a></h3>
+<p><strong>What it is:</strong>
+- A <strong>mode transition</strong> where the agent yields interpretive authority to the human
+- Triggered by human invocation: "ADR closeout ceremony" (or equivalents: "begin closeout", "closeout ADR-X.Y.Z")
+- Ensures human attestation is grounded in <strong>direct observation</strong>, not mediated through agent claims</p>
+<p><strong>Why it matters (epistemic integrity):</strong>
+- Prevents "mediated observation" where humans see reality only through agent lens
+- Agent presents <strong>paths and commands</strong>, not <strong>conclusions and outcomes</strong>
+- Human executes and observes directly; agent is a "silent index"
+- Eliminates corruption risk from agent errors/bias</p>
+<p><strong>Attestation forms (canonical):</strong>
+The human MUST provide exactly one of these explicit forms:
+- <strong>"Completed"</strong> — All work finished; claims verified
+- <strong>"Completed — Partial: [reason]"</strong> — Subset accepted; remainder deferred with documented rationale
+- <strong>"Dropped — [reason]"</strong> — ADR rejected; clear rationale provided</p>
+<p><strong>Agent behavior during closeout (MUST):</strong>
+1. Recognize the trigger phrase as mode transition
+2. Immediately yield interpretive authority
+3. Present <strong>raw artifact paths and commands</strong> for human execution, NOT summaries
+4. Wait for <strong>explicit</strong> human attestation before recording
+5. Run audit checks <strong>only after</strong> attestation (post-closeout)
+6. Reference gates by number only; defer to charter for definitions
+7. Surface audit-protocol.md for human reference</p>
+<p><strong>Agent behavior during closeout (MUST NOT):</strong>
+1. Summarize or interpret evidence outcomes
+2. Infer attestation from silence/continuation
+3. Auto-close based on passing checks
+4. Run audit during closeout mode
+5. Present ledger entries as proof of completion
+6. Redefine gate semantics
+7. Offer to "check if requirements are met" (human checks; agent presents paths)
+8. Proceed to post-closeout tasks until attestation recorded</p>
+<p><strong>Closeout Form template:</strong>
+- Located at <code>ADR-CLOSEOUT-FORM.md</code> in ADR folder
+- Optional workspace for collaboration during ceremony
+- Pre-attestation checklist, human attestation phase, post-attestation audit section
+- Phase markers: Phase 1 (COMPLETED) → Phase 2 (VALIDATED)</p>
+<p><strong>Example:</strong> <code>/Users/jeff/Documents/Code/airlineops/docs/design/adr/adr-0.0.x/ADR-0.0.19-AIRAC-orchestrated-warehouse-pipeline/ADR-CLOSEOUT-FORM.md</code></p>
+<hr />
+<h3 id="3-daily-workflow-patterns">3. Daily Workflow Patterns<a class="headerlink" href="#3-daily-workflow-patterns" title="Permanent link">&para;</a></h3>
+<p><strong>Git Sync Ritual:</strong>
+- Mentioned in CLAUDE.md as part of standard workflow
+- Command: <code>uv run -m opsdev git-sync --apply --lint --test</code>
+- Workflow element that integrates governance checks into development flow</p>
+<p><strong>Gate Progression Pattern (Lite Lane):</strong>
+1. <strong>Gate 1 (ADR):</strong> Record intent; checklist items → OBPI briefs
+2. <strong>Gate 2 (TDD):</strong> Passing tests; coverage ≥40%
+3. Lite lane complete; code merged</p>
+<p><strong>Gate Progression Pattern (Heavy Lane):</strong>
+1. <strong>Gate 1 (ADR):</strong> Record intent; detailed Feature Checklist
+2. <strong>Gate 2 (TDD):</strong> Passing tests; coverage ≥40%
+3. <strong>Gate 3 (Docs):</strong> Documentation build passes; markdown lint clean; links valid
+4. <strong>Gate 4 (BDD):</strong> Passing Behave scenarios for external contracts
+5. <strong>Gate 5 (Human Attestation):</strong> Closeout ceremony; explicit human attestation
+6. <strong>Post-Attestation:</strong> Audit run; ADR status → Validated</p>
+<p><strong>Documentation = Gate 5 Artifact (critical insight):</strong>
+- Gate 5 is NOT a separate deliverable; it's the <strong>result of comprehensive documentation updates</strong>
+- When code changes → operator documentation must reflect those changes
+- When workflows change → runbooks/walkthroughs must be updated
+- When contracts change → help text, CLI docs, user guides must be revised
+- Agents treat documentation updates as <strong>required, first-class delivery</strong> alongside code
+- No hand-holding; same rigor as Gates 1-4</p>
+<p><strong>Heavy Lane Documentation Obligation (no discretion):</strong>
+- Scan relevant docs BEFORE starting work
+- Update all affected documentation surfaces in the same PR/branch
+- Ensure docstrings match actual behavior
+- Ensure CLI help text is current
+- Ensure runbooks/walkthroughs have concrete, working examples
+- Ensure links/anchors are valid
+- Run markdown lint + mkdocs build to validate</p>
+<hr />
+<h3 id="4-adrobpighiaudit-linkage-and-topology">4. ADR/OBPI/GHI/Audit Linkage and Topology<a class="headerlink" href="#4-adrobpighiaudit-linkage-and-topology" title="Permanent link">&para;</a></h3>
+<p><strong>ADR structure (preferred modern layout):</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>docs/design/adr/adr-X.Y.x/ADR-X.Y.Z-{slug}/
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  ADR-X.Y.Z-{slug}.md           # Intent document
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>  ADR-CLOSEOUT-FORM.md          # Optional ceremony workspace
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  briefs/
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    OBPI-X.Y.Z-01-*.md          # Brief for checklist item 1
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    OBPI-X.Y.Z-02-*.md          # Brief for checklist item 2
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    ...                         # Sequential, no gaps
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>  audit/
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    AUDIT_PLAN.md               # Pre-audit plan
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    AUDIT.md                    # Post-attestation audit log
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    proofs/                     # Optional command outputs, receipts
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>  logs/
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    design-outcomes.jsonl       # Optional agent-facing metadata
+</code></pre></div></p>
+<p><strong>ADR Lifecycle States (canonical, mutually exclusive):</strong>
+1. <strong>Pool</strong> — Planned, lightweight intent only (pre-prioritization)
+2. <strong>Draft</strong> — Being authored; not ready for review
+3. <strong>Proposed</strong> — Submitted for review; awaiting acceptance
+4. <strong>Accepted</strong> — Approved; implementation may begin
+5. <strong>Completed</strong> — Implementation finished; Gate 5 attestation received
+6. <strong>Validated</strong> — Post-attestation audit completed (Phase 2)
+7. <strong>Superseded</strong> — Replaced by newer ADR
+8. <strong>Abandoned</strong> — Work stopped; clear rationale</p>
+<p><strong>Pre-release identifier scheme (SemVer compliant):</strong>
+- Format: <code>{major}.{minor}.{patch}[-{type}.{identifier}]</code>
+- Types:
+  - <code>pool.{slug}</code> — Planned ADR in pool (<code>0.2.0-pool.forecaster-core</code>)
+  - <code>obpi.{nn}</code> — OBPI in progress (<code>0.1.15-obpi.03</code>)
+  - <code>ghi.{nn}</code> — GitHub issue discovered during work (<code>0.1.15-ghi.67</code>)</p>
+<p><strong>OBPIs vs GHIs distinction:</strong>
+- <strong>OBPIs = planned work</strong> — scoped in advance, tied to ADR checklist items
+- <strong>GHIs = emergent work</strong> — bugs, surprises, asides discovered while fulfilling OBPI
+- GHIs are NOT OBPI-level work themselves; they're discovered needs surfaced during execution</p>
+<hr />
+<h3 id="5-tooling-and-commands-for-managing-adrsobpis">5. Tooling and Commands for Managing ADRs/OBPIs<a class="headerlink" href="#5-tooling-and-commands-for-managing-adrsobpis" title="Permanent link">&para;</a></h3>
+<p><strong>Core Skills (workflow automation):</strong></p>
+<p>Available as reusable procedures in <code>.github/skills/</code>:</p>
+<ol>
+<li><strong>gz-adr-create</strong> (<code>SKILL.md</code>)</li>
+<li>Create/update ADR documents</li>
+<li>
+<p>Structure ADR folder, initialize briefs, update registries</p>
+</li>
+<li>
+<p><strong>gz-obpi-brief</strong> (<code>SKILL.md</code>)</p>
+</li>
+<li>Generate compliant OBPI markdown brief</li>
+<li>Enforce One Brief Per Item discipline</li>
+<li>
+<p>Template-driven with Heavy Lane mandatory planning template</p>
+</li>
+<li>
+<p><strong>gz-adr-closeout-ceremony</strong> (<code>SKILL.md</code>)</p>
+</li>
+<li>Execute closeout ceremony protocol</li>
+<li>Present artifact paths/commands-only summary</li>
+<li>
+<p>Guide human through direct observation (no interpretation)</p>
+</li>
+<li>
+<p><strong>gz-adr-audit</strong> (<code>SKILL.md</code>)</p>
+</li>
+<li>Gate-5 audit templates and procedure</li>
+<li>
+<p>Post-attestation reconciliation</p>
+</li>
+<li>
+<p><strong>gz-adr-sync</strong> (<code>SKILL.md</code>)</p>
+</li>
+<li>Sync ADR index and status tables from source files</li>
+<li>
+<p>Detect and reconcile drift</p>
+</li>
+<li>
+<p><strong>gz-obpi-sync</strong> (<code>SKILL.md</code>)</p>
+</li>
+<li>Sync OBPI status in ADR table from brief sources</li>
+<li>
+<p>Detect and reconcile drift</p>
+</li>
+<li>
+<p><strong>gz-adr-verification</strong> (<code>SKILL.md</code>)</p>
+</li>
+<li>Generate ADR→tests verification report</li>
+<li>Use @covers mappings to link ADR to test coverage</li>
+</ol>
+<p><strong>Governance Manifest:</strong>
+- Machine-readable governance config at <code>config/governance_manifest.json</code>
+- Canonical reference for verification commands, gate definitions, doctrine</p>
+<p><strong>Registries (must stay in sync):</strong>
+- <code>docs/design/adr/adr_index.md</code>
+- <code>docs/design/adr/adr_status.md</code>
+- <code>docs/governance/GovZero/adr-status.md</code> (canonical location)</p>
+<hr />
+<h3 id="6-five-gates-framework">6. Five Gates Framework<a class="headerlink" href="#6-five-gates-framework" title="Permanent link">&para;</a></h3>
+<p><strong>Gate definitions (sole authority: <code>charter.md</code>):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Gate</th>
+<th>Purpose</th>
+<th>Lane</th>
+<th>Artifact</th>
+<th>Authority</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Gate 1</strong></td>
+<td>Record intent &amp; tradeoffs</td>
+<td>Lite, Heavy</td>
+<td>ADR document with problem/decision/consequences</td>
+<td>ADR author</td>
+</tr>
+<tr>
+<td><strong>Gate 2</strong></td>
+<td>Verify implementation correctness</td>
+<td>Lite, Heavy</td>
+<td>Passing unit tests; coverage ≥40%</td>
+<td>CI/test results</td>
+</tr>
+<tr>
+<td><strong>Gate 3</strong></td>
+<td>Ensure docs describe behavior accurately</td>
+<td>Heavy only</td>
+<td>Clean markdown lint, mkdocs build passes, links/anchors valid</td>
+<td>Markdown validator + manual review</td>
+</tr>
+<tr>
+<td><strong>Gate 4</strong></td>
+<td>Verify external contract behavior</td>
+<td>Heavy only</td>
+<td>Passing Behave scenarios for CLI/API/schema contracts</td>
+<td>Behave test results</td>
+</tr>
+<tr>
+<td><strong>Gate 5</strong></td>
+<td>Human directly observes &amp; attests</td>
+<td>Heavy only</td>
+<td>Explicit human attestation recorded with timestamp</td>
+<td><strong>Human attestation only</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Lane Selection:</strong>
+- <strong>Lite:</strong> Internal changes only (no external contract changes)
+- <strong>Heavy:</strong> External contract changes (CLI, API, schema, error messages)</p>
+<hr />
+<h3 id="7-key-invariants-and-governance-philosophy">7. Key Invariants and Governance Philosophy<a class="headerlink" href="#7-key-invariants-and-governance-philosophy" title="Permanent link">&para;</a></h3>
+<p><strong>Alignment Chain Covenant:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>Intent (ADR/OBPI) ↔ Code (behavior) ↔ Docs (claims)
+</code></pre></div>
+All three links must hold. If any breaks, work isn't done.</p>
+<p><strong>Scope expansion is not scope creep:</strong>
+- Agents own work completely
+- Never defer or say "out of scope"
+- Fix everything broken/misaligned immediately</p>
+<p><strong>Documentation is not optional for Heavy lane:</strong>
+- Operator runbooks, walkthroughs, docstrings, mkdocs docs
+- All surfaces must form coherent public contract
+- No hand-holding; treat as first-class delivery</p>
+<p><strong>Human authority is singular:</strong>
+- Only humans can attest to ADR completion (Gate 5)
+- Agents present artifacts; humans observe and attest
+- Audit runs <strong>post-attestation</strong> for reconciliation only
+- Ledgers/logs are agent-facing, not proof</p>
+<hr />
+<h3 id="8-referenced-key-documents">8. Referenced Key Documents<a class="headerlink" href="#8-referenced-key-documents" title="Permanent link">&para;</a></h3>
+<p><strong>GovZero Canon (in <code>docs/governance/GovZero/</code>):</strong>
+- <code>charter.md</code> — Sole authority for gate definitions
+- <code>adr-lifecycle.md</code> — Lifecycle states, pre-release identifiers, status mapping
+- <code>adr-obpi-ghi-audit-linkage.md</code> — Canonical linkage rules, artifact placement
+- <code>audit-protocol.md</code> — Closeout ceremony behavior, agent scripts</p>
+<p><strong>Key Governance Files:</strong>
+- <code>/AGENTS.md</code> — AI agent contract; GovZero v6 multi-agent edition
+- <code>docs/design/adr/CLAUDE.md</code> — ADR governance rules for Claude Code
+- <code>docs/governance/gate5_documentation_obligation.md</code> — Gate 5 definitive rules
+- <code>docs/governance/AGENTS_MD_BEHAVIORAL_INVENTORY.md</code> — Behavioral checklist</p>
+<hr />
+<h3 id="key-takeaways-for-gzkit-documentation">Key Takeaways for gzkit Documentation<a class="headerlink" href="#key-takeaways-for-gzkit-documentation" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>OBPIs are the atomic unit of work</strong> — each maps to one checklist item; numbering must be sequential</li>
+<li><strong>Closeout ceremony is a mode transition</strong> — agent yields authority; human observes directly (never through agent interpretation)</li>
+<li><strong>Documentation IS the Gate 5 artifact</strong> — not a separate deliverable; comprehensive doc updates are required for Heavy lane</li>
+<li><strong>Five Gates form an integrity chain</strong> — all must pass; ADR intent must align with code behavior and documentation claims</li>
+<li><strong>Governance is executable</strong> — lives in markdown, validated by Python CLI (gzkit)</li>
+<li><strong>Human attestation is the closure gate</strong> — agents present; humans attest; audit reconciles post-attestation</li>
+<li><strong>Skills provide reusable procedures</strong> — ADR creation, OBPI generation, closeout ceremony, audit, sync/verification</li>
+</ol>
+<hr />
+<h3 id="files-for-reference">Files for Reference<a class="headerlink" href="#files-for-reference" title="Permanent link">&para;</a></h3>
+<p><strong>Absolute paths to key documents:</strong>
+- <code>/Users/jeff/Documents/Code/airlineops/docs/governance/GovZero/charter.md</code>
+- <code>/Users/jeff/Documents/Code/airlineops/docs/governance/GovZero/adr-lifecycle.md</code>
+- <code>/Users/jeff/Documents/Code/airlineops/docs/governance/GovZero/adr-obpi-ghi-audit-linkage.md</code>
+- <code>/Users/jeff/Documents/Code/airlineops/docs/governance/GovZero/audit-protocol.md</code>
+- <code>/Users/jeff/Documents/Code/airlineops/AGENTS.md</code>
+- <code>/Users/jeff/Documents/Code/airlineops/docs/design/adr/CLAUDE.md</code>
+- <code>/Users/jeff/Documents/Code/airlineops/docs/governance/gate5_documentation_obligation.md</code>
+- <code>/Users/jeff/Documents/Code/airlineops/.github/skills/gz-adr-*</code> (suite of skills)</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      The human is index zero.
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/tvproductions/gzkit" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.sections", "navigation.expand", "navigation.top", "toc.follow", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
