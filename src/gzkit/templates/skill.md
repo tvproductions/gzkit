@@ -1,6 +1,14 @@
 ---
 name: {skill_slug}
 description: {skill_description}
+compatibility: {compatibility}
+invocation: {invocation}
+gz_command: {gz_command}
+metadata:
+  skill-version: "{metadata_skill_version}"
+  govzero-framework-version: "{metadata_govzero_framework_version}"
+  govzero-author: "{metadata_govzero_author}"
+  govzero_layer: "{metadata_govzero_layer}"
 lifecycle_state: {lifecycle_state}
 owner: {owner}
 last_reviewed: {last_reviewed}

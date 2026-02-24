@@ -18,18 +18,34 @@ from gzkit.sync import (
 )
 
 
-def _skill_markdown(name: str) -> str:
-    return (
-        "---\n"
-        f"name: {name}\n"
-        "description: Demo skill\n"
-        "lifecycle_state: active\n"
-        "owner: gzkit-governance\n"
-        "last_reviewed: 2026-02-21\n"
-        "---\n\n"
-        "# SKILL.md\n\n"
-        "Skill body.\n"
-    )
+def _skill_markdown(
+    name: str,
+    *,
+    compatibility: str | None = None,
+    invocation: str | None = None,
+    gz_command: str | None = None,
+    metadata: dict[str, str] | None = None,
+) -> str:
+    lines = [
+        "---",
+        f"name: {name}",
+        "description: Demo skill",
+        "lifecycle_state: active",
+        "owner: gzkit-governance",
+        "last_reviewed: 2026-02-21",
+    ]
+    if compatibility is not None:
+        lines.append(f"compatibility: {compatibility}")
+    if invocation is not None:
+        lines.append(f"invocation: {invocation}")
+    if gz_command is not None:
+        lines.append(f"gz_command: {gz_command}")
+    if metadata is not None:
+        lines.append("metadata:")
+        for key, value in metadata.items():
+            lines.append(f"  {key}: {value}")
+    lines.extend(["---", "", "# SKILL.md", "", "Skill body.", ""])
+    return "\n".join(lines)
 
 
 class TestDetectProjectStructure(unittest.TestCase):
@@ -491,6 +507,50 @@ class TestSyncControlSurfaces(unittest.TestCase):
             legacy_skill = project_root / config.paths.copilot_skills / "legacy-skill"
             legacy_skill.mkdir(parents=True, exist_ok=True)
             (legacy_skill / "SKILL.md").write_text(_skill_markdown("legacy-skill"))
+
+            blockers = collect_canonical_sync_blockers(project_root, config)
+            self.assertEqual(blockers, [])
+
+    def test_canonical_sync_preflight_blocks_invalid_metadata_govzero_layer(self) -> None:
+        """Invalid known metadata values are blocking preflight errors."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            broken_skill = project_root / config.paths.skills / "broken-skill"
+            broken_skill.mkdir(parents=True, exist_ok=True)
+            (broken_skill / "SKILL.md").write_text(
+                _skill_markdown(
+                    "broken-skill",
+                    metadata={"govzero_layer": "Layer 99 — Unknown"},
+                )
+            )
+
+            blockers = collect_canonical_sync_blockers(project_root, config)
+            self.assertTrue(
+                any(
+                    "invalid metadata.govzero_layer 'Layer 99 — Unknown'" in blocker
+                    for blocker in blockers
+                )
+            )
+
+    def test_canonical_sync_preflight_allows_unknown_metadata_keys(self) -> None:
+        """Unknown metadata keys remain allowed for compatibility."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            skill_dir = project_root / config.paths.skills / "demo-skill"
+            skill_dir.mkdir(parents=True, exist_ok=True)
+            (skill_dir / "SKILL.md").write_text(
+                _skill_markdown(
+                    "demo-skill",
+                    metadata={
+                        "govzero_layer": "Layer 1 — Evidence Gathering",
+                        "custom-key": "custom-value",
+                    },
+                )
+            )
 
             blockers = collect_canonical_sync_blockers(project_root, config)
             self.assertEqual(blockers, [])

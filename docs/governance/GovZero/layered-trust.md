@@ -246,6 +246,24 @@ or `**Layer:**` callout) explaining the layer behavior in human terms.
 
 This makes the architecture explicit and machine-readable.
 
+### Skill Taxonomy Contract
+
+Canonical skill frontmatter is grouped into taxonomy classes:
+
+- Identity: `name`, `description`
+- Lifecycle (required): `lifecycle_state`, `owner`, `last_reviewed`
+- Capability (optional): `compatibility`, `invocation`, `gz_command`, `metadata.*`
+
+Known `metadata` keys validated when present:
+
+- `skill-version` (`X.Y.Z`)
+- `govzero-framework-version` (`vN` or `vN.N.N`)
+- `govzero-author` (non-empty)
+- `govzero_layer` (one of the canonical layer labels above)
+
+Mirror parity is fail-closed for required identity/lifecycle fields. Optional capability and metadata
+fields are also fail-closed when canonical skills define them.
+
 ---
 
 ## See Also

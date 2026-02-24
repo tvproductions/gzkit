@@ -1009,7 +1009,13 @@ class TestSkillCommands(unittest.TestCase):
             runner.invoke(main, ["init"])
             result = runner.invoke(main, ["skill", "new", "my-skill"])
             self.assertEqual(result.exit_code, 0)
-            self.assertTrue(Path(".gzkit/skills/my-skill/SKILL.md").exists())
+            skill_file = Path(".gzkit/skills/my-skill/SKILL.md")
+            self.assertTrue(skill_file.exists())
+            content = skill_file.read_text(encoding="utf-8")
+            self.assertIn("compatibility:", content)
+            self.assertIn("invocation:", content)
+            self.assertIn("gz_command:", content)
+            self.assertIn("metadata:", content)
 
     def test_init_scaffolds_adr_create_and_removes_adr_manager(self) -> None:
         """core skill scaffolding uses gz-adr-create hard cutover."""

@@ -19,14 +19,24 @@ ALLOWED_ID_PREFIXES = ("ADR-", "PRD-", "OBPI-")
 ALLOWED_LANES = {"lite", "heavy"}
 SKILL_NAME_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 SKILL_LAST_REVIEWED_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-SKILL_REQUIRED_FRONTMATTER_FIELDS = (
-    "name",
-    "description",
-    "lifecycle_state",
-    "owner",
-    "last_reviewed",
+SKILL_IDENTITY_FIELDS = ("name", "description")
+SKILL_LIFECYCLE_FIELDS = ("lifecycle_state", "owner", "last_reviewed")
+SKILL_REQUIRED_FRONTMATTER_FIELDS = SKILL_IDENTITY_FIELDS + SKILL_LIFECYCLE_FIELDS
+SKILL_CAPABILITY_FIELDS = ("compatibility", "invocation", "gz_command")
+SKILL_METADATA_KEYS = (
+    "metadata.skill-version",
+    "metadata.govzero-framework-version",
+    "metadata.govzero-author",
+    "metadata.govzero_layer",
 )
+SKILL_VERSION_RE = re.compile(r"^\d+\.\d+\.\d+$")
+SKILL_FRAMEWORK_VERSION_RE = re.compile(r"^v\d+(?:\.\d+){0,2}$")
 SKILL_LIFECYCLE_STATES = {"draft", "active", "deprecated", "retired"}
+SKILL_GOVZERO_LAYERS = {
+    "Layer 1 — Evidence Gathering",
+    "Layer 2 — Ledger Consumption",
+    "Layer 3 — File Sync",
+}
 
 
 def detect_project_structure(project_root: Path) -> dict[str, str]:
@@ -478,16 +488,32 @@ def _parse_skill_frontmatter(skill_file: Path) -> dict[str, str]:
         return {}
 
     frontmatter: dict[str, str] = {}
+    active_map_key: str | None = None
     for raw in lines[1:]:
         stripped = raw.strip()
         if stripped == "---":
             return frontmatter
         if not stripped or raw.lstrip().startswith("#"):
             continue
-        if raw.startswith((" ", "\t")) or ":" not in raw:
+        if raw.startswith((" ", "\t")):
+            if active_map_key and ":" in stripped:
+                key, value = stripped.split(":", 1)
+                nested_key = f"{active_map_key}.{key.strip()}"
+                frontmatter[nested_key] = value.strip().strip("\"'")
             continue
-        key, value = raw.split(":", 1)
-        frontmatter[key.strip()] = value.strip().strip("\"'")
+
+        active_map_key = None
+        if ":" not in stripped:
+            continue
+
+        key, value = stripped.split(":", 1)
+        normalized_key = key.strip()
+        normalized_value = value.strip().strip("\"'")
+        if not value.strip() and normalized_key == "metadata":
+            active_map_key = normalized_key
+            continue
+
+        frontmatter[normalized_key] = normalized_value
 
     return {}
 
@@ -513,10 +539,29 @@ def _validate_skill_frontmatter(
 ) -> list[str]:
     """Collect canonical frontmatter validation errors for one skill file."""
     errors: list[str] = []
-    for field in SKILL_REQUIRED_FRONTMATTER_FIELDS:
-        if not frontmatter.get(field, ""):
-            errors.append(f"{rel_file}: missing frontmatter field '{field}'.")
+    errors.extend(_validate_required_frontmatter_fields(frontmatter, rel_file))
+    errors.extend(_validate_frontmatter_name(frontmatter, rel_file, skill_name))
+    errors.extend(_validate_lifecycle_field_values(frontmatter, rel_file))
+    errors.extend(_validate_capability_field_values(frontmatter, rel_file))
+    errors.extend(_validate_known_metadata_values(frontmatter, rel_file))
+    return errors
 
+
+def _validate_required_frontmatter_fields(frontmatter: dict[str, str], rel_file: str) -> list[str]:
+    """Validate required identity/lifecycle fields."""
+    errors: list[str] = []
+    for field in SKILL_REQUIRED_FRONTMATTER_FIELDS:
+        if frontmatter.get(field, ""):
+            continue
+        errors.append(f"{rel_file}: missing frontmatter field '{field}'.")
+    return errors
+
+
+def _validate_frontmatter_name(
+    frontmatter: dict[str, str], rel_file: str, skill_name: str
+) -> list[str]:
+    """Validate declared name against directory/name contract."""
+    errors: list[str] = []
     declared_name = frontmatter.get("name", "")
     if declared_name and declared_name != skill_name:
         errors.append(
@@ -524,7 +569,12 @@ def _validate_skill_frontmatter(
         )
     elif declared_name and not SKILL_NAME_RE.match(declared_name):
         errors.append(f"{rel_file}: frontmatter name must be kebab-case.")
+    return errors
 
+
+def _validate_lifecycle_field_values(frontmatter: dict[str, str], rel_file: str) -> list[str]:
+    """Validate lifecycle enum and date format fields."""
+    errors: list[str] = []
     lifecycle_state = frontmatter.get("lifecycle_state", "")
     if lifecycle_state and lifecycle_state not in SKILL_LIFECYCLE_STATES:
         allowed = ", ".join(sorted(SKILL_LIFECYCLE_STATES))
@@ -535,6 +585,51 @@ def _validate_skill_frontmatter(
     last_reviewed = frontmatter.get("last_reviewed", "")
     if last_reviewed and not SKILL_LAST_REVIEWED_RE.match(last_reviewed):
         errors.append(f"{rel_file}: invalid last_reviewed '{last_reviewed}' (YYYY-MM-DD).")
+    return errors
+
+
+def _validate_capability_field_values(frontmatter: dict[str, str], rel_file: str) -> list[str]:
+    """Validate optional capability fields when present."""
+    errors: list[str] = []
+    for field in SKILL_CAPABILITY_FIELDS:
+        if field in frontmatter and not frontmatter[field]:
+            errors.append(f"{rel_file}: capability field '{field}' cannot be empty when present.")
+    return errors
+
+
+def _validate_known_metadata_values(frontmatter: dict[str, str], rel_file: str) -> list[str]:
+    """Validate known metadata.* keys when present."""
+    errors: list[str] = []
+
+    skill_version = frontmatter.get("metadata.skill-version")
+    if skill_version == "":
+        errors.append(f"{rel_file}: metadata.skill-version cannot be empty when present.")
+    elif skill_version and not SKILL_VERSION_RE.match(skill_version):
+        errors.append(
+            f"{rel_file}: invalid metadata.skill-version '{skill_version}' (expected X.Y.Z)."
+        )
+
+    framework_version = frontmatter.get("metadata.govzero-framework-version")
+    if framework_version == "":
+        errors.append(
+            f"{rel_file}: metadata.govzero-framework-version cannot be empty when present."
+        )
+    elif framework_version and not SKILL_FRAMEWORK_VERSION_RE.match(framework_version):
+        errors.append(
+            f"{rel_file}: invalid metadata.govzero-framework-version '{framework_version}' "
+            "(expected vN or vN.N.N)."
+        )
+
+    govzero_author = frontmatter.get("metadata.govzero-author")
+    if govzero_author == "":
+        errors.append(f"{rel_file}: metadata.govzero-author cannot be empty when present.")
+
+    govzero_layer = frontmatter.get("metadata.govzero_layer")
+    if govzero_layer and govzero_layer not in SKILL_GOVZERO_LAYERS:
+        allowed = ", ".join(sorted(SKILL_GOVZERO_LAYERS))
+        errors.append(
+            f"{rel_file}: invalid metadata.govzero_layer '{govzero_layer}' (allowed: {allowed})."
+        )
 
     return errors
 
