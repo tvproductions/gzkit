@@ -53,7 +53,23 @@ CORE_SKILLS = {
 
 KEBAB_CASE_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 LIFECYCLE_STATES = {"draft", "active", "deprecated", "retired"}
-SKILL_IDENTITY_FIELDS = ("name", "description", "lifecycle_state", "owner", "last_reviewed")
+SKILL_IDENTITY_FIELDS = ("name", "description")
+SKILL_LIFECYCLE_FIELDS = ("lifecycle_state", "owner", "last_reviewed")
+SKILL_REQUIRED_FIELDS = SKILL_IDENTITY_FIELDS + SKILL_LIFECYCLE_FIELDS
+SKILL_CAPABILITY_FIELDS = ("compatibility", "invocation", "gz_command")
+SKILL_METADATA_KEYS = (
+    "metadata.skill-version",
+    "metadata.govzero-framework-version",
+    "metadata.govzero-author",
+    "metadata.govzero_layer",
+)
+SKILL_VERSION_RE = re.compile(r"^\d+\.\d+\.\d+$")
+SKILL_FRAMEWORK_VERSION_RE = re.compile(r"^v\d+(?:\.\d+){0,2}$")
+SKILL_GOVZERO_LAYERS = {
+    "Layer 1 — Evidence Gathering",
+    "Layer 2 — Ledger Consumption",
+    "Layer 3 — File Sync",
+}
 
 
 @dataclass
@@ -116,20 +132,35 @@ def _parse_frontmatter(content: str) -> tuple[dict[str, str], str]:
         return {}, content
 
     frontmatter: dict[str, str] = {}
+    active_map_key: str | None = None
     end_idx = -1
     for idx, raw in enumerate(lines[1:], start=1):
-        if raw.strip() == "---":
+        stripped = raw.strip()
+        if stripped == "---":
             end_idx = idx
             break
-        if not raw.strip() or raw.lstrip().startswith("#"):
+        if not stripped or raw.lstrip().startswith("#"):
             continue
+
         if raw.startswith((" ", "\t")):
-            # Ignore nested YAML blocks for this lightweight parser.
+            if active_map_key and ":" in stripped:
+                key, value = stripped.split(":", 1)
+                nested_key = f"{active_map_key}.{key.strip()}"
+                frontmatter[nested_key] = value.strip().strip("\"'")
             continue
-        if ":" not in raw:
+
+        active_map_key = None
+        if ":" not in stripped:
             continue
-        key, value = raw.split(":", 1)
-        frontmatter[key.strip()] = value.strip().strip("\"'")
+
+        key, value = stripped.split(":", 1)
+        normalized_key = key.strip()
+        normalized_value = value.strip().strip("\"'")
+        if not value.strip() and normalized_key == "metadata":
+            active_map_key = normalized_key
+            continue
+
+        frontmatter[normalized_key] = normalized_value
 
     if end_idx == -1:
         return {}, content
@@ -199,6 +230,13 @@ def scaffold_skill(
         "skill_slug": dir_name,
         "skill_name": dir_name.replace("-", " ").title(),
         "skill_description": "A custom skill for this project.",
+        "compatibility": "Project-local skill contract.",
+        "invocation": "Describe the CLI invocation used for this skill.",
+        "gz_command": "describe-command-surface",
+        "metadata_skill_version": "1.0.0",
+        "metadata_govzero_framework_version": "v6",
+        "metadata_govzero_author": "gzkit-governance",
+        "metadata_govzero_layer": "Layer 1 — Evidence Gathering",
         "lifecycle_state": "active",
         "owner": "gzkit-governance",
         "last_reviewed": date.today().isoformat(),
@@ -366,25 +404,40 @@ def _validate_skill_metadata_fields(
     frontmatter: dict[str, str],
 ) -> None:
     """Validate metadata fields for one canonical skill."""
-    if not frontmatter.get("description", ""):
+    _validate_required_skill_fields(project_root, issues, skill_file, frontmatter)
+    _validate_lifecycle_field_values(project_root, issues, skill_file, frontmatter)
+    _validate_capability_fields(project_root, issues, skill_file, frontmatter)
+    _validate_known_metadata_fields(project_root, issues, skill_file, frontmatter)
+
+
+def _validate_required_skill_fields(
+    project_root: Path,
+    issues: list[SkillAuditIssue],
+    skill_file: Path,
+    frontmatter: dict[str, str],
+) -> None:
+    """Validate required identity/lifecycle fields."""
+    for field in SKILL_REQUIRED_FIELDS:
+        if frontmatter.get(field, ""):
+            continue
         _append_audit_issue(
             issues,
             project_root,
             "error",
             skill_file,
-            "Missing frontmatter field: description.",
+            f"Missing frontmatter field: {field}.",
         )
 
+
+def _validate_lifecycle_field_values(
+    project_root: Path,
+    issues: list[SkillAuditIssue],
+    skill_file: Path,
+    frontmatter: dict[str, str],
+) -> None:
+    """Validate lifecycle enum/date constraints."""
     lifecycle_state = frontmatter.get("lifecycle_state", "")
-    if not lifecycle_state:
-        _append_audit_issue(
-            issues,
-            project_root,
-            "error",
-            skill_file,
-            "Missing frontmatter field: lifecycle_state.",
-        )
-    elif lifecycle_state not in LIFECYCLE_STATES:
+    if lifecycle_state and lifecycle_state not in LIFECYCLE_STATES:
         allowed = ", ".join(sorted(LIFECYCLE_STATES))
         _append_audit_issue(
             issues,
@@ -394,31 +447,103 @@ def _validate_skill_metadata_fields(
             f"Invalid lifecycle_state '{lifecycle_state}'. Allowed: {allowed}.",
         )
 
-    if not frontmatter.get("owner", ""):
-        _append_audit_issue(
-            issues,
-            project_root,
-            "error",
-            skill_file,
-            "Missing frontmatter field: owner.",
-        )
-
     last_reviewed = frontmatter.get("last_reviewed", "")
-    if not last_reviewed:
-        _append_audit_issue(
-            issues,
-            project_root,
-            "error",
-            skill_file,
-            "Missing frontmatter field: last_reviewed.",
-        )
-    elif not re.match(r"^\d{4}-\d{2}-\d{2}$", last_reviewed):
+    if last_reviewed and not re.match(r"^\d{4}-\d{2}-\d{2}$", last_reviewed):
         _append_audit_issue(
             issues,
             project_root,
             "error",
             skill_file,
             f"Invalid last_reviewed '{last_reviewed}' (expected YYYY-MM-DD).",
+        )
+
+
+def _validate_capability_fields(
+    project_root: Path,
+    issues: list[SkillAuditIssue],
+    skill_file: Path,
+    frontmatter: dict[str, str],
+) -> None:
+    """Validate optional capability fields when present."""
+    for field in SKILL_CAPABILITY_FIELDS:
+        if field not in frontmatter:
+            continue
+        if frontmatter[field]:
+            continue
+        _append_audit_issue(
+            issues,
+            project_root,
+            "error",
+            skill_file,
+            f"Capability field '{field}' cannot be empty when present.",
+        )
+
+
+def _validate_known_metadata_fields(
+    project_root: Path,
+    issues: list[SkillAuditIssue],
+    skill_file: Path,
+    frontmatter: dict[str, str],
+) -> None:
+    """Validate known metadata.* keys when present."""
+    skill_version = frontmatter.get("metadata.skill-version")
+    if skill_version == "":
+        _append_audit_issue(
+            issues,
+            project_root,
+            "error",
+            skill_file,
+            "metadata.skill-version cannot be empty when present.",
+        )
+    elif skill_version and not SKILL_VERSION_RE.match(skill_version):
+        _append_audit_issue(
+            issues,
+            project_root,
+            "error",
+            skill_file,
+            f"Invalid metadata.skill-version '{skill_version}' (expected X.Y.Z).",
+        )
+
+    framework_version = frontmatter.get("metadata.govzero-framework-version")
+    if framework_version == "":
+        _append_audit_issue(
+            issues,
+            project_root,
+            "error",
+            skill_file,
+            "metadata.govzero-framework-version cannot be empty when present.",
+        )
+    elif framework_version and not SKILL_FRAMEWORK_VERSION_RE.match(framework_version):
+        _append_audit_issue(
+            issues,
+            project_root,
+            "error",
+            skill_file,
+            (
+                "Invalid metadata.govzero-framework-version "
+                f"'{framework_version}' (expected vN or vN.N.N)."
+            ),
+        )
+
+    govzero_author = frontmatter.get("metadata.govzero-author")
+    if govzero_author == "":
+        _append_audit_issue(
+            issues,
+            project_root,
+            "error",
+            skill_file,
+            "metadata.govzero-author cannot be empty when present.",
+        )
+
+    govzero_layer = frontmatter.get("metadata.govzero_layer")
+    if govzero_layer and govzero_layer not in SKILL_GOVZERO_LAYERS:
+        allowed = ", ".join(sorted(SKILL_GOVZERO_LAYERS))
+        _append_audit_issue(
+            issues,
+            project_root,
+            "error",
+            skill_file,
+            f"Invalid metadata.govzero_layer '{govzero_layer}'. Allowed: {allowed}.",
         )
 
 
@@ -504,8 +629,8 @@ def _validate_mirror_root(
         )
 
     shared_names = sorted(canonical_names & mirror_names)
-    mirrored_fields = SKILL_IDENTITY_FIELDS
     for name in shared_names:
+        mirrored_fields = list(SKILL_REQUIRED_FIELDS)
         canonical_file = canonical_dirs[name] / "SKILL.md"
         mirror_file = mirror_dirs[name] / "SKILL.md"
         if not mirror_file.exists():
@@ -550,6 +675,14 @@ def _validate_mirror_root(
                     f"must match mirrored directory name '{name}'."
                 ),
             )
+
+        for field in SKILL_CAPABILITY_FIELDS:
+            if field in canonical_frontmatter:
+                mirrored_fields.append(field)
+
+        for field in SKILL_METADATA_KEYS:
+            if field in canonical_frontmatter:
+                mirrored_fields.append(field)
 
         for field in mirrored_fields:
             if canonical_frontmatter.get(field) == mirror_frontmatter.get(field):
