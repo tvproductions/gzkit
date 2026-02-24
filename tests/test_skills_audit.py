@@ -9,8 +9,10 @@ from gzkit.skills import audit_skills
 from gzkit.sync import sync_skill_mirrors
 
 
-def _skill_frontmatter(name: str, **overrides: str) -> dict[str, str]:
-    fields = {
+def _skill_frontmatter(
+    name: str, **overrides: str | dict[str, str]
+) -> dict[str, str | dict[str, str]]:
+    fields: dict[str, str | dict[str, str]] = {
         "name": name,
         "description": "Demo skill",
         "lifecycle_state": "active",
@@ -26,7 +28,7 @@ def _write_skill(
     root_rel: str,
     skill_dir_name: str,
     *,
-    frontmatter: dict[str, str] | None = None,
+    frontmatter: dict[str, str | dict[str, str]] | None = None,
     include_frontmatter: bool = True,
 ) -> None:
     skill_dir = project_root / root_rel / skill_dir_name
@@ -40,6 +42,11 @@ def _write_skill(
     lines = ["---"]
     frontmatter = frontmatter or _skill_frontmatter(skill_dir_name)
     for key, value in frontmatter.items():
+        if isinstance(value, dict):
+            lines.append(f"{key}:")
+            for nested_key, nested_value in value.items():
+                lines.append(f"  {nested_key}: {nested_value}")
+            continue
         lines.append(f"{key}: {value}")
     lines.extend(
         [
@@ -81,6 +88,139 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
                     for issue in report.issues
                 )
             )
+
+    def test_optional_capability_drift_blocks_audit_when_declared_in_canonical(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            _write_skill(
+                project_root,
+                config.paths.skills,
+                "demo-skill",
+                frontmatter=_skill_frontmatter("demo-skill", compatibility="GovZero v6"),
+            )
+            _write_skill(
+                project_root,
+                config.paths.codex_skills,
+                "demo-skill",
+                frontmatter=_skill_frontmatter("demo-skill", compatibility="Different contract"),
+            )
+            _write_skill(
+                project_root,
+                config.paths.claude_skills,
+                "demo-skill",
+                frontmatter=_skill_frontmatter("demo-skill", compatibility="GovZero v6"),
+            )
+            _write_skill(
+                project_root,
+                config.paths.copilot_skills,
+                "demo-skill",
+                frontmatter=_skill_frontmatter("demo-skill", compatibility="GovZero v6"),
+            )
+
+            report = audit_skills(project_root, config)
+            self.assertFalse(report.valid)
+            self.assertTrue(
+                any(
+                    "Mirror field drift for 'compatibility'" in issue.message
+                    for issue in report.issues
+                )
+            )
+
+    def test_optional_capability_fields_can_be_absent(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            _write_skill(project_root, config.paths.skills, "demo-skill")
+            _write_skill(project_root, config.paths.codex_skills, "demo-skill")
+            _write_skill(project_root, config.paths.claude_skills, "demo-skill")
+            _write_skill(project_root, config.paths.copilot_skills, "demo-skill")
+
+            report = audit_skills(project_root, config)
+            self.assertTrue(report.valid)
+
+    def test_invalid_known_metadata_key_blocks_audit(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            _write_skill(
+                project_root,
+                config.paths.skills,
+                "demo-skill",
+                frontmatter=_skill_frontmatter(
+                    "demo-skill", metadata={"govzero_layer": "Layer 99 — Unknown"}
+                ),
+            )
+            _write_skill(
+                project_root,
+                config.paths.codex_skills,
+                "demo-skill",
+                frontmatter=_skill_frontmatter(
+                    "demo-skill", metadata={"govzero_layer": "Layer 99 — Unknown"}
+                ),
+            )
+            _write_skill(
+                project_root,
+                config.paths.claude_skills,
+                "demo-skill",
+                frontmatter=_skill_frontmatter(
+                    "demo-skill", metadata={"govzero_layer": "Layer 99 — Unknown"}
+                ),
+            )
+            _write_skill(
+                project_root,
+                config.paths.copilot_skills,
+                "demo-skill",
+                frontmatter=_skill_frontmatter(
+                    "demo-skill", metadata={"govzero_layer": "Layer 99 — Unknown"}
+                ),
+            )
+
+            report = audit_skills(project_root, config)
+            self.assertFalse(report.valid)
+            self.assertTrue(
+                any("Invalid metadata.govzero_layer" in issue.message for issue in report.issues)
+            )
+
+    def test_unknown_metadata_keys_are_allowed(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            metadata = {
+                "govzero_layer": "Layer 1 — Evidence Gathering",
+                "custom-key": "custom-value",
+            }
+            _write_skill(
+                project_root,
+                config.paths.skills,
+                "demo-skill",
+                frontmatter=_skill_frontmatter("demo-skill", metadata=metadata),
+            )
+            _write_skill(
+                project_root,
+                config.paths.codex_skills,
+                "demo-skill",
+                frontmatter=_skill_frontmatter("demo-skill", metadata=metadata),
+            )
+            _write_skill(
+                project_root,
+                config.paths.claude_skills,
+                "demo-skill",
+                frontmatter=_skill_frontmatter("demo-skill", metadata=metadata),
+            )
+            _write_skill(
+                project_root,
+                config.paths.copilot_skills,
+                "demo-skill",
+                frontmatter=_skill_frontmatter("demo-skill", metadata=metadata),
+            )
+
+            report = audit_skills(project_root, config)
+            self.assertTrue(report.valid)
 
     def test_missing_mirror_directory_blocks_audit(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
