@@ -51,7 +51,9 @@ CLI attestation tokens remain stable, but presentations map to canonical terms:
 ## Operational Sequence
 
 1. Run OBPI increments repeatedly (implement, verify, brief evidence update)
-2. Record optional OBPI-scoped receipts using `gz obpi emit-receipt`
+2. Record OBPI-scoped receipts using `gz obpi emit-receipt`
+   Completed receipts are fail-closed when required value narrative/key proof evidence is missing.
+   Heavy/Foundation parent ADRs additionally require explicit human-attestation evidence.
 3. Reconcile OBPI completeness at ADR boundary (`gz adr audit-check`)
 4. Perform ADR closeout and attestation (`gz closeout`, `gz attest`)
 5. Run post-attestation audit (`gz audit`)

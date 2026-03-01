@@ -216,11 +216,14 @@ def obpi_receipt_emitted_event(
     attestor: str,
     evidence: dict[str, Any] | None = None,
     parent_adr: str | None = None,
+    obpi_completion: str | None = None,
 ) -> LedgerEvent:
     """Create an OBPI receipt event."""
     extra: dict[str, Any] = {"receipt_event": receipt_event, "attestor": attestor}
     if evidence is not None:
         extra["evidence"] = evidence
+    if obpi_completion is not None:
+        extra["obpi_completion"] = obpi_completion
     return LedgerEvent(
         event="obpi_receipt_emitted",
         id=obpi_id,

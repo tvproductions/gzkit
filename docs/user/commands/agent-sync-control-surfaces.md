@@ -20,7 +20,9 @@ Blocking preflight failures include:
 
 - missing canonical skill directories (without a legacy bootstrap candidate),
 - missing `SKILL.md`,
-- missing or invalid `SKILL.md` frontmatter identity fields.
+- missing or invalid `SKILL.md` frontmatter identity fields,
+- stale `last_reviewed` values older than policy threshold (90 days),
+- invalid/missing deprecation metadata for `deprecated` or `retired` skills.
 
 On failure, sync exits non-zero and prints recovery steps.
 

@@ -2,6 +2,7 @@
 
 import tempfile
 import unittest
+from datetime import date, timedelta
 from pathlib import Path
 
 from gzkit.config import GzkitConfig
@@ -17,7 +18,7 @@ def _skill_frontmatter(
         "description": "Demo skill",
         "lifecycle_state": "active",
         "owner": "gzkit-governance",
-        "last_reviewed": "2026-02-21",
+        "last_reviewed": date.today().isoformat(),
     }
     fields.update(overrides)
     return fields
@@ -292,6 +293,353 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
             self.assertEqual(
                 [(i.path, i.code, i.message) for i in report.issues],
                 [(i.path, i.code, i.message) for i in ordered],
+            )
+
+    def test_stale_last_reviewed_blocks_audit_by_default(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+            stale_date = (date.today() - timedelta(days=120)).isoformat()
+            stale_frontmatter = _skill_frontmatter("demo-skill", last_reviewed=stale_date)
+
+            _write_skill(
+                project_root, config.paths.skills, "demo-skill", frontmatter=stale_frontmatter
+            )
+            _write_skill(
+                project_root, config.paths.codex_skills, "demo-skill", frontmatter=stale_frontmatter
+            )
+            _write_skill(
+                project_root,
+                config.paths.claude_skills,
+                "demo-skill",
+                frontmatter=stale_frontmatter,
+            )
+            _write_skill(
+                project_root,
+                config.paths.copilot_skills,
+                "demo-skill",
+                frontmatter=stale_frontmatter,
+            )
+
+            report = audit_skills(project_root, config)
+            self.assertFalse(report.valid)
+            self.assertTrue(any(issue.code == "SKA-LAST-REVIEWED-STALE" for issue in report.issues))
+
+    def test_max_review_age_override_allows_older_review_dates(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+            stale_date = (date.today() - timedelta(days=120)).isoformat()
+            stale_frontmatter = _skill_frontmatter("demo-skill", last_reviewed=stale_date)
+
+            _write_skill(
+                project_root, config.paths.skills, "demo-skill", frontmatter=stale_frontmatter
+            )
+            _write_skill(
+                project_root, config.paths.codex_skills, "demo-skill", frontmatter=stale_frontmatter
+            )
+            _write_skill(
+                project_root,
+                config.paths.claude_skills,
+                "demo-skill",
+                frontmatter=stale_frontmatter,
+            )
+            _write_skill(
+                project_root,
+                config.paths.copilot_skills,
+                "demo-skill",
+                frontmatter=stale_frontmatter,
+            )
+
+            report = audit_skills(project_root, config, max_review_age_days=365)
+            self.assertTrue(report.valid)
+            self.assertFalse(
+                any(issue.code == "SKA-LAST-REVIEWED-STALE" for issue in report.issues)
+            )
+
+    def test_deprecated_skill_requires_deprecation_fields(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+            frontmatter = _skill_frontmatter("demo-skill", lifecycle_state="deprecated")
+
+            _write_skill(project_root, config.paths.skills, "demo-skill", frontmatter=frontmatter)
+            _write_skill(
+                project_root, config.paths.codex_skills, "demo-skill", frontmatter=frontmatter
+            )
+            _write_skill(
+                project_root, config.paths.claude_skills, "demo-skill", frontmatter=frontmatter
+            )
+            _write_skill(
+                project_root, config.paths.copilot_skills, "demo-skill", frontmatter=frontmatter
+            )
+
+            report = audit_skills(project_root, config)
+            self.assertFalse(report.valid)
+            self.assertTrue(
+                any(issue.code == "SKA-DEPRECATION-FIELD-MISSING" for issue in report.issues)
+            )
+
+    def test_valid_lifecycle_transition_metadata_passes(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+            frontmatter = _skill_frontmatter(
+                "demo-skill",
+                lifecycle_state="active",
+                lifecycle_transition_from="draft",
+                lifecycle_transition_date=date.today().isoformat(),
+                lifecycle_transition_reason="Skill reached production readiness.",
+                lifecycle_transition_evidence="Reviewed by maintainer; sync + audit passed.",
+            )
+
+            _write_skill(project_root, config.paths.skills, "demo-skill", frontmatter=frontmatter)
+            _write_skill(
+                project_root, config.paths.codex_skills, "demo-skill", frontmatter=frontmatter
+            )
+            _write_skill(
+                project_root, config.paths.claude_skills, "demo-skill", frontmatter=frontmatter
+            )
+            _write_skill(
+                project_root, config.paths.copilot_skills, "demo-skill", frontmatter=frontmatter
+            )
+
+            report = audit_skills(project_root, config)
+            self.assertTrue(report.valid)
+
+    def test_transition_metadata_missing_fields_blocks_audit(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+            frontmatter = _skill_frontmatter(
+                "demo-skill",
+                lifecycle_state="active",
+                lifecycle_transition_from="draft",
+            )
+
+            _write_skill(project_root, config.paths.skills, "demo-skill", frontmatter=frontmatter)
+            _write_skill(
+                project_root, config.paths.codex_skills, "demo-skill", frontmatter=frontmatter
+            )
+            _write_skill(
+                project_root, config.paths.claude_skills, "demo-skill", frontmatter=frontmatter
+            )
+            _write_skill(
+                project_root, config.paths.copilot_skills, "demo-skill", frontmatter=frontmatter
+            )
+
+            report = audit_skills(project_root, config)
+            self.assertFalse(report.valid)
+            self.assertTrue(
+                any(
+                    issue.code == "SKA-LIFECYCLE-TRANSITION-FIELDS-INCOMPLETE"
+                    for issue in report.issues
+                )
+            )
+
+    def test_unsupported_lifecycle_transition_blocks_audit(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+            frontmatter = _skill_frontmatter(
+                "demo-skill",
+                lifecycle_state="retired",
+                lifecycle_transition_from="active",
+                lifecycle_transition_date=date.today().isoformat(),
+                lifecycle_transition_reason="Retired directly.",
+                lifecycle_transition_evidence="No intermediate deprecation stage.",
+                deprecation_replaced_by="new-skill",
+                deprecation_migration="See migration guide",
+                deprecation_communication="Announced in release notes",
+                deprecation_announced_on=date.today().isoformat(),
+                retired_on=date.today().isoformat(),
+            )
+
+            _write_skill(project_root, config.paths.skills, "demo-skill", frontmatter=frontmatter)
+            _write_skill(
+                project_root, config.paths.codex_skills, "demo-skill", frontmatter=frontmatter
+            )
+            _write_skill(
+                project_root, config.paths.claude_skills, "demo-skill", frontmatter=frontmatter
+            )
+            _write_skill(
+                project_root, config.paths.copilot_skills, "demo-skill", frontmatter=frontmatter
+            )
+
+            report = audit_skills(project_root, config)
+            self.assertFalse(report.valid)
+            self.assertTrue(
+                any(issue.code == "SKA-LIFECYCLE-TRANSITION-UNSUPPORTED" for issue in report.issues)
+            )
+
+    def test_transition_field_drift_blocks_audit_when_declared_in_canonical(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+            canonical_frontmatter = _skill_frontmatter(
+                "demo-skill",
+                lifecycle_state="active",
+                lifecycle_transition_from="draft",
+                lifecycle_transition_date=date.today().isoformat(),
+                lifecycle_transition_reason="Ready",
+                lifecycle_transition_evidence="Audit evidence recorded.",
+            )
+
+            _write_skill(
+                project_root,
+                config.paths.skills,
+                "demo-skill",
+                frontmatter=canonical_frontmatter,
+            )
+            _write_skill(
+                project_root,
+                config.paths.codex_skills,
+                "demo-skill",
+                frontmatter=canonical_frontmatter,
+            )
+            _write_skill(
+                project_root,
+                config.paths.claude_skills,
+                "demo-skill",
+                frontmatter=_skill_frontmatter(
+                    "demo-skill",
+                    lifecycle_state="active",
+                    lifecycle_transition_from="draft",
+                    lifecycle_transition_date=date.today().isoformat(),
+                    lifecycle_transition_reason="Different reason",
+                    lifecycle_transition_evidence="Audit evidence recorded.",
+                ),
+            )
+            _write_skill(
+                project_root,
+                config.paths.copilot_skills,
+                "demo-skill",
+                frontmatter=canonical_frontmatter,
+            )
+
+            report = audit_skills(project_root, config)
+            self.assertFalse(report.valid)
+            self.assertTrue(
+                any(
+                    issue.code == "SKA-MIRROR-FIELD-DRIFT"
+                    and "lifecycle_transition_reason" in issue.message
+                    for issue in report.issues
+                )
+            )
+
+    def test_active_skill_forbids_deprecation_fields(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+            frontmatter = _skill_frontmatter(
+                "demo-skill",
+                lifecycle_state="active",
+                deprecation_replaced_by="new-skill",
+            )
+
+            _write_skill(project_root, config.paths.skills, "demo-skill", frontmatter=frontmatter)
+            _write_skill(
+                project_root, config.paths.codex_skills, "demo-skill", frontmatter=frontmatter
+            )
+            _write_skill(
+                project_root, config.paths.claude_skills, "demo-skill", frontmatter=frontmatter
+            )
+            _write_skill(
+                project_root, config.paths.copilot_skills, "demo-skill", frontmatter=frontmatter
+            )
+
+            report = audit_skills(project_root, config)
+            self.assertFalse(report.valid)
+            self.assertTrue(
+                any(issue.code == "SKA-DEPRECATION-FIELD-FORBIDDEN" for issue in report.issues)
+            )
+
+    def test_retired_skill_requires_retired_on(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+            frontmatter = _skill_frontmatter(
+                "demo-skill",
+                lifecycle_state="retired",
+                deprecation_replaced_by="new-skill",
+                deprecation_migration="See migration guide",
+                deprecation_communication="Announced in release notes",
+                deprecation_announced_on=date.today().isoformat(),
+            )
+
+            _write_skill(project_root, config.paths.skills, "demo-skill", frontmatter=frontmatter)
+            _write_skill(
+                project_root, config.paths.codex_skills, "demo-skill", frontmatter=frontmatter
+            )
+            _write_skill(
+                project_root, config.paths.claude_skills, "demo-skill", frontmatter=frontmatter
+            )
+            _write_skill(
+                project_root, config.paths.copilot_skills, "demo-skill", frontmatter=frontmatter
+            )
+
+            report = audit_skills(project_root, config)
+            self.assertFalse(report.valid)
+            self.assertTrue(
+                any(
+                    issue.code == "SKA-DEPRECATION-FIELD-MISSING" and "retired_on" in issue.message
+                    for issue in report.issues
+                )
+            )
+
+    def test_deprecation_field_drift_blocks_audit_when_declared_in_canonical(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+            canonical_frontmatter = _skill_frontmatter(
+                "demo-skill",
+                lifecycle_state="deprecated",
+                deprecation_replaced_by="new-skill",
+                deprecation_migration="See migration guide",
+                deprecation_communication="Announced in release notes",
+                deprecation_announced_on=date.today().isoformat(),
+            )
+
+            _write_skill(
+                project_root,
+                config.paths.skills,
+                "demo-skill",
+                frontmatter=canonical_frontmatter,
+            )
+            _write_skill(
+                project_root,
+                config.paths.codex_skills,
+                "demo-skill",
+                frontmatter=canonical_frontmatter,
+            )
+            _write_skill(
+                project_root,
+                config.paths.claude_skills,
+                "demo-skill",
+                frontmatter=_skill_frontmatter(
+                    "demo-skill",
+                    lifecycle_state="deprecated",
+                    deprecation_replaced_by="new-skill",
+                    deprecation_migration="Different path",
+                    deprecation_communication="Announced in release notes",
+                    deprecation_announced_on=date.today().isoformat(),
+                ),
+            )
+            _write_skill(
+                project_root,
+                config.paths.copilot_skills,
+                "demo-skill",
+                frontmatter=canonical_frontmatter,
+            )
+
+            report = audit_skills(project_root, config)
+            self.assertFalse(report.valid)
+            self.assertTrue(
+                any(
+                    issue.code == "SKA-MIRROR-FIELD-DRIFT"
+                    and "deprecation_migration" in issue.message
+                    for issue in report.issues
+                )
             )
 
     def test_mirror_directory_name_must_be_kebab_case(self) -> None:

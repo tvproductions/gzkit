@@ -8,6 +8,7 @@ import tempfile
 import unittest
 from contextlib import contextmanager, redirect_stderr, redirect_stdout
 from dataclasses import dataclass
+from datetime import date, timedelta
 from pathlib import Path
 from unittest.mock import patch
 
@@ -1067,6 +1068,20 @@ class TestSkillCommands(unittest.TestCase):
             encoding="utf-8",
         )
 
+    @staticmethod
+    def _set_skill_last_reviewed_all_roots(skill_name: str, last_reviewed: str) -> None:
+        roots = [".gzkit/skills", ".agents/skills", ".claude/skills", ".github/skills"]
+        for root in roots:
+            skill_file = Path(root) / skill_name / "SKILL.md"
+            content = skill_file.read_text(encoding="utf-8")
+            updated = []
+            for line in content.splitlines():
+                if line.startswith("last_reviewed:"):
+                    updated.append(f"last_reviewed: {last_reviewed}")
+                else:
+                    updated.append(line)
+            skill_file.write_text("\n".join(updated) + "\n", encoding="utf-8")
+
     def test_skill_list(self) -> None:
         """skill list shows scaffolded skills."""
         runner = CliRunner()
@@ -1145,14 +1160,42 @@ class TestSkillCommands(unittest.TestCase):
             payload = json.loads(result.output)
             self.assertIn("blocking_error_count", payload)
             self.assertIn("non_blocking_warning_count", payload)
+            self.assertIn("max_review_age_days", payload)
+            self.assertIn("stale_review_count", payload)
             self.assertEqual(payload["blocking_error_count"], 0)
             self.assertEqual(payload["non_blocking_warning_count"], 1)
+            self.assertEqual(payload["max_review_age_days"], 90)
+            self.assertEqual(payload["stale_review_count"], 0)
             self.assertTrue(payload["issues"])
             issue = payload["issues"][0]
             self.assertIn("code", issue)
             self.assertIn("blocking", issue)
             self.assertFalse(issue["blocking"])
             self.assertEqual(issue["code"], "SKA-MIRROR-DIR-UNEXPECTED")
+
+    def test_skill_audit_rejects_non_positive_max_review_age_days(self) -> None:
+        """Non-positive max review age is rejected as invalid input."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            result = runner.invoke(main, ["skill", "audit", "--max-review-age-days", "0"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("positive integer", result.output.lower())
+
+    def test_skill_audit_max_review_age_override_relaxes_stale_failure(self) -> None:
+        """Override can relax stale-review blocking checks when policy allows."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            stale_date = (date.today() - timedelta(days=120)).isoformat()
+            self._set_skill_last_reviewed_all_roots("lint", stale_date)
+
+            default_result = runner.invoke(main, ["skill", "audit"])
+            self.assertNotEqual(default_result.exit_code, 0)
+            self.assertIn("ska-last-reviewed-stale", default_result.output.lower())
+
+            relaxed_result = runner.invoke(main, ["skill", "audit", "--max-review-age-days", "365"])
+            self.assertEqual(relaxed_result.exit_code, 0)
 
     def test_check_command_passes_with_non_blocking_skill_audit_warning(self) -> None:
         """Aggregate check remains pass when skill audit warning is non-blocking."""
@@ -1585,12 +1628,94 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                     "completed",
                     "--attestor",
                     "human:jeff",
+                    "--evidence-json",
+                    (
+                        '{"value_narrative":"before/after capability",'
+                        '"key_proof":"uv run gz status --table"}'
+                    ),
                     "--dry-run",
                 ],
             )
             self.assertEqual(result.exit_code, 0)
             ledger_content = Path(".gzkit/ledger.jsonl").read_text()
             self.assertNotIn("obpi_receipt_emitted", ledger_content)
+
+    def test_obpi_emit_receipt_completed_requires_evidence(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0"])
+            result = runner.invoke(
+                main,
+                [
+                    "obpi",
+                    "emit-receipt",
+                    "OBPI-0.1.0-01-demo",
+                    "--event",
+                    "completed",
+                    "--attestor",
+                    "human:jeff",
+                ],
+            )
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("require --evidence-json", result.output)
+
+    def test_obpi_emit_receipt_completed_heavy_requires_human_attestation_evidence(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init", "--mode", "heavy"])
+            runner.invoke(main, ["plan", "0.1.0", "--lane", "heavy"])
+            runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0"])
+            result = runner.invoke(
+                main,
+                [
+                    "obpi",
+                    "emit-receipt",
+                    "OBPI-0.1.0-01-demo",
+                    "--event",
+                    "completed",
+                    "--attestor",
+                    "human:jeff",
+                    "--evidence-json",
+                    (
+                        '{"value_narrative":"capability now exists",'
+                        '"key_proof":"uv run gz adr status ADR-0.1.0 --json"}'
+                    ),
+                ],
+            )
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("human_attestation=true", result.output)
+
+    def test_obpi_emit_receipt_completed_heavy_records_attested_completion(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init", "--mode", "heavy"])
+            runner.invoke(main, ["plan", "0.1.0", "--lane", "heavy"])
+            runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0"])
+            result = runner.invoke(
+                main,
+                [
+                    "obpi",
+                    "emit-receipt",
+                    "OBPI-0.1.0-01-demo",
+                    "--event",
+                    "completed",
+                    "--attestor",
+                    "human:jeff",
+                    "--evidence-json",
+                    (
+                        '{"value_narrative":"manual completion now auditable",'
+                        '"key_proof":"uv run gz status --table",'
+                        '"human_attestation":true,'
+                        '"attestation_text":"attest completed",'
+                        '"attestation_date":"2026-03-01"}'
+                    ),
+                ],
+            )
+            self.assertEqual(result.exit_code, 0)
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text()
+            self.assertIn('"obpi_completion":"attested_completed"', ledger_content)
 
     def test_obpi_emit_receipt_rejects_pool_linked_obpi(self) -> None:
         runner = CliRunner()

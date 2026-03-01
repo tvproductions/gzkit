@@ -48,7 +48,13 @@ from gzkit.quality import (
     run_tests,
     run_typecheck,
 )
-from gzkit.skills import audit_skills, list_skills, scaffold_core_skills, scaffold_skill
+from gzkit.skills import (
+    DEFAULT_MAX_REVIEW_AGE_DAYS,
+    audit_skills,
+    list_skills,
+    scaffold_core_skills,
+    scaffold_skill,
+)
 from gzkit.sync import (
     collect_canonical_sync_blockers,
     detect_project_name,
@@ -3026,6 +3032,95 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
         raise SystemExit(1)
 
 
+def _is_foundation_adr(adr_id: str) -> bool:
+    """Return True when ADR ID is in the 0.0.x foundation series."""
+    return re.match(r"^ADR-0\.0\.\d+(?:[.-].*)?$", adr_id) is not None
+
+
+def _requires_human_obpi_attestation(parent_adr: str | None, parent_lane: str) -> bool:
+    """Return whether completed evidence must include human-attestation fields."""
+    if not isinstance(parent_adr, str) or not parent_adr:
+        return False
+    return parent_lane == "heavy" or _is_foundation_adr(parent_adr)
+
+
+def _validate_obpi_completed_required_fields(evidence: dict[str, Any]) -> None:
+    """Validate baseline completed-receipt evidence fields."""
+    required_fields = ("value_narrative", "key_proof")
+    missing: list[str] = []
+    for field in required_fields:
+        value = evidence.get(field)
+        if not isinstance(value, str) or not value.strip():
+            missing.append(field)
+    if missing:
+        raise GzCliError(
+            f"Missing required completed-evidence field(s): {', '.join(sorted(missing))}."
+        )
+
+
+def _validate_obpi_human_attestation_fields(evidence: dict[str, Any], attestor: str) -> None:
+    """Validate heavy/foundation human-attestation evidence contract."""
+    if not attestor.lower().startswith("human:"):
+        raise GzCliError(
+            "Heavy/Foundation OBPI completion requires --attestor to use human:<name> format."
+        )
+    if evidence.get("human_attestation") is not True:
+        raise GzCliError(
+            "Heavy/Foundation OBPI completion requires evidence.human_attestation=true."
+        )
+
+    attestation_text = evidence.get("attestation_text")
+    if not isinstance(attestation_text, str) or not attestation_text.strip():
+        raise GzCliError(
+            "Heavy/Foundation OBPI completion requires non-empty evidence.attestation_text."
+        )
+
+    attestation_date = evidence.get("attestation_date")
+    if not isinstance(attestation_date, str) or not re.match(
+        r"^\d{4}-\d{2}-\d{2}$", attestation_date
+    ):
+        raise GzCliError(
+            "Heavy/Foundation OBPI completion requires evidence.attestation_date "
+            "formatted as YYYY-MM-DD."
+        )
+    try:
+        date.fromisoformat(attestation_date)
+    except ValueError as exc:
+        raise GzCliError(
+            "Heavy/Foundation OBPI completion requires evidence.attestation_date "
+            "formatted as YYYY-MM-DD."
+        ) from exc
+
+
+def _validate_obpi_completion_evidence(
+    *,
+    evidence: dict[str, Any] | None,
+    parent_adr: str | None,
+    parent_lane: str,
+    attestor: str,
+) -> tuple[dict[str, Any], str]:
+    """Validate and normalize evidence for OBPI completed receipts."""
+    if evidence is None:
+        raise GzCliError(
+            "OBPI completed receipts require --evidence-json with value_narrative and key_proof."
+        )
+
+    _validate_obpi_completed_required_fields(evidence)
+    requires_human_attestation = _requires_human_obpi_attestation(parent_adr, parent_lane)
+
+    if requires_human_attestation:
+        _validate_obpi_human_attestation_fields(evidence, attestor)
+
+    completion_term = "attested_completed" if requires_human_attestation else "completed"
+    normalized = dict(evidence)
+    normalized["obpi_completion"] = completion_term
+    normalized["attestation_requirement"] = "required" if requires_human_attestation else "optional"
+    if isinstance(parent_adr, str) and parent_adr:
+        normalized["parent_adr"] = parent_adr
+    normalized["parent_lane"] = parent_lane
+    return normalized, completion_term
+
+
 def adr_emit_receipt_cmd(
     adr: str,
     receipt_event: str,
@@ -3104,12 +3199,33 @@ def obpi_emit_receipt_cmd(
             raise GzCliError("--evidence-json must decode to a JSON object")
         evidence = parsed
 
+    parent_lane = config.mode
+    if isinstance(parent_adr, str) and parent_adr:
+        parent_info = graph.get(parent_adr, {})
+        parent_lane = _resolve_adr_lane(parent_info, config.mode)
+
+    obpi_completion: str | None = None
+    if receipt_event == "completed":
+        evidence, obpi_completion = _validate_obpi_completion_evidence(
+            evidence=evidence,
+            parent_adr=parent_adr if isinstance(parent_adr, str) else None,
+            parent_lane=parent_lane,
+            attestor=attestor,
+        )
+    elif evidence is not None:
+        evidence = dict(evidence)
+        evidence.setdefault("parent_lane", parent_lane)
+        if isinstance(parent_adr, str) and parent_adr:
+            evidence.setdefault("parent_adr", parent_adr)
+        evidence.setdefault("obpi_completion", "not_completed")
+
     event = obpi_receipt_emitted_event(
         obpi_id=obpi_id,
         receipt_event=receipt_event,
         attestor=attestor,
         evidence=evidence,
         parent_adr=parent_adr if isinstance(parent_adr, str) else None,
+        obpi_completion=obpi_completion,
     )
 
     if dry_run:
@@ -4284,52 +4400,73 @@ def skill_list() -> None:
     console.print(table)
 
 
-def skill_audit_cmd(as_json: bool, strict: bool) -> None:
-    """Audit skill naming, metadata, and mirror parity."""
-    config = ensure_initialized()
-    project_root = get_project_root()
-    report = audit_skills(project_root, config)
+def _skill_audit_counts(report: Any) -> dict[str, int]:
+    """Aggregate issue counters from a skill-audit report."""
+    return {
+        "warning_count": sum(1 for issue in report.issues if issue.severity == "warning"),
+        "error_count": sum(1 for issue in report.issues if issue.severity == "error"),
+        "blocking_error_count": sum(1 for issue in report.issues if issue.blocking),
+        "non_blocking_warning_count": sum(1 for issue in report.issues if not issue.blocking),
+        "stale_review_count": sum(
+            1 for issue in report.issues if issue.code == "SKA-LAST-REVIEWED-STALE"
+        ),
+    }
 
-    warning_count = sum(1 for issue in report.issues if issue.severity == "warning")
-    error_count = sum(1 for issue in report.issues if issue.severity == "error")
-    blocking_error_count = sum(1 for issue in report.issues if issue.blocking)
-    non_blocking_warning_count = sum(1 for issue in report.issues if not issue.blocking)
-    success = blocking_error_count == 0 and (non_blocking_warning_count == 0 or not strict)
 
-    if as_json:
-        payload = report.to_dict()
-        payload["strict"] = strict
-        payload["success"] = success
-        payload["error_count"] = error_count
-        payload["warning_count"] = warning_count
-        payload["blocking_error_count"] = blocking_error_count
-        payload["non_blocking_warning_count"] = non_blocking_warning_count
-        print(json.dumps(payload, indent=2))
-        if not success:
-            raise SystemExit(1)
-        return
+def _skill_audit_success(counts: dict[str, int], strict: bool) -> bool:
+    """Determine pass/fail semantics for skill-audit output."""
+    return counts["blocking_error_count"] == 0 and (
+        counts["non_blocking_warning_count"] == 0 or not strict
+    )
 
-    if success:
-        console.print("[green]Skill audit passed.[/green]")
-        root_count = len(report.checked_roots)
-        console.print(
-            f"Checked {report.checked_skills} canonical skills across {root_count} roots."
-        )
-        console.print(
-            f"Blocking: {blocking_error_count}  Non-blocking: {non_blocking_warning_count}"
-        )
-        if non_blocking_warning_count:
-            console.print(
-                f"[yellow]{non_blocking_warning_count} warning(s) found (non-blocking).[/yellow]"
-            )
-        return
 
+def _emit_skill_audit_json(
+    report: Any,
+    strict: bool,
+    max_review_age_days: int,
+    success: bool,
+    counts: dict[str, int],
+) -> None:
+    """Print skill-audit JSON payload and enforce exit semantics."""
+    payload = report.to_dict()
+    payload["strict"] = strict
+    payload["max_review_age_days"] = max_review_age_days
+    payload["success"] = success
+    payload.update(counts)
+    print(json.dumps(payload, indent=2))
+    if not success:
+        raise SystemExit(1)
+
+
+def _print_skill_audit_success(
+    report: Any, max_review_age_days: int, counts: dict[str, int]
+) -> None:
+    """Print human-readable success summary for skill audit."""
+    console.print("[green]Skill audit passed.[/green]")
+    root_count = len(report.checked_roots)
+    console.print(f"Checked {report.checked_skills} canonical skills across {root_count} roots.")
+    console.print(
+        "Blocking: "
+        f"{counts['blocking_error_count']}  Non-blocking: {counts['non_blocking_warning_count']}"
+    )
+    console.print(f"Max review age: {max_review_age_days} days")
+    if counts["non_blocking_warning_count"]:
+        warning_message = f"{counts['non_blocking_warning_count']} warning(s) found (non-blocking)."
+        console.print(f"[yellow]{warning_message}[/yellow]")
+
+
+def _print_skill_audit_failure(
+    report: Any, max_review_age_days: int, counts: dict[str, int]
+) -> None:
+    """Print human-readable failure details for skill audit."""
     console.print("[red]Skill audit failed.[/red]")
     console.print(
         "Blocking errors: "
-        f"{blocking_error_count}  Non-blocking warnings: {non_blocking_warning_count}"
+        f"{counts['blocking_error_count']}  "
+        f"Non-blocking warnings: {counts['non_blocking_warning_count']}"
     )
-    console.print(f"Errors: {error_count}  Warnings: {warning_count}")
+    console.print(f"Errors: {counts['error_count']}  Warnings: {counts['warning_count']}")
+    console.print(f"Max review age: {max_review_age_days} days")
     for issue in report.issues:
         style = "red" if issue.severity == "error" else "yellow"
         scope = "BLOCKING" if issue.blocking else "NON-BLOCKING"
@@ -4337,6 +4474,27 @@ def skill_audit_cmd(as_json: bool, strict: bool) -> None:
             f"  [{style}]{issue.severity.upper()}[/{style}] [{issue.code}] [{scope}] "
             f"{issue.path}: {issue.message}"
         )
+
+
+def skill_audit_cmd(as_json: bool, strict: bool, max_review_age_days: int) -> None:
+    """Audit skill naming, metadata, and mirror parity."""
+    config = ensure_initialized()
+    project_root = get_project_root()
+    if max_review_age_days <= 0:
+        raise GzCliError("--max-review-age-days must be a positive integer.")
+    report = audit_skills(project_root, config, max_review_age_days=max_review_age_days)
+    counts = _skill_audit_counts(report)
+    success = _skill_audit_success(counts, strict)
+
+    if as_json:
+        _emit_skill_audit_json(report, strict, max_review_age_days, success, counts)
+        return
+
+    if success:
+        _print_skill_audit_success(report, max_review_age_days, counts)
+        return
+
+    _print_skill_audit_failure(report, max_review_age_days, counts)
     raise SystemExit(1)
 
 
@@ -4841,7 +4999,19 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Treat warnings as blocking failures.",
     )
-    p_skill_audit.set_defaults(func=lambda a: skill_audit_cmd(as_json=a.as_json, strict=a.strict))
+    p_skill_audit.add_argument(
+        "--max-review-age-days",
+        type=int,
+        default=DEFAULT_MAX_REVIEW_AGE_DAYS,
+        help="Maximum age of last_reviewed before audit fails (default: 90).",
+    )
+    p_skill_audit.set_defaults(
+        func=lambda a: skill_audit_cmd(
+            as_json=a.as_json,
+            strict=a.strict,
+            max_review_age_days=a.max_review_age_days,
+        )
+    )
 
     p_interview = commands.add_parser("interview", help="Interactive document interview")
     p_interview.add_argument("document_type", choices=["prd", "adr", "obpi"])

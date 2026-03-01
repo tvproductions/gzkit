@@ -252,6 +252,14 @@ Canonical skill frontmatter is grouped into taxonomy classes:
 
 - Identity: `name`, `description`
 - Lifecycle (required): `lifecycle_state`, `owner`, `last_reviewed`
+- Lifecycle maintenance (required by policy): `last_reviewed` MUST be reviewed on a regular cadence (default max age: 90 days)
+- Lifecycle transitions (required when declared): `lifecycle_transition_from`, `lifecycle_transition_date`, `lifecycle_transition_reason`, `lifecycle_transition_evidence`
+- Deprecation/retirement evidence (state-conditional):
+  - `deprecation_replaced_by`
+  - `deprecation_migration`
+  - `deprecation_communication`
+  - `deprecation_announced_on`
+  - `retired_on` (required when `lifecycle_state: retired`)
 - Capability (optional): `compatibility`, `invocation`, `gz_command`, `metadata.*`
 
 Known `metadata` keys validated when present:
@@ -263,6 +271,14 @@ Known `metadata` keys validated when present:
 
 Mirror parity is fail-closed for required identity/lifecycle fields. Optional capability and metadata
 fields are also fail-closed when canonical skills define them.
+
+### Operator Responsibility (Maintenance + Deprecation)
+
+- Skill owners MUST keep `last_reviewed` fresh per maintenance cadence policy.
+- Transitioning lifecycle states MUST include explicit transition evidence and use supported state transitions only.
+- Deprecating a skill MUST include replacement, migration, and communication evidence.
+- Retiring a skill MUST include retirement date evidence after deprecation communication.
+- Canonical skills remain source of truth; mirrors are synchronized from canon and must preserve deprecation metadata exactly when present.
 
 ---
 
