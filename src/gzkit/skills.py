@@ -94,15 +94,19 @@ class SkillAuditIssue:
     """Represents one skill-audit finding."""
 
     severity: str  # error | warning
+    code: str
     path: str
     message: str
+    blocking: bool
 
-    def to_dict(self) -> dict[str, str]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert issue to dictionary."""
         return {
             "severity": self.severity,
+            "code": self.code,
             "path": self.path,
             "message": self.message,
+            "blocking": self.blocking,
         }
 
 
@@ -349,13 +353,24 @@ def get_skill(
 def _append_audit_issue(
     issues: list[SkillAuditIssue],
     project_root: Path,
-    severity: str,
+    code: str,
     path: Path,
     message: str,
+    *,
+    blocking: bool = True,
 ) -> None:
     """Append a skill audit issue with project-relative path."""
     rel = path.relative_to(project_root) if path.is_relative_to(project_root) else path
-    issues.append(SkillAuditIssue(severity=severity, path=str(rel), message=message))
+    severity = "error" if blocking else "warning"
+    issues.append(
+        SkillAuditIssue(
+            severity=severity,
+            code=code,
+            path=str(rel),
+            message=message,
+            blocking=blocking,
+        )
+    )
 
 
 def _validate_skill_identity(
@@ -371,7 +386,7 @@ def _validate_skill_identity(
         _append_audit_issue(
             issues,
             project_root,
-            "error",
+            "SKA-NAME-MISSING",
             skill_file,
             "Missing frontmatter field: name.",
         )
@@ -381,7 +396,7 @@ def _validate_skill_identity(
         _append_audit_issue(
             issues,
             project_root,
-            "error",
+            "SKA-NAME-MISMATCH",
             skill_file,
             f"Frontmatter name '{declared_name}' must match directory name '{skill_name}'.",
         )
@@ -391,7 +406,7 @@ def _validate_skill_identity(
         _append_audit_issue(
             issues,
             project_root,
-            "error",
+            "SKA-NAME-NOT-KEBAB",
             skill_file,
             "Frontmatter name must be kebab-case.",
         )
@@ -423,7 +438,7 @@ def _validate_required_skill_fields(
         _append_audit_issue(
             issues,
             project_root,
-            "error",
+            "SKA-REQUIRED-FIELD-MISSING",
             skill_file,
             f"Missing frontmatter field: {field}.",
         )
@@ -442,7 +457,7 @@ def _validate_lifecycle_field_values(
         _append_audit_issue(
             issues,
             project_root,
-            "error",
+            "SKA-LIFECYCLE-STATE-INVALID",
             skill_file,
             f"Invalid lifecycle_state '{lifecycle_state}'. Allowed: {allowed}.",
         )
@@ -452,7 +467,7 @@ def _validate_lifecycle_field_values(
         _append_audit_issue(
             issues,
             project_root,
-            "error",
+            "SKA-LAST-REVIEWED-INVALID",
             skill_file,
             f"Invalid last_reviewed '{last_reviewed}' (expected YYYY-MM-DD).",
         )
@@ -473,7 +488,7 @@ def _validate_capability_fields(
         _append_audit_issue(
             issues,
             project_root,
-            "error",
+            "SKA-CAPABILITY-FIELD-EMPTY",
             skill_file,
             f"Capability field '{field}' cannot be empty when present.",
         )
@@ -491,7 +506,7 @@ def _validate_known_metadata_fields(
         _append_audit_issue(
             issues,
             project_root,
-            "error",
+            "SKA-METADATA-SKILL-VERSION-EMPTY",
             skill_file,
             "metadata.skill-version cannot be empty when present.",
         )
@@ -499,7 +514,7 @@ def _validate_known_metadata_fields(
         _append_audit_issue(
             issues,
             project_root,
-            "error",
+            "SKA-METADATA-SKILL-VERSION-INVALID",
             skill_file,
             f"Invalid metadata.skill-version '{skill_version}' (expected X.Y.Z).",
         )
@@ -509,7 +524,7 @@ def _validate_known_metadata_fields(
         _append_audit_issue(
             issues,
             project_root,
-            "error",
+            "SKA-METADATA-FRAMEWORK-VERSION-EMPTY",
             skill_file,
             "metadata.govzero-framework-version cannot be empty when present.",
         )
@@ -517,7 +532,7 @@ def _validate_known_metadata_fields(
         _append_audit_issue(
             issues,
             project_root,
-            "error",
+            "SKA-METADATA-FRAMEWORK-VERSION-INVALID",
             skill_file,
             (
                 "Invalid metadata.govzero-framework-version "
@@ -530,7 +545,7 @@ def _validate_known_metadata_fields(
         _append_audit_issue(
             issues,
             project_root,
-            "error",
+            "SKA-METADATA-AUTHOR-EMPTY",
             skill_file,
             "metadata.govzero-author cannot be empty when present.",
         )
@@ -541,7 +556,7 @@ def _validate_known_metadata_fields(
         _append_audit_issue(
             issues,
             project_root,
-            "error",
+            "SKA-METADATA-LAYER-INVALID",
             skill_file,
             f"Invalid metadata.govzero_layer '{govzero_layer}'. Allowed: {allowed}.",
         )
@@ -558,7 +573,7 @@ def _validate_canonical_skill(
         _append_audit_issue(
             issues,
             project_root,
-            "error",
+            "SKA-CANONICAL-DIR-NOT-KEBAB",
             skill_dir,
             "Skill directory name must be kebab-case.",
         )
@@ -568,7 +583,7 @@ def _validate_canonical_skill(
         _append_audit_issue(
             issues,
             project_root,
-            "error",
+            "SKA-CANONICAL-SKILL-FILE-MISSING",
             skill_dir,
             "Missing SKILL.md file.",
         )
@@ -579,7 +594,7 @@ def _validate_canonical_skill(
         _append_audit_issue(
             issues,
             project_root,
-            "error",
+            "SKA-CANONICAL-FRONTMATTER-MISSING",
             skill_file,
             "Missing YAML frontmatter.",
         )
@@ -603,7 +618,7 @@ def _validate_mirror_root(
         _append_audit_issue(
             issues,
             project_root,
-            "error",
+            "SKA-MIRROR-DIR-NOT-KEBAB",
             path,
             "Mirrored skill directory name must be kebab-case.",
         )
@@ -615,7 +630,7 @@ def _validate_mirror_root(
         _append_audit_issue(
             issues,
             project_root,
-            "error",
+            "SKA-MIRROR-DIR-MISSING",
             mirror_root / name,
             "Missing mirrored skill directory.",
         )
@@ -623,9 +638,10 @@ def _validate_mirror_root(
         _append_audit_issue(
             issues,
             project_root,
-            "error",
+            "SKA-MIRROR-DIR-UNEXPECTED",
             mirror_root / name,
             "Unexpected skill directory not in canonical root.",
+            blocking=False,
         )
 
     shared_names = sorted(canonical_names & mirror_names)
@@ -637,7 +653,7 @@ def _validate_mirror_root(
             _append_audit_issue(
                 issues,
                 project_root,
-                "error",
+                "SKA-MIRROR-SKILL-FILE-MISSING",
                 mirror_dirs[name],
                 "Missing mirrored SKILL.md.",
             )
@@ -649,7 +665,7 @@ def _validate_mirror_root(
             _append_audit_issue(
                 issues,
                 project_root,
-                "error",
+                "SKA-MIRROR-FRONTMATTER-MISSING",
                 mirror_file,
                 "Missing YAML frontmatter in mirrored SKILL.md.",
             )
@@ -660,7 +676,7 @@ def _validate_mirror_root(
             _append_audit_issue(
                 issues,
                 project_root,
-                "error",
+                "SKA-MIRROR-NAME-MISSING",
                 mirror_file,
                 "Missing frontmatter field: name in mirrored SKILL.md.",
             )
@@ -668,7 +684,7 @@ def _validate_mirror_root(
             _append_audit_issue(
                 issues,
                 project_root,
-                "error",
+                "SKA-MIRROR-NAME-MISMATCH",
                 mirror_file,
                 (
                     f"Mirror frontmatter name '{mirror_name}' "
@@ -690,7 +706,7 @@ def _validate_mirror_root(
             _append_audit_issue(
                 issues,
                 project_root,
-                "error",
+                "SKA-MIRROR-FIELD-DRIFT",
                 mirror_file,
                 f"Mirror field drift for '{field}' compared to canonical skill '{name}'.",
             )
@@ -717,7 +733,7 @@ def audit_skills(project_root: Path, config: GzkitConfig | None = None) -> Skill
         _append_audit_issue(
             issues,
             project_root,
-            "error",
+            "SKA-CANONICAL-ROOT-EMPTY",
             canonical_root,
             "Canonical skills root has no skill directories.",
         )
@@ -734,7 +750,8 @@ def audit_skills(project_root: Path, config: GzkitConfig | None = None) -> Skill
     for root_name in mirror_roots:
         _validate_mirror_root(project_root, issues, root_paths[root_name], canonical_dirs)
 
-    valid = not any(issue.severity == "error" for issue in issues)
+    issues = sorted(issues, key=lambda issue: (issue.path, issue.code, issue.message))
+    valid = not any(issue.blocking for issue in issues)
     return SkillAuditReport(
         valid=valid,
         issues=issues,

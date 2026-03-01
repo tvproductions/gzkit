@@ -4,8 +4,9 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
-from gzkit.quality import QualityResult, run_adr_path_contract_lint, run_command
+from gzkit.quality import QualityResult, run_adr_path_contract_lint, run_command, run_skill_audit
 
 
 class TestQualityResult(unittest.TestCase):
@@ -49,6 +50,29 @@ class TestRunCommand(unittest.TestCase):
             result = run_command(command, cwd=Path(tmpdir))
             self.assertTrue(result.success)
             self.assertEqual(Path(result.stdout.strip()).resolve(), Path(tmpdir).resolve())
+
+
+class TestSkillAuditQualityIntegration(unittest.TestCase):
+    """Tests for quality integration command wiring."""
+
+    def test_run_skill_audit_uses_non_strict_default_command(self) -> None:
+        """run_skill_audit should call CLI without --strict for default check behavior."""
+        with (
+            tempfile.TemporaryDirectory() as tmpdir,
+            patch("gzkit.quality.run_command") as mock_run_command,
+        ):
+            mock_run_command.return_value = QualityResult(
+                success=True,
+                command="uv run gz skill audit",
+                stdout="ok",
+                stderr="",
+                returncode=0,
+            )
+            run_skill_audit(Path(tmpdir))
+            mock_run_command.assert_called_once_with(
+                "uv run gz skill audit",
+                cwd=Path(tmpdir),
+            )
 
 
 class TestAdrPathContractLint(unittest.TestCase):

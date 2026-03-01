@@ -34,6 +34,12 @@ When stale mirror-only paths exist, sync:
 2. emits a recovery warning with stale paths,
 3. prints the manual cleanup protocol.
 
+Related policy in `gz skill audit`:
+
+- stale mirror-only paths are reported as non-blocking warnings
+  (`SKA-MIRROR-DIR-UNEXPECTED`) by default,
+- `--strict` escalates those warnings to blocking failures.
+
 Manual recovery protocol:
 
 ```bash

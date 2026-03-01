@@ -84,6 +84,8 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
             self.assertTrue(
                 any(
                     issue.path.endswith(".claude/skills/demo-skill/SKILL.md")
+                    and issue.code == "SKA-MIRROR-FIELD-DRIFT"
+                    and issue.blocking
                     and "Mirror field drift for 'owner'" in issue.message
                     for issue in report.issues
                 )
@@ -236,9 +238,60 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
             self.assertTrue(
                 any(
                     issue.path.endswith(".claude/skills/demo-skill")
+                    and issue.code == "SKA-MIRROR-DIR-MISSING"
+                    and issue.blocking
                     and "Missing mirrored skill directory." in issue.message
                     for issue in report.issues
                 )
+            )
+
+    def test_stale_mirror_directory_is_non_blocking_warning(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            _write_skill(project_root, config.paths.skills, "demo-skill")
+            _write_skill(project_root, config.paths.codex_skills, "demo-skill")
+            _write_skill(project_root, config.paths.claude_skills, "demo-skill")
+            _write_skill(project_root, config.paths.copilot_skills, "demo-skill")
+            _write_skill(project_root, config.paths.claude_skills, "stale-skill")
+
+            report = audit_skills(project_root, config)
+            self.assertTrue(report.valid)
+            self.assertTrue(
+                any(
+                    issue.path.endswith(".claude/skills/stale-skill")
+                    and issue.code == "SKA-MIRROR-DIR-UNEXPECTED"
+                    and issue.severity == "warning"
+                    and not issue.blocking
+                    for issue in report.issues
+                )
+            )
+
+    def test_issue_codes_are_present_and_order_is_deterministic(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            _write_skill(
+                project_root,
+                config.paths.skills,
+                "demo-skill",
+                frontmatter=_skill_frontmatter("demo-skill", lifecycle_state="invalid"),
+            )
+            _write_skill(project_root, config.paths.codex_skills, "demo-skill")
+            _write_skill(project_root, config.paths.copilot_skills, "demo-skill")
+
+            report = audit_skills(project_root, config)
+            self.assertFalse(report.valid)
+            self.assertTrue(all(issue.code for issue in report.issues))
+            ordered = sorted(
+                report.issues,
+                key=lambda issue: (issue.path, issue.code, issue.message),
+            )
+            self.assertEqual(
+                [(i.path, i.code, i.message) for i in report.issues],
+                [(i.path, i.code, i.message) for i in ordered],
             )
 
     def test_mirror_directory_name_must_be_kebab_case(self) -> None:

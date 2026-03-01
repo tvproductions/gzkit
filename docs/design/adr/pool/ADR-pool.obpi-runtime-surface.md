@@ -35,6 +35,8 @@ Add first-class OBPI runtime surfaces so operators can execute, verify, and reco
 - Provide compatibility mapping from current ADR-focused flows.
 - Ensure Gate 2/Gate 3 evidence can be attached to OBPI progress checkpoints.
 - Define drift detection and audit outputs keyed by OBPI identifiers.
+- Reuse execution-memory graph primitives (typed dependencies + ready/blocked semantics)
+  instead of introducing a separate planner model.
 
 ---
 
@@ -48,8 +50,8 @@ Add first-class OBPI runtime surfaces so operators can execute, verify, and reco
 
 ## Dependencies
 
-- **Blocks on**: ADR-0.7.0-obpi-first-operations
-- **Blocked by**: ADR-0.7.0-obpi-first-operations
+- **Blocks on**: ADR-0.7.0-obpi-first-operations, ADR-pool.execution-memory-graph
+- **Blocked by**: ADR-0.7.0-obpi-first-operations, ADR-pool.execution-memory-graph
 
 ---
 

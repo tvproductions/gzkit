@@ -9,6 +9,7 @@ import unittest
 from contextlib import contextmanager, redirect_stderr, redirect_stdout
 from dataclasses import dataclass
 from pathlib import Path
+from unittest.mock import patch
 
 from gzkit.cli import COMMAND_DOCS, main, resolve_adr_file
 from gzkit.config import GzkitConfig
@@ -20,6 +21,7 @@ from gzkit.ledger import (
     gate_checked_event,
     obpi_created_event,
 )
+from gzkit.quality import CheckResult, QualityResult
 
 
 @dataclass
@@ -990,6 +992,29 @@ class TestLintCommand(unittest.TestCase):
 class TestSkillCommands(unittest.TestCase):
     """Tests for skill subcommands."""
 
+    @staticmethod
+    def _write_stale_mirror_skill() -> None:
+        stale = Path(".claude/skills/stale-skill")
+        stale.mkdir(parents=True, exist_ok=True)
+        (stale / "SKILL.md").write_text(
+            "\n".join(
+                [
+                    "---",
+                    "name: stale-skill",
+                    "description: stale mirror skill",
+                    "lifecycle_state: active",
+                    "owner: gzkit-governance",
+                    "last_reviewed: 2026-03-01",
+                    "---",
+                    "",
+                    "# SKILL.md",
+                    "",
+                ]
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+
     def test_skill_list(self) -> None:
         """skill list shows scaffolded skills."""
         runner = CliRunner()
@@ -1033,6 +1058,77 @@ class TestSkillCommands(unittest.TestCase):
             result = runner.invoke(main, ["skill", "audit"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("passed", result.output.lower())
+
+    def test_skill_audit_warning_is_non_blocking_without_strict(self) -> None:
+        """Stale mirror-only skills emit non-blocking warnings by default."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            self._write_stale_mirror_skill()
+            result = runner.invoke(main, ["skill", "audit"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("non-blocking", result.output.lower())
+            self.assertIn("blocking: 0", result.output.lower())
+            self.assertIn("non-blocking: 1", result.output.lower())
+
+    def test_skill_audit_strict_fails_on_non_blocking_warnings(self) -> None:
+        """Strict mode escalates warnings to failure."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            self._write_stale_mirror_skill()
+            result = runner.invoke(main, ["skill", "audit", "--strict"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("non-blocking warnings", result.output.lower())
+            self.assertIn("ska-mirror-dir-unexpected", result.output.lower())
+
+    def test_skill_audit_json_includes_issue_codes_and_blocking_counts(self) -> None:
+        """JSON payload includes additive policy fields for machine consumers."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            self._write_stale_mirror_skill()
+            result = runner.invoke(main, ["skill", "audit", "--json"])
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            self.assertIn("blocking_error_count", payload)
+            self.assertIn("non_blocking_warning_count", payload)
+            self.assertEqual(payload["blocking_error_count"], 0)
+            self.assertEqual(payload["non_blocking_warning_count"], 1)
+            self.assertTrue(payload["issues"])
+            issue = payload["issues"][0]
+            self.assertIn("code", issue)
+            self.assertIn("blocking", issue)
+            self.assertFalse(issue["blocking"])
+            self.assertEqual(issue["code"], "SKA-MIRROR-DIR-UNEXPECTED")
+
+    def test_check_command_passes_with_non_blocking_skill_audit_warning(self) -> None:
+        """Aggregate check remains pass when skill audit warning is non-blocking."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            ok = QualityResult(True, "cmd", "", "", 0)
+            warning_skill_audit = QualityResult(
+                True,
+                "uv run gz skill audit",
+                "Warnings: SKA-MIRROR-DIR-UNEXPECTED",
+                "",
+                0,
+            )
+            fake = CheckResult(
+                success=True,
+                lint=ok,
+                format=ok,
+                typecheck=ok,
+                test=ok,
+                skill_audit=warning_skill_audit,
+                parity_check=ok,
+                readiness_audit=ok,
+            )
+            with patch("gzkit.cli.run_all_checks", return_value=fake):
+                result = runner.invoke(main, ["check"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("all checks passed", result.output.lower())
 
 
 class TestNewCommandParsers(unittest.TestCase):

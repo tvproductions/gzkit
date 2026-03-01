@@ -3976,25 +3976,6 @@ def validate(
         console.print("[green]All validations passed.[/green]")
 
 
-def _is_path_within_root(path: str, root: str) -> bool:
-    """Return True when a project-relative path is equal to or nested under root."""
-    normalized_root = root.rstrip("/")
-    return path == normalized_root or path.startswith(f"{normalized_root}/")
-
-
-def _is_recoverable_stale_mirror_issue(path: str, message: str, config: GzkitConfig) -> bool:
-    """Classify stale mirror-only directory findings as recovery warnings."""
-    if message != "Unexpected skill directory not in canonical root.":
-        return False
-
-    mirror_roots = (
-        config.paths.codex_skills,
-        config.paths.claude_skills,
-        config.paths.copilot_skills,
-    )
-    return any(_is_path_within_root(path, root) for root in mirror_roots)
-
-
 def _run_agent_control_sync(dry_run: bool) -> None:
     """Execute control-surface regeneration flow."""
     config = ensure_initialized()
@@ -4033,12 +4014,7 @@ def _run_agent_control_sync(dry_run: bool) -> None:
 
     report = audit_skills(project_root, config)
     blocking_errors = sorted(
-        [
-            issue
-            for issue in report.issues
-            if issue.severity == "error"
-            and not _is_recoverable_stale_mirror_issue(issue.path, issue.message, config)
-        ],
+        [issue for issue in report.issues if issue.blocking],
         key=lambda issue: (issue.path, issue.message),
     )
     if blocking_errors:
@@ -4280,7 +4256,9 @@ def skill_audit_cmd(as_json: bool, strict: bool) -> None:
 
     warning_count = sum(1 for issue in report.issues if issue.severity == "warning")
     error_count = sum(1 for issue in report.issues if issue.severity == "error")
-    success = report.valid and (warning_count == 0 or not strict)
+    blocking_error_count = sum(1 for issue in report.issues if issue.blocking)
+    non_blocking_warning_count = sum(1 for issue in report.issues if not issue.blocking)
+    success = blocking_error_count == 0 and (non_blocking_warning_count == 0 or not strict)
 
     if as_json:
         payload = report.to_dict()
@@ -4288,6 +4266,8 @@ def skill_audit_cmd(as_json: bool, strict: bool) -> None:
         payload["success"] = success
         payload["error_count"] = error_count
         payload["warning_count"] = warning_count
+        payload["blocking_error_count"] = blocking_error_count
+        payload["non_blocking_warning_count"] = non_blocking_warning_count
         print(json.dumps(payload, indent=2))
         if not success:
             raise SystemExit(1)
@@ -4299,16 +4279,27 @@ def skill_audit_cmd(as_json: bool, strict: bool) -> None:
         console.print(
             f"Checked {report.checked_skills} canonical skills across {root_count} roots."
         )
-        if warning_count:
-            console.print(f"[yellow]{warning_count} warning(s) found (non-blocking).[/yellow]")
+        console.print(
+            f"Blocking: {blocking_error_count}  Non-blocking: {non_blocking_warning_count}"
+        )
+        if non_blocking_warning_count:
+            console.print(
+                f"[yellow]{non_blocking_warning_count} warning(s) found (non-blocking).[/yellow]"
+            )
         return
 
     console.print("[red]Skill audit failed.[/red]")
+    console.print(
+        "Blocking errors: "
+        f"{blocking_error_count}  Non-blocking warnings: {non_blocking_warning_count}"
+    )
     console.print(f"Errors: {error_count}  Warnings: {warning_count}")
     for issue in report.issues:
         style = "red" if issue.severity == "error" else "yellow"
+        scope = "BLOCKING" if issue.blocking else "NON-BLOCKING"
         console.print(
-            f"  [{style}]{issue.severity.upper()}[/{style}] {issue.path}: {issue.message}"
+            f"  [{style}]{issue.severity.upper()}[/{style}] [{issue.code}] [{scope}] "
+            f"{issue.path}: {issue.message}"
         )
     raise SystemExit(1)
 
