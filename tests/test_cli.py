@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from unittest.mock import patch
 
-from gzkit.cli import COMMAND_DOCS, main, resolve_adr_file
+from gzkit.cli import COMMAND_DOCS, GzCliError, main, resolve_adr_file
 from gzkit.config import GzkitConfig
 from gzkit.ledger import (
     Ledger,
@@ -239,7 +239,7 @@ class TestAttestSemantics(unittest.TestCase):
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("Gate 3 must pass", result.output)
 
-    def test_attest_heavy_allows_gate4_na_when_features_missing(self) -> None:
+    def test_attest_heavy_requires_gate4(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
             runner.invoke(main, ["init", "--mode", "heavy"])
@@ -249,8 +249,8 @@ class TestAttestSemantics(unittest.TestCase):
             ledger.append(gate_checked_event("ADR-0.1.0", 3, "pass", "docs", 0))
 
             result = runner.invoke(main, ["attest", "ADR-0.1.0", "--status", "completed"])
-            self.assertEqual(result.exit_code, 0)
-            self.assertIn("Term: Completed", result.output)
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("Gate 4 must pass", result.output)
 
     def test_attest_force_bypass_requires_reason(self) -> None:
         runner = CliRunner()
@@ -828,6 +828,58 @@ class TestAdrResolution(unittest.TestCase):
             self.assertEqual(resolved_path.resolve(), adr_path.resolve())
             self.assertEqual(resolved_id, "ADR-0.6.0-pool.gz-chores-system")
 
+    def test_resolve_adr_file_matches_unique_semver_prefix(self) -> None:
+        """Resolves ADR-<semver> input to a unique suffixed ADR id."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+
+            adr_path = Path(config.paths.adrs) / "ADR-0.5.0-skill-lifecycle-governance.md"
+            adr_path.parent.mkdir(parents=True, exist_ok=True)
+            adr_path.write_text(
+                "---\n"
+                "id: ADR-0.5.0-skill-lifecycle-governance\n"
+                "---\n\n"
+                "# ADR-0.5.0: skill-lifecycle-governance\n"
+            )
+
+            resolved_path, resolved_id = resolve_adr_file(Path.cwd(), config, "ADR-0.5.0")
+
+            self.assertEqual(resolved_path.resolve(), adr_path.resolve())
+            self.assertEqual(resolved_id, "ADR-0.5.0-skill-lifecycle-governance")
+
+    def test_resolve_adr_file_rejects_ambiguous_semver_prefix(self) -> None:
+        """Raises when ADR-<semver> matches multiple suffixed ADR IDs."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+
+            adr_dir = Path(config.paths.adrs)
+            adr_dir.mkdir(parents=True, exist_ok=True)
+            (adr_dir / "ADR-0.5.0-alpha.md").write_text("# ADR-0.5.0: alpha\n")
+            (adr_dir / "ADR-0.5.0-beta.md").write_text("# ADR-0.5.0: beta\n")
+
+            with self.assertRaisesRegex(GzCliError, r"Multiple ADR files found for ADR-0\.5\.0"):
+                resolve_adr_file(Path.cwd(), config, "ADR-0.5.0")
+
+    def test_resolve_adr_file_keeps_legacy_semver_metadata_id(self) -> None:
+        """Resolves ADR-<semver> to metadata ID when legacy files use suffixed paths."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+
+            adr_path = Path(config.paths.adrs) / "ADR-0.2.0-gate-verification.md"
+            adr_path.parent.mkdir(parents=True, exist_ok=True)
+            adr_path.write_text("---\nid: ADR-0.2.0\n---\n\n# ADR-0.2.0: Gate Verification\n")
+
+            resolved_path, resolved_id = resolve_adr_file(Path.cwd(), config, "ADR-0.2.0")
+
+            self.assertEqual(resolved_path.resolve(), adr_path.resolve())
+            self.assertEqual(resolved_id, "ADR-0.2.0")
+
 
 class TestValidateCommand(unittest.TestCase):
     """Tests for gz validate command."""
@@ -1254,14 +1306,16 @@ class TestAdrRuntimeCommands(unittest.TestCase):
             self.assertIn("Completed — Partial: [reason]", result.output)
             self.assertIn("Dropped — [reason]", result.output)
 
-    def test_closeout_heavy_shows_gate4_na_when_features_missing(self) -> None:
+    def test_closeout_heavy_includes_bdd_command_when_features_missing(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
             runner.invoke(main, ["init", "--mode", "heavy"])
             runner.invoke(main, ["plan", "0.1.0", "--lane", "heavy"])
             result = runner.invoke(main, ["closeout", "ADR-0.1.0", "--dry-run"])
             self.assertEqual(result.exit_code, 0)
-            self.assertIn("Gate 4 (BDD): N/A", result.output)
+            self.assertIn("Gate 4 (BDD):", result.output)
+            self.assertIn("uv run -m behave features/", result.output)
+            self.assertNotIn("Gate 4 (BDD): N/A", result.output)
 
     def test_closeout_heavy_includes_bdd_command_when_features_exist(self) -> None:
         runner = CliRunner()
@@ -1589,6 +1643,27 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
             self.assertIn("QC Readiness:", result.output)
             self.assertNotIn("Gate 2 (TDD):", result.output)
 
+    def test_adr_status_accepts_semver_prefix_for_suffixed_adr(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            adr_path = Path(config.paths.adrs) / "ADR-0.5.0-skill-lifecycle-governance.md"
+            adr_path.parent.mkdir(parents=True, exist_ok=True)
+            adr_path.write_text(
+                "---\n"
+                "id: ADR-0.5.0-skill-lifecycle-governance\n"
+                "---\n\n"
+                "# ADR-0.5.0: skill-lifecycle-governance\n"
+            )
+
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(adr_created_event("ADR-0.5.0-skill-lifecycle-governance", "", "heavy"))
+
+            result = runner.invoke(main, ["adr", "status", "0.5.0"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("ADR-0.5.0-skill-lifecycle-governance", result.output)
+
     def test_adr_status_show_gates_includes_gate_breakdown(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -1598,6 +1673,36 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
             result = runner.invoke(main, ["adr", "status", "ADR-0.1.0", "--show-gates"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("Gate 2 (TDD):", result.output)
+
+    def test_adr_status_heavy_features_missing_reports_gate4_pending(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init", "--mode", "heavy"])
+            runner.invoke(main, ["plan", "0.1.0", "--lane", "heavy"])
+
+            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0", "--json"])
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            self.assertEqual(payload["gates"]["4"], "pending")
+            self.assertNotIn("gate4_na_reason", payload)
+
+    def test_adr_status_legacy_semver_id_still_resolves(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init", "--mode", "heavy"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            adr_path = Path(config.paths.adrs) / "ADR-0.2.0-gate-verification.md"
+            adr_path.parent.mkdir(parents=True, exist_ok=True)
+            adr_path.write_text(
+                "---\nid: ADR-0.2.0\nlane: heavy\n---\n\n# ADR-0.2.0: Gate Verification\n"
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(adr_created_event("ADR-0.2.0", "", "heavy"))
+
+            result = runner.invoke(main, ["adr", "status", "ADR-0.2.0", "--json"])
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            self.assertEqual(payload["adr"], "ADR-0.2.0")
 
     def test_adr_status_json_completed(self) -> None:
         runner = CliRunner()

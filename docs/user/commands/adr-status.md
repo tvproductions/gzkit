@@ -10,6 +10,10 @@ Show focused OBPI progress, lifecycle status, and gate readiness for one ADR.
 gz adr status <ADR-ID> [--json] [--show-gates]
 ```
 
+`<ADR-ID>` accepts full IDs (for example `ADR-0.5.0-skill-lifecycle-governance`) and
+unique SemVer prefixes (for example `0.5.0` or `ADR-0.5.0`) when exactly one ADR ID
+starts with that prefix.
+
 ---
 
 ## Runtime Behavior
@@ -50,4 +54,5 @@ reported explicitly so gaps are visible in a single ADR view.
 uv run gz adr status ADR-0.3.0
 uv run gz adr status ADR-0.3.0 --show-gates
 uv run gz adr status ADR-0.3.0 --json
+uv run gz adr status 0.5.0
 ```

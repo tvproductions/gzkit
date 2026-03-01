@@ -18,7 +18,7 @@ gz attest <ADR> --status {completed,partial,dropped} [--reason <text>] [--force]
 
 - Lite lane: Gate 2 must be `pass`.
 - Heavy lane: Gate 2 and Gate 3 must be `pass`.
-- Heavy lane Gate 4: must be `pass` when `features/` exists; otherwise Gate 4 is treated as N/A with explicit rationale.
+- Heavy lane Gate 4: must be `pass`.
 
 If prerequisites fail, the command exits non-zero.
 

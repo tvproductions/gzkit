@@ -20,6 +20,7 @@ classifiers = [
 ]
 
 dependencies = [
+    "behave>=1.2.6",
     "rich>=13.0",
 ]
 

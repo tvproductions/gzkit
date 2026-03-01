@@ -15,7 +15,7 @@ Lanes determine which gates must be satisfied.
 
 ## Heavy-Lane Gate 4 Detail
 
-Heavy lane expects BDD verification (Gate 4). If no `features/` suite exists, runtime surfaces mark Gate 4 as N/A with explicit rationale rather than silently passing.
+Heavy lane requires BDD verification (Gate 4) to pass.
 
 ---
 
