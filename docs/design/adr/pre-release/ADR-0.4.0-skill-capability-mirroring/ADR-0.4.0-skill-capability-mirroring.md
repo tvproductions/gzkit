@@ -1,6 +1,6 @@
 ---
 id: ADR-0.4.0-skill-capability-mirroring
-status: Proposed
+status: Completed
 semver: 0.4.0
 lane: heavy
 parent: ADR-0.3.0
@@ -49,13 +49,13 @@ Execution is decomposed into distribution workstreams:
 ## Evidence
 
 - [x] Skill source and mirror topology implemented in runtime/config/sync surfaces.
-- [ ] Agent-native mirror contracts are explicit and auditable for all control surfaces.
-- [ ] Sync determinism and recovery behavior are verified under drift scenarios.
-- [ ] Compatibility migration is complete and legacy mirror assumptions are retired.
-- [ ] Human attestation recorded after remaining heavy-lane gate flow.
+- [x] Agent-native mirror contracts are explicit and auditable for all control surfaces.
+- [x] Sync determinism and recovery behavior are verified under drift scenarios.
+- [x] Compatibility migration is complete and legacy mirror assumptions are retired.
+- [x] Human attestation recorded after remaining heavy-lane gate flow.
 
 ## Attestation Block
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.4.0 | Pending | | | |
+| 0.4.0 | Completed | Jeffry Babb | 2026-03-01 | attest completed |
