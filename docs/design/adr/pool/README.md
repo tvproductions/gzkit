@@ -43,7 +43,13 @@ uv run gz adr promote ADR-pool.<slug> --semver X.Y.Z [--dry-run]
 | [ADR-pool.gz-chores-system](ADR-pool.gz-chores-system.md) | 0.7.x | Waiting | ADR-0.2.0 |
 | [ADR-pool.release-hardening](ADR-pool.release-hardening.md) | 1.0.x | Waiting | ADR-pool.audit-system |
 | [ADR-pool.go-runtime-parity](ADR-pool.go-runtime-parity.md) | Foundation | Waiting | ADR-0.3.0 |
-| [ADR-pool.obpi-runtime-surface](ADR-pool.obpi-runtime-surface.md) | Runtime ergonomics | Waiting | ADR-0.7.0-obpi-first-operations |
+| [ADR-pool.ai-runtime-foundations](ADR-pool.ai-runtime-foundations.md) | Phase 7+ runtime track | Waiting | ADR-pool.release-hardening |
+| [ADR-pool.evaluation-infrastructure](ADR-pool.evaluation-infrastructure.md) | Phase 8 eval track | Waiting | ADR-pool.ai-runtime-foundations |
+| [ADR-pool.controlled-agency-recovery](ADR-pool.controlled-agency-recovery.md) | Phase 9 agency track | Waiting | ADR-pool.evaluation-infrastructure |
+| [ADR-pool.storage-simplicity-profile](ADR-pool.storage-simplicity-profile.md) | Runtime posture | Waiting | ADR-0.0.2-stdlib-cli-and-agent-sync |
+| [ADR-pool.execution-memory-graph](ADR-pool.execution-memory-graph.md) | Runtime execution memory | Waiting | ADR-pool.storage-simplicity-profile, ADR-0.7.0-obpi-first-operations |
+| [ADR-pool.prime-context-hooks](ADR-pool.prime-context-hooks.md) | CLI+hooks context runtime | Waiting | ADR-pool.execution-memory-graph |
+| [ADR-pool.obpi-runtime-surface](ADR-pool.obpi-runtime-surface.md) | OBPI-native runtime ergonomics | Waiting | ADR-0.7.0-obpi-first-operations, ADR-pool.execution-memory-graph |
 
 ---
 
@@ -74,8 +80,14 @@ PRD-GZKIT-1.0.0
 ├── ADR-pool.audit-system (Phase 6)
 ├── ADR-pool.gz-chores-system (Parity backlog)
 ├── ADR-pool.release-hardening (Phase 7)
+├── ADR-pool.ai-runtime-foundations (Phase 7: AI runtime foundations)
+├── ADR-pool.evaluation-infrastructure (Phase 8: Evaluation infrastructure)
+├── ADR-pool.controlled-agency-recovery (Phase 9: Controlled agency and recovery)
 ├── ADR-pool.go-runtime-parity (Foundation runtime track)
+├── ADR-pool.storage-simplicity-profile (Runtime storage posture)
 ├── [ADR-0.7.0](../pre-release/ADR-0.7.0-obpi-first-operations/ADR-0.7.0-obpi-first-operations.md) (OBPI-first governance track) ← Active
+├── ADR-pool.execution-memory-graph (Typed runtime execution memory)
+├── ADR-pool.prime-context-hooks (Dynamic runtime context via hooks)
 └── ADR-pool.obpi-runtime-surface (OBPI-native runtime surfaces)
 ```
 
