@@ -2,6 +2,7 @@
 
 import tempfile
 import unittest
+from datetime import date, timedelta
 from pathlib import Path
 
 from gzkit.config import GzkitConfig
@@ -21,18 +22,29 @@ from gzkit.sync import (
 def _skill_markdown(
     name: str,
     *,
+    lifecycle_state: str = "active",
+    last_reviewed: str | None = None,
+    lifecycle_transition_from: str | None = None,
+    lifecycle_transition_date: str | None = None,
+    lifecycle_transition_reason: str | None = None,
+    lifecycle_transition_evidence: str | None = None,
     compatibility: str | None = None,
     invocation: str | None = None,
     gz_command: str | None = None,
+    deprecation_replaced_by: str | None = None,
+    deprecation_migration: str | None = None,
+    deprecation_communication: str | None = None,
+    deprecation_announced_on: str | None = None,
+    retired_on: str | None = None,
     metadata: dict[str, str] | None = None,
 ) -> str:
     lines = [
         "---",
         f"name: {name}",
         "description: Demo skill",
-        "lifecycle_state: active",
+        f"lifecycle_state: {lifecycle_state}",
         "owner: gzkit-governance",
-        "last_reviewed: 2026-02-21",
+        f"last_reviewed: {last_reviewed or date.today().isoformat()}",
     ]
     if compatibility is not None:
         lines.append(f"compatibility: {compatibility}")
@@ -40,6 +52,24 @@ def _skill_markdown(
         lines.append(f"invocation: {invocation}")
     if gz_command is not None:
         lines.append(f"gz_command: {gz_command}")
+    if lifecycle_transition_from is not None:
+        lines.append(f"lifecycle_transition_from: {lifecycle_transition_from}")
+    if lifecycle_transition_date is not None:
+        lines.append(f"lifecycle_transition_date: {lifecycle_transition_date}")
+    if lifecycle_transition_reason is not None:
+        lines.append(f"lifecycle_transition_reason: {lifecycle_transition_reason}")
+    if lifecycle_transition_evidence is not None:
+        lines.append(f"lifecycle_transition_evidence: {lifecycle_transition_evidence}")
+    if deprecation_replaced_by is not None:
+        lines.append(f"deprecation_replaced_by: {deprecation_replaced_by}")
+    if deprecation_migration is not None:
+        lines.append(f"deprecation_migration: {deprecation_migration}")
+    if deprecation_communication is not None:
+        lines.append(f"deprecation_communication: {deprecation_communication}")
+    if deprecation_announced_on is not None:
+        lines.append(f"deprecation_announced_on: {deprecation_announced_on}")
+    if retired_on is not None:
+        lines.append(f"retired_on: {retired_on}")
     if metadata is not None:
         lines.append("metadata:")
         for key, value in metadata.items():
@@ -554,6 +584,116 @@ class TestSyncControlSurfaces(unittest.TestCase):
 
             blockers = collect_canonical_sync_blockers(project_root, config)
             self.assertEqual(blockers, [])
+
+    def test_canonical_sync_preflight_blocks_stale_last_reviewed(self) -> None:
+        """Stale lifecycle review metadata is a blocking preflight error."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+            stale_date = (date.today() - timedelta(days=120)).isoformat()
+
+            broken_skill = project_root / config.paths.skills / "broken-skill"
+            broken_skill.mkdir(parents=True, exist_ok=True)
+            (broken_skill / "SKILL.md").write_text(
+                _skill_markdown("broken-skill", last_reviewed=stale_date)
+            )
+
+            blockers = collect_canonical_sync_blockers(project_root, config)
+            self.assertTrue(any("older than 90 days" in blocker for blocker in blockers))
+
+    def test_canonical_sync_preflight_blocks_missing_deprecation_fields(self) -> None:
+        """Deprecated skills must provide communication metadata."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            broken_skill = project_root / config.paths.skills / "broken-skill"
+            broken_skill.mkdir(parents=True, exist_ok=True)
+            (broken_skill / "SKILL.md").write_text(
+                _skill_markdown("broken-skill", lifecycle_state="deprecated")
+            )
+
+            blockers = collect_canonical_sync_blockers(project_root, config)
+            self.assertTrue(
+                any(
+                    "missing frontmatter field 'deprecation_replaced_by'" in blocker
+                    for blocker in blockers
+                )
+            )
+
+    def test_canonical_sync_preflight_blocks_retired_without_retired_on(self) -> None:
+        """Retired skills must include retired_on evidence metadata."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            broken_skill = project_root / config.paths.skills / "broken-skill"
+            broken_skill.mkdir(parents=True, exist_ok=True)
+            (broken_skill / "SKILL.md").write_text(
+                _skill_markdown(
+                    "broken-skill",
+                    lifecycle_state="retired",
+                    deprecation_replaced_by="new-skill",
+                    deprecation_migration="See migration guide",
+                    deprecation_communication="Announced in release notes",
+                    deprecation_announced_on=date.today().isoformat(),
+                )
+            )
+
+            blockers = collect_canonical_sync_blockers(project_root, config)
+            self.assertTrue(
+                any("missing frontmatter field 'retired_on'" in blocker for blocker in blockers)
+            )
+
+    def test_canonical_sync_preflight_blocks_incomplete_transition_metadata(self) -> None:
+        """Transition metadata must be fully specified when declared."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            broken_skill = project_root / config.paths.skills / "broken-skill"
+            broken_skill.mkdir(parents=True, exist_ok=True)
+            (broken_skill / "SKILL.md").write_text(
+                _skill_markdown(
+                    "broken-skill",
+                    lifecycle_state="active",
+                    lifecycle_transition_from="draft",
+                )
+            )
+
+            blockers = collect_canonical_sync_blockers(project_root, config)
+            self.assertTrue(
+                any("transition metadata incomplete" in blocker for blocker in blockers)
+            )
+
+    def test_canonical_sync_preflight_blocks_unsupported_transition(self) -> None:
+        """Unsupported lifecycle transitions fail canonical preflight."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            broken_skill = project_root / config.paths.skills / "broken-skill"
+            broken_skill.mkdir(parents=True, exist_ok=True)
+            (broken_skill / "SKILL.md").write_text(
+                _skill_markdown(
+                    "broken-skill",
+                    lifecycle_state="retired",
+                    lifecycle_transition_from="active",
+                    lifecycle_transition_date=date.today().isoformat(),
+                    lifecycle_transition_reason="Retired immediately",
+                    lifecycle_transition_evidence="No intermediate deprecation phase.",
+                    deprecation_replaced_by="new-skill",
+                    deprecation_migration="See migration guide",
+                    deprecation_communication="Announced in release notes",
+                    deprecation_announced_on=date.today().isoformat(),
+                    retired_on=date.today().isoformat(),
+                )
+            )
+
+            blockers = collect_canonical_sync_blockers(project_root, config)
+            self.assertTrue(
+                any("unsupported lifecycle transition" in blocker for blocker in blockers)
+            )
 
 
 if __name__ == "__main__":

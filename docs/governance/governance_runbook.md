@@ -130,8 +130,11 @@ uv run gz lint
 4. Emit OBPI completion receipt with explicit attestor evidence.
 
 ```bash
-uv run gz obpi emit-receipt OBPI-<X.Y.Z-NN>-<slug> --event completed --attestor "<Human Name>" --evidence-json '{"attestation":"I attest I understand the completion of OBPI-<X.Y.Z-NN>.","date":"YYYY-MM-DD"}'
+uv run gz obpi emit-receipt OBPI-<X.Y.Z-NN>-<slug> --event completed --attestor "human:<name>" --evidence-json '{"value_narrative":"<problem-before vs capability-now>","key_proof":"<one concrete CLI/code proof>","human_attestation":true,"attestation_text":"attest completed","attestation_date":"YYYY-MM-DD"}'
 ```
+
+For Lite parents, `human_attestation` fields are optional.
+For Heavy/Foundation parents, they are required and fail closed when missing.
 
 ---
 
@@ -253,6 +256,45 @@ Compatibility note:
 
 - `gz-adr-create` is canonical in gzkit.
 - `gz-adr-manager` is retained as a legacy alias for cross-repository parity.
+
+---
+
+## Workflow: Skill Maintenance and Deprecation Operations
+
+**When:** Weekly hygiene cadence, before ADR closeout touching skills, or when deprecating/retiring any skill.
+
+1. Run lifecycle audit with explicit cadence threshold.
+
+```bash
+uv run gz skill audit --json --max-review-age-days 90
+```
+
+2. If stale review findings exist, update canonical `.gzkit/skills/*/SKILL.md`:
+
+- set `last_reviewed` to current review date,
+- confirm `owner` remains accurate,
+- re-run audit until stale findings are zero.
+
+3. If a skill is `deprecated` or `retired`, ensure metadata evidence is present:
+
+- `deprecation_replaced_by`
+- `deprecation_migration`
+- `deprecation_communication`
+- `deprecation_announced_on`
+- `retired_on` (retired only)
+
+4. Sync mirrors from canonical source of truth.
+
+```bash
+uv run gz agent sync control-surfaces
+uv run gz skill audit
+```
+
+Rules:
+
+- Canonical `.gzkit/skills` is authoritative; mirrors are derived artifacts.
+- Do not deprecate/retire without communication and migration evidence.
+- Do not bypass stale review failures; they are blocking policy failures.
 
 ---
 
