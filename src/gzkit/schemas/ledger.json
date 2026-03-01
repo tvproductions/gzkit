@@ -79,7 +79,11 @@
       "properties": {
         "receipt_event": { "type": "string", "enum": ["completed", "validated"] },
         "attestor": { "type": "string", "min_length": 1 },
-        "evidence": { "type": "object" }
+        "evidence": { "type": "object" },
+        "obpi_completion": {
+          "type": "string",
+          "enum": ["completed", "attested_completed", "not_completed"]
+        }
       }
     },
     "artifact_renamed": {

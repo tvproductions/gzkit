@@ -119,12 +119,14 @@ class TestEventFactories(unittest.TestCase):
             "human:jeff",
             {"note": "observed"},
             parent_adr="ADR-0.6.0-demo",
+            obpi_completion="not_completed",
         )
         self.assertEqual(event.event, "obpi_receipt_emitted")
         self.assertEqual(event.id, "OBPI-0.6.0-01-demo")
         self.assertEqual(event.parent, "ADR-0.6.0-demo")
         self.assertEqual(event.extra["receipt_event"], "validated")
         self.assertEqual(event.extra["attestor"], "human:jeff")
+        self.assertEqual(event.extra["obpi_completion"], "not_completed")
 
 
 class TestLedger(unittest.TestCase):

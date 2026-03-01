@@ -83,6 +83,10 @@ Records a validation event tied to a specific git commit.
 | `evidence` | object | No | Evidence payload (test results, coverage, etc.) |
 | `attestor` | string | Yes | Human attestor (must be `human:<name>`, e.g., `human:jeff`). Only humans can attest — agents record evidence via the `agent` field. |
 
+For OBPI-scoped completion receipts (`obpi_receipt_emitted` with `receipt_event=completed`),
+runtime evidence must include value narrative + key proof semantics, and Heavy/Foundation
+parents require explicit human-attestation evidence fields.
+
 ### ValidationAnchor Fields
 
 | Field | Type | Required | Description |

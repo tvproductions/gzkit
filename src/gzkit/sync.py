@@ -6,7 +6,7 @@ Control surfaces are agent-specific files generated from governance canon.
 
 import json
 import re
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -19,10 +19,46 @@ ALLOWED_ID_PREFIXES = ("ADR-", "PRD-", "OBPI-")
 ALLOWED_LANES = {"lite", "heavy"}
 SKILL_NAME_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 SKILL_LAST_REVIEWED_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+DEFAULT_MAX_REVIEW_AGE_DAYS = 90
 SKILL_IDENTITY_FIELDS = ("name", "description")
 SKILL_LIFECYCLE_FIELDS = ("lifecycle_state", "owner", "last_reviewed")
 SKILL_REQUIRED_FRONTMATTER_FIELDS = SKILL_IDENTITY_FIELDS + SKILL_LIFECYCLE_FIELDS
 SKILL_CAPABILITY_FIELDS = ("compatibility", "invocation", "gz_command")
+SKILL_TRANSITION_FIELDS = (
+    "lifecycle_transition_from",
+    "lifecycle_transition_date",
+    "lifecycle_transition_reason",
+    "lifecycle_transition_evidence",
+)
+SKILL_ALLOWED_TRANSITIONS = {
+    ("draft", "active"),
+    ("active", "deprecated"),
+    ("deprecated", "active"),
+    ("deprecated", "retired"),
+}
+SKILL_DEPRECATION_FIELDS = (
+    "deprecation_replaced_by",
+    "deprecation_migration",
+    "deprecation_communication",
+    "deprecation_announced_on",
+    "retired_on",
+)
+SKILL_DEPRECATION_REQUIRED_BY_STATE = {
+    "deprecated": (
+        "deprecation_replaced_by",
+        "deprecation_migration",
+        "deprecation_communication",
+        "deprecation_announced_on",
+    ),
+    "retired": (
+        "deprecation_replaced_by",
+        "deprecation_migration",
+        "deprecation_communication",
+        "deprecation_announced_on",
+        "retired_on",
+    ),
+}
+SKILL_DEPRECATION_DATE_FIELDS = ("deprecation_announced_on", "retired_on")
 SKILL_METADATA_KEYS = (
     "metadata.skill-version",
     "metadata.govzero-framework-version",
@@ -576,16 +612,137 @@ def _validate_lifecycle_field_values(frontmatter: dict[str, str], rel_file: str)
     """Validate lifecycle enum and date format fields."""
     errors: list[str] = []
     lifecycle_state = frontmatter.get("lifecycle_state", "")
-    if lifecycle_state and lifecycle_state not in SKILL_LIFECYCLE_STATES:
-        allowed = ", ".join(sorted(SKILL_LIFECYCLE_STATES))
+    _append_invalid_lifecycle_state(errors, rel_file, lifecycle_state)
+    _append_last_reviewed_issues(errors, frontmatter, rel_file)
+    _append_deprecation_date_issues(errors, frontmatter, rel_file)
+    _append_transition_issues(errors, frontmatter, rel_file, lifecycle_state)
+    _append_deprecation_field_issues(errors, frontmatter, rel_file, lifecycle_state)
+    return errors
+
+
+def _parse_skill_date(value: str) -> date | None:
+    """Parse a date constrained to YYYY-MM-DD."""
+    if not SKILL_LAST_REVIEWED_RE.match(value):
+        return None
+    try:
+        return date.fromisoformat(value)
+    except ValueError:
+        return None
+
+
+def _append_invalid_lifecycle_state(errors: list[str], rel_file: str, lifecycle_state: str) -> None:
+    """Append lifecycle-state enum errors."""
+    if not lifecycle_state or lifecycle_state in SKILL_LIFECYCLE_STATES:
+        return
+    allowed = ", ".join(sorted(SKILL_LIFECYCLE_STATES))
+    errors.append(f"{rel_file}: invalid lifecycle_state '{lifecycle_state}' (allowed: {allowed}).")
+
+
+def _append_last_reviewed_issues(
+    errors: list[str], frontmatter: dict[str, str], rel_file: str
+) -> None:
+    """Append last_reviewed validation and staleness issues."""
+    last_reviewed = frontmatter.get("last_reviewed", "")
+    if not last_reviewed:
+        return
+    parsed_last_reviewed = _parse_skill_date(last_reviewed)
+    if parsed_last_reviewed is None:
+        errors.append(f"{rel_file}: invalid last_reviewed '{last_reviewed}' (YYYY-MM-DD).")
+        return
+    if date.today() - parsed_last_reviewed <= timedelta(days=DEFAULT_MAX_REVIEW_AGE_DAYS):
+        return
+    errors.append(
+        f"{rel_file}: last_reviewed '{last_reviewed}' is older than "
+        f"{DEFAULT_MAX_REVIEW_AGE_DAYS} days."
+    )
+
+
+def _append_deprecation_date_issues(
+    errors: list[str], frontmatter: dict[str, str], rel_file: str
+) -> None:
+    """Append invalid deprecation/retirement date issues."""
+    for field in SKILL_DEPRECATION_DATE_FIELDS:
+        value = frontmatter.get(field, "")
+        if not value:
+            continue
+        if _parse_skill_date(value) is not None:
+            continue
+        errors.append(f"{rel_file}: invalid {field} '{value}' (YYYY-MM-DD).")
+
+
+def _append_transition_issues(
+    errors: list[str],
+    frontmatter: dict[str, str],
+    rel_file: str,
+    lifecycle_state: str,
+) -> None:
+    """Append transition metadata issues when transition fields are declared."""
+    if not any(field in frontmatter for field in SKILL_TRANSITION_FIELDS):
+        return
+
+    missing_transition_fields = [
+        field for field in SKILL_TRANSITION_FIELDS if not frontmatter.get(field, "")
+    ]
+    if missing_transition_fields:
         errors.append(
-            f"{rel_file}: invalid lifecycle_state '{lifecycle_state}' (allowed: {allowed})."
+            f"{rel_file}: transition metadata incomplete. Missing: "
+            f"{', '.join(sorted(missing_transition_fields))}."
         )
 
-    last_reviewed = frontmatter.get("last_reviewed", "")
-    if last_reviewed and not SKILL_LAST_REVIEWED_RE.match(last_reviewed):
-        errors.append(f"{rel_file}: invalid last_reviewed '{last_reviewed}' (YYYY-MM-DD).")
-    return errors
+    transition_from = frontmatter.get("lifecycle_transition_from", "")
+    if transition_from and transition_from not in SKILL_LIFECYCLE_STATES:
+        allowed = ", ".join(sorted(SKILL_LIFECYCLE_STATES))
+        errors.append(
+            f"{rel_file}: invalid lifecycle_transition_from '{transition_from}' "
+            f"(allowed: {allowed})."
+        )
+
+    transition_date = frontmatter.get("lifecycle_transition_date", "")
+    if transition_date and _parse_skill_date(transition_date) is None:
+        errors.append(
+            f"{rel_file}: invalid lifecycle_transition_date '{transition_date}' (YYYY-MM-DD)."
+        )
+
+    _append_transition_pair_issue(errors, rel_file, transition_from, lifecycle_state)
+
+
+def _append_transition_pair_issue(
+    errors: list[str], rel_file: str, transition_from: str, lifecycle_state: str
+) -> None:
+    """Append transition direction support errors."""
+    if not transition_from or not lifecycle_state:
+        return
+    if transition_from == lifecycle_state:
+        errors.append(
+            f"{rel_file}: transition from '{transition_from}' to '{lifecycle_state}' "
+            "is not allowed."
+        )
+        return
+    if (transition_from, lifecycle_state) in SKILL_ALLOWED_TRANSITIONS:
+        return
+    errors.append(
+        f"{rel_file}: unsupported lifecycle transition '{transition_from}' -> '{lifecycle_state}'."
+    )
+
+
+def _append_deprecation_field_issues(
+    errors: list[str], frontmatter: dict[str, str], rel_file: str, lifecycle_state: str
+) -> None:
+    """Append state-based deprecation field presence/absence issues."""
+    if lifecycle_state in {"draft", "active"}:
+        for field in SKILL_DEPRECATION_FIELDS:
+            if field in frontmatter:
+                errors.append(
+                    f"{rel_file}: field '{field}' is only allowed for deprecated/retired skills."
+                )
+
+    for field in SKILL_DEPRECATION_REQUIRED_BY_STATE.get(lifecycle_state, ()):
+        if frontmatter.get(field, ""):
+            continue
+        errors.append(
+            f"{rel_file}: missing frontmatter field '{field}' for "
+            f"lifecycle_state '{lifecycle_state}'."
+        )
 
 
 def _validate_capability_field_values(frontmatter: dict[str, str], rel_file: str) -> list[str]:
