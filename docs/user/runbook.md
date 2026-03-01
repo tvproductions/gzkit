@@ -205,6 +205,7 @@ uv run gz adr emit-receipt ADR-0.6.0-pool-promotion-protocol --event validated -
 - `uv run gz adr audit-check ADR-<X.Y.Z>`
 - `uv run gz adr status ADR-<X.Y.Z> --json`
 - `uv run gz status --json`
+- `uv run gz readiness audit`
 
 ---
 

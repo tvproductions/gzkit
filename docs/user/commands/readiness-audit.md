@@ -33,6 +33,14 @@ Evaluation design explicitly includes TDD/BDD governance signals (Gate 2 and Gat
 
 Scoring is 0.00-3.00 per dimension. The command fails when required control surfaces are missing or overall discipline score is below the minimum threshold.
 
+## Reference Mapping
+
+Use this command with the practitioner reference:
+
+- [`Agent Input Disciplines`](../reference/agent-input-disciplines.md)
+
+The audit operationalizes that reference into deterministic repository checks.
+
 ---
 
 ## Example
