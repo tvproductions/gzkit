@@ -30,8 +30,8 @@ Canonical GovZero source: [`docs/governance/GovZero/audit-protocol.md`](../../go
 
 For heavy lane ADRs:
 
-- If `features/` exists, closeout includes the Gate 4 BDD command.
-- If `features/` is absent, closeout and status surfaces report Gate 4 as N/A with explicit rationale.
+- Closeout includes the Gate 4 BDD command.
+- Gate 4 must pass before attestation.
 
 ---
 

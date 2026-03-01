@@ -24,7 +24,6 @@ Per ADR it reports:
 - Canonical lifecycle (`Pending`, `Completed`, `Validated`, `Abandoned`)
 - Canonical attestation term when attested
 - Gate summaries (`1..5` where lane-applicable) only when `--show-gates` is supplied
-- Heavy-lane Gate 4 N/A rationale when `features/` is absent
 
 `--table` renders a stable summary table with one row per ADR:
 - ADR id
