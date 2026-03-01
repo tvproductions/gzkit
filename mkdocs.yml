@@ -111,6 +111,7 @@ nav:
   - Reference:
     - Charter: user/reference/charter.md
     - Lineage: user/reference/lineage.md
+    - Agent Input Disciplines: user/reference/agent-input-disciplines.md
     - Genesis: user/reference/genesis.md
     - AirlineOps Exploration: user/reference/airlineops-exploration-verbatim.md
 

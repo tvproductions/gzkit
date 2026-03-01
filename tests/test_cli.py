@@ -2156,6 +2156,10 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
         Path("docs/governance/GovZero/audits/AUDIT-TEMPLATE-agent-readiness.md").write_text(
             "# Agent Readiness Audit\n"
         )
+        Path("docs/user/reference").mkdir(parents=True, exist_ok=True)
+        Path("docs/user/reference/agent-input-disciplines.md").write_text(
+            "# Agent Input Disciplines\n"
+        )
         Path("src/gzkit/templates").mkdir(parents=True, exist_ok=True)
         Path("src/gzkit/templates/obpi.md").write_text(
             "\n".join(

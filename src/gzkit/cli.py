@@ -3737,6 +3737,15 @@ def readiness_audit_cmd(as_json: bool) -> None:
                 "required": False,
                 "issue": "GovZero canonical docs surface missing",
             },
+            {
+                "id": "agent_input_disciplines_reference",
+                "kind": "file",
+                "path": "docs/user/reference/agent-input-disciplines.md",
+                "required": True,
+                "issue": (
+                    "required practitioner reference surface missing for four-discipline compliance"
+                ),
+            },
         ],
         "intent_engineering": [
             {

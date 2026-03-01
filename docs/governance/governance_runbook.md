@@ -281,11 +281,12 @@ uv run gz readiness audit --json > docs/proposals/AUDIT-agent-readiness-gzkit-YY
 Use readiness as a design input, not a one-time score:
 
 1. Run `gz readiness audit` before parity extraction or major governance edits.
-2. Capture a dated audit artifact in `docs/proposals/`.
-3. Convert the top three gaps into tracked ADR/OBPI follow-up work.
-4. Use Gate 2 (TDD) and Gate 4 (BDD) evidence as primary inputs for acceptance/evaluation improvements.
-5. Re-run readiness after implementation and record score delta in the same proposal.
-6. Only claim maturity improvements when quality gates (`gz check`) also pass.
+2. Cross-check findings against [`docs/user/reference/agent-input-disciplines.md`](../user/reference/agent-input-disciplines.md) and record which discipline/primitive each gap maps to.
+3. Capture a dated audit artifact in `docs/proposals/`.
+4. Convert the top three gaps into tracked ADR/OBPI follow-up work.
+5. Use Gate 2 (TDD) and Gate 4 (BDD) evidence as primary inputs for acceptance/evaluation improvements.
+6. Re-run readiness after implementation and record score delta in the same proposal.
+7. Only claim maturity improvements when quality gates (`gz check`) also pass.
 
 ---
 
@@ -321,6 +322,7 @@ Use readiness as a design input, not a one-time score:
 - [Audit Protocol](GovZero/audit-protocol.md)
 - [Agent Readiness Audit Template](GovZero/audits/AUDIT-TEMPLATE-agent-readiness.md)
 - [Agent-Era Prompting Summary (Nate B. Jones)](GovZero/agent-era-prompting-summary.md)
+- [Agent Input Disciplines: Practitioner Reference](../user/reference/agent-input-disciplines.md)
 - [Gate 5 Architecture](GovZero/gate5-architecture.md)
 - [Layered Trust](GovZero/layered-trust.md)
 - [Session Handoff Obligations](GovZero/session-handoff-obligations.md)

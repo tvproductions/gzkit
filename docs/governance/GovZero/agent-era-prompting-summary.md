@@ -98,3 +98,8 @@ The transcript implies the next maturity step: readiness must be measured as a r
 ## Practical Operating Rule
 
 For long-running agent tasks, do not rely on real-time correction. Encode context, intent, constraints, and verification criteria up front, then run deterministic checks before completion claims.
+
+## Companion Reference
+
+For a deeper practitioner-level synthesis with Anthropic/OpenAI corroboration, see:
+[`docs/user/reference/agent-input-disciplines.md`](../../user/reference/agent-input-disciplines.md)
