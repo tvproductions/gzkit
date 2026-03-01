@@ -7,6 +7,7 @@ import argparse
 import json
 import os
 import re
+import shlex
 import subprocess
 from datetime import date
 from pathlib import Path
@@ -116,6 +117,7 @@ COMMAND_DOCS: dict[str, str] = {
     "audit": "docs/user/commands/audit.md",
     "check-config-paths": "docs/user/commands/check-config-paths.md",
     "cli audit": "docs/user/commands/cli-audit.md",
+    "parity check": "docs/user/commands/parity-check.md",
     "adr status": "docs/user/commands/adr-status.md",
     "adr promote": "docs/user/commands/adr-promote.md",
     "adr audit-check": "docs/user/commands/adr-audit-check.md",
@@ -3247,6 +3249,7 @@ def check_config_paths_cmd(as_json: bool) -> None:
         "paths.agents_md": config.paths.agents_md,
         "paths.claude_md": config.paths.claude_md,
         "paths.copilot_instructions": config.paths.copilot_instructions,
+        "paths.discovery_index": config.paths.discovery_index,
     }
 
     legacy_obpi_path = f"{config.paths.design_root}/obpis"
@@ -3267,6 +3270,95 @@ def check_config_paths_cmd(as_json: bool) -> None:
 
     if issues:
         raise SystemExit(1)
+
+
+def _extract_readme_quickstart_commands(
+    readme_content: str,
+) -> tuple[list[tuple[str, int]], list[dict[str, str]]]:
+    """Extract `gz ...` commands from the README Quick Start fenced block."""
+    issues: list[dict[str, str]] = []
+    heading = "## Quick Start"
+    heading_index = readme_content.find(heading)
+    if heading_index == -1:
+        issues.append({"path": "README.md", "issue": "missing `## Quick Start` section"})
+        return [], issues
+
+    section_content = readme_content[heading_index + len(heading) :]
+    block_match = re.search(r"```(?:bash|sh)?\n(.*?)\n```", section_content, re.DOTALL)
+    if not block_match:
+        issues.append({"path": "README.md", "issue": "missing fenced command block in Quick Start"})
+        return [], issues
+
+    block_content = block_match.group(1)
+    block_start = heading_index + len(heading) + block_match.start(1)
+    block_start_line = readme_content[:block_start].count("\n") + 1
+
+    commands: list[tuple[str, int]] = []
+    for offset, raw_line in enumerate(block_content.splitlines()):
+        stripped = raw_line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        commands.append((stripped, block_start_line + offset))
+    return commands, issues
+
+
+def _normalize_readme_command(command_line: str) -> list[str] | None:
+    """Normalize README command examples to parser argv format."""
+    try:
+        tokens = shlex.split(command_line)
+    except ValueError:
+        return None
+
+    if not tokens:
+        return []
+
+    if tokens[0] == "gz":
+        return tokens[1:]
+
+    if len(tokens) >= 3 and tokens[0] == "uv" and tokens[1] == "run" and tokens[2] == "gz":
+        return tokens[3:]
+
+    return []
+
+
+def _collect_readme_quickstart_issues(project_root: Path) -> list[dict[str, str]]:
+    """Validate README Quick Start command examples against current parser."""
+    readme_path = project_root / "README.md"
+    if not readme_path.exists():
+        return [{"path": "README.md", "issue": "README missing"}]
+
+    readme_content = readme_path.read_text()
+    command_lines, issues = _extract_readme_quickstart_commands(readme_content)
+    if issues:
+        return issues
+
+    parser = _build_parser()
+    for command_line, line_no in command_lines:
+        argv = _normalize_readme_command(command_line)
+        if argv is None:
+            issues.append(
+                {
+                    "path": f"README.md:{line_no}",
+                    "issue": f"invalid shell quoting in command `{command_line}`",
+                }
+            )
+            continue
+
+        # Ignore non-gz commands in the quickstart block.
+        if not argv:
+            continue
+
+        try:
+            parser.parse_args(argv)
+        except SystemExit:
+            issues.append(
+                {
+                    "path": f"README.md:{line_no}",
+                    "issue": f"invalid Quick Start command `{command_line}`",
+                }
+            )
+
+    return issues
 
 
 def cli_audit_cmd(as_json: bool) -> None:
@@ -3301,6 +3393,8 @@ def cli_audit_cmd(as_json: bool) -> None:
                 {"path": "docs/user/commands/index.md", "issue": f"missing link to {basename}"}
             )
 
+    issues.extend(_collect_readme_quickstart_issues(project_root))
+
     result = {"valid": not issues, "issues": issues}
     if as_json:
         print(json.dumps(result, indent=2))
@@ -3308,6 +3402,122 @@ def cli_audit_cmd(as_json: bool) -> None:
         console.print("[green]CLI audit passed.[/green]")
     else:
         console.print("[red]CLI audit failed.[/red]")
+        for issue in issues:
+            console.print(f"  - {issue['path']}: {issue['issue']}")
+
+    if issues:
+        raise SystemExit(1)
+
+
+def _required_markers_missing(content: str, markers: tuple[str, ...]) -> list[str]:
+    """Return marker strings not found in content."""
+    return [marker for marker in markers if marker not in content]
+
+
+def parity_check_cmd(as_json: bool) -> None:
+    """Run deterministic parity regression checks for governance surfaces."""
+    project_root = get_project_root()
+    issues: list[dict[str, str]] = []
+
+    template_path = project_root / "docs/proposals/REPORT-TEMPLATE-airlineops-parity.md"
+    report_paths = sorted((project_root / "docs/proposals").glob("REPORT-airlineops-parity-*.md"))
+    enforced = template_path.exists() or bool(report_paths)
+
+    if not enforced:
+        result = {"valid": True, "enforced": False, "issues": []}
+        if as_json:
+            print(json.dumps(result, indent=2))
+        else:
+            console.print("[green]Parity check skipped.[/green]")
+            console.print("  No parity-report surfaces detected in this repository.")
+        return
+
+    required_files = (
+        ".github/discovery-index.json",
+        "docs/governance/parity-intake-rubric.md",
+        "docs/proposals/REPORT-TEMPLATE-airlineops-parity.md",
+        ".gzkit/skills/airlineops-parity-scan/SKILL.md",
+    )
+    for rel_path in required_files:
+        path = project_root / rel_path
+        if not path.exists():
+            issues.append({"path": rel_path, "issue": "required parity surface missing"})
+
+    template_markers = (
+        "## Executive Summary",
+        "## Canonical Coverage Matrix",
+        "## Behavior / Procedure Source Matrix",
+        "## Habit Parity Matrix (Required)",
+        "## GovZero Mining Inventory",
+        "## Proof Surface Check",
+        "## Next Actions",
+    )
+    if template_path.exists():
+        missing_markers = _required_markers_missing(template_path.read_text(), template_markers)
+        for marker in missing_markers:
+            issues.append(
+                {
+                    "path": "docs/proposals/REPORT-TEMPLATE-airlineops-parity.md",
+                    "issue": f"missing required section marker `{marker}`",
+                }
+            )
+
+    skill_path = project_root / ".gzkit/skills/airlineops-parity-scan/SKILL.md"
+    required_skill_commands = (
+        "uv run gz cli audit",
+        "uv run gz check-config-paths",
+        "uv run gz adr audit-check ADR-<target>",
+        "uv run mkdocs build --strict",
+    )
+    if skill_path.exists():
+        missing_commands = _required_markers_missing(
+            skill_path.read_text(), required_skill_commands
+        )
+        for marker in missing_commands:
+            issues.append(
+                {
+                    "path": ".gzkit/skills/airlineops-parity-scan/SKILL.md",
+                    "issue": f"missing required ritual command `{marker}`",
+                }
+            )
+
+    latest_report = report_paths[-1] if report_paths else None
+    if latest_report is None:
+        issues.append(
+            {
+                "path": "docs/proposals",
+                "issue": "missing dated parity report (`REPORT-airlineops-parity-YYYY-MM-DD.md`)",
+            }
+        )
+    else:
+        report_content = latest_report.read_text()
+        report_markers = ("Overall parity status:", "## Next Actions")
+        missing_report_markers = _required_markers_missing(report_content, report_markers)
+        rel_latest = str(latest_report.relative_to(project_root))
+        for marker in missing_report_markers:
+            issues.append(
+                {
+                    "path": rel_latest,
+                    "issue": f"latest parity report missing marker `{marker}`",
+                }
+            )
+
+    result = {
+        "valid": not issues,
+        "enforced": True,
+        "latest_report": (
+            str(latest_report.relative_to(project_root)) if latest_report is not None else None
+        ),
+        "issues": issues,
+    }
+    if as_json:
+        print(json.dumps(result, indent=2))
+    elif not issues:
+        console.print("[green]Parity check passed.[/green]")
+        if latest_report is not None:
+            console.print(f"  Latest report: {latest_report.relative_to(project_root)}")
+    else:
+        console.print("[red]Parity check failed.[/red]")
         for issue in issues:
             console.print(f"  - {issue['path']}: {issue['issue']}")
 
@@ -3601,7 +3811,7 @@ def typecheck() -> None:
 
 
 def check() -> None:
-    """Run all quality checks (lint + format + typecheck + test + skill audit)."""
+    """Run all quality checks (lint + format + typecheck + test + skill/parity audits)."""
     project_root = get_project_root()
 
     console.print("Running all quality checks...\n")
@@ -3621,6 +3831,9 @@ def check() -> None:
 
     # Skill audit
     console.print("[bold]Skill audit:[/bold]", "PASS" if result.skill_audit.success else "FAIL")
+
+    # Parity check
+    console.print("[bold]Parity check:[/bold]", "PASS" if result.parity_check.success else "FAIL")
 
     if result.success:
         console.print("\n[green]All checks passed.[/green]")
@@ -4058,6 +4271,15 @@ def _build_parser() -> argparse.ArgumentParser:
     p_cli_audit = cli_commands.add_parser("audit", help="Audit CLI docs/manpage coverage")
     p_cli_audit.add_argument("--json", dest="as_json", action="store_true")
     p_cli_audit.set_defaults(func=lambda a: cli_audit_cmd(as_json=a.as_json))
+
+    p_parity = commands.add_parser("parity", help="Parity governance commands")
+    parity_commands = p_parity.add_subparsers(dest="parity_command")
+    parity_commands.required = True
+    p_parity_check = parity_commands.add_parser(
+        "check", help="Run deterministic parity regression checks"
+    )
+    p_parity_check.add_argument("--json", dest="as_json", action="store_true")
+    p_parity_check.set_defaults(func=lambda a: parity_check_cmd(as_json=a.as_json))
 
     p_git_sync = commands.add_parser("git-sync", help="Sync branch with guarded ritual")
     _add_git_sync_options(p_git_sync)

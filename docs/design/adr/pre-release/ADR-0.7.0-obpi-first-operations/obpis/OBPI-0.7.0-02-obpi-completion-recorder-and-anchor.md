@@ -75,7 +75,7 @@ Record OBPI completion transitions as first-class runtime events with optional g
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `../airlineops/.claude/hooks/obpi-completion-recorder.py`
+- [ ] Pattern to follow: `src/gzkit/ledger.py` (`obpi_receipt_emitted_event`)
 - [ ] Test patterns: `tests/test_ledger.py`
 
 ## Quality Gates

@@ -1,6 +1,8 @@
 # Operator Runbook
 
 This runbook is a proof surface and must match executable runtime behavior.
+For governance-maintainer procedures (parity scans, reconciliation sequencing, closeout/audit operations), use [`docs/governance/governance_runbook.md`](../governance/governance_runbook.md).
+Legacy parity note: when external docs mention `/gz-adr-manager`, use `/gz-adr-create` (or the `gz-adr-manager` compatibility alias skill).
 
 ---
 

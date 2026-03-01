@@ -82,6 +82,14 @@ Use this section to enumerate mined process norms across all canonical control s
 |---|---|---|---|---|---|
 |  |  |  |  |  |  |
 
+## Parity Intake Rubric Decisions (Required)
+
+Use `docs/governance/parity-intake-rubric.md` to classify each candidate import.
+
+| Candidate Item | Canonical Source | gzkit Target | Classification (Import Now / Import with Compatibility / Defer (Tracked) / Exclude) | Rationale | Runtime/Proof Backing |
+|---|---|---|---|---|---|
+|  |  |  |  |  |  |
+
 ## NOT GovZero Exclusion Log
 
 Use this section for exclusion-first classification. Anything excluded from GovZero scope MUST be justified as product capability.

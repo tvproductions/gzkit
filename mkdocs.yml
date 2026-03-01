@@ -73,6 +73,8 @@ nav:
     - gz check-config-paths: user/commands/check-config-paths.md
     - gz cli audit: user/commands/cli-audit.md
   - Governance (Canonical):
+    - Governance Runbook: governance/governance_runbook.md
+    - Parity Intake Rubric: governance/parity-intake-rubric.md
     - Charter: governance/GovZero/charter.md
     - ADR Lifecycle: governance/GovZero/adr-lifecycle.md
     - ADR/OBPI/GHI/Audit Linkage: governance/GovZero/adr-obpi-ghi-audit-linkage.md
@@ -81,6 +83,7 @@ nav:
     - Gate 5 Architecture: governance/GovZero/gate5-architecture.md
     - Architectural Enforcement: governance/GovZero/architectural-enforcement.md
     - Gzkit Structure: governance/GovZero/gzkit-structure.md
+    - Governance Registry Design: governance/GovZero/governance-registry-design.md
     - Layered Trust: governance/GovZero/layered-trust.md
     - Ledger Schema: governance/GovZero/ledger-schema.md
     - Session Handoff Obligations: governance/GovZero/session-handoff-obligations.md

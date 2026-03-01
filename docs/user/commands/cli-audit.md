@@ -17,6 +17,7 @@ gz cli audit [--json]
 - Required command manpages exist under `docs/user/commands/`
 - Each page heading matches the command surface (`# gz ...`)
 - `docs/user/commands/index.md` links to each required page
+- `README.md` Quick Start command examples parse against the live CLI
 
 ---
 
