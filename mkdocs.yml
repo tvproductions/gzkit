@@ -62,16 +62,22 @@ nav:
     - gz status: user/commands/status.md
     - gz state: user/commands/state.md
     - gz adr status: user/commands/adr-status.md
+    - gz adr promote: user/commands/adr-promote.md
     - gz adr audit-check: user/commands/adr-audit-check.md
     - gz adr emit-receipt: user/commands/adr-emit-receipt.md
+    - gz obpi emit-receipt: user/commands/obpi-emit-receipt.md
     - gz closeout: user/commands/closeout.md
     - gz audit: user/commands/audit.md
     - gz git-sync: user/commands/git-sync.md
     - gz attest: user/commands/attest.md
     - gz migrate-semver: user/commands/migrate-semver.md
     - gz register-adrs: user/commands/register-adrs.md
+    - gz skill audit: user/commands/skill-audit.md
+    - gz parity check: user/commands/parity-check.md
+    - gz readiness audit: user/commands/readiness-audit.md
     - gz check-config-paths: user/commands/check-config-paths.md
     - gz cli audit: user/commands/cli-audit.md
+    - gz agent sync control-surfaces: user/commands/agent-sync-control-surfaces.md
   - Governance (Canonical):
     - Governance Runbook: governance/governance_runbook.md
     - Parity Intake Rubric: governance/parity-intake-rubric.md
@@ -84,6 +90,7 @@ nav:
     - Architectural Enforcement: governance/GovZero/architectural-enforcement.md
     - Gzkit Structure: governance/GovZero/gzkit-structure.md
     - Governance Registry Design: governance/GovZero/governance-registry-design.md
+    - Agent-Era Prompting Summary: governance/GovZero/agent-era-prompting-summary.md
     - Layered Trust: governance/GovZero/layered-trust.md
     - Ledger Schema: governance/GovZero/ledger-schema.md
     - Session Handoff Obligations: governance/GovZero/session-handoff-obligations.md
@@ -100,6 +107,7 @@ nav:
     - Audits:
       - Harmonization Brief: governance/GovZero/audits/AUDIT-BRIEF-governance-harmonization.md
       - Harmonization Audit: governance/GovZero/audits/governance-harmonization-2026-01-11.md
+      - Agent Readiness Audit Template: governance/GovZero/audits/AUDIT-TEMPLATE-agent-readiness.md
   - Reference:
     - Charter: user/reference/charter.md
     - Lineage: user/reference/lineage.md

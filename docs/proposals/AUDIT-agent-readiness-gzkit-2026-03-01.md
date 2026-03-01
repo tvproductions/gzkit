@@ -2,7 +2,7 @@
 
 ## Applying the four-discipline taxonomy to gzkit
 
-This audit applies Nate Herk's prompting taxonomy (prompt craft, context engineering, intent engineering, specification engineering) and the five specification primitives to `gzkit`.
+This audit applies Nate B. Jones' prompting taxonomy (prompt craft, context engineering, intent engineering, specification engineering) and the five specification primitives to `gzkit`.
 
 Scoring scale (0-3):
 
@@ -105,6 +105,8 @@ Scoring scale (0-3):
 
 ## Summary and Next Actions
 
+Initial snapshot below reflects pre-remediation scoring; see Post-Remediation Addendum for current state.
+
 ### gzkit: Top 3 gaps
 
 1. **Context contract drift (high impact, low effort):**
@@ -135,7 +137,7 @@ Scoring scale (0-3):
 - Corroborating sources: Anthropic (context engineering, harnesses), OpenAI (agent-building and long-horizon tasks)
 - Framework version: Sprint and Drift / GovZero v6
 
-## Evidence Notes
+## Evidence Notes (Initial, Now Resolved)
 
 Tracked defects discovered during this audit:
 
@@ -143,3 +145,22 @@ Tracked defects discovered during this audit:
    - Evidence: `README.md` references `gz plan new` and `gz verify`; `uv run gz --help` shows no `verify` command.
 2. Missing discovery index
    - Evidence: `.github/discovery-index.json` absent while referenced by OBPI templates and ADR artifacts.
+
+## Post-Remediation Addendum (2026-03-01)
+
+Follow-up hardening was completed after the initial scoring pass:
+
+- `gz readiness audit` command added and wired into `gz check`.
+- Readiness eval design now treats Gate 2 (TDD) and Gate 4 (BDD) as first-class signals.
+- `.github/discovery-index.json` restored to required control surfaces.
+- Readiness audit template added under `docs/governance/GovZero/audits/`.
+- Nate transcript summary added under `docs/governance/GovZero/`.
+- Governance runbook updated with a readiness-driven design workflow.
+
+Current command state:
+
+```bash
+uv run gz readiness audit --json
+```
+
+Latest result: `success=true`, `overall_score=3.0`, `required_failures=[]`.
