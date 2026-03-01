@@ -124,7 +124,7 @@ audit trail (ledger entries are receipts).
 |------|--------|--------|
 | `gz-adr-sync` | ADR files | adr_index.md, adr_status.md |
 | `gz-obpi-sync` | Brief files | ADR OBPI table |
-| `gz-adr-manager` | User input | New ADR + briefs |
+| `gz-adr-create` (`gz-adr-manager` alias) | User input | New ADR + briefs |
 | `gz-obpi-brief` | User input | New OBPI brief |
 
 **Workflow:** Read source file metadata → Update target index → No verification (trusts content as-is)

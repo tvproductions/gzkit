@@ -54,7 +54,8 @@ When an ADR is pulled from pool or authored fresh:
 - Brief files must exist in the `briefs/` directory — a table row is not sufficient
 - The brief content may be minimal at Draft (stub acceptable), but the file must exist
 
-**Enforcement:** The `gz-adr-manager` skill creates briefs during ADR creation.
+**Enforcement:** The `gz-adr-create` skill creates briefs during ADR creation
+(`gz-adr-manager` is retained as a compatibility alias).
 See [adr-lifecycle.md](adr-lifecycle.md) § OBPI Completeness Requirement for the canonical rule.
 
 ## Artifact layout

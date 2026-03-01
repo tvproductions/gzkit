@@ -92,6 +92,7 @@ Skills are centralized under `.gzkit` and mirrored to tool-local paths:
 - `gz-adr-closeout-ceremony`: --- (`.gzkit/skills/gz-adr-closeout-ceremony/SKILL.md`)
 - `gz-adr-create`: --- (`.gzkit/skills/gz-adr-create/SKILL.md`)
 - `gz-adr-emit-receipt`: --- (`.gzkit/skills/gz-adr-emit-receipt/SKILL.md`)
+- `gz-adr-manager`: --- (`.gzkit/skills/gz-adr-manager/SKILL.md`)
 - `gz-adr-map`: --- (`.gzkit/skills/gz-adr-map/SKILL.md`)
 - `gz-adr-recon`: --- (`.gzkit/skills/gz-adr-recon/SKILL.md`)
 - `gz-adr-status`: --- (`.gzkit/skills/gz-adr-status/SKILL.md`)

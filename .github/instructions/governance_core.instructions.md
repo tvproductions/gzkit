@@ -1,0 +1,31 @@
+---
+applyTo: "**/*"
+---
+
+# Governance Core (gzkit)
+
+## Non-negotiable rules
+
+- Read `AGENTS.md` before implementation work.
+- Use `uv run` for Python command execution.
+- Do not bypass Gate 5 when lane requirements require human attestation.
+- Do not edit `.gzkit/ledger.jsonl` manually.
+- Every defect must be fixed now or tracked (`gh issue create --label defect` or `.gzkit/insights/agent-insights.jsonl`).
+
+## Required workflow order
+
+1. `uv run gz state --json`
+2. `uv run gz status --table`
+3. Implement one OBPI increment
+4. `uv run gz implement --adr ADR-<X.Y.Z>`
+5. `uv run gz gates --adr ADR-<X.Y.Z>`
+6. `uv run gz adr audit-check ADR-<X.Y.Z>`
+
+## Proof commands
+
+```bash
+uv run gz cli audit
+uv run gz check-config-paths
+uv run gz validate --documents --surfaces
+uv run mkdocs build --strict
+```

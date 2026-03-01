@@ -3,7 +3,7 @@ Status: Active
 Last reviewed: 2026-02-04
 
 > **Architecture context added 2026-02-04:** All briefs now require reading
-> `docs/design/architecture/system-manifest.md` and `config/architecture.json` before
+> `docs/design/lodestar/govzero-doctrine.md` and `.gzkit/manifest.json` before
 > implementation to ensure understanding of bounded contexts, contracts, and invariants.
 
 This file contains two briefing templates:
@@ -60,16 +60,16 @@ Use the `discovery_checklist` in discovery-index.json to structure your evaluati
 
 **Before any implementation, read these architecture documents:**
 
-1. `docs/design/architecture/system-manifest.md` — Human-readable architecture overview
-2. `config/architecture.json` — Machine-readable companion
+1. `docs/design/lodestar/govzero-doctrine.md` — Human-readable governance architecture
+2. `.gzkit/manifest.json` — Machine-readable governance/verification contract
 
 These documents establish:
 
-- **Bounded contexts** — what each context owns and does NOT own
-- **Port protocols** — ResolverPort, LoaderPort, DatasetPort contracts
-- **Canonical formats** — period formats per cadence (quarterly, monthly, AIRAC, etc.)
-- **Key invariants** — single-active contracts, determinism guarantees
-- **Responsibility boundaries** — Librarian vs Warehouse vs Registrar
+- **Governance boundaries** — what automation owns vs. what humans must attest
+- **Artifact contracts** — canonical paths, schemas, and control-surface expectations
+- **Verification doctrine** — gates, quality rituals, and fail-closed behavior
+- **Key invariants** — append-only evidence, deterministic checks, and explicit escalation
+- **Responsibility boundaries** — agent execution vs. human authority
 
 **Why this matters:** Each OBPI must operate within the larger system architecture.
 Understanding the bounded contexts and responsibility boundaries prevents scope creep
@@ -86,7 +86,7 @@ and ensures implementations don't violate established contracts.
 This brief template defers to the canonical repo policies (GovZero v6):
 
 - `.github/copilot-instructions.md` — repo-wide agent guidance and rituals
-- `.github/instructions/tests.instructions.md` — canonical tests policy
+- `.github/instructions/governance_core.instructions.md` — canonical governance policy
 - `.github/instructions/*.instructions.md` — scoped guardrails (tests, CLI, warehouse, cross-platform)
 
 > SemVer ADR workflow
@@ -364,7 +364,7 @@ Lite — ADR note + stdlib unittest + smoke (≤60s). Escalate to Heavy if a CLI
 Agent MUST conform to these constraints:
 
 - **No invented files:** Only edit files listed in ALLOWED PATHS; never create undeclared files.
-- **No invented config:** Do not assume config keys exist; verify in `config/settings.json` or `config/schema.py`.
+- **No invented config:** Do not assume config keys exist; verify in `.gzkit.json` or `.gzkit/manifest.json`.
 - **No invented data:** Do not reference test data, fixtures, or datasets not present in `fixtures/**` or `data/**`.
 - **No placeholder code:** Never commit `TODO`, `FIXME`, `@skip`, or incomplete test/function implementations.
 - **No private/stashed work:** Work must be complete and visible; no agent-only staging or ledger hiding.
@@ -408,8 +408,8 @@ If the plan is questioned or modified, update it and re-present.
 
 **Architecture (MANDATORY — read once, understand system context):**
 
-- [ ] `docs/design/architecture/system-manifest.md` — bounded contexts, contracts, invariants
-- [ ] `config/architecture.json` — machine-readable architecture manifest
+- [ ] `docs/design/lodestar/govzero-doctrine.md` — governance boundaries and invariants
+- [ ] `.gzkit/manifest.json` — machine-readable governance manifest
 
 **Governance (read once, cache):**
 
@@ -426,7 +426,7 @@ If the plan is questioned or modified, update it and re-present.
 
 - [ ] Registry entry: `data/data_sources.json::{key}` (if dataset-related)
 - [ ] Config setting: `config/settings.json::{path}` (if config-related)
-- [ ] Config schema: `src/airlineops/config/schema.py` (if schema change needed)
+- [ ] Config schema: `src/gzkit/schemas/manifest.json` (if schema change needed)
 - [ ] Calendar definition: `config/calendars.json::{calendar}` (if period-related)
 
 **Existing Code (understand current state):**
@@ -697,8 +697,8 @@ If an example cannot be tested or a BDD scenario cannot be implemented immediate
 
 **Architecture (MANDATORY — read once, understand system context):**
 
-- [ ] `docs/design/architecture/system-manifest.md` — bounded contexts, contracts, invariants
-- [ ] `config/architecture.json` — machine-readable architecture manifest
+- [ ] `docs/design/lodestar/govzero-doctrine.md` — governance boundaries and invariants
+- [ ] `.gzkit/manifest.json` — machine-readable governance manifest
 
 **Governance (read once, cache):**
 

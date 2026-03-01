@@ -74,7 +74,7 @@ Add a pre-completion validator gate that blocks OBPI `Completed` transitions whe
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `../airlineops/.claude/hooks/obpi-completion-validator.py`
+- [ ] Pattern to follow: `src/gzkit/cli.py` (`_attestation_gate_snapshot`, `attest`)
 - [ ] Test patterns: `tests/test_cli.py`
 
 ## Quality Gates

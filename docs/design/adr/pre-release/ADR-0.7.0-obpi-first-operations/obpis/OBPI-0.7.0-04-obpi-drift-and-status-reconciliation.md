@@ -75,7 +75,7 @@ Expose OBPI completion drift and reconciliation signals in status/audit surfaces
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `../airlineops/src/opsdev/lib/adr_recon.py`
+- [ ] Pattern to follow: `src/gzkit/cli.py` (`status`, `adr_status_cmd`)
 - [ ] Test patterns: `tests/test_cli.py`
 
 ## Quality Gates

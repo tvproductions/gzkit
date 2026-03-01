@@ -75,7 +75,7 @@ Make OBPI completion/audit checks consume ledger proof as primary evidence inste
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `../airlineops/src/opsdev/lib/adr_audit_ledger.py`
+- [ ] Pattern to follow: `src/gzkit/cli.py` (`adr_audit_check`)
 - [ ] Test patterns: `tests/test_cli.py`
 
 ## Quality Gates

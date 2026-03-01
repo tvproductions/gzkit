@@ -1,0 +1,96 @@
+{
+  "version": "1.0.0",
+  "repository": {
+    "name": "gzkit",
+    "paths": {
+      "source_root": "src",
+      "tests_root": "tests",
+      "docs_root": "docs",
+      "design_root": "docs/design"
+    }
+  },
+  "governance": {
+    "agent_contracts": [
+      "AGENTS.md",
+      "CLAUDE.md"
+    ],
+    "control_surfaces": {
+      "copilot_instructions": ".github/copilot-instructions.md",
+      "discovery_index": ".github/discovery-index.json",
+      "skills_canonical": ".gzkit/skills",
+      "skills_mirrors": [
+        ".claude/skills",
+        ".agents/skills",
+        ".github/skills"
+      ]
+    }
+  },
+  "quality_gates": {
+    "lite": [
+      1,
+      2
+    ],
+    "heavy": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  "verification_commands": {
+    "lint": "uv run gz lint",
+    "typecheck": "uv run gz typecheck",
+    "test": "uv run gz test",
+    "skill_audit": "uv run gz skill audit",
+    "check_config_paths": "uv run gz check-config-paths",
+    "cli_audit": "uv run gz cli audit",
+    "parity_check": "uv run gz parity check",
+    "docs": "uv run mkdocs build --strict"
+  },
+  "discovery_checklist": {
+    "governance": [
+      ".github/discovery-index.json",
+      ".github/copilot-instructions.md",
+      "AGENTS.md"
+    ],
+    "context": [
+      "parent_adr",
+      "related_obpis"
+    ],
+    "prerequisites": [
+      "required_module",
+      "required_config"
+    ],
+    "existing_code": [
+      "implementation_pattern",
+      "test_pattern"
+    ]
+  },
+  "completion_checklist": {
+    "lite": [
+      "gate1_recorded",
+      "gate2_passed",
+      "quality_passed",
+      "evidence_recorded"
+    ],
+    "heavy": [
+      "gate1_recorded",
+      "gate2_passed",
+      "gate3_passed",
+      "gate4_passed_or_na",
+      "gate5_attested",
+      "evidence_recorded"
+    ]
+  },
+  "doctrines": {
+    "identity_rule": "GovZero = AirlineOps - (AirlineOps product capabilities)",
+    "ownership": "Agents own complete execution and defect tracking.",
+    "attestation_boundary": "Human attestation is required before final completion."
+  },
+  "prohibitions": [
+    "Never bypass Gate 5 human attestation.",
+    "Never mutate ledger directly; use gz commands.",
+    "Never claim completion without recorded evidence."
+  ]
+}

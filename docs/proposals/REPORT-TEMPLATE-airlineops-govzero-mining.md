@@ -49,6 +49,14 @@ Exclusions are exceptional. Default is inclusion in GovZero scope unless product
 | Verification |  |  |  |  |  |
 | Human attestation boundary |  |  |  |  |  |
 
+## Intake Decisions (Required)
+
+Classify each high-impact mined candidate with the parity intake rubric.
+
+| Norm ID | Candidate | Classification | Why | Follow-up Linkage |
+|---|---|---|---|---|
+|  |  |  |  |  |
+
 ---
 
 ## Required Commands

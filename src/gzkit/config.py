@@ -39,6 +39,7 @@ class PathConfig:
     codex_skills: str = ".agents/skills"
     copilot_skills: str = ".github/skills"
     copilot_instructions: str = ".github/copilot-instructions.md"
+    discovery_index: str = ".github/discovery-index.json"
     copilot_hooks: str = ".github/copilot/hooks"
     skills: str = ".gzkit/skills"
 
@@ -97,6 +98,7 @@ class GzkitConfig:
             copilot_instructions=paths_data.get(
                 "copilot_instructions", ".github/copilot-instructions.md"
             ),
+            discovery_index=paths_data.get("discovery_index", ".github/discovery-index.json"),
             copilot_hooks=paths_data.get("copilot_hooks", ".github/copilot/hooks"),
             skills=paths_data.get("skills", ".gzkit/skills"),
         )
@@ -134,6 +136,7 @@ class GzkitConfig:
                 "codex_skills": self.paths.codex_skills,
                 "copilot_skills": self.paths.copilot_skills,
                 "copilot_instructions": self.paths.copilot_instructions,
+                "discovery_index": self.paths.discovery_index,
                 "copilot_hooks": self.paths.copilot_hooks,
                 "skills": self.paths.skills,
             },
