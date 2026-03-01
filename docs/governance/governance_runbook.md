@@ -271,6 +271,24 @@ Rules:
 
 ---
 
+## Workflow: Readiness-Driven Design
+
+```bash
+uv run gz readiness audit
+uv run gz readiness audit --json > docs/proposals/AUDIT-agent-readiness-gzkit-YYYY-MM-DD.json
+```
+
+Use readiness as a design input, not a one-time score:
+
+1. Run `gz readiness audit` before parity extraction or major governance edits.
+2. Capture a dated audit artifact in `docs/proposals/`.
+3. Convert the top three gaps into tracked ADR/OBPI follow-up work.
+4. Use Gate 2 (TDD) and Gate 4 (BDD) evidence as primary inputs for acceptance/evaluation improvements.
+5. Re-run readiness after implementation and record score delta in the same proposal.
+6. Only claim maturity improvements when quality gates (`gz check`) also pass.
+
+---
+
 ## Quick Governance Checklist
 
 ### Before starting OBPI work
@@ -301,6 +319,8 @@ Rules:
 - [GovZero Charter](GovZero/charter.md)
 - [ADR Lifecycle](GovZero/adr-lifecycle.md)
 - [Audit Protocol](GovZero/audit-protocol.md)
+- [Agent Readiness Audit Template](GovZero/audits/AUDIT-TEMPLATE-agent-readiness.md)
+- [Agent-Era Prompting Summary (Nate B. Jones)](GovZero/agent-era-prompting-summary.md)
 - [Gate 5 Architecture](GovZero/gate5-architecture.md)
 - [Layered Trust](GovZero/layered-trust.md)
 - [Session Handoff Obligations](GovZero/session-handoff-obligations.md)

@@ -241,6 +241,7 @@ class CheckResult:
     test: QualityResult
     skill_audit: QualityResult
     parity_check: QualityResult
+    readiness_audit: QualityResult
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
@@ -252,6 +253,7 @@ class CheckResult:
             "test": self.test.to_dict(),
             "skill_audit": self.skill_audit.to_dict(),
             "parity_check": self.parity_check.to_dict(),
+            "readiness_audit": self.readiness_audit.to_dict(),
         }
 
 
@@ -270,6 +272,7 @@ def run_all_checks(project_root: Path) -> CheckResult:
     test = run_tests(project_root)
     skill_audit = run_skill_audit(project_root)
     parity_check = run_parity_check(project_root)
+    readiness_audit = run_readiness_audit(project_root)
 
     success = all(
         [
@@ -279,6 +282,7 @@ def run_all_checks(project_root: Path) -> CheckResult:
             test.success,
             skill_audit.success,
             parity_check.success,
+            readiness_audit.success,
         ]
     )
 
@@ -290,6 +294,7 @@ def run_all_checks(project_root: Path) -> CheckResult:
         test=test,
         skill_audit=skill_audit,
         parity_check=parity_check,
+        readiness_audit=readiness_audit,
     )
 
 
@@ -313,3 +318,8 @@ def run_skill_audit(project_root: Path) -> QualityResult:
 def run_parity_check(project_root: Path) -> QualityResult:
     """Run deterministic parity regression checks."""
     return run_command("uv run gz parity check", cwd=project_root)
+
+
+def run_readiness_audit(project_root: Path) -> QualityResult:
+    """Run readiness audit over four disciplines and five primitives."""
+    return run_command("uv run gz readiness audit", cwd=project_root)

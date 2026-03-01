@@ -1056,6 +1056,8 @@ class TestNewCommandParsers(unittest.TestCase):
             ["cli", "audit", "--help"],
             ["parity", "--help"],
             ["parity", "check", "--help"],
+            ["readiness", "--help"],
+            ["readiness", "audit", "--help"],
             ["skill", "audit", "--help"],
         ]
         for args in commands:
@@ -1851,7 +1853,7 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
             doc_path = Path(doc_rel)
             doc_path.parent.mkdir(parents=True, exist_ok=True)
             doc_path.write_text(f"# gz {command_name}\n\nStub\n")
-            links.append(f"- {doc_path.name}")
+            links.append(f"- [`gz {command_name}`]({doc_path.name})")
         index_path.write_text("# Commands Index\n\n" + "\n".join(links) + "\n")
         Path("README.md").write_text(
             "\n".join(
@@ -1930,6 +1932,66 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
                 ]
             )
         )
+
+    @staticmethod
+    def _prepare_readiness_surface() -> None:
+        Path("README.md").write_text(
+            "\n".join(
+                [
+                    "# Example Project",
+                    "",
+                    "This is a development covenant for agent execution.",
+                    "",
+                    "human attestation remains required for completion.",
+                    "",
+                ]
+            )
+        )
+        Path("docs/governance/governance_runbook.md").parent.mkdir(parents=True, exist_ok=True)
+        Path("docs/governance/governance_runbook.md").write_text("# Governance Runbook\n")
+        Path("docs/user/concepts").mkdir(parents=True, exist_ok=True)
+        Path("docs/user/concepts/lanes.md").write_text("# Lanes\n")
+        Path("docs/governance/GovZero/audits").mkdir(parents=True, exist_ok=True)
+        Path("docs/governance/GovZero/audits/AUDIT-TEMPLATE-agent-readiness.md").write_text(
+            "# Agent Readiness Audit\n"
+        )
+        Path("src/gzkit/templates").mkdir(parents=True, exist_ok=True)
+        Path("src/gzkit/templates/obpi.md").write_text(
+            "\n".join(
+                [
+                    "parent:",
+                    "item:",
+                    "## Objective",
+                    "## Allowed Paths",
+                    "## Denied Paths",
+                    "## Discovery Checklist",
+                    "## Requirements (FAIL-CLOSED)",
+                    "NEVER",
+                    "ALWAYS",
+                    "## Acceptance Criteria",
+                    "## Completion Checklist",
+                    "",
+                ]
+            )
+        )
+        Path(".gzkit/skills/gz-obpi-brief/assets").mkdir(parents=True, exist_ok=True)
+        Path(".gzkit/skills/gz-obpi-brief/assets/OBPI_BRIEF-template.md").write_text(
+            "\n".join(
+                [
+                    "## BLOCKERS",
+                    "## Implementation Plan (Lite)",
+                    "## OBPI Completion Evidence",
+                    "## Work Breakdown Structure Context",
+                    "Each brief targets exactly one OBPI entry",
+                    "",
+                ]
+            )
+        )
+        Path("docs/design/prd").mkdir(parents=True, exist_ok=True)
+        Path("docs/design/prd/PRD-GZKIT-1.0.0.md").write_text("# PRD\n")
+        Path("tests").mkdir(parents=True, exist_ok=True)
+        Path("tests/test_cli.py").write_text("import unittest\n")
+        Path("tests/test_sync.py").write_text("import unittest\n")
 
     def test_check_config_paths_passes_for_valid_layout(self) -> None:
         runner = CliRunner()
@@ -2051,6 +2113,29 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
             result = runner.invoke(main, ["parity", "check"])
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("required parity surface missing", result.output.lower())
+
+    def test_readiness_audit_passes_for_initialized_repository(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            self._prepare_docs_surface()
+            self._prepare_parity_surface()
+            self._prepare_readiness_surface()
+            result = runner.invoke(main, ["readiness", "audit"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("passed", result.output.lower())
+
+    def test_readiness_audit_fails_when_required_surface_missing(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            self._prepare_docs_surface()
+            self._prepare_parity_surface()
+            self._prepare_readiness_surface()
+            Path(".github/discovery-index.json").unlink()
+            result = runner.invoke(main, ["readiness", "audit"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("required control surface", result.output.lower())
 
 
 if __name__ == "__main__":

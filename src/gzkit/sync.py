@@ -833,6 +833,7 @@ def _discovery_index_payload(project_root: Path, config: GzkitConfig) -> dict[st
             "check_config_paths": "uv run gz check-config-paths",
             "cli_audit": "uv run gz cli audit",
             "parity_check": "uv run gz parity check",
+            "readiness_audit": "uv run gz readiness audit",
             "docs": "uv run mkdocs build --strict",
         },
         "discovery_checklist": {
