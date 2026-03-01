@@ -2,6 +2,43 @@
 
 ## Unreleased
 
+### Governance remediation (2026-03-01)
+
+Backfilled Gate 4 (BDD/Behave) evidence for released versions in the `0.1.0` to `0.3.1` range.
+
+- Added an executable Behave suite at `features/heavy_lane_gate4.feature` with step code under
+  `features/steps/`.
+- Added `behave` as a project dependency and declared `verification.bdd` in `.gzkit/manifest.json`.
+- Recorded Gate 4 pass events for:
+  - `ADR-0.1.0` (release `0.1.0`)
+  - `ADR-0.2.0` (release `0.2.0`)
+  - `ADR-0.3.0` (release line covering `0.3.0` and patch `0.3.1`)
+- Confirmed `v0.3.1` release note anchor remains `ADR-0.3.0`.
+
+### Verification
+
+- `uv run -m behave features/`
+- `uv run gz gates --gate 4 --adr ADR-0.1.0`
+- `uv run gz gates --gate 4 --adr ADR-0.2.0`
+- `uv run gz gates --gate 4 --adr ADR-0.3.0`
+
+## v0.4.0 (2026-03-01)
+
+**ADR:** ADR-0.4.0 - Skill Capability Mirroring
+
+Promoted skill-capability mirroring to a governed, heavy-lane ADR with completed OBPI execution and closeout artifacts.
+
+### Delivered
+
+- Canonical skill source centralization with multi-agent mirror surfaces.
+- Agent-native mirror contract enforcement and sync determinism hardening.
+- Compatibility migration updates and control-surface parity operations.
+- Closeout ceremony artifacts and Gate 4 BDD backfill enforcement.
+
+### Gate Evidence
+
+All 5 GovZero gates satisfied.
+
 ## v0.3.1 - Ledger Schema Enforcement Patch (2026-02-14)
 
 **ADR context:** `ADR-0.3.x` line (active anchor: `ADR-0.3.0`)
