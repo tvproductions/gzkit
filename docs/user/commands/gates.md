@@ -34,6 +34,8 @@ Gate commands use `.gzkit/manifest.json` when available:
 - Gate 3 (Docs): `verification.docs` or `uv run mkdocs build --strict`
 - Gate 4 (BDD): `verification.bdd` or `uv run -m behave features/`
 
+For heavy-lane ADRs, Gate 4 is required and must pass before attestation.
+
 ---
 
 ## Example

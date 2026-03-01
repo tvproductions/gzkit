@@ -207,6 +207,9 @@ All 5 GovZero gates satisfied.
 Create a GitHub release for the ADR version:
 
 ```bash
+# MANDATORY: run full git sync immediately before release creation
+uv run gz git-sync --apply --lint --test
+
 # Create release (title = semver only)
 gh release create vX.Y.Z --title "vX.Y.Z" --notes "$(cat <<'EOF'
 ## What's New
@@ -229,6 +232,9 @@ All 5 GovZero gates satisfied. See ADR closeout form for details.
 EOF
 )"
 ```
+
+**Policy constraint:** `uv run gz git-sync --apply --lint --test` MUST be the command immediately preceding `gh release create`.
+If any intervening changes occur (new commit, staged file, or regenerated artifact), rerun full git sync before creating/updating the release.
 
 **Why this matters:** The release tags the commit as a governance milestone. The human attestation (Gate 5) is the authority that allows this release to exist.
 
@@ -266,8 +272,9 @@ Display the ceremony completion table:
 7. **MUST** record attestation verbatim with timestamp
 8. **MUST** review and close related GitHub Issues after attestation
 9. **MUST** update RELEASE_NOTES.md with release entry
-10. **MUST** create GitHub release with title = semver only (vX.Y.Z)
-11. **MUST** display ceremony completion summary table
+10. **MUST** run `uv run gz git-sync --apply --lint --test` immediately before any `gh release create` or release update command
+11. **MUST** create GitHub release with title = semver only (vX.Y.Z)
+12. **MUST** display ceremony completion summary table
 
 ---
 

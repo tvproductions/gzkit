@@ -170,7 +170,7 @@ Dry run: no ledger event will be written.
   Would initiate closeout for: ADR-0.6.0-pool-promotion-protocol
   Gate 2 (TDD): uv run -m unittest discover tests
   Gate 3 (Docs): uv run mkdocs build --strict
-  Gate 4 (BDD): N/A (features/ not found; Gate 4 is N/A for this repository.)
+  Gate 4 (BDD): uv run -m behave features/
   Gate 5 (Human): Awaiting explicit attestation
 ```
 
@@ -195,6 +195,7 @@ uv run gz adr emit-receipt ADR-0.6.0-pool-promotion-protocol --event validated -
 ## Verification Checklist (OBPI + ADR)
 
 - `uv run -m unittest discover tests`
+- `uv run -m behave features/` (heavy lane)
 - `uv run gz lint`
 - `uv run gz typecheck`
 - `uv run mkdocs build --strict`
@@ -224,5 +225,5 @@ If none resolve, stop and report blockers. Do not claim parity completion withou
 - Do not run `gz audit` pre-attestation.
 - Do not use OBPI-scoped receipt emission as a substitute for ADR completion attestation.
 - `gz adr emit-receipt` remains available for ADR-level accounting and legacy scoped payload flows.
-- For heavy lane without `features/`, Gate 4 is reported N/A with explicit rationale.
+- For heavy lane, Gate 4 must pass before attestation.
 - Historical files under `docs/user/reference/**` are archival and may contain legacy command examples; active operator command contracts are in `docs/user/commands/**` and CLI help output.

@@ -53,3 +53,23 @@ Recorded commands:
 - `uv run gz attest ADR-0.4.0-skill-capability-mirroring --status completed`
 - `uv run gz audit ADR-0.4.0-skill-capability-mirroring`
 - `uv run gz adr emit-receipt ADR-0.4.0-skill-capability-mirroring --event validated --attestor "Jeffry Babb" --evidence-json '{"scope":"ADR-0.4.0-skill-capability-mirroring","date":"2026-03-01"}'`
+- `gh issue list --repo tvproductions/gzkit --search "ADR-0.4.0" --state open --json number,title,url,labels`
+- `gh issue list --repo tvproductions/gzkit --search "OBPI-0.4.0" --state open --json number,title,url,labels`
+- `gh issue list --repo tvproductions/gzkit --search "skill capability mirroring" --state open --json number,title,url,labels`
+- `gh issue list --repo tvproductions/gzkit --search "mirror" --state open --json number,title,url,labels`
+- `gh issue list --repo tvproductions/gzkit --search "skill" --state open --json number,title,url,labels`
+- `gh issue list --repo tvproductions/gzkit --state open --limit 100 --json number,title,url,labels`
+- `gh release view v0.4.0 --repo tvproductions/gzkit --json tagName,name,isDraft,isPrerelease,publishedAt,url`
+- `gh release create v0.4.0 --repo tvproductions/gzkit --title "v0.4.0" --notes-file /tmp/gzkit-v0.4.0-release-notes.md`
+
+Step 8 issue review result:
+
+- No open issues were found for `ADR-0.4.0`, `OBPI-0.4.0`, or `skill capability mirroring`; no issue closures were performed.
+
+Step 9 release notes confirmation:
+
+- `RELEASE_NOTES.md` contains `## v0.4.0 (2026-03-01)` with ADR and gate evidence details.
+
+Step 10 release publication:
+
+- GitHub release created: <https://github.com/tvproductions/gzkit/releases/tag/v0.4.0>

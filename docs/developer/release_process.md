@@ -55,7 +55,16 @@ uv run --python .venv-smoke -m gzkit --version
 rm -rf .venv-smoke
 ```
 
-6. Tag and publish (manual)
+6. Mandatory final git sync (must be immediately before publish/tag commands)
+
+```zsh
+uv run gz git-sync --apply --lint --test
+```
+
+No intervening command is allowed between this full sync and release/tag commands.
+If HEAD or the worktree changes after sync, rerun this step.
+
+7. Tag and publish (manual)
 
 ```zsh
 git tag -a vX.Y.Z -m "gzkit vX.Y.Z"
@@ -65,5 +74,5 @@ gh release create vX.Y.Z --notes-file RELEASE_NOTES.md --title "gzkit vX.Y.Z"
 
 ## Notes
 
-- Use `uv run gz git-sync --apply` before tagging/pushing if branch state needs normalization.
+- Full sync is mandatory immediately before release/tag commands: `uv run gz git-sync --apply --lint --test`.
 - Do not create release tags until all gates and human attestation evidence are complete.

@@ -26,6 +26,23 @@ wheels = [
 ]
 
 [[package]]
+name = "behave"
+version = "1.3.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "colorama" },
+    { name = "cucumber-expressions" },
+    { name = "cucumber-tag-expressions" },
+    { name = "parse" },
+    { name = "parse-type" },
+    { name = "six" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/62/51/f37442fe648b3e35ecf69bee803fa6db3f74c5b46d6c882d0bc5654185a2/behave-1.3.3.tar.gz", hash = "sha256:2b8f4b64ed2ea756a5a2a73e23defc1c4631e9e724c499e46661778453ebaf51", size = 892639, upload-time = "2025-09-04T12:12:02.531Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/63/71/06f74ffed6d74525c5cd6677c97bd2df0b7649e47a249cf6a0c2038083b2/behave-1.3.3-py2.py3-none-any.whl", hash = "sha256:89bdb62af8fb9f147ce245736a5de69f025e5edfb66f1fbe16c5007493f842c0", size = 223594, upload-time = "2025-09-04T12:12:00.3Z" },
+]
+
+[[package]]
 name = "certifi"
 version = "2026.1.4"
 source = { registry = "https://pypi.org/simple" }
@@ -97,6 +114,24 @@ wheels = [
 ]
 
 [[package]]
+name = "cucumber-expressions"
+version = "19.0.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/81/5f/1afc1a0a2a6daed47b2d032a897613a556ebf49303e4af8310223f4a450b/cucumber_expressions-19.0.0.tar.gz", hash = "sha256:8eb5ae46dd03dd37fec1163ace1510529501d7d1868ff372c1ab2cd5aa4543a8", size = 13722, upload-time = "2026-01-25T18:09:15.642Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3b/72/eb79377be899d24c91ed196a50808563685992bb3aa6b82dbe3a1e30df67/cucumber_expressions-19.0.0-py3-none-any.whl", hash = "sha256:f452e6c73258c1677043ad67ad5f538c87284d6b502004720510fb6b7452d9c5", size = 20232, upload-time = "2026-01-25T18:09:16.763Z" },
+]
+
+[[package]]
+name = "cucumber-tag-expressions"
+version = "9.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/b1/e0/de0b292a533846def28a4373a00c883ffa5ed986ca79f0284bd69a6297b8/cucumber_tag_expressions-9.1.0.tar.gz", hash = "sha256:d960383d5885300ebcbcb14e41657946fde2a59d5c0f485eb291bc6a0e228acc", size = 8437, upload-time = "2026-02-17T21:59:06.072Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6b/cf/8e8d034f7d55fceb2e4765bf9fab5da6d6a09204cd09de7bb5054f242cd0/cucumber_tag_expressions-9.1.0-py3-none-any.whl", hash = "sha256:cca145d677a942c1877e5a2cf13da8c6ec99260988877c817efd284d8455bb56", size = 9726, upload-time = "2026-02-17T21:59:04.755Z" },
+]
+
+[[package]]
 name = "ghp-import"
 version = "2.1.0"
 source = { registry = "https://pypi.org/simple" }
@@ -113,6 +148,7 @@ name = "gzkit"
 version = "0.3.1"
 source = { editable = "." }
 dependencies = [
+    { name = "behave" },
     { name = "rich" },
 ]
 
@@ -127,6 +163,7 @@ docs = [
 
 [package.metadata]
 requires-dist = [
+    { name = "behave", specifier = ">=1.2.6" },
     { name = "mkdocs", marker = "extra == 'docs'", specifier = ">=1.6" },
     { name = "mkdocs-material", marker = "extra == 'docs'", specifier = ">=9.5" },
     { name = "rich", specifier = ">=13.0" },
@@ -331,6 +368,28 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/ec/46/68dde5b6bc00c1296ec6466ab27dddede6aec9af1b99090e1107091b3b84/paginate-0.5.7.tar.gz", hash = "sha256:22bd083ab41e1a8b4f3690544afb2c60c25e5c9a63a30fa2f483f6c60c8e5945", size = 19252, upload-time = "2024-08-25T14:17:24.139Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/90/96/04b8e52da071d28f5e21a805b19cb9390aa17a47462ac87f5e2696b9566d/paginate-0.5.7-py2.py3-none-any.whl", hash = "sha256:b885e2af73abcf01d9559fd5216b57ef722f8c42affbb63942377668e35c7591", size = 13746, upload-time = "2024-08-25T14:17:22.55Z" },
+]
+
+[[package]]
+name = "parse"
+version = "1.21.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/fd/18/0bea374e5ec3c8ba15365570002187f3fef9d7265ffbc2f649529878cc80/parse-1.21.1.tar.gz", hash = "sha256:825e1a88e9d9fb481b8d2ca709c6195558b6eaa97c559ad3a9a20aa2d12815a3", size = 29105, upload-time = "2026-02-19T02:20:07.645Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c3/13/114daf766c33aec6c5a3954e7ea653f8a7ade9602c5c5a2228281698c490/parse-1.21.1-py2.py3-none-any.whl", hash = "sha256:55339ca698019815df3b8e8b550e5933933527e623b0cdf1ca2f404da35ffb47", size = 19693, upload-time = "2026-02-19T02:20:06.575Z" },
+]
+
+[[package]]
+name = "parse-type"
+version = "0.6.6"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "parse" },
+    { name = "six" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/19/ea/42ba6ce0abba04ab6e0b997dcb9b528a4661b62af1fe1b0d498120d5ea78/parse_type-0.6.6.tar.gz", hash = "sha256:513a3784104839770d690e04339a8b4d33439fcd5dd99f2e4580f9fc1097bfb2", size = 98012, upload-time = "2025-08-11T22:53:48.066Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/85/8d/eef3d8cdccc32abdd91b1286884c99b8c3a6d3b135affcc2a7a0f383bb32/parse_type-0.6.6-py2.py3-none-any.whl", hash = "sha256:3ca79bbe71e170dfccc8ec6c341edfd1c2a0fc1e5cfd18330f93af938de2348c", size = 27085, upload-time = "2025-08-11T22:53:46.396Z" },
 ]
 
 [[package]]

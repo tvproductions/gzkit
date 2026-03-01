@@ -238,8 +238,6 @@ def _gate4_na_reason(project_root: Path, lane: str) -> str | None:
     """Return explicit Gate 4 N/A rationale when BDD suite is not applicable."""
     if lane != "heavy":
         return "Gate 4 applies to heavy lane only."
-    if not (project_root / "features").exists():
-        return "features/ not found; Gate 4 is N/A for this repository."
     return None
 
 
@@ -267,8 +265,8 @@ def _attestation_gate_snapshot(
     if lane == "heavy":
         if gate3 != "pass":
             blockers.append(f"Gate 3 must pass (current: {gate3}).")
-        if gate4_na is None and gate4 != "pass":
-            blockers.append(f"Gate 4 must pass when features/ exists (current: {gate4}).")
+        if gate4 != "pass":
+            blockers.append(f"Gate 4 must pass (current: {gate4}).")
 
     return {
         "lane": lane,
@@ -651,6 +649,28 @@ def resolve_target_adr(
 
 def resolve_adr_file(project_root: Path, config: GzkitConfig, adr: str) -> tuple[Path, str]:
     """Resolve an ADR file path from an ID, supporting nested layouts."""
+
+    def _pick_unique(
+        candidates: list[tuple[Path, str]], requested_id: str
+    ) -> tuple[Path, str] | None:
+        if len(candidates) == 1:
+            return candidates[0]
+        if len(candidates) > 1:
+            # Prefer non-pool ADRs when duplicates exist
+            non_pool = [
+                entry for entry in candidates if "docs/design/adr/pool" not in str(entry[0])
+            ]
+            if len(non_pool) == 1:
+                return non_pool[0]
+            if len(non_pool) > 1:
+                rels = ", ".join(
+                    str(path.relative_to(project_root)) for path, _resolved in non_pool
+                )
+                raise GzCliError(f"Multiple ADR files found for {requested_id}: {rels}")
+            rels = ", ".join(str(path.relative_to(project_root)) for path, _resolved in candidates)
+            raise GzCliError(f"Multiple ADR files found for {requested_id}: {rels}")
+        return None
+
     adr_id = adr if adr.startswith("ADR-") else f"ADR-{adr}"
     adr_dir = project_root / config.paths.adrs
 
@@ -660,29 +680,36 @@ def resolve_adr_file(project_root: Path, config: GzkitConfig, adr: str) -> tuple
 
     for candidate in candidates:
         if candidate.exists():
-            return candidate, adr_id
+            return candidate, candidate.stem
 
     artifacts = scan_existing_artifacts(project_root, config.paths.design_root)
-    matches = []
+    exact_matches: list[tuple[Path, str]] = []
+    prefix_matches: list[tuple[Path, str]] = []
     for adr_file in artifacts.get("adrs", []):
         metadata = parse_artifact_metadata(adr_file)
+        stem_id = adr_file.stem
+        parsed_id = metadata.get("id", stem_id)
         # Prefer explicit metadata IDs, but also match filename stems for
         # suffixed IDs like ADR-0.6.0-pool.* when headers use ADR-0.6.0.
-        if metadata.get("id") == adr_id or adr_file.stem == adr_id:
-            matches.append(adr_file)
+        if adr_id == stem_id:
+            exact_matches.append((adr_file, stem_id))
+            continue
+        if adr_id == parsed_id:
+            exact_matches.append((adr_file, parsed_id))
+            continue
+        if stem_id.startswith(f"{adr_id}-"):
+            prefix_matches.append((adr_file, stem_id))
+            continue
+        if parsed_id.startswith(f"{adr_id}-"):
+            prefix_matches.append((adr_file, parsed_id))
 
-    if len(matches) == 1:
-        return matches[0], adr_id
-    if len(matches) > 1:
-        # Prefer non-pool ADRs when duplicates exist
-        non_pool = [p for p in matches if "docs/design/adr/pool" not in str(p)]
-        if len(non_pool) == 1:
-            return non_pool[0], adr_id
-        if len(non_pool) > 1:
-            rels = ", ".join(str(p.relative_to(project_root)) for p in non_pool)
-            raise GzCliError(f"Multiple ADR files found for {adr_id}: {rels}")
-        rels = ", ".join(str(p.relative_to(project_root)) for p in matches)
-        raise GzCliError(f"Multiple ADR files found for {adr_id}: {rels}")
+    exact_pick = _pick_unique(exact_matches, adr_id)
+    if exact_pick is not None:
+        return exact_pick
+
+    prefix_pick = _pick_unique(prefix_matches, adr_id)
+    if prefix_pick is not None:
+        return prefix_pick
 
     raise GzCliError(f"ADR not found: {adr_id}")
 

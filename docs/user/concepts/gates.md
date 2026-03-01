@@ -21,7 +21,7 @@ Gates are verification checkpoints in the covenant.
 - `gz attest` enforces prerequisite gates by default.
 - Lite lane attestation requires Gate 2 pass.
 - Heavy lane attestation requires Gate 2 and Gate 3 pass.
-- Heavy lane Gate 4 must pass when `features/` exists; otherwise explicit N/A rationale applies.
+- Heavy lane Gate 4 must pass.
 - `--force` exists for accountable overrides and requires rationale when bypassing failed prerequisites.
 
 ---

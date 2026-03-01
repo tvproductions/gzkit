@@ -23,8 +23,7 @@ Output includes:
 - Linked OBPI evidence paths
 - Verification command set for the ADR lane
 - Canonical attestation choices
-- Heavy-lane Gate 4 command when `features/` exists
-- Heavy-lane explicit Gate 4 N/A reason when `features/` is absent
+- Heavy-lane Gate 4 command (always required for heavy lane)
 
 It does not interpret command outcomes.
 
