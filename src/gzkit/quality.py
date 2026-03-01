@@ -240,6 +240,7 @@ class CheckResult:
     typecheck: QualityResult
     test: QualityResult
     skill_audit: QualityResult
+    parity_check: QualityResult
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
@@ -250,6 +251,7 @@ class CheckResult:
             "typecheck": self.typecheck.to_dict(),
             "test": self.test.to_dict(),
             "skill_audit": self.skill_audit.to_dict(),
+            "parity_check": self.parity_check.to_dict(),
         }
 
 
@@ -267,6 +269,7 @@ def run_all_checks(project_root: Path) -> CheckResult:
     typecheck = run_typecheck(project_root)
     test = run_tests(project_root)
     skill_audit = run_skill_audit(project_root)
+    parity_check = run_parity_check(project_root)
 
     success = all(
         [
@@ -275,6 +278,7 @@ def run_all_checks(project_root: Path) -> CheckResult:
             typecheck.success,
             test.success,
             skill_audit.success,
+            parity_check.success,
         ]
     )
 
@@ -285,6 +289,7 @@ def run_all_checks(project_root: Path) -> CheckResult:
         typecheck=typecheck,
         test=test,
         skill_audit=skill_audit,
+        parity_check=parity_check,
     )
 
 
@@ -303,3 +308,8 @@ def run_pymarkdown(project_root: Path) -> QualityResult:
 def run_skill_audit(project_root: Path) -> QualityResult:
     """Run skill lifecycle/parity audit."""
     return run_command("uv run gz skill audit", cwd=project_root)
+
+
+def run_parity_check(project_root: Path) -> QualityResult:
+    """Run deterministic parity regression checks."""
+    return run_command("uv run gz parity check", cwd=project_root)

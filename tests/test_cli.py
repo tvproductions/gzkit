@@ -1054,6 +1054,8 @@ class TestNewCommandParsers(unittest.TestCase):
             ["check-config-paths", "--help"],
             ["cli", "--help"],
             ["cli", "audit", "--help"],
+            ["parity", "--help"],
+            ["parity", "check", "--help"],
             ["skill", "audit", "--help"],
         ]
         for args in commands:
@@ -1851,6 +1853,83 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
             doc_path.write_text(f"# gz {command_name}\n\nStub\n")
             links.append(f"- {doc_path.name}")
         index_path.write_text("# Commands Index\n\n" + "\n".join(links) + "\n")
+        Path("README.md").write_text(
+            "\n".join(
+                [
+                    "# Example Project",
+                    "",
+                    "## Quick Start",
+                    "",
+                    "```bash",
+                    "gz init",
+                    'gz plan feature --title "Feature description"',
+                    "gz status",
+                    "gz check",
+                    "```",
+                    "",
+                ]
+            )
+        )
+
+    @staticmethod
+    def _prepare_parity_surface() -> None:
+        Path(".github/discovery-index.json").parent.mkdir(parents=True, exist_ok=True)
+        Path(".github/discovery-index.json").write_text(
+            json.dumps(
+                {
+                    "version": "1.0.0",
+                    "discovery_checklist": {},
+                    "completion_checklist": {"lite": [], "heavy": []},
+                },
+                indent=2,
+            )
+            + "\n"
+        )
+        Path("docs/governance/parity-intake-rubric.md").parent.mkdir(parents=True, exist_ok=True)
+        Path("docs/governance/parity-intake-rubric.md").write_text("# Rubric\n")
+        Path("docs/proposals/REPORT-TEMPLATE-airlineops-parity.md").parent.mkdir(
+            parents=True, exist_ok=True
+        )
+        Path("docs/proposals/REPORT-TEMPLATE-airlineops-parity.md").write_text(
+            "\n".join(
+                [
+                    "# REPORT TEMPLATE",
+                    "## Executive Summary",
+                    "## Canonical Coverage Matrix",
+                    "## Behavior / Procedure Source Matrix",
+                    "## Habit Parity Matrix (Required)",
+                    "## GovZero Mining Inventory",
+                    "## Proof Surface Check",
+                    "## Next Actions",
+                    "",
+                ]
+            )
+        )
+        Path(".gzkit/skills/airlineops-parity-scan/SKILL.md").parent.mkdir(
+            parents=True, exist_ok=True
+        )
+        Path(".gzkit/skills/airlineops-parity-scan/SKILL.md").write_text(
+            "\n".join(
+                [
+                    "# SKILL.md",
+                    "uv run gz cli audit",
+                    "uv run gz check-config-paths",
+                    "uv run gz adr audit-check ADR-<target>",
+                    "uv run mkdocs build --strict",
+                    "",
+                ]
+            )
+        )
+        Path("docs/proposals/REPORT-airlineops-parity-2026-03-01.md").write_text(
+            "\n".join(
+                [
+                    "# REPORT",
+                    "Overall parity status: Partial",
+                    "## Next Actions",
+                    "",
+                ]
+            )
+        )
 
     def test_check_config_paths_passes_for_valid_layout(self) -> None:
         runner = CliRunner()
@@ -1929,6 +2008,49 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
             result = runner.invoke(main, ["cli", "audit"])
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("failed", result.output.lower())
+
+    def test_cli_audit_detects_invalid_readme_quickstart_command(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            self._prepare_docs_surface()
+            Path("README.md").write_text(
+                "\n".join(
+                    [
+                        "# Example Project",
+                        "",
+                        "## Quick Start",
+                        "",
+                        "```bash",
+                        "gz init",
+                        "gz verify",
+                        "```",
+                        "",
+                    ]
+                )
+            )
+            result = runner.invoke(main, ["cli", "audit"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("invalid quick start command", result.output.lower())
+
+    def test_parity_check_passes_when_contract_surfaces_are_present(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            self._prepare_parity_surface()
+            result = runner.invoke(main, ["parity", "check"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("passed", result.output.lower())
+
+    def test_parity_check_fails_when_discovery_index_missing(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            self._prepare_parity_surface()
+            Path(".github/discovery-index.json").unlink()
+            result = runner.invoke(main, ["parity", "check"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("required parity surface missing", result.output.lower())
 
 
 if __name__ == "__main__":

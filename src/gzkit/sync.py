@@ -794,6 +794,89 @@ uv run -m unittest discover tests    # Run tests""".format(module=project_name.r
     }
 
 
+def _discovery_index_payload(project_root: Path, config: GzkitConfig) -> dict[str, Any]:
+    """Build the discovery-index control surface payload."""
+    project_name = config.project_name or detect_project_name(project_root)
+    return {
+        "version": "1.0.0",
+        "repository": {
+            "name": project_name,
+            "paths": {
+                "source_root": config.paths.source_root,
+                "tests_root": config.paths.tests_root,
+                "docs_root": config.paths.docs_root,
+                "design_root": config.paths.design_root,
+            },
+        },
+        "governance": {
+            "agent_contracts": [config.paths.agents_md, config.paths.claude_md],
+            "control_surfaces": {
+                "copilot_instructions": config.paths.copilot_instructions,
+                "discovery_index": config.paths.discovery_index,
+                "skills_canonical": config.paths.skills,
+                "skills_mirrors": [
+                    config.paths.claude_skills,
+                    config.paths.codex_skills,
+                    config.paths.copilot_skills,
+                ],
+            },
+        },
+        "quality_gates": {
+            "lite": [1, 2],
+            "heavy": [1, 2, 3, 4, 5],
+        },
+        "verification_commands": {
+            "lint": "uv run gz lint",
+            "typecheck": "uv run gz typecheck",
+            "test": "uv run gz test",
+            "skill_audit": "uv run gz skill audit",
+            "check_config_paths": "uv run gz check-config-paths",
+            "cli_audit": "uv run gz cli audit",
+            "parity_check": "uv run gz parity check",
+            "docs": "uv run mkdocs build --strict",
+        },
+        "discovery_checklist": {
+            "governance": [
+                config.paths.discovery_index,
+                config.paths.copilot_instructions,
+                config.paths.agents_md,
+            ],
+            "context": ["parent_adr", "related_obpis"],
+            "prerequisites": ["required_module", "required_config"],
+            "existing_code": ["implementation_pattern", "test_pattern"],
+        },
+        "completion_checklist": {
+            "lite": ["gate1_recorded", "gate2_passed", "quality_passed", "evidence_recorded"],
+            "heavy": [
+                "gate1_recorded",
+                "gate2_passed",
+                "gate3_passed",
+                "gate4_passed_or_na",
+                "gate5_attested",
+                "evidence_recorded",
+            ],
+        },
+        "doctrines": {
+            "identity_rule": "GovZero = AirlineOps - (AirlineOps product capabilities)",
+            "ownership": "Agents own complete execution and defect tracking.",
+            "attestation_boundary": "Human attestation is required before final completion.",
+        },
+        "prohibitions": [
+            "Never bypass Gate 5 human attestation.",
+            "Never mutate ledger directly; use gz commands.",
+            "Never claim completion without recorded evidence.",
+        ],
+    }
+
+
+def sync_discovery_index(project_root: Path, config: GzkitConfig) -> None:
+    """Generate .github/discovery-index.json control surface."""
+    discovery_path = project_root / config.paths.discovery_index
+    discovery_path.parent.mkdir(parents=True, exist_ok=True)
+    payload = _discovery_index_payload(project_root, config)
+    discovery_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+
+
 def sync_agents_md(project_root: Path, config: GzkitConfig) -> None:
     """Generate AGENTS.md from template.
 
@@ -938,6 +1021,9 @@ def sync_all(project_root: Path, config: GzkitConfig | None = None) -> list[str]
 
     sync_copilot_instructions(project_root, config)
     updated.append(config.paths.copilot_instructions)
+
+    sync_discovery_index(project_root, config)
+    updated.append(config.paths.discovery_index)
 
     sync_claude_settings(project_root, config)
     updated.append(config.paths.claude_settings)

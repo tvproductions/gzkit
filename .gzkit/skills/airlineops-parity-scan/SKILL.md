@@ -38,7 +38,7 @@ GovZero mining rule:
 
 - `../airlineops` exists and is readable.
 - gzkit repo is initialized with `docs/` and `docs/design/`.
-- Use canonical references in `docs/lodestar/govzero-doctrine.md`.
+- Use canonical references in `docs/design/lodestar/govzero-doctrine.md`.
 
 ## Steps
 
@@ -51,7 +51,7 @@ GovZero mining rule:
    Fail closed if none resolve.
    Record canonical-root evidence in the parity report.
 3. Read canonical source declarations:
-   `docs/lodestar/govzero-doctrine.md`, `docs/lodestar/README.md`, `AGENTS.md`.
+   `docs/design/lodestar/govzero-doctrine.md`, `docs/design/lodestar/README.md`, `AGENTS.md`.
 4. Build a behavior/procedure source matrix from canonical and extraction surfaces:
    - Canonical behavior sources (AirlineOps):
      - `.github/skills/gz-*`
@@ -76,30 +76,34 @@ GovZero mining rule:
    - cite source file/path
    - map to extracted gzkit surface (or mark missing/divergent)
    - classify confidence and remediation target
-6. Compare both artifact parity and procedure parity:
+6. Apply parity intake rubric to each candidate import:
+   - Use `docs/governance/parity-intake-rubric.md`
+   - Classify each item as `Import Now`, `Import with Compatibility`, `Defer (Tracked)`, or `Exclude`
+   - Record rationale and runtime/proof backing for the classification
+7. Compare both artifact parity and procedure parity:
    - artifact parity: presence/path/content
    - procedure parity: orientation, tool use, post-accounting, validation, verification, presentation, human authority boundaries
-7. Classify each matrix item as:
+8. Classify each matrix item as:
    - `Parity`
    - `Partial`
    - `Missing`
    - `Divergent`
-8. Execute and record runnable ritual checks from gzkit surfaces:
+9. Execute and record runnable ritual checks from gzkit surfaces:
    - `uv run gz cli audit`
    - `uv run gz check-config-paths`
    - `uv run gz adr audit-check ADR-<target>`
    - `uv run mkdocs build --strict`
-9. Write a dated report:
+10. Write a dated report:
    `docs/proposals/REPORT-airlineops-parity-YYYY-MM-DD.md`
    Use `docs/proposals/REPORT-TEMPLATE-airlineops-parity.md`.
    Also produce mining inventory report:
    `docs/proposals/REPORT-airlineops-govzero-mining-YYYY-MM-DD.md`
    Use `docs/proposals/REPORT-TEMPLATE-airlineops-govzero-mining.md`.
-10. For every `Missing`, `Divergent`, or high-impact `Partial` finding:
+11. For every `Missing`, `Divergent`, or high-impact `Partial` finding:
    - Propose target SemVer minor
    - Identify parent ADR and OBPI linkage
    - Add an explicit next action
-11. Summarize risk:
+12. Summarize risk:
    - What blocks 1.0 readiness
    - What can wait
    - What must be done next cycle

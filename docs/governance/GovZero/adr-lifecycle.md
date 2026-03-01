@@ -188,7 +188,8 @@ Before an ADR transitions to **Accepted** status:
 implementation. Orphaned checklist items (without briefs) create ambiguity about scope.
 Co-creation ensures intent is locked with execution units at decision time.
 
-**Verification:** The `gz-adr-manager` skill enforces this during ADR creation.
+**Verification:** The `gz-adr-create` skill enforces this during ADR creation
+(`gz-adr-manager` is retained as a compatibility alias).
 Manual verification: count checklist items in ADR, count brief files in `briefs/` — must match.
 
 **Anti-pattern:** ADR tables listing OBPIs as "Pending" with no actual brief files.
