@@ -1,0 +1,131 @@
+---
+applyTo: "src/opsdev/**,config/opsdev.chores.json,docs/design/briefs/chores/**,.github/skills/**"
+---
+
+# Copilot Chores Workflow (opsdev)
+
+> **Purpose:** Enable Copilot to run repository chores effectively with clear, repeatable command sequences, aligned to AirlineOps guardrails.
+
+## Core Principles
+
+| Principle           | Description                                     |
+| ------------------- | ----------------------------------------------- |
+| **Plan-first**      | Generate or refresh a chore plan before any run |
+| **Lite by default** | Fast lane (≤60s), unit tests only               |
+| **Small diffs**     | Touch only files in scope for the chore         |
+| **CLI evidence**    | Never use raw SQL for attestation               |
+
+## Command Sequences
+
+### 1. Discover Chores
+
+```bash
+uv run -m opsdev chores list
+uv run -m opsdev chores show <chore_slug>
+```
+
+### 2. Plan & Advise
+
+```bash
+# Replace plan to avoid drift
+uv run -m opsdev chores plan <chore_slug> --replace
+uv run -m opsdev chores advise <chore_slug>
+```
+
+### 3. Apply Advice (Copilot Execution Steps)
+
+**Step-by-step workflow:**
+
+1. **Read advice** — Identify discrete actions (refactor patterns, validation, tests, naming, dead code)
+2. **Create TODO list** — Exactly one item in-progress at a time
+3. **Implement surgically** — Minimal diffs, preserve behavior, use approved helpers
+4. **Validate locally** — Lint, typecheck, tests (iterate in small batches)
+5. **Sync if green** — Commit/push after validation passes
+6. **Post delta update** — Concise summary of changes, test status, next batch
+
+```bash
+# Validation loop (repeat until green)
+uv run ruff check . --fix && uv run ruff format .
+uvx ty check . --exclude 'features/**'
+uv run -m unittest -q
+
+# Sync when ready
+uv run -m opsdev sync-repo --apply
+```
+
+### 4. Run Chore (Lane Selection)
+
+### 4. Run Chore
+
+Lane is selected from the chore registry entry in `config/opsdev.chores.json`.
+Confirm the configured lane with `uv run -m opsdev chores show <chore_slug>`.
+
+```bash
+uv run -m opsdev chores run <chore_slug>
+```
+
+## Evidence & Attestation
+
+### ✅ Correct Evidence (CLI commands only)
+
+```bash
+# External contract evidence (Heavy lane)
+uv run -m airlineops reports db1b --quarter 2025-Q1
+uv run -m airlineops warehouse discover bts_db28_ticket --quarter 2025-Q1
+uv run -m opsdev gates
+uv run behave features/<feature>.feature --tags=@schema
+```
+
+### ❌ Prohibited Evidence
+
+- Raw SQL statements
+- Direct DB queries for attestation
+- Bypassing CLI interface
+
+## Complete Workflow Examples
+
+### Example 1: Hygiene/Refactor Chore (Generic)
+
+```bash
+# 1. Plan & Advise
+uv run -m opsdev chores plan <chore_slug> --replace
+uv run -m opsdev chores advise <chore_slug>
+
+# 2. Run the chore (lane comes from config/opsdev.chores.json)
+uv run -m opsdev chores run <chore_slug>
+
+# 3. Validate
+uv run ruff check . --fix && uv run ruff format .
+uvx ty check . --exclude 'features/**'
+uv run -m unittest -q
+
+# 4. Sync
+uv run -m opsdev sync-repo --apply
+```
+
+### Example 2: Contract/Docs/CLI Chore (Heavy)
+
+```bash
+# 1. Plan & Advise
+uv run -m opsdev chores plan cli-contract-governance --replace
+uv run -m opsdev chores advise cli-contract-governance
+
+# 2. Run the chore (configured lane: Heavy)
+uv run -m opsdev chores run cli-contract-governance
+
+# 3. Validate gates
+uv run -m opsdev gates
+
+# 4. Sync
+uv run -m opsdev sync-repo --apply
+```
+
+## Copilot Execution Checklist
+
+- [ ] Read `.github/discovery-index.json` and relevant instructions for scope
+- [ ] Create TODOs; set exactly one in-progress
+- [ ] Plan → Advise the chore
+- [ ] Read advice and execute tasks: inspect hotspots, apply fixes, iterate
+- [ ] Run Lite lane; if blocked by lane rules, note blockers and propose alternatives
+- [ ] Make minimal, surgical edits; re-run lint/types/tests
+- [ ] Sync repo when green; provide concise summary and next options
