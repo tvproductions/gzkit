@@ -50,6 +50,7 @@ uv run gz adr promote ADR-pool.<slug> --semver X.Y.Z [--dry-run]
 | [ADR-pool.execution-memory-graph](ADR-pool.execution-memory-graph.md) | Runtime execution memory | Waiting | ADR-pool.storage-simplicity-profile, ADR-0.7.0-obpi-first-operations |
 | [ADR-pool.prime-context-hooks](ADR-pool.prime-context-hooks.md) | CLI+hooks context runtime | Waiting | ADR-pool.execution-memory-graph |
 | [ADR-pool.obpi-runtime-surface](ADR-pool.obpi-runtime-surface.md) | OBPI-native runtime ergonomics | Waiting | ADR-0.7.0-obpi-first-operations, ADR-pool.execution-memory-graph |
+| [ADR-pool.airlineops-surface-breadth-parity](ADR-pool.airlineops-surface-breadth-parity.md) | Canonical `.claude/**` + `.gzkit/**` breadth parity | Waiting | ADR-0.3.0-airlineops-canon-reconciliation |
 
 ---
 
@@ -88,7 +89,8 @@ PRD-GZKIT-1.0.0
 ├── [ADR-0.7.0](../pre-release/ADR-0.7.0-obpi-first-operations/ADR-0.7.0-obpi-first-operations.md) (OBPI-first governance track) ← Active
 ├── ADR-pool.execution-memory-graph (Typed runtime execution memory)
 ├── ADR-pool.prime-context-hooks (Dynamic runtime context via hooks)
-└── ADR-pool.obpi-runtime-surface (OBPI-native runtime surfaces)
+├── ADR-pool.obpi-runtime-surface (OBPI-native runtime surfaces)
+└── ADR-pool.airlineops-surface-breadth-parity (Canonical `.claude/**` + `.gzkit/**` breadth parity)
 ```
 
 Parenting model:
