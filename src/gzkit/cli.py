@@ -4214,9 +4214,10 @@ def tidy(check_only: bool, fix: bool, dry_run: bool) -> None:
     graph = ledger.get_artifact_graph()
 
     # Find OBPIs without ADRs
-    obpis_with_adrs = {info["parent"] for info in graph.values() if info.get("parent")}
     orphan_obpis = [
-        k for k, v in graph.items() if v.get("type") == "obpi" and k not in obpis_with_adrs
+        k
+        for k, v in graph.items()
+        if v.get("type") == "obpi" and (not v.get("parent") or v.get("parent") not in graph)
     ]
 
     if orphan_obpis:
