@@ -38,6 +38,8 @@ Universal agent contract for gzkit.
 2. Follow the gate covenant for all changes
 3. Record governance events in the ledger
 4. Preserve human intent across context boundaries
+5. Aggressively offload online research, codebase exploration, and log analysis to subagents to preserve main context.
+6. When spawning a subagent, always include a 'Why' parameter in the subagent system prompt to help it filter signal from noise.
 
 ### Never
 

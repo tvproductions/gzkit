@@ -4,6 +4,7 @@ description: Auto-format code with Ruff.
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-02-18
+model: haiku
 ---
 
 # SKILL.md

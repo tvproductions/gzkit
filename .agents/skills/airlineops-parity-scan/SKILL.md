@@ -4,6 +4,7 @@ description: Run a repeatable governance parity scan between ../airlineops (cano
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-02-18
+disable_model_invocation: true
 ---
 
 # SKILL.md
