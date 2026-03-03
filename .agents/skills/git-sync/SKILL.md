@@ -4,6 +4,7 @@ description: Run the guarded repository sync ritual with lint/test gates.
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-02-21
+disable_model_invocation: true
 ---
 
 # SKILL.md
