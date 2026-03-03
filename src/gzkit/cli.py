@@ -17,6 +17,10 @@ from rich.table import Table
 from gzkit import __version__
 from gzkit.commands.attest import attest
 from gzkit.commands.common import (
+    ADR_SEMVER_ID_RE,
+    ADR_SLUG_RE,
+    COMMAND_DOCS,
+    SEMVER_ONLY_RE,
     GzCliError,
     _compute_git_sync_state,
     _confirm,
@@ -104,34 +108,6 @@ from gzkit.validate import (
 )
 
 GIT_SYNC_SKILL_PATH = ".gzkit/skills/git-sync/SKILL.md"
-COMMAND_DOCS: dict[str, str] = {
-    "init": "docs/user/commands/init.md",
-    "prd": "docs/user/commands/prd.md",
-    "constitute": "docs/user/commands/constitute.md",
-    "specify": "docs/user/commands/specify.md",
-    "plan": "docs/user/commands/plan.md",
-    "status": "docs/user/commands/status.md",
-    "state": "docs/user/commands/state.md",
-    "git-sync": "docs/user/commands/git-sync.md",
-    "attest": "docs/user/commands/attest.md",
-    "implement": "docs/user/commands/implement.md",
-    "gates": "docs/user/commands/gates.md",
-    "migrate-semver": "docs/user/commands/migrate-semver.md",
-    "register-adrs": "docs/user/commands/register-adrs.md",
-    "skill audit": "docs/user/commands/skill-audit.md",
-    "closeout": "docs/user/commands/closeout.md",
-    "audit": "docs/user/commands/audit.md",
-    "check-config-paths": "docs/user/commands/check-config-paths.md",
-    "cli audit": "docs/user/commands/cli-audit.md",
-    "parity check": "docs/user/commands/parity-check.md",
-    "readiness audit": "docs/user/commands/readiness-audit.md",
-    "adr status": "docs/user/commands/adr-status.md",
-    "adr promote": "docs/user/commands/adr-promote.md",
-    "adr audit-check": "docs/user/commands/adr-audit-check.md",
-    "adr emit-receipt": "docs/user/commands/adr-emit-receipt.md",
-    "obpi emit-receipt": "docs/user/commands/obpi-emit-receipt.md",
-    "agent sync control-surfaces": "docs/user/commands/agent-sync-control-surfaces.md",
-}
 
 SEMVER_ID_RENAMES: tuple[tuple[str, str], ...] = (
     # Historical OBPI relabeling migration.
@@ -161,10 +137,6 @@ SEMVER_ID_RENAMES: tuple[tuple[str, str], ...] = (
     ),
     ("OBPI-0.8.0-01-skill-source-centralization", "OBPI-0.4.0-01-skill-source-centralization"),
 )
-ADR_SEMVER_ID_RE = re.compile(r"^ADR-\d+\.\d+\.\d+(?:[.-][A-Za-z0-9][A-Za-z0-9.-]*)?$")
-ADR_POOL_ID_RE = re.compile(r"^ADR-pool\.[A-Za-z0-9][A-Za-z0-9.-]*$")
-SEMVER_ONLY_RE = re.compile(r"^\d+\.\d+\.\d+$")
-ADR_SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
 def _plan_git_sync(

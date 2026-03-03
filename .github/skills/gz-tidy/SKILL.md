@@ -4,6 +4,7 @@ description: Run maintenance checks and cleanup routines. Use for repository hyg
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-02-18
+model: haiku
 ---
 
 # gz tidy

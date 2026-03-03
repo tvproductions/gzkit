@@ -12,6 +12,7 @@ invocation: uv run gz status --table
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-02-22
+model: haiku
 ---
 
 # gz-adr-status

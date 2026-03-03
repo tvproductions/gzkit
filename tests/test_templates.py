@@ -74,6 +74,59 @@ class TestRenderTemplate(unittest.TestCase):
         self.assertIn("{parent_adr}", content)
 
 
+class TestAgentsTemplateSemantic(unittest.TestCase):
+    """Semantic content tests for the AGENTS template.
+
+    Prevents sync from silently dropping governance rules.
+    """
+
+    def setUp(self) -> None:
+        self.content = render_template(
+            "agents",
+            project_name="test-project",
+            project_purpose="Test purpose",
+            tech_stack="Python 3.13+",
+            skills_canon_path=".gzkit/skills",
+            skills_claude_path=".claude/skills",
+            skills_codex_path=".agents/skills",
+            skills_copilot_path=".github/skills",
+            skills_catalog="(none)",
+            sync_date="2026-01-01",
+            local_content="",
+        )
+
+    def test_always_rules_present(self) -> None:
+        """All 6 'Always' rules are present in rendered AGENTS template."""
+        always_rules = [
+            "Read AGENTS.md before starting work",
+            "Follow the gate covenant for all changes",
+            "Record governance events in the ledger",
+            "Preserve human intent across context boundaries",
+            "offload online research, codebase exploration, and log analysis to subagents",
+            "always include a 'Why' parameter in the subagent system prompt",
+        ]
+        for rule in always_rules:
+            with self.subTest(rule=rule):
+                self.assertIn(rule, self.content)
+
+    def test_never_rules_present(self) -> None:
+        """All 4 'Never' rules are present in rendered AGENTS template."""
+        never_rules = [
+            "Bypass Gate 5 (human attestation)",
+            "Modify the ledger directly (use gzkit commands)",
+            "Create governance artifacts without proper linkage",
+            "Make changes that violate declared invariants",
+        ]
+        for rule in never_rules:
+            with self.subTest(rule=rule):
+                self.assertIn(rule, self.content)
+
+    def test_local_content_injection(self) -> None:
+        """AGENTS template includes agents.local.md injection markers."""
+        self.assertIn("<!-- BEGIN agents.local.md -->", self.content)
+        self.assertIn("<!-- END agents.local.md -->", self.content)
+
+
 class TestListTemplates(unittest.TestCase):
     """Tests for listing templates."""
 
