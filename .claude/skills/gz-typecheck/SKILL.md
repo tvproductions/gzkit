@@ -4,6 +4,7 @@ description: Run static type checks. Use when verifying type safety before merge
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-02-18
+model: haiku
 ---
 
 # gz typecheck

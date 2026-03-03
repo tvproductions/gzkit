@@ -4,7 +4,6 @@ description: Initialize gzkit governance scaffolding for a repository. Use when 
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-02-18
-disable_model_invocation: true
 ---
 
 # gz init

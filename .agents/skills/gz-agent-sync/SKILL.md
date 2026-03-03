@@ -4,7 +4,6 @@ description: Synchronize generated control surfaces and skill mirrors. Use after
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-02-21
-disable_model_invocation: true
 ---
 
 # gz agent sync control-surfaces
