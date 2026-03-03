@@ -4,6 +4,7 @@ description: Validate configured and manifest path coherence. Use when diagnosin
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-02-18
+model: haiku
 ---
 
 # gz check-config-paths
