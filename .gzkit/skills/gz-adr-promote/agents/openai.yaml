@@ -1,0 +1,4 @@
+interface:
+  display_name: "gz adr promote"
+  short_description: "Operate the gz adr promote workflow"
+  default_prompt: "Use $gz-adr-promote to run gz adr promote for this task."

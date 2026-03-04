@@ -175,25 +175,27 @@ When a human provides Gate 5 attestation, the ADR status updates as follows:
 
 ## OBPI Completeness Requirement (Canonical)
 
-**Binding rule:** OBPIs are co-created with the ADR, not deferred.
+**Binding rule: The ADR Feature Checklist and the OBPI Briefs MUST remain in 1:1 synchronization. NO DRIFT PERMITTED.**
 
 Before an ADR transitions to **Accepted** status:
 
-- Each numbered checklist item in the Feature Checklist MUST have exactly one
-  corresponding OBPI brief file in the `briefs/` directory
-- Each brief MUST follow naming: `OBPI-{semver}-{nn}-{slug}.md`
-- Each brief MUST reference its parent ADR and specific checklist item
+-   **1:1 Mapping**: Each numbered checklist item in the ADR's Feature Checklist MUST have exactly one corresponding OBPI brief file in the `briefs/` directory.
+-   **Identification**: Each brief MUST follow naming: `OBPI-{semver}-{nn}-{slug}.md`.
+-   **Linkage**: Each brief MUST reference its parent ADR and the specific checklist item it fulfills.
+-   **Synchronized Intent**: The objective and acceptance criteria of the brief MUST match the intent of the checklist item.
 
-**Rationale:** The Work Breakdown Structure (WBS) is a contract between ADR intent and
-implementation. Orphaned checklist items (without briefs) create ambiguity about scope.
-Co-creation ensures intent is locked with execution units at decision time.
+### OBPI Decomposition Protocol (Matrix of Four Overlay)
 
-**Verification:** The `gz-adr-create` skill enforces this during ADR creation
-(`gz-adr-manager` is retained as a compatibility alias).
-Manual verification: count checklist items in ADR, count brief files in `briefs/` — must match.
+To maximize granularity and ensure incremental delivery, the ADR Feature Checklist MUST be developed using a two-step decomposition protocol:
 
-**Anti-pattern:** ADR tables listing OBPIs as "Pending" with no actual brief files.
-This is a governance violation. All briefs must exist as files before Accepted.
+1.  **Step 1: Baseline Structural Template (Rule of Three)**: Complex ADRs are initially scaffolded into three baseline checklist items: Registry/Interface, Core Execution, and Lifecycle/Operations.
+2.  **Step 2: Refining Overlay (Matrix of Four)**: Apply the principles defined in the [OBPI Decomposition Matrix](obpi-decomposition-matrix.md) (Single-Narrative, Testability, State Anchor, Surface Boundary) to each baseline unit. If a unit violates a principle, it MUST be further decomposed into multiple checklist items.
+
+**Rationale:** The Feature Checklist is the governance contract for the ADR. OBPIs are the execution units for that contract. High-granularity decomposition prevents "god-object" briefs and oversized verification batches. Drift between the checklist and the briefs creates un-auditable scope and violates the principle of layered trust.
+
+**Enforcement:** The `gz-adr-create` and `gz-plan` skills enforce this 1:1 synchronization and the two-step protocol during the Spec Developer Phase. Automated verification (e.g., `gz validate`) that fails the checklist-to-brief count check is a blocking governance failure.
+
+**Anti-pattern:** ADR tables listing OBPIs as "Pending" with no actual brief files. This is a governance violation. All briefs must exist as files before the ADR is Accepted.
 
 ---
 
