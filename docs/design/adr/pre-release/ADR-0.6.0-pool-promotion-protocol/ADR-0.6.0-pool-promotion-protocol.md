@@ -1,6 +1,6 @@
 ---
 id: ADR-0.6.0-pool-promotion-protocol
-status: Proposed
+status: Completed
 semver: 0.6.0
 lane: heavy
 parent: ADR-0.5.0-skill-lifecycle-governance
