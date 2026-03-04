@@ -1,24 +1,23 @@
 ---
-id: OBPI-0.6.0-01-chores-system-core
-parent: ADR-pool.gz-chores-system
+id: OBPI-0.8.0-01-chores-registry
+parent: ADR-0.8.0-gz-chores-system
 item: 1
 lane: Heavy
 status: Draft
 ---
 
-# OBPI-0.6.0-01-chores-system-core: Chores system core scaffolding
+# OBPI-0.8.0-01-chores-registry: Chores registry and configuration
 
 ## ADR Item
 
-- **Source ADR:** `docs/design/adr/pool/ADR-pool.gz-chores-system.md`
-- **Checklist Item:** #1 -- "Stand up a minimal gz chores system (registry + list/plan/run/audit)."
+- **Source ADR:** `docs/design/adr/pre-release/ADR-0.8.0-gz-chores-system/ADR-0.8.0-gz-chores-system.md`
+- **Checklist Item:** #1 -- "Define a config-first chore registry with lanes, evidence commands, and acceptance checks."
 
 **Status:** Draft
 
 ## Objective
 
-Deliver a minimal gz chores subsystem that can list chores from a registry, generate a plan template, run lane
-commands, capture evidence, and write a per-chore log entry.
+Define the `config/gzkit.chores.json` schema and implement the registry loader so chores are defined declaratively with lanes, evidence, and acceptance blocks.
 
 ## Lane
 
@@ -53,7 +52,7 @@ commands, capture evidence, and write a per-chore log entry.
 **Governance (read once, cache):**
 
 - [ ] `AGENTS.md` / `CLAUDE.md` -- agent operating contract
-- [ ] Parent ADR: `docs/design/adr/pool/ADR-pool.gz-chores-system.md`
+- [ ] Parent ADR: `docs/design/adr/pre-release/ADR-0.8.0-gz-chores-system/ADR-0.8.0-gz-chores-system.md`
 - [ ] Migration report: `docs/design/briefs/REPORT-airlineops-chores-migration.md`
 
 **Existing Code (understand current state):**

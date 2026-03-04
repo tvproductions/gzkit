@@ -1,4 +1,11 @@
+---
+status: Superseded
+promoted_to: ADR-0.8.0-gz-chores-system
+---
+
 # ADR-pool.gz-chores-system: gz Chores System
+> Promoted to `ADR-0.8.0-gz-chores-system` on 2026-03-04. This pool file is retained as historical intake context.
+
 
 ## Status
 
