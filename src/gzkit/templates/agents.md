@@ -100,6 +100,23 @@ Skill behavior is standardized and synchronized by `gz agent sync control-surfac
 - **lite**: Gates 1, 2 required
 - **heavy**: All gates required
 
+### OBPI Decomposition Mandate (Matrix of Four Overlay)
+
+**Agent MUST right-size implementation units using a two-step decomposition protocol.**
+
+1.  **Step 1: Baseline Structural Template (Rule of Three)**: For complex ADRs, scaffold into three baseline layers (Registry, Core Execution, and Lifecycle/Operations).
+2.  **Step 2: Refining Overlay (Matrix of Four)**: Apply four core principles to each baseline unit. If a unit violates a principle, it MUST be further decomposed.
+
+**1:1 Synchronization Mandate**: The ADR's Feature Checklist MUST remain in 1:1 synchronization with the OBPI brief files. No drift is permitted. Each checklist item maps to exactly one brief.
+
+**Core Principles (The Filter):**
+-   **Single-Narrative**: No "and" in OBPI objectives.
+-   **Testability Ceiling**: If verification clusters >5, decompose.
+-   **State Anchor**: Isolate Ledger and state-writing logic.
+-   **Surface Boundary**: Separate internal logic from external surfaces (CLI/API).
+
+Detailed standards in the [OBPI Decomposition Matrix](docs/governance/GovZero/obpi-decomposition-matrix.md).
+
 ## OBPI Acceptance Protocol
 
 **Agent MUST NOT mark an OBPI brief as `Completed` without explicit human attestation when parent ADR lane is Heavy or Foundational (0.0.x).**
