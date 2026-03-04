@@ -22,6 +22,40 @@ Backfilled Gate 4 (BDD/Behave) evidence for released versions in the `0.1.0` to 
 - `uv run gz gates --gate 4 --adr ADR-0.2.0`
 - `uv run gz gates --gate 4 --adr ADR-0.3.0`
 
+## v0.6.0 (2026-03-04)
+
+**ADR:** ADR-0.6.0-pool-promotion-protocol - Pool Promotion Protocol and Tooling
+
+Introduces a deterministic, auditable protocol for promoting pool ADRs (backlog) into canonical, versioned ADR packages.
+
+### Delivered
+
+- `gz adr promote` command for automated promotion and rename lineage tracking.
+- Ledger `artifact_renamed` event integration for promotion auditability.
+- Canonical ADR bucket layout (foundation/pre-release/<major>.0) enforcement.
+- Archival protocol for source pool files with `Superseded` status tracking.
+
+### Gate Evidence
+
+All 5 GovZero gates satisfied.
+
+## v0.5.0 (2026-03-01)
+
+**ADR:** ADR-0.5.0 - Skill Lifecycle Governance
+
+Defined the formal lifecycle contract for skills to ensure capability parity is maintainable and operator-visible.
+
+### Delivered
+
+- Skill taxonomy and capability model for canonical skills and mirrors.
+- Parity verification policy and executable runtime checks.
+- Formal state transition semantics and evidence requirements for skill lifecycle.
+- Maintenance and deprecation runbooks for governance-backed skill operations.
+
+### Gate Evidence
+
+All 5 GovZero gates satisfied.
+
 ## v0.4.0 (2026-03-01)
 
 **ADR:** ADR-0.4.0 - Skill Capability Mirroring

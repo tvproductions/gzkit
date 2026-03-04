@@ -1615,7 +1615,11 @@ def gates_cmd(gate_number: int | None, adr: str | None) -> None:
     adr_id = resolve_target_adr(project_root, config, ledger, adr)
     manifest = load_manifest(project_root)
 
-    gates_for_lane = manifest.get("gates", {}).get(config.mode, [1, 2])
+    graph = ledger.get_artifact_graph()
+    info = graph.get(adr_id, {})
+    lane = _resolve_adr_lane(info, config.mode)
+
+    gates_for_lane = manifest.get("gates", {}).get(lane, [1, 2])
     gate_list = [gate_number] if gate_number is not None else list(gates_for_lane)
 
     failures = 0
