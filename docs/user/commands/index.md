@@ -22,6 +22,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz adr status`](adr-status.md) | Show focused OBPI progress for one ADR |
 | [`gz adr promote`](adr-promote.md) | Promote a pool ADR into canonical ADR package structure |
 | [`gz adr audit-check`](adr-audit-check.md) | Verify OBPI completeness/evidence for one ADR |
+| [`gz adr covers-check`](adr-covers-check.md) | Verify ADR/OBPI @covers traceability in tests |
 | [`gz closeout`](closeout.md) | Present closeout paths/commands and record closeout initiation |
 | [`gz attest`](attest.md) | Record human attestation with prerequisite enforcement |
 | [`gz audit`](audit.md) | Run strict post-attestation audit reconciliation |
@@ -64,10 +65,11 @@ Primary daily loop (OBPI-first):
 ADR closeout loop (after OBPI batch completion):
 
 1. ADR/OBPI reconciliation (`gz adr audit-check`)
-2. Closeout presentation (`gz closeout`)
-3. Human attestation (`gz attest`)
-4. Post-attestation audit (`gz audit`)
-5. ADR-level receipt/accounting (`gz adr emit-receipt`)
+2. Spec-test traceability reconciliation (`gz adr covers-check`)
+3. Closeout presentation (`gz closeout`)
+4. Human attestation (`gz attest`)
+5. Post-attestation audit (`gz audit`)
+6. ADR-level receipt/accounting (`gz adr emit-receipt`)
 
 ---
 

@@ -11,6 +11,8 @@ from pathlib import Path
 from typing import Any
 
 from gzkit.config import GzkitConfig
+from gzkit.hooks.claude import setup_claude_hooks
+from gzkit.hooks.copilot import setup_copilot_hooks
 from gzkit.templates import render_template
 
 HEADER_ID_RE = re.compile(r"^#\s+((?:ADR|PRD)-[^\s:]+)")
@@ -1188,6 +1190,10 @@ def sync_all(project_root: Path, config: GzkitConfig | None = None) -> list[str]
 
     sync_copilotignore(project_root)
     updated.append(".copilotignore")
+
+    # Update agent hooks to latest templates/logic
+    updated.extend(setup_claude_hooks(project_root, config))
+    updated.extend(setup_copilot_hooks(project_root, config))
 
     mirrored = sync_skill_mirrors(project_root, config)
     updated.extend(mirrored)

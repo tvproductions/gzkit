@@ -10,15 +10,17 @@ from gzkit.commands.common import (
     _apply_pool_adr_status_overrides,
     _gate4_na_reason,
     _is_pool_adr_id,
-    _parse_frontmatter_value,
-    _resolve_adr_lane,
     console,
     ensure_initialized,
     get_project_root,
     resolve_adr_file,
 )
 from gzkit.config import GzkitConfig
-from gzkit.ledger import Ledger
+from gzkit.ledger import (
+    Ledger,
+    parse_frontmatter_value,
+    resolve_adr_lane,
+)
 from gzkit.sync import parse_artifact_metadata, scan_existing_artifacts
 
 
@@ -70,7 +72,7 @@ def _build_adr_status_entry(
 ) -> dict[str, Any]:
     """Build enriched ADR status payload for one ADR."""
     entry = dict(info)
-    lane = _resolve_adr_lane(entry, config.mode)
+    lane = resolve_adr_lane(entry, config.mode)
     gate_statuses = ledger.get_latest_gate_statuses(adr_id)
     gate4_na = _gate4_na_reason(project_root, lane)
     entry["lane"] = lane
@@ -280,21 +282,39 @@ def _has_substantive_implementation_summary(content: str) -> bool:
     return False
 
 
-def _inspect_obpi_brief(obpi_file: Path) -> dict[str, Any]:
+def _inspect_obpi_brief(
+    obpi_file: Path,
+    obpi_id: str | None = None,
+    graph: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     content = obpi_file.read_text()
-    frontmatter_status = (_parse_frontmatter_value(content, "status") or "").strip().lower()
+    frontmatter_status = (parse_frontmatter_value(content, "status") or "").strip().lower()
     brief_status = (_markdown_label_value(content, "Brief Status") or "").strip().lower()
-    completed = frontmatter_status == "completed" or brief_status == "completed"
+
+    # Ledger-First Completion Consumption
+    ledger_completed = False
+    if obpi_id and graph:
+        info = graph.get(obpi_id, {})
+        ledger_completed = bool(info.get("ledger_completed"))
+
+    # Completion is earned via ledger proof, but also reflected in file
+    file_completed = frontmatter_status == "completed" or brief_status == "completed"
+    completed = ledger_completed
+
     evidence_ok = _has_substantive_implementation_summary(content)
 
     reasons: list[str] = []
-    if not completed:
-        reasons.append("status is not Completed")
+    if not ledger_completed:
+        reasons.append("ledger proof of completion is missing")
+    if not file_completed:
+        reasons.append("brief file status is not Completed")
     if not evidence_ok:
         reasons.append("implementation evidence is missing or placeholder")
 
     return {
         "completed": completed,
+        "ledger_completed": ledger_completed,
+        "file_completed": file_completed,
         "evidence_ok": evidence_ok,
         "frontmatter_status": frontmatter_status or None,
         "brief_status": brief_status or None,
@@ -360,8 +380,9 @@ def _adr_obpi_status_rows(
             }
         )
 
+    graph = ledger.get_artifact_graph()
     for obpi_id, obpi_file in sorted(obpi_files.items()):
-        inspection = _inspect_obpi_brief(obpi_file)
+        inspection = _inspect_obpi_brief(obpi_file, obpi_id=obpi_id, graph=graph)
         rows.append(
             {
                 "id": obpi_id,
@@ -369,6 +390,8 @@ def _adr_obpi_status_rows(
                 "found_file": True,
                 "file": str(obpi_file.relative_to(project_root)),
                 "completed": bool(inspection["completed"]),
+                "ledger_completed": bool(inspection["ledger_completed"]),
+                "file_completed": bool(inspection["file_completed"]),
                 "evidence_ok": bool(inspection["evidence_ok"]),
                 "frontmatter_status": inspection["frontmatter_status"],
                 "brief_status": inspection["brief_status"],
@@ -428,8 +451,22 @@ def _render_obpi_row_status(row: dict[str, Any]) -> str:
         return f"{obpi_id}: [red]MISSING FILE[/red]"
     if _obpi_row_complete(row):
         return f"{obpi_id}: [green]COMPLETED[/green] + evidence"
-    issues = ", ".join(cast(list[str], row.get("issues", [])))
-    return f"{obpi_id}: [yellow]INCOMPLETE[/yellow] ({issues})"
+
+    issues = cast(list[str], row.get("issues", []))
+    status_label = "[yellow]INCOMPLETE[/yellow]"
+
+    # Detect Drift
+    if row.get("ledger_completed") and not row.get("file_completed"):
+        status_label = "[red]DRIFT[/red] (ledger says Completed, file says Draft)"
+    elif row.get("ledger_completed") and not row.get("evidence_ok"):
+        status_label = "[red]DRIFT[/red] (ledger says Completed, evidence is placeholder)"
+    elif row.get("file_completed") and not row.get("ledger_completed"):
+        status_label = "[red]DRIFT[/red] (file says Completed, ledger proof missing)"
+
+    if issues:
+        issues_text = ", ".join(issues)
+        return f"{obpi_id}: {status_label} ({issues_text})"
+    return f"{obpi_id}: {status_label}"
 
 
 def _apply_obpi_lifecycle_overrides(
@@ -461,7 +498,7 @@ def adr_status_cmd(adr: str, as_json: bool, show_gates: bool) -> None:
     if not info or info.get("type") != "adr":
         raise GzCliError(f"ADR not found in ledger: {adr_id}")
 
-    lane = _resolve_adr_lane(info, config.mode)
+    lane = resolve_adr_lane(info, config.mode)
     gate_statuses = ledger.get_latest_gate_statuses(adr_id)
     gate4_na = _gate4_na_reason(project_root, lane)
     semantics = Ledger.derive_adr_semantics(info)
