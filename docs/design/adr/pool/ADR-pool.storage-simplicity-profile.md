@@ -37,6 +37,10 @@ safety.
   - Tier A: canonical docs + append-only ledger
   - Tier B: deterministic derived indexes/caches rebuilt from canonical sources
   - Tier C: external/stateful runtime backends only by explicit ADR authorization
+- Define canonical identity surfaces that all tiers must preserve:
+  - `ADR-*` (feature intent)
+  - `OBPI-*` (delivery unit)
+  - `REQ-*` (acceptance/proof unit)
 - Define explicit escalation criteria for moving from Tier A/B to Tier C.
 - Define sync boundaries for CLI + hooks workflows and local-first operation.
 - Specify MCP posture for this track: optional integration, never a hard dependency.
@@ -73,3 +77,6 @@ This pool ADR can be promoted when all are true:
 
 - This ADR intentionally captures selective learning: absorb useful execution
   patterns while avoiding unnecessary backend complexity.
+- BEADS alignment: dependency/query ergonomics.
+- Plumb alignment: spec-test-code reconciliation needs deterministic IDs and proof joins.
+- Scope guard: storage choices must not weaken deterministic readiness/proof derivation.

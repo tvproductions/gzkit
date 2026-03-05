@@ -9,6 +9,7 @@ from gzkit.ledger import (
     adr_created_event,
     gate_checked_event,
     obpi_created_event,
+    obpi_receipt_emitted_event,
 )
 from tests.commands.common import CliRunner
 
@@ -203,6 +204,17 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                 brief_status="Completed",
                 implementation_line="src/module.py",
             )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(
+                obpi_receipt_emitted_event(
+                    obpi_id="OBPI-0.1.0-01-demo",
+                    parent_adr="ADR-0.1.0",
+                    receipt_event="completed",
+                    attestor="human:test",
+                    obpi_completion="completed",
+                )
+            )
             result = runner.invoke(main, ["adr", "audit-check", "ADR-0.1.0"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("PASS", result.output)
@@ -233,6 +245,94 @@ class TestAdrRuntimeCommands(unittest.TestCase):
             result = runner.invoke(main, ["adr", "audit-check", "ADR-pool.sample"])
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("Pool ADRs cannot be audit-checked", result.output)
+
+    def test_adr_covers_check_passes_for_adr_and_linked_obpi(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0"])
+
+            tests_dir = Path("tests")
+            tests_dir.mkdir(parents=True, exist_ok=True)
+            (tests_dir / "test_traceability.py").write_text(
+                "\n".join(
+                    [
+                        '@covers("ADR-0.1.0")',
+                        '@covers("OBPI-0.1.0-01-demo")',
+                        '@covers("REQ-0.1.0-01-01")',
+                        '@covers("REQ-0.1.0-01-02")',
+                        '@covers("REQ-0.1.0-01-03")',
+                        "def test_traceability():",
+                        "    pass",
+                        "",
+                    ]
+                )
+            )
+
+            result = runner.invoke(main, ["adr", "covers-check", "ADR-0.1.0"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("PASS", result.output)
+
+    def test_adr_covers_check_fails_when_obpi_cover_missing(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0"])
+
+            tests_dir = Path("tests")
+            tests_dir.mkdir(parents=True, exist_ok=True)
+            (tests_dir / "test_traceability.py").write_text(
+                "\n".join(
+                    [
+                        '@covers("ADR-0.1.0")',
+                        "def test_traceability():",
+                        "    pass",
+                        "",
+                    ]
+                )
+            )
+
+            result = runner.invoke(main, ["adr", "covers-check", "ADR-0.1.0", "--json"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn('"passed": false', result.output)
+            self.assertIn("OBPI-0.1.0-01-demo", result.output)
+
+    def test_adr_covers_check_fails_when_criterion_missing_req_id(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0"])
+
+            obpi_file = next(Path(".").rglob("OBPI-0.1.0-01-demo.md"))
+            content = obpi_file.read_text()
+            content = content.replace(
+                "REQ-0.1.0-01-01: Given/When/Then behavior criterion 1",
+                "Given/When/Then behavior criterion 1",
+            )
+            obpi_file.write_text(content)
+
+            tests_dir = Path("tests")
+            tests_dir.mkdir(parents=True, exist_ok=True)
+            (tests_dir / "test_traceability.py").write_text(
+                "\n".join(
+                    [
+                        '@covers("ADR-0.1.0")',
+                        '@covers("OBPI-0.1.0-01-demo")',
+                        '@covers("REQ-0.1.0-01-02")',
+                        '@covers("REQ-0.1.0-01-03")',
+                        "def test_traceability():",
+                        "    pass",
+                        "",
+                    ]
+                )
+            )
+
+            result = runner.invoke(main, ["adr", "covers-check", "ADR-0.1.0", "--json"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn('"criteria_without_req_ids"', result.output)
 
     def test_adr_emit_receipt_records_event(self) -> None:
         runner = CliRunner()

@@ -34,6 +34,10 @@ Add first-class OBPI runtime surfaces so operators can execute, verify, and reco
 - Add OBPI-native ledger events and state derivation semantics.
 - Provide compatibility mapping from current ADR-focused flows.
 - Ensure Gate 2/Gate 3 evidence can be attached to OBPI progress checkpoints.
+- Add REQ-aware OBPI proof surfaces:
+  - list REQ targets extracted from acceptance criteria,
+  - show covered/missing REQ targets,
+  - reconcile OBPI completion against REQ proof status.
 - Define drift detection and audit outputs keyed by OBPI identifiers.
 - Reuse execution-memory graph primitives (typed dependencies + ready/blocked semantics)
   instead of introducing a separate planner model.
@@ -62,9 +66,11 @@ This pool ADR can be promoted when all are true:
 1. OBPI-first doctrine ADR is accepted for implementation.
 2. CLI contract and ledger compatibility plan is approved.
 3. Migration plan exists for current `gz adr ...` operator flows.
+4. REQ-ID and `@covers` mapping contract is accepted at OBPI surface.
 
 ---
 
 ## Notes
 
 - AirlineOps OBPI completion anchoring and reconciliation behavior should be treated as canonical reference patterns.
+- Plumb-style "tests for spec" becomes operational at OBPI scope via REQ targets.

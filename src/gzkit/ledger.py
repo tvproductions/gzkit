@@ -198,11 +198,14 @@ def audit_receipt_emitted_event(
     receipt_event: str,
     attestor: str,
     evidence: dict[str, Any] | None = None,
+    anchor: dict[str, str] | None = None,
 ) -> LedgerEvent:
     """Create an audit receipt event."""
     extra: dict[str, Any] = {"receipt_event": receipt_event, "attestor": attestor}
     if evidence is not None:
         extra["evidence"] = evidence
+    if anchor is not None:
+        extra["anchor"] = anchor
     return LedgerEvent(
         event="audit_receipt_emitted",
         id=adr_id,
@@ -217,6 +220,7 @@ def obpi_receipt_emitted_event(
     evidence: dict[str, Any] | None = None,
     parent_adr: str | None = None,
     obpi_completion: str | None = None,
+    anchor: dict[str, str] | None = None,
 ) -> LedgerEvent:
     """Create an OBPI receipt event."""
     extra: dict[str, Any] = {"receipt_event": receipt_event, "attestor": attestor}
@@ -224,6 +228,8 @@ def obpi_receipt_emitted_event(
         extra["evidence"] = evidence
     if obpi_completion is not None:
         extra["obpi_completion"] = obpi_completion
+    if anchor is not None:
+        extra["anchor"] = anchor
     return LedgerEvent(
         event="obpi_receipt_emitted",
         id=obpi_id,
@@ -242,6 +248,30 @@ def artifact_renamed_event(old_id: str, new_id: str, reason: str | None = None) 
         id=old_id,
         extra=extra,
     )
+
+
+def parse_frontmatter_value(content: str, key: str) -> str | None:
+    """Extract a single value from YAML frontmatter."""
+    lines = content.splitlines()
+    if not lines or lines[0].strip() != "---":
+        return None
+
+    for line in lines[1:]:
+        if line.strip() == "---":
+            break
+        if ":" not in line:
+            continue
+        raw_key, _, raw_value = line.partition(":")
+        if raw_key.strip() != key:
+            continue
+        return raw_value.strip().strip("\"'")
+    return None
+
+
+def resolve_adr_lane(info: dict[str, Any], default_mode: str) -> str:
+    """Resolve lane from ADR metadata with mode fallback."""
+    lane = str(info.get("lane") or default_mode).lower()
+    return lane if lane in {"lite", "heavy"} else default_mode
 
 
 class Ledger:
@@ -522,6 +552,13 @@ class Ledger:
             return
         receipt_event = event.extra.get("receipt_event")
         graph[canonical_id]["latest_receipt_event"] = receipt_event
+
+        obpi_completion = event.extra.get("obpi_completion")
+        if obpi_completion:
+            graph[canonical_id]["obpi_completion"] = obpi_completion
+            if obpi_completion in {"completed", "attested_completed"}:
+                graph[canonical_id]["ledger_completed"] = True
+
         if receipt_event == "validated":
             graph[canonical_id]["validated"] = True
 

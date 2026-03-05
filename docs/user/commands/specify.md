@@ -72,6 +72,7 @@ The created brief contains:
 - **Metadata**: ID, title, parent, lane, status
 - **Intent**: What you want to accomplish
 - **Acceptance Criteria**: How to know it's done
+- **REQ IDs**: Each acceptance checkbox is seeded with `REQ-<semver>-<obpi_item>-<nn>`
 - **Out of Scope**: What this brief doesn't cover
 - **Dependencies**: What this depends on
 - **Lane Requirements**: Docs/BDD needed (based on lane)

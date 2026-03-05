@@ -34,6 +34,7 @@ through hook-driven context injection, with CLI as the primary integration path.
 - Introduce `gz prime` for compact, machine- and human-readable runtime context:
   - active ready work
   - key blockers
+  - missing proof targets (`ADR/OBPI/REQ`) that block completion
   - completion protocol
   - current governance constraints
 - Integrate prime refresh into supported hook events (session start, pre-compaction).
@@ -71,3 +72,4 @@ This pool ADR can be promoted when all are true:
 ## Notes
 
 - This ADR is explicitly CLI + hooks first, matching current `gzkit` operating posture.
+- Prime output should be graph-backed and proof-aware, not prose-only summaries.

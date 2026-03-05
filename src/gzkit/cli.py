@@ -4,6 +4,7 @@ A Development Covenant for Human-AI Collaboration.
 """
 
 import argparse
+import ast
 import json
 import os
 import re
@@ -25,14 +26,11 @@ from gzkit.commands.common import (
     _compute_git_sync_state,
     _confirm,
     _gate4_na_reason,
-    _git_cmd,
     _git_status_lines,
     _head_is_merge_commit,
     _is_pool_adr_id,
-    _parse_frontmatter_value,
     _prompt_text,
     _reject_pool_adr_for_lifecycle,
-    _resolve_adr_lane,
     _upsert_frontmatter_value,
     console,
     ensure_initialized,
@@ -53,6 +51,7 @@ from gzkit.commands.status import (
 from gzkit.config import GzkitConfig
 from gzkit.hooks.claude import setup_claude_hooks
 from gzkit.hooks.copilot import setup_copilot_hooks, setup_copilotignore
+from gzkit.hooks.obpi import ObpiValidator
 from gzkit.interview import (
     check_interview_complete,
     format_answers_for_template,
@@ -69,8 +68,10 @@ from gzkit.ledger import (
     gate_checked_event,
     obpi_created_event,
     obpi_receipt_emitted_event,
+    parse_frontmatter_value,
     prd_created_event,
     project_init_event,
+    resolve_adr_lane,
 )
 from gzkit.quality import (
     run_all_checks,
@@ -99,6 +100,10 @@ from gzkit.sync import (
     write_manifest,
 )
 from gzkit.templates import render_template
+from gzkit.utils import (
+    capture_validation_anchor,
+    git_cmd,
+)
 from gzkit.validate import (
     validate_all,
     validate_document,
@@ -170,7 +175,7 @@ def _plan_git_sync(
     actions.append(f"git fetch --prune {remote}")
 
     if apply and not blockers:
-        rc_fetch, _out_fetch, err_fetch = _git_cmd(project_root, "fetch", "--prune", remote)
+        rc_fetch, _out_fetch, err_fetch = git_cmd(project_root, "fetch", "--prune", remote)
         if rc_fetch != 0:
             blockers.append(err_fetch or f"Fetch failed for remote {remote}.")
 
@@ -261,11 +266,11 @@ def _commit_staged_changes(project_root: Path, blockers: list[str], executed: li
     if blockers:
         return
 
-    rc_staged, staged_out, _err_staged = _git_cmd(project_root, "diff", "--cached", "--name-only")
+    rc_staged, staged_out, _err_staged = git_cmd(project_root, "diff", "--cached", "--name-only")
     if rc_staged != 0 or not staged_out.strip():
         return
 
-    rc_commit, _out_commit, err_commit = _git_cmd(
+    rc_commit, _out_commit, err_commit = git_cmd(
         project_root,
         "commit",
         "-m",
@@ -291,12 +296,12 @@ def _pull_if_needed(
         return
 
     if diverged:
-        rc_pull, _out_pull, err_pull = _git_cmd(
+        rc_pull, _out_pull, err_pull = git_cmd(
             project_root, "pull", "--rebase", remote, target_branch
         )
         pull_cmd = f"git pull --rebase {remote} {target_branch}"
     else:
-        rc_pull, _out_pull, err_pull = _git_cmd(
+        rc_pull, _out_pull, err_pull = git_cmd(
             project_root, "pull", "--ff-only", remote, target_branch
         )
         pull_cmd = f"git pull --ff-only {remote} {target_branch}"
@@ -323,7 +328,7 @@ def _push_if_ahead(
     if post_state["ahead"] <= 0:
         return
 
-    rc_push, _out_push, err_push = _git_cmd(project_root, "push", remote, target_branch)
+    rc_push, _out_push, err_push = git_cmd(project_root, "push", remote, target_branch)
     if rc_push == 0:
         executed.append(f"git push {remote} {target_branch}")
     else:
@@ -368,7 +373,7 @@ def _execute_git_sync(
         return executed
 
     if dirty and auto_add:
-        rc_add, _out_add, err_add = _git_cmd(project_root, "add", "-A")
+        rc_add, _out_add, err_add = git_cmd(project_root, "add", "-A")
         if rc_add == 0:
             executed.append("git add -A")
         else:
@@ -745,6 +750,14 @@ def specify(
     version = resolved_parent.replace("ADR-", "").split("-")[0]
     obpi_id = f"OBPI-{version}-{item:02d}-{name}"
     obpi_title = title or name.replace("-", " ").title()
+    req_prefix = f"REQ-{version}-{item:02d}"
+    acceptance_criteria_seed = "\n".join(
+        [
+            f"- [ ] {req_prefix}-01: Given/When/Then behavior criterion 1",
+            f"- [ ] {req_prefix}-02: Given/When/Then behavior criterion 2",
+            f"- [ ] {req_prefix}-03: Given/When/Then behavior criterion 3",
+        ]
+    )
 
     lane_cap = lane.capitalize()
     lane_requirements = (
@@ -765,6 +778,7 @@ def specify(
         lane_rationale="TBD",
         objective="TBD",
         lane_requirements=lane_requirements,
+        acceptance_criteria_seed=acceptance_criteria_seed,
     )
 
     obpi_dir = adr_file.parent / "obpis"
@@ -936,8 +950,9 @@ def adr_audit_check(adr: str, as_json: bool) -> None:
                 }
             )
 
+    graph = ledger.get_artifact_graph()
     for obpi_id, obpi_file in sorted(obpi_files.items()):
-        inspection = _inspect_obpi_brief(obpi_file)
+        inspection = _inspect_obpi_brief(obpi_file, obpi_id=obpi_id, graph=graph)
         if inspection["reasons"]:
             findings.append(
                 {
@@ -980,6 +995,268 @@ def adr_audit_check(adr: str, as_json: bool) -> None:
         raise SystemExit(1)
 
 
+def _collect_covers_annotations(project_root: Path) -> dict[str, list[str]]:
+    """Collect @covers("<target>") annotations from tests/**/*.py."""
+    tests_dir = project_root / "tests"
+    if not tests_dir.exists():
+        return {}
+
+    covers: dict[str, list[str]] = {}
+
+    for test_file in sorted(tests_dir.rglob("*.py")):
+        content = test_file.read_text()
+        rel_path = str(test_file.relative_to(project_root))
+
+        try:
+            tree = ast.parse(content)
+        except SyntaxError:
+            continue
+
+        for node in ast.walk(tree):
+            if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                continue
+            for decorator in node.decorator_list:
+                if not isinstance(decorator, ast.Call):
+                    continue
+                if isinstance(decorator.func, ast.Name):
+                    decorator_name = decorator.func.id
+                elif isinstance(decorator.func, ast.Attribute):
+                    decorator_name = decorator.func.attr
+                else:
+                    continue
+                if decorator_name != "covers" or not decorator.args:
+                    continue
+                target_arg = decorator.args[0]
+                if not isinstance(target_arg, ast.Constant) or not isinstance(
+                    target_arg.value, str
+                ):
+                    continue
+                target = target_arg.value.strip()
+                if not target:
+                    continue
+                rows = covers.setdefault(target, [])
+                if rel_path not in rows:
+                    rows.append(rel_path)
+
+    return covers
+
+
+OBPI_SEMVER_ITEM_RE = re.compile(r"^OBPI-([0-9]+\.[0-9]+\.[0-9]+)-([0-9]{2})(?:-[a-z0-9-]+)?$")
+REQ_ID_RE = re.compile(r"\bREQ-[0-9]+\.[0-9]+\.[0-9]+-[0-9]{2}-[0-9]{2}\b")
+
+
+def _extract_h2_section_lines(content: str, heading: str) -> list[tuple[int, str]]:
+    """Return line-numbered content lines for a markdown H2 section."""
+    lines = content.splitlines()
+    heading_line = f"## {heading}"
+    section_start: int | None = None
+    for idx, line in enumerate(lines):
+        if line.strip() == heading_line:
+            section_start = idx + 1
+            break
+    if section_start is None:
+        return []
+
+    section_end = len(lines)
+    for idx in range(section_start, len(lines)):
+        if lines[idx].startswith("## "):
+            section_end = idx
+            break
+
+    return [(line_no + 1, lines[line_no]) for line_no in range(section_start, section_end)]
+
+
+def _req_prefix_for_obpi(obpi_id: str) -> str | None:
+    """Return expected REQ prefix for an OBPI (REQ-<semver>-<item>-)."""
+    match = OBPI_SEMVER_ITEM_RE.match(obpi_id)
+    if not match:
+        return None
+    semver, item = match.groups()
+    return f"REQ-{semver}-{item}-"
+
+
+def _extract_obpi_requirement_targets(
+    project_root: Path,
+    obpi_file: Path,
+    obpi_id: str,
+) -> dict[str, Any]:
+    """Extract REQ targets and acceptance-criteria gaps from an OBPI brief."""
+    content = obpi_file.read_text()
+    section_lines = _extract_h2_section_lines(content, "Acceptance Criteria")
+    req_prefix = _req_prefix_for_obpi(obpi_id)
+
+    requirement_targets: set[str] = set()
+    criteria_without_req_ids: list[dict[str, Any]] = []
+    invalid_requirement_targets: list[dict[str, Any]] = []
+
+    for line_no, line in section_lines:
+        match = re.match(r"^\s*-\s*\[[ xX]\]\s*(.+?)\s*$", line)
+        if not match:
+            continue
+        criterion_text = match.group(1).strip()
+        if not criterion_text:
+            continue
+
+        req_ids = sorted(set(REQ_ID_RE.findall(criterion_text)))
+        if not req_ids:
+            criteria_without_req_ids.append(
+                {
+                    "obpi": obpi_id,
+                    "file": str(obpi_file.relative_to(project_root)),
+                    "line": line_no,
+                    "text": criterion_text,
+                }
+            )
+            continue
+
+        for req_id in req_ids:
+            requirement_targets.add(req_id)
+            if req_prefix and not req_id.startswith(req_prefix):
+                invalid_requirement_targets.append(
+                    {
+                        "obpi": obpi_id,
+                        "file": str(obpi_file.relative_to(project_root)),
+                        "line": line_no,
+                        "req": req_id,
+                        "expected_prefix": req_prefix,
+                    }
+                )
+
+    return {
+        "requirement_targets": sorted(requirement_targets),
+        "criteria_without_req_ids": criteria_without_req_ids,
+        "invalid_requirement_targets": invalid_requirement_targets,
+    }
+
+
+def _collect_adr_requirement_targets(
+    project_root: Path,
+    obpi_files: dict[str, Path],
+) -> tuple[list[str], list[dict[str, Any]], list[dict[str, Any]]]:
+    """Collect requirement targets and REQ-shape issues for an ADR OBPI set."""
+    requirement_targets: set[str] = set()
+    criteria_without_req_ids: list[dict[str, Any]] = []
+    invalid_requirement_targets: list[dict[str, Any]] = []
+
+    for obpi_id, obpi_file in sorted(obpi_files.items()):
+        parsed = _extract_obpi_requirement_targets(project_root, obpi_file, obpi_id)
+        requirement_targets.update(parsed["requirement_targets"])
+        criteria_without_req_ids.extend(parsed["criteria_without_req_ids"])
+        invalid_requirement_targets.extend(parsed["invalid_requirement_targets"])
+
+    return (
+        sorted(requirement_targets),
+        criteria_without_req_ids,
+        invalid_requirement_targets,
+    )
+
+
+def _build_covers_rows(
+    adr_id: str,
+    expected_targets: list[str],
+    covers: dict[str, list[str]],
+) -> tuple[list[dict[str, Any]], list[str]]:
+    """Build per-target coverage rows and return missing targets."""
+    rows: list[dict[str, Any]] = []
+    missing: list[str] = []
+    for target in expected_targets:
+        tests = covers.get(target, [])
+        rows.append(
+            {
+                "target": target,
+                "target_type": (
+                    "adr" if target == adr_id else "obpi" if target.startswith("OBPI-") else "req"
+                ),
+                "covered": bool(tests),
+                "tests": tests,
+            }
+        )
+        if not tests:
+            missing.append(target)
+    return rows, missing
+
+
+def _print_adr_covers_check_result(result: dict[str, Any]) -> None:
+    """Render human-readable output for adr covers-check."""
+    adr_id = str(result["adr"])
+    passed = bool(result["passed"])
+    missing = cast(list[str], result["missing_targets"])
+    criteria_without_req_ids = cast(list[dict[str, Any]], result["criteria_without_req_ids"])
+    invalid_requirement_targets = cast(list[dict[str, Any]], result["invalid_requirement_targets"])
+    unmatched_targets = cast(list[str], result["unmatched_targets"])
+
+    console.print(f"[bold]ADR covers-check:[/bold] {adr_id}")
+    if passed:
+        console.print("[green]PASS[/green] All ADR/OBPI/REQ targets have @covers annotations.")
+    if missing:
+        console.print("[red]FAIL[/red] Missing @covers annotations:")
+        for target in missing:
+            console.print(f"  - {target}")
+    if criteria_without_req_ids:
+        console.print("[red]FAIL[/red] Acceptance criteria missing REQ IDs:")
+        for row in criteria_without_req_ids:
+            console.print(f"  - {row['obpi']}:{row['line']} -> {row['text']}")
+    if invalid_requirement_targets:
+        console.print("[red]FAIL[/red] REQ IDs with wrong OBPI scope:")
+        for row in invalid_requirement_targets:
+            console.print(
+                f"  - {row['obpi']}:{row['line']} -> {row['req']} "
+                f"(expected {row['expected_prefix']}*)"
+            )
+    if unmatched_targets:
+        console.print("[yellow]Unmatched @covers targets (not linked to this ADR):[/yellow]")
+        for target in unmatched_targets:
+            console.print(f"  - {target}")
+
+
+def adr_covers_check(adr: str, as_json: bool) -> None:
+    """Verify @covers traceability for an ADR and its linked OBPIs."""
+    config = ensure_initialized()
+    project_root = get_project_root()
+    ledger = Ledger(project_root / config.paths.ledger)
+
+    adr_input = adr if adr.startswith("ADR-") else f"ADR-{adr}"
+    canonical_adr = ledger.canonicalize_id(adr_input)
+    _adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
+    _reject_pool_adr_for_lifecycle(adr_id, "covers-checked")
+
+    obpi_files, expected_obpis = _collect_obpi_files_for_adr(project_root, config, ledger, adr_id)
+    (
+        requirement_targets,
+        criteria_without_req_ids,
+        invalid_requirement_targets,
+    ) = _collect_adr_requirement_targets(project_root, obpi_files)
+
+    expected_targets = [adr_id, *sorted(expected_obpis), *requirement_targets]
+    covers = _collect_covers_annotations(project_root)
+    rows, missing = _build_covers_rows(adr_id, expected_targets, covers)
+
+    referenced_targets = sorted(k for k in covers if k.startswith(("ADR-", "OBPI-", "REQ-")))
+    unmatched_targets = sorted(k for k in referenced_targets if k not in expected_targets)
+    passed = not missing and not criteria_without_req_ids and not invalid_requirement_targets
+
+    result = {
+        "adr": adr_id,
+        "passed": passed,
+        "expected_targets": expected_targets,
+        "covered_targets": [row["target"] for row in rows if row["covered"]],
+        "missing_targets": missing,
+        "requirement_targets": requirement_targets,
+        "criteria_without_req_ids": criteria_without_req_ids,
+        "invalid_requirement_targets": invalid_requirement_targets,
+        "rows": rows,
+        "unmatched_targets": unmatched_targets,
+    }
+
+    if as_json:
+        print(json.dumps(result, indent=2))
+    else:
+        _print_adr_covers_check_result(result)
+
+    if not passed:
+        raise SystemExit(1)
+
+
 def _normalize_pool_adr_input(pool_adr: str) -> str:
     """Normalize user ADR argument into an explicit pool ADR identifier."""
     pool_input = pool_adr if pool_adr.startswith("ADR-") else f"ADR-{pool_adr}"
@@ -1005,7 +1282,7 @@ def _resolve_pool_adr_source(
         raise GzCliError(f"Pool ADR already promoted or renamed in ledger state: {pool_adr_id}")
 
     pool_content = pool_file.read_text()
-    existing_promoted_to = _parse_frontmatter_value(pool_content, "promoted_to")
+    existing_promoted_to = parse_frontmatter_value(pool_content, "promoted_to")
     if existing_promoted_to:
         raise GzCliError(
             f"Pool ADR already records promotion target '{existing_promoted_to}': {pool_adr_id}"
@@ -1238,11 +1515,11 @@ def git_sync(
     _config = ensure_initialized()
     project_root = get_project_root()
 
-    rc_repo, inside, err_repo = _git_cmd(project_root, "rev-parse", "--is-inside-work-tree")
+    rc_repo, inside, err_repo = git_cmd(project_root, "rev-parse", "--is-inside-work-tree")
     if rc_repo != 0 or inside != "true":
         raise GzCliError(err_repo or "Not a git repository.")
 
-    rc_branch, current_branch, err_branch = _git_cmd(
+    rc_branch, current_branch, err_branch = git_cmd(
         project_root, "rev-parse", "--abbrev-ref", "HEAD"
     )
     if rc_branch != 0:
@@ -1617,7 +1894,7 @@ def gates_cmd(gate_number: int | None, adr: str | None) -> None:
 
     graph = ledger.get_artifact_graph()
     info = graph.get(adr_id, {})
-    lane = _resolve_adr_lane(info, config.mode)
+    lane = resolve_adr_lane(info, config.mode)
 
     gates_for_lane = manifest.get("gates", {}).get(lane, [1, 2])
     gate_list = [gate_number] if gate_number is not None else list(gates_for_lane)
@@ -1769,7 +2046,7 @@ def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
     _reject_pool_adr_for_lifecycle(adr_id, "closed out")
     graph = ledger.get_artifact_graph()
     adr_info = graph.get(adr_id, {})
-    lane = _resolve_adr_lane(adr_info, config.mode)
+    lane = resolve_adr_lane(adr_info, config.mode)
 
     verification_steps, gate4_na_reason = _closeout_verification_steps(manifest, lane, project_root)
     obpi_files, _expected = _collect_obpi_files_for_adr(project_root, config, ledger, adr_id)
@@ -2080,11 +2357,13 @@ def adr_emit_receipt_cmd(
             raise GzCliError("--evidence-json must decode to a JSON object")
         evidence = parsed
 
+    anchor = capture_validation_anchor(project_root, adr_id)
     event = audit_receipt_emitted_event(
         adr_id=adr_id,
         receipt_event=receipt_event,
         attestor=attestor,
         evidence=evidence,
+        anchor=anchor,
     )
 
     if dry_run:
@@ -2134,7 +2413,7 @@ def obpi_emit_receipt_cmd(
     parent_lane = config.mode
     if isinstance(parent_adr, str) and parent_adr:
         parent_info = graph.get(parent_adr, {})
-        parent_lane = _resolve_adr_lane(parent_info, config.mode)
+        parent_lane = resolve_adr_lane(parent_info, config.mode)
 
     obpi_completion: str | None = None
     if receipt_event == "completed":
@@ -2151,6 +2430,7 @@ def obpi_emit_receipt_cmd(
             evidence.setdefault("parent_adr", parent_adr)
         evidence.setdefault("obpi_completion", "not_completed")
 
+    anchor = capture_validation_anchor(project_root, parent_adr)
     event = obpi_receipt_emitted_event(
         obpi_id=obpi_id,
         receipt_event=receipt_event,
@@ -2158,6 +2438,7 @@ def obpi_emit_receipt_cmd(
         evidence=evidence,
         parent_adr=parent_adr if isinstance(parent_adr, str) else None,
         obpi_completion=obpi_completion,
+        anchor=anchor,
     )
 
     if dry_run:
@@ -2172,6 +2453,27 @@ def obpi_emit_receipt_cmd(
         console.print(f"  Parent ADR: {parent_adr}")
     console.print(f"  Event: {receipt_event}")
     console.print(f"  Attestor: {attestor}")
+
+
+def obpi_validate_cmd(obpi_path: str) -> None:
+    """Validate an OBPI brief file for completion readiness."""
+    ensure_initialized()
+    project_root = get_project_root()
+    validator = ObpiValidator(project_root)
+
+    path = Path(obpi_path)
+    if not path.is_absolute():
+        path = project_root / path
+
+    errors = validator.validate_file(path)
+
+    if errors:
+        console.print(f"[red]OBPI Validation Failed:[/red] {path.name}")
+        for error in errors:
+            console.print(f"  - [yellow]BLOCK:[/yellow] {error}")
+        raise SystemExit(1)
+
+    console.print(f"[green]OBPI Validation Passed:[/green] {path.name}")
 
 
 def _append_path_issue(issues: list[dict[str, str]], path: str, issue: str) -> None:
@@ -3724,6 +4026,13 @@ def _build_parser() -> argparse.ArgumentParser:
     p_adr_audit_check.add_argument("--json", dest="as_json", action="store_true")
     p_adr_audit_check.set_defaults(func=lambda a: adr_audit_check(adr=a.adr, as_json=a.as_json))
 
+    p_adr_covers_check = adr_commands.add_parser(
+        "covers-check", help="Verify @covers traceability for ADR, OBPIs, and REQ acceptance IDs"
+    )
+    p_adr_covers_check.add_argument("adr")
+    p_adr_covers_check.add_argument("--json", dest="as_json", action="store_true")
+    p_adr_covers_check.set_defaults(func=lambda a: adr_covers_check(adr=a.adr, as_json=a.as_json))
+
     p_adr_emit = adr_commands.add_parser(
         "emit-receipt", help="Emit completed/validated receipt event for an ADR"
     )
@@ -3767,6 +4076,12 @@ def _build_parser() -> argparse.ArgumentParser:
             dry_run=a.dry_run,
         )
     )
+
+    p_obpi_validate = obpi_commands.add_parser(
+        "validate", help="Validate OBPI brief for completion readiness"
+    )
+    p_obpi_validate.add_argument("obpi_path", help="Path to the OBPI brief file")
+    p_obpi_validate.set_defaults(func=lambda a: obpi_validate_cmd(obpi_path=a.obpi_path))
 
     p_check_paths = commands.add_parser(
         "check-config-paths", help="Validate config/manifest paths are coherent"

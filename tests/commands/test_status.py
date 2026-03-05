@@ -11,6 +11,7 @@ from gzkit.ledger import (
     audit_receipt_emitted_event,
     gate_checked_event,
     obpi_created_event,
+    obpi_receipt_emitted_event,
 )
 from tests.commands.common import CliRunner, _write_obpi
 
@@ -171,6 +172,17 @@ class TestStatusCommand(unittest.TestCase):
                     ]
                 )
                 + "\n"
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(
+                obpi_receipt_emitted_event(
+                    obpi_id="OBPI-0.1.0-01-demo",
+                    parent_adr="ADR-0.1.0",
+                    receipt_event="completed",
+                    attestor="human:test",
+                    obpi_completion="completed",
+                )
             )
 
             result = runner.invoke(main, ["status"])
@@ -545,6 +557,17 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
                 status="Completed",
                 brief_status="Completed",
                 implementation_line="src/module.py",
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(
+                obpi_receipt_emitted_event(
+                    obpi_id="OBPI-0.1.0-01-demo",
+                    parent_adr="ADR-0.1.0",
+                    receipt_event="completed",
+                    attestor="human:test",
+                    obpi_completion="completed",
+                )
             )
 
             result = runner.invoke(main, ["adr", "status", "ADR-0.1.0", "--json"])

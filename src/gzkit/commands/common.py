@@ -10,8 +10,14 @@ from typing import Any, cast
 from rich.console import Console
 
 from gzkit.config import GzkitConfig
-from gzkit.ledger import Ledger
+from gzkit.ledger import (
+    Ledger,
+    resolve_adr_lane,
+)
 from gzkit.sync import parse_artifact_metadata, scan_existing_artifacts
+from gzkit.utils import (
+    git_cmd,
+)
 
 
 class GzCliError(Exception):
@@ -47,6 +53,7 @@ COMMAND_DOCS: dict[str, str] = {
     "adr status": "docs/user/commands/adr-status.md",
     "adr promote": "docs/user/commands/adr-promote.md",
     "adr audit-check": "docs/user/commands/adr-audit-check.md",
+    "adr covers-check": "docs/user/commands/adr-covers-check.md",
     "adr emit-receipt": "docs/user/commands/adr-emit-receipt.md",
     "obpi emit-receipt": "docs/user/commands/obpi-emit-receipt.md",
     "agent sync control-surfaces": "docs/user/commands/agent-sync-control-surfaces.md",
@@ -144,12 +151,6 @@ def get_git_user() -> str:
         return "unknown"
 
 
-def _resolve_adr_lane(info: dict[str, Any], default_mode: str) -> str:
-    """Resolve lane from ADR metadata with mode fallback."""
-    lane = str(info.get("lane") or default_mode).lower()
-    return lane if lane in {"lite", "heavy"} else default_mode
-
-
 def _gate4_na_reason(project_root: Path, lane: str) -> str | None:
     """Return explicit Gate 4 N/A rationale when BDD suite is not applicable."""
     if lane != "heavy":
@@ -166,7 +167,7 @@ def _attestation_gate_snapshot(
     """Compute attestation prerequisite state for one ADR."""
     graph = ledger.get_artifact_graph()
     info = graph.get(adr_id, {})
-    lane = _resolve_adr_lane(info, config.mode)
+    lane = resolve_adr_lane(info, config.mode)
     gate_statuses = ledger.get_latest_gate_statuses(adr_id)
 
     gate2 = gate_statuses.get(2, "pending")
@@ -203,28 +204,6 @@ def _canonical_attestation_term(attest_status: str, reason: str | None = None) -
     return base
 
 
-def _run_exec(cmd: list[str], cwd: Path, timeout: int | None = None) -> tuple[int, str, str]:
-    """Run a subprocess command and return (rc, stdout, stderr)."""
-    try:
-        result = subprocess.run(
-            cmd,
-            cwd=cwd,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-        )
-        return result.returncode, result.stdout.strip(), result.stderr.strip()
-    except subprocess.TimeoutExpired:
-        return 124, "", f"TIMEOUT after {timeout}s"
-    except FileNotFoundError:
-        return 127, "", f"Command not found: {cmd[0]}"
-
-
-def _git_cmd(project_root: Path, *args: str) -> tuple[int, str, str]:
-    """Run git command in project root."""
-    return _run_exec(["git", *args], cwd=project_root)
-
-
 def _compute_git_sync_state(project_root: Path, branch: str, remote: str) -> dict[str, Any]:
     """Compute ahead/behind/divergence against remote branch."""
     warnings: list[str] = []
@@ -232,7 +211,7 @@ def _compute_git_sync_state(project_root: Path, branch: str, remote: str) -> dic
     behind = 0
     diverged = False
 
-    rc_head, head, err_head = _git_cmd(project_root, "rev-parse", branch)
+    rc_head, head, err_head = git_cmd(project_root, "rev-parse", branch)
     if rc_head != 0:
         warnings.append(err_head or f"Could not resolve local branch: {branch}")
         return {
@@ -244,7 +223,7 @@ def _compute_git_sync_state(project_root: Path, branch: str, remote: str) -> dic
             "warnings": warnings,
         }
 
-    rc_remote, remote_head, err_remote = _git_cmd(project_root, "rev-parse", f"{remote}/{branch}")
+    rc_remote, remote_head, err_remote = git_cmd(project_root, "rev-parse", f"{remote}/{branch}")
     if rc_remote != 0:
         warnings.append(err_remote or f"Could not resolve remote branch: {remote}/{branch}")
         return {
@@ -256,10 +235,10 @@ def _compute_git_sync_state(project_root: Path, branch: str, remote: str) -> dic
             "warnings": warnings,
         }
 
-    rc_ahead, ahead_s, _ = _git_cmd(
+    rc_ahead, ahead_s, _ = git_cmd(
         project_root, "rev-list", "--count", f"{remote}/{branch}..{branch}"
     )
-    rc_behind, behind_s, _ = _git_cmd(
+    rc_behind, behind_s, _ = git_cmd(
         project_root, "rev-list", "--count", f"{branch}..{remote}/{branch}"
     )
     if rc_ahead == 0 and ahead_s.isdigit():
@@ -280,16 +259,14 @@ def _compute_git_sync_state(project_root: Path, branch: str, remote: str) -> dic
 
 def _head_is_merge_commit(project_root: Path) -> bool:
     """Return True when HEAD itself is a merge commit."""
-    rc_merge, merge_head, _ = _git_cmd(
-        project_root, "rev-list", "--max-count=1", "--merges", "HEAD"
-    )
-    rc_head, head_sha, _ = _git_cmd(project_root, "rev-parse", "HEAD")
+    rc_merge, merge_head, _ = git_cmd(project_root, "rev-list", "--max-count=1", "--merges", "HEAD")
+    rc_head, head_sha, _ = git_cmd(project_root, "rev-parse", "HEAD")
     return rc_merge == 0 and rc_head == 0 and bool(merge_head) and merge_head == head_sha
 
 
 def _git_status_lines(project_root: Path) -> tuple[list[str], str | None]:
     """Return porcelain status lines, or an error if status can't be read."""
-    rc_status, status_out, err_status = _git_cmd(project_root, "status", "--porcelain")
+    rc_status, status_out, err_status = git_cmd(project_root, "status", "--porcelain")
     if rc_status != 0:
         return [], err_status or "Could not read git status."
     lines = [line for line in status_out.splitlines() if line.strip()]
@@ -380,23 +357,6 @@ def resolve_target_adr(
 
     _adr_file, resolved_adr_id = resolve_adr_file(project_root, config, canonical_adr_id)
     return resolved_adr_id
-
-
-def _parse_frontmatter_value(content: str, key: str) -> str | None:
-    lines = content.splitlines()
-    if not lines or lines[0].strip() != "---":
-        return None
-
-    for line in lines[1:]:
-        if line.strip() == "---":
-            break
-        if ":" not in line:
-            continue
-        raw_key, _, raw_value = line.partition(":")
-        if raw_key.strip() != key:
-            continue
-        return raw_value.strip().strip("\"'")
-    return None
 
 
 def _upsert_frontmatter_value(content: str, key: str, value: str) -> str:
