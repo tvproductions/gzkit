@@ -51,6 +51,24 @@ uv run gz adr promote ADR-pool.<slug> --semver X.Y.Z [--dry-run]
 | [ADR-pool.prime-context-hooks](ADR-pool.prime-context-hooks.md) | CLI+hooks context runtime | Waiting | ADR-pool.execution-memory-graph |
 | [ADR-pool.obpi-runtime-surface](ADR-pool.obpi-runtime-surface.md) | OBPI-native runtime ergonomics | Waiting | ADR-0.7.0-obpi-first-operations, ADR-pool.execution-memory-graph |
 | [ADR-pool.airlineops-surface-breadth-parity](ADR-pool.airlineops-surface-breadth-parity.md) | Canonical `.claude/**` + `.gzkit/**` breadth parity | Waiting | ADR-0.3.0-airlineops-canon-reconciliation |
+| [ADR-pool.spec-triangle-sync](ADR-pool.spec-triangle-sync.md) | Spec-test-code process synchronization | Waiting | ADR-0.7.0-obpi-first-operations, ADR-pool.execution-memory-graph |
+| [ADR-pool.tests-for-spec](ADR-pool.tests-for-spec.md) | Requirement-level test traceability | Waiting | ADR-pool.spec-triangle-sync |
+
+---
+
+## Runtime Direction (BEADS + Plumb)
+
+The runtime pool track converges two complementary patterns:
+
+- BEADS pattern: dependency graph + ready/blocked queue + query-first operator surfaces.
+- Plumb pattern: spec-test-code reconciliation with requirement-level proof.
+
+gzkit target composition:
+
+- Graph spine: `ADR -> OBPI -> REQ` with typed edges.
+- Proof spine: `REQ -> test evidence` (e.g., `@covers` or equivalent metadata).
+- State source: append-only ledger + deterministic derived views.
+- Constraint: no mandatory Dolt/SQL runtime dependency in this track.
 
 ---
 
@@ -90,7 +108,9 @@ PRD-GZKIT-1.0.0
 ├── ADR-pool.execution-memory-graph (Typed runtime execution memory)
 ├── ADR-pool.prime-context-hooks (Dynamic runtime context via hooks)
 ├── ADR-pool.obpi-runtime-surface (OBPI-native runtime surfaces)
-└── ADR-pool.airlineops-surface-breadth-parity (Canonical `.claude/**` + `.gzkit/**` breadth parity)
+├── ADR-pool.airlineops-surface-breadth-parity (Canonical `.claude/**` + `.gzkit/**` breadth parity)
+├── ADR-pool.spec-triangle-sync (Spec-test-code synchronization process)
+└── ADR-pool.tests-for-spec (Tests verify spec requirements)
 ```
 
 Parenting model:

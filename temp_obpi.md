@@ -1,55 +1,37 @@
 ---
-id: OBPI-0.7.0-04-obpi-drift-and-status-reconciliation
+id: OBPI-0.7.0-01-obpi-completion-validator-gate
 parent: ADR-0.7.0-obpi-first-operations
-item: 4
+item: 1
 lane: Heavy
 status: Completed
 ---
 
-# OBPI-0.7.0-04-obpi-drift-and-status-reconciliation: Obpi Drift And Status Reconciliation
+# OBPI-0.7.0-01-obpi-completion-validator-gate: Obpi Completion Validator Gate
 
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.7.0-obpi-first-operations/ADR-0.7.0-obpi-first-operations.md`
-- **Checklist Item:** #4 — "Add OBPI drift/status reconciliation reporting."
+- **Checklist Item:** #1 — "Implement OBPI completion validator gate parity."
 
-**Status:** Completed
+**Status:** Draft
 
 ## Objective
 
-Expose OBPI completion drift and reconciliation signals in status/audit surfaces so operators can see when completed OBPI state has diverged from recorded evidence.
+<!-- One-sentence concrete outcome. What does "done" look like? -->
 
-### Implementation Summary
-
-- Files modified: `src/gzkit/commands/status.py` (added DRIFT detection and reporting), `src/gzkit/ledger.py` (added ledger-first completion tracking).
-- Date completed: 2026-03-04
-
-## Key Proof
-
-```bash
-# Status command now detects and reports drift:
-uv run gz adr status ADR-0.7.0-obpi-first-operations
-# Output: OBPI-0.7.0-04: [red]DRIFT[/red] (file says Completed, ledger proof missing)
-```
-
-## Human Attestation
-
-- Attestor: human:jeff
-- Attestation: "Confirmed status reporting correctly identifies divergence between ledger and local files."
-- Date: 2026-03-04
+Add a pre-completion validator gate that blocks OBPI `Completed` transitions when required evidence or human attestation prerequisites are not satisfied.
 
 ## Lane
 
-**Heavy** — This affects operator-visible governance reporting and closeout quality signals.
+**Heavy** — This enforces authority boundaries for OBPI lifecycle transitions.
 
 ## Allowed Paths
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
-- `src/gzkit/cli.py` — status and reconciliation rendering
-- `src/gzkit/ledger.py` — OBPI lifecycle signal derivation
-- `docs/user/commands/**` — status/audit documentation
-- `tests/**` — status/audit regression coverage
+- `src/gzkit/hooks/**` — completion-gate runtime logic
+- `src/gzkit/cli.py` — surfaced status/audit behavior coupling
+- `tests/**` — gate and regression coverage
 
 ## Denied Paths
 
@@ -63,10 +45,10 @@ uv run gz adr status ADR-0.7.0-obpi-first-operations
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
      These are the rules agents ground against. If not met, OBPI fails. -->
 
-1. REQUIREMENT: Status surfaces MUST report OBPI unit completion and outstanding items deterministically.
-1. REQUIREMENT: Reconciliation output MUST separate complete, missing, and drifted OBPI evidence states.
-1. NEVER: Never collapse OBPI drift into opaque ADR-only summary claims.
-1. ALWAYS: Reporting must preserve OBPI identifiers for remediation targeting.
+1. REQUIREMENT: Completion edit attempts MUST be blocked when OBPI evidence prerequisites are absent.
+1. REQUIREMENT: Heavy/Foundation parent ADRs MUST require explicit human attestation before completion.
+1. NEVER: Never silently downgrade failed completion gating to warning-only behavior.
+1. ALWAYS: Gate failures must explain required next action to the operator.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -92,7 +74,7 @@ uv run gz adr status ADR-0.7.0-obpi-first-operations
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `src/gzkit/cli.py` (`status`, `adr_status_cmd`)
+- [ ] Pattern to follow: `src/gzkit/cli.py` (`_attestation_gate_snapshot`, `attest`)
 - [ ] Test patterns: `tests/test_cli.py`
 
 ## Quality Gates
@@ -138,18 +120,17 @@ uv run gz adr status ADR-0.7.0-obpi-first-operations
 # Gate 2: Tests
 uv run -m unittest discover tests
 
-# Status/reconciliation behavior
-uv run gz status --json
-uv run gz adr status ADR-0.7.0-obpi-first-operations --json
+# Gate behavior
+uv run -m unittest discover tests
 ```
 
 ## Acceptance Criteria
 
 <!-- Specific, testable criteria for completion. Checkbox list. -->
 
-- [ ] Status output reports OBPI-unit completion and open items correctly.
-- [ ] Reconciliation distinguishes missing proof from drifted proof states.
-- [ ] Tests validate OBPI-centric reporting behavior.
+- [ ] Validator gate blocks invalid `Completed` transitions deterministically.
+- [ ] Heavy/Foundation attestation inheritance is enforced.
+- [ ] Tests cover success, block, and error-handling paths.
 
 ## Completion Checklist
 

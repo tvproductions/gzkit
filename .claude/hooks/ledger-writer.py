@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""gzkit ledger writer hook for claude.
+"""gzkit ledger writer and validator hook for claude.
 
-This hook records governance artifact edits in the ledger.
+This hook records governance artifact edits and enforces completion gates.
 """
 
 import json
@@ -46,15 +46,21 @@ def main() -> int:
     except ValueError:
         return 0
 
-    # Import gzkit and record edit
+    # Import gzkit and record edit/validate
     sys.path.insert(0, str(project_root / "src"))
     try:
         from gzkit.hooks.core import record_artifact_edit
 
         session = os.environ.get("CLAUDE_SESSION_ID") or os.environ.get("COPILOT_SESSION_ID")
+
+        # This will trigger validation and raise if it fails
         record_artifact_edit(project_root, str(rel_path), session)
+
     except ImportError:
         pass  # gzkit not installed, skip
+    except Exception as exc:
+        print(f"\n[GOVERNANCE BLOCK] {exc}\n", file=sys.stderr)
+        return 1
 
     return 0
 

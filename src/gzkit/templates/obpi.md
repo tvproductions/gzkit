@@ -127,11 +127,13 @@ command --to --verify
 
 ## Acceptance Criteria
 
-<!-- Specific, testable criteria for completion. Checkbox list. -->
+<!--
+Specific, testable criteria for completion.
+Each checkbox MUST carry a deterministic REQ ID:
+REQ-<semver>-<obpi_item>-<criterion_index>
+-->
 
-- [ ] Criterion 1: Description
-- [ ] Criterion 2: Description
-- [ ] Criterion 3: Description
+{acceptance_criteria_seed}
 
 ## Completion Checklist
 

@@ -38,6 +38,9 @@ task lists.
   - `discovered-from`
   - `validates`
   - `related`
+- Define cross-layer graph joins for governance and proof:
+  - `ADR -> OBPI -> REQ`
+  - `REQ -> test evidence (@covers target)`
 - Add deterministic queue surfaces for operators and agents:
   - `ready` (no open blockers)
   - `blocked` (with blocking reason)
@@ -69,6 +72,7 @@ This pool ADR can be promoted when all are true:
 1. Runtime node/edge schema and CLI contract are approved.
 2. Ledger event strategy for runtime state transitions is accepted.
 3. Evaluation cases for ready/blocked determinism are defined.
+4. Queue semantics define how missing REQ proof affects readiness.
 
 ---
 
@@ -76,3 +80,5 @@ This pool ADR can be promoted when all are true:
 
 - This ADR operationalizes the "specification engineering" and "evaluation design"
   discipline in the Nate B. Jones readiness framing.
+- BEADS informs dependency/ready queue behavior.
+- Plumb informs requirement-proof edges that participate in readiness decisions.

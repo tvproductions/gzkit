@@ -71,7 +71,16 @@
       "properties": {
         "receipt_event": { "type": "string", "enum": ["completed", "validated"] },
         "attestor": { "type": "string", "min_length": 1 },
-        "evidence": { "type": "object" }
+        "evidence": { "type": "object" },
+        "anchor": {
+          "type": "object",
+          "required": ["commit", "semver"],
+          "properties": {
+            "commit": { "type": "string", "pattern": "^[a-f0-9]{7,40}$" },
+            "tag": { "type": "string" },
+            "semver": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" }
+          }
+        }
       }
     },
     "obpi_receipt_emitted": {
@@ -83,6 +92,15 @@
         "obpi_completion": {
           "type": "string",
           "enum": ["completed", "attested_completed", "not_completed"]
+        },
+        "anchor": {
+          "type": "object",
+          "required": ["commit", "semver"],
+          "properties": {
+            "commit": { "type": "string", "pattern": "^[a-f0-9]{7,40}$" },
+            "tag": { "type": "string" },
+            "semver": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" }
+          }
         }
       }
     },
