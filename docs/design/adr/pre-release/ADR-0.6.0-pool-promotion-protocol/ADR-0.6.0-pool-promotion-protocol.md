@@ -55,4 +55,4 @@ Adopt a canonical promotion workflow centered on `uv run gz adr promote`:
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.6.0 | Pending | | | |
+| 0.6.0 | Completed | Jeff | 2026-03-05 | attest completed |

@@ -38,6 +38,7 @@ Introduces a deterministic, auditable protocol for promoting pool ADRs (backlog)
 ### Gate Evidence
 
 All 5 GovZero gates satisfied.
+- Closeout attestation recorded in `docs/design/adr/pre-release/ADR-0.6.0-pool-promotion-protocol/ADR-CLOSEOUT-FORM.md` on 2026-03-05.
 
 ## v0.5.0 (2026-03-01)
 
