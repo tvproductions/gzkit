@@ -54,7 +54,12 @@ Recorded commands:
 
 Step 8 issue review result:
 
-- Pending execution in this session (`gh issue list` / `gh issue close`).
+- Queried open issues by ADR/OBPI/keyword:
+  - `gh issue list --repo tvproductions/gzkit --search "ADR-0.6.0" --state open --json number,title,url,labels`
+  - `gh issue list --repo tvproductions/gzkit --search "OBPI-0.6.0" --state open --json number,title,url,labels`
+  - `gh issue list --repo tvproductions/gzkit --search "ADR-0.6" --state open --json number,title,url,labels`
+  - `gh issue list --repo tvproductions/gzkit --search "pool promotion protocol" --state open --json number,title,url,labels`
+- Result: no matching open issues; no closures performed.
 
 Step 9 release notes confirmation:
 
@@ -62,4 +67,7 @@ Step 9 release notes confirmation:
 
 Step 10 release publication:
 
-- Pending execution in this session (`gh release create` or release update if tag exists).
+- Ran policy-mandated pre-release sync: `uv run gz git-sync --apply --lint --test`
+- Existing release detected: `gh release view v0.6.0 --repo tvproductions/gzkit --json tagName,name,isDraft,isPrerelease,publishedAt,url`
+- Updated release metadata: `gh release edit v0.6.0 --repo tvproductions/gzkit --title "v0.6.0" --notes-file /tmp/gzkit-v0.6.0-release-notes.md`
+- Release URL: <https://github.com/tvproductions/gzkit/releases/tag/v0.6.0>
