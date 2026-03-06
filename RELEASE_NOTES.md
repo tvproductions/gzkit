@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+_No unreleased entries._
+
+## v0.7.0 (2026-03-06)
+
+**ADR context:** `ADR-0.7.0-obpi-first-operations`
+**Release scope:** Version metadata correction and governance verification backfill packaging.
+
+### Delivered
+
+- Updated package/runtime metadata to `0.7.0` in `pyproject.toml`, `src/gzkit/__init__.py`,
+  `uv.lock`, and `README.md`.
+- Finalized previously staged governance remediation for Gate 4 (BDD/Behave) evidence across
+  released lines `0.1.0` to `0.3.1`.
+- CLI/runtime now reports `gzkit 0.7.0`.
+
 ### Governance remediation (2026-03-01)
 
 Backfilled Gate 4 (BDD/Behave) evidence for released versions in the `0.1.0` to `0.3.1` range.
@@ -17,6 +32,9 @@ Backfilled Gate 4 (BDD/Behave) evidence for released versions in the `0.1.0` to 
 
 ### Verification
 
+- `uv run gz --version`
+- `uv run gz lint`
+- `uv run gz test`
 - `uv run -m behave features/`
 - `uv run gz gates --gate 4 --adr ADR-0.1.0`
 - `uv run gz gates --gate 4 --adr ADR-0.2.0`
