@@ -4,6 +4,42 @@
 
 _No unreleased entries._
 
+## v0.8.0 (2026-03-07)
+
+**ADR context:** `ADR-0.8.0-gz-chores-system`
+**Release scope:** gz chores system delivery with full heavy-lane closeout and validation evidence.
+
+### Delivered
+
+- Introduced config-first chores lifecycle commands:
+  - `gz chores list`
+  - `gz chores plan <slug>`
+  - `gz chores run <slug>`
+  - `gz chores audit --all|--slug`
+- Added guarded registry + runner semantics in `config/gzkit.chores.json` and
+  `src/gzkit/commands/chores.py`, including deterministic log paths under
+  `docs/design/briefs/chores/CHORE-<slug>/logs/CHORE-LOG.md`.
+- Added lifecycle/runner coverage in `tests/commands/test_chores.py` and command-parser coverage
+  in `tests/commands/test_parsers.py`.
+- Completed ADR heavy-lane ceremony for 0.8.0:
+  closeout initiated, gates 1-5 passed, audit artifacts generated, attestation recorded, and
+  validated ADR receipt emitted.
+- Updated runtime/package metadata to `0.8.0` in `pyproject.toml`, `src/gzkit/__init__.py`,
+  `uv.lock`, and `README.md`.
+
+### Gate Evidence
+
+All 5 GovZero gates satisfied for `ADR-0.8.0-gz-chores-system`.
+
+### Verification
+
+- `uv run gz gates --adr ADR-0.8.0-gz-chores-system`
+- `uv run gz closeout ADR-0.8.0-gz-chores-system`
+- `uv run gz audit ADR-0.8.0-gz-chores-system`
+- `uv run gz attest ADR-0.8.0-gz-chores-system --status completed`
+- `uv run gz adr emit-receipt ADR-0.8.0-gz-chores-system --event validated --attestor "human:jeff" --evidence-json ...`
+- `uv run gz adr status ADR-0.8.0-gz-chores-system --json`
+
 ## v0.7.0 (2026-03-06)
 
 **ADR context:** `ADR-0.7.0-obpi-first-operations`

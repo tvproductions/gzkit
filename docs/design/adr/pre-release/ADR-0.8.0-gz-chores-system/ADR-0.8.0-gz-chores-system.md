@@ -37,9 +37,9 @@ Implement the Chores System as a config-first subsystem with dedicated lifecycle
 
 ## Checklist
 
-- [ ] OBPI-0.8.0-01: Chores registry and configuration
-- [ ] OBPI-0.8.0-02: Chores runner and execution engine
-- [ ] OBPI-0.8.0-03: Chores lifecycle (plan, list, audit) and logging
+- [x] OBPI-0.8.0-01: Chores registry and configuration
+- [x] OBPI-0.8.0-02: Chores runner and execution engine
+- [x] OBPI-0.8.0-03: Chores lifecycle (plan, list, audit) and logging
 
 ## Q&A Transcript
 
