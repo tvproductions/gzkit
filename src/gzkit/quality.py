@@ -134,7 +134,7 @@ def run_adr_path_contract_lint(project_root: Path) -> QualityResult:
         try:
             lines = file_path.read_text(encoding="utf-8").splitlines()
         except OSError as exc:
-            violations.append(f"{file_path}:1: unable to read file ({exc})")
+            violations.append(f"{file_path.as_posix()}:1: unable to read file ({exc})")
             continue
 
         rel_path = (
@@ -142,12 +142,13 @@ def run_adr_path_contract_lint(project_root: Path) -> QualityResult:
             if file_path.is_relative_to(project_root)
             else file_path
         )
+        rel_display = rel_path.as_posix()
         for line_no, line in enumerate(lines, start=1):
             if any(allowed in line for allowed in allow_substrings):
                 continue
             if any(pattern.search(line) for pattern in forbidden_patterns):
                 trimmed = line.strip()
-                violations.append(f"{rel_path}:{line_no}: {trimmed}")
+                violations.append(f"{rel_display}:{line_no}: {trimmed}")
 
     if violations:
         return QualityResult(
