@@ -2,11 +2,15 @@
 
 Current hook surface in gzkit:
 
-| Hook | Event | Purpose |
-| --- | --- | --- |
-| `instruction-router.py` | `PreToolUse` (`Write|Edit`) | Auto-surfaces `.github/instructions/*.instructions.md` constraints (informational only) |
-| `post-edit-ruff.py` | `PostToolUse` (`Write|Edit`) | Runs `ruff check --fix` and `ruff format` on edited Python files (non-blocking) |
-| `ledger-writer.py` | `PostToolUse` (`Write|Edit`) | Records governance artifact edits via `gzkit.hooks.core.record_artifact_edit` |
+- `instruction-router.py`
+  PreToolUse (`Write|Edit`) hook that auto-surfaces
+  `.github/instructions/*.instructions.md` constraints.
+- `post-edit-ruff.py`
+  PostToolUse (`Write|Edit`) hook that runs `ruff check --fix`
+  and `ruff format` on edited Python files.
+- `ledger-writer.py`
+  PostToolUse (`Write|Edit`) hook that records governance
+  artifact edits via `gzkit.hooks.core.record_artifact_edit`.
 
 ## Notes
 

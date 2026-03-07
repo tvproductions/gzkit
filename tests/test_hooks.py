@@ -1,10 +1,13 @@
 """Tests for gzkit hooks module."""
 
+import json
 import os
 import tempfile
 import unittest
 from pathlib import Path
 
+from gzkit.config import GzkitConfig
+from gzkit.hooks.claude import generate_claude_settings, setup_claude_hooks
 from gzkit.hooks.core import (
     generate_hook_script,
     is_governance_artifact,
@@ -83,17 +86,101 @@ class TestWriteHookScript(unittest.TestCase):
 
     def test_makes_executable(self) -> None:
         """Hook script is executable."""
-        if os.name == "nt":
-            self.skipTest("Executable bit is not meaningful on Windows")
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
             script_path = write_hook_script(project_root, "claude", ".claude/hooks")
 
-            # Check executable bit
+            if os.name == "nt":
+                self.assertTrue(script_path.exists())
+                self.assertEqual(script_path.suffix, ".py")
+                return
+
+            # Check executable bit on Unix-like systems.
             import stat
 
             mode = script_path.stat().st_mode
             self.assertTrue(mode & stat.S_IXUSR)
+
+
+class TestGenerateClaudeSettings(unittest.TestCase):
+    """Tests for Claude settings generation."""
+
+    def test_includes_instruction_router_post_edit_and_ledger_writer(self) -> None:
+        """Generated settings wire the full OBPI-01 hook tranche."""
+        config = GzkitConfig(project_name="gzkit-test")
+
+        settings = generate_claude_settings(config)
+
+        pretool_hooks = settings["hooks"]["PreToolUse"][0]["hooks"]
+        posttool_hooks = settings["hooks"]["PostToolUse"][0]["hooks"]
+        pretool_commands = [hook["command"] for hook in pretool_hooks]
+        posttool_commands = [hook["command"] for hook in posttool_hooks]
+
+        self.assertEqual(
+            pretool_commands,
+            ["uv run python .claude/hooks/instruction-router.py"],
+        )
+        self.assertEqual(
+            posttool_commands,
+            [
+                "uv run python .claude/hooks/post-edit-ruff.py",
+                "uv run python .claude/hooks/ledger-writer.py",
+            ],
+        )
+
+
+class TestSetupClaudeHooks(unittest.TestCase):
+    """Tests for Claude hook setup."""
+
+    def test_creates_full_hook_tranche_and_settings(self) -> None:
+        """Setup writes the tranche files referenced by settings."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            created = setup_claude_hooks(project_root, config)
+            created = [path.replace("\\", "/") for path in created]
+
+            hooks_dir = project_root / ".claude" / "hooks"
+            instruction_router = hooks_dir / "instruction-router.py"
+            post_edit_ruff = hooks_dir / "post-edit-ruff.py"
+            ledger_writer = hooks_dir / "ledger-writer.py"
+            readme = hooks_dir / "README.md"
+            settings_path = project_root / ".claude" / "settings.json"
+
+            for path in (
+                instruction_router,
+                post_edit_ruff,
+                ledger_writer,
+                readme,
+                settings_path,
+            ):
+                self.assertTrue(path.exists(), path)
+
+            self.assertIn(".claude/hooks/instruction-router.py", created)
+            self.assertIn(".claude/hooks/post-edit-ruff.py", created)
+            self.assertIn(".claude/hooks/ledger-writer.py", created)
+            self.assertIn(".claude/hooks/README.md", created)
+            self.assertIn(".claude/settings.json", created)
+
+            settings = json.loads(settings_path.read_text(encoding="utf-8"))
+            self.assertEqual(
+                settings["hooks"]["PreToolUse"][0]["hooks"][0]["command"],
+                "uv run python .claude/hooks/instruction-router.py",
+            )
+            self.assertEqual(
+                [hook["command"] for hook in settings["hooks"]["PostToolUse"][0]["hooks"]],
+                [
+                    "uv run python .claude/hooks/post-edit-ruff.py",
+                    "uv run python .claude/hooks/ledger-writer.py",
+                ],
+            )
+
+            readme_text = readme.read_text(encoding="utf-8")
+            self.assertIn("Current hook surface in gzkit:", readme_text)
+            self.assertIn("hook that auto-surfaces", readme_text)
+            self.assertIn("hook that runs `ruff check --fix`", readme_text)
+            self.assertIn("hook that records governance", readme_text)
 
 
 if __name__ == "__main__":

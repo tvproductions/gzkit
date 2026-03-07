@@ -2219,9 +2219,8 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
         proof_file = proofs_dir / f"{label}.txt"
         proof_file.write_text(
             f"$ {command}\n\n[returncode] {result.returncode}\n\n"
-            f"[stdout]\n{result.stdout}\n\n[stderr]\n{result.stderr}\n"
-            ,
-            encoding="utf-8"
+            f"[stdout]\n{result.stdout}\n\n[stderr]\n{result.stderr}\n",
+            encoding="utf-8",
         )
         result_rows.append(
             {
@@ -3446,6 +3445,8 @@ def _is_recoverable_stale_mirror_issue(path: str, message: str, config: GzkitCon
         config.paths.copilot_skills,
     )
     return any(_is_path_within_root(path, root) for root in mirror_roots)
+
+
 def _run_agent_control_sync(dry_run: bool) -> None:
     """Execute control-surface regeneration flow."""
     config = ensure_initialized()
