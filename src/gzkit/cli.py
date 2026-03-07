@@ -17,6 +17,7 @@ from rich.table import Table
 
 from gzkit import __version__
 from gzkit.commands.attest import attest
+from gzkit.commands.chores import chores_audit, chores_list, chores_plan, chores_run
 from gzkit.commands.common import (
     ADR_SEMVER_ID_RE,
     ADR_SLUG_RE,
@@ -49,6 +50,13 @@ from gzkit.commands.status import (
     status,
 )
 from gzkit.config import GzkitConfig
+from gzkit.decomposition import (
+    build_checklist_seed,
+    compute_scorecard,
+    default_dimension_scores,
+    parse_checklist_items,
+    parse_scorecard,
+)
 from gzkit.hooks.claude import setup_claude_hooks
 from gzkit.hooks.copilot import setup_copilot_hooks, setup_copilotignore
 from gzkit.hooks.obpi import ObpiValidator
@@ -745,6 +753,32 @@ def specify(
     if _is_pool_adr_id(canonical_parent):
         raise GzCliError(f"Pool ADRs cannot receive OBPIs until promoted: {canonical_parent}.")
     adr_file, resolved_parent = resolve_adr_file(project_root, config, canonical_parent)
+    adr_content = adr_file.read_text()
+    checklist_items = parse_checklist_items(adr_content)
+    if not checklist_items:
+        raise GzCliError(
+            f"Parent ADR has no checklist items to map: {resolved_parent}. "
+            "Define checklist entries before creating OBPIs."
+        )
+    if item <= 0 or item > len(checklist_items):
+        raise GzCliError(
+            f"Checklist item #{item} is out of range for {resolved_parent} "
+            f"(available: 1-{len(checklist_items)})."
+        )
+
+    scorecard, scorecard_errors = parse_scorecard(adr_content)
+    if scorecard_errors:
+        summary = "; ".join(scorecard_errors)
+        raise GzCliError(
+            f"Parent ADR decomposition scorecard is invalid for {resolved_parent}: {summary}"
+        )
+    assert scorecard is not None
+    if len(checklist_items) != scorecard.final_target_obpi_count:
+        raise GzCliError(
+            "ADR checklist count does not match scorecard target for "
+            f"{resolved_parent}: checklist={len(checklist_items)} "
+            f"target={scorecard.final_target_obpi_count}."
+        )
 
     # Extract semver from parent ADR ID (e.g., ADR-0.4.0-slug -> 0.4.0).
     version = resolved_parent.replace("ADR-", "").split("-")[0]
@@ -773,7 +807,7 @@ def specify(
         parent_adr=resolved_parent,
         parent_adr_path=str(adr_file.relative_to(project_root)),
         item_number=str(item),
-        checklist_item_text="TBD",
+        checklist_item_text=checklist_items[item - 1],
         lane=lane_cap,
         lane_rationale="TBD",
         objective="TBD",
@@ -887,6 +921,20 @@ def _render_promoted_adr_content(
     promote_date: str,
 ) -> str:
     """Render promoted ADR scaffold seeded from a pool ADR source."""
+    default_scores = default_dimension_scores(lane, semver)
+    scorecard = compute_scorecard(
+        data_state=default_scores["data_state"],
+        logic_engine=default_scores["logic_engine"],
+        interface=default_scores["interface"],
+        observability=default_scores["observability"],
+        lineage=default_scores["lineage"],
+        split_single_narrative=0,
+        split_surface_boundary=0,
+        split_state_anchor=0,
+        split_testability_ceiling=0,
+    )
+    checklist_seed = build_checklist_seed(semver, scorecard.final_target_obpi_count)
+
     content = render_template(
         "adr",
         id=target_adr_id,
@@ -911,7 +959,8 @@ def _render_promoted_adr_content(
         negative_consequences=(
             "- Promotion increases governance and delivery obligations immediately."
         ),
-        checklist="- [ ] Define OBPI-01 scope and acceptance criteria",
+        decomposition_scorecard=scorecard.to_markdown(),
+        checklist=checklist_seed,
         qa_transcript="Promotion seeded via `gz adr promote`; interview transcript not captured.",
         alternatives="- Keep this work in pool until reprioritized.",
     )
@@ -3221,6 +3270,14 @@ def readiness_audit_cmd(as_json: bool) -> None:
                 "path": "src/gzkit/templates/obpi.md",
                 "markers": ("item:", "parent:"),
             },
+            {
+                "kind": "markers",
+                "path": "src/gzkit/templates/adr.md",
+                "markers": (
+                    "## Decomposition Scorecard",
+                    "Final Target OBPI Count",
+                ),
+            },
         ],
         "evaluation_design": [
             {
@@ -3907,6 +3964,16 @@ def _build_parser() -> argparse.ArgumentParser:
     p_plan.add_argument("--semver", default="0.1.0")
     p_plan.add_argument("--lane", choices=["lite", "heavy"], default="lite")
     p_plan.add_argument("--title")
+    p_plan.add_argument("--score-data-state", type=int, choices=[0, 1, 2])
+    p_plan.add_argument("--score-logic-engine", type=int, choices=[0, 1, 2])
+    p_plan.add_argument("--score-interface", type=int, choices=[0, 1, 2])
+    p_plan.add_argument("--score-observability", type=int, choices=[0, 1, 2])
+    p_plan.add_argument("--score-lineage", type=int, choices=[0, 1, 2])
+    p_plan.add_argument("--split-single-narrative", action="store_true")
+    p_plan.add_argument("--split-surface-boundary", action="store_true")
+    p_plan.add_argument("--split-state-anchor", action="store_true")
+    p_plan.add_argument("--split-testability-ceiling", action="store_true")
+    p_plan.add_argument("--baseline-selected", type=int)
     p_plan.add_argument("--dry-run", action="store_true")
     p_plan.set_defaults(
         func=lambda a: plan_cmd(
@@ -3915,6 +3982,16 @@ def _build_parser() -> argparse.ArgumentParser:
             semver=a.semver,
             lane=a.lane,
             title=a.title,
+            score_data_state=a.score_data_state,
+            score_logic_engine=a.score_logic_engine,
+            score_interface=a.score_interface,
+            score_observability=a.score_observability,
+            score_lineage=a.score_lineage,
+            split_single_narrative=a.split_single_narrative,
+            split_surface_boundary=a.split_surface_boundary,
+            split_state_anchor=a.split_state_anchor,
+            split_testability_ceiling=a.split_testability_ceiling,
+            baseline_selected=a.baseline_selected,
             dry_run=a.dry_run,
         )
     )
@@ -4164,6 +4241,28 @@ def _build_parser() -> argparse.ArgumentParser:
             dry_run=a.dry_run,
         )
     )
+
+    p_chores = commands.add_parser("chores", help="Chore registry and execution commands")
+    chores_commands = p_chores.add_subparsers(dest="chores_command")
+    chores_commands.required = True
+
+    chores_commands.add_parser("list", help="List chores from registry").set_defaults(
+        func=lambda a: chores_list()
+    )
+
+    p_chores_plan = chores_commands.add_parser("plan", help="Show plan details for one chore")
+    p_chores_plan.add_argument("slug")
+    p_chores_plan.set_defaults(func=lambda a: chores_plan(slug=a.slug))
+
+    p_chores_run = chores_commands.add_parser("run", help="Execute one chore by slug")
+    p_chores_run.add_argument("slug")
+    p_chores_run.set_defaults(func=lambda a: chores_run(slug=a.slug))
+
+    p_chores_audit = chores_commands.add_parser("audit", help="Audit chore log presence")
+    chores_audit_target = p_chores_audit.add_mutually_exclusive_group(required=True)
+    chores_audit_target.add_argument("--all", dest="all_chores", action="store_true")
+    chores_audit_target.add_argument("--slug")
+    p_chores_audit.set_defaults(func=lambda a: chores_audit(all_chores=a.all_chores, slug=a.slug))
 
     p_implement = commands.add_parser("implement", help="Run Gate 2 and record result")
     p_implement.add_argument("--adr")

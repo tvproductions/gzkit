@@ -10,6 +10,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from gzkit.decomposition import parse_checklist_items, parse_scorecard
 from gzkit.schemas import load_schema
 
 
@@ -209,6 +210,51 @@ def validate_headers(
     return errors
 
 
+def _validate_adr_decomposition(body: str, artifact_path: str) -> list[ValidationError]:
+    """Validate deterministic ADR decomposition scorecard semantics."""
+    errors: list[ValidationError] = []
+    checklist_items = parse_checklist_items(body)
+    if not checklist_items:
+        errors.append(
+            ValidationError(
+                type="decomposition",
+                artifact=artifact_path,
+                message="Checklist must contain at least one OBPI item.",
+                field="Checklist",
+            )
+        )
+
+    scorecard, scorecard_errors = parse_scorecard(body)
+    for message in scorecard_errors:
+        errors.append(
+            ValidationError(
+                type="decomposition",
+                artifact=artifact_path,
+                message=message,
+                field="Decomposition Scorecard",
+            )
+        )
+
+    if (
+        scorecard is not None
+        and checklist_items
+        and (len(checklist_items) != scorecard.final_target_obpi_count)
+    ):
+        errors.append(
+            ValidationError(
+                type="decomposition",
+                artifact=artifact_path,
+                message=(
+                    "Checklist count must match scorecard final target: "
+                    f"checklist={len(checklist_items)} "
+                    f"target={scorecard.final_target_obpi_count}."
+                ),
+                field="Checklist",
+            )
+        )
+    return errors
+
+
 def _append_ledger_error(
     errors: list[ValidationError],
     ledger_path: Path,
@@ -351,6 +397,8 @@ def validate_document(path: Path, schema_name: str) -> list[ValidationError]:
 
     errors.extend(validate_frontmatter(frontmatter, schema, str(path)))
     errors.extend(validate_headers(headers, schema, str(path)))
+    if schema_name == "adr":
+        errors.extend(_validate_adr_decomposition(body, str(path)))
 
     return errors
 

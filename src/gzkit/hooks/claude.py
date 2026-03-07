@@ -1,6 +1,6 @@
 """Claude Code hook generation and management.
 
-Generates hooks for Claude Code's PostToolUse system.
+Generates Claude hook settings for governance-safe pre/post edit automation.
 """
 
 import json
@@ -19,20 +19,35 @@ def generate_claude_settings(config: GzkitConfig) -> dict:
     Returns:
         Settings dictionary for Claude Code.
     """
+    hooks_dir = config.paths.claude_hooks
     return {
         "hooks": {
+            "PreToolUse": [
+                {
+                    "matcher": "Write|Edit",
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": f"uv run python {hooks_dir}/instruction-router.py",
+                        }
+                    ],
+                }
+            ],
             "PostToolUse": [
                 {
                     "matcher": "Edit|Write",
                     "hooks": [
                         {
                             "type": "command",
-                            "command": f"uv run python {config.paths.claude_hooks}"
-                            "/ledger-writer.py",
-                        }
+                            "command": f"uv run python {hooks_dir}/post-edit-ruff.py",
+                        },
+                        {
+                            "type": "command",
+                            "command": f"uv run python {hooks_dir}/ledger-writer.py",
+                        },
                     ],
                 }
-            ]
+            ],
         }
     }
 

@@ -1,12 +1,15 @@
 ---
 id: ADR-pool.airlineops-surface-breadth-parity
-status: Pool
+status: Superseded
 parent: PRD-GZKIT-1.0.0
 lane: heavy
 enabler: ADR-0.3.0
+promoted_to: ADR-0.9.0-airlineops-surface-breadth-parity
 ---
 
 # ADR-pool.airlineops-surface-breadth-parity: AirlineOps Control-Surface Breadth Parity
+> Promoted to `ADR-0.9.0-airlineops-surface-breadth-parity` on 2026-03-06. This pool file is retained as historical intake context.
+
 
 ## Status
 

@@ -18,7 +18,11 @@ class TestSpecifyCommand(unittest.TestCase):
                 main, ["specify", "core-feature", "--parent", "ADR-0.1.0", "--item", "1"]
             )
             self.assertEqual(result.exit_code, 0)
-            self.assertTrue(Path("design/adr/obpis/OBPI-0.1.0-01-core-feature.md").exists())
+            obpi_path = Path("design/adr/obpis/OBPI-0.1.0-01-core-feature.md")
+            self.assertTrue(obpi_path.exists())
+            content = obpi_path.read_text()
+            self.assertIn('Checklist Item:** #1 — "OBPI-0.1.0-01:', content)
+            self.assertNotIn('Checklist Item:** #1 — "TBD"', content)
 
     def test_specify_rejects_pool_parent(self) -> None:
         """specify blocks pool ADR parents until promotion."""
@@ -31,3 +35,15 @@ class TestSpecifyCommand(unittest.TestCase):
             )
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("Pool ADRs cannot receive OBPIs until promoted", result.output)
+
+    def test_specify_rejects_out_of_range_item(self) -> None:
+        """specify rejects checklist item numbers outside scorecard-backed checklist range."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            result = runner.invoke(
+                main, ["specify", "core-feature", "--parent", "ADR-0.1.0", "--item", "2"]
+            )
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("out of range", result.output)

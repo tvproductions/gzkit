@@ -56,6 +56,10 @@ COMMAND_DOCS: dict[str, str] = {
     "adr covers-check": "docs/user/commands/adr-covers-check.md",
     "adr emit-receipt": "docs/user/commands/adr-emit-receipt.md",
     "obpi emit-receipt": "docs/user/commands/obpi-emit-receipt.md",
+    "chores list": "docs/user/commands/chores-list.md",
+    "chores plan": "docs/user/commands/chores-plan.md",
+    "chores run": "docs/user/commands/chores-run.md",
+    "chores audit": "docs/user/commands/chores-audit.md",
     "agent sync control-surfaces": "docs/user/commands/agent-sync-control-surfaces.md",
 }
 
