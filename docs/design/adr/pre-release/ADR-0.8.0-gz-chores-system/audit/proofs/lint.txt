@@ -1,0 +1,9 @@
+$ uvx ruff check src tests
+
+[returncode] 0
+
+[stdout]
+All checks passed!
+
+
+[stderr]
