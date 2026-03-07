@@ -15,7 +15,7 @@ LEDGER_SCHEMA = "gzkit.ledger.v1"
 
 ATTESTATION_CANONICAL_TERMS: dict[str, str] = {
     "completed": "Completed",
-    "partial": "Completed — Partial",
+    "partial": "Completed - Partial",
     "dropped": "Dropped",
 }
 

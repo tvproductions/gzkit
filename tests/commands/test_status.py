@@ -397,7 +397,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
             payload = json.loads(result.output)
             adr_payload = payload["adrs"]["ADR-0.1.0"]
             self.assertEqual(adr_payload["lifecycle_status"], "Completed")
-            self.assertEqual(adr_payload["attestation_term"], "Completed — Partial")
+            self.assertEqual(adr_payload["attestation_term"], "Completed - Partial")
 
     def test_status_json_obpi_incomplete_overrides_completed_lifecycle(self) -> None:
         runner = CliRunner()
