@@ -416,9 +416,9 @@ class TestSyncControlSurfaces(unittest.TestCase):
 
             sync_all(project_root, config)
 
-            agents = (project_root / config.paths.agents_md).read_text()
-            claude = (project_root / config.paths.claude_md).read_text()
-            copilot = (project_root / config.paths.copilot_instructions).read_text()
+            agents = (project_root / config.paths.agents_md).read_text(encoding="utf-8")
+            claude = (project_root / config.paths.claude_md).read_text(encoding="utf-8")
+            copilot = (project_root / config.paths.copilot_instructions).read_text(encoding="utf-8")
 
             self.assertIn("`demo-skill`", agents)
             self.assertIn(".gzkit/skills/demo-skill/SKILL.md", agents)
@@ -437,7 +437,7 @@ class TestSyncControlSurfaces(unittest.TestCase):
 
             sync_all(project_root, config)
 
-            agents = (project_root / config.paths.agents_md).read_text()
+            agents = (project_root / config.paths.agents_md).read_text(encoding="utf-8")
             self.assertIn("`demo-skill`: Demo skill", agents)
             self.assertNotIn("`demo-skill`: ---", agents)
 
@@ -460,9 +460,10 @@ class TestSyncControlSurfaces(unittest.TestCase):
             self.assertTrue(claude_mirror.exists())
             self.assertTrue(codex_mirror.exists())
             self.assertTrue(copilot_mirror.exists())
-            self.assertEqual(claude_mirror.read_text(), source_file.read_text())
-            self.assertEqual(codex_mirror.read_text(), source_file.read_text())
-            self.assertEqual(copilot_mirror.read_text(), source_file.read_text())
+            source_text = source_file.read_text(encoding="utf-8")
+            self.assertEqual(claude_mirror.read_text(encoding="utf-8"), source_text)
+            self.assertEqual(codex_mirror.read_text(encoding="utf-8"), source_text)
+            self.assertEqual(copilot_mirror.read_text(encoding="utf-8"), source_text)
             self.assertIn(".claude/skills/audit-skill/SKILL.md", updated)
             self.assertIn(".agents/skills/audit-skill/SKILL.md", updated)
             self.assertIn(".github/skills/audit-skill/SKILL.md", updated)
@@ -568,14 +569,14 @@ class TestSyncControlSurfaces(unittest.TestCase):
             (broken_skill / "SKILL.md").write_text(
                 _skill_markdown(
                     "broken-skill",
-                    metadata={"govzero_layer": "Layer 99 — Unknown"},
+                    metadata={"govzero_layer": "Layer 99 - Unknown"},
                 )
             )
 
             blockers = collect_canonical_sync_blockers(project_root, config)
             self.assertTrue(
                 any(
-                    "invalid metadata.govzero_layer 'Layer 99 — Unknown'" in blocker
+                    "invalid metadata.govzero_layer 'Layer 99 - Unknown'" in blocker
                     for blocker in blockers
                 )
             )
@@ -592,7 +593,7 @@ class TestSyncControlSurfaces(unittest.TestCase):
                 _skill_markdown(
                     "demo-skill",
                     metadata={
-                        "govzero_layer": "Layer 1 — Evidence Gathering",
+                        "govzero_layer": "Layer 1 - Evidence Gathering",
                         "custom-key": "custom-value",
                     },
                 )

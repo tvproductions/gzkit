@@ -83,7 +83,7 @@ def _record_obpi_completion_if_ready(
     if not obpi_path.exists():
         return
 
-    content = obpi_path.read_text()
+    content = obpi_path.read_text(encoding="utf-8")
     status = (parse_frontmatter_value(content, "status") or "").strip().lower()
     if status != "completed":
         return
@@ -295,7 +295,7 @@ def write_hook_script(project_root: Path, hook_type: str, hooks_dir: str) -> Pat
 
     script_path = hooks_path / "ledger-writer.py"
     script_content = generate_hook_script(hook_type, project_root)
-    script_path.write_text(script_content)
+    script_path.write_text(script_content, encoding="utf-8")
 
     # Make executable on Unix
     script_path.chmod(0o755)

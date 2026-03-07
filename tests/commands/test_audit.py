@@ -198,7 +198,7 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
         with runner.isolated_filesystem():
             runner.invoke(main, ["init"])
             config_path = Path(".gzkit.json")
-            config = json.loads(config_path.read_text())
+            config = json.loads(config_path.read_text(encoding="utf-8"))
             config["paths"]["obpis"] = "design/obpis"
             config_path.write_text(json.dumps(config, indent=2) + "\n")
             Path("design/obpis").mkdir(parents=True, exist_ok=True)

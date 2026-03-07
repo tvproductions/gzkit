@@ -103,9 +103,9 @@ SKILL_METADATA_KEYS = (
 SKILL_VERSION_RE = re.compile(r"^\d+\.\d+\.\d+$")
 SKILL_FRAMEWORK_VERSION_RE = re.compile(r"^v\d+(?:\.\d+){0,2}$")
 SKILL_GOVZERO_LAYERS = {
-    "Layer 1 — Evidence Gathering",
-    "Layer 2 — Ledger Consumption",
-    "Layer 3 — File Sync",
+    "Layer 1 - Evidence Gathering",
+    "Layer 2 - Ledger Consumption",
+    "Layer 3 - File Sync",
 }
 
 
@@ -277,7 +277,7 @@ def scaffold_skill(
         "metadata_skill_version": "1.0.0",
         "metadata_govzero_framework_version": "v6",
         "metadata_govzero_author": "gzkit-governance",
-        "metadata_govzero_layer": "Layer 1 — Evidence Gathering",
+        "metadata_govzero_layer": "Layer 1 - Evidence Gathering",
         "lifecycle_state": "active",
         "owner": "gzkit-governance",
         "last_reviewed": date.today().isoformat(),
@@ -292,7 +292,7 @@ def scaffold_skill(
     content = render_template("skill", **context)
 
     skill_file = skill_path / "SKILL.md"
-    skill_file.write_text(content)
+    skill_file.write_text(content, encoding="utf-8")
 
     return skill_file
 

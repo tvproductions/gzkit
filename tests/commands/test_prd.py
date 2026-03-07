@@ -23,5 +23,5 @@ class TestPrdCommand(unittest.TestCase):
         with runner.isolated_filesystem():
             runner.invoke(main, ["init"])
             runner.invoke(main, ["prd", "TEST-1.0.0"])
-            ledger_content = Path(".gzkit/ledger.jsonl").read_text()
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertIn("prd_created", ledger_content)

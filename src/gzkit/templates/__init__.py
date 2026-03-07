@@ -23,7 +23,7 @@ def load_template(name: str) -> str:
     """
     template_dir = files("gzkit.templates")
     template_file = template_dir.joinpath(f"{name}.md")
-    return template_file.read_text()
+    return template_file.read_text(encoding="utf-8")
 
 
 def render_template(name: str, **kwargs: Any) -> str:

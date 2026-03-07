@@ -277,7 +277,7 @@ def _has_substantive_implementation_summary(content: str) -> bool:
     bullet_matches = re.findall(r"^- [^:\n]+:[ \t]*(.+)$", section, flags=re.MULTILINE)
     for value in bullet_matches:
         normalized = value.strip().lower()
-        if normalized and normalized not in {"-", "—", "tbd", "(none)", "n/a"}:
+        if normalized and normalized not in {"-", "tbd", "(none)", "n/a"}:
             return True
     return False
 
@@ -287,7 +287,7 @@ def _inspect_obpi_brief(
     obpi_id: str | None = None,
     graph: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    content = obpi_file.read_text()
+    content = obpi_file.read_text(encoding="utf-8")
     frontmatter_status = (parse_frontmatter_value(content, "status") or "").strip().lower()
     brief_status = (_markdown_label_value(content, "Brief Status") or "").strip().lower()
 

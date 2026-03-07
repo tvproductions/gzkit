@@ -17,7 +17,6 @@ STRICT_PLACEHOLDERS = {
     "none",
     "(none)",
     "-",
-    "—",
     "paste test output here",
     "paste lint/format/type check output here",
     "one-sentence concrete outcome",
@@ -45,7 +44,7 @@ class ObpiValidator:
         if not obpi_path.exists():
             return [f"File not found: {obpi_path}"]
 
-        content = obpi_path.read_text()
+        content = obpi_path.read_text(encoding="utf-8")
         status = (parse_frontmatter_value(content, "status") or "").strip().lower()
 
         # Only enforce completion rules if status is 'completed'

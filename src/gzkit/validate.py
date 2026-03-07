@@ -369,7 +369,7 @@ def validate_document(path: Path, schema_name: str) -> list[ValidationError]:
 
     # Load content
     try:
-        content = path.read_text()
+        content = path.read_text(encoding="utf-8")
     except Exception as e:
         return [
             ValidationError(
@@ -424,7 +424,7 @@ def validate_manifest(manifest_path: Path) -> list[ValidationError]:
         ]
 
     try:
-        content = manifest_path.read_text()
+        content = manifest_path.read_text(encoding="utf-8")
         manifest = json.loads(content)
     except json.JSONDecodeError as e:
         return [
@@ -758,7 +758,7 @@ def validate_surfaces(project_root: Path) -> list[ValidationError]:
     agents_md = project_root / "AGENTS.md"
     if agents_md.exists():
         try:
-            content = agents_md.read_text()
+            content = agents_md.read_text(encoding="utf-8")
             _, body = parse_frontmatter(content)
             headers = extract_headers(body)
 
@@ -837,7 +837,7 @@ def validate_all(project_root: Path) -> ValidationResult:
     # If manifest is valid, validate documents based on it
     if manifest_path.exists():
         try:
-            manifest = json.loads(manifest_path.read_text())
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
             artifacts = manifest.get("artifacts", {})
 
             for _artifact_type, artifact_config in artifacts.items():

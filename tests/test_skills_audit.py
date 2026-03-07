@@ -154,7 +154,7 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
                 config.paths.skills,
                 "demo-skill",
                 frontmatter=_skill_frontmatter(
-                    "demo-skill", metadata={"govzero_layer": "Layer 99 — Unknown"}
+                    "demo-skill", metadata={"govzero_layer": "Layer 99 - Unknown"}
                 ),
             )
             _write_skill(
@@ -162,7 +162,7 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
                 config.paths.codex_skills,
                 "demo-skill",
                 frontmatter=_skill_frontmatter(
-                    "demo-skill", metadata={"govzero_layer": "Layer 99 — Unknown"}
+                    "demo-skill", metadata={"govzero_layer": "Layer 99 - Unknown"}
                 ),
             )
             _write_skill(
@@ -170,7 +170,7 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
                 config.paths.claude_skills,
                 "demo-skill",
                 frontmatter=_skill_frontmatter(
-                    "demo-skill", metadata={"govzero_layer": "Layer 99 — Unknown"}
+                    "demo-skill", metadata={"govzero_layer": "Layer 99 - Unknown"}
                 ),
             )
             _write_skill(
@@ -178,7 +178,7 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
                 config.paths.copilot_skills,
                 "demo-skill",
                 frontmatter=_skill_frontmatter(
-                    "demo-skill", metadata={"govzero_layer": "Layer 99 — Unknown"}
+                    "demo-skill", metadata={"govzero_layer": "Layer 99 - Unknown"}
                 ),
             )
 
@@ -194,7 +194,7 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
             config = GzkitConfig(project_name="gzkit-test")
 
             metadata = {
-                "govzero_layer": "Layer 1 — Evidence Gathering",
+                "govzero_layer": "Layer 1 - Evidence Gathering",
                 "custom-key": "custom-value",
             }
             _write_skill(

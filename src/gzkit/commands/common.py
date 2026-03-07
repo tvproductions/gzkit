@@ -138,7 +138,7 @@ def load_manifest(project_root: Path) -> dict[str, Any]:
     manifest_path = project_root / ".gzkit" / "manifest.json"
     if not manifest_path.exists():
         raise GzCliError("Missing .gzkit/manifest.json")
-    return json.loads(manifest_path.read_text())
+    return json.loads(manifest_path.read_text(encoding="utf-8"))
 
 
 def get_git_user() -> str:

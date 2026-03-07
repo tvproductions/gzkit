@@ -71,9 +71,9 @@ SKILL_VERSION_RE = re.compile(r"^\d+\.\d+\.\d+$")
 SKILL_FRAMEWORK_VERSION_RE = re.compile(r"^v\d+(?:\.\d+){0,2}$")
 SKILL_LIFECYCLE_STATES = {"draft", "active", "deprecated", "retired"}
 SKILL_GOVZERO_LAYERS = {
-    "Layer 1 — Evidence Gathering",
-    "Layer 2 — Ledger Consumption",
-    "Layer 3 — File Sync",
+    "Layer 1 - Evidence Gathering",
+    "Layer 2 - Ledger Consumption",
+    "Layer 3 - File Sync",
 }
 
 
@@ -259,7 +259,7 @@ def parse_artifact_metadata(file_path: Path) -> dict[str, str]:
     result: dict[str, str] = {"id": file_path.stem}
 
     try:
-        content = file_path.read_text()
+        content = file_path.read_text(encoding="utf-8")
     except OSError:
         return result
 
@@ -281,7 +281,7 @@ def detect_project_name(project_root: Path) -> str:
     """
     pyproject = project_root / "pyproject.toml"
     if pyproject.exists():
-        for line in pyproject.read_text().split("\n"):
+        for line in pyproject.read_text(encoding="utf-8").split("\n"):
             # Parse name = "project-name" or name = 'project-name'
             if line.strip().startswith("name") and "=" in line:
                 _, _, value = line.partition("=")
@@ -371,7 +371,7 @@ def load_local_content(project_root: Path) -> str:
     """
     local_path = project_root / "agents.local.md"
     if local_path.exists():
-        return local_path.read_text()
+        return local_path.read_text(encoding="utf-8")
     return ""
 
 
@@ -1077,7 +1077,7 @@ def sync_agents_md(project_root: Path, config: GzkitConfig) -> None:
     content = render_template("agents", **context)
 
     agents_path = project_root / config.paths.agents_md
-    agents_path.write_text(content)
+    agents_path.write_text(content, encoding="utf-8")
 
 
 def sync_claude_md(project_root: Path, config: GzkitConfig) -> None:
@@ -1091,7 +1091,7 @@ def sync_claude_md(project_root: Path, config: GzkitConfig) -> None:
     content = render_template("claude", **context)
 
     claude_path = project_root / config.paths.claude_md
-    claude_path.write_text(content)
+    claude_path.write_text(content, encoding="utf-8")
 
 
 def sync_copilot_instructions(project_root: Path, config: GzkitConfig) -> None:
@@ -1106,7 +1106,7 @@ def sync_copilot_instructions(project_root: Path, config: GzkitConfig) -> None:
 
     copilot_path = project_root / config.paths.copilot_instructions
     copilot_path.parent.mkdir(parents=True, exist_ok=True)
-    copilot_path.write_text(content)
+    copilot_path.write_text(content, encoding="utf-8")
 
 
 def sync_claude_settings(project_root: Path, config: GzkitConfig) -> None:
@@ -1139,7 +1139,7 @@ AGENTS.md
 """
 
     copilotignore_path = project_root / ".copilotignore"
-    copilotignore_path.write_text(ignore_content)
+    copilotignore_path.write_text(ignore_content, encoding="utf-8")
 
 
 def sync_skill_mirrors(project_root: Path, config: GzkitConfig) -> list[str]:

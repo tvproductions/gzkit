@@ -20,9 +20,9 @@ class TestSpecifyCommand(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             obpi_path = Path("design/adr/obpis/OBPI-0.1.0-01-core-feature.md")
             self.assertTrue(obpi_path.exists())
-            content = obpi_path.read_text()
-            self.assertIn('Checklist Item:** #1 — "OBPI-0.1.0-01:', content)
-            self.assertNotIn('Checklist Item:** #1 — "TBD"', content)
+            content = obpi_path.read_text(encoding="utf-8")
+            self.assertIn('Checklist Item:** #1 - "OBPI-0.1.0-01:', content)
+            self.assertNotIn('Checklist Item:** #1 - "TBD"', content)
 
     def test_specify_rejects_pool_parent(self) -> None:
         """specify blocks pool ADR parents until promotion."""

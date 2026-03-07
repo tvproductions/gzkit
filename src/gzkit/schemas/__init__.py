@@ -28,7 +28,7 @@ def load_schema(name: str) -> dict[str, Any]:
     """
     schema_dir = files("gzkit.schemas")
     schema_file = schema_dir.joinpath(f"{name}.json")
-    return json.loads(schema_file.read_text())
+    return json.loads(schema_file.read_text(encoding="utf-8"))
 
 
 def get_schema_path(name: str) -> Path:

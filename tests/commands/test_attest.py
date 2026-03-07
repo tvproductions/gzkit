@@ -78,7 +78,7 @@ class TestAttestSemantics(unittest.TestCase):
                 ],
             )
             self.assertEqual(result.exit_code, 0)
-            ledger_content = Path(".gzkit/ledger.jsonl").read_text()
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertIn("attested", ledger_content)
             self.assertIn("manual override for reconciliation", ledger_content)
 
@@ -112,5 +112,5 @@ class TestAttestSemantics(unittest.TestCase):
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("Pool ADRs cannot be attested", result.output)
 
-            ledger_content = Path(".gzkit/ledger.jsonl").read_text()
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertNotIn('"event":"attested","id":"ADR-pool.sample"', ledger_content)

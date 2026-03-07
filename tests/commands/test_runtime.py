@@ -49,7 +49,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     @staticmethod
     def _set_manifest_verification_noop() -> None:
         manifest_path = Path(".gzkit/manifest.json")
-        manifest = json.loads(manifest_path.read_text())
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         manifest["verification"] = {
             "test": "python -c \"print('ok')\"",
             "lint": "python -c \"print('ok')\"",
@@ -84,7 +84,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
             runner.invoke(main, ["plan", "0.1.0"])
             result = runner.invoke(main, ["closeout", "ADR-0.1.0"])
             self.assertEqual(result.exit_code, 0)
-            ledger_content = Path(".gzkit/ledger.jsonl").read_text()
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertIn("closeout_initiated", ledger_content)
 
     def test_closeout_dry_run_writes_nothing(self) -> None:
@@ -94,7 +94,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
             runner.invoke(main, ["plan", "0.1.0"])
             result = runner.invoke(main, ["closeout", "ADR-0.1.0", "--dry-run"])
             self.assertEqual(result.exit_code, 0)
-            ledger_content = Path(".gzkit/ledger.jsonl").read_text()
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertNotIn("closeout_initiated", ledger_content)
 
     def test_closeout_includes_canonical_attestation_choices(self) -> None:
@@ -104,8 +104,8 @@ class TestAdrRuntimeCommands(unittest.TestCase):
             runner.invoke(main, ["plan", "0.1.0"])
             result = runner.invoke(main, ["closeout", "ADR-0.1.0", "--dry-run"])
             self.assertEqual(result.exit_code, 0)
-            self.assertIn("Completed — Partial: [reason]", result.output)
-            self.assertIn("Dropped — [reason]", result.output)
+            self.assertIn("Completed - Partial: [reason]", result.output)
+            self.assertIn("Dropped - [reason]", result.output)
 
     def test_closeout_heavy_includes_bdd_command_when_features_missing(self) -> None:
         runner = CliRunner()
@@ -137,7 +137,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
             result = runner.invoke(main, ["closeout", "ADR-pool.sample"])
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("Pool ADRs cannot be closed out", result.output)
-            ledger_content = Path(".gzkit/ledger.jsonl").read_text()
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertNotIn('"event":"closeout_initiated","id":"ADR-pool.sample"', ledger_content)
 
     def test_audit_pre_attestation_fails(self) -> None:
@@ -307,7 +307,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
             runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0"])
 
             obpi_file = next(Path(".").rglob("OBPI-0.1.0-01-demo.md"))
-            content = obpi_file.read_text()
+            content = obpi_file.read_text(encoding="utf-8")
             content = content.replace(
                 "REQ-0.1.0-01-01: Given/When/Then behavior criterion 1",
                 "Given/When/Then behavior criterion 1",
@@ -354,7 +354,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                 ],
             )
             self.assertEqual(result.exit_code, 0)
-            ledger_content = Path(".gzkit/ledger.jsonl").read_text()
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertIn("audit_receipt_emitted", ledger_content)
 
     def test_adr_emit_receipt_invalid_json_fails(self) -> None:
@@ -398,7 +398,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                 ],
             )
             self.assertEqual(result.exit_code, 0)
-            ledger_content = Path(".gzkit/ledger.jsonl").read_text()
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertNotIn("audit_receipt_emitted", ledger_content)
 
     def test_adr_emit_receipt_rejects_pool_adr(self) -> None:
@@ -442,7 +442,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                 ],
             )
             self.assertEqual(result.exit_code, 0)
-            ledger_content = Path(".gzkit/ledger.jsonl").read_text()
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertIn("obpi_receipt_emitted", ledger_content)
             self.assertIn('"id":"OBPI-0.1.0-01-demo"', ledger_content)
 
@@ -494,7 +494,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                 ],
             )
             self.assertEqual(result.exit_code, 0)
-            ledger_content = Path(".gzkit/ledger.jsonl").read_text()
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertNotIn("obpi_receipt_emitted", ledger_content)
 
     def test_obpi_emit_receipt_completed_requires_evidence(self) -> None:
@@ -571,7 +571,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                 ],
             )
             self.assertEqual(result.exit_code, 0)
-            ledger_content = Path(".gzkit/ledger.jsonl").read_text()
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertIn('"obpi_completion":"attested_completed"', ledger_content)
 
     def test_obpi_emit_receipt_rejects_pool_linked_obpi(self) -> None:

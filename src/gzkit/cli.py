@@ -497,7 +497,7 @@ def save_transcript(
     transcript_dir = project_root / ".gzkit" / "transcripts"
     transcript_dir.mkdir(parents=True, exist_ok=True)
     transcript_file = transcript_dir / f"{document_id}-interview.md"
-    transcript_file.write_text(f"# Q&A Transcript: {document_id}\n\n{transcript}")
+    transcript_file.write_text(f"# Q&A Transcript: {document_id}\n\n{transcript}", encoding="utf-8")
 
     return transcript_file
 
@@ -539,7 +539,7 @@ def _register_existing_artifacts(
         console.print("\n  ADRs:")
         for meta in adr_metadata:
             parent = meta.get("parent", "(no parent found)")
-            console.print(f"    - {meta['id']} → parent: {parent}")
+            console.print(f"    - {meta['id']} -> parent: {parent}")
 
     console.print()
     if not _confirm("Register these artifacts in the ledger?", default=True):
@@ -693,7 +693,7 @@ def prd(name: str, title: str | None, dry_run: bool) -> None:
 
     # Write file
     prd_dir.mkdir(parents=True, exist_ok=True)
-    prd_file.write_text(content)
+    prd_file.write_text(content, encoding="utf-8")
 
     # Record event
     ledger = Ledger(project_root / config.paths.ledger)
@@ -728,7 +728,7 @@ def constitute(name: str, title: str | None, dry_run: bool) -> None:
         return
 
     constitution_dir.mkdir(parents=True, exist_ok=True)
-    constitution_file.write_text(content)
+    constitution_file.write_text(content, encoding="utf-8")
 
     ledger = Ledger(project_root / config.paths.ledger)
     ledger.append(constitution_created_event(constitution_id))
@@ -753,7 +753,7 @@ def specify(
     if _is_pool_adr_id(canonical_parent):
         raise GzCliError(f"Pool ADRs cannot receive OBPIs until promoted: {canonical_parent}.")
     adr_file, resolved_parent = resolve_adr_file(project_root, config, canonical_parent)
-    adr_content = adr_file.read_text()
+    adr_content = adr_file.read_text(encoding="utf-8")
     checklist_items = parse_checklist_items(adr_content)
     if not checklist_items:
         raise GzCliError(
@@ -825,7 +825,7 @@ def specify(
         return
 
     obpi_dir.mkdir(parents=True, exist_ok=True)
-    obpi_file.write_text(content)
+    obpi_file.write_text(content, encoding="utf-8")
 
     ledger.append(obpi_created_event(obpi_id, resolved_parent))
 
@@ -1053,7 +1053,7 @@ def _collect_covers_annotations(project_root: Path) -> dict[str, list[str]]:
     covers: dict[str, list[str]] = {}
 
     for test_file in sorted(tests_dir.rglob("*.py")):
-        content = test_file.read_text()
+        content = test_file.read_text(encoding="utf-8")
         rel_path = str(test_file.relative_to(project_root))
 
         try:
@@ -1130,7 +1130,7 @@ def _extract_obpi_requirement_targets(
     obpi_id: str,
 ) -> dict[str, Any]:
     """Extract REQ targets and acceptance-criteria gaps from an OBPI brief."""
-    content = obpi_file.read_text()
+    content = obpi_file.read_text(encoding="utf-8")
     section_lines = _extract_h2_section_lines(content, "Acceptance Criteria")
     req_prefix = _req_prefix_for_obpi(obpi_id)
 
@@ -1330,7 +1330,7 @@ def _resolve_pool_adr_source(
     if ledger.canonicalize_id(pool_adr_id) != pool_adr_id:
         raise GzCliError(f"Pool ADR already promoted or renamed in ledger state: {pool_adr_id}")
 
-    pool_content = pool_file.read_text()
+    pool_content = pool_file.read_text(encoding="utf-8")
     existing_promoted_to = parse_frontmatter_value(pool_content, "promoted_to")
     if existing_promoted_to:
         raise GzCliError(
@@ -1473,8 +1473,8 @@ def _apply_adr_promotion(ledger: Ledger, promotion_plan: dict[str, Any]) -> None
     pool_file = cast(Path, promotion_plan["pool_file"])
     target_dir.mkdir(parents=True, exist_ok=True)
     (target_dir / "obpis").mkdir(parents=True, exist_ok=True)
-    target_file.write_text(cast(str, promotion_plan["promoted_content"]))
-    pool_file.write_text(cast(str, promotion_plan["updated_pool_content"]))
+    target_file.write_text(cast(str, promotion_plan["promoted_content"]), encoding="utf-8")
+    pool_file.write_text(cast(str, promotion_plan["updated_pool_content"]), encoding="utf-8")
     ledger.append(
         artifact_renamed_event(
             old_id=cast(str, promotion_plan["pool_adr_id"]),
@@ -2102,7 +2102,7 @@ def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
 
     closeout_form = adr_file.parent / "ADR-CLOSEOUT-FORM.md"
     gate_1_path = str(adr_file.relative_to(project_root))
-    attestation_choices = ["Completed", "Completed — Partial: [reason]", "Dropped — [reason]"]
+    attestation_choices = ["Completed", "Completed - Partial: [reason]", "Dropped - [reason]"]
     evidence = {
         "adr_file": gate_1_path,
         "closeout_form": (
@@ -2220,6 +2220,8 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
         proof_file.write_text(
             f"$ {command}\n\n[returncode] {result.returncode}\n\n"
             f"[stdout]\n{result.stdout}\n\n[stderr]\n{result.stderr}\n"
+            ,
+            encoding="utf-8"
         )
         result_rows.append(
             {
@@ -2251,7 +2253,8 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
                 f"- Directory: `{proofs_dir.relative_to(project_root)}`",
             ]
         )
-        + "\n"
+        + "\n",
+        encoding="utf-8",
     )
 
     audit_file = audit_dir / "AUDIT.md"
@@ -2267,7 +2270,7 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
         audit_lines.append(
             f"- **{row['label']}**: {status} (`{row['command']}`) -> `{row['proof_file']}`"
         )
-    audit_file.write_text("\n".join(audit_lines) + "\n")
+    audit_file.write_text("\n".join(audit_lines) + "\n", encoding="utf-8")
 
     output = {
         "adr": adr_id,
@@ -2754,7 +2757,7 @@ def _collect_readme_quickstart_issues(project_root: Path) -> list[dict[str, str]
     if not readme_path.exists():
         return [{"path": "README.md", "issue": "README missing"}]
 
-    readme_content = readme_path.read_text()
+    readme_content = readme_path.read_text(encoding="utf-8")
     command_lines, issues = _extract_readme_quickstart_commands(readme_content)
     if issues:
         return issues
@@ -2794,7 +2797,7 @@ def cli_audit_cmd(as_json: bool) -> None:
     issues: list[dict[str, str]] = []
 
     index_path = project_root / "docs/user/commands/index.md"
-    index_content = index_path.read_text() if index_path.exists() else ""
+    index_content = index_path.read_text(encoding="utf-8") if index_path.exists() else ""
     if not index_path.exists():
         issues.append({"path": "docs/user/commands/index.md", "issue": "commands index missing"})
 
@@ -2804,7 +2807,7 @@ def cli_audit_cmd(as_json: bool) -> None:
             issues.append({"path": doc_rel, "issue": f"missing doc for `{command_name}`"})
             continue
 
-        content = doc_path.read_text()
+        content = doc_path.read_text(encoding="utf-8")
         expected_heading = f"# gz {command_name}"
         if not content.lstrip().startswith(expected_heading):
             issues.append(
@@ -2880,7 +2883,10 @@ def parity_check_cmd(as_json: bool) -> None:
         "## Next Actions",
     )
     if template_path.exists():
-        missing_markers = _required_markers_missing(template_path.read_text(), template_markers)
+        missing_markers = _required_markers_missing(
+            template_path.read_text(encoding="utf-8"),
+            template_markers,
+        )
         for marker in missing_markers:
             issues.append(
                 {
@@ -2898,7 +2904,7 @@ def parity_check_cmd(as_json: bool) -> None:
     )
     if skill_path.exists():
         missing_commands = _required_markers_missing(
-            skill_path.read_text(), required_skill_commands
+            skill_path.read_text(encoding="utf-8"), required_skill_commands
         )
         for marker in missing_commands:
             issues.append(
@@ -2917,7 +2923,7 @@ def parity_check_cmd(as_json: bool) -> None:
             }
         )
     else:
-        report_content = latest_report.read_text()
+        report_content = latest_report.read_text(encoding="utf-8")
         report_markers = ("Overall parity status:", "## Next Actions")
         missing_report_markers = _required_markers_missing(report_content, report_markers)
         rel_latest = str(latest_report.relative_to(project_root))
@@ -2955,7 +2961,7 @@ def parity_check_cmd(as_json: bool) -> None:
 def _readiness_collect_markers(path: Path, markers: tuple[str, ...]) -> list[str]:
     """Return marker strings that are missing from file content."""
     try:
-        content = path.read_text()
+        content = path.read_text(encoding="utf-8")
     except OSError:
         return list(markers)
     lowered = content.lower()
@@ -3348,7 +3354,10 @@ def readiness_audit_cmd(as_json: bool) -> None:
         if issues:
             console.print("Findings:")
             for issue in issues:
-                console.print(f"  - {issue['discipline']}: {issue['path']} — {issue['issue']}")
+                console.print(
+                    f"  - {issue['discipline']}: {issue['path']} - {issue['issue']}",
+                    soft_wrap=True,
+                )
 
     if not success:
         raise SystemExit(1)
@@ -3389,7 +3398,7 @@ def validate(
         # Validate documents based on manifest
         manifest_path = project_root / ".gzkit" / "manifest.json"
         if manifest_path.exists():
-            manifest = json.loads(manifest_path.read_text())
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
             for _artifact_type, artifact_config in manifest.get("artifacts", {}).items():
                 artifact_dir = project_root / artifact_config.get("path", "")
                 schema = artifact_config.get("schema", "")
@@ -3883,7 +3892,7 @@ def interview(document_type: str) -> None:
 
     doc_dir.mkdir(parents=True, exist_ok=True)
     doc_file = doc_dir / f"{doc_id}.md"
-    doc_file.write_text(content)
+    doc_file.write_text(content, encoding="utf-8")
 
     # Record event
     if document_type == "prd":

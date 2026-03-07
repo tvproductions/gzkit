@@ -11,7 +11,7 @@ status: Draft
 ## ADR Item
 
 - **Source ADR:** `{parent_adr_path}`
-- **Checklist Item:** #{item_number} — "{checklist_item_text}"
+- **Checklist Item:** #{item_number} - "{checklist_item_text}"
 
 **Status:** Draft
 
@@ -23,21 +23,21 @@ status: Draft
 
 ## Lane
 
-**{lane}** — {lane_rationale}
+**{lane}** - {lane_rationale}
 
 ## Allowed Paths
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
-- `src/module/` — Reason this is in scope
-- `tests/test_module.py` — Reason
+- `src/module/` - Reason this is in scope
+- `tests/test_module.py` - Reason
 
 ## Denied Paths
 
 <!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
 
-- `docs/design/**` — ADR changes out of scope
-- `features/**` — BDD handled separately
+- `docs/design/**` - ADR changes out of scope
+- `features/**` - BDD handled separately
 - New dependencies
 - CI files, lockfiles
 
@@ -59,9 +59,9 @@ status: Draft
 
 **Governance (read once, cache):**
 
-- [ ] `.github/discovery-index.json` — repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` — agent operating contract
-- [ ] Parent ADR — understand full context
+- [ ] `.github/discovery-index.json` - repo structure
+- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
+- [ ] Parent ADR - understand full context
 
 **Context:**
 
@@ -179,6 +179,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 **Brief Status:** Draft
 
-**Date Completed:** —
+**Date Completed:** -
 
-**Evidence Hash:** —
+**Evidence Hash:** -

@@ -74,7 +74,7 @@ def plan_cmd(
         return
 
     adr_dir.mkdir(parents=True, exist_ok=True)
-    adr_file.write_text(content)
+    adr_file.write_text(content, encoding="utf-8")
 
     ledger = Ledger(project_root / config.paths.ledger)
     ledger.append(adr_created_event(adr_id, parent_obpi or "", lane))

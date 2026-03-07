@@ -1,6 +1,6 @@
 # ADR Closeout Form: {adr_id}
 
-**Status**: Phase 1 — Pre-Attestation
+**Status**: Phase 1 - Pre-Attestation
 
 ---
 
@@ -31,8 +31,8 @@ Do not trust agent summaries. Run the commands. See the output.
 
 ### Attestation (choose one):
 
-- [ ] **Completed** — All work finished; all claims verified
-- [ ] **Completed — Partial**: _______________
+- [ ] **Completed** - All work finished; all claims verified
+- [ ] **Completed - Partial**: _______________
 - [ ] **Dropped**: _______________
 
 **Attested by**: _______________
