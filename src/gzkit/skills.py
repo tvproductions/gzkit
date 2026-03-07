@@ -403,7 +403,7 @@ def _append_audit_issue(
         SkillAuditIssue(
             severity=severity,
             code=code,
-            path=str(rel),
+            path=rel.as_posix(),
             message=message,
             blocking=blocking,
         )

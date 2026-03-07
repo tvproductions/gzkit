@@ -3419,6 +3419,24 @@ def validate(
         console.print("[green]All validations passed.[/green]")
 
 
+def _is_path_within_root(path: str, root: str) -> bool:
+    """Return True when a project-relative path is equal to or nested under root."""
+    normalized_path = path.replace("\\", "/").rstrip("/")
+    normalized_root = root.replace("\\", "/").rstrip("/")
+    return normalized_path == normalized_root or normalized_path.startswith(f"{normalized_root}/")
+
+
+def _is_recoverable_stale_mirror_issue(path: str, message: str, config: GzkitConfig) -> bool:
+    """Classify stale mirror-only directory findings as recovery warnings."""
+    if message != "Unexpected skill directory not in canonical root.":
+        return False
+
+    mirror_roots = (
+        config.paths.codex_skills,
+        config.paths.claude_skills,
+        config.paths.copilot_skills,
+    )
+    return any(_is_path_within_root(path, root) for root in mirror_roots)
 def _run_agent_control_sync(dry_run: bool) -> None:
     """Execute control-surface regeneration flow."""
     config = ensure_initialized()
