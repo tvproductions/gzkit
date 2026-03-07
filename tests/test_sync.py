@@ -425,6 +425,22 @@ class TestSyncControlSurfaces(unittest.TestCase):
             self.assertIn("`demo-skill`", claude)
             self.assertIn("`demo-skill`", copilot)
 
+    def test_sync_skills_catalog_uses_frontmatter_description(self) -> None:
+        """Skill catalog entries use frontmatter descriptions, not `---` placeholders."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            skill_dir = project_root / config.paths.skills / "demo-skill"
+            skill_dir.mkdir(parents=True, exist_ok=True)
+            (skill_dir / "SKILL.md").write_text(_skill_markdown("demo-skill"))
+
+            sync_all(project_root, config)
+
+            agents = (project_root / config.paths.agents_md).read_text()
+            self.assertIn("`demo-skill`: Demo skill", agents)
+            self.assertNotIn("`demo-skill`: ---", agents)
+
     def test_sync_mirrors_skills_into_all_tool_directories(self) -> None:
         """Canonical skills are mirrored into Claude, Codex, and Copilot paths."""
         with tempfile.TemporaryDirectory() as tmpdir:

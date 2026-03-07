@@ -27,6 +27,13 @@ date: {date}
 
 {negative_consequences}
 
+## Decomposition Scorecard
+
+<!-- Deterministic OBPI sizing: score each dimension 0/1/2. -->
+<!-- Cutoffs are notional defaults and should be calibrated over time from project evidence. -->
+
+{decomposition_scorecard}
+
 ## Checklist
 
 <!-- Each item becomes an OBPI (One Brief Per Item). Sequential numbering, no gaps. -->

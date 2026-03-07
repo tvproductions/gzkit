@@ -1,60 +1,43 @@
 ---
-id: OBPI-0.7.0-04-obpi-drift-and-status-reconciliation
-parent: ADR-0.7.0-obpi-first-operations
-item: 4
+id: OBPI-0.9.0-05-parity-qc-and-closeout-readiness
+parent: ADR-0.9.0-airlineops-surface-breadth-parity
+item: 5
 lane: Heavy
-status: Completed
+status: Draft
 ---
 
-# OBPI-0.7.0-04-obpi-drift-and-status-reconciliation: Obpi Drift And Status Reconciliation
+# OBPI-0.9.0-05-parity-qc-and-closeout-readiness: Parity QC and closeout readiness
 
 ## ADR Item
 
-- **Source ADR:** `docs/design/adr/pre-release/ADR-0.7.0-obpi-first-operations/ADR-0.7.0-obpi-first-operations.md`
-- **Checklist Item:** #4 — "Add OBPI drift/status reconciliation reporting."
+- **Source ADR:** `docs/design/adr/pre-release/ADR-0.9.0-airlineops-surface-breadth-parity/ADR-0.9.0-airlineops-surface-breadth-parity.md`
+- **Checklist Item:** #5 — "TBD"
 
-**Status:** Completed
+**Status:** Draft
 
 ## Objective
 
-Expose OBPI completion drift and reconciliation signals in status/audit surfaces so operators can see when completed OBPI state has diverged from recorded evidence.
+<!-- One-sentence concrete outcome. What does "done" look like? -->
 
-### Implementation Summary
-
-- Files modified: `src/gzkit/commands/status.py` (added DRIFT detection and reporting), `src/gzkit/ledger.py` (added ledger-first completion tracking).
-- Date completed: 2026-03-04
-
-## Key Proof
-
-```bash
-# Status command now detects and reports drift:
-uv run gz adr status ADR-0.7.0-obpi-first-operations
-# Output: OBPI-0.7.0-04: [red]DRIFT[/red] (file says Completed, ledger proof missing)
-```
-
-## Human Attestation
-
-- Attestor: human:jeff
-- Attestation: "Confirmed status reporting correctly identifies divergence between ledger and local files."
-- Date: 2026-03-04
+TBD
 
 ## Lane
 
-**Heavy** — This affects operator-visible governance reporting and closeout quality signals.
+**Heavy** — TBD
 
 ## Allowed Paths
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
-- `src/gzkit/cli.py` — status and reconciliation rendering
-- `src/gzkit/ledger.py` — OBPI lifecycle signal derivation
-- `docs/user/commands/**` — status/audit documentation
-- `tests/**` — status/audit regression coverage
+- `src/module/` — Reason this is in scope
+- `tests/test_module.py` — Reason
 
 ## Denied Paths
 
 <!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
 
+- `docs/design/**` — ADR changes out of scope
+- `features/**` — BDD handled separately
 - New dependencies
 - CI files, lockfiles
 
@@ -63,10 +46,10 @@ uv run gz adr status ADR-0.7.0-obpi-first-operations
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
      These are the rules agents ground against. If not met, OBPI fails. -->
 
-1. REQUIREMENT: Status surfaces MUST report OBPI unit completion and outstanding items deterministically.
-1. REQUIREMENT: Reconciliation output MUST separate complete, missing, and drifted OBPI evidence states.
-1. NEVER: Never collapse OBPI drift into opaque ADR-only summary claims.
-1. ALWAYS: Reporting must preserve OBPI identifiers for remediation targeting.
+1. REQUIREMENT: First constraint
+1. REQUIREMENT: Second constraint
+1. NEVER: What must not happen
+1. ALWAYS: What must always be true
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -82,18 +65,18 @@ uv run gz adr status ADR-0.7.0-obpi-first-operations
 
 **Context:**
 
-- [ ] Parent ADR: `docs/design/adr/pre-release/ADR-0.7.0-obpi-first-operations/ADR-0.7.0-obpi-first-operations.md`
+- [ ] Parent ADR: `docs/design/adr/pre-release/ADR-0.9.0-airlineops-surface-breadth-parity/ADR-0.9.0-airlineops-surface-breadth-parity.md`
 - [ ] Related OBPIs in same ADR
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required file/module exists: `src/gzkit/cli.py`
-- [ ] Required config exists: `.gzkit/manifest.json`
+- [ ] Required file/module exists: `path/to/prerequisite`
+- [ ] Required config exists: `config/file.json`
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `src/gzkit/cli.py` (`status`, `adr_status_cmd`)
-- [ ] Test patterns: `tests/test_cli.py`
+- [ ] Pattern to follow: `path/to/exemplar`
+- [ ] Test patterns: `tests/path/to/similar_tests.py`
 
 ## Quality Gates
 
@@ -138,18 +121,21 @@ uv run gz adr status ADR-0.7.0-obpi-first-operations
 # Gate 2: Tests
 uv run -m unittest discover tests
 
-# Status/reconciliation behavior
-uv run gz status --json
-uv run gz adr status ADR-0.7.0-obpi-first-operations --json
+# Specific verification for this OBPI
+command --to --verify
 ```
 
 ## Acceptance Criteria
 
-<!-- Specific, testable criteria for completion. Checkbox list. -->
+<!--
+Specific, testable criteria for completion.
+Each checkbox MUST carry a deterministic REQ ID:
+REQ-<semver>-<obpi_item>-<criterion_index>
+-->
 
-- [ ] Status output reports OBPI-unit completion and open items correctly.
-- [ ] Reconciliation distinguishes missing proof from drifted proof states.
-- [ ] Tests validate OBPI-centric reporting behavior.
+- [ ] REQ-0.9.0-05-01: Given/When/Then behavior criterion 1
+- [ ] REQ-0.9.0-05-02: Given/When/Then behavior criterion 2
+- [ ] REQ-0.9.0-05-03: Given/When/Then behavior criterion 3
 
 ## Completion Checklist
 
@@ -193,7 +179,7 @@ uv run gz adr status ADR-0.7.0-obpi-first-operations --json
 
 ---
 
-**Brief Status:** Completed
+**Brief Status:** Draft
 
 **Date Completed:** —
 

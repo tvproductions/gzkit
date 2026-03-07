@@ -1,0 +1,35 @@
+{
+  "schema": "gzkit.chores.v1",
+  "version": 1,
+  "chores": [
+    {
+      "slug": "quality-check",
+      "title": "Run full quality gates",
+      "lane": "lite",
+      "description": "Run the full gz quality gate set and capture deterministic evidence.",
+      "steps": [
+        {
+          "name": "run-gz-check",
+          "argv": [
+            "uv",
+            "run",
+            "gz",
+            "check"
+          ],
+          "timeout_seconds": 1200
+        }
+      ],
+      "evidence": {
+        "commands": [
+          "uv run gz check"
+        ]
+      },
+      "acceptance": {
+        "checks": [
+          "Command exits with status 0",
+          "No lint/type/test/parity/readiness blockers are reported"
+        ]
+      }
+    }
+  ]
+}

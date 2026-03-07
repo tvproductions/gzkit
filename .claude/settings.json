@@ -1,9 +1,24 @@
 {
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python .claude/hooks/instruction-router.py"
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Edit|Write",
         "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python .claude/hooks/post-edit-ruff.py"
+          },
           {
             "type": "command",
             "command": "uv run python .claude/hooks/ledger-writer.py"

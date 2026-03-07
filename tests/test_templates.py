@@ -21,6 +21,7 @@ class TestLoadTemplate(unittest.TestCase):
         self.assertIn("{id}", content)
         self.assertIn("Intent", content)
         self.assertIn("Decision", content)
+        self.assertIn("Decomposition Scorecard", content)
 
     def test_load_obpi_template(self) -> None:
         """Can load OBPI template."""
