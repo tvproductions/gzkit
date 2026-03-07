@@ -159,6 +159,79 @@ class TestChoresCommands(unittest.TestCase):
             self.assertTrue(log_path.exists())
             self.assertIn("Status: FAIL", log_path.read_text(encoding="utf-8"))
 
+    def test_chores_run_nonzero_exit_returns_nonzero_and_logs_fail(self) -> None:
+        """chore run propagates failing return code and records failed log entry."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            _write_registry(
+                {
+                    "schema": "gzkit.chores.v1",
+                    "version": 1,
+                    "chores": [
+                        {
+                            "slug": "failing-run",
+                            "title": "Failing run",
+                            "lane": "lite",
+                            "steps": [
+                                {
+                                    "name": "exit-three",
+                                    "argv": [sys.executable, "-c", "import sys; sys.exit(3)"],
+                                    "timeout_seconds": 10,
+                                }
+                            ],
+                            "evidence": {"commands": ["nonzero exit path"]},
+                            "acceptance": {"checks": ["runner exits nonzero"]},
+                        }
+                    ],
+                }
+            )
+
+            result = runner.invoke(main, ["chores", "run", "failing-run"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("Chore step failed", result.output)
+            self.assertIn("returncode: 3", result.output)
+
+            log_path = Path("design/briefs/chores/CHORE-failing-run/logs/CHORE-LOG.md")
+            self.assertTrue(log_path.exists())
+            self.assertIn("Status: FAIL", log_path.read_text(encoding="utf-8"))
+
+    def test_chores_run_missing_executable_returns_nonzero_and_logs_fail(self) -> None:
+        """chore run fails closed when step executable is missing."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            _write_registry(
+                {
+                    "schema": "gzkit.chores.v1",
+                    "version": 1,
+                    "chores": [
+                        {
+                            "slug": "missing-exe",
+                            "title": "Missing executable",
+                            "lane": "lite",
+                            "steps": [
+                                {
+                                    "name": "missing-exec",
+                                    "argv": ["this-executable-should-not-exist-gzkit"],
+                                    "timeout_seconds": 10,
+                                }
+                            ],
+                            "evidence": {"commands": ["missing executable path"]},
+                            "acceptance": {"checks": ["runner exits nonzero"]},
+                        }
+                    ],
+                }
+            )
+
+            result = runner.invoke(main, ["chores", "run", "missing-exe"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("command not found", result.output.lower())
+
+            log_path = Path("design/briefs/chores/CHORE-missing-exe/logs/CHORE-LOG.md")
+            self.assertTrue(log_path.exists())
+            self.assertIn("Status: FAIL", log_path.read_text(encoding="utf-8"))
+
     def test_chores_audit_reports_log_presence(self) -> None:
         """chore audit reports log status per chore."""
         runner = CliRunner()
