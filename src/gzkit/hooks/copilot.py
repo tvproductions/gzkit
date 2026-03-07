@@ -64,5 +64,5 @@ def setup_copilotignore(project_root: Path) -> Path:
     """
     content = generate_copilotignore(project_root)
     ignore_path = project_root / ".copilotignore"
-    ignore_path.write_text(content)
+    ignore_path.write_text(content, encoding="utf-8")
     return ignore_path

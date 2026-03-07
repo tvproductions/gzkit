@@ -28,7 +28,7 @@ class TestDryRunCommands(unittest.TestCase):
             result = runner.invoke(main, ["prd", "TEST-1.0.0", "--dry-run"])
             self.assertEqual(result.exit_code, 0)
             self.assertFalse(Path("design/prd/PRD-TEST-1.0.0.md").exists())
-            ledger_content = Path(".gzkit/ledger.jsonl").read_text()
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertNotIn("prd_created", ledger_content)
 
     def test_attest_dry_run_does_not_write(self) -> None:
@@ -43,5 +43,5 @@ class TestDryRunCommands(unittest.TestCase):
                 main, ["attest", "ADR-0.1.0", "--status", "completed", "--dry-run"]
             )
             self.assertEqual(result.exit_code, 0)
-            ledger_content = Path(".gzkit/ledger.jsonl").read_text()
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertNotIn("attested", ledger_content)

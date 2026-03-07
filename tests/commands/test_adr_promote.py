@@ -69,14 +69,14 @@ class TestAdrPromoteCommand(unittest.TestCase):
                 / "ADR-0.6.0-sample-work.md"
             )
             self.assertTrue(target_file.exists())
-            target_content = target_file.read_text()
+            target_content = target_file.read_text(encoding="utf-8")
             self.assertIn("promoted_from: ADR-pool.sample-work", target_content)
 
-            updated_pool = pool_file.read_text()
+            updated_pool = pool_file.read_text(encoding="utf-8")
             self.assertIn("status: Superseded", updated_pool)
             self.assertIn("promoted_to: ADR-0.6.0-sample-work", updated_pool)
 
-            ledger_content = Path(".gzkit/ledger.jsonl").read_text()
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertIn('"event":"artifact_renamed"', ledger_content)
             self.assertIn('"id":"ADR-pool.sample-work"', ledger_content)
             self.assertIn('"new_id":"ADR-0.6.0-sample-work"', ledger_content)

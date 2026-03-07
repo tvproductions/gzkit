@@ -16,5 +16,5 @@ class TestGateCommands(unittest.TestCase):
             runner.invoke(main, ["plan", "0.1.0"])
             result = runner.invoke(main, ["gates", "--gate", "1"])
             self.assertEqual(result.exit_code, 0)
-            ledger_content = Path(".gzkit/ledger.jsonl").read_text()
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertIn("gate_checked", ledger_content)

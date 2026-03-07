@@ -17,7 +17,7 @@ class TestPlanCommand(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             adr_path = Path("design/adr/ADR-0.1.0.md")
             self.assertTrue(adr_path.exists())
-            content = adr_path.read_text()
+            content = adr_path.read_text(encoding="utf-8")
             self.assertIn("## Decomposition Scorecard", content)
             self.assertIn("- Final Target OBPI Count: 1", content)
             self.assertEqual(content.count("- [ ] OBPI-0.1.0-"), 1)
