@@ -72,4 +72,6 @@ indent-style = "space"
 [dependency-groups]
 dev = [
     "coverage>=7.13.4",
+    "mkdocs>=1.6",
+    "mkdocs-material>=9.5",
 ]
