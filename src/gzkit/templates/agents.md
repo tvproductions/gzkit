@@ -106,6 +106,7 @@ Skill behavior is standardized and synchronized by `gz agent sync control-surfac
 
 1.  **Step 1: Baseline Structural Template (Rule of Three)**: For complex ADRs, scaffold into three baseline layers (Registry, Core Execution, and Lifecycle/Operations).
 2.  **Step 2: Refining Overlay (Matrix of Four)**: Apply four core principles to each baseline unit. If a unit violates a principle, it MUST be further decomposed.
+3.  **Step 3: Deterministic Scorecard Gate**: Score dimensions (Data/State, Logic/Engine, Interface, Observability, Lineage) as 0/1/2, map to baseline range (`0-3 => 1-2`, `4-6 => 3`, `7-8 => 4`, `9-10 => 5+`), add mandatory split triggers, and set `Final Target OBPI Count`.
 
 **1:1 Synchronization Mandate**: The ADR's Feature Checklist MUST remain in 1:1 synchronization with the OBPI brief files. No drift is permitted. Each checklist item maps to exactly one brief.
 

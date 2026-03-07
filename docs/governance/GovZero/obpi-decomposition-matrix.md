@@ -68,6 +68,63 @@ The matrix scales based on the ADR's lane:
 
 ---
 
+## Deterministic Decomposition Gate
+
+To remove intuition-only planning, ADR decomposition MUST be computed using a scorecard.
+
+### Step 1: Dimension Scores (0/1/2)
+
+Score each dimension:
+
+- Data/State
+- Logic/Engine
+- Interface
+- Observability
+- Lineage
+
+Compute:
+
+- `Dimension Total = sum(5 dimension scores)`
+
+### Step 2: Baseline Count
+
+Map `Dimension Total` to a baseline range:
+
+- `0-3 => 1-2`
+- `4-6 => 3`
+- `7-8 => 4`
+- `9-10 => 5+`
+
+Select one baseline count inside that range as `Baseline Selected`.
+
+### Step 3: Mandatory Split Adders
+
+Add `+1` OBPI for each triggered split rule:
+
+- Single-Narrative violation (mixed objectives)
+- Surface Boundary violation (internal logic + external surface in one unit)
+- State Anchor violation (state-writing mixed with non-state work)
+- Testability Ceiling violation (>5 test scenario clusters)
+
+Compute:
+
+- `Split Total = sum(triggered split rules)`
+- `Final Target OBPI Count = Baseline Selected + Split Total`
+
+### Step 4: Checklist Synchronization
+
+ADR checklist count MUST equal `Final Target OBPI Count`.
+
+This is enforced as a mechanics contract in gzkit command surfaces (`gz plan` seed + `gz specify`
+binding + validation checks).
+
+### Calibration Policy
+
+Cutoffs are notional defaults, not immutable constants. They MUST be reviewed and tuned from project
+evidence (rework rate, failed gates, attestation churn, and delivery predictability).
+
+---
+
 ## Enforcement
 
 The `gz-plan` and `gz-adr-promote` skills utilize this matrix during the **Spec Developer Phase**. Agents must perform a "Granularity Assessment" and present the rationale for the resulting OBPI checklist based on these dimensions.

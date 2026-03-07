@@ -107,6 +107,12 @@ GovZero mining rule:
    - What blocks 1.0 readiness
    - What can wait
    - What must be done next cycle
+13. Enforce action closure for this scan cycle:
+   - For each `Import Now` finding, execute at least one concrete tranche in the
+     same cycle (code/docs/settings change) and record file-level evidence.
+   - If execution cannot happen in-cycle, open a trackable defect (`gh issue create --label defect`)
+     and link it in the report.
+   - A scan with findings but no execution artifact or defect artifact is `INCOMPLETE`.
 
 ## Examples
 
@@ -123,6 +129,7 @@ GovZero mining rule:
 - Do not claim procedure parity without executable ritual evidence from gzkit runtime/docs surfaces.
 - Do not use patch versions for new feature sequencing.
 - Keep findings actionable: each gap must map to ADR/OBPI follow-up.
+- Do not close a scan cycle with only passive tracking; require execution or a filed defect.
 
 ## Related Skills
 

@@ -118,9 +118,26 @@ Test decision.
 
 Test consequences.
 
-## OBPIs
+## Decomposition Scorecard
 
-Test OBPIs.
+- Data/State: 0
+- Logic/Engine: 0
+- Interface: 0
+- Observability: 0
+- Lineage: 0
+- Dimension Total: 0
+- Baseline Range: 1-2
+- Baseline Selected: 1
+- Split Single-Narrative: 0
+- Split Surface Boundary: 0
+- Split State Anchor: 0
+- Split Testability Ceiling: 0
+- Split Total: 0
+- Final Target OBPI Count: 1
+
+## Checklist
+
+- [ ] OBPI-0.1.0-01: Define scope, constraints, and acceptance criteria
 
 ## Evidence
 
@@ -134,6 +151,71 @@ Test evidence.
             f.flush()
             errors = validate_document(Path(f.name), "adr")
             self.assertEqual(errors, [])
+
+    def test_adr_decomposition_checklist_mismatch_fails(self) -> None:
+        """Checklist count must match scorecard final target."""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+            f.write("""---
+id: ADR-0.1.0
+status: Draft
+semver: 0.1.0
+lane: lite
+parent: OBPI-core
+date: 2026-01-01
+---
+
+# ADR-0.1.0: Test
+
+## Intent
+
+Test intent.
+
+## Decision
+
+Test decision.
+
+## Consequences
+
+Test consequences.
+
+## Decomposition Scorecard
+
+- Data/State: 0
+- Logic/Engine: 0
+- Interface: 0
+- Observability: 0
+- Lineage: 0
+- Dimension Total: 0
+- Baseline Range: 1-2
+- Baseline Selected: 1
+- Split Single-Narrative: 1
+- Split Surface Boundary: 0
+- Split State Anchor: 0
+- Split Testability Ceiling: 0
+- Split Total: 1
+- Final Target OBPI Count: 2
+
+## Checklist
+
+- [ ] OBPI-0.1.0-01: Define scope, constraints, and acceptance criteria
+
+## Evidence
+
+Test evidence.
+
+## Attestation Block
+
+| Term | Status | Attested By | Date | Reason |
+|------|--------|-------------|------|--------|
+""")
+            f.flush()
+            errors = validate_document(Path(f.name), "adr")
+            self.assertTrue(any(e.type == "decomposition" for e in errors))
+            self.assertTrue(
+                any(
+                    "Checklist count must match scorecard final target" in e.message for e in errors
+                )
+            )
 
     def test_missing_frontmatter_field(self) -> None:
         """Missing frontmatter field returns error."""

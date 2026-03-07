@@ -29,6 +29,10 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz adr emit-receipt`](adr-emit-receipt.md) | Emit completed/validated receipt with optional evidence scope |
 | [`gz obpi emit-receipt`](obpi-emit-receipt.md) | Emit completed/validated receipt for one OBPI |
 | [`gz git-sync`](git-sync.md) | Run guarded sync ritual |
+| [`gz chores list`](chores-list.md) | List declared chores from the config registry |
+| [`gz chores plan`](chores-plan.md) | Show deterministic plan details for one chore |
+| [`gz chores run`](chores-run.md) | Execute one chore and append a dated log |
+| [`gz chores audit`](chores-audit.md) | Audit chore log presence for one/all chores |
 | [`gz migrate-semver`](migrate-semver.md) | Record SemVer ID rename events |
 | [`gz register-adrs`](register-adrs.md) | Register existing ADR files into ledger |
 

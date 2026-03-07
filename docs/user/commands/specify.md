@@ -7,7 +7,7 @@ Create a new implementation brief.
 ## Usage
 
 ```bash
-gz specify <name> --parent <PARENT-ID> [OPTIONS]
+gz specify <name> --parent <ADR-ID> --item <N> [OPTIONS]
 ```
 
 ---
@@ -25,6 +25,7 @@ gz specify <name> --parent <PARENT-ID> [OPTIONS]
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `--parent` | string | required | Parent ADR ID |
+| `--item` | integer | `1` | Parent ADR checklist item number |
 | `--lane` | `lite` \| `heavy` | `lite` | Governance lane |
 | `--title` | string | — | Brief title |
 | `--dry-run` | flag | — | Show actions without writing |
@@ -33,12 +34,15 @@ gz specify <name> --parent <PARENT-ID> [OPTIONS]
 
 ## What It Does
 
-1. Creates a brief document from template
-2. Resolves the parent ADR and writes the OBPI under that ADR package `obpis/` directory
-3. Records the creation event in the ledger
-4. Configures lane-specific requirements (docs, BDD)
+1. Resolves the parent ADR and loads `Checklist` + `Decomposition Scorecard`
+2. Enforces checklist/scorecard count consistency
+3. Binds OBPI `--item N` to the exact parent checklist text
+4. Creates OBPI brief under parent ADR `obpis/` directory
+5. Records `obpi_created` event in ledger
 
 Pool ADRs (`ADR-pool.*` or legacy `ADR-*.pool.*`) are blocked as parents until promoted.
+If the parent ADR scorecard is missing/invalid, or checklist count drifts from scorecard target,
+`gz specify` fails closed.
 
 ---
 
@@ -46,13 +50,14 @@ Pool ADRs (`ADR-pool.*` or legacy `ADR-*.pool.*`) are blocked as parents until p
 
 ```bash
 # Basic usage
-gz specify add-login --parent ADR-0.4.0-skill-capability-mirroring
+gz specify add-login --parent ADR-0.4.0-skill-capability-mirroring --item 1
 
 # With options
-gz specify add-login --parent ADR-0.4.0-skill-capability-mirroring --lane heavy --title "Add Login Button"
+gz specify add-login --parent ADR-0.4.0-skill-capability-mirroring --item 2 \
+  --lane heavy --title "Add Login Button"
 
 # Dry run
-gz specify add-login --parent PRD-my-feature-1.0.0 --dry-run
+gz specify add-login --parent ADR-0.4.0-skill-capability-mirroring --item 2 --dry-run
 ```
 
 ---
@@ -70,11 +75,9 @@ Created OBPI: docs/design/adr/pre-release/ADR-0.4.0-skill-capability-mirroring/o
 The created brief contains:
 
 - **Metadata**: ID, title, parent, lane, status
-- **Intent**: What you want to accomplish
+- **ADR Item Linkage**: exact quoted checklist item text from parent ADR
 - **Acceptance Criteria**: How to know it's done
 - **REQ IDs**: Each acceptance checkbox is seeded with `REQ-<semver>-<obpi_item>-<nn>`
-- **Out of Scope**: What this brief doesn't cover
-- **Dependencies**: What this depends on
 - **Lane Requirements**: Docs/BDD needed (based on lane)
 
 ---

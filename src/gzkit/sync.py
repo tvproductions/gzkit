@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from gzkit.config import GzkitConfig
-from gzkit.hooks.claude import setup_claude_hooks
+from gzkit.hooks.claude import generate_claude_settings, setup_claude_hooks
 from gzkit.hooks.copilot import setup_copilot_hooks
 from gzkit.templates import render_template
 
@@ -382,12 +382,41 @@ def _extract_skill_description(skill_file: Path) -> str:
         skill_file: Path to SKILL.md.
 
     Returns:
-        First non-empty non-heading line, or a fallback description.
+        Frontmatter `description`, body fallback, or a default message.
     """
-    for line in skill_file.read_text().splitlines():
+    try:
+        content = skill_file.read_text(encoding="utf-8")
+    except OSError:
+        return "No description provided."
+
+    lines = content.splitlines()
+    body_start = 0
+
+    # Prefer explicit frontmatter description when present.
+    if lines and lines[0].strip() == "---":
+        for idx, raw in enumerate(lines[1:], start=1):
+            stripped = raw.strip()
+            if stripped == "---":
+                body_start = idx + 1
+                break
+            if not stripped or raw.startswith((" ", "\t")) or ":" not in stripped:
+                continue
+            key, value = stripped.split(":", 1)
+            if key.strip() == "description":
+                description = value.strip().strip("\"'")
+                if description:
+                    return description
+
+    for line in lines[body_start:]:
         stripped = line.strip()
-        if stripped and not stripped.startswith("#"):
-            return stripped
+        if not stripped or stripped == "---" or stripped.startswith("#"):
+            continue
+        # Avoid leaking top-level frontmatter-like keys into rendered catalogs.
+        if ":" in stripped and not stripped.startswith("http"):
+            key, _, _ = stripped.partition(":")
+            if key.isidentifier() and " " not in key:
+                continue
+        return stripped
     return "No description provided."
 
 
@@ -1087,17 +1116,7 @@ def sync_claude_settings(project_root: Path, config: GzkitConfig) -> None:
         project_root: Project root directory.
         config: Project configuration.
     """
-    hook_cmd = f"uv run python {config.paths.claude_hooks}/ledger-writer.py"
-    settings = {
-        "hooks": {
-            "PostToolUse": [
-                {
-                    "matcher": "Edit|Write",
-                    "hooks": [{"type": "command", "command": hook_cmd}],
-                }
-            ]
-        }
-    }
+    settings = generate_claude_settings(config)
 
     settings_path = project_root / config.paths.claude_settings
     settings_path.parent.mkdir(parents=True, exist_ok=True)

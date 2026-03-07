@@ -9,6 +9,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
 
+from gzkit.decomposition import build_checklist_seed, compute_scorecard, default_dimension_scores
+
 
 @dataclass
 class Question:
@@ -455,7 +457,24 @@ def format_answers_for_template(
         template_vars.setdefault("decision", "")
         template_vars.setdefault("positive_consequences", "")
         template_vars.setdefault("negative_consequences", "")
-        template_vars.setdefault("checklist", "")
+        semver = str(template_vars.get("semver", "0.1.0"))
+        lane = str(template_vars.get("lane", "lite"))
+        defaults = default_dimension_scores(lane, semver)
+        scorecard = compute_scorecard(
+            data_state=defaults["data_state"],
+            logic_engine=defaults["logic_engine"],
+            interface=defaults["interface"],
+            observability=defaults["observability"],
+            lineage=defaults["lineage"],
+            split_single_narrative=0,
+            split_surface_boundary=0,
+            split_state_anchor=0,
+            split_testability_ceiling=0,
+        )
+        template_vars.setdefault("decomposition_scorecard", scorecard.to_markdown())
+        template_vars.setdefault(
+            "checklist", build_checklist_seed(semver, scorecard.final_target_obpi_count)
+        )
         template_vars.setdefault("alternatives", "")
 
     return template_vars
