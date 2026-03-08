@@ -40,6 +40,10 @@ htmlcov/
 # Ruff
 .ruff_cache/
 
+# PyInstaller
+*.manifest
+*.spec.warn
+
 # OS
 .DS_Store
 Thumbs.db
