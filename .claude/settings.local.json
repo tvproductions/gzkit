@@ -6,7 +6,8 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:medium.com)",
       "WebFetch(domain:redreamality.com)",
-      "WebFetch(domain:openspec.pro)"
+      "WebFetch(domain:openspec.pro)",
+      "Bash(python -c \":*)"
     ]
   }
 }
