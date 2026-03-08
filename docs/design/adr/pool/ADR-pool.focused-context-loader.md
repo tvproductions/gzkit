@@ -1,8 +1,17 @@
+---
+id: ADR-pool.focused-context-loader
+status: Pool
+parent: PRD-GZKIT-1.0.0
+lane: lite
+enabler: null
+inspired_by: openspec
+---
+
 # ADR-pool.focused-context-loader: Focused Context Loader
 
 ## Status
 
-Proposed
+Pool
 
 ## Date
 
@@ -36,6 +45,32 @@ agent accuracy on specific tasks.
 
 ---
 
+## Non-Goals
+
+- No pool OBPIs. OBPIs begin only after promotion to a SemVer ADR.
+- No replacement of AGENTS.md — this is a complementary focused view.
+- No automatic context injection into agent sessions (manual piping only).
+
+---
+
+## Dependencies
+
+- **Blocks on**: None
+- **Blocked by**: None
+- **Related**: ADR-pool.prime-context-hooks (complementary, not dependent)
+
+---
+
+## Promotion Criteria
+
+This pool ADR can be promoted when all are true:
+
+1. Human assigns a SemVer ADR ID for active implementation.
+2. Context payload format is accepted.
+3. ADR-to-test discovery mechanism is agreed upon.
+
+---
+
 ## Inspired By
 
 [OpenSpec](https://github.com/Fission-AI/OpenSpec) — load-on-demand context management
@@ -44,16 +79,9 @@ consumption and preventing context drift.
 
 ---
 
-## Dependencies
-
-- **Blocks on**: None
-- **Blocked by**: ADR-pool.prime-context-hooks (related but independent)
-
----
-
 ## Notes
 
-- This is the agent-efficiency counterpart to prime-context-hooks
-- Could replace the current AGENTS.md monolith with composable context fragments
-- Key metric: tokens consumed before agent starts productive work
+- This is the agent-efficiency counterpart to prime-context-hooks.
+- Could replace the current AGENTS.md monolith with composable context fragments.
+- Key metric: tokens consumed before agent starts productive work.
 - Consider: integrate with Claude Code's `/context` or CLAUDE.md conventions?

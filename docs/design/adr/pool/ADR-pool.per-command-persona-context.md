@@ -1,8 +1,17 @@
+---
+id: ADR-pool.per-command-persona-context
+status: Pool
+parent: PRD-GZKIT-1.0.0
+lane: lite
+enabler: null
+inspired_by: bmad
+---
+
 # ADR-pool.per-command-persona-context: Per-Command Persona Context
 
 ## Status
 
-Proposed
+Pool
 
 ## Date
 
@@ -37,11 +46,11 @@ verification checklists). Not separate agents — contextual prompts per command
 
 ---
 
-## Inspired By
+## Non-Goals
 
-[BMAD Method](https://github.com/bmad-code-org/BMAD-METHOD) — agent-as-code pattern
-with specialized personas (Product Manager, Architect, Developer, QA). The insight:
-different tasks benefit from different AI "mindsets."
+- No pool OBPIs. OBPIs begin only after promotion to a SemVer ADR.
+- No multiple concurrent agents (BMAD's complexity trap).
+- No user-facing persona selection UI.
 
 ---
 
@@ -53,10 +62,28 @@ different tasks benefit from different AI "mindsets."
 
 ---
 
+## Promotion Criteria
+
+This pool ADR can be promoted when all are true:
+
+1. Human assigns a SemVer ADR ID for active implementation.
+2. Persona set and storage format are accepted.
+3. Skill SKILL.md vs. standalone persona file decision is made.
+
+---
+
+## Inspired By
+
+[BMAD Method](https://github.com/bmad-code-org/BMAD-METHOD) — agent-as-code pattern
+with specialized personas (Product Manager, Architect, Developer, QA). The insight:
+different tasks benefit from different AI "mindsets."
+
+---
+
 ## Notes
 
-- Partially implemented: each skill's SKILL.md already has behavior instructions
-- The gap is intentionality — current skills describe workflow, not cognitive stance
-- BMAD's failure mode (12+ agent types) is the warning: keep persona count small
+- Partially implemented: each skill's SKILL.md already has behavior instructions.
+- The gap is intentionality — current skills describe workflow, not cognitive stance.
+- BMAD's failure mode (12+ agent types) is the warning: keep persona count small.
+- Key principle: one agent, multiple hats — not multiple agents.
 - Consider: should personas be user-customizable?
-- Key principle: one agent, multiple hats — not multiple agents
