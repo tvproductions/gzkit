@@ -1,8 +1,17 @@
+---
+id: ADR-pool.pre-planning-interview
+status: Pool
+parent: PRD-GZKIT-1.0.0
+lane: lite
+enabler: null
+inspired_by: speckit
+---
+
 # ADR-pool.pre-planning-interview: Pre-Planning Interview Phase
 
 ## Status
 
-Proposed
+Pool
 
 ## Date
 
@@ -37,11 +46,11 @@ assumptions, constraints, and unknowns before committing to a design decision.
 
 ---
 
-## Inspired By
+## Non-Goals
 
-[GitHub Spec Kit](https://github.com/github/spec-kit) — explicit clarification phase
-before planning where the AI asks questions to resolve ambiguity before writing the
-specification.
+- No pool OBPIs. OBPIs begin only after promotion to a SemVer ADR.
+- No mandatory interview requirement — experienced users skip straight to `gz plan`.
+- No domain-specific question sets in initial implementation.
 
 ---
 
@@ -53,10 +62,27 @@ specification.
 
 ---
 
+## Promotion Criteria
+
+This pool ADR can be promoted when all are true:
+
+1. Human assigns a SemVer ADR ID for active implementation.
+2. Core question set is accepted.
+3. Transcript format and storage location are decided.
+
+---
+
+## Inspired By
+
+[GitHub Spec Kit](https://github.com/github/spec-kit) — explicit clarification phase
+before planning where the AI asks questions to resolve ambiguity before writing the
+specification.
+
+---
+
 ## Notes
 
-- The skill stub exists but the question set and output format are undefined
-- Interview is optional — experienced users can skip straight to `gz plan`
-- For students: this is the Socratic method applied to software design
+- The skill stub exists but the question set and output format are undefined.
+- For students: this is the Socratic method applied to software design.
 - Key question: should interview responses persist or be consumed by plan generation?
-- Consider: domain-specific question sets (web app vs. CLI vs. library)?
+- Consider: domain-specific question sets (web app vs. CLI vs. library) as a future extension.

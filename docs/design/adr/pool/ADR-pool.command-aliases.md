@@ -1,8 +1,17 @@
+---
+id: ADR-pool.command-aliases
+status: Pool
+parent: PRD-GZKIT-1.0.0
+lane: lite
+enabler: null
+inspired_by: bmad
+---
+
 # ADR-pool.command-aliases: Human-Readable Command Aliases
 
 ## Status
 
-Proposed
+Pool
 
 ## Date
 
@@ -38,11 +47,11 @@ an ADR is a "plan."
 
 ---
 
-## Inspired By
+## Non-Goals
 
-[BMAD Method](https://github.com/bmad-code-org/BMAD-METHOD) — uses familiar Agile
-vocabulary (user stories, acceptance criteria, sprint) that students already know.
-The insight: jargon is a barrier to adoption, not a feature.
+- No pool OBPIs. OBPIs begin only after promotion to a SemVer ADR.
+- No replacement of canonical command names — aliases are sugar, not substitutes.
+- No user-configurable alias mappings in initial implementation.
 
 ---
 
@@ -53,10 +62,27 @@ The insight: jargon is a barrier to adoption, not a feature.
 
 ---
 
+## Promotion Criteria
+
+This pool ADR can be promoted when all are true:
+
+1. Human assigns a SemVer ADR ID for active implementation.
+2. Alias set is finalized and accepted.
+3. Help text format for alias display is agreed upon.
+
+---
+
+## Inspired By
+
+[BMAD Method](https://github.com/bmad-code-org/BMAD-METHOD) — uses familiar Agile
+vocabulary (user stories, acceptance criteria, sprint) that students already know.
+The insight: jargon is a barrier to adoption, not a feature.
+
+---
+
 ## Notes
 
-- Smallest effort, highest adoption impact of all proposed improvements
-- Aliases should never replace canonical names — they're sugar, not substitutes
-- `--help` output improvement is the real win: "gz decide — Record a design decision (alias for gz plan)"
-- Consider: should aliases be configurable or hardcoded?
+- Smallest effort, highest adoption impact of all proposed improvements.
 - Risk: alias proliferation. Keep the set small and stable.
+- `--help` improvement is the real win: "gz decide — Record a design decision (alias for gz plan)"
+- Consider: should aliases be configurable or hardcoded?

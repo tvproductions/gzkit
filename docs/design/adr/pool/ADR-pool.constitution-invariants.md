@@ -1,8 +1,17 @@
+---
+id: ADR-pool.constitution-invariants
+status: Pool
+parent: PRD-GZKIT-1.0.0
+lane: lite
+enabler: null
+inspired_by: speckit
+---
+
 # ADR-pool.constitution-invariants: Project Constitution for Immutable Invariants
 
 ## Status
 
-Proposed
+Pool
 
 ## Date
 
@@ -37,11 +46,11 @@ this codebase."
 
 ---
 
-## Inspired By
+## Non-Goals
 
-[GitHub Spec Kit](https://github.com/github/spec-kit) — `constitution.md` concept:
-immutable project principles that all generated code must satisfy. The specification
-is separate from the workflow.
+- No pool OBPIs. OBPIs begin only after promotion to a SemVer ADR.
+- No runtime enforcement engine (constitution is declarative, not executable).
+- No changes to existing AGENTS.md structure until constitution is proven.
 
 ---
 
@@ -53,9 +62,27 @@ is separate from the workflow.
 
 ---
 
+## Promotion Criteria
+
+This pool ADR can be promoted when all are true:
+
+1. Human assigns a SemVer ADR ID for active implementation.
+2. Constitution template sections are accepted.
+3. Relationship between CONSTITUTION.md and AGENTS.md is clarified.
+
+---
+
+## Inspired By
+
+[GitHub Spec Kit](https://github.com/github/spec-kit) — `constitution.md` concept:
+immutable project principles that all generated code must satisfy. The specification
+is separate from the workflow.
+
+---
+
 ## Notes
 
-- The skill stub exists but the ceremony and template are undefined
-- Constitution should be bootstrapped during `gz init` with sensible defaults
+- The skill stub exists but the ceremony and template are undefined.
+- Constitution should be bootstrapped during `gz init` with sensible defaults.
 - Key question: should constitutions be enforced (validation) or advisory (documentation)?
-- For students: constitution is the "coding standards" document they're already familiar with
+- For students: constitution is the "coding standards" document they're already familiar with.

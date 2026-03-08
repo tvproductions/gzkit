@@ -1,8 +1,17 @@
+---
+id: ADR-pool.change-isolation-workspace
+status: Pool
+parent: PRD-GZKIT-1.0.0
+lane: lite
+enabler: null
+inspired_by: openspec
+---
+
 # ADR-pool.change-isolation-workspace: Filesystem Change Isolation
 
 ## Status
 
-Proposed
+Pool
 
 ## Date
 
@@ -32,10 +41,11 @@ from completed decisions, reducing context confusion for both humans and AI agen
 
 ---
 
-## Inspired By
+## Non-Goals
 
-[OpenSpec](https://github.com/Fission-AI/OpenSpec) — `changes/` directory pattern
-for isolating pending modifications from current system state.
+- No pool OBPIs. OBPIs begin only after promotion to a SemVer ADR.
+- No changes to the existing pool/ or canonical ADR directory structures.
+- No mandatory adoption — changes/ is opt-in alongside existing direct creation.
 
 ---
 
@@ -43,6 +53,23 @@ for isolating pending modifications from current system state.
 
 - **Blocks on**: None
 - **Blocked by**: None
+
+---
+
+## Promotion Criteria
+
+This pool ADR can be promoted when all are true:
+
+1. Human assigns a SemVer ADR ID for active implementation.
+2. Workspace lifecycle (create → merge) is accepted.
+3. Backward compatibility with existing ADR creation is confirmed.
+
+---
+
+## Inspired By
+
+[OpenSpec](https://github.com/Fission-AI/OpenSpec) — `changes/` directory pattern
+for isolating pending modifications from current system state.
 
 ---
 
