@@ -140,6 +140,30 @@ class TestStatusCommand(unittest.TestCase):
             self.assertIn("PENDING", result.output)
             self.assertIn("OBPI completion", result.output)
 
+    def test_status_json_orders_semver_ids_numerically(self) -> None:
+        """status --json sorts SemVer ADR ids numerically, not lexicographically."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            adr_dir = Path(config.paths.adrs)
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+
+            for adr_id in ("ADR-0.10.0", "ADR-0.2.0", "ADR-0.9.0"):
+                adr_path = adr_dir / f"{adr_id}.md"
+                adr_path.parent.mkdir(parents=True, exist_ok=True)
+                adr_path.write_text(f"---\nid: {adr_id}\n---\n\n# {adr_id}\n")
+                ledger.append(adr_created_event(adr_id, "", "lite"))
+
+            result = runner.invoke(main, ["status", "--json"])
+
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            self.assertEqual(
+                list(payload["adrs"].keys()),
+                ["ADR-0.2.0", "ADR-0.9.0", "ADR-0.10.0"],
+            )
+
     def test_status_shows_obpi_completion_summary(self) -> None:
         """status renders OBPI completion as the primary unit."""
         runner = CliRunner()

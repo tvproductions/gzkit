@@ -26,6 +26,10 @@ from gzkit.ledger import (
 )
 from gzkit.sync import parse_artifact_metadata, scan_existing_artifacts
 
+ADR_SEMVER_STATUS_ID_RE = re.compile(
+    r"^ADR-(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)(?P<suffix>(?:[.-][A-Za-z0-9][A-Za-z0-9.-]*)?)$"
+)
+
 
 def _render_gate_status(gate_status: str | None) -> str:
     if gate_status == "pass":
@@ -112,6 +116,24 @@ def _build_adr_status_entry(
     entry["obpi_summary"] = obpi_summary
     _apply_obpi_lifecycle_overrides(adr_id, entry, obpi_summary)
     return entry
+
+
+def _adr_status_sort_key(adr_id: str) -> tuple[int, int, int, int, int, str]:
+    """Sort ADR ids semver-first so 0.10.0 correctly follows 0.9.0."""
+    match = ADR_SEMVER_STATUS_ID_RE.match(adr_id)
+    if match:
+        suffix = match.group("suffix")
+        return (
+            0,
+            int(match.group("major")),
+            int(match.group("minor")),
+            int(match.group("patch")),
+            0 if not suffix else 1,
+            suffix,
+        )
+    if _is_pool_adr_id(adr_id):
+        return (1, 0, 0, 0, 0, adr_id)
+    return (2, 0, 0, 0, 0, adr_id)
 
 
 def _collect_adr_statuses(
@@ -216,7 +238,7 @@ def _render_status_table(adrs: dict[str, dict[str, Any]], default_mode: str) -> 
     table.add_column("Checks", no_wrap=True)
     table.row_styles = ["none", "dim"]
 
-    for adr_id, info in sorted(adrs.items()):
+    for adr_id, info in sorted(adrs.items(), key=lambda item: _adr_status_sort_key(item[0])):
         lane = cast(str, info.get("lane", default_mode))
         gates = cast(dict[str, str], info.get("gates", {}))
         obpi_summary = cast(dict[str, Any], info.get("obpi_summary", {}))
@@ -251,6 +273,7 @@ def status(as_json: bool, show_gates: bool, as_table: bool) -> None:
     pending = ledger.get_pending_attestations()
     graph = ledger.get_artifact_graph()
     adrs = _collect_adr_statuses(project_root, config, ledger, graph)
+    adrs = dict(sorted(adrs.items(), key=lambda item: _adr_status_sort_key(item[0])))
 
     if as_json:
         result = {
@@ -271,7 +294,7 @@ def status(as_json: bool, show_gates: bool, as_table: bool) -> None:
         _render_status_table(adrs, config.mode)
         return
 
-    for adr_id, info in sorted(adrs.items()):
+    for adr_id, info in adrs.items():
         _render_status_row(adr_id, info, config.mode, show_gates)
 
 
