@@ -32,11 +32,11 @@ Per ADR it reports:
 - OBPI completion ratio
 - OBPI unit status
 - QC readiness
-- pending check categories
+- pending check categories (compact codes in `Checks`)
 
 QC readiness is fail-closed for OBPI-first delivery:
 - when linked OBPIs exist and OBPI unit is not `completed`, `QC` reports `PENDING`
-- `Pending Checks` includes `OBPI completion` even if gate checks are otherwise passing
+- `Checks` includes `O` (`OBPI completion`) even if gate checks are otherwise passing
 
 `Validated` applies to ADR-level validation receipts. OBPI-scoped receipts marked with
 `adr_completion: not_completed` do not mark the parent ADR as validated.
@@ -69,12 +69,15 @@ uv run gz status --show-gates
 uv run gz status --json
 ```
 
-Table output excerpt (captured 2026-02-22):
+Table output excerpt (captured 2026-03-08):
 
 ```text
 ADR Status
-| ADR                                  | Lifecycle | Lane  | OBPI | OBPI Unit | QC      | Pending Checks               |
-| ------------------------------------ | --------- | ----- | ---- | --------- | ------- | ---------------------------- |
-| ADR-0.6.0-pool-promotion-protocol    | Pending   | HEAVY | 3/3  | COMPLETED | PENDING | Human attestation            |
-| ADR-0.4.0-skill-capability-mirroring | Validated | HEAVY | 4/4  | COMPLETED | READY   | -                            |
++------------------------------------------------------------------------------+
+| ADR            | Life      | Lane  |  OBPI | Unit      | QC      | Checks    |
+|----------------+-----------+-------+-------+-----------+---------+-----------|
+| ADR-0.1.0      | Pending   | LITE  |   0/1 | PENDING   | PENDING | O,T       |
+| ADR-0.2.0      | Completed | HEAVY |   3/3 | COMPLETED | READY   | -         |
++------------------------------------------------------------------------------+
+Checks legend: O=OBPI completion, T=TDD, D=Docs, B=BDD, H=Human attestation
 ```
