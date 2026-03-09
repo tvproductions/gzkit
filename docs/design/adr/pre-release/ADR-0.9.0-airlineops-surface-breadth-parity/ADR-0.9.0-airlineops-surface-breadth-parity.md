@@ -47,15 +47,15 @@ Adopt a tranche-based breadth parity execution protocol:
 
 <!-- Each item becomes an OBPI (One Brief Per Item). Sequential numbering, no gaps. -->
 
-- [ ] OBPI-0.9.0-01: Import non-blocking `.claude/hooks` tranche with
+- [x] OBPI-0.9.0-01: Import non-blocking `.claude/hooks` tranche with
       `.claude/settings.json` wiring and intake matrix evidence.
-- [ ] OBPI-0.9.0-02: Adapt blocking/deferred canonical `.claude/hooks` for gzkit
+- [x] OBPI-0.9.0-02: Adapt blocking/deferred canonical `.claude/hooks` for gzkit
       compatibility and record decisions with verification evidence.
-- [ ] OBPI-0.9.0-03: Produce `.gzkit/**` parity intake matrix and tranche sequence
+- [x] OBPI-0.9.0-03: Produce `.gzkit/**` parity intake matrix and tranche sequence
       with explicit import/defer/exclude rationale.
-- [ ] OBPI-0.9.0-04: Execute approved `.gzkit/**` import tranche and synchronize
+- [x] OBPI-0.9.0-04: Execute approved `.gzkit/**` import tranche and synchronize
       generated mirror/control surfaces.
-- [ ] OBPI-0.9.0-05: Produce parity QC and closeout evidence package for heavy-lane
+- [x] OBPI-0.9.0-05: Produce parity QC and closeout evidence package for heavy-lane
       gate readiness and attestation review.
 
 ## Q&A Transcript
@@ -69,10 +69,18 @@ breadth parity without execution closure.
 
 <!-- Links to tests, documentation, and other artifacts that prove completion -->
 
-- [ ] Tests: `tests/`
-- [ ] Docs: `docs/`
-- [ ] Parity intake matrix:
+- [x] Tests: `tests/`
+- [x] Docs: `docs/`
+- [x] Parity intake matrix:
       `docs/design/adr/pre-release/ADR-0.9.0-airlineops-surface-breadth-parity/claude-hooks-intake-matrix.md`
+- [x] `.gzkit/**` intake matrix:
+      `docs/design/adr/pre-release/ADR-0.9.0-airlineops-surface-breadth-parity/gzkit-surface-intake-matrix.md`
+- [x] Closeout readiness brief:
+      `docs/design/adr/pre-release/ADR-0.9.0-airlineops-surface-breadth-parity/obpis/OBPI-0.9.0-05-parity-qc-and-closeout-readiness.md`
+- [x] Audit plan:
+      `docs/design/adr/pre-release/ADR-0.9.0-airlineops-surface-breadth-parity/audit/AUDIT_PLAN.md`
+- [x] Audit report:
+      `docs/design/adr/pre-release/ADR-0.9.0-airlineops-surface-breadth-parity/audit/AUDIT.md`
 
 ## Alternatives Considered
 
@@ -82,4 +90,4 @@ breadth parity without execution closure.
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.9.0 | Pending | | | |
+| 0.9.0 | Completed | Test User | 2026-03-09 | |
