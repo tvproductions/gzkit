@@ -4,6 +4,31 @@
 
 _No unreleased entries._
 
+## v0.9.0 (2026-03-09)
+
+**ADR context:** `ADR-0.9.0-airlineops-surface-breadth-parity`
+**Release scope:** AirlineOps control-surface breadth parity tranche with closeout, audit, and validation packaging.
+
+### Delivered
+
+- Imported the approved `.claude/hooks` governance tranche and wired compatibility-safe hook enforcement into `.claude/settings.json`.
+- Classified canonical `.gzkit/**` deltas with explicit import/defer/exclude rationale and executed the approved governance-surface tranche.
+- Added local process-plane ontology/schema governance assets and synchronized generated control surfaces.
+- Produced closeout, audit, and validated lifecycle artifacts for ADR-0.9.0, including OBPI evidence completion and audit proofs.
+
+### Gate Evidence
+
+All 5 GovZero gates satisfied for `ADR-0.9.0-airlineops-surface-breadth-parity`.
+
+### Verification
+
+- `uv run gz status --table`
+- `uv run gz adr status ADR-0.9.0-airlineops-surface-breadth-parity --json`
+- `uv run gz closeout ADR-0.9.0-airlineops-surface-breadth-parity`
+- `uv run gz attest ADR-0.9.0-airlineops-surface-breadth-parity --status completed`
+- `uv run gz audit ADR-0.9.0-airlineops-surface-breadth-parity`
+- `uv run gz adr emit-receipt ADR-0.9.0-airlineops-surface-breadth-parity --event validated --attestor "human:jeff" --evidence-json ...`
+
 ## v0.8.0 (2026-03-07)
 
 **ADR context:** `ADR-0.8.0-gz-chores-system`
