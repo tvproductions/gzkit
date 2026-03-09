@@ -5,6 +5,9 @@ import re
 from pathlib import Path
 from typing import Any, cast
 
+from rich import box
+from rich.table import Table
+
 from gzkit.commands.common import (
     GzCliError,
     _apply_pool_adr_status_overrides,
@@ -61,6 +64,21 @@ def _render_qc_readiness(readiness: str, blockers: list[str]) -> str:
     if readiness == "ready":
         return "[green]READY[/green]"
     return f"[yellow]PENDING[/yellow] (pending: {', '.join(blockers)})"
+
+
+def _render_pending_checks_cell(blockers: list[str]) -> str:
+    """Render compact pending-check codes for table view."""
+    if not blockers:
+        return "-"
+
+    code_map = {
+        "OBPI completion": "O",
+        "TDD": "T",
+        "Docs": "D",
+        "BDD": "B",
+        "Human attestation": "H",
+    }
+    return ",".join(code_map.get(blocker, "?") for blocker in blockers)
 
 
 def _build_adr_status_entry(
@@ -188,8 +206,15 @@ def _render_status_row(
 
 def _render_status_table(adrs: dict[str, dict[str, Any]], default_mode: str) -> None:
     """Render ADR status as a stable tabular summary."""
-    headers = ["ADR", "Lifecycle", "Lane", "OBPI", "OBPI Unit", "QC", "Pending Checks"]
-    rows: list[list[str]] = []
+    table = Table(title="ADR Status", box=box.ASCII)
+    table.add_column("ADR", overflow="ellipsis")
+    table.add_column("Life", no_wrap=True)
+    table.add_column("Lane", no_wrap=True)
+    table.add_column("OBPI", justify="right", no_wrap=True)
+    table.add_column("Unit", no_wrap=True)
+    table.add_column("QC", no_wrap=True)
+    table.add_column("Checks", no_wrap=True)
+    table.row_styles = ["none", "dim"]
 
     for adr_id, info in sorted(adrs.items()):
         lane = cast(str, info.get("lane", default_mode))
@@ -203,23 +228,18 @@ def _render_status_table(adrs: dict[str, dict[str, Any]], default_mode: str) -> 
         qc_readiness, qc_blockers = _qc_readiness(gates, lane, obpi_summary)
         qc_label = "READY" if qc_readiness == "ready" else "PENDING"
 
-        rows.append(
-            [
-                adr_id,
-                lifecycle_status,
-                lane.upper(),
-                f"{obpi_completed}/{obpi_total}",
-                obpi_unit_status.upper(),
-                qc_label,
-                ", ".join(qc_blockers) if qc_blockers else "-",
-            ]
+        table.add_row(
+            adr_id,
+            lifecycle_status,
+            lane.upper(),
+            f"{obpi_completed}/{obpi_total}",
+            obpi_unit_status.upper(),
+            qc_label,
+            _render_pending_checks_cell(qc_blockers),
         )
 
-    print("ADR Status")
-    print("| " + " | ".join(headers) + " |")
-    print("| " + " | ".join("---" for _ in headers) + " |")
-    for row in rows:
-        print("| " + " | ".join(row) + " |")
+    console.print(table)
+    console.print("Checks legend: O=OBPI completion, T=TDD, D=Docs, B=BDD, H=Human attestation")
 
 
 def status(as_json: bool, show_gates: bool, as_table: bool) -> None:
