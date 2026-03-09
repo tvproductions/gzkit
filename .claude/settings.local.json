@@ -7,7 +7,10 @@
       "WebFetch(domain:medium.com)",
       "WebFetch(domain:redreamality.com)",
       "WebFetch(domain:openspec.pro)",
-      "Bash(python -c \":*)"
+      "Bash(python -c \":*)",
+      "Bash(wc -l /c/Users/Jeff/source/repos/va/airlineops/.claude/hooks/*.py)",
+      "Bash(uvx ruff check src tests)",
+      "Bash(uvx ruff format --check .)"
     ]
   }
 }
