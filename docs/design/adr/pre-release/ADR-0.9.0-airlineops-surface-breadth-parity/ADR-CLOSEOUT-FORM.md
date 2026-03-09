@@ -61,7 +61,7 @@ Step 8 issue review result:
   - `gh issue list --search "ADR-0.9.0" --state open`
   - `gh issue list --search "OBPI-0.9.0" --state open`
   - `gh issue list --search "airlineops surface breadth parity" --state open`
-- Result: pending GitHub review
+- Result: no matching open issues; no closures performed.
 
 Step 9 release notes confirmation:
 
@@ -69,5 +69,6 @@ Step 9 release notes confirmation:
 
 Step 10 release publication:
 
-- Policy-mandated pre-release sync: pending `uv run gz git-sync --apply --lint --test`
-- Release publication: pending GitHub release review and creation for `v0.9.0`
+- Policy-mandated pre-release sync: `uv run gz git-sync --apply --lint --test`
+- Release created: `gh release create v0.9.0 --repo tvproductions/gzkit --title "v0.9.0" --notes-file /tmp/gzkit-v0.9.0-release-notes.md`
+- Release URL: <https://github.com/tvproductions/gzkit/releases/tag/v0.9.0>
