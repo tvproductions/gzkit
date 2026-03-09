@@ -7,7 +7,7 @@ metadata:
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   skill-type: "reconciler"
-  govzero_layer: "Layer 2 — Ledger Consumption"
+  govzero_layer: "Layer 2 - Ledger Consumption"
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-02-18

@@ -1,0 +1,338 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://govzero.dev/schemas/ontology/v0.1.0",
+  "title": "GovZero Ontology",
+  "description": "Central semantic model for governance: doctrines, policies, rules, and actions with enforcement, observability, traceability, and remediation links.",
+  "type": "object",
+  "required": ["version", "last_updated", "doctrines", "policies", "rules", "actions"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Schema version (semver).",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO 8601 date of last modification."
+    },
+    "doctrines": {
+      "type": "object",
+      "description": "High-level engineering principles. Keys are doctrine IDs (D-{SLUG}).",
+      "propertyNames": { "pattern": "^D-[A-Z][A-Z0-9-]+$" },
+      "additionalProperties": { "$ref": "#/$defs/doctrine" }
+    },
+    "policies": {
+      "type": "object",
+      "description": "Codified interpretations of doctrines scoped to domains. Keys are policy IDs (P-{ABBREV}-{SLUG}).",
+      "propertyNames": { "pattern": "^P-[A-Z][A-Z0-9-]+$" },
+      "additionalProperties": { "$ref": "#/$defs/policy" }
+    },
+    "rules": {
+      "type": "object",
+      "description": "Atomic, testable constraints on agent or code behavior. Keys are rule IDs (R-{ABBREV}-{NNN}).",
+      "propertyNames": { "pattern": "^R-[A-Z][A-Z0-9-]+-\\d{3}$" },
+      "additionalProperties": { "$ref": "#/$defs/rule" }
+    },
+    "actions": {
+      "type": "object",
+      "description": "Operations with authorization boundaries. Keys are action IDs (A-{SLUG}).",
+      "propertyNames": { "pattern": "^A-[A-Z][A-Z0-9-]+$" },
+      "additionalProperties": { "$ref": "#/$defs/action" }
+    }
+  },
+  "$defs": {
+    "plane": {
+      "type": "string",
+      "enum": ["product", "process"],
+      "description": "Product plane (constrains code) or process plane (constrains governance)."
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "architecture",
+        "cli",
+        "configuration",
+        "data-access",
+        "data-modeling",
+        "dependencies",
+        "documentation",
+        "portability",
+        "process",
+        "security",
+        "stability",
+        "testing",
+        "tooling",
+        "versioning"
+      ],
+      "description": "Classification of the governance element."
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["blocking", "advisory", "pattern", "anti-pattern"],
+      "description": "Compliance-behavior signal: blocking (must comply), advisory (should comply), pattern (preferred approach), anti-pattern (prohibited approach)."
+    },
+    "authorization": {
+      "type": "string",
+      "enum": ["autonomous", "human-gated", "prohibited"],
+      "description": "Agent authorization level: autonomous (no approval needed), human-gated (requires approval), prohibited (must never do)."
+    },
+    "enforcement_coverage": {
+      "type": "string",
+      "enum": ["automated", "human-gated", "gap"],
+      "description": "Enforcement status: automated (machine enforcement active), human-gated (human review by design), gap (enforcement debt)."
+    },
+    "doctrine": {
+      "type": "object",
+      "required": ["title", "description", "canonical_source", "category", "plane"],
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Human-readable name."
+        },
+        "description": {
+          "type": "string",
+          "description": "What this doctrine means and why it exists."
+        },
+        "origin_adr": {
+          "type": "string",
+          "description": "ADR that established this doctrine (e.g., 'ADR-0.1.0')."
+        },
+        "canonical_source": {
+          "type": "string",
+          "description": "File path of the authoritative statement."
+        },
+        "also_stated_in": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Other file paths that restate this doctrine."
+        },
+        "category": { "$ref": "#/$defs/category" },
+        "plane": { "$ref": "#/$defs/plane" },
+        "deprecated": {
+          "type": "boolean",
+          "default": false,
+          "description": "True if this doctrine is no longer active. ID is never reused."
+        }
+      }
+    },
+    "policy": {
+      "type": "object",
+      "required": ["title", "description", "doctrine", "scope", "canonical_source"],
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Human-readable name."
+        },
+        "description": {
+          "type": "string",
+          "description": "What this policy requires."
+        },
+        "doctrine": {
+          "type": "string",
+          "pattern": "^D-[A-Z][A-Z0-9-]+$",
+          "description": "Parent doctrine ID (derives_from link)."
+        },
+        "scope": {
+          "type": "string",
+          "description": "File paths or domains this policy applies to (glob patterns allowed)."
+        },
+        "canonical_source": {
+          "type": "string",
+          "description": "File path of the authoritative statement."
+        },
+        "deprecated": {
+          "type": "boolean",
+          "default": false,
+          "description": "True if this policy is no longer active. ID is never reused."
+        }
+      }
+    },
+    "enforcement": {
+      "type": "object",
+      "required": ["coverage"],
+      "additionalProperties": false,
+      "properties": {
+        "coverage": { "$ref": "#/$defs/enforcement_coverage" },
+        "policy_tests": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "File paths of policy tests that enforce this rule."
+        },
+        "pre_commit_hooks": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Pre-commit hook IDs that enforce this rule."
+        },
+        "chores": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Chore slugs that check or enforce this rule."
+        },
+        "skills": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Skill names that help enforce this rule."
+        },
+        "schema_validation": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "JSON Schema or Pydantic model paths that validate this rule."
+        }
+      }
+    },
+    "observability": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "chore_proofs": {
+          "type": "string",
+          "description": "Directory path where chore completion evidence is stored."
+        },
+        "arb_receipt_tag": {
+          "type": "string",
+          "description": "ARB receipt tag for compliance evidence."
+        },
+        "insight_category": {
+          "type": "string",
+          "description": "Category tag for agent-insights.jsonl entries."
+        },
+        "coverage_metric": {
+          "type": "string",
+          "description": "Name of the coverage metric (e.g., 'test_coverage_pct')."
+        }
+      }
+    },
+    "traceability": {
+      "type": "object",
+      "required": ["affected_paths"],
+      "additionalProperties": false,
+      "properties": {
+        "adr": {
+          "type": "string",
+          "description": "ADR that introduced or governs this rule."
+        },
+        "instruction_file": {
+          "type": "string",
+          "description": "Instruction file where this rule is documented."
+        },
+        "affected_paths": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Glob patterns of files constrained by this rule."
+        },
+        "related_rules": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "IDs of related rules (cross-references)."
+        }
+      }
+    },
+    "remediation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "chore": {
+          "type": "string",
+          "description": "Chore slug that remediates this rule."
+        },
+        "command": {
+          "type": "string",
+          "description": "CLI command that fixes violations."
+        },
+        "pattern": {
+          "type": "string",
+          "description": "Description of the fix pattern."
+        },
+        "exemplar": {
+          "type": "string",
+          "description": "File path of a good example to follow."
+        }
+      }
+    },
+    "agent_guidance": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "claude_code": {
+          "type": "string",
+          "description": "Compliance hint for Claude Code agent."
+        },
+        "copilot": {
+          "type": "string",
+          "description": "Compliance hint for GitHub Copilot agent."
+        },
+        "codex": {
+          "type": "string",
+          "description": "Compliance hint for OpenAI Codex agent."
+        }
+      }
+    },
+    "rule": {
+      "type": "object",
+      "required": ["title", "description", "policy", "severity", "plane", "enforcement", "traceability"],
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Human-readable name (semantic slug)."
+        },
+        "description": {
+          "type": "string",
+          "description": "Precise statement of the constraint."
+        },
+        "policy": {
+          "type": "string",
+          "pattern": "^P-[A-Z][A-Z0-9-]+$",
+          "description": "Parent policy ID (constrains link)."
+        },
+        "severity": { "$ref": "#/$defs/severity" },
+        "plane": { "$ref": "#/$defs/plane" },
+        "enforcement": { "$ref": "#/$defs/enforcement" },
+        "observability": { "$ref": "#/$defs/observability" },
+        "traceability": { "$ref": "#/$defs/traceability" },
+        "remediation": { "$ref": "#/$defs/remediation" },
+        "agent_guidance": { "$ref": "#/$defs/agent_guidance" },
+        "deprecated": {
+          "type": "boolean",
+          "default": false,
+          "description": "True if this rule is no longer active. ID is never reused."
+        }
+      }
+    },
+    "action": {
+      "type": "object",
+      "required": ["title", "description", "authorization"],
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Human-readable name."
+        },
+        "description": {
+          "type": "string",
+          "description": "What this action does."
+        },
+        "authorization": { "$ref": "#/$defs/authorization" },
+        "scope": {
+          "type": "string",
+          "description": "Where this action applies."
+        },
+        "rules_enforced": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Rule IDs this action helps enforce."
+        },
+        "agent_guidance": { "$ref": "#/$defs/agent_guidance" },
+        "deprecated": {
+          "type": "boolean",
+          "default": false,
+          "description": "True if this action is no longer active. ID is never reused."
+        }
+      }
+    }
+  }
+}

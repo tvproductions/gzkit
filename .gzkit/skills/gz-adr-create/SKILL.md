@@ -7,7 +7,7 @@ metadata:
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), linkage (ADR/OBPI/GHI), minor-release (odometer discipline)"
-  govzero_layer: "Layer 3 — File Sync"
+  govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-02-18

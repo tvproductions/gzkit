@@ -6,7 +6,7 @@ metadata:
   skill-version: "1.1.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
-  govzero_layer: "Layer 1 — Evidence Gathering"
+  govzero_layer: "Layer 1 - Evidence Gathering"
   status: ACTIVE
   effective-date: "2026-02-18"
 gz_command: check

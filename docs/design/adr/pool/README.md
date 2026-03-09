@@ -49,7 +49,6 @@ uv run gz adr promote ADR-pool.<slug> --semver X.Y.Z [--dry-run]
 | [ADR-pool.storage-simplicity-profile](ADR-pool.storage-simplicity-profile.md) | Runtime posture | Waiting | ADR-0.0.2-stdlib-cli-and-agent-sync |
 | [ADR-pool.execution-memory-graph](ADR-pool.execution-memory-graph.md) | Runtime execution memory | Waiting | ADR-pool.storage-simplicity-profile, ADR-0.7.0-obpi-first-operations |
 | [ADR-pool.prime-context-hooks](ADR-pool.prime-context-hooks.md) | CLI+hooks context runtime | Waiting | ADR-pool.execution-memory-graph |
-| [ADR-pool.obpi-runtime-surface](ADR-pool.obpi-runtime-surface.md) | OBPI-native runtime ergonomics | Waiting | ADR-0.7.0-obpi-first-operations, ADR-pool.execution-memory-graph |
 | [ADR-pool.airlineops-surface-breadth-parity](ADR-pool.airlineops-surface-breadth-parity.md) | Canonical `.claude/**` + `.gzkit/**` breadth parity | Waiting | ADR-0.3.0-airlineops-canon-reconciliation |
 | [ADR-pool.spec-triangle-sync](ADR-pool.spec-triangle-sync.md) | Spec-test-code process synchronization | Waiting | ADR-0.7.0-obpi-first-operations, ADR-pool.execution-memory-graph |
 | [ADR-pool.tests-for-spec](ADR-pool.tests-for-spec.md) | Requirement-level test traceability | Waiting | ADR-pool.spec-triangle-sync |
@@ -80,6 +79,7 @@ gzkit target composition:
 | ADR-pool.skill-capability-mirroring | [ADR-0.4.0](../pre-release/ADR-0.4.0-skill-capability-mirroring/ADR-0.4.0-skill-capability-mirroring.md) | 2026-02-17 |
 | [ADR-pool.pool-promotion-protocol](ADR-pool.pool-promotion-protocol.md) | [ADR-0.6.0-pool-promotion-protocol](../pre-release/ADR-0.6.0-pool-promotion-protocol/ADR-0.6.0-pool-promotion-protocol.md) | 2026-02-21 |
 | [ADR-pool.obpi-first-operations](ADR-pool.obpi-first-operations.md) | [ADR-0.7.0-obpi-first-operations](../pre-release/ADR-0.7.0-obpi-first-operations/ADR-0.7.0-obpi-first-operations.md) | 2026-02-21 |
+| [ADR-pool.obpi-runtime-surface](ADR-pool.obpi-runtime-surface.md) | [ADR-0.10.0-obpi-runtime-surface](../pre-release/ADR-0.10.0-obpi-runtime-surface/ADR-0.10.0-obpi-runtime-surface.md) | 2026-03-09 |
 
 ---
 
@@ -107,7 +107,7 @@ PRD-GZKIT-1.0.0
 ├── [ADR-0.7.0](../pre-release/ADR-0.7.0-obpi-first-operations/ADR-0.7.0-obpi-first-operations.md) (OBPI-first governance track) ← Active
 ├── ADR-pool.execution-memory-graph (Typed runtime execution memory)
 ├── ADR-pool.prime-context-hooks (Dynamic runtime context via hooks)
-├── ADR-pool.obpi-runtime-surface (OBPI-native runtime surfaces)
+├── [ADR-0.10.0](../pre-release/ADR-0.10.0-obpi-runtime-surface/ADR-0.10.0-obpi-runtime-surface.md) (OBPI-native runtime surfaces) ← Active
 ├── ADR-pool.airlineops-surface-breadth-parity (Canonical `.claude/**` + `.gzkit/**` breadth parity)
 ├── ADR-pool.spec-triangle-sync (Spec-test-code synchronization process)
 └── ADR-pool.tests-for-spec (Tests verify spec requirements)

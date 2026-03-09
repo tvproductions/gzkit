@@ -7,7 +7,7 @@ metadata:
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   skill-type: "orchestrator"
-  govzero_layer: "Layer 2 — Ledger Consumption"
+  govzero_layer: "Layer 2 - Ledger Consumption"
   orchestrates: ["gz-obpi-audit"]
 lifecycle_state: active
 owner: gzkit-governance

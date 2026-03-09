@@ -5,7 +5,7 @@ compatibility: Requires GovZero v6 framework with OBPI briefs
 metadata:
   skill-version: "1.0.0"
   govzero-framework-version: "v6"
-  govzero_layer: "Layer 3 — File Sync"
+  govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-02-18

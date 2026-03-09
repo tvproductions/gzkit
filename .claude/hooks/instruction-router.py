@@ -22,10 +22,7 @@ import sys
 import time
 from pathlib import Path
 
-# How long (seconds) before re-surfacing the same instruction file
-DEDUP_WINDOW_SECONDS = 2 * 60 * 60  # 2 hours
-
-# Section heading keywords that signal actionable constraints
+DEDUP_WINDOW_SECONDS = 2 * 60 * 60
 CONSTRAINT_KEYWORDS = (
     "prohibited",
     "must not",
@@ -35,29 +32,17 @@ CONSTRAINT_KEYWORDS = (
     "core principles",
     "responsibilities",
 )
-
-# Max lines to extract per instruction file
 MAX_LINES_PER_FILE = 15
-
-# Instruction file that should always be included for Python files
 UNIVERSAL_INSTRUCTION = "cross-platform.instructions.md"
 
 
 def parse_apply_to(file_path):
-    """Extract applyTo glob patterns from instruction file frontmatter.
-
-    Args:
-        file_path: Path to the instruction file.
-
-    Returns:
-        List of glob pattern strings, or empty list if no applyTo found.
-    """
+    """Extract applyTo glob patterns from instruction frontmatter."""
     try:
         text = file_path.read_text(encoding="utf-8")
     except OSError:
         return []
 
-    # Frontmatter is between --- delimiters
     if not text.startswith("---"):
         return []
 
@@ -70,22 +55,12 @@ def parse_apply_to(file_path):
         line = line.strip()
         if line.startswith("applyTo:"):
             value = line[len("applyTo:") :].strip().strip('"').strip("'")
-            return [p.strip() for p in value.split(",") if p.strip()]
+            return [pattern.strip() for pattern in value.split(",") if pattern.strip()]
     return []
 
 
 def extract_constraint_sections(file_path):
-    """Extract key constraint sections from an instruction file.
-
-    Finds headings containing constraint keywords and extracts their
-    content up to the next heading of equal or higher level.
-
-    Args:
-        file_path: Path to the instruction file.
-
-    Returns:
-        List of extracted lines (capped at MAX_LINES_PER_FILE).
-    """
+    """Extract key constraint sections from an instruction file."""
     try:
         text = file_path.read_text(encoding="utf-8")
     except OSError:
@@ -97,24 +72,20 @@ def extract_constraint_sections(file_path):
     capture_level = 0
 
     for line in lines:
-        # Check if this is a heading
         heading_match = re.match(r"^(#{1,6})\s+(.*)", line)
         if heading_match:
             level = len(heading_match.group(1))
             title = heading_match.group(2).lower()
 
-            # If we were capturing and hit a same/higher-level heading, stop
             if capturing and level <= capture_level:
                 capturing = False
 
-            # Check if this heading contains a constraint keyword
-            if any(kw in title for kw in CONSTRAINT_KEYWORDS):
+            if any(keyword in title for keyword in CONSTRAINT_KEYWORDS):
                 capturing = True
                 capture_level = level
                 result.append(line)
                 continue
 
-        # Skip empty lines at the start of a captured section.
         if capturing and (not result or result[-1].strip() or line.strip()):
             result.append(line)
 
@@ -125,14 +96,7 @@ def extract_constraint_sections(file_path):
 
 
 def load_state(state_path):
-    """Load dedup state from JSON file.
-
-    Args:
-        state_path: Path to the state file.
-
-    Returns:
-        Dict mapping instruction filenames to last-surfaced timestamps.
-    """
+    """Load dedup state from JSON file."""
     try:
         return json.loads(state_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
@@ -140,17 +104,12 @@ def load_state(state_path):
 
 
 def save_state(state_path, state):
-    """Persist dedup state to JSON file.
-
-    Args:
-        state_path: Path to the state file.
-        state: Dict mapping instruction filenames to timestamps.
-    """
+    """Persist dedup state to JSON file."""
     try:
         state_path.parent.mkdir(parents=True, exist_ok=True)
         state_path.write_text(json.dumps(state, indent=2) + "\n", encoding="utf-8")
     except OSError:
-        pass  # Best-effort; don't fail the hook
+        pass
 
 
 def main():
@@ -167,7 +126,6 @@ def main():
     if not file_path or not cwd:
         sys.exit(0)
 
-    # Resolve to relative path (as_posix for cross-platform)
     try:
         abs_path = Path(file_path).resolve()
         cwd_path = Path(cwd).resolve()
@@ -176,7 +134,6 @@ def main():
     except (ValueError, TypeError):
         sys.exit(0)
 
-    # Locate instruction files
     instructions_dir = cwd_path / ".github" / "instructions"
     if not instructions_dir.is_dir():
         sys.exit(0)
@@ -185,7 +142,6 @@ def main():
     if not instruction_files:
         sys.exit(0)
 
-    # Find matching instruction files
     matched = []
     is_python_file = rel_str.endswith(".py")
 
@@ -196,7 +152,6 @@ def main():
                 matched.append(inst_file)
                 break
 
-    # Always include cross-platform for Python files
     if is_python_file:
         universal = instructions_dir / UNIVERSAL_INSTRUCTION
         if universal.is_file() and universal not in matched:
@@ -205,12 +160,10 @@ def main():
     if not matched:
         sys.exit(0)
 
-    # Dedup: check state file
     state_path = cwd_path / ".claude" / "hooks" / ".instruction-state.json"
     state = load_state(state_path)
     now = time.time()
 
-    # Filter to only unsurfaced instructions
     to_surface = []
     for inst_file in matched:
         key = inst_file.name
@@ -221,7 +174,6 @@ def main():
     if not to_surface:
         sys.exit(0)
 
-    # Extract and output constraints
     output_parts = []
     output_parts.append("INSTRUCTION CONSTRAINTS (auto-surfaced)")
     output_parts.append("=" * 45)
@@ -236,17 +188,13 @@ def main():
         output_parts.append(f"--- {inst_file.name} ---")
         output_parts.extend(sections)
         output_parts.append("")
-
-        # Update state
         state[inst_file.name] = now
 
-    # Only output if we have actual constraint content
     has_content = any(line.startswith("--- ") and line.endswith(" ---") for line in output_parts)
     if not has_content:
         sys.exit(0)
 
     save_state(state_path, state)
-
     print("\n".join(output_parts), file=sys.stderr)
     sys.exit(0)
 

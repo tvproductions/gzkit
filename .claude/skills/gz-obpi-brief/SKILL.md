@@ -8,7 +8,7 @@ metadata:
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/adr-obpi-ghi-audit-linkage.md"
   govzero-gates-covered: "Gate 1 (ADR intent), OBPI checklist mapping"
-  govzero_layer: "Layer 3 — File Sync"
+  govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-02-18

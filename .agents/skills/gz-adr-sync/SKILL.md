@@ -6,7 +6,7 @@ metadata:
   skill-version: "6.1.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
-  govzero_layer: "Layer 3 — File Sync"
+  govzero_layer: "Layer 3 - File Sync"
 gz_command: register-adrs
 invocation: uv run gz register-adrs
 lifecycle_state: active
