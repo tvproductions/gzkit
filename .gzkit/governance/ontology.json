@@ -1,0 +1,150 @@
+{
+  "actions": {
+    "A-EDIT-IN-SCOPE": {
+      "authorization": "autonomous",
+      "description": "Create or modify files that are within the current OBPI brief's allowed paths.",
+      "title": "Create or edit files within brief scope"
+    },
+    "A-FILE-DELETE": {
+      "authorization": "human-gated",
+      "description": "Remove files from the repository.",
+      "title": "Delete files"
+    },
+    "A-GIT-COMMIT": {
+      "authorization": "human-gated",
+      "description": "Stage files and create commits in the local repository.",
+      "title": "Create git commits"
+    },
+    "A-GIT-NO-VERIFY": {
+      "agent_guidance": {
+        "claude_code": "NEVER use --no-verify. Fix the underlying hook or quality failure instead.",
+        "codex": "Prohibited. Fix the failing gate instead of bypassing it."
+      },
+      "authorization": "prohibited",
+      "description": "Use git commit --no-verify to skip pre-commit hooks.",
+      "title": "Bypass pre-commit hooks"
+    },
+    "A-GIT-PUSH": {
+      "authorization": "human-gated",
+      "description": "Execute git push or create commits that affect the remote.",
+      "title": "Push to remote repository"
+    },
+    "A-MARK-OBPI-COMPLETED": {
+      "agent_guidance": {
+        "claude_code": "Must complete the full attestation ceremony and receive explicit human acceptance before updating status.",
+        "codex": "Present value narrative, proof, and evidence, then wait for explicit human acceptance before marking an OBPI Completed."
+      },
+      "authorization": "human-gated",
+      "description": "Update an OBPI brief status to Completed. Requires explicit human attestation.",
+      "rules_enforced": [
+        "R-ATTEST-OBPI-001"
+      ],
+      "title": "Mark OBPI as Completed"
+    },
+    "A-RAW-SQL-ATTESTATION": {
+      "agent_guidance": {
+        "claude_code": "Use documented `uv run gz ...` validation and evidence commands for attestation support. Never substitute raw SQL or ad hoc database inspection.",
+        "codex": "Attestation evidence must come from repository control surfaces and recorded command output, not raw SQL."
+      },
+      "authorization": "prohibited",
+      "description": "Use raw SQL queries as a substitute for CLI- or document-backed attestation evidence.",
+      "title": "Use raw SQL for attestation evidence"
+    },
+    "A-READ-FILES": {
+      "authorization": "autonomous",
+      "description": "Read any file in the repository for understanding context, patterns, or requirements.",
+      "title": "Read any repository file"
+    },
+    "A-RUN-FULL-SUITE": {
+      "authorization": "human-gated",
+      "description": "Execute Heavy-lane validation such as `uv run gz check`, `uv run mkdocs build --strict`, and `uv run -m behave features/`.",
+      "title": "Run full test suite or BDD"
+    },
+    "A-RUN-LINT": {
+      "authorization": "autonomous",
+      "description": "Execute repository lint and formatting commands such as `uv run gz lint` and `uv run gz format`.",
+      "title": "Run lint and format"
+    },
+    "A-RUN-UNIT-TESTS": {
+      "authorization": "autonomous",
+      "description": "Execute unit tests with `uv run gz test` or targeted `uv run -m unittest ...` commands.",
+      "title": "Run unit tests"
+    },
+    "A-SEARCH-CODEBASE": {
+      "authorization": "autonomous",
+      "description": "Use repository search and exploration tools to inspect implementation and documentation state.",
+      "title": "Search codebase"
+    },
+    "A-UV-ADD": {
+      "authorization": "human-gated",
+      "description": "Execute `uv add` to add new package dependencies.",
+      "title": "Add new dependencies"
+    }
+  },
+  "doctrines": {
+    "D-FLAG-DEFECTS": {
+      "also_stated_in": [
+        "CLAUDE.md#flag-defects-never-excuse"
+      ],
+      "canonical_source": "AGENTS.md#prime-directive-ownership",
+      "category": "process",
+      "description": "If you encounter something broken, wrong, or misaligned, flag it as a defect. Never rationalize it away with 'pre-existing', 'not in scope', 'template drift', or 'evidence unavailable'.",
+      "origin_adr": "ADR-0.0.27",
+      "plane": "process",
+      "title": "Flag Defects Never Excuse"
+    },
+    "D-GATE-ATTESTATION": {
+      "also_stated_in": [
+        "AGENTS.md#obpi-acceptance-protocol",
+        "AGENTS.md#lane-inheritance-rule"
+      ],
+      "canonical_source": "docs/governance/GovZero/charter.md",
+      "category": "process",
+      "description": "Human attestation is the closeout gate. Agents cannot attest on behalf of humans. Audit is a reconciliation mechanism, not an authority mechanism.",
+      "plane": "process",
+      "title": "Human Gate Attestation"
+    },
+    "D-OBPI-DISCIPLINE": {
+      "also_stated_in": [
+        "AGENTS.md#obpi-decomposition-mandate"
+      ],
+      "canonical_source": "docs/design/adr/CLAUDE.md",
+      "category": "process",
+      "description": "Each OBPI brief maps 1:1 to a checklist item in the parent ADR. Sequential numbering with no gaps. Briefs are created with the ADR, not after.",
+      "plane": "process",
+      "title": "One Brief Per Item"
+    }
+  },
+  "last_updated": "2026-03-09",
+  "policies": {
+    "P-ATTEST-OBPI-CEREMONY": {
+      "canonical_source": "AGENTS.md#obpi-acceptance-protocol",
+      "description": "An agent must not mark an OBPI as Completed without explicit human attestation. The ceremony order is value narrative, key proof, evidence, wait for review, receive attestation, then update status.",
+      "doctrine": "D-GATE-ATTESTATION",
+      "scope": "docs/design/adr/**/*.md",
+      "title": "OBPI acceptance ceremony required"
+    }
+  },
+  "rules": {
+    "R-ATTEST-OBPI-001": {
+      "agent_guidance": {
+        "claude_code": "NEVER skip the acceptance ceremony. When OBPI implementation is done, switch to presenter mode and wait for human acceptance before updating status.",
+        "codex": "Present evidence and wait for explicit human 'Accepted' or equivalent before changing an OBPI to Completed."
+      },
+      "description": "An agent must not update OBPI status to Completed without explicit human attestation and the required acceptance ceremony.",
+      "enforcement": {
+        "coverage": "human-gated"
+      },
+      "plane": "process",
+      "policy": "P-ATTEST-OBPI-CEREMONY",
+      "severity": "blocking",
+      "title": "OBPI requires human attestation before Completed",
+      "traceability": {
+        "affected_paths": [
+          "docs/design/adr/**/*.md"
+        ]
+      }
+    }
+  },
+  "version": "0.1.0"
+}

@@ -8,7 +8,7 @@ metadata:
   skill-version: "6.0.0"
   govzero-framework-version: "v6"
   govzero-author: "gzkit-governance"
-  govzero_layer: "Layer 3 — File Sync"
+  govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-03-01

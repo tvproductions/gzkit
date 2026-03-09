@@ -13,7 +13,7 @@ status: Completed
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.9.0-airlineops-surface-breadth-parity/ADR-0.9.0-airlineops-surface-breadth-parity.md`
 - **Checklist Item:** #2 — "OBPI-0.9.0-02: Adapt blocking/deferred canonical `.claude/hooks` for gzkit compatibility and record decisions with verification evidence."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
