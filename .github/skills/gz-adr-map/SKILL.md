@@ -6,7 +6,7 @@ metadata:
   skill-version: "1.1.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
-  govzero_layer: "Layer 1 — Evidence Gathering"
+  govzero_layer: "Layer 1 - Evidence Gathering"
 gz_command: state
 invocation: uv run gz state --json
 lifecycle_state: active

@@ -8,12 +8,13 @@
 
 ## Overview
 
-`.gzkit/` (GovZero Kit) is the canonical root directory for GovZero governance ledgers and learning artifacts. It consolidates governance outputs that were previously scattered across `artifacts/` into a single, version-controlled location.
+`.gzkit/` (GovZero Kit) is the canonical root directory for GovZero governance ledgers, ontology artifacts, canonical skills, and learning scaffolds. It consolidates governance outputs that were previously scattered across `artifacts/` into a single, version-controlled location.
 
 ### Purpose
 
-- **Centralized governance storage:** Single root for all GovZero ledger files
+- **Centralized governance storage:** Single root for GovZero ledgers, ontology artifacts, and control-surface manifests
 - **Compound engineering:** Learning artifacts accumulate across sessions, enabling future work to build on past insights
+- **Canonical skill source:** `.gzkit/skills/` is the source of truth for mirrored agent skill surfaces
 - **Git-tracked by default:** All files in `.gzkit/` are version-controlled unless explicitly gitignored
 - **Append-only ledgers:** JSONL files grow monotonically, preserving full audit history
 
@@ -24,10 +25,16 @@
 ```text
 .gzkit/
 ├── README.md                          # Quick orientation
+├── governance/                        # Governance ontology + schema
+│   ├── ontology.json
+│   └── ontology.schema.json
 ├── insights/                          # Agent insight ledgers
 │   └── agent-insights.jsonl           # Observations captured during work sessions
-└── lessons/                           # Learning ledgers (compound engineering)
-    └── (*.jsonl files added by future OBPIs)
+├── lessons/                           # Learning ledgers (compound engineering)
+│   └── (*.jsonl files added by future OBPIs)
+├── skills/                            # Canonical skill source for mirrored agents
+├── ledger.jsonl                       # Append-only governance ledger
+└── manifest.json                      # Repository/control-surface manifest
 ```
 
 ---
@@ -42,9 +49,29 @@ Agent observations captured automatically during work sessions. These are raw, u
 |------|-------------|
 | `agent-insights.jsonl` | Observations from all agents across sessions |
 
+### `governance/`
+
+Structured GovZero registry artifacts used to describe doctrines, policies, rules, and actions in machine-readable form.
+
+| File | Description |
+|------|-------------|
+| `ontology.json` | Populated GovZero ontology for gzkit's currently adopted process-plane governance |
+| `ontology.schema.json` | JSON Schema used to validate ontology structure |
+
 ### `lessons/`
 
 Structured learning ledgers for compound engineering. Unlike raw insights, lessons are curated and categorized for future consumption. This directory is scaffolded by OBPI-0.0.25-02; learning ledger files will be populated by subsequent OBPIs in the ADR-0.0.25 series.
+
+### `skills/`
+
+Canonical skill definitions used by `gz agent sync control-surfaces` to regenerate mirrored agent surfaces under `.agents/skills/`, `.claude/skills/`, and `.github/skills/`.
+
+### Root manifests
+
+| File | Description |
+|------|-------------|
+| `ledger.jsonl` | Repo-scoped governance event ledger |
+| `manifest.json` | Control-surface manifest, path contract, and verification command catalog |
 
 ---
 
@@ -77,8 +104,10 @@ ADR-0.0.25 defines a storage architecture that splits artifacts by scope:
 | Artifact Type | Location | Rationale |
 |---------------|----------|-----------|
 | GovZero ledgers | `.gzkit/` | Repo-wide governance outputs |
+| Governance ontology | `.gzkit/governance/` | Structured machine-readable governance model |
 | Learning ledgers | `.gzkit/lessons/` | Cross-session compound learning |
 | Agent insights | `.gzkit/insights/` | Raw agent observations |
+| Canonical skills | `.gzkit/skills/` | Source of truth for mirrored agent skill surfaces |
 | Session handoffs | `{ADR-package}/handoffs/` | Package-local, tied to specific ADR work |
 | ADR audit ledgers | `{ADR-package}/logs/` | Per-ADR OBPI audit trails |
 

@@ -8,7 +8,7 @@ metadata:
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
   govzero-gates-covered: "Gate 5 (Human Attestation)"
-  govzero_layer: "Layer 2 — Ledger Consumption"
+  govzero_layer: "Layer 2 - Ledger Consumption"
   trust_model: "Trusts Layer 1 ledger proof; does NOT re-verify evidence"
 gz_command: audit
 invocation: uv run gz audit <adr-id>

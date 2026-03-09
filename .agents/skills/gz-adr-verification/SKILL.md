@@ -6,7 +6,7 @@ metadata:
   skill-version: "6.1.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
-  govzero_layer: "Layer 1 — Evidence Gathering"
+  govzero_layer: "Layer 1 - Evidence Gathering"
 gz_command: adr audit-check
 invocation: uv run gz adr audit-check <ADR-ID>
 lifecycle_state: active

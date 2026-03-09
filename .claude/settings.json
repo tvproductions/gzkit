@@ -6,10 +6,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uv run python .claude/hooks/obpi-completion-validator.py"
-          },
-          {
-            "type": "command",
             "command": "uv run python .claude/hooks/instruction-router.py"
           }
         ]

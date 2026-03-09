@@ -27,15 +27,12 @@ def main():
     except json.JSONDecodeError:
         sys.exit(0)
 
-    # Extract file path from tool input
     tool_input = input_data.get("tool_input", {})
     file_path = tool_input.get("file_path", "")
 
-    # Only act on Python files
     if not file_path.endswith(".py"):
         sys.exit(0)
 
-    # Resolve to absolute path using cwd from hook input
     cwd = input_data.get("cwd", "")
     try:
         target = Path(file_path)
@@ -45,13 +42,11 @@ def main():
     except (ValueError, TypeError, OSError):
         sys.exit(0)
 
-    # File must exist on disk (could have been deleted between edit and hook)
     if not target.is_file():
         sys.exit(0)
 
     posix_path = target.as_posix()
 
-    # Run ruff check --fix (auto-fix safe issues)
     with suppress(FileNotFoundError, subprocess.TimeoutExpired, OSError):
         subprocess.run(
             ["uv", "run", "ruff", "check", "--fix", "--quiet", posix_path],
@@ -59,7 +54,6 @@ def main():
             timeout=TIMEOUT_SECONDS,
         )
 
-    # Run ruff format (normalize formatting)
     with suppress(FileNotFoundError, subprocess.TimeoutExpired, OSError):
         subprocess.run(
             ["uv", "run", "ruff", "format", "--quiet", posix_path],

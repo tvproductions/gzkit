@@ -1,12 +1,15 @@
 ---
 id: ADR-pool.obpi-runtime-surface
-status: Pool
+status: Superseded
 parent: PRD-GZKIT-1.0.0
 lane: heavy
 enabler: ADR-0.7.0-obpi-first-operations
+promoted_to: ADR-0.10.0-obpi-runtime-surface
 ---
 
 # ADR-pool.obpi-runtime-surface: OBPI Runtime Surfaces
+> Promoted to `ADR-0.10.0-obpi-runtime-surface` on 2026-03-09. This pool file is retained as historical intake context.
+
 
 ## Status
 
