@@ -1,4 +1,4 @@
-# -*- mode: python ; coding: utf-8 -*-
+# ruff: noqa: F821
 """PyInstaller spec file for gzkit.
 
 Builds a single-file executable for the `gz` CLI.
@@ -11,15 +11,14 @@ Output:
     dist/gz      (macOS/Linux)
 """
 
-import sys
 from pathlib import Path
 
 # ── Paths ────────────────────────────────────────────────────────────
 SRC = Path("src/gzkit")
-TEMPLATES = [(str(SRC / "templates" / f), "gzkit/templates")
+TEMPLATES = [(str(f), "gzkit/templates")
              for f in (SRC / "templates").iterdir()
              if f.suffix == ".md"]
-SCHEMAS = [(str(SRC / "schemas" / f), "gzkit/schemas")
+SCHEMAS = [(str(f), "gzkit/schemas")
            for f in (SRC / "schemas").iterdir()
            if f.suffix == ".json"]
 
