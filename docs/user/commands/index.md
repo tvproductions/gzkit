@@ -27,6 +27,8 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz attest`](attest.md) | Record human attestation with prerequisite enforcement |
 | [`gz audit`](audit.md) | Run strict post-attestation audit reconciliation |
 | [`gz adr emit-receipt`](adr-emit-receipt.md) | Emit completed/validated receipt with optional evidence scope |
+| [`gz obpi status`](obpi-status.md) | Show focused runtime status for one OBPI |
+| [`gz obpi reconcile`](obpi-reconcile.md) | Fail-closed reconciliation for one OBPI |
 | [`gz obpi emit-receipt`](obpi-emit-receipt.md) | Emit completed/validated receipt for one OBPI |
 | [`gz git-sync`](git-sync.md) | Run guarded sync ritual |
 | [`gz chores list`](chores-list.md) | List declared chores from the config registry |
@@ -34,7 +36,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz chores run`](chores-run.md) | Execute one chore and append a dated log |
 | [`gz chores audit`](chores-audit.md) | Audit chore log presence for one/all chores |
 | [`gz migrate-semver`](migrate-semver.md) | Record SemVer ID rename events |
-| [`gz register-adrs`](register-adrs.md) | Register existing ADR files into ledger |
+| [`gz register-adrs`](register-adrs.md) | Register existing ADR packages and linked OBPIs into ledger |
 
 ---
 
@@ -62,9 +64,10 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 
 Primary daily loop (OBPI-first):
 
-1. Orientation and ADR context (`gz status`, `gz adr status`)
+1. Orientation and ADR/OBPI context (`gz status`, `gz adr status`, `gz obpi status`)
 2. One OBPI increment implementation and verification (`gz implement`, optional Gate 3 docs check)
-3. OBPI evidence update in brief + OBPI receipt (`gz obpi emit-receipt`)
+3. OBPI reconciliation before receipt emission (`gz obpi reconcile`)
+4. OBPI evidence update in brief + OBPI receipt (`gz obpi emit-receipt`)
 
 ADR closeout loop (after OBPI batch completion):
 

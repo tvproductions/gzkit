@@ -97,6 +97,27 @@ class TestStatusCommand(unittest.TestCase):
             self.assertIn("0/0", result.output)
             self.assertIn("TDD", result.output)
 
+    def test_status_table_wraps_long_adr_ids_instead_of_truncating(self) -> None:
+        """status --table preserves long ADR ids instead of ellipsizing them."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            adr_dir = Path(config.paths.adrs)
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+
+            adr_id = "ADR-0.10.0-obpi-runtime-surface"
+            adr_path = adr_dir / f"{adr_id}.md"
+            adr_path.parent.mkdir(parents=True, exist_ok=True)
+            adr_path.write_text(f"---\nid: {adr_id}\n---\n\n# {adr_id}\n")
+            ledger.append(adr_created_event(adr_id, "", "heavy"))
+
+            result = runner.invoke(main, ["status", "--table"])
+
+            self.assertEqual(result.exit_code, 0)
+            self.assertNotIn("…", result.output)
+            self.assertIn("ADR-0.10.0-obpi-runtime-surface", result.output)
+
     def test_status_table_blocks_ready_on_incomplete_obpis(self) -> None:
         """status --table marks QC pending when linked OBPIs are incomplete."""
         runner = CliRunner()
@@ -193,6 +214,9 @@ class TestStatusCommand(unittest.TestCase):
                         "### Implementation Summary",
                         "- Files created/modified: src/module.py",
                         "",
+                        "## Key Proof",
+                        "uv run gz adr status ADR-0.1.0 --json",
+                        "",
                     ]
                 )
                 + "\n"
@@ -214,6 +238,193 @@ class TestStatusCommand(unittest.TestCase):
             self.assertIn("OBPI Unit:       COMPLETED", result.output)
             self.assertIn("OBPI Completion: 1/1 complete", result.output)
             self.assertIn("all linked OBPIs completed with evidence", result.output)
+
+    def test_obpi_status_json_includes_runtime_fields(self) -> None:
+        """obpi status --json reports the focused OBPI runtime payload."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            _write_obpi(
+                path=obpi_path,
+                status="Completed",
+                brief_status="Completed",
+                implementation_line="src/module.py",
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(
+                obpi_receipt_emitted_event(
+                    obpi_id="OBPI-0.1.0-01-demo",
+                    parent_adr="ADR-0.1.0",
+                    receipt_event="completed",
+                    attestor="human:test",
+                    obpi_completion="completed",
+                )
+            )
+
+            result = runner.invoke(main, ["obpi", "status", "OBPI-0.1.0-01-demo", "--json"])
+
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            self.assertEqual(payload["obpi"], "OBPI-0.1.0-01-demo")
+            self.assertEqual(payload["parent_adr"], "ADR-0.1.0")
+            self.assertTrue(payload["found_file"])
+            self.assertTrue(payload["completed"])
+            self.assertEqual(payload["runtime_state"], "completed")
+            self.assertEqual(payload["proof_state"], "recorded")
+            self.assertEqual(payload["attestation_requirement"], "optional")
+            self.assertEqual(payload["issues"], [])
+
+    def test_obpi_status_json_reports_missing_file(self) -> None:
+        """obpi status reports missing brief files explicitly."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+
+            result = runner.invoke(main, ["obpi", "status", "OBPI-0.1.0-01-demo", "--json"])
+
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            self.assertFalse(payload["found_file"])
+            self.assertIsNone(payload["file"])
+            self.assertIn("linked in ledger but no OBPI file found", payload["issues"])
+
+    def test_obpi_status_json_supports_file_backed_obpi_without_ledger_link(self) -> None:
+        """obpi status still inspects standalone OBPI briefs."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            _write_obpi(
+                path=obpi_path,
+                status="Draft",
+                brief_status="Draft",
+                implementation_line="src/module.py",
+            )
+
+            result = runner.invoke(main, ["obpi", "status", "OBPI-0.1.0-01-demo", "--json"])
+
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            self.assertFalse(payload["linked_in_ledger"])
+            self.assertTrue(payload["found_file"])
+            self.assertEqual(payload["parent_adr"], "ADR-0.1.0")
+            self.assertEqual(payload["attestation_requirement"], "optional")
+
+    def test_obpi_reconcile_json_passes_for_completed_obpi(self) -> None:
+        """obpi reconcile passes when ledger, file, and proof are coherent."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            _write_obpi(
+                path=obpi_path,
+                status="Completed",
+                brief_status="Completed",
+                implementation_line="src/module.py",
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(
+                obpi_receipt_emitted_event(
+                    obpi_id="OBPI-0.1.0-01-demo",
+                    parent_adr="ADR-0.1.0",
+                    receipt_event="completed",
+                    attestor="human:test",
+                    obpi_completion="completed",
+                )
+            )
+
+            result = runner.invoke(main, ["obpi", "reconcile", "OBPI-0.1.0-01-demo", "--json"])
+
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            self.assertTrue(payload["passed"])
+            self.assertEqual(payload["blockers"], [])
+            self.assertEqual(payload["runtime_state"], "completed")
+
+    def test_obpi_reconcile_fails_closed_when_proof_missing(self) -> None:
+        """obpi reconcile emits BLOCKERS and exits non-zero when proof is missing."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            _write_obpi(
+                path=obpi_path,
+                status="Draft",
+                brief_status="Draft",
+                implementation_line="src/module.py",
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+
+            result = runner.invoke(main, ["obpi", "reconcile", "OBPI-0.1.0-01-demo"])
+
+            self.assertEqual(result.exit_code, 1)
+            self.assertIn("BLOCKERS:", result.output)
+            self.assertIn("ledger proof of completion is missing", result.output)
+
+    def test_obpi_status_uses_only_key_proof_section_for_req_proof_inputs(self) -> None:
+        """Key proof extraction stops at the next heading instead of swallowing later sections."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            obpi_path.write_text(
+                "\n".join(
+                    [
+                        "---",
+                        "id: OBPI-0.1.0-01-demo",
+                        "parent: ADR-0.1.0",
+                        "item: 1",
+                        "lane: Lite",
+                        "status: Draft",
+                        "---",
+                        "",
+                        "# OBPI-0.1.0-01-demo: Demo",
+                        "",
+                        "**Brief Status:** Draft",
+                        "",
+                        "## Key Proof",
+                        "uv run gz obpi status OBPI-0.1.0-01-demo --json",
+                        "",
+                        "### Implementation Summary",
+                        "- Files created/modified: src/module.py",
+                    ]
+                )
+                + "\n"
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+
+            result = runner.invoke(main, ["obpi", "status", "OBPI-0.1.0-01-demo", "--json"])
+
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            self.assertEqual(len(payload["req_proof_inputs"]), 1)
+            self.assertEqual(
+                payload["req_proof_inputs"][0]["source"],
+                "uv run gz obpi status OBPI-0.1.0-01-demo --json",
+            )
 
 
 class TestLifecycleStatusSemantics(unittest.TestCase):
@@ -352,6 +563,30 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             self.assertIn("QC Readiness: PENDING (pending: OBPI completion)", result.output)
 
+    def test_adr_status_surfaces_closeout_blockers(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            _write_obpi(
+                path=obpi_path,
+                status="Draft",
+                brief_status="Draft",
+                implementation_line="src/module.py",
+            )
+
+            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0"])
+
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("Closeout Readiness: BLOCKED", result.output)
+            self.assertIn("Closeout Blockers:", result.output)
+            self.assertIn(
+                "OBPI-0.1.0-01-demo: ledger proof of completion is missing", result.output
+            )
+
     def test_adr_status_json_validated(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -470,9 +705,13 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
             adr_payload = payload["adrs"]["ADR-0.1.0"]
             self.assertIn("obpis", adr_payload)
             self.assertIn("obpi_summary", adr_payload)
+            self.assertIn("closeout_ready", adr_payload)
+            self.assertIn("closeout_blockers", adr_payload)
             self.assertEqual(adr_payload["obpi_summary"]["total"], 1)
             self.assertEqual(adr_payload["obpi_summary"]["completed"], 0)
             self.assertEqual(adr_payload["obpi_summary"]["unit_status"], "pending")
+            self.assertFalse(adr_payload["closeout_ready"])
+            self.assertIn("OBPI-0.1.0-01-demo", adr_payload["closeout_blockers"][0])
 
     def test_status_json_completed_status_with_empty_summary_stays_incomplete(self) -> None:
         runner = CliRunner()
@@ -504,6 +743,9 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
                         "- Tests added:",
                         "- Date completed:",
                         "",
+                        "## Key Proof",
+                        "uv run gz adr status ADR-0.1.0 --json",
+                        "",
                     ]
                 )
                 + "\n"
@@ -516,7 +758,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
             self.assertEqual(adr_payload["obpi_summary"]["completed"], 0)
             self.assertEqual(adr_payload["obpi_summary"]["unit_status"], "pending")
             self.assertIn(
-                "implementation evidence is missing or placeholder",
+                "implementation summary is missing or placeholder",
                 adr_payload["obpis"][0]["issues"],
             )
 
@@ -604,6 +846,11 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
             self.assertTrue(row["found_file"])
             self.assertTrue(row["completed"])
             self.assertTrue(row["evidence_ok"])
+            self.assertEqual(row["runtime_state"], "completed")
+            self.assertEqual(row["proof_state"], "recorded")
+            self.assertEqual(row["attestation_requirement"], "optional")
+            self.assertEqual(row["req_proof_state"], "recorded")
+            self.assertEqual(row["req_proof_summary"]["present"], 1)
             self.assertEqual(row["issues"], [])
 
     def test_adr_status_json_reports_missing_linked_obpi_file(self) -> None:

@@ -13,7 +13,9 @@ from gzkit.ledger import (
     audit_receipt_emitted_event,
     closeout_initiated_event,
     constitution_created_event,
+    derive_obpi_semantics,
     gate_checked_event,
+    normalize_req_proof_inputs,
     obpi_created_event,
     obpi_receipt_emitted_event,
     prd_created_event,
@@ -345,6 +347,142 @@ class TestLedger(unittest.TestCase):
         )
         self.assertEqual(validated["lifecycle_status"], "Validated")
         self.assertEqual(validated["closeout_phase"], "validated")
+
+    def test_normalize_req_proof_inputs_falls_back_to_legacy_key_proof(self) -> None:
+        """Legacy key_proof text is normalized into a machine-readable proof input."""
+        inputs = normalize_req_proof_inputs(
+            None,
+            fallback_key_proof="uv run gz adr status ADR-0.1.0 --json",
+        )
+        self.assertEqual(inputs[0]["name"], "key_proof")
+        self.assertEqual(inputs[0]["kind"], "legacy_key_proof")
+        self.assertEqual(inputs[0]["status"], "present")
+
+    def test_normalize_req_proof_inputs_preserves_scope_and_gap_reason(self) -> None:
+        """Optional proof-input metadata is preserved when valid."""
+        inputs = normalize_req_proof_inputs(
+            [
+                {
+                    "name": "audit_gap",
+                    "kind": "artifact",
+                    "source": "docs/proof.txt",
+                    "status": "missing",
+                    "scope": "OBPI-0.10.0-01",
+                    "gap_reason": "receipt not recorded yet",
+                }
+            ]
+        )
+        self.assertEqual(inputs[0]["scope"], "OBPI-0.10.0-01")
+        self.assertEqual(inputs[0]["gap_reason"], "receipt not recorded yet")
+
+    def test_derive_obpi_semantics_reports_pending_without_proof(self) -> None:
+        """Absent proof and brief completion remain pending."""
+        semantics = derive_obpi_semantics(
+            {},
+            found_file=True,
+            file_completed=False,
+            implementation_evidence_ok=False,
+            key_proof_ok=False,
+        )
+        self.assertEqual(semantics["runtime_state"], "pending")
+        self.assertEqual(semantics["proof_state"], "missing")
+        self.assertEqual(semantics["attestation_requirement"], "optional")
+
+    def test_derive_obpi_semantics_reports_in_progress_with_partial_proof(self) -> None:
+        """Partial proof keeps runtime state in progress instead of completed."""
+        semantics = derive_obpi_semantics(
+            {},
+            found_file=True,
+            file_completed=False,
+            implementation_evidence_ok=True,
+            key_proof_ok=False,
+            fallback_key_proof="uv run gz obpi status OBPI-0.10.0-01 --json",
+        )
+        self.assertEqual(semantics["runtime_state"], "in_progress")
+        self.assertEqual(semantics["proof_state"], "recorded")
+
+    def test_derive_obpi_semantics_uses_legacy_key_proof_for_completion(self) -> None:
+        """Legacy completed receipts remain completed when brief key proof is substantive."""
+        semantics = derive_obpi_semantics(
+            {
+                "latest_receipt_event": "completed",
+                "obpi_completion": "completed",
+                "ledger_completed": True,
+                "latest_evidence": {},
+            },
+            found_file=True,
+            file_completed=True,
+            implementation_evidence_ok=True,
+            key_proof_ok=True,
+            fallback_key_proof="uv run gz adr status ADR-0.1.0 --json",
+        )
+        self.assertEqual(semantics["runtime_state"], "completed")
+        self.assertEqual(semantics["proof_state"], "recorded")
+        self.assertEqual(semantics["attestation_requirement"], "optional")
+        self.assertTrue(semantics["completed"])
+
+    def test_derive_obpi_semantics_requires_attestation_for_attested_completed(self) -> None:
+        """Attested completion reports required attestation and records it when present."""
+        semantics = derive_obpi_semantics(
+            {
+                "latest_receipt_event": "completed",
+                "obpi_completion": "attested_completed",
+                "ledger_completed": True,
+                "latest_evidence": {"attestation_requirement": "required"},
+            },
+            found_file=True,
+            file_completed=True,
+            implementation_evidence_ok=True,
+            key_proof_ok=True,
+            fallback_key_proof="uv run gz obpi reconcile OBPI-0.10.0-01 --json",
+            human_attestation={
+                "present": True,
+                "valid": True,
+                "attestor": "human:jeff",
+                "date": "2026-03-10",
+            },
+        )
+        self.assertEqual(semantics["runtime_state"], "attested_completed")
+        self.assertEqual(semantics["attestation_requirement"], "required")
+        self.assertEqual(semantics["attestation_state"], "recorded")
+
+    def test_derive_obpi_semantics_reports_validated_state(self) -> None:
+        """Validated receipts promote proof state to validated on top of completed proof."""
+        semantics = derive_obpi_semantics(
+            {
+                "latest_receipt_event": "validated",
+                "obpi_completion": "completed",
+                "ledger_completed": True,
+                "validated": True,
+                "latest_evidence": {},
+            },
+            found_file=True,
+            file_completed=True,
+            implementation_evidence_ok=True,
+            key_proof_ok=True,
+            fallback_key_proof="uv run gz obpi status OBPI-0.10.0-01 --json",
+        )
+        self.assertEqual(semantics["runtime_state"], "validated")
+        self.assertEqual(semantics["proof_state"], "validated")
+
+    def test_derive_obpi_semantics_reports_drift_when_ledger_and_file_disagree(self) -> None:
+        """Ledger completion plus incomplete brief evidence is treated as drift."""
+        semantics = derive_obpi_semantics(
+            {
+                "latest_receipt_event": "completed",
+                "obpi_completion": "completed",
+                "ledger_completed": True,
+                "latest_evidence": {},
+            },
+            found_file=True,
+            file_completed=False,
+            implementation_evidence_ok=False,
+            key_proof_ok=False,
+        )
+        self.assertEqual(semantics["runtime_state"], "drift")
+        self.assertIn(
+            "ledger says completed but brief file status is not Completed", semantics["issues"]
+        )
 
 
 if __name__ == "__main__":

@@ -1,17 +1,17 @@
 ---
 name: gz-adr-status
-description: Always show a table of ADRs and lifecycle/QC status; optionally follow with focused ADR detail.
+description: Show the ADR table for summary requests, or show focused lifecycle and OBPI detail for one ADR.
 compatibility: GovZero v6 framework; uses gz CLI status surfaces
 metadata:
-  skill-version: "1.2.0"
+  skill-version: "1.3.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero_layer: "Layer 1 - Evidence Gathering"
-gz_command: status --table
-invocation: uv run gz status --table
+gz_command: status
+invocation: uv run gz status --table | uv run gz adr status ADR-0.3.0
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-02-22
+last_reviewed: 2026-03-10
 model: haiku
 ---
 
@@ -23,7 +23,7 @@ Show ADR status using the current `gz` command surface.
 
 - Inspect all ADRs for pending gates and lifecycle at a glance
 - Provide repeatable operator summaries in a consistent table format
-- Optionally drill into one ADR after presenting the table
+- Inspect one ADR's lifecycle, QC posture, and OBPI breakdown without reprinting the global table
 
 ## Invocation
 
@@ -35,18 +35,18 @@ Show ADR status using the current `gz` command surface.
 CLI equivalents:
 
 ```bash
-# Required table summary (always)
+# Summary view
 uv run gz status --table
 
-# Optional focused ADR drilldown after table
+# Focused ADR drilldown
 uv run gz adr status ADR-0.3.0
 uv run gz adr status ADR-0.3.0 --json
 ```
 
 ## Notes
 
-- This skill must always show `uv run gz status --table` output.
-- If an ADR ID is provided, show the table first, then focused ADR details.
+- Use `uv run gz status --table` for summary requests without an ADR identifier.
+- If an ADR ID is provided, show only the focused ADR details unless the user explicitly asks for both summary and detail.
 - `gz adr status` requires an ADR identifier.
 
 ## References

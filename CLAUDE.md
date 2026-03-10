@@ -96,7 +96,7 @@ Skills are centralized under `.gzkit` and mirrored to tool-local paths:
 - `gz-adr-map`: Build ADR-to-artifact traceability using gz state and repository search. (`.gzkit/skills/gz-adr-map/SKILL.md`)
 - `gz-adr-promote`: Promote a pool ADR into canonical ADR package structure. Use when moving a backlog item (ADR-pool.*) into an active, versioned ADR. (`.gzkit/skills/gz-adr-promote/SKILL.md`)
 - `gz-adr-recon`: Reconcile ADR/OBPI evidence state from ledger-driven gz outputs. (`.gzkit/skills/gz-adr-recon/SKILL.md`)
-- `gz-adr-status`: Always show a table of ADRs and lifecycle/QC status; optionally follow with focused ADR detail. (`.gzkit/skills/gz-adr-status/SKILL.md`)
+- `gz-adr-status`: Show the ADR table for summary requests, or show focused lifecycle and OBPI detail for one ADR. (`.gzkit/skills/gz-adr-status/SKILL.md`)
 - `gz-adr-sync`: Reconcile ADR files with ledger registration and status views. (`.gzkit/skills/gz-adr-sync/SKILL.md`)
 - `gz-adr-verification`: Verify ADR evidence and linkage using gz ADR/status checks. (`.gzkit/skills/gz-adr-verification/SKILL.md`)
 - `gz-agent-sync`: Synchronize generated control surfaces and skill mirrors. Use after skill or governance-surface updates. (`.gzkit/skills/gz-agent-sync/SKILL.md`)

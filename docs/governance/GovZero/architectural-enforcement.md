@@ -234,5 +234,5 @@ class TestAdapterArchitecturalCompliance(unittest.TestCase):
 ## See Also
 
 - [System Manifest](../architecture/system-manifest.md) — Bounded contexts and invariants
-- [ADR-0.1.16](../../design/adr/adr-0.1.x/ADR-0.1.16-unified-adapter-architecture/) — Adapter delegation rule
+- [ADR-0.1.16](../../design/adr/adr-0.1.x/ADR-0.1.16-unified-adapter-architecture/ADR-0.1.16-unified-adapter-architecture.md) — Adapter delegation rule
 - [OBPI Template](../../../.github/skills/gz-obpi-brief/assets/OBPI_BRIEF-template.md) — Brief format

@@ -18,33 +18,52 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     """Behavioral tests for closeout/audit-check/emit-receipt runtime surfaces."""
 
     @staticmethod
-    def _write_obpi(path: Path, status: str, brief_status: str, implementation_line: str) -> None:
-        path.write_text(
-            "\n".join(
+    def _write_obpi(
+        path: Path,
+        status: str,
+        brief_status: str,
+        implementation_line: str,
+        *,
+        lane: str = "Lite",
+        key_proof: str = "uv run gz adr status ADR-0.1.0 --json",
+        human_attestation: tuple[str, str, str] | None = None,
+    ) -> None:
+        lines = [
+            "---",
+            "id: OBPI-0.1.0-01-demo",
+            "parent: ADR-0.1.0",
+            "item: 1",
+            f"lane: {lane}",
+            f"status: {status}",
+            "---",
+            "",
+            "# OBPI-0.1.0-01-demo: Demo",
+            "",
+            f"**Brief Status:** {brief_status}",
+            "",
+            "## Evidence",
+            "",
+            "### Implementation Summary",
+            f"- Files created/modified: {implementation_line}",
+            "- Validation commands run: uv run -m unittest discover tests",
+            "- Date completed: 2026-02-14",
+            "",
+            "## Key Proof",
+            key_proof,
+            "",
+        ]
+        if human_attestation is not None:
+            attestor, attestation, attestation_date = human_attestation
+            lines.extend(
                 [
-                    "---",
-                    "id: OBPI-0.1.0-01-demo",
-                    "parent: ADR-0.1.0",
-                    "item: 1",
-                    "lane: Lite",
-                    f"status: {status}",
-                    "---",
-                    "",
-                    "# OBPI-0.1.0-01-demo: Demo",
-                    "",
-                    f"**Brief Status:** {brief_status}",
-                    "",
-                    "## Evidence",
-                    "",
-                    "### Implementation Summary",
-                    f"- Files created/modified: {implementation_line}",
-                    "- Validation commands run: uv run -m unittest discover tests",
-                    "- Date completed: 2026-02-14",
+                    "## Human Attestation",
+                    f"- Attestor: {attestor}",
+                    f"- Attestation: {attestation}",
+                    f"- Date: {attestation_date}",
                     "",
                 ]
             )
-            + "\n"
-        )
+        path.write_text("\n".join(lines) + "\n")
 
     @staticmethod
     def _set_manifest_verification_noop() -> None:
@@ -139,6 +158,97 @@ class TestAdrRuntimeCommands(unittest.TestCase):
             self.assertIn("Pool ADRs cannot be closed out", result.output)
             ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertNotIn('"event":"closeout_initiated","id":"ADR-pool.sample"', ledger_content)
+
+    def test_closeout_blocks_when_obpi_proof_is_incomplete(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            self._write_obpi(
+                path=obpi_path,
+                status="Draft",
+                brief_status="Draft",
+                implementation_line="src/module.py",
+            )
+
+            result = runner.invoke(main, ["closeout", "ADR-0.1.0"])
+
+            self.assertEqual(result.exit_code, 1)
+            self.assertIn("Closeout blocked:", result.output)
+            self.assertIn("BLOCKERS:", result.output)
+            self.assertIn(
+                "OBPI-0.1.0-01-demo: ledger proof of completion is missing", result.output
+            )
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
+            self.assertNotIn("closeout_initiated", ledger_content)
+
+    def test_closeout_json_includes_obpi_blockers(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            self._write_obpi(
+                path=obpi_path,
+                status="Draft",
+                brief_status="Draft",
+                implementation_line="src/module.py",
+            )
+
+            result = runner.invoke(main, ["closeout", "ADR-0.1.0", "--json"])
+
+            self.assertEqual(result.exit_code, 1)
+            payload = json.loads(result.output)
+            self.assertFalse(payload["allowed"])
+            self.assertIn("OBPI-0.1.0-01-demo", payload["blockers"][0])
+            self.assertEqual(payload["obpi_summary"]["total"], 1)
+            self.assertEqual(payload["obpi_rows"][0]["id"], "OBPI-0.1.0-01-demo")
+            self.assertIn(
+                "uv run gz obpi reconcile OBPI-0.1.0-01-demo",
+                payload["next_steps"],
+            )
+            self.assertIsNone(payload["event"])
+
+    def test_closeout_blocks_heavy_obpi_missing_required_human_attestation(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init", "--mode", "heavy"])
+            runner.invoke(main, ["plan", "0.1.0", "--lane", "heavy"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            self._write_obpi(
+                path=obpi_path,
+                status="Completed",
+                brief_status="Completed",
+                implementation_line="src/module.py",
+                lane="Heavy",
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(
+                obpi_receipt_emitted_event(
+                    obpi_id="OBPI-0.1.0-01-demo",
+                    parent_adr="ADR-0.1.0",
+                    receipt_event="completed",
+                    attestor="human:test",
+                    obpi_completion="completed",
+                    evidence={"attestation_requirement": "required"},
+                )
+            )
+
+            result = runner.invoke(main, ["closeout", "ADR-0.1.0"])
+
+            self.assertEqual(result.exit_code, 1)
+            self.assertIn(
+                "OBPI-0.1.0-01-demo: required human attestation evidence is missing",
+                result.output,
+            )
 
     def test_audit_pre_attestation_fails(self) -> None:
         runner = CliRunner()
@@ -573,6 +683,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertIn('"obpi_completion":"attested_completed"', ledger_content)
+            self.assertIn('"req_proof_inputs"', ledger_content)
 
     def test_obpi_emit_receipt_rejects_pool_linked_obpi(self) -> None:
         runner = CliRunner()

@@ -3,7 +3,7 @@ id: OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces
 parent: ADR-0.10.0-obpi-runtime-surface
 item: 2
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces: OBPI query and reconcile command surfaces
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.10.0-obpi-runtime-surface/ADR-0.10.0-obpi-runtime-surface.md`
 - **Checklist Item:** #2 -- "Deliver OBPI-native query and reconcile command surfaces."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -55,108 +55,203 @@ status views or manual brief review.
 
 **Governance (read once, cache):**
 
-- [ ] `AGENTS.md` / `CLAUDE.md`
-- [ ] Parent ADR: `docs/design/adr/pre-release/ADR-0.10.0-obpi-runtime-surface/ADR-0.10.0-obpi-runtime-surface.md`
-- [ ] `docs/user/commands/obpi-emit-receipt.md`
+- [x] `AGENTS.md` / `CLAUDE.md`
+- [x] Parent ADR: `docs/design/adr/pre-release/ADR-0.10.0-obpi-runtime-surface/ADR-0.10.0-obpi-runtime-surface.md`
+- [x] `docs/user/commands/obpi-emit-receipt.md`
 
 **Context:**
 
-- [ ] `src/gzkit/cli.py`
-- [ ] `src/gzkit/commands/status.py`
-- [ ] `tests/commands/test_status.py`
-- [ ] `tests/test_obpi_validator.py`
+- [x] `src/gzkit/cli.py`
+- [x] `src/gzkit/commands/status.py`
+- [x] `tests/commands/test_status.py`
+- [x] `tests/test_obpi_validator.py`
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] OBPI runtime contract from OBPI-0.10.0-01 is accepted or stubbed with explicit assumptions
-- [ ] Existing `gz obpi` command group exists
+- [x] OBPI runtime contract from OBPI-0.10.0-01 is accepted or stubbed with explicit assumptions
+- [x] Existing `gz obpi` command group exists
 
 ## Quality Gates
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this brief
-- [ ] Parent ADR checklist item quoted
+- [x] Intent and scope recorded in this brief
+- [x] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] Tests written before/with implementation
-- [ ] Tests pass: `uv run gz test`
-- [ ] Coverage maintained: `uv run coverage run -m unittest discover tests && uv run coverage report`
+- [x] Tests written before/with implementation
+- [x] Tests pass: `uv run gz test`
+- [x] Coverage maintained: `uv run coverage run -m unittest discover tests && uv run coverage report`
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Format clean: `uv run gz format`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Format clean: `uv run ruff format --check .`
+- [x] Type check clean: `uv run gz typecheck`
 
 ### Gate 3: Docs (Heavy only)
 
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
+- [x] Docs build: `uv run mkdocs build --strict`
+- [x] Relevant docs updated
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
+- [x] Acceptance scenarios pass: `uv run -m behave features/`
 
 ### Gate 5: Human (Heavy only)
 
-- [ ] Human attestation recorded
+- [x] Human attestation recorded
 
 ## Verification
 
 ```bash
 uv run gz test
 uv run gz lint
+uv run ruff format --check .
 uv run gz typecheck
 uv run mkdocs build --strict
 uv run -m behave features/
-uv run gz obpi validate <path-to-obpi-brief>
+uv run gz obpi status OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces --json
+uv run gz obpi reconcile OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces --json
+uv run gz obpi validate docs/design/adr/pre-release/ADR-0.10.0-obpi-runtime-surface/obpis/OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces.md
 ```
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.10.0-02-01: OBPI-native query surfaces render deterministic state at OBPI granularity.
-- [ ] REQ-0.10.0-02-02: Reconcile output reports proof/evidence drift explicitly and fail-closed.
-- [ ] REQ-0.10.0-02-03: Existing receipt and validation command surfaces remain compatible.
+- [x] REQ-0.10.0-02-01: OBPI-native query surfaces render deterministic state at OBPI granularity.
+- [x] REQ-0.10.0-02-02: Reconcile output reports proof/evidence drift explicitly and fail-closed.
+- [x] REQ-0.10.0-02-03: Existing receipt and validation command surfaces remain compatible.
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
+
+## Value Narrative
+
+Before this closeout pass, `gz obpi status` and `gz obpi reconcile` were already
+implemented, documented, and covered by focused tests, but this OBPI still
+looked incomplete at governance level because its brief remained a placeholder
+with no recorded verification evidence or acceptance narrative.
+
+After this pass, the operator-facing query/reconcile surfaces are verified
+against the recorded OBPI contract: the repo has deterministic OBPI drill-down
+surfaces for text and JSON inspection, fail-closed reconciliation for missing
+proof or brief drift, and documentation/examples that match current CLI
+behavior. Human attestation is now recorded, so the brief and receipt state can
+move together to completed runtime evidence.
 
 ## Evidence
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded.
+- [x] Parent checklist item remains quoted and unchanged.
+- [x] Existing command, doc, and test surfaces were audited instead of
+  re-implemented: `src/gzkit/cli.py`, `src/gzkit/commands/status.py`,
+  `docs/user/commands/obpi-status.md`, `docs/user/commands/obpi-reconcile.md`,
+  `tests/commands/test_status.py`, and `tests/test_obpi_validator.py`.
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+$ uv run gz test
+Running tests...
+Ran 324 tests in 4.126s
+OK
+
+Tests passed.
+
+$ uv run coverage run -m unittest discover tests
+Ran 324 tests in 5.184s
+OK
+
+$ uv run coverage report
+TOTAL                                    9189   1194    87%
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+$ uv run gz lint
+Running linters...
+All checks passed!
+
+ADR path contract check passed.
+Lint passed.
+
+$ uv run ruff format --check .
+68 files already formatted
+
+$ uv run gz typecheck
+Running type checker...
+All checks passed!
+
+Type check passed.
 ```
+
+### Gate 3 (Docs)
+
+```text
+$ uv run mkdocs build --strict
+INFO    -  Cleaning site directory
+INFO    -  Building documentation to directory: /Users/jeff/Documents/Code/gzkit/site
+INFO    -  Documentation built in 0.68 seconds
+```
+
+Audit note: the `obpi-status` and `obpi-reconcile` command docs already matched
+current CLI behavior, so no operator-facing doc correction was required.
+
+### Gate 4 (BDD)
+
+```text
+$ uv run -m behave features/
+1 feature passed, 0 failed, 0 skipped
+3 scenarios passed, 0 failed, 0 skipped
+16 steps passed, 0 failed, 0 skipped
+```
+
+## Key Proof
+
+- `uv run gz obpi emit-receipt OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces --event completed --attestor human:jeff --evidence-json ...`
+  records completed proof and human attestation for the heavy-lane OBPI.
+- `uv run gz obpi status OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces --json`
+  reports `runtime_state: attested_completed`, `attestation_requirement:
+  required`, and zero issues after receipt emission.
+- `uv run gz obpi reconcile OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces --json`
+  returns `passed: true` with no blockers, confirming ledger and brief evidence
+  are coherent.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
+- Files created/modified: `docs/design/adr/pre-release/ADR-0.10.0-obpi-runtime-surface/obpis/OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces.md`
+- Existing implementation verified: `src/gzkit/cli.py`, `src/gzkit/commands/status.py`, `docs/user/commands/obpi-status.md`, `docs/user/commands/obpi-reconcile.md`, `tests/commands/test_status.py`, and `tests/test_obpi_validator.py`
+- Repository hygiene for shared format gate: Ruff normalization on `.claude/hooks/instruction-router.py`, `.claude/hooks/ledger-writer.py`, `.claude/hooks/post-edit-ruff.py`, `.github/copilot/hooks/ledger-writer.py`, and `tests/commands/test_register_adrs.py`
+- Tests added: none in this pass; existing status/reconcile coverage already exercised the OBPI contract
+- Ledger event recorded: `obpi_receipt_emitted` (`completed`) for `OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces`
+- Date completed: 2026-03-10
+
+## Human Attestation
+
+- Attestor: human:jeff
+- Attestation: Completed
+- Date: 2026-03-10
+- Scope: OBPI-0.10.0-02 query/reconcile command surfaces, verification evidence, and operator closeout review accepted.
+
+### Gate 5 (Human)
+
+- [x] Human attestation explicitly received from the user on 2026-03-10.
+- [x] Completion receipt emitted with matching attestation metadata and scoped REQ proof inputs.
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** —
+**Date Completed:** 2026-03-10
 
-**Evidence Hash:** —
+**Evidence Hash:** 58348d8

@@ -108,5 +108,5 @@ These terms are canonical. Other terms (accept, approve, sign off) are not valid
 - ADR status table: [adr-status.md](adr-status.md)
 - Closeout ceremony behavior: [audit-protocol.md](audit-protocol.md)
 - ADR/OBPI/GHI/audit linkage: [adr-obpi-ghi-audit-linkage.md](adr-obpi-ghi-audit-linkage.md)
-- Agent contract: [/AGENTS.md](/AGENTS.md)
-- Machine-readable governance: [/config/governance_manifest.json](/config/governance_manifest.json)
+- Agent contract: [AGENTS.md](https://github.com/tvproductions/gzkit/blob/main/AGENTS.md)
+- Machine-readable governance: [config/governance_manifest.json](https://github.com/tvproductions/gzkit/blob/main/config/governance_manifest.json)

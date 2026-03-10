@@ -12,10 +12,11 @@ Canonical GovZero source: [`docs/governance/GovZero/audit-protocol.md`](../../go
    - Confirm target ADR and OBPI scope.
    - Confirm lane obligations.
 2. **Presentation** (`gz closeout`)
-   - Agent provides Gate 1 path plus verification commands.
-   - Output is commands/paths only, no interpreted outcomes.
+   - Agent provides Gate 1 path, OBPI completion summary, and verification commands.
+   - Linked OBPI proof is reconciled first. If any OBPI is not closeout-ready, closeout prints
+     `BLOCKERS:` plus follow-up commands and stops before recording `closeout_initiated`.
 3. **Human Observation**
-   - Human runs commands and inspects artifacts directly.
+   - Human runs commands and inspects artifacts directly after closeout is unblocked.
 4. **Attestation** (`gz attest`)
    - Human records `completed`, `partial`, or `dropped`.
    - `gz attest` enforces prerequisite gates by default.
@@ -31,6 +32,7 @@ Canonical GovZero source: [`docs/governance/GovZero/audit-protocol.md`](../../go
 For heavy lane ADRs:
 
 - Closeout includes the Gate 4 BDD command.
+- Closeout remains blocked until linked heavy-lane OBPIs satisfy their attestation-proof rules.
 - Gate 4 must pass before attestation.
 
 ---

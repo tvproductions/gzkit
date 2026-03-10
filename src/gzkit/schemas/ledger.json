@@ -88,7 +88,49 @@
       "properties": {
         "receipt_event": { "type": "string", "enum": ["completed", "validated"] },
         "attestor": { "type": "string", "min_length": 1 },
-        "evidence": { "type": "object" },
+        "evidence": {
+          "type": "object",
+          "properties": {
+            "value_narrative": { "type": "string", "min_length": 1 },
+            "key_proof": { "type": "string", "min_length": 1 },
+            "human_attestation": { "type": "boolean" },
+            "attestation_text": { "type": "string", "min_length": 1 },
+            "attestation_date": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+            "attestation_requirement": {
+              "type": "string",
+              "enum": ["required", "optional"]
+            },
+            "parent_adr": { "type": "string", "min_length": 1 },
+            "parent_lane": { "type": "string", "enum": ["lite", "heavy"] },
+            "req_proof_inputs": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["name", "kind", "source", "status"],
+                "properties": {
+                  "name": { "type": "string", "min_length": 1 },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "command",
+                      "artifact",
+                      "brief_section",
+                      "attestation",
+                      "legacy_key_proof"
+                    ]
+                  },
+                  "source": { "type": "string", "min_length": 1 },
+                  "status": {
+                    "type": "string",
+                    "enum": ["present", "missing"]
+                  },
+                  "scope": { "type": "string", "min_length": 1 },
+                  "gap_reason": { "type": "string", "min_length": 1 }
+                }
+              }
+            }
+          }
+        },
         "obpi_completion": {
           "type": "string",
           "enum": ["completed", "attested_completed", "not_completed"]

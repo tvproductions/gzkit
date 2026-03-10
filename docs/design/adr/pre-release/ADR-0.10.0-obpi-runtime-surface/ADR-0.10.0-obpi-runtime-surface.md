@@ -1,6 +1,6 @@
 ---
 id: ADR-0.10.0-obpi-runtime-surface
-status: Proposed
+status: Validated
 semver: 0.10.0
 lane: heavy
 parent: PRD-GZKIT-1.0.0
@@ -81,9 +81,9 @@ compatibility seams rather than replaced with ad hoc runtime state.
 
 <!-- Each item becomes an OBPI (One Brief Per Item). Sequential numbering, no gaps. -->
 
-- [ ] OBPI-0.10.0-01: Define the OBPI runtime contract and derived state model.
-- [ ] OBPI-0.10.0-02: Deliver OBPI-native query and reconcile command surfaces.
-- [ ] OBPI-0.10.0-03: Integrate OBPI proof state with lifecycle guidance and parity-dependent operator flows.
+- [x] OBPI-0.10.0-01: Define the OBPI runtime contract and derived state model.
+- [x] OBPI-0.10.0-02: Deliver OBPI-native query and reconcile command surfaces.
+- [x] OBPI-0.10.0-03: Integrate OBPI proof state with lifecycle guidance and parity-dependent operator flows.
 
 ## Q&A Transcript
 
@@ -95,10 +95,14 @@ Promotion seeded via `gz adr promote`; interview transcript not captured.
 
 <!-- Links to tests, documentation, and other artifacts that prove completion -->
 
-- [ ] Tests: `tests/`
-- [ ] Docs: `docs/`
-- [ ] Runtime command docs: `docs/user/commands/`
-- [ ] OBPI concepts/runtime semantics: `docs/user/concepts/`, `docs/governance/GovZero/`
+- [x] Tests: `tests/`
+- [x] Docs: `docs/`
+- [x] Runtime command docs: `docs/user/commands/`
+- [x] OBPI concepts/runtime semantics: `docs/user/concepts/`, `docs/governance/GovZero/`
+- [x] Closeout form:
+      `docs/design/adr/pre-release/ADR-0.10.0-obpi-runtime-surface/ADR-CLOSEOUT-FORM.md`
+- [x] Audit artifacts:
+      `docs/design/adr/pre-release/ADR-0.10.0-obpi-runtime-surface/audit/`
 
 ## Alternatives Considered
 
@@ -108,4 +112,4 @@ Promotion seeded via `gz adr promote`; interview transcript not captured.
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.10.0 | Pending | | | |
+| 0.10.0 | Completed | Test User | 2026-03-10 | attest completed |

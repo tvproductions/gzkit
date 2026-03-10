@@ -47,30 +47,49 @@ class CliRunner:
         )
 
 
-def _write_obpi(path: Path, status: str, brief_status: str, implementation_line: str) -> None:
-    path.write_text(
-        "\n".join(
+def _write_obpi(
+    path: Path,
+    status: str,
+    brief_status: str,
+    implementation_line: str,
+    *,
+    lane: str = "Lite",
+    key_proof: str = "uv run gz adr status ADR-0.1.0 --json",
+    human_attestation: tuple[str, str, str] | None = None,
+) -> None:
+    lines = [
+        "---",
+        "id: OBPI-0.1.0-01-demo",
+        "parent: ADR-0.1.0",
+        "item: 1",
+        f"lane: {lane}",
+        f"status: {status}",
+        "---",
+        "",
+        "# OBPI-0.1.0-01-demo: Demo",
+        "",
+        f"**Brief Status:** {brief_status}",
+        "",
+        "## Evidence",
+        "",
+        "### Implementation Summary",
+        f"- Files created/modified: {implementation_line}",
+        "- Validation commands run: uv run -m unittest discover tests",
+        "- Date completed: 2026-02-14",
+        "",
+        "## Key Proof",
+        key_proof,
+        "",
+    ]
+    if human_attestation is not None:
+        attestor, attestation, attestation_date = human_attestation
+        lines.extend(
             [
-                "---",
-                "id: OBPI-0.1.0-01-demo",
-                "parent: ADR-0.1.0",
-                "item: 1",
-                "lane: Lite",
-                f"status: {status}",
-                "---",
-                "",
-                "# OBPI-0.1.0-01-demo: Demo",
-                "",
-                f"**Brief Status:** {brief_status}",
-                "",
-                "## Evidence",
-                "",
-                "### Implementation Summary",
-                f"- Files created/modified: {implementation_line}",
-                "- Validation commands run: uv run -m unittest discover tests",
-                "- Date completed: 2026-02-14",
+                "## Human Attestation",
+                f"- Attestor: {attestor}",
+                f"- Attestation: {attestation}",
+                f"- Date: {attestation_date}",
                 "",
             ]
         )
-        + "\n"
-    )
+    path.write_text("\n".join(lines) + "\n")

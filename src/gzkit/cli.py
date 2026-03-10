@@ -39,14 +39,20 @@ from gzkit.commands.common import (
     get_project_root,
     load_manifest,
     resolve_adr_file,
+    resolve_obpi_file,
     resolve_target_adr,
 )
 from gzkit.commands.plan import plan_cmd
 from gzkit.commands.state import state
 from gzkit.commands.status import (
+    _adr_closeout_readiness,
+    _adr_obpi_status_rows,
     _collect_obpi_files_for_adr,
     _inspect_obpi_brief,
+    _summarize_obpi_rows,
     adr_status_cmd,
+    obpi_reconcile_cmd,
+    obpi_status_cmd,
     status,
 )
 from gzkit.config import GzkitConfig
@@ -74,6 +80,7 @@ from gzkit.ledger import (
     closeout_initiated_event,
     constitution_created_event,
     gate_checked_event,
+    normalize_req_proof_inputs,
     obpi_created_event,
     obpi_receipt_emitted_event,
     parse_frontmatter_value,
@@ -394,38 +401,6 @@ def _execute_git_sync(
     _run_post_sync_lint(project_root, run_lint_gate, blockers, executed, warnings)
 
     return executed
-
-
-def resolve_obpi_file(
-    project_root: Path,
-    config: GzkitConfig,
-    ledger: Ledger,
-    obpi: str,
-) -> tuple[Path, str]:
-    """Resolve an OBPI file path from an ID, supporting rename chains."""
-    obpi_input = obpi if obpi.startswith("OBPI-") else f"OBPI-{obpi}"
-    canonical_obpi = ledger.canonicalize_id(obpi_input)
-    graph = ledger.get_artifact_graph()
-
-    info = graph.get(canonical_obpi)
-    if not info or info.get("type") != "obpi":
-        raise GzCliError(f"OBPI not found in ledger: {canonical_obpi}")
-
-    artifacts = scan_existing_artifacts(project_root, config.paths.design_root)
-    matches: list[Path] = []
-    for obpi_file in artifacts.get("obpis", []):
-        metadata = parse_artifact_metadata(obpi_file)
-        file_id = metadata.get("id", obpi_file.stem)
-        if ledger.canonicalize_id(file_id) == canonical_obpi:
-            matches.append(obpi_file)
-
-    if len(matches) == 1:
-        return matches[0], canonical_obpi
-    if len(matches) > 1:
-        rels = ", ".join(str(path.relative_to(project_root)) for path in matches)
-        raise GzCliError(f"Multiple OBPI files found for {canonical_obpi}: {rels}")
-
-    raise GzCliError(f"OBPI file not found for {canonical_obpi}")
 
 
 def run_interview(document_type: str) -> dict[str, str]:
@@ -1715,8 +1690,115 @@ def migrate_semver(dry_run: bool) -> None:
     )
 
 
-def register_adrs(lane: str | None, pool_only: bool = True, dry_run: bool = False) -> None:
-    """Register ADR files that exist in canon but are missing from ledger state."""
+def _normalize_register_targets(ledger: Ledger, targets: list[str] | None) -> set[str]:
+    """Expand target ADR ids to canonical and prefixed forms."""
+    normalized_targets = {
+        target if target.startswith("ADR-") else f"ADR-{target}" for target in (targets or [])
+    }
+    return normalized_targets | {ledger.canonicalize_id(target) for target in normalized_targets}
+
+
+def _adr_register_identity(
+    ledger: Ledger,
+    adr_file: Path,
+    metadata: dict[str, str],
+) -> tuple[str, set[str], bool] | None:
+    """Resolve operator-facing and canonical ADR ids for registration."""
+    stem_id = adr_file.stem
+    parsed_id = metadata.get("id", stem_id)
+    canonical_candidates = {
+        ledger.canonicalize_id(parsed_id),
+        ledger.canonicalize_id(stem_id),
+    }
+    adr_id = parsed_id
+    if parsed_id != stem_id and stem_id.startswith(f"{parsed_id}-"):
+        adr_id = stem_id
+    is_pool_adr = _is_pool_adr_id(adr_id)
+    is_semver_adr = ADR_SEMVER_ID_RE.match(adr_id) is not None
+    if not (is_semver_adr or is_pool_adr):
+        return None
+    return adr_id, canonical_candidates, is_pool_adr
+
+
+def _collect_adrs_to_register(
+    *,
+    ledger: Ledger,
+    artifacts: dict[str, list[Path]],
+    known_adrs: set[str],
+    target_ids: set[str],
+    pool_only: bool,
+    default_lane: str,
+) -> tuple[list[tuple[str, str, str]], set[str]]:
+    """Collect missing ADR packages and eligible parent ids."""
+    to_register: list[tuple[str, str, str]] = []
+    eligible_parent_ids: set[str] = set()
+    for adr_file in artifacts.get("adrs", []):
+        metadata = parse_artifact_metadata(adr_file)
+        resolved = _adr_register_identity(ledger, adr_file, metadata)
+        if resolved is None:
+            continue
+        adr_id, canonical_candidates, is_pool_adr = resolved
+        if target_ids and canonical_candidates.isdisjoint(target_ids):
+            continue
+        if pool_only and not is_pool_adr:
+            continue
+
+        canonical_adr_id = ledger.canonicalize_id(adr_id)
+        eligible_parent_ids.add(canonical_adr_id)
+        if known_adrs.intersection(canonical_candidates):
+            continue
+
+        parent = metadata.get("parent", "")
+        raw_lane = metadata.get("lane", default_lane).lower()
+        resolved_lane = raw_lane if raw_lane in {"lite", "heavy"} else default_lane
+        to_register.append((adr_id, parent, resolved_lane))
+    to_register.sort(key=lambda item: item[0])
+    return to_register, eligible_parent_ids
+
+
+def _collect_obpis_to_register(
+    *,
+    ledger: Ledger,
+    artifacts: dict[str, list[Path]],
+    known_obpis: set[str],
+    eligible_parent_ids: set[str],
+) -> list[tuple[str, str]]:
+    """Collect missing OBPI ledger entries for eligible ADR packages."""
+    to_register_obpis: list[tuple[str, str]] = []
+    for obpi_file in artifacts.get("obpis", []):
+        metadata = parse_artifact_metadata(obpi_file)
+        stem_id = obpi_file.stem
+        parsed_id = metadata.get("id", stem_id)
+        canonical_candidates = {
+            ledger.canonicalize_id(parsed_id),
+            ledger.canonicalize_id(stem_id),
+        }
+        if known_obpis.intersection(canonical_candidates):
+            continue
+
+        parent = metadata.get("parent", "")
+        if not parent:
+            continue
+        parent_id = parent if parent.startswith("ADR-") else f"ADR-{parent}"
+        canonical_parent = ledger.canonicalize_id(parent_id)
+        if canonical_parent not in eligible_parent_ids:
+            continue
+
+        obpi_id = parsed_id
+        if parsed_id != stem_id and stem_id.startswith(f"{parsed_id}-"):
+            obpi_id = stem_id
+        to_register_obpis.append((obpi_id, canonical_parent))
+    to_register_obpis.sort(key=lambda item: item[0])
+    return to_register_obpis
+
+
+def register_adrs(
+    lane: str | None,
+    pool_only: bool = True,
+    dry_run: bool = False,
+    targets: list[str] | None = None,
+) -> None:
+    """Register ADR packages that exist in canon but are missing from ledger state."""
     config = ensure_initialized()
     project_root = get_project_root()
     ledger = Ledger(project_root / config.paths.ledger)
@@ -1726,43 +1808,30 @@ def register_adrs(lane: str | None, pool_only: bool = True, dry_run: bool = Fals
     known_adrs = {
         artifact_id for artifact_id, info in existing_graph.items() if info.get("type") == "adr"
     }
+    known_obpis = {
+        artifact_id for artifact_id, info in existing_graph.items() if info.get("type") == "obpi"
+    }
 
+    target_ids = _normalize_register_targets(ledger, targets)
     default_lane = lane or config.mode
-    to_register: list[tuple[str, str, str]] = []
-    for adr_file in artifacts.get("adrs", []):
-        metadata = parse_artifact_metadata(adr_file)
-        stem_id = adr_file.stem
-        parsed_id = metadata.get("id", stem_id)
-        canonical_candidates = {
-            ledger.canonicalize_id(parsed_id),
-            ledger.canonicalize_id(stem_id),
-        }
-        if known_adrs.intersection(canonical_candidates):
-            continue
+    to_register, eligible_parent_ids = _collect_adrs_to_register(
+        ledger=ledger,
+        artifacts=artifacts,
+        known_adrs=known_adrs,
+        target_ids=target_ids,
+        pool_only=pool_only,
+        default_lane=default_lane,
+    )
+    to_register_obpis = _collect_obpis_to_register(
+        ledger=ledger,
+        artifacts=artifacts,
+        known_obpis=known_obpis,
+        eligible_parent_ids=eligible_parent_ids,
+    )
 
-        adr_id = parsed_id
-        if parsed_id != stem_id and stem_id.startswith(f"{parsed_id}-"):
-            # Keep descriptive suffixes when headers only declare ADR-x.y.z.
-            adr_id = stem_id
-
-        is_semver_adr = ADR_SEMVER_ID_RE.match(adr_id) is not None
-        is_pool_adr = _is_pool_adr_id(adr_id)
-        if not (is_semver_adr or is_pool_adr):
-            continue
-
-        if pool_only and not is_pool_adr:
-            continue
-
-        parent = metadata.get("parent", "")
-        raw_lane = metadata.get("lane", default_lane).lower()
-        resolved_lane = raw_lane if raw_lane in {"lite", "heavy"} else default_lane
-        to_register.append((adr_id, parent, resolved_lane))
-
-    if not to_register:
-        console.print("No unregistered ADRs found.")
+    if not to_register and not to_register_obpis:
+        console.print("No unregistered ADRs or OBPIs found.")
         return
-
-    to_register.sort(key=lambda item: item[0])
 
     if dry_run:
         console.print("[yellow]Dry run:[/yellow] no ledger events will be written.")
@@ -1771,6 +1840,8 @@ def register_adrs(lane: str | None, pool_only: bool = True, dry_run: bool = Fals
             console.print(
                 f"  Would append adr_created: {adr_id} (parent: {parent_display}, lane: {adr_lane})"
             )
+        for obpi_id, parent in to_register_obpis:
+            console.print(f"  Would append obpi_created: {obpi_id} (parent: {parent})")
         return
 
     for adr_id, parent, adr_lane in to_register:
@@ -1779,9 +1850,15 @@ def register_adrs(lane: str | None, pool_only: bool = True, dry_run: bool = Fals
         parent_display = parent or "(none)"
         console.print(f"Registered ADR: {adr_id} (parent: {parent_display}, lane: {adr_lane})")
 
+    for obpi_id, parent in to_register_obpis:
+        ledger.append(obpi_created_event(obpi_id, parent))
+        known_obpis.add(ledger.canonicalize_id(obpi_id))
+        console.print(f"Registered OBPI: {obpi_id} (parent: {parent})")
+
     console.print(
         f"\n[green]ADR registration complete:[/green] "
-        f"{len(to_register)} adr_created event(s) recorded."
+        f"{len(to_register)} adr_created event(s), "
+        f"{len(to_register_obpis)} obpi_created event(s) recorded."
     )
 
 
@@ -2028,23 +2105,33 @@ def _closeout_result_payload(
     adr_id: str,
     lane: str,
     dry_run: bool,
-    event: dict[str, Any],
+    allowed: bool,
+    blockers: list[str],
+    event: dict[str, Any] | None,
     gate_1_path: str,
+    obpi_summary: dict[str, Any],
+    obpi_rows: list[dict[str, Any]],
     verification_steps: list[tuple[str, str]],
     gate4_na_reason: str | None,
     attestation_choices: list[str],
+    next_steps: list[str],
 ) -> dict[str, Any]:
     rendered_steps = [{"label": label, "command": command} for label, command in verification_steps]
     return {
         "adr": adr_id,
         "mode": lane,
         "dry_run": dry_run,
+        "allowed": allowed,
+        "blockers": blockers,
         "event": event,
         "gate_1_path": gate_1_path,
+        "obpi_summary": obpi_summary,
+        "obpi_rows": obpi_rows,
         "verification_commands": [command for _label, command in verification_steps],
         "verification_steps": rendered_steps,
         "gate4_na_reason": gate4_na_reason,
         "attestation_choices": attestation_choices,
+        "next_steps": next_steps,
     }
 
 
@@ -2054,12 +2141,32 @@ def _render_closeout_output(result: dict[str, Any], dry_run: bool) -> None:
     gate_1_path = result["gate_1_path"]
     gate4_na_reason = result.get("gate4_na_reason")
     attestation_choices = result.get("attestation_choices", [])
+    blockers = cast(list[str], result.get("blockers", []))
+    next_steps = cast(list[str], result.get("next_steps", []))
+    obpi_summary = cast(dict[str, Any], result.get("obpi_summary", {}))
     steps = result.get("verification_steps", [])
+    obpi_total = int(obpi_summary.get("total", 0))
+    obpi_completed = int(obpi_summary.get("completed", 0))
+
+    if blockers:
+        heading = "[red]Closeout blocked:[/red]" if not dry_run else "[red]Dry run blocked:[/red]"
+        console.print(f"{heading} {adr_id}")
+        console.print(f"  Gate 1 (ADR): {gate_1_path}")
+        console.print(f"  OBPI Completion: {obpi_completed}/{obpi_total} complete")
+        console.print("BLOCKERS:")
+        for blocker in blockers:
+            console.print(f"- {blocker}")
+        if next_steps:
+            console.print("Next steps:")
+            for step in next_steps:
+                console.print(f"  - {step}")
+        return
 
     if dry_run:
         console.print("[yellow]Dry run:[/yellow] no ledger event will be written.")
         console.print(f"  Would initiate closeout for: {adr_id}")
         console.print(f"  Gate 1 (ADR): {gate_1_path}")
+        console.print(f"  OBPI Completion: {obpi_completed}/{obpi_total} complete")
         for step in steps:
             console.print(f"  {step['label']}: {step['command']}")
         if gate4_na_reason is not None and lane == "heavy":
@@ -2071,6 +2178,7 @@ def _render_closeout_output(result: dict[str, Any], dry_run: bool) -> None:
 
     console.print(f"[green]Closeout initiated:[/green] {adr_id}")
     console.print(f"Gate 1 (ADR): {gate_1_path}")
+    console.print(f"OBPI Completion: {obpi_completed}/{obpi_total} complete")
     for step in steps:
         console.print(f"{step['label']}: {step['command']}")
     if gate4_na_reason is not None and lane == "heavy":
@@ -2080,6 +2188,14 @@ def _render_closeout_output(result: dict[str, Any], dry_run: bool) -> None:
     for choice in attestation_choices:
         console.print(f"  - {choice}", markup=False)
     console.print(f"Record attestation command: uv run gz attest {adr_id} --status completed")
+
+
+def _closeout_next_steps(adr_id: str, blocking_ids: list[str]) -> list[str]:
+    """Suggest the minimal next commands needed to clear closeout blockers."""
+    steps = [f"uv run gz adr status {adr_id}", f"uv run gz adr audit-check {adr_id}"]
+    for obpi_id in blocking_ids:
+        steps.append(f"uv run gz obpi reconcile {obpi_id}")
+    return steps
 
 
 def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
@@ -2099,6 +2215,13 @@ def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
 
     verification_steps, gate4_na_reason = _closeout_verification_steps(manifest, lane, project_root)
     obpi_files, _expected = _collect_obpi_files_for_adr(project_root, config, ledger, adr_id)
+    obpi_rows = _adr_obpi_status_rows(project_root, config, ledger, adr_id)
+    obpi_summary = _summarize_obpi_rows(obpi_rows)
+    closeout_readiness = _adr_closeout_readiness(obpi_rows)
+    blockers = list(closeout_readiness["blockers"])
+    next_steps = _closeout_next_steps(
+        adr_id, cast(list[str], closeout_readiness.get("blocking_ids", []))
+    )
 
     closeout_form = adr_file.parent / "ADR-CLOSEOUT-FORM.md"
     gate_1_path = str(adr_file.relative_to(project_root))
@@ -2109,6 +2232,8 @@ def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
             str(closeout_form.relative_to(project_root)) if closeout_form.exists() else None
         ),
         "obpi_files": [str(path.relative_to(project_root)) for path in obpi_files.values()],
+        "obpi_summary": obpi_summary,
+        "obpi_rows": obpi_rows,
         "verification_commands": [command for _label, command in verification_steps],
         "verification_steps": [
             {"label": label, "command": command} for label, command in verification_steps
@@ -2116,23 +2241,37 @@ def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
         "gate4_na_reason": gate4_na_reason,
         "attestation_choices": attestation_choices,
     }
-    event = closeout_initiated_event(
-        adr_id=adr_id,
-        by=get_git_user(),
-        mode=lane,
-        evidence=evidence,
-    )
+    event = None
+    if not blockers:
+        event = closeout_initiated_event(
+            adr_id=adr_id,
+            by=get_git_user(),
+            mode=lane,
+            evidence=evidence,
+        )
 
     result = _closeout_result_payload(
         adr_id=adr_id,
         lane=lane,
         dry_run=dry_run,
-        event=event.to_dict(),
+        allowed=not blockers,
+        blockers=blockers,
+        event=event.to_dict() if event is not None else None,
         gate_1_path=gate_1_path,
+        obpi_summary=obpi_summary,
+        obpi_rows=obpi_rows,
         verification_steps=verification_steps,
         gate4_na_reason=gate4_na_reason,
         attestation_choices=attestation_choices,
+        next_steps=next_steps,
     )
+
+    if blockers:
+        if as_json:
+            print(json.dumps(result, indent=2))
+        else:
+            _render_closeout_output(result, dry_run=dry_run)
+        raise SystemExit(1)
 
     if dry_run:
         if as_json:
@@ -2141,6 +2280,7 @@ def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
         _render_closeout_output(result, dry_run=True)
         return
 
+    assert event is not None
     ledger.append(event)
 
     if as_json:
@@ -2352,6 +2492,24 @@ def _validate_obpi_human_attestation_fields(evidence: dict[str, Any], attestor: 
         ) from exc
 
 
+def _validate_explicit_req_proof_inputs(raw_inputs: Any) -> list[dict[str, str]]:
+    """Validate an explicit req_proof_inputs payload when supplied."""
+    if raw_inputs is None:
+        return []
+    if not isinstance(raw_inputs, list) or not raw_inputs:
+        raise GzCliError(
+            "evidence.req_proof_inputs must be a non-empty list of proof input objects."
+        )
+
+    normalized = normalize_req_proof_inputs(raw_inputs)
+    if len(normalized) != len(raw_inputs):
+        raise GzCliError(
+            "Each evidence.req_proof_inputs item must include non-empty "
+            "name/kind/source fields and status present|missing."
+        )
+    return normalized
+
+
 def _validate_obpi_completion_evidence(
     *,
     evidence: dict[str, Any] | None,
@@ -2373,6 +2531,22 @@ def _validate_obpi_completion_evidence(
 
     completion_term = "attested_completed" if requires_human_attestation else "completed"
     normalized = dict(evidence)
+    explicit_req_proof_inputs = _validate_explicit_req_proof_inputs(
+        normalized.get("req_proof_inputs")
+    )
+    human_attestation = None
+    if normalized.get("human_attestation") is True:
+        human_attestation = {
+            "valid": True,
+            "attestor": attestor,
+            "attestation_text": normalized.get("attestation_text"),
+            "date": normalized.get("attestation_date"),
+        }
+    normalized["req_proof_inputs"] = explicit_req_proof_inputs or normalize_req_proof_inputs(
+        None,
+        fallback_key_proof=cast(str, normalized.get("key_proof")),
+        human_attestation=human_attestation,
+    )
     normalized["obpi_completion"] = completion_term
     normalized["attestation_requirement"] = "required" if requires_human_attestation else "optional"
     if isinstance(parent_adr, str) and parent_adr:
@@ -2444,6 +2618,8 @@ def obpi_emit_receipt_cmd(
     _obpi_file, obpi_id = resolve_obpi_file(project_root, config, ledger, obpi)
     graph = ledger.get_artifact_graph()
     obpi_info = graph.get(obpi_id, {})
+    if obpi_info.get("type") != "obpi":
+        raise GzCliError(f"OBPI not found in ledger: {obpi_id}")
     parent_adr = obpi_info.get("parent")
     if isinstance(parent_adr, str) and _is_pool_adr_id(parent_adr):
         raise GzCliError(
@@ -2476,6 +2652,13 @@ def obpi_emit_receipt_cmd(
         )
     elif evidence is not None:
         evidence = dict(evidence)
+        explicit_req_proof_inputs = _validate_explicit_req_proof_inputs(
+            evidence.get("req_proof_inputs")
+        )
+        evidence["req_proof_inputs"] = explicit_req_proof_inputs or normalize_req_proof_inputs(
+            None,
+            fallback_key_proof=cast(str | None, evidence.get("key_proof")),
+        )
         evidence.setdefault("parent_lane", parent_lane)
         if isinstance(parent_adr, str) and parent_adr:
             evidence.setdefault("parent_adr", parent_adr)
@@ -4182,6 +4365,20 @@ def _build_parser() -> argparse.ArgumentParser:
         )
     )
 
+    p_obpi_status = obpi_commands.add_parser(
+        "status", help="Show focused runtime status for one OBPI"
+    )
+    p_obpi_status.add_argument("obpi")
+    p_obpi_status.add_argument("--json", dest="as_json", action="store_true")
+    p_obpi_status.set_defaults(func=lambda a: obpi_status_cmd(obpi=a.obpi, as_json=a.as_json))
+
+    p_obpi_reconcile = obpi_commands.add_parser(
+        "reconcile", help="Fail-closed runtime reconciliation for one OBPI"
+    )
+    p_obpi_reconcile.add_argument("obpi")
+    p_obpi_reconcile.add_argument("--json", dest="as_json", action="store_true")
+    p_obpi_reconcile.set_defaults(func=lambda a: obpi_reconcile_cmd(obpi=a.obpi, as_json=a.as_json))
+
     p_obpi_validate = obpi_commands.add_parser(
         "validate", help="Validate OBPI brief for completion readiness"
     )
@@ -4241,7 +4438,12 @@ def _build_parser() -> argparse.ArgumentParser:
 
     p_register_adrs = commands.add_parser(
         "register-adrs",
-        help="Register ADR files that exist in canon but are missing from ledger state",
+        help="Register ADR packages that exist in canon but are missing from ledger state",
+    )
+    p_register_adrs.add_argument(
+        "targets",
+        nargs="*",
+        help="Optional ADR ids to reconcile; when omitted, scan all eligible ADR packages",
     )
     p_register_adrs.add_argument(
         "--lane",
@@ -4267,6 +4469,7 @@ def _build_parser() -> argparse.ArgumentParser:
             lane=a.lane,
             pool_only=a.pool_only,
             dry_run=a.dry_run,
+            targets=a.targets,
         )
     )
 
