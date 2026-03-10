@@ -14,18 +14,32 @@ gz closeout <ADR-ID> [--json] [--dry-run]
 
 ## Runtime Behavior
 
-`gz closeout` is a presentation step. It emits paths and commands only.
+`gz closeout` is fail-closed on linked OBPI runtime proof.
 Pool ADRs (`ADR-pool.*`) are blocked from closeout until promoted out of pool.
 
 Output includes:
 
 - Gate 1 ADR path
+- OBPI completion summary
+- Closeout blockers when any linked OBPI is not closeout-ready
 - Linked OBPI evidence paths
 - Verification command set for the ADR lane
 - Canonical attestation choices
 - Heavy-lane Gate 4 command (always required for heavy lane)
 
-It does not interpret command outcomes.
+If any linked OBPI still has missing proof, missing brief completion, drift, or
+missing required human-attestation evidence, `gz closeout` prints `BLOCKERS:`
+and exits `1` without writing `closeout_initiated`.
+
+`--json` adds:
+
+- `allowed`
+- `blockers`
+- `obpi_summary`
+- `obpi_rows`
+- `next_steps`
+
+It still does not interpret the verification command outcomes themselves.
 
 ---
 
@@ -49,5 +63,18 @@ It does not interpret command outcomes.
 ## Example
 
 ```bash
-uv run gz closeout ADR-0.3.0
+uv run gz closeout ADR-0.10.0 --dry-run
+```
+
+```text
+Dry run blocked: ADR-0.10.0-obpi-runtime-surface
+  Gate 1 (ADR): docs/design/adr/pre-release/ADR-0.10.0-obpi-runtime-surface/ADR-0.10.0-obpi-runtime-surface.md
+  OBPI Completion: 2/3 complete
+BLOCKERS:
+- OBPI-0.10.0-03-obpi-proof-and-lifecycle-integration: ledger proof of completion is missing
+- OBPI-0.10.0-03-obpi-proof-and-lifecycle-integration: brief file status is not Completed
+Next steps:
+  - uv run gz adr status ADR-0.10.0-obpi-runtime-surface
+  - uv run gz adr audit-check ADR-0.10.0-obpi-runtime-surface
+  - uv run gz obpi reconcile OBPI-0.10.0-03-obpi-proof-and-lifecycle-integration
 ```

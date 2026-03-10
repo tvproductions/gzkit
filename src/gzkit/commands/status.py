@@ -17,10 +17,12 @@ from gzkit.commands.common import (
     ensure_initialized,
     get_project_root,
     resolve_adr_file,
+    resolve_obpi,
 )
 from gzkit.config import GzkitConfig
 from gzkit.ledger import (
     Ledger,
+    derive_obpi_semantics,
     parse_frontmatter_value,
     resolve_adr_lane,
 )
@@ -114,6 +116,9 @@ def _build_adr_status_entry(
     entry["obpis"] = obpi_rows
     obpi_summary = _summarize_obpi_rows(obpi_rows)
     entry["obpi_summary"] = obpi_summary
+    closeout_readiness = _adr_closeout_readiness(obpi_rows)
+    entry["closeout_ready"] = bool(closeout_readiness["ready"])
+    entry["closeout_blockers"] = list(closeout_readiness["blockers"])
     _apply_obpi_lifecycle_overrides(adr_id, entry, obpi_summary)
     return entry
 
@@ -228,8 +233,8 @@ def _render_status_row(
 
 def _render_status_table(adrs: dict[str, dict[str, Any]], default_mode: str) -> None:
     """Render ADR status as a stable tabular summary."""
-    table = Table(title="ADR Status", box=box.ASCII)
-    table.add_column("ADR", overflow="ellipsis")
+    table = Table(title="ADR Status", box=box.ASCII, padding=(0, 0))
+    table.add_column("ADR", overflow="fold")
     table.add_column("Life", no_wrap=True)
     table.add_column("Lane", no_wrap=True)
     table.add_column("OBPI", justify="right", no_wrap=True)
@@ -325,6 +330,63 @@ def _has_substantive_implementation_summary(content: str) -> bool:
     return False
 
 
+def _section_body(content: str, heading: str) -> str | None:
+    lines = content.splitlines()
+    start_index: int | None = None
+
+    for index, line in enumerate(lines):
+        if line.strip() in {f"## {heading}", f"### {heading}"}:
+            start_index = index + 1
+            break
+
+    if start_index is None:
+        return None
+
+    end_index = len(lines)
+    for index in range(start_index, len(lines)):
+        stripped = lines[index].strip()
+        if stripped == "---" or re.match(r"^(##|###) ", stripped):
+            end_index = index
+            break
+
+    body = "\n".join(lines[start_index:end_index]).strip()
+    if body:
+        return body
+    return None
+
+
+def _has_substantive_section(content: str, heading: str) -> bool:
+    body = _section_body(content, heading)
+    if not body:
+        return False
+    normalized = body.strip().lower()
+    return normalized not in {"", "-", "...", "tbd", "(none)", "n/a", "paste test output here"}
+
+
+def _extract_human_attestation(content: str) -> dict[str, Any]:
+    body = _section_body(content, "Human Attestation")
+    if not body:
+        return {"present": False, "valid": False}
+
+    attestor_match = re.search(r"^- Attestor:\s*(.+)$", body, flags=re.MULTILINE)
+    attestation_match = re.search(r"^- Attestation:\s*(.+)$", body, flags=re.MULTILINE)
+    date_match = re.search(r"^- Date:\s*(\d{4}-\d{2}-\d{2})$", body, flags=re.MULTILINE)
+
+    attestor = attestor_match.group(1).strip() if attestor_match else None
+    attestation_text = attestation_match.group(1).strip() if attestation_match else None
+    attestation_date = date_match.group(1).strip() if date_match else None
+    valid = bool(
+        attestor and attestor.lower().startswith("human:") and attestation_text and attestation_date
+    )
+    return {
+        "present": True,
+        "valid": valid,
+        "attestor": attestor,
+        "attestation_text": attestation_text,
+        "date": attestation_date,
+    }
+
+
 def _inspect_obpi_brief(
     obpi_file: Path,
     obpi_id: str | None = None,
@@ -333,35 +395,31 @@ def _inspect_obpi_brief(
     content = obpi_file.read_text(encoding="utf-8")
     frontmatter_status = (parse_frontmatter_value(content, "status") or "").strip().lower()
     brief_status = (_markdown_label_value(content, "Brief Status") or "").strip().lower()
-
-    # Ledger-First Completion Consumption
-    ledger_completed = False
-    if obpi_id and graph:
-        info = graph.get(obpi_id, {})
-        ledger_completed = bool(info.get("ledger_completed"))
-
-    # Completion is earned via ledger proof, but also reflected in file
     file_completed = frontmatter_status == "completed" or brief_status == "completed"
-    completed = ledger_completed
-
-    evidence_ok = _has_substantive_implementation_summary(content)
-
-    reasons: list[str] = []
-    if not ledger_completed:
-        reasons.append("ledger proof of completion is missing")
-    if not file_completed:
-        reasons.append("brief file status is not Completed")
-    if not evidence_ok:
-        reasons.append("implementation evidence is missing or placeholder")
+    implementation_evidence_ok = _has_substantive_implementation_summary(content)
+    key_proof_body = _section_body(content, "Key Proof")
+    key_proof_ok = _has_substantive_section(content, "Key Proof")
+    human_attestation = _extract_human_attestation(content)
+    info = graph.get(obpi_id, {}) if obpi_id and graph else {}
+    semantics = derive_obpi_semantics(
+        info,
+        found_file=True,
+        file_completed=file_completed,
+        implementation_evidence_ok=implementation_evidence_ok,
+        key_proof_ok=key_proof_ok,
+        fallback_key_proof=key_proof_body,
+        human_attestation=human_attestation,
+    )
 
     return {
-        "completed": completed,
-        "ledger_completed": ledger_completed,
         "file_completed": file_completed,
-        "evidence_ok": evidence_ok,
+        "implementation_evidence_ok": implementation_evidence_ok,
+        "key_proof_ok": key_proof_ok,
+        "human_attestation": human_attestation,
         "frontmatter_status": frontmatter_status or None,
         "brief_status": brief_status or None,
-        "reasons": reasons,
+        "reasons": list(semantics["issues"]),
+        **semantics,
     }
 
 
@@ -405,25 +463,42 @@ def _adr_obpi_status_rows(
     """Build per-OBPI status rows for a target ADR."""
     obpi_files, expected_obpis = _collect_obpi_files_for_adr(project_root, config, ledger, adr_id)
     rows: list[dict[str, Any]] = []
+    graph = ledger.get_artifact_graph()
 
     for expected_id in sorted(expected_obpis):
         if expected_id in obpi_files:
             continue
+        semantics = derive_obpi_semantics(
+            graph.get(expected_id, {}),
+            found_file=False,
+            file_completed=False,
+            implementation_evidence_ok=False,
+            key_proof_ok=False,
+        )
         rows.append(
             {
                 "id": expected_id,
                 "linked_in_ledger": True,
                 "found_file": False,
                 "file": None,
-                "completed": False,
-                "evidence_ok": False,
+                "completed": bool(semantics["completed"]),
+                "ledger_completed": bool(semantics["ledger_completed"]),
+                "evidence_ok": bool(semantics["evidence_ok"]),
+                "implementation_evidence_ok": False,
+                "key_proof_ok": False,
+                "runtime_state": semantics["runtime_state"],
+                "proof_state": semantics["proof_state"],
+                "attestation_requirement": semantics["attestation_requirement"],
+                "attestation_state": semantics["attestation_state"],
+                "req_proof_state": semantics["req_proof_state"],
+                "req_proof_inputs": list(semantics["req_proof_inputs"]),
+                "req_proof_summary": dict(semantics["req_proof_summary"]),
                 "frontmatter_status": None,
                 "brief_status": None,
-                "issues": ["linked in ledger but no OBPI file found"],
+                "issues": ["linked in ledger but no OBPI file found", *list(semantics["issues"])],
             }
         )
 
-    graph = ledger.get_artifact_graph()
     for obpi_id, obpi_file in sorted(obpi_files.items()):
         inspection = _inspect_obpi_brief(obpi_file, obpi_id=obpi_id, graph=graph)
         rows.append(
@@ -436,9 +511,19 @@ def _adr_obpi_status_rows(
                 "ledger_completed": bool(inspection["ledger_completed"]),
                 "file_completed": bool(inspection["file_completed"]),
                 "evidence_ok": bool(inspection["evidence_ok"]),
+                "implementation_evidence_ok": bool(inspection["implementation_evidence_ok"]),
+                "key_proof_ok": bool(inspection["key_proof_ok"]),
+                "human_attestation": dict(inspection["human_attestation"]),
+                "runtime_state": inspection["runtime_state"],
+                "proof_state": inspection["proof_state"],
+                "attestation_requirement": inspection["attestation_requirement"],
+                "attestation_state": inspection["attestation_state"],
+                "req_proof_state": inspection["req_proof_state"],
+                "req_proof_inputs": list(inspection["req_proof_inputs"]),
+                "req_proof_summary": dict(inspection["req_proof_summary"]),
                 "frontmatter_status": inspection["frontmatter_status"],
                 "brief_status": inspection["brief_status"],
-                "issues": list(inspection["reasons"]),
+                "issues": list(inspection["issues"]),
             }
         )
 
@@ -447,9 +532,7 @@ def _adr_obpi_status_rows(
 
 def _obpi_row_complete(row: dict[str, Any]) -> bool:
     """Return True when an OBPI row is complete with implementation evidence."""
-    return (
-        bool(row.get("found_file")) and bool(row.get("completed")) and bool(row.get("evidence_ok"))
-    )
+    return bool(row.get("found_file")) and bool(row.get("completed"))
 
 
 def _summarize_obpi_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
@@ -478,6 +561,39 @@ def _summarize_obpi_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def _obpi_closeout_blockers(row: dict[str, Any]) -> list[str]:
+    """Return closeout-blocking messages for one OBPI row."""
+    if _obpi_row_complete(row):
+        return []
+
+    obpi_id = cast(str, row.get("id", "(unknown)"))
+    issues = [str(issue) for issue in cast(list[str], row.get("issues", [])) if str(issue).strip()]
+    if issues:
+        return [f"{obpi_id}: {issue}" for issue in issues]
+
+    runtime_state = str(row.get("runtime_state", "pending"))
+    proof_state = str(row.get("proof_state", "missing"))
+    return [f"{obpi_id}: not closeout-ready (runtime={runtime_state}, proof={proof_state})"]
+
+
+def _adr_closeout_readiness(obpi_rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Derive fail-closed ADR closeout readiness from linked OBPI rows."""
+    blockers: list[str] = []
+    blocking_ids: list[str] = []
+    for row in obpi_rows:
+        row_blockers = _obpi_closeout_blockers(row)
+        if not row_blockers:
+            continue
+        blockers.extend(row_blockers)
+        blocking_ids.append(cast(str, row.get("id", "")))
+
+    return {
+        "ready": not blockers,
+        "blockers": blockers,
+        "blocking_ids": sorted(obpi_id for obpi_id in blocking_ids if obpi_id),
+    }
+
+
 def _render_obpi_unit_status(unit_status: str) -> str:
     if unit_status == "completed":
         return "[green]COMPLETED[/green]"
@@ -488,23 +604,27 @@ def _render_obpi_unit_status(unit_status: str) -> str:
     return "[cyan]UNSCOPED[/cyan]"
 
 
+def _render_obpi_runtime_state(runtime_state: str, found_file: bool) -> str:
+    if runtime_state == "validated":
+        return "[green]VALIDATED[/green]"
+    if runtime_state == "attested_completed":
+        return "[green]ATTESTED COMPLETED[/green]"
+    if runtime_state == "completed":
+        return "[green]COMPLETED[/green]"
+    if runtime_state == "in_progress":
+        return "[yellow]IN PROGRESS[/yellow]"
+    if runtime_state == "drift":
+        return "[red]DRIFT[/red]"
+    if not found_file:
+        return "[red]MISSING FILE[/red]"
+    return "[yellow]PENDING[/yellow]"
+
+
 def _render_obpi_row_status(row: dict[str, Any]) -> str:
     obpi_id = cast(str, row.get("id", "(unknown)"))
-    if not row.get("found_file"):
-        return f"{obpi_id}: [red]MISSING FILE[/red]"
-    if _obpi_row_complete(row):
-        return f"{obpi_id}: [green]COMPLETED[/green] + evidence"
-
+    runtime_state = str(row.get("runtime_state", "pending"))
     issues = cast(list[str], row.get("issues", []))
-    status_label = "[yellow]INCOMPLETE[/yellow]"
-
-    # Detect Drift
-    if row.get("ledger_completed") and not row.get("file_completed"):
-        status_label = "[red]DRIFT[/red] (ledger says Completed, file says Draft)"
-    elif row.get("ledger_completed") and not row.get("evidence_ok"):
-        status_label = "[red]DRIFT[/red] (ledger says Completed, evidence is placeholder)"
-    elif row.get("file_completed") and not row.get("ledger_completed"):
-        status_label = "[red]DRIFT[/red] (file says Completed, ledger proof missing)"
+    status_label = _render_obpi_runtime_state(runtime_state, bool(row.get("found_file")))
 
     if issues:
         issues_text = ", ".join(issues)
@@ -525,6 +645,176 @@ def _apply_obpi_lifecycle_overrides(
 
     if total > 0 and unit_status != "completed" and lifecycle_status in {"Completed", "Validated"}:
         payload["lifecycle_status"] = "Pending"
+
+
+def _build_obpi_status_entry(
+    project_root: Path,
+    config: GzkitConfig,
+    ledger: Ledger,
+    obpi_id: str,
+) -> dict[str, Any]:
+    """Build enriched runtime status payload for one OBPI."""
+    graph = ledger.get_artifact_graph()
+    raw_info = graph.get(obpi_id)
+    _resolved_id, obpi_file = resolve_obpi(project_root, config, ledger, obpi_id)
+    linked_in_ledger = bool(raw_info and raw_info.get("type") == "obpi")
+    info: dict[str, Any] = raw_info if linked_in_ledger and isinstance(raw_info, dict) else {}
+
+    parent_adr = info.get("parent")
+    if obpi_file and not isinstance(parent_adr, str):
+        metadata = parse_artifact_metadata(obpi_file)
+        parent_adr = metadata.get("parent")
+    result: dict[str, Any] = {
+        "obpi": obpi_id,
+        "id": obpi_id,
+        "parent_adr": parent_adr,
+        "linked_in_ledger": linked_in_ledger,
+        "found_file": obpi_file is not None,
+        "file": str(obpi_file.relative_to(project_root)) if obpi_file else None,
+    }
+
+    if obpi_file is None:
+        semantics = derive_obpi_semantics(
+            info,
+            found_file=False,
+            file_completed=False,
+            implementation_evidence_ok=False,
+            key_proof_ok=False,
+        )
+        result.update(
+            {
+                "completed": bool(semantics["completed"]),
+                "ledger_completed": bool(semantics["ledger_completed"]),
+                "file_completed": False,
+                "evidence_ok": bool(semantics["evidence_ok"]),
+                "implementation_evidence_ok": False,
+                "key_proof_ok": False,
+                "human_attestation": {"present": False, "valid": False},
+                "runtime_state": semantics["runtime_state"],
+                "proof_state": semantics["proof_state"],
+                "attestation_requirement": semantics["attestation_requirement"],
+                "attestation_state": semantics["attestation_state"],
+                "req_proof_state": semantics["req_proof_state"],
+                "req_proof_inputs": list(semantics["req_proof_inputs"]),
+                "req_proof_summary": dict(semantics["req_proof_summary"]),
+                "frontmatter_status": None,
+                "brief_status": None,
+                "issues": ["linked in ledger but no OBPI file found", *list(semantics["issues"])],
+            }
+        )
+        return result
+
+    inspection = _inspect_obpi_brief(obpi_file, obpi_id=obpi_id, graph=graph)
+    result.update(
+        {
+            "completed": bool(inspection["completed"]),
+            "ledger_completed": bool(inspection["ledger_completed"]),
+            "file_completed": bool(inspection["file_completed"]),
+            "evidence_ok": bool(inspection["evidence_ok"]),
+            "implementation_evidence_ok": bool(inspection["implementation_evidence_ok"]),
+            "key_proof_ok": bool(inspection["key_proof_ok"]),
+            "human_attestation": dict(inspection["human_attestation"]),
+            "runtime_state": inspection["runtime_state"],
+            "proof_state": inspection["proof_state"],
+            "attestation_requirement": inspection["attestation_requirement"],
+            "attestation_state": inspection["attestation_state"],
+            "req_proof_state": inspection["req_proof_state"],
+            "req_proof_inputs": list(inspection["req_proof_inputs"]),
+            "req_proof_summary": dict(inspection["req_proof_summary"]),
+            "frontmatter_status": inspection["frontmatter_status"],
+            "brief_status": inspection["brief_status"],
+            "issues": list(inspection["issues"]),
+        }
+    )
+    return result
+
+
+def _render_obpi_status_details(result: dict[str, Any]) -> None:
+    """Render the focused OBPI runtime status view."""
+    obpi_id = cast(str, result["obpi"])
+    parent_adr = result.get("parent_adr")
+    file_path = result.get("file") or "(missing)"
+    runtime_state = str(result.get("runtime_state", "pending"))
+    proof_state = str(result.get("proof_state", "missing"))
+    attestation_state = str(result.get("attestation_state", "not_required"))
+    issues = cast(list[str], result.get("issues", []))
+
+    console.print(f"[bold]{obpi_id}[/bold]")
+    if isinstance(parent_adr, str) and parent_adr:
+        console.print(f"  Parent ADR: {parent_adr}")
+    console.print(f"  File: {file_path}")
+    console.print(
+        "  Runtime State: "
+        + _render_obpi_runtime_state(runtime_state, bool(result.get("found_file")))
+    )
+    console.print(f"  Proof State: {proof_state}")
+    console.print(f"  Attestation State: {attestation_state}")
+    console.print(
+        "  Completion: "
+        + ("[green]COMPLETE[/green]" if result.get("completed") else "[yellow]PENDING[/yellow]")
+    )
+    console.print("  Issues:")
+    if not issues:
+        console.print("    - none")
+        return
+    for issue in issues:
+        console.print(f"    - {issue}")
+
+
+def obpi_status_cmd(obpi: str, as_json: bool) -> None:
+    """Display focused runtime status for one OBPI."""
+    config = ensure_initialized()
+    project_root = get_project_root()
+    ledger = Ledger(project_root / config.paths.ledger)
+
+    obpi_id, _obpi_file = resolve_obpi(project_root, config, ledger, obpi)
+    result = _build_obpi_status_entry(project_root, config, ledger, obpi_id)
+    if as_json:
+        print(json.dumps(result, indent=2))
+        return
+    _render_obpi_status_details(result)
+
+
+def obpi_reconcile_cmd(obpi: str, as_json: bool) -> None:
+    """Fail-closed reconciliation for one OBPI runtime unit."""
+    config = ensure_initialized()
+    project_root = get_project_root()
+    ledger = Ledger(project_root / config.paths.ledger)
+
+    obpi_id, _obpi_file = resolve_obpi(project_root, config, ledger, obpi)
+    result = _build_obpi_status_entry(project_root, config, ledger, obpi_id)
+    blockers = cast(list[str], result.get("issues", []))
+    payload = {
+        "passed": not blockers,
+        "blockers": blockers,
+        **result,
+    }
+
+    if as_json:
+        print(json.dumps(payload, indent=2))
+    else:
+        console.print(f"[bold]OBPI reconcile:[/bold] {obpi_id}")
+        if isinstance(result.get("parent_adr"), str) and result.get("parent_adr"):
+            console.print(f"  Parent ADR: {result['parent_adr']}")
+        console.print(f"  File: {result.get('file') or '(missing)'}")
+        console.print(
+            "  Runtime State: "
+            + _render_obpi_runtime_state(
+                str(result.get("runtime_state", "pending")),
+                bool(result.get("found_file")),
+            )
+        )
+        console.print(f"  Proof State: {result.get('proof_state', 'missing')}")
+        console.print(f"  Attestation State: {result.get('attestation_state', 'not_required')}")
+        if blockers:
+            console.print("BLOCKERS:")
+            for blocker in blockers:
+                console.print(f"- {blocker}")
+        else:
+            console.print("[green]PASS[/green] OBPI runtime state and proof evidence are coherent.")
+
+    if blockers:
+        raise SystemExit(1)
 
 
 def adr_status_cmd(adr: str, as_json: bool, show_gates: bool) -> None:
@@ -569,6 +859,9 @@ def adr_status_cmd(adr: str, as_json: bool, show_gates: bool) -> None:
     result["obpis"] = obpi_rows
     obpi_summary = _summarize_obpi_rows(obpi_rows)
     result["obpi_summary"] = obpi_summary
+    closeout_readiness = _adr_closeout_readiness(obpi_rows)
+    result["closeout_ready"] = bool(closeout_readiness["ready"])
+    result["closeout_blockers"] = list(closeout_readiness["blockers"])
     _apply_obpi_lifecycle_overrides(adr_id, result, obpi_summary)
     if gate4_na is not None:
         result["gate4_na_reason"] = gate4_na
@@ -593,6 +886,12 @@ def adr_status_cmd(adr: str, as_json: bool, show_gates: bool) -> None:
     else:
         for row in obpi_rows:
             console.print(f"    - {_render_obpi_row_status(row)}")
+    closeout_label = "[green]READY[/green]" if result["closeout_ready"] else "[red]BLOCKED[/red]"
+    console.print(f"  Closeout Readiness: {closeout_label}")
+    if result["closeout_blockers"]:
+        console.print("  Closeout Blockers:")
+        for blocker in cast(list[str], result["closeout_blockers"]):
+            console.print(f"    - {blocker}")
 
     gates = cast(dict[str, str], result.get("gates", {}))
     qc_readiness, qc_blockers = _qc_readiness(gates, lane, obpi_summary)

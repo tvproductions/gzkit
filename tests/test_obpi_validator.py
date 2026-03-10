@@ -193,6 +193,10 @@ status: {status}
         receipt = [e for e in events if e.event == "obpi_receipt_emitted"][-1]
         self.assertEqual(receipt.extra.get("receipt_event"), "completed")
         self.assertEqual(receipt.id, final_path.stem)
+        evidence = receipt.extra.get("evidence")
+        self.assertIsInstance(evidence, dict)
+        self.assertEqual(evidence.get("key_proof"), "Verified")
+        self.assertTrue(evidence.get("req_proof_inputs"))
 
         # Check anchor (will be 0000000 since we're in a temp dir without git)
         anchor = receipt.extra.get("anchor")

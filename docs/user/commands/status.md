@@ -15,11 +15,13 @@ gz status [--json] [--table] [--show-gates]
 ## Runtime Behavior
 
 `gz status` derives ADR lifecycle from ledger events and treats OBPI completion as the primary progress unit.
+For single-OBPI drilldown, use `gz obpi status` or `gz obpi reconcile`.
 
 Per ADR it reports:
 
 - OBPI summary (`total`, `completed`, `incomplete`, `unit_status`)
-- OBPI rows (linked file presence, completion, evidence, issues)
+- OBPI rows (linked file presence, `runtime_state`, proof/attestation state, and issues)
+- Closeout readiness fields (`closeout_ready`, `closeout_blockers`)
 - QC readiness summary (`READY` / `PENDING` with pending checkpoints)
 - Canonical lifecycle (`Pending`, `Completed`, `Validated`, `Abandoned`)
 - Canonical attestation term when attested
@@ -56,6 +58,10 @@ even if ledger attestation/receipt events indicate `Completed` or `Validated`.
 - `lifecycle_status`
 - `attestation_term`
 - `closeout_phase`
+- `closeout_ready`
+- `closeout_blockers`
+- additive per-OBPI runtime fields such as `runtime_state`, `proof_state`,
+  `attestation_requirement`, `attestation_state`, `req_proof_state`, and `req_proof_inputs`
 - related additive fields
 
 ---
@@ -74,10 +80,12 @@ Table output excerpt (captured 2026-03-08):
 ```text
 ADR Status
 +------------------------------------------------------------------------------+
-| ADR            | Life      | Lane  |  OBPI | Unit      | QC      | Checks    |
-|----------------+-----------+-------+-------+-----------+---------+-----------|
-| ADR-0.1.0      | Pending   | LITE  |   0/1 | PENDING   | PENDING | O,T       |
-| ADR-0.2.0      | Completed | HEAVY |   3/3 | COMPLETED | READY   | -         |
+|ADR                         |Life     |Lane | OBPI|Unit     |QC     |Checks   |
+|----------------------------+---------+-----+-----+---------+-------+---------|
+|ADR-0.1.0                   |Pending  |LITE |  0/1|PENDING  |PENDING|O,T      |
+|ADR-0.2.0                   |Completed|HEAVY|  3/3|COMPLETED|READY  |-        |
 +------------------------------------------------------------------------------+
 Checks legend: O=OBPI completion, T=TDD, D=Docs, B=BDD, H=Human attestation
 ```
+
+The table uses compact cell padding so more ADR identifier text stays visible in the default terminal width. If an identifier still exceeds the available width, the `ADR` column folds it across lines instead of truncating it with an ellipsis.

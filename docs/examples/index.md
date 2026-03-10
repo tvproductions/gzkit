@@ -37,7 +37,7 @@ expected output. Do this before your own project.
 
 ## Templates
 
-Ready-to-use templates in [templates/](templates/):
+Ready-to-use templates in this directory:
 
 | Template | Use When |
 |----------|----------|

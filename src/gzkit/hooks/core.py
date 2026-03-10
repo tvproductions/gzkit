@@ -11,6 +11,7 @@ from gzkit.hooks.obpi import ObpiValidator
 from gzkit.ledger import (
     Ledger,
     artifact_edited_event,
+    normalize_req_proof_inputs,
     obpi_receipt_emitted_event,
     parse_frontmatter_value,
     resolve_adr_lane,
@@ -72,6 +73,50 @@ def validate_obpi_transition(project_root: Path, path: str) -> None:
         raise RuntimeError("OBPI completion validation failed.")
 
 
+def _section_body(content: str, heading: str) -> str | None:
+    for marker in ("##", "###"):
+        pattern = rf"^{re.escape(marker)} {re.escape(heading)}\s*$([\s\S]*?)(?:^{marker} |\n---|\Z)"
+        match = re.search(pattern, content, flags=re.MULTILINE)
+        if match:
+            body = match.group(1).strip()
+            if body:
+                return body
+    return None
+
+
+def _implementation_summary_value(content: str) -> str | None:
+    section = _section_body(content, "Implementation Summary")
+    if not section:
+        return None
+    bullet_matches = re.findall(r"^- [^:\n]+:[ \t]*(.+)$", section, flags=re.MULTILINE)
+    for value in bullet_matches:
+        cleaned = value.strip()
+        if cleaned:
+            return cleaned
+    plain_bullets = re.findall(r"^- \s*(.+)$", section, flags=re.MULTILINE)
+    for value in plain_bullets:
+        cleaned = value.strip()
+        if cleaned:
+            return cleaned
+    return None
+
+
+def _extract_human_attestation(content: str) -> dict[str, str] | None:
+    body = _section_body(content, "Human Attestation")
+    if not body:
+        return None
+    attestor_match = re.search(r"^- Attestor:\s*(.+)$", body, flags=re.MULTILINE)
+    attestation_match = re.search(r"^- Attestation:\s*(.+)$", body, flags=re.MULTILINE)
+    date_match = re.search(r"^- Date:\s*(\d{4}-\d{2}-\d{2})$", body, flags=re.MULTILINE)
+    if not attestor_match or not attestation_match or not date_match:
+        return None
+    return {
+        "attestor": attestor_match.group(1).strip(),
+        "attestation_text": attestation_match.group(1).strip(),
+        "attestation_date": date_match.group(1).strip(),
+    }
+
+
 def _record_obpi_completion_if_ready(
     project_root: Path,
     ledger: Ledger,
@@ -91,6 +136,9 @@ def _record_obpi_completion_if_ready(
     # Extract metadata for receipt
     obpi_id = parse_frontmatter_value(content, "id") or obpi_path.stem
     parent_adr = parse_frontmatter_value(content, "parent")
+    value_narrative = _implementation_summary_value(content)
+    key_proof = _section_body(content, "Key Proof")
+    human_attestation = _extract_human_attestation(content)
 
     # Resolve lane for attestation term
     parent_lane = config.mode
@@ -98,6 +146,9 @@ def _record_obpi_completion_if_ready(
         graph = ledger.get_artifact_graph()
         parent_info = graph.get(ledger.canonicalize_id(parent_adr), {})
         parent_lane = resolve_adr_lane(parent_info, config.mode)
+    requires_human_attestation = parent_lane == "heavy" or (
+        isinstance(parent_adr, str) and bool(re.match(r"^ADR-0\.0\.\d+", parent_adr))
+    )
 
     # Use 'human:agent-automated' as fallback if session is not human
     # In AirlineOps, agents can record 'completed' events, but they are 'not_attested'
@@ -111,12 +162,38 @@ def _record_obpi_completion_if_ready(
     anchor = capture_validation_anchor(project_root, parent_adr)
 
     # Emit receipt
+    evidence: dict[str, object] = {
+        "attestation_requirement": "required" if requires_human_attestation else "optional",
+        "parent_lane": parent_lane,
+    }
+    if parent_adr:
+        evidence["parent_adr"] = parent_adr
+    if value_narrative:
+        evidence["value_narrative"] = value_narrative
+    if key_proof:
+        evidence["key_proof"] = key_proof
+    if human_attestation:
+        evidence["human_attestation"] = True
+        evidence["attestation_text"] = human_attestation["attestation_text"]
+        evidence["attestation_date"] = human_attestation["attestation_date"]
+    evidence["req_proof_inputs"] = normalize_req_proof_inputs(
+        None,
+        fallback_key_proof=key_proof,
+        human_attestation={
+            "valid": bool(human_attestation),
+            "attestor": human_attestation["attestor"] if human_attestation else None,
+            "date": human_attestation["attestation_date"] if human_attestation else None,
+        }
+        if human_attestation
+        else None,
+    )
     event = obpi_receipt_emitted_event(
         obpi_id=obpi_id,
         receipt_event="completed",
         attestor=attestor,
+        evidence=evidence,
         parent_adr=parent_adr,
-        obpi_completion="completed" if parent_lane == "lite" else "attested_completed",
+        obpi_completion="attested_completed" if requires_human_attestation else "completed",
         anchor=anchor,
     )
     ledger.append(event)

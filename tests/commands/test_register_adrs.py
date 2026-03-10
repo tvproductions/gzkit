@@ -42,7 +42,7 @@ class TestRegisterAdrsCommand(unittest.TestCase):
 
             repeat = runner.invoke(main, ["register-adrs"])
             self.assertEqual(repeat.exit_code, 0)
-            self.assertIn("No unregistered ADRs found.", repeat.output)
+            self.assertIn("No unregistered ADRs or OBPIs found.", repeat.output)
 
     def test_register_adrs_keeps_suffixed_id_and_registers_non_semver_pool(self) -> None:
         """register-adrs keeps suffixed IDs and accepts non-semver pool IDs."""
@@ -81,3 +81,64 @@ class TestRegisterAdrsCommand(unittest.TestCase):
             self.assertIn("ADR-0.4.0-pool.heavy-lane", state_result.output)
             self.assertIn("ADR-pool.go-runtime-parity", state_result.output)
             self.assertNotIn("ADR-CLOSEOUT-FORM", state_result.output)
+
+    def test_register_adrs_all_registers_missing_obpis_for_targeted_adr_only(self) -> None:
+        """register-adrs --all can backfill missing OBPI links for one ADR package."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+
+            adr_root = Path(config.paths.adrs) / "pre-release"
+            adr_one_dir = adr_root / "ADR-0.1.0" / "obpis"
+            adr_one_dir.parent.mkdir(parents=True, exist_ok=True)
+            (adr_one_dir.parent / "ADR-0.1.0.md").write_text(
+                "---\nid: ADR-0.1.0\nparent: PRD-GZKIT-1.0.0\nlane: lite\n---\n\n# ADR-0.1.0\n"
+            )
+            adr_one_dir.mkdir(parents=True, exist_ok=True)
+            (adr_one_dir / "OBPI-0.1.0-01-demo.md").write_text(
+                "---\n"
+                "id: OBPI-0.1.0-01-demo\n"
+                "parent: ADR-0.1.0\n"
+                "item: 1\n"
+                "lane: Lite\n"
+                "status: Draft\n"
+                "---\n\n"
+                "# OBPI-0.1.0-01-demo\n"
+            )
+
+            adr_two_dir = adr_root / "ADR-0.2.0" / "obpis"
+            adr_two_dir.parent.mkdir(parents=True, exist_ok=True)
+            (adr_two_dir.parent / "ADR-0.2.0.md").write_text(
+                "---\nid: ADR-0.2.0\nparent: PRD-GZKIT-1.0.0\nlane: lite\n---\n\n# ADR-0.2.0\n"
+            )
+            adr_two_dir.mkdir(parents=True, exist_ok=True)
+            (adr_two_dir / "OBPI-0.2.0-01-demo.md").write_text(
+                "---\n"
+                "id: OBPI-0.2.0-01-demo\n"
+                "parent: ADR-0.2.0\n"
+                "item: 1\n"
+                "lane: Lite\n"
+                "status: Draft\n"
+                "---\n\n"
+                "# OBPI-0.2.0-01-demo\n"
+            )
+
+            dry_run = runner.invoke(main, ["register-adrs", "ADR-0.1.0", "--all", "--dry-run"])
+            self.assertEqual(dry_run.exit_code, 0)
+            self.assertIn("Would append adr_created: ADR-0.1.0", dry_run.output)
+            self.assertIn("Would append obpi_created: OBPI-0.1.0-01-demo", dry_run.output)
+            self.assertNotIn("ADR-0.2.0", dry_run.output)
+            self.assertNotIn("OBPI-0.2.0-01-demo", dry_run.output)
+
+            result = runner.invoke(main, ["register-adrs", "ADR-0.1.0", "--all"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("Registered ADR: ADR-0.1.0", result.output)
+            self.assertIn("Registered OBPI: OBPI-0.1.0-01-demo", result.output)
+            self.assertNotIn("OBPI-0.2.0-01-demo", result.output)
+
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
+            self.assertIn('"event":"adr_created","id":"ADR-0.1.0"', ledger_content)
+            self.assertIn('"event":"obpi_created","id":"OBPI-0.1.0-01-demo"', ledger_content)
+            self.assertNotIn('"event":"adr_created","id":"ADR-0.2.0"', ledger_content)
+            self.assertNotIn('"event":"obpi_created","id":"OBPI-0.2.0-01-demo"', ledger_content)
