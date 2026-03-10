@@ -258,5 +258,5 @@ A ready-to-use ADR template is available at:
 - [Michael Nygard's original ADR proposal](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions)
   — The format that started it all
 - [adr.github.io](https://adr.github.io/) — Community resources and tooling
-- [gzkit ADR examples](../design/adr/) — Real ADRs used to govern this tool
+- [gzkit ADR examples](https://github.com/tvproductions/gzkit/tree/main/docs/design/adr) — Real ADRs used to govern this tool
 - [PRD Guide](guide-prd.md) — How PRDs feed into ADRs

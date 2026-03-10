@@ -4,6 +4,32 @@
 
 _No unreleased entries._
 
+## v0.10.0 (2026-03-10)
+
+**ADR context:** `ADR-0.10.0-obpi-runtime-surface`
+**Release scope:** OBPI runtime surfaces for status, reconciliation, closeout readiness, and lifecycle proof integration.
+
+### Delivered
+
+- Added governed OBPI runtime contract semantics and lifecycle state derivation consumed from ledger and brief evidence.
+- Delivered operator-facing `gz obpi status` and `gz obpi reconcile` surfaces with JSON and fail-closed reconciliation behavior.
+- Integrated OBPI proof state into `gz adr status` and `gz closeout` so ADR closeout readiness is derived from linked OBPI evidence.
+- Produced heavy-lane closeout, audit, and validated receipt artifacts for ADR-0.10.0.
+
+### Gate Evidence
+
+All 5 GovZero gates satisfied for `ADR-0.10.0-obpi-runtime-surface`.
+
+### Verification
+
+- `uv run gz obpi status OBPI-0.10.0-03-obpi-proof-and-lifecycle-integration --json`
+- `uv run gz obpi reconcile OBPI-0.10.0-03-obpi-proof-and-lifecycle-integration`
+- `uv run gz adr status ADR-0.10.0-obpi-runtime-surface --json`
+- `uv run gz closeout ADR-0.10.0-obpi-runtime-surface`
+- `uv run gz attest ADR-0.10.0-obpi-runtime-surface --status completed`
+- `uv run gz audit ADR-0.10.0-obpi-runtime-surface`
+- `uv run gz adr emit-receipt ADR-0.10.0-obpi-runtime-surface --event validated --attestor "human:jeff" --evidence-json ...`
+
 ## v0.9.0 (2026-03-09)
 
 **ADR context:** `ADR-0.9.0-airlineops-surface-breadth-parity`

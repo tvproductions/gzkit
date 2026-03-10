@@ -55,6 +55,8 @@ COMMAND_DOCS: dict[str, str] = {
     "adr audit-check": "docs/user/commands/adr-audit-check.md",
     "adr covers-check": "docs/user/commands/adr-covers-check.md",
     "adr emit-receipt": "docs/user/commands/adr-emit-receipt.md",
+    "obpi status": "docs/user/commands/obpi-status.md",
+    "obpi reconcile": "docs/user/commands/obpi-reconcile.md",
     "obpi emit-receipt": "docs/user/commands/obpi-emit-receipt.md",
     "chores list": "docs/user/commands/chores-list.md",
     "chores plan": "docs/user/commands/chores-plan.md",
@@ -361,6 +363,52 @@ def resolve_target_adr(
 
     _adr_file, resolved_adr_id = resolve_adr_file(project_root, config, canonical_adr_id)
     return resolved_adr_id
+
+
+def resolve_obpi(
+    project_root: Path,
+    config: GzkitConfig,
+    ledger: Ledger,
+    obpi: str,
+) -> tuple[str, Path | None]:
+    """Resolve an OBPI id and optional file path from ledger or matching brief."""
+    obpi_input = obpi if obpi.startswith("OBPI-") else f"OBPI-{obpi}"
+    canonical_obpi = ledger.canonicalize_id(obpi_input)
+    graph = ledger.get_artifact_graph()
+    info = graph.get(canonical_obpi)
+    if info and info.get("type") != "obpi":
+        raise GzCliError(f"OBPI not found in ledger: {canonical_obpi}")
+
+    artifacts = scan_existing_artifacts(project_root, config.paths.design_root)
+    matches: list[Path] = []
+    for obpi_file in artifacts.get("obpis", []):
+        metadata = parse_artifact_metadata(obpi_file)
+        file_id = metadata.get("id", obpi_file.stem)
+        if ledger.canonicalize_id(file_id) == canonical_obpi:
+            matches.append(obpi_file)
+
+    if len(matches) > 1:
+        rels = ", ".join(str(path.relative_to(project_root)) for path in matches)
+        raise GzCliError(f"Multiple OBPI files found for {canonical_obpi}: {rels}")
+
+    if info and info.get("type") == "obpi":
+        return canonical_obpi, matches[0] if matches else None
+    if matches:
+        return canonical_obpi, matches[0]
+    raise GzCliError(f"OBPI not found in ledger or briefs: {canonical_obpi}")
+
+
+def resolve_obpi_file(
+    project_root: Path,
+    config: GzkitConfig,
+    ledger: Ledger,
+    obpi: str,
+) -> tuple[Path, str]:
+    """Resolve an OBPI file path from an ID, supporting rename chains."""
+    canonical_obpi, obpi_file = resolve_obpi(project_root, config, ledger, obpi)
+    if obpi_file is None:
+        raise GzCliError(f"OBPI file not found for {canonical_obpi}")
+    return obpi_file, canonical_obpi
 
 
 def _upsert_frontmatter_value(content: str, key: str, value: str) -> str:

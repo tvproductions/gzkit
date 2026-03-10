@@ -43,6 +43,25 @@ nav:
   - Quickstart: user/quickstart.md
   - Runbook: user/runbook.md
   - Why gzkit?: user/why.md
+  - Examples:
+    - Overview: examples/index.md
+    - Tutorials:
+      - First Project: examples/tutorial-first-project.md
+      - RHEA Bootstrap: examples/tutorial-rhea-bootstrap.md
+    - Guides:
+      - PRD Guide: examples/guide-prd.md
+      - ADR Guide: examples/guide-adr.md
+      - Task Guide: examples/guide-tasks.md
+      - Releasing Guide: examples/guide-releasing.md
+    - Templates:
+      - PRD Template: examples/templates/prd-template.md
+      - ADR Template: examples/templates/adr-template.md
+      - Task Template: examples/templates/task-template.md
+    - Assessments:
+      - Glossary: examples/glossary.md
+      - GZKit Readiness Assessment: examples/gzkit-readiness-assessment.md
+      - Go-Live Gap Analysis: examples/go-live-gap-analysis.md
+      - Framework Comparison: examples/comparison-gzkit-speckit-bmad.md
   - Concepts:
     - Gates: user/concepts/gates.md
     - Lanes: user/concepts/lanes.md
@@ -64,7 +83,10 @@ nav:
     - gz adr status: user/commands/adr-status.md
     - gz adr promote: user/commands/adr-promote.md
     - gz adr audit-check: user/commands/adr-audit-check.md
+    - gz adr covers-check: user/commands/adr-covers-check.md
     - gz adr emit-receipt: user/commands/adr-emit-receipt.md
+    - gz obpi status: user/commands/obpi-status.md
+    - gz obpi reconcile: user/commands/obpi-reconcile.md
     - gz obpi emit-receipt: user/commands/obpi-emit-receipt.md
     - gz closeout: user/commands/closeout.md
     - gz audit: user/commands/audit.md
@@ -72,6 +94,10 @@ nav:
     - gz attest: user/commands/attest.md
     - gz migrate-semver: user/commands/migrate-semver.md
     - gz register-adrs: user/commands/register-adrs.md
+    - gz chores list: user/commands/chores-list.md
+    - gz chores plan: user/commands/chores-plan.md
+    - gz chores run: user/commands/chores-run.md
+    - gz chores audit: user/commands/chores-audit.md
     - gz skill audit: user/commands/skill-audit.md
     - gz parity check: user/commands/parity-check.md
     - gz readiness audit: user/commands/readiness-audit.md
@@ -83,6 +109,8 @@ nav:
     - Parity Intake Rubric: governance/parity-intake-rubric.md
     - Charter: governance/GovZero/charter.md
     - ADR Lifecycle: governance/GovZero/adr-lifecycle.md
+    - OBPI Runtime Contract: governance/GovZero/obpi-runtime-contract.md
+    - OBPI Decomposition Matrix: governance/GovZero/obpi-decomposition-matrix.md
     - ADR/OBPI/GHI/Audit Linkage: governance/GovZero/adr-obpi-ghi-audit-linkage.md
     - ADR Status: governance/GovZero/adr-status.md
     - Audit Protocol: governance/GovZero/audit-protocol.md
@@ -109,10 +137,12 @@ nav:
       - Harmonization Audit: governance/GovZero/audits/governance-harmonization-2026-01-11.md
       - Agent Readiness Audit Template: governance/GovZero/audits/AUDIT-TEMPLATE-agent-readiness.md
   - Reference:
+    - Docs README: README.md
     - Charter: user/reference/charter.md
     - Lineage: user/reference/lineage.md
     - Agent Input Disciplines: user/reference/agent-input-disciplines.md
     - Genesis: user/reference/genesis.md
+    - Genesis Transcript: user/reference/genesis-transcript.md
     - AirlineOps Exploration: user/reference/airlineops-exploration-verbatim.md
 
 exclude_docs: |

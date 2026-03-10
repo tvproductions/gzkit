@@ -314,7 +314,7 @@ gaps exist and borrow specific concepts (not entire frameworks) to fill them.
 
 ## Sources
 
-- [GZKit documentation](../user/) and [philosophy](../user/why.md)
+- [GZKit documentation](../user/index.md) and [philosophy](../user/why.md)
 - [OpenSpec](https://github.com/Fission-AI/OpenSpec) and
   [openspec.pro](https://openspec.pro/)
 - [GitHub Spec Kit](https://github.com/github/spec-kit) and

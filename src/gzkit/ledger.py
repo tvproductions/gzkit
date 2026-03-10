@@ -19,6 +19,27 @@ ATTESTATION_CANONICAL_TERMS: dict[str, str] = {
     "dropped": "Dropped",
 }
 
+OBPI_RUNTIME_STATES = {
+    "pending",
+    "in_progress",
+    "completed",
+    "attested_completed",
+    "validated",
+    "drift",
+}
+OBPI_COMPLETED_RUNTIME_STATES = {"completed", "attested_completed", "validated"}
+OBPI_PROOF_STATES = {"missing", "partial", "recorded", "validated"}
+OBPI_ATTESTATION_REQUIREMENTS = {"required", "optional"}
+OBPI_ATTESTATION_STATES = {"not_required", "missing", "recorded"}
+REQ_PROOF_INPUT_KINDS = {
+    "command",
+    "artifact",
+    "brief_section",
+    "attestation",
+    "legacy_key_proof",
+}
+REQ_PROOF_INPUT_STATUSES = {"present", "missing"}
+
 
 @dataclass
 class LedgerEvent:
@@ -274,6 +295,258 @@ def resolve_adr_lane(info: dict[str, Any], default_mode: str) -> str:
     return lane if lane in {"lite", "heavy"} else default_mode
 
 
+def _normalize_req_proof_input_item(item: Any) -> dict[str, str] | None:
+    """Validate and normalize one REQ-proof input row."""
+    if not isinstance(item, dict):
+        return None
+
+    name = item.get("name")
+    kind = item.get("kind")
+    source = item.get("source")
+    status = item.get("status", "present")
+    if not isinstance(name, str) or not name.strip():
+        return None
+    if not isinstance(kind, str) or kind not in REQ_PROOF_INPUT_KINDS:
+        return None
+    if not isinstance(source, str) or not source.strip():
+        return None
+    if not isinstance(status, str) or status not in REQ_PROOF_INPUT_STATUSES:
+        return None
+
+    entry = {
+        "name": name.strip(),
+        "kind": kind,
+        "source": source.strip(),
+        "status": status,
+    }
+    for optional_field in ("scope", "gap_reason"):
+        optional_value = item.get(optional_field)
+        if isinstance(optional_value, str) and optional_value.strip():
+            entry[optional_field] = optional_value.strip()
+    return entry
+
+
+def _fallback_req_proof_inputs(
+    fallback_key_proof: str | None,
+    human_attestation: dict[str, Any] | None,
+) -> list[dict[str, str]]:
+    """Build compatibility proof inputs when structured evidence is absent."""
+    normalized: list[dict[str, str]] = []
+    if isinstance(fallback_key_proof, str) and fallback_key_proof.strip():
+        normalized.append(
+            {
+                "name": "key_proof",
+                "kind": "legacy_key_proof",
+                "source": fallback_key_proof.strip(),
+                "status": "present",
+            }
+        )
+    if human_attestation and human_attestation.get("valid"):
+        attestor = human_attestation.get("attestor", "human")
+        attestation_date = human_attestation.get("date", "unknown-date")
+        normalized.append(
+            {
+                "name": "human_attestation",
+                "kind": "attestation",
+                "source": f"{attestor} @ {attestation_date}",
+                "status": "present",
+            }
+        )
+    return normalized
+
+
+def normalize_req_proof_inputs(
+    raw_inputs: Any,
+    *,
+    fallback_key_proof: str | None = None,
+    human_attestation: dict[str, Any] | None = None,
+) -> list[dict[str, str]]:
+    """Normalize REQ-proof inputs into a stable machine-readable list."""
+    if isinstance(raw_inputs, list):
+        normalized = [
+            entry
+            for item in raw_inputs
+            if (entry := _normalize_req_proof_input_item(item)) is not None
+        ]
+        if normalized:
+            return normalized
+
+    return _fallback_req_proof_inputs(fallback_key_proof, human_attestation)
+
+
+def summarize_req_proof_inputs(inputs: list[dict[str, str]]) -> dict[str, int | str]:
+    """Summarize normalized REQ-proof input state."""
+    total = len(inputs)
+    present = sum(1 for item in inputs if item.get("status") == "present")
+    missing = total - present
+
+    if total == 0:
+        state = "missing"
+    elif missing == 0:
+        state = "recorded"
+    elif present == 0:
+        state = "missing"
+    else:
+        state = "partial"
+
+    return {
+        "total": total,
+        "present": present,
+        "missing": missing,
+        "state": state,
+    }
+
+
+def _resolve_attestation_requirement(evidence: dict[str, Any], obpi_completion: Any) -> str:
+    """Resolve whether explicit human attestation evidence is required."""
+    requirement = evidence.get("attestation_requirement")
+    if isinstance(requirement, str):
+        return requirement
+    return "required" if obpi_completion == "attested_completed" else "optional"
+
+
+def _human_attestation_is_valid(
+    human_attestation: dict[str, Any] | None,
+    evidence: dict[str, Any],
+) -> bool:
+    """Return True when human attestation evidence is present and usable."""
+    human_attestation_ok = bool(human_attestation and human_attestation.get("valid"))
+    if evidence.get("human_attestation") is not True:
+        return human_attestation_ok
+    attestation_text = evidence.get("attestation_text")
+    attestation_date = evidence.get("attestation_date")
+    return human_attestation_ok or (
+        isinstance(attestation_text, str)
+        and bool(attestation_text.strip())
+        and isinstance(attestation_date, str)
+        and bool(attestation_date.strip())
+    )
+
+
+def _derive_obpi_issues(
+    *,
+    ledger_completed: bool,
+    file_completed: bool,
+    found_file: bool,
+    latest_receipt_event: Any,
+    implementation_evidence_ok: bool,
+    key_proof_ok: bool,
+    attestation_requirement: str,
+    human_attestation_ok: bool,
+) -> list[str]:
+    """Collect fail-closed OBPI runtime issues."""
+    issues: list[str] = []
+    if not ledger_completed:
+        issues.append("ledger proof of completion is missing")
+    if not file_completed and not ledger_completed:
+        issues.append("brief file status is not Completed")
+    if not found_file and latest_receipt_event:
+        issues.append("ledger proof exists but the OBPI brief file is missing")
+    if ledger_completed and not file_completed:
+        issues.append("ledger says completed but brief file status is not Completed")
+    if file_completed and not ledger_completed:
+        issues.append("brief file says Completed but ledger proof of completion is missing")
+    if latest_receipt_event == "validated" and not ledger_completed:
+        issues.append("validated receipt exists without completed proof state")
+    if file_completed and not implementation_evidence_ok:
+        issues.append("implementation summary is missing or placeholder")
+    if file_completed and not key_proof_ok:
+        issues.append("key proof is missing or placeholder")
+    if attestation_requirement == "required" and file_completed and not human_attestation_ok:
+        issues.append("required human attestation evidence is missing")
+    return issues
+
+
+def derive_obpi_semantics(
+    info: dict[str, Any],
+    *,
+    found_file: bool,
+    file_completed: bool,
+    implementation_evidence_ok: bool,
+    key_proof_ok: bool,
+    fallback_key_proof: str | None = None,
+    human_attestation: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Derive shared OBPI runtime semantics from ledger and brief evidence."""
+    latest_receipt_event = info.get("latest_receipt_event")
+    obpi_completion = info.get("obpi_completion")
+    ledger_completed = bool(info.get("ledger_completed"))
+    validated = bool(info.get("validated"))
+
+    evidence = info.get("latest_evidence")
+    if not isinstance(evidence, dict):
+        evidence = {}
+
+    attestation_requirement = _resolve_attestation_requirement(evidence, obpi_completion)
+
+    req_proof_inputs = normalize_req_proof_inputs(
+        evidence.get("req_proof_inputs"),
+        fallback_key_proof=fallback_key_proof,
+        human_attestation=human_attestation,
+    )
+    req_proof_summary = summarize_req_proof_inputs(req_proof_inputs)
+    req_proof_state = str(req_proof_summary["state"])
+
+    human_attestation_ok = _human_attestation_is_valid(human_attestation, evidence)
+
+    if attestation_requirement == "required":
+        attestation_state = "recorded" if human_attestation_ok else "missing"
+    else:
+        attestation_state = "not_required"
+
+    evidence_ok = implementation_evidence_ok and key_proof_ok
+
+    issues = _derive_obpi_issues(
+        ledger_completed=ledger_completed,
+        file_completed=file_completed,
+        found_file=found_file,
+        latest_receipt_event=latest_receipt_event,
+        implementation_evidence_ok=implementation_evidence_ok,
+        key_proof_ok=key_proof_ok,
+        attestation_requirement=attestation_requirement,
+        human_attestation_ok=human_attestation_ok,
+    )
+
+    runtime_state = "pending"
+    if issues and ledger_completed:
+        runtime_state = "drift"
+    elif validated and ledger_completed and evidence_ok and attestation_state != "missing":
+        runtime_state = "validated"
+    elif (
+        obpi_completion == "attested_completed" and evidence_ok and attestation_state == "recorded"
+    ):
+        runtime_state = "attested_completed"
+    elif obpi_completion == "completed" and evidence_ok:
+        runtime_state = "completed"
+    elif any(
+        [
+            latest_receipt_event,
+            file_completed,
+            implementation_evidence_ok,
+            key_proof_ok,
+            req_proof_summary["present"],
+        ]
+    ):
+        runtime_state = "in_progress"
+
+    proof_state = "validated" if runtime_state == "validated" else req_proof_state
+
+    completed = runtime_state in OBPI_COMPLETED_RUNTIME_STATES
+    return {
+        "runtime_state": runtime_state,
+        "proof_state": proof_state,
+        "attestation_requirement": attestation_requirement,
+        "attestation_state": attestation_state,
+        "req_proof_state": req_proof_state,
+        "req_proof_inputs": req_proof_inputs,
+        "req_proof_summary": req_proof_summary,
+        "completed": completed,
+        "ledger_completed": ledger_completed,
+        "evidence_ok": evidence_ok,
+        "issues": issues,
+    }
+
+
 class Ledger:
     """Append-only ledger for governance events.
 
@@ -447,7 +720,9 @@ class Ledger:
         }
         if event.event == "obpi_created":
             entry["latest_receipt_event"] = None
+            entry["latest_evidence"] = None
             entry["validated"] = False
+            entry["ledger_completed"] = False
         if event.event == "adr_created":
             entry["lane"] = event.extra.get("lane")
             entry["closeout_initiated"] = False
@@ -552,6 +827,9 @@ class Ledger:
             return
         receipt_event = event.extra.get("receipt_event")
         graph[canonical_id]["latest_receipt_event"] = receipt_event
+        evidence = event.extra.get("evidence")
+        if isinstance(evidence, dict):
+            graph[canonical_id]["latest_evidence"] = dict(evidence)
 
         obpi_completion = event.extra.get("obpi_completion")
         if obpi_completion:

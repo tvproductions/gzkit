@@ -29,7 +29,19 @@ An OBPI is operationally complete when:
 
 - Brief status is `Completed`
 - Implementation summary evidence is substantive (not placeholder)
+- Key proof is substantive and machine-readable in receipt/runtime state
 - Linked runtime/doc changes are verifiable
+
+Runtime surfaces now derive OBPI state from both ledger evidence and brief content.
+`runtime_state` stays fail-closed when completion proof is missing, placeholder, or
+out of sync with the brief.
+The full machine-readable contract is defined in
+[`docs/governance/GovZero/obpi-runtime-contract.md`](../../governance/GovZero/obpi-runtime-contract.md).
+
+Use the OBPI-native runtime surfaces to inspect that state directly:
+
+- `uv run gz obpi status OBPI-...`
+- `uv run gz obpi reconcile OBPI-...`
 
 For parser-safe evidence detection, keep `### Implementation Summary` as inline
 `- key: value` bullets (for example, `- Date completed: 2026-02-23`) rather than
@@ -63,7 +75,13 @@ When recording OBPI completion before ADR completion, emit an OBPI-native receip
 - `uv run gz obpi emit-receipt OBPI-... --event completed|validated ...`
 
 This records accountability at OBPI scope without claiming the parent ADR is done.
+Completed receipts also persist `req_proof_inputs`, which are later consumed by
+`gz obpi status`, `gz obpi reconcile`, and ADR lifecycle surfaces.
+The same runtime issues now block `gz closeout` until every linked OBPI is ready
+for ADR-level closeout.
 `gz adr emit-receipt` remains available for ADR-level accounting and legacy scoped payloads.
+Each normalized proof-input item uses the stable contract shape:
+`name`, `kind`, `source`, `status`, with optional `scope` and `gap_reason`.
 
 ---
 
@@ -71,6 +89,9 @@ This records accountability at OBPI scope without claiming the parent ADR is don
 
 - [Lifecycle](lifecycle.md)
 - [Workflow](workflow.md)
+- [OBPI Runtime Contract](../../governance/GovZero/obpi-runtime-contract.md)
+- [gz obpi status](../commands/obpi-status.md)
+- [gz obpi reconcile](../commands/obpi-reconcile.md)
 - [gz adr audit-check](../commands/adr-audit-check.md)
 - [gz obpi emit-receipt](../commands/obpi-emit-receipt.md)
 - [gz adr emit-receipt](../commands/adr-emit-receipt.md)

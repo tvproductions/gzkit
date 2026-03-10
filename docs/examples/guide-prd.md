@@ -162,5 +162,5 @@ A ready-to-use PRD template is available at:
 ## Further Reading
 
 - *Inspired* by Marty Cagan — Industry-standard on product thinking
-- [gzkit PRD example](../design/prd/) — A real PRD used to govern this tool
+- [gzkit PRD example](https://github.com/tvproductions/gzkit/tree/main/docs/design/prd) — A real PRD used to govern this tool
 - [gzkit philosophy](../user/why.md) — Why governance matters in AI-assisted development

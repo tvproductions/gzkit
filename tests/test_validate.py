@@ -357,7 +357,20 @@ class TestValidateLedger(unittest.TestCase):
                     "ts": "2026-02-14T00:00:03+00:00",
                     "receipt_event": "validated",
                     "attestor": "human:jeff",
-                    "evidence": {"acceptance": "observed"},
+                    "evidence": {
+                        "acceptance": "observed",
+                        "parent_lane": "heavy",
+                        "attestation_requirement": "required",
+                        "req_proof_inputs": [
+                            {
+                                "name": "key_proof",
+                                "kind": "command",
+                                "source": "uv run gz adr status ADR-0.3.0 --json",
+                                "status": "present",
+                                "scope": "OBPI-0.3.0-04-demo",
+                            }
+                        ],
+                    },
                 },
             ]
             for entry in entries:
@@ -365,6 +378,77 @@ class TestValidateLedger(unittest.TestCase):
             f.flush()
             errors = validate_ledger(Path(f.name))
             self.assertEqual(errors, [])
+
+    def test_invalid_obpi_req_proof_inputs_rejected(self) -> None:
+        """Malformed nested req_proof_inputs fail ledger validation."""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
+            f.write(
+                json.dumps(
+                    {
+                        "schema": "gzkit.ledger.v1",
+                        "event": "obpi_receipt_emitted",
+                        "id": "OBPI-0.3.0-04-demo",
+                        "parent": "ADR-0.3.0",
+                        "ts": "2026-02-14T00:00:03+00:00",
+                        "receipt_event": "completed",
+                        "attestor": "human:jeff",
+                        "evidence": {
+                            "req_proof_inputs": [
+                                {
+                                    "name": "key_proof",
+                                    "kind": "unknown",
+                                    "source": "",
+                                    "status": "done",
+                                }
+                            ]
+                        },
+                    }
+                )
+                + "\n"
+            )
+            f.flush()
+            errors = validate_ledger(Path(f.name))
+            self.assertTrue(
+                any("req_proof_inputs" in error.field for error in errors if error.field)
+            )
+
+    def test_invalid_obpi_req_proof_optional_fields_rejected(self) -> None:
+        """Optional proof-input metadata must be non-empty strings when present."""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
+            f.write(
+                json.dumps(
+                    {
+                        "schema": "gzkit.ledger.v1",
+                        "event": "obpi_receipt_emitted",
+                        "id": "OBPI-0.3.0-04-demo",
+                        "parent": "ADR-0.3.0",
+                        "ts": "2026-02-14T00:00:03+00:00",
+                        "receipt_event": "completed",
+                        "attestor": "human:jeff",
+                        "evidence": {
+                            "req_proof_inputs": [
+                                {
+                                    "name": "proof_gap",
+                                    "kind": "artifact",
+                                    "source": "docs/proof.txt",
+                                    "status": "missing",
+                                    "scope": "",
+                                    "gap_reason": 7,
+                                }
+                            ]
+                        },
+                    }
+                )
+                + "\n"
+            )
+            f.flush()
+            errors = validate_ledger(Path(f.name))
+            self.assertTrue(
+                any(error.field == "evidence.req_proof_inputs[0].scope" for error in errors)
+            )
+            self.assertTrue(
+                any(error.field == "evidence.req_proof_inputs[0].gap_reason" for error in errors)
+            )
 
     def test_invalid_json_line(self) -> None:
         """Malformed JSON line returns ledger validation error."""

@@ -181,4 +181,4 @@ Ledger entries are for agent reconciliation only. They do not constitute proof o
 - Gate definitions: [charter.md](charter.md)
 - ADR/OBPI/GHI/audit linkage: [adr-obpi-ghi-audit-linkage.md](adr-obpi-ghi-audit-linkage.md)
 - Disposition rubric (legacy): [../ADR_DISPOSITION_RUBRIC.md](../ADR_DISPOSITION_RUBRIC.md)
-- Agent contract: [/AGENTS.md](/AGENTS.md)
+- Agent contract: [AGENTS.md](https://github.com/tvproductions/gzkit/blob/main/AGENTS.md)

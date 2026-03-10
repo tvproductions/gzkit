@@ -32,11 +32,12 @@ This is the operator habit loop for gzkit-first GovZero parity.
 
 ## ADR Closeout Loop (When OBPI Batch Is Done)
 
-1. `uv run gz adr audit-check ADR-<X.Y.Z>`
-2. `uv run gz closeout ADR-<X.Y.Z>`
-3. `uv run gz attest ADR-<X.Y.Z> --status completed`
-4. `uv run gz audit ADR-<X.Y.Z>`
-5. `uv run gz adr emit-receipt ADR-<X.Y.Z> --event validated ...`
+1. `uv run gz obpi reconcile OBPI-<X.Y.Z-NN>-<slug>`
+2. `uv run gz adr audit-check ADR-<X.Y.Z>`
+3. `uv run gz closeout ADR-<X.Y.Z>`
+4. `uv run gz attest ADR-<X.Y.Z> --status completed`
+5. `uv run gz audit ADR-<X.Y.Z>`
+6. `uv run gz adr emit-receipt ADR-<X.Y.Z> --event validated ...`
 
 ---
 
