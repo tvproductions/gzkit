@@ -426,6 +426,243 @@ class TestStatusCommand(unittest.TestCase):
                 "uv run gz obpi status OBPI-0.1.0-01-demo --json",
             )
 
+    def test_obpi_status_accepts_legacy_verification_section_as_key_proof(self) -> None:
+        """Legacy completed briefs can use Verification as proof when Key Proof is absent."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            obpi_path.write_text(
+                "\n".join(
+                    [
+                        "---",
+                        "id: OBPI-0.1.0-01-demo",
+                        "parent: ADR-0.1.0",
+                        "item: 1",
+                        "lane: Heavy",
+                        "status: Completed",
+                        "---",
+                        "",
+                        "# OBPI-0.1.0-01-demo: Demo",
+                        "",
+                        "**Brief Status:** Completed",
+                        "",
+                        "## Verification",
+                        "```bash",
+                        "uv run gz status --table",
+                        "uv run -m unittest discover tests",
+                        "```",
+                        "",
+                        "## Evidence",
+                        "",
+                        "### Implementation Summary",
+                        "- Files created/modified: src/module.py",
+                        "- Date completed: 2026-03-10",
+                        "",
+                    ]
+                )
+                + "\n"
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(
+                obpi_receipt_emitted_event(
+                    obpi_id="OBPI-0.1.0-01-demo",
+                    parent_adr="ADR-0.1.0",
+                    receipt_event="completed",
+                    attestor="human:test",
+                    obpi_completion="completed",
+                )
+            )
+
+            result = runner.invoke(main, ["obpi", "status", "OBPI-0.1.0-01-demo", "--json"])
+
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            self.assertTrue(payload["key_proof_ok"])
+            self.assertEqual(payload["runtime_state"], "completed")
+            self.assertEqual(payload["req_proof_state"], "recorded")
+
+    def test_status_json_accepts_legacy_gate_evidence_section_as_key_proof(self) -> None:
+        """Gate Evidence remains a valid proof source for historical completed briefs."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            obpi_path.write_text(
+                "\n".join(
+                    [
+                        "---",
+                        "id: OBPI-0.1.0-01-demo",
+                        "parent: ADR-0.1.0",
+                        "item: 1",
+                        "lane: Lite",
+                        "status: Completed",
+                        "---",
+                        "",
+                        "# OBPI-0.1.0-01-demo: Demo",
+                        "",
+                        "## Gate Evidence",
+                        "",
+                        "| Gate | Evidence | Command/Path |",
+                        "|------|----------|--------------|",
+                        "| Gate 2 (TDD) | Tests pass | `uv run -m unittest discover tests` |",
+                        "",
+                        "## Evidence",
+                        "",
+                        "### Implementation Summary",
+                        "- Files created/modified: src/module.py",
+                        "- Date completed: 2026-03-10",
+                        "",
+                    ]
+                )
+                + "\n"
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(
+                obpi_receipt_emitted_event(
+                    obpi_id="OBPI-0.1.0-01-demo",
+                    parent_adr="ADR-0.1.0",
+                    receipt_event="completed",
+                    attestor="human:test",
+                    obpi_completion="completed",
+                )
+            )
+            ledger.append(attested_event("ADR-0.1.0", "completed", "human"))
+
+            result = runner.invoke(main, ["status", "--json"])
+
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            adr_payload = payload["adrs"]["ADR-0.1.0"]
+            self.assertEqual(adr_payload["obpi_summary"]["completed"], 1)
+            self.assertEqual(adr_payload["obpi_summary"]["unit_status"], "completed")
+            self.assertEqual(adr_payload["lifecycle_status"], "Completed")
+
+    def test_obpi_status_accepts_verification_heading_prefix_as_key_proof(self) -> None:
+        """Verification headings with legacy suffixes still count as substantive proof."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            obpi_path.write_text(
+                "\n".join(
+                    [
+                        "---",
+                        "id: OBPI-0.1.0-01-demo",
+                        "parent: ADR-0.1.0",
+                        "item: 1",
+                        "lane: Heavy",
+                        "status: Completed",
+                        "---",
+                        "",
+                        "# OBPI-0.1.0-01-demo: Demo",
+                        "",
+                        "**Brief Status:** Completed",
+                        "",
+                        "## Evidence",
+                        "",
+                        "### Implementation Summary",
+                        "- Files created/modified: src/module.py",
+                        "- Date completed: 2026-03-10",
+                        "",
+                        "### Verification Commands Run (2026-03-10)",
+                        "",
+                        "```text",
+                        "uv run gz lint",
+                        "uv run gz test",
+                        "```",
+                        "",
+                    ]
+                )
+                + "\n"
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(
+                obpi_receipt_emitted_event(
+                    obpi_id="OBPI-0.1.0-01-demo",
+                    parent_adr="ADR-0.1.0",
+                    receipt_event="completed",
+                    attestor="human:test",
+                    obpi_completion="completed",
+                )
+            )
+
+            result = runner.invoke(main, ["obpi", "status", "OBPI-0.1.0-01-demo", "--json"])
+
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            self.assertTrue(payload["key_proof_ok"])
+            self.assertEqual(payload["req_proof_state"], "recorded")
+
+    def test_obpi_status_accepts_validation_commands_bullet_as_key_proof(self) -> None:
+        """Legacy implementation summaries can surface proof via validation-commands bullets."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            obpi_path.write_text(
+                "\n".join(
+                    [
+                        "---",
+                        "id: OBPI-0.1.0-01-demo",
+                        "parent: ADR-0.1.0",
+                        "item: 1",
+                        "lane: Heavy",
+                        "status: Completed",
+                        "---",
+                        "",
+                        "# OBPI-0.1.0-01-demo: Demo",
+                        "",
+                        "**Brief Status:** Completed",
+                        "",
+                        "## Evidence",
+                        "",
+                        "### Implementation Summary",
+                        "- Files created/modified: src/module.py",
+                        "- Validation commands run:",
+                        "  - uv run gz lint",
+                        "  - uv run gz check",
+                        "- Validation outcome: PASS",
+                        "- Date completed: 2026-03-10",
+                        "",
+                    ]
+                )
+                + "\n"
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(
+                obpi_receipt_emitted_event(
+                    obpi_id="OBPI-0.1.0-01-demo",
+                    parent_adr="ADR-0.1.0",
+                    receipt_event="completed",
+                    attestor="human:test",
+                    obpi_completion="completed",
+                )
+            )
+
+            result = runner.invoke(main, ["obpi", "status", "OBPI-0.1.0-01-demo", "--json"])
+
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            self.assertTrue(payload["key_proof_ok"])
+            self.assertIn("uv run gz check", payload["req_proof_inputs"][0]["source"])
+
 
 class TestLifecycleStatusSemantics(unittest.TestCase):
     """Tests for derived lifecycle semantics on status/state surfaces."""

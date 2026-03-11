@@ -80,27 +80,27 @@ how OBPI work is carried out across agents.
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this brief
-- [ ] Parent ADR checklist item quoted
+- [x] Intent and scope recorded in this brief
+- [x] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] Validation commands pass for updated control surfaces
-- [ ] Tests pass: `uv run gz test`
+- [x] Validation commands pass for updated control surfaces
+- [x] Tests pass: `uv run gz test`
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 ### Gate 3: Docs (Heavy only)
 
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
+- [x] Docs build: `uv run mkdocs build --strict`
+- [x] Relevant docs updated
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
+- [x] Acceptance scenarios pass: `uv run -m behave features/`
 
 ### Gate 5: Human (Heavy only)
 
@@ -137,25 +137,93 @@ uv run -m behave features/
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+$ uv run gz agent sync control-surfaces
+Syncing control surfaces...
+  Updated .agents/skills/gz-obpi-pipeline/SKILL.md
+  Updated .claude/skills/gz-obpi-pipeline/SKILL.md
+  Updated .github/skills/gz-obpi-pipeline/SKILL.md
+  Updated AGENTS.md
+  Updated CLAUDE.md
+  Updated .github/copilot-instructions.md
+Sync complete.
+
+$ uv run gz validate --documents
+All validations passed.
+
+$ uv run gz test
+Ran 334 tests in 4.504s
+OK
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/typecheck output here
+$ uv run gz lint
+Running linters...
+All checks passed!
+ADR path contract check passed.
+Lint passed.
+
+$ uv run gz typecheck
+Running type checker...
+All checks passed!
+Type check passed.
+```
+
+### Gate 3 (Docs)
+
+```text
+$ uv run mkdocs build --strict
+INFO    -  Documentation built in 0.75 seconds
+```
+
+### Gate 4 (BDD)
+
+```text
+$ uv run -m behave features/
+1 feature passed, 0 failed, 0 skipped
+3 scenarios passed, 0 failed, 0 skipped
+16 steps passed, 0 failed, 0 skipped
+```
+
+## Key Proof
+
+```text
+Canonical gzkit now contains `.gzkit/skills/gz-obpi-pipeline/SKILL.md`, and the
+same staged pipeline contract is mirrored into `.agents/skills/`,
+`.claude/skills/`, and `.github/skills/` by `uv run gz agent sync control-surfaces`.
+Parity evidence for this tranche is recorded in:
+
+- `docs/proposals/REPORT-airlineops-parity-2026-03-11.md`
+- `docs/proposals/REPORT-airlineops-govzero-mining-2026-03-11.md`
 ```
 
 ### Implementation Summary
 
 - Files created/modified:
-- Tests added:
-- Date completed:
+  - `.gzkit/skills/gz-obpi-pipeline/SKILL.md`
+  - `src/gzkit/templates/agents.md`
+  - `src/gzkit/templates/claude.md`
+  - `src/gzkit/templates/copilot.md`
+  - `docs/governance/governance_runbook.md`
+  - `docs/user/concepts/workflow.md`
+  - `docs/user/runbook.md`
+  - `docs/proposals/REPORT-airlineops-parity-2026-03-11.md`
+  - `docs/proposals/REPORT-airlineops-govzero-mining-2026-03-11.md`
+  - mirrored skill/control-surface files regenerated via `gz agent sync control-surfaces`
+- Tests added: none
+- Date completed: 2026-03-11
+- Attestation status: pending human review for Heavy-lane completion
+- Defects noted:
+  - `gz-obpi-lock` parity is still missing; pipeline currently fails closed for
+    concurrent/shared-scope execution instead of claiming support.
+  - plan-audit hook parity is still missing; the pipeline can consume a receipt
+    if present but gzkit does not yet generate the AirlineOps receipt surface.
 
 ---
 

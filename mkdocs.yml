@@ -86,6 +86,7 @@ nav:
     - gz adr covers-check: user/commands/adr-covers-check.md
     - gz adr emit-receipt: user/commands/adr-emit-receipt.md
     - gz obpi status: user/commands/obpi-status.md
+    - gz obpi validate: user/commands/obpi-validate.md
     - gz obpi reconcile: user/commands/obpi-reconcile.md
     - gz obpi emit-receipt: user/commands/obpi-emit-receipt.md
     - gz closeout: user/commands/closeout.md
@@ -109,6 +110,7 @@ nav:
     - Parity Intake Rubric: governance/parity-intake-rubric.md
     - Charter: governance/GovZero/charter.md
     - ADR Lifecycle: governance/GovZero/adr-lifecycle.md
+    - OBPI Transaction Contract: governance/GovZero/obpi-transaction-contract.md
     - OBPI Runtime Contract: governance/GovZero/obpi-runtime-contract.md
     - OBPI Decomposition Matrix: governance/GovZero/obpi-decomposition-matrix.md
     - ADR/OBPI/GHI/Audit Linkage: governance/GovZero/adr-obpi-ghi-audit-linkage.md

@@ -56,6 +56,7 @@ COMMAND_DOCS: dict[str, str] = {
     "adr covers-check": "docs/user/commands/adr-covers-check.md",
     "adr emit-receipt": "docs/user/commands/adr-emit-receipt.md",
     "obpi status": "docs/user/commands/obpi-status.md",
+    "obpi validate": "docs/user/commands/obpi-validate.md",
     "obpi reconcile": "docs/user/commands/obpi-reconcile.md",
     "obpi emit-receipt": "docs/user/commands/obpi-emit-receipt.md",
     "chores list": "docs/user/commands/chores-list.md",
@@ -277,6 +278,26 @@ def _git_status_lines(project_root: Path) -> tuple[list[str], str | None]:
         return [], err_status or "Could not read git status."
     lines = [line for line in status_out.splitlines() if line.strip()]
     return lines, None
+
+
+def _skip_tokens(skip_value: str) -> set[str]:
+    """Parse pre-commit SKIP env format into normalized token set."""
+    tokens: set[str] = set()
+    for chunk in skip_value.split(","):
+        for token in chunk.split():
+            normalized = token.strip().lower()
+            if normalized:
+                tokens.add(normalized)
+    return tokens
+
+
+def _skip_disables_xenon(skip_tokens: set[str]) -> bool:
+    """Return True when SKIP tokens can disable xenon complexity hooks."""
+    if not skip_tokens:
+        return False
+    if "all" in skip_tokens or "xenon-complexity" in skip_tokens:
+        return True
+    return any(token.startswith("xenon") for token in skip_tokens)
 
 
 def resolve_adr_file(project_root: Path, config: GzkitConfig, adr: str) -> tuple[Path, str]:

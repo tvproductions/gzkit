@@ -355,12 +355,83 @@ def _section_body(content: str, heading: str) -> str | None:
     return None
 
 
+def _section_body_with_prefix(content: str, heading_prefix: str) -> str | None:
+    lines = content.splitlines()
+    start_index: int | None = None
+
+    for index, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped.startswith(f"## {heading_prefix}") or stripped.startswith(
+            f"### {heading_prefix}"
+        ):
+            start_index = index + 1
+            break
+
+    if start_index is None:
+        return None
+
+    end_index = len(lines)
+    for index in range(start_index, len(lines)):
+        stripped = lines[index].strip()
+        if stripped == "---" or re.match(r"^(##|###) ", stripped):
+            end_index = index
+            break
+
+    body = "\n".join(lines[start_index:end_index]).strip()
+    if body:
+        return body
+    return None
+
+
 def _has_substantive_section(content: str, heading: str) -> bool:
     body = _section_body(content, heading)
     if not body:
         return False
     normalized = body.strip().lower()
     return normalized not in {"", "-", "...", "tbd", "(none)", "n/a", "paste test output here"}
+
+
+def _has_substantive_body(body: str | None) -> bool:
+    if not body:
+        return False
+    normalized = body.strip().lower()
+    return normalized not in {"", "-", "...", "tbd", "(none)", "n/a", "paste test output here"}
+
+
+def _implementation_summary_validation_commands(content: str) -> str | None:
+    body = _section_body(content, "Implementation Summary")
+    if not body:
+        return None
+
+    lines = body.splitlines()
+    for index, line in enumerate(lines):
+        if not line.startswith("- Validation commands run:"):
+            continue
+
+        collected = [line.removeprefix("- Validation commands run:").strip()]
+        for follow_line in lines[index + 1 :]:
+            if follow_line.startswith("- "):
+                break
+            collected.append(follow_line.rstrip())
+
+        candidate = "\n".join(part for part in collected if part.strip()).strip()
+        if _has_substantive_body(candidate):
+            return candidate
+    return None
+
+
+def _resolved_key_proof_body(content: str) -> str | None:
+    for heading in ("Key Proof", "Verification", "Gate Evidence"):
+        body = _section_body(content, heading)
+        if body and _has_substantive_section(content, heading):
+            return body
+    prefixed_verification = _section_body_with_prefix(content, "Verification")
+    if _has_substantive_body(prefixed_verification):
+        return prefixed_verification
+    validation_commands = _implementation_summary_validation_commands(content)
+    if _has_substantive_body(validation_commands):
+        return validation_commands
+    return None
 
 
 def _extract_human_attestation(content: str) -> dict[str, Any]:
@@ -397,8 +468,8 @@ def _inspect_obpi_brief(
     brief_status = (_markdown_label_value(content, "Brief Status") or "").strip().lower()
     file_completed = frontmatter_status == "completed" or brief_status == "completed"
     implementation_evidence_ok = _has_substantive_implementation_summary(content)
-    key_proof_body = _section_body(content, "Key Proof")
-    key_proof_ok = _has_substantive_section(content, "Key Proof")
+    key_proof_body = _resolved_key_proof_body(content)
+    key_proof_ok = key_proof_body is not None
     human_attestation = _extract_human_attestation(content)
     info = graph.get(obpi_id, {}) if obpi_id and graph else {}
     semantics = derive_obpi_semantics(

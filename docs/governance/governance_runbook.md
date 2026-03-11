@@ -30,6 +30,7 @@ uv run gz gates --adr ADR-<X.Y.Z>
 /gz-adr-create
 /gz-adr-manager   # compatibility alias for /gz-adr-create
 /gz-obpi-brief
+/gz-obpi-pipeline OBPI-<X.Y.Z-NN>
 /gz-obpi-reconcile ADR-<X.Y.Z>
 /gz-adr-recon ADR-<X.Y.Z>
 /gz-adr-sync
@@ -111,14 +112,29 @@ uv run gz check-config-paths
 
 **When:** Implementing one checklist item.
 
-1. Orient on current state.
+1. Orient on current state and the parent ADR.
 
 ```bash
 uv run gz adr status ADR-<X.Y.Z> --json
 uv run gz status --table
 ```
 
-2. Implement + verify Gate 2 (+ Gate 3 when docs changed).
+2. Plan the OBPI and exit plan mode with an approved plan.
+3. Invoke the OBPI execution pipeline.
+
+```text
+/gz-obpi-pipeline OBPI-<X.Y.Z-NN>
+```
+
+Use compatibility entry points when implementation or verification already
+exists:
+
+```text
+/gz-obpi-pipeline OBPI-<X.Y.Z-NN> --from=verify
+/gz-obpi-pipeline OBPI-<X.Y.Z-NN> --from=ceremony
+```
+
+4. Inside the pipeline, implement + verify Gate 2 (+ Gate 3 when docs change).
 
 ```bash
 uv run gz implement --adr ADR-<X.Y.Z>
@@ -126,15 +142,15 @@ uv run gz gates --adr ADR-<X.Y.Z>
 uv run gz lint
 ```
 
-3. Update brief evidence fields (implementation summary must be concrete and parser-safe).
-4. Emit OBPI completion receipt with explicit attestor evidence.
+5. Present the OBPI acceptance ceremony before marking the brief `Completed`.
+6. Sync audit and ADR table state after the ceremony.
 
-```bash
-uv run gz obpi emit-receipt OBPI-<X.Y.Z-NN>-<slug> --event completed --attestor "human:<name>" --evidence-json '{"value_narrative":"<problem-before vs capability-now>","key_proof":"<one concrete CLI/code proof>","human_attestation":true,"attestation_text":"attest completed","attestation_date":"YYYY-MM-DD"}'
-```
+Pipeline rules:
 
-For Lite parents, `human_attestation` fields are optional.
-For Heavy/Foundation parents, they are required and fail closed when missing.
+- verify -> ceremony -> sync is mandatory
+- Heavy/Foundation work stays fail-closed on human attestation
+- if concurrent execution is needed before lock parity exists, stop with
+  `BLOCKERS`
 
 ---
 
