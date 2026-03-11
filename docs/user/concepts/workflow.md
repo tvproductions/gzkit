@@ -8,7 +8,9 @@ This is the operator habit loop for gzkit-first GovZero parity.
 
 1. OBPI is the unit of execution and completion.
 2. ADR is the roll-up boundary for attestation/audit lifecycle state.
-3. Repeat OBPI increments continuously; run ADR closeout only when OBPI evidence is complete.
+3. After planning an OBPI, execution should flow through `gz-obpi-pipeline`, not
+   freeform implementation.
+4. Run ADR closeout only when OBPI evidence is complete.
 
 ---
 
@@ -17,15 +19,16 @@ This is the operator habit loop for gzkit-first GovZero parity.
 1. **Orient**
    - `uv run gz status`
    - `uv run gz adr status ADR-<X.Y.Z> --json`
-2. **Implement one OBPI increment**
-   - scoped code/docs changes for one brief item
+2. **Execute through the pipeline**
+   - `/gz-obpi-pipeline OBPI-<X.Y.Z-NN>`
 3. **Verify increment**
+   - `uv run gz obpi validate path/to/OBPI-<X.Y.Z-NN>-<slug>.md`
    - `uv run gz implement --adr ADR-<X.Y.Z>`
    - `uv run gz gates --gate 3 --adr ADR-<X.Y.Z>` when docs changed
-4. **Document completion evidence**
-   - set OBPI brief to `Completed` with substantive implementation summary
-5. **Record OBPI-scoped accountability evidence**
-   - `uv run gz obpi emit-receipt OBPI-<X.Y.Z-NN>-<slug> --event completed --attestor "<Human Name>" --evidence-json '{"attestation":"observed"}'`
+4. **Present evidence**
+   - value narrative, key proof, verification outputs
+5. **Sync brief and ADR state**
+   - `gz-obpi-audit` then `gz-obpi-sync`
 6. **Repeat for next OBPI**
 
 ---
@@ -45,6 +48,7 @@ This is the operator habit loop for gzkit-first GovZero parity.
 
 - It prevents hidden work-in-progress at ADR scope.
 - It keeps evidence close to each OBPI increment.
+- It preserves the verify -> ceremony -> sync sequence from AirlineOps parity.
 - It preserves human attestation as explicit ADR-level authority.
 - It keeps audit/validation as post-attestation reconciliation.
 

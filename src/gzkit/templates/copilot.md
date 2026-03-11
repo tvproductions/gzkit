@@ -41,9 +41,10 @@ This project uses gzkit for governance. Key commands:
 
 When completing an OBPI brief:
 
-1. Provide value narrative + one key proof example
-2. Provide verification evidence (tests/commands/output)
-3. Wait for explicit human acceptance before setting `Completed` for Heavy/Foundation parent ADR work
+1. Use `gz-obpi-pipeline` after plan approval instead of freeform implementation
+2. Provide value narrative + one key proof example
+3. Provide verification evidence (tests/commands/output)
+4. Wait for explicit human acceptance before setting `Completed` for Heavy/Foundation parent ADR work
 
 Reference: `AGENTS.md` section `OBPI Acceptance Protocol`.
 
