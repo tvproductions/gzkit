@@ -73,3 +73,5 @@ This pool ADR can be promoted when all are true:
 
 - This ADR is explicitly CLI + hooks first, matching current `gzkit` operating posture.
 - Prime output should be graph-backed and proof-aware, not prose-only summaries.
+- It also aligns with [12-factor-agents](https://github.com/humanlayer/12-factor-agents),
+  especially Factor 3 (own your context window).
