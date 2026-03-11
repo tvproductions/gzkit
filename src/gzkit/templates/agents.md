@@ -122,6 +122,13 @@ Detailed standards in the [OBPI Decomposition Matrix](docs/governance/GovZero/ob
 
 **Agent MUST NOT mark an OBPI brief as `Completed` without explicit human attestation when parent ADR lane is Heavy or Foundational (0.0.x).**
 
+**Pipeline mandate:** After plan approval for OBPI work, agents MUST invoke the
+OBPI execution pipeline (`gz-obpi-pipeline`) instead of implementing directly.
+The pipeline enforces the verify -> ceremony -> sync sequence that gets lost in
+freeform execution. If implementation is already complete, invoke with
+`--from=verify` or `--from=ceremony` to enter the governance stages. Freeform
+implementation without pipeline invocation is a process defect.
+
 ### Ceremony Steps
 
 1. **Present value narrative**: Explain what problem existed before this OBPI and what capability exists now.
@@ -151,7 +158,7 @@ This protocol prevents agents from presenting OBPI completion as fait accompli w
 Always use `uv run` for Python commands:
 
 ```bash
-uv run -m gzkit --help     # CLI entry point
+uv run gz --help           # CLI entry point
 uv run -m unittest discover tests  # Run tests
 ```
 

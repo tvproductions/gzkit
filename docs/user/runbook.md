@@ -22,22 +22,28 @@ uv run gz status
 uv run gz status --table
 uv run gz adr status ADR-<X.Y.Z> --json
 
-# 2) Implement one OBPI increment (code + docs as needed)
+# 2) Execute the OBPI through the staged pipeline
+/gz-obpi-pipeline OBPI-<X.Y.Z-NN>
+
+#    Compatibility entry points:
+#    /gz-obpi-pipeline OBPI-<X.Y.Z-NN> --from=verify
+#    /gz-obpi-pipeline OBPI-<X.Y.Z-NN> --from=ceremony
+
 # 3) Verify this increment
 uv run gz implement --adr ADR-<X.Y.Z>
 uv run gz gates --gate 3 --adr ADR-<X.Y.Z>   # when docs changed
 uv run gz lint
 
-# 4) Update the OBPI brief with substantive implementation evidence
-#    (status Completed + concrete summary, not placeholders)
+# 4) Present the OBPI ceremony and only then update the brief
+#    (status Completed only after attestation when required)
 #    Use parser-safe inline bullets in "Implementation Summary":
 #      - Files created/modified: <paths>
 #      - Tests added: <files or (none)>
 #      - Date completed: YYYY-MM-DD
 #    (Do not split values onto nested bullet lines.)
 
-# 5) Record OBPI-scoped receipt evidence on the OBPI itself
-uv run gz obpi emit-receipt OBPI-<X.Y.Z-NN>-<slug> --event completed --attestor "<Human Name>" --evidence-json '{"attestation":"I attest I understand the completion of OBPI-<X.Y.Z-NN>.","date":"YYYY-MM-DD"}'
+# 5) Sync evidence and ADR table state
+#    The pipeline should drive audit + sync after ceremony.
 ```
 
 ---

@@ -32,6 +32,8 @@ from gzkit.commands.common import (
     _is_pool_adr_id,
     _prompt_text,
     _reject_pool_adr_for_lifecycle,
+    _skip_disables_xenon,
+    _skip_tokens,
     _upsert_frontmatter_value,
     console,
     ensure_initialized,
@@ -220,26 +222,6 @@ def _plan_git_sync(
         "blockers": blockers,
         "warnings": warnings,
     }
-
-
-def _skip_tokens(skip_value: str) -> set[str]:
-    """Parse pre-commit SKIP env format into normalized token set."""
-    tokens: set[str] = set()
-    for chunk in skip_value.split(","):
-        for token in chunk.split():
-            normalized = token.strip().lower()
-            if normalized:
-                tokens.add(normalized)
-    return tokens
-
-
-def _skip_disables_xenon(skip_tokens: set[str]) -> bool:
-    """Return True when SKIP tokens can disable xenon complexity hooks."""
-    if not skip_tokens:
-        return False
-    if "all" in skip_tokens or "xenon-complexity" in skip_tokens:
-        return True
-    return any(token.startswith("xenon") for token in skip_tokens)
 
 
 def _enforce_git_sync_skip_policy() -> None:
@@ -2703,8 +2685,9 @@ def obpi_validate_cmd(obpi_path: str) -> None:
 
     if errors:
         console.print(f"[red]OBPI Validation Failed:[/red] {path.name}")
+        console.print("BLOCKERS:")
         for error in errors:
-            console.print(f"  - [yellow]BLOCK:[/yellow] {error}")
+            console.print(f"- {error}")
         raise SystemExit(1)
 
     console.print(f"[green]OBPI Validation Passed:[/green] {path.name}")

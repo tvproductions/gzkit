@@ -17,7 +17,7 @@ Gate definitions and closeout behavior remain authoritative in `charter.md` and
 ## Definitions
 
 - **ADR**: The intent contract and top-level evidence ledger for a decision.
-- **OBPI**: One Brief Per Item; the atomic implementation unit for a single ADR checklist item.
+- **OBPI**: One Brief Per Item; the atomic implementation unit for a single ADR checklist item and a bounded transaction with explicit scope and evidence.
 - **GHI**: GitHub Issue used for tracking work (optional but linkable).
 - **Audit**: Post-attestation reconciliation artifact that references observed proofs.
 - **ADR Closeout Form**: An optional collaboration workspace for the closeout ceremony (observation and attestation).
@@ -27,6 +27,7 @@ Gate definitions and closeout behavior remain authoritative in `charter.md` and
 1. Each ADR MUST include a Feature Checklist and an Evidence Ledger.
 1. Each checklist item MUST map to exactly one OBPI brief.
 1. Each OBPI brief MUST reference its parent ADR and the specific checklist item.
+1. Each OBPI brief MUST declare `Allowed Paths` and `Denied Paths` so scope isolation is explicit before execution starts.
 1. The ADR Evidence Ledger MUST include a "Related issues" field; use `none` or `TBD`
    when no GHI exists (no blank fields).
 1. If a GHI exists for an OBPI, the OBPI MUST link it and the ADR Evidence Ledger
@@ -207,6 +208,7 @@ metadata. Suggested minimal schema:
 ## References
 
 - Gate definitions: `docs/governance/GovZero/charter.md`
+- Transaction law: `docs/governance/GovZero/obpi-transaction-contract.md`
 - Closeout ceremony: `docs/governance/GovZero/audit-protocol.md`
 - Governance index: `docs/governance/GOVERNANCE_AND_AGENT_TOOLING_INDEX.md`
 - Background (non-canonical):

@@ -10,6 +10,9 @@ Canonical GovZero source: [`docs/governance/GovZero/adr-obpi-ghi-audit-linkage.m
 
 OBPI is the operational unit of completion in gzkit.
 
+Each OBPI is also a bounded transaction. Scope is defined up front, verified by
+changed-files audit, and blocked when work escapes the declared allowlist.
+
 Each OBPI represents one ADR checklist value increment and should include:
 
 1. Work execution on scoped paths
@@ -35,12 +38,16 @@ An OBPI is operationally complete when:
 Runtime surfaces now derive OBPI state from both ledger evidence and brief content.
 `runtime_state` stays fail-closed when completion proof is missing, placeholder, or
 out of sync with the brief.
+Execution-boundary rules such as allowlists, spine-touch serialization, and
+parallel-safe blocking live in the
+[OBPI Transaction Contract](../../governance/GovZero/obpi-transaction-contract.md).
 The full machine-readable contract is defined in
 [`docs/governance/GovZero/obpi-runtime-contract.md`](../../governance/GovZero/obpi-runtime-contract.md).
 
 Use the OBPI-native runtime surfaces to inspect that state directly:
 
 - `uv run gz obpi status OBPI-...`
+- `uv run gz obpi validate path/to/OBPI-...md`
 - `uv run gz obpi reconcile OBPI-...`
 
 For parser-safe evidence detection, keep `### Implementation Summary` as inline
@@ -66,6 +73,29 @@ Lane inheritance applies:
 
 Reference: `AGENTS.md` section `OBPI Acceptance Protocol`.
 
+## Transaction Boundaries
+
+Every OBPI brief should be readable as an execution contract:
+
+- brief and ADR context are loaded before implementation begins
+- `Allowed Paths` are the only paths that may be changed.
+- `Denied Paths` make non-goals explicit.
+- when a plan-audit receipt exists, it must be read as part of transaction
+  context
+- `git diff --name-only` is the minimum changed-files audit before completion.
+- `gz obpi validate` is the fail-closed pre-completion gate for allowlist,
+  evidence, and git-sync readiness.
+- Spine-touch work is serialized.
+- Parallel OBPI work is valid only when allowlists are disjoint and no shared
+  blocker exists.
+- Until lock parity exists, shared-scope or spine-touch work stays single-OBPI.
+
+If any of those conditions fail, the correct outcome is `BLOCKERS`, not "close
+enough."
+
+Compatibility gaps do not weaken the contract. They must be called out
+explicitly and handled fail-closed.
+
 ---
 
 ## OBPI Receipt Practice
@@ -89,6 +119,7 @@ Each normalized proof-input item uses the stable contract shape:
 
 - [Lifecycle](lifecycle.md)
 - [Workflow](workflow.md)
+- [OBPI Transaction Contract](../../governance/GovZero/obpi-transaction-contract.md)
 - [OBPI Runtime Contract](../../governance/GovZero/obpi-runtime-contract.md)
 - [gz obpi status](../commands/obpi-status.md)
 - [gz obpi reconcile](../commands/obpi-reconcile.md)

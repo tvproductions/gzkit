@@ -63,9 +63,10 @@ def validate_obpi_transition(project_root: Path, path: str) -> None:
 
     if errors:
         print(f"\nOBPI Validation Failed: {path}")
+        print("BLOCKERS:")
         for error in errors:
-            print(f"  - BLOCK: {error}")
-        print("\nFix these issues or revert status to 'Draft' to continue.\n")
+            print(f"- {error}")
+        print("\nFix these blockers or revert status to 'Draft' to continue.\n")
         # In a hook context, we want to exit non-zero to block the tool use
         # However, record_artifact_edit is called by the hook script which might
         # ignore the return value or exception.

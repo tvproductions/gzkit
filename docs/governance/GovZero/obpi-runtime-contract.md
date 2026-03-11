@@ -11,6 +11,10 @@
 The OBPI runtime contract defines the machine-readable state model used by
 ledger-derived OBPI status, reconciliation, and later lifecycle/proof surfaces.
 
+Execution boundaries, allowlist scope law, changed-files auditing, spine-touch
+serialization, and parallel-safe blocker rules are defined separately in the
+[OBPI Transaction Contract](obpi-transaction-contract.md).
+
 The contract is ledger-first:
 
 - runtime state is derived from `.gzkit/ledger.jsonl`
@@ -134,6 +138,8 @@ one stable machine-readable shape.
 
 - OBPI-scoped receipts with `adr_completion: not_completed` do not promote ADR
   lifecycle to `Validated`.
+- Runtime consumers must not weaken the fail-closed transaction rules defined in
+  the [OBPI Transaction Contract](obpi-transaction-contract.md).
 - Legacy receipts without explicit `req_proof_inputs` remain consumable through
   fallback normalization.
 - Human attestation remains the authority boundary for Heavy/Foundation

@@ -51,19 +51,20 @@ Follow the gzkit gate covenant for all changes:
 1. Check state: `gz state`
 2. Check status: `gz status`
 3. Create ADR for changes: `gz plan`
-4. Implement with tests
+4. For OBPI work after planning, run `gz-obpi-pipeline`
 5. Validate: `gz validate --documents && gz check`
 6. Request attestation: Human runs `gz attest`
 
 ## OBPI Acceptance
 
-OBPI closure follows `AGENTS.md` and is attestation-first:
+OBPI closure follows `AGENTS.md` and is pipeline-first plus attestation-first:
 
-1. Present value narrative
-2. Present key proof
-3. Present verification evidence
-4. Wait for explicit human acceptance
-5. Only then mark brief status `Completed`
+1. Run `gz-obpi-pipeline` after plan approval
+2. Present value narrative
+3. Present key proof
+4. Present verification evidence
+5. Wait for explicit human acceptance
+6. Only then mark brief status `Completed`
 
 Reference: `AGENTS.md` section `OBPI Acceptance Protocol`.
 

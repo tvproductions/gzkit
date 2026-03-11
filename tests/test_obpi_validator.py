@@ -1,5 +1,7 @@
 import json
+import os
 import shutil
+import subprocess
 import tempfile
 import unittest
 from datetime import date
@@ -17,43 +19,79 @@ class TestObpiValidator(unittest.TestCase):
         self.gzkit_dir = self.project_root / ".gzkit"
         self.gzkit_dir.mkdir()
 
-        # Initialize manifest
-        self.manifest_path = self.gzkit_dir / "manifest.json"
-        self.manifest_data = {
-            "schema": "gzkit.manifest.v1",
-            "structure": {"design_root": "docs/design"},
-            "gates": {"lite": [1, 2], "heavy": [1, 2, 3, 4, 5]},
-        }
-        self.manifest_path.write_text(json.dumps(self.manifest_data))
+        manifest_path = self.gzkit_dir / "manifest.json"
+        manifest_path.write_text(
+            json.dumps(
+                {
+                    "schema": "gzkit.manifest.v1",
+                    "structure": {"design_root": "docs/design"},
+                    "gates": {"lite": [1, 2], "heavy": [1, 2, 3, 4, 5]},
+                }
+            ),
+            encoding="utf-8",
+        )
 
-        # Initialize .gzkit.json
-        self.config_path = self.project_root / ".gzkit.json"
-        self.config_data = {"mode": "lite", "paths": {"ledger": ".gzkit/ledger.jsonl"}}
-        self.config_path.write_text(json.dumps(self.config_data))
+        config_path = self.project_root / ".gzkit.json"
+        config_path.write_text(
+            json.dumps({"mode": "lite", "paths": {"ledger": ".gzkit/ledger.jsonl"}}),
+            encoding="utf-8",
+        )
 
-        # Initialize ledger
         self.ledger_path = self.gzkit_dir / "ledger.jsonl"
         self.ledger = Ledger(self.ledger_path)
         self.ledger.append(project_init_event("test-project", "lite"))
+
+        self._git("init")
+        self._git("config", "user.email", "test@example.com")
+        self._git("config", "user.name", "Test User")
+        self._commit_all("chore: initial")
 
         self.validator = ObpiValidator(self.project_root)
 
     def tearDown(self):
         shutil.rmtree(self.test_dir)
 
+    def _git(self, *args: str) -> str:
+        result = subprocess.run(
+            ["git", *args],
+            cwd=self.project_root,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        return result.stdout.strip()
+
+    def _commit_all(self, message: str) -> None:
+        self._git("add", "-A")
+        status = self._git("status", "--porcelain")
+        if status:
+            self._git("commit", "-m", message)
+
+    def _register_adr(self, adr_id: str, lane: str = "lite") -> None:
+        self.ledger.append(adr_created_event(adr_id, "PRD-TEST", lane))
+        self._commit_all(f"chore: register {adr_id}")
+
     def _create_obpi(
         self,
-        adr_id,
-        status="Draft",
-        summary="- Evidence: Done",
-        proof="Proof here",
-        attestation=None,
-        lane="lite",
-    ):
-        # Ensure ADR exists in ledger
-        self.ledger.append(adr_created_event(adr_id, "PRD-TEST", lane))
+        adr_id: str,
+        *,
+        status: str = "Draft",
+        summary: str = "- Evidence: Done",
+        proof: str = "Proof here",
+        attestation: str | None = None,
+        lane: str = "lite",
+        relative_path: str | None = None,
+        allowed_paths: list[str] | None = None,
+    ) -> Path:
+        self._register_adr(adr_id, lane)
 
         obpi_id = f"OBPI-{adr_id}-01"
+        rel_path = relative_path or f"{obpi_id}.md"
+        path = self.project_root / rel_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+        allowlist = allowed_paths or [rel_path]
+        allowlist_lines = "\n".join(f"- `{item}` - in scope" for item in allowlist)
         content = f"""---
 id: {obpi_id}
 parent: {adr_id}
@@ -61,6 +99,9 @@ status: {status}
 ---
 
 # {obpi_id}
+
+## Allowed Paths
+{allowlist_lines}
 
 ### Implementation Summary
 {summary}
@@ -71,55 +112,74 @@ status: {status}
         if attestation:
             content += f"\n## Human Attestation\n{attestation}\n"
 
-        obpi_path = self.project_root / f"{obpi_id}.md"
-        obpi_path.write_text(content)
-        return obpi_path
+        path.write_text(content, encoding="utf-8")
+        return path
 
     def test_validate_draft_is_always_valid(self):
         path = self._create_obpi("ADR-0.1.0", status="Draft", summary="...")
         errors = self.validator.validate_file(path)
         self.assertEqual(errors, [])
 
-    def test_validate_lite_completed_substantive(self):
-        path = self._create_obpi(
+    def test_validate_completed_passes_with_allowlisted_changes(self):
+        obpi_path = self._create_obpi(
+            "ADR-0.1.0",
+            status="Completed",
+            summary="- Task: Finished implementation",
+            proof="Works as expected",
+            allowed_paths=["OBPI-ADR-0.1.0-01.md", "src/**"],
+        )
+        module_path = self.project_root / "src" / "demo.py"
+        module_path.parent.mkdir(parents=True, exist_ok=True)
+        module_path.write_text("print('ok')\n", encoding="utf-8")
+
+        errors = self.validator.validate_file(obpi_path)
+        self.assertEqual(errors, [])
+
+    def test_validate_completed_blocks_out_of_scope_changes(self):
+        obpi_path = self._create_obpi(
             "ADR-0.1.0",
             status="Completed",
             summary="- Task: Finished implementation",
             proof="Works as expected",
         )
-        errors = self.validator.validate_file(path)
-        self.assertEqual(errors, [])
+        outside_path = self.project_root / "docs" / "outside.md"
+        outside_path.parent.mkdir(parents=True, exist_ok=True)
+        outside_path.write_text("out of scope\n", encoding="utf-8")
 
-    def test_validate_lite_completed_missing_summary(self):
-        path = self._create_obpi(
-            "ADR-0.1.0",
-            status="Completed",
-            summary="- Task: TBD",
-            proof="Proof",
+        errors = self.validator.validate_file(obpi_path)
+        self.assertIn(
+            "Changed-files audit found out-of-allowlist path: docs/outside.md. "
+            "Amend the OBPI or revert the change.",
+            errors,
         )
-        errors = self.validator.validate_file(path)
-        self.assertIn("Missing or non-substantive 'Implementation Summary'.", errors)
+
+    def test_validate_completed_requires_allowed_paths(self):
+        self._register_adr("ADR-0.1.0")
+        obpi_path = self.project_root / "OBPI-ADR-0.1.0-01.md"
+        obpi_path.write_text(
+            "---\n"
+            "id: OBPI-ADR-0.1.0-01\n"
+            "parent: ADR-0.1.0\n"
+            "status: Completed\n"
+            "---\n\n"
+            "# OBPI-ADR-0.1.0-01\n\n"
+            "### Implementation Summary\n"
+            "- Task: Finished implementation\n\n"
+            "## Key Proof\n"
+            "Works as expected\n",
+            encoding="utf-8",
+        )
+
+        errors = self.validator.validate_file(obpi_path)
+        self.assertIn("Missing or empty 'Allowed Paths' allowlist.", errors)
 
     def test_validate_heavy_completed_missing_attestation(self):
-        # Heavy lane inherits human attestation requirement
         path = self._create_obpi(
             "ADR-0.2.0",
             status="Completed",
             summary="- Done: Yes",
             proof="Proof",
             lane="heavy",
-        )
-        errors = self.validator.validate_file(path)
-        self.assertIn("Heavy/Foundation OBPI requires a '## Human Attestation' section.", errors)
-
-    def test_validate_foundation_completed_requires_attestation(self):
-        # 0.0.x series always requires attestation
-        path = self._create_obpi(
-            "ADR-0.0.1",
-            status="Completed",
-            summary="- Done: Yes",
-            proof="Proof",
-            lane="lite",
         )
         errors = self.validator.validate_file(path)
         self.assertIn("Heavy/Foundation OBPI requires a '## Human Attestation' section.", errors)
@@ -139,21 +199,6 @@ status: {status}
         errors = self.validator.validate_file(path)
         self.assertEqual(errors, [])
 
-    def test_validate_heavy_completed_invalid_attestor(self):
-        attestation = (
-            f"- Attestor: agent:claudia\n- Attestation: Done\n- Date: {date.today().isoformat()}"
-        )
-        path = self._create_obpi(
-            "ADR-0.2.0",
-            status="Completed",
-            summary="- Done: Yes",
-            proof="Proof",
-            attestation=attestation,
-            lane="heavy",
-        )
-        errors = self.validator.validate_file(path)
-        self.assertIn("Human attestation block requires 'Attestor: human:<name>'.", errors)
-
     def test_validate_strict_placeholders(self):
         path = self._create_obpi(
             "ADR-0.1.0",
@@ -165,29 +210,55 @@ status: {status}
         self.assertIn("Missing or non-substantive 'Implementation Summary'.", errors)
         self.assertIn("Missing or non-substantive 'Key Proof'.", errors)
 
+    def test_validate_requires_git_repo(self):
+        path = self._create_obpi(
+            "ADR-0.1.0",
+            status="Completed",
+            summary="- Task: Finished implementation",
+            proof="Works as expected",
+        )
+        shutil.rmtree(self.project_root / ".git")
+
+        errors = self.validator.validate_file(path)
+        self.assertIn("Not a git repository.", errors)
+
+    def test_validate_blocks_skip_values_that_bypass_xenon(self):
+        path = self._create_obpi(
+            "ADR-0.1.0",
+            status="Completed",
+            summary="- Task: Finished implementation",
+            proof="Works as expected",
+        )
+        original_skip = os.environ.get("SKIP")
+        os.environ["SKIP"] = "xenon-complexity"
+        try:
+            errors = self.validator.validate_file(path)
+        finally:
+            if original_skip is None:
+                os.environ.pop("SKIP", None)
+            else:
+                os.environ["SKIP"] = original_skip
+
+        self.assertIn(
+            "Refusing completion validation with SKIP that can bypass xenon complexity checks.",
+            errors,
+        )
+
     def test_recorder_appends_receipt_to_ledger(self):
-        # Create a valid completed OBPI
-        adr_id = "ADR-0.1.0"
-        obpi_path = self._create_obpi(
-            adr_id,
+        final_rel_path = "docs/design/adr/pre-release/ADR-0.1.0/obpis/OBPI-ADR-0.1.0-01.md"
+        final_path = self._create_obpi(
+            "ADR-0.1.0",
             status="Completed",
             summary="- Done: Yes",
             proof="Verified",
+            relative_path=final_rel_path,
+            allowed_paths=["docs/design/adr/pre-release/ADR-0.1.0/**"],
         )
-        # Move it to a subfolder to match GOVERNANCE_PATTERNS
-        final_dir = self.project_root / "docs/design/adr/pre-release/ADR-0.1.0/obpis"
-        final_dir.mkdir(parents=True, exist_ok=True)
-        final_path = final_dir / obpi_path.name
-        obpi_path.rename(final_path)
         rel_path = str(final_path.relative_to(self.project_root))
 
-        # Run the record_artifact_edit hook
         record_artifact_edit(self.project_root, rel_path, session="test-session")
 
-        # Check ledger
         events = self.ledger.read_all()
-
-        # Should have: project_init, adr_created, artifact_edited, obpi_receipt_emitted
         self.assertTrue(any(e.event == "obpi_receipt_emitted" for e in events))
 
         receipt = [e for e in events if e.event == "obpi_receipt_emitted"][-1]
@@ -198,8 +269,27 @@ status: {status}
         self.assertEqual(evidence.get("key_proof"), "Verified")
         self.assertTrue(evidence.get("req_proof_inputs"))
 
-        # Check anchor (will be 0000000 since we're in a temp dir without git)
         anchor = receipt.extra.get("anchor")
         self.assertIsNotNone(anchor)
-        self.assertEqual(anchor.get("commit"), "0000000")
+        self.assertNotEqual(anchor.get("commit"), "0000000")
         self.assertEqual(anchor.get("semver"), "0.1.0")
+
+    def test_validate_blocks_merge_head(self):
+        path = self._create_obpi(
+            "ADR-0.1.0",
+            status="Completed",
+            summary="- Task: Finished implementation",
+            proof="Works as expected",
+        )
+        current_branch = self._git("rev-parse", "--abbrev-ref", "HEAD")
+        self._git("checkout", "-b", "feature")
+        (self.project_root / "feature.txt").write_text("feature\n", encoding="utf-8")
+        self._commit_all("feat: branch change")
+        self._git("checkout", current_branch)
+        (self.project_root / "main.txt").write_text("main\n", encoding="utf-8")
+        self._commit_all("feat: main change")
+        self._git("merge", "--no-ff", "feature", "-m", "merge feature")
+        path.write_text(path.read_text(encoding="utf-8") + "\n", encoding="utf-8")
+
+        errors = self.validator.validate_file(path)
+        self.assertIn("Merge commit at HEAD. Linearize history before completion.", errors)

@@ -1,13 +1,18 @@
 """OBPI completion validator engine.
 
-Enforces evidence and human attestation requirements for OBPI transitions.
+Enforces scope, evidence, and git-sync readiness requirements for OBPI
+completion transitions.
 """
 
 import re
+from fnmatch import fnmatch
 from pathlib import Path
+from typing import cast
 
 from gzkit.config import GzkitConfig
+from gzkit.git_sync import assess_git_sync_readiness
 from gzkit.ledger import Ledger
+from gzkit.utils import git_cmd
 
 # Blacklist of non-substantive placeholder tokens
 STRICT_PLACEHOLDERS = {
@@ -63,6 +68,16 @@ class ObpiValidator:
         parent_info = graph.get(self.ledger.canonicalize_id(parent_id), {})
         lane = resolve_adr_lane(parent_info, self.config.mode)
 
+        allowlist = self._allowed_paths(content)
+        if not allowlist:
+            errors.append("Missing or empty 'Allowed Paths' allowlist.")
+        else:
+            changed_files = self._changed_files()
+            errors.extend(self._validate_changed_files(changed_files, allowlist))
+
+        readiness = assess_git_sync_readiness(self.project_root)
+        errors.extend(cast(list[str], readiness["blockers"]))
+
         # 2. Check for Substantive Implementation Summary
         if not self._has_substantive_summary(content):
             errors.append("Missing or non-substantive 'Implementation Summary'.")
@@ -78,9 +93,95 @@ class ObpiValidator:
 
         return errors
 
+    def _allowed_paths(self, content: str) -> list[str]:
+        """Extract normalized allowlist patterns from the brief."""
+        section = self._section_body(content, "Allowed Paths")
+        if not section:
+            return []
+
+        patterns: list[str] = []
+        for line in section.splitlines():
+            stripped = line.strip()
+            if not stripped.startswith("-"):
+                continue
+
+            backticked = re.findall(r"`([^`]+)`", stripped)
+            candidates = backticked or [re.sub(r"^-+\s*", "", stripped).split(" - ", 1)[0]]
+            for candidate in candidates:
+                normalized = candidate.strip().replace("\\", "/")
+                if not normalized or " " in normalized:
+                    continue
+                if normalized.endswith("/"):
+                    normalized = normalized.rstrip("/") + "/**"
+                patterns.append(normalized)
+
+        return patterns
+
+    def _changed_files(self) -> list[str]:
+        """Return the live changed-file set for scope validation."""
+        files: set[str] = set()
+        commands = (
+            ("diff", "--name-only"),
+            ("diff", "--cached", "--name-only"),
+            ("ls-files", "--others", "--exclude-standard"),
+        )
+        for command in commands:
+            rc, output, _ = git_cmd(self.project_root, *command)
+            if rc != 0:
+                continue
+            for line in output.splitlines():
+                normalized = line.strip().replace("\\", "/")
+                if normalized:
+                    files.add(normalized)
+        return sorted(files)
+
+    def _validate_changed_files(self, changed_files: list[str], allowlist: list[str]) -> list[str]:
+        """Validate the live changed-file set against the allowlist."""
+        errors: list[str] = []
+        if not changed_files:
+            errors.append(
+                "Changed-files audit found no modified paths. "
+                "Completion requires live scope evidence."
+            )
+            return errors
+
+        for path in changed_files:
+            if not self._path_is_allowlisted(path, allowlist):
+                errors.append(
+                    "Changed-files audit found out-of-allowlist path: "
+                    f"{path}. Amend the OBPI or revert the change."
+                )
+        return errors
+
+    def _path_is_allowlisted(self, path: str, allowlist: list[str]) -> bool:
+        """Return True when a changed path matches an allowed path pattern."""
+        for pattern in allowlist:
+            normalized = pattern.replace("\\", "/")
+            if normalized.endswith("/**"):
+                prefix = normalized[: -len("/**")]
+                if path == prefix or path.startswith(prefix + "/"):
+                    return True
+            if fnmatch(path, normalized):
+                return True
+        return False
+
     def _is_foundation_series(self, adr_id: str) -> bool:
         """Return True if the ADR belongs to the 0.0.x foundation series."""
         return bool(re.match(r"^ADR-0\.0\.\d+", adr_id))
+
+    def _section_body(self, content: str, heading: str) -> str | None:
+        """Return the body of an H2/H3 section when present."""
+        for marker in ("##", "###"):
+            pattern = (
+                rf"^{re.escape(marker)} {re.escape(heading)}\s*$"
+                rf"([\s\S]*?)(?:^{marker} |\n---|\Z)"
+            )
+            match = re.search(pattern, content, flags=re.MULTILINE)
+            if match:
+                body = match.group(1).strip()
+                if body:
+                    return body
+        return None
 
     def _is_placeholder(self, text: str) -> bool:
         """Return True if text consists only of placeholder tokens."""
@@ -100,59 +201,42 @@ class ObpiValidator:
             return False
 
         section = match.group(1)
-        # Look for bullet points with content
         bullets = re.findall(r"^- [^:\n]+:[ \t]*(.+)$", section, flags=re.MULTILINE)
         if not bullets:
-            # Fallback to simple bullets if no key:value pairs
             bullets = re.findall(r"^- \s*(.+)$", section, flags=re.MULTILINE)
 
         substantive_count = 0
-        for b in bullets:
-            if not self._is_placeholder(b):
+        for bullet in bullets:
+            if not self._is_placeholder(bullet):
                 substantive_count += 1
 
         return substantive_count > 0
 
     def _has_substantive_section(self, content: str, section_name: str) -> bool:
         """Check if a specific section has substantive content beyond the header."""
-        pattern = rf"^## {re.escape(section_name)}\s*$([\s\S]*?)(?:^## |\n---|\Z)"
-        match = re.search(pattern, content, flags=re.MULTILINE)
-        if not match:
-            # Try H3
-            pattern = rf"^### {re.escape(section_name)}\s*$([\s\S]*?)(?:^### |\n---|\Z)"
-            match = re.search(pattern, content, flags=re.MULTILINE)
-
-        if not match:
+        body = self._section_body(content, section_name)
+        if body is None:
             return False
-
-        body = match.group(1).strip()
         return not self._is_placeholder(body)
 
     def _validate_human_attestation(self, content: str) -> list[str]:
         """Validate the existence and content of the human attestation block."""
         errors = []
 
-        # Check for Human Attestation Section
-        pattern = r"^## Human Attestation\s*$([\s\S]*?)(?:^## |\n---|\Z)"
-        match = re.search(pattern, content, flags=re.MULTILINE)
-        if not match:
+        body = self._section_body(content, "Human Attestation")
+        if body is None:
             return ["Heavy/Foundation OBPI requires a '## Human Attestation' section."]
 
-        body = match.group(1)
-
-        # Validate Attestor
         attestor_match = re.search(r"^- Attestor:\s*(.+)$", body, flags=re.MULTILINE)
         if not attestor_match or not attestor_match.group(1).lower().startswith("human:"):
             errors.append("Human attestation block requires 'Attestor: human:<name>'.")
         elif self._is_placeholder(attestor_match.group(1).partition(":")[2]):
             errors.append("Human attestor name cannot be a placeholder.")
 
-        # Validate Attestation Text
         attestation_match = re.search(r"^- Attestation:\s*(.+)$", body, flags=re.MULTILINE)
         if not attestation_match or self._is_placeholder(attestation_match.group(1)):
             errors.append("Human attestation block requires substantive 'Attestation' text.")
 
-        # Validate Date
         date_match = re.search(r"^- Date:\s*(\d{4}-\d{2}-\d{2})$", body, flags=re.MULTILINE)
         if not date_match:
             errors.append("Human attestation block requires 'Date: YYYY-MM-DD'.")
