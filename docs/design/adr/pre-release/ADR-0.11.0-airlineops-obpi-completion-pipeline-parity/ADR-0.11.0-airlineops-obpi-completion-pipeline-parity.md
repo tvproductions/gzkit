@@ -113,9 +113,9 @@ This ADR extends existing gzkit work rather than replacing it:
 
 ## Checklist
 
-- [ ] OBPI-0.11.0-01: Define the OBPI transaction contract, scope isolation
+- [x] OBPI-0.11.0-01: Define the OBPI transaction contract, scope isolation
       rules, and parallel-safe execution doctrine.
-- [ ] OBPI-0.11.0-02: Deliver the blocking completion validator pipeline with
+- [x] OBPI-0.11.0-02: Deliver the blocking completion validator pipeline with
       changed-files audit and git-sync enforcement.
 - [ ] OBPI-0.11.0-03: Deliver recorder and receipt semantics for git-anchored
       OBPI completion evidence.
