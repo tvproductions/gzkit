@@ -82,3 +82,6 @@ This pool ADR can be promoted when all are true:
   discipline in the Nate B. Jones readiness framing.
 - BEADS informs dependency/ready queue behavior.
 - Plumb informs requirement-proof edges that participate in readiness decisions.
+- It also aligns with [12-factor-agents](https://github.com/humanlayer/12-factor-agents),
+  especially Factor 5 (unify execution state and business state) and Factor 12
+  (make your agent a stateless reducer).

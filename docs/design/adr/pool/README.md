@@ -51,7 +51,11 @@ uv run gz adr promote ADR-pool.<slug> --semver X.Y.Z [--dry-run]
 | [ADR-pool.storage-simplicity-profile](ADR-pool.storage-simplicity-profile.md) | Runtime posture | Waiting | ADR-0.0.2-stdlib-cli-and-agent-sync |
 | [ADR-pool.execution-memory-graph](ADR-pool.execution-memory-graph.md) | Runtime execution memory | Waiting | ADR-pool.storage-simplicity-profile, ADR-0.7.0-obpi-first-operations |
 | [ADR-pool.prime-context-hooks](ADR-pool.prime-context-hooks.md) | CLI+hooks context runtime | Waiting | ADR-pool.execution-memory-graph |
+| [ADR-pool.obpi-pipeline-runtime-surface](ADR-pool.obpi-pipeline-runtime-surface.md) | First-class launch/resume runtime for OBPI execution | Waiting | ADR-0.11.0-airlineops-obpi-completion-pipeline-parity |
+| [ADR-pool.pause-resume-handoff-runtime](ADR-pool.pause-resume-handoff-runtime.md) | Runtime pause/resume and handoff lifecycle | Waiting | ADR-pool.obpi-pipeline-runtime-surface |
 | [ADR-pool.obpi-pipeline-enforcement-parity](ADR-pool.obpi-pipeline-enforcement-parity.md) | AirlineOps-style hook enforcement for `gz-obpi-pipeline` | Waiting | ADR-0.11.0-airlineops-obpi-completion-pipeline-parity |
+| [ADR-pool.structured-blocker-envelopes](ADR-pool.structured-blocker-envelopes.md) | Machine-readable blocker and retry envelopes | Waiting | ADR-0.10.0-obpi-runtime-surface |
+| [ADR-pool.channel-agnostic-human-triggers](ADR-pool.channel-agnostic-human-triggers.md) | Transport-independent approval and attestation events | Waiting | ADR-pool.pause-resume-handoff-runtime |
 | [ADR-pool.airlineops-surface-breadth-parity](ADR-pool.airlineops-surface-breadth-parity.md) | Canonical `.claude/**` + `.gzkit/**` breadth parity | Waiting | ADR-0.3.0-airlineops-canon-reconciliation |
 | [ADR-pool.spec-triangle-sync](ADR-pool.spec-triangle-sync.md) | Spec-test-code process synchronization | Waiting | ADR-0.7.0-obpi-first-operations, ADR-pool.execution-memory-graph |
 | [ADR-pool.tests-for-spec](ADR-pool.tests-for-spec.md) | Requirement-level test traceability | Waiting | ADR-pool.spec-triangle-sync |
@@ -112,7 +116,11 @@ PRD-GZKIT-1.0.0
 ├── [ADR-0.7.0](../pre-release/ADR-0.7.0-obpi-first-operations/ADR-0.7.0-obpi-first-operations.md) (OBPI-first governance track) ← Active
 ├── ADR-pool.execution-memory-graph (Typed runtime execution memory)
 ├── ADR-pool.prime-context-hooks (Dynamic runtime context via hooks)
+├── ADR-pool.obpi-pipeline-runtime-surface (First-class OBPI pipeline command/runtime)
+├── ADR-pool.pause-resume-handoff-runtime (Pause/resume and handoff lifecycle runtime)
 ├── ADR-pool.obpi-pipeline-enforcement-parity (Hook-enforced OBPI pipeline path parity)
+├── ADR-pool.structured-blocker-envelopes (Machine-readable blocker envelopes)
+├── ADR-pool.channel-agnostic-human-triggers (Transport-independent human approvals)
 ├── [ADR-0.10.0](../pre-release/ADR-0.10.0-obpi-runtime-surface/ADR-0.10.0-obpi-runtime-surface.md) (OBPI-native runtime surfaces) ← Active
 ├── ADR-pool.airlineops-surface-breadth-parity (Canonical `.claude/**` + `.gzkit/**` breadth parity)
 ├── ADR-pool.spec-triangle-sync (Spec-test-code synchronization process)
