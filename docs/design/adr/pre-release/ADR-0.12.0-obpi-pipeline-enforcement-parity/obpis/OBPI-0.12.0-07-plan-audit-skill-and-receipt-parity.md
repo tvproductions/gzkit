@@ -3,7 +3,7 @@ id: OBPI-0.12.0-07-plan-audit-skill-and-receipt-parity
 parent: ADR-0.12.0-obpi-pipeline-enforcement-parity
 item: 7
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.12.0-07-plan-audit-skill-and-receipt-parity: Plan-audit skill and receipt parity
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.12.0-obpi-pipeline-enforcement-parity/ADR-0.12.0-obpi-pipeline-enforcement-parity.md`
 - **Checklist Item:** #7 - "OBPI-0.12.0-07: Port `gz-plan-audit` and the receipt-generation contract consumed by the plan-exit gate and pipeline router."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -126,7 +126,7 @@ the receipt contract that later hook OBPIs consume.
 
 ### Gate 5: Human (Heavy only)
 
-- [ ] Human attestation recorded
+- [x] Human attestation recorded
 
 ## Verification
 
@@ -158,7 +158,7 @@ uv run -m behave features/
 - [x] **Code Quality:** Lint, format, type checks clean
 - [x] **Value Narrative:** Problem-before vs capability-now is documented
 - [x] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -272,7 +272,7 @@ Took 0min 0.259s
 ### Gate 5 (Human)
 
 ```text
-# Pending human attestation
+Human attestation received on 2026-03-12: "attest completed"
 ```
 
 ## Value Narrative
@@ -286,10 +286,14 @@ story distinguishes manual audit use from still-pending blocking enforcement.
 
 ## Key Proof
 
-Canonical skill target:
-
 ```text
-.gzkit/skills/gz-plan-audit/SKILL.md
+$ uv run gz skill audit --json
+{
+  "valid": true,
+  "checked_skills": 48,
+  "issues": [],
+  "success": true
+}
 ```
 
 ### Implementation Summary
@@ -304,21 +308,21 @@ Canonical skill target:
 - Tests added: none; this tranche ports a governance skill surface and verifies
   it via control-surface sync plus repo quality gates
 - Date completed: 2026-03-12
-- Attestation status: pending
+- Attestation status: human attestation recorded and completion receipt emitted
 - Defects noted: none currently; if runtime hook import slips behind the ported
   skill, the remaining gap stays tracked by `OBPI-0.12.0-02`,
   `OBPI-0.12.0-03`, and `OBPI-0.12.0-06`
 
 ## Human Attestation
 
-- Attestor: `human:<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: human:jeff
+- Attestation: attest completed
+- Date: 2026-03-12
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-12
 
 **Evidence Hash:** -
