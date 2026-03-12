@@ -272,7 +272,7 @@ Took 0min 0.259s
 ### Gate 5 (Human)
 
 ```text
-Human attestation received on 2026-03-12: "attest completed"
+Human attestation received on 2026-03-12: "attest completed for obpi-0.12.0-07"
 ```
 
 ## Value Narrative
@@ -308,7 +308,7 @@ $ uv run gz skill audit --json
 - Tests added: none; this tranche ports a governance skill surface and verifies
   it via control-surface sync plus repo quality gates
 - Date completed: 2026-03-12
-- Attestation status: human attestation recorded and completion receipt emitted
+- Attestation status: human re-attestation recorded and completion receipt re-emitted after drift repair
 - Defects noted: none currently; if runtime hook import slips behind the ported
   skill, the remaining gap stays tracked by `OBPI-0.12.0-02`,
   `OBPI-0.12.0-03`, and `OBPI-0.12.0-06`
@@ -316,7 +316,7 @@ $ uv run gz skill audit --json
 ## Human Attestation
 
 - Attestor: human:jeff
-- Attestation: attest completed
+- Attestation: attest completed for obpi-0.12.0-07
 - Date: 2026-03-12
 
 ---

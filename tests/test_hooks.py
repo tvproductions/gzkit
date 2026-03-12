@@ -2,6 +2,8 @@
 
 import json
 import os
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -144,6 +146,7 @@ class TestSetupClaudeHooks(unittest.TestCase):
             hooks_dir = project_root / ".claude" / "hooks"
             instruction_router = hooks_dir / "instruction-router.py"
             post_edit_ruff = hooks_dir / "post-edit-ruff.py"
+            plan_audit_gate = hooks_dir / "plan-audit-gate.py"
             ledger_writer = hooks_dir / "ledger-writer.py"
             readme = hooks_dir / "README.md"
             settings_path = project_root / ".claude" / "settings.json"
@@ -151,6 +154,7 @@ class TestSetupClaudeHooks(unittest.TestCase):
             for path in (
                 instruction_router,
                 post_edit_ruff,
+                plan_audit_gate,
                 ledger_writer,
                 readme,
                 settings_path,
@@ -159,6 +163,7 @@ class TestSetupClaudeHooks(unittest.TestCase):
 
             self.assertIn(".claude/hooks/instruction-router.py", created)
             self.assertIn(".claude/hooks/post-edit-ruff.py", created)
+            self.assertIn(".claude/hooks/plan-audit-gate.py", created)
             self.assertIn(".claude/hooks/ledger-writer.py", created)
             self.assertIn(".claude/hooks/README.md", created)
             self.assertIn(".claude/settings.json", created)
@@ -179,8 +184,176 @@ class TestSetupClaudeHooks(unittest.TestCase):
             readme_text = readme.read_text(encoding="utf-8")
             self.assertIn("Current hook surface in gzkit:", readme_text)
             self.assertIn("hook that auto-surfaces", readme_text)
+            self.assertIn("plan-audit-gate.py", readme_text)
+            self.assertIn("not yet active in", readme_text)
             self.assertIn("hook that runs `ruff check --fix`", readme_text)
             self.assertIn("hook that records governance", readme_text)
+
+
+class TestPlanAuditGateHook(unittest.TestCase):
+    """Tests for the generated plan-audit gate script."""
+
+    def _create_hook(self, project_root: Path) -> Path:
+        config = GzkitConfig(project_name="gzkit-test")
+        setup_claude_hooks(project_root, config)
+        return project_root / ".claude" / "hooks" / "plan-audit-gate.py"
+
+    def _run_hook(self, script_path: Path, cwd: Path) -> subprocess.CompletedProcess[str]:
+        payload = {"cwd": str(cwd)}
+        return subprocess.run(
+            [sys.executable, str(script_path)],
+            input=json.dumps(payload),
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+
+    def _write_plan(self, plans_dir: Path, name: str, content: str) -> Path:
+        plans_dir.mkdir(parents=True, exist_ok=True)
+        plan_path = plans_dir / name
+        plan_path.write_text(content, encoding="utf-8")
+        return plan_path
+
+    def _write_receipt(self, plans_dir: Path, *, obpi_id: str, verdict: str) -> Path:
+        receipt_path = plans_dir / ".plan-audit-receipt.json"
+        receipt_path.write_text(
+            json.dumps(
+                {
+                    "obpi_id": obpi_id,
+                    "timestamp": "2026-03-12T12:00:00Z",
+                    "verdict": verdict,
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        return receipt_path
+
+    def test_allows_when_plans_dir_is_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            script_path = self._create_hook(project_root)
+
+            result = self._run_hook(script_path, project_root)
+
+            self.assertEqual(result.returncode, 0)
+            self.assertEqual(result.stderr, "")
+
+    def test_allows_when_latest_plan_has_no_obpi(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            script_path = self._create_hook(project_root)
+            plans_dir = project_root / ".claude" / "plans"
+            self._write_plan(plans_dir, "notes.md", "Plan for docs cleanup only\n")
+
+            result = self._run_hook(script_path, project_root)
+
+            self.assertEqual(result.returncode, 0)
+
+    def test_blocks_when_obpi_plan_has_no_receipt(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            script_path = self._create_hook(project_root)
+            plans_dir = project_root / ".claude" / "plans"
+            self._write_plan(plans_dir, "active.md", "Implement OBPI-0.12.0-02\n")
+
+            result = self._run_hook(script_path, project_root)
+
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("BLOCKED: Cannot exit plan mode - plan audit required.", result.stderr)
+            self.assertIn("/gz-plan-audit OBPI-0.12.0-02", result.stderr)
+
+    def test_allows_when_matching_pass_receipt_is_newer_than_plan(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            script_path = self._create_hook(project_root)
+            plans_dir = project_root / ".claude" / "plans"
+            plan_path = self._write_plan(plans_dir, "active.md", "Implement OBPI-0.12.0-02\n")
+            receipt_path = self._write_receipt(plans_dir, obpi_id="OBPI-0.12.0-02", verdict="PASS")
+            os.utime(plan_path, (1_700_000_000, 1_700_000_000))
+            os.utime(receipt_path, (1_700_000_100, 1_700_000_100))
+
+            result = self._run_hook(script_path, project_root)
+
+            self.assertEqual(result.returncode, 0)
+
+    def test_allows_when_matching_fail_receipt_is_newer_than_plan(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            script_path = self._create_hook(project_root)
+            plans_dir = project_root / ".claude" / "plans"
+            plan_path = self._write_plan(plans_dir, "active.md", "Implement OBPI-0.12.0-02\n")
+            receipt_path = self._write_receipt(plans_dir, obpi_id="OBPI-0.12.0-02", verdict="FAIL")
+            os.utime(plan_path, (1_700_000_000, 1_700_000_000))
+            os.utime(receipt_path, (1_700_000_100, 1_700_000_100))
+
+            result = self._run_hook(script_path, project_root)
+
+            self.assertEqual(result.returncode, 0)
+
+    def test_blocks_when_receipt_is_older_than_plan(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            script_path = self._create_hook(project_root)
+            plans_dir = project_root / ".claude" / "plans"
+            plan_path = self._write_plan(plans_dir, "active.md", "Implement OBPI-0.12.0-02\n")
+            receipt_path = self._write_receipt(plans_dir, obpi_id="OBPI-0.12.0-02", verdict="PASS")
+            os.utime(receipt_path, (1_700_000_000, 1_700_000_000))
+            os.utime(plan_path, (1_700_000_100, 1_700_000_100))
+
+            result = self._run_hook(script_path, project_root)
+
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("Audit receipt is older than plan file", result.stderr)
+
+    def test_blocks_when_receipt_obpi_does_not_match(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            script_path = self._create_hook(project_root)
+            plans_dir = project_root / ".claude" / "plans"
+            plan_path = self._write_plan(plans_dir, "active.md", "Implement OBPI-0.12.0-02\n")
+            receipt_path = self._write_receipt(plans_dir, obpi_id="OBPI-0.12.0-07", verdict="PASS")
+            os.utime(plan_path, (1_700_000_000, 1_700_000_000))
+            os.utime(receipt_path, (1_700_000_100, 1_700_000_100))
+
+            result = self._run_hook(script_path, project_root)
+
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("Audit receipt is for OBPI-0.12.0-07", result.stderr)
+
+    def test_blocks_when_receipt_verdict_is_invalid(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            script_path = self._create_hook(project_root)
+            plans_dir = project_root / ".claude" / "plans"
+            plan_path = self._write_plan(plans_dir, "active.md", "Implement OBPI-0.12.0-02\n")
+            receipt_path = self._write_receipt(plans_dir, obpi_id="OBPI-0.12.0-02", verdict="MAYBE")
+            os.utime(plan_path, (1_700_000_000, 1_700_000_000))
+            os.utime(receipt_path, (1_700_000_100, 1_700_000_100))
+
+            result = self._run_hook(script_path, project_root)
+
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("invalid verdict", result.stderr)
+
+    def test_emits_prior_art_warning_without_blocking_valid_receipt(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            script_path = self._create_hook(project_root)
+            plans_dir = project_root / ".claude" / "plans"
+            plan_path = self._write_plan(
+                plans_dir,
+                "active.md",
+                "Create `src/new_module.py` for OBPI-0.12.0-02 without prior pattern notes\n",
+            )
+            receipt_path = self._write_receipt(plans_dir, obpi_id="OBPI-0.12.0-02", verdict="PASS")
+            os.utime(plan_path, (1_700_000_000, 1_700_000_000))
+            os.utime(receipt_path, (1_700_000_100, 1_700_000_100))
+
+            result = self._run_hook(script_path, project_root)
+
+            self.assertEqual(result.returncode, 0)
+            self.assertIn("PRIOR ART REMINDER", result.stderr)
 
 
 if __name__ == "__main__":
