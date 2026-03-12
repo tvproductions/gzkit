@@ -3,7 +3,7 @@ id: OBPI-0.12.0-02-plan-exit-audit-gate-parity
 parent: ADR-0.12.0-obpi-pipeline-enforcement-parity
 item: 2
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.12.0-02-plan-exit-audit-gate-parity: Plan-exit audit gate parity
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.12.0-obpi-pipeline-enforcement-parity/ADR-0.12.0-obpi-pipeline-enforcement-parity.md`
 - **Checklist Item:** #2 - "OBPI-0.12.0-02: Port the plan-exit audit gate with gzkit-compatible blocking behavior."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -121,7 +121,7 @@ future Claude hook orchestration.
 
 ### Gate 5: Human (Heavy only)
 
-- [ ] Human attestation recorded
+- [x] Human attestation recorded
 
 ## Verification
 
@@ -153,7 +153,7 @@ uv run -m behave features/
 - [x] **Code Quality:** Lint, format, type checks clean
 - [x] **Value Narrative:** Problem-before vs capability-now is documented
 - [x] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -242,7 +242,7 @@ Took 0min 0.318s
 ### Gate 5 (Human)
 
 ```text
-# Pending human attestation
+Human attestation received on 2026-03-12: "attest completed"
 ```
 
 ## Value Narrative
@@ -270,20 +270,20 @@ Direct hook target:
   - ADR package files in this tranche
 - Tests added: direct plan-audit gate behavior coverage in `tests/test_hooks.py`
 - Date completed: 2026-03-12
-- Attestation status: pending
+- Attestation status: human attestation recorded and completion receipt emitted
 - Defects noted: none currently; final settings registration remains tracked by
   `OBPI-0.12.0-06`
 
 ## Human Attestation
 
-- Attestor: `human:<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: human:jeff
+- Attestation: attest completed
+- Date: 2026-03-12
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-12
 
 **Evidence Hash:** -
