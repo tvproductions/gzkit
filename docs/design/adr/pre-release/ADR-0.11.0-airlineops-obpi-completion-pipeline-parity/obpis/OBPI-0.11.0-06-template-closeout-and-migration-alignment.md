@@ -3,7 +3,7 @@ id: OBPI-0.11.0-06-template-closeout-and-migration-alignment
 parent: ADR-0.11.0-airlineops-obpi-completion-pipeline-parity
 item: 6
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.11.0-06-template-closeout-and-migration-alignment: Template, closeout, and migration alignment
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.11.0-airlineops-obpi-completion-pipeline-parity/ADR-0.11.0-airlineops-obpi-completion-pipeline-parity.md`
 - **Checklist Item:** #6 -- "Align templates, closeout guidance, and operator docs to the faithful AirlineOps completion pipeline."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -79,31 +79,31 @@ Heavy, so human attestation still applies at closeout by inheritance.
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this brief
-- [ ] Parent ADR checklist item quoted
+- [x] Intent and scope recorded in this brief
+- [x] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] Validation commands pass for updated docs/surfaces
-- [ ] Tests pass: `uv run gz test`
+- [x] Validation commands pass for updated docs/surfaces
+- [x] Tests pass: `uv run gz test`
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 ### Gate 3: Docs (Heavy only)
 
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs and templates updated
+- [x] Docs build: `uv run mkdocs build --strict`
+- [x] Relevant docs and templates updated
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
+- [x] Acceptance scenarios pass: `uv run -m behave features/`
 
 ### Gate 5: Human (Parent Heavy inheritance)
 
-- [ ] Human attestation recorded
+- [x] Human attestation recorded
 
 ## Verification
 
@@ -130,7 +130,7 @@ uv run -m behave features/
 - [x] **Code Quality:** Lint and type checks clean
 - [x] **Value Narrative:** Problem-before vs capability-now is documented
 - [x] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Awaiting human attestation and completion receipt
+- [x] **OBPI Acceptance:** Human attestation recorded and completion ready
 
 ## Evidence
 
@@ -209,8 +209,7 @@ Took 0min 0.252s
 ### Gate 5 (Human)
 
 ```text
-Pending. Parent ADR is Heavy, so final brief completion and receipt emission
-remain gated on explicit human attestation.
+Human attestation received on 2026-03-12: "attest completed"
 ```
 
 ## Value Narrative
@@ -246,14 +245,20 @@ generated surface directly.
 
 - Files created/modified: `docs/governance/GovZero/charter.md`, `docs/user/concepts/lanes.md`, `docs/user/concepts/workflow.md`, `docs/user/concepts/lifecycle.md`, `docs/user/concepts/closeout.md`, `docs/user/runbook.md`, `docs/user/commands/index.md`, `src/gzkit/templates/obpi.md`, `src/gzkit/templates/agents.md`, `src/gzkit/templates/claude.md`, `src/gzkit/sync.py`, `src/gzkit/cli.py`, `.gzkit/skills/gz-obpi-pipeline/SKILL.md`, `.gzkit/skills/gz-obpi-brief/assets/OBPI_BRIEF-template.md`, `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, `.gzkit/manifest.json`, `docs/design/adr/pre-release/ADR-0.7.0-obpi-first-operations/ADR-0.7.0-obpi-first-operations.md`, `docs/design/adr/pre-release/ADR-0.10.0-obpi-runtime-surface/ADR-0.10.0-obpi-runtime-surface.md`, and regenerated mirror/control-surface files under `.agents/`, `.claude/`, and `.github/`
 - Tests added: updated `tests/test_sync.py`, updated `tests/test_validate.py`, updated `features/heavy_lane_gate4.feature`
-- Date completed: implementation verified 2026-03-12; completion pending attestation
-- Attestation status: pending parent-ADR human attestation
+- Date completed: 2026-03-12
+- Attestation status: human attestation recorded
 - Defects noted: none
+
+## Human Attestation
+
+- Attestor: human:jeff
+- Attestation: attest completed
+- Date: 2026-03-12
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** —
+**Date Completed:** 2026-03-12
 
-**Evidence Hash:** —
+**Evidence Hash:** 808cd95
