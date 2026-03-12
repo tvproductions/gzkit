@@ -3,7 +3,7 @@ id: OBPI-0.11.0-05-gz-obpi-pipeline-skill-and-mirror-surface
 parent: ADR-0.11.0-airlineops-obpi-completion-pipeline-parity
 item: 5
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.11.0-05-gz-obpi-pipeline-skill-and-mirror-surface: Gz obpi pipeline skill and mirror surface
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.11.0-airlineops-obpi-completion-pipeline-parity/ADR-0.11.0-airlineops-obpi-completion-pipeline-parity.md`
 - **Checklist Item:** #5 -- "Port the `gz-obpi-pipeline` skill into `.gzkit` and sync mirror control surfaces."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -60,21 +60,21 @@ how OBPI work is carried out across agents.
 
 **Governance (read once, cache):**
 
-- [ ] `AGENTS.md`
-- [ ] Parent ADR: `docs/design/adr/pre-release/ADR-0.11.0-airlineops-obpi-completion-pipeline-parity/ADR-0.11.0-airlineops-obpi-completion-pipeline-parity.md`
+- [x] `AGENTS.md`
+- [x] Parent ADR: `docs/design/adr/pre-release/ADR-0.11.0-airlineops-obpi-completion-pipeline-parity/ADR-0.11.0-airlineops-obpi-completion-pipeline-parity.md`
 
 **Context:**
 
-- [ ] `../airlineops/.claude/skills/gz-obpi-pipeline/SKILL.md`
-- [ ] `.gzkit/skills/gz-obpi-audit/SKILL.md`
-- [ ] `.gzkit/skills/gz-obpi-sync/SKILL.md`
-- [ ] `.gzkit/skills/gz-session-handoff/SKILL.md`
-- [ ] `docs/governance/GovZero/session-handoff-obligations.md`
+- [x] `../airlineops/.claude/skills/gz-obpi-pipeline/SKILL.md`
+- [x] `.gzkit/skills/gz-obpi-audit/SKILL.md`
+- [x] `.gzkit/skills/gz-obpi-sync/SKILL.md`
+- [x] `.gzkit/skills/gz-session-handoff/SKILL.md`
+- [x] `docs/governance/GovZero/session-handoff-obligations.md`
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Canonical skill root exists: `.gzkit/skills/`
-- [ ] Mirror sync surface exists: `uv run gz agent sync control-surfaces`
+- [x] Canonical skill root exists: `.gzkit/skills/`
+- [x] Mirror sync surface exists: `uv run gz agent sync control-surfaces`
 
 ## Quality Gates
 
@@ -104,7 +104,7 @@ how OBPI work is carried out across agents.
 
 ### Gate 5: Human (Heavy only)
 
-- [ ] Human attestation recorded
+- [x] Human attestation recorded
 
 ## Verification
 
@@ -120,18 +120,18 @@ uv run -m behave features/
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.11.0-05-01: `.gzkit/skills/gz-obpi-pipeline/SKILL.md` exists and defines the staged OBPI execution flow.
-- [ ] REQ-0.11.0-05-02: Mirror skill surfaces are synchronized and reference the same staged pipeline contract.
-- [ ] REQ-0.11.0-05-03: The skill preserves evidence presentation, attestation, and sync stages as first-class steps.
+- [x] REQ-0.11.0-05-01: `.gzkit/skills/gz-obpi-pipeline/SKILL.md` exists and defines the staged OBPI execution flow.
+- [x] REQ-0.11.0-05-02: Mirror skill surfaces are synchronized and reference the same staged pipeline contract.
+- [x] REQ-0.11.0-05-03: The skill preserves evidence presentation, attestation, and sync stages as first-class steps.
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests and validation commands pass
-- [ ] **Code Quality:** Lint and type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests and validation commands pass
+- [x] **Code Quality:** Lint and type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 ## Evidence
 
@@ -145,19 +145,33 @@ uv run -m behave features/
 $ uv run gz agent sync control-surfaces
 Syncing control surfaces...
   Updated .agents/skills/gz-obpi-pipeline/SKILL.md
+  Updated .claude/hooks/README.md
+  Updated .claude/hooks/instruction-router.py
+  Updated .claude/hooks/ledger-writer.py
+  Updated .claude/hooks/post-edit-ruff.py
+  Updated .claude/settings.json
   Updated .claude/skills/gz-obpi-pipeline/SKILL.md
+  Updated .copilotignore
+  Updated .github/copilot-instructions.md
+  Updated .github/copilot/hooks/ledger-writer.py
+  Updated .github/discovery-index.json
   Updated .github/skills/gz-obpi-pipeline/SKILL.md
+  Updated .gzkit/manifest.json
   Updated AGENTS.md
   Updated CLAUDE.md
-  Updated .github/copilot-instructions.md
+
 Sync complete.
 
 $ uv run gz validate --documents
 All validations passed.
 
 $ uv run gz test
-Ran 334 tests in 4.504s
+Running tests...
+Ran 349 tests in 7.990s
+
 OK
+
+Tests passed.
 ```
 
 ### Code Quality
@@ -166,12 +180,14 @@ OK
 $ uv run gz lint
 Running linters...
 All checks passed!
+
 ADR path contract check passed.
 Lint passed.
 
 $ uv run gz typecheck
 Running type checker...
 All checks passed!
+
 Type check passed.
 ```
 
@@ -179,17 +195,35 @@ Type check passed.
 
 ```text
 $ uv run mkdocs build --strict
-INFO    -  Documentation built in 0.75 seconds
+INFO    -  Cleaning site directory
+INFO    -  Building documentation to directory: /Users/jeff/Documents/Code/gzkit/site
+INFO    -  Documentation built in 0.76 seconds
 ```
 
 ### Gate 4 (BDD)
 
 ```text
 $ uv run -m behave features/
-1 feature passed, 0 failed, 0 skipped
-3 scenarios passed, 0 failed, 0 skipped
-16 steps passed, 0 failed, 0 skipped
+2 features passed, 0 failed, 0 skipped
+5 scenarios passed, 0 failed, 0 skipped
+27 steps passed, 0 failed, 0 skipped
+Took 0min 0.212s
 ```
+
+### Gate 5 (Human)
+
+```text
+Human attestation received on 2026-03-12: "I'll attest completed"
+```
+
+## Value Narrative
+
+Before this tranche, gzkit had a canonical `gz-obpi-pipeline` skill, but the
+post-attestation closeout order still allowed completion accounting to be
+captured from a dirty or unsynced repository state. Now the pipeline contract
+is explicit across canon, mirrors, generated agent surfaces, and operator docs:
+guarded `git sync` runs before final completion receipt/accounting and the
+later brief/ADR reconciliation steps.
 
 ## Key Proof
 
@@ -197,7 +231,10 @@ $ uv run -m behave features/
 Canonical gzkit now contains `.gzkit/skills/gz-obpi-pipeline/SKILL.md`, and the
 same staged pipeline contract is mirrored into `.agents/skills/`,
 `.claude/skills/`, and `.github/skills/` by `uv run gz agent sync control-surfaces`.
-Parity evidence for this tranche is recorded in:
+The generated operator contract in `AGENTS.md` now states that the pipeline
+enforces `verify -> ceremony -> guarded git sync -> completion accounting`, and
+the Gate 4 scenario in `features/heavy_lane_gate4.feature` asserts that wording
+explicitly. Parity evidence for this tranche is recorded in:
 
 - `docs/proposals/REPORT-airlineops-parity-2026-03-11.md`
 - `docs/proposals/REPORT-airlineops-govzero-mining-2026-03-11.md`
@@ -207,28 +244,39 @@ Parity evidence for this tranche is recorded in:
 
 - Files created/modified:
   - `.gzkit/skills/gz-obpi-pipeline/SKILL.md`
+  - `.agents/skills/gz-obpi-pipeline/SKILL.md`
+  - `.claude/skills/gz-obpi-pipeline/SKILL.md`
+  - `.github/skills/gz-obpi-pipeline/SKILL.md`
   - `src/gzkit/templates/agents.md`
   - `src/gzkit/templates/claude.md`
   - `src/gzkit/templates/copilot.md`
-  - `docs/governance/governance_runbook.md`
-  - `docs/user/concepts/workflow.md`
-  - `docs/user/runbook.md`
-  - `docs/proposals/REPORT-airlineops-parity-2026-03-11.md`
-  - `docs/proposals/REPORT-airlineops-govzero-mining-2026-03-11.md`
+  - `AGENTS.md`
+  - `CLAUDE.md`
+  - `.github/copilot-instructions.md`
+  - `docs/governance/GovZero/obpi-transaction-contract.md`
+  - `docs/governance/GovZero/obpi-runtime-contract.md`
+  - `docs/governance/GovZero/validation-receipts.md`
+  - `docs/user/commands/git-sync.md`
+  - `docs/user/commands/index.md`
+  - `docs/user/commands/obpi-emit-receipt.md`
+  - `tests/test_sync.py`
+  - `features/heavy_lane_gate4.feature`
+  - `features/steps/gz_steps.py`
   - mirrored skill/control-surface files regenerated via `gz agent sync control-surfaces`
-- Tests added: none
-- Date completed: 2026-03-11
-- Attestation status: pending human review for Heavy-lane completion
+- Tests added:
+  - `tests/test_sync.py::test_sync_generated_surfaces_include_guarded_git_sync_pipeline_contract`
+  - `features/heavy_lane_gate4.feature` scenario asserting generated pipeline guidance
+- Date completed: 2026-03-12
+- Attestation status: human attestation recorded
 - Defects noted:
-  - `gz-obpi-lock` parity is still missing; pipeline currently fails closed for
-    concurrent/shared-scope execution instead of claiming support.
-  - plan-audit hook parity is still missing; the pipeline can consume a receipt
-    if present but gzkit does not yet generate the AirlineOps receipt surface.
+  - `gz-obpi-lock` parity is still missing; pipeline currently fails closed for concurrent/shared-scope execution instead of claiming support.
+  - plan-audit hook parity is still missing; the pipeline can consume a receipt if present but gzkit does not yet generate the AirlineOps receipt surface.
+  - lane doctrine may currently classify process/documentation surface changes more broadly than intended by the operator rule "Heavy only when APIs, commands, or other human/system-used runtime surfaces change"; carry this into OBPI-06 governance/template alignment.
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** —
+**Date Completed:** 2026-03-12
 
 **Evidence Hash:** —
