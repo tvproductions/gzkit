@@ -4,6 +4,31 @@
 
 _No unreleased entries._
 
+## v0.11.0 (2026-03-12)
+
+**ADR context:** `ADR-0.11.0-airlineops-obpi-completion-pipeline-parity`
+**Release scope:** Faithful AirlineOps OBPI completion pipeline parity across transaction, validation, receipt, reconciliation, and operator workflow surfaces.
+
+### Delivered
+
+- Defined the OBPI transaction contract and fail-closed scope-isolation rules for gzkit.
+- Added guarded completion validation, structured completion receipts, and anchor-aware OBPI reconciliation.
+- Ported the canonical `gz-obpi-pipeline` skill and synchronized mirrored/generated control surfaces.
+- Aligned doctrine, templates, operator workflow docs, and closeout guidance to the same staged pipeline contract.
+
+### Gate Evidence
+
+All 5 GovZero gates satisfied for `ADR-0.11.0-airlineops-obpi-completion-pipeline-parity`.
+
+### Verification
+
+- `uv run gz adr status ADR-0.11.0-airlineops-obpi-completion-pipeline-parity --json`
+- `uv run gz obpi reconcile OBPI-0.11.0-06-template-closeout-and-migration-alignment --json`
+- `uv run gz closeout ADR-0.11.0-airlineops-obpi-completion-pipeline-parity`
+- `uv run gz attest ADR-0.11.0-airlineops-obpi-completion-pipeline-parity --status completed`
+- `uv run gz audit ADR-0.11.0-airlineops-obpi-completion-pipeline-parity`
+- `uv run gz adr emit-receipt ADR-0.11.0-airlineops-obpi-completion-pipeline-parity --event validated --attestor "human:jeff" --evidence-json ...`
+
 ## v0.10.0 (2026-03-10)
 
 **ADR context:** `ADR-0.10.0-obpi-runtime-surface`
