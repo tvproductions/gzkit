@@ -27,7 +27,9 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         lane: str = "Lite",
         key_proof: str = "uv run gz adr status ADR-0.1.0 --json",
         human_attestation: tuple[str, str, str] | None = None,
+        allowed_paths: list[str] | None = None,
     ) -> None:
+        allowlist = allowed_paths or [path.as_posix()]
         lines = [
             "---",
             "id: OBPI-0.1.0-01-demo",
@@ -40,6 +42,9 @@ class TestAdrRuntimeCommands(unittest.TestCase):
             "# OBPI-0.1.0-01-demo: Demo",
             "",
             f"**Brief Status:** {brief_status}",
+            "",
+            "## Allowed Paths",
+            *(f"- `{allowed_path}` - in scope" for allowed_path in allowlist),
             "",
             "## Evidence",
             "",
@@ -684,6 +689,72 @@ class TestAdrRuntimeCommands(unittest.TestCase):
             ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertIn('"obpi_completion":"attested_completed"', ledger_content)
             self.assertIn('"req_proof_inputs"', ledger_content)
+
+    def test_obpi_emit_receipt_completed_enriches_structured_receipt_context(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init", "--mode", "heavy"])
+            runner.invoke(main, ["plan", "0.1.0", "--lane", "heavy"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            self._write_obpi(
+                path=obpi_path,
+                status="Completed",
+                brief_status="Completed",
+                implementation_line=(
+                    "docs/design/adr/pre-release/ADR-0.1.0/obpis/OBPI-0.1.0-01-demo.md"
+                ),
+                lane="Heavy",
+                human_attestation=("human:jeff", "attest completed", "2026-03-11"),
+                allowed_paths=[obpi_path.as_posix()],
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            evidence_json = json.dumps(
+                {
+                    "value_narrative": ("manual completion now captures structured scope evidence"),
+                    "key_proof": "uv run gz obpi status OBPI-0.1.0-01-demo --json",
+                    "human_attestation": True,
+                    "attestation_text": "attest completed",
+                    "attestation_date": "2026-03-11",
+                }
+            )
+
+            result = runner.invoke(
+                main,
+                [
+                    "obpi",
+                    "emit-receipt",
+                    "OBPI-0.1.0-01-demo",
+                    "--event",
+                    "completed",
+                    "--attestor",
+                    "human:jeff",
+                    "--evidence-json",
+                    evidence_json,
+                ],
+            )
+
+            self.assertEqual(result.exit_code, 0)
+            entries = [
+                json.loads(line)
+                for line in Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8").splitlines()
+                if line
+            ]
+            receipt = [entry for entry in entries if entry["event"] == "obpi_receipt_emitted"][-1]
+            evidence = receipt["evidence"]
+            self.assertEqual(evidence["recorder_source"], "cli:obpi_emit_receipt")
+            self.assertEqual(evidence["scope_audit"]["allowlist"], [obpi_path.as_posix()])
+            self.assertIsInstance(evidence["scope_audit"]["changed_files"], list)
+            self.assertIsInstance(evidence["scope_audit"]["out_of_scope_files"], list)
+            self.assertIn("git_sync_state", evidence)
+            self.assertIn("recorder_warnings", evidence)
+            self.assertTrue(evidence["recorder_warnings"])
+            self.assertTrue(
+                any("Not a git repository." in warning for warning in evidence["recorder_warnings"])
+            )
+            self.assertNotIn("anchor", receipt)
 
     def test_obpi_emit_receipt_rejects_pool_linked_obpi(self) -> None:
         runner = CliRunner()

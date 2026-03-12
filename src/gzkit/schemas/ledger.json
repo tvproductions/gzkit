@@ -102,6 +102,53 @@
             },
             "parent_adr": { "type": "string", "min_length": 1 },
             "parent_lane": { "type": "string", "enum": ["lite", "heavy"] },
+            "scope_audit": {
+              "type": "object",
+              "properties": {
+                "allowlist": {
+                  "type": "array",
+                  "items": { "type": "string", "min_length": 1 }
+                },
+                "changed_files": {
+                  "type": "array",
+                  "items": { "type": "string", "min_length": 1 }
+                },
+                "out_of_scope_files": {
+                  "type": "array",
+                  "items": { "type": "string", "min_length": 1 }
+                }
+              }
+            },
+            "git_sync_state": {
+              "type": "object",
+              "properties": {
+                "branch": { "type": "string" },
+                "remote": { "type": "string" },
+                "head": { "type": "string" },
+                "remote_head": { "type": "string" },
+                "dirty": { "type": "boolean" },
+                "ahead": { "type": "integer", "min": 0 },
+                "behind": { "type": "integer", "min": 0 },
+                "diverged": { "type": "boolean" },
+                "actions": {
+                  "type": "array",
+                  "items": { "type": "string", "min_length": 1 }
+                },
+                "warnings": {
+                  "type": "array",
+                  "items": { "type": "string", "min_length": 1 }
+                },
+                "blockers": {
+                  "type": "array",
+                  "items": { "type": "string", "min_length": 1 }
+                }
+              }
+            },
+            "recorder_source": { "type": "string", "min_length": 1 },
+            "recorder_warnings": {
+              "type": "array",
+              "items": { "type": "string", "min_length": 1 }
+            },
             "req_proof_inputs": {
               "type": "array",
               "items": {

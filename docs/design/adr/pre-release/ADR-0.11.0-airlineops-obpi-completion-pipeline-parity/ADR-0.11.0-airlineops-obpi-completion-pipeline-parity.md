@@ -117,7 +117,7 @@ This ADR extends existing gzkit work rather than replacing it:
       rules, and parallel-safe execution doctrine.
 - [x] OBPI-0.11.0-02: Deliver the blocking completion validator pipeline with
       changed-files audit and git-sync enforcement.
-- [ ] OBPI-0.11.0-03: Deliver recorder and receipt semantics for git-anchored
+- [x] OBPI-0.11.0-03: Deliver recorder and receipt semantics for git-anchored
       OBPI completion evidence.
 - [ ] OBPI-0.11.0-04: Deliver anchor-aware OBPI drift detection and
       reconciliation surfaces.

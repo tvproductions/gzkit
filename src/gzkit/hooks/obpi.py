@@ -7,7 +7,7 @@ completion transitions.
 import re
 from fnmatch import fnmatch
 from pathlib import Path
-from typing import cast
+from typing import Any, cast
 
 from gzkit.config import GzkitConfig
 from gzkit.git_sync import assess_git_sync_readiness
@@ -26,6 +26,163 @@ STRICT_PLACEHOLDERS = {
     "paste lint/format/type check output here",
     "one-sentence concrete outcome",
 }
+
+
+def _section_body(content: str, heading: str) -> str | None:
+    """Return the body of an H2/H3 section when present."""
+    for marker in ("##", "###"):
+        pattern = (
+            rf"^{re.escape(marker)} {re.escape(heading)}\s*$"
+            rf"([\s\S]*?)(?:^{marker} |\n---|\Z)"
+        )
+        match = re.search(pattern, content, flags=re.MULTILINE)
+        if match:
+            body = match.group(1).strip()
+            if body:
+                return body
+    return None
+
+
+def extract_allowed_paths(content: str) -> list[str]:
+    """Extract normalized allowlist patterns from an OBPI brief."""
+    section = _section_body(content, "Allowed Paths")
+    if not section:
+        return []
+
+    patterns: list[str] = []
+    for line in section.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("-"):
+            continue
+
+        backticked = re.findall(r"`([^`]+)`", stripped)
+        candidates = backticked or [re.sub(r"^-+\s*", "", stripped).split(" - ", 1)[0]]
+        for candidate in candidates:
+            normalized = candidate.strip().replace("\\", "/")
+            if not normalized or " " in normalized:
+                continue
+            if normalized.endswith("/"):
+                normalized = normalized.rstrip("/") + "/**"
+            patterns.append(normalized)
+
+    return patterns
+
+
+def collect_changed_files(project_root: Path) -> list[str]:
+    """Return the live changed-file set for scope validation."""
+    files: set[str] = set()
+    commands = (
+        ("diff", "--name-only"),
+        ("diff", "--cached", "--name-only"),
+        ("ls-files", "--others", "--exclude-standard"),
+    )
+    for command in commands:
+        rc, output, _ = git_cmd(project_root, *command)
+        if rc != 0:
+            continue
+        for line in output.splitlines():
+            normalized = line.strip().replace("\\", "/")
+            if normalized:
+                files.add(normalized)
+    return sorted(files)
+
+
+def path_is_allowlisted(path: str, allowlist: list[str]) -> bool:
+    """Return True when a changed path matches an allowed path pattern."""
+    for pattern in allowlist:
+        normalized = pattern.replace("\\", "/")
+        if normalized.endswith("/**"):
+            prefix = normalized[: -len("/**")]
+            if path == prefix or path.startswith(prefix + "/"):
+                return True
+        if fnmatch(path, normalized):
+            return True
+    return False
+
+
+def build_scope_audit(project_root: Path, content: str) -> dict[str, list[str]]:
+    """Build a structured allowlist-vs-changed-files payload."""
+    allowlist = extract_allowed_paths(content)
+    changed_files = collect_changed_files(project_root)
+    out_of_scope_files = [
+        path for path in changed_files if not path_is_allowlisted(path, allowlist)
+    ]
+    return {
+        "allowlist": allowlist,
+        "changed_files": changed_files,
+        "out_of_scope_files": out_of_scope_files,
+    }
+
+
+def normalize_scope_audit(raw_scope_audit: Any) -> dict[str, list[str]] | None:
+    """Validate and normalize a structured scope-audit payload."""
+    if raw_scope_audit is None:
+        return None
+    if not isinstance(raw_scope_audit, dict):
+        return None
+
+    normalized: dict[str, list[str]] = {}
+    for field in ("allowlist", "changed_files", "out_of_scope_files"):
+        raw_value = raw_scope_audit.get(field)
+        if raw_value is None:
+            normalized[field] = []
+            continue
+        if not isinstance(raw_value, list):
+            return None
+        cleaned: list[str] = []
+        for item in raw_value:
+            if not isinstance(item, str) or not item.strip():
+                return None
+            cleaned.append(item.strip().replace("\\", "/"))
+        normalized[field] = cleaned
+    return normalized
+
+
+def normalize_git_sync_state(raw_state: Any) -> dict[str, Any] | None:
+    """Validate and normalize structured git-sync state."""
+    if raw_state is None:
+        return None
+    if not isinstance(raw_state, dict):
+        return None
+
+    normalized: dict[str, Any] = {}
+    optional_string_fields = ("branch", "remote", "head", "remote_head")
+    for field in optional_string_fields:
+        value = raw_state.get(field)
+        if value is None:
+            normalized[field] = None
+        elif isinstance(value, str):
+            normalized[field] = value.strip() or None
+        else:
+            return None
+
+    bool_fields = ("dirty", "diverged")
+    for field in bool_fields:
+        value = raw_state.get(field)
+        if not isinstance(value, bool):
+            return None
+        normalized[field] = value
+
+    int_fields = ("ahead", "behind")
+    for field in int_fields:
+        value = raw_state.get(field)
+        if not isinstance(value, int):
+            return None
+        normalized[field] = value
+
+    list_fields = ("actions", "warnings", "blockers")
+    for field in list_fields:
+        value = raw_state.get(field)
+        if not isinstance(value, list):
+            return None
+        cleaned: list[str] = []
+        for item in value:
+            if not isinstance(item, str) or not item.strip():
+                return None
+            cleaned.append(item.strip())
+        normalized[field] = cleaned
+
+    return normalized
 
 
 class ObpiValidator:
@@ -68,11 +225,11 @@ class ObpiValidator:
         parent_info = graph.get(self.ledger.canonicalize_id(parent_id), {})
         lane = resolve_adr_lane(parent_info, self.config.mode)
 
-        allowlist = self._allowed_paths(content)
+        allowlist = extract_allowed_paths(content)
         if not allowlist:
             errors.append("Missing or empty 'Allowed Paths' allowlist.")
         else:
-            changed_files = self._changed_files()
+            changed_files = collect_changed_files(self.project_root)
             errors.extend(self._validate_changed_files(changed_files, allowlist))
 
         readiness = assess_git_sync_readiness(self.project_root)
@@ -93,48 +250,6 @@ class ObpiValidator:
 
         return errors
 
-    def _allowed_paths(self, content: str) -> list[str]:
-        """Extract normalized allowlist patterns from the brief."""
-        section = self._section_body(content, "Allowed Paths")
-        if not section:
-            return []
-
-        patterns: list[str] = []
-        for line in section.splitlines():
-            stripped = line.strip()
-            if not stripped.startswith("-"):
-                continue
-
-            backticked = re.findall(r"`([^`]+)`", stripped)
-            candidates = backticked or [re.sub(r"^-+\s*", "", stripped).split(" - ", 1)[0]]
-            for candidate in candidates:
-                normalized = candidate.strip().replace("\\", "/")
-                if not normalized or " " in normalized:
-                    continue
-                if normalized.endswith("/"):
-                    normalized = normalized.rstrip("/") + "/**"
-                patterns.append(normalized)
-
-        return patterns
-
-    def _changed_files(self) -> list[str]:
-        """Return the live changed-file set for scope validation."""
-        files: set[str] = set()
-        commands = (
-            ("diff", "--name-only"),
-            ("diff", "--cached", "--name-only"),
-            ("ls-files", "--others", "--exclude-standard"),
-        )
-        for command in commands:
-            rc, output, _ = git_cmd(self.project_root, *command)
-            if rc != 0:
-                continue
-            for line in output.splitlines():
-                normalized = line.strip().replace("\\", "/")
-                if normalized:
-                    files.add(normalized)
-        return sorted(files)
-
     def _validate_changed_files(self, changed_files: list[str], allowlist: list[str]) -> list[str]:
         """Validate the live changed-file set against the allowlist."""
         errors: list[str] = []
@@ -146,24 +261,12 @@ class ObpiValidator:
             return errors
 
         for path in changed_files:
-            if not self._path_is_allowlisted(path, allowlist):
+            if not path_is_allowlisted(path, allowlist):
                 errors.append(
                     "Changed-files audit found out-of-allowlist path: "
                     f"{path}. Amend the OBPI or revert the change."
                 )
         return errors
-
-    def _path_is_allowlisted(self, path: str, allowlist: list[str]) -> bool:
-        """Return True when a changed path matches an allowed path pattern."""
-        for pattern in allowlist:
-            normalized = pattern.replace("\\", "/")
-            if normalized.endswith("/**"):
-                prefix = normalized[: -len("/**")]
-                if path == prefix or path.startswith(prefix + "/"):
-                    return True
-            if fnmatch(path, normalized):
-                return True
-        return False
 
     def _is_foundation_series(self, adr_id: str) -> bool:
         """Return True if the ADR belongs to the 0.0.x foundation series."""
@@ -171,17 +274,7 @@ class ObpiValidator:
 
     def _section_body(self, content: str, heading: str) -> str | None:
         """Return the body of an H2/H3 section when present."""
-        for marker in ("##", "###"):
-            pattern = (
-                rf"^{re.escape(marker)} {re.escape(heading)}\s*$"
-                rf"([\s\S]*?)(?:^{marker} |\n---|\Z)"
-            )
-            match = re.search(pattern, content, flags=re.MULTILINE)
-            if match:
-                body = match.group(1).strip()
-                if body:
-                    return body
-        return None
+        return _section_body(content, heading)
 
     def _is_placeholder(self, text: str) -> bool:
         """Return True if text consists only of placeholder tokens."""

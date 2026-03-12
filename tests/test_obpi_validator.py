@@ -1,11 +1,14 @@
+import io
 import json
 import os
 import shutil
 import subprocess
 import tempfile
 import unittest
+from contextlib import redirect_stderr
 from datetime import date
 from pathlib import Path
+from unittest.mock import patch
 
 from gzkit.hooks.core import record_artifact_edit
 from gzkit.hooks.obpi import ObpiValidator
@@ -268,11 +271,81 @@ status: {status}
         self.assertIsInstance(evidence, dict)
         self.assertEqual(evidence.get("key_proof"), "Verified")
         self.assertTrue(evidence.get("req_proof_inputs"))
+        self.assertEqual(evidence.get("recorder_source"), "hook:auto")
+        self.assertEqual(
+            evidence.get("recorder_warnings"),
+            ["Working tree was dirty when the completion receipt was captured."],
+        )
+
+        scope_audit = evidence.get("scope_audit")
+        self.assertEqual(
+            scope_audit,
+            {
+                "allowlist": ["docs/design/adr/pre-release/ADR-0.1.0/**"],
+                "changed_files": [rel_path],
+                "out_of_scope_files": [],
+            },
+        )
+        git_sync_state = evidence.get("git_sync_state")
+        self.assertIsInstance(git_sync_state, dict)
+        self.assertTrue(git_sync_state.get("dirty"))
+        self.assertIsInstance(git_sync_state.get("ahead"), int)
+        self.assertIsInstance(git_sync_state.get("behind"), int)
+        self.assertIsInstance(git_sync_state.get("blockers"), list)
 
         anchor = receipt.extra.get("anchor")
         self.assertIsNotNone(anchor)
         self.assertNotEqual(anchor.get("commit"), "0000000")
         self.assertEqual(anchor.get("semver"), "0.1.0")
+
+    def test_recorder_warns_but_keeps_receipt_when_anchor_capture_degrades(self):
+        final_rel_path = "docs/design/adr/pre-release/ADR-0.1.0/obpis/OBPI-ADR-0.1.0-01.md"
+        final_path = self._create_obpi(
+            "ADR-0.1.0",
+            status="Completed",
+            summary="- Done: Yes",
+            proof="Verified",
+            relative_path=final_rel_path,
+            allowed_paths=["docs/design/adr/pre-release/ADR-0.1.0/**"],
+        )
+        rel_path = str(final_path.relative_to(self.project_root))
+
+        with patch(
+            "gzkit.hooks.core.capture_validation_anchor_with_warnings",
+            return_value=(None, ["Could not resolve HEAD commit for receipt anchor."]),
+        ):
+            record_artifact_edit(self.project_root, rel_path, session="test-session")
+
+        receipt = [e for e in self.ledger.read_all() if e.event == "obpi_receipt_emitted"][-1]
+        evidence = receipt.extra.get("evidence")
+        self.assertIsInstance(evidence, dict)
+        self.assertIn(
+            "Could not resolve HEAD commit for receipt anchor.",
+            evidence.get("recorder_warnings", []),
+        )
+        self.assertNotIn("anchor", receipt.extra)
+
+    def test_recorder_append_failure_is_warning_only(self):
+        final_rel_path = "docs/design/adr/pre-release/ADR-0.1.0/obpis/OBPI-ADR-0.1.0-01.md"
+        final_path = self._create_obpi(
+            "ADR-0.1.0",
+            status="Completed",
+            summary="- Done: Yes",
+            proof="Verified",
+            relative_path=final_rel_path,
+            allowed_paths=["docs/design/adr/pre-release/ADR-0.1.0/**"],
+        )
+        rel_path = str(final_path.relative_to(self.project_root))
+        stderr = io.StringIO()
+
+        with (
+            patch.object(Ledger, "append", side_effect=[None, OSError("disk full")]),
+            redirect_stderr(stderr),
+        ):
+            result = record_artifact_edit(self.project_root, rel_path, session="test-session")
+
+        self.assertTrue(result)
+        self.assertIn("Could not append OBPI completion receipt", stderr.getvalue())
 
     def test_validate_blocks_merge_head(self):
         path = self._create_obpi(

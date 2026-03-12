@@ -36,6 +36,15 @@ gz obpi emit-receipt <OBPI-ID> --event {completed,validated} --attestor <text> [
 - Appends `obpi_receipt_emitted` to the ledger (unless `--dry-run`).
   Completed receipts write machine-readable completion semantics
   (`obpi_completion`) plus proof metadata for lifecycle reconciliation.
+- Completed receipts also carry structured recorder context:
+  - `scope_audit` (`allowlist`, `changed_files`, `out_of_scope_files`)
+  - `git_sync_state` (branch/remote/dirty/ahead/behind/diverged/actions/warnings/blockers)
+  - `recorder_source`
+  - `recorder_warnings`
+- If `scope_audit` or `git_sync_state` is omitted for a completed receipt,
+  gzkit derives it from the current OBPI brief and repository state. If either
+  field is supplied explicitly, gzkit validates the structure before writing the
+  receipt.
 - The resulting runtime evidence is consumed by `gz obpi status`,
   `gz obpi reconcile`, and ADR status/lifecycle surfaces.
 
@@ -46,5 +55,5 @@ gz obpi emit-receipt <OBPI-ID> --event {completed,validated} --attestor <text> [
 ```bash
 uv run gz obpi emit-receipt OBPI-0.6.0-02-promotion-command-lineage --event validated --attestor "human:Jeff" --evidence-json '{"acceptance":"operator observed deterministic pool promotion behavior","date":"2026-02-21"}'
 
-uv run gz obpi emit-receipt OBPI-0.5.0-05-obpi-acceptance-protocol-runtime-parity --event completed --attestor "human:jeff" --evidence-json '{"value_narrative":"OBPI completion now fail-closes when attestation evidence is missing for Heavy/Foundation parents.","key_proof":"uv run gz obpi emit-receipt ... --event completed --evidence-json <payload>","human_attestation":true,"attestation_text":"attest completed","attestation_date":"2026-03-01","req_proof_inputs":[{"name":"key_proof","kind":"command","source":"uv run gz obpi emit-receipt ... --event completed --evidence-json <payload>","status":"present"},{"name":"human_attestation","kind":"attestation","source":"human:jeff @ 2026-03-01","status":"present"}]}'
+uv run gz obpi emit-receipt OBPI-0.5.0-05-obpi-acceptance-protocol-runtime-parity --event completed --attestor "human:jeff" --evidence-json '{"value_narrative":"OBPI completion receipts now preserve structured scope and git-sync evidence for later drift checks.","key_proof":"uv run gz obpi status OBPI-0.5.0-05-obpi-acceptance-protocol-runtime-parity --json","human_attestation":true,"attestation_text":"attest completed","attestation_date":"2026-03-01","req_proof_inputs":[{"name":"key_proof","kind":"command","source":"uv run gz obpi status OBPI-0.5.0-05-obpi-acceptance-protocol-runtime-parity --json","status":"present"},{"name":"human_attestation","kind":"attestation","source":"human:jeff @ 2026-03-01","status":"present"}]}'
 ```
