@@ -267,7 +267,7 @@ Took 0min 0.274s
 ### Gate 5 (Human)
 
 ```text
-Human attestation received on 2026-03-12: "attest completed"
+Human attestation received on 2026-03-12: "attest completed for obpi-0.12.0-01"
 ```
 
 ## Value Narrative
@@ -321,7 +321,7 @@ without changing hook ownership for `OBPI-0.12.0-02` through
 - `docs/proposals/REPORT-airlineops-govzero-mining-2026-03-11.md`
 - Tests added: none
 - Date completed: 2026-03-12
-- Attestation status: human attestation recorded and completion receipt emitted
+- Attestation status: human re-attestation recorded and completion receipt re-emitted after drift repair
 - Defects noted:
 - Hidden dependency discovered during intake: the hook chain cannot be implemented
   honestly without `gz-plan-audit` receipt generation, so the ADR was amended
@@ -333,7 +333,7 @@ without changing hook ownership for `OBPI-0.12.0-02` through
 ## Human Attestation
 
 - Attestor: human:jeff
-- Attestation: attest completed
+- Attestation: attest completed for obpi-0.12.0-01
 - Date: 2026-03-12
 
 ---
