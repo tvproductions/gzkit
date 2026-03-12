@@ -273,10 +273,16 @@ explicitly. Parity evidence for this tranche is recorded in:
   - plan-audit hook parity is still missing; the pipeline can consume a receipt if present but gzkit does not yet generate the AirlineOps receipt surface.
   - lane doctrine may currently classify process/documentation surface changes more broadly than intended by the operator rule "Heavy only when APIs, commands, or other human/system-used runtime surfaces change"; carry this into OBPI-06 governance/template alignment.
 
+## Human Attestation
+
+- Attestor: human:jeff
+- Attestation: I'll attest completed
+- Date: 2026-03-12
+
 ---
 
 **Brief Status:** Completed
 
 **Date Completed:** 2026-03-12
 
-**Evidence Hash:** —
+**Evidence Hash:** 1e86980
