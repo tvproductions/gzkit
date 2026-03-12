@@ -14,10 +14,8 @@ Current hook surface in gzkit:
 
 ## Notes
 
-- Blocking canonical hooks were deferred during `ADR-0.9.0`, but the active
-  successor contract now lives under
-  `ADR-0.12.0-obpi-pipeline-enforcement-parity`.
-- Historical intake matrix:
-  `docs/design/adr/pre-release/ADR-0.9.0-airlineops-surface-breadth-parity/claude-hooks-intake-matrix.md`
-- Active successor contract:
-  `docs/design/adr/pre-release/ADR-0.12.0-obpi-pipeline-enforcement-parity/claude-pipeline-hooks-parity-matrix.md`
+- Blocking canonical hooks are intentionally deferred until compatibility
+  adaptation is defined under `ADR-0.9.0-airlineops-surface-breadth-parity`.
+- See intake matrix:
+  `docs/design/adr/pre-release/ADR-0.9.0-airlineops-surface-breadth-parity/
+claude-hooks-intake-matrix.md`
