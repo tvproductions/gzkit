@@ -206,9 +206,11 @@ After attestation in Normal mode, or after evidence capture in Exception mode:
 - AirlineOps is the behavioral reference implementation for this pipeline.
 - gzkit adapts the control surface to its native command vocabulary and current
   repository structure.
-- Until `gz-obpi-lock` and plan-audit hooks are ported, pipeline stages that
-  depend on them must fail closed instead of being silently skipped. The active
-  parity contract for those missing surfaces is tracked under
+- The `gz-plan-audit` skill is now available as the manual receipt generator
+  for `.claude/plans/.plan-audit-receipt.json`.
+- Until the plan-audit hook chain and `gz-obpi-lock` are ported, pipeline
+  stages that depend on them must fail closed instead of being silently
+  skipped. The active parity contract for those missing surfaces is tracked under
   `ADR-0.12.0-obpi-pipeline-enforcement-parity`.
 - The point of this skill is sequencing and governance memory: verify ->
   ceremony -> guarded git sync -> completion accounting is mandatory.

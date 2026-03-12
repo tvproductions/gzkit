@@ -116,7 +116,7 @@ This ADR deliberately builds on earlier work instead of replacing it:
 
 <!-- Each item becomes an OBPI (One Brief Per Item). Sequential numbering, no gaps. -->
 
-- [ ] OBPI-0.12.0-01: Inventory the canonical AirlineOps hook chain and define
+- [x] OBPI-0.12.0-01: Inventory the canonical AirlineOps hook chain and define
       the gzkit parity contract.
 - [ ] OBPI-0.12.0-02: Port the plan-exit audit gate with gzkit-compatible
       blocking behavior.

@@ -33,8 +33,8 @@ comes from `gz-plan-audit`; in gzkit it is now tracked explicitly as
 
 | Surface | Current gzkit Status | gzkit Target | Contract | Owner OBPI | Notes |
 | --- | --- | --- | --- | --- | --- |
-| `gz-plan-audit` skill | Missing | `.gzkit/skills/gz-plan-audit/SKILL.md` plus mirrors | audits ADR ↔ OBPI ↔ plan alignment and writes receipt | `OBPI-0.12.0-07` | Added as explicit successor OBPI during this intake |
-| Plan-audit receipt | Missing | `.claude/plans/.plan-audit-receipt.json` | fields: `obpi_id`, `timestamp`, `verdict`, `plan_file`, `gaps_found` | `OBPI-0.12.0-07` | `verdict` must be `PASS` or `FAIL`; receipt must be newer than plan file |
+| `gz-plan-audit` skill | Ported | `.gzkit/skills/gz-plan-audit/SKILL.md` plus mirrors | audits ADR ↔ OBPI ↔ plan alignment and writes receipt | `OBPI-0.12.0-07` | Canonical skill is ported; operator-invoked today, hook enforcement still pending |
+| Plan-audit receipt | Skill-defined | `.claude/plans/.plan-audit-receipt.json` | fields: `obpi_id`, `timestamp`, `verdict`, `plan_file`, `gaps_found` | `OBPI-0.12.0-07` | Contract is ported through the skill; hook and router enforcement still land in later OBPIs |
 | Active pipeline marker | Missing | `.claude/plans/.pipeline-active-{OBPI-ID}.json` | per-OBPI marker created by pipeline Stage 1 | `OBPI-0.12.0-03` | Legacy fallback `.pipeline-active.json` remains compatibility-only |
 | Lock surface | Missing | future native surface | concurrency / shared-scope coordination | follow-on ADR | Out of scope for `ADR-0.12.0`; fail closed until designed |
 

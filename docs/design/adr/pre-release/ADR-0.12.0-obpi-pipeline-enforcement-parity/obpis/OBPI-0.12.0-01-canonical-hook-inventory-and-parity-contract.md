@@ -3,7 +3,7 @@ id: OBPI-0.12.0-01-canonical-hook-inventory-and-parity-contract
 parent: ADR-0.12.0-obpi-pipeline-enforcement-parity
 item: 1
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.12.0-01-canonical-hook-inventory-and-parity-contract: Canonical hook inventory and parity contract
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.12.0-obpi-pipeline-enforcement-parity/ADR-0.12.0-obpi-pipeline-enforcement-parity.md`
 - **Checklist Item:** #1 - "OBPI-0.12.0-01: Inventory the canonical AirlineOps hook chain and define the gzkit parity contract."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -143,7 +143,7 @@ contracts that later runtime surfaces must implement exactly.
 
 ### Gate 5: Human (Heavy only)
 
-- [ ] Human attestation recorded
+- [x] Human attestation recorded
 
 ## Verification
 
@@ -195,7 +195,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - [x] **Code Quality:** Lint, format, type checks clean
 - [x] **Value Narrative:** Problem-before vs capability-now is documented
 - [x] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -266,7 +266,7 @@ Took 0min 0.274s
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+Human attestation received on 2026-03-12: "attest completed"
 ```
 
 ## Value Narrative
@@ -316,7 +316,7 @@ ownership model, and the hidden receipt-generator dependency is explicit.
 - `docs/proposals/REPORT-airlineops-govzero-mining-2026-03-11.md`
 - Tests added: none
 - Date completed: 2026-03-12
-- Attestation status: pending human attestation
+- Attestation status: human attestation recorded and completion receipt emitted
 - Defects noted:
 - Hidden dependency discovered during intake: the hook chain cannot be implemented
   honestly without `gz-plan-audit` receipt generation, so the ADR was amended
@@ -324,14 +324,14 @@ ownership model, and the hidden receipt-generator dependency is explicit.
 
 ## Human Attestation
 
-- Attestor: pending human attestation
-- Attestation: pending
-- Date: pending
+- Attestor: human:jeff
+- Attestation: attest completed
+- Date: 2026-03-12
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-12
 
 **Evidence Hash:** -
