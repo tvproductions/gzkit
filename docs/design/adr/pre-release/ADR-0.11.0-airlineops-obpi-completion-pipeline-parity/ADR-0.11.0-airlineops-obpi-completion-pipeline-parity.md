@@ -121,7 +121,7 @@ This ADR extends existing gzkit work rather than replacing it:
       OBPI completion evidence.
 - [x] OBPI-0.11.0-04: Deliver anchor-aware OBPI drift detection and
       reconciliation surfaces.
-- [ ] OBPI-0.11.0-05: Port the `gz-obpi-pipeline` skill into `.gzkit` and sync
+- [x] OBPI-0.11.0-05: Port the `gz-obpi-pipeline` skill into `.gzkit` and sync
       mirror control surfaces.
 - [ ] OBPI-0.11.0-06: Align templates, closeout guidance, and operator docs to
       the faithful AirlineOps completion pipeline.
