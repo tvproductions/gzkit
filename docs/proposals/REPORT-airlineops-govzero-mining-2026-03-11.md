@@ -28,7 +28,7 @@
 |---|---|---|---|---|---|---|---|
 | N-001 | After plan approval, OBPI work must run through a dedicated execution pipeline | `../airlineops/AGENTS.md`, `../airlineops/.claude/skills/gz-obpi-pipeline/SKILL.md` | N | Y | `.gzkit/skills/gz-obpi-pipeline/SKILL.md`, `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md` | Parity | imported in this cycle |
 | N-002 | Stage order is load context -> implement -> verify -> present evidence -> sync | `../airlineops/.claude/skills/gz-obpi-pipeline/SKILL.md` | N | Y | pipeline skill + workflow/runbook docs | Parity | now first-class in gzkit docs |
-| N-003 | Missing orchestration primitives must fail closed | `../airlineops/.claude/skills/gz-obpi-pipeline/SKILL.md` | N | Y | compatibility note in gzkit pipeline skill | Partial | lock and plan-audit parity still missing |
+| N-003 | Missing orchestration primitives must fail closed | `../airlineops/.claude/skills/gz-obpi-pipeline/SKILL.md` | N | Y | compatibility note in gzkit pipeline skill | Partial | lock and plan-audit parity still missing, now tracked under `ADR-0.12.0` |
 
 ## NOT GovZero Exclusion Log
 
@@ -57,7 +57,7 @@ Exclusions are exceptional. Default is inclusion in GovZero scope unless product
 |---|---|---|---|---|
 | N-001 | canonical pipeline skill | Import Now | missing operator surface, high governance impact | `ADR-0.11.0` / `OBPI-0.11.0-05` |
 | N-002 | verify -> ceremony -> sync workflow narration | Import Now | pipeline without operator docs is incomplete | `ADR-0.11.0` / `OBPI-0.11.0-05` |
-| N-003 | lock and plan-audit parity | Defer (Tracked) | no native gzkit surface yet; imported fail-closed compatibility wording first | successor `ADR-0.11.0` tranche |
+| N-003 | lock and plan-audit parity | Defer (Tracked) | no native gzkit surface yet; successor ADR now owns the parity contract | `ADR-0.12.0` / `OBPI-0.12.0-01`, `OBPI-0.12.0-07` |
 
 ---
 
@@ -85,5 +85,6 @@ uv run mkdocs build --strict
    - Severity: P1
    - Why it matters: lock and plan-audit parity are still weaker than AirlineOps,
      so concurrency and plan-governance enforcement are not yet equivalent.
-   - ADR/OBPI linkage: `ADR-0.11.0` successor tranche required
-   - Next action: import those primitives as the next execution-parity tranche
+   - ADR/OBPI linkage: `ADR-0.12.0` / `OBPI-0.12.0-01`, `OBPI-0.12.0-07`
+   - Next action: land the intake contract first, then port the receipt
+     generator and hook chain under `ADR-0.12.0`
