@@ -128,7 +128,7 @@ This ADR deliberately builds on earlier work instead of replacing it:
       unfinished pipeline state before commit and push.
 - [ ] OBPI-0.12.0-06: Register the hook chain in settings and align tests,
       docs, and operator verification with the enforced runtime.
-- [ ] OBPI-0.12.0-07: Port `gz-plan-audit` and the receipt-generation contract
+- [x] OBPI-0.12.0-07: Port `gz-plan-audit` and the receipt-generation contract
       consumed by the plan-exit gate and pipeline router.
 
 ## Q&A Transcript

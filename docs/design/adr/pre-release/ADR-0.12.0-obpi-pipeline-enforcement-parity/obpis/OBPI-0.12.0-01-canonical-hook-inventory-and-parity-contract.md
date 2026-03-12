@@ -207,6 +207,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 ### Gate 1 (ADR)
 
 - [x] Intent and scope recorded
+- [x] Parent ADR checklist item quoted
 - [x] Parent ADR amended to add `OBPI-0.12.0-07` and raise the target count to
       seven
 - [x] Parity matrix created:
@@ -293,15 +294,19 @@ $ rg -n 'ADR-0.12.0|OBPI-0.12.0-07|plan-audit|pipeline-router|pipeline-gate|pipe
 
 docs/design/adr/pre-release/ADR-0.12.0-obpi-pipeline-enforcement-parity/ADR-0.12.0-obpi-pipeline-enforcement-parity.md:60:7. **Plan-Audit Skill + Receipt Parity**...
 docs/design/adr/pre-release/ADR-0.12.0-obpi-pipeline-enforcement-parity/claude-pipeline-hooks-parity-matrix.md:26:| `plan-audit-gate.py` | Missing | `.claude/hooks/plan-audit-gate.py` | ...
-docs/design/adr/pre-release/ADR-0.12.0-obpi-pipeline-enforcement-parity/claude-pipeline-hooks-parity-matrix.md:36:| `gz-plan-audit` skill | Missing | `.gzkit/skills/gz-plan-audit/SKILL.md` plus mirrors | ...
-.claude/hooks/README.md:23:  `docs/design/adr/pre-release/ADR-0.12.0-obpi-pipeline-enforcement-parity/claude-pipeline-hooks-parity-matrix.md`
-.gzkit/skills/gz-obpi-pipeline/SKILL.md:212:  `ADR-0.12.0-obpi-pipeline-enforcement-parity`.
+docs/design/adr/pre-release/ADR-0.12.0-obpi-pipeline-enforcement-parity/claude-pipeline-hooks-parity-matrix.md:36:| `gz-plan-audit` skill | Ported | `.gzkit/skills/gz-plan-audit/SKILL.md` plus mirrors | ...
+docs/design/adr/pre-release/ADR-0.12.0-obpi-pipeline-enforcement-parity/claude-pipeline-hooks-parity-matrix.md:37:| Plan-audit receipt | Skill-defined | `.claude/plans/.plan-audit-receipt.json` | ...
+.claude/hooks/README.md:14:- The operator-facing `gz-plan-audit` skill now lives canonically at
+.gzkit/skills/gz-obpi-pipeline/SKILL.md:209:- The `gz-plan-audit` skill is now available as the manual receipt generator
 ```
 
 The proof is the repo now carrying one coherent successor contract instead of a
 generic defer note: the ADR checklist, parity matrix, pipeline skill note,
 historical parity reports, and hook README all point to the same `ADR-0.12.0`
-ownership model, and the hidden receipt-generator dependency is explicit.
+ownership model. The hidden receipt-generator dependency was made explicit by
+this OBPI, and the later `OBPI-0.12.0-07` port now fills that named contract
+without changing hook ownership for `OBPI-0.12.0-02` through
+`OBPI-0.12.0-06`.
 
 ### Implementation Summary
 
@@ -321,6 +326,9 @@ ownership model, and the hidden receipt-generator dependency is explicit.
 - Hidden dependency discovered during intake: the hook chain cannot be implemented
   honestly without `gz-plan-audit` receipt generation, so the ADR was amended
   to add `OBPI-0.12.0-07`.
+- Completion anchor later drifted when `OBPI-0.12.0-07` updated shared contract
+  surfaces inside this OBPI's tracked scope; reconciliation requires a fresh
+  synced receipt after re-verifying the current state.
 
 ## Human Attestation
 
