@@ -123,7 +123,7 @@ This ADR extends existing gzkit work rather than replacing it:
       reconciliation surfaces.
 - [x] OBPI-0.11.0-05: Port the `gz-obpi-pipeline` skill into `.gzkit` and sync
       mirror control surfaces.
-- [ ] OBPI-0.11.0-06: Align templates, closeout guidance, and operator docs to
+- [x] OBPI-0.11.0-06: Align templates, closeout guidance, and operator docs to
       the faithful AirlineOps completion pipeline.
 
 ## Q&A Transcript
