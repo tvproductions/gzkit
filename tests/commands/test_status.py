@@ -1,4 +1,5 @@
 import json
+import subprocess
 import unittest
 from pathlib import Path
 
@@ -13,7 +14,7 @@ from gzkit.ledger import (
     obpi_created_event,
     obpi_receipt_emitted_event,
 )
-from tests.commands.common import CliRunner, _write_obpi
+from tests.commands.common import CliRunner, _init_git_repo, _write_obpi
 
 
 class TestStatusCommand(unittest.TestCase):
@@ -379,6 +380,135 @@ class TestStatusCommand(unittest.TestCase):
             self.assertEqual(result.exit_code, 1)
             self.assertIn("BLOCKERS:", result.output)
             self.assertIn("ledger proof of completion is missing", result.output)
+
+    def test_obpi_reconcile_reports_anchor_drift_for_scope_changes(self) -> None:
+        """Anchor-aware reconcile fails when tracked files changed since completion."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            _write_obpi(
+                path=obpi_path,
+                status="Completed",
+                brief_status="Completed",
+                implementation_line="src/module.py",
+            )
+            module_path = Path("src/module.py")
+            module_path.parent.mkdir(parents=True, exist_ok=True)
+            module_path.write_text("value = 1\n", encoding="utf-8")
+            anchor_commit = _init_git_repo(Path.cwd())
+
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(
+                obpi_receipt_emitted_event(
+                    obpi_id="OBPI-0.1.0-01-demo",
+                    parent_adr="ADR-0.1.0",
+                    receipt_event="completed",
+                    attestor="human:test",
+                    obpi_completion="completed",
+                    evidence={
+                        "scope_audit": {
+                            "allowlist": ["src/module.py"],
+                            "changed_files": ["src/module.py"],
+                            "out_of_scope_files": [],
+                        },
+                        "git_sync_state": {
+                            "dirty": False,
+                            "ahead": 0,
+                            "behind": 0,
+                            "diverged": False,
+                            "blockers": [],
+                        },
+                    },
+                    anchor={"commit": anchor_commit, "semver": "0.1.0"},
+                )
+            )
+
+            module_path.write_text("value = 2\n", encoding="utf-8")
+            subprocess.run(
+                ["git", "add", "src/module.py"],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            subprocess.run(
+                ["git", "commit", "-m", "change module"],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+
+            result = runner.invoke(main, ["obpi", "reconcile", "OBPI-0.1.0-01-demo", "--json"])
+
+            self.assertEqual(result.exit_code, 1)
+            payload = json.loads(result.output)
+            self.assertFalse(payload["passed"])
+            self.assertEqual(payload["runtime_state"], "drift")
+            self.assertEqual(payload["anchor_state"], "stale")
+            self.assertEqual(payload["anchor_commit"], anchor_commit)
+            self.assertEqual(payload["anchor_drift_files"], ["src/module.py"])
+            self.assertIn("completion anchor drifted in recorded OBPI scope", payload["blockers"])
+
+    def test_obpi_status_json_exposes_anchor_fields(self) -> None:
+        """Focused OBPI status includes anchor reconciliation fields."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            _write_obpi(
+                path=obpi_path,
+                status="Completed",
+                brief_status="Completed",
+                implementation_line="src/module.py",
+            )
+            module_path = Path("src/module.py")
+            module_path.parent.mkdir(parents=True, exist_ok=True)
+            module_path.write_text("value = 1\n", encoding="utf-8")
+            anchor_commit = _init_git_repo(Path.cwd())
+
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(
+                obpi_receipt_emitted_event(
+                    obpi_id="OBPI-0.1.0-01-demo",
+                    parent_adr="ADR-0.1.0",
+                    receipt_event="completed",
+                    attestor="human:test",
+                    obpi_completion="completed",
+                    evidence={
+                        "scope_audit": {
+                            "allowlist": ["src/module.py"],
+                            "changed_files": ["src/module.py"],
+                            "out_of_scope_files": [],
+                        },
+                        "git_sync_state": {
+                            "dirty": False,
+                            "ahead": 0,
+                            "behind": 0,
+                            "diverged": False,
+                            "blockers": [],
+                        },
+                    },
+                    anchor={"commit": anchor_commit, "semver": "0.1.0"},
+                )
+            )
+
+            result = runner.invoke(main, ["obpi", "status", "OBPI-0.1.0-01-demo", "--json"])
+
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            self.assertEqual(payload["runtime_state"], "completed")
+            self.assertEqual(payload["anchor_state"], "current")
+            self.assertEqual(payload["anchor_commit"], anchor_commit)
+            self.assertEqual(payload["current_head"], anchor_commit)
+            self.assertEqual(payload["anchor_issues"], [])
 
     def test_obpi_status_uses_only_key_proof_section_for_req_proof_inputs(self) -> None:
         """Key proof extraction stops at the next heading instead of swallowing later sections."""

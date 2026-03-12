@@ -24,7 +24,8 @@ It keeps existing compatibility fields and adds derived semantics:
 
 - `obpis` (linked OBPI status rows including `runtime_state`, `proof_state`,
   `attestation_requirement`, `attestation_state`, `req_proof_state`,
-  `req_proof_inputs`, and `issues`)
+  `req_proof_inputs`, `anchor_state`, `anchor_commit`, `current_head`,
+  `anchor_issues`, `anchor_drift_files`, and `issues`)
 - `obpi_summary` (`total`, `completed`, `incomplete`, `unit_status`, `outstanding_ids`)
 - `lane`
 - `lifecycle_status`
@@ -51,6 +52,9 @@ OBPI rows are resolved from linked ledger children plus on-disk briefs. Missing 
 reported explicitly so gaps are visible in a single ADR view.
 Closeout readiness reuses the same OBPI runtime issues and reports `BLOCKED` until every linked
 OBPI is closeout-ready.
+Anchor-aware OBPI rows preserve completion counts separately from closeout blockers: a completed
+OBPI can still surface `drift` issues when later changes touched its recorded scope or when its
+receipt captured degraded git-sync state.
 The runtime model is additive and fail-closed:
 
 - legacy receipts without explicit `req_proof_inputs` are backfilled from substantive brief `Key Proof`
