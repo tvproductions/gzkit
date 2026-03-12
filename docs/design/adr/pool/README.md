@@ -59,6 +59,12 @@ uv run gz adr promote ADR-pool.<slug> --semver X.Y.Z [--dry-run]
 | [ADR-pool.airlineops-surface-breadth-parity](ADR-pool.airlineops-surface-breadth-parity.md) | Canonical `.claude/**` + `.gzkit/**` breadth parity | Waiting | ADR-0.3.0-airlineops-canon-reconciliation |
 | [ADR-pool.spec-triangle-sync](ADR-pool.spec-triangle-sync.md) | Spec-test-code process synchronization | Waiting | ADR-0.7.0-obpi-first-operations, ADR-pool.execution-memory-graph |
 | [ADR-pool.tests-for-spec](ADR-pool.tests-for-spec.md) | Requirement-level test traceability | Waiting | ADR-pool.spec-triangle-sync |
+| [ADR-pool.session-productivity-metrics](ADR-pool.session-productivity-metrics.md) | Quantitative session telemetry ledger | Waiting | None |
+| [ADR-pool.universal-agent-onboarding](ADR-pool.universal-agent-onboarding.md) | Vendor-neutral agent cold-start protocol | Waiting | None |
+| [ADR-pool.agent-role-specialization](ADR-pool.agent-role-specialization.md) | Abstract role taxonomy for multi-agent work | Waiting | None |
+| [ADR-pool.agentic-security-review](ADR-pool.agentic-security-review.md) | Static security scanning in gate pipeline | Waiting | None |
+| [ADR-pool.graduated-oversight-model](ADR-pool.graduated-oversight-model.md) | Three-tier oversight replacing binary Normal/Exception | Waiting | None |
+| [ADR-pool.airlineops-direct-governance-migration](ADR-pool.airlineops-direct-governance-migration.md) | AirlineOps adopts gzkit as primary governance authority | Waiting | ADR-pool.constraint-library, ADR-pool.universal-agent-onboarding |
 
 ---
 
@@ -124,7 +130,13 @@ PRD-GZKIT-1.0.0
 ├── [ADR-0.10.0](../pre-release/ADR-0.10.0-obpi-runtime-surface/ADR-0.10.0-obpi-runtime-surface.md) (OBPI-native runtime surfaces) ← Active
 ├── ADR-pool.airlineops-surface-breadth-parity (Canonical `.claude/**` + `.gzkit/**` breadth parity)
 ├── ADR-pool.spec-triangle-sync (Spec-test-code synchronization process)
-└── ADR-pool.tests-for-spec (Tests verify spec requirements)
+├── ADR-pool.tests-for-spec (Tests verify spec requirements)
+├── ADR-pool.session-productivity-metrics (Quantitative session telemetry)
+├── ADR-pool.universal-agent-onboarding (Vendor-neutral cold-start protocol)
+├── ADR-pool.agent-role-specialization (Abstract role taxonomy)
+├── ADR-pool.agentic-security-review (Static security scanning in gates)
+├── ADR-pool.graduated-oversight-model (Three-tier oversight model)
+└── ADR-pool.airlineops-direct-governance-migration (AirlineOps adopts gzkit governance)
 ```
 
 Parenting model:
