@@ -23,7 +23,8 @@ Canonical GovZero source: [`docs/governance/GovZero/audit-protocol.md`](../../go
 5. **Post-attestation Audit** (`gz audit`)
    - Reconciliation only; blocked before attestation.
 6. **Receipts/Accounting** (`gz adr emit-receipt`)
-   - Record completed/validated receipts, including OBPI-scoped evidence when appropriate.
+   - Record ADR-level completed/validated receipts after attestation.
+   - OBPI completion accounting belongs in the OBPI pipeline before ADR closeout, after guarded `git sync`.
 
 ---
 

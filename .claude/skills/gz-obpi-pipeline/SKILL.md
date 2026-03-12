@@ -166,10 +166,11 @@ After attestation in Normal mode, or after evidence capture in Exception mode:
 3. Emit the final completed receipt or equivalent OBPI completion accounting
    immediately after the successful sync so anchor evidence is captured from the
    synced repository state.
-4. Run `gz-obpi-audit` for the OBPI or parent ADR to record evidence.
-5. Update the OBPI brief with checked criteria, evidence, and attestation data.
-6. Run `gz-obpi-sync` for the parent ADR so the ADR checklist reflects brief
-   truth.
+4. Update the OBPI brief with checked criteria, evidence, and attestation data.
+5. Run `uv run gz obpi reconcile {OBPI-ID}` to confirm the synced receipt and
+   brief agree.
+6. Run `uv run gz adr status {PARENT-ADR} --json` so the parent ADR view
+   reflects the reconciled OBPI state.
 7. Remove `.claude/plans/.pipeline-active-{OBPI-ID}.json` if it was created.
 8. Create a session handoff if more OBPIs remain or follow-up work is deferred.
 
@@ -196,7 +197,7 @@ After attestation in Normal mode, or after evidence capture in Exception mode:
 | 2 | files changed, tests added, scope respected |
 | 3 | command outputs and pass/fail status |
 | 4 | value narrative, key proof, attestation text or self-close note |
-| 5 | `git sync` result, completion receipt/accounting, brief update, audit entry, ADR table sync, handoff if needed |
+| 5 | `git sync` result, completion receipt/accounting, brief update, reconcile/status proof, handoff if needed |
 
 ---
 
@@ -217,7 +218,7 @@ After attestation in Normal mode, or after evidence capture in Exception mode:
 ## Related
 
 - `AGENTS.md` section `OBPI Acceptance Protocol`
-- `.gzkit/skills/gz-obpi-audit/SKILL.md`
-- `.gzkit/skills/gz-obpi-sync/SKILL.md`
+- `docs/user/concepts/workflow.md`
+- `docs/user/runbook.md`
 - `.gzkit/skills/gz-session-handoff/SKILL.md`
 - `docs/governance/GovZero/obpi-transaction-contract.md`

@@ -333,10 +333,12 @@ def generate_manifest(
             "copilot_skills": config.paths.copilot_skills,
         },
         "verification": {
-            "lint": "uvx ruff check src tests",
-            "format": "uvx ruff format --check .",
-            "typecheck": "uvx ty check src",
-            "test": "uv run -m unittest discover tests",
+            "lint": "uv run gz lint",
+            "format": "uv run gz format",
+            "typecheck": "uv run gz typecheck",
+            "test": "uv run gz test",
+            "docs": "uv run mkdocs build --strict",
+            "bdd": "uv run -m behave features/",
         },
         "gates": {
             "lite": [1, 2],
@@ -949,10 +951,10 @@ def get_project_context(project_root: Path, config: GzkitConfig) -> dict[str, st
     tech_stack = "Python 3.13+ with uv, ruff, ty"
     build_commands = """uv sync                              # Hydrate environment
 uv run -m {module} --help            # CLI entry point
-uvx ruff check src tests             # Lint
-uvx ruff format --check .            # Format check
-uvx ty check src                     # Type check
-uv run -m unittest discover tests    # Run tests""".format(module=project_name.replace("-", ""))
+uv run gz lint                       # Lint
+uv run gz format                     # Format
+uv run gz typecheck                  # Type check
+uv run gz test                       # Run tests""".format(module=project_name.replace("-", ""))
 
     architecture = "See project documentation"
     coding_conventions = "Ruff defaults: 4-space indent, 100-char lines, double quotes"

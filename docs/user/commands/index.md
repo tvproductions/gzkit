@@ -69,7 +69,7 @@ Primary daily loop (OBPI-first, pipeline-governed):
 2. Plan the OBPI, then execute it through `gz-obpi-pipeline`
 3. Present the Heavy-lane acceptance ceremony when required
 4. Run guarded sync (`gz git-sync --apply --lint --test`)
-5. Emit final OBPI completion accounting (`gz obpi emit-receipt`)
+5. Emit final OBPI completion accounting from the synced state (`gz obpi emit-receipt`)
 6. Reconcile/update brief and ADR state (`gz obpi reconcile`, `gz adr status`)
 
 ADR closeout loop (after OBPI batch completion):

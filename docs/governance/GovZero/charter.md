@@ -81,10 +81,12 @@ Agents present artifacts; humans observe and attest. Audit runs post-attestation
 
 | Lane | Gates | Trigger |
 |------|-------|---------|
-| **Lite** | 1, 2 | Internal changes only (no external contract changes) |
-| **Heavy** | 1, 2, 3, 4, 5 | External contract changes (CLI, API, schema, error messages) |
+| **Lite** | 1, 2 | Internal-only implementation, documentation, process, or template changes that do not change an external runtime contract |
+| **Heavy** | 1, 2, 3, 4, 5 | Changes to commands, APIs, schemas, or other runtime contracts used by humans or external systems |
 
-Default lane is Lite. Escalate to Heavy only when external contracts change.
+Default lane is Lite. Escalate to Heavy only when a command, API, schema, or
+runtime contract changes. Documentation-only, process-only, and template-only
+changes remain Lite unless they also change one of those external surfaces.
 
 ---
 

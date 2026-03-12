@@ -113,10 +113,10 @@ Use the canonical skill catalog and keep mirrors synced via `gz agent sync contr
 ```bash
 uv sync                              # Hydrate environment
 uv run -m gzkit --help            # CLI entry point
-uvx ruff check src tests             # Lint
-uvx ruff format --check .            # Format check
-uvx ty check src                     # Type check
-uv run -m unittest discover tests    # Run tests
+uv run gz lint                       # Lint
+uv run gz format                     # Format
+uv run gz typecheck                  # Type check
+uv run gz test                       # Run tests
 ```
 
 ## Key Files

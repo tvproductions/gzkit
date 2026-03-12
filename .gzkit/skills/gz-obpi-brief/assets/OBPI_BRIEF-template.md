@@ -184,17 +184,15 @@ When gates are passing, emit this shape:
 
 **Gate 2 (TDD) — Lite:**
 - ✓ Tests pass: {N} tests, 0 failures
-  uv run -m unittest -q tests.test_{module}
+  uv run gz test
   # Output: Ran {N} tests in X.XXs — OK
 
 - ✓ Coverage: {X%} ≥ 40% minimum
-  uv run coverage report
-  # Output: TOTAL ... {X}%
+  Use repository-native proof when coverage is part of the contract.
 
 **Code Quality:**
-- ✓ Lint: `uv run ruff check .` — OK
-- ✓ Format: `uv run ruff format .` — no changes
-- ✓ Type check: `uvx ty check .` — OK
+- ✓ Lint: `uv run gz lint` — OK
+- ✓ Type check: `uv run gz typecheck` — OK
 
 **Changed files:** {list of 3-5 file paths}
 
@@ -452,16 +450,13 @@ If the plan is questioned or modified, update it and re-present.
 #### Gate 2: TDD
 
 - [ ] Unit tests written for new/changed behavior
-- [ ] Tests pass: `uv run -m unittest -q tests.test_{module}`
-- [ ] All tests pass: `uv run -m unittest -q`
-- [ ] Coverage ≥40%: `uv run coverage run -m unittest discover -s tests -t .`
-  and `uv run coverage report --fail-under=40`
+- [ ] Tests pass: `uv run gz test`
+- [ ] Validation commands are recorded with real outputs
 
 #### Code Quality
 
-- [ ] Lint clean: `uv run ruff check . --fix`
-- [ ] Format clean: `uv run ruff format .`
-- [ ] Type check clean: `uvx ty check . --exclude 'features/**'`
+- [ ] Lint clean: `uv run gz lint`
+- [ ] Type check clean: `uv run gz typecheck`
 
 ### COMPLETION CHECKLIST (Lite)
 
@@ -491,7 +486,7 @@ Item-specific gates and commands (if any) are listed below.
 2. **Gate 2 (TDD):** ✓ PASSED — {N} tests pass, 0 failures
 
    ```bash
-   $ uv run -m unittest -v
+   $ uv run gz test
    ...
    Ran {N} tests in {X.XX}s
    OK

@@ -40,6 +40,21 @@ Execution is decomposed into OBPI briefs under this ADR package.
 - Additional runtime and documentation surfaces increase implementation complexity.
 - Existing operator habits that are ADR-only or gate-centric require migration.
 
+## Migration Note
+
+As of 2026-03-12, the active operator sequence for this ADR family is
+maintained by ADR-0.11.0 and the user workflow docs. Earlier shorthand that
+suggested ADR-only closeout habits or optional post-ceremony sync has been
+superseded by the OBPI pipeline order:
+
+1. verify
+2. present evidence / attestation when required
+3. guarded `git sync`
+4. final OBPI completion accounting
+
+Use `docs/user/concepts/workflow.md` and `docs/user/runbook.md` as the active
+operator references.
+
 ## Checklist
 
 <!-- Each item becomes an OBPI (One Brief Per Item). Sequential numbering, no gaps. -->

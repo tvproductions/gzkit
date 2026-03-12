@@ -25,6 +25,10 @@ status: Draft
 
 **{lane}** - {lane_rationale}
 
+> Heavy is reserved for command/API/schema/runtime-contract changes. Process,
+> documentation, and template-only work stays Lite unless it changes one of
+> those external surfaces.
+
 ## Allowed Paths
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
@@ -37,7 +41,6 @@ status: Draft
 <!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
 
 - `docs/design/**` - ADR changes out of scope
-- `features/**` - BDD handled separately
 - New dependencies
 - CI files, lockfiles
 
@@ -90,19 +93,18 @@ status: Draft
 ### Gate 2: TDD
 
 - [ ] Tests written before/with implementation
-- [ ] Tests pass: `uv run -m unittest discover tests`
-- [ ] Coverage maintained: `uv run coverage run -m unittest && uv run coverage report`
+- [ ] Tests pass: `uv run gz test`
+- [ ] Validation commands recorded in evidence with real outputs
 
 ### Code Quality
 
-- [ ] Lint clean: `uvx ruff check src tests`
-- [ ] Format clean: `uvx ruff format --check .`
-- [ ] Type check clean: `uvx ty check src`
+- [ ] Lint clean: `uv run gz lint`
+- [ ] Type check clean: `uv run gz typecheck`
 
 <!-- Heavy lane only: -->
 ### Gate 3: Docs (Heavy only)
 
-- [ ] Docs build: `uvx mkdocs build --strict`
+- [ ] Docs build: `uv run mkdocs build --strict`
 - [ ] Relevant docs updated
 
 ### Gate 4: BDD (Heavy only)
@@ -115,11 +117,14 @@ status: Draft
 
 ## Verification
 
-<!-- What commands verify this work? Human runs these at closeout. -->
+<!-- What commands verify this work? Use real repo commands, then paste the
+     outputs into Evidence. -->
 
 ```bash
-# Gate 2: Tests
-uv run -m unittest discover tests
+uv run gz validate --documents
+uv run gz lint
+uv run gz typecheck
+uv run gz test
 
 # Specific verification for this OBPI
 command --to --verify
@@ -169,11 +174,45 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 # Paste lint/format/type check output here
 ```
 
+### Gate 3 (Docs)
+
+```text
+# Paste docs-build output here when Gate 3 applies
+```
+
+### Gate 4 (BDD)
+
+```text
+# Paste behave output here when Gate 4 applies
+```
+
+### Gate 5 (Human)
+
+```text
+# Record attestation text here when required by parent lane
+```
+
+## Value Narrative
+
+<!-- What problem existed before this OBPI, and what capability exists now? -->
+
+## Key Proof
+
+<!-- One concrete usage example, command, or before/after behavior. -->
+
 ### Implementation Summary
 
 - Files created/modified:
 - Tests added:
 - Date completed:
+- Attestation status:
+- Defects noted:
+
+## Human Attestation
+
+- Attestor: `human:<name>` when required, otherwise `n/a`
+- Attestation: substantive attestation text or `n/a`
+- Date: YYYY-MM-DD or `n/a`
 
 ---
 

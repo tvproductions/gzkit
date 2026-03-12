@@ -27,9 +27,13 @@ This is the operator habit loop for gzkit-first GovZero parity.
    - `uv run gz gates --gate 3 --adr ADR-<X.Y.Z>` when docs changed
 4. **Present evidence**
    - value narrative, key proof, verification outputs
-5. **Sync brief and ADR state**
-   - `gz-obpi-audit` then `gz-obpi-sync`
-6. **Repeat for next OBPI**
+5. **Run guarded sync**
+   - `uv run gz git-sync --apply --lint --test`
+6. **Record OBPI completion from the synced state**
+   - `uv run gz obpi emit-receipt OBPI-<X.Y.Z-NN>-<slug> --event completed ...`
+   - `uv run gz obpi reconcile OBPI-<X.Y.Z-NN>-<slug>`
+   - `uv run gz adr status ADR-<X.Y.Z> --json`
+7. **Repeat for next OBPI**
 
 ---
 
@@ -48,7 +52,7 @@ This is the operator habit loop for gzkit-first GovZero parity.
 
 - It prevents hidden work-in-progress at ADR scope.
 - It keeps evidence close to each OBPI increment.
-- It preserves the verify -> ceremony -> sync sequence from AirlineOps parity.
+- It preserves the verify -> ceremony -> guarded git sync -> completion accounting sequence from AirlineOps parity.
 - It preserves human attestation as explicit ADR-level authority.
 - It keeps audit/validation as post-attestation reconciliation.
 

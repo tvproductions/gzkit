@@ -21,10 +21,10 @@ Python 3.13+ with uv, ruff, ty
 ```bash
 uv sync                              # Hydrate environment
 uv run -m gzkit --help            # CLI entry point
-uvx ruff check src tests             # Lint
-uvx ruff format --check .            # Format check
-uvx ty check src                     # Type check
-uv run -m unittest discover tests    # Run tests
+uv run gz lint                       # Lint
+uv run gz format                     # Format
+uv run gz typecheck                  # Type check
+uv run gz test                       # Run tests
 ```
 
 ## Architecture
@@ -57,7 +57,7 @@ Follow the gzkit gate covenant for all changes:
 2. Check status: `gz status`
 3. Create ADR for changes: `gz plan`
 4. For OBPI work after planning, run `gz-obpi-pipeline`
-5. Validate: `gz validate --documents && gz check`
+5. Validate: `gz validate --documents`, `gz lint`, `gz typecheck`, `gz test`
 6. Request attestation: Human runs `gz attest`
 7. In the pipeline closeout stage, run `uv run gz git-sync --apply --lint --test` before final OBPI completion accounting
 

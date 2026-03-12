@@ -294,10 +294,12 @@ class TestValidateManifest(unittest.TestCase):
                 "copilot_skills": ".github/skills",
             },
             "verification": {
-                "lint": "uvx ruff check src tests",
-                "format": "uvx ruff format --check .",
-                "typecheck": "uvx ty check src",
-                "test": "uv run -m unittest discover tests",
+                "lint": "uv run gz lint",
+                "format": "uv run gz format",
+                "typecheck": "uv run gz typecheck",
+                "test": "uv run gz test",
+                "docs": "uv run mkdocs build --strict",
+                "bdd": "uv run -m behave features/",
             },
             "gates": {
                 "lite": [1, 2, 5],
