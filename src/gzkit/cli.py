@@ -959,7 +959,7 @@ def adr_audit_check(adr: str, as_json: bool) -> None:
 
     graph = ledger.get_artifact_graph()
     for obpi_id, obpi_file in sorted(obpi_files.items()):
-        inspection = _inspect_obpi_brief(obpi_file, obpi_id=obpi_id, graph=graph)
+        inspection = _inspect_obpi_brief(project_root, obpi_file, obpi_id=obpi_id, graph=graph)
         if inspection["reasons"]:
             findings.append(
                 {

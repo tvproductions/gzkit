@@ -27,6 +27,9 @@ It reports blockers for conditions including:
 - missing or placeholder implementation summary
 - missing or placeholder key proof
 - ledger/file completion drift
+- completion-anchor drift in recorded OBPI scope
+- missing completion-anchor evidence for anchor-tracked receipts
+- degraded git-sync evidence recorded at receipt time
 - missing required human-attestation proof
 
 Text mode prints `PASS` when no blockers are present. Otherwise it prints
@@ -37,6 +40,7 @@ Text mode prints `PASS` when no blockers are present. Otherwise it prints
 - `passed`
 - `blockers`
 - the same OBPI runtime fields returned by `gz obpi status`, including `attestation_requirement`
+- anchor-specific fields: `anchor_state`, `anchor_commit`, `current_head`, `anchor_issues`, `anchor_drift_files`
 
 ---
 
@@ -61,3 +65,9 @@ BLOCKERS:
 ```bash
 uv run gz obpi reconcile OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces --json
 ```
+
+Anchor-aware blockers are emitted verbatim, for example:
+
+- `completion anchor evidence is missing`
+- `completion anchor drifted in recorded OBPI scope`
+- `completion git-sync evidence recorded blockers: ...`

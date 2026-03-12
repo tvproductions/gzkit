@@ -30,6 +30,26 @@ def git_cmd(project_root: Path, *args: str) -> tuple[int, str, str]:
     return run_exec(["git", *args], cwd=project_root)
 
 
+def resolve_git_head_commit(project_root: Path) -> str | None:
+    """Return the current HEAD short SHA, or None when unavailable."""
+    rc, head_sha, _err = git_cmd(project_root, "rev-parse", "--short=7", "HEAD")
+    if rc == 0 and head_sha:
+        return head_sha.strip()
+    return None
+
+
+def list_changed_files_between(
+    project_root: Path,
+    base_ref: str,
+    target_ref: str = "HEAD",
+) -> list[str] | None:
+    """Return changed files between two refs, or None when git cannot resolve them."""
+    rc, stdout, _err = git_cmd(project_root, "diff", "--name-only", f"{base_ref}..{target_ref}")
+    if rc != 0:
+        return None
+    return [line.strip() for line in stdout.splitlines() if line.strip()]
+
+
 def capture_validation_anchor_with_warnings(
     project_root: Path,
     adr_id: str | None = None,
@@ -38,11 +58,11 @@ def capture_validation_anchor_with_warnings(
     anchor: dict[str, str] = {}
     warnings: list[str] = []
 
-    rc_head, head_sha, err_head = git_cmd(project_root, "rev-parse", "HEAD")
-    if rc_head == 0 and head_sha:
-        anchor["commit"] = head_sha[:7]
+    head_commit = resolve_git_head_commit(project_root)
+    if head_commit:
+        anchor["commit"] = head_commit
     else:
-        warnings.append(err_head or "Could not resolve HEAD commit for receipt anchor.")
+        warnings.append("Could not resolve HEAD commit for receipt anchor.")
 
     rc_tag, tag, err_tag = git_cmd(project_root, "tag", "--points-at", "HEAD")
     if rc_tag == 0 and tag:

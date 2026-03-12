@@ -1,5 +1,6 @@
 import io
 import os
+import subprocess
 import tempfile
 from contextlib import contextmanager, redirect_stderr, redirect_stdout
 from dataclasses import dataclass
@@ -45,6 +46,48 @@ class CliRunner:
             exit_code=0 if exit_code is None else int(exit_code),
             output=output.getvalue(),
         )
+
+
+def _init_git_repo(path: Path, *, seed_file: str = "README.md") -> str:
+    """Initialize a disposable git repo and return the initial short HEAD SHA."""
+    subprocess.run(
+        ["git", "init", "-b", "main"],
+        cwd=path,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    subprocess.run(
+        ["git", "config", "user.name", "Test User"],
+        cwd=path,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    subprocess.run(
+        ["git", "config", "user.email", "test@example.com"],
+        cwd=path,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    (path / seed_file).write_text("seed\n", encoding="utf-8")
+    subprocess.run(["git", "add", "."], cwd=path, check=True, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "commit", "-m", "seed"],
+        cwd=path,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    result = subprocess.run(
+        ["git", "rev-parse", "--short=7", "HEAD"],
+        cwd=path,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return result.stdout.strip()
 
 
 def _write_obpi(

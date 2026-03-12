@@ -1,0 +1,12 @@
+Feature: OBPI anchor drift reconciliation
+  Completed OBPIs should fail closed when tracked files change after their completion anchor.
+
+  Scenario: Reconcile reports stale anchor drift for tracked scope changes
+    Given the workspace is initialized
+    And ADR-0.1.0 exists
+    And a completed OBPI with anchor-tracked receipt exists for OBPI-0.1.0-01-demo
+    And the tracked module changes after the completion anchor
+    When I run the gz command "obpi reconcile OBPI-0.1.0-01-demo --json"
+    Then the command exits non-zero
+    And JSON path "runtime_state" equals "drift"
+    And JSON path "anchor_state" equals "stale"

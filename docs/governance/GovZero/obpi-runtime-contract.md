@@ -40,6 +40,11 @@ Derived OBPI payloads expose these stable fields:
 - `completed`
 - `ledger_completed`
 - `evidence_ok`
+- `anchor_state`
+- `anchor_commit`
+- `current_head`
+- `anchor_issues`
+- `anchor_drift_files`
 - `issues`
 
 ---
@@ -53,13 +58,11 @@ Derived OBPI payloads expose these stable fields:
 | `completed` | Lite-compatible completion proof is present. |
 | `attested_completed` | Heavy/Foundation-compatible completion proof is present with attestation evidence. |
 | `validated` | A validated receipt exists on top of completed proof. |
-| `drift` | Ledger and brief evidence disagree, or completed proof is missing from one side. |
+| `drift` | Ledger/brief evidence disagree, or anchor-aware reconciliation found explicit blockers on completed proof. |
 
-Completed runtime states are:
-
-- `completed`
-- `attested_completed`
-- `validated`
+Completion accounting is separate from drift signaling. A row may still report
+`completed: true` when proof is intact but `runtime_state: drift` because
+anchor-aware reconciliation found closeout blockers.
 
 ---
 
@@ -158,9 +161,24 @@ later reconciliation consumes directly from ledger evidence:
 - `recorder_source`
 - `recorder_warnings`
 
-These fields do not currently change the derived runtime-state machine on their
-own. They exist so later anchor-aware reconciliation can explain *why* a
-completion drifted without inventing a second evidence source.
+Anchor-aware reconciliation consumes these fields directly:
+
+- if `HEAD` moved but no recorded-scope files changed, `anchor_state` remains
+  non-blocking (`scope_clean`)
+- if recorded-scope files changed since the completion anchor,
+  `anchor_state = stale` and reconciliation fails closed
+- if the completed receipt is missing anchor data or recorded degraded
+  `git_sync_state`, reconciliation emits explicit blockers
+
+The canonical derived anchor states are:
+
+- `not_applicable`
+- `not_tracked`
+- `current`
+- `scope_clean`
+- `stale`
+- `missing`
+- `degraded`
 
 ---
 

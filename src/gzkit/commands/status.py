@@ -459,6 +459,7 @@ def _extract_human_attestation(content: str) -> dict[str, Any]:
 
 
 def _inspect_obpi_brief(
+    project_root: Path,
     obpi_file: Path,
     obpi_id: str | None = None,
     graph: dict[str, Any] | None = None,
@@ -480,6 +481,7 @@ def _inspect_obpi_brief(
         key_proof_ok=key_proof_ok,
         fallback_key_proof=key_proof_body,
         human_attestation=human_attestation,
+        project_root=project_root,
     )
 
     return {
@@ -545,6 +547,7 @@ def _adr_obpi_status_rows(
             file_completed=False,
             implementation_evidence_ok=False,
             key_proof_ok=False,
+            project_root=project_root,
         )
         rows.append(
             {
@@ -564,6 +567,11 @@ def _adr_obpi_status_rows(
                 "req_proof_state": semantics["req_proof_state"],
                 "req_proof_inputs": list(semantics["req_proof_inputs"]),
                 "req_proof_summary": dict(semantics["req_proof_summary"]),
+                "anchor_state": semantics["anchor_state"],
+                "anchor_commit": semantics["anchor_commit"],
+                "current_head": semantics["current_head"],
+                "anchor_issues": list(semantics["anchor_issues"]),
+                "anchor_drift_files": list(semantics["anchor_drift_files"]),
                 "frontmatter_status": None,
                 "brief_status": None,
                 "issues": ["linked in ledger but no OBPI file found", *list(semantics["issues"])],
@@ -571,7 +579,7 @@ def _adr_obpi_status_rows(
         )
 
     for obpi_id, obpi_file in sorted(obpi_files.items()):
-        inspection = _inspect_obpi_brief(obpi_file, obpi_id=obpi_id, graph=graph)
+        inspection = _inspect_obpi_brief(project_root, obpi_file, obpi_id=obpi_id, graph=graph)
         rows.append(
             {
                 "id": obpi_id,
@@ -592,6 +600,11 @@ def _adr_obpi_status_rows(
                 "req_proof_state": inspection["req_proof_state"],
                 "req_proof_inputs": list(inspection["req_proof_inputs"]),
                 "req_proof_summary": dict(inspection["req_proof_summary"]),
+                "anchor_state": inspection["anchor_state"],
+                "anchor_commit": inspection["anchor_commit"],
+                "current_head": inspection["current_head"],
+                "anchor_issues": list(inspection["anchor_issues"]),
+                "anchor_drift_files": list(inspection["anchor_drift_files"]),
                 "frontmatter_status": inspection["frontmatter_status"],
                 "brief_status": inspection["brief_status"],
                 "issues": list(inspection["issues"]),
@@ -634,13 +647,12 @@ def _summarize_obpi_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
 
 def _obpi_closeout_blockers(row: dict[str, Any]) -> list[str]:
     """Return closeout-blocking messages for one OBPI row."""
-    if _obpi_row_complete(row):
-        return []
-
     obpi_id = cast(str, row.get("id", "(unknown)"))
     issues = [str(issue) for issue in cast(list[str], row.get("issues", [])) if str(issue).strip()]
     if issues:
         return [f"{obpi_id}: {issue}" for issue in issues]
+    if _obpi_row_complete(row):
+        return []
 
     runtime_state = str(row.get("runtime_state", "pending"))
     proof_state = str(row.get("proof_state", "missing"))
@@ -751,6 +763,7 @@ def _build_obpi_status_entry(
             file_completed=False,
             implementation_evidence_ok=False,
             key_proof_ok=False,
+            project_root=project_root,
         )
         result.update(
             {
@@ -768,6 +781,11 @@ def _build_obpi_status_entry(
                 "req_proof_state": semantics["req_proof_state"],
                 "req_proof_inputs": list(semantics["req_proof_inputs"]),
                 "req_proof_summary": dict(semantics["req_proof_summary"]),
+                "anchor_state": semantics["anchor_state"],
+                "anchor_commit": semantics["anchor_commit"],
+                "current_head": semantics["current_head"],
+                "anchor_issues": list(semantics["anchor_issues"]),
+                "anchor_drift_files": list(semantics["anchor_drift_files"]),
                 "frontmatter_status": None,
                 "brief_status": None,
                 "issues": ["linked in ledger but no OBPI file found", *list(semantics["issues"])],
@@ -775,7 +793,7 @@ def _build_obpi_status_entry(
         )
         return result
 
-    inspection = _inspect_obpi_brief(obpi_file, obpi_id=obpi_id, graph=graph)
+    inspection = _inspect_obpi_brief(project_root, obpi_file, obpi_id=obpi_id, graph=graph)
     result.update(
         {
             "completed": bool(inspection["completed"]),
@@ -792,6 +810,11 @@ def _build_obpi_status_entry(
             "req_proof_state": inspection["req_proof_state"],
             "req_proof_inputs": list(inspection["req_proof_inputs"]),
             "req_proof_summary": dict(inspection["req_proof_summary"]),
+            "anchor_state": inspection["anchor_state"],
+            "anchor_commit": inspection["anchor_commit"],
+            "current_head": inspection["current_head"],
+            "anchor_issues": list(inspection["anchor_issues"]),
+            "anchor_drift_files": list(inspection["anchor_drift_files"]),
             "frontmatter_status": inspection["frontmatter_status"],
             "brief_status": inspection["brief_status"],
             "issues": list(inspection["issues"]),
@@ -808,6 +831,9 @@ def _render_obpi_status_details(result: dict[str, Any]) -> None:
     runtime_state = str(result.get("runtime_state", "pending"))
     proof_state = str(result.get("proof_state", "missing"))
     attestation_state = str(result.get("attestation_state", "not_required"))
+    anchor_state = str(result.get("anchor_state", "not_applicable"))
+    anchor_commit = result.get("anchor_commit") or "(none)"
+    current_head = result.get("current_head") or "(unknown)"
     issues = cast(list[str], result.get("issues", []))
 
     console.print(f"[bold]{obpi_id}[/bold]")
@@ -820,6 +846,9 @@ def _render_obpi_status_details(result: dict[str, Any]) -> None:
     )
     console.print(f"  Proof State: {proof_state}")
     console.print(f"  Attestation State: {attestation_state}")
+    console.print(f"  Anchor State: {anchor_state}")
+    console.print(f"  Anchor Commit: {anchor_commit}")
+    console.print(f"  Current HEAD: {current_head}")
     console.print(
         "  Completion: "
         + ("[green]COMPLETE[/green]" if result.get("completed") else "[yellow]PENDING[/yellow]")
