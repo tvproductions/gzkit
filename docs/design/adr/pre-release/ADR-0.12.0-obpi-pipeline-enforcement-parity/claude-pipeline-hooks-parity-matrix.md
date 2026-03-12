@@ -23,7 +23,7 @@ comes from `gz-plan-audit`; in gzkit it is now tracked explicitly as
 
 | Canonical Artifact | Current gzkit Status | gzkit Target | Trigger / Contract | Owner OBPI | Notes |
 | --- | --- | --- | --- | --- | --- |
-| `plan-audit-gate.py` | Missing | `.claude/hooks/plan-audit-gate.py` | `ExitPlanMode` hard gate; consumes `.claude/plans/.plan-audit-receipt.json` | `OBPI-0.12.0-02` | Blocked until `OBPI-0.12.0-07` lands the receipt generator |
+| `plan-audit-gate.py` | Ported (inactive) | `.claude/hooks/plan-audit-gate.py` | `ExitPlanMode` hard gate; consumes `.claude/plans/.plan-audit-receipt.json` | `OBPI-0.12.0-02` | Hook script is ported; registration and ordering still land in `OBPI-0.12.0-06` |
 | `pipeline-router.py` | Missing | `.claude/hooks/pipeline-router.py` | plan-exit routing; reads receipt and directs agent to `gz-obpi-pipeline` | `OBPI-0.12.0-03` | Must support PASS-only routing and silent no-op when receipt absent |
 | `pipeline-gate.py` | Missing | `.claude/hooks/pipeline-gate.py` | `Write|Edit` block for `src/` and `tests/`; consumes active pipeline marker | `OBPI-0.12.0-04` | Must honor per-OBPI marker first, legacy marker second |
 | `pipeline-completion-reminder.py` | Missing | `.claude/hooks/pipeline-completion-reminder.py` | pre-commit / pre-push reminder before incomplete pipeline state leaves local repo | `OBPI-0.12.0-05` | Non-blocking warning surface |
