@@ -18,9 +18,11 @@
     this scan cycle.
   - Pipeline mandate was absent from gzkit's generated agent contracts and
     operator workflow docs.
-  - Lock and plan-audit hook parity remain missing compatibility seams.
+  - Lock and plan-audit hook parity remain missing compatibility seams, now
+    promoted into `ADR-0.12.0-obpi-pipeline-enforcement-parity`.
 - Recommended next minor(s):
-  - continue `ADR-0.11.0` for runtime enforcement and closeout alignment
+  - execute `ADR-0.12.0` for plan-audit, router, write-time gate, and reminder
+    parity
 
 ---
 
@@ -93,7 +95,7 @@
 |---|---|---|---|---|---|
 | `gz-obpi-pipeline` skill surface | `../airlineops/.claude/skills/gz-obpi-pipeline/SKILL.md` | `.gzkit/skills/gz-obpi-pipeline/SKILL.md` + mirrors | Import Now | high-impact missing governance surface; operator ritual was absent | `uv run gz agent sync control-surfaces`, `uv run gz cli audit` |
 | Pipeline mandate in generated agent contracts | `../airlineops/AGENTS.md` | `src/gzkit/templates/*.md` -> synced contracts | Import Now | without this, agents still implement freeform | synced `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md` |
-| `gz-obpi-lock` and plan-audit hook parity | AirlineOps runbook + skill | future gzkit runtime/control surfaces | Defer (Tracked) | no current native surface; imported skill now fails closed and documents the gap | compatibility note in skill, `gz adr audit-check` still fail-closes |
+| `gz-obpi-lock` and plan-audit hook parity | AirlineOps runbook + skill | `ADR-0.12.0-obpi-pipeline-enforcement-parity` | Defer (Tracked) | no current native surface yet; successor ADR now owns the parity contract | compatibility note in skill, successor ADR package, `gz adr audit-check` still fail-closes |
 
 ## NOT GovZero Exclusion Log
 
@@ -128,10 +130,11 @@
   still weaker than canon.
 - Evidence: no `gz-obpi-lock` skill or plan-audit hook found in gzkit; pipeline
   skill records this as fail-closed compatibility behavior.
-- Proposed remediation: continue runtime parity import in later `ADR-0.11.0`
-  tranches or successor ADR.
-- Target SemVer minor: `0.11.0+`
-- ADR/OBPI linkage: `ADR-0.11.0` follow-on after `OBPI-0.11.0-05`
+- Proposed remediation: execute `ADR-0.12.0-obpi-pipeline-enforcement-parity`,
+  beginning with the intake/contract tranche and the newly explicit
+  `gz-plan-audit` dependency.
+- Target SemVer minor: `0.12.0`
+- ADR/OBPI linkage: `ADR-0.12.0` / `OBPI-0.12.0-01`, `OBPI-0.12.0-07`
 
 ---
 
@@ -167,8 +170,8 @@ Notes:
    Owner: Human + agent
 2. Action: import lock and plan-audit parity so Stage 1 concurrency and receipt
    enforcement match AirlineOps more closely
-   Parent ADR: `ADR-0.11.0-airlineops-obpi-completion-pipeline-parity`
-   OBPI: successor tranche required
+   Parent ADR: `ADR-0.12.0-obpi-pipeline-enforcement-parity`
+   OBPI: `OBPI-0.12.0-01` intake/contract, then `OBPI-0.12.0-07` plus hook tranches
    Owner: agent
 
 ---
@@ -177,5 +180,5 @@ Notes:
 
 | Item | Rationale | Revisit by |
 |---|---|---|
-| `gz-obpi-lock` parity | no native surface yet; current skill fails closed instead of claiming support | next `ADR-0.11.0` execution tranche |
-| plan-audit hook parity | no hook implementation yet in gzkit | next planning-lifecycle parity tranche |
+| `gz-obpi-lock` parity | no native surface yet; current skill fails closed instead of claiming support | follow-on after `ADR-0.12.0` hook parity |
+| plan-audit hook parity | successor ADR now owns the contract and receipt surface definition | `ADR-0.12.0` |

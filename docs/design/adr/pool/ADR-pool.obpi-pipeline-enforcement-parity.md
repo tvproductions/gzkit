@@ -1,12 +1,15 @@
 ---
 id: ADR-pool.obpi-pipeline-enforcement-parity
-status: Pool
+status: Superseded
 parent: PRD-GZKIT-1.0.0
 lane: heavy
 enabler: ADR-0.11.0-airlineops-obpi-completion-pipeline-parity
+promoted_to: ADR-0.12.0-obpi-pipeline-enforcement-parity
 ---
 
 # ADR-pool.obpi-pipeline-enforcement-parity: AirlineOps-Style OBPI Pipeline Enforcement Parity
+> Promoted to `ADR-0.12.0-obpi-pipeline-enforcement-parity` on 2026-03-12. This pool file is retained as historical intake context.
+
 
 ## Status
 

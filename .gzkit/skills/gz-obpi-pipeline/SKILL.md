@@ -207,7 +207,9 @@ After attestation in Normal mode, or after evidence capture in Exception mode:
 - gzkit adapts the control surface to its native command vocabulary and current
   repository structure.
 - Until `gz-obpi-lock` and plan-audit hooks are ported, pipeline stages that
-  depend on them must fail closed instead of being silently skipped.
+  depend on them must fail closed instead of being silently skipped. The active
+  parity contract for those missing surfaces is tracked under
+  `ADR-0.12.0-obpi-pipeline-enforcement-parity`.
 - The point of this skill is sequencing and governance memory: verify ->
   ceremony -> guarded git sync -> completion accounting is mandatory.
 - In gzkit, `uv run gz git-sync --apply --lint --test` is the canonical Stage 5
