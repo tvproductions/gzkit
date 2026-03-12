@@ -2,7 +2,7 @@
 id: OBPI-0.11.0-06-template-closeout-and-migration-alignment
 parent: ADR-0.11.0-airlineops-obpi-completion-pipeline-parity
 item: 6
-lane: Heavy
+lane: Lite
 status: Draft
 ---
 
@@ -24,8 +24,9 @@ and written guidance.
 
 ## Lane
 
-**Heavy** -- This unit changes operator-visible guidance and template contracts
-used by multiple control surfaces.
+**Lite** -- This unit aligns documentation, templates, and generated guidance
+without changing a command/API/schema/runtime surface. The parent ADR remains
+Heavy, so human attestation still applies at closeout by inheritance.
 
 ## Allowed Paths
 
@@ -100,7 +101,7 @@ used by multiple control surfaces.
 
 - [ ] Acceptance scenarios pass: `uv run -m behave features/`
 
-### Gate 5: Human (Heavy only)
+### Gate 5: Human (Parent Heavy inheritance)
 
 - [ ] Human attestation recorded
 
@@ -118,42 +119,136 @@ uv run -m behave features/
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.11.0-06-01: Templates express the faithful transaction and evidence rules consistently with runtime surfaces.
-- [ ] REQ-0.11.0-06-02: Operator docs describe one coherent OBPI completion and closeout flow.
-- [ ] REQ-0.11.0-06-03: Migration notes eliminate contradictory guidance across 0.7.0, 0.10.0, and 0.11.0 surfaces.
+- [x] REQ-0.11.0-06-01: Templates express the faithful transaction and evidence rules consistently with runtime surfaces.
+- [x] REQ-0.11.0-06-02: Operator docs describe one coherent OBPI completion and closeout flow.
+- [x] REQ-0.11.0-06-03: Migration notes eliminate contradictory guidance across 0.7.0, 0.10.0, and 0.11.0 surfaces.
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests and validation commands pass
-- [ ] **Code Quality:** Lint and type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests and validation commands pass
+- [x] **Code Quality:** Lint and type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [ ] **OBPI Acceptance:** Awaiting human attestation and completion receipt
 
 ## Evidence
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+$ uv run gz agent sync control-surfaces
+Syncing control surfaces...
+  Updated .claude/hooks/README.md
+  Updated .claude/hooks/instruction-router.py
+  Updated .claude/hooks/ledger-writer.py
+  Updated .claude/hooks/post-edit-ruff.py
+  Updated .claude/settings.json
+  Updated .copilotignore
+  Updated .github/copilot-instructions.md
+  Updated .github/copilot/hooks/ledger-writer.py
+  Updated .github/discovery-index.json
+  Updated .gzkit/manifest.json
+  Updated AGENTS.md
+  Updated CLAUDE.md
+
+Sync complete.
+
+$ uv run gz validate --documents
+All validations passed.
+
+$ uv run gz test
+Running tests...
+Ran 350 tests in 8.242s
+
+OK
+
+Tests passed.
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/typecheck output here
+$ uv run gz lint
+Running linters...
+All checks passed!
+
+ADR path contract check passed.
+Lint passed.
+
+$ uv run gz typecheck
+Running type checker...
+All checks passed!
+
+Type check passed.
+```
+
+### Gate 3 (Docs)
+
+```text
+$ uv run mkdocs build --strict
+INFO    -  Cleaning site directory
+INFO    -  Building documentation to directory: /Users/jeff/Documents/Code/gzkit/site
+INFO    -  Documentation built in 0.70 seconds
+```
+
+### Gate 4 (BDD)
+
+```text
+$ uv run -m behave features/
+2 features passed, 0 failed, 0 skipped
+6 scenarios passed, 0 failed, 0 skipped
+31 steps passed, 0 failed, 0 skipped
+Took 0min 0.252s
+```
+
+### Gate 5 (Human)
+
+```text
+Pending. Parent ADR is Heavy, so final brief completion and receipt emission
+remain gated on explicit human attestation.
+```
+
+## Value Narrative
+
+Before this tranche, gzkit still carried contradictory habits across doctrine,
+templates, generated control surfaces, and operator docs: Heavy-lane guidance
+was broader than the intended runtime-contract trigger, the OBPI template still
+advertised legacy verification commands, and workflow docs still implied older
+post-ceremony habits. Now the canon, the brief templates, the generated agent
+surfaces, and the operator runbooks all describe one coherent OBPI-first flow:
+verify, attest when required, run guarded `git sync`, then record final OBPI
+completion accounting and reconcile status from the synced state.
+
+## Key Proof
+
+```text
+The regenerated operator contract in `AGENTS.md` now states both sides of the
+doctrine and workflow fix:
+
+- Heavy is reserved for command/API/schema/runtime-contract changes used by
+  humans or external systems.
+- Documentation/process/template-only changes stay Lite unless they change one
+  of those external surfaces.
+- The pipeline enforces `verify -> ceremony -> guarded git sync -> completion accounting`.
+- Generated command examples now use `uv run gz test` and gz-native verification
+  defaults from `.gzkit/manifest.json`.
+
+The Gate 4 scenario in `features/heavy_lane_gate4.feature` now asserts that
+generated surface directly.
 ```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
+- Files created/modified: `docs/governance/GovZero/charter.md`, `docs/user/concepts/lanes.md`, `docs/user/concepts/workflow.md`, `docs/user/concepts/lifecycle.md`, `docs/user/concepts/closeout.md`, `docs/user/runbook.md`, `docs/user/commands/index.md`, `src/gzkit/templates/obpi.md`, `src/gzkit/templates/agents.md`, `src/gzkit/templates/claude.md`, `src/gzkit/sync.py`, `src/gzkit/cli.py`, `.gzkit/skills/gz-obpi-pipeline/SKILL.md`, `.gzkit/skills/gz-obpi-brief/assets/OBPI_BRIEF-template.md`, `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, `.gzkit/manifest.json`, `docs/design/adr/pre-release/ADR-0.7.0-obpi-first-operations/ADR-0.7.0-obpi-first-operations.md`, `docs/design/adr/pre-release/ADR-0.10.0-obpi-runtime-surface/ADR-0.10.0-obpi-runtime-surface.md`, and regenerated mirror/control-surface files under `.agents/`, `.claude/`, and `.github/`
+- Tests added: updated `tests/test_sync.py`, updated `tests/test_validate.py`, updated `features/heavy_lane_gate4.feature`
+- Date completed: implementation verified 2026-03-12; completion pending attestation
+- Attestation status: pending parent-ADR human attestation
+- Defects noted: none
 
 ---
 

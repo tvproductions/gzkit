@@ -1981,7 +1981,7 @@ def implement_cmd(adr: str | None) -> None:
     adr_id = resolve_target_adr(project_root, config, ledger, adr)
     manifest = load_manifest(project_root)
 
-    test_command = manifest.get("verification", {}).get("test", "uv run -m unittest discover tests")
+    test_command = manifest.get("verification", {}).get("test", "uv run gz test")
     if not _run_gate_2(
         project_root,
         ledger,
@@ -2016,7 +2016,7 @@ def gates_cmd(gate_number: int | None, adr: str | None) -> None:
             project_root,
             ledger,
             adr_id,
-            manifest.get("verification", {}).get("test", "uv run -m unittest discover tests"),
+            manifest.get("verification", {}).get("test", "uv run gz test"),
         ),
         3: lambda: _run_gate_3(
             project_root,
@@ -2056,7 +2056,7 @@ def _manifest_verification_commands(
 ) -> list[tuple[str, str]]:
     verification = manifest.get("verification", {})
     commands: list[tuple[str, str]] = [
-        ("test", verification.get("test", "uv run -m unittest discover tests")),
+        ("test", verification.get("test", "uv run gz test")),
         ("lint", verification.get("lint", "uv run gz lint")),
         ("typecheck", verification.get("typecheck", "uv run gz typecheck")),
     ]
@@ -2070,7 +2070,7 @@ def _closeout_verification_steps(
 ) -> tuple[list[tuple[str, str]], str | None]:
     verification = manifest.get("verification", {})
     steps: list[tuple[str, str]] = [
-        ("Gate 2 (TDD)", verification.get("test", "uv run -m unittest discover tests")),
+        ("Gate 2 (TDD)", verification.get("test", "uv run gz test")),
         ("Quality (Lint)", verification.get("lint", "uv run gz lint")),
         ("Quality (Typecheck)", verification.get("typecheck", "uv run gz typecheck")),
     ]

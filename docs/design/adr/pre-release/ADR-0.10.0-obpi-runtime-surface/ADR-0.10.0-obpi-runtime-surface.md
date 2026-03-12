@@ -57,6 +57,22 @@ compatibility seams rather than replaced with ad hoc runtime state.
 - Some target behavior depends on backlog prerequisites such as
   `ADR-pool.execution-memory-graph`, so sequencing discipline remains necessary.
 
+## Migration Note
+
+As of 2026-03-12, the runtime surfaces introduced here are consumed through the
+ADR-0.11.0 OBPI pipeline. Operator guidance that once emphasized ADR-only
+closeout flows or manual post-ceremony habits is superseded by the current
+sequence:
+
+1. verify
+2. present evidence / attestation when required
+3. guarded `git sync`
+4. final OBPI completion accounting
+5. ADR closeout later
+
+Use `docs/user/concepts/workflow.md`, `docs/user/concepts/lifecycle.md`, and
+`docs/user/runbook.md` as the active operator references.
+
 ## Decomposition Scorecard
 
 <!-- Deterministic OBPI sizing: score each dimension 0/1/2. -->
