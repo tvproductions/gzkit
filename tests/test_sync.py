@@ -416,8 +416,27 @@ class TestSyncControlSurfaces(unittest.TestCase):
 
             self.assertIn("guarded git sync -> completion", agents)
             self.assertIn("uv run gz git-sync --apply --lint --test", agents)
+            self.assertIn("uv run gz test", agents)
+            self.assertIn("Documentation/process/template-only changes stay", agents)
+            self.assertNotIn("uv run -m unittest discover tests", agents)
             self.assertIn("uv run gz git-sync --apply --lint --test", claude)
+            self.assertIn("uv run gz test", claude)
             self.assertIn("uv run gz git-sync --apply --lint --test", copilot)
+
+    def test_sync_manifest_uses_gz_native_verification_defaults(self) -> None:
+        """Generated manifests use gz-native verification commands."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            sync_all(project_root, config)
+
+            manifest = (project_root / ".gzkit" / "manifest.json").read_text(encoding="utf-8")
+            self.assertIn('"test": "uv run gz test"', manifest)
+            self.assertIn('"lint": "uv run gz lint"', manifest)
+            self.assertIn('"typecheck": "uv run gz typecheck"', manifest)
+            self.assertIn('"docs": "uv run mkdocs build --strict"', manifest)
+            self.assertIn('"bdd": "uv run -m behave features/"', manifest)
 
     def test_sync_includes_skills_in_generated_surfaces(self) -> None:
         """Generated AGENTS/CLAUDE/Copilot files include the skill catalog."""

@@ -99,6 +99,9 @@ Skill behavior is standardized and synchronized by `gz agent sync control-surfac
 
 - **lite**: Gates 1, 2 required
 - **heavy**: All gates required
+- Heavy is reserved for command/API/schema/runtime-contract changes used by
+  humans or external systems. Documentation/process/template-only changes stay
+  Lite unless they change one of those external surfaces.
 
 ### OBPI Decomposition Mandate (Matrix of Four Overlay)
 
@@ -162,7 +165,7 @@ Always use `uv run` for Python commands:
 
 ```bash
 uv run gz --help           # CLI entry point
-uv run -m unittest discover tests  # Run tests
+uv run gz test             # Run tests
 ```
 
 ### Quality Commands

@@ -57,14 +57,16 @@ CLI attestation tokens remain stable, but presentations map to canonical terms:
 1. Load OBPI transaction context (brief, ADR, handoff context, and plan receipt
    when present) before implementation begins
 2. Run OBPI increments repeatedly through the transaction contract
-2. Record OBPI-scoped receipts using `gz obpi emit-receipt`
+3. After required ceremony/attestation, run guarded repo sync with
+   `uv run gz git-sync --apply --lint --test`
+4. Record OBPI-scoped receipts using `gz obpi emit-receipt`
    Completed receipts are fail-closed when required value narrative/key proof evidence is missing.
    Heavy/Foundation parent ADRs additionally require explicit human-attestation evidence.
-3. Reconcile OBPI completeness at ADR boundary (`gz obpi reconcile`, `gz adr audit-check`)
-4. Perform ADR closeout and attestation (`gz closeout`, `gz attest`)
+5. Reconcile OBPI completeness at ADR boundary (`gz obpi reconcile`, `gz adr audit-check`)
+6. Perform ADR closeout and attestation (`gz closeout`, `gz attest`)
    `gz closeout` remains blocked until linked OBPIs are closeout-ready.
-5. Run post-attestation audit (`gz audit`)
-6. Emit ADR-level receipt/accounting (`gz adr emit-receipt`)
+7. Run post-attestation audit (`gz audit`)
+8. Emit ADR-level receipt/accounting (`gz adr emit-receipt`)
 
 If a required compatibility surface is missing, the transaction contract still
 controls: shared or spine-touch execution must stay single-OBPI, and missing

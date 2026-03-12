@@ -27,3 +27,9 @@ Feature: Heavy lane Gate 4 governance
     Given the workspace is initialized in heavy mode
     Then the file "AGENTS.md" contains "guarded git sync -> completion"
     And the file "AGENTS.md" contains "uv run gz git-sync --apply --lint --test"
+
+  Scenario: Canonical lane doctrine narrows Heavy to runtime-contract changes
+    Given the workspace is initialized in heavy mode
+    Then the file "AGENTS.md" contains "Documentation/process/template-only changes stay"
+    And the file "AGENTS.md" contains "command/API/schema/runtime-contract changes"
+    And the file "AGENTS.md" contains "uv run gz test"

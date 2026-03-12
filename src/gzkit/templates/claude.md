@@ -52,7 +52,7 @@ Follow the gzkit gate covenant for all changes:
 2. Check status: `gz status`
 3. Create ADR for changes: `gz plan`
 4. For OBPI work after planning, run `gz-obpi-pipeline`
-5. Validate: `gz validate --documents && gz check`
+5. Validate: `gz validate --documents`, `gz lint`, `gz typecheck`, `gz test`
 6. Request attestation: Human runs `gz attest`
 7. In the pipeline closeout stage, run `uv run gz git-sync --apply --lint --test` before final OBPI completion accounting
 
