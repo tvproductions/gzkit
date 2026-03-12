@@ -161,6 +161,17 @@ later reconciliation consumes directly from ledger evidence:
 - `recorder_source`
 - `recorder_warnings`
 
+The intended pipeline ordering in gzkit is:
+
+1. verify
+2. ceremony / human attestation when required
+3. guarded `git sync`
+4. final completed receipt emission
+5. downstream brief/ADR sync
+
+That ordering makes the completed receipt the anchor for the synced
+implementation state rather than for a clearly unsynced repository snapshot.
+
 Anchor-aware reconciliation consumes these fields directly:
 
 - if `HEAD` moved but no recorded-scope files changed, `anchor_state` remains

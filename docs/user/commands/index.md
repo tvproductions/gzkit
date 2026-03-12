@@ -63,12 +63,14 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 
 ## Operator Sequences
 
-Primary daily loop (OBPI-first):
+Primary daily loop (OBPI-first, pipeline-governed):
 
 1. Orientation and ADR/OBPI context (`gz status`, `gz adr status`, `gz obpi status`)
-2. One OBPI increment implementation and verification (`gz implement`, optional Gate 3 docs check)
-3. OBPI reconciliation before receipt emission (`gz obpi reconcile`)
-4. OBPI evidence update in brief + OBPI receipt (`gz obpi emit-receipt`)
+2. Plan the OBPI, then execute it through `gz-obpi-pipeline`
+3. Present the Heavy-lane acceptance ceremony when required
+4. Run guarded sync (`gz git-sync --apply --lint --test`)
+5. Emit final OBPI completion accounting (`gz obpi emit-receipt`)
+6. Reconcile/update brief and ADR state (`gz obpi reconcile`, `gz adr status`)
 
 ADR closeout loop (after OBPI batch completion):
 

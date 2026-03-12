@@ -59,6 +59,7 @@ Follow the gzkit gate covenant for all changes:
 4. For OBPI work after planning, run `gz-obpi-pipeline`
 5. Validate: `gz validate --documents && gz check`
 6. Request attestation: Human runs `gz attest`
+7. In the pipeline closeout stage, run `uv run gz git-sync --apply --lint --test` before final OBPI completion accounting
 
 ## OBPI Acceptance
 
@@ -69,7 +70,8 @@ OBPI closure follows `AGENTS.md` and is pipeline-first plus attestation-first:
 3. Present key proof
 4. Present verification evidence
 5. Wait for explicit human acceptance
-6. Only then mark brief status `Completed`
+6. Run `uv run gz git-sync --apply --lint --test` before final completion receipt/accounting
+7. Only then mark brief status `Completed`
 
 Reference: `AGENTS.md` section `OBPI Acceptance Protocol`.
 

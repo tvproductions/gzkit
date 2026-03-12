@@ -402,6 +402,23 @@ class TestParseArtifactMetadata(unittest.TestCase):
 class TestSyncControlSurfaces(unittest.TestCase):
     """Tests for full control-surface synchronization."""
 
+    def test_sync_generated_surfaces_include_guarded_git_sync_pipeline_contract(self) -> None:
+        """Generated surfaces carry the guarded sync-before-accounting contract."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            sync_all(project_root, config)
+
+            agents = (project_root / config.paths.agents_md).read_text(encoding="utf-8")
+            claude = (project_root / config.paths.claude_md).read_text(encoding="utf-8")
+            copilot = (project_root / config.paths.copilot_instructions).read_text(encoding="utf-8")
+
+            self.assertIn("guarded git sync -> completion", agents)
+            self.assertIn("uv run gz git-sync --apply --lint --test", agents)
+            self.assertIn("uv run gz git-sync --apply --lint --test", claude)
+            self.assertIn("uv run gz git-sync --apply --lint --test", copilot)
+
     def test_sync_includes_skills_in_generated_surfaces(self) -> None:
         """Generated AGENTS/CLAUDE/Copilot files include the skill catalog."""
         with tempfile.TemporaryDirectory() as tmpdir:

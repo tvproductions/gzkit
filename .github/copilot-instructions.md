@@ -45,6 +45,7 @@ When completing an OBPI brief:
 2. Provide value narrative + one key proof example
 3. Provide verification evidence (tests/commands/output)
 4. Wait for explicit human acceptance before setting `Completed` for Heavy/Foundation parent ADR work
+5. Run `uv run gz git-sync --apply --lint --test` before final OBPI completion receipt/accounting
 
 Reference: `AGENTS.md` section `OBPI Acceptance Protocol`.
 

@@ -149,6 +149,11 @@ Minimum evidence expectations:
 - value narrative and key proof
 - lane-appropriate attestation evidence
 
+For gzkit pipeline-driven closeout, final completed-receipt accounting must run
+only after the guarded sync ritual (`uv run gz git-sync --apply --lint --test`)
+has succeeded. If the repo is still dirty, diverged, or otherwise unsynced at
+that point, the workflow must stop before final completion accounting.
+
 Agents may prepare and summarize this evidence. They may not replace human
 attestation for Heavy or Foundation work.
 

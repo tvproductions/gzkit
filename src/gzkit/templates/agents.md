@@ -124,10 +124,13 @@ Detailed standards in the [OBPI Decomposition Matrix](docs/governance/GovZero/ob
 
 **Pipeline mandate:** After plan approval for OBPI work, agents MUST invoke the
 OBPI execution pipeline (`gz-obpi-pipeline`) instead of implementing directly.
-The pipeline enforces the verify -> ceremony -> sync sequence that gets lost in
-freeform execution. If implementation is already complete, invoke with
-`--from=verify` or `--from=ceremony` to enter the governance stages. Freeform
-implementation without pipeline invocation is a process defect.
+The pipeline enforces the verify -> ceremony -> guarded git sync -> completion
+accounting sequence that gets lost in freeform execution. In gzkit, Stage 5
+uses `uv run gz git-sync --apply --lint --test` before final OBPI completion
+receipt emission and brief/ADR sync. If implementation is already complete,
+invoke with `--from=verify` or `--from=ceremony` to enter the governance
+stages. Freeform implementation without pipeline invocation is a process
+defect.
 
 ### Ceremony Steps
 
