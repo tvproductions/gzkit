@@ -96,6 +96,7 @@ Use the canonical skill catalog and keep mirrors synced via `gz agent sync contr
 - `gz-obpi-reconcile`: OBPI brief reconciliation — Audit briefs against evidence, fix stale metadata, write ledger proof. (`.gzkit/skills/gz-obpi-reconcile/SKILL.md`)
 - `gz-obpi-sync`: Sync OBPI status in ADR table from brief source files. Detects drift and reconciles. (Layer 3) (`.gzkit/skills/gz-obpi-sync/SKILL.md`)
 - `gz-plan`: Create ADR artifacts for planned change. Use when recording architecture intent and lane-specific scope. (`.gzkit/skills/gz-plan/SKILL.md`)
+- `gz-plan-audit`: Pre-flight alignment audit — verify ADR intent, OBPI brief scope, and plan are aligned before implementation begins. Use when exiting plan mode, before starting implementation, or to catch scope drift between ADR intent and the active OBPI brief. (`.gzkit/skills/gz-plan-audit/SKILL.md`)
 - `gz-prd`: Create product requirement artifacts. Use when defining or revising project-level intent before ADR planning. (`.gzkit/skills/gz-prd/SKILL.md`)
 - `gz-register-adrs`: Register existing ADR files missing from ledger state. Use when reconciling on-disk ADRs with governance state. (`.gzkit/skills/gz-register-adrs/SKILL.md`)
 - `gz-session-handoff`: Create and resume session handoff documents for agent context preservation across engineering sessions. (`.gzkit/skills/gz-session-handoff/SKILL.md`)
