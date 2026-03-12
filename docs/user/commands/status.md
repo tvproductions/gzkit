@@ -20,7 +20,7 @@ For single-OBPI drilldown, use `gz obpi status` or `gz obpi reconcile`.
 Per ADR it reports:
 
 - OBPI summary (`total`, `completed`, `incomplete`, `unit_status`)
-- OBPI rows (linked file presence, `runtime_state`, proof/attestation state, and issues)
+- OBPI rows (linked file presence, `runtime_state`, proof/attestation state, anchor state, and issues)
 - Closeout readiness fields (`closeout_ready`, `closeout_blockers`)
 - QC readiness summary (`READY` / `PENDING` with pending checkpoints)
 - Canonical lifecycle (`Pending`, `Completed`, `Validated`, `Abandoned`)
@@ -61,7 +61,8 @@ even if ledger attestation/receipt events indicate `Completed` or `Validated`.
 - `closeout_ready`
 - `closeout_blockers`
 - additive per-OBPI runtime fields such as `runtime_state`, `proof_state`,
-  `attestation_requirement`, `attestation_state`, `req_proof_state`, and `req_proof_inputs`
+  `attestation_requirement`, `attestation_state`, `req_proof_state`, `req_proof_inputs`,
+  `anchor_state`, `anchor_commit`, `current_head`, `anchor_issues`, and `anchor_drift_files`
 - related additive fields
 
 ---

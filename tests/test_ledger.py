@@ -420,6 +420,7 @@ class TestLedger(unittest.TestCase):
         self.assertEqual(semantics["proof_state"], "recorded")
         self.assertEqual(semantics["attestation_requirement"], "optional")
         self.assertTrue(semantics["completed"])
+        self.assertEqual(semantics["anchor_state"], "not_tracked")
 
     def test_derive_obpi_semantics_requires_attestation_for_attested_completed(self) -> None:
         """Attested completion reports required attestation and records it when present."""
@@ -483,6 +484,135 @@ class TestLedger(unittest.TestCase):
         self.assertIn(
             "ledger says completed but brief file status is not Completed", semantics["issues"]
         )
+        self.assertFalse(semantics["completed"])
+
+    def test_derive_obpi_semantics_reports_scope_clean_when_head_advances_outside_scope(
+        self,
+    ) -> None:
+        """Anchor mismatch without recorded-scope overlap remains complete and non-drifted."""
+        semantics = derive_obpi_semantics(
+            {
+                "latest_receipt_event": "completed",
+                "obpi_completion": "completed",
+                "ledger_completed": True,
+                "latest_evidence": {},
+                "latest_completion_evidence": {
+                    "scope_audit": {
+                        "allowlist": ["src/module.py"],
+                        "changed_files": ["src/module.py"],
+                        "out_of_scope_files": [],
+                    }
+                },
+                "latest_completion_anchor": {"commit": "abc1234", "semver": "0.10.0"},
+            },
+            found_file=True,
+            file_completed=True,
+            implementation_evidence_ok=True,
+            key_proof_ok=True,
+            current_head="def5678",
+            files_since_anchor=["docs/guide.md"],
+        )
+        self.assertEqual(semantics["runtime_state"], "completed")
+        self.assertEqual(semantics["anchor_state"], "scope_clean")
+        self.assertEqual(semantics["anchor_drift_files"], [])
+        self.assertEqual(semantics["issues"], [])
+        self.assertTrue(semantics["completed"])
+
+    def test_derive_obpi_semantics_reports_stale_anchor_when_scope_changes(self) -> None:
+        """Anchor drift is surfaced when files changed since completion overlap recorded scope."""
+        semantics = derive_obpi_semantics(
+            {
+                "latest_receipt_event": "completed",
+                "obpi_completion": "completed",
+                "ledger_completed": True,
+                "latest_evidence": {},
+                "latest_completion_evidence": {
+                    "scope_audit": {
+                        "allowlist": ["src/gzkit/ledger.py", "tests/**"],
+                        "changed_files": ["src/gzkit/ledger.py"],
+                        "out_of_scope_files": [],
+                    }
+                },
+                "latest_completion_anchor": {"commit": "abc1234", "semver": "0.10.0"},
+            },
+            found_file=True,
+            file_completed=True,
+            implementation_evidence_ok=True,
+            key_proof_ok=True,
+            current_head="def5678",
+            files_since_anchor=["src/gzkit/ledger.py", "docs/guide.md"],
+        )
+        self.assertEqual(semantics["runtime_state"], "drift")
+        self.assertEqual(semantics["anchor_state"], "stale")
+        self.assertEqual(semantics["anchor_drift_files"], ["src/gzkit/ledger.py"])
+        self.assertIn("completion anchor drifted in recorded OBPI scope", semantics["issues"])
+        self.assertTrue(semantics["completed"])
+
+    def test_derive_obpi_semantics_reports_missing_anchor_for_tracked_receipts(self) -> None:
+        """Structured completion receipts require anchor evidence for reconciliation."""
+        semantics = derive_obpi_semantics(
+            {
+                "latest_receipt_event": "completed",
+                "obpi_completion": "completed",
+                "ledger_completed": True,
+                "latest_evidence": {},
+                "latest_completion_evidence": {
+                    "scope_audit": {
+                        "allowlist": ["src/module.py"],
+                        "changed_files": ["src/module.py"],
+                        "out_of_scope_files": [],
+                    }
+                },
+            },
+            found_file=True,
+            file_completed=True,
+            implementation_evidence_ok=True,
+            key_proof_ok=True,
+            current_head="def5678",
+        )
+        self.assertEqual(semantics["runtime_state"], "drift")
+        self.assertEqual(semantics["anchor_state"], "missing")
+        self.assertIn("completion anchor evidence is missing", semantics["issues"])
+        self.assertTrue(semantics["completed"])
+
+    def test_derive_obpi_semantics_reports_degraded_git_sync_receipt_state(self) -> None:
+        """Recorder-time git-sync blockers are surfaced as anchor-aware drift."""
+        semantics = derive_obpi_semantics(
+            {
+                "latest_receipt_event": "completed",
+                "obpi_completion": "completed",
+                "ledger_completed": True,
+                "latest_evidence": {},
+                "latest_completion_evidence": {
+                    "scope_audit": {
+                        "allowlist": ["src/module.py"],
+                        "changed_files": ["src/module.py"],
+                        "out_of_scope_files": [],
+                    },
+                    "git_sync_state": {
+                        "dirty": True,
+                        "ahead": 0,
+                        "behind": 0,
+                        "diverged": False,
+                        "blockers": ["Working tree is dirty."],
+                    },
+                },
+                "latest_completion_anchor": {"commit": "abc1234", "semver": "0.10.0"},
+            },
+            found_file=True,
+            file_completed=True,
+            implementation_evidence_ok=True,
+            key_proof_ok=True,
+            current_head="abc1234",
+        )
+        self.assertEqual(semantics["runtime_state"], "drift")
+        self.assertEqual(semantics["anchor_state"], "degraded")
+        self.assertIn(
+            "completion git-sync evidence recorded blockers: Working tree is dirty.",
+            semantics["issues"],
+        )
+        self.assertIn("completion receipt was captured from a dirty worktree", semantics["issues"])
+        self.assertTrue(semantics["completed"])
 
 
 if __name__ == "__main__":

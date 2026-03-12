@@ -28,6 +28,9 @@ The payload includes:
 - proof state
 - attestation requirement
 - attestation state
+- anchor state
+- completion anchor commit and current HEAD
+- anchor-specific issues and recorded drift files when applicable
 - issue list derived fail-closed from ledger/brief evidence
 
 This command is informational. It exits `0` when the OBPI resolves, even when
@@ -48,6 +51,9 @@ OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces
   Runtime State: PENDING
   Proof State: missing
   Attestation State: not_required
+  Anchor State: not_applicable
+  Anchor Commit: (none)
+  Current HEAD: (unknown)
   Completion: PENDING
   Issues:
     - ledger proof of completion is missing
@@ -57,3 +63,11 @@ OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces
 ```bash
 uv run gz obpi status OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces --json
 ```
+
+Anchor-tracked completed receipts add:
+
+- `anchor_state`
+- `anchor_commit`
+- `current_head`
+- `anchor_issues`
+- `anchor_drift_files`

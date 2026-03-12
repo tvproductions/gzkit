@@ -119,7 +119,7 @@ This ADR extends existing gzkit work rather than replacing it:
       changed-files audit and git-sync enforcement.
 - [x] OBPI-0.11.0-03: Deliver recorder and receipt semantics for git-anchored
       OBPI completion evidence.
-- [ ] OBPI-0.11.0-04: Deliver anchor-aware OBPI drift detection and
+- [x] OBPI-0.11.0-04: Deliver anchor-aware OBPI drift detection and
       reconciliation surfaces.
 - [ ] OBPI-0.11.0-05: Port the `gz-obpi-pipeline` skill into `.gzkit` and sync
       mirror control surfaces.
