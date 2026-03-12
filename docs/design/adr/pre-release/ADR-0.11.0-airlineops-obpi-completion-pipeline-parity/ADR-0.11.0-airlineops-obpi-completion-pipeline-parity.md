@@ -163,4 +163,4 @@ implicit operator habit.
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.11.0 | Pending | | | |
+| 0.11.0 | Completed | Test User | 2026-03-12 | attest completed |
