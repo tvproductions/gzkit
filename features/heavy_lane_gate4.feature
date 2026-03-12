@@ -22,3 +22,8 @@ Feature: Heavy lane Gate 4 governance
     When I run the gz command "adr status ADR-0.1.0 --json"
     Then the command exits with code 0
     And JSON path "gates.4" equals "pending"
+
+  Scenario: Pipeline guidance requires guarded git sync before completion accounting
+    Given the workspace is initialized in heavy mode
+    Then the file "AGENTS.md" contains "guarded git sync -> completion"
+    And the file "AGENTS.md" contains "uv run gz git-sync --apply --lint --test"

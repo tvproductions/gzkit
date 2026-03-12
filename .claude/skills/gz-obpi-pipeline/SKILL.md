@@ -63,7 +63,7 @@ parent ADR execution mode.
 2. Implement
 3. Verify
 4. Present Evidence
-5. Sync
+5. Sync And Account
 ```
 
 Normal mode uses a human gate at Stage 4. Exception mode self-closes with full
@@ -155,16 +155,23 @@ Do not mark the brief `Completed` before attestation.
 2. Record self-close evidence for later ADR closeout review.
 3. Proceed to sync.
 
-### Stage 5: Sync
+### Stage 5: Sync And Account
 
 After attestation in Normal mode, or after evidence capture in Exception mode:
 
-1. Run `gz-obpi-audit` for the OBPI or parent ADR to record evidence.
-2. Update the OBPI brief with checked criteria, evidence, and attestation data.
-3. Run `gz-obpi-sync` for the parent ADR so the ADR checklist reflects brief
+1. Run guarded repo sync before any final completion accounting:
+   `uv run gz git-sync --apply --lint --test`
+2. Abort Stage 5 if `git sync` fails or leaves unresolved divergence/blockers.
+   Final completion receipts must not be captured from an unsynced state.
+3. Emit the final completed receipt or equivalent OBPI completion accounting
+   immediately after the successful sync so anchor evidence is captured from the
+   synced repository state.
+4. Run `gz-obpi-audit` for the OBPI or parent ADR to record evidence.
+5. Update the OBPI brief with checked criteria, evidence, and attestation data.
+6. Run `gz-obpi-sync` for the parent ADR so the ADR checklist reflects brief
    truth.
-4. Remove `.claude/plans/.pipeline-active-{OBPI-ID}.json` if it was created.
-5. Create a session handoff if more OBPIs remain or follow-up work is deferred.
+7. Remove `.claude/plans/.pipeline-active-{OBPI-ID}.json` if it was created.
+8. Create a session handoff if more OBPIs remain or follow-up work is deferred.
 
 ---
 
@@ -176,6 +183,7 @@ After attestation in Normal mode, or after evidence capture in Exception mode:
 | Plan audit receipt says `FAIL` | Stop and fix plan alignment |
 | Tests or verification fail twice | Create handoff and stop |
 | Human rejects attestation | Return to implementation with feedback |
+| `git sync` fails or repo remains unsynced | Stop before completion accounting and repair blockers |
 | Concurrent work required without a lock surface | Stop and emit `BLOCKERS` |
 
 ---
@@ -188,7 +196,7 @@ After attestation in Normal mode, or after evidence capture in Exception mode:
 | 2 | files changed, tests added, scope respected |
 | 3 | command outputs and pass/fail status |
 | 4 | value narrative, key proof, attestation text or self-close note |
-| 5 | brief update, audit entry, ADR table sync, handoff if needed |
+| 5 | `git sync` result, completion receipt/accounting, brief update, audit entry, ADR table sync, handoff if needed |
 
 ---
 
@@ -200,7 +208,9 @@ After attestation in Normal mode, or after evidence capture in Exception mode:
 - Until `gz-obpi-lock` and plan-audit hooks are ported, pipeline stages that
   depend on them must fail closed instead of being silently skipped.
 - The point of this skill is sequencing and governance memory: verify ->
-  ceremony -> sync is mandatory.
+  ceremony -> guarded git sync -> completion accounting is mandatory.
+- In gzkit, `uv run gz git-sync --apply --lint --test` is the canonical Stage 5
+  sync ritual. Do not substitute ad-hoc git commands.
 
 ---
 
