@@ -35,6 +35,15 @@ gz git-sync [OPTIONS]
 4. Runs lint/test guardrails when requested.
 5. Executes sync operations when `--apply` is set.
 
+For OBPI pipeline closeout in gzkit, this is the canonical guarded sync step:
+
+- run `uv run gz git-sync --apply --lint --test` after attestation
+- then emit the final completed OBPI receipt/accounting
+- then update brief/ADR reconciliation artifacts
+
+This ordering prevents completion receipts from being anchored to an obviously
+unsynced repository state.
+
 ---
 
 ## Examples

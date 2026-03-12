@@ -183,6 +183,12 @@ def step_output_contains(context, text: str) -> None:  # type: ignore[no-untyped
     assert text in context.output, context.output
 
 
+@then('the file "{path}" contains "{text}"')
+def step_file_contains(_context, path: str, text: str) -> None:  # type: ignore[no-untyped-def]
+    content = Path(path).read_text(encoding="utf-8")
+    assert text in content, content
+
+
 @then('JSON path "{path}" equals "{expected}"')
 def step_json_path_equals(context, path: str, expected: str) -> None:  # type: ignore[no-untyped-def]
     payload = json.loads(context.output)

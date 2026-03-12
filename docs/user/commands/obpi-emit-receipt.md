@@ -48,6 +48,11 @@ gz obpi emit-receipt <OBPI-ID> --event {completed,validated} --attestor <text> [
 - The resulting runtime evidence is consumed by `gz obpi status`,
   `gz obpi reconcile`, and ADR status/lifecycle surfaces.
 
+For the OBPI execution pipeline closeout path, emit the final `completed`
+receipt immediately after a successful guarded `uv run gz git-sync --apply
+--lint --test` run. That sequence captures anchor evidence from the synced
+repository state before downstream brief/ADR accounting edits occur.
+
 ---
 
 ## Example
