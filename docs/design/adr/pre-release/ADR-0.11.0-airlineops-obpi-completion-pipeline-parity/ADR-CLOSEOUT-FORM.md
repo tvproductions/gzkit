@@ -71,4 +71,6 @@ Step 9 release notes confirmation:
 Step 10 release publication:
 
 - Policy requires `uv run gz git-sync --apply --lint --test` immediately before `gh release create` or any release update command.
-- Planned release command: `gh release create v0.11.0 --repo tvproductions/gzkit --title "v0.11.0" --notes-file /tmp/gzkit-v0.11.0-release-notes.md`
+- Policy-mandated pre-release sync: `uv run gz git-sync --apply --lint --test`
+- Release created: `gh release create v0.11.0 --repo tvproductions/gzkit --title "v0.11.0" --notes-file /tmp/gzkit-v0.11.0-release-notes.md`
+- Release URL: <https://github.com/tvproductions/gzkit/releases/tag/v0.11.0>
