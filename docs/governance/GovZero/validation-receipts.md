@@ -89,6 +89,19 @@ parents require explicit human-attestation evidence fields.
 REQ-proof inputs follow the
 [OBPI Runtime Contract](obpi-runtime-contract.md), including required
 `name`/`kind`/`source`/`status` fields and optional `scope` / `gap_reason`.
+Completed receipts also preserve the transaction snapshot needed for later
+reconciliation:
+
+- `scope_audit.allowlist`
+- `scope_audit.changed_files`
+- `scope_audit.out_of_scope_files`
+- `git_sync_state` (branch, remote, dirty, ahead/behind, divergence, actions, warnings, blockers)
+- `recorder_source`
+- `recorder_warnings`
+
+If git anchoring degrades after completion is already allowed, gzkit records the
+warning in `recorder_warnings` and keeps the completion decision intact rather
+than retroactively rewriting the brief state.
 
 ### ValidationAnchor Fields
 

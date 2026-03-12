@@ -30,30 +30,45 @@ def git_cmd(project_root: Path, *args: str) -> tuple[int, str, str]:
     return run_exec(["git", *args], cwd=project_root)
 
 
-def capture_validation_anchor(project_root: Path, adr_id: str | None = None) -> dict[str, str]:
-    """Capture git commit and tag info for temporal anchoring."""
-    anchor = {}
+def capture_validation_anchor_with_warnings(
+    project_root: Path,
+    adr_id: str | None = None,
+) -> tuple[dict[str, str] | None, list[str]]:
+    """Capture git anchor data and report degradations as warnings."""
+    anchor: dict[str, str] = {}
+    warnings: list[str] = []
 
-    # 1. Capture Commit SHA
-    rc_head, head_sha, _ = git_cmd(project_root, "rev-parse", "HEAD")
+    rc_head, head_sha, err_head = git_cmd(project_root, "rev-parse", "HEAD")
     if rc_head == 0 and head_sha:
         anchor["commit"] = head_sha[:7]
+    else:
+        warnings.append(err_head or "Could not resolve HEAD commit for receipt anchor.")
 
-    # 2. Capture Tag (if any)
-    rc_tag, tag, _ = git_cmd(project_root, "tag", "--points-at", "HEAD")
+    rc_tag, tag, err_tag = git_cmd(project_root, "tag", "--points-at", "HEAD")
     if rc_tag == 0 and tag:
         anchor["tag"] = tag.splitlines()[0].strip()
+    elif rc_tag != 0 and err_tag:
+        warnings.append(err_tag)
 
-    # 3. Resolve SemVer
     if adr_id:
         semver_match = re.search(r"\d+\.\d+\.\d+", adr_id)
         if semver_match:
             anchor["semver"] = semver_match.group(0)
+        else:
+            warnings.append(f"Could not derive semver anchor from ADR ID: {adr_id}")
+    else:
+        warnings.append("Could not derive semver anchor: parent ADR ID missing.")
 
-    # Ensure required fields exist even if git fails
-    if "commit" not in anchor:
-        anchor["commit"] = "0000000"
-    if "semver" not in anchor:
-        anchor["semver"] = "0.0.0"
+    if "commit" not in anchor or "semver" not in anchor:
+        return None, warnings
+    return anchor, warnings
 
-    return anchor
+
+def capture_validation_anchor(project_root: Path, adr_id: str | None = None) -> dict[str, str]:
+    """Capture git commit and tag info for temporal anchoring."""
+    anchor, warnings = capture_validation_anchor_with_warnings(project_root, adr_id)
+    if anchor is not None:
+        return anchor
+
+    _ = warnings
+    return {"commit": "0000000", "semver": "0.0.0"}

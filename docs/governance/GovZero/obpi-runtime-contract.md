@@ -134,6 +134,36 @@ one stable machine-readable shape.
 
 ---
 
+## Completed Receipt Context
+
+Completed `obpi_receipt_emitted` events may also carry the recorder context that
+later reconciliation consumes directly from ledger evidence:
+
+- `scope_audit`
+  - `allowlist`
+  - `changed_files`
+  - `out_of_scope_files`
+- `git_sync_state`
+  - `branch`
+  - `remote`
+  - `head`
+  - `remote_head`
+  - `dirty`
+  - `ahead`
+  - `behind`
+  - `diverged`
+  - `actions`
+  - `warnings`
+  - `blockers`
+- `recorder_source`
+- `recorder_warnings`
+
+These fields do not currently change the derived runtime-state machine on their
+own. They exist so later anchor-aware reconciliation can explain *why* a
+completion drifted without inventing a second evidence source.
+
+---
+
 ## Compatibility Boundaries
 
 - OBPI-scoped receipts with `adr_completion: not_completed` do not promote ADR

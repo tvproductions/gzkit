@@ -3,7 +3,7 @@ id: OBPI-0.11.0-03-obpi-completion-recorder-and-anchor-receipts
 parent: ADR-0.11.0-airlineops-obpi-completion-pipeline-parity
 item: 3
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.11.0-03-obpi-completion-recorder-and-anchor-receipts: OBPI completion recorder and anchor receipts
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.11.0-airlineops-obpi-completion-pipeline-parity/ADR-0.11.0-airlineops-obpi-completion-pipeline-parity.md`
 - **Checklist Item:** #3 -- "Deliver recorder and receipt semantics for git-anchored OBPI completion evidence."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -31,6 +31,7 @@ recorder behavior consumed by operator reconciliation.
 
 - `src/gzkit/ledger.py` and `src/gzkit/schemas/ledger.json` -- receipt schema and anchor fields
 - `src/gzkit/hooks/**` -- post-completion recorder integration
+- `src/gzkit/cli.py` -- manual receipt emission must match the same structured completion evidence contract
 - `src/gzkit/utils.py` -- git anchor helpers if required
 - `tests/**` and `features/**` -- receipt and recorder coverage
 - `docs/governance/GovZero/**` and `docs/user/commands/**` -- receipt and anchoring docs
@@ -76,35 +77,36 @@ recorder behavior consumed by operator reconciliation.
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this brief
-- [ ] Parent ADR checklist item quoted
+- [x] Intent and scope recorded in this brief
+- [x] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] Tests written before/with implementation
-- [ ] Tests pass: `uv run gz test`
+- [x] Tests written before/with implementation
+- [x] Tests pass: `uv run gz test`
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 ### Gate 3: Docs (Heavy only)
 
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
+- [x] Docs build: `uv run mkdocs build --strict`
+- [x] Relevant docs updated
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
+- [x] Acceptance scenarios pass: `uv run -m behave features/`
 
 ### Gate 5: Human (Heavy only)
 
-- [ ] Human attestation recorded
+- [x] Human attestation recorded
 
 ## Verification
 
 ```bash
+uv run gz validate --documents
 uv run gz obpi status <obpi-id> --json
 uv run gz lint
 uv run gz typecheck
@@ -115,47 +117,139 @@ uv run -m behave features/
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.11.0-03-01: OBPI completion receipts include structured git anchor data.
-- [ ] REQ-0.11.0-03-02: Receipt evidence preserves transaction-scope fields needed for later reconciliation.
-- [ ] REQ-0.11.0-03-03: Recorder failure semantics are explicit, warning-only, and tested.
+- [x] REQ-0.11.0-03-01: OBPI completion receipts include structured git anchor data.
+- [x] REQ-0.11.0-03-02: Receipt evidence preserves transaction-scope fields needed for later reconciliation.
+- [x] REQ-0.11.0-03-03: Recorder failure semantics are explicit, warning-only, and tested.
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass
-- [ ] **Code Quality:** Lint and type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass
+- [x] **Code Quality:** Lint and type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
+
+## Value Narrative
+
+Before this tranche, gzkit could emit OBPI completion receipts, but the
+receipts were too coarse for later drift analysis. Hook-driven completion writes
+captured anchor data only as a best-effort blob, manual `gz obpi emit-receipt`
+did not normalize the same structured context, and the recorder could pollute
+its own scope evidence by including `.gzkit/ledger.jsonl` in the changed-files
+snapshot.
+
+After this tranche, completed receipts preserve one deterministic evidence
+envelope across hook-driven and manual completion paths. `scope_audit` now
+captures the OBPI allowlist plus the pre-recorder changed-files snapshot,
+`git_sync_state` preserves the repository sync posture that later reconciliation
+needs, and `recorder_source` plus `recorder_warnings` make degraded anchoring
+or post-completion recorder failures explicit without retroactively undoing the
+completion decision.
 
 ## Evidence
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
+
+```text
+$ uv run gz validate --documents
+All validations passed.
+```
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+$ uv run gz test
+Ran 342 tests in 7.322s
+OK
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/typecheck output here
+$ uv run gz lint
+Running linters...
+All checks passed!
+ADR path contract check passed.
+Lint passed.
+
+$ uv run gz typecheck
+Running type checker...
+All checks passed!
+Type check passed.
+```
+
+### Gate 3 (Docs)
+
+```text
+$ uv run mkdocs build --strict
+INFO    -  Documentation built in 0.71 seconds
+```
+
+### Gate 4 (BDD)
+
+```text
+$ uv run -m behave features/
+1 feature passed, 0 failed, 0 skipped
+3 scenarios passed, 0 failed, 0 skipped
+16 steps passed, 0 failed, 0 skipped
+```
+
+## Key Proof
+
+```text
+Focused proof surface:
+
+$ uv run -m unittest tests.test_obpi_validator tests.commands.test_runtime tests.test_validate
+Ran 65 tests in 3.458s
+OK
+
+That proof tranche exercises the exact contract landed here:
+
+- hook-driven completion receipts now include `scope_audit`, `git_sync_state`,
+  `recorder_source`, and `recorder_warnings`
+- recorder scope snapshots are captured before the ledger write so
+  `.gzkit/ledger.jsonl` does not contaminate OBPI transaction evidence
+- degraded anchor capture and receipt-append failures warn explicitly without
+  rewriting the completion decision
+- manual `gz obpi emit-receipt --event completed` enriches the same structured
+  receipt context as the hook path
 ```
 
 ### Implementation Summary
 
 - Files created/modified:
-- Tests added:
-- Date completed:
+  - `src/gzkit/hooks/core.py`
+  - `src/gzkit/hooks/obpi.py`
+  - `src/gzkit/cli.py`
+  - `src/gzkit/utils.py`
+  - `src/gzkit/schemas/ledger.json`
+  - `src/gzkit/validate.py`
+  - `docs/user/commands/obpi-emit-receipt.md`
+  - `docs/governance/GovZero/validation-receipts.md`
+  - `docs/governance/GovZero/obpi-runtime-contract.md`
+  - `docs/design/adr/pre-release/ADR-0.11.0-airlineops-obpi-completion-pipeline-parity/ADR-0.11.0-airlineops-obpi-completion-pipeline-parity.md`
+  - this OBPI brief
+- Tests added/updated:
+  - `tests/test_obpi_validator.py`
+  - `tests/commands/test_runtime.py`
+  - `tests/test_validate.py`
+- Date completed: 2026-03-12
+- Completion receipt surface:
+  - hook recorder and manual `gz obpi emit-receipt` now normalize the same structured completion evidence contract
+
+## Human Attestation
+
+- Attestor: human:jeff
+- Attestation: attest completed
+- Date: 2026-03-12
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** —
+**Date Completed:** 2026-03-12
 
-**Evidence Hash:** —
+**Evidence Hash:** a809a9d

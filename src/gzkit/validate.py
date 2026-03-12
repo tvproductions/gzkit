@@ -407,6 +407,156 @@ def _validate_obpi_receipt_evidence(
             field="evidence.attestation_date",
         )
 
+    _validate_scope_audit(evidence.get("scope_audit"), errors, ledger_path, line_no)
+    _validate_git_sync_state(evidence.get("git_sync_state"), errors, ledger_path, line_no)
+    _validate_recorder_metadata(evidence, errors, ledger_path, line_no)
+
+
+def _validate_string_array_field(
+    value: Any,
+    *,
+    field: str,
+    errors: list[ValidationError],
+    ledger_path: Path,
+    line_no: int,
+) -> None:
+    if not isinstance(value, list):
+        _append_ledger_error(
+            errors,
+            ledger_path,
+            line_no,
+            f"{field} must be an array of non-empty strings.",
+            field=field,
+        )
+        return
+    for index, item in enumerate(value):
+        if not isinstance(item, str) or not item.strip():
+            _append_ledger_error(
+                errors,
+                ledger_path,
+                line_no,
+                f"{field}[{index}] must be a non-empty string.",
+                field=f"{field}[{index}]",
+            )
+
+
+def _validate_scope_audit(
+    scope_audit: Any,
+    errors: list[ValidationError],
+    ledger_path: Path,
+    line_no: int,
+) -> None:
+    if scope_audit is None:
+        return
+    if not isinstance(scope_audit, dict):
+        _append_ledger_error(
+            errors,
+            ledger_path,
+            line_no,
+            "evidence.scope_audit must be an object.",
+            field="evidence.scope_audit",
+        )
+        return
+
+    for field in ("allowlist", "changed_files", "out_of_scope_files"):
+        _validate_string_array_field(
+            scope_audit.get(field),
+            field=f"evidence.scope_audit.{field}",
+            errors=errors,
+            ledger_path=ledger_path,
+            line_no=line_no,
+        )
+
+
+def _validate_git_sync_state(
+    git_sync_state: Any,
+    errors: list[ValidationError],
+    ledger_path: Path,
+    line_no: int,
+) -> None:
+    if git_sync_state is None:
+        return
+    if not isinstance(git_sync_state, dict):
+        _append_ledger_error(
+            errors,
+            ledger_path,
+            line_no,
+            "evidence.git_sync_state must be an object.",
+            field="evidence.git_sync_state",
+        )
+        return
+
+    for field in ("branch", "remote", "head", "remote_head"):
+        value = git_sync_state.get(field)
+        if value is not None and (not isinstance(value, str) or not value.strip()):
+            _append_ledger_error(
+                errors,
+                ledger_path,
+                line_no,
+                f"evidence.git_sync_state.{field} must be a non-empty string when present.",
+                field=f"evidence.git_sync_state.{field}",
+            )
+
+    for field in ("dirty", "diverged"):
+        value = git_sync_state.get(field)
+        if not isinstance(value, bool):
+            _append_ledger_error(
+                errors,
+                ledger_path,
+                line_no,
+                f"evidence.git_sync_state.{field} must be a boolean.",
+                field=f"evidence.git_sync_state.{field}",
+            )
+
+    for field in ("ahead", "behind"):
+        value = git_sync_state.get(field)
+        if not isinstance(value, int) or value < 0:
+            _append_ledger_error(
+                errors,
+                ledger_path,
+                line_no,
+                f"evidence.git_sync_state.{field} must be a non-negative integer.",
+                field=f"evidence.git_sync_state.{field}",
+            )
+
+    for field in ("actions", "warnings", "blockers"):
+        _validate_string_array_field(
+            git_sync_state.get(field),
+            field=f"evidence.git_sync_state.{field}",
+            errors=errors,
+            ledger_path=ledger_path,
+            line_no=line_no,
+        )
+
+
+def _validate_recorder_metadata(
+    evidence: dict[str, Any],
+    errors: list[ValidationError],
+    ledger_path: Path,
+    line_no: int,
+) -> None:
+    recorder_source = evidence.get("recorder_source")
+    if recorder_source is not None and (
+        not isinstance(recorder_source, str) or not recorder_source.strip()
+    ):
+        _append_ledger_error(
+            errors,
+            ledger_path,
+            line_no,
+            "evidence.recorder_source must be a non-empty string when present.",
+            field="evidence.recorder_source",
+        )
+
+    recorder_warnings = evidence.get("recorder_warnings")
+    if recorder_warnings is not None:
+        _validate_string_array_field(
+            recorder_warnings,
+            field="evidence.recorder_warnings",
+            errors=errors,
+            ledger_path=ledger_path,
+            line_no=line_no,
+        )
+
 
 def _validate_req_proof_input_item(
     item: Any,

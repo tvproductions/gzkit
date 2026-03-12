@@ -67,7 +67,8 @@ from gzkit.decomposition import (
 )
 from gzkit.hooks.claude import setup_claude_hooks
 from gzkit.hooks.copilot import setup_copilot_hooks, setup_copilotignore
-from gzkit.hooks.obpi import ObpiValidator
+from gzkit.hooks.core import enrich_completed_receipt_evidence
+from gzkit.hooks.obpi import ObpiValidator, normalize_git_sync_state, normalize_scope_audit
 from gzkit.interview import (
     check_interview_complete,
     format_answers_for_template,
@@ -2494,11 +2495,13 @@ def _validate_explicit_req_proof_inputs(raw_inputs: Any) -> list[dict[str, str]]
 
 def _validate_obpi_completion_evidence(
     *,
+    project_root: Path,
+    obpi_content: str,
     evidence: dict[str, Any] | None,
     parent_adr: str | None,
     parent_lane: str,
     attestor: str,
-) -> tuple[dict[str, Any], str]:
+) -> tuple[dict[str, Any], str, dict[str, str] | None]:
     """Validate and normalize evidence for OBPI completed receipts."""
     if evidence is None:
         raise GzCliError(
@@ -2534,7 +2537,32 @@ def _validate_obpi_completion_evidence(
     if isinstance(parent_adr, str) and parent_adr:
         normalized["parent_adr"] = parent_adr
     normalized["parent_lane"] = parent_lane
-    return normalized, completion_term
+    explicit_scope_audit = normalized.get("scope_audit")
+    scope_audit = normalize_scope_audit(explicit_scope_audit)
+    if explicit_scope_audit is not None and scope_audit is None:
+        raise GzCliError(
+            "evidence.scope_audit must be an object with allowlist, changed_files, "
+            "and out_of_scope_files string arrays."
+        )
+
+    explicit_git_sync_state = normalized.get("git_sync_state")
+    git_sync_state = normalize_git_sync_state(explicit_git_sync_state)
+    if explicit_git_sync_state is not None and git_sync_state is None:
+        raise GzCliError(
+            "evidence.git_sync_state must include branch/remote/head/remote_head, "
+            "dirty/diverged booleans, ahead/behind integers, and action/warning/blocker arrays."
+        )
+
+    enriched_evidence, anchor = enrich_completed_receipt_evidence(
+        project_root=project_root,
+        content=obpi_content,
+        base_evidence=normalized,
+        parent_adr=parent_adr,
+        recorder_source="cli:obpi_emit_receipt",
+        scope_audit=scope_audit,
+        git_sync_state=git_sync_state,
+    )
+    return enriched_evidence, completion_term, anchor
 
 
 def adr_emit_receipt_cmd(
@@ -2597,7 +2625,7 @@ def obpi_emit_receipt_cmd(
     project_root = get_project_root()
     ledger = Ledger(project_root / config.paths.ledger)
 
-    _obpi_file, obpi_id = resolve_obpi_file(project_root, config, ledger, obpi)
+    obpi_file, obpi_id = resolve_obpi_file(project_root, config, ledger, obpi)
     graph = ledger.get_artifact_graph()
     obpi_info = graph.get(obpi_id, {})
     if obpi_info.get("type") != "obpi":
@@ -2625,8 +2653,12 @@ def obpi_emit_receipt_cmd(
         parent_lane = resolve_adr_lane(parent_info, config.mode)
 
     obpi_completion: str | None = None
+    anchor: dict[str, str] | None = None
     if receipt_event == "completed":
-        evidence, obpi_completion = _validate_obpi_completion_evidence(
+        obpi_content = obpi_file.read_text(encoding="utf-8")
+        evidence, obpi_completion, anchor = _validate_obpi_completion_evidence(
+            project_root=project_root,
+            obpi_content=obpi_content,
             evidence=evidence,
             parent_adr=parent_adr if isinstance(parent_adr, str) else None,
             parent_lane=parent_lane,
@@ -2645,8 +2677,8 @@ def obpi_emit_receipt_cmd(
         if isinstance(parent_adr, str) and parent_adr:
             evidence.setdefault("parent_adr", parent_adr)
         evidence.setdefault("obpi_completion", "not_completed")
-
-    anchor = capture_validation_anchor(project_root, parent_adr)
+    if receipt_event != "completed":
+        anchor = capture_validation_anchor(project_root, parent_adr)
     event = obpi_receipt_emitted_event(
         obpi_id=obpi_id,
         receipt_event=receipt_event,
