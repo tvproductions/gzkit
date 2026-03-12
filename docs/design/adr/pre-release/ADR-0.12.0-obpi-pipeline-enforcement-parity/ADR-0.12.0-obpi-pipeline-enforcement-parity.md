@@ -118,7 +118,7 @@ This ADR deliberately builds on earlier work instead of replacing it:
 
 - [x] OBPI-0.12.0-01: Inventory the canonical AirlineOps hook chain and define
       the gzkit parity contract.
-- [ ] OBPI-0.12.0-02: Port the plan-exit audit gate with gzkit-compatible
+- [x] OBPI-0.12.0-02: Port the plan-exit audit gate with gzkit-compatible
       blocking behavior.
 - [ ] OBPI-0.12.0-03: Port the pipeline router and active-marker bridge that
       hand approved plan work into `gz-obpi-pipeline`.
