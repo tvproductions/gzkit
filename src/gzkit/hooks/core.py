@@ -4,10 +4,17 @@ This module contains the governance enforcement logic that all agent hooks use.
 """
 
 import re
+import sys
 from pathlib import Path
+from typing import Any
 
 from gzkit.config import GzkitConfig
-from gzkit.hooks.obpi import ObpiValidator
+from gzkit.git_sync import assess_git_sync_readiness
+from gzkit.hooks.obpi import (
+    ObpiValidator,
+    build_scope_audit,
+    normalize_git_sync_state,
+)
 from gzkit.ledger import (
     Ledger,
     artifact_edited_event,
@@ -16,7 +23,7 @@ from gzkit.ledger import (
     parse_frontmatter_value,
     resolve_adr_lane,
 )
-from gzkit.utils import capture_validation_anchor
+from gzkit.utils import capture_validation_anchor_with_warnings
 
 # Governance artifact patterns
 GOVERNANCE_PATTERNS = [
@@ -118,11 +125,75 @@ def _extract_human_attestation(content: str) -> dict[str, str] | None:
     }
 
 
+def _dedupe_preserve_order(items: list[str]) -> list[str]:
+    seen: set[str] = set()
+    deduped: list[str] = []
+    for item in items:
+        if item in seen:
+            continue
+        seen.add(item)
+        deduped.append(item)
+    return deduped
+
+
+def enrich_completed_receipt_evidence(
+    *,
+    project_root: Path,
+    content: str,
+    base_evidence: dict[str, Any],
+    parent_adr: str | None,
+    recorder_source: str,
+    scope_audit: dict[str, list[str]] | None = None,
+    git_sync_state: dict[str, Any] | None = None,
+    extra_warnings: list[str] | None = None,
+) -> tuple[dict[str, Any], dict[str, str] | None]:
+    """Attach structured scope/git metadata and warning-aware anchoring."""
+    evidence = dict(base_evidence)
+    evidence["scope_audit"] = scope_audit or build_scope_audit(project_root, content)
+
+    normalized_git_sync_state = git_sync_state or normalize_git_sync_state(
+        assess_git_sync_readiness(project_root)
+    )
+    if normalized_git_sync_state is None:
+        normalized_git_sync_state = {
+            "branch": None,
+            "remote": None,
+            "head": None,
+            "remote_head": None,
+            "dirty": False,
+            "ahead": 0,
+            "behind": 0,
+            "diverged": False,
+            "actions": [],
+            "warnings": ["Could not normalize git-sync state for receipt evidence."],
+            "blockers": [],
+        }
+    evidence["git_sync_state"] = normalized_git_sync_state
+    evidence["recorder_source"] = recorder_source
+
+    warnings = list(extra_warnings or [])
+    if normalized_git_sync_state.get("dirty"):
+        warnings.append("Working tree was dirty when the completion receipt was captured.")
+    blockers = normalized_git_sync_state.get("blockers", [])
+    if isinstance(blockers, list):
+        warnings.extend(
+            f"Git-sync blocker present at receipt capture time: {blocker}"
+            for blocker in blockers
+            if isinstance(blocker, str)
+        )
+
+    anchor, anchor_warnings = capture_validation_anchor_with_warnings(project_root, parent_adr)
+    warnings.extend(anchor_warnings)
+    evidence["recorder_warnings"] = _dedupe_preserve_order(warnings)
+    return evidence, anchor
+
+
 def _record_obpi_completion_if_ready(
     project_root: Path,
     ledger: Ledger,
     config: GzkitConfig,
     path: str,
+    scope_audit: dict[str, list[str]] | None = None,
 ) -> None:
     """Record an OBPI completion receipt if the file is in 'Completed' status."""
     obpi_path = project_root / path
@@ -159,9 +230,6 @@ def _record_obpi_completion_if_ready(
     # For now, we'll use a fixed attestor token for automated completion
     attestor = "agent:automated-recorder"
 
-    # Capture anchor
-    anchor = capture_validation_anchor(project_root, parent_adr)
-
     # Emit receipt
     evidence: dict[str, object] = {
         "attestation_requirement": "required" if requires_human_attestation else "optional",
@@ -188,16 +256,30 @@ def _record_obpi_completion_if_ready(
         if human_attestation
         else None,
     )
+    enriched_evidence, anchor = enrich_completed_receipt_evidence(
+        project_root=project_root,
+        content=content,
+        base_evidence=evidence,
+        parent_adr=parent_adr,
+        recorder_source="hook:auto",
+        scope_audit=scope_audit,
+    )
     event = obpi_receipt_emitted_event(
         obpi_id=obpi_id,
         receipt_event="completed",
         attestor=attestor,
-        evidence=evidence,
+        evidence=enriched_evidence,
         parent_adr=parent_adr,
         obpi_completion="attested_completed" if requires_human_attestation else "completed",
         anchor=anchor,
     )
-    ledger.append(event)
+    try:
+        ledger.append(event)
+    except OSError as exc:
+        print(
+            f"Warning: Could not append OBPI completion receipt for {obpi_id}: {exc}",
+            file=sys.stderr,
+        )
 
 
 def record_artifact_edit(
@@ -220,8 +302,15 @@ def record_artifact_edit(
 
     # Perform OBPI completion validation if it's an OBPI
     is_obpi = "obpis/" in path.replace("\\", "/")
+    completion_scope_audit: dict[str, list[str]] | None = None
     if is_obpi:
         validate_obpi_transition(project_root, path)
+        obpi_path = project_root / path
+        if obpi_path.exists():
+            content = obpi_path.read_text(encoding="utf-8")
+            status = (parse_frontmatter_value(content, "status") or "").strip().lower()
+            if status == "completed":
+                completion_scope_audit = build_scope_audit(project_root, content)
 
     config = GzkitConfig.load(project_root / ".gzkit.json")
     ledger_path = project_root / config.paths.ledger
@@ -237,7 +326,13 @@ def record_artifact_edit(
 
     # 2. If it's an OBPI being completed, record the receipt
     if is_obpi:
-        _record_obpi_completion_if_ready(project_root, ledger, config, path)
+        _record_obpi_completion_if_ready(
+            project_root,
+            ledger,
+            config,
+            path,
+            scope_audit=completion_scope_audit,
+        )
 
     return True
 

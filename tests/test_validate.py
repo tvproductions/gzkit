@@ -361,6 +361,28 @@ class TestValidateLedger(unittest.TestCase):
                         "acceptance": "observed",
                         "parent_lane": "heavy",
                         "attestation_requirement": "required",
+                        "scope_audit": {
+                            "allowlist": ["docs/design/adr/pre-release/ADR-0.3.0/**"],
+                            "changed_files": [
+                                "docs/design/adr/pre-release/ADR-0.3.0/obpis/OBPI-0.3.0-04-demo.md"
+                            ],
+                            "out_of_scope_files": [],
+                        },
+                        "git_sync_state": {
+                            "branch": "main",
+                            "remote": "origin",
+                            "head": "abc1234",
+                            "remote_head": "abc1234",
+                            "dirty": False,
+                            "ahead": 0,
+                            "behind": 0,
+                            "diverged": False,
+                            "actions": ["git fetch --prune origin"],
+                            "warnings": [],
+                            "blockers": [],
+                        },
+                        "recorder_source": "hook:auto",
+                        "recorder_warnings": [],
                         "req_proof_inputs": [
                             {
                                 "name": "key_proof",
@@ -449,6 +471,51 @@ class TestValidateLedger(unittest.TestCase):
             self.assertTrue(
                 any(error.field == "evidence.req_proof_inputs[0].gap_reason" for error in errors)
             )
+
+    def test_invalid_obpi_structured_receipt_context_rejected(self) -> None:
+        """Malformed structured scope/git receipt context fails ledger validation."""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
+            f.write(
+                json.dumps(
+                    {
+                        "schema": "gzkit.ledger.v1",
+                        "event": "obpi_receipt_emitted",
+                        "id": "OBPI-0.3.0-04-demo",
+                        "parent": "ADR-0.3.0",
+                        "ts": "2026-02-14T00:00:03+00:00",
+                        "receipt_event": "completed",
+                        "attestor": "human:jeff",
+                        "evidence": {
+                            "scope_audit": {
+                                "allowlist": [""],
+                                "changed_files": [],
+                                "out_of_scope_files": [],
+                            },
+                            "git_sync_state": {
+                                "branch": "main",
+                                "remote": "origin",
+                                "head": "abc1234",
+                                "remote_head": "abc1234",
+                                "dirty": "no",
+                                "ahead": -1,
+                                "behind": 0,
+                                "diverged": False,
+                                "actions": [],
+                                "warnings": [],
+                                "blockers": [],
+                            },
+                        },
+                    }
+                )
+                + "\n"
+            )
+            f.flush()
+            errors = validate_ledger(Path(f.name))
+            self.assertTrue(
+                any(error.field == "evidence.scope_audit.allowlist[0]" for error in errors)
+            )
+            self.assertTrue(any(error.field == "evidence.git_sync_state.dirty" for error in errors))
+            self.assertTrue(any(error.field == "evidence.git_sync_state.ahead" for error in errors))
 
     def test_invalid_json_line(self) -> None:
         """Malformed JSON line returns ledger validation error."""
