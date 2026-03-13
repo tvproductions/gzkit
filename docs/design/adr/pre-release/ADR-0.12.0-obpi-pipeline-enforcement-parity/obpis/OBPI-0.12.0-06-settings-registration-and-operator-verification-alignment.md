@@ -3,7 +3,7 @@ id: OBPI-0.12.0-06-settings-registration-and-operator-verification-alignment
 parent: ADR-0.12.0-obpi-pipeline-enforcement-parity
 item: 6
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.12.0-06-settings-registration-and-operator-verification-alignment: Settings registration and operator verification alignment
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.12.0-obpi-pipeline-enforcement-parity/ADR-0.12.0-obpi-pipeline-enforcement-parity.md`
 - **Checklist Item:** #6 - "OBPI-0.12.0-06: Register the hook chain in settings and align tests, docs, and operator verification with the enforced runtime."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -144,7 +144,7 @@ future Claude sessions by registering blocking and advisory governance hooks in
 
 ### Gate 5: Human (Heavy only)
 
-- [ ] Human attestation recorded
+- [x] Human attestation recorded
 
 ## Verification
 
@@ -274,7 +274,31 @@ Took 0min 0.287s
 ### Gate 5 (Human)
 
 ```text
-Pending human attestation.
+Human attestation received on 2026-03-13: "completed and fix"
+
+$ uv run gz git-sync --apply --lint --test
+Git sync execution
+  Branch: main
+  Remote: origin
+  ahead=0 behind=0 diverged=False dirty=True
+  Actions:
+    - git add -A
+    - git fetch --prune origin
+  Executed:
+    - git add -A
+    - gz lint (pre-sync)
+    - gz test (pre-sync)
+    - git commit
+    - git push origin main
+    - gz lint (post-sync)
+Git sync completed.
+
+$ uv run gz obpi emit-receipt OBPI-0.12.0-06-settings-registration-and-operator-verification-alignment --event completed --attestor "human:jeff" --evidence-json '{...}'
+OBPI receipt emitted.
+  OBPI: OBPI-0.12.0-06-settings-registration-and-operator-verification-alignment
+  Parent ADR: ADR-0.12.0-obpi-pipeline-enforcement-parity
+  Event: completed
+  Attestor: human:jeff
 ```
 
 ## Value Narrative
@@ -358,8 +382,9 @@ $ sed -n '1,260p' .claude/settings.json
   parity matrix, OBPI brief, and generated Claude/mirror control surfaces
 - Tests added: settings matcher/order assertions and active-runtime README
   assertions
-- Date completed: -
-- Attestation status: pending
+- Date completed: 2026-03-13
+- Attestation status: human attestation recorded and completion receipt emitted
+  after guarded git sync
 - Defects noted: `uv run gz adr status ADR-0.12.0-obpi-pipeline-enforcement-parity --json`
   now reports completion-anchor drift on completed `OBPI-0.12.0-01`,
   `OBPI-0.12.0-02`, `OBPI-0.12.0-03`, `OBPI-0.12.0-04`, and `OBPI-0.12.0-07`
@@ -368,14 +393,14 @@ $ sed -n '1,260p' .claude/settings.json
 
 ## Human Attestation
 
-- Attestor: `n/a`
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: human:jeff
+- Attestation: completed and fix
+- Date: 2026-03-13
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-13
 
 **Evidence Hash:** -
