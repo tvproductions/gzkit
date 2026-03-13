@@ -17,13 +17,16 @@ status: Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-TBD
+Activate the previously ported pipeline-enforcement hook chain in generated
+Claude settings with deterministic matcher ordering, while updating tests,
+runtime docs, and operator guidance so gzkit’s enforced runtime matches the
+documented OBPI pipeline contract.
 
 ## Lane
 
-**Heavy** - TBD
+**Heavy** -- This unit changes the active hook runtime used by operators and
+future Claude sessions by registering blocking and advisory governance hooks in
+`.claude/settings.json`.
 
 > Heavy is reserved for command/API/schema/runtime-contract changes. Process,
 > documentation, and template-only work stays Lite unless it changes one of
@@ -31,85 +34,113 @@ TBD
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `src/gzkit/hooks/claude.py` -- generated Claude settings and README source of
+  truth
+- `tests/test_hooks.py` -- settings registration, ordering, and README coverage
+- `.claude/hooks/**` and `.claude/settings.json` -- generated Claude hook
+  artifacts and active settings surface touched by control-surface sync
+- `.gzkit/skills/gz-plan-audit/**`, `.claude/skills/gz-plan-audit/**`,
+  `.agents/skills/gz-plan-audit/**`, `.github/skills/gz-plan-audit/**` --
+  operator guidance updated through canonical skill edits and mirror sync
+- `.gzkit/manifest.json`, `AGENTS.md`, `CLAUDE.md`,
+  `.github/discovery-index.json`, `.github/copilot-instructions.md`,
+  `.copilotignore` -- generated control surfaces changed by sync
+- `docs/design/adr/pre-release/ADR-0.12.0-obpi-pipeline-enforcement-parity/**`
+  -- parity matrix and OBPI evidence package for this tranche
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
-- `docs/design/**` - ADR changes out of scope
-- New dependencies
-- CI files, lockfiles
+- `../airlineops/**`
+- Hook behavior changes already owned by `OBPI-0.12.0-02` through
+  `OBPI-0.12.0-05`; this tranche registers existing contracts instead of
+  redesigning their semantics
+- New dependencies, CI files, lockfiles, or unrelated runtime changes
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
-
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
+1. REQUIREMENT: `.claude/settings.json` MUST register `plan-audit-gate.py` on
+   `PreToolUse` `ExitPlanMode`.
+1. REQUIREMENT: `.claude/settings.json` MUST register `pipeline-router.py` on
+   `PostToolUse` `ExitPlanMode`.
+1. REQUIREMENT: `.claude/settings.json` MUST register `pipeline-gate.py` before
+   `instruction-router.py` in the `PreToolUse` `Write|Edit` chain so blocking
+   happens before informational surfacing.
+1. REQUIREMENT: `.claude/settings.json` MUST register
+   `pipeline-completion-reminder.py` on `PreToolUse` `Bash`.
+1. REQUIREMENT: Existing `Edit|Write` post-edit ordering MUST remain
+   `post-edit-ruff.py` followed by `ledger-writer.py`.
+1. REQUIREMENT: Generated README, parity docs, and `gz-plan-audit` guidance
+   MUST describe the hook chain as active and MUST name the enforced matcher
+   order truthfully.
+1. REQUIREMENT: Tests MUST lock the exact settings matcher layout and order so
+   later drift is caught mechanically.
+1. NEVER: Change the semantics of the previously ported hook scripts beyond
+   what is necessary to register them.
+1. ALWAYS: Keep the generated command pattern as `uv run python <hook-path>`.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first. -->
-
 **Governance (read once, cache):**
 
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
+- [x] `AGENTS.md`
+- [x] Parent ADR:
+      `docs/design/adr/pre-release/ADR-0.12.0-obpi-pipeline-enforcement-parity/ADR-0.12.0-obpi-pipeline-enforcement-parity.md`
 
 **Context:**
 
-- [ ] Parent ADR: `docs/design/adr/pre-release/ADR-0.12.0-obpi-pipeline-enforcement-parity/ADR-0.12.0-obpi-pipeline-enforcement-parity.md`
-- [ ] Related OBPIs in same ADR
+- [x] `src/gzkit/hooks/claude.py`
+- [x] `tests/test_hooks.py`
+- [x] `.claude/settings.json`
+- [x] `.claude/hooks/README.md`
+- [x] `.gzkit/skills/gz-plan-audit/SKILL.md`
+- [x] `docs/design/adr/pre-release/ADR-0.12.0-obpi-pipeline-enforcement-parity/claude-pipeline-hooks-parity-matrix.md`
+- [x] Related completed OBPIs in the same ADR, especially
+      `OBPI-0.12.0-02`, `OBPI-0.12.0-03`, `OBPI-0.12.0-04`, and
+      `OBPI-0.12.0-05`
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
+- [x] Hook generator exists: `src/gzkit/hooks/claude.py`
+- [x] Generated hook sync surface exists: `uv run gz agent sync control-surfaces`
+- [x] Ported hook artifacts already exist in generator output
+- [x] Receipt and marker contracts already exist from earlier OBPIs
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+- [x] Current settings generator and tests in `src/gzkit/hooks/claude.py` and
+      `tests/test_hooks.py`
+- [x] AirlineOps ordering notes from `../airlineops/.claude/hooks/README.md`
+      and planning artifacts that place `pipeline-gate.py` first in the
+      `Write|Edit` chain
 
 ## Quality Gates
 
-<!-- Which gates apply and how to verify them. -->
-
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] Tests written before/with implementation
-- [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
+- [x] Tests written before/with implementation
+- [x] Tests pass: `uv run gz test`
+- [x] Validation commands recorded in evidence with real outputs
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
 ### Gate 3: Docs (Heavy only)
 
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
+- [x] Docs build: `uv run mkdocs build --strict`
+- [x] Relevant docs updated
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
+- [x] Acceptance scenarios pass: `uv run -m behave features/`
 
 ### Gate 5: Human (Heavy only)
 
@@ -117,104 +148,229 @@ TBD
 
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
+uv run python -m unittest tests.test_hooks -v
+uv run gz agent sync control-surfaces
 uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
 uv run gz test
-
-# Specific verification for this OBPI
-command --to --verify
+uv run mkdocs build --strict
+uv run -m behave features/
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.12.0-06-01: Given/When/Then behavior criterion 1
-- [ ] REQ-0.12.0-06-02: Given/When/Then behavior criterion 2
-- [ ] REQ-0.12.0-06-03: Given/When/Then behavior criterion 3
+- [x] REQ-0.12.0-06-01: Generated `.claude/settings.json` wires the active
+      pipeline hook chain on `ExitPlanMode`, `Write|Edit`, and `Bash` with
+      exact matcher and command ordering.
+- [x] REQ-0.12.0-06-02: Generated README and operator-facing `gz-plan-audit`
+      guidance describe the hook chain as active and document the actual
+      matcher order instead of pending registration.
+- [x] REQ-0.12.0-06-03: Tests lock the settings layout and order, and the
+      direct hook behavior suites still pass with the registered runtime.
 
 ## Completion Checklist
 
-<!-- Verify all gates before marking OBPI accepted. -->
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
-
-> For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
+> For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md`
+> section `OBPI Acceptance Protocol`.
 
 ## Evidence
 
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
-
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
+- [x] Parity matrix updated to reflect active registration and ordering.
+- [x] `gz-plan-audit` guidance updated from pending registration to active
+      enforcement.
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+$ uv run python -m unittest tests.test_hooks -v
+Ran 43 tests in 0.558s
+
+OK
+
+$ uv run gz agent sync control-surfaces
+Syncing control surfaces...
+  Updated .agents/skills/gz-plan-audit/SKILL.md
+  Updated .claude/hooks/README.md
+  Updated .claude/hooks/instruction-router.py
+  Updated .claude/hooks/ledger-writer.py
+  Updated .claude/hooks/pipeline-completion-reminder.py
+  Updated .claude/hooks/pipeline-gate.py
+  Updated .claude/hooks/pipeline-router.py
+  Updated .claude/hooks/plan-audit-gate.py
+  Updated .claude/hooks/post-edit-ruff.py
+  Updated .claude/settings.json
+  Updated .claude/skills/gz-plan-audit/SKILL.md
+  Updated .copilotignore
+  Updated .github/copilot-instructions.md
+  Updated .github/copilot/hooks/ledger-writer.py
+  Updated .github/discovery-index.json
+  Updated .github/skills/gz-plan-audit/SKILL.md
+  Updated .gzkit/manifest.json
+  Updated AGENTS.md
+  Updated CLAUDE.md
+
+Sync complete.
+
+$ uv run gz test
+Running tests...
+Ran 379 tests in 8.985s
+
+OK
+
+Tests passed.
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+$ uv run gz validate --documents
+All validations passed.
+
+$ uv run gz lint
+Running linters...
+All checks passed!
+
+ADR path contract check passed.
+Lint passed.
+
+$ uv run gz typecheck
+Running type checker...
+All checks passed!
+
+Type check passed.
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here when Gate 3 applies
+$ uv run mkdocs build --strict
+INFO    -  Cleaning site directory
+INFO    -  Building documentation to directory: /Users/jeff/Documents/Code/gzkit/site
+INFO    -  Documentation built in 0.73 seconds
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here when Gate 4 applies
+$ uv run -m behave features/
+2 features passed, 0 failed, 0 skipped
+6 scenarios passed, 0 failed, 0 skipped
+31 steps passed, 0 failed, 0 skipped
+Took 0min 0.287s
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+Pending human attestation.
 ```
 
 ## Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before this tranche, gzkit had the full set of pipeline-enforcement hooks on
+disk, but the actual Claude runtime still left them unwired, which meant the
+OBPI pipeline contract depended on operator memory instead of active settings.
+Now the hook chain can be enforced through `.claude/settings.json`, so the
+runtime behavior, tests, and operator docs all describe the same active path.
 
 ## Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+```text
+$ sed -n '1,260p' .claude/settings.json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python .claude/hooks/plan-audit-gate.py"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python .claude/hooks/pipeline-gate.py"
+          },
+          {
+            "type": "command",
+            "command": "uv run python .claude/hooks/instruction-router.py"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python .claude/hooks/pipeline-completion-reminder.py"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python .claude/hooks/pipeline-router.py"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python .claude/hooks/post-edit-ruff.py"
+          },
+          {
+            "type": "command",
+            "command": "uv run python .claude/hooks/ledger-writer.py"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created/modified: hook generator, hook tests, `gz-plan-audit` skill,
+  parity matrix, OBPI brief, and generated Claude/mirror control surfaces
+- Tests added: settings matcher/order assertions and active-runtime README
+  assertions
+- Date completed: -
+- Attestation status: pending
+- Defects noted: `uv run gz adr status ADR-0.12.0-obpi-pipeline-enforcement-parity --json`
+  now reports completion-anchor drift on completed `OBPI-0.12.0-01`,
+  `OBPI-0.12.0-02`, `OBPI-0.12.0-03`, `OBPI-0.12.0-04`, and `OBPI-0.12.0-07`
+  because this tranche touched shared tracked files in the ADR package,
+  generated hook surfaces, and `gz-plan-audit` skill guidance
 
 ## Human Attestation
 
-- Attestor: `human:<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `n/a`
+- Attestation: `n/a`
+- Date: `n/a`
 
 ---
 
