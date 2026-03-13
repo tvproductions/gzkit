@@ -15,6 +15,10 @@ Planning happens in native plan mode. This pipeline picks up after the plan is
 approved and enforces the governance stages that get lost in freeform
 execution.
 
+The canonical runtime launch surface is now `uv run gz obpi pipeline`. This
+skill remains the wrapper/operator ritual while later `ADR-0.13.0` OBPIs move
+more of the stage engine into the runtime command.
+
 ---
 
 ## When to Use
