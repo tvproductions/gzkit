@@ -1,10 +1,10 @@
-# Release workflow — triggers on version tags (v0.8.0, v1.0.0, etc.)
+# Release workflow — triggers on version tags (vX.Y.Z)
 # Builds PyInstaller binaries for Windows/Linux/macOS, creates GitHub Release,
 # and optionally publishes to PyPI.
 #
 # Usage:
-#   git tag v0.8.0
-#   git push origin v0.8.0
+#   git tag vX.Y.Z
+#   git push origin vX.Y.Z
 
 name: Release
 
@@ -52,9 +52,12 @@ jobs:
       - name: Build binary
         run: uv run pyinstaller gz.spec
 
-      - name: Rename artifact
+      - name: Rename artifact (skip if same name)
         shell: bash
-        run: mv "dist/${{ matrix.pyinstaller-name }}" "dist/${{ matrix.artifact }}"
+        run: |
+          if [[ "${{ matrix.pyinstaller-name }}" != "${{ matrix.artifact }}" ]]; then
+            mv "dist/${{ matrix.pyinstaller-name }}" "dist/${{ matrix.artifact }}"
+          fi
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

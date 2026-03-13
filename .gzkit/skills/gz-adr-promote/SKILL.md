@@ -15,7 +15,7 @@ Operate the gz adr promote command surface to transition pool (backlog) ADRs int
 ## Workflow
 
 1.  **Identify the pool ADR**: Confirm the source ADR ID (e.g., `ADR-pool.ai-runtime-foundations`).
-2.  **Determine the target version**: Confirm the target semantic version (e.g., `0.8.0`).
+2.  **Determine the target version**: Confirm the target semantic version (e.g., `X.Y.Z`).
 3.  **Decomposition Protocol (Two-Step)**:
     *   **Step 1: Baseline Structural Template (Rule of Three)**: Scaffold into three baseline layers (Registry, Core Execution, and Lifecycle/Operations).
     *   **Step 2: Refining Overlay (Matrix of Four)**: Apply the four core principles (Single-Narrative, Testability Ceiling, State Anchor, Surface Boundary) to each baseline unit. If a unit violates a principle, it MUST be further decomposed.
@@ -30,7 +30,7 @@ Operate the gz adr promote command surface to transition pool (backlog) ADRs int
 
 ## Options
 
-- `--semver`: (Required) The target version (e.g., `0.8.0`).
+- `--semver`: (Required) The target version (e.g., `X.Y.Z`).
 - `--slug`: Optional override for the target slug (defaults to slug derived from pool ID).
 - `--lane`: Optional override for the lane (`lite` or `heavy`).
 
