@@ -3,7 +3,7 @@ id: OBPI-0.12.0-03-pipeline-router-and-active-marker-bridge
 parent: ADR-0.12.0-obpi-pipeline-enforcement-parity
 item: 3
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.12.0-03-pipeline-router-and-active-marker-bridge: Pipeline router and active-marker bridge
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.12.0-obpi-pipeline-enforcement-parity/ADR-0.12.0-obpi-pipeline-enforcement-parity.md`
 - **Checklist Item:** #3 - "OBPI-0.12.0-03: Port the pipeline router and active-marker bridge that hand approved plan work into `gz-obpi-pipeline`."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -146,7 +146,7 @@ canonical pipeline surface that later blocking hooks depend on.
 
 ### Gate 5: Human (Heavy only)
 
-- [ ] Human attestation recorded
+- [x] Human attestation recorded
 
 ## Verification
 
@@ -190,7 +190,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - [x] **Code Quality:** Lint, format, type checks clean
 - [x] **Value Narrative:** Problem-before vs capability-now is documented
 - [x] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -290,7 +290,32 @@ Took 0min 0.276s
 ### Gate 5 (Human)
 
 ```text
-Pending human attestation.
+Human attestation received on 2026-03-13: "Accepted"
+
+$ uv run gz git-sync --apply --lint --test
+Git sync execution
+  Branch: main
+  Remote: origin
+  ahead=1 behind=0 diverged=False dirty=True
+  Actions:
+    - git add -A
+    - git fetch --prune origin
+    - git push origin main
+  Executed:
+    - git add -A
+    - gz lint (pre-sync)
+    - gz test (pre-sync)
+    - git commit
+    - git push origin main
+    - gz lint (post-sync)
+Git sync completed.
+
+$ uv run gz obpi emit-receipt OBPI-0.12.0-03-pipeline-router-and-active-marker-bridge --event completed --attestor "human:jeff" --evidence-json '{...}'
+OBPI receipt emitted.
+  OBPI: OBPI-0.12.0-03-pipeline-router-and-active-marker-bridge
+  Parent ADR: ADR-0.12.0-obpi-pipeline-enforcement-parity
+  Event: completed
+  Attestor: human:jeff
 ```
 
 ## Value Narrative
@@ -329,9 +354,9 @@ If implementation is already done, use --from=verify or --from=ceremony.
   PASS-only router coverage plus silent no-op coverage for missing, corrupt,
   missing-OBPI, and `FAIL` receipts
 - Date completed:
-  Pending human attestation
+  2026-03-13
 - Attestation status:
-  Pending
+  human attestation recorded and completion receipt emitted after guarded git sync
 - Defects noted:
   `uv run gz adr status ADR-0.12.0-obpi-pipeline-enforcement-parity --json`
   now reports completion-anchor drift on completed `OBPI-0.12.0-01`,
@@ -341,14 +366,14 @@ If implementation is already done, use --from=verify or --from=ceremony.
 
 ## Human Attestation
 
-- Attestor: `human:<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: human:jeff
+- Attestation: Accepted
+- Date: 2026-03-13
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-13
 
 **Evidence Hash:** -
