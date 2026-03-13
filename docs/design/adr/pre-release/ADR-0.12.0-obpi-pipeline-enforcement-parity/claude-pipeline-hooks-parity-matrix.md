@@ -23,11 +23,11 @@ comes from `gz-plan-audit`; in gzkit it is now tracked explicitly as
 
 | Canonical Artifact | Current gzkit Status | gzkit Target | Trigger / Contract | Owner OBPI | Notes |
 | --- | --- | --- | --- | --- | --- |
-| `plan-audit-gate.py` | Ported (inactive) | `.claude/hooks/plan-audit-gate.py` | `ExitPlanMode` hard gate; consumes `.claude/plans/.plan-audit-receipt.json` | `OBPI-0.12.0-02` | Hook script is ported; registration and ordering still land in `OBPI-0.12.0-06` |
-| `pipeline-router.py` | Ported (inactive) | `.claude/hooks/pipeline-router.py` | plan-exit routing; reads receipt and directs agent to `gz-obpi-pipeline` | `OBPI-0.12.0-03` | Supports PASS-only routing and silent no-op when receipt is absent or not `PASS`; registration still lands in `OBPI-0.12.0-06` |
-| `pipeline-gate.py` | Ported (inactive) | `.claude/hooks/pipeline-gate.py` | `Write|Edit` block for `src/` and `tests/`; consumes active pipeline marker | `OBPI-0.12.0-04` | Honors per-OBPI marker first, legacy marker second, and blocks only when a PASS receipt exists without a matching marker; registration still lands in `OBPI-0.12.0-06` |
-| `pipeline-completion-reminder.py` | Ported (inactive) | `.claude/hooks/pipeline-completion-reminder.py` | pre-commit / pre-push reminder before incomplete pipeline state leaves local repo | `OBPI-0.12.0-05` | Non-blocking warning surface; generated locally but registration still lands in `OBPI-0.12.0-06` |
-| Hook registration / ordering | Missing | `.claude/settings.json` and `.claude/hooks/README.md` | correct registration order relative to existing router/validator hooks | `OBPI-0.12.0-06` | Must document actual runtime, not aspirational parity |
+| `plan-audit-gate.py` | Registered | `.claude/hooks/plan-audit-gate.py` | `ExitPlanMode` hard gate; consumes `.claude/plans/.plan-audit-receipt.json` | `OBPI-0.12.0-02` | Active on `PreToolUse` `ExitPlanMode` |
+| `pipeline-router.py` | Registered | `.claude/hooks/pipeline-router.py` | plan-exit routing; reads receipt and directs agent to `gz-obpi-pipeline` | `OBPI-0.12.0-03` | Active on `PostToolUse` `ExitPlanMode`; PASS-only routing remains unchanged |
+| `pipeline-gate.py` | Registered | `.claude/hooks/pipeline-gate.py` | `Write|Edit` block for `src/` and `tests/`; consumes active pipeline marker | `OBPI-0.12.0-04` | Active as the first `PreToolUse` hook for `Write|Edit` |
+| `pipeline-completion-reminder.py` | Registered | `.claude/hooks/pipeline-completion-reminder.py` | pre-commit / pre-push reminder before incomplete pipeline state leaves local repo | `OBPI-0.12.0-05` | Active on `PreToolUse` `Bash`; advisory-only behavior remains unchanged |
+| Hook registration / ordering | Completed | `.claude/settings.json` and `.claude/hooks/README.md` | correct registration order relative to existing router/validator hooks | `OBPI-0.12.0-06` | Generated settings and README now describe the enforced runtime truthfully |
 
 ## Prerequisite Surfaces
 
@@ -47,8 +47,11 @@ comes from `gz-plan-audit`; in gzkit it is now tracked explicitly as
 5. `pipeline-gate.py` blocks `src/` and `tests/` writes until that marker exists.
 6. `pipeline-completion-reminder.py` warns before commit/push while the marker
    still represents incomplete governance state.
-7. `OBPI-0.12.0-06` wires the hook chain into `.claude/settings.json` in the
-   correct order.
+7. The generated `.claude/settings.json` wires the hook chain in this order:
+   `plan-audit-gate.py` on `PreToolUse ExitPlanMode`, `pipeline-router.py` on
+   `PostToolUse ExitPlanMode`, `pipeline-gate.py` before `instruction-router.py`
+   on `PreToolUse Write|Edit`, and `pipeline-completion-reminder.py` on
+   `PreToolUse Bash`.
 
 ## Fail-Closed Rules
 
@@ -56,8 +59,8 @@ comes from `gz-plan-audit`; in gzkit it is now tracked explicitly as
   gate/router contract.
 - Missing active-marker parity is a blocker for write-time gating, not a reason
   to allow unrestricted `src/` / `tests/` edits.
-- `.claude/hooks/README.md` and the pipeline skill must stay honest about what
-  is implemented versus only contracted.
+- `.claude/hooks/README.md` and the pipeline skill must stay honest about the
+  active registration state and matcher ordering.
 - No hook in this ADR may silently reinterpret the AirlineOps contract into a
   reminder-only substitute where canon blocks.
 

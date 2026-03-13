@@ -865,10 +865,18 @@ def _claude_hooks_readme() -> str:
             "",
             "- The operator-facing `gz-plan-audit` skill and receipt contract are",
             "  ported under `ADR-0.12.0-obpi-pipeline-enforcement-parity`.",
-            "- `plan-audit-gate.py`, `pipeline-router.py`, `pipeline-gate.py`,",
-            "  and `pipeline-completion-reminder.py` are generated locally but",
-            "  not yet active in `.claude/settings.json`.",
-            "  Registration and ordering stay with `OBPI-0.12.0-06`.",
+            "- The pipeline enforcement hooks are active in `.claude/settings.json`",
+            "  with the generated runtime order described below.",
+            "",
+            "## Registration Order",
+            "",
+            "- `PreToolUse` `ExitPlanMode`: `plan-audit-gate.py`",
+            "- `PostToolUse` `ExitPlanMode`: `pipeline-router.py`",
+            "- `PreToolUse` `Write|Edit`: `pipeline-gate.py`,",
+            "  then `instruction-router.py`",
+            "- `PreToolUse` `Bash`: `pipeline-completion-reminder.py`",
+            "- `PostToolUse` `Edit|Write`: `post-edit-ruff.py`,",
+            "  then `ledger-writer.py`",
             "- Historical intake matrix:",
             "  `docs/design/adr/pre-release/ADR-0.9.0-airlineops-surface-breadth-parity/",
             "claude-hooks-intake-matrix.md`",
@@ -901,16 +909,49 @@ def generate_claude_settings(config: GzkitConfig) -> dict:
         "hooks": {
             "PreToolUse": [
                 {
+                    "matcher": "ExitPlanMode",
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": f"uv run python {hooks_dir}/plan-audit-gate.py",
+                        }
+                    ],
+                },
+                {
                     "matcher": "Write|Edit",
                     "hooks": [
                         {
                             "type": "command",
+                            "command": f"uv run python {hooks_dir}/pipeline-gate.py",
+                        },
+                        {
+                            "type": "command",
                             "command": f"uv run python {hooks_dir}/instruction-router.py",
+                        },
+                    ],
+                },
+                {
+                    "matcher": "Bash",
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": (
+                                f"uv run python {hooks_dir}/pipeline-completion-reminder.py"
+                            ),
                         }
                     ],
-                }
+                },
             ],
             "PostToolUse": [
+                {
+                    "matcher": "ExitPlanMode",
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": f"uv run python {hooks_dir}/pipeline-router.py",
+                        }
+                    ],
+                },
                 {
                     "matcher": "Edit|Write",
                     "hooks": [
@@ -923,7 +964,7 @@ def generate_claude_settings(config: GzkitConfig) -> dict:
                             "command": f"uv run python {hooks_dir}/ledger-writer.py",
                         },
                     ],
-                }
+                },
             ],
         }
     }
