@@ -148,6 +148,7 @@ class TestSetupClaudeHooks(unittest.TestCase):
             post_edit_ruff = hooks_dir / "post-edit-ruff.py"
             plan_audit_gate = hooks_dir / "plan-audit-gate.py"
             pipeline_router = hooks_dir / "pipeline-router.py"
+            pipeline_gate = hooks_dir / "pipeline-gate.py"
             ledger_writer = hooks_dir / "ledger-writer.py"
             readme = hooks_dir / "README.md"
             settings_path = project_root / ".claude" / "settings.json"
@@ -157,6 +158,7 @@ class TestSetupClaudeHooks(unittest.TestCase):
                 post_edit_ruff,
                 plan_audit_gate,
                 pipeline_router,
+                pipeline_gate,
                 ledger_writer,
                 readme,
                 settings_path,
@@ -167,6 +169,7 @@ class TestSetupClaudeHooks(unittest.TestCase):
             self.assertIn(".claude/hooks/post-edit-ruff.py", created)
             self.assertIn(".claude/hooks/plan-audit-gate.py", created)
             self.assertIn(".claude/hooks/pipeline-router.py", created)
+            self.assertIn(".claude/hooks/pipeline-gate.py", created)
             self.assertIn(".claude/hooks/ledger-writer.py", created)
             self.assertIn(".claude/hooks/README.md", created)
             self.assertIn(".claude/settings.json", created)
@@ -189,6 +192,7 @@ class TestSetupClaudeHooks(unittest.TestCase):
             self.assertIn("hook that auto-surfaces", readme_text)
             self.assertIn("plan-audit-gate.py", readme_text)
             self.assertIn("pipeline-router.py", readme_text)
+            self.assertIn("pipeline-gate.py", readme_text)
             self.assertIn("not yet active in", readme_text)
             self.assertIn("hook that runs `ruff check --fix`", readme_text)
             self.assertIn("hook that records governance", readme_text)
@@ -463,6 +467,164 @@ class TestPipelineRouterHook(unittest.TestCase):
             self.assertIn("OBPI plan approved: OBPI-0.12.0-03", result.stdout)
             self.assertIn("/gz-obpi-pipeline OBPI-0.12.0-03", result.stdout)
             self.assertEqual(result.stderr, "")
+
+
+class TestPipelineGateHook(unittest.TestCase):
+    """Tests for the generated pipeline gate script."""
+
+    def _create_hook(self, project_root: Path) -> Path:
+        config = GzkitConfig(project_name="gzkit-test")
+        setup_claude_hooks(project_root, config)
+        return project_root / ".claude" / "hooks" / "pipeline-gate.py"
+
+    def _run_hook(
+        self,
+        script_path: Path,
+        cwd: Path,
+        *,
+        file_path: str,
+    ) -> subprocess.CompletedProcess[str]:
+        payload = {"cwd": str(cwd), "tool_input": {"file_path": file_path}}
+        return subprocess.run(
+            [sys.executable, str(script_path)],
+            input=json.dumps(payload),
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+
+    def _write_receipt(self, plans_dir: Path, *, obpi_id: str, verdict: str) -> None:
+        plans_dir.mkdir(parents=True, exist_ok=True)
+        (plans_dir / ".plan-audit-receipt.json").write_text(
+            json.dumps(
+                {
+                    "obpi_id": obpi_id,
+                    "timestamp": "2026-03-13T12:00:00Z",
+                    "verdict": verdict,
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+
+    def _write_marker(self, plans_dir: Path, name: str, *, obpi_id: str) -> None:
+        plans_dir.mkdir(parents=True, exist_ok=True)
+        (plans_dir / name).write_text(
+            json.dumps({"obpi_id": obpi_id, "started_at": "2026-03-13T12:00:00Z"}) + "\n",
+            encoding="utf-8",
+        )
+
+    def test_allows_non_implementation_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            script_path = self._create_hook(project_root)
+
+            result = self._run_hook(script_path, project_root, file_path="docs/readme.md")
+
+            self.assertEqual(result.returncode, 0)
+            self.assertEqual(result.stdout, "")
+            self.assertEqual(result.stderr, "")
+
+    def test_allows_when_receipt_is_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            script_path = self._create_hook(project_root)
+
+            result = self._run_hook(script_path, project_root, file_path="src/demo.py")
+
+            self.assertEqual(result.returncode, 0)
+            self.assertEqual(result.stdout, "")
+            self.assertEqual(result.stderr, "")
+
+    def test_allows_when_receipt_is_not_pass(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            script_path = self._create_hook(project_root)
+            self._write_receipt(
+                project_root / ".claude" / "plans",
+                obpi_id="OBPI-0.12.0-04",
+                verdict="FAIL",
+            )
+
+            result = self._run_hook(script_path, project_root, file_path="tests/test_demo.py")
+
+            self.assertEqual(result.returncode, 0)
+            self.assertEqual(result.stdout, "")
+            self.assertEqual(result.stderr, "")
+
+    def test_blocks_when_pass_receipt_exists_without_marker(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            script_path = self._create_hook(project_root)
+            self._write_receipt(
+                project_root / ".claude" / "plans",
+                obpi_id="OBPI-0.12.0-04",
+                verdict="PASS",
+            )
+
+            result = self._run_hook(script_path, project_root, file_path="src/demo.py")
+
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("BLOCKED: Pipeline not invoked for OBPI-0.12.0-04.", result.stderr)
+            self.assertIn("/gz-obpi-pipeline OBPI-0.12.0-04", result.stderr)
+            self.assertIn("--from=verify", result.stderr)
+
+    def test_allows_when_per_obpi_marker_matches(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            plans_dir = project_root / ".claude" / "plans"
+            script_path = self._create_hook(project_root)
+            self._write_receipt(plans_dir, obpi_id="OBPI-0.12.0-04", verdict="PASS")
+            self._write_marker(
+                plans_dir,
+                ".pipeline-active-OBPI-0.12.0-04.json",
+                obpi_id="OBPI-0.12.0-04",
+            )
+
+            result = self._run_hook(script_path, project_root, file_path="src/demo.py")
+
+            self.assertEqual(result.returncode, 0)
+            self.assertEqual(result.stderr, "")
+
+    def test_allows_when_legacy_marker_matches(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            plans_dir = project_root / ".claude" / "plans"
+            script_path = self._create_hook(project_root)
+            self._write_receipt(plans_dir, obpi_id="OBPI-0.12.0-04", verdict="PASS")
+            self._write_marker(plans_dir, ".pipeline-active.json", obpi_id="OBPI-0.12.0-04")
+
+            result = self._run_hook(script_path, project_root, file_path="tests/test_demo.py")
+
+            self.assertEqual(result.returncode, 0)
+            self.assertEqual(result.stderr, "")
+
+    def test_blocks_when_marker_is_corrupt(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            plans_dir = project_root / ".claude" / "plans"
+            script_path = self._create_hook(project_root)
+            self._write_receipt(plans_dir, obpi_id="OBPI-0.12.0-04", verdict="PASS")
+            plans_dir.mkdir(parents=True, exist_ok=True)
+            (plans_dir / ".pipeline-active.json").write_text("{oops\n", encoding="utf-8")
+
+            result = self._run_hook(script_path, project_root, file_path="src/demo.py")
+
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("BLOCKED: Pipeline not invoked for OBPI-0.12.0-04.", result.stderr)
+
+    def test_blocks_when_marker_obpi_does_not_match(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            plans_dir = project_root / ".claude" / "plans"
+            script_path = self._create_hook(project_root)
+            self._write_receipt(plans_dir, obpi_id="OBPI-0.12.0-04", verdict="PASS")
+            self._write_marker(plans_dir, ".pipeline-active.json", obpi_id="OBPI-0.12.0-03")
+
+            result = self._run_hook(script_path, project_root, file_path="src/demo.py")
+
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("BLOCKED: Pipeline not invoked for OBPI-0.12.0-04.", result.stderr)
 
 
 if __name__ == "__main__":

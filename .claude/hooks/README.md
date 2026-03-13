@@ -11,6 +11,9 @@ Current hook surface in gzkit:
 - `pipeline-router.py`
   PostToolUse (`ExitPlanMode`) hook that routes PASS receipts into
   `gz-obpi-pipeline`.
+- `pipeline-gate.py`
+  PreToolUse (`Write|Edit`) hook that blocks `src/` and `tests/`
+  writes until the active pipeline marker exists.
 - `post-edit-ruff.py`
   PostToolUse (`Write|Edit`) hook that runs `ruff check --fix`
   and `ruff format` on edited Python files.
@@ -22,8 +25,9 @@ Current hook surface in gzkit:
 
 - The operator-facing `gz-plan-audit` skill and receipt contract are
   ported under `ADR-0.12.0-obpi-pipeline-enforcement-parity`.
-- `plan-audit-gate.py` and `pipeline-router.py` are generated
-  locally but not yet active in `.claude/settings.json`.
+- `plan-audit-gate.py`, `pipeline-router.py`, and
+  `pipeline-gate.py` are generated locally but not yet active in
+  `.claude/settings.json`.
   Registration and ordering stay with `OBPI-0.12.0-06`.
 - Historical intake matrix:
   `docs/design/adr/pre-release/ADR-0.9.0-airlineops-surface-breadth-parity/
