@@ -3,7 +3,7 @@ id: OBPI-0.12.0-05-completion-reminder-surface
 parent: ADR-0.12.0-obpi-pipeline-enforcement-parity
 item: 5
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.12.0-05-completion-reminder-surface: Completion reminder surface
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.12.0-obpi-pipeline-enforcement-parity/ADR-0.12.0-obpi-pipeline-enforcement-parity.md`
 - **Checklist Item:** #5 - "OBPI-0.12.0-05: Port the completion reminder surfaces that reinforce unfinished pipeline state before commit and push."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -144,7 +144,7 @@ blocking.
 
 ### Gate 5: Human (Heavy only)
 
-- [ ] Human attestation recorded
+- [x] Human attestation recorded
 
 ## Verification
 
@@ -270,7 +270,31 @@ Took 0min 0.295s
 ### Gate 5 (Human)
 
 ```text
-Pending human attestation.
+Human attestation received on 2026-03-13: "attest bcompleted"
+
+$ uv run gz git-sync --apply --lint --test
+Git sync execution
+  Branch: main
+  Remote: origin
+  ahead=0 behind=0 diverged=False dirty=True
+  Actions:
+    - git add -A
+    - git fetch --prune origin
+  Executed:
+    - git add -A
+    - gz lint (pre-sync)
+    - gz test (pre-sync)
+    - git commit
+    - git push origin main
+    - gz lint (post-sync)
+Git sync completed.
+
+$ uv run gz obpi emit-receipt OBPI-0.12.0-05-completion-reminder-surface --event completed --attestor "human:jeff" --evidence-json '{...}'
+OBPI receipt emitted.
+  OBPI: OBPI-0.12.0-05-completion-reminder-surface
+  Parent ADR: ADR-0.12.0-obpi-pipeline-enforcement-parity
+  Event: completed
+  Attestor: human:jeff
 ```
 
 ## Value Narrative
@@ -308,8 +332,9 @@ Preferred re-entry point:
   and generated Claude control surfaces
 - Tests added: direct `pipeline-completion-reminder.py` generation and behavior
   coverage
-- Date completed: -
-- Attestation status: pending
+- Date completed: 2026-03-13
+- Attestation status: human attestation recorded and completion receipt emitted
+  after guarded git sync
 - Defects noted: `uv run gz adr status ADR-0.12.0-obpi-pipeline-enforcement-parity --json`
   reports completion-anchor drift on completed `OBPI-0.12.0-01`,
   `OBPI-0.12.0-02`, `OBPI-0.12.0-03`, and `OBPI-0.12.0-07` after this tranche's
@@ -317,14 +342,14 @@ Preferred re-entry point:
 
 ## Human Attestation
 
-- Attestor: `n/a`
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: human:jeff
+- Attestation: attest bcompleted
+- Date: 2026-03-13
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-13
 
 **Evidence Hash:** -
