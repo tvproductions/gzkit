@@ -495,6 +495,80 @@ def _plan_audit_gate_script() -> str:
     )
 
 
+def _pipeline_router_script() -> str:
+    """Return the pipeline router hook script."""
+    return (
+        dedent(
+            """\
+            #!/usr/bin/env python3
+            \"\"\"Pipeline Router Hook.
+
+            PostToolUse hook on ExitPlanMode that routes the agent to
+            `/gz-obpi-pipeline` after plan approval for OBPI work.
+
+            How it works:
+              1. Reads `.claude/plans/.plan-audit-receipt.json`
+              2. If the receipt exists, names an OBPI, and has verdict `PASS`,
+                 emit a routing instruction on stdout directing the agent to
+                 invoke `/gz-obpi-pipeline`
+              3. If the receipt is absent, invalid, or not `PASS`, exit silently
+
+            Exit codes:
+              0 - Always (PostToolUse hooks should not block)
+            \"\"\"
+
+            import json
+            import os
+            import sys
+            from pathlib import Path
+
+            RECEIPT_FILE = ".plan-audit-receipt.json"
+
+
+            def main() -> None:
+                \"\"\"Route approved OBPI plans into the pipeline.\"\"\"
+                try:
+                    input_data = json.load(sys.stdin)
+                except json.JSONDecodeError:
+                    sys.exit(0)
+
+                cwd = input_data.get("cwd", os.getcwd())
+                receipt_path = Path(cwd) / ".claude" / "plans" / RECEIPT_FILE
+                if not receipt_path.exists():
+                    sys.exit(0)
+
+                try:
+                    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+                except (OSError, json.JSONDecodeError):
+                    sys.exit(0)
+
+                obpi_id = receipt.get("obpi_id", "")
+                verdict = receipt.get("verdict", "")
+                if not obpi_id or verdict != "PASS":
+                    sys.exit(0)
+
+                print(
+                    f"OBPI plan approved: {obpi_id}\\n"
+                    f"\\n"
+                    f"REQUIRED: Execute the approved plan via the governance pipeline:\\n"
+                    f"  /gz-obpi-pipeline {obpi_id}\\n"
+                    f"\\n"
+                    f"Do NOT implement directly; the pipeline preserves the required\\n"
+                    f"verification, acceptance ceremony, and sync stages.\\n"
+                    f"\\n"
+                    f"If implementation is already done, use --from=verify or --from=ceremony."
+                )
+                sys.exit(0)
+
+
+            if __name__ == "__main__":
+                main()
+            """
+        )
+        + "\n"
+    )
+
+
 def _claude_hooks_readme() -> str:
     """Return the generated local README for the Claude hook surface."""
     return "\n".join(
@@ -509,6 +583,9 @@ def _claude_hooks_readme() -> str:
             "- `plan-audit-gate.py`",
             "  PreToolUse (`ExitPlanMode`) hook that validates the latest",
             "  OBPI plan against `.claude/plans/.plan-audit-receipt.json`.",
+            "- `pipeline-router.py`",
+            "  PostToolUse (`ExitPlanMode`) hook that routes PASS receipts into",
+            "  `gz-obpi-pipeline`.",
             "- `post-edit-ruff.py`",
             "  PostToolUse (`Write|Edit`) hook that runs `ruff check --fix`",
             "  and `ruff format` on edited Python files.",
@@ -520,9 +597,9 @@ def _claude_hooks_readme() -> str:
             "",
             "- The operator-facing `gz-plan-audit` skill and receipt contract are",
             "  ported under `ADR-0.12.0-obpi-pipeline-enforcement-parity`.",
-            "- `plan-audit-gate.py` is generated locally but not yet active in",
-            "  `.claude/settings.json`; registration and ordering stay with",
-            "  `OBPI-0.12.0-06`.",
+            "- `plan-audit-gate.py` and `pipeline-router.py` are generated",
+            "  locally but not yet active in `.claude/settings.json`.",
+            "  Registration and ordering stay with `OBPI-0.12.0-06`.",
             "- Historical intake matrix:",
             "  `docs/design/adr/pre-release/ADR-0.9.0-airlineops-surface-breadth-parity/",
             "claude-hooks-intake-matrix.md`",
@@ -616,6 +693,10 @@ def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) ->
     plan_audit_gate_path = hooks_path / "plan-audit-gate.py"
     _write_hook_file(plan_audit_gate_path, _plan_audit_gate_script(), executable=True)
     created.append(str(plan_audit_gate_path.relative_to(project_root)))
+
+    pipeline_router_path = hooks_path / "pipeline-router.py"
+    _write_hook_file(pipeline_router_path, _pipeline_router_script(), executable=True)
+    created.append(str(pipeline_router_path.relative_to(project_root)))
 
     readme_path = hooks_path / "README.md"
     _write_hook_file(readme_path, _claude_hooks_readme())

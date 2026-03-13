@@ -8,6 +8,9 @@ Current hook surface in gzkit:
 - `plan-audit-gate.py`
   PreToolUse (`ExitPlanMode`) hook that validates the latest
   OBPI plan against `.claude/plans/.plan-audit-receipt.json`.
+- `pipeline-router.py`
+  PostToolUse (`ExitPlanMode`) hook that routes PASS receipts into
+  `gz-obpi-pipeline`.
 - `post-edit-ruff.py`
   PostToolUse (`Write|Edit`) hook that runs `ruff check --fix`
   and `ruff format` on edited Python files.
@@ -19,9 +22,9 @@ Current hook surface in gzkit:
 
 - The operator-facing `gz-plan-audit` skill and receipt contract are
   ported under `ADR-0.12.0-obpi-pipeline-enforcement-parity`.
-- `plan-audit-gate.py` is generated locally but not yet active in
-  `.claude/settings.json`; registration and ordering stay with
-  `OBPI-0.12.0-06`.
+- `plan-audit-gate.py` and `pipeline-router.py` are generated
+  locally but not yet active in `.claude/settings.json`.
+  Registration and ordering stay with `OBPI-0.12.0-06`.
 - Historical intake matrix:
   `docs/design/adr/pre-release/ADR-0.9.0-airlineops-surface-breadth-parity/
 claude-hooks-intake-matrix.md`
