@@ -107,26 +107,78 @@ class TestWriteHookScript(unittest.TestCase):
 class TestGenerateClaudeSettings(unittest.TestCase):
     """Tests for Claude settings generation."""
 
-    def test_includes_instruction_router_post_edit_and_ledger_writer(self) -> None:
-        """Generated settings wire the full OBPI-01 hook tranche."""
+    def test_includes_active_pipeline_enforcement_registration(self) -> None:
+        """Generated settings wire the active OBPI-06 enforcement chain."""
         config = GzkitConfig(project_name="gzkit-test")
 
         settings = generate_claude_settings(config)
 
-        pretool_hooks = settings["hooks"]["PreToolUse"][0]["hooks"]
-        posttool_hooks = settings["hooks"]["PostToolUse"][0]["hooks"]
-        pretool_commands = [hook["command"] for hook in pretool_hooks]
-        posttool_commands = [hook["command"] for hook in posttool_hooks]
+        pretool_hooks = settings["hooks"]["PreToolUse"]
+        posttool_hooks = settings["hooks"]["PostToolUse"]
 
         self.assertEqual(
-            pretool_commands,
-            ["uv run python .claude/hooks/instruction-router.py"],
+            pretool_hooks,
+            [
+                {
+                    "matcher": "ExitPlanMode",
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": "uv run python .claude/hooks/plan-audit-gate.py",
+                        }
+                    ],
+                },
+                {
+                    "matcher": "Write|Edit",
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": "uv run python .claude/hooks/pipeline-gate.py",
+                        },
+                        {
+                            "type": "command",
+                            "command": "uv run python .claude/hooks/instruction-router.py",
+                        },
+                    ],
+                },
+                {
+                    "matcher": "Bash",
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": (
+                                "uv run python .claude/hooks/pipeline-completion-reminder.py"
+                            ),
+                        }
+                    ],
+                },
+            ],
         )
         self.assertEqual(
-            posttool_commands,
+            posttool_hooks,
             [
-                "uv run python .claude/hooks/post-edit-ruff.py",
-                "uv run python .claude/hooks/ledger-writer.py",
+                {
+                    "matcher": "ExitPlanMode",
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": "uv run python .claude/hooks/pipeline-router.py",
+                        }
+                    ],
+                },
+                {
+                    "matcher": "Edit|Write",
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": "uv run python .claude/hooks/post-edit-ruff.py",
+                        },
+                        {
+                            "type": "command",
+                            "command": "uv run python .claude/hooks/ledger-writer.py",
+                        },
+                    ],
+                },
             ],
         )
 
@@ -179,14 +231,68 @@ class TestSetupClaudeHooks(unittest.TestCase):
 
             settings = json.loads(settings_path.read_text(encoding="utf-8"))
             self.assertEqual(
-                settings["hooks"]["PreToolUse"][0]["hooks"][0]["command"],
-                "uv run python .claude/hooks/instruction-router.py",
+                settings["hooks"]["PreToolUse"],
+                [
+                    {
+                        "matcher": "ExitPlanMode",
+                        "hooks": [
+                            {
+                                "type": "command",
+                                "command": "uv run python .claude/hooks/plan-audit-gate.py",
+                            }
+                        ],
+                    },
+                    {
+                        "matcher": "Write|Edit",
+                        "hooks": [
+                            {
+                                "type": "command",
+                                "command": "uv run python .claude/hooks/pipeline-gate.py",
+                            },
+                            {
+                                "type": "command",
+                                "command": "uv run python .claude/hooks/instruction-router.py",
+                            },
+                        ],
+                    },
+                    {
+                        "matcher": "Bash",
+                        "hooks": [
+                            {
+                                "type": "command",
+                                "command": (
+                                    "uv run python .claude/hooks/pipeline-completion-reminder.py"
+                                ),
+                            }
+                        ],
+                    },
+                ],
             )
             self.assertEqual(
-                [hook["command"] for hook in settings["hooks"]["PostToolUse"][0]["hooks"]],
+                settings["hooks"]["PostToolUse"],
                 [
-                    "uv run python .claude/hooks/post-edit-ruff.py",
-                    "uv run python .claude/hooks/ledger-writer.py",
+                    {
+                        "matcher": "ExitPlanMode",
+                        "hooks": [
+                            {
+                                "type": "command",
+                                "command": "uv run python .claude/hooks/pipeline-router.py",
+                            }
+                        ],
+                    },
+                    {
+                        "matcher": "Edit|Write",
+                        "hooks": [
+                            {
+                                "type": "command",
+                                "command": "uv run python .claude/hooks/post-edit-ruff.py",
+                            },
+                            {
+                                "type": "command",
+                                "command": "uv run python .claude/hooks/ledger-writer.py",
+                            },
+                        ],
+                    },
                 ],
             )
 
@@ -197,7 +303,8 @@ class TestSetupClaudeHooks(unittest.TestCase):
             self.assertIn("pipeline-router.py", readme_text)
             self.assertIn("pipeline-gate.py", readme_text)
             self.assertIn("pipeline-completion-reminder.py", readme_text)
-            self.assertIn("not yet active in", readme_text)
+            self.assertIn("Registration Order", readme_text)
+            self.assertNotIn("not yet active in", readme_text)
             self.assertIn("hook that runs `ruff check --fix`", readme_text)
             self.assertIn("hook that records governance", readme_text)
 

@@ -2,16 +2,47 @@
   "hooks": {
     "PreToolUse": [
       {
+        "matcher": "ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python .claude/hooks/plan-audit-gate.py"
+          }
+        ]
+      },
+      {
         "matcher": "Write|Edit",
         "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python .claude/hooks/pipeline-gate.py"
+          },
           {
             "type": "command",
             "command": "uv run python .claude/hooks/instruction-router.py"
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python .claude/hooks/pipeline-completion-reminder.py"
+          }
+        ]
       }
     ],
     "PostToolUse": [
+      {
+        "matcher": "ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python .claude/hooks/pipeline-router.py"
+          }
+        ]
+      },
       {
         "matcher": "Edit|Write",
         "hooks": [
