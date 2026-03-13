@@ -8,7 +8,7 @@ from gzkit.ledger import (
     adr_created_event,
     gate_checked_event,
 )
-from tests.commands.common import CliRunner
+from tests.commands.common import CliRunner, _init_git_repo
 
 
 class TestAttestSemantics(unittest.TestCase):
@@ -63,6 +63,7 @@ class TestAttestSemantics(unittest.TestCase):
     def test_attest_force_with_reason_records_event(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
+            _init_git_repo(Path.cwd())
             runner.invoke(main, ["init"])
             runner.invoke(main, ["plan", "0.1.0"])
             result = runner.invoke(
@@ -81,6 +82,36 @@ class TestAttestSemantics(unittest.TestCase):
             ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertIn("attested", ledger_content)
             self.assertIn("manual override for reconciliation", ledger_content)
+
+    def test_attest_updates_adr_attestation_block_and_closeout_form(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _init_git_repo(Path.cwd())
+            runner.invoke(main, ["init", "--mode", "heavy"])
+            runner.invoke(main, ["plan", "0.1.0", "--lane", "heavy"])
+
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
+            ledger.append(gate_checked_event("ADR-0.1.0", 3, "pass", "docs", 0))
+            ledger.append(gate_checked_event("ADR-0.1.0", 4, "pass", "bdd", 0))
+
+            closeout = runner.invoke(main, ["closeout", "ADR-0.1.0"])
+            self.assertEqual(closeout.exit_code, 0)
+            result = runner.invoke(main, ["attest", "ADR-0.1.0", "--status", "completed"])
+            self.assertEqual(result.exit_code, 0)
+
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            adr_file = next(Path(config.paths.adrs).rglob("ADR-0.1.0.md"))
+            adr_content = adr_file.read_text(encoding="utf-8")
+            self.assertIn("| 0.1.0 | Completed | Test User |", adr_content)
+            self.assertNotIn("| 0.1.0 | Pending | | | |", adr_content)
+
+            closeout_form = adr_file.parent / "ADR-CLOSEOUT-FORM.md"
+            self.assertTrue(closeout_form.exists())
+            closeout_content = closeout_form.read_text(encoding="utf-8")
+            self.assertIn("**Status**: Phase 2 — Completed", closeout_content)
+            self.assertIn("- `completed`", closeout_content)
+            self.assertIn("**Attested by**: Test User", closeout_content)
 
     def test_attest_rejects_pool_adr(self) -> None:
         runner = CliRunner()

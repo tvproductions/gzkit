@@ -4,6 +4,31 @@
 
 _No unreleased entries._
 
+## v0.12.0 (2026-03-13)
+
+**ADR context:** `ADR-0.12.0-obpi-pipeline-enforcement-parity`
+**Release scope:** AirlineOps pipeline-enforcement parity across plan-exit gating, routing, write-time enforcement, completion reminders, and active runtime registration.
+
+### Delivered
+
+- Ported the Claude plan-exit enforcement chain with `plan-audit-gate.py` and `pipeline-router.py`.
+- Added the write-time `pipeline-gate.py` and advisory `pipeline-completion-reminder.py` hook surfaces.
+- Registered the full pipeline hook chain in `.claude/settings.json` with the intended matcher and ordering contract.
+- Completed the pipeline active-marker bridge for per-OBPI and legacy compatibility markers.
+- Hardened ADR closeout/attestation runtime behavior so `gz closeout` materializes `ADR-CLOSEOUT-FORM.md` and `gz attest` updates the ADR attestation block and closeout form.
+
+### Gate Evidence
+
+All 5 GovZero gates satisfied for `ADR-0.12.0-obpi-pipeline-enforcement-parity`.
+
+### Verification
+
+- `uv run gz adr audit-check ADR-0.12.0-obpi-pipeline-enforcement-parity`
+- `uv run gz closeout ADR-0.12.0-obpi-pipeline-enforcement-parity`
+- `uv run gz attest ADR-0.12.0-obpi-pipeline-enforcement-parity --status completed`
+- `uv run gz audit ADR-0.12.0-obpi-pipeline-enforcement-parity`
+- `uv run gz adr emit-receipt ADR-0.12.0-obpi-pipeline-enforcement-parity --event validated --attestor "human:jeff" --evidence-json ...`
+
 ## v0.11.0 (2026-03-12)
 
 **ADR context:** `ADR-0.11.0-airlineops-obpi-completion-pipeline-parity`
