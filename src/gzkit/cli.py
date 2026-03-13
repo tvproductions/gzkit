@@ -60,9 +60,9 @@ from gzkit.commands.status import (
 )
 from gzkit.config import GzkitConfig
 from gzkit.decomposition import (
-    build_checklist_seed,
+    DecompositionScorecard,
     compute_scorecard,
-    default_dimension_scores,
+    extract_markdown_section,
     parse_checklist_items,
     parse_scorecard,
 )
@@ -739,43 +739,21 @@ def specify(
             f"target={scorecard.final_target_obpi_count}."
         )
 
-    # Extract semver from parent ADR ID (e.g., ADR-0.4.0-slug -> 0.4.0).
-    version = resolved_parent.replace("ADR-", "").split("-")[0]
-    obpi_id = f"OBPI-{version}-{item:02d}-{name}"
-    obpi_title = title or name.replace("-", " ").title()
-    req_prefix = f"REQ-{version}-{item:02d}"
-    acceptance_criteria_seed = "\n".join(
-        [
-            f"- [ ] {req_prefix}-01: Given/When/Then behavior criterion 1",
-            f"- [ ] {req_prefix}-02: Given/When/Then behavior criterion 2",
-            f"- [ ] {req_prefix}-03: Given/When/Then behavior criterion 3",
-        ]
-    )
-
-    lane_cap = lane.capitalize()
-    lane_requirements = (
-        "All 5 gates required: ADR, TDD, Docs, BDD, Human attestation"
-        if lane == "heavy"
-        else "Gates 1, 2 required: ADR, TDD"
-    )
-
-    content = render_template(
-        "obpi",
-        id=obpi_id,
-        title=obpi_title,
-        parent_adr=resolved_parent,
-        parent_adr_path=str(adr_file.relative_to(project_root)),
-        item_number=str(item),
+    obpi_plan = _build_obpi_plan(
+        project_root=project_root,
+        adr_file=adr_file,
+        parent_adr_id=resolved_parent,
+        item=item,
         checklist_item_text=checklist_items[item - 1],
-        lane=lane_cap,
-        lane_rationale="TBD",
+        lane=lane,
+        name=name,
+        title=title or name.replace("-", " ").title(),
         objective="TBD",
-        lane_requirements=lane_requirements,
-        acceptance_criteria_seed=acceptance_criteria_seed,
     )
-
-    obpi_dir = adr_file.parent / "obpis"
-    obpi_file = obpi_dir / f"{obpi_id}.md"
+    obpi_id = cast(str, obpi_plan["obpi_id"])
+    obpi_file = cast(Path, obpi_plan["obpi_file"])
+    obpi_dir = obpi_file.parent
+    content = cast(str, obpi_plan["content"])
 
     if dry_run:
         console.print("[yellow]Dry run:[/yellow] no files will be written.")
@@ -789,6 +767,84 @@ def specify(
     ledger.append(obpi_created_event(obpi_id, resolved_parent))
 
     console.print(f"Created OBPI: {obpi_file}")
+
+
+def _normalized_objective_from_checklist_item(checklist_item_text: str) -> str:
+    """Render a one-sentence objective from ADR checklist text."""
+    objective = re.sub(r"^OBPI-\d+\.\d+\.\d+-\d+:\s*", "", checklist_item_text).strip()
+    if not objective:
+        return "TBD"
+    if objective.endswith((".", "!", "?")):
+        return objective
+    return f"{objective}."
+
+
+def _slugify_obpi_name(value: str) -> str:
+    """Convert checklist text into a stable OBPI slug suffix."""
+    stripped = re.sub(r"`([^`]*)`", r"\1", value)
+    slug = re.sub(r"[^a-zA-Z0-9]+", "-", stripped).strip("-").lower()
+    return slug or "scope-item"
+
+
+def _render_obpi_acceptance_seed(version: str, item: int) -> str:
+    """Create deterministic acceptance criteria seed for an OBPI."""
+    req_prefix = f"REQ-{version}-{item:02d}"
+    return "\n".join(
+        [
+            f"- [ ] {req_prefix}-01: Given/When/Then behavior criterion 1",
+            f"- [ ] {req_prefix}-02: Given/When/Then behavior criterion 2",
+            f"- [ ] {req_prefix}-03: Given/When/Then behavior criterion 3",
+        ]
+    )
+
+
+def _build_obpi_plan(
+    *,
+    project_root: Path,
+    adr_file: Path,
+    parent_adr_id: str,
+    item: int,
+    checklist_item_text: str,
+    lane: str,
+    name: str,
+    title: str,
+    objective: str,
+) -> dict[str, Any]:
+    """Build deterministic OBPI artifact plan used by specify and ADR promotion."""
+    version = parent_adr_id.replace("ADR-", "").split("-")[0]
+    obpi_id = f"OBPI-{version}-{item:02d}-{name}"
+    lane_cap = lane.capitalize()
+    lane_requirements = (
+        "All 5 gates required: ADR, TDD, Docs, BDD, Human attestation"
+        if lane == "heavy"
+        else "Gates 1, 2 required: ADR, TDD"
+    )
+    lane_rationale = (
+        "This OBPI changes a command/API/schema/runtime contract surface."
+        if lane == "heavy"
+        else "This OBPI remains internal to the promoted ADR implementation scope."
+    )
+    content = render_template(
+        "obpi",
+        id=obpi_id,
+        title=title,
+        parent_adr=parent_adr_id,
+        parent_adr_path=str(adr_file.relative_to(project_root)),
+        item_number=str(item),
+        checklist_item_text=checklist_item_text,
+        lane=lane_cap,
+        lane_rationale=lane_rationale,
+        objective=objective,
+        lane_requirements=lane_requirements,
+        acceptance_criteria_seed=_render_obpi_acceptance_seed(version, item),
+    )
+    obpi_dir = adr_file.parent / "obpis"
+    obpi_file = obpi_dir / f"{obpi_id}.md"
+    return {
+        "obpi_id": obpi_id,
+        "obpi_file": obpi_file,
+        "content": content,
+    }
 
 
 def _pool_title_from_content(content: str) -> str | None:
@@ -846,6 +902,8 @@ def _mark_pool_adr_promoted(content: str, target_adr_id: str, promote_date: str)
     """Mark pool ADR frontmatter and body as promoted archive context."""
     updated = _upsert_frontmatter_value(content, "status", "Superseded")
     updated = _upsert_frontmatter_value(updated, "promoted_to", target_adr_id)
+    updated = updated.replace("\n## Status\n\nPool\n", "\n## Status\n\nSuperseded\n", 1)
+    updated = updated.replace("\n## Status\n\nProposed\n", "\n## Status\n\nSuperseded\n", 1)
 
     note = (
         f"> Promoted to `{target_adr_id}` on {promote_date}. "
@@ -869,8 +927,118 @@ def _mark_pool_adr_promoted(content: str, target_adr_id: str, promote_date: str)
     return "\n".join(lines).rstrip() + "\n"
 
 
+def _required_pool_section(pool_content: str, section_title: str) -> str:
+    """Read a required H2 section from a pool ADR and fail closed if missing."""
+    section = extract_markdown_section(pool_content, section_title)
+    if section is None or not section.strip():
+        raise GzCliError(
+            f"Pool ADR is not ready for promotion: missing required section '## {section_title}'."
+        )
+    return section.strip()
+
+
+def _optional_pool_section(pool_content: str, section_title: str) -> str | None:
+    """Read an optional H2 section from a pool ADR."""
+    section = extract_markdown_section(pool_content, section_title)
+    if section is None:
+        return None
+    normalized = section.strip()
+    return normalized or None
+
+
+def _parse_top_level_markdown_bullets(section_content: str) -> list[str]:
+    """Extract top-level markdown bullet items from a section body."""
+    bullets: list[str] = []
+    current: list[str] | None = None
+    for raw_line in section_content.splitlines():
+        bullet_match = re.match(r"^(?P<indent>\s*)-\s+(?P<body>.+)$", raw_line.rstrip())
+        if bullet_match and not bullet_match.group("indent"):
+            if current:
+                bullets.append(re.sub(r"\s+", " ", " ".join(current)).strip())
+            current = [bullet_match.group("body").strip()]
+            continue
+        if current is None:
+            continue
+        stripped = raw_line.strip()
+        if not stripped:
+            continue
+        if re.match(r"^[-*]\s+", stripped) or re.match(r"^\d+[.)]\s+", stripped):
+            continue
+        current.append(stripped)
+
+    if current:
+        bullets.append(re.sub(r"\s+", " ", " ".join(current)).strip())
+    return bullets
+
+
+def _promotion_scorecard(target_count: int) -> DecompositionScorecard:
+    """Compute a valid scorecard for a concrete promoted checklist count."""
+    if target_count <= 0:
+        raise GzCliError("Pool ADR promotion requires at least one executable checklist item.")
+    if target_count <= 2:
+        dimension_total = 0
+    elif target_count == 3:
+        dimension_total = 4
+    elif target_count == 4:
+        dimension_total = 7
+    else:
+        dimension_total = 9
+
+    scores = [0, 0, 0, 0, 0]
+    for index in range(dimension_total):
+        scores[index % 5] += 1
+
+    return compute_scorecard(
+        data_state=scores[0],
+        logic_engine=scores[1],
+        interface=scores[2],
+        observability=scores[3],
+        lineage=scores[4],
+        split_single_narrative=0,
+        split_surface_boundary=0,
+        split_state_anchor=0,
+        split_testability_ceiling=0,
+        baseline_selected=target_count,
+    )
+
+
+def _promoted_checklist_from_pool(
+    pool_content: str, semver: str
+) -> tuple[list[str], str, DecompositionScorecard]:
+    """Derive executable ADR checklist items from pool target scope."""
+    target_scope = _required_pool_section(pool_content, "Target Scope")
+    scope_items = []
+    for item in _parse_top_level_markdown_bullets(target_scope):
+        normalized = item.rstrip(":").strip()
+        if normalized:
+            scope_items.append(normalized)
+    if not scope_items:
+        raise GzCliError(
+            "Pool ADR is not ready for promotion: '## Target Scope' must contain top-level "
+            "actionable bullet items."
+        )
+
+    checklist = "\n".join(
+        f"- [ ] OBPI-{semver}-{index:02d}: {item}"
+        for index, item in enumerate(scope_items, start=1)
+    )
+    return scope_items, checklist, _promotion_scorecard(len(scope_items))
+
+
+def _insert_promoted_context_sections(content: str, sections: list[tuple[str, str]]) -> str:
+    """Insert additional preserved pool sections into promoted ADR content."""
+    if not sections:
+        return content
+    rendered = "\n\n".join(f"## {title}\n\n{body}" for title, body in sections if body.strip())
+    marker = "\n## Q&A Transcript\n"
+    if marker not in content:
+        return content.rstrip() + "\n\n" + rendered + "\n"
+    return content.replace(marker, "\n" + rendered + "\n\n## Q&A Transcript\n", 1)
+
+
 def _render_promoted_adr_content(
     pool_adr_id: str,
+    pool_content: str,
     target_adr_id: str,
     semver: str,
     lane: str,
@@ -880,19 +1048,16 @@ def _render_promoted_adr_content(
     promote_date: str,
 ) -> str:
     """Render promoted ADR scaffold seeded from a pool ADR source."""
-    default_scores = default_dimension_scores(lane, semver)
-    scorecard = compute_scorecard(
-        data_state=default_scores["data_state"],
-        logic_engine=default_scores["logic_engine"],
-        interface=default_scores["interface"],
-        observability=default_scores["observability"],
-        lineage=default_scores["lineage"],
-        split_single_narrative=0,
-        split_surface_boundary=0,
-        split_state_anchor=0,
-        split_testability_ceiling=0,
+    intent = (
+        _optional_pool_section(pool_content, "Intent")
+        or _optional_pool_section(pool_content, "Problem Statement")
+        or f"Promoted from `{pool_adr_id}` for active implementation."
     )
-    checklist_seed = build_checklist_seed(semver, scorecard.final_target_obpi_count)
+    scope_items, checklist_seed, scorecard = _promoted_checklist_from_pool(pool_content, semver)
+    decision = _optional_pool_section(pool_content, "Decision") or (
+        f"Promote `{pool_adr_id}` into active implementation and execute the following "
+        "tracked scope:\n\n" + "\n".join(f"- {item}" for item in scope_items)
+    )
 
     content = render_template(
         "adr",
@@ -903,27 +1068,32 @@ def _render_promoted_adr_content(
         parent=parent,
         date=promote_date,
         title=title,
-        intent=(
-            f"Promoted from `{pool_adr_id}`. Replace this seeded intent with concrete "
-            "problem framing and implementation scope."
-        ),
-        decision=(
-            "Promotion from pool is accepted for active planning and implementation. "
-            "Replace with the final ADR decision statement."
-        ),
+        intent=intent,
+        decision=decision,
         positive_consequences=(
-            "- Work moves from backlog intent to an executable ADR package.\n"
-            "- This ADR can now receive OBPI briefs and lifecycle gate evidence."
+            "- Promotion preserves backlog intent as executable ADR scope.\n"
+            "- Checklist items now map 1:1 to generated OBPI briefs immediately."
         ),
         negative_consequences=(
-            "- Promotion increases governance and delivery obligations immediately."
+            "- Promotion fails closed when the pool ADR lacks actionable execution scope."
         ),
         decomposition_scorecard=scorecard.to_markdown(),
         checklist=checklist_seed,
-        qa_transcript="Promotion seeded via `gz adr promote`; interview transcript not captured.",
-        alternatives="- Keep this work in pool until reprioritized.",
+        qa_transcript=(
+            f"Promotion derived from `{pool_adr_id}` on {promote_date}; executable scope "
+            "was carried forward from the pool ADR instead of reseeded as placeholders."
+        ),
+        alternatives="- Keep this work in the pool backlog until reprioritized.",
     )
-    return _upsert_frontmatter_value(content, "promoted_from", pool_adr_id)
+    content = _upsert_frontmatter_value(content, "promoted_from", pool_adr_id)
+    preserved_sections: list[tuple[str, str]] = [
+        ("Target Scope", _required_pool_section(pool_content, "Target Scope"))
+    ]
+    for title in ("Non-Goals", "Dependencies", "Promotion Criteria", "Inspired By", "Notes"):
+        section = _optional_pool_section(pool_content, title)
+        if section is not None:
+            preserved_sections.append((title, section))
+    return _insert_promoted_context_sections(content, preserved_sections)
 
 
 def adr_audit_check(adr: str, as_json: bool) -> None:
@@ -1364,6 +1534,7 @@ def _build_adr_promotion_plan(
     promote_date = date.today().isoformat()
     promoted_content = _render_promoted_adr_content(
         pool_adr_id=pool_adr_id,
+        pool_content=pool_content,
         target_adr_id=target_adr_id,
         semver=semver,
         lane=promoted_lane,
@@ -1372,6 +1543,27 @@ def _build_adr_promotion_plan(
         status=promoted_status,
         promote_date=promote_date,
     )
+    checklist_items = parse_checklist_items(promoted_content)
+    if not checklist_items:
+        raise GzCliError(
+            f"Promotion did not produce executable checklist items for {target_adr_id}."
+        )
+    obpi_plans = []
+    for item_number, checklist_item_text in enumerate(checklist_items, start=1):
+        core_text = re.sub(r"^OBPI-\d+\.\d+\.\d+-\d+:\s*", "", checklist_item_text).strip()
+        obpi_plans.append(
+            _build_obpi_plan(
+                project_root=project_root,
+                adr_file=target_file,
+                parent_adr_id=target_adr_id,
+                item=item_number,
+                checklist_item_text=checklist_item_text,
+                lane=promoted_lane,
+                name=_slugify_obpi_name(core_text),
+                title=core_text,
+                objective=_normalized_objective_from_checklist_item(checklist_item_text),
+            )
+        )
     updated_pool_content = _mark_pool_adr_promoted(pool_content, target_adr_id, promote_date)
     return {
         "pool_file": pool_file,
@@ -1384,6 +1576,7 @@ def _build_adr_promotion_plan(
         "promoted_lane": promoted_lane,
         "promoted_status": promoted_status,
         "promoted_content": promoted_content,
+        "obpi_plans": obpi_plans,
         "updated_pool_content": updated_pool_content,
     }
 
@@ -1401,6 +1594,7 @@ def _adr_promotion_result(
         "target_status": promotion_plan["promoted_status"],
         "lane": promotion_plan["promoted_lane"],
         "parent": promotion_plan["promoted_parent"],
+        "obpis": [plan["obpi_id"] for plan in promotion_plan["obpi_plans"]],
         "pool_file": str(pool_file.relative_to(project_root)),
         "target_file": str(target_file.relative_to(project_root)),
         "dry_run": dry_run,
@@ -1413,16 +1607,22 @@ def _print_adr_promotion_dry_run(project_root: Path, promotion_plan: dict[str, A
     target_file = cast(Path, promotion_plan["target_file"])
     pool_adr_id = cast(str, promotion_plan["pool_adr_id"])
     target_adr_id = cast(str, promotion_plan["target_adr_id"])
+    obpi_plans = cast(list[dict[str, Any]], promotion_plan["obpi_plans"])
 
     console.print("[yellow]Dry run:[/yellow] no files or ledger events will be written.")
     console.print(f"  Pool ADR: {pool_adr_id}")
     console.print(f"  Target ADR: {target_adr_id}")
     console.print(f"  Target file: {target_file.relative_to(project_root)}")
+    console.print(f"  Would create OBPIs: {len(obpi_plans)}")
+    for plan in obpi_plans:
+        console.print(f"    - {cast(Path, plan['obpi_file']).relative_to(project_root)}")
     console.print(f"  Would update pool file: {pool_file.relative_to(project_root)}")
     console.print(
         "  Would append artifact_renamed: "
         f"{pool_adr_id} -> {target_adr_id} (reason: pool_promotion)"
     )
+    for plan in obpi_plans:
+        console.print(f"  Would append obpi_created: {plan['obpi_id']} -> {target_adr_id}")
 
 
 def _apply_adr_promotion(ledger: Ledger, promotion_plan: dict[str, Any]) -> None:
@@ -1433,6 +1633,8 @@ def _apply_adr_promotion(ledger: Ledger, promotion_plan: dict[str, Any]) -> None
     target_dir.mkdir(parents=True, exist_ok=True)
     (target_dir / "obpis").mkdir(parents=True, exist_ok=True)
     target_file.write_text(cast(str, promotion_plan["promoted_content"]), encoding="utf-8")
+    for plan in cast(list[dict[str, Any]], promotion_plan["obpi_plans"]):
+        cast(Path, plan["obpi_file"]).write_text(cast(str, plan["content"]), encoding="utf-8")
     pool_file.write_text(cast(str, promotion_plan["updated_pool_content"]), encoding="utf-8")
     ledger.append(
         artifact_renamed_event(
@@ -1441,6 +1643,13 @@ def _apply_adr_promotion(ledger: Ledger, promotion_plan: dict[str, Any]) -> None
             reason="pool_promotion",
         )
     )
+    for plan in cast(list[dict[str, Any]], promotion_plan["obpi_plans"]):
+        ledger.append(
+            obpi_created_event(
+                cast(str, plan["obpi_id"]),
+                cast(str, promotion_plan["target_adr_id"]),
+            )
+        )
 
 
 def _print_adr_promotion_applied(project_root: Path, promotion_plan: dict[str, Any]) -> None:
@@ -1449,8 +1658,12 @@ def _print_adr_promotion_applied(project_root: Path, promotion_plan: dict[str, A
     target_adr_id = cast(str, promotion_plan["target_adr_id"])
     target_file = cast(Path, promotion_plan["target_file"])
     pool_file = cast(Path, promotion_plan["pool_file"])
+    obpi_plans = cast(list[dict[str, Any]], promotion_plan["obpi_plans"])
     console.print(f"[green]Promoted pool ADR:[/green] {pool_adr_id} -> {target_adr_id}")
     console.print(f"  Created: {target_file.relative_to(project_root)}")
+    console.print(f"  Created OBPIs: {len(obpi_plans)}")
+    for plan in obpi_plans:
+        console.print(f"    - {cast(Path, plan['obpi_file']).relative_to(project_root)}")
     console.print(f"  Updated: {pool_file.relative_to(project_root)}")
 
 

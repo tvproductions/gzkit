@@ -13,7 +13,7 @@ promoted_to: ADR-0.7.0-obpi-first-operations
 
 ## Status
 
-Proposed
+Superseded
 
 ## Date
 
