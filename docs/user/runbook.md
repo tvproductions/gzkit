@@ -23,11 +23,14 @@ uv run gz status --table
 uv run gz adr status ADR-<X.Y.Z> --json
 
 # 2) Execute the OBPI through the staged pipeline
-/gz-obpi-pipeline OBPI-<X.Y.Z-NN>
+uv run gz obpi pipeline OBPI-<X.Y.Z-NN>
 
+#    Wrapper skill remains available:
+#    /gz-obpi-pipeline OBPI-<X.Y.Z-NN>
+#
 #    Compatibility entry points:
-#    /gz-obpi-pipeline OBPI-<X.Y.Z-NN> --from=verify
-#    /gz-obpi-pipeline OBPI-<X.Y.Z-NN> --from=ceremony
+#    uv run gz obpi pipeline OBPI-<X.Y.Z-NN> --from=verify
+#    uv run gz obpi pipeline OBPI-<X.Y.Z-NN> --from=ceremony
 
 # 3) Verify this increment
 uv run gz implement --adr ADR-<X.Y.Z>

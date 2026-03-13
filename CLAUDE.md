@@ -95,6 +95,7 @@ Skills are centralized under `.gzkit` and mirrored to tool-local paths:
 - `gz-adr-closeout-ceremony`: Execute the ADR closeout ceremony protocol for human attestation. GovZero v6 skill. (`.gzkit/skills/gz-adr-closeout-ceremony/SKILL.md`)
 - `gz-adr-create`: Create and book a GovZero ADR with its OBPI briefs. Enforces minor-version odometer and five-gate compliance. Portable skill for GovZero-compliant repositories. (`.gzkit/skills/gz-adr-create/SKILL.md`)
 - `gz-adr-emit-receipt`: Emit ADR receipt events with scoped evidence payloads. Use when recording completed or validated accounting events. (`.gzkit/skills/gz-adr-emit-receipt/SKILL.md`)
+- `gz-adr-eval`: Post-authoring quality evaluation for ADRs and OBPIs. Scores ADRs on 8 weighted dimensions, OBPIs on 5 dimensions, and can run 10 structured red-team challenges before proposal/defense. (`.gzkit/skills/gz-adr-eval/SKILL.md`)
 - `gz-adr-manager`: Compatibility alias for gz-adr-create to preserve cross-repository governance ritual continuity. (`.gzkit/skills/gz-adr-manager/SKILL.md`)
 - `gz-adr-map`: Build ADR-to-artifact traceability using gz state and repository search. (`.gzkit/skills/gz-adr-map/SKILL.md`)
 - `gz-adr-promote`: Promote a pool ADR into canonical ADR package structure. Use when moving a backlog item (ADR-pool.*) into an active, versioned ADR. (`.gzkit/skills/gz-adr-promote/SKILL.md`)

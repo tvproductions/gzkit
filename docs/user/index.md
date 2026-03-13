@@ -30,5 +30,5 @@ gzkit enforces a ledger-first GovZero workflow:
 ## Flow
 
 ```text
-gz init -> gz specify -> gz plan -> implement/verify -> gz obpi emit-receipt -> gz obpi reconcile -> gz adr audit-check -> gz closeout -> gz attest -> gz audit -> gz adr emit-receipt
+gz init -> gz specify -> gz plan -> gz obpi pipeline -> gz obpi emit-receipt -> gz obpi reconcile -> gz adr audit-check -> gz closeout -> gz attest -> gz audit -> gz adr emit-receipt
 ```
