@@ -1,17 +1,20 @@
 ---
 id: ADR-pool.obpi-pipeline-runtime-surface
-status: Pool
+status: Superseded
 parent: PRD-GZKIT-1.0.0
 lane: heavy
 enabler: ADR-0.11.0-airlineops-obpi-completion-pipeline-parity
 inspired_by: 12-factor-agents
+promoted_to: ADR-0.13.0-obpi-pipeline-runtime-surface
 ---
 
 # ADR-pool.obpi-pipeline-runtime-surface: OBPI Pipeline Runtime Surface
+> Promoted to `ADR-0.13.0-obpi-pipeline-runtime-surface` on 2026-03-13. This pool file is retained as historical intake context.
+
 
 ## Status
 
-Pool
+Superseded
 
 ## Date
 
