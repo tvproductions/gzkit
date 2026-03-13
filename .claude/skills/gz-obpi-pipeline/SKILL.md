@@ -88,8 +88,12 @@ evidence and defers human review to ADR closeout.
    - anything else => `normal`
 6. Check for existing handoffs and resume context when present:
    - `docs/design/adr/**/handoffs/*.md`
-7. Create a lightweight pipeline marker:
+7. Create lightweight pipeline markers:
    - `.claude/plans/.pipeline-active-{OBPI-ID}.json`
+   - `.claude/plans/.pipeline-active.json` as a legacy compatibility marker
+     for the same OBPI
+   - Marker payload should include `obpi_id`, `started_at`, and execution
+     mode when available
 8. Apply the brief allowlist as the working scope contract before any edits.
 
 **gzkit compatibility rule:** A dedicated `gz-obpi-lock` surface is not present
@@ -172,7 +176,9 @@ After attestation in Normal mode, or after evidence capture in Exception mode:
 6. Run `uv run gz adr status {PARENT-ADR} --json` so the parent ADR view
    reflects the reconciled OBPI state.
 7. Remove `.claude/plans/.pipeline-active-{OBPI-ID}.json` if it was created.
-8. Create a session handoff if more OBPIs remain or follow-up work is deferred.
+8. Remove `.claude/plans/.pipeline-active.json` only when it still points at
+   the same OBPI as the per-OBPI marker.
+9. Create a session handoff if more OBPIs remain or follow-up work is deferred.
 
 ---
 
@@ -208,10 +214,11 @@ After attestation in Normal mode, or after evidence capture in Exception mode:
   repository structure.
 - The `gz-plan-audit` skill is now available as the manual receipt generator
   for `.claude/plans/.plan-audit-receipt.json`.
-- Until the plan-audit hook chain and `gz-obpi-lock` are ported, pipeline
+- Until the plan-audit hook chain and `gz-obpi-lock` are fully wired, pipeline
   stages that depend on them must fail closed instead of being silently
-  skipped. The active parity contract for those missing surfaces is tracked under
-  `ADR-0.12.0-obpi-pipeline-enforcement-parity`.
+  skipped. `OBPI-0.12.0-03` ports the router artifact and the dual-write active
+  marker contract; settings registration and write-time enforcement still land
+  in later `ADR-0.12.0` tranches.
 - The point of this skill is sequencing and governance memory: verify ->
   ceremony -> guarded git sync -> completion accounting is mandatory.
 - In gzkit, `uv run gz git-sync --apply --lint --test` is the canonical Stage 5

@@ -24,7 +24,7 @@ comes from `gz-plan-audit`; in gzkit it is now tracked explicitly as
 | Canonical Artifact | Current gzkit Status | gzkit Target | Trigger / Contract | Owner OBPI | Notes |
 | --- | --- | --- | --- | --- | --- |
 | `plan-audit-gate.py` | Ported (inactive) | `.claude/hooks/plan-audit-gate.py` | `ExitPlanMode` hard gate; consumes `.claude/plans/.plan-audit-receipt.json` | `OBPI-0.12.0-02` | Hook script is ported; registration and ordering still land in `OBPI-0.12.0-06` |
-| `pipeline-router.py` | Missing | `.claude/hooks/pipeline-router.py` | plan-exit routing; reads receipt and directs agent to `gz-obpi-pipeline` | `OBPI-0.12.0-03` | Must support PASS-only routing and silent no-op when receipt absent |
+| `pipeline-router.py` | Ported (inactive) | `.claude/hooks/pipeline-router.py` | plan-exit routing; reads receipt and directs agent to `gz-obpi-pipeline` | `OBPI-0.12.0-03` | Supports PASS-only routing and silent no-op when receipt is absent or not `PASS`; registration still lands in `OBPI-0.12.0-06` |
 | `pipeline-gate.py` | Missing | `.claude/hooks/pipeline-gate.py` | `Write|Edit` block for `src/` and `tests/`; consumes active pipeline marker | `OBPI-0.12.0-04` | Must honor per-OBPI marker first, legacy marker second |
 | `pipeline-completion-reminder.py` | Missing | `.claude/hooks/pipeline-completion-reminder.py` | pre-commit / pre-push reminder before incomplete pipeline state leaves local repo | `OBPI-0.12.0-05` | Non-blocking warning surface |
 | Hook registration / ordering | Missing | `.claude/settings.json` and `.claude/hooks/README.md` | correct registration order relative to existing router/validator hooks | `OBPI-0.12.0-06` | Must document actual runtime, not aspirational parity |
@@ -35,7 +35,7 @@ comes from `gz-plan-audit`; in gzkit it is now tracked explicitly as
 | --- | --- | --- | --- | --- | --- |
 | `gz-plan-audit` skill | Ported | `.gzkit/skills/gz-plan-audit/SKILL.md` plus mirrors | audits ADR ↔ OBPI ↔ plan alignment and writes receipt | `OBPI-0.12.0-07` | Canonical skill is ported; operator-invoked today, hook enforcement still pending |
 | Plan-audit receipt | Skill-defined | `.claude/plans/.plan-audit-receipt.json` | fields: `obpi_id`, `timestamp`, `verdict`, `plan_file`, `gaps_found` | `OBPI-0.12.0-07` | Contract is ported through the skill; hook and router enforcement still land in later OBPIs |
-| Active pipeline marker | Missing | `.claude/plans/.pipeline-active-{OBPI-ID}.json` | per-OBPI marker created by pipeline Stage 1 | `OBPI-0.12.0-03` | Legacy fallback `.pipeline-active.json` remains compatibility-only |
+| Active pipeline marker | Ported (skill contract) | `.claude/plans/.pipeline-active-{OBPI-ID}.json` | per-OBPI marker created by pipeline Stage 1 | `OBPI-0.12.0-03` | Stage 1 now dual-writes the legacy fallback `.pipeline-active.json` for compatibility-only consumers |
 | Lock surface | Missing | future native surface | concurrency / shared-scope coordination | follow-on ADR | Out of scope for `ADR-0.12.0`; fail closed until designed |
 
 ## Ordering Contract

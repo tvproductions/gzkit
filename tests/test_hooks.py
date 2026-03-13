@@ -147,6 +147,7 @@ class TestSetupClaudeHooks(unittest.TestCase):
             instruction_router = hooks_dir / "instruction-router.py"
             post_edit_ruff = hooks_dir / "post-edit-ruff.py"
             plan_audit_gate = hooks_dir / "plan-audit-gate.py"
+            pipeline_router = hooks_dir / "pipeline-router.py"
             ledger_writer = hooks_dir / "ledger-writer.py"
             readme = hooks_dir / "README.md"
             settings_path = project_root / ".claude" / "settings.json"
@@ -155,6 +156,7 @@ class TestSetupClaudeHooks(unittest.TestCase):
                 instruction_router,
                 post_edit_ruff,
                 plan_audit_gate,
+                pipeline_router,
                 ledger_writer,
                 readme,
                 settings_path,
@@ -164,6 +166,7 @@ class TestSetupClaudeHooks(unittest.TestCase):
             self.assertIn(".claude/hooks/instruction-router.py", created)
             self.assertIn(".claude/hooks/post-edit-ruff.py", created)
             self.assertIn(".claude/hooks/plan-audit-gate.py", created)
+            self.assertIn(".claude/hooks/pipeline-router.py", created)
             self.assertIn(".claude/hooks/ledger-writer.py", created)
             self.assertIn(".claude/hooks/README.md", created)
             self.assertIn(".claude/settings.json", created)
@@ -185,6 +188,7 @@ class TestSetupClaudeHooks(unittest.TestCase):
             self.assertIn("Current hook surface in gzkit:", readme_text)
             self.assertIn("hook that auto-surfaces", readme_text)
             self.assertIn("plan-audit-gate.py", readme_text)
+            self.assertIn("pipeline-router.py", readme_text)
             self.assertIn("not yet active in", readme_text)
             self.assertIn("hook that runs `ruff check --fix`", readme_text)
             self.assertIn("hook that records governance", readme_text)
@@ -354,6 +358,111 @@ class TestPlanAuditGateHook(unittest.TestCase):
 
             self.assertEqual(result.returncode, 0)
             self.assertIn("PRIOR ART REMINDER", result.stderr)
+
+
+class TestPipelineRouterHook(unittest.TestCase):
+    """Tests for the generated pipeline router script."""
+
+    def _create_hook(self, project_root: Path) -> Path:
+        config = GzkitConfig(project_name="gzkit-test")
+        setup_claude_hooks(project_root, config)
+        return project_root / ".claude" / "hooks" / "pipeline-router.py"
+
+    def _run_hook(self, script_path: Path, cwd: Path) -> subprocess.CompletedProcess[str]:
+        payload = {"cwd": str(cwd)}
+        return subprocess.run(
+            [sys.executable, str(script_path)],
+            input=json.dumps(payload),
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+
+    def _write_receipt(
+        self,
+        plans_dir: Path,
+        *,
+        obpi_id: str | None,
+        verdict: str,
+    ) -> Path:
+        payload = {"timestamp": "2026-03-12T12:00:00Z", "verdict": verdict}
+        if obpi_id is not None:
+            payload["obpi_id"] = obpi_id
+
+        receipt_path = plans_dir / ".plan-audit-receipt.json"
+        plans_dir.mkdir(parents=True, exist_ok=True)
+        receipt_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+        return receipt_path
+
+    def test_allows_silently_when_receipt_is_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            script_path = self._create_hook(project_root)
+
+            result = self._run_hook(script_path, project_root)
+
+            self.assertEqual(result.returncode, 0)
+            self.assertEqual(result.stdout, "")
+            self.assertEqual(result.stderr, "")
+
+    def test_allows_silently_when_receipt_is_corrupt(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            script_path = self._create_hook(project_root)
+            plans_dir = project_root / ".claude" / "plans"
+            plans_dir.mkdir(parents=True, exist_ok=True)
+            (plans_dir / ".plan-audit-receipt.json").write_text("{oops\n", encoding="utf-8")
+
+            result = self._run_hook(script_path, project_root)
+
+            self.assertEqual(result.returncode, 0)
+            self.assertEqual(result.stdout, "")
+            self.assertEqual(result.stderr, "")
+
+    def test_allows_silently_when_receipt_has_no_obpi(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            script_path = self._create_hook(project_root)
+            self._write_receipt(project_root / ".claude" / "plans", obpi_id=None, verdict="PASS")
+
+            result = self._run_hook(script_path, project_root)
+
+            self.assertEqual(result.returncode, 0)
+            self.assertEqual(result.stdout, "")
+            self.assertEqual(result.stderr, "")
+
+    def test_allows_silently_when_receipt_verdict_is_fail(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            script_path = self._create_hook(project_root)
+            self._write_receipt(
+                project_root / ".claude" / "plans",
+                obpi_id="OBPI-0.12.0-03",
+                verdict="FAIL",
+            )
+
+            result = self._run_hook(script_path, project_root)
+
+            self.assertEqual(result.returncode, 0)
+            self.assertEqual(result.stdout, "")
+            self.assertEqual(result.stderr, "")
+
+    def test_routes_when_receipt_verdict_is_pass(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            script_path = self._create_hook(project_root)
+            self._write_receipt(
+                project_root / ".claude" / "plans",
+                obpi_id="OBPI-0.12.0-03",
+                verdict="PASS",
+            )
+
+            result = self._run_hook(script_path, project_root)
+
+            self.assertEqual(result.returncode, 0)
+            self.assertIn("OBPI plan approved: OBPI-0.12.0-03", result.stdout)
+            self.assertIn("/gz-obpi-pipeline OBPI-0.12.0-03", result.stdout)
+            self.assertEqual(result.stderr, "")
 
 
 if __name__ == "__main__":

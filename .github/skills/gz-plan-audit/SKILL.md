@@ -4,7 +4,7 @@ description: Pre-flight alignment audit — verify ADR intent, OBPI brief scope,
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-03-12
-compatibility: Works with GovZero-compliant repositories; in gzkit the receipt is written under .claude/plans/ and is consumed by gz-obpi-pipeline today and the future plan-exit hooks tracked by ADR-0.12.0.
+compatibility: Works with GovZero-compliant repositories; in gzkit the receipt is written under .claude/plans/, consumed by gz-obpi-pipeline today, and read by the generated but inactive plan-exit hooks tracked by ADR-0.12.0.
 metadata:
   skill-version: "6.0.0"
   govzero-framework-version: "v6"
@@ -43,8 +43,9 @@ Current gzkit compatibility rule:
 - The `gz-plan-audit` skill is ported and may write
   `.claude/plans/.plan-audit-receipt.json`.
 - `gz-obpi-pipeline` already consumes that receipt when it exists.
-- The blocking `plan-audit-gate.py` hook and router enforcement are still
-  pending under `ADR-0.12.0-obpi-pipeline-enforcement-parity`.
+- The `plan-audit-gate.py` and `pipeline-router.py` hook artifacts are ported,
+  but their `.claude/settings.json` registration and ordering remain pending
+  under `ADR-0.12.0-obpi-pipeline-enforcement-parity`.
 
 ## Invocation
 
@@ -215,8 +216,8 @@ separate action.
 
 Target enforcement contract for gzkit:
 
-- Planned hook: `.claude/hooks/plan-audit-gate.py`
-- Planned router consumer: `.claude/hooks/pipeline-router.py`
+- Ported hook: `.claude/hooks/plan-audit-gate.py`
+- Ported router consumer: `.claude/hooks/pipeline-router.py`
 - Planned registration surface: `.claude/settings.json`
 - Current consumer already present: `.gzkit/skills/gz-obpi-pipeline/SKILL.md`
 
@@ -225,9 +226,10 @@ Current state:
 - The operator must invoke `/gz-plan-audit` manually.
 - `gz-obpi-pipeline` consumes `.claude/plans/.plan-audit-receipt.json` when it
   exists.
+- `plan-audit-gate.py` and `pipeline-router.py` are generated locally but stay
+  inactive until `OBPI-0.12.0-06` wires them in `.claude/settings.json`.
 - Missing or stale receipts are currently a governance gap, not yet a
-  mechanical block, until `OBPI-0.12.0-02`, `OBPI-0.12.0-03`, and
-  `OBPI-0.12.0-06` land.
+  mechanical block, until that registration tranche lands.
 
 Future gate logic to preserve:
 
@@ -239,7 +241,7 @@ Future gate logic to preserve:
    - receipt OBPI must match plan OBPI
    - receipt must be newer than the plan file
    - receipt must contain a `PASS` or `FAIL` verdict
-5. Invalid or missing receipt blocks plan exit once the hook is ported
+5. Invalid or missing receipt blocks plan exit once the hook chain is registered
 
 ## Failure Modes
 
