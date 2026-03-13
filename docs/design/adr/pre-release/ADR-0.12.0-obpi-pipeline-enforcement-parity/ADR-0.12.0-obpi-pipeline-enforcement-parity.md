@@ -179,4 +179,4 @@ therefore adds `OBPI-0.12.0-07` instead of silently overloading
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.12.0 | Pending | | | |
+| 0.12.0 | Completed | Test User | 2026-03-13 | completed |

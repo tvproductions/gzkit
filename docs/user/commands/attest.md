@@ -24,6 +24,13 @@ If prerequisites fail, the command exits non-zero.
 
 `--force` bypasses failed prerequisites, but `--reason` is mandatory when bypassing.
 
+On success, `gz attest` also updates the ADR package:
+
+- refreshes `ADR-CLOSEOUT-FORM.md` with the recorded attestation text, attester,
+  and UTC timestamp
+- updates the ADR file's `Attestation Block` row with the canonical attestation
+  term and recorded reason text
+
 ---
 
 ## Canonical Term Mapping

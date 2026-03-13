@@ -35,6 +35,7 @@ from gzkit.commands.common import (
     _skip_disables_xenon,
     _skip_tokens,
     _upsert_frontmatter_value,
+    _write_adr_closeout_form,
     console,
     ensure_initialized,
     get_git_user,
@@ -2209,6 +2210,7 @@ def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
     closeout_form = adr_file.parent / "ADR-CLOSEOUT-FORM.md"
     gate_1_path = str(adr_file.relative_to(project_root))
     attestation_choices = ["Completed", "Completed - Partial: [reason]", "Dropped - [reason]"]
+    attestation_command = f"uv run gz attest {adr_id} --status completed"
     evidence = {
         "adr_file": gate_1_path,
         "closeout_form": (
@@ -2223,6 +2225,7 @@ def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
         ],
         "gate4_na_reason": gate4_na_reason,
         "attestation_choices": attestation_choices,
+        "attestation_command": attestation_command,
     }
     event = None
     if not blockers:
@@ -2264,6 +2267,17 @@ def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
         return
 
     assert event is not None
+    gate_statuses = ledger.get_latest_gate_statuses(adr_id)
+    _write_adr_closeout_form(
+        project_root,
+        adr_id,
+        adr_file,
+        obpi_rows,
+        verification_steps,
+        gate_statuses,
+        attestation_command=attestation_command,
+    )
+    event.extra["evidence"]["closeout_form"] = str(closeout_form.relative_to(project_root))
     ledger.append(event)
 
     if as_json:

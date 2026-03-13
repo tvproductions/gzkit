@@ -1,0 +1,11 @@
+$ uv run mkdocs build --strict
+
+[returncode] 0
+
+[stdout]
+
+
+[stderr]
+INFO    -  Cleaning site directory
+INFO    -  Building documentation to directory: /Users/jeff/Documents/Code/gzkit/site
+INFO    -  Documentation built in 0.67 seconds

@@ -11,7 +11,7 @@ from gzkit.ledger import (
     obpi_created_event,
     obpi_receipt_emitted_event,
 )
-from tests.commands.common import CliRunner
+from tests.commands.common import CliRunner, _init_git_repo
 
 
 class TestAdrRuntimeCommands(unittest.TestCase):
@@ -105,11 +105,19 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             runner.invoke(main, ["init"])
+            _init_git_repo(Path.cwd())
             runner.invoke(main, ["plan", "0.1.0"])
             result = runner.invoke(main, ["closeout", "ADR-0.1.0"])
             self.assertEqual(result.exit_code, 0)
             ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertIn("closeout_initiated", ledger_content)
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            adr_file = next(Path(config.paths.adrs).rglob("ADR-0.1.0.md"))
+            closeout_form = adr_file.parent / "ADR-CLOSEOUT-FORM.md"
+            self.assertTrue(closeout_form.exists())
+            closeout_content = closeout_form.read_text(encoding="utf-8")
+            self.assertIn("# ADR Closeout Form: ADR-0.1.0", closeout_content)
+            self.assertIn("Awaiting explicit human attestation.", closeout_content)
 
     def test_closeout_dry_run_writes_nothing(self) -> None:
         runner = CliRunner()

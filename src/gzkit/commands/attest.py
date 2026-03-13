@@ -1,19 +1,52 @@
 """Attest command implementation."""
 
 from datetime import date
+from pathlib import Path
+from typing import cast
 
 from gzkit.commands.common import (
     GzCliError,
     _attestation_gate_snapshot,
     _canonical_attestation_term,
+    _closeout_form_attestation_text,
+    _closeout_form_timestamp,
+    _gate4_na_reason,
     _is_pool_adr_id,
+    _update_adr_attestation_block,
+    _write_adr_closeout_form,
     console,
     ensure_initialized,
     get_git_user,
     get_project_root,
+    load_manifest,
     resolve_adr_file,
 )
+from gzkit.commands.status import _adr_obpi_status_rows
 from gzkit.ledger import Ledger, attested_event
+
+
+def _attest_verification_steps(
+    manifest: dict[str, object], lane: str, project_root: Path
+) -> list[tuple[str, str]]:
+    """Render the closeout verification steps needed by the closeout form."""
+    raw_verification = manifest.get("verification", {})
+    verification = cast(
+        dict[str, str],
+        raw_verification if isinstance(raw_verification, dict) else {},
+    )
+
+    steps: list[tuple[str, str]] = [
+        ("Gate 2 (TDD)", str(verification.get("test", "uv run gz test"))),
+        ("Quality (Lint)", str(verification.get("lint", "uv run gz lint"))),
+        ("Quality (Typecheck)", str(verification.get("typecheck", "uv run gz typecheck"))),
+    ]
+    if lane != "heavy":
+        return steps
+
+    steps.append(("Gate 3 (Docs)", str(verification.get("docs", "uv run mkdocs build --strict"))))
+    if _gate4_na_reason(project_root, lane) is None:
+        steps.append(("Gate 4 (BDD)", str(verification.get("bdd", "uv run -m behave features/"))))
+    return steps
 
 
 def attest(
@@ -35,7 +68,7 @@ def attest(
     canonical_adr = ledger.canonicalize_id(adr_input)
 
     # Verify ADR exists (support nested ADR layout)
-    _adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
+    adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
     if _is_pool_adr_id(adr_id):
         raise GzCliError(
             f"Pool ADRs cannot be attested: {adr_id}. Promote this ADR from pool first."
@@ -77,9 +110,37 @@ def attest(
     # Record attestation
     ledger.append(attested_event(adr_id, attest_status, attester, reason))
 
-    # Update ADR file attestation block (simplified)
-    # In a full implementation, we would parse and update the table
     today = date.today().isoformat()
+    attestation_text = _closeout_form_attestation_text(attest_status, reason)
+    timestamp_utc = _closeout_form_timestamp()
+    verification_steps = _attest_verification_steps(
+        load_manifest(project_root), snapshot["lane"], project_root
+    )
+    gate_statuses = ledger.get_latest_gate_statuses(adr_id)
+    obpi_rows = _adr_obpi_status_rows(project_root, config, ledger, adr_id)
+
+    _write_adr_closeout_form(
+        project_root,
+        adr_id,
+        adr_file,
+        obpi_rows,
+        verification_steps,
+        gate_statuses,
+        attestation_command=f"uv run gz attest {adr_id} --status completed",
+        attestation_text=attestation_text,
+        attestation_term=canonical_term,
+        attester=attester,
+        timestamp_utc=timestamp_utc,
+    )
+    _update_adr_attestation_block(
+        adr_file,
+        adr_id,
+        canonical_term=canonical_term,
+        attester=attester,
+        attestation_date=today,
+        attestation_reason=attestation_text,
+    )
+
     console.print("\\n[green]Attestation recorded:[/green]")
     console.print(f"  ADR: {adr_id}")
     console.print(f"  Term: {canonical_term}")

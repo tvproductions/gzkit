@@ -22,6 +22,7 @@ Output includes:
 - Gate 1 ADR path
 - OBPI completion summary
 - Closeout blockers when any linked OBPI is not closeout-ready
+- Generated `ADR-CLOSEOUT-FORM.md` path inside the ADR package
 - Linked OBPI evidence paths
 - Verification command set for the ADR lane
 - Canonical attestation choices
@@ -30,6 +31,10 @@ Output includes:
 If any linked OBPI still has missing proof, missing brief completion, drift, or
 missing required human-attestation evidence, `gz closeout` prints `BLOCKERS:`
 and exits `1` without writing `closeout_initiated`.
+
+When closeout succeeds without `--dry-run`, `gz closeout` creates or refreshes
+`ADR-CLOSEOUT-FORM.md` beside the ADR file with the current evidence inventory
+and Gate 5 attestation command.
 
 `--json` adds:
 
