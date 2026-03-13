@@ -17,7 +17,7 @@ An ADR progresses through these states:
 |-------|---------|-------------------|
 | **Pool** | Planned ADR awaiting prioritization; lightweight intent only | Author identifies future work need |
 | **Draft** | ADR being authored; not yet ready for review | ADR pulled from pool; author creates full structure |
-| **Proposed** | ADR submitted for review; awaiting acceptance | Author declares ready for review |
+| **Proposed** | ADR submitted for review; awaiting acceptance | Author completes evaluation and declares ready for review |
 | **Accepted** | ADR approved; implementation work may begin | Human accepts the proposal |
 | **Completed** | Implementation finished; Gate 5 attestation received | Human attests "Completed" or "Completed — Partial" |
 | **Validated** | Post-attestation audit completed (Phase 2) | Audit passes and reconciliation recorded |
@@ -161,7 +161,7 @@ When a human provides Gate 5 attestation, the ADR status updates as follows:
 ## State Transition Rules
 
 1. **Pool → Draft**: ADR pulled from pool; author creates full structure in `adr-X.Y.x/`
-2. **Draft → Proposed**: Author determines ADR is ready for review
+2. **Draft → Proposed**: Author runs ADR evaluation, records `EVALUATION_SCORECARD.md`, and determines the ADR is ready for review
 3. **Proposed → Accepted**: Human reviews and accepts the proposal for implementation
 4. **Accepted → Completed**: Human provides "Completed" or "Completed — Partial" attestation via closeout ceremony
 5. **Accepted → Abandoned**: Human provides "Dropped" attestation or explicitly abandons work
@@ -196,7 +196,7 @@ To maximize granularity and ensure incremental delivery, the ADR Feature Checkli
 
 **Rationale:** The Feature Checklist is the governance contract for the ADR. OBPIs are the execution units for that contract. High-granularity decomposition prevents "god-object" briefs and oversized verification batches. Drift between the checklist and the briefs creates un-auditable scope and violates the principle of layered trust.
 
-**Enforcement:** The `gz-adr-create` and `gz-plan` skills enforce this 1:1 synchronization and the two-step protocol during the Spec Developer Phase. Automated verification (e.g., `gz validate`) that fails the checklist-to-brief count check is a blocking governance failure.
+**Enforcement:** The `gz-adr-create`, `gz-plan`, and `gz-adr-eval` skills enforce this 1:1 synchronization, quality review, and the two-step protocol during the spec/decomposition phase. Automated verification (e.g., `gz validate`) that fails the checklist-to-brief count check is a blocking governance failure.
 
 **Anti-pattern:** ADR tables listing OBPIs as "Pending" with no actual brief files. This is a governance violation. All briefs must exist as files before the ADR is Accepted.
 

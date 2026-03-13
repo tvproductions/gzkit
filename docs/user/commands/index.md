@@ -28,6 +28,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz audit`](audit.md) | Run strict post-attestation audit reconciliation |
 | [`gz adr emit-receipt`](adr-emit-receipt.md) | Emit completed/validated receipt with optional evidence scope |
 | [`gz obpi status`](obpi-status.md) | Show focused runtime status for one OBPI |
+| [`gz obpi pipeline`](obpi-pipeline.md) | Launch the OBPI pipeline runtime surface |
 | [`gz obpi validate`](obpi-validate.md) | Validate one OBPI brief for completion readiness |
 | [`gz obpi reconcile`](obpi-reconcile.md) | Fail-closed reconciliation for one OBPI |
 | [`gz obpi emit-receipt`](obpi-emit-receipt.md) | Emit completed/validated receipt for one OBPI |
@@ -66,7 +67,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 Primary daily loop (OBPI-first, pipeline-governed):
 
 1. Orientation and ADR/OBPI context (`gz status`, `gz adr status`, `gz obpi status`)
-2. Plan the OBPI, then execute it through `gz-obpi-pipeline`
+2. Plan the OBPI, then execute it through `uv run gz obpi pipeline` (wrapper skill `/gz-obpi-pipeline` remains available)
 3. Present the Heavy-lane acceptance ceremony when required
 4. Run guarded sync (`gz git-sync --apply --lint --test`)
 5. Emit final OBPI completion accounting from the synced state (`gz obpi emit-receipt`)

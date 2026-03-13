@@ -34,14 +34,22 @@ Introduce a runtime command contract such as `gz obpi pipeline <obpi>`,
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `src/gzkit/cli.py` - CLI parser, runtime launcher, and pipeline stage selection
+- `src/gzkit/commands/common.py` - command-doc registration for the new surface
+- `tests/commands/test_obpi_pipeline.py` - command contract and blocker coverage
+- `docs/user/commands/obpi-pipeline.md` - operator manpage for the new surface
+- `docs/user/commands/index.md` - command index registration
+- `docs/user/concepts/workflow.md` - workflow narrative alignment
+- `docs/user/runbook.md` - operator runbook alignment
+- `.gzkit/skills/gz-obpi-pipeline/SKILL.md` - wrapper-skill guidance pointing at the CLI runtime
 
 ## Denied Paths
 
 <!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
 
-- `docs/design/**` - ADR changes out of scope
+- `.claude/hooks/**` - hook-wrapper rewiring belongs to `OBPI-0.13.0-05`
+- stage-state schema files beyond the existing active markers - richer persistence belongs to `OBPI-0.13.0-02`
+- machine-readable runtime output contracts - structured outputs belong to `OBPI-0.13.0-03`
 - New dependencies
 - CI files, lockfiles
 
@@ -50,10 +58,13 @@ Introduce a runtime command contract such as `gz obpi pipeline <obpi>`,
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
      These are the rules agents ground against. If not met, OBPI fails. -->
 
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
+1. REQUIREMENT: `gz obpi pipeline <OBPI-ID>` MUST exist as a real CLI surface under the existing `obpi` command group.
+1. REQUIREMENT: The command MUST accept `--from=verify` and `--from=ceremony` and reject any other `--from` value.
+1. REQUIREMENT: The command MUST resolve canonical and short-form OBPI identifiers using the existing ledger-first resolution path.
+1. REQUIREMENT: Stage 1 MUST create `.claude/plans/.pipeline-active-{OBPI-ID}.json` and `.claude/plans/.pipeline-active.json` for the active OBPI.
+1. REQUIREMENT: The command MUST fail closed with `BLOCKERS:` when the OBPI brief is missing, already completed, the matching plan-audit receipt verdict is `FAIL`, another OBPI is already active, or verification commands fail.
+1. NEVER: This OBPI MUST NOT introduce richer stage persistence, JSON runtime output, abort/resume subcommands, or wrapper/hook rewiring.
+1. ALWAYS: User docs and the wrapper skill MUST identify `uv run gz obpi pipeline` as the canonical runtime launch surface.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -70,17 +81,19 @@ Introduce a runtime command contract such as `gz obpi pipeline <obpi>`,
 **Context:**
 
 - [ ] Parent ADR: `docs/design/adr/pre-release/ADR-0.13.0-obpi-pipeline-runtime-surface/ADR-0.13.0-obpi-pipeline-runtime-surface.md`
-- [ ] Related OBPIs in same ADR
+- [ ] `.gzkit/skills/gz-obpi-pipeline/SKILL.md`
+- [ ] `docs/user/commands/obpi-status.md`
+- [ ] `docs/user/commands/obpi-reconcile.md`
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
+- [ ] Existing `obpi` parser exists in `src/gzkit/cli.py`
+- [ ] Claude plan receipt and active-marker contracts already exist under `.claude/plans/`
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+- [ ] Pattern to follow: `src/gzkit/commands/status.py` fail-closed runtime output
+- [ ] Test patterns: `tests/commands/test_runtime.py`, `tests/test_hooks.py`
 
 ## Quality Gates
 
@@ -122,13 +135,13 @@ Introduce a runtime command contract such as `gz obpi pipeline <obpi>`,
      outputs into Evidence. -->
 
 ```bash
+uv run python -m unittest tests.commands.test_obpi_pipeline -v
 uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
 uv run gz test
-
-# Specific verification for this OBPI
-command --to --verify
+uv run mkdocs build --strict
+uv run -m behave features/
 ```
 
 ## Acceptance Criteria
@@ -139,9 +152,11 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.13.0-01-01: Given/When/Then behavior criterion 1
-- [ ] REQ-0.13.0-01-02: Given/When/Then behavior criterion 2
-- [ ] REQ-0.13.0-01-03: Given/When/Then behavior criterion 3
+- [ ] REQ-0.13.0-01-01: `gz obpi pipeline <OBPI-ID>` launches successfully, writes the active markers, and prints the follow-up `--from=verify` command.
+- [ ] REQ-0.13.0-01-02: `gz obpi pipeline <OBPI-ID> --from=verify` executes the OBPI verification command block plus Heavy-lane docs/BDD checks and clears markers on success.
+- [ ] REQ-0.13.0-01-03: `gz obpi pipeline <OBPI-ID> --from=ceremony` prints the ceremony/accounting next steps and clears markers on exit.
+- [ ] REQ-0.13.0-01-04: The command emits `BLOCKERS:` and exits non-zero for completed briefs, matching `FAIL` receipts, conflicting active markers, and failing verification commands.
+- [ ] REQ-0.13.0-01-05: Command docs, workflow docs, runbook, and wrapper skill all point to `uv run gz obpi pipeline` as the canonical runtime launch surface.
 
 ## Completion Checklist
 
@@ -168,25 +183,47 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+uv run python -m unittest tests.commands.test_obpi_pipeline -v
+Ran 5 tests in 0.159s
+OK
+
+uv run gz test
+Ran 386 tests in 9.304s
+OK
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+uv run gz validate --documents
+All validations passed.
+
+uv run gz lint
+All checks passed!
+ADR path contract check passed.
+Lint passed.
+
+uv run gz typecheck
+All checks passed!
+Type check passed.
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here when Gate 3 applies
+uv run mkdocs build --strict
+INFO    -  Cleaning site directory
+INFO    -  Building documentation to directory: /Users/jeff/Documents/Code/gzkit/site
+INFO    -  Documentation built in 0.69 seconds
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here when Gate 4 applies
+uv run -m behave features/
+2 features passed, 0 failed, 0 skipped
+6 scenarios passed, 0 failed, 0 skipped
+31 steps passed, 0 failed, 0 skipped
 ```
 
 ### Gate 5 (Human)
@@ -199,17 +236,48 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 <!-- What problem existed before this OBPI, and what capability exists now? -->
 
+Before this OBPI, `gz-obpi-pipeline` existed only as a skill/operator ritual,
+so hooks and docs could tell an operator to run the pipeline but gzkit did not
+own a first-class CLI runtime for it. Now `uv run gz obpi pipeline <OBPI-ID>`
+exists as a code-owned command surface with launch, `--from=verify`, and
+`--from=ceremony` entry points, active-marker compatibility for the existing
+`ADR-0.12.0` hook chain, and fail-closed blockers for missing/invalid
+governance prerequisites.
+
 ## Key Proof
 
 <!-- One concrete usage example, command, or before/after behavior. -->
 
+```text
+$ uv run gz obpi pipeline OBPI-0.13.0-01-runtime-command-contract
+OBPI pipeline: OBPI-0.13.0-01-runtime-command-contract
+  Parent ADR: ADR-0.13.0-obpi-pipeline-runtime-surface
+  Lane: heavy
+  Entry: full
+  Receipt: MISSING
+  Stages: 1. Load Context -> 2. Implement -> 3. Verify -> 4. Present Evidence -> 5. Sync And Account
+
+Next:
+- Implement the approved OBPI within the brief allowlist.
+- When implementation is ready, run: uv run gz obpi pipeline OBPI-0.13.0-01-runtime-command-contract --from=verify
+```
+
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created/modified: `src/gzkit/cli.py`, `src/gzkit/commands/common.py`,
+  `tests/commands/test_obpi_pipeline.py`,
+  `docs/user/commands/obpi-pipeline.md`, `docs/user/commands/index.md`,
+  `docs/user/concepts/workflow.md`, `docs/user/index.md`,
+  `docs/user/runbook.md`, `mkdocs.yml`,
+  `.gzkit/skills/gz-obpi-pipeline/SKILL.md`, mirrored skill files, and this
+  brief.
+- Tests added: `tests/commands/test_obpi_pipeline.py`
+- Date completed: `2026-03-13`
+- Attestation status: pending human attestation
+- Defects noted: fixed missing MkDocs nav registration for
+  `docs/user/commands/obpi-pipeline.md`; fixed command-manpage examples to use
+  real CLI output; fixed this brief's verification block to include Heavy-lane
+  docs and BDD commands.
 
 ## Human Attestation
 

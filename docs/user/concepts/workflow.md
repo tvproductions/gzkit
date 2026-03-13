@@ -8,8 +8,8 @@ This is the operator habit loop for gzkit-first GovZero parity.
 
 1. OBPI is the unit of execution and completion.
 2. ADR is the roll-up boundary for attestation/audit lifecycle state.
-3. After planning an OBPI, execution should flow through `gz-obpi-pipeline`, not
-   freeform implementation.
+3. After planning an OBPI, execution should flow through `uv run gz obpi pipeline`
+   (or the wrapper skill `gz-obpi-pipeline`), not freeform implementation.
 4. Run ADR closeout only when OBPI evidence is complete.
 
 ---
@@ -20,7 +20,8 @@ This is the operator habit loop for gzkit-first GovZero parity.
    - `uv run gz status`
    - `uv run gz adr status ADR-<X.Y.Z> --json`
 2. **Execute through the pipeline**
-   - `/gz-obpi-pipeline OBPI-<X.Y.Z-NN>`
+   - `uv run gz obpi pipeline OBPI-<X.Y.Z-NN>`
+   - wrapper skill remains available: `/gz-obpi-pipeline OBPI-<X.Y.Z-NN>`
 3. **Verify increment**
    - `uv run gz obpi validate path/to/OBPI-<X.Y.Z-NN>-<slug>.md`
    - `uv run gz implement --adr ADR-<X.Y.Z>`
