@@ -17,13 +17,17 @@ status: Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-TBD
+Port the AirlineOps `pipeline-completion-reminder.py` hook into gzkit as a
+generated Claude `PreToolUse` advisory surface for `Bash` that warns before
+`git commit` and `git push` when an OBPI pipeline marker still exists and the
+corresponding brief has not yet reached `Completed`, while leaving
+`.claude/settings.json` registration to `OBPI-0.12.0-06`.
 
 ## Lane
 
-**Heavy** - TBD
+**Heavy** -- This unit ports an operator-facing runtime contract that affects
+local commit and push workflows even though it is advisory rather than
+blocking.
 
 > Heavy is reserved for command/API/schema/runtime-contract changes. Process,
 > documentation, and template-only work stays Lite unless it changes one of
@@ -31,85 +35,112 @@ TBD
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `src/gzkit/hooks/claude.py` -- generated Claude hook source of truth
+- `tests/test_hooks.py` -- direct hook behavior and hook-generation coverage
+- `.claude/hooks/**` and `.claude/settings.json` -- generated Claude hook
+  artifacts and settings surface touched by control-surface sync
+- `.gzkit/manifest.json`, `AGENTS.md`, `CLAUDE.md`,
+  `.github/discovery-index.json`, `.github/copilot-instructions.md`,
+  `.copilotignore` -- generated control surfaces changed by sync
+- `docs/design/adr/pre-release/ADR-0.12.0-obpi-pipeline-enforcement-parity/**`
+  -- ADR, parity matrix, and OBPI evidence package for this tranche
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
-- `docs/design/**` - ADR changes out of scope
-- New dependencies
-- CI files, lockfiles
+- `../airlineops/**`
+- `.gzkit/skills/gz-obpi-pipeline/**` and `.gzkit/skills/gz-plan-audit/**` --
+  marker and receipt contracts already owned by earlier tranches
+- Active `.claude/settings.json` registration or hook ordering changes --
+  reserved for `OBPI-0.12.0-06`
+- New dependencies, CI files, lockfiles, or unrelated runtime changes
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
-
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
+1. REQUIREMENT: The hook MUST be generated into
+   `.claude/hooks/pipeline-completion-reminder.py` from
+   `src/gzkit/hooks/claude.py`.
+1. REQUIREMENT: The reminder MUST inspect only `Bash` payloads whose command
+   includes `git commit` or `git push`.
+1. REQUIREMENT: The reminder MUST read active pipeline state from
+   `.claude/plans/.pipeline-active-*.json` with
+   `.claude/plans/.pipeline-active.json` as legacy compatibility input.
+1. REQUIREMENT: The reminder MUST stay silent when no active marker exists,
+   when marker JSON is corrupt, when the marker lacks `obpi_id`, or when the
+   corresponding brief cannot be resolved under `docs/design/adr/`.
+1. REQUIREMENT: If the matched brief is already `Completed`, the reminder MUST
+   emit only stale-marker cleanup guidance and exit successfully.
+1. REQUIREMENT: If the matched brief is not `Completed`, the reminder MUST emit
+   advisory stderr output that includes `/gz-obpi-pipeline <OBPI-ID>
+   --from=ceremony`.
+1. REQUIREMENT: Generated docs and the parity matrix MUST state truthfully that
+   `pipeline-completion-reminder.py` is ported but inactive until
+   `OBPI-0.12.0-06` wires `.claude/settings.json`.
+1. NEVER: Block commit or push in this tranche.
+1. ALWAYS: Exit `0`; this surface is an advisory reminder, not an enforcement
+   gate.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first. -->
-
 **Governance (read once, cache):**
 
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
+- [x] `AGENTS.md`
+- [x] Parent ADR:
+      `docs/design/adr/pre-release/ADR-0.12.0-obpi-pipeline-enforcement-parity/ADR-0.12.0-obpi-pipeline-enforcement-parity.md`
 
 **Context:**
 
-- [ ] Parent ADR: `docs/design/adr/pre-release/ADR-0.12.0-obpi-pipeline-enforcement-parity/ADR-0.12.0-obpi-pipeline-enforcement-parity.md`
-- [ ] Related OBPIs in same ADR
+- [x] `../airlineops/.claude/hooks/pipeline-completion-reminder.py`
+- [x] `src/gzkit/hooks/claude.py`
+- [x] `tests/test_hooks.py`
+- [x] `.claude/settings.json`
+- [x] `.claude/hooks/README.md`
+- [x] `docs/design/adr/pre-release/ADR-0.12.0-obpi-pipeline-enforcement-parity/claude-pipeline-hooks-parity-matrix.md`
+- [x] Related OBPIs in the same ADR, especially `OBPI-0.12.0-03`,
+      `OBPI-0.12.0-04`, and `OBPI-0.12.0-06`
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
+- [x] Hook generator exists: `src/gzkit/hooks/claude.py`
+- [x] Generated hook sync surface exists: `uv run gz agent sync control-surfaces`
+- [x] Active marker contract exists:
+      `.claude/plans/.pipeline-active-{OBPI-ID}.json` and
+      `.claude/plans/.pipeline-active.json`
+- [x] Briefs exist under `docs/design/adr/` for lookup by OBPI identifier
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+- [x] Pattern to follow:
+      `../airlineops/.claude/hooks/pipeline-completion-reminder.py`
+- [x] Test patterns: `tests/test_hooks.py`
 
 ## Quality Gates
 
-<!-- Which gates apply and how to verify them. -->
-
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] Tests written before/with implementation
-- [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
+- [x] Tests written before/with implementation
+- [x] Tests pass: `uv run gz test`
+- [x] Validation commands recorded in evidence with real outputs
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
 ### Gate 3: Docs (Heavy only)
 
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
+- [x] Docs build: `uv run mkdocs build --strict`
+- [x] Relevant docs updated
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
+- [x] Acceptance scenarios pass: `uv run -m behave features/`
 
 ### Gate 5: Human (Heavy only)
 
@@ -117,104 +148,178 @@ TBD
 
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
+uv run python -m unittest tests.test_hooks -v
+uv run gz agent sync control-surfaces
 uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
 uv run gz test
-
-# Specific verification for this OBPI
-command --to --verify
+uv run mkdocs build --strict
+uv run -m behave features/
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.12.0-05-01: Given/When/Then behavior criterion 1
-- [ ] REQ-0.12.0-05-02: Given/When/Then behavior criterion 2
-- [ ] REQ-0.12.0-05-03: Given/When/Then behavior criterion 3
+- [x] REQ-0.12.0-05-01: `.claude/hooks/pipeline-completion-reminder.py`
+      exists as a generated hook and stays silent unless an active pipeline
+      marker exists for a commit or push attempt.
+- [x] REQ-0.12.0-05-02: The reminder emits stale-marker guidance when the brief
+      is already `Completed`, and emits a non-blocking completion reminder when
+      the brief is found but still incomplete.
+- [x] REQ-0.12.0-05-03: Generated docs and settings remain truthful: the hook
+      is ported and documented, but still inactive in `.claude/settings.json`.
 
 ## Completion Checklist
 
-<!-- Verify all gates before marking OBPI accepted. -->
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
-
-> For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
+> For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md`
+> section `OBPI Acceptance Protocol`.
 
 ## Evidence
 
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
-
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
+- [x] Parity matrix updated to reflect the ported but inactive reminder artifact.
+- [x] Generated hook docs remain explicit that settings registration is deferred
+      to `OBPI-0.12.0-06`.
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+$ uv run python -m unittest tests.test_hooks -v
+Ran 43 tests in 0.638s
+
+OK
+
+$ uv run gz agent sync control-surfaces
+Syncing control surfaces...
+  Updated .claude/hooks/README.md
+  Updated .claude/hooks/instruction-router.py
+  Updated .claude/hooks/ledger-writer.py
+  Updated .claude/hooks/pipeline-completion-reminder.py
+  Updated .claude/hooks/pipeline-gate.py
+  Updated .claude/hooks/pipeline-router.py
+  Updated .claude/hooks/plan-audit-gate.py
+  Updated .claude/hooks/post-edit-ruff.py
+  Updated .copilotignore
+  Updated .github/copilot-instructions.md
+  Updated .github/copilot/hooks/ledger-writer.py
+  Updated .github/discovery-index.json
+  Updated .gzkit/manifest.json
+  Updated AGENTS.md
+  Updated CLAUDE.md
+
+Sync complete.
+
+$ uv run gz test
+Running tests...
+Ran 379 tests in 8.842s
+
+OK
+
+Tests passed.
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+$ uv run gz validate --documents
+All validations passed.
+
+$ uv run gz lint
+Running linters...
+All checks passed!
+
+ADR path contract check passed.
+Lint passed.
+
+$ uv run gz typecheck
+Running type checker...
+All checks passed!
+
+Type check passed.
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here when Gate 3 applies
+$ uv run mkdocs build --strict
+INFO    -  Cleaning site directory
+INFO    -  Building documentation to directory: /Users/jeff/Documents/Code/gzkit/site
+INFO    -  Documentation built in 0.74 seconds
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here when Gate 4 applies
+$ uv run -m behave features/
+2 features passed, 0 failed, 0 skipped
+6 scenarios passed, 0 failed, 0 skipped
+31 steps passed, 0 failed, 0 skipped
+Took 0min 0.295s
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+Pending human attestation.
 ```
 
 ## Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before this tranche, gzkit could create and enforce OBPI pipeline state, but it
+still lacked the final operator-facing reminder that catches the easy failure
+mode where a commit or push happens before the brief and sync steps are closed
+out. Now the generated hook surface can warn on that incomplete state without
+reinterpreting the contract into a blocking gate.
 
 ## Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+```text
+$ printf '{"cwd":"<temp-workspace>","tool_input":{"command":"git push origin main"}}' | uv run python .claude/hooks/pipeline-completion-reminder.py
+PIPELINE COMPLETION REMINDER
+
+Active OBPI pipeline: OBPI-0.12.0-05
+Brief status: Accepted
+
+You are about to commit or push while the governance pipeline still
+appears incomplete. Before publishing changes, finish the closeout path:
+
+  1. Run /gz-obpi-audit OBPI-0.12.0-05
+  2. Update the brief status to Completed
+  3. Run /gz-obpi-sync
+  4. Release the active pipeline marker
+
+Preferred re-entry point:
+  /gz-obpi-pipeline OBPI-0.12.0-05 --from=ceremony
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created/modified: hook generator, hook tests, parity matrix, OBPI brief,
+  and generated Claude control surfaces
+- Tests added: direct `pipeline-completion-reminder.py` generation and behavior
+  coverage
+- Date completed: -
+- Attestation status: pending
+- Defects noted: `uv run gz adr status ADR-0.12.0-obpi-pipeline-enforcement-parity --json`
+  reports completion-anchor drift on completed `OBPI-0.12.0-01`,
+  `OBPI-0.12.0-02`, `OBPI-0.12.0-03`, and `OBPI-0.12.0-07` after this tranche's
+  shared-file updates
 
 ## Human Attestation
 
-- Attestor: `human:<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `n/a`
+- Attestation: `n/a`
+- Date: `n/a`
 
 ---
 
