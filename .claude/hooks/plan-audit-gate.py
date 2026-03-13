@@ -94,7 +94,10 @@ def check_audit_receipt(
 
     receipt_mtime = receipt_path.stat().st_mtime
     if receipt_mtime < plan_mtime:
-        return False, "Audit receipt is older than plan file (plan was modified after audit)"
+        return (
+            False,
+            "Audit receipt is older than plan file (plan was modified after audit)",
+        )
 
     if receipt_verdict not in ("PASS", "FAIL"):
         return False, f"Audit receipt has invalid verdict: {receipt_verdict!r}"
@@ -160,7 +163,8 @@ def main() -> None:
         f"REQUIRED: Run the pre-flight alignment audit first:\n"
         f"  /gz-plan-audit {obpi_ids[0]}\n"
         f"\n"
-        f"This verifies ADR <-> OBPI <-> Plan alignment before implementation begins.\n",
+        f"This verifies ADR <-> OBPI <-> Plan alignment before "
+        f"implementation begins.\n",
         file=sys.stderr,
     )
     sys.exit(2)
