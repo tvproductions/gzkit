@@ -1,6 +1,6 @@
 # gz adr promote
 
-Promote a pool ADR into canonical ADR package structure and record ledger rename lineage.
+Promote a pool ADR into an executable canonical ADR package and record promotion lineage.
 
 ---
 
@@ -35,11 +35,14 @@ gz adr promote <POOL-ADR> --semver X.Y.Z [OPTIONS]
    - `0.0.z` -> `foundation/`
    - `0.y.z` (`y>0`) -> `pre-release/`
    - `1.y.z+` -> `<major>.0/`
-4. Pool file is retained and updated to archival context:
+4. Pool ADR must already contain actionable `## Target Scope` bullets.
+5. Promotion derives a concrete ADR checklist from that scope and creates matching OBPI briefs immediately.
+6. Pool file is retained and updated to archival context:
    - `status: Superseded`
    - `promoted_to: ADR-X.Y.Z-slug`
-5. Promotion lineage is written to ledger as:
+7. Promotion lineage is written to ledger as:
    - `artifact_renamed` with reason `pool_promotion`
+8. One `obpi_created` ledger event is written per generated brief.
 
 ---
 
@@ -49,6 +52,6 @@ gz adr promote <POOL-ADR> --semver X.Y.Z [OPTIONS]
 # Preview promotion
 gz adr promote ADR-pool.gz-chores-system --semver 0.6.0 --dry-run
 
-# Apply promotion
+# Apply promotion and generate matching OBPI briefs
 gz adr promote ADR-pool.gz-chores-system --semver 0.6.0
 ```

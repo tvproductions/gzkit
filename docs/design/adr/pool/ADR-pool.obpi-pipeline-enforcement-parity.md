@@ -13,7 +13,7 @@ promoted_to: ADR-0.12.0-obpi-pipeline-enforcement-parity
 
 ## Status
 
-Pool
+Superseded
 
 ## Date
 

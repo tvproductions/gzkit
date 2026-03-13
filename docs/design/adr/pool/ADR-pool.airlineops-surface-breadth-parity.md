@@ -13,7 +13,7 @@ promoted_to: ADR-0.9.0-airlineops-surface-breadth-parity
 
 ## Status
 
-Pool
+Superseded
 
 ## Date
 

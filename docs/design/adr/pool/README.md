@@ -32,6 +32,9 @@ Canonical command:
 uv run gz adr promote ADR-pool.<slug> --semver X.Y.Z [--dry-run]
 ```
 
+Promotion is fail-closed unless the pool ADR already contains actionable `## Target Scope`
+bullets. On success, the command creates the promoted ADR plus matching OBPI brief files.
+
 ---
 
 ## Current Pool

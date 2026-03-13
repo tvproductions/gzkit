@@ -9,7 +9,7 @@ promoted_to: ADR-0.8.0-gz-chores-system
 
 ## Status
 
-Proposed
+Superseded
 
 ## Date
 

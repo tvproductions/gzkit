@@ -13,7 +13,7 @@ promoted_to: ADR-0.10.0-obpi-runtime-surface
 
 ## Status
 
-Proposed
+Superseded
 
 ## Date
 
