@@ -149,6 +149,7 @@ class TestSetupClaudeHooks(unittest.TestCase):
             plan_audit_gate = hooks_dir / "plan-audit-gate.py"
             pipeline_router = hooks_dir / "pipeline-router.py"
             pipeline_gate = hooks_dir / "pipeline-gate.py"
+            pipeline_completion_reminder = hooks_dir / "pipeline-completion-reminder.py"
             ledger_writer = hooks_dir / "ledger-writer.py"
             readme = hooks_dir / "README.md"
             settings_path = project_root / ".claude" / "settings.json"
@@ -159,6 +160,7 @@ class TestSetupClaudeHooks(unittest.TestCase):
                 plan_audit_gate,
                 pipeline_router,
                 pipeline_gate,
+                pipeline_completion_reminder,
                 ledger_writer,
                 readme,
                 settings_path,
@@ -170,6 +172,7 @@ class TestSetupClaudeHooks(unittest.TestCase):
             self.assertIn(".claude/hooks/plan-audit-gate.py", created)
             self.assertIn(".claude/hooks/pipeline-router.py", created)
             self.assertIn(".claude/hooks/pipeline-gate.py", created)
+            self.assertIn(".claude/hooks/pipeline-completion-reminder.py", created)
             self.assertIn(".claude/hooks/ledger-writer.py", created)
             self.assertIn(".claude/hooks/README.md", created)
             self.assertIn(".claude/settings.json", created)
@@ -193,6 +196,7 @@ class TestSetupClaudeHooks(unittest.TestCase):
             self.assertIn("plan-audit-gate.py", readme_text)
             self.assertIn("pipeline-router.py", readme_text)
             self.assertIn("pipeline-gate.py", readme_text)
+            self.assertIn("pipeline-completion-reminder.py", readme_text)
             self.assertIn("not yet active in", readme_text)
             self.assertIn("hook that runs `ruff check --fix`", readme_text)
             self.assertIn("hook that records governance", readme_text)
@@ -625,6 +629,176 @@ class TestPipelineGateHook(unittest.TestCase):
 
             self.assertEqual(result.returncode, 2)
             self.assertIn("BLOCKED: Pipeline not invoked for OBPI-0.12.0-04.", result.stderr)
+
+
+class TestPipelineCompletionReminderHook(unittest.TestCase):
+    """Tests for the generated pipeline completion reminder script."""
+
+    def _create_hook(self, project_root: Path) -> Path:
+        config = GzkitConfig(project_name="gzkit-test")
+        setup_claude_hooks(project_root, config)
+        return project_root / ".claude" / "hooks" / "pipeline-completion-reminder.py"
+
+    def _run_hook(
+        self,
+        script_path: Path,
+        cwd: Path,
+        *,
+        command: str,
+    ) -> subprocess.CompletedProcess[str]:
+        payload = {"cwd": str(cwd), "tool_input": {"command": command}}
+        return subprocess.run(
+            [sys.executable, str(script_path)],
+            input=json.dumps(payload),
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+
+    def _write_marker(self, plans_dir: Path, name: str, payload: dict[str, str]) -> None:
+        plans_dir.mkdir(parents=True, exist_ok=True)
+        (plans_dir / name).write_text(json.dumps(payload) + "\n", encoding="utf-8")
+
+    def _write_brief(self, project_root: Path, *, status: str) -> Path:
+        brief_path = (
+            project_root
+            / "docs"
+            / "design"
+            / "adr"
+            / "pre-release"
+            / "ADR-0.12.0-obpi-pipeline-enforcement-parity"
+            / "obpis"
+            / "OBPI-0.12.0-05-completion-reminder-surface.md"
+        )
+        brief_path.parent.mkdir(parents=True, exist_ok=True)
+        brief_path.write_text(
+            "\n".join(
+                [
+                    "---",
+                    "id: OBPI-0.12.0-05-completion-reminder-surface",
+                    f"status: {status}",
+                    "---",
+                    "",
+                    "# OBPI-0.12.0-05",
+                    "",
+                    f"**Status:** {status}",
+                    "",
+                    f"**Brief Status:** {status}",
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
+        return brief_path
+
+    def test_allows_silently_when_command_is_not_commit_or_push(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            script_path = self._create_hook(project_root)
+
+            result = self._run_hook(script_path, project_root, command="git status")
+
+            self.assertEqual(result.returncode, 0)
+            self.assertEqual(result.stdout, "")
+            self.assertEqual(result.stderr, "")
+
+    def test_allows_silently_when_marker_is_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            script_path = self._create_hook(project_root)
+
+            result = self._run_hook(script_path, project_root, command="git commit -m test")
+
+            self.assertEqual(result.returncode, 0)
+            self.assertEqual(result.stdout, "")
+            self.assertEqual(result.stderr, "")
+
+    def test_allows_silently_when_marker_is_corrupt(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            plans_dir = project_root / ".claude" / "plans"
+            script_path = self._create_hook(project_root)
+            plans_dir.mkdir(parents=True, exist_ok=True)
+            (plans_dir / ".pipeline-active.json").write_text("{oops\n", encoding="utf-8")
+
+            result = self._run_hook(script_path, project_root, command="git push origin main")
+
+            self.assertEqual(result.returncode, 0)
+            self.assertEqual(result.stdout, "")
+            self.assertEqual(result.stderr, "")
+
+    def test_allows_silently_when_marker_has_no_obpi(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            plans_dir = project_root / ".claude" / "plans"
+            script_path = self._create_hook(project_root)
+            self._write_marker(
+                plans_dir,
+                ".pipeline-active.json",
+                {"started_at": "2026-03-13T12:00:00Z"},
+            )
+
+            result = self._run_hook(script_path, project_root, command="git commit -m test")
+
+            self.assertEqual(result.returncode, 0)
+            self.assertEqual(result.stdout, "")
+            self.assertEqual(result.stderr, "")
+
+    def test_allows_silently_when_brief_is_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            plans_dir = project_root / ".claude" / "plans"
+            script_path = self._create_hook(project_root)
+            self._write_marker(
+                plans_dir,
+                ".pipeline-active-OBPI-0.12.0-05.json",
+                {"obpi_id": "OBPI-0.12.0-05", "started_at": "2026-03-13T12:00:00Z"},
+            )
+
+            result = self._run_hook(script_path, project_root, command="git push origin main")
+
+            self.assertEqual(result.returncode, 0)
+            self.assertEqual(result.stdout, "")
+            self.assertEqual(result.stderr, "")
+
+    def test_emits_stale_marker_note_when_brief_is_completed(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            plans_dir = project_root / ".claude" / "plans"
+            script_path = self._create_hook(project_root)
+            self._write_marker(
+                plans_dir,
+                ".pipeline-active-OBPI-0.12.0-05.json",
+                {"obpi_id": "OBPI-0.12.0-05", "started_at": "2026-03-13T12:00:00Z"},
+            )
+            self._write_brief(project_root, status="Completed")
+
+            result = self._run_hook(script_path, project_root, command="git commit -m test")
+
+            self.assertEqual(result.returncode, 0)
+            self.assertEqual(result.stdout, "")
+            self.assertIn("STALE PIPELINE MARKER", result.stderr)
+            self.assertIn("OBPI-0.12.0-05", result.stderr)
+
+    def test_emits_reminder_when_brief_is_incomplete(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            plans_dir = project_root / ".claude" / "plans"
+            script_path = self._create_hook(project_root)
+            self._write_marker(
+                plans_dir,
+                ".pipeline-active-OBPI-0.12.0-05.json",
+                {"obpi_id": "OBPI-0.12.0-05", "started_at": "2026-03-13T12:00:00Z"},
+            )
+            self._write_brief(project_root, status="Accepted")
+
+            result = self._run_hook(script_path, project_root, command="git push origin main")
+
+            self.assertEqual(result.returncode, 0)
+            self.assertEqual(result.stdout, "")
+            self.assertIn("PIPELINE COMPLETION REMINDER", result.stderr)
+            self.assertIn("/gz-obpi-audit OBPI-0.12.0-05", result.stderr)
+            self.assertIn("/gz-obpi-pipeline OBPI-0.12.0-05 --from=ceremony", result.stderr)
 
 
 if __name__ == "__main__":
