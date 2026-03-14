@@ -24,6 +24,16 @@ The contract is ledger-first:
 The canonical implementation boundary is `derive_obpi_semantics()` in
 `src/gzkit/ledger.py`.
 
+During active OBPI pipeline execution, gzkit also persists a lightweight
+machine-readable stage-state payload in:
+
+- `.claude/plans/.pipeline-active-{OBPI-ID}.json`
+- `.claude/plans/.pipeline-active.json`
+
+That marker payload is compatibility state for active execution, not the
+authority for completion semantics. Completion and lifecycle truth remain
+ledger-first.
+
 ---
 
 ## Canonical Runtime Fields
@@ -46,6 +56,39 @@ Derived OBPI payloads expose these stable fields:
 - `anchor_issues`
 - `anchor_drift_files`
 - `issues`
+
+## Active Pipeline Marker Fields
+
+While an OBPI pipeline is active, the marker payload exposes these stable
+fields:
+
+- `obpi_id`
+- `parent_adr`
+- `lane`
+- `entry`
+- `execution_mode`
+- `current_stage`
+- `started_at`
+- `updated_at`
+- `receipt_state`
+
+`entry` is one of:
+
+- `full`
+- `verify`
+- `ceremony`
+
+`current_stage` is one of:
+
+- `implement`
+- `verify`
+- `ceremony`
+
+`receipt_state` mirrors the Stage 1 plan-audit receipt classification used by
+the runtime (`missing`, `pass`, `fail`, `invalid`, `other_obpi`, `unknown`).
+
+Consumers must remain backward-compatible with older marker payloads that only
+carry `obpi_id` and timestamp fields, and must ignore unknown future keys.
 
 ---
 

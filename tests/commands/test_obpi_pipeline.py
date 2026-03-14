@@ -14,6 +14,10 @@ class TestObpiPipelineCommand(unittest.TestCase):
     """Tests for the OBPI pipeline runtime command surface."""
 
     @staticmethod
+    def _load_json(path: Path) -> dict[str, str]:
+        return json.loads(path.read_text(encoding="utf-8"))
+
+    @staticmethod
     def _seed_parent_adr(config: GzkitConfig, adr_id: str) -> Path:
         adr_dir = Path(config.paths.adrs) / "pre-release" / adr_id
         adr_dir.mkdir(parents=True, exist_ok=True)
@@ -110,6 +114,17 @@ class TestObpiPipelineCommand(unittest.TestCase):
             marker_path, legacy_path = self._pipeline_paths(Path.cwd())
             self.assertTrue(marker_path.exists())
             self.assertTrue(legacy_path.exists())
+            payload = self._load_json(marker_path)
+            self.assertEqual(payload["obpi_id"], "OBPI-0.13.0-01-runtime-command-contract")
+            self.assertEqual(payload["parent_adr"], "ADR-0.13.0-obpi-pipeline-runtime-surface")
+            self.assertEqual(payload["lane"], "heavy")
+            self.assertEqual(payload["entry"], "full")
+            self.assertEqual(payload["execution_mode"], "normal")
+            self.assertEqual(payload["current_stage"], "implement")
+            self.assertEqual(payload["receipt_state"], "missing")
+            self.assertIn("started_at", payload)
+            self.assertIn("updated_at", payload)
+            self.assertEqual(payload, self._load_json(legacy_path))
 
     def test_blocks_when_matching_receipt_verdict_is_fail(self) -> None:
         runner = CliRunner()
@@ -171,6 +186,38 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertFalse(marker_path.exists())
             self.assertFalse(legacy_path.exists())
 
+    @patch("gzkit.cli._remove_pipeline_markers")
+    @patch("gzkit.cli.run_command")
+    def test_verify_rewrites_markers_with_verify_stage_state(
+        self, run_command_mock, remove_markers_mock
+    ) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            self._seed_runtime(runner)
+            run_command_mock.return_value = QualityResult(
+                success=True,
+                command="ok",
+                stdout="ok",
+                stderr="",
+                returncode=0,
+            )
+
+            result = runner.invoke(
+                main,
+                ["obpi", "pipeline", "OBPI-0.13.0-01-runtime-command-contract", "--from=verify"],
+            )
+
+            self.assertEqual(result.exit_code, 0)
+            marker_path, legacy_path = self._pipeline_paths(Path.cwd())
+            payload = self._load_json(marker_path)
+            self.assertEqual(payload["entry"], "verify")
+            self.assertEqual(payload["current_stage"], "verify")
+            self.assertEqual(payload["receipt_state"], "missing")
+            self.assertEqual(payload["parent_adr"], "ADR-0.13.0-obpi-pipeline-runtime-surface")
+            self.assertEqual(payload["lane"], "heavy")
+            self.assertEqual(payload, self._load_json(legacy_path))
+            remove_markers_mock.assert_called_once()
+
     def test_ceremony_prints_next_steps_and_clears_markers(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -193,6 +240,28 @@ class TestObpiPipelineCommand(unittest.TestCase):
             marker_path, legacy_path = self._pipeline_paths(Path.cwd())
             self.assertFalse(marker_path.exists())
             self.assertFalse(legacy_path.exists())
+
+    @patch("gzkit.cli._remove_pipeline_markers")
+    def test_ceremony_rewrites_markers_with_ceremony_stage_state(self, remove_markers_mock) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            self._seed_runtime(runner)
+
+            result = runner.invoke(
+                main,
+                ["obpi", "pipeline", "OBPI-0.13.0-01-runtime-command-contract", "--from=ceremony"],
+            )
+
+            self.assertEqual(result.exit_code, 0)
+            marker_path, legacy_path = self._pipeline_paths(Path.cwd())
+            payload = self._load_json(marker_path)
+            self.assertEqual(payload["entry"], "ceremony")
+            self.assertEqual(payload["current_stage"], "ceremony")
+            self.assertEqual(payload["receipt_state"], "missing")
+            self.assertEqual(payload["parent_adr"], "ADR-0.13.0-obpi-pipeline-runtime-surface")
+            self.assertEqual(payload["lane"], "heavy")
+            self.assertEqual(payload, self._load_json(legacy_path))
+            remove_markers_mock.assert_called_once()
 
     def test_blocks_when_brief_is_already_completed(self) -> None:
         runner = CliRunner()

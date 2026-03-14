@@ -66,7 +66,7 @@ execute the following tracked scope:
 
 <!-- Each item becomes an OBPI (One Brief Per Item). Sequential numbering, no gaps. -->
 
-- [ ] OBPI-0.13.0-01: Introduce a runtime command contract such as `gz obpi pipeline <obpi>`, `--from=verify`, and `--from=ceremony`
+- [x] OBPI-0.13.0-01: Introduce a runtime command contract such as `gz obpi pipeline <obpi>`, `--from=verify`, and `--from=ceremony`
 - [ ] OBPI-0.13.0-02: Persist pipeline stage state in a repository-local, machine-readable form
 - [ ] OBPI-0.13.0-03: Expose structured stage outputs for current stage, blockers, required human action, and next command or resume point
 - [ ] OBPI-0.13.0-04: Keep Stage 4 human attestation as an explicit authority boundary for Heavy and Foundation work

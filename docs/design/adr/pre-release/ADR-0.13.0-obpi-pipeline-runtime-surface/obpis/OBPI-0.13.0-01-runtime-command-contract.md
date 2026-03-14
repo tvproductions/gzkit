@@ -3,7 +3,7 @@ id: OBPI-0.13.0-01-runtime-command-contract
 parent: ADR-0.13.0-obpi-pipeline-runtime-surface
 item: 1
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.13.0-01-runtime-command-contract: Runtime Command Contract
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.13.0-obpi-pipeline-runtime-surface/ADR-0.13.0-obpi-pipeline-runtime-surface.md`
 - **Checklist Item:** #1 - "OBPI-0.13.0-01: Introduce a runtime command contract such as `gz obpi pipeline <obpi>`, `--from=verify`, and `--from=ceremony`"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -74,26 +74,26 @@ Introduce a runtime command contract such as `gz obpi pipeline <obpi>`,
 
 **Governance (read once, cache):**
 
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
+- [x] `.github/discovery-index.json` - repo structure
+- [x] `AGENTS.md` or `CLAUDE.md` - agent operating contract
+- [x] Parent ADR - understand full context
 
 **Context:**
 
-- [ ] Parent ADR: `docs/design/adr/pre-release/ADR-0.13.0-obpi-pipeline-runtime-surface/ADR-0.13.0-obpi-pipeline-runtime-surface.md`
-- [ ] `.gzkit/skills/gz-obpi-pipeline/SKILL.md`
-- [ ] `docs/user/commands/obpi-status.md`
-- [ ] `docs/user/commands/obpi-reconcile.md`
+- [x] Parent ADR: `docs/design/adr/pre-release/ADR-0.13.0-obpi-pipeline-runtime-surface/ADR-0.13.0-obpi-pipeline-runtime-surface.md`
+- [x] `.gzkit/skills/gz-obpi-pipeline/SKILL.md`
+- [x] `docs/user/commands/obpi-status.md`
+- [x] `docs/user/commands/obpi-reconcile.md`
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Existing `obpi` parser exists in `src/gzkit/cli.py`
-- [ ] Claude plan receipt and active-marker contracts already exist under `.claude/plans/`
+- [x] Existing `obpi` parser exists in `src/gzkit/cli.py`
+- [x] Claude plan receipt and active-marker contracts already exist under `.claude/plans/`
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `src/gzkit/commands/status.py` fail-closed runtime output
-- [ ] Test patterns: `tests/commands/test_runtime.py`, `tests/test_hooks.py`
+- [x] Pattern to follow: `src/gzkit/commands/status.py` fail-closed runtime output
+- [x] Test patterns: `tests/commands/test_runtime.py`, `tests/test_hooks.py`
 
 ## Quality Gates
 
@@ -101,33 +101,33 @@ Introduce a runtime command contract such as `gz obpi pipeline <obpi>`,
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] Tests written before/with implementation
-- [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
+- [x] Tests written before/with implementation
+- [x] Tests pass: `uv run gz test`
+- [x] Validation commands recorded in evidence with real outputs
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 <!-- Heavy lane only: -->
 ### Gate 3: Docs (Heavy only)
 
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
+- [x] Docs build: `uv run mkdocs build --strict`
+- [x] Relevant docs updated
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
+- [x] Acceptance scenarios pass: `uv run -m behave features/`
 
 ### Gate 5: Human (Heavy only)
 
-- [ ] Human attestation recorded
+- [x] Human attestation recorded
 
 ## Verification
 
@@ -152,22 +152,22 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.13.0-01-01: `gz obpi pipeline <OBPI-ID>` launches successfully, writes the active markers, and prints the follow-up `--from=verify` command.
-- [ ] REQ-0.13.0-01-02: `gz obpi pipeline <OBPI-ID> --from=verify` executes the OBPI verification command block plus Heavy-lane docs/BDD checks and clears markers on success.
-- [ ] REQ-0.13.0-01-03: `gz obpi pipeline <OBPI-ID> --from=ceremony` prints the ceremony/accounting next steps and clears markers on exit.
-- [ ] REQ-0.13.0-01-04: The command emits `BLOCKERS:` and exits non-zero for completed briefs, matching `FAIL` receipts, conflicting active markers, and failing verification commands.
-- [ ] REQ-0.13.0-01-05: Command docs, workflow docs, runbook, and wrapper skill all point to `uv run gz obpi pipeline` as the canonical runtime launch surface.
+- [x] REQ-0.13.0-01-01: `gz obpi pipeline <OBPI-ID>` launches successfully, writes the active markers, and prints the follow-up `--from=verify` command.
+- [x] REQ-0.13.0-01-02: `gz obpi pipeline <OBPI-ID> --from=verify` executes the OBPI verification command block plus Heavy-lane docs/BDD checks and clears markers on success.
+- [x] REQ-0.13.0-01-03: `gz obpi pipeline <OBPI-ID> --from=ceremony` prints the ceremony/accounting next steps and clears markers on exit.
+- [x] REQ-0.13.0-01-04: The command emits `BLOCKERS:` and exits non-zero for completed briefs, matching `FAIL` receipts, conflicting active markers, and failing verification commands.
+- [x] REQ-0.13.0-01-05: Command docs, workflow docs, runbook, and wrapper skill all point to `uv run gz obpi pipeline` as the canonical runtime launch surface.
 
 ## Completion Checklist
 
 <!-- Verify all gates before marking OBPI accepted. -->
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -178,7 +178,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
@@ -229,7 +229,27 @@ uv run -m behave features/
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+Human attestation received on 2026-03-13: "completed"
+
+$ uv run gz git-sync --apply --lint --test
+Git sync execution
+  Branch: main
+  Remote: origin
+  ahead=0 behind=0 diverged=False dirty=False
+  Actions:
+    - git fetch --prune origin
+  Executed:
+    - gz lint (pre-sync)
+    - gz test (pre-sync)
+    - gz lint (post-sync)
+Git sync completed.
+
+$ uv run gz obpi emit-receipt OBPI-0.13.0-01-runtime-command-contract --event completed --attestor "human:jeff" --evidence-json '{...}'
+OBPI receipt emitted.
+  OBPI: OBPI-0.13.0-01-runtime-command-contract
+  Parent ADR: ADR-0.13.0-obpi-pipeline-runtime-surface
+  Event: completed
+  Attestor: human:jeff
 ```
 
 ## Value Narrative
@@ -273,22 +293,23 @@ Next:
   brief.
 - Tests added: `tests/commands/test_obpi_pipeline.py`
 - Date completed: `2026-03-13`
-- Attestation status: pending human attestation
+- Attestation status: human attestation recorded
 - Defects noted: fixed missing MkDocs nav registration for
   `docs/user/commands/obpi-pipeline.md`; fixed command-manpage examples to use
   real CLI output; fixed this brief's verification block to include Heavy-lane
-  docs and BDD commands.
+  docs and BDD commands; the missing plan-audit receipt remains an explicit
+  evidence gap surfaced by the runtime warning.
 
 ## Human Attestation
 
-- Attestor: `human:<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: human:jeff
+- Attestation: completed
+- Date: 2026-03-13
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-13
 
-**Evidence Hash:** -
+**Evidence Hash:** acad34c
