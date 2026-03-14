@@ -3,7 +3,7 @@ id: OBPI-0.13.0-04-human-gate-boundary
 parent: ADR-0.13.0-obpi-pipeline-runtime-surface
 item: 4
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.13.0-04-human-gate-boundary: Human Gate Boundary
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.13.0-obpi-pipeline-runtime-surface/ADR-0.13.0-obpi-pipeline-runtime-surface.md`
 - **Checklist Item:** #4 - "OBPI-0.13.0-04: Keep Stage 4 human attestation as an explicit authority boundary for Heavy and Foundation work"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -123,7 +123,7 @@ Heavy and Foundation work, while leaving Lite OBPI ceremony flow non-blocking.
 
 ### Gate 5: Human (Heavy only)
 
-- [ ] Human attestation recorded
+- [x] Human attestation recorded
 
 ## Verification
 
@@ -151,7 +151,7 @@ uv run -m behave features/
 - [x] **Code Quality:** Lint, format, type checks clean
 - [x] **Value Narrative:** Problem-before vs capability-now is documented
 - [x] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -221,7 +221,7 @@ $ uv run -m behave features/
 ### Gate 5 (Human)
 
 ```text
-Pending human attestation.
+Human attestation received on 2026-03-14: "attest completed"
 ```
 
 ## Value Narrative
@@ -247,17 +247,23 @@ Ceremony
 
 - Files created/modified: `src/gzkit/cli.py`, `tests/commands/test_obpi_pipeline.py`, Stage 4 docs/runtime contract text, the canonical pipeline skill, and regenerated control-surface mirrors from `uv run gz agent sync control-surfaces`
 - Tests added: Lite-parent and Foundation-parent ceremony coverage in `tests/commands/test_obpi_pipeline.py`
-- Date completed: pending human attestation
-- Attestation status: waiting for Heavy-lane ceremony acceptance
+- Date completed: 2026-03-14
+- Attestation status: human attestation recorded
 - Defects noted: the OBPI brief started as an unfilled template and was rewritten into a concrete scope/evidence contract as part of this work
 
 ## Human Attestation
 
-- Attestor: pending human review
-- Attestation: pending human review
-- Date: n/a
+- Attestor: human:jeff
+- Attestation: attest completed
+- Date: 2026-03-14
 
 ---
+
+**Brief Status:** Completed
+
+**Date Completed:** 2026-03-14
+
+**Evidence Hash:** pending-sync-anchor
 
 **Brief Status:** Draft
 
