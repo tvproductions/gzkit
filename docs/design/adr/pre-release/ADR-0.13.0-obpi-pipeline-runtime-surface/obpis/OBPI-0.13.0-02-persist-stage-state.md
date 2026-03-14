@@ -3,7 +3,7 @@ id: OBPI-0.13.0-02-persist-stage-state
 parent: ADR-0.13.0-obpi-pipeline-runtime-surface
 item: 2
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.13.0-02-persist-stage-state: Persist Pipeline Stage State
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.13.0-obpi-pipeline-runtime-surface/ADR-0.13.0-obpi-pipeline-runtime-surface.md`
 - **Checklist Item:** #2 - "OBPI-0.13.0-02: Persist pipeline stage state in a repository-local, machine-readable form"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -51,6 +51,7 @@ Persist pipeline stage state in a repository-local, machine-readable form.
 - `AGENTS.md` - generated control surface synced from canonical skills/manifest
 - `CLAUDE.md` - generated control surface synced from canonical skills/manifest
 - `.github/copilot-instructions.md` - generated control surface synced from canonical skills/manifest
+- `docs/design/adr/pre-release/ADR-0.13.0-obpi-pipeline-runtime-surface/ADR-0.13.0-obpi-pipeline-runtime-surface.md` - parent ADR checklist synchronization during completion accounting
 - `docs/design/adr/pre-release/ADR-0.13.0-obpi-pipeline-runtime-surface/obpis/OBPI-0.13.0-02-persist-stage-state.md` - this brief and completion evidence
 
 ## Denied Paths
@@ -58,7 +59,7 @@ Persist pipeline stage state in a repository-local, machine-readable form.
 <!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
 
 - `src/gzkit/hooks/**` - hook rewiring belongs to later runtime convergence work
-- `.claude/hooks/**` - generated hook wrappers stay behaviorally unchanged in this OBPI
+- manual behavioral edits to `.claude/hooks/**` outside `gz agent sync control-surfaces`
 - new repo-local state files outside `.claude/plans/.pipeline-active*.json`
 - structured blocker/next-command/human-action runtime outputs - deferred to `OBPI-0.13.0-03`
 - new CLI flags, abort/resume subcommands, or JSON stdout contracts
@@ -86,24 +87,24 @@ Persist pipeline stage state in a repository-local, machine-readable form.
 
 **Governance (read once, cache):**
 
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
+- [x] `.github/discovery-index.json` - repo structure
+- [x] `AGENTS.md` or `CLAUDE.md` - agent operating contract
+- [x] Parent ADR - understand full context
 
 **Context:**
 
-- [ ] Parent ADR: `docs/design/adr/pre-release/ADR-0.13.0-obpi-pipeline-runtime-surface/ADR-0.13.0-obpi-pipeline-runtime-surface.md`
-- [ ] Related OBPIs in same ADR, especially `OBPI-0.13.0-01` and `OBPI-0.13.0-03`
+- [x] Parent ADR: `docs/design/adr/pre-release/ADR-0.13.0-obpi-pipeline-runtime-surface/ADR-0.13.0-obpi-pipeline-runtime-surface.md`
+- [x] Related OBPIs in same ADR, especially `OBPI-0.13.0-01` and `OBPI-0.13.0-03`
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Existing `obpi pipeline` parser and marker helpers exist in `src/gzkit/cli.py`
-- [ ] Existing marker consumers exist under `tests/test_hooks.py`
+- [x] Existing `obpi pipeline` parser and marker helpers exist in `src/gzkit/cli.py`
+- [x] Existing marker consumers exist under `tests/test_hooks.py`
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `OBPI-0.13.0-01` runtime contract implementation in `src/gzkit/cli.py`
-- [ ] Test patterns: `tests/commands/test_obpi_pipeline.py`, `tests/test_hooks.py`
+- [x] Pattern to follow: `OBPI-0.13.0-01` runtime contract implementation in `src/gzkit/cli.py`
+- [x] Test patterns: `tests/commands/test_obpi_pipeline.py`, `tests/test_hooks.py`
 
 ## Quality Gates
 
@@ -111,33 +112,33 @@ Persist pipeline stage state in a repository-local, machine-readable form.
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] Tests written before/with implementation
-- [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
+- [x] Tests written before/with implementation
+- [x] Tests pass: `uv run gz test`
+- [x] Validation commands recorded in evidence with real outputs
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 <!-- Heavy lane only: -->
 ### Gate 3: Docs (Heavy only)
 
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
+- [x] Docs build: `uv run mkdocs build --strict`
+- [x] Relevant docs updated
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
+- [x] Acceptance scenarios pass: `uv run -m behave features/`
 
 ### Gate 5: Human (Heavy only)
 
-- [ ] Human attestation recorded
+- [x] Human attestation recorded
 
 ## Verification
 
@@ -163,21 +164,21 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.13.0-02-01: `gz obpi pipeline <OBPI-ID>` writes enriched per-OBPI and legacy marker files with `entry=full`, `current_stage=implement`, and the parent/lane/receipt metadata.
-- [ ] REQ-0.13.0-02-02: `gz obpi pipeline <OBPI-ID> --from=verify` and `--from=ceremony` rewrite the active marker payload with the stage-specific `entry` and `current_stage` values before cleanup.
-- [ ] REQ-0.13.0-02-03: Existing hook consumers continue to accept the richer marker payload without behavior regressions when they only depend on `obpi_id`.
-- [ ] REQ-0.13.0-02-04: User and governance docs describe the richer marker payload as active pipeline state and explicitly defer structured outputs to `OBPI-0.13.0-03`.
+- [x] REQ-0.13.0-02-01: `gz obpi pipeline <OBPI-ID>` writes enriched per-OBPI and legacy marker files with `entry=full`, `current_stage=implement`, and the parent/lane/receipt metadata.
+- [x] REQ-0.13.0-02-02: `gz obpi pipeline <OBPI-ID> --from=verify` and `--from=ceremony` rewrite the active marker payload with the stage-specific `entry` and `current_stage` values before cleanup.
+- [x] REQ-0.13.0-02-03: Existing hook consumers continue to accept the richer marker payload without behavior regressions when they only depend on `obpi_id`.
+- [x] REQ-0.13.0-02-04: User and governance docs describe the richer marker payload as active pipeline state and explicitly defer structured outputs to `OBPI-0.13.0-03`.
 
 ## Completion Checklist
 
 <!-- Verify all gates before marking OBPI accepted. -->
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -188,64 +189,168 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+$ uv run python -m unittest tests.commands.test_obpi_pipeline -v
+Ran 7 tests in 0.227s
+OK
+
+$ uv run python -m unittest tests.test_hooks -v
+Ran 45 tests in 0.639s
+OK
+
+$ uv run gz obpi pipeline OBPI-0.13.0-02-persist-stage-state --from=verify
+PASS uv run python -m unittest tests.commands.test_obpi_pipeline -v
+PASS uv run python -m unittest tests.test_hooks -v
+PASS uv run gz validate --documents
+PASS uv run gz lint
+PASS uv run gz typecheck
+PASS uv run gz test
+PASS uv run mkdocs build --strict
+PASS uv run -m behave features/
+Verification completed.
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+$ uv run gz validate --documents
+All validations passed.
+
+$ uv run gz lint
+Running linters...
+All checks passed!
+
+ADR path contract check passed.
+Lint passed.
+
+$ uv run gz typecheck
+All checks passed!
+Type check passed.
+
+$ uv run gz format
+Formatting code...
+76 files left unchanged
+
+All checks passed!
+Format complete.
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here when Gate 3 applies
+$ uv run mkdocs build --strict
+PASS uv run mkdocs build --strict
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here when Gate 4 applies
+$ uv run -m behave features/
+PASS uv run -m behave features/
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+Human attestation received on 2026-03-14: "Completed"
+
+$ uv run gz git-sync --apply --lint --test
+Git sync execution
+  Branch: main
+  Remote: origin
+  ahead=0 behind=0 diverged=False dirty=True
+  Actions:
+    - git add -A
+    - git fetch --prune origin
+  Executed:
+    - git add -A
+    - gz lint (pre-sync)
+    - gz test (pre-sync)
+    - git commit
+    - git push origin main
+    - gz lint (post-sync)
+Git sync completed.
+
+$ uv run gz obpi emit-receipt OBPI-0.13.0-02-persist-stage-state --event completed --attestor "human:jeff" --evidence-json '{...}'
+OBPI receipt emitted.
+  OBPI: OBPI-0.13.0-02-persist-stage-state
+  Parent ADR: ADR-0.13.0-obpi-pipeline-runtime-surface
+  Event: completed
+  Attestor: human:jeff
 ```
 
 ## Value Narrative
 
 <!-- What problem existed before this OBPI, and what capability exists now? -->
 
+Before this OBPI, the pipeline only persisted a minimal active marker with
+`obpi_id`, `started_at`, and `execution_mode`. That was enough to prove that a
+pipeline was active, but not enough to tell which stage was currently active or
+which receipt context the runtime had loaded. Now the existing active marker
+files carry machine-readable stage state for the active pipeline run, including
+`parent_adr`, `lane`, `entry`, `current_stage`, `updated_at`, and
+`receipt_state`, while keeping the same file paths and preserving hook
+compatibility.
+
 ## Key Proof
 
 <!-- One concrete usage example, command, or before/after behavior. -->
 
+```text
+$ uv run gz obpi pipeline OBPI-0.13.0-02-persist-stage-state
+OBPI pipeline: OBPI-0.13.0-02-persist-stage-state
+  Parent ADR: ADR-0.13.0-obpi-pipeline-runtime-surface
+  Lane: heavy
+  Entry: full
+  Receipt: MISSING
+  Marker: .claude/plans/.pipeline-active-OBPI-0.13.0-02-persist-stage-state.json
+
+Marker payload now includes:
+- obpi_id
+- parent_adr
+- lane
+- entry
+- execution_mode
+- current_stage
+- started_at
+- updated_at
+- receipt_state
+```
+
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created/modified: `src/gzkit/cli.py`,
+  `tests/commands/test_obpi_pipeline.py`, `tests/test_hooks.py`,
+  `docs/user/commands/obpi-pipeline.md`,
+  `docs/governance/GovZero/obpi-runtime-contract.md`,
+  `.gzkit/skills/gz-obpi-pipeline/SKILL.md`, mirrored skill files, generated
+  control surfaces from `gz agent sync control-surfaces`, and this brief.
+- Tests added: richer marker payload coverage for full/verify/ceremony runtime
+  entries plus hook compatibility cases for richer marker JSON.
+- Date completed: `2026-03-14`
+- Attestation status: human attestation recorded
+- Defects noted: fixed this brief's placeholder scope/requirements/template
+  drift before implementation; fixed sync-time formatting drift detected by the
+  first guarded `git-sync` attempt; the missing plan-audit receipt remains an
+  explicit governance gap surfaced by the runtime warning; `OBPI-0.13.0-01`
+  now reports anchor drift in `gz adr status ADR-0.13.0 --json` because this
+  tranche intentionally changed files that were part of OBPI-01's recorded
+  scope and that earlier completion anchor has not yet been re-baselined.
 
 ## Human Attestation
 
-- Attestor: `human:<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: human:jeff
+- Attestation: Completed
+- Date: 2026-03-14
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-14
 
-**Evidence Hash:** -
+**Evidence Hash:** fa2f3a4
