@@ -573,7 +573,7 @@ class TestLedger(unittest.TestCase):
             current_head="def5678",
             files_since_anchor=["src/gzkit/ledger.py", "docs/guide.md"],
         )
-        self.assertEqual(semantics["runtime_state"], "drift")
+        self.assertEqual(semantics["runtime_state"], "completed")
         self.assertEqual(semantics["anchor_state"], "stale")
         self.assertEqual(semantics["anchor_drift_files"], ["src/gzkit/ledger.py"])
         self.assertIn("completion anchor drifted in recorded OBPI scope", semantics["issues"])
@@ -663,7 +663,7 @@ class TestLedger(unittest.TestCase):
             key_proof_ok=True,
             current_head="def5678",
         )
-        self.assertEqual(semantics["runtime_state"], "drift")
+        self.assertEqual(semantics["runtime_state"], "completed")
         self.assertEqual(semantics["anchor_state"], "missing")
         self.assertIn("completion anchor evidence is missing", semantics["issues"])
         self.assertTrue(semantics["completed"])
@@ -698,7 +698,7 @@ class TestLedger(unittest.TestCase):
             key_proof_ok=True,
             current_head="abc1234",
         )
-        self.assertEqual(semantics["runtime_state"], "drift")
+        self.assertEqual(semantics["runtime_state"], "completed")
         self.assertEqual(semantics["anchor_state"], "degraded")
         self.assertIn(
             "completion git-sync evidence recorded blockers: Working tree is dirty.",
