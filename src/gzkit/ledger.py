@@ -817,7 +817,6 @@ def _derive_obpi_issues(
     key_proof_ok: bool,
     attestation_requirement: str,
     human_attestation_ok: bool,
-    anchor_issues: list[str],
 ) -> list[str]:
     """Collect fail-closed OBPI runtime issues."""
     issues: list[str] = []
@@ -839,7 +838,6 @@ def _derive_obpi_issues(
         issues.append("key proof is missing or placeholder")
     if attestation_requirement == "required" and file_completed and not human_attestation_ok:
         issues.append("required human attestation evidence is missing")
-    issues.extend(anchor_issues)
     return issues
 
 
@@ -947,7 +945,6 @@ def derive_obpi_semantics(
         key_proof_ok=key_proof_ok,
         attestation_requirement=attestation_requirement,
         human_attestation_ok=human_attestation_ok,
-        anchor_issues=list(anchor_analysis["anchor_issues"]),
     )
 
     runtime_state = _derive_obpi_runtime_state(
@@ -965,6 +962,7 @@ def derive_obpi_semantics(
     )
 
     proof_state = "validated" if runtime_state == "validated" else req_proof_state
+    issues = [*issues, *list(anchor_analysis["anchor_issues"])]
 
     completed = bool(
         found_file
