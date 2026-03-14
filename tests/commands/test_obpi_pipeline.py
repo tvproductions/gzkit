@@ -18,7 +18,13 @@ class TestObpiPipelineCommand(unittest.TestCase):
         return json.loads(path.read_text(encoding="utf-8"))
 
     @staticmethod
-    def _seed_parent_adr(config: GzkitConfig, adr_id: str) -> Path:
+    def _seed_parent_adr(
+        config: GzkitConfig,
+        adr_id: str,
+        *,
+        semver: str = "0.13.0",
+        lane: str = "heavy",
+    ) -> Path:
         adr_dir = Path(config.paths.adrs) / "pre-release" / adr_id
         adr_dir.mkdir(parents=True, exist_ok=True)
         adr_file = adr_dir / f"{adr_id}.md"
@@ -26,8 +32,8 @@ class TestObpiPipelineCommand(unittest.TestCase):
             "---\n"
             f"id: {adr_id}\n"
             "status: Proposed\n"
-            "semver: 0.13.0\n"
-            "lane: heavy\n"
+            f"semver: {semver}\n"
+            f"lane: {lane}\n"
             "parent: PRD-GZKIT-1.0.0\n"
             "date: 2026-03-13\n"
             "---\n\n"
@@ -37,21 +43,27 @@ class TestObpiPipelineCommand(unittest.TestCase):
         return adr_file
 
     @staticmethod
-    def _seed_obpi(config: GzkitConfig, parent_adr: str, *, completed: bool = False) -> Path:
+    def _seed_obpi(
+        config: GzkitConfig,
+        parent_adr: str,
+        *,
+        obpi_id: str = "OBPI-0.13.0-01-runtime-command-contract",
+        completed: bool = False,
+    ) -> Path:
         obpi_dir = Path(config.paths.adrs) / "pre-release" / parent_adr / "obpis"
         obpi_dir.mkdir(parents=True, exist_ok=True)
-        obpi_file = obpi_dir / "OBPI-0.13.0-01-runtime-command-contract.md"
+        obpi_file = obpi_dir / f"{obpi_id}.md"
         brief_status = "Completed" if completed else "Draft"
         frontmatter_status = "Completed" if completed else "Draft"
         obpi_file.write_text(
             "---\n"
-            "id: OBPI-0.13.0-01-runtime-command-contract\n"
+            f"id: {obpi_id}\n"
             f"parent: {parent_adr}\n"
             "item: 1\n"
             "lane: Heavy\n"
             f"status: {frontmatter_status}\n"
             "---\n\n"
-            "# OBPI-0.13.0-01-runtime-command-contract: Runtime Command Contract\n\n"
+            f"# {obpi_id}: Runtime Command Contract\n\n"
             f"**Brief Status:** {brief_status}\n\n"
             "## Verification\n\n"
             "```bash\n"
@@ -82,22 +94,32 @@ class TestObpiPipelineCommand(unittest.TestCase):
         )
 
     @staticmethod
-    def _pipeline_paths(project_root: Path) -> tuple[Path, Path]:
+    def _pipeline_paths(
+        project_root: Path, obpi_id: str = "OBPI-0.13.0-01-runtime-command-contract"
+    ) -> tuple[Path, Path]:
         plans_dir = project_root / ".claude" / "plans"
         return (
-            plans_dir / ".pipeline-active-OBPI-0.13.0-01-runtime-command-contract.json",
+            plans_dir / f".pipeline-active-{obpi_id}.json",
             plans_dir / ".pipeline-active.json",
         )
 
-    def _seed_runtime(self, runner: CliRunner) -> None:
-        runner.invoke(main, ["init", "--mode", "heavy"])
+    def _seed_runtime(
+        self,
+        runner: CliRunner,
+        *,
+        parent_adr: str = "ADR-0.13.0-obpi-pipeline-runtime-surface",
+        parent_semver: str = "0.13.0",
+        parent_lane: str = "heavy",
+        config_mode: str = "heavy",
+        obpi_id: str = "OBPI-0.13.0-01-runtime-command-contract",
+    ) -> None:
+        runner.invoke(main, ["init", "--mode", config_mode])
         config = GzkitConfig.load(Path(".gzkit.json"))
-        parent_adr = "ADR-0.13.0-obpi-pipeline-runtime-surface"
-        self._seed_parent_adr(config, parent_adr)
-        self._seed_obpi(config, parent_adr)
+        self._seed_parent_adr(config, parent_adr, semver=parent_semver, lane=parent_lane)
+        self._seed_obpi(config, parent_adr, obpi_id=obpi_id)
         ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-        ledger.append(adr_created_event(parent_adr, "PRD-GZKIT-1.0.0", "heavy"))
-        ledger.append(obpi_created_event("OBPI-0.13.0-01-runtime-command-contract", parent_adr))
+        ledger.append(adr_created_event(parent_adr, "PRD-GZKIT-1.0.0", config_mode))
+        ledger.append(obpi_created_event(obpi_id, parent_adr))
 
     def test_full_launch_accepts_short_id_and_creates_markers(self) -> None:
         runner = CliRunner()
@@ -327,6 +349,78 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertIsNone(payload["resume_point"])
             self.assertEqual(payload["parent_adr"], "ADR-0.13.0-obpi-pipeline-runtime-surface")
             self.assertEqual(payload["lane"], "heavy")
+            self.assertEqual(payload, self._load_json(legacy_path))
+            remove_markers_mock.assert_called_once()
+
+    @patch("gzkit.cli._remove_pipeline_markers")
+    def test_ceremony_lite_parent_omits_required_human_action(self, remove_markers_mock) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            self._seed_runtime(
+                runner,
+                parent_adr="ADR-1.2.3-lite-obpi-demo",
+                parent_semver="1.2.3",
+                parent_lane="lite",
+                config_mode="lite",
+            )
+
+            result = runner.invoke(
+                main,
+                ["obpi", "pipeline", "OBPI-0.13.0-01-runtime-command-contract", "--from=ceremony"],
+            )
+
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn(
+                "Human attestation is optional for this OBPI; do not block completion",
+                result.output,
+            )
+            self.assertIn("accounting on it.", result.output)
+            self.assertIn('--attestor "<name>"', " ".join(result.output.split()))
+            marker_path, legacy_path = self._pipeline_paths(Path.cwd())
+            payload = self._load_json(marker_path)
+            self.assertIsNone(payload["required_human_action"])
+            self.assertEqual(payload["lane"], "lite")
+            self.assertEqual(payload["parent_adr"], "ADR-1.2.3-lite-obpi-demo")
+            self.assertEqual(payload, self._load_json(legacy_path))
+            remove_markers_mock.assert_called_once()
+
+    @patch("gzkit.cli._remove_pipeline_markers")
+    def test_ceremony_foundation_parent_requires_human_attestation(
+        self, remove_markers_mock
+    ) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            self._seed_runtime(
+                runner,
+                parent_adr="ADR-0.0.5-foundation-obpi-demo",
+                parent_semver="0.0.5",
+                parent_lane="lite",
+                config_mode="lite",
+                obpi_id="OBPI-0.0.5-01-runtime-command-contract",
+            )
+
+            result = runner.invoke(
+                main,
+                ["obpi", "pipeline", "OBPI-0.0.5-01-runtime-command-contract", "--from=ceremony"],
+            )
+
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn(
+                "Obtain explicit human attestation before completion accounting.",
+                result.output,
+            )
+            self.assertIn('--attestor "human:<name>"', " ".join(result.output.split()))
+            marker_path, legacy_path = self._pipeline_paths(
+                Path.cwd(), "OBPI-0.0.5-01-runtime-command-contract"
+            )
+            payload = self._load_json(marker_path)
+            self.assertEqual(
+                payload["required_human_action"],
+                "Present evidence and obtain explicit human attestation before "
+                "completion accounting.",
+            )
+            self.assertEqual(payload["lane"], "lite")
+            self.assertEqual(payload["parent_adr"], "ADR-0.0.5-foundation-obpi-demo")
             self.assertEqual(payload, self._load_json(legacy_path))
             remove_markers_mock.assert_called_once()
 
