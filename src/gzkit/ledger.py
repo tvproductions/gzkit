@@ -5,6 +5,7 @@ State is derived from the ledger, not stored separately.
 """
 
 import json
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path, PurePosixPath
@@ -501,6 +502,138 @@ def _relevant_anchor_drift_files(
     return sorted(set(relevant))
 
 
+def _parse_event_timestamp(value: Any) -> datetime | None:
+    """Parse an event timestamp into a comparable UTC-aware datetime."""
+    if not isinstance(value, str) or not value.strip():
+        return None
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+
+def _candidate_anchor_paths(files_since_anchor: list[str]) -> list[str]:
+    """Filter out transient files that must not participate in anchor drift."""
+    return [path for path in files_since_anchor if not _is_transient_anchor_state_path(path)]
+
+
+def _iter_later_completed_siblings(
+    *,
+    artifact_graph: dict[str, dict[str, Any]],
+    obpi_id: str,
+    parent_adr: str,
+    current_completion_ts: datetime,
+) -> Iterator[dict[str, Any]]:
+    """Yield later completed sibling OBPI metadata for the same parent ADR."""
+    for sibling_id, sibling_info in artifact_graph.items():
+        if sibling_id == obpi_id or sibling_info.get("type") != "obpi":
+            continue
+        if sibling_info.get("parent") != parent_adr or not sibling_info.get("ledger_completed"):
+            continue
+
+        sibling_completion_ts = _parse_event_timestamp(sibling_info.get("latest_completion_ts"))
+        if sibling_completion_ts is None or sibling_completion_ts <= current_completion_ts:
+            continue
+
+        yield sibling_info
+
+
+def _sibling_scope_details(
+    *,
+    project_root: Path,
+    sibling_info: dict[str, Any],
+) -> tuple[dict[str, list[str]], set[str]] | None:
+    """Return normalized sibling scope plus post-anchor changes when available."""
+    sibling_evidence = sibling_info.get("latest_completion_evidence")
+    if not isinstance(sibling_evidence, dict):
+        return None
+
+    sibling_scope = _normalize_scope_audit(sibling_evidence)
+    if not sibling_scope["allowlist"] and not sibling_scope["changed_files"]:
+        return None
+
+    sibling_anchor = _normalize_anchor(sibling_info.get("latest_completion_anchor"))
+    sibling_anchor_commit = sibling_anchor.get("commit") if sibling_anchor else None
+    if not sibling_anchor_commit:
+        return None
+
+    sibling_files_since_anchor = list_changed_files_between(project_root, sibling_anchor_commit)
+    if sibling_files_since_anchor is None:
+        return None
+
+    sibling_post_anchor_changes = set(
+        _relevant_anchor_drift_files(sibling_files_since_anchor, sibling_scope)
+    )
+    return sibling_scope, sibling_post_anchor_changes
+
+
+def _sibling_covers_path(
+    *,
+    path: str,
+    sibling_scope: dict[str, list[str]],
+    sibling_post_anchor_changes: set[str],
+) -> bool:
+    """Return True when a sibling completion safely absorbs a changed path."""
+    if path in sibling_post_anchor_changes:
+        return False
+    if path in sibling_scope["changed_files"]:
+        return True
+    return _path_matches_scope_allowlist(path, sibling_scope["allowlist"])
+
+
+def _later_sibling_covered_paths(
+    *,
+    project_root: Path | None,
+    obpi_id: str | None,
+    info: dict[str, Any],
+    artifact_graph: dict[str, dict[str, Any]] | None,
+    files_since_anchor: list[str],
+) -> set[str]:
+    """Return changed paths already absorbed by later completed sibling OBPIs."""
+    if project_root is None or artifact_graph is None or not obpi_id or not files_since_anchor:
+        return set()
+
+    parent_adr = info.get("parent")
+    if not isinstance(parent_adr, str) or not parent_adr:
+        return set()
+
+    current_completion_ts = _parse_event_timestamp(info.get("latest_completion_ts"))
+    if current_completion_ts is None:
+        return set()
+
+    covered_paths: set[str] = set()
+    candidate_paths = _candidate_anchor_paths(files_since_anchor)
+    if not candidate_paths:
+        return set()
+
+    sibling_infos = _iter_later_completed_siblings(
+        artifact_graph=artifact_graph,
+        obpi_id=obpi_id,
+        parent_adr=parent_adr,
+        current_completion_ts=current_completion_ts,
+    )
+    for sibling_info in sibling_infos:
+        sibling_scope_details = _sibling_scope_details(
+            project_root=project_root,
+            sibling_info=sibling_info,
+        )
+        if sibling_scope_details is None:
+            continue
+        sibling_scope, sibling_post_anchor_changes = sibling_scope_details
+
+        for path in candidate_paths:
+            if path in covered_paths:
+                continue
+            if _sibling_covers_path(
+                path=path,
+                sibling_scope=sibling_scope,
+                sibling_post_anchor_changes=sibling_post_anchor_changes,
+            ):
+                covered_paths.add(path)
+
+    return covered_paths
+
+
 def _anchor_result(
     *,
     anchor_state: str,
@@ -543,6 +676,9 @@ def _resolve_current_head(project_root: Path | None, current_head: str | None) -
 def _derive_scope_anchor_state(
     *,
     project_root: Path | None,
+    obpi_id: str | None,
+    info: dict[str, Any],
+    artifact_graph: dict[str, dict[str, Any]] | None,
     current_head: str,
     anchor_commit: str,
     scope_audit: dict[str, list[str]],
@@ -558,6 +694,14 @@ def _derive_scope_anchor_state(
         return "degraded", ["changes since the completion anchor could not be inspected"], []
 
     anchor_drift_files = _relevant_anchor_drift_files(files_since_anchor, scope_audit)
+    sibling_covered = _later_sibling_covered_paths(
+        project_root=project_root,
+        obpi_id=obpi_id,
+        info=info,
+        artifact_graph=artifact_graph,
+        files_since_anchor=anchor_drift_files,
+    )
+    anchor_drift_files = sorted(path for path in anchor_drift_files if path not in sibling_covered)
     if anchor_drift_files:
         return "stale", ["completion anchor drifted in recorded OBPI scope"], anchor_drift_files
     return "scope_clean", [], []
@@ -591,6 +735,8 @@ def _git_sync_anchor_issues(git_sync_state: Any) -> list[str]:
 def _derive_anchor_analysis(
     info: dict[str, Any],
     *,
+    obpi_id: str | None,
+    artifact_graph: dict[str, dict[str, Any]] | None,
     ledger_completed: bool,
     project_root: Path | None,
     current_head: str | None,
@@ -641,6 +787,9 @@ def _derive_anchor_analysis(
 
     anchor_state, anchor_issues, anchor_drift_files = _derive_scope_anchor_state(
         project_root=project_root,
+        obpi_id=obpi_id,
+        info=info,
+        artifact_graph=artifact_graph,
         current_head=current_head,
         anchor_commit=anchor_commit,
         scope_audit=scope_audit,
@@ -743,6 +892,8 @@ def _derive_obpi_runtime_state(
 def derive_obpi_semantics(
     info: dict[str, Any],
     *,
+    obpi_id: str | None = None,
+    artifact_graph: dict[str, dict[str, Any]] | None = None,
     found_file: bool,
     file_completed: bool,
     implementation_evidence_ok: bool,
@@ -779,6 +930,8 @@ def derive_obpi_semantics(
     evidence_ok = implementation_evidence_ok and key_proof_ok
     anchor_analysis = _derive_anchor_analysis(
         info,
+        obpi_id=obpi_id,
+        artifact_graph=artifact_graph,
         ledger_completed=ledger_completed,
         project_root=project_root,
         current_head=current_head,
@@ -1016,6 +1169,7 @@ class Ledger:
             entry["latest_evidence"] = None
             entry["latest_completion_evidence"] = None
             entry["latest_completion_anchor"] = None
+            entry["latest_completion_ts"] = None
             entry["validated"] = False
             entry["ledger_completed"] = False
         if event.event == "adr_created":
@@ -1130,6 +1284,7 @@ class Ledger:
             graph[canonical_id]["latest_completion_anchor"] = _normalize_anchor(
                 event.extra.get("anchor")
             )
+            graph[canonical_id]["latest_completion_ts"] = event.ts
 
         obpi_completion = event.extra.get("obpi_completion")
         if obpi_completion:
