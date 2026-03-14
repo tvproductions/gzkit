@@ -476,6 +476,12 @@ def _path_matches_scope_allowlist(path: str, allowlist: list[str]) -> bool:
     return False
 
 
+def _is_transient_anchor_state_path(path: str) -> bool:
+    """Return True when a path is runtime state, not durable governed scope."""
+    normalized_path = path.replace("\\", "/").strip()
+    return normalized_path == ".claude/hooks/.instruction-state.json"
+
+
 def _relevant_anchor_drift_files(
     files_since_anchor: list[str] | None,
     scope_audit: dict[str, list[str]],
@@ -489,7 +495,8 @@ def _relevant_anchor_drift_files(
     relevant = [
         path
         for path in files_since_anchor
-        if path in changed_files or _path_matches_scope_allowlist(path, allowlist)
+        if not _is_transient_anchor_state_path(path)
+        and (path in changed_files or _path_matches_scope_allowlist(path, allowlist))
     ]
     return sorted(set(relevant))
 

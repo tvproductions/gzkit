@@ -97,8 +97,9 @@ evidence and defers human review to ADR closeout.
    - `.claude/plans/.pipeline-active.json` as a legacy compatibility marker
      for the same OBPI
    - Marker payload should include `obpi_id`, `parent_adr`, `lane`, `entry`,
-     `execution_mode`, `current_stage`, `started_at`, `updated_at`, and
-     `receipt_state`
+     `execution_mode`, `current_stage`, `started_at`, `updated_at`,
+     `receipt_state`, `blockers`, `required_human_action`, `next_command`, and
+     `resume_point`
 8. Apply the brief allowlist as the working scope contract before any edits.
 
 **gzkit compatibility rule:** A dedicated `gz-obpi-lock` surface is not present

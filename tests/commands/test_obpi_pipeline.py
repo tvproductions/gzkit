@@ -122,6 +122,13 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertEqual(payload["execution_mode"], "normal")
             self.assertEqual(payload["current_stage"], "implement")
             self.assertEqual(payload["receipt_state"], "missing")
+            self.assertEqual(payload["blockers"], [])
+            self.assertIsNone(payload["required_human_action"])
+            self.assertEqual(
+                payload["next_command"],
+                "uv run gz obpi pipeline OBPI-0.13.0-01-runtime-command-contract --from=verify",
+            )
+            self.assertEqual(payload["resume_point"], "verify")
             self.assertIn("started_at", payload)
             self.assertIn("updated_at", payload)
             self.assertEqual(payload, self._load_json(legacy_path))
@@ -213,10 +220,62 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertEqual(payload["entry"], "verify")
             self.assertEqual(payload["current_stage"], "verify")
             self.assertEqual(payload["receipt_state"], "missing")
+            self.assertEqual(payload["blockers"], [])
+            self.assertIsNone(payload["required_human_action"])
+            self.assertEqual(
+                payload["next_command"],
+                "uv run gz obpi pipeline OBPI-0.13.0-01-runtime-command-contract --from=ceremony",
+            )
+            self.assertEqual(payload["resume_point"], "ceremony")
             self.assertEqual(payload["parent_adr"], "ADR-0.13.0-obpi-pipeline-runtime-surface")
             self.assertEqual(payload["lane"], "heavy")
             self.assertEqual(payload, self._load_json(legacy_path))
             remove_markers_mock.assert_called_once()
+
+    @patch("gzkit.cli.run_command")
+    def test_verify_failure_persists_blockers_and_resume_point(self, run_command_mock) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            self._seed_runtime(runner)
+
+            def command_result(command: str, cwd: Path) -> QualityResult:
+                if command == "uv run gz lint":
+                    return QualityResult(
+                        success=False,
+                        command=command,
+                        stdout="",
+                        stderr="lint failed",
+                        returncode=1,
+                    )
+                return QualityResult(
+                    success=True,
+                    command=command,
+                    stdout="ok",
+                    stderr="",
+                    returncode=0,
+                )
+
+            run_command_mock.side_effect = command_result
+
+            result = runner.invoke(
+                main,
+                ["obpi", "pipeline", "OBPI-0.13.0-01-runtime-command-contract", "--from=verify"],
+            )
+
+            self.assertEqual(result.exit_code, 1)
+            self.assertIn("BLOCKERS:", result.output)
+            self.assertIn("uv run gz lint: lint failed", result.output)
+            marker_path, legacy_path = self._pipeline_paths(Path.cwd())
+            self.assertTrue(marker_path.exists())
+            self.assertTrue(legacy_path.exists())
+            payload = self._load_json(marker_path)
+            self.assertEqual(payload["entry"], "verify")
+            self.assertEqual(payload["current_stage"], "verify")
+            self.assertEqual(payload["blockers"], ["uv run gz lint: lint failed"])
+            self.assertIsNone(payload["required_human_action"])
+            self.assertIsNone(payload["next_command"])
+            self.assertEqual(payload["resume_point"], "verify")
+            self.assertEqual(payload, self._load_json(legacy_path))
 
     def test_ceremony_prints_next_steps_and_clears_markers(self) -> None:
         runner = CliRunner()
@@ -258,6 +317,14 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertEqual(payload["entry"], "ceremony")
             self.assertEqual(payload["current_stage"], "ceremony")
             self.assertEqual(payload["receipt_state"], "missing")
+            self.assertEqual(payload["blockers"], [])
+            self.assertEqual(
+                payload["required_human_action"],
+                "Present evidence and obtain explicit human attestation before "
+                "completion accounting.",
+            )
+            self.assertEqual(payload["next_command"], "uv run gz git-sync --apply --lint --test")
+            self.assertIsNone(payload["resume_point"])
             self.assertEqual(payload["parent_adr"], "ADR-0.13.0-obpi-pipeline-runtime-surface")
             self.assertEqual(payload["lane"], "heavy")
             self.assertEqual(payload, self._load_json(legacy_path))
