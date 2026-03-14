@@ -447,7 +447,7 @@ class TestStatusCommand(unittest.TestCase):
             self.assertEqual(result.exit_code, 1)
             payload = json.loads(result.output)
             self.assertFalse(payload["passed"])
-            self.assertEqual(payload["runtime_state"], "drift")
+            self.assertEqual(payload["runtime_state"], "completed")
             self.assertEqual(payload["anchor_state"], "stale")
             self.assertEqual(payload["anchor_commit"], anchor_commit)
             self.assertEqual(payload["anchor_drift_files"], ["src/module.py"])
