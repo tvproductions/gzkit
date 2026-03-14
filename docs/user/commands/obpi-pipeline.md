@@ -48,10 +48,20 @@ Those marker payloads now persist:
 - `started_at`
 - `updated_at`
 - `receipt_state`
+- `blockers`
+- `required_human_action`
+- `next_command`
+- `resume_point`
 
-The marker payload is active-state only. Structured blocker lists, next-command
-payloads, and required-human-action envelopes remain deferred to later
-`ADR-0.13.0` OBPIs.
+`blockers` is a list of active stage blockers.
+`required_human_action` is either `null` or a concise human-action summary for
+the current stage.
+`next_command` is either `null` or the next canonical operator command.
+`resume_point` is either `null` or the stage label the operator should resume
+from.
+
+The marker payload is active-state only. It is not authoritative completion
+history.
 
 ---
 

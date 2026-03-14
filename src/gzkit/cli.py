@@ -2961,6 +2961,46 @@ def _pipeline_stage_name(start_from: str | None) -> str:
     return "implement"
 
 
+def _pipeline_stage_output(
+    obpi_id: str,
+    start_from: str | None,
+    *,
+    blockers: list[str] | None = None,
+) -> dict[str, Any]:
+    """Return structured stage-output fields for the active pipeline stage."""
+    active_blockers = list(blockers or [])
+    if start_from == "verify":
+        if active_blockers:
+            return {
+                "blockers": active_blockers,
+                "required_human_action": None,
+                "next_command": None,
+                "resume_point": "verify",
+            }
+        return {
+            "blockers": [],
+            "required_human_action": None,
+            "next_command": f"uv run gz obpi pipeline {obpi_id} --from=ceremony",
+            "resume_point": "ceremony",
+        }
+    if start_from == "ceremony":
+        return {
+            "blockers": [],
+            "required_human_action": (
+                "Present evidence and obtain explicit human attestation before "
+                "completion accounting."
+            ),
+            "next_command": "uv run gz git-sync --apply --lint --test",
+            "resume_point": None,
+        }
+    return {
+        "blockers": [],
+        "required_human_action": None,
+        "next_command": f"uv run gz obpi pipeline {obpi_id} --from=verify",
+        "resume_point": "verify",
+    }
+
+
 def _pipeline_marker_payload(
     obpi_id: str,
     parent_adr: str,
@@ -2969,10 +3009,10 @@ def _pipeline_marker_payload(
     receipt_state: str,
     *,
     execution_mode: str = "normal",
-) -> dict[str, str]:
+) -> dict[str, Any]:
     """Build the persisted active-state payload for pipeline markers."""
     timestamp = datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
-    return {
+    payload: dict[str, Any] = {
         "obpi_id": obpi_id,
         "parent_adr": parent_adr,
         "lane": lane,
@@ -2983,9 +3023,11 @@ def _pipeline_marker_payload(
         "updated_at": timestamp,
         "receipt_state": receipt_state,
     }
+    payload.update(_pipeline_stage_output(obpi_id, start_from))
+    return payload
 
 
-def _write_pipeline_markers(plans_dir: Path, payload: dict[str, str]) -> tuple[Path, Path]:
+def _write_pipeline_markers(plans_dir: Path, payload: dict[str, Any]) -> tuple[Path, Path]:
     """Create active pipeline markers for the target OBPI."""
     obpi_id = payload["obpi_id"]
     per_obpi_marker, legacy_marker = _pipeline_marker_paths(plans_dir, obpi_id)
@@ -2994,6 +3036,27 @@ def _write_pipeline_markers(plans_dir: Path, payload: dict[str, str]) -> tuple[P
     per_obpi_marker.write_text(encoded, encoding="utf-8")
     legacy_marker.write_text(encoded, encoding="utf-8")
     return per_obpi_marker, legacy_marker
+
+
+def _refresh_pipeline_markers(
+    plans_dir: Path,
+    obpi_id: str,
+    *,
+    blockers: list[str],
+) -> None:
+    """Refresh active marker stage-output fields for the target OBPI."""
+    timestamp = datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    per_obpi_marker, legacy_marker = _pipeline_marker_paths(plans_dir, obpi_id)
+    marker_paths = (per_obpi_marker, legacy_marker)
+    for marker_path in marker_paths:
+        marker = _load_pipeline_json(marker_path)
+        if marker is None or marker.get("obpi_id") != obpi_id:
+            continue
+        entry = str(marker.get("entry") or "full")
+        start_from = None if entry == "full" else entry
+        marker.update(_pipeline_stage_output(obpi_id, start_from, blockers=blockers))
+        marker["updated_at"] = timestamp
+        marker_path.write_text(json.dumps(marker, indent=2) + "\n", encoding="utf-8")
 
 
 def _remove_pipeline_markers(plans_dir: Path, obpi_id: str) -> None:
@@ -3104,6 +3167,118 @@ def _pipeline_stage_labels(start_from: str | None) -> list[str]:
     ]
 
 
+def _print_pipeline_blockers(obpi_id: str, blockers: list[str]) -> None:
+    """Render standard pipeline blocker output for one OBPI."""
+    console.print(f"[bold]OBPI pipeline:[/bold] {obpi_id}")
+    console.print("BLOCKERS:")
+    for blocker in blockers:
+        console.print(f"- {blocker}")
+
+
+def _print_pipeline_header(
+    *,
+    obpi_id: str,
+    resolved_parent: str,
+    obpi_file: Path,
+    project_root: Path,
+    lane: str,
+    start_from: str | None,
+    receipt_state: str,
+    stage_labels: list[str],
+    per_obpi_marker: Path,
+    legacy_marker: Path,
+    warnings: list[str],
+    receipt: dict[str, Any] | None,
+) -> None:
+    """Render the shared pipeline header."""
+    console.print(f"[bold]OBPI pipeline:[/bold] {obpi_id}")
+    console.print(f"  Parent ADR: {resolved_parent}")
+    console.print(f"  Brief: {obpi_file.relative_to(project_root)}")
+    console.print(f"  Lane: {lane}")
+    console.print(f"  Entry: {start_from or 'full'}")
+    console.print(f"  Receipt: {receipt_state.upper()}")
+    console.print("  Stages: " + " -> ".join(stage_labels))
+    console.print(f"  Marker: {per_obpi_marker.relative_to(project_root)}")
+    console.print(f"  Legacy Marker: {legacy_marker.relative_to(project_root)}")
+    if receipt and receipt.get("plan_file"):
+        console.print(f"  Plan File: {receipt['plan_file']}")
+    for warning in warnings:
+        console.print(f"  Warning: {warning}")
+
+
+def _print_pipeline_implementation_next_steps(obpi_id: str) -> None:
+    """Render Stage 2 guidance after a full launch."""
+    console.print("")
+    console.print("Next:")
+    console.print("- Implement the approved OBPI within the brief allowlist.")
+    console.print(
+        f"- When implementation is ready, run: uv run gz obpi pipeline {obpi_id} --from=verify"
+    )
+    console.print("- Keep the active pipeline markers in place during implementation.")
+
+
+def _run_pipeline_verify_stage(
+    *,
+    project_root: Path,
+    plans_dir: Path,
+    obpi_id: str,
+    obpi_content: str,
+    lane: str,
+) -> None:
+    """Run the verify stage and either fail closed or print ceremony guidance."""
+    commands = _pipeline_verification_commands(obpi_content, lane)
+    failures: list[tuple[str, str]] = []
+    console.print("")
+    console.print("[bold]Verification[/bold]")
+    for command in commands:
+        result = run_command(command, cwd=project_root)
+        if result.success:
+            console.print(f"[green]PASS[/green] {command}")
+            continue
+        detail = (result.stderr or result.stdout or f"exit code {result.returncode}").strip()
+        failures.append((command, detail))
+        console.print(f"[red]FAIL[/red] {command}")
+    if failures:
+        _refresh_pipeline_markers(
+            plans_dir,
+            obpi_id,
+            blockers=[f"{command}: {detail}" for command, detail in failures],
+        )
+        console.print("BLOCKERS:")
+        for command, detail in failures:
+            console.print(f"- {command}: {detail}")
+        raise SystemExit(1)
+
+    _remove_pipeline_markers(plans_dir, obpi_id)
+    console.print("")
+    console.print("Verification completed.")
+    console.print("Next:")
+    console.print(f"- Present evidence via: uv run gz obpi pipeline {obpi_id} --from=ceremony")
+    console.print("- The active implementation markers were cleared after successful verification.")
+
+
+def _run_pipeline_ceremony_stage(plans_dir: Path, obpi_id: str, resolved_parent: str) -> None:
+    """Render ceremony guidance and clear active markers for that path."""
+    _remove_pipeline_markers(plans_dir, obpi_id)
+    console.print("")
+    console.print("[bold]Ceremony[/bold]")
+    console.print("- Present a value narrative.")
+    console.print("- Present one key proof example.")
+    console.print("- Present the verification outputs and files changed.")
+    console.print("- Obtain explicit human attestation before completion accounting.")
+    console.print("")
+    console.print("Next:")
+    console.print("- Run guarded sync: uv run gz git-sync --apply --lint --test")
+    console.print(
+        "- Emit completion receipt: "
+        "uv run gz obpi emit-receipt "
+        f'{obpi_id} --event completed --attestor "human:<name>" --evidence-json ...'
+    )
+    console.print(f"- Reconcile: uv run gz obpi reconcile {obpi_id}")
+    console.print(f"- Refresh parent ADR view: uv run gz adr status {resolved_parent} --json")
+    console.print("- The active implementation markers were cleared for the ceremony path.")
+
+
 def obpi_pipeline_cmd(obpi: str, start_from: str | None) -> None:
     """Launch the OBPI pipeline runtime surface for one OBPI."""
     config = ensure_initialized()
@@ -3126,24 +3301,21 @@ def obpi_pipeline_cmd(obpi: str, start_from: str | None) -> None:
     obpi_content = obpi_file.read_text(encoding="utf-8")
     inspection = _inspect_obpi_brief(project_root, obpi_file, obpi_id, graph)
     if bool(inspection.get("file_completed")):
-        console.print(f"[bold]OBPI pipeline:[/bold] {obpi_id}")
-        console.print("BLOCKERS:")
-        console.print("- OBPI brief is already completed; pipeline launch is not allowed")
+        _print_pipeline_blockers(
+            obpi_id, ["OBPI brief is already completed; pipeline launch is not allowed"]
+        )
         raise SystemExit(1)
 
     plans_dir = _pipeline_plans_dir(project_root)
     blockers = _pipeline_concurrency_blockers(plans_dir, obpi_id)
     receipt_state, warnings, receipt = _pipeline_receipt_state(plans_dir, obpi_id)
     if receipt_state == "fail":
-        console.print(f"[bold]OBPI pipeline:[/bold] {obpi_id}")
-        console.print("BLOCKERS:")
-        console.print("- plan-audit receipt verdict is FAIL; correct plan alignment first")
+        _print_pipeline_blockers(
+            obpi_id, ["plan-audit receipt verdict is FAIL; correct plan alignment first"]
+        )
         raise SystemExit(1)
     if blockers:
-        console.print(f"[bold]OBPI pipeline:[/bold] {obpi_id}")
-        console.print("BLOCKERS:")
-        for blocker in blockers:
-            console.print(f"- {blocker}")
+        _print_pipeline_blockers(obpi_id, blockers)
         raise SystemExit(1)
 
     lane = resolve_adr_lane(graph.get(resolved_parent, {}), config.mode)
@@ -3157,77 +3329,36 @@ def obpi_pipeline_cmd(obpi: str, start_from: str | None) -> None:
     per_obpi_marker, legacy_marker = _write_pipeline_markers(plans_dir, marker_payload)
     stage_labels = _pipeline_stage_labels(start_from)
 
-    console.print(f"[bold]OBPI pipeline:[/bold] {obpi_id}")
-    console.print(f"  Parent ADR: {resolved_parent}")
-    console.print(f"  Brief: {obpi_file.relative_to(project_root)}")
-    console.print(f"  Lane: {lane}")
-    console.print(f"  Entry: {start_from or 'full'}")
-    console.print(f"  Receipt: {receipt_state.upper()}")
-    console.print("  Stages: " + " -> ".join(stage_labels))
-    console.print(f"  Marker: {per_obpi_marker.relative_to(project_root)}")
-    console.print(f"  Legacy Marker: {legacy_marker.relative_to(project_root)}")
-    if receipt and receipt.get("plan_file"):
-        console.print(f"  Plan File: {receipt['plan_file']}")
-    for warning in warnings:
-        console.print(f"  Warning: {warning}")
+    _print_pipeline_header(
+        obpi_id=obpi_id,
+        resolved_parent=resolved_parent,
+        obpi_file=obpi_file,
+        project_root=project_root,
+        lane=lane,
+        start_from=start_from,
+        receipt_state=receipt_state,
+        stage_labels=stage_labels,
+        per_obpi_marker=per_obpi_marker,
+        legacy_marker=legacy_marker,
+        warnings=warnings,
+        receipt=receipt,
+    )
 
     if start_from is None:
-        console.print("")
-        console.print("Next:")
-        console.print("- Implement the approved OBPI within the brief allowlist.")
-        console.print(
-            f"- When implementation is ready, run: uv run gz obpi pipeline {obpi_id} --from=verify"
-        )
-        console.print("- Keep the active pipeline markers in place during implementation.")
+        _print_pipeline_implementation_next_steps(obpi_id)
         return
 
     if start_from == "verify":
-        commands = _pipeline_verification_commands(obpi_content, lane)
-        failures: list[tuple[str, str]] = []
-        console.print("")
-        console.print("[bold]Verification[/bold]")
-        for command in commands:
-            result = run_command(command, cwd=project_root)
-            if result.success:
-                console.print(f"[green]PASS[/green] {command}")
-                continue
-            detail = (result.stderr or result.stdout or f"exit code {result.returncode}").strip()
-            failures.append((command, detail))
-            console.print(f"[red]FAIL[/red] {command}")
-        if failures:
-            console.print("BLOCKERS:")
-            for command, detail in failures:
-                console.print(f"- {command}: {detail}")
-            raise SystemExit(1)
-
-        _remove_pipeline_markers(plans_dir, obpi_id)
-        console.print("")
-        console.print("Verification completed.")
-        console.print("Next:")
-        console.print(f"- Present evidence via: uv run gz obpi pipeline {obpi_id} --from=ceremony")
-        console.print(
-            "- The active implementation markers were cleared after successful verification."
+        _run_pipeline_verify_stage(
+            project_root=project_root,
+            plans_dir=plans_dir,
+            obpi_id=obpi_id,
+            obpi_content=obpi_content,
+            lane=lane,
         )
         return
 
-    _remove_pipeline_markers(plans_dir, obpi_id)
-    console.print("")
-    console.print("[bold]Ceremony[/bold]")
-    console.print("- Present a value narrative.")
-    console.print("- Present one key proof example.")
-    console.print("- Present the verification outputs and files changed.")
-    console.print("- Obtain explicit human attestation before completion accounting.")
-    console.print("")
-    console.print("Next:")
-    console.print("- Run guarded sync: uv run gz git-sync --apply --lint --test")
-    console.print(
-        "- Emit completion receipt: "
-        "uv run gz obpi emit-receipt "
-        f'{obpi_id} --event completed --attestor "human:<name>" --evidence-json ...'
-    )
-    console.print(f"- Reconcile: uv run gz obpi reconcile {obpi_id}")
-    console.print(f"- Refresh parent ADR view: uv run gz adr status {resolved_parent} --json")
-    console.print("- The active implementation markers were cleared for the ceremony path.")
+    _run_pipeline_ceremony_stage(plans_dir, obpi_id, resolved_parent)
 
 
 def obpi_validate_cmd(obpi_path: str) -> None:

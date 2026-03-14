@@ -720,6 +720,10 @@ class TestPipelineGateHook(unittest.TestCase):
                         "started_at": "2026-03-13T12:00:00Z",
                         "updated_at": "2026-03-13T12:05:00Z",
                         "receipt_state": "pass",
+                        "blockers": [],
+                        "required_human_action": None,
+                        "next_command": "uv run gz obpi pipeline OBPI-0.12.0-04 --from=ceremony",
+                        "resume_point": "ceremony",
                     }
                 )
                 + "\n",
@@ -959,6 +963,10 @@ class TestPipelineCompletionReminderHook(unittest.TestCase):
                     "started_at": "2026-03-13T12:00:00Z",
                     "updated_at": "2026-03-13T12:05:00Z",
                     "receipt_state": "pass",
+                    "blockers": [],
+                    "required_human_action": None,
+                    "next_command": "uv run gz obpi pipeline OBPI-0.12.0-05 --from=ceremony",
+                    "resume_point": "ceremony",
                 },
             )
             self._write_brief(project_root, status="Accepted")

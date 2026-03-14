@@ -518,6 +518,36 @@ class TestLedger(unittest.TestCase):
         self.assertEqual(semantics["issues"], [])
         self.assertTrue(semantics["completed"])
 
+    def test_derive_obpi_semantics_ignores_transient_hook_state_for_anchor_drift(self) -> None:
+        """Transient hook state should not stale a completed OBPI anchor."""
+        semantics = derive_obpi_semantics(
+            {
+                "latest_receipt_event": "completed",
+                "obpi_completion": "completed",
+                "ledger_completed": True,
+                "latest_evidence": {},
+                "latest_completion_evidence": {
+                    "scope_audit": {
+                        "allowlist": [".claude/hooks/**"],
+                        "changed_files": [".claude/hooks/README.md"],
+                        "out_of_scope_files": [],
+                    }
+                },
+                "latest_completion_anchor": {"commit": "abc1234", "semver": "0.10.0"},
+            },
+            found_file=True,
+            file_completed=True,
+            implementation_evidence_ok=True,
+            key_proof_ok=True,
+            current_head="def5678",
+            files_since_anchor=[".claude/hooks/.instruction-state.json"],
+        )
+        self.assertEqual(semantics["runtime_state"], "completed")
+        self.assertEqual(semantics["anchor_state"], "scope_clean")
+        self.assertEqual(semantics["anchor_drift_files"], [])
+        self.assertEqual(semantics["issues"], [])
+        self.assertTrue(semantics["completed"])
+
     def test_derive_obpi_semantics_reports_stale_anchor_when_scope_changes(self) -> None:
         """Anchor drift is surfaced when files changed since completion overlap recorded scope."""
         semantics = derive_obpi_semantics(
