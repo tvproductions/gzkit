@@ -70,8 +70,11 @@ parent ADR execution mode.
 5. Sync And Account
 ```
 
-Normal mode uses a human gate at Stage 4. Exception mode self-closes with full
-evidence and defers human review to ADR closeout.
+Normal mode uses a human gate at Stage 4 only when the parent ADR requires
+human attestation for OBPI completion (Heavy or Foundation scope). Lite normal
+mode still presents evidence at Stage 4, but does not block completion
+accounting on human attestation. Exception mode self-closes with full evidence
+and defers human review to ADR closeout.
 
 ### Stage 1: Load Context
 
@@ -150,14 +153,17 @@ Record outputs as evidence.
 
 ### Stage 4: Present Evidence
 
-#### Normal Mode — Human Gate
+#### Normal Mode — Evidence Gate
 
 1. Present value narrative.
 2. Present one key proof example.
 3. Present verification evidence, file changes, and blockers cleared.
-4. Wait for explicit human attestation.
+4. If the parent ADR is Heavy or Foundation, wait for explicit human
+   attestation before completion accounting.
+5. If the parent ADR is Lite, human attestation remains optional.
 
-Do not mark the brief `Completed` before attestation.
+Do not mark the brief `Completed` before attestation when attestation is
+required.
 
 #### Exception Mode — Self-Close
 

@@ -29,7 +29,8 @@ Current command contract:
   brief, adds Heavy-lane docs/BDD checks, clears active markers on success, and
   prints the follow-up `--from=ceremony` command
 - `--from=ceremony` reruns Stage 1, prints the ceremony/accounting checklist,
-  and clears active markers on exit
+  requires explicit human attestation only for Heavy/Foundation completion
+  paths, and clears active markers on exit
 
 The active marker files are also the machine-readable stage-state contract while
 the pipeline is running:
@@ -54,8 +55,9 @@ Those marker payloads now persist:
 - `resume_point`
 
 `blockers` is a list of active stage blockers.
-`required_human_action` is either `null` or a concise human-action summary for
-the current stage.
+`required_human_action` is either `null` or a concise summary of the current
+required human action. Lite-lane ceremony state keeps this field `null` because
+human attestation is optional there.
 `next_command` is either `null` or the next canonical operator command.
 `resume_point` is either `null` or the stage label the operator should resume
 from.

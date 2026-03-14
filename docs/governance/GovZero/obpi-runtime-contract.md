@@ -94,7 +94,9 @@ the runtime (`missing`, `pass`, `fail`, `invalid`, `other_obpi`, `unknown`).
 `blockers` is a plain list of blocker strings for the active stage.
 
 `required_human_action` is either `null` or the current stage's explicit human
-action summary.
+action summary. Ceremony-state markers populate it only when the parent ADR
+requires human attestation for OBPI completion, so Lite-lane ceremony markers
+leave it `null`.
 
 `next_command` is either `null` or the next canonical operator command.
 

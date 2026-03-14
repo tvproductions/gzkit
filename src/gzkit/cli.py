@@ -2966,6 +2966,7 @@ def _pipeline_stage_output(
     start_from: str | None,
     *,
     blockers: list[str] | None = None,
+    requires_human_attestation: bool = False,
 ) -> dict[str, Any]:
     """Return structured stage-output fields for the active pipeline stage."""
     active_blockers = list(blockers or [])
@@ -2989,6 +2990,8 @@ def _pipeline_stage_output(
             "required_human_action": (
                 "Present evidence and obtain explicit human attestation before "
                 "completion accounting."
+                if requires_human_attestation
+                else None
             ),
             "next_command": "uv run gz git-sync --apply --lint --test",
             "resume_point": None,
@@ -3009,6 +3012,7 @@ def _pipeline_marker_payload(
     receipt_state: str,
     *,
     execution_mode: str = "normal",
+    requires_human_attestation: bool = False,
 ) -> dict[str, Any]:
     """Build the persisted active-state payload for pipeline markers."""
     timestamp = datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
@@ -3023,7 +3027,13 @@ def _pipeline_marker_payload(
         "updated_at": timestamp,
         "receipt_state": receipt_state,
     }
-    payload.update(_pipeline_stage_output(obpi_id, start_from))
+    payload.update(
+        _pipeline_stage_output(
+            obpi_id,
+            start_from,
+            requires_human_attestation=requires_human_attestation,
+        )
+    )
     return payload
 
 
@@ -3257,7 +3267,13 @@ def _run_pipeline_verify_stage(
     console.print("- The active implementation markers were cleared after successful verification.")
 
 
-def _run_pipeline_ceremony_stage(plans_dir: Path, obpi_id: str, resolved_parent: str) -> None:
+def _run_pipeline_ceremony_stage(
+    plans_dir: Path,
+    obpi_id: str,
+    resolved_parent: str,
+    *,
+    requires_human_attestation: bool,
+) -> None:
     """Render ceremony guidance and clear active markers for that path."""
     _remove_pipeline_markers(plans_dir, obpi_id)
     console.print("")
@@ -3265,14 +3281,21 @@ def _run_pipeline_ceremony_stage(plans_dir: Path, obpi_id: str, resolved_parent:
     console.print("- Present a value narrative.")
     console.print("- Present one key proof example.")
     console.print("- Present the verification outputs and files changed.")
-    console.print("- Obtain explicit human attestation before completion accounting.")
+    if requires_human_attestation:
+        console.print("- Obtain explicit human attestation before completion accounting.")
+    else:
+        console.print(
+            "- Human attestation is optional for this OBPI; do not block "
+            "completion accounting on it."
+        )
     console.print("")
     console.print("Next:")
     console.print("- Run guarded sync: uv run gz git-sync --apply --lint --test")
+    attestor_hint = '"human:<name>"' if requires_human_attestation else '"<name>"'
     console.print(
         "- Emit completion receipt: "
         "uv run gz obpi emit-receipt "
-        f'{obpi_id} --event completed --attestor "human:<name>" --evidence-json ...'
+        f"{obpi_id} --event completed --attestor {attestor_hint} --evidence-json ..."
     )
     console.print(f"- Reconcile: uv run gz obpi reconcile {obpi_id}")
     console.print(f"- Refresh parent ADR view: uv run gz adr status {resolved_parent} --json")
@@ -3319,12 +3342,14 @@ def obpi_pipeline_cmd(obpi: str, start_from: str | None) -> None:
         raise SystemExit(1)
 
     lane = resolve_adr_lane(graph.get(resolved_parent, {}), config.mode)
+    requires_human_attestation = _requires_human_obpi_attestation(resolved_parent, lane)
     marker_payload = _pipeline_marker_payload(
         obpi_id,
         resolved_parent,
         lane,
         start_from,
         receipt_state,
+        requires_human_attestation=requires_human_attestation,
     )
     per_obpi_marker, legacy_marker = _write_pipeline_markers(plans_dir, marker_payload)
     stage_labels = _pipeline_stage_labels(start_from)
@@ -3358,7 +3383,12 @@ def obpi_pipeline_cmd(obpi: str, start_from: str | None) -> None:
         )
         return
 
-    _run_pipeline_ceremony_stage(plans_dir, obpi_id, resolved_parent)
+    _run_pipeline_ceremony_stage(
+        plans_dir,
+        obpi_id,
+        resolved_parent,
+        requires_human_attestation=requires_human_attestation,
+    )
 
 
 def obpi_validate_cmd(obpi_path: str) -> None:
