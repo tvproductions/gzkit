@@ -250,6 +250,33 @@ OBPI receipt emitted.
   Parent ADR: ADR-0.13.0-obpi-pipeline-runtime-surface
   Event: completed
   Attestor: human:jeff
+
+Re-baseline receipt refreshed on 2026-03-14 after shared-scope stage-state
+work changed tracked OBPI-01 files.
+
+$ uv run gz git-sync --apply --lint --test
+Git sync execution
+  Branch: main
+  Remote: origin
+  ahead=0 behind=0 diverged=False dirty=True
+  Actions:
+    - git add -A
+    - git fetch --prune origin
+  Executed:
+    - git add -A
+    - gz lint (pre-sync)
+    - gz test (pre-sync)
+    - git commit
+    - git push origin main
+    - gz lint (post-sync)
+Git sync completed.
+
+$ uv run gz obpi emit-receipt OBPI-0.13.0-01-runtime-command-contract --event completed --attestor "human:jeff" --evidence-json '{...}'
+OBPI receipt emitted.
+  OBPI: OBPI-0.13.0-01-runtime-command-contract
+  Parent ADR: ADR-0.13.0-obpi-pipeline-runtime-surface
+  Event: completed
+  Attestor: human:jeff
 ```
 
 ## Value Narrative
@@ -294,6 +321,8 @@ Next:
 - Tests added: `tests/commands/test_obpi_pipeline.py`
 - Date completed: `2026-03-13`
 - Attestation status: human attestation recorded
+- Re-baseline anchor refreshed: `2026-03-14` at `97126f5` after
+  `OBPI-0.13.0-02` changed shared tracked files in the OBPI-01 allowlist.
 - Defects noted: fixed missing MkDocs nav registration for
   `docs/user/commands/obpi-pipeline.md`; fixed command-manpage examples to use
   real CLI output; fixed this brief's verification block to include Heavy-lane
@@ -312,4 +341,4 @@ Next:
 
 **Date Completed:** 2026-03-13
 
-**Evidence Hash:** acad34c
+**Evidence Hash:** 97126f5
