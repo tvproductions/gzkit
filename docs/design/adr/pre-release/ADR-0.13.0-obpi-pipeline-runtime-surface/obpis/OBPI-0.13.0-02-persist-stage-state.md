@@ -281,6 +281,33 @@ OBPI receipt emitted.
   Parent ADR: ADR-0.13.0-obpi-pipeline-runtime-surface
   Event: completed
   Attestor: human:jeff
+
+Re-baseline receipt refreshed on 2026-03-14 after the later OBPI-01 anchor
+refresh advanced the synced head beyond the original OBPI-02 completion anchor.
+
+$ uv run gz git-sync --apply --lint --test
+Git sync execution
+  Branch: main
+  Remote: origin
+  ahead=0 behind=0 diverged=False dirty=True
+  Actions:
+    - git add -A
+    - git fetch --prune origin
+  Executed:
+    - git add -A
+    - gz lint (pre-sync)
+    - gz test (pre-sync)
+    - git commit
+    - git push origin main
+    - gz lint (post-sync)
+Git sync completed.
+
+$ uv run gz obpi emit-receipt OBPI-0.13.0-02-persist-stage-state --event completed --attestor "human:jeff" --evidence-json '{...}'
+OBPI receipt emitted.
+  OBPI: OBPI-0.13.0-02-persist-stage-state
+  Parent ADR: ADR-0.13.0-obpi-pipeline-runtime-surface
+  Event: completed
+  Attestor: human:jeff
 ```
 
 ## Value Narrative
@@ -333,13 +360,12 @@ Marker payload now includes:
   entries plus hook compatibility cases for richer marker JSON.
 - Date completed: `2026-03-14`
 - Attestation status: human attestation recorded
+- Re-baseline anchor refreshed: `2026-03-14` at `6bb374b` after the later
+  OBPI-01 anchor refresh advanced the synced repository head.
 - Defects noted: fixed this brief's placeholder scope/requirements/template
   drift before implementation; fixed sync-time formatting drift detected by the
   first guarded `git-sync` attempt; the missing plan-audit receipt remains an
-  explicit governance gap surfaced by the runtime warning; `OBPI-0.13.0-01`
-  now reports anchor drift in `gz adr status ADR-0.13.0 --json` because this
-  tranche intentionally changed files that were part of OBPI-01's recorded
-  scope and that earlier completion anchor has not yet been re-baselined.
+  explicit governance gap surfaced by the runtime warning.
 
 ## Human Attestation
 
@@ -353,4 +379,4 @@ Marker payload now includes:
 
 **Date Completed:** 2026-03-14
 
-**Evidence Hash:** fa2f3a4
+**Evidence Hash:** 6bb374b

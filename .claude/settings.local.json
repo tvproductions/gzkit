@@ -10,7 +10,16 @@
       "Bash(python -c \":*)",
       "Bash(wc -l /c/Users/Jeff/source/repos/va/airlineops/.claude/hooks/*.py)",
       "Bash(uvx ruff check src tests)",
-      "Bash(uvx ruff format --check .)"
+      "Bash(uvx ruff format --check .)",
+      "Bash(find /Users/jeff/Documents/Code/gzkit -name *insights* -o -name *memory* -o -name *context*)",
+      "WebFetch(domain:promptkit.natebjones.com)",
+      "Bash(gh repo:*)",
+      "Bash(gh api:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(for dir:*)",
+      "Bash(do echo:*)",
+      "Bash(xargs -I{} gh api repos/NateBJones-Projects/OB1/git/trees/{} --jq \".tree[] | \"\"\\\\\\(.type\\) \\\\\\(.path\\)\"\"\")",
+      "Bash(done)"
     ]
   }
 }
