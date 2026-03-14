@@ -4,7 +4,7 @@ status: Pool
 parent: PRD-GZKIT-1.0.0
 lane: heavy
 enabler: ADR-pool.storage-simplicity-profile
-inspired_by: openbrain-ob1, 12-factor-agents, openspec
+inspired_by: openbrain-ob1, 12-factor-agents, openspec, anthropic-long-running-agents, claude-agent-sdk, openai-agents-sdk
 ---
 
 # ADR-pool.progressive-context-disclosure: Progressive Context Disclosure for Long-Running Agent Sessions
@@ -70,6 +70,35 @@ to gzkit's context management challenge:
   smarter. The system improves with use.
 - **Model outputs driving model inputs**: the agent's reasoning about what it
   needs informs what context it pulls next, creating an agentic retrieval loop.
+
+### Validation: Anthropic's Long-Running Agent Harness
+
+Anthropic's own engineering research on effective harnesses for long-running
+agents independently validates core assumptions in this design:
+
+- **"Context compaction alone is insufficient"**: even frontier models with
+  large context windows fall short without structured context management.
+  Progressive disclosure is not a nice-to-have; it is architecturally required.
+- **Explicit memory artifacts over implicit context**: their harness uses
+  structured files (`claude-progress.txt`, `feature_list.json`, git history)
+  as the primary context recovery mechanism -- not the context window itself.
+  This validates Option C's session frames and Option A's structured payloads.
+- **JSON over Markdown for machine-readable state**: structured formats reduce
+  the likelihood of agents modifying specifications. Supports typed, structured
+  tier payloads over prose dumps.
+- **Session opening as progressive disclosure**: their coding agent follows an
+  L0 -> L1 pattern at session start: orient (pwd, read progress, read git log)
+  then focus (read feature list, verify existing state) then execute. This is
+  the tier model in practice.
+- **Verification before continuation**: every session starts by testing
+  existing functionality before new work. Maps directly to arb evidence flowing
+  into L1 context payloads.
+- **Single-feature-per-session constraint**: scoped work prevents context
+  exhaustion. Supports scoped context loading (`--scope ADR-0.13.0`).
+- **Two-agent architecture (Initializer + Coding Agent)**: the initializer
+  creates context infrastructure; the coding agent consumes it. This maps to
+  the split between design sessions (which produce context) and execution
+  sessions (which consume it).
 
 ### What This Is Not
 
@@ -272,6 +301,107 @@ Supabase integration.
 
 ---
 
+## Agent SDK Integration Posture
+
+### Claude Agent SDK as Runtime Substrate
+
+The Claude Agent SDK (`claude-agent-sdk`, Python and TypeScript) provides
+runtime primitives that directly serve progressive context disclosure. When a
+Claude agent environment is detected, gzkit should leverage these primitives
+rather than reimplementing them. When Claude is not the runtime, the CLI surface
+remains fully functional standalone.
+
+**Adoption stance**: optional integration, never hard dependency. Consistent
+with the storage-simplicity-profile and the MCP posture. The SDK is an
+accelerator, not a requirement.
+
+### SDK Primitives and Their Progressive Disclosure Roles
+
+| SDK Primitive | Progressive Disclosure Role |
+|---|---|
+| **Session resume/fork** | Built-in session continuity. Sessions persist as JSONL at `~/.claude/projects/<cwd>/`. gzkit session frames (Option C) can be derived from or coordinated with SDK session transcripts. Resume by ID eliminates manual handoff for Claude-hosted sessions. Fork enables exploratory design branches. |
+| **SessionStart hook** | Automatic L0 injection. A `SessionStart` hook fires before the agent acts and can invoke `gz context --tier L0` to inject the orient payload. Zero operator effort for basic context priming. |
+| **PostToolUse hooks** | Context escalation triggers. When the agent reads an ADR (`Read` on an ADR path), a `PostToolUse` hook can surface related L1 context (OBPI brief, recent arb results, open defects). The agent gets contextual enrichment without explicitly requesting it. |
+| **Subagents** | L3 synthesis without context pollution. Spawn a subagent with `AgentDefinition` for cross-artifact pattern detection, time-bridging analysis, or governance health synthesis. The subagent receives targeted context, reasons across it, and returns a summary -- the main agent's context window stays clean. |
+| **MCP integration** | Native MCP server consumption. The SDK's `mcp_servers` option connects gzkit's context MCP server with zero extra wiring. The agent calls `get_context(tier, scope)` as a tool, same as any other MCP tool. |
+| **Hooks (PreToolUse)** | Context-aware guardrails. A `PreToolUse` hook on `Edit`/`Write` can check whether the agent has loaded sufficient context for the scope it is modifying -- e.g., block edits to files under an ADR scope if L1 context for that ADR has not been loaded. |
+
+### OpenAI Agents SDK as Runtime Substrate
+
+The OpenAI Agents SDK (`openai-agents`) provides a parallel set of runtime
+primitives for Codex and OpenAI-hosted agent environments. The same adoption
+stance applies: optional integration, never hard dependency.
+
+| SDK Primitive | Progressive Disclosure Role |
+|---|---|
+| **Sessions with history limiting** | `SessionSettings(limit=N)` retrieves only the N most recent conversation items. This is progressive disclosure of conversation history built into the framework. gzkit can set the limit based on tier: L0 = recent items only, L2 = full history. |
+| **Multiple session backends** | SQLite (in-memory or file), Redis, SQLAlchemy, Dapr. Maps directly to gzkit's storage tier model: SQLite for Tier A/B, Redis/SQLAlchemy for Tier C. |
+| **Handoffs with input filters** | When one agent delegates to another, `input_filter` controls what conversation history transfers. Context filtering on agent transitions maps to tier-scoped context loading when switching between design and execution agents. |
+| **Guardrails** | Input/output validation layers. Can enforce context-loading requirements: reject agent runs that lack required governance context for their scope. |
+| **MCP integration** | Native tool support for MCP servers, same as Claude SDK. gzkit's context MCP server is consumed identically. |
+| **Tracing** | Built-in observability for agent workflows. Can feed into gzkit's session frames: trace data becomes evidence of what the agent did and why. |
+| **Multi-provider via LiteLLM** | Works with 100+ LLMs. Progressive disclosure is model-agnostic; the context management layer should not assume a specific model provider. |
+
+### Cross-SDK Design Principles
+
+Both SDKs confirm the same architectural pattern: the agent runtime provides
+session persistence and tool execution; the application (gzkit) provides
+domain-specific context management on top. Progressive disclosure is the
+application-layer concern; the SDK provides the plumbing.
+
+Key design constraints that apply across both SDKs:
+
+- **gzkit owns the context semantics**. The SDK provides session persistence
+  (raw transcripts); gzkit provides governance context (interpreted state).
+  Neither replaces the other.
+- **Tier loading is SDK-agnostic**. `gz context --tier L1 --scope ADR-0.13.0`
+  produces the same payload regardless of whether it is consumed by a Claude
+  hook, an OpenAI guardrail, or a standalone CLI invocation.
+- **MCP is the universal retrieval channel**. Both SDKs support MCP natively.
+  The gzkit context MCP server works identically in both environments.
+
+### Detection and Activation
+
+gzkit should detect the agent runtime environment and activate the appropriate
+SDK integration when available:
+
+- **Claude Code session**: detected via environment variables or hook
+  infrastructure. Activate SessionStart/PostToolUse hooks for automatic
+  context tier loading.
+- **Claude Agent SDK programmatic use**: detected via `claude-agent-sdk` import
+  availability. Expose `AgentDefinition` for context-synthesis subagents and
+  hook callbacks for tier escalation.
+- **Codex / OpenAI Agents SDK**: detected via `openai-agents` import
+  availability or Codex environment markers. Expose guardrails for context
+  validation, session settings for history limiting, and handoff input filters
+  for tier-scoped context transfer.
+- **Non-SDK environments**: CLI-only surface. `gz context`, `gz prime`,
+  `gz session` commands work standalone. MCP server available if configured.
+
+### Session Continuity Coordination
+
+Agent SDK session persistence and gzkit session frames (Option C) are
+complementary, not competing:
+
+- **SDK sessions** capture the full agent transcript (prompts, tool calls,
+  results). They are the raw record of what happened.
+- **gzkit session frames** capture structured governance state (active OBPI,
+  pipeline stage, decisions, arb results). They are the interpreted record of
+  what matters.
+
+In Claude environments, a `SessionEnd` hook can trigger `gz session push` to
+capture the governance frame when a session ends. On resume, a `SessionStart`
+hook loads the governance frame (L0) while the SDK restores the conversation
+transcript.
+
+In OpenAI environments, the same coordination occurs through guardrails
+(pre-run context injection) and session callbacks (`session_input_callback`
+for merging governance context with conversation history).
+
+Both layers serve continuity; neither replaces the other.
+
+---
+
 ## Relationship to Existing Pool ADRs
 
 | Pool ADR | Relationship |
@@ -345,6 +475,17 @@ This pool ADR can be promoted when all are true:
   business state), Factor 6 (launch/pause/resume).
 - [OpenSpec](https://github.com/Fission-AI/OpenSpec) -- load-on-demand context
   management, composable context fragments.
+- [Effective Harnesses for Long-Running Agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents) --
+  Anthropic engineering validation that structured memory artifacts, progressive
+  session initialization, and verification-before-continuation are required for
+  multi-context-window agent work.
+- [Claude Agent SDK](https://platform.claude.com/docs/en/agent-sdk/overview) --
+  runtime primitives (session resume/fork, hooks, subagents, MCP) that serve as
+  the substrate for progressive disclosure when Claude is the agent runtime.
+- [OpenAI Agents SDK](https://github.com/openai/openai-agents-python) --
+  sessions with history limiting, handoffs with input filters, guardrails, and
+  multi-provider support that serve as the substrate for progressive disclosure
+  in Codex/OpenAI agent environments.
 
 ---
 
@@ -364,3 +505,20 @@ This pool ADR can be promoted when all are true:
 - Token budget awareness should be a first-class concern: each tier should have
   a target token envelope so the system can reason about context window
   utilization.
+- Anthropic's long-running agent research confirms the two-agent pattern
+  (initializer creates context, coding agent consumes it) as effective. gzkit's
+  design/execution session split is a governance-native expression of this
+  pattern: design sessions produce structured context artifacts (ADRs, OBPIs,
+  plans), execution sessions consume them through progressive disclosure.
+- The Anthropic harness's `claude-progress.txt` + `feature_list.json` + git
+  history trio is a minimal implementation of what this ADR generalizes into
+  session frames (Option C) and tier payloads (Option A). gzkit's advantage is
+  that it already has richer structured artifacts to draw from.
+- The Claude Agent SDK provides the runtime substrate for progressive
+  disclosure in Claude environments. Its session resume/fork, hooks, subagents,
+  and MCP support map directly onto the tier loading, context escalation,
+  synthesis, and retrieval patterns described here. Adoption follows the same
+  "optional, never hard dependency" posture as storage and MCP.
+- The SDK's session persistence (raw transcripts) and gzkit's session frames
+  (interpreted governance state) are complementary layers. Neither replaces the
+  other. A SessionEnd hook bridging the two creates automatic continuity.

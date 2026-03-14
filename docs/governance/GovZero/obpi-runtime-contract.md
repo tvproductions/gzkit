@@ -71,6 +71,10 @@ fields:
 - `started_at`
 - `updated_at`
 - `receipt_state`
+- `blockers`
+- `required_human_action`
+- `next_command`
+- `resume_point`
 
 `entry` is one of:
 
@@ -86,6 +90,16 @@ fields:
 
 `receipt_state` mirrors the Stage 1 plan-audit receipt classification used by
 the runtime (`missing`, `pass`, `fail`, `invalid`, `other_obpi`, `unknown`).
+
+`blockers` is a plain list of blocker strings for the active stage.
+
+`required_human_action` is either `null` or the current stage's explicit human
+action summary.
+
+`next_command` is either `null` or the next canonical operator command.
+
+`resume_point` is either `null` or the stage label the operator should resume
+from after clearing blockers or finishing the current stage.
 
 Consumers must remain backward-compatible with older marker payloads that only
 carry `obpi_id` and timestamp fields, and must ignore unknown future keys.

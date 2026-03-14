@@ -19,7 +19,9 @@
       "Bash(for dir:*)",
       "Bash(do echo:*)",
       "Bash(xargs -I{} gh api repos/NateBJones-Projects/OB1/git/trees/{} --jq \".tree[] | \"\"\\\\\\(.type\\) \\\\\\(.path\\)\"\"\")",
-      "Bash(done)"
+      "Bash(done)",
+      "WebFetch(domain:www.anthropic.com)",
+      "WebFetch(domain:openai.github.io)"
     ]
   }
 }
