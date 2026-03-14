@@ -31,8 +31,26 @@ Current command contract:
 - `--from=ceremony` reruns Stage 1, prints the ceremony/accounting checklist,
   and clears active markers on exit
 
-This OBPI introduces the runtime launch contract only. Richer stage persistence,
-structured outputs, and full wrapper/runtime convergence are deferred to later
+The active marker files are also the machine-readable stage-state contract while
+the pipeline is running:
+
+- `.claude/plans/.pipeline-active-<OBPI-ID>.json`
+- `.claude/plans/.pipeline-active.json`
+
+Those marker payloads now persist:
+
+- `obpi_id`
+- `parent_adr`
+- `lane`
+- `entry`
+- `execution_mode`
+- `current_stage`
+- `started_at`
+- `updated_at`
+- `receipt_state`
+
+The marker payload is active-state only. Structured blocker lists, next-command
+payloads, and required-human-action envelopes remain deferred to later
 `ADR-0.13.0` OBPIs.
 
 ---

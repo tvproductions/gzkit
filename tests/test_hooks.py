@@ -697,6 +697,40 @@ class TestPipelineGateHook(unittest.TestCase):
             self.assertEqual(result.returncode, 0)
             self.assertEqual(result.stderr, "")
 
+    def test_allows_when_richer_per_obpi_marker_matches(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            plans_dir = project_root / ".claude" / "plans"
+            script_path = self._create_hook(project_root)
+            self._write_receipt(plans_dir, obpi_id="OBPI-0.12.0-04", verdict="PASS")
+            self._write_marker(
+                plans_dir,
+                ".pipeline-active-OBPI-0.12.0-04.json",
+                obpi_id="OBPI-0.12.0-04",
+            )
+            (plans_dir / ".pipeline-active-OBPI-0.12.0-04.json").write_text(
+                json.dumps(
+                    {
+                        "obpi_id": "OBPI-0.12.0-04",
+                        "parent_adr": "ADR-0.12.0-obpi-pipeline-enforcement-parity",
+                        "lane": "heavy",
+                        "entry": "verify",
+                        "execution_mode": "normal",
+                        "current_stage": "verify",
+                        "started_at": "2026-03-13T12:00:00Z",
+                        "updated_at": "2026-03-13T12:05:00Z",
+                        "receipt_state": "pass",
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            result = self._run_hook(script_path, project_root, file_path="src/demo.py")
+
+            self.assertEqual(result.returncode, 0)
+            self.assertEqual(result.stderr, "")
+
     def test_allows_when_legacy_marker_matches(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
@@ -906,6 +940,35 @@ class TestPipelineCompletionReminderHook(unittest.TestCase):
             self.assertIn("PIPELINE COMPLETION REMINDER", result.stderr)
             self.assertIn("/gz-obpi-audit OBPI-0.12.0-05", result.stderr)
             self.assertIn("/gz-obpi-pipeline OBPI-0.12.0-05 --from=ceremony", result.stderr)
+
+    def test_emits_reminder_with_richer_marker_payload(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            plans_dir = project_root / ".claude" / "plans"
+            script_path = self._create_hook(project_root)
+            self._write_marker(
+                plans_dir,
+                ".pipeline-active-OBPI-0.12.0-05.json",
+                {
+                    "obpi_id": "OBPI-0.12.0-05",
+                    "parent_adr": "ADR-0.12.0-obpi-pipeline-enforcement-parity",
+                    "lane": "heavy",
+                    "entry": "verify",
+                    "execution_mode": "normal",
+                    "current_stage": "verify",
+                    "started_at": "2026-03-13T12:00:00Z",
+                    "updated_at": "2026-03-13T12:05:00Z",
+                    "receipt_state": "pass",
+                },
+            )
+            self._write_brief(project_root, status="Accepted")
+
+            result = self._run_hook(script_path, project_root, command="git push origin main")
+
+            self.assertEqual(result.returncode, 0)
+            self.assertEqual(result.stdout, "")
+            self.assertIn("PIPELINE COMPLETION REMINDER", result.stderr)
+            self.assertIn("Active OBPI pipeline: OBPI-0.12.0-05", result.stderr)
 
 
 if __name__ == "__main__":

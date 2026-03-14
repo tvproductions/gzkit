@@ -2952,15 +2952,44 @@ def _pipeline_marker_paths(plans_dir: Path, obpi_id: str) -> tuple[Path, Path]:
     return plans_dir / f".pipeline-active-{obpi_id}.json", plans_dir / PIPELINE_LEGACY_MARKER
 
 
-def _write_pipeline_markers(plans_dir: Path, obpi_id: str) -> tuple[Path, Path]:
+def _pipeline_stage_name(start_from: str | None) -> str:
+    """Return the active stage label persisted in the marker payload."""
+    if start_from == "verify":
+        return "verify"
+    if start_from == "ceremony":
+        return "ceremony"
+    return "implement"
+
+
+def _pipeline_marker_payload(
+    obpi_id: str,
+    parent_adr: str,
+    lane: str,
+    start_from: str | None,
+    receipt_state: str,
+    *,
+    execution_mode: str = "normal",
+) -> dict[str, str]:
+    """Build the persisted active-state payload for pipeline markers."""
+    timestamp = datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return {
+        "obpi_id": obpi_id,
+        "parent_adr": parent_adr,
+        "lane": lane,
+        "entry": start_from or "full",
+        "execution_mode": execution_mode,
+        "current_stage": _pipeline_stage_name(start_from),
+        "started_at": timestamp,
+        "updated_at": timestamp,
+        "receipt_state": receipt_state,
+    }
+
+
+def _write_pipeline_markers(plans_dir: Path, payload: dict[str, str]) -> tuple[Path, Path]:
     """Create active pipeline markers for the target OBPI."""
+    obpi_id = payload["obpi_id"]
     per_obpi_marker, legacy_marker = _pipeline_marker_paths(plans_dir, obpi_id)
     plans_dir.mkdir(parents=True, exist_ok=True)
-    payload = {
-        "obpi_id": obpi_id,
-        "started_at": datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
-        "execution_mode": "normal",
-    }
     encoded = json.dumps(payload, indent=2) + "\n"
     per_obpi_marker.write_text(encoded, encoding="utf-8")
     legacy_marker.write_text(encoded, encoding="utf-8")
@@ -3118,7 +3147,14 @@ def obpi_pipeline_cmd(obpi: str, start_from: str | None) -> None:
         raise SystemExit(1)
 
     lane = resolve_adr_lane(graph.get(resolved_parent, {}), config.mode)
-    per_obpi_marker, legacy_marker = _write_pipeline_markers(plans_dir, obpi_id)
+    marker_payload = _pipeline_marker_payload(
+        obpi_id,
+        resolved_parent,
+        lane,
+        start_from,
+        receipt_state,
+    )
+    per_obpi_marker, legacy_marker = _write_pipeline_markers(plans_dir, marker_payload)
     stage_labels = _pipeline_stage_labels(start_from)
 
     console.print(f"[bold]OBPI pipeline:[/bold] {obpi_id}")
