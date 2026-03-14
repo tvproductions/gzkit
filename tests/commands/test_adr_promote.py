@@ -138,7 +138,9 @@ class TestAdrPromoteCommand(unittest.TestCase):
                 ["adr", "promote", "ADR-pool.missing-scope", "--semver", "0.6.0"],
             )
             self.assertNotEqual(result.exit_code, 0)
-            self.assertIn("missing required section '## Target Scope'", result.output)
+            normalized_output = " ".join(result.output.split())
+            self.assertIn("missing required section", normalized_output)
+            self.assertIn("Target Scope", normalized_output)
             self.assertFalse(
                 (
                     Path(config.paths.adrs)

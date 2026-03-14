@@ -2,6 +2,7 @@ import io
 import json
 import os
 import shutil
+import stat
 import subprocess
 import tempfile
 import unittest
@@ -13,6 +14,16 @@ from unittest.mock import patch
 from gzkit.hooks.core import record_artifact_edit
 from gzkit.hooks.obpi import ObpiValidator
 from gzkit.ledger import Ledger, adr_created_event, project_init_event
+
+
+def _remove_readonly_tree(path: Path) -> None:
+    """Remove a temp tree reliably on Windows when git objects are read-only."""
+
+    def _onexc(func, target, _exc_info):
+        os.chmod(target, stat.S_IWRITE)
+        func(target)
+
+    shutil.rmtree(path, onexc=_onexc)
 
 
 class TestObpiValidator(unittest.TestCase):
@@ -52,7 +63,7 @@ class TestObpiValidator(unittest.TestCase):
         self.validator = ObpiValidator(self.project_root)
 
     def tearDown(self):
-        shutil.rmtree(self.test_dir)
+        _remove_readonly_tree(self.test_dir)
 
     def _git(self, *args: str) -> str:
         result = subprocess.run(
@@ -220,7 +231,7 @@ status: {status}
             summary="- Task: Finished implementation",
             proof="Works as expected",
         )
-        shutil.rmtree(self.project_root / ".git")
+        _remove_readonly_tree(self.project_root / ".git")
 
         errors = self.validator.validate_file(path)
         self.assertIn("Not a git repository.", errors)
@@ -257,7 +268,7 @@ status: {status}
             relative_path=final_rel_path,
             allowed_paths=["docs/design/adr/pre-release/ADR-0.1.0/**"],
         )
-        rel_path = str(final_path.relative_to(self.project_root))
+        rel_path = final_path.relative_to(self.project_root).as_posix()
 
         record_artifact_edit(self.project_root, rel_path, session="test-session")
 
@@ -308,7 +319,7 @@ status: {status}
             relative_path=final_rel_path,
             allowed_paths=["docs/design/adr/pre-release/ADR-0.1.0/**"],
         )
-        rel_path = str(final_path.relative_to(self.project_root))
+        rel_path = final_path.relative_to(self.project_root).as_posix()
 
         with patch(
             "gzkit.hooks.core.capture_validation_anchor_with_warnings",
@@ -335,7 +346,7 @@ status: {status}
             relative_path=final_rel_path,
             allowed_paths=["docs/design/adr/pre-release/ADR-0.1.0/**"],
         )
-        rel_path = str(final_path.relative_to(self.project_root))
+        rel_path = final_path.relative_to(self.project_root).as_posix()
         stderr = io.StringIO()
 
         with (
