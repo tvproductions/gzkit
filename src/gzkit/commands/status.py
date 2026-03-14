@@ -475,6 +475,8 @@ def _inspect_obpi_brief(
     info = graph.get(obpi_id, {}) if obpi_id and graph else {}
     semantics = derive_obpi_semantics(
         info,
+        obpi_id=obpi_id,
+        artifact_graph=graph,
         found_file=True,
         file_completed=file_completed,
         implementation_evidence_ok=implementation_evidence_ok,
@@ -543,6 +545,8 @@ def _adr_obpi_status_rows(
             continue
         semantics = derive_obpi_semantics(
             graph.get(expected_id, {}),
+            obpi_id=expected_id,
+            artifact_graph=graph,
             found_file=False,
             file_completed=False,
             implementation_evidence_ok=False,
@@ -759,6 +763,8 @@ def _build_obpi_status_entry(
     if obpi_file is None:
         semantics = derive_obpi_semantics(
             info,
+            obpi_id=obpi_id,
+            artifact_graph=graph,
             found_file=False,
             file_completed=False,
             implementation_evidence_ok=False,
