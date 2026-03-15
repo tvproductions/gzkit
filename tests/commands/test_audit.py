@@ -169,6 +169,8 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
             Path("src").mkdir(exist_ok=True)
             Path("tests").mkdir(exist_ok=True)
             Path("docs").mkdir(exist_ok=True)
+            Path(".github/instructions").mkdir(parents=True, exist_ok=True)
+            Path(".claude/rules").mkdir(parents=True, exist_ok=True)
             result = runner.invoke(main, ["check-config-paths"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("passed", result.output.lower())

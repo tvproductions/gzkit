@@ -3267,7 +3267,15 @@ def _collect_control_surface_issues(
 ) -> list[dict[str, str]]:
     """Collect manifest control-surface path issues."""
     issues: list[dict[str, str]] = []
-    dir_controls = {"hooks", "skills", "claude_skills", "codex_skills", "copilot_skills"}
+    dir_controls = {
+        "hooks",
+        "skills",
+        "claude_skills",
+        "codex_skills",
+        "copilot_skills",
+        "instructions",
+        "claude_rules",
+    }
 
     for control_name, control_path in manifest.get("control_surfaces", {}).items():
         path = project_root / control_path
