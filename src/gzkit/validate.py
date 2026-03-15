@@ -1119,6 +1119,111 @@ def validate_surfaces(project_root: Path) -> list[ValidationError]:
             )
         )
 
+    errors.extend(_validate_skill_frontmatter(project_root))
+    errors.extend(_validate_instruction_frontmatter(project_root))
+
+    return errors
+
+
+_VALID_SKILL_CATEGORIES = {
+    "adr-lifecycle",
+    "adr-operations",
+    "adr-audit",
+    "obpi-pipeline",
+    "governance-infrastructure",
+    "agent-operations",
+    "code-quality",
+    "cross-repository",
+}
+_VALID_LIFECYCLE_STATES = {"active", "deprecated", "draft", "retired"}
+
+
+def _validate_skill_frontmatter(project_root: Path) -> list[ValidationError]:
+    """Validate skill SKILL.md frontmatter against schema constraints."""
+    errors: list[ValidationError] = []
+    skills_dir = project_root / ".gzkit" / "skills"
+    if not skills_dir.exists():
+        return errors
+
+    for skill_dir in sorted(skills_dir.iterdir()):
+        skill_file = skill_dir / "SKILL.md"
+        if not skill_dir.is_dir() or not skill_file.exists():
+            continue
+
+        try:
+            content = skill_file.read_text(encoding="utf-8")
+            fm, _ = parse_frontmatter(content)
+        except (OSError, ValueError) as e:
+            errors.append(
+                ValidationError(
+                    type="surface",
+                    artifact=str(skill_file),
+                    message=f"Failed to parse frontmatter: {e}",
+                )
+            )
+            continue
+
+        category = fm.get("category", "")
+        if category and category not in _VALID_SKILL_CATEGORIES:
+            errors.append(
+                ValidationError(
+                    type="surface",
+                    artifact=str(skill_file),
+                    message=f"Invalid category '{category}'. "
+                    f"Allowed: {', '.join(sorted(_VALID_SKILL_CATEGORIES))}",
+                    field="category",
+                )
+            )
+
+        state = fm.get("lifecycle_state", "")
+        if state and state not in _VALID_LIFECYCLE_STATES:
+            errors.append(
+                ValidationError(
+                    type="surface",
+                    artifact=str(skill_file),
+                    message=f"Invalid lifecycle_state '{state}'. "
+                    f"Allowed: {', '.join(sorted(_VALID_LIFECYCLE_STATES))}",
+                    field="lifecycle_state",
+                )
+            )
+
+    return errors
+
+
+def _validate_instruction_frontmatter(project_root: Path) -> list[ValidationError]:
+    """Validate instruction file frontmatter for required applyTo field."""
+    errors: list[ValidationError] = []
+    instructions_dir = project_root / ".github" / "instructions"
+    if not instructions_dir.exists():
+        return errors
+
+    for inst_file in sorted(instructions_dir.iterdir()):
+        if not inst_file.name.endswith(".instructions.md"):
+            continue
+
+        try:
+            content = inst_file.read_text(encoding="utf-8")
+            fm, _ = parse_frontmatter(content)
+        except (OSError, ValueError) as e:
+            errors.append(
+                ValidationError(
+                    type="surface",
+                    artifact=str(inst_file),
+                    message=f"Failed to parse frontmatter: {e}",
+                )
+            )
+            continue
+
+        if not fm.get("applyTo"):
+            errors.append(
+                ValidationError(
+                    type="surface",
+                    artifact=str(inst_file),
+                    message="Missing required field: applyTo",
+                    field="applyTo",
+                )
+            )
+
     return errors
 
 
