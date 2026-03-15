@@ -17,8 +17,9 @@ without the `OBPI-` prefix.
 
 ## Runtime Behavior
 
-`gz obpi pipeline` is the CLI launch surface for the governance pipeline
-previously expressed only through the `gz-obpi-pipeline` skill.
+`gz obpi pipeline` is the canonical CLI launch surface for the governance
+pipeline. The `gz-obpi-pipeline` skill remains available as a thin alias for
+agent UX, but it must not redefine stage sequencing or closeout semantics.
 
 Current command contract:
 
@@ -64,6 +65,9 @@ from.
 
 The marker payload is active-state only. It is not authoritative completion
 history.
+
+Claude hook surfaces and generated control surfaces should point operators back
+to this command contract instead of re-explaining the stage engine in prose.
 
 ---
 

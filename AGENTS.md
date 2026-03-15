@@ -116,7 +116,7 @@ Skill behavior is standardized and synchronized by `gz agent sync control-surfac
 - `gz-migrate-semver`: Record semver identifier migration events. Use when applying canonical ADR or OBPI renaming migrations. (`.gzkit/skills/gz-migrate-semver/SKILL.md`)
 - `gz-obpi-audit`: Audit OBPI brief status against actual code/test evidence. Records proof in JSONL ledger. (`.gzkit/skills/gz-obpi-audit/SKILL.md`)
 - `gz-obpi-brief`: Generate a new OBPI brief file with correct headers, constraints, and evidence stubs. GovZero v6 skill. (`.gzkit/skills/gz-obpi-brief/SKILL.md`)
-- `gz-obpi-pipeline`: Post-plan OBPI execution pipeline — implement, verify, present evidence, and sync after a plan is approved. (`.gzkit/skills/gz-obpi-pipeline/SKILL.md`)
+- `gz-obpi-pipeline`: Thin wrapper over the canonical `uv run gz obpi pipeline` runtime for post-plan OBPI execution. (`.gzkit/skills/gz-obpi-pipeline/SKILL.md`)
 - `gz-obpi-reconcile`: OBPI brief reconciliation — Audit briefs against evidence, fix stale metadata, write ledger proof. (`.gzkit/skills/gz-obpi-reconcile/SKILL.md`)
 - `gz-obpi-sync`: Sync OBPI status in ADR table from brief source files. Detects drift and reconciles. (Layer 3) (`.gzkit/skills/gz-obpi-sync/SKILL.md`)
 - `gz-plan`: Create ADR artifacts for planned change. Use when recording architecture intent and lane-specific scope. (`.gzkit/skills/gz-plan/SKILL.md`)
@@ -173,15 +173,14 @@ Detailed standards in the [OBPI Decomposition Matrix](docs/governance/GovZero/ob
 
 **Agent MUST NOT mark an OBPI brief as `Completed` without explicit human attestation when parent ADR lane is Heavy or Foundational (0.0.x).**
 
-**Pipeline mandate:** After plan approval for OBPI work, agents MUST invoke the
-OBPI execution pipeline (`gz-obpi-pipeline`) instead of implementing directly.
-The pipeline enforces the verify -> ceremony -> guarded git sync -> completion
-accounting sequence that gets lost in freeform execution. In gzkit, Stage 5
-uses `uv run gz git-sync --apply --lint --test` before final OBPI completion
-receipt emission and brief/ADR sync. If implementation is already complete,
-invoke with `--from=verify` or `--from=ceremony` to enter the governance
-stages. Freeform implementation without pipeline invocation is a process
-defect.
+**Pipeline mandate:** After plan approval for OBPI work, agents MUST start the
+canonical runtime surface `uv run gz obpi pipeline <OBPI-ID>` instead of
+implementing directly. The `gz-obpi-pipeline` skill remains a thin alias only.
+The runtime owns stage sequencing, marker state, and re-entry semantics. In
+gzkit, it preserves the verify -> ceremony -> guarded git sync -> completion
+accounting order, with `uv run gz git-sync --apply --lint --test` required
+before final OBPI completion receipt emission and brief/ADR sync. Freeform
+implementation without runtime invocation is a process defect.
 
 ### Ceremony Steps
 

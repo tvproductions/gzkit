@@ -14,26 +14,24 @@ import os
 import sys
 from pathlib import Path
 
-LEGACY_MARKER = ".pipeline-active.json"
-
-
-def load_json(path: Path) -> dict | None:
-    """Best-effort JSON reader for pipeline markers."""
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return None
+from gzkit.pipeline_runtime import (
+    PIPELINE_LEGACY_MARKER,
+    _load_pipeline_json,
+    _pipeline_plans_dir,
+    pipeline_completion_reminder_message,
+    pipeline_stale_marker_message,
+)
 
 
 def find_active_marker(plans_dir: Path) -> dict | None:
     """Return the first readable active pipeline marker payload."""
     marker_paths = sorted(plans_dir.glob(".pipeline-active-*.json"))
-    marker_paths.append(plans_dir / LEGACY_MARKER)
+    marker_paths.append(plans_dir / PIPELINE_LEGACY_MARKER)
 
     for marker_path in marker_paths:
         if not marker_path.exists():
             continue
-        marker = load_json(marker_path)
+        marker = _load_pipeline_json(marker_path)
         if marker is not None:
             return marker
         return None
@@ -81,7 +79,7 @@ def main() -> None:
         sys.exit(0)
 
     cwd_path = Path(input_data.get("cwd", os.getcwd())).resolve()
-    plans_dir = cwd_path / ".claude" / "plans"
+    plans_dir = _pipeline_plans_dir(cwd_path)
     if not plans_dir.is_dir():
         sys.exit(0)
 
@@ -99,31 +97,15 @@ def main() -> None:
 
     status = brief_status(brief_path)
     if status == "Completed":
-        print(
-            f"STALE PIPELINE MARKER\n"
-            f"\n"
-            f"Active marker still references {obpi_id}, but the brief is already\n"
-            f"Completed. Clean up the pipeline marker if the closeout is done.\n",
-            file=sys.stderr,
-        )
+        print(pipeline_stale_marker_message(obpi_id), file=sys.stderr)
         sys.exit(0)
 
     print(
-        f"PIPELINE COMPLETION REMINDER\n"
-        f"\n"
-        f"Active OBPI pipeline: {obpi_id}\n"
-        f"Brief status: {status or 'Unknown'}\n"
-        f"\n"
-        f"You are about to commit or push while the governance pipeline still\n"
-        f"appears incomplete. Before publishing changes, finish the closeout path:\n"
-        f"\n"
-        f"  1. Run /gz-obpi-audit {obpi_id}\n"
-        f"  2. Update the brief status to Completed\n"
-        f"  3. Run /gz-obpi-sync\n"
-        f"  4. Release the active pipeline marker\n"
-        f"\n"
-        f"Preferred re-entry point:\n"
-        f"  /gz-obpi-pipeline {obpi_id} --from=ceremony\n",
+        pipeline_completion_reminder_message(
+            obpi_id,
+            status=status,
+            next_command=marker.get("next_command"),
+        ),
         file=sys.stderr,
     )
     sys.exit(0)
@@ -131,3 +113,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

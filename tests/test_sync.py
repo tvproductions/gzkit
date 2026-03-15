@@ -415,12 +415,16 @@ class TestSyncControlSurfaces(unittest.TestCase):
             copilot = (project_root / config.paths.copilot_instructions).read_text(encoding="utf-8")
 
             self.assertIn("guarded git sync -> completion", agents)
+            self.assertIn("uv run gz obpi pipeline <OBPI-ID>", agents)
             self.assertIn("uv run gz git-sync --apply --lint --test", agents)
             self.assertIn("uv run gz test", agents)
             self.assertIn("Documentation/process/template-only changes stay", agents)
             self.assertNotIn("uv run -m unittest discover tests", agents)
+            self.assertIn("uv run gz obpi pipeline <OBPI-ID>", claude)
+            self.assertIn("thin alias", claude)
             self.assertIn("uv run gz git-sync --apply --lint --test", claude)
             self.assertIn("uv run gz test", claude)
+            self.assertIn("uv run gz obpi pipeline <OBPI-ID>", copilot)
             self.assertIn("uv run gz git-sync --apply --lint --test", copilot)
 
     def test_sync_manifest_uses_gz_native_verification_defaults(self) -> None:
