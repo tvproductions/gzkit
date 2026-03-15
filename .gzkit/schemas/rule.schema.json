@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "gzkit Rule/Instruction Frontmatter",
+  "description": "Schema for .github/instructions/*.instructions.md frontmatter fields.",
+  "type": "object",
+  "properties": {
+    "name": { "type": "string", "description": "Display name for the rule." },
+    "description": { "type": "string", "description": "What the rule enforces." },
+    "category": { "type": "string", "description": "Grouping for catalog use." },
+    "applyTo": {
+      "type": "string",
+      "description": "Copilot glob patterns (comma-separated)."
+    },
+    "excludeAgent": {
+      "type": "string",
+      "enum": ["code-review", "coding-agent", "all"],
+      "description": "Copilot agent exclusion."
+    }
+  },
+  "required": ["applyTo"]
+}
