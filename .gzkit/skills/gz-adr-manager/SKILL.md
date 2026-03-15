@@ -1,6 +1,7 @@
 ---
 name: gz-adr-manager
 description: Compatibility alias for gz-adr-create to preserve cross-repository governance ritual continuity.
+category: adr-operations
 compatibility: GovZero v6 compatibility alias for historical AirlineOps command language.
 invocation: Use when prompts or docs call `/gz-adr-manager`; this alias delegates to `/gz-adr-create`.
 gz_command: gz plan + gz specify workflow through gz-adr-create semantics
