@@ -22,68 +22,19 @@ If this file and `AGENTS.md` diverge, follow `AGENTS.md` and run `gz agent sync 
 {build_commands}
 ```
 
-## Architecture
-
-{architecture}
-
 ## Coding Conventions
 
 {coding_conventions}
 
-## Key Invariants
+## Governance Rules
 
-{invariants}
+Loaded contextually from `.claude/rules/` (mirrored from `.github/instructions/`).
 
-## Gate Covenant
-
-Follow the gzkit gate covenant for all changes:
-
-| Gate | Purpose | Command |
-|------|---------|---------|
-| Gate 1 | ADR recorded | `gz validate --documents` |
-| Gate 2 | Tests pass | `gz test` |
-| Gate 3 | Docs updated | `gz lint` |
-| Gate 4 | BDD verified | Manual |
-| Gate 5 | Human attests | `gz attest` |
-
-## Governance Workflow
-
-1. Check state: `gz state`
-2. Check status: `gz status`
-3. Create ADR for changes: `gz plan`
-4. For OBPI work after planning, start `uv run gz obpi pipeline <OBPI-ID>`
-5. The `gz-obpi-pipeline` skill remains available as a thin alias
-6. Validate: `gz validate --documents`, `gz lint`, `gz typecheck`, `gz test`
-7. Request attestation: Human runs `gz attest`
-8. In the pipeline closeout stage, run `uv run gz git-sync --apply --lint --test` before final OBPI completion accounting
-
-## OBPI Acceptance
-
-OBPI closure follows `AGENTS.md` and is pipeline-first plus attestation-first:
-
-1. Run `uv run gz obpi pipeline <OBPI-ID>` after plan approval
-2. Use `gz-obpi-pipeline` only as a thin alias over that runtime
-3. Present value narrative
-4. Present key proof
-5. Present verification evidence
-6. Wait for explicit human acceptance
-7. Run `uv run gz git-sync --apply --lint --test` before final completion receipt/accounting
-8. Only then mark brief status `Completed`
-
-Reference: `AGENTS.md` section `OBPI Acceptance Protocol`.
+Run `gz agent sync control-surfaces` to regenerate.
 
 ## Skills
 
-Skills are centralized under `.gzkit` and mirrored to tool-local paths:
-
-- Canonical skills: `{skills_canon_path}`
-- Claude skill mirror: `{skills_claude_path}`
-- Codex skill mirror: `{skills_codex_path}`
-- Copilot skill mirror: `{skills_copilot_path}`
-
-### Available Skills
-
-{skills_catalog}
+Discovered automatically from `.claude/skills/`. See `AGENTS.md` for the full catalog.
 
 ## Control Surfaces
 

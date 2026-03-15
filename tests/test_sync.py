@@ -421,10 +421,9 @@ class TestSyncControlSurfaces(unittest.TestCase):
             self.assertIn("uv run gz test", agents)
             self.assertIn("Documentation/process/template-only changes stay", agents)
             self.assertNotIn("uv run -m unittest discover tests", agents)
-            self.assertIn("uv run gz obpi pipeline <OBPI-ID>", claude)
-            self.assertIn("thin alias", claude)
-            self.assertIn("uv run gz git-sync --apply --lint --test", claude)
-            self.assertIn("uv run gz test", claude)
+            # Slim CLAUDE.md delegates governance to .claude/rules/
+            self.assertIn(".claude/rules/", claude)
+            self.assertIn("AGENTS.md", claude)
             self.assertIn("uv run gz obpi pipeline <OBPI-ID>", copilot)
             self.assertIn("uv run gz git-sync --apply --lint --test", copilot)
 
@@ -464,7 +463,9 @@ class TestSyncControlSurfaces(unittest.TestCase):
             self.assertIn("`demo-skill`", agents)
             # Categorized format no longer includes per-skill paths
             self.assertIn(".gzkit/skills/<skill-name>/", agents)
-            self.assertIn("`demo-skill`", claude)
+            # Slim CLAUDE.md no longer includes skill catalog
+            self.assertNotIn("`demo-skill`", claude)
+            self.assertIn(".claude/skills/", claude)
             self.assertIn("`demo-skill`", copilot)
 
     def test_sync_skills_catalog_uses_frontmatter_description(self) -> None:
