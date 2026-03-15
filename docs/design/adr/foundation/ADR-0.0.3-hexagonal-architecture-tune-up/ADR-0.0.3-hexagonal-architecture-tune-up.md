@@ -1,0 +1,179 @@
+---
+id: ADR-0.0.3-hexagonal-architecture-tune-up
+status: Draft
+semver: 0.0.3
+lane: heavy
+parent:
+date: 2026-03-15
+---
+
+# ADR-0.0.3-hexagonal-architecture-tune-up: Hexagonal Architecture Tune-Up
+
+## Intent
+
+1. **Hexagonal layering** — Separate core domain logic from I/O and CLI concerns via ports and adapters
+2. **Testability** — Enable unit tests with in-memory fakes instead of `mock.patch` on implementation internals
+3. **Structured logging** — structlog with correlation IDs, verbosity levels, JSON file output
+4. **Unified output** — Single OutputFormatter chokepoint supporting 5 modes (human, JSON, quiet, verbose, debug)
+5. **Config discipline** — ENV-optional precedence chain, single load point, constructor injection
+6. **Error clarity** — Retryability-oriented domain exception hierarchy (TransientError, PermanentError, OperatorError)
+7. **Architectural enforcement** — Policy tests that enforce import boundaries and conventions via AST scanning
+
+## Decision
+
+### Three-Layer Model
+
+```
+CLI Adapter Layer (cli/, commands/)
+  Knows: argparse, rich, structlog config, OutputFormatter
+  Does: parse args, wire adapters, call services, format output
+  Imports: core/, ports/, adapters/
+
+Core Domain Layer (core/)
+  Knows: ports/ (Protocols only), pydantic, structlog (binding only)
+  Does: business logic, domain models, state machines, validation rules
+  Imports: ports/, pydantic, stdlib, domain deps
+
+Ports and Adapters (ports/, adapters/)
+  ports/: typing.Protocol definitions for I/O boundaries (structural subtyping)
+  adapters/: Concrete implementations that satisfy protocols via duck typing
+```
+
+### Port Interfaces
+
+Four primary ports covering all I/O boundaries, defined as `typing.Protocol` (structural subtyping). Adapters satisfy these implicitly — they match method signatures without inheriting from the protocol class. The type checker (`ty`) verifies conformance at dev time.
+
+```python
+from typing import Protocol
+from pathlib import Path
+
+class FileStore(Protocol):
+    """Port for filesystem operations."""
+
+    def read_text(self, path: Path) -> str: ...
+
+    def write_text(self, path: Path, content: str) -> None: ...
+
+    def exists(self, path: Path) -> bool: ...
+
+    def iterdir(self, path: Path) -> list[Path]: ...
+
+class ProcessRunner(Protocol):
+    """Port for subprocess execution."""
+
+    def run(self, cmd: list[str], cwd: Path | None = None) -> tuple[int, str, str]: ...
+
+class LedgerStore(Protocol):
+    """Port for append-only event persistence."""
+
+    def append(self, event: dict) -> None: ...
+
+    def read_all(self) -> list[dict]: ...
+
+class ConfigStore(Protocol):
+    """Port for configuration persistence."""
+
+    def load(self) -> dict: ...
+
+    def save(self, data: dict) -> None: ...
+```
+
+### Layer Import Rules
+
+```
+cli/          → core/, ports/, adapters/, rich, structlog, argparse, pydantic
+core/         → ports/, pydantic, structlog (binding only), stdlib, domain deps
+ports/        → typing (Protocol), stdlib type annotations only
+adapters/     → ports/, stdlib, approved external libs, domain deps
+tests/fakes/  → ports/, stdlib only
+tests/unit/   → core/, ports/, tests/fakes/, unittest, pydantic
+tests/integration/ → cli/, core/, ports/, adapters/, tests/fakes/, unittest
+tests/policy/ → ast, pathlib, unittest (scans source; imports nothing from src/)
+```
+
+### Target Project Structure
+
+```
+src/gzkit/
+├── cli/
+│   ├── __init__.py
+│   ├── main.py              # Entry point, parser, logging config
+│   ├── commands/             # Existing commands/ directory
+│   └── formatters.py         # OutputFormatter
+├── core/
+│   ├── __init__.py
+│   ├── models.py             # Domain models (Pydantic)
+│   ├── exceptions.py         # Exception hierarchy
+│   ├── lifecycle.py           # ADR/OBPI state machines
+│   ├── scoring.py             # Scorecard computation (from decomposition.py)
+│   └── validation_rules.py   # Pure validation logic (from validate.py)
+├── ports/
+│   ├── __init__.py
+│   └── interfaces.py         # Protocol port definitions
+├── adapters/
+│   ├── __init__.py
+│   ├── filesystem.py         # FileStore implementation
+│   ├── process.py            # ProcessRunner implementation
+│   └── ledger.py             # LedgerStore implementation
+├── config.py                  # Pydantic config model, precedence chain
+├── ...                        # Remaining modules (migrated incrementally)
+tests/
+├── unit/                      # Core logic, fakes, no I/O
+├── integration/               # CLI invocation, real adapters
+├── policy/                    # Architectural enforcement (AST scans)
+└── fakes/                     # In-memory port implementations
+```
+
+## Consequences
+
+### Positive
+
+Governance visibility for superpowers work.
+
+### Negative
+
+Additional booking step in workflow.
+
+## Decomposition Scorecard
+
+<!-- Deterministic OBPI sizing: score each dimension 0/1/2. -->
+<!-- Cutoffs are notional defaults and should be calibrated over time from project evidence. -->
+
+Auto-generated by gz superbook.
+
+## Checklist
+
+<!-- Each item becomes an OBPI (One Brief Per Item). Sequential numbering, no gaps. -->
+
+- [ ] OBPI-0.0.3-01: Hexagonal Skeleton
+- [ ] OBPI-0.0.3-02: Domain Extraction
+- [ ] OBPI-0.0.3-03: Exception Hierarchy & Exit Codes
+- [ ] OBPI-0.0.3-04: Test Fakes & Separation
+- [ ] OBPI-0.0.3-05: Config Precedence & Injection (ENV-Optional)
+- [ ] OBPI-0.0.3-06: Output Formatter
+- [ ] OBPI-0.0.3-07: Structured Logging (structlog)
+- [ ] OBPI-0.0.3-08: Progress Indication
+- [ ] OBPI-0.0.3-09: Policy Tests (Architectural Enforcement)
+
+## Q&A Transcript
+
+<!-- Interview transcript preserved for context -->
+
+Generated from superpowers spec.
+
+## Evidence
+
+<!-- Links to tests, documentation, and other artifacts that prove completion -->
+
+- [ ] Tests: `tests/`
+- [ ] Docs: `docs/`
+
+## Alternatives Considered
+
+Manual gz plan + gz specify (two-step).
+
+## Attestation Block
+
+| Term | Status | Attested By | Date | Reason |
+|------|--------|-------------|------|--------|
+| 0.0.3 | Pending | | | |
