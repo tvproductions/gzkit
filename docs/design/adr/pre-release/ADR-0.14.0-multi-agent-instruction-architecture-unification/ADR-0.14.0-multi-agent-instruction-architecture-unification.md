@@ -1,5 +1,5 @@
 ---
-id: ADR-0.14.0
+id: ADR-0.14.0-multi-agent-instruction-architecture-unification
 status: Draft
 semver: 0.14.0
 lane: heavy
@@ -218,4 +218,3 @@ Specific rejection rationale:
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
 | 0.14.0 | Pending | | | |
-

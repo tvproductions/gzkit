@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.14.0-06-instruction-evals-and-readiness-checks
-parent: ADR-0.14.0
+parent: ADR-0.14.0-multi-agent-instruction-architecture-unification
 item: 6
 lane: Heavy
 status: Draft
@@ -217,4 +217,3 @@ architecture.
 **Date Completed:** -
 
 **Evidence Hash:** -
-

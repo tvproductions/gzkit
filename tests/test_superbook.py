@@ -74,6 +74,38 @@ class TestClassifyLane(unittest.TestCase):
         self.assertEqual(result.lane, "heavy")
 
 
+class TestExtractSemver(unittest.TestCase):
+    def test_bare_id(self) -> None:
+        """Extracts semver from bare ADR ID."""
+        from gzkit.superbook import extract_semver
+
+        self.assertEqual(extract_semver("ADR-0.14.0"), "0.14.0")
+
+    def test_slugged_id(self) -> None:
+        """Extracts semver from slugged ADR ID."""
+        from gzkit.superbook import extract_semver
+
+        self.assertEqual(
+            extract_semver("ADR-0.14.0-multi-agent-instruction-architecture-unification"),
+            "0.14.0",
+        )
+
+    def test_pool_id_returns_none(self) -> None:
+        """Pool ADR IDs have no semver."""
+        from gzkit.superbook import extract_semver
+
+        self.assertIsNone(extract_semver("ADR-pool.audit-system"))
+
+    def test_directory_name(self) -> None:
+        """Extracts semver from directory-style ADR name."""
+        from gzkit.superbook import extract_semver
+
+        self.assertEqual(
+            extract_semver("ADR-0.17.0-agentsmd-tidy-control-surface-schema-and-rules-mir"),
+            "0.17.0",
+        )
+
+
 class TestNextSemver(unittest.TestCase):
     def test_next_semver_increments_minor(self) -> None:
         """next_semver increments minor version."""
@@ -86,6 +118,10 @@ class TestNextSemver(unittest.TestCase):
     def test_next_semver_handles_semantic_ordering(self) -> None:
         """next_semver orders semantically, not lexicographically."""
         self.assertEqual(next_semver(["0.9.0", "0.10.0"]), "0.11.0")
+
+    def test_next_semver_handles_slugged_semvers(self) -> None:
+        """next_semver handles semvers with trailing slug text."""
+        self.assertEqual(next_semver(["0.14.0-multi-agent", "0.15.0"]), "0.16.0")
 
 
 class TestMapChunksToObpis(unittest.TestCase):
@@ -106,10 +142,12 @@ class TestMapChunksToObpis(unittest.TestCase):
                 ),
             ],
         )
-        obpis = map_chunks_to_obpis(plan, "0.17.0", "heavy")
+        obpis = map_chunks_to_obpis(plan, "0.17.0", "heavy", "ADR-0.17.0-test")
         self.assertEqual(len(obpis), 2)
         self.assertEqual(obpis[0].id, "OBPI-0.17.0-01-catalog")
         self.assertEqual(obpis[1].id, "OBPI-0.17.0-02-mirroring")
+        self.assertEqual(obpis[0].parent, "ADR-0.17.0-test")
+        self.assertEqual(obpis[1].parent, "ADR-0.17.0-test")
 
     def test_map_generates_req_ids(self) -> None:
         """REQ IDs are generated from chunk criteria."""
@@ -123,7 +161,7 @@ class TestMapChunksToObpis(unittest.TestCase):
                 ),
             ],
         )
-        obpis = map_chunks_to_obpis(plan, "0.17.0", "heavy")
+        obpis = map_chunks_to_obpis(plan, "0.17.0", "heavy", "ADR-0.17.0-test")
         self.assertEqual(len(obpis[0].reqs), 2)
         self.assertEqual(obpis[0].reqs[0].id, "REQ-0.17.0-01-01")
         self.assertEqual(obpis[0].reqs[1].id, "REQ-0.17.0-01-02")
@@ -136,7 +174,7 @@ class TestMapChunksToObpis(unittest.TestCase):
                 ChunkData(name="Slim CLAUDE.md Template", file_paths=[]),
             ],
         )
-        obpis = map_chunks_to_obpis(plan, "0.17.0", "heavy")
+        obpis = map_chunks_to_obpis(plan, "0.17.0", "heavy", "ADR-0.17.0-test")
         self.assertEqual(obpis[0].id, "OBPI-0.17.0-01-slim-claudemd-template")
 
 
@@ -165,13 +203,13 @@ class TestGenerateADRDraft(unittest.TestCase):
             ],
         )
         adr = generate_adr_draft(spec, plan, lane="heavy", semver="0.17.0")
-        self.assertEqual(adr.id, "ADR-0.17.0")
+        self.assertEqual(adr.id, "ADR-0.17.0-test-feature")
         self.assertEqual(adr.title, "Test Feature")
         self.assertEqual(adr.lane, "heavy")
         self.assertEqual(len(adr.checklist), 2)
         self.assertIn("Catalog", adr.checklist[0])
         self.assertEqual(len(adr.obpis), 2)
-        self.assertEqual(adr.obpis[0].parent, "ADR-0.17.0")
+        self.assertEqual(adr.obpis[0].parent, "ADR-0.17.0-test-feature")
 
 
 class TestMapCommitsToChunks(unittest.TestCase):
