@@ -466,7 +466,10 @@ class TestSyncControlSurfaces(unittest.TestCase):
             # Slim CLAUDE.md no longer includes skill catalog
             self.assertNotIn("`demo-skill`", claude)
             self.assertIn(".claude/skills/", claude)
-            self.assertIn("`demo-skill`", copilot)
+            # Slim copilot no longer includes skill catalog
+            self.assertNotIn("`demo-skill`", copilot)
+            self.assertIn("AGENTS.md", copilot)
+            self.assertIn("Available Skills", copilot)
 
     def test_sync_skills_catalog_uses_frontmatter_description(self) -> None:
         """Skill catalog entries use frontmatter descriptions, not `---` placeholders."""
