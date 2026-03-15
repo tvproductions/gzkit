@@ -55,7 +55,13 @@
       "Bash(ls -1 /Users/jeff/Documents/Code/gzkit/docs/design/adr/pool/ADR-pool.*.md)",
       "Bash(/tmp/pool_list.txt:*)",
       "Read(//tmp/**)",
-      "Bash(ls /Users/jeff/Documents/Code/gzkit/docs/design/adr/adr_*.md /Users/jeff/Documents/Code/gzkit/docs/design/adr/adr-status*.md)"
+      "Bash(ls /Users/jeff/Documents/Code/gzkit/docs/design/adr/adr_*.md /Users/jeff/Documents/Code/gzkit/docs/design/adr/adr-status*.md)",
+      "Bash(wc -l /Users/jeff/Documents/Code/gzkit/src/gzkit/*.py)",
+      "Bash(find /Users/jeff/Documents/Code/gzkit/tests -name \"test_*.py\" -exec wc -l {} +)",
+      "Bash(wc -l /Users/jeff/Documents/Code/gzkit/tests/test_*.py /Users/jeff/Documents/Code/gzkit/tests/commands/test_*.py)",
+      "Bash(find /Users/jeff/Documents/Code/gzkit/src/gzkit -type f -name \"*.py\" -exec wc -l {} +)",
+      "Bash(python3 -c \"import sys,json; [print\\(json.loads\\(l\\)[''''event''''], json.loads\\(l\\)[''''id'''']\\) for l in sys.stdin]\")",
+      "Bash(python3 -c \"import sys,json; [print\\(json.loads\\(l\\)[''''id'''']\\) for l in sys.stdin]\")"
     ]
   }
 }
