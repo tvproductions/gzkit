@@ -1,6 +1,7 @@
 ---
 name: gz-plan-audit
 description: Pre-flight alignment audit — verify ADR intent, OBPI brief scope, and plan are aligned before implementation begins. Use when exiting plan mode, before starting implementation, or to catch scope drift between ADR intent and the active OBPI brief.
+category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-03-12
