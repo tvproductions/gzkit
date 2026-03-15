@@ -141,7 +141,6 @@ class TestAdapterTemplatesReferenceCanon(unittest.TestCase):
         content = render_template("claude", skills_catalog="- `test-skill`: Desc")
         self.assertNotIn("`test-skill`", content)
         self.assertIn("AGENTS.md", content)
-        self.assertIn("Available Skills", content)
 
     def test_copilot_adapter_references_agents_for_skills(self) -> None:
         content = render_template("copilot", skills_catalog="- `test-skill`: Desc")

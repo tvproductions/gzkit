@@ -92,7 +92,9 @@ Tests for mirroring, unconditional, comma-split, exclusion, file filter, stale c
 class TestParseSpec(unittest.TestCase):
     def test_parse_spec_extracts_title(self) -> None:
         """Parser extracts spec title from first H1."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".md", delete=False, encoding="utf-8"
+        ) as f:
             f.write(SAMPLE_SPEC)
             f.flush()
             spec = parse_spec(Path(f.name))
@@ -103,7 +105,9 @@ class TestParseSpec(unittest.TestCase):
 
     def test_parse_spec_extracts_goal(self) -> None:
         """Parser extracts goal from Goals section."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".md", delete=False, encoding="utf-8"
+        ) as f:
             f.write(SAMPLE_SPEC)
             f.flush()
             spec = parse_spec(Path(f.name))
@@ -111,7 +115,9 @@ class TestParseSpec(unittest.TestCase):
 
     def test_parse_spec_extracts_architecture(self) -> None:
         """Parser extracts architecture summary."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".md", delete=False, encoding="utf-8"
+        ) as f:
             f.write(SAMPLE_SPEC)
             f.flush()
             spec = parse_spec(Path(f.name))
@@ -119,7 +125,9 @@ class TestParseSpec(unittest.TestCase):
 
     def test_parse_spec_extracts_file_scope(self) -> None:
         """Parser extracts file paths from Implementation Scope."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".md", delete=False, encoding="utf-8"
+        ) as f:
             f.write(SAMPLE_SPEC)
             f.flush()
             spec = parse_spec(Path(f.name))
