@@ -264,9 +264,3 @@ Ceremony
 **Date Completed:** 2026-03-14
 
 **Evidence Hash:** pending-sync-anchor
-
-**Brief Status:** Draft
-
-**Date Completed:** -
-
-**Evidence Hash:** -
