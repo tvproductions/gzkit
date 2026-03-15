@@ -1409,6 +1409,8 @@ def sync_all(project_root: Path, config: GzkitConfig | None = None) -> list[str]
     sync_claude_md(project_root, config)
     updated.append(config.paths.claude_md)
 
+    updated.extend(sync_claude_rules(project_root))
+
     sync_copilot_instructions(project_root, config)
     updated.append(config.paths.copilot_instructions)
 
