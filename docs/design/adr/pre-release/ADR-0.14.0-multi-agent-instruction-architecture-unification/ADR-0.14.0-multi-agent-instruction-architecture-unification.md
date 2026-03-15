@@ -89,6 +89,24 @@ The target architecture is:
 - Add an eval and readiness layer with positive and negative controls across supported
   agent surfaces.
 
+## Dependency Graph and Parallelization
+
+```text
+OBPI-01 (canonical model)
+  ├─► OBPI-02 (path-scoped rules)     ─┐
+  ├─► OBPI-03 (root surface slimming)  ├─► OBPI-06 (evals & readiness)
+  ├─► OBPI-04 (audit & drift)         ─┘
+  └─► OBPI-05 (local config & sync)
+```
+
+**Critical path:** OBPI-01 → OBPI-04 → OBPI-06
+
+**Parallelization:** After OBPI-01 completes, OBPIs 02, 03, 04, and 05 can all
+run concurrently. OBPI-06 sequences after 01 and 04 (needs canonical surfaces
+and audit detection logic to exercise positive/negative controls).
+
+**Theoretical minimum stages:** 3 (01 alone → 02+03+04+05 in parallel → 06 alone)
+
 ## Non-Goals
 
 - Do not replace gzkit's existing governance model, ledger model, or skill system.

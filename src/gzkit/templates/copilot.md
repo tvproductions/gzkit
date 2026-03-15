@@ -61,7 +61,7 @@ Use the canonical skill catalog and keep mirrors synced via `gz agent sync contr
 
 ### Available Skills
 
-{skills_catalog}
+See `AGENTS.md` § Available Skills for the complete skill catalog.
 
 ## Build Commands
 
