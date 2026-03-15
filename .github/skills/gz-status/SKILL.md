@@ -1,6 +1,7 @@
 ---
 name: gz-status
 description: Report gate and lifecycle status across ADRs. Use when checking blockers and next governance actions.
+category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-02-18

@@ -1,6 +1,7 @@
 ---
 name: gz-adr-check
 description: Run blocking ADR evidence checks for a target ADR.
+category: adr-operations
 compatibility: GovZero v6 framework; CI-capable evidence gate
 metadata:
   skill-version: "1.1.0"

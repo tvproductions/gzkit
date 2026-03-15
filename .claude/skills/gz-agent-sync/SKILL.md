@@ -1,6 +1,7 @@
 ---
 name: gz-agent-sync
 description: Synchronize generated control surfaces and skill mirrors. Use after skill or governance-surface updates.
+category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-02-21

@@ -1,6 +1,7 @@
 ---
 name: gz-tidy
 description: Run maintenance checks and cleanup routines. Use for repository hygiene and governance maintenance operations.
+category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-03-15

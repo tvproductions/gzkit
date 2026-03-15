@@ -1,6 +1,7 @@
 ---
 name: gz-adr-sync
 description: Reconcile ADR files with ledger registration and status views.
+category: adr-operations
 compatibility: GovZero v6 framework; uses register-adrs + status commands
 metadata:
   skill-version: "6.1.0"
