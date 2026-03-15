@@ -1,6 +1,7 @@
 ---
 name: gz-adr-recon
 description: Reconcile ADR/OBPI evidence state from ledger-driven gz outputs.
+category: adr-operations
 compatibility: GovZero v6 framework with OBPI briefs
 metadata:
   skill-version: "1.1.0"

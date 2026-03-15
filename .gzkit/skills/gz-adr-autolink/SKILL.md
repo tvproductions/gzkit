@@ -1,6 +1,7 @@
 ---
 name: gz-adr-autolink
 description: Maintain ADR verification links by scanning @covers decorators and updating docs.
+category: adr-operations
 compatibility: GovZero v6 framework; manual linkage workflow
 metadata:
   skill-version: "1.1.0"

@@ -1,6 +1,7 @@
 ---
 name: gz-obpi-pipeline
 description: Post-plan OBPI execution pipeline — implement, verify, present evidence, and sync after a plan is approved.
+category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-03-11

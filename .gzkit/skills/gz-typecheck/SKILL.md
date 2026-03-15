@@ -1,6 +1,7 @@
 ---
 name: gz-typecheck
 description: Run static type checks. Use when verifying type safety before merge or attestation.
+category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-02-18
