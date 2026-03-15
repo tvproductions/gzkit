@@ -127,6 +127,12 @@ class TestAgentsTemplateSemantic(unittest.TestCase):
         self.assertIn("<!-- BEGIN agents.local.md -->", self.content)
         self.assertIn("<!-- END agents.local.md -->", self.content)
 
+    def test_pipeline_runtime_is_canonical(self) -> None:
+        """Rendered AGENTS template names the CLI runtime as canonical."""
+        self.assertIn("uv run gz obpi pipeline <OBPI-ID>", self.content)
+        self.assertIn("gz-obpi-pipeline", self.content)
+        self.assertIn("thin alias", self.content)
+
 
 class TestListTemplates(unittest.TestCase):
     """Tests for listing templates."""

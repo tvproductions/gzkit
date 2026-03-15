@@ -25,7 +25,7 @@ uv run gz adr status ADR-<X.Y.Z> --json
 # 2) Execute the OBPI through the staged pipeline
 uv run gz obpi pipeline OBPI-<X.Y.Z-NN>
 
-#    Wrapper skill remains available:
+#    Thin wrapper skill remains available:
 #    /gz-obpi-pipeline OBPI-<X.Y.Z-NN>
 #
 #    Compatibility entry points:
