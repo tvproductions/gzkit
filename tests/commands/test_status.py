@@ -231,6 +231,12 @@ class TestStatusCommand(unittest.TestCase):
                     receipt_event="completed",
                     attestor="human:test",
                     obpi_completion="completed",
+                    evidence={
+                        "value_narrative": (
+                            "The demo OBPI completed with canonical receipt evidence."
+                        ),
+                        "key_proof": "uv run gz adr status ADR-0.1.0 --json",
+                    },
                 )
             )
 
@@ -264,6 +270,10 @@ class TestStatusCommand(unittest.TestCase):
                     receipt_event="completed",
                     attestor="human:test",
                     obpi_completion="completed",
+                    evidence={
+                        "value_narrative": "The focused OBPI status is backed by receipt evidence.",
+                        "key_proof": "uv run gz adr status ADR-0.1.0 --json",
+                    },
                 )
             )
 
@@ -346,6 +356,10 @@ class TestStatusCommand(unittest.TestCase):
                     receipt_event="completed",
                     attestor="human:test",
                     obpi_completion="completed",
+                    evidence={
+                        "value_narrative": "The reconcile path has canonical completion evidence.",
+                        "key_proof": "uv run gz adr status ADR-0.1.0 --json",
+                    },
                 )
             )
 
@@ -356,6 +370,49 @@ class TestStatusCommand(unittest.TestCase):
             self.assertTrue(payload["passed"])
             self.assertEqual(payload["blockers"], [])
             self.assertEqual(payload["runtime_state"], "completed")
+
+    def test_obpi_reconcile_json_reports_reflection_drift_without_blocking(self) -> None:
+        """obpi reconcile stays green when only the markdown reflection is stale."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            _write_obpi(
+                path=obpi_path,
+                status="Draft",
+                brief_status="Draft",
+                implementation_line="",
+                key_proof="",
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(
+                obpi_receipt_emitted_event(
+                    obpi_id="OBPI-0.1.0-01-demo",
+                    parent_adr="ADR-0.1.0",
+                    receipt_event="completed",
+                    attestor="human:test",
+                    obpi_completion="completed",
+                    evidence={
+                        "value_narrative": (
+                            "The runtime engine is now the canonical execution path."
+                        ),
+                        "key_proof": "uv run gz obpi pipeline OBPI-0.1.0-01-demo --json",
+                    },
+                )
+            )
+
+            result = runner.invoke(main, ["obpi", "reconcile", "OBPI-0.1.0-01-demo", "--json"])
+
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            self.assertTrue(payload["passed"])
+            self.assertEqual(payload["blockers"], [])
+            self.assertEqual(payload["runtime_state"], "completed")
+            self.assertIn("brief reflection is not marked Completed", payload["reflection_issues"])
 
     def test_obpi_reconcile_fails_closed_when_proof_missing(self) -> None:
         """obpi reconcile emits BLOCKERS and exits non-zero when proof is missing."""
@@ -411,6 +468,8 @@ class TestStatusCommand(unittest.TestCase):
                     attestor="human:test",
                     obpi_completion="completed",
                     evidence={
+                        "value_narrative": "Anchor-aware reconciliation remains canonical.",
+                        "key_proof": "uv run gz obpi reconcile OBPI-0.1.0-01-demo --json",
                         "scope_audit": {
                             "allowlist": ["src/module.py"],
                             "changed_files": ["src/module.py"],
@@ -518,6 +577,10 @@ class TestStatusCommand(unittest.TestCase):
                     attestor="human:test",
                     obpi_completion="completed",
                     evidence={
+                        "value_narrative": (
+                            "Earlier sibling receipts stay complete after later shared changes."
+                        ),
+                        "key_proof": "uv run gz obpi reconcile OBPI-0.1.0-01-demo --json",
                         "scope_audit": {
                             "allowlist": ["src/module.py"],
                             "changed_files": ["src/module.py"],
@@ -563,6 +626,10 @@ class TestStatusCommand(unittest.TestCase):
                     attestor="human:test",
                     obpi_completion="completed",
                     evidence={
+                        "value_narrative": (
+                            "Later sibling completion absorbs the shared-file change."
+                        ),
+                        "key_proof": "uv run gz obpi status OBPI-0.1.0-02-demo --json",
                         "scope_audit": {
                             "allowlist": ["src/module.py"],
                             "changed_files": ["src/module.py"],
@@ -619,6 +686,10 @@ class TestStatusCommand(unittest.TestCase):
                     attestor="human:test",
                     obpi_completion="completed",
                     evidence={
+                        "value_narrative": (
+                            "Anchor fields come from the canonical completion receipt."
+                        ),
+                        "key_proof": "uv run gz obpi status OBPI-0.1.0-01-demo --json",
                         "scope_audit": {
                             "allowlist": ["src/module.py"],
                             "changed_files": ["src/module.py"],
@@ -646,8 +717,8 @@ class TestStatusCommand(unittest.TestCase):
             self.assertEqual(payload["current_head"], anchor_commit)
             self.assertEqual(payload["anchor_issues"], [])
 
-    def test_obpi_status_uses_only_key_proof_section_for_req_proof_inputs(self) -> None:
-        """Key proof extraction stops at the next heading instead of swallowing later sections."""
+    def test_obpi_status_uses_only_key_proof_section_for_file_reflection(self) -> None:
+        """Key proof extraction still parses the file section without promoting canonical proof."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             runner.invoke(main, ["init"])
@@ -686,14 +757,11 @@ class TestStatusCommand(unittest.TestCase):
 
             self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)
-            self.assertEqual(len(payload["req_proof_inputs"]), 1)
-            self.assertEqual(
-                payload["req_proof_inputs"][0]["source"],
-                "uv run gz obpi status OBPI-0.1.0-01-demo --json",
-            )
+            self.assertTrue(payload["key_proof_ok"])
+            self.assertEqual(payload["req_proof_inputs"], [])
 
-    def test_obpi_status_accepts_legacy_verification_section_as_key_proof(self) -> None:
-        """Legacy completed briefs can use Verification as proof when Key Proof is absent."""
+    def test_obpi_status_accepts_legacy_verification_section_as_file_reflection(self) -> None:
+        """Legacy Verification sections still parse as file proof without redefining lifecycle."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             runner.invoke(main, ["init"])
@@ -749,11 +817,11 @@ class TestStatusCommand(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)
             self.assertTrue(payload["key_proof_ok"])
-            self.assertEqual(payload["runtime_state"], "completed")
-            self.assertEqual(payload["req_proof_state"], "recorded")
+            self.assertEqual(payload["runtime_state"], "drift")
+            self.assertEqual(payload["req_proof_state"], "missing")
 
-    def test_status_json_accepts_legacy_gate_evidence_section_as_key_proof(self) -> None:
-        """Gate Evidence remains a valid proof source for historical completed briefs."""
+    def test_status_json_accepts_legacy_gate_evidence_section_as_file_reflection(self) -> None:
+        """Gate Evidence still parses as file proof without redefining ledger completion."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             runner.invoke(main, ["init"])
@@ -808,12 +876,13 @@ class TestStatusCommand(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)
             adr_payload = payload["adrs"]["ADR-0.1.0"]
-            self.assertEqual(adr_payload["obpi_summary"]["completed"], 1)
-            self.assertEqual(adr_payload["obpi_summary"]["unit_status"], "completed")
-            self.assertEqual(adr_payload["lifecycle_status"], "Completed")
+            self.assertEqual(adr_payload["obpi_summary"]["completed"], 0)
+            self.assertEqual(adr_payload["obpi_summary"]["unit_status"], "pending")
+            self.assertEqual(adr_payload["lifecycle_status"], "Pending")
+            self.assertTrue(adr_payload["obpis"][0]["key_proof_ok"])
 
-    def test_obpi_status_accepts_verification_heading_prefix_as_key_proof(self) -> None:
-        """Verification headings with legacy suffixes still count as substantive proof."""
+    def test_obpi_status_accepts_verification_heading_prefix_as_file_reflection(self) -> None:
+        """Verification headings with legacy suffixes still parse as file proof only."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             runner.invoke(main, ["init"])
@@ -870,10 +939,10 @@ class TestStatusCommand(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)
             self.assertTrue(payload["key_proof_ok"])
-            self.assertEqual(payload["req_proof_state"], "recorded")
+            self.assertEqual(payload["req_proof_state"], "missing")
 
-    def test_obpi_status_accepts_validation_commands_bullet_as_key_proof(self) -> None:
-        """Legacy implementation summaries can surface proof via validation-commands bullets."""
+    def test_obpi_status_accepts_validation_commands_bullet_as_file_reflection(self) -> None:
+        """Legacy validation-command bullets still parse as file proof only."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             runner.invoke(main, ["init"])
@@ -927,7 +996,7 @@ class TestStatusCommand(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)
             self.assertTrue(payload["key_proof_ok"])
-            self.assertIn("uv run gz check", payload["req_proof_inputs"][0]["source"])
+            self.assertEqual(payload["req_proof_inputs"], [])
 
 
 class TestLifecycleStatusSemantics(unittest.TestCase):
@@ -1261,7 +1330,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
             self.assertEqual(adr_payload["obpi_summary"]["completed"], 0)
             self.assertEqual(adr_payload["obpi_summary"]["unit_status"], "pending")
             self.assertIn(
-                "implementation summary is missing or placeholder",
+                "ledger proof of completion is missing",
                 adr_payload["obpis"][0]["issues"],
             )
 
@@ -1336,6 +1405,10 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
                     receipt_event="completed",
                     attestor="human:test",
                     obpi_completion="completed",
+                    evidence={
+                        "value_narrative": "ADR status rows reflect canonical receipt evidence.",
+                        "key_proof": "uv run gz adr status ADR-0.1.0 --json",
+                    },
                 )
             )
 

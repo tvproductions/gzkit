@@ -18,19 +18,21 @@ the `OBPI-` prefix. Resolution remains ledger-first and follows rename chains.
 ## Runtime Behavior
 
 `gz obpi reconcile` uses the same OBPI runtime payload as `gz obpi status`, then
-fails closed when proof or brief state is missing or drifted.
+fails closed when canonical ledger proof is missing or drifted.
 
 It reports blockers for conditions including:
 
 - missing OBPI brief file
 - missing ledger proof of completion
-- missing or placeholder implementation summary
-- missing or placeholder key proof
-- ledger/file completion drift
+- missing receipt value narrative
+- missing receipt key proof
 - completion-anchor drift in recorded OBPI scope
 - missing completion-anchor evidence for anchor-tracked receipts
 - degraded git-sync evidence recorded at receipt time
 - missing required human-attestation proof
+
+Markdown brief mismatches are returned separately as `reflection_issues`. They
+do not block reconcile when the ledger receipt and canonical evidence are valid.
 
 Text mode prints `PASS` when no blockers are present. Otherwise it prints
 `BLOCKERS:` followed by one blocker per line and exits `1`.
@@ -59,7 +61,6 @@ OBPI reconcile: OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces
   Attestation State: not_required
 BLOCKERS:
 - ledger proof of completion is missing
-- brief file status is not Completed
 ```
 
 ```bash

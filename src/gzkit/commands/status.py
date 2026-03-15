@@ -493,6 +493,7 @@ def _inspect_obpi_brief(
         "human_attestation": human_attestation,
         "frontmatter_status": frontmatter_status or None,
         "brief_status": brief_status or None,
+        "file_human_attestation_ok": bool(human_attestation.get("valid")),
         "reasons": list(semantics["issues"]),
         **semantics,
     }
@@ -578,6 +579,7 @@ def _adr_obpi_status_rows(
                 "anchor_drift_files": list(semantics["anchor_drift_files"]),
                 "frontmatter_status": None,
                 "brief_status": None,
+                "reflection_issues": list(semantics["reflection_issues"]),
                 "issues": ["linked in ledger but no OBPI file found", *list(semantics["issues"])],
             }
         )
@@ -611,6 +613,7 @@ def _adr_obpi_status_rows(
                 "anchor_drift_files": list(inspection["anchor_drift_files"]),
                 "frontmatter_status": inspection["frontmatter_status"],
                 "brief_status": inspection["brief_status"],
+                "reflection_issues": list(inspection["reflection_issues"]),
                 "issues": list(inspection["issues"]),
             }
         )
@@ -620,7 +623,7 @@ def _adr_obpi_status_rows(
 
 def _obpi_row_complete(row: dict[str, Any]) -> bool:
     """Return True when an OBPI row is complete with implementation evidence."""
-    return bool(row.get("found_file")) and bool(row.get("completed"))
+    return bool(row.get("completed"))
 
 
 def _summarize_obpi_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
@@ -711,11 +714,15 @@ def _render_obpi_row_status(row: dict[str, Any]) -> str:
     obpi_id = cast(str, row.get("id", "(unknown)"))
     runtime_state = str(row.get("runtime_state", "pending"))
     issues = cast(list[str], row.get("issues", []))
+    reflection_issues = cast(list[str], row.get("reflection_issues", []))
     status_label = _render_obpi_runtime_state(runtime_state, bool(row.get("found_file")))
 
     if issues:
         issues_text = ", ".join(issues)
         return f"{obpi_id}: {status_label} ({issues_text})"
+    if reflection_issues:
+        issues_text = ", ".join(reflection_issues)
+        return f"{obpi_id}: {status_label} (reflection drift: {issues_text})"
     return f"{obpi_id}: {status_label}"
 
 
@@ -794,6 +801,7 @@ def _build_obpi_status_entry(
                 "anchor_drift_files": list(semantics["anchor_drift_files"]),
                 "frontmatter_status": None,
                 "brief_status": None,
+                "reflection_issues": list(semantics["reflection_issues"]),
                 "issues": ["linked in ledger but no OBPI file found", *list(semantics["issues"])],
             }
         )
@@ -823,6 +831,7 @@ def _build_obpi_status_entry(
             "anchor_drift_files": list(inspection["anchor_drift_files"]),
             "frontmatter_status": inspection["frontmatter_status"],
             "brief_status": inspection["brief_status"],
+            "reflection_issues": list(inspection["reflection_issues"]),
             "issues": list(inspection["issues"]),
         }
     )
@@ -841,6 +850,7 @@ def _render_obpi_status_details(result: dict[str, Any]) -> None:
     anchor_commit = result.get("anchor_commit") or "(none)"
     current_head = result.get("current_head") or "(unknown)"
     issues = cast(list[str], result.get("issues", []))
+    reflection_issues = cast(list[str], result.get("reflection_issues", []))
 
     console.print(f"[bold]{obpi_id}[/bold]")
     if isinstance(parent_adr, str) and parent_adr:
@@ -862,8 +872,14 @@ def _render_obpi_status_details(result: dict[str, Any]) -> None:
     console.print("  Issues:")
     if not issues:
         console.print("    - none")
+    else:
+        for issue in issues:
+            console.print(f"    - {issue}")
+    console.print("  Reflection Issues:")
+    if not reflection_issues:
+        console.print("    - none")
         return
-    for issue in issues:
+    for issue in reflection_issues:
         console.print(f"    - {issue}")
 
 
