@@ -392,7 +392,11 @@ class TestLedger(unittest.TestCase):
     def test_derive_obpi_semantics_reports_in_progress_with_partial_proof(self) -> None:
         """Partial proof keeps runtime state in progress instead of completed."""
         semantics = derive_obpi_semantics(
-            {},
+            {
+                "latest_evidence": {
+                    "value_narrative": "The runtime engine is partially wired but missing proof.",
+                }
+            },
             found_file=True,
             file_completed=False,
             implementation_evidence_ok=True,
@@ -400,10 +404,10 @@ class TestLedger(unittest.TestCase):
             fallback_key_proof="uv run gz obpi status OBPI-0.10.0-01 --json",
         )
         self.assertEqual(semantics["runtime_state"], "in_progress")
-        self.assertEqual(semantics["proof_state"], "recorded")
+        self.assertEqual(semantics["proof_state"], "missing")
 
-    def test_derive_obpi_semantics_uses_legacy_key_proof_for_completion(self) -> None:
-        """Legacy completed receipts remain completed when brief key proof is substantive."""
+    def test_derive_obpi_semantics_requires_receipt_proof_for_completion(self) -> None:
+        """Brief-only proof no longer upgrades a completed receipt to canonical completion."""
         semantics = derive_obpi_semantics(
             {
                 "latest_receipt_event": "completed",
@@ -417,10 +421,12 @@ class TestLedger(unittest.TestCase):
             key_proof_ok=True,
             fallback_key_proof="uv run gz adr status ADR-0.1.0 --json",
         )
-        self.assertEqual(semantics["runtime_state"], "completed")
-        self.assertEqual(semantics["proof_state"], "recorded")
+        self.assertEqual(semantics["runtime_state"], "drift")
+        self.assertEqual(semantics["proof_state"], "missing")
         self.assertEqual(semantics["attestation_requirement"], "optional")
-        self.assertTrue(semantics["completed"])
+        self.assertIn("completed receipt evidence is missing value narrative", semantics["issues"])
+        self.assertIn("completed receipt evidence is missing key proof", semantics["issues"])
+        self.assertFalse(semantics["completed"])
         self.assertEqual(semantics["anchor_state"], "not_tracked")
 
     def test_derive_obpi_semantics_requires_attestation_for_attested_completed(self) -> None:
@@ -430,13 +436,19 @@ class TestLedger(unittest.TestCase):
                 "latest_receipt_event": "completed",
                 "obpi_completion": "attested_completed",
                 "ledger_completed": True,
-                "latest_evidence": {"attestation_requirement": "required"},
+                "latest_evidence": {
+                    "attestation_requirement": "required",
+                    "value_narrative": "The runtime engine now persists canonical stage state.",
+                    "key_proof": "uv run gz obpi reconcile OBPI-0.10.0-01 --json",
+                    "human_attestation": True,
+                    "attestation_text": "Accepted by the human reviewer.",
+                    "attestation_date": "2026-03-10",
+                },
             },
             found_file=True,
             file_completed=True,
             implementation_evidence_ok=True,
             key_proof_ok=True,
-            fallback_key_proof="uv run gz obpi reconcile OBPI-0.10.0-01 --json",
             human_attestation={
                 "present": True,
                 "valid": True,
@@ -456,36 +468,49 @@ class TestLedger(unittest.TestCase):
                 "obpi_completion": "completed",
                 "ledger_completed": True,
                 "validated": True,
-                "latest_evidence": {},
+                "latest_evidence": {
+                    "value_narrative": "Structured outputs now flow through the runtime surface.",
+                    "key_proof": "uv run gz obpi status OBPI-0.10.0-01 --json",
+                },
             },
             found_file=True,
             file_completed=True,
             implementation_evidence_ok=True,
             key_proof_ok=True,
-            fallback_key_proof="uv run gz obpi status OBPI-0.10.0-01 --json",
         )
         self.assertEqual(semantics["runtime_state"], "validated")
         self.assertEqual(semantics["proof_state"], "validated")
 
-    def test_derive_obpi_semantics_reports_drift_when_ledger_and_file_disagree(self) -> None:
-        """Ledger completion plus incomplete brief evidence is treated as drift."""
+    def test_derive_obpi_semantics_reports_reflection_drift_without_downgrading_completion(
+        self,
+    ) -> None:
+        """Ledger completion remains canonical when only the markdown reflection drifts."""
         semantics = derive_obpi_semantics(
             {
                 "latest_receipt_event": "completed",
                 "obpi_completion": "completed",
                 "ledger_completed": True,
-                "latest_evidence": {},
+                "latest_evidence": {
+                    "value_narrative": "The runtime engine is unified behind one command.",
+                    "key_proof": "uv run gz obpi pipeline OBPI-0.13.0-05 --json",
+                },
             },
             found_file=True,
             file_completed=False,
             implementation_evidence_ok=False,
             key_proof_ok=False,
         )
-        self.assertEqual(semantics["runtime_state"], "drift")
-        self.assertIn(
-            "ledger says completed but brief file status is not Completed", semantics["issues"]
+        self.assertEqual(semantics["runtime_state"], "completed")
+        self.assertEqual(semantics["issues"], [])
+        self.assertEqual(
+            semantics["reflection_issues"],
+            [
+                "brief reflection is not marked Completed",
+                "brief implementation summary is missing or placeholder",
+                "brief key proof is missing or placeholder",
+            ],
         )
-        self.assertFalse(semantics["completed"])
+        self.assertTrue(semantics["completed"])
 
     def test_derive_obpi_semantics_reports_scope_clean_when_head_advances_outside_scope(
         self,
@@ -496,7 +521,10 @@ class TestLedger(unittest.TestCase):
                 "latest_receipt_event": "completed",
                 "obpi_completion": "completed",
                 "ledger_completed": True,
-                "latest_evidence": {},
+                "latest_evidence": {
+                    "value_narrative": "The runtime stage state persists across sessions.",
+                    "key_proof": "uv run gz obpi status OBPI-0.10.0-02 --json",
+                },
                 "latest_completion_evidence": {
                     "scope_audit": {
                         "allowlist": ["src/module.py"],
@@ -526,7 +554,10 @@ class TestLedger(unittest.TestCase):
                 "latest_receipt_event": "completed",
                 "obpi_completion": "completed",
                 "ledger_completed": True,
-                "latest_evidence": {},
+                "latest_evidence": {
+                    "value_narrative": "Transient hook state is ignored during anchor checks.",
+                    "key_proof": "uv run gz obpi status OBPI-0.10.0-02 --json",
+                },
                 "latest_completion_evidence": {
                     "scope_audit": {
                         "allowlist": [".claude/hooks/**"],
@@ -556,7 +587,10 @@ class TestLedger(unittest.TestCase):
                 "latest_receipt_event": "completed",
                 "obpi_completion": "completed",
                 "ledger_completed": True,
-                "latest_evidence": {},
+                "latest_evidence": {
+                    "value_narrative": "Anchor drift is isolated to files inside recorded scope.",
+                    "key_proof": "uv run gz obpi reconcile OBPI-0.10.0-02 --json",
+                },
                 "latest_completion_evidence": {
                     "scope_audit": {
                         "allowlist": ["src/gzkit/ledger.py", "tests/**"],
@@ -590,7 +624,10 @@ class TestLedger(unittest.TestCase):
             "latest_receipt_event": "completed",
             "obpi_completion": "completed",
             "ledger_completed": True,
-            "latest_evidence": {},
+            "latest_evidence": {
+                "value_narrative": "Later sibling completions absorb shared-file drift safely.",
+                "key_proof": "uv run gz obpi status OBPI-0.13.0-01 --json",
+            },
             "latest_completion_evidence": {
                 "scope_audit": {
                     "allowlist": ["src/gzkit/cli.py"],
@@ -648,7 +685,10 @@ class TestLedger(unittest.TestCase):
                 "latest_receipt_event": "completed",
                 "obpi_completion": "completed",
                 "ledger_completed": True,
-                "latest_evidence": {},
+                "latest_evidence": {
+                    "value_narrative": "Tracked receipts require explicit completion anchors.",
+                    "key_proof": "uv run gz obpi reconcile OBPI-0.10.0-02 --json",
+                },
                 "latest_completion_evidence": {
                     "scope_audit": {
                         "allowlist": ["src/module.py"],
@@ -675,7 +715,12 @@ class TestLedger(unittest.TestCase):
                 "latest_receipt_event": "completed",
                 "obpi_completion": "completed",
                 "ledger_completed": True,
-                "latest_evidence": {},
+                "latest_evidence": {
+                    "value_narrative": (
+                        "Git-sync blockers are preserved with the completion receipt."
+                    ),
+                    "key_proof": "uv run gz obpi status OBPI-0.10.0-02 --json",
+                },
                 "latest_completion_evidence": {
                     "scope_audit": {
                         "allowlist": ["src/module.py"],

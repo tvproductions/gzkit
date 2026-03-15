@@ -31,7 +31,8 @@ The payload includes:
 - anchor state
 - completion anchor commit and current HEAD
 - anchor-specific issues and recorded drift files when applicable
-- issue list derived fail-closed from ledger/brief evidence
+- canonical issue list derived fail-closed from ledger evidence
+- reflection-issue list describing markdown drift without redefining lifecycle truth
 
 This command is informational. It exits `0` when the OBPI resolves, even when
 issues or drift are present.
@@ -57,7 +58,8 @@ OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces
   Completion: PENDING
   Issues:
     - ledger proof of completion is missing
-    - brief file status is not Completed
+  Reflection Issues:
+    - none
 ```
 
 ```bash
@@ -71,3 +73,4 @@ Anchor-tracked completed receipts add:
 - `current_head`
 - `anchor_issues`
 - `anchor_drift_files`
+- `reflection_issues`

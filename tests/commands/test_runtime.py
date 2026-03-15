@@ -336,6 +336,10 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                     receipt_event="completed",
                     attestor="human:test",
                     obpi_completion="completed",
+                    evidence={
+                        "value_narrative": "The OBPI completed with canonical receipt evidence.",
+                        "key_proof": "uv run gz adr status ADR-0.1.0 --json",
+                    },
                 )
             )
             result = runner.invoke(main, ["adr", "audit-check", "ADR-0.1.0"])

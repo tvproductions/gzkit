@@ -28,9 +28,9 @@ Output includes:
 - Canonical attestation choices
 - Heavy-lane Gate 4 command (always required for heavy lane)
 
-If any linked OBPI still has missing proof, missing brief completion, drift, or
-missing required human-attestation evidence, `gz closeout` prints `BLOCKERS:`
-and exits `1` without writing `closeout_initiated`.
+If any linked OBPI still has missing proof, canonical drift, or missing
+required human-attestation evidence, `gz closeout` prints `BLOCKERS:` and exits
+`1` without writing `closeout_initiated`.
 
 When closeout succeeds without `--dry-run`, `gz closeout` creates or refreshes
 `ADR-CLOSEOUT-FORM.md` beside the ADR file with the current evidence inventory
@@ -77,7 +77,6 @@ Dry run blocked: ADR-0.10.0-obpi-runtime-surface
   OBPI Completion: 2/3 complete
 BLOCKERS:
 - OBPI-0.10.0-03-obpi-proof-and-lifecycle-integration: ledger proof of completion is missing
-- OBPI-0.10.0-03-obpi-proof-and-lifecycle-integration: brief file status is not Completed
 Next steps:
   - uv run gz adr status ADR-0.10.0-obpi-runtime-surface
   - uv run gz adr audit-check ADR-0.10.0-obpi-runtime-surface
