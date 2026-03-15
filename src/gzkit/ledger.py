@@ -408,17 +408,21 @@ def _resolve_attestation_requirement(evidence: dict[str, Any], obpi_completion: 
     return "required" if obpi_completion == "attested_completed" else "optional"
 
 
-def _human_attestation_is_valid(
-    human_attestation: dict[str, Any] | None,
-    evidence: dict[str, Any],
-) -> bool:
-    """Return True when human attestation evidence is present and usable."""
-    human_attestation_ok = bool(human_attestation and human_attestation.get("valid"))
+def _has_substantive_evidence_text(value: Any) -> bool:
+    """Return whether receipt evidence contains a substantive text payload."""
+    if not isinstance(value, str):
+        return False
+    normalized = value.strip().lower()
+    return normalized not in {"", "-", "...", "tbd", "(none)", "n/a", "paste test output here"}
+
+
+def _human_attestation_is_valid(evidence: dict[str, Any]) -> bool:
+    """Return True when receipt evidence includes usable human attestation proof."""
     if evidence.get("human_attestation") is not True:
-        return human_attestation_ok
+        return False
     attestation_text = evidence.get("attestation_text")
     attestation_date = evidence.get("attestation_date")
-    return human_attestation_ok or (
+    return (
         isinstance(attestation_text, str)
         and bool(attestation_text.strip())
         and isinstance(attestation_date, str)
@@ -810,34 +814,57 @@ def _derive_anchor_analysis(
 def _derive_obpi_issues(
     *,
     ledger_completed: bool,
-    file_completed: bool,
-    found_file: bool,
     latest_receipt_event: Any,
     implementation_evidence_ok: bool,
     key_proof_ok: bool,
     attestation_requirement: str,
     human_attestation_ok: bool,
 ) -> list[str]:
-    """Collect fail-closed OBPI runtime issues."""
+    """Collect canonical fail-closed OBPI runtime issues from ledger truth."""
     issues: list[str] = []
     if not ledger_completed:
         issues.append("ledger proof of completion is missing")
-    if not file_completed and not ledger_completed:
-        issues.append("brief file status is not Completed")
-    if not found_file and latest_receipt_event:
-        issues.append("ledger proof exists but the OBPI brief file is missing")
-    if ledger_completed and not file_completed:
-        issues.append("ledger says completed but brief file status is not Completed")
-    if file_completed and not ledger_completed:
-        issues.append("brief file says Completed but ledger proof of completion is missing")
     if latest_receipt_event == "validated" and not ledger_completed:
         issues.append("validated receipt exists without completed proof state")
-    if file_completed and not implementation_evidence_ok:
-        issues.append("implementation summary is missing or placeholder")
-    if file_completed and not key_proof_ok:
-        issues.append("key proof is missing or placeholder")
-    if attestation_requirement == "required" and file_completed and not human_attestation_ok:
+    if ledger_completed and not implementation_evidence_ok:
+        issues.append("completed receipt evidence is missing value narrative")
+    if ledger_completed and not key_proof_ok:
+        issues.append("completed receipt evidence is missing key proof")
+    if attestation_requirement == "required" and ledger_completed and not human_attestation_ok:
         issues.append("required human attestation evidence is missing")
+    return issues
+
+
+def _derive_obpi_reflection_issues(
+    *,
+    ledger_completed: bool,
+    file_completed: bool,
+    found_file: bool,
+    latest_receipt_event: Any,
+    file_implementation_evidence_ok: bool,
+    file_key_proof_ok: bool,
+    attestation_requirement: str,
+    file_human_attestation_ok: bool,
+) -> list[str]:
+    """Collect markdown-reflection drift that should not redefine ledger truth."""
+    issues: list[str] = []
+    if latest_receipt_event and not found_file:
+        issues.append("OBPI brief file is missing; markdown reflection is out of sync with ledger")
+    if not ledger_completed and file_completed:
+        issues.append("brief reflection says Completed without ledger completion proof")
+    if ledger_completed and found_file and not file_completed:
+        issues.append("brief reflection is not marked Completed")
+    if ledger_completed and found_file and not file_implementation_evidence_ok:
+        issues.append("brief implementation summary is missing or placeholder")
+    if ledger_completed and found_file and not file_key_proof_ok:
+        issues.append("brief key proof is missing or placeholder")
+    if (
+        attestation_requirement == "required"
+        and ledger_completed
+        and found_file
+        and not file_human_attestation_ok
+    ):
+        issues.append("brief human attestation section is missing or incomplete")
     return issues
 
 
@@ -860,7 +887,6 @@ def _derive_obpi_runtime_state(
     attestation_state: str,
     obpi_completion: Any,
     latest_receipt_event: Any,
-    file_completed: bool,
     implementation_evidence_ok: bool,
     key_proof_ok: bool,
     req_proof_present: int,
@@ -874,15 +900,7 @@ def _derive_obpi_runtime_state(
         return "attested_completed"
     if obpi_completion == "completed" and evidence_ok:
         return "completed"
-    if any(
-        [
-            latest_receipt_event,
-            file_completed,
-            implementation_evidence_ok,
-            key_proof_ok,
-            req_proof_present,
-        ]
-    ):
+    if any([latest_receipt_event, implementation_evidence_ok, key_proof_ok, req_proof_present]):
         return "in_progress"
     return "pending"
 
@@ -916,16 +934,27 @@ def derive_obpi_semantics(
 
     req_proof_inputs = normalize_req_proof_inputs(
         evidence.get("req_proof_inputs"),
-        fallback_key_proof=fallback_key_proof,
-        human_attestation=human_attestation,
+        fallback_key_proof=(
+            evidence.get("key_proof")
+            if _has_substantive_evidence_text(evidence.get("key_proof"))
+            else None
+        ),
     )
     req_proof_summary = summarize_req_proof_inputs(req_proof_inputs)
     req_proof_state = str(req_proof_summary["state"])
 
-    human_attestation_ok = _human_attestation_is_valid(human_attestation, evidence)
+    file_human_attestation_ok = bool(human_attestation and human_attestation.get("valid"))
+    human_attestation_ok = _human_attestation_is_valid(evidence)
     attestation_state = _derive_attestation_state(attestation_requirement, human_attestation_ok)
 
-    evidence_ok = implementation_evidence_ok and key_proof_ok
+    canonical_implementation_evidence_ok = _has_substantive_evidence_text(
+        evidence.get("value_narrative")
+    )
+    canonical_key_proof_ok = (
+        _has_substantive_evidence_text(evidence.get("key_proof"))
+        or int(req_proof_summary["present"]) > 0
+    )
+    evidence_ok = canonical_implementation_evidence_ok and canonical_key_proof_ok
     anchor_analysis = _derive_anchor_analysis(
         info,
         obpi_id=obpi_id,
@@ -938,13 +967,21 @@ def derive_obpi_semantics(
 
     issues = _derive_obpi_issues(
         ledger_completed=ledger_completed,
+        latest_receipt_event=latest_receipt_event,
+        implementation_evidence_ok=canonical_implementation_evidence_ok,
+        key_proof_ok=canonical_key_proof_ok,
+        attestation_requirement=attestation_requirement,
+        human_attestation_ok=human_attestation_ok,
+    )
+    reflection_issues = _derive_obpi_reflection_issues(
+        ledger_completed=ledger_completed,
         file_completed=file_completed,
         found_file=found_file,
         latest_receipt_event=latest_receipt_event,
-        implementation_evidence_ok=implementation_evidence_ok,
-        key_proof_ok=key_proof_ok,
+        file_implementation_evidence_ok=implementation_evidence_ok,
+        file_key_proof_ok=key_proof_ok,
         attestation_requirement=attestation_requirement,
-        human_attestation_ok=human_attestation_ok,
+        file_human_attestation_ok=file_human_attestation_ok,
     )
 
     runtime_state = _derive_obpi_runtime_state(
@@ -955,9 +992,8 @@ def derive_obpi_semantics(
         attestation_state=attestation_state,
         obpi_completion=obpi_completion,
         latest_receipt_event=latest_receipt_event,
-        file_completed=file_completed,
-        implementation_evidence_ok=implementation_evidence_ok,
-        key_proof_ok=key_proof_ok,
+        implementation_evidence_ok=canonical_implementation_evidence_ok,
+        key_proof_ok=canonical_key_proof_ok,
         req_proof_present=int(req_proof_summary["present"]),
     )
 
@@ -965,11 +1001,7 @@ def derive_obpi_semantics(
     issues = [*issues, *list(anchor_analysis["anchor_issues"])]
 
     completed = bool(
-        found_file
-        and ledger_completed
-        and file_completed
-        and evidence_ok
-        and attestation_state != "missing"
+        ledger_completed and evidence_ok and attestation_state != "missing"
     )
     return {
         "runtime_state": runtime_state,
@@ -982,6 +1014,7 @@ def derive_obpi_semantics(
         "completed": completed,
         "ledger_completed": ledger_completed,
         "evidence_ok": evidence_ok,
+        "reflection_issues": reflection_issues,
         "anchor_state": anchor_analysis["anchor_state"],
         "anchor_commit": anchor_analysis["anchor_commit"],
         "current_head": anchor_analysis["current_head"],
