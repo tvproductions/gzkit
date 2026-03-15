@@ -422,6 +422,37 @@ def _extract_skill_description(skill_file: Path) -> str:
     return "No description provided."
 
 
+def _extract_skill_frontmatter_field(skill_file: Path, field: str) -> str:
+    """Extract a named field from SKILL.md frontmatter.
+
+    Args:
+        skill_file: Path to SKILL.md.
+        field: Frontmatter key to extract.
+
+    Returns:
+        Field value or empty string if not found.
+    """
+    try:
+        content = skill_file.read_text(encoding="utf-8")
+    except OSError:
+        return ""
+
+    lines = content.splitlines()
+    if not lines or lines[0].strip() != "---":
+        return ""
+
+    for raw in lines[1:]:
+        stripped = raw.strip()
+        if stripped == "---":
+            break
+        if not stripped or ":" not in stripped:
+            continue
+        key, value = stripped.split(":", 1)
+        if key.strip() == field:
+            return value.strip().strip("\"'")
+    return ""
+
+
 def collect_skills_catalog(
     project_root: Path,
     skills_dir: str,
@@ -449,6 +480,7 @@ def collect_skills_catalog(
             {
                 "name": skill_dir.name,
                 "description": _extract_skill_description(skill_file),
+                "category": _extract_skill_frontmatter_field(skill_file, "category"),
                 "path": skill_file.relative_to(project_root).as_posix(),
             }
         )
