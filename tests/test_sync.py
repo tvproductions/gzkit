@@ -8,6 +8,7 @@ from pathlib import Path
 from gzkit.config import GzkitConfig
 from gzkit.sync import (
     collect_canonical_sync_blockers,
+    collect_skills_catalog,
     detect_project_name,
     detect_project_structure,
     extract_artifact_id,
@@ -751,6 +752,24 @@ class TestSyncControlSurfaces(unittest.TestCase):
             self.assertTrue(
                 any("unsupported lifecycle transition" in blocker for blocker in blockers)
             )
+
+    def test_collect_skills_catalog_reads_category_from_frontmatter(self) -> None:
+        """Skill catalog collection extracts the category field from frontmatter."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            skill_dir = project_root / config.paths.skills / "gz-plan"
+            skill_dir.mkdir(parents=True, exist_ok=True)
+            (skill_dir / "SKILL.md").write_text(
+                "---\nname: gz-plan\ndescription: Create ADR artifacts.\n"
+                "category: adr-lifecycle\nlifecycle_state: active\n"
+                "owner: gzkit-governance\nlast_reviewed: 2026-03-15\n---\n"
+            )
+
+            skills = collect_skills_catalog(project_root, config.paths.skills)
+            self.assertEqual(len(skills), 1)
+            self.assertEqual(skills[0]["category"], "adr-lifecycle")
 
 
 if __name__ == "__main__":
