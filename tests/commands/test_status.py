@@ -545,6 +545,8 @@ class TestStatusCommand(unittest.TestCase):
                     attestor="human:test",
                     obpi_completion="completed",
                     evidence={
+                        "value_narrative": "Anchor drift is tracked with linked defects.",
+                        "key_proof": "uv run gz adr status ADR-0.1.0 --json",
                         "scope_audit": {
                             "allowlist": ["src/module.py"],
                             "changed_files": ["src/module.py"],
@@ -1270,6 +1272,8 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
                     attestor="human:test",
                     obpi_completion="completed",
                     evidence={
+                        "value_narrative": "Anchor drift is tracked with linked defects.",
+                        "key_proof": "uv run gz adr status ADR-0.1.0 --json",
                         "scope_audit": {
                             "allowlist": ["src/module.py"],
                             "changed_files": ["src/module.py"],
