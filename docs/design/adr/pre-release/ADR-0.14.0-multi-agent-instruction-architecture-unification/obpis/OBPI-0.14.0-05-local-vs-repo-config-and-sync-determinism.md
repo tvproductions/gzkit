@@ -27,6 +27,9 @@ generator/test contract.
 ## Lane
 
 **Heavy** - Changes tracked agent config policy and sync guarantees seen by operators.
+Heavy rather than Lite because the sync determinism guarantee and local-config
+separation change operator-visible `.claude/settings.json` contract behavior and
+affect how external agent tools discover project policy.
 
 ## Allowed Paths
 

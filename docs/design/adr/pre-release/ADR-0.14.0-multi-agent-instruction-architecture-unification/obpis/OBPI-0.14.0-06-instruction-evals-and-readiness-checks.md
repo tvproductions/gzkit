@@ -28,6 +28,15 @@ surface presence.
 ## Lane
 
 **Heavy** - Adds new quality/readiness behavior for externally consumed agent surfaces.
+Heavy rather than Lite because the readiness command produces operator-facing output
+and defines pass/fail criteria for externally consumed instruction surfaces.
+
+## Prerequisites
+
+- **OBPI-0.14.0-01** must be complete (canonical instruction model provides the
+  surfaces that evals exercise).
+- **OBPI-0.14.0-04** must be complete (audit detection logic provides the drift
+  and defect signals that readiness checks validate against).
 
 ## Allowed Paths
 
