@@ -129,6 +129,8 @@ def step_completed_anchor_obpi(context) -> None:  # type: ignore[no-untyped-def]
             attestor="human:bdd",
             obpi_completion="completed",
             evidence={
+                "value_narrative": "Anchor-aware reconcile preserves completed lifecycle state.",
+                "key_proof": "uv run gz obpi reconcile OBPI-0.1.0-01-demo --json",
                 "scope_audit": {
                     "allowlist": ["src/module.py"],
                     "changed_files": ["src/module.py"],
