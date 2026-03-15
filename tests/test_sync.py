@@ -846,6 +846,112 @@ class TestSyncControlSurfaces(unittest.TestCase):
         result = render_skills_catalog(skills, categorized=False)
         self.assertIn("- `lint`: Run linting. (`.gzkit/skills/lint/SKILL.md`)", result)
 
+    def test_sync_claude_rules_mirrors_instructions_to_claude_rules(self) -> None:
+        """Instructions from .github/instructions/ are mirrored to .claude/rules/."""
+        from gzkit.sync import sync_claude_rules
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            instructions_dir = project_root / ".github" / "instructions"
+            instructions_dir.mkdir(parents=True, exist_ok=True)
+            (instructions_dir / "tests.instructions.md").write_text(
+                '---\napplyTo: "tests/**"\n---\n\n# Test Policy\n\nUse unittest.\n'
+            )
+            sync_claude_rules(project_root)
+            rules_file = project_root / ".claude" / "rules" / "tests.md"
+            self.assertTrue(rules_file.exists())
+            content = rules_file.read_text(encoding="utf-8")
+            self.assertIn("paths:", content)
+            self.assertIn('  - "tests/**"', content)
+            self.assertIn("# Test Policy", content)
+            self.assertIn("Use unittest.", content)
+
+    def test_sync_claude_rules_strips_frontmatter_for_universal_rules(self) -> None:
+        """Instructions with applyTo: '**/*' become unconditional rules (no frontmatter)."""
+        from gzkit.sync import sync_claude_rules
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            instructions_dir = project_root / ".github" / "instructions"
+            instructions_dir.mkdir(parents=True, exist_ok=True)
+            (instructions_dir / "governance_core.instructions.md").write_text(
+                '---\napplyTo: "**/*"\n---\n\n# Governance Core\n\nRead AGENTS.md.\n'
+            )
+            sync_claude_rules(project_root)
+            rules_file = project_root / ".claude" / "rules" / "governance_core.md"
+            content = rules_file.read_text(encoding="utf-8")
+            self.assertNotIn("paths:", content)
+            self.assertNotIn("---", content)
+            self.assertIn("# Governance Core", content)
+
+    def test_sync_claude_rules_splits_comma_separated_apply_to(self) -> None:
+        """Comma-separated applyTo patterns become a YAML list in paths."""
+        from gzkit.sync import sync_claude_rules
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            instructions_dir = project_root / ".github" / "instructions"
+            instructions_dir.mkdir(parents=True, exist_ok=True)
+            (instructions_dir / "gate5.instructions.md").write_text(
+                '---\napplyTo: "docs/**,src/gzkit/**"\n---\n\n# Gate 5\n'
+            )
+            sync_claude_rules(project_root)
+            rules_file = project_root / ".claude" / "rules" / "gate5.md"
+            content = rules_file.read_text(encoding="utf-8")
+            self.assertIn('  - "docs/**"', content)
+            self.assertIn('  - "src/gzkit/**"', content)
+
+    def test_sync_claude_rules_skips_excluded_coding_agent_rules(self) -> None:
+        """Instructions with excludeAgent: coding-agent are not mirrored."""
+        from gzkit.sync import sync_claude_rules
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            instructions_dir = project_root / ".github" / "instructions"
+            instructions_dir.mkdir(parents=True, exist_ok=True)
+            (instructions_dir / "review_only.instructions.md").write_text(
+                '---\napplyTo: "**/*"\nexcludeAgent: coding-agent\n---\n\n# Review Only\n'
+            )
+            sync_claude_rules(project_root)
+            rules_file = project_root / ".claude" / "rules" / "review_only.md"
+            self.assertFalse(rules_file.exists())
+
+    def test_sync_claude_rules_skips_readme_and_non_instruction_files(self) -> None:
+        """Only *.instructions.md files are mirrored."""
+        from gzkit.sync import sync_claude_rules
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            instructions_dir = project_root / ".github" / "instructions"
+            instructions_dir.mkdir(parents=True, exist_ok=True)
+            (instructions_dir / "README.md").write_text("# Instructions\n")
+            (instructions_dir / "tests.instructions.md").write_text(
+                '---\napplyTo: "tests/**"\n---\n\n# Tests\n'
+            )
+            sync_claude_rules(project_root)
+            rules_dir = project_root / ".claude" / "rules"
+            mirrored = [f.name for f in rules_dir.iterdir()] if rules_dir.exists() else []
+            self.assertIn("tests.md", mirrored)
+            self.assertNotIn("README.md", mirrored)
+
+    def test_sync_claude_rules_deletes_stale_mirrored_rules(self) -> None:
+        """Rules that no longer have a source instruction file are deleted."""
+        from gzkit.sync import sync_claude_rules
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            instructions_dir = project_root / ".github" / "instructions"
+            instructions_dir.mkdir(parents=True, exist_ok=True)
+            (instructions_dir / "tests.instructions.md").write_text(
+                '---\napplyTo: "tests/**"\n---\n\n# Tests\n'
+            )
+            rules_dir = project_root / ".claude" / "rules"
+            rules_dir.mkdir(parents=True, exist_ok=True)
+            (rules_dir / "old_rule.md").write_text("# Stale\n")
+            sync_claude_rules(project_root)
+            self.assertTrue((rules_dir / "tests.md").exists())
+            self.assertFalse((rules_dir / "old_rule.md").exists())
+
 
 if __name__ == "__main__":
     unittest.main()
