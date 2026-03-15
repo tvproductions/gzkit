@@ -462,7 +462,8 @@ class TestSyncControlSurfaces(unittest.TestCase):
             copilot = (project_root / config.paths.copilot_instructions).read_text(encoding="utf-8")
 
             self.assertIn("`demo-skill`", agents)
-            self.assertIn(".gzkit/skills/demo-skill/SKILL.md", agents)
+            # Categorized format no longer includes per-skill paths
+            self.assertIn(".gzkit/skills/<skill-name>/", agents)
             self.assertIn("`demo-skill`", claude)
             self.assertIn("`demo-skill`", copilot)
 
@@ -479,8 +480,8 @@ class TestSyncControlSurfaces(unittest.TestCase):
             sync_all(project_root, config)
 
             agents = (project_root / config.paths.agents_md).read_text(encoding="utf-8")
-            self.assertIn("`demo-skill`: Demo skill", agents)
-            self.assertNotIn("`demo-skill`: ---", agents)
+            self.assertIn("`demo-skill`", agents)
+            self.assertNotIn("---: ---", agents)
 
     def test_sync_mirrors_skills_into_all_tool_directories(self) -> None:
         """Canonical skills are mirrored into Claude, Codex, and Copilot paths."""
@@ -770,6 +771,80 @@ class TestSyncControlSurfaces(unittest.TestCase):
             skills = collect_skills_catalog(project_root, config.paths.skills)
             self.assertEqual(len(skills), 1)
             self.assertEqual(skills[0]["category"], "adr-lifecycle")
+
+    def test_render_skills_catalog_categorized_groups_by_category(self) -> None:
+        """Categorized renderer groups skills under category headers."""
+        from gzkit.sync import render_skills_catalog
+
+        skills = [
+            {
+                "name": "gz-plan",
+                "description": "Create ADR.",
+                "category": "adr-lifecycle",
+                "path": ".gzkit/skills/gz-plan/SKILL.md",
+            },
+            {
+                "name": "lint",
+                "description": "Run linting.",
+                "category": "code-quality",
+                "path": ".gzkit/skills/lint/SKILL.md",
+            },
+            {
+                "name": "gz-attest",
+                "description": "Record attestation.",
+                "category": "adr-lifecycle",
+                "path": ".gzkit/skills/gz-attest/SKILL.md",
+            },
+        ]
+        result = render_skills_catalog(skills, categorized=True)
+        self.assertIn("#### ADR Lifecycle", result)
+        self.assertIn("#### Code Quality", result)
+        self.assertIn("`gz-plan`", result)
+        self.assertIn("`gz-attest`", result)
+        self.assertIn("`lint`", result)
+        # Should NOT contain full descriptions or per-skill paths
+        self.assertNotIn("Create ADR.", result)
+        self.assertNotIn(".gzkit/skills/gz-plan/SKILL.md", result)
+
+    def test_render_skills_catalog_categorized_shows_uncategorized_for_missing_category(
+        self,
+    ) -> None:
+        """Skills without a category field appear under Uncategorized."""
+        from gzkit.sync import render_skills_catalog
+
+        skills = [
+            {
+                "name": "gz-plan",
+                "description": "Create ADR.",
+                "category": "adr-lifecycle",
+                "path": ".gzkit/skills/gz-plan/SKILL.md",
+            },
+            {
+                "name": "orphan-skill",
+                "description": "No category.",
+                "category": "",
+                "path": ".gzkit/skills/orphan-skill/SKILL.md",
+            },
+        ]
+        result = render_skills_catalog(skills, categorized=True)
+        self.assertIn("#### ADR Lifecycle", result)
+        self.assertIn("#### Uncategorized", result)
+        self.assertIn("`orphan-skill`", result)
+
+    def test_render_skills_catalog_flat_mode_preserves_existing_format(self) -> None:
+        """Non-categorized rendering preserves the existing flat bullet format."""
+        from gzkit.sync import render_skills_catalog
+
+        skills = [
+            {
+                "name": "lint",
+                "description": "Run linting.",
+                "category": "code-quality",
+                "path": ".gzkit/skills/lint/SKILL.md",
+            },
+        ]
+        result = render_skills_catalog(skills, categorized=False)
+        self.assertIn("- `lint`: Run linting. (`.gzkit/skills/lint/SKILL.md`)", result)
 
 
 if __name__ == "__main__":
