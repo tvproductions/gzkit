@@ -3,9 +3,33 @@
 **Date**: 2026-03-15
 **Status**: Design approved, pending implementation plan
 
+## Background: Superpowers Framework
+
+[Superpowers](https://github.com/obra/superpowers) is a Claude Code plugin that provides a structured methodology for AI-assisted software engineering. It enforces a disciplined workflow:
+
+1. **Brainstorming** — Socratic dialogue to explore intent, constraints, and alternatives before committing to a design. Produces multiple-choice questions, trade-off comparisons, and approach recommendations.
+2. **Spec writing** — The approved design is captured as a formal spec document (`docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`). Specs go through an automated review loop (subagent reviewer identifies gaps, author fixes, re-review until approved) followed by human review.
+3. **Plan writing** — The spec is decomposed into an implementation plan (`docs/superpowers/plans/YYYY-MM-DD-<topic>.md`). Plans are structured as **chunks** (logical groupings, ~1000 lines max) containing **tasks** (2-5 minute atomic units) containing **steps** (individual actions: write test, run test, implement, verify, commit). Plans specify exact file paths, complete code, and expected command outputs. Plans also go through automated review.
+4. **Execution** — Plans are executed via subagent-driven development: a fresh subagent per task, with two-stage review (spec compliance, then code quality) after each. Implementation follows TDD: write failing test → verify failure → implement → verify pass → commit.
+5. **Completion** — Branch finishing with verification gates before merge/PR.
+
+**Key principles:** TDD always, YAGNI ruthlessly, DRY, bite-sized tasks, evidence before assertions, fresh context per task (subagents prevent context pollution).
+
+**Artifacts produced:**
+- Spec document (design decisions, architecture, trade-offs)
+- Plan document (chunks, tasks, steps, file paths, complete code)
+- Git commits (one per task, with meaningful messages)
+- Test suite (written before implementation per TDD)
+
 ## Problem
 
 Superpowers' plan/task framework produces high-quality implementation artifacts (specs, plans, commits) but these exist outside GovZero's governance ledger. Work completed through superpowers has no ADR, no OBPI briefs, no ledger events, and no formal attestation trail. This creates a governance gap where significant architectural work is invisible to `gz status`, `gz state`, and audit workflows.
+
+The two frameworks are complementary, not competing:
+- **Superpowers** provides behavioral methodology — *how* work is done (TDD, decomposition, review discipline)
+- **GovZero** provides governance infrastructure — *that* work is tracked (ledger, gates, attestation, audit trail)
+
+`gz superbook` bridges them: it reads superpowers artifacts and books them into GovZero's governance ledger.
 
 ## Goals
 
