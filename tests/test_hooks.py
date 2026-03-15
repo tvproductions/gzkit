@@ -303,6 +303,7 @@ class TestSetupClaudeHooks(unittest.TestCase):
             self.assertIn("pipeline-router.py", readme_text)
             self.assertIn("pipeline-gate.py", readme_text)
             self.assertIn("pipeline-completion-reminder.py", readme_text)
+            self.assertIn("src/gzkit/pipeline_runtime.py", readme_text)
             self.assertIn("Registration Order", readme_text)
             self.assertNotIn("not yet active in", readme_text)
             self.assertIn("hook that runs `ruff check --fix`", readme_text)
@@ -577,7 +578,6 @@ class TestPipelineRouterHook(unittest.TestCase):
             self.assertEqual(result.returncode, 0)
             self.assertIn("OBPI plan approved: OBPI-0.12.0-03", result.stdout)
             self.assertIn("uv run gz obpi pipeline OBPI-0.12.0-03", result.stdout)
-            self.assertIn("/gz-obpi-pipeline OBPI-0.12.0-03", result.stdout)
             self.assertEqual(result.stderr, "")
 
 
@@ -679,7 +679,6 @@ class TestPipelineGateHook(unittest.TestCase):
             self.assertEqual(result.returncode, 2)
             self.assertIn("BLOCKED: Pipeline not invoked for OBPI-0.12.0-04.", result.stderr)
             self.assertIn("uv run gz obpi pipeline OBPI-0.12.0-04", result.stderr)
-            self.assertIn("/gz-obpi-pipeline OBPI-0.12.0-04", result.stderr)
             self.assertIn("--from=verify", result.stderr)
 
     def test_allows_when_per_obpi_marker_matches(self) -> None:
@@ -926,6 +925,7 @@ class TestPipelineCompletionReminderHook(unittest.TestCase):
             self.assertEqual(result.stdout, "")
             self.assertIn("STALE PIPELINE MARKER", result.stderr)
             self.assertIn("OBPI-0.12.0-05", result.stderr)
+            self.assertIn("runtime-managed", result.stderr)
 
     def test_emits_reminder_when_brief_is_incomplete(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -944,8 +944,8 @@ class TestPipelineCompletionReminderHook(unittest.TestCase):
             self.assertEqual(result.returncode, 0)
             self.assertEqual(result.stdout, "")
             self.assertIn("PIPELINE COMPLETION REMINDER", result.stderr)
-            self.assertIn("uv run gz obpi pipeline OBPI-0.12.0-05 --from=ceremony", result.stderr)
-            self.assertIn("/gz-obpi-pipeline OBPI-0.12.0-05 --from=ceremony", result.stderr)
+            self.assertIn("uv run gz obpi pipeline OBPI-0.12.0-05 --from=verify", result.stderr)
+            self.assertIn("Do not clear the pipeline marker by hand", result.stderr)
 
     def test_emits_reminder_with_richer_marker_payload(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -979,6 +979,7 @@ class TestPipelineCompletionReminderHook(unittest.TestCase):
             self.assertEqual(result.stdout, "")
             self.assertIn("PIPELINE COMPLETION REMINDER", result.stderr)
             self.assertIn("Active OBPI pipeline: OBPI-0.12.0-05", result.stderr)
+            self.assertIn("Current stage: verify", result.stderr)
             self.assertIn("uv run gz obpi pipeline OBPI-0.12.0-05 --from=ceremony", result.stderr)
 
 

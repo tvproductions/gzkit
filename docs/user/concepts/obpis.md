@@ -53,6 +53,9 @@ Use the OBPI-native runtime surfaces to inspect that state directly:
 For parser-safe evidence detection, keep `### Implementation Summary` as inline
 `- key: value` bullets (for example, `- Date completed: 2026-02-23`) rather than
 splitting values onto nested bullet lines.
+When a defect is filed during the OBPI, record it in a dedicated
+`## Tracked Defects` section using `- GHI-123 (open|closed): summary` bullets so
+status and closeout surfaces can preserve defect-level traceability offline.
 
 `gz adr audit-check` validates these conditions per linked ADR.
 

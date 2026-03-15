@@ -10,13 +10,13 @@ Current hook surface in gzkit:
   OBPI plan against `.claude/plans/.plan-audit-receipt.json`.
 - `pipeline-router.py`
   PostToolUse (`ExitPlanMode`) hook that routes PASS receipts into
-  the canonical `gz obpi pipeline` runtime.
+  `uv run gz obpi pipeline`.
 - `pipeline-gate.py`
   PreToolUse (`Write|Edit`) hook that blocks `src/` and `tests/`
-  writes until the active pipeline marker exists.
+  writes until the runtime-owned active pipeline marker exists.
 - `pipeline-completion-reminder.py`
   PreToolUse (`Bash`) hook that warns before `git commit` and
-  `git push` when an active OBPI pipeline still appears incomplete.
+  `git push` when an active OBPI runtime still appears incomplete.
 - `post-edit-ruff.py`
   PostToolUse (`Write|Edit`) hook that runs `ruff check --fix`
   and `ruff format` on edited Python files.
@@ -28,8 +28,12 @@ Current hook surface in gzkit:
 
 - The operator-facing `gz-plan-audit` skill and receipt contract are
   ported under `ADR-0.12.0-obpi-pipeline-enforcement-parity`.
+- `src/gzkit/pipeline_runtime.py` is the canonical shared runtime used
+  by the CLI and generated pipeline hooks.
 - The pipeline enforcement hooks are active in `.claude/settings.json`
   with the generated runtime order described below.
+- `.claude/hooks/obpi-completion-validator.py` remains a historical
+  compatibility surface; it is not part of the active registration order.
 
 ## Registration Order
 

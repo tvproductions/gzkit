@@ -215,7 +215,7 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertFalse(marker_path.exists())
             self.assertFalse(legacy_path.exists())
 
-    @patch("gzkit.cli._remove_pipeline_markers")
+    @patch("gzkit.cli.remove_pipeline_markers")
     @patch("gzkit.cli.run_command")
     def test_verify_rewrites_markers_with_verify_stage_state(
         self, run_command_mock, remove_markers_mock
@@ -322,7 +322,7 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertFalse(marker_path.exists())
             self.assertFalse(legacy_path.exists())
 
-    @patch("gzkit.cli._remove_pipeline_markers")
+    @patch("gzkit.cli.remove_pipeline_markers")
     def test_ceremony_rewrites_markers_with_ceremony_stage_state(self, remove_markers_mock) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -352,7 +352,7 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertEqual(payload, self._load_json(legacy_path))
             remove_markers_mock.assert_called_once()
 
-    @patch("gzkit.cli._remove_pipeline_markers")
+    @patch("gzkit.cli.remove_pipeline_markers")
     def test_ceremony_lite_parent_omits_required_human_action(self, remove_markers_mock) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -384,7 +384,7 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertEqual(payload, self._load_json(legacy_path))
             remove_markers_mock.assert_called_once()
 
-    @patch("gzkit.cli._remove_pipeline_markers")
+    @patch("gzkit.cli.remove_pipeline_markers")
     def test_ceremony_foundation_parent_requires_human_attestation(
         self, remove_markers_mock
     ) -> None:

@@ -313,17 +313,16 @@ PIPELINE COMPLETION REMINDER
 
 Active OBPI pipeline: OBPI-0.12.0-05
 Brief status: Accepted
+Current stage: verify
+Receipt state: pass
 
 You are about to commit or push while the governance pipeline still
-appears incomplete. Before publishing changes, finish the closeout path:
+appears incomplete. Finish the runtime-managed closeout path first:
 
-  1. Run /gz-obpi-audit OBPI-0.12.0-05
-  2. Update the brief status to Completed
-  3. Run /gz-obpi-sync
-  4. Release the active pipeline marker
+Next canonical command:
+  uv run gz obpi pipeline OBPI-0.12.0-05 --from=ceremony
 
-Preferred re-entry point:
-  /gz-obpi-pipeline OBPI-0.12.0-05 --from=ceremony
+Do not clear the pipeline marker by hand; the runtime owns it.
 ```
 
 ### Implementation Summary

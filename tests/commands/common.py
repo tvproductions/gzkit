@@ -99,6 +99,7 @@ def _write_obpi(
     lane: str = "Lite",
     key_proof: str = "uv run gz adr status ADR-0.1.0 --json",
     human_attestation: tuple[str, str, str] | None = None,
+    tracked_defects: list[str] | None = None,
 ) -> None:
     lines = [
         "---",
@@ -124,6 +125,14 @@ def _write_obpi(
         key_proof,
         "",
     ]
+    if tracked_defects:
+        lines.extend(
+            [
+                "## Tracked Defects",
+                *[f"- {defect}" for defect in tracked_defects],
+                "",
+            ]
+        )
     if human_attestation is not None:
         attestor, attestation, attestation_date = human_attestation
         lines.extend(

@@ -45,6 +45,9 @@ QC readiness is fail-closed for OBPI-first delivery:
 
 When linked OBPIs exist and the OBPI unit is not `completed`, lifecycle is reported as `Pending`
 even if ledger attestation/receipt events indicate `Completed` or `Validated`.
+Anchor freshness stays fail-closed in `closeout_blockers`, but a completed OBPI
+keeps its completed runtime state unless non-anchor proof/evidence drift is
+present.
 
 ---
 
@@ -62,8 +65,13 @@ even if ledger attestation/receipt events indicate `Completed` or `Validated`.
 - `closeout_blockers`
 - additive per-OBPI runtime fields such as `runtime_state`, `proof_state`,
   `attestation_requirement`, `attestation_state`, `req_proof_state`, `req_proof_inputs`,
-  `anchor_state`, `anchor_commit`, `current_head`, `anchor_issues`, and `anchor_drift_files`
+  `anchor_state`, `anchor_commit`, `current_head`, `anchor_issues`,
+  `anchor_drift_files`, `tracked_defects`, and `issue_details`
 - related additive fields
+
+If an OBPI brief records a `## Tracked Defects` section, the corresponding
+closeout blockers carry those linked `GHI-*` refs so summary drilldowns keep
+defect-level traceability without requiring live GitHub access.
 
 ---
 

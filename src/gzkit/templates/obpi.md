@@ -208,6 +208,13 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - Attestation status:
 - Defects noted:
 
+## Tracked Defects
+
+<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
+     Use one bullet per issue so status surfaces can preserve traceability. -->
+
+- GHI-123 (open): defect title or short summary
+
 ## Human Attestation
 
 - Attestor: `human:<name>` when required, otherwise `n/a`
