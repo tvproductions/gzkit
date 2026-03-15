@@ -1,6 +1,7 @@
 ---
 name: gz-obpi-audit
 description: Audit OBPI brief status against actual code/test evidence. Records proof in JSONL ledger.
+category: obpi-pipeline
 compatibility: GovZero v6 framework with OBPI briefs
 metadata:
   skill-version: "1.1.0"

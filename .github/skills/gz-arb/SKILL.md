@@ -1,6 +1,7 @@
 ---
 name: gz-arb
 description: Quality evidence workflow using native gz lint/typecheck/test/check commands.
+category: code-quality
 compatibility: GovZero v6 framework; uses gz CLI quality surfaces
 metadata:
   skill-version: "1.1.0"

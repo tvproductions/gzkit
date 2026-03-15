@@ -1,6 +1,7 @@
 ---
 name: gz-specify
 description: Create OBPI briefs linked to parent ADR items. Use when decomposing implementation into OBPI increments.
+category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-02-18

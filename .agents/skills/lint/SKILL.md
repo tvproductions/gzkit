@@ -1,6 +1,7 @@
 ---
 name: lint
 description: Run code linting with Ruff and PyMarkdown.
+category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-02-18
