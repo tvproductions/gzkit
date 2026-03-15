@@ -488,21 +488,65 @@ def collect_skills_catalog(
     return skills
 
 
-def render_skills_catalog(skills: list[dict[str, str]]) -> str:
-    """Render a markdown bullet list for available skills.
+# Display names for category slugs, in desired render order.
+SKILL_CATEGORY_ORDER: list[tuple[str, str]] = [
+    ("adr-lifecycle", "ADR Lifecycle"),
+    ("adr-operations", "ADR Operations"),
+    ("adr-audit", "ADR Audit & Closeout"),
+    ("obpi-pipeline", "OBPI Pipeline"),
+    ("governance-infrastructure", "Governance Infrastructure"),
+    ("agent-operations", "Agent & Repository Operations"),
+    ("code-quality", "Code Quality"),
+    ("cross-repository", "Cross-Repository"),
+]
+
+_CATEGORY_DISPLAY: dict[str, str] = dict(SKILL_CATEGORY_ORDER)
+_CATEGORY_SORT: dict[str, int] = {slug: i for i, (slug, _) in enumerate(SKILL_CATEGORY_ORDER)}
+
+
+def render_skills_catalog(skills: list[dict[str, str]], *, categorized: bool = True) -> str:
+    """Render a markdown skill catalog.
 
     Args:
-        skills: Skill metadata records.
+        skills: Skill metadata records (must include 'name', 'description',
+            'category', 'path').
+        categorized: If True, group by category with compact name-only format.
+            If False, emit flat bullet list with full descriptions (legacy).
 
     Returns:
-        Markdown list text.
+        Markdown catalog text.
     """
     if not skills:
         return "- No local skills found. Create one with `gz skill new <name>`."
 
-    lines = []
+    if not categorized:
+        lines = []
+        for skill in skills:
+            lines.append(f"- `{skill['name']}`: {skill['description']} (`{skill['path']}`)")
+        return "\n".join(lines)
+
+    # Group by category.
+    groups: dict[str, list[str]] = {}
     for skill in skills:
-        lines.append(f"- `{skill['name']}`: {skill['description']} (`{skill['path']}`)")
+        cat = skill.get("category", "").strip() or "uncategorized"
+        groups.setdefault(cat, []).append(f"`{skill['name']}`")
+
+    lines: list[str] = []
+    # Render known categories in order.
+    for slug, display in SKILL_CATEGORY_ORDER:
+        if slug in groups:
+            lines.append(f"#### {display}")
+            lines.append(", ".join(sorted(groups.pop(slug))))
+            lines.append("")
+
+    # Render uncategorized last.
+    for slug in sorted(groups):
+        display = _CATEGORY_DISPLAY.get(slug, "Uncategorized")
+        lines.append(f"#### {display}")
+        lines.append(", ".join(sorted(groups[slug])))
+        lines.append("")
+
+    lines.append("For details on any skill, read its `SKILL.md` in `.gzkit/skills/<skill-name>/`.")
     return "\n".join(lines)
 
 
