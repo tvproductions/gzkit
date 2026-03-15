@@ -75,11 +75,16 @@ def next_semver(existing: list[str]) -> str:
     if not existing:
         return "0.1.0"
 
-    def _parse(s: str) -> tuple[int, int, int]:
+    def _parse(s: str) -> tuple[int, int, int] | None:
         parts = s.split(".")
-        return (int(parts[0]), int(parts[1]), int(parts[2]))
+        if len(parts) != 3:
+            return None
+        try:
+            return (int(parts[0]), int(parts[1]), int(parts[2]))
+        except ValueError:
+            return None
 
-    versions = sorted(_parse(v) for v in existing)
+    versions = sorted(v for v in (_parse(s) for s in existing) if v is not None)
     major, minor, _patch = versions[-1]
     return f"{major}.{minor + 1}.0"
 
