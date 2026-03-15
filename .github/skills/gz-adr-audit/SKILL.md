@@ -1,6 +1,7 @@
 ---
 name: gz-adr-audit
 description: Gate-5 audit templates and procedure for ADR verification. GovZero v6 skill.
+category: adr-audit
 compatibility: GovZero v6 framework; provides audit procedure for COMPLETED→VALIDATED ADR transition
 metadata:
   skill-version: "6.3.0"

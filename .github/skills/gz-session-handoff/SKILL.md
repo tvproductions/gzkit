@@ -1,6 +1,7 @@
 ---
 name: gz-session-handoff
 description: Create and resume session handoff documents for agent context preservation across engineering sessions.
+category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
   skill-version: "6.0.0"

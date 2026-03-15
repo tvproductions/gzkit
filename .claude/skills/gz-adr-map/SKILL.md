@@ -1,6 +1,7 @@
 ---
 name: gz-adr-map
 description: Build ADR-to-artifact traceability using gz state and repository search.
+category: adr-operations
 compatibility: GovZero v6 framework; manual mapping workflow
 metadata:
   skill-version: "1.1.0"

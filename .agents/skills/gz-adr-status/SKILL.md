@@ -1,6 +1,7 @@
 ---
 name: gz-adr-status
 description: Show the ADR table for summary requests, or show focused lifecycle and OBPI detail for one ADR.
+category: adr-lifecycle
 compatibility: GovZero v6 framework; uses gz CLI status surfaces
 metadata:
   skill-version: "1.9.0"

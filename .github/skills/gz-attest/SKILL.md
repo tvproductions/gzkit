@@ -1,6 +1,7 @@
 ---
 name: gz-attest
 description: Record human attestation with prerequisite enforcement. Use when formally attesting ADR completion state.
+category: adr-lifecycle
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-02-18

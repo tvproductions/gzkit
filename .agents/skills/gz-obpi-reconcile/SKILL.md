@@ -1,6 +1,7 @@
 ---
 name: gz-obpi-reconcile
 description: OBPI brief reconciliation — Audit briefs against evidence, fix stale metadata, write ledger proof.
+category: obpi-pipeline
 compatibility: GovZero v6 framework with OBPI briefs
 metadata:
   skill-version: "2.0.0"

@@ -1,6 +1,7 @@
 ---
 name: gz-obpi-sync
 description: Sync OBPI status in ADR table from brief source files. Detects drift and reconciles. (Layer 3)
+category: obpi-pipeline
 compatibility: Requires GovZero v6 framework with OBPI briefs
 metadata:
   skill-version: "1.0.0"

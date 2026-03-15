@@ -1,6 +1,7 @@
 ---
 name: gz-obpi-brief
 description: Generate a new OBPI brief file with correct headers, constraints, and evidence stubs. GovZero v6 skill.
+category: obpi-pipeline
 compatibility: GovZero v6 framework; enforces One Brief Per Item (OBPI) discipline
 metadata:
   skill-version: "6.0.0"

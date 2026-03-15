@@ -1,6 +1,7 @@
 ---
 name: gz-adr-closeout-ceremony
 description: Execute the ADR closeout ceremony protocol for human attestation. GovZero v6 skill.
+category: adr-audit
 compatibility: GovZero v6 framework; provides runbook walkthrough for human ADR attestation
 metadata:
   skill-version: "6.0.0"

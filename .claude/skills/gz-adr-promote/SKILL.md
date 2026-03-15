@@ -1,6 +1,7 @@
 ---
 name: gz-adr-promote
 description: Promote a pool ADR into canonical ADR package structure. Use when moving a backlog item (ADR-pool.*) into an active, versioned ADR.
+category: adr-lifecycle
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-03-04

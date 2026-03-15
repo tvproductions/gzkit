@@ -1,6 +1,7 @@
 ---
 name: test
 description: Run unit tests with unittest.
+category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-02-18

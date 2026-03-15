@@ -1,6 +1,7 @@
 ---
 name: gz-adr-verification
 description: Verify ADR evidence and linkage using gz ADR/status checks.
+category: adr-operations
 compatibility: GovZero v6 framework; Gate 2/traceability workflow
 metadata:
   skill-version: "6.1.0"
