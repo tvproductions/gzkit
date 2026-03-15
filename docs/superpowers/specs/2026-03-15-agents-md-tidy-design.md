@@ -75,6 +75,14 @@ Canonical (gzkit-owned)          ->  Vendor Mirror (generated)
 | `applyTo: "tests/**"` | `paths: ["tests/**"]` |
 | `applyTo: "docs/**,src/gzkit/**"` | `paths: ["docs/**", "src/gzkit/**"]` |
 
+**Glob syntax translation**: `sync_claude_rules()` must handle more than comma splitting:
+
+1. Split `applyTo` by commas: `"docs/**,src/**"` -> `["docs/**", "src/**"]`
+2. Flag unsupported features: VS Code's glob engine (used by Copilot) supports `{}` brace expansion and `!` exclusion negation. Claude Code's `paths` matcher may not. If an `applyTo` pattern contains `{`, `}`, or `!`, the sync logs a warning. Canonical instructions should avoid these until cross-vendor glob compatibility is verified.
+3. Trim whitespace from each pattern after splitting.
+
+**Agent exclusion filter**: If an instruction file has `excludeAgent: coding-agent` (or `excludeAgent: all`), `sync_claude_rules()` skips it entirely — Claude Code acts as a coding agent, so the rule has no business loading into its context.
+
 **File naming**: Drop `.instructions` infix. `governance_core.instructions.md` -> `governance_core.md`.
 
 **Sync behavior**: Full replace on each sync. `.claude/rules/` is 100% generated. Stale files are deleted. Directory is created if missing on first run (matching existing `sync_copilot_instructions()` pattern).
@@ -190,7 +198,9 @@ Project-specific additions come from `agents.local.md`.
 | Code Quality | `lint`, `format`, `test`, `gz-typecheck`, `gz-check`, `gz-arb`, `gz-cli-audit` |
 | Cross-Repository | `airlineops-parity-scan` |
 
-**Rendering**: `render_skills_catalog()` in `sync.py` is modified to accept a `categorized=True` parameter. When `True`, groups skills by `category` field and emits compact name-only format. When `False` (or for backward compatibility), emits the current flat format. The AGENTS.md template uses `{skills_catalog}` — the variable name stays the same, but the renderer produces categorized output by default.
+**Rendering**: `render_skills_catalog()` in `sync.py` is modified to accept a `categorized=True` parameter. When `True`, groups skills by `category` field and emits compact name-only format. When `False` (or for backward compatibility), emits the current flat format. The AGENTS.md template uses `{skills_catalog}` — the variable name stays the same, but the renderer produces categorized output by default. `categorized=True` is the default for all control surface documents (AGENTS.md, CLAUDE.md, copilot-instructions.md). The flat renderer remains in `sync.py` for testing/auditing.
+
+**Uncategorized fallback**: Skills missing a `category` field (or with null/empty value) are grouped under an `Uncategorized` header at the bottom of the catalog. This prevents skills from silently disappearing from the catalog while making the omission an obvious quality defect visible in AGENTS.md during audits.
 
 **Categories are a closed enum** validated by `skill.schema.json`. Allowed values: `adr-lifecycle`, `adr-operations`, `adr-audit`, `obpi-pipeline`, `governance-infrastructure`, `agent-operations`, `code-quality`, `cross-repository`.
 
@@ -277,6 +287,8 @@ Recognized fields for `.github/instructions/*.md` frontmatter:
 | **Total always-loaded** | **~290 lines** | **~60 lines** | **~230 lines (~80%)** |
 
 Governance rules now load contextually via `.claude/rules/` — only when Claude touches matching files.
+
+**Deduplication note**: The savings come from eliminating *duplication*, not adding net-new content. Currently Claude loads the Gate Covenant and OBPI workflow twice: once from CLAUDE.md and once from `governance_core` (which loads unconditionally via `applyTo: "**/*"`). After this change, those rules exist only in `.claude/rules/governance_core.md` (unconditional). The `governance_core` rule staying unconditional is working as intended — it's the single source, not a duplicate.
 
 ## Scope Exclusions
 
