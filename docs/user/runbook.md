@@ -31,6 +31,10 @@ uv run gz obpi pipeline OBPI-<X.Y.Z-NN>
 #    Compatibility entry points:
 #    uv run gz obpi pipeline OBPI-<X.Y.Z-NN> --from=verify
 #    uv run gz obpi pipeline OBPI-<X.Y.Z-NN> --from=ceremony
+#
+#    The CLI and generated Claude hooks share the same runtime engine in
+#    src/gzkit/pipeline_runtime.py. Treat active pipeline markers as
+#    runtime-managed state; do not clear them by hand.
 
 # 3) Verify this increment
 uv run gz implement --adr ADR-<X.Y.Z>

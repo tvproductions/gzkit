@@ -25,7 +25,8 @@ It keeps existing compatibility fields and adds derived semantics:
 - `obpis` (linked OBPI status rows including `runtime_state`, `proof_state`,
   `attestation_requirement`, `attestation_state`, `req_proof_state`,
   `req_proof_inputs`, `anchor_state`, `anchor_commit`, `current_head`,
-  `anchor_issues`, `anchor_drift_files`, and `issues`)
+  `anchor_issues`, `anchor_drift_files`, `tracked_defects`, `issue_details`,
+  and `issues`)
 - `obpi_summary` (`total`, `completed`, `incomplete`, `unit_status`, `outstanding_ids`)
 - `lane`
 - `lifecycle_status`
@@ -55,6 +56,12 @@ OBPI is closeout-ready.
 Anchor-aware OBPI rows preserve completion counts separately from closeout blockers: a completed
 OBPI can still surface `drift` issues when later changes touched its recorded scope or when its
 receipt captured degraded git-sync state.
+When a brief records local `## Tracked Defects` bullets, closeout blockers and
+human-facing issue strings annotate the linked `GHI-*` refs instead of
+collapsing every blocker to the same generic symptom text.
+Anchor freshness does not downgrade a completed OBPI back to `pending`; it
+remains `completed` or `attested_completed` while `closeout_blockers` stays
+fail-closed until the anchor issue is reconciled.
 The runtime model is additive and fail-closed:
 
 - legacy receipts without explicit `req_proof_inputs` are backfilled from substantive brief `Key Proof`

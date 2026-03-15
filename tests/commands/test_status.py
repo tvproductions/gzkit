@@ -512,6 +512,84 @@ class TestStatusCommand(unittest.TestCase):
             self.assertEqual(payload["anchor_drift_files"], ["src/module.py"])
             self.assertIn("completion anchor drifted in recorded OBPI scope", payload["blockers"])
 
+    def test_obpi_status_json_surfaces_tracked_defects_for_anchor_drift(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            _write_obpi(
+                path=obpi_path,
+                status="Completed",
+                brief_status="Completed",
+                implementation_line="src/module.py",
+                tracked_defects=[
+                    "GHI-11 (open): Ignore transient anchor drift noise",
+                    "GHI-12 (closed): Preserve completion state when only anchor freshness drifts",
+                ],
+            )
+            module_path = Path("src/module.py")
+            module_path.parent.mkdir(parents=True, exist_ok=True)
+            module_path.write_text("value = 1\n", encoding="utf-8")
+            anchor_commit = _init_git_repo(Path.cwd())
+
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(
+                obpi_receipt_emitted_event(
+                    obpi_id="OBPI-0.1.0-01-demo",
+                    parent_adr="ADR-0.1.0",
+                    receipt_event="completed",
+                    attestor="human:test",
+                    obpi_completion="completed",
+                    evidence={
+                        "scope_audit": {
+                            "allowlist": ["src/module.py"],
+                            "changed_files": ["src/module.py"],
+                            "out_of_scope_files": [],
+                        },
+                        "git_sync_state": {
+                            "dirty": False,
+                            "ahead": 0,
+                            "behind": 0,
+                            "diverged": False,
+                            "blockers": [],
+                        },
+                    },
+                    anchor={"commit": anchor_commit, "semver": "0.1.0"},
+                )
+            )
+
+            module_path.write_text("value = 2\n", encoding="utf-8")
+            subprocess.run(
+                ["git", "add", "src/module.py"],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            subprocess.run(
+                ["git", "commit", "-m", "change module"],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+
+            result = runner.invoke(main, ["obpi", "status", "OBPI-0.1.0-01-demo", "--json"])
+
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            self.assertEqual(payload["tracked_defects"][0]["id"], "GHI-11")
+            self.assertEqual(payload["tracked_defects"][0]["state"], "open")
+            self.assertEqual(payload["tracked_defects"][1]["id"], "GHI-12")
+            self.assertEqual(payload["tracked_defects"][1]["state"], "closed")
+            self.assertIn("completion anchor drifted in recorded OBPI scope", payload["issues"])
+            self.assertIn(
+                "tracked defects: GHI-11 (open), GHI-12 (closed)",
+                payload["issue_details"][0],
+            )
+
     def test_obpi_reconcile_ignores_shared_file_changes_absorbed_by_later_sibling_completion(
         self,
     ) -> None:
@@ -1158,6 +1236,79 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
             self.assertIn(
                 "OBPI-0.1.0-01-demo: ledger proof of completion is missing", result.output
             )
+
+    def test_adr_status_closeout_blockers_include_tracked_defect_refs(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            _write_obpi(
+                path=obpi_path,
+                status="Completed",
+                brief_status="Completed",
+                implementation_line="src/module.py",
+                tracked_defects=[
+                    "GHI-11 (open): Ignore transient anchor drift noise",
+                    "GHI-12 (open): Reconcile shared-scope sibling completions correctly",
+                ],
+            )
+            module_path = Path("src/module.py")
+            module_path.parent.mkdir(parents=True, exist_ok=True)
+            module_path.write_text("value = 1\n", encoding="utf-8")
+            anchor_commit = _init_git_repo(Path.cwd())
+
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(
+                obpi_receipt_emitted_event(
+                    obpi_id="OBPI-0.1.0-01-demo",
+                    parent_adr="ADR-0.1.0",
+                    receipt_event="completed",
+                    attestor="human:test",
+                    obpi_completion="completed",
+                    evidence={
+                        "scope_audit": {
+                            "allowlist": ["src/module.py"],
+                            "changed_files": ["src/module.py"],
+                            "out_of_scope_files": [],
+                        },
+                        "git_sync_state": {
+                            "dirty": False,
+                            "ahead": 0,
+                            "behind": 0,
+                            "diverged": False,
+                            "blockers": [],
+                        },
+                    },
+                    anchor={"commit": anchor_commit, "semver": "0.1.0"},
+                )
+            )
+
+            module_path.write_text("value = 2\n", encoding="utf-8")
+            subprocess.run(
+                ["git", "add", "src/module.py"],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            subprocess.run(
+                ["git", "commit", "-m", "change module"],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+
+            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0", "--json"])
+
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            blocker = payload["closeout_blockers"][0]
+            self.assertIn("completion anchor drifted in recorded OBPI scope", blocker)
+            self.assertIn("tracked defects: GHI-11 (open), GHI-12 (open)", blocker)
+            self.assertEqual(payload["obpis"][0]["tracked_defects"][0]["id"], "GHI-11")
 
     def test_adr_status_json_validated(self) -> None:
         runner = CliRunner()

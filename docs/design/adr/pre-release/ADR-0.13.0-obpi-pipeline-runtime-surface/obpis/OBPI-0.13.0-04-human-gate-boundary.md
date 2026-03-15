@@ -249,7 +249,13 @@ Ceremony
 - Tests added: Lite-parent and Foundation-parent ceremony coverage in `tests/commands/test_obpi_pipeline.py`
 - Date completed: 2026-03-14
 - Attestation status: human attestation recorded
+- Re-baseline anchor refreshed: 2026-03-15 at `a587714` after completion
+  receipt reconciliation cleared stale self/ADR bookkeeping drift.
 - Defects noted: the OBPI brief started as an unfilled template and was rewritten into a concrete scope/evidence contract as part of this work
+
+## Tracked Defects
+
+- GHI-13 (closed): Status misclassifies completed OBPIs as drift when anchor freshness degrades
 
 ## Human Attestation
 
@@ -263,4 +269,4 @@ Ceremony
 
 **Date Completed:** 2026-03-14
 
-**Evidence Hash:** pending-sync-anchor
+**Evidence Hash:** a587714

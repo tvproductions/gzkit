@@ -881,6 +881,7 @@ def _derive_attestation_state(
 def _derive_obpi_runtime_state(
     *,
     issues: list[str],
+    anchor_issues: list[str],
     ledger_completed: bool,
     validated: bool,
     evidence_ok: bool,
@@ -892,7 +893,14 @@ def _derive_obpi_runtime_state(
     req_proof_present: int,
 ) -> str:
     """Resolve the OBPI runtime state from normalized evidence."""
-    if issues and ledger_completed:
+    non_anchor_issues = list(issues)
+    for anchor_issue in anchor_issues:
+        try:
+            non_anchor_issues.remove(anchor_issue)
+        except ValueError:
+            continue
+
+    if non_anchor_issues and ledger_completed:
         return "drift"
     if validated and ledger_completed and evidence_ok and attestation_state != "missing":
         return "validated"
@@ -986,6 +994,7 @@ def derive_obpi_semantics(
 
     runtime_state = _derive_obpi_runtime_state(
         issues=issues,
+        anchor_issues=list(anchor_analysis["anchor_issues"]),
         ledger_completed=ledger_completed,
         validated=validated,
         evidence_ok=evidence_ok,

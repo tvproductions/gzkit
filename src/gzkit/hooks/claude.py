@@ -503,14 +503,14 @@ def _pipeline_router_script() -> str:
             #!/usr/bin/env python3
             \"\"\"Pipeline Router Hook.
 
-            PostToolUse hook on ExitPlanMode that routes the agent into the
-            canonical OBPI pipeline runtime after plan approval for OBPI work.
+            PostToolUse hook on ExitPlanMode that routes the agent to
+            `uv run gz obpi pipeline` after plan approval for OBPI work.
 
             How it works:
               1. Reads `.claude/plans/.plan-audit-receipt.json`
               2. If the receipt exists, names an OBPI, and has verdict `PASS`,
                  emit a routing instruction on stdout directing the agent to
-                 invoke `uv run gz obpi pipeline`
+                 invoke the canonical runtime command
               3. If the receipt is absent, invalid, or not `PASS`, exit silently
 
             Exit codes:
@@ -522,12 +522,15 @@ def _pipeline_router_script() -> str:
             import sys
             from pathlib import Path
 
-            from gzkit.pipeline_runtime import (
-                PIPELINE_RECEIPT_FILE,
-                _load_pipeline_json,
-                _pipeline_plans_dir,
-                pipeline_router_message,
-            )
+
+            def find_project_root(start: Path) -> Path:
+                \"\"\"Find the project root by looking for .gzkit or src/gzkit.\"\"\"
+                current = start
+                while current != current.parent:
+                    if (current / ".gzkit").is_dir() or (current / "src" / "gzkit").is_dir():
+                        return current
+                    current = current.parent
+                return start
 
 
             def main() -> None:
@@ -537,18 +540,29 @@ def _pipeline_router_script() -> str:
                 except json.JSONDecodeError:
                     sys.exit(0)
 
-                cwd = input_data.get("cwd", os.getcwd())
-                receipt_path = _pipeline_plans_dir(Path(cwd)) / PIPELINE_RECEIPT_FILE
+                project_root = find_project_root(Path(input_data.get("cwd", os.getcwd())).resolve())
+                sys.path.insert(0, str(project_root / "src"))
+
+                try:
+                    from gzkit.pipeline_runtime import (
+                        load_plan_audit_receipt,
+                        pipeline_plans_dir,
+                        pipeline_router_message,
+                    )
+                except Exception:
+                    sys.exit(0)
+
+                plans_dir = pipeline_plans_dir(project_root)
+                receipt_path = plans_dir / ".plan-audit-receipt.json"
                 if not receipt_path.exists():
                     sys.exit(0)
 
-                receipt = _load_pipeline_json(receipt_path)
-                if receipt is None:
+                receipt_state, _warnings, receipt = load_plan_audit_receipt(plans_dir, "")
+                if receipt is None or receipt_state != "pass":
                     sys.exit(0)
 
-                obpi_id = receipt.get("obpi_id", "")
-                verdict = receipt.get("verdict", "")
-                if not obpi_id or verdict != "PASS":
+                obpi_id = str(receipt.get("obpi_id") or "")
+                if not obpi_id:
                     sys.exit(0)
 
                 print(pipeline_router_message(obpi_id))
@@ -585,14 +599,6 @@ def _pipeline_gate_script() -> str:
             import sys
             from pathlib import Path
 
-            from gzkit.pipeline_runtime import (
-                PIPELINE_LEGACY_MARKER,
-                PIPELINE_RECEIPT_FILE,
-                _load_pipeline_json,
-                _pipeline_plans_dir,
-                pipeline_gate_block_message,
-            )
-
 
             def resolve_repo_path(cwd: str, file_path: str) -> str | None:
                 \"\"\"Resolve a tool file path into a repo-relative POSIX path.\"\"\"
@@ -611,12 +617,14 @@ def _pipeline_gate_script() -> str:
                 return rel_path.as_posix()
 
 
-            def marker_matches(marker_path: Path, obpi_id: str) -> bool:
-                \"\"\"Return whether a marker exists and matches the target OBPI.\"\"\"
-                if not marker_path.exists():
-                    return False
-                marker = _load_pipeline_json(marker_path)
-                return bool(marker and marker.get("obpi_id") == obpi_id)
+            def find_project_root(start: Path) -> Path:
+                \"\"\"Find the project root by looking for .gzkit or src/gzkit.\"\"\"
+                current = start
+                while current != current.parent:
+                    if (current / ".gzkit").is_dir() or (current / "src" / "gzkit").is_dir():
+                        return current
+                    current = current.parent
+                return start
 
 
             def main() -> None:
@@ -634,26 +642,41 @@ def _pipeline_gate_script() -> str:
                 if rel_path is None or not rel_path.startswith(("src/", "tests/")):
                     sys.exit(0)
 
-                cwd_path = Path(input_data.get("cwd", os.getcwd())).resolve()
-                plans_dir = _pipeline_plans_dir(cwd_path)
-                receipt = _load_pipeline_json(plans_dir / PIPELINE_RECEIPT_FILE)
-                if not receipt:
+                project_root = find_project_root(Path(input_data.get("cwd", os.getcwd())).resolve())
+                sys.path.insert(0, str(project_root / "src"))
+
+                try:
+                    from gzkit.pipeline_runtime import (
+                        load_plan_audit_receipt,
+                        marker_matches,
+                        pipeline_gate_message,
+                        pipeline_marker_paths,
+                        pipeline_plans_dir,
+                    )
+                except Exception:
                     sys.exit(0)
 
-                obpi_id = receipt.get("obpi_id", "")
-                verdict = receipt.get("verdict", "")
-                if not obpi_id or verdict != "PASS":
+                plans_dir = pipeline_plans_dir(project_root)
+                receipt_path = plans_dir / ".plan-audit-receipt.json"
+                if not receipt_path.exists():
                     sys.exit(0)
 
-                obpi_marker = plans_dir / f".pipeline-active-{obpi_id}.json"
+                receipt_state, _warnings, receipt = load_plan_audit_receipt(plans_dir, "")
+                if receipt is None or receipt_state != "pass":
+                    sys.exit(0)
+
+                obpi_id = str(receipt.get("obpi_id") or "")
+                if not obpi_id:
+                    sys.exit(0)
+
+                obpi_marker, legacy_marker = pipeline_marker_paths(plans_dir, obpi_id)
                 if marker_matches(obpi_marker, obpi_id):
                     sys.exit(0)
 
-                legacy_marker = plans_dir / PIPELINE_LEGACY_MARKER
                 if marker_matches(legacy_marker, obpi_id):
                     sys.exit(0)
 
-                print(pipeline_gate_block_message(obpi_id), file=sys.stderr)
+                print(pipeline_gate_message(obpi_id), file=sys.stderr)
                 sys.exit(2)
 
 
@@ -686,56 +709,15 @@ def _pipeline_completion_reminder_script() -> str:
             import sys
             from pathlib import Path
 
-            from gzkit.pipeline_runtime import (
-                PIPELINE_LEGACY_MARKER,
-                _load_pipeline_json,
-                _pipeline_plans_dir,
-                pipeline_completion_reminder_message,
-                pipeline_stale_marker_message,
-            )
 
-
-            def find_active_marker(plans_dir: Path) -> dict | None:
-                \"\"\"Return the first readable active pipeline marker payload.\"\"\"
-                marker_paths = sorted(plans_dir.glob(".pipeline-active-*.json"))
-                marker_paths.append(plans_dir / PIPELINE_LEGACY_MARKER)
-
-                for marker_path in marker_paths:
-                    if not marker_path.exists():
-                        continue
-                    marker = _load_pipeline_json(marker_path)
-                    if marker is not None:
-                        return marker
-                    return None
-                return None
-
-
-            def find_brief_path(docs_root: Path, obpi_id: str) -> Path | None:
-                \"\"\"Find the OBPI brief that corresponds to the active marker.\"\"\"
-                if not docs_root.is_dir():
-                    return None
-
-                pattern = f"{obpi_id}*.md"
-                matches = sorted(docs_root.rglob(pattern))
-                return matches[0] if matches else None
-
-
-            def brief_status(brief_path: Path) -> str | None:
-                \"\"\"Extract the brief status from a brief file.\"\"\"
-                try:
-                    lines = brief_path.read_text(encoding="utf-8").splitlines()
-                except OSError:
-                    return None
-
-                for line in lines:
-                    stripped = line.strip()
-                    if stripped.startswith("status:"):
-                        return stripped.split(":", 1)[1].strip()
-                    if stripped.startswith("**Status:**"):
-                        return stripped.split("**Status:**", 1)[1].strip()
-                    if stripped.startswith("**Brief Status:**"):
-                        return stripped.split("**Brief Status:**", 1)[1].strip()
-                return None
+            def find_project_root(start: Path) -> Path:
+                \"\"\"Find the project root by looking for .gzkit or src/gzkit.\"\"\"
+                current = start
+                while current != current.parent:
+                    if (current / ".gzkit").is_dir() or (current / "src" / "gzkit").is_dir():
+                        return current
+                    current = current.parent
+                return start
 
 
             def main() -> None:
@@ -750,12 +732,25 @@ def _pipeline_completion_reminder_script() -> str:
                 if not any(git_cmd in command for git_cmd in ("git commit", "git push")):
                     sys.exit(0)
 
-                cwd_path = Path(input_data.get("cwd", os.getcwd())).resolve()
-                plans_dir = _pipeline_plans_dir(cwd_path)
+                project_root = find_project_root(Path(input_data.get("cwd", os.getcwd())).resolve())
+                sys.path.insert(0, str(project_root / "src"))
+
+                try:
+                    from gzkit.pipeline_runtime import (
+                        extract_brief_status,
+                        find_active_pipeline_marker,
+                        find_obpi_brief,
+                        pipeline_completion_reminder_message,
+                        pipeline_plans_dir,
+                    )
+                except Exception:
+                    sys.exit(0)
+
+                plans_dir = pipeline_plans_dir(project_root)
                 if not plans_dir.is_dir():
                     sys.exit(0)
 
-                marker = find_active_marker(plans_dir)
+                marker = find_active_pipeline_marker(plans_dir)
                 if not marker:
                     sys.exit(0)
 
@@ -763,23 +758,18 @@ def _pipeline_completion_reminder_script() -> str:
                 if not obpi_id:
                     sys.exit(0)
 
-                brief_path = find_brief_path(cwd_path / "docs" / "design" / "adr", obpi_id)
+                brief_path = find_obpi_brief(project_root / "docs" / "design" / "adr", obpi_id)
                 if brief_path is None:
                     sys.exit(0)
 
-                status = brief_status(brief_path)
-                if status == "Completed":
-                    print(pipeline_stale_marker_message(obpi_id), file=sys.stderr)
+                message = pipeline_completion_reminder_message(
+                    marker,
+                    brief_status=extract_brief_status(brief_path),
+                )
+                if not message:
                     sys.exit(0)
 
-                print(
-                    pipeline_completion_reminder_message(
-                        obpi_id,
-                        status=status,
-                        next_command=marker.get("next_command"),
-                    ),
-                    file=sys.stderr,
-                )
+                print(message, file=sys.stderr)
                 sys.exit(0)
 
 
@@ -807,13 +797,13 @@ def _claude_hooks_readme() -> str:
             "  OBPI plan against `.claude/plans/.plan-audit-receipt.json`.",
             "- `pipeline-router.py`",
             "  PostToolUse (`ExitPlanMode`) hook that routes PASS receipts into",
-            "  the canonical `gz obpi pipeline` runtime.",
+            "  `uv run gz obpi pipeline`.",
             "- `pipeline-gate.py`",
             "  PreToolUse (`Write|Edit`) hook that blocks `src/` and `tests/`",
-            "  writes until the active pipeline marker exists.",
+            "  writes until the runtime-owned active pipeline marker exists.",
             "- `pipeline-completion-reminder.py`",
             "  PreToolUse (`Bash`) hook that warns before `git commit` and",
-            "  `git push` when an active OBPI pipeline still appears incomplete.",
+            "  `git push` when an active OBPI runtime still appears incomplete.",
             "- `post-edit-ruff.py`",
             "  PostToolUse (`Write|Edit`) hook that runs `ruff check --fix`",
             "  and `ruff format` on edited Python files.",
@@ -825,8 +815,12 @@ def _claude_hooks_readme() -> str:
             "",
             "- The operator-facing `gz-plan-audit` skill and receipt contract are",
             "  ported under `ADR-0.12.0-obpi-pipeline-enforcement-parity`.",
+            "- `src/gzkit/pipeline_runtime.py` is the canonical shared runtime used",
+            "  by the CLI and generated pipeline hooks.",
             "- The pipeline enforcement hooks are active in `.claude/settings.json`",
             "  with the generated runtime order described below.",
+            "- `.claude/hooks/obpi-completion-validator.py` remains a historical",
+            "  compatibility surface; it is not part of the active registration order.",
             "",
             "## Registration Order",
             "",

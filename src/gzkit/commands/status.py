@@ -458,6 +458,77 @@ def _extract_human_attestation(content: str) -> dict[str, Any]:
     }
 
 
+def _extract_tracked_defects(content: str) -> list[dict[str, Any]]:
+    """Parse brief-local tracked GitHub defects from a dedicated section."""
+    body = _section_body(content, "Tracked Defects")
+    if not body:
+        return []
+
+    defects: list[dict[str, Any]] = []
+    seen_ids: set[str] = set()
+    for line in body.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("- "):
+            continue
+
+        candidate = stripped[2:].strip()
+        if candidate.startswith(("[ ] ", "[x] ", "[X] ")):
+            candidate = candidate[4:].strip()
+        candidate = re.sub(r"^\[(?P<label>[^\]]+)\]\([^)]+\)", r"\g<label>", candidate)
+        candidate = re.sub(
+            r"^https?://github\.com/[^/]+/[^/]+/issues/(?P<number>\d+)",
+            r"#\g<number>",
+            candidate,
+        )
+
+        match = re.search(r"(?P<prefix>GHI-|#)(?P<number>\d+)", candidate, flags=re.IGNORECASE)
+        if not match:
+            continue
+
+        issue_id = f"GHI-{int(match.group('number'))}"
+        if issue_id in seen_ids:
+            continue
+
+        state_match = re.search(r"\((open|closed)\)", candidate, flags=re.IGNORECASE)
+        state = state_match.group(1).lower() if state_match else "unknown"
+        summary_match = re.match(
+            r".*?(?:GHI-|#)\d+(?:\s*\((?:open|closed)\))?\s*(?::|-)\s*(?P<summary>.+)$",
+            candidate,
+            flags=re.IGNORECASE,
+        )
+        summary = summary_match.group("summary").strip() if summary_match else None
+        defects.append(
+            {
+                "id": issue_id,
+                "number": int(match.group("number")),
+                "state": state,
+                "summary": summary,
+            }
+        )
+        seen_ids.add(issue_id)
+    return defects
+
+
+def _tracked_defect_refs(tracked_defects: list[dict[str, Any]]) -> str:
+    """Render one compact tracked-defect reference list."""
+    refs: list[str] = []
+    for defect in tracked_defects:
+        issue_id = str(defect.get("id", "")).strip()
+        if not issue_id:
+            continue
+        state = str(defect.get("state", "")).strip().lower()
+        refs.append(f"{issue_id} ({state})" if state and state != "unknown" else issue_id)
+    return ", ".join(refs)
+
+
+def _issue_details(issues: list[str], tracked_defects: list[dict[str, Any]]) -> list[str]:
+    """Attach brief-local defect linkage to human-facing issue strings."""
+    refs = _tracked_defect_refs(tracked_defects)
+    if not refs:
+        return list(issues)
+    return [f"{issue} [tracked defects: {refs}]" for issue in issues]
+
+
 def _inspect_obpi_brief(
     project_root: Path,
     obpi_file: Path,
@@ -472,6 +543,7 @@ def _inspect_obpi_brief(
     key_proof_body = _resolved_key_proof_body(content)
     key_proof_ok = key_proof_body is not None
     human_attestation = _extract_human_attestation(content)
+    tracked_defects = _extract_tracked_defects(content)
     info = graph.get(obpi_id, {}) if obpi_id and graph else {}
     semantics = derive_obpi_semantics(
         info,
@@ -493,7 +565,8 @@ def _inspect_obpi_brief(
         "human_attestation": human_attestation,
         "frontmatter_status": frontmatter_status or None,
         "brief_status": brief_status or None,
-        "file_human_attestation_ok": bool(human_attestation.get("valid")),
+        "tracked_defects": tracked_defects,
+        "issue_details": _issue_details(list(semantics["issues"]), tracked_defects),
         "reasons": list(semantics["issues"]),
         **semantics,
     }
@@ -579,8 +652,12 @@ def _adr_obpi_status_rows(
                 "anchor_drift_files": list(semantics["anchor_drift_files"]),
                 "frontmatter_status": None,
                 "brief_status": None,
-                "reflection_issues": list(semantics["reflection_issues"]),
+                "tracked_defects": [],
                 "issues": ["linked in ledger but no OBPI file found", *list(semantics["issues"])],
+                "issue_details": _issue_details(
+                    ["linked in ledger but no OBPI file found", *list(semantics["issues"])],
+                    [],
+                ),
             }
         )
 
@@ -613,8 +690,9 @@ def _adr_obpi_status_rows(
                 "anchor_drift_files": list(inspection["anchor_drift_files"]),
                 "frontmatter_status": inspection["frontmatter_status"],
                 "brief_status": inspection["brief_status"],
-                "reflection_issues": list(inspection["reflection_issues"]),
+                "tracked_defects": list(inspection["tracked_defects"]),
                 "issues": list(inspection["issues"]),
+                "issue_details": list(inspection["issue_details"]),
             }
         )
 
@@ -623,7 +701,7 @@ def _adr_obpi_status_rows(
 
 def _obpi_row_complete(row: dict[str, Any]) -> bool:
     """Return True when an OBPI row is complete with implementation evidence."""
-    return bool(row.get("completed"))
+    return bool(row.get("found_file")) and bool(row.get("completed"))
 
 
 def _summarize_obpi_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
@@ -655,7 +733,11 @@ def _summarize_obpi_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
 def _obpi_closeout_blockers(row: dict[str, Any]) -> list[str]:
     """Return closeout-blocking messages for one OBPI row."""
     obpi_id = cast(str, row.get("id", "(unknown)"))
-    issues = [str(issue) for issue in cast(list[str], row.get("issues", [])) if str(issue).strip()]
+    issues = [
+        str(issue)
+        for issue in cast(list[str], row.get("issue_details", row.get("issues", [])))
+        if str(issue).strip()
+    ]
     if issues:
         return [f"{obpi_id}: {issue}" for issue in issues]
     if _obpi_row_complete(row):
@@ -713,16 +795,12 @@ def _render_obpi_runtime_state(runtime_state: str, found_file: bool) -> str:
 def _render_obpi_row_status(row: dict[str, Any]) -> str:
     obpi_id = cast(str, row.get("id", "(unknown)"))
     runtime_state = str(row.get("runtime_state", "pending"))
-    issues = cast(list[str], row.get("issues", []))
-    reflection_issues = cast(list[str], row.get("reflection_issues", []))
+    issues = cast(list[str], row.get("issue_details", row.get("issues", [])))
     status_label = _render_obpi_runtime_state(runtime_state, bool(row.get("found_file")))
 
     if issues:
         issues_text = ", ".join(issues)
         return f"{obpi_id}: {status_label} ({issues_text})"
-    if reflection_issues:
-        issues_text = ", ".join(reflection_issues)
-        return f"{obpi_id}: {status_label} (reflection drift: {issues_text})"
     return f"{obpi_id}: {status_label}"
 
 
@@ -801,8 +879,12 @@ def _build_obpi_status_entry(
                 "anchor_drift_files": list(semantics["anchor_drift_files"]),
                 "frontmatter_status": None,
                 "brief_status": None,
-                "reflection_issues": list(semantics["reflection_issues"]),
+                "tracked_defects": [],
                 "issues": ["linked in ledger but no OBPI file found", *list(semantics["issues"])],
+                "issue_details": _issue_details(
+                    ["linked in ledger but no OBPI file found", *list(semantics["issues"])],
+                    [],
+                ),
             }
         )
         return result
@@ -831,8 +913,9 @@ def _build_obpi_status_entry(
             "anchor_drift_files": list(inspection["anchor_drift_files"]),
             "frontmatter_status": inspection["frontmatter_status"],
             "brief_status": inspection["brief_status"],
-            "reflection_issues": list(inspection["reflection_issues"]),
+            "tracked_defects": list(inspection["tracked_defects"]),
             "issues": list(inspection["issues"]),
+            "issue_details": list(inspection["issue_details"]),
         }
     )
     return result
@@ -849,8 +932,7 @@ def _render_obpi_status_details(result: dict[str, Any]) -> None:
     anchor_state = str(result.get("anchor_state", "not_applicable"))
     anchor_commit = result.get("anchor_commit") or "(none)"
     current_head = result.get("current_head") or "(unknown)"
-    issues = cast(list[str], result.get("issues", []))
-    reflection_issues = cast(list[str], result.get("reflection_issues", []))
+    issues = cast(list[str], result.get("issue_details", result.get("issues", [])))
 
     console.print(f"[bold]{obpi_id}[/bold]")
     if isinstance(parent_adr, str) and parent_adr:
@@ -872,14 +954,8 @@ def _render_obpi_status_details(result: dict[str, Any]) -> None:
     console.print("  Issues:")
     if not issues:
         console.print("    - none")
-    else:
-        for issue in issues:
-            console.print(f"    - {issue}")
-    console.print("  Reflection Issues:")
-    if not reflection_issues:
-        console.print("    - none")
         return
-    for issue in reflection_issues:
+    for issue in issues:
         console.print(f"    - {issue}")
 
 

@@ -146,6 +146,7 @@ def main():
     try:
         from gzkit.config import GzkitConfig
         from gzkit.ledger import Ledger, resolve_adr_lane
+        from gzkit.pipeline_runtime import completion_receipt_missing_message
 
         config = GzkitConfig.load(project_root / ".gzkit.json")
         ledger = Ledger(project_root / config.paths.ledger)
@@ -157,15 +158,7 @@ def main():
 
     # 5. Check for receipt evidence in ledger
     if not has_receipt_evidence(events, obpi_id):
-        print(
-            f"\n\u26d4 BLOCKED: Cannot mark {obpi_id} as Completed.\n"
-            f"\n"
-            f"No completion receipt found in .gzkit/ledger.jsonl\n"
-            f"\n"
-            f"REQUIRED: Run OBPI audit first to verify and record evidence:\n"
-            f"  /gz-obpi-audit {obpi_id}\n",
-            file=sys.stderr,
-        )
+        print(completion_receipt_missing_message(obpi_id), file=sys.stderr)
         sys.exit(2)
 
     # 6. Check lane for attestation requirements
