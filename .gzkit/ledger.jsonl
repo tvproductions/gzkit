@@ -450,3 +450,9 @@
 {"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pre-release/ADR-0.16.0-cms-architecture-formalization/ADR-CLOSEOUT-FORM.md","ts":"2026-03-15T13:48:01.932072+00:00","path":"docs/design/adr/pre-release/ADR-0.16.0-cms-architecture-formalization/ADR-CLOSEOUT-FORM.md"}
 {"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.pydantic-schema-enforcement.md","ts":"2026-03-15T13:48:14.408430+00:00","path":"docs/design/adr/pool/ADR-pool.pydantic-schema-enforcement.md"}
 {"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.vendor-alignment-claude-code.md","ts":"2026-03-15T14:04:11.433703+00:00","path":"docs/design/adr/pool/ADR-pool.vendor-alignment-claude-code.md"}
+{"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-0.17.0","ts":"2026-03-15T18:37:01.418476+00:00","lane":"heavy","source":"gz-superbook"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.17.0-01-categorized-skill-catalog","ts":"2026-03-15T18:37:01.418850+00:00","parent":"ADR-0.17.0","source":"gz-superbook"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.17.0-02-rules-mirroring","ts":"2026-03-15T18:37:01.418898+00:00","parent":"ADR-0.17.0","source":"gz-superbook"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.17.0-03-slim-claudemd-template","ts":"2026-03-15T18:37:01.418935+00:00","parent":"ADR-0.17.0","source":"gz-superbook"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.17.0-04-json-schemas-and-validation","ts":"2026-03-15T18:37:01.418971+00:00","parent":"ADR-0.17.0","source":"gz-superbook"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.17.0-05-manifest-update-and-final-sync","ts":"2026-03-15T18:37:01.419006+00:00","parent":"ADR-0.17.0","source":"gz-superbook"}
