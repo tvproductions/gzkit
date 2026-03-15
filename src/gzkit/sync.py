@@ -332,6 +332,8 @@ def generate_manifest(
             "claude_skills": config.paths.claude_skills,
             "codex_skills": config.paths.codex_skills,
             "copilot_skills": config.paths.copilot_skills,
+            "instructions": ".github/instructions",
+            "claude_rules": ".claude/rules",
         },
         "verification": {
             "lint": "uv run gz lint",
