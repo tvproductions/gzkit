@@ -77,7 +77,7 @@ Use the canonical skill catalog and keep mirrors synced via `gz agent sync contr
 `gz-constitute`, `gz-gates`, `gz-implement`, `gz-init`, `gz-interview`, `gz-prd`, `gz-state`, `gz-status`, `gz-validate`
 
 #### Agent & Repository Operations
-`git-sync`, `gz-agent-sync`, `gz-check-config-paths`, `gz-migrate-semver`, `gz-register-adrs`, `gz-session-handoff`, `gz-tidy`
+`git-sync`, `gz-agent-sync`, `gz-check-config-paths`, `gz-migrate-semver`, `gz-register-adrs`, `gz-session-handoff`, `gz-superbook`, `gz-tidy`
 
 #### Code Quality
 `format`, `gz-arb`, `gz-check`, `gz-cli-audit`, `gz-typecheck`, `lint`, `test`

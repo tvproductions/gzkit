@@ -63,11 +63,24 @@ def classify_lane(spec: SpecData, plan: PlanData) -> LaneClassification:
     return LaneClassification(lane=lane, signals=sorted(set(signals)))
 
 
+def extract_semver(adr_id: str) -> str | None:
+    """Extract the semver portion from an ADR identifier.
+
+    Handles both bare (``ADR-0.14.0``) and slugged
+    (``ADR-0.14.0-multi-agent-...``) forms.
+
+    Returns:
+        Semver string like ``0.14.0``, or None if unparseable.
+    """
+    m = re.match(r"ADR-(\d+\.\d+\.\d+)", adr_id)
+    return m.group(1) if m else None
+
+
 def next_semver(existing: list[str]) -> str:
     """Compute next minor semver from existing ADR semvers.
 
     Args:
-        existing: List of existing semver strings.
+        existing: List of existing semver strings (e.g. ``["0.14.0"]``).
 
     Returns:
         Next semver string.
@@ -76,26 +89,167 @@ def next_semver(existing: list[str]) -> str:
         return "0.1.0"
 
     def _parse(s: str) -> tuple[int, int, int] | None:
-        parts = s.split(".")
-        if len(parts) != 3:
+        # Strip any trailing slug text from the patch component.
+        m = re.match(r"(\d+)\.(\d+)\.(\d+)", s)
+        if not m:
             return None
-        try:
-            return (int(parts[0]), int(parts[1]), int(parts[2]))
-        except ValueError:
-            return None
+        return (int(m.group(1)), int(m.group(2)), int(m.group(3)))
 
     versions = sorted(v for v in (_parse(s) for s in existing) if v is not None)
+    if not versions:
+        return "0.1.0"
     major, minor, _patch = versions[-1]
     return f"{major}.{minor + 1}.0"
 
 
-def map_chunks_to_obpis(plan: PlanData, semver: str, lane: str) -> list[OBPIDraft]:
+def collect_existing_semvers(project_root: Path) -> list[str]:
+    """Collect all ADR semvers from both the ledger and on-disk packages.
+
+    Scans ledger ``adr_created`` events and ADR directories under
+    ``docs/design/adr/`` to avoid semver gaps when ADRs are created
+    outside the superbook pipeline.
+
+    Args:
+        project_root: Repository root.
+
+    Returns:
+        Deduplicated list of semver strings.
+    """
+    from gzkit.ledger import Ledger  # noqa: PLC0415
+
+    semvers: set[str] = set()
+
+    # Source 1: ledger adr_created events
+    ledger = Ledger(project_root / ".gzkit" / "ledger.jsonl")
+    for event in ledger.read_all():
+        if event.event == "adr_created":
+            sv = extract_semver(event.id)
+            if sv:
+                semvers.add(sv)
+
+    # Source 2: on-disk ADR directories
+    adr_base = project_root / "docs" / "design" / "adr"
+    for bucket in ("foundation", "pre-release"):
+        bucket_dir = adr_base / bucket
+        if not bucket_dir.is_dir():
+            continue
+        for child in bucket_dir.iterdir():
+            if child.is_dir() and child.name.startswith("ADR-"):
+                sv = extract_semver(child.name)
+                if sv:
+                    semvers.add(sv)
+
+    return sorted(semvers)
+
+
+def slugify_obpi_name(value: str) -> str:
+    """Convert checklist text into a stable OBPI slug suffix."""
+    stripped = re.sub(r"`([^`]*)`", r"\1", value)
+    slug = re.sub(r"[^a-zA-Z0-9]+", "-", stripped).strip("-").lower()
+    return slug or "scope-item"
+
+
+def render_obpi_acceptance_seed(version: str, item: int, criteria: list[str] | None = None) -> str:
+    """Create acceptance criteria seed for an OBPI.
+
+    Args:
+        version: Semver string for REQ ID prefix.
+        item: OBPI item number.
+        criteria: Optional concrete criteria. Falls back to placeholders.
+    """
+    req_prefix = f"REQ-{version}-{item:02d}"
+    if criteria:
+        return "\n".join(
+            f"- [ ] {req_prefix}-{idx:02d}: {c}" for idx, c in enumerate(criteria, start=1)
+        )
+    return "\n".join(
+        [
+            f"- [ ] {req_prefix}-01: Given/When/Then behavior criterion 1",
+            f"- [ ] {req_prefix}-02: Given/When/Then behavior criterion 2",
+            f"- [ ] {req_prefix}-03: Given/When/Then behavior criterion 3",
+        ]
+    )
+
+
+def build_obpi_plan(
+    *,
+    project_root: Path,
+    adr_file: Path,
+    parent_adr_id: str,
+    item: int,
+    checklist_item_text: str,
+    lane: str,
+    name: str,
+    title: str,
+    objective: str,
+    acceptance_criteria_seed: str | None = None,
+) -> dict[str, object]:
+    """Build deterministic OBPI artifact plan.
+
+    Shared by ``gz specify`` and ``gz superbook`` so both produce
+    identical template output.
+
+    Args:
+        project_root: Repository root.
+        adr_file: Absolute path to parent ADR markdown file.
+        parent_adr_id: Full slugged ADR identifier.
+        item: Checklist item number (1-based).
+        checklist_item_text: Text of the checklist item.
+        lane: Governance lane (``lite`` or ``heavy``).
+        name: Slug suffix for the OBPI ID.
+        title: Human-readable title.
+        objective: One-sentence objective.
+        acceptance_criteria_seed: Optional pre-formatted criteria markdown.
+    """
+    from gzkit.templates import render_template  # noqa: PLC0415
+
+    version = extract_semver(parent_adr_id) or parent_adr_id.replace("ADR-", "").split("-")[0]
+    obpi_id = f"OBPI-{version}-{item:02d}-{name}"
+    lane_cap = lane.capitalize()
+    lane_requirements = (
+        "All 5 gates required: ADR, TDD, Docs, BDD, Human attestation"
+        if lane == "heavy"
+        else "Gates 1, 2 required: ADR, TDD"
+    )
+    lane_rationale = (
+        "This OBPI changes a command/API/schema/runtime contract surface."
+        if lane == "heavy"
+        else "This OBPI remains internal to the promoted ADR implementation scope."
+    )
+    if acceptance_criteria_seed is None:
+        acceptance_criteria_seed = render_obpi_acceptance_seed(version, item)
+
+    content = render_template(
+        "obpi",
+        id=obpi_id,
+        title=title,
+        parent_adr=parent_adr_id,
+        parent_adr_path=str(adr_file.relative_to(project_root)),
+        item_number=str(item),
+        checklist_item_text=checklist_item_text,
+        lane=lane_cap,
+        lane_rationale=lane_rationale,
+        objective=objective,
+        lane_requirements=lane_requirements,
+        acceptance_criteria_seed=acceptance_criteria_seed,
+    )
+    obpi_dir = adr_file.parent / "obpis"
+    obpi_file = obpi_dir / f"{obpi_id}.md"
+    return {
+        "obpi_id": obpi_id,
+        "obpi_file": obpi_file,
+        "content": content,
+    }
+
+
+def map_chunks_to_obpis(plan: PlanData, semver: str, lane: str, adr_id: str) -> list[OBPIDraft]:
     """Map plan chunks to OBPI drafts.
 
     Args:
         plan: Parsed plan data.
         semver: ADR semver for ID generation.
         lane: Governance lane.
+        adr_id: Full slugged ADR identifier for parent references.
 
     Returns:
         List of OBPIDraft, one per chunk.
@@ -120,7 +274,7 @@ def map_chunks_to_obpis(plan: PlanData, semver: str, lane: str) -> list[OBPIDraf
             OBPIDraft(
                 id=obpi_id,
                 objective=chunk.name,
-                parent=f"ADR-{semver}",
+                parent=adr_id,
                 item=idx,
                 lane=lane,
                 allowed_paths=chunk.file_paths,
@@ -152,14 +306,16 @@ def generate_adr_draft(
     Returns:
         ADRDraft with populated OBPIs.
     """
-    obpis = map_chunks_to_obpis(plan, semver, lane)
+    slug = _slugify(spec.title)
+    adr_id = f"ADR-{semver}-{slug}"
+    obpis = map_chunks_to_obpis(plan, semver, lane, adr_id)
 
     checklist = [
         f"OBPI-{semver}-{idx:02d}: {chunk.name}" for idx, chunk in enumerate(plan.chunks, start=1)
     ]
 
     return ADRDraft(
-        id=f"ADR-{semver}",
+        id=adr_id,
         title=spec.title,
         semver=semver,
         lane=lane,
@@ -247,9 +403,8 @@ def apply_draft(adr: ADRDraft, project_root: Path) -> list[str]:
     from gzkit.ledger import Ledger, adr_created_event, obpi_created_event
     from gzkit.templates import render_template  # noqa: PLC0415
 
-    slug = _slugify(adr.title)
     bucket = "foundation" if adr.semver.startswith("0.0.") else "pre-release"
-    adr_dir_name = f"{adr.id}-{slug}"
+    adr_dir_name = adr.id
     adr_dir = project_root / "docs" / "design" / "adr" / bucket / adr_dir_name
     obpis_dir = adr_dir / "obpis"
     audit_dir = adr_dir / "audit"
@@ -284,23 +439,25 @@ def apply_draft(adr: ADRDraft, project_root: Path) -> list[str]:
     adr_file.write_text(adr_content, encoding="utf-8")
     created.append(str(adr_file.relative_to(project_root)))
 
-    # Write OBPI files
-    for obpi in adr.obpis:
+    # Write OBPI files via shared build_obpi_plan
+    for idx, obpi in enumerate(adr.obpis):
         criteria_md = "\n".join(f"- [ ] {req.id}: {req.description}" for req in obpi.reqs)
-        obpi_content = render_template(
-            "obpi",
-            id=obpi.id,
-            title=obpi.objective,
-            parent_adr=obpi.parent,
-            item_number=str(obpi.item),
+        checklist_item_text = adr.checklist[idx] if idx < len(adr.checklist) else obpi.objective
+        plan = build_obpi_plan(
+            project_root=project_root,
+            adr_file=adr_file,
+            parent_adr_id=obpi.parent,
+            item=obpi.item,
+            checklist_item_text=checklist_item_text,
             lane=obpi.lane,
-            status=obpi.status,
+            name=_slugify(obpi.objective),
+            title=obpi.objective,
             objective=obpi.objective,
             acceptance_criteria_seed=criteria_md,
-            lane_rationale=f"Inherited from parent {obpi.parent} ({obpi.lane}).",
         )
-        obpi_file = obpis_dir / f"{obpi.id}.md"
-        obpi_file.write_text(obpi_content, encoding="utf-8")
+        obpi_file = Path(str(plan["obpi_file"]))
+        obpi_file.parent.mkdir(parents=True, exist_ok=True)
+        obpi_file.write_text(str(plan["content"]), encoding="utf-8")
         created.append(str(obpi_file.relative_to(project_root)))
 
     # Emit ledger events

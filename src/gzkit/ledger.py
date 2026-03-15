@@ -1009,9 +1009,7 @@ def derive_obpi_semantics(
     proof_state = "validated" if runtime_state == "validated" else req_proof_state
     issues = [*issues, *list(anchor_analysis["anchor_issues"])]
 
-    completed = bool(
-        ledger_completed and evidence_ok and attestation_state != "missing"
-    )
+    completed = bool(ledger_completed and evidence_ok and attestation_state != "missing")
     return {
         "runtime_state": runtime_state,
         "proof_state": proof_state,

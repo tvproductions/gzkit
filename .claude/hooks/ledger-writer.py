@@ -50,6 +50,7 @@ def main() -> int:
     sys.path.insert(0, str(project_root / "src"))
     try:
         from gzkit.hooks.core import record_artifact_edit
+
         session = os.environ.get("CLAUDE_SESSION_ID") or os.environ.get("COPILOT_SESSION_ID")
 
         # This will trigger validation and raise if it fails

@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.17.0-02-rules-mirroring
-parent: ADR-0.17.0
+parent: ADR-0.17.0-agentsmd-tidy-control-surface-schema-and-rules-mir
 item: 2
 lane: heavy
 status: Draft
@@ -23,7 +23,7 @@ Rules Mirroring
 
 ## Lane
 
-**heavy** - Inherited from parent ADR-0.17.0 (heavy).
+**heavy** - Inherited from parent ADR-0.17.0-agentsmd-tidy-control-surface-schema-and-rules-mir (heavy).
 
 > Heavy is reserved for command/API/schema/runtime-contract changes. Process,
 > documentation, and template-only work stays Lite unless it changes one of

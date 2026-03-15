@@ -22,6 +22,7 @@ from gzkit.commands.common import (
     resolve_adr_file,
 )
 from gzkit.commands.status import _adr_obpi_status_rows
+from gzkit.config import GzkitConfig
 from gzkit.ledger import Ledger, attested_event
 
 
@@ -47,6 +48,31 @@ def _attest_verification_steps(
     if _gate4_na_reason(project_root, lane) is None:
         steps.append(("Gate 4 (BDD)", str(verification.get("bdd", "uv run -m behave features/"))))
     return steps
+
+
+def _check_obpi_completion(
+    project_root: Path,
+    config: GzkitConfig,
+    ledger: Ledger,
+    adr_id: str,
+    force: bool,
+) -> None:
+    """Block attestation when OBPIs are incomplete unless forced."""
+    obpi_check_rows = _adr_obpi_status_rows(project_root, config, ledger, adr_id)
+    incomplete = [r["id"] for r in obpi_check_rows if not r["completed"]]
+    if incomplete and not force:
+        blocker_list = "\n".join(f"- {oid}" for oid in incomplete)
+        raise GzCliError(
+            f"Cannot attest {adr_id} as completed — "
+            f"{len(incomplete)} OBPI(s) are not completed:\n"
+            f"{blocker_list}\n"
+            "Complete all OBPIs first, or use --force with --reason."
+        )
+    if incomplete and force:
+        console.print(
+            f"[yellow]Warning:[/yellow] {len(incomplete)} OBPI(s) still incomplete, "
+            "proceeding with --force."
+        )
 
 
 def attest(
@@ -92,6 +118,9 @@ def attest(
         console.print(
             "[yellow]Force override:[/yellow] bypassing failed prerequisites with recorded reason."
         )
+
+    if attest_status == "completed":
+        _check_obpi_completion(project_root, config, ledger, adr_id, force)
 
     # Get attester identity
     attester = get_git_user()

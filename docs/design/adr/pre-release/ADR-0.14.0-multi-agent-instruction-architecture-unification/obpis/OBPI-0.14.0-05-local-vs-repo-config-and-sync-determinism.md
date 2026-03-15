@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.14.0-05-local-vs-repo-config-and-sync-determinism
-parent: ADR-0.14.0
+parent: ADR-0.14.0-multi-agent-instruction-architecture-unification
 item: 5
 lane: Heavy
 status: Draft
@@ -216,4 +216,3 @@ leaving local-only settings untracked or example-based.
 **Date Completed:** -
 
 **Evidence Hash:** -
-

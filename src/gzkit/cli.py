@@ -792,22 +792,13 @@ def _normalized_objective_from_checklist_item(checklist_item_text: str) -> str:
 
 
 def _slugify_obpi_name(value: str) -> str:
-    """Convert checklist text into a stable OBPI slug suffix."""
-    stripped = re.sub(r"`([^`]*)`", r"\1", value)
-    slug = re.sub(r"[^a-zA-Z0-9]+", "-", stripped).strip("-").lower()
-    return slug or "scope-item"
+    """Convert checklist text into a stable OBPI slug suffix.
 
+    Delegates to :func:`gzkit.superbook.slugify_obpi_name`.
+    """
+    from gzkit.superbook import slugify_obpi_name  # noqa: PLC0415
 
-def _render_obpi_acceptance_seed(version: str, item: int) -> str:
-    """Create deterministic acceptance criteria seed for an OBPI."""
-    req_prefix = f"REQ-{version}-{item:02d}"
-    return "\n".join(
-        [
-            f"- [ ] {req_prefix}-01: Given/When/Then behavior criterion 1",
-            f"- [ ] {req_prefix}-02: Given/When/Then behavior criterion 2",
-            f"- [ ] {req_prefix}-03: Given/When/Then behavior criterion 3",
-        ]
-    )
+    return slugify_obpi_name(value)
 
 
 def _build_obpi_plan(
@@ -822,41 +813,23 @@ def _build_obpi_plan(
     title: str,
     objective: str,
 ) -> dict[str, Any]:
-    """Build deterministic OBPI artifact plan used by specify and ADR promotion."""
-    version = parent_adr_id.replace("ADR-", "").split("-")[0]
-    obpi_id = f"OBPI-{version}-{item:02d}-{name}"
-    lane_cap = lane.capitalize()
-    lane_requirements = (
-        "All 5 gates required: ADR, TDD, Docs, BDD, Human attestation"
-        if lane == "heavy"
-        else "Gates 1, 2 required: ADR, TDD"
-    )
-    lane_rationale = (
-        "This OBPI changes a command/API/schema/runtime contract surface."
-        if lane == "heavy"
-        else "This OBPI remains internal to the promoted ADR implementation scope."
-    )
-    content = render_template(
-        "obpi",
-        id=obpi_id,
-        title=title,
-        parent_adr=parent_adr_id,
-        parent_adr_path=str(adr_file.relative_to(project_root)),
-        item_number=str(item),
+    """Build deterministic OBPI artifact plan.
+
+    Delegates to :func:`gzkit.superbook.build_obpi_plan`.
+    """
+    from gzkit.superbook import build_obpi_plan  # noqa: PLC0415
+
+    return build_obpi_plan(
+        project_root=project_root,
+        adr_file=adr_file,
+        parent_adr_id=parent_adr_id,
+        item=item,
         checklist_item_text=checklist_item_text,
-        lane=lane_cap,
-        lane_rationale=lane_rationale,
+        lane=lane,
+        name=name,
+        title=title,
         objective=objective,
-        lane_requirements=lane_requirements,
-        acceptance_criteria_seed=_render_obpi_acceptance_seed(version, item),
     )
-    obpi_dir = adr_file.parent / "obpis"
-    obpi_file = obpi_dir / f"{obpi_id}.md"
-    return {
-        "obpi_id": obpi_id,
-        "obpi_file": obpi_file,
-        "content": content,
-    }
 
 
 def _pool_title_from_content(content: str) -> str | None:

@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.14.0-02-native-path-scoped-rules
-parent: ADR-0.14.0
+parent: ADR-0.14.0-multi-agent-instruction-architecture-unification
 item: 2
 lane: Heavy
 status: Draft
@@ -219,4 +219,3 @@ expansion.
 **Date Completed:** -
 
 **Evidence Hash:** -
-
