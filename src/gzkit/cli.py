@@ -3334,6 +3334,20 @@ def _collect_obpi_path_contract_issues(
     return issues
 
 
+def _superbook_dispatch(
+    mode: str,
+    spec_path: str,
+    plan_path: str,
+    semver: str | None,
+    lane: str | None,
+    apply: bool,
+) -> None:
+    """Dispatch to superbook command implementation."""
+    from gzkit.commands.superbook import superbook_cmd  # noqa: PLC0415
+
+    superbook_cmd(mode, spec_path, plan_path, semver=semver, lane=lane, apply=apply)
+
+
 def check_config_paths_cmd(as_json: bool) -> None:
     """Validate that configured and manifest-declared paths exist and are coherent."""
     config = ensure_initialized()
@@ -4702,6 +4716,31 @@ def _build_parser() -> argparse.ArgumentParser:
             split_testability_ceiling=a.split_testability_ceiling,
             baseline_selected=a.baseline_selected,
             dry_run=a.dry_run,
+        )
+    )
+
+    # superbook
+    p_superbook = commands.add_parser(
+        "superbook", help="Bridge superpowers artifacts to GovZero governance"
+    )
+    p_superbook.add_argument("mode", choices=["retroactive", "forward"], help="Booking mode")
+    p_superbook.add_argument("--spec", required=True, help="Path to superpowers spec")
+    p_superbook.add_argument("--plan", required=True, help="Path to superpowers plan")
+    p_superbook.add_argument("--semver", default=None, help="Override auto-assigned semver")
+    p_superbook.add_argument(
+        "--lane", default=None, choices=["lite", "heavy"], help="Override lane"
+    )
+    p_superbook.add_argument(
+        "--apply", action="store_true", help="Write artifacts (default: dry-run)"
+    )
+    p_superbook.set_defaults(
+        func=lambda a: _superbook_dispatch(
+            mode=a.mode,
+            spec_path=a.spec,
+            plan_path=a.plan,
+            semver=a.semver,
+            lane=a.lane,
+            apply=a.apply,
         )
     )
 
