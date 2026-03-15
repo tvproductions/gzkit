@@ -94,7 +94,7 @@ Use the canonical skill catalog and keep mirrors synced via `gz agent sync contr
 - `gz-migrate-semver`: Record semver identifier migration events. Use when applying canonical ADR or OBPI renaming migrations. (`.gzkit/skills/gz-migrate-semver/SKILL.md`)
 - `gz-obpi-audit`: Audit OBPI brief status against actual code/test evidence. Records proof in JSONL ledger. (`.gzkit/skills/gz-obpi-audit/SKILL.md`)
 - `gz-obpi-brief`: Generate a new OBPI brief file with correct headers, constraints, and evidence stubs. GovZero v6 skill. (`.gzkit/skills/gz-obpi-brief/SKILL.md`)
-- `gz-obpi-pipeline`: Thin wrapper over the canonical `uv run gz obpi pipeline` runtime for post-plan OBPI execution. (`.gzkit/skills/gz-obpi-pipeline/SKILL.md`)
+- `gz-obpi-pipeline`: Post-plan OBPI execution pipeline — implement, verify, present evidence, and sync after a plan is approved. (`.gzkit/skills/gz-obpi-pipeline/SKILL.md`)
 - `gz-obpi-reconcile`: OBPI brief reconciliation — Audit briefs against evidence, fix stale metadata, write ledger proof. (`.gzkit/skills/gz-obpi-reconcile/SKILL.md`)
 - `gz-obpi-sync`: Sync OBPI status in ADR table from brief source files. Detects drift and reconciles. (Layer 3) (`.gzkit/skills/gz-obpi-sync/SKILL.md`)
 - `gz-plan`: Create ADR artifacts for planned change. Use when recording architecture intent and lane-specific scope. (`.gzkit/skills/gz-plan/SKILL.md`)

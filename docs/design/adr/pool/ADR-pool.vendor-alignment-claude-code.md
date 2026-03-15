@@ -151,3 +151,11 @@ This pool ADR can be promoted when all are true:
   Notification hooks) can proceed as chores without waiting for promotion.
 - Plugin packaging is medium-term but architecturally significant — it could
   replace `gz agent sync control-surfaces` entirely.
+- **`@claude-code-guide` as surface QA tool:** The built-in `claude-code-guide`
+  subagent reads current Anthropic documentation and can diagnose gzkit's own
+  Claude surfaces (hooks, CLAUDE.md, settings.json, rules). This is free,
+  self-updating QA: tag a broken hook or a CLAUDE.md with `@claude-code-guide`
+  and it will diagnose against current docs, not stale knowledge. Consider
+  documenting this as a troubleshooting step in `gz-tidy` or `gz-check` for
+  Claude surface validation. The subagent operates in its own context window
+  (does not consume the main session's context budget).
