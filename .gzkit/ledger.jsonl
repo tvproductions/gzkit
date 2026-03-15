@@ -456,3 +456,4 @@
 {"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.17.0-03-slim-claudemd-template","ts":"2026-03-15T18:37:01.418935+00:00","parent":"ADR-0.17.0","source":"gz-superbook"}
 {"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.17.0-04-json-schemas-and-validation","ts":"2026-03-15T18:37:01.418971+00:00","parent":"ADR-0.17.0","source":"gz-superbook"}
 {"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.17.0-05-manifest-update-and-final-sync","ts":"2026-03-15T18:37:01.419006+00:00","parent":"ADR-0.17.0","source":"gz-superbook"}
+{"schema":"gzkit.ledger.v1","event":"attested","id":"ADR-0.17.0","ts":"2026-03-15T18:44:42.961719+00:00","status":"completed","by":"Test User","reason":"Retroactive attestation: work completed via superpowers plan execution with all quality gates passing (lint, typecheck, test, 447 tests OK). Booked retroactively via gz superbook."}
