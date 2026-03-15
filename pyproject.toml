@@ -21,6 +21,7 @@ classifiers = [
 
 dependencies = [
     "behave>=1.2.6",
+    "pydantic>=2.12.5",
     "rich>=13.0",
 ]
 
