@@ -24,7 +24,7 @@ Heavy lane requires BDD verification (Gate 4) to pass.
 Even when lane requirements differ, the closeout habit order remains consistent:
 
 1. Orientation
-2. Execute through `uv run gz obpi pipeline`
+2. Execute through `uv run gz obpi pipeline` (wrapper skill `/gz-obpi-pipeline` remains available)
 3. Verification/tool use
 4. Human attestation when required
 5. Guarded `git sync`

@@ -265,10 +265,17 @@ Marker payload now includes:
   payloads.
 - Date completed: 2026-03-14
 - Attestation status: human attestation recorded
+- Re-baseline anchor refreshed: 2026-03-15 at `a587714` after completion
+  receipt reconciliation cleared stale shared-scope ADR drift.
 - Defects noted: repaired this brief's placeholder scope/requirements defect
   before implementation; the runtime still warns when the plan-audit receipt is
   missing; mixed-tree Stage 5 sync was explicitly approved by the human
   attestor for this closeout.
+
+## Tracked Defects
+
+- GHI-12 (closed): Recurring false OBPI anchor drift in shared-scope ADRs
+- GHI-13 (closed): Status misclassifies completed OBPIs as drift when anchor freshness degrades
 
 ## Human Attestation
 
@@ -282,4 +289,4 @@ Marker payload now includes:
 
 **Date Completed:** 2026-03-14
 
-**Evidence Hash:** pending-sync-anchor
+**Evidence Hash:** a587714

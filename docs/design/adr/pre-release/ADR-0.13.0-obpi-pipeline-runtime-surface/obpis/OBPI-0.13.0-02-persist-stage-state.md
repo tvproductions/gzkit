@@ -362,10 +362,18 @@ Marker payload now includes:
 - Attestation status: human attestation recorded
 - Re-baseline anchor refreshed: `2026-03-14` at `6bb374b` after the later
   OBPI-01 anchor refresh advanced the synced repository head.
+- Re-baseline anchor refreshed: `2026-03-15` at `a587714` after completion
+  receipt reconciliation cleared stale ADR-shared drift.
 - Defects noted: fixed this brief's placeholder scope/requirements/template
   drift before implementation; fixed sync-time formatting drift detected by the
   first guarded `git-sync` attempt; the missing plan-audit receipt remains an
   explicit governance gap surfaced by the runtime warning.
+
+## Tracked Defects
+
+- GHI-11 (closed): OBPI anchor drift should ignore transient `.claude/hooks/.instruction-state.json`
+- GHI-12 (closed): Recurring false OBPI anchor drift in shared-scope ADRs
+- GHI-13 (closed): Status misclassifies completed OBPIs as drift when anchor freshness degrades
 
 ## Human Attestation
 
@@ -379,4 +387,4 @@ Marker payload now includes:
 
 **Date Completed:** 2026-03-14
 
-**Evidence Hash:** 6bb374b
+**Evidence Hash:** a587714

@@ -93,16 +93,16 @@ from gzkit.ledger import (
     resolve_adr_lane,
 )
 from gzkit.pipeline_runtime import (
-    _pipeline_concurrency_blockers,
-    _pipeline_marker_payload,
-    _pipeline_plans_dir,
-    _pipeline_receipt_state,
-    _pipeline_stage_labels,
-    _pipeline_verification_commands,
-    _refresh_pipeline_markers,
-    _remove_pipeline_markers,
-    _write_pipeline_markers,
-    pipeline_runtime_command,
+    load_plan_audit_receipt,
+    pipeline_command,
+    pipeline_concurrency_blockers,
+    pipeline_git_sync_command,
+    pipeline_marker_payload,
+    pipeline_plans_dir,
+    pipeline_stage_labels,
+    refresh_pipeline_markers,
+    remove_pipeline_markers,
+    write_pipeline_markers,
 )
 from gzkit.quality import (
     run_all_checks,
@@ -2941,6 +2941,31 @@ def obpi_emit_receipt_cmd(
     console.print(f"  Event: {receipt_event}")
     console.print(f"  Attestor: {attestor}")
 
+
+def _pipeline_verification_commands(obpi_content: str, lane: str) -> list[str]:
+    """Parse the Verification block into executable shell commands."""
+    section = extract_markdown_section(obpi_content, "Verification") or ""
+    matches = re.findall(r"```bash\n(.*?)```", section, flags=re.DOTALL)
+    commands: list[str] = []
+    for block in matches:
+        for raw_line in block.splitlines():
+            line = raw_line.strip()
+            if not line or line.startswith("#") or line == "command --to --verify":
+                continue
+            commands.append(line)
+    if lane == "heavy":
+        commands.extend(["uv run mkdocs build --strict", "uv run -m behave features/"])
+
+    deduped: list[str] = []
+    seen: set[str] = set()
+    for command in commands:
+        if command in seen:
+            continue
+        seen.add(command)
+        deduped.append(command)
+    return deduped
+
+
 def _print_pipeline_blockers(obpi_id: str, blockers: list[str]) -> None:
     """Render standard pipeline blocker output for one OBPI."""
     console.print(f"[bold]OBPI pipeline:[/bold] {obpi_id}")
@@ -2985,10 +3010,7 @@ def _print_pipeline_implementation_next_steps(obpi_id: str) -> None:
     console.print("")
     console.print("Next:")
     console.print("- Implement the approved OBPI within the brief allowlist.")
-    next_command = pipeline_runtime_command(obpi_id, start_from="verify")
-    console.print(
-        f"- When implementation is ready, run: {next_command}"
-    )
+    console.print(f"- When implementation is ready, run: {pipeline_command(obpi_id, 'verify')}")
     console.print("- Keep the active pipeline markers in place during implementation.")
 
 
@@ -3014,7 +3036,7 @@ def _run_pipeline_verify_stage(
         failures.append((command, detail))
         console.print(f"[red]FAIL[/red] {command}")
     if failures:
-        _refresh_pipeline_markers(
+        refresh_pipeline_markers(
             plans_dir,
             obpi_id,
             blockers=[f"{command}: {detail}" for command, detail in failures],
@@ -3024,13 +3046,11 @@ def _run_pipeline_verify_stage(
             console.print(f"- {command}: {detail}")
         raise SystemExit(1)
 
-    _remove_pipeline_markers(plans_dir, obpi_id)
+    remove_pipeline_markers(plans_dir, obpi_id)
     console.print("")
     console.print("Verification completed.")
     console.print("Next:")
-    console.print(
-        f"- Present evidence via: {pipeline_runtime_command(obpi_id, start_from='ceremony')}"
-    )
+    console.print(f"- Present evidence via: {pipeline_command(obpi_id, 'ceremony')}")
     console.print("- The active implementation markers were cleared after successful verification.")
 
 
@@ -3042,7 +3062,7 @@ def _run_pipeline_ceremony_stage(
     requires_human_attestation: bool,
 ) -> None:
     """Render ceremony guidance and clear active markers for that path."""
-    _remove_pipeline_markers(plans_dir, obpi_id)
+    remove_pipeline_markers(plans_dir, obpi_id)
     console.print("")
     console.print("[bold]Ceremony[/bold]")
     console.print("- Present a value narrative.")
@@ -3057,7 +3077,7 @@ def _run_pipeline_ceremony_stage(
         )
     console.print("")
     console.print("Next:")
-    console.print("- Run guarded sync: uv run gz git-sync --apply --lint --test")
+    console.print(f"- Run guarded sync: {pipeline_git_sync_command()}")
     attestor_hint = '"human:<name>"' if requires_human_attestation else '"<name>"'
     console.print(
         "- Emit completion receipt: "
@@ -3096,9 +3116,9 @@ def obpi_pipeline_cmd(obpi: str, start_from: str | None) -> None:
         )
         raise SystemExit(1)
 
-    plans_dir = _pipeline_plans_dir(project_root)
-    blockers = _pipeline_concurrency_blockers(plans_dir, obpi_id)
-    receipt_state, warnings, receipt = _pipeline_receipt_state(plans_dir, obpi_id)
+    plans_dir = pipeline_plans_dir(project_root)
+    blockers = pipeline_concurrency_blockers(plans_dir, obpi_id)
+    receipt_state, warnings, receipt = load_plan_audit_receipt(plans_dir, obpi_id)
     if receipt_state == "fail":
         _print_pipeline_blockers(
             obpi_id, ["plan-audit receipt verdict is FAIL; correct plan alignment first"]
@@ -3110,7 +3130,7 @@ def obpi_pipeline_cmd(obpi: str, start_from: str | None) -> None:
 
     lane = resolve_adr_lane(graph.get(resolved_parent, {}), config.mode)
     requires_human_attestation = _requires_human_obpi_attestation(resolved_parent, lane)
-    marker_payload = _pipeline_marker_payload(
+    marker_payload = pipeline_marker_payload(
         obpi_id,
         resolved_parent,
         lane,
@@ -3118,8 +3138,8 @@ def obpi_pipeline_cmd(obpi: str, start_from: str | None) -> None:
         receipt_state,
         requires_human_attestation=requires_human_attestation,
     )
-    per_obpi_marker, legacy_marker = _write_pipeline_markers(plans_dir, marker_payload)
-    stage_labels = _pipeline_stage_labels(start_from)
+    per_obpi_marker, legacy_marker = write_pipeline_markers(plans_dir, marker_payload)
+    stage_labels = pipeline_stage_labels(start_from)
 
     _print_pipeline_header(
         obpi_id=obpi_id,

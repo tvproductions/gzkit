@@ -21,6 +21,9 @@ without the `OBPI-` prefix.
 pipeline. The `gz-obpi-pipeline` skill remains available as a thin alias for
 agent UX, but it must not redefine stage sequencing or closeout semantics.
 
+`src/gzkit/pipeline_runtime.py` is the shared runtime engine behind the CLI and
+the generated Claude pipeline hooks.
+
 Current command contract:
 
 - full launch creates the active pipeline markers, reads the plan-audit receipt
@@ -34,7 +37,8 @@ Current command contract:
   paths, and clears active markers on exit
 
 The active marker files are also the machine-readable stage-state contract while
-the pipeline is running:
+the pipeline is running. They are runtime-managed and should not be edited or
+cleared manually:
 
 - `.claude/plans/.pipeline-active-<OBPI-ID>.json`
 - `.claude/plans/.pipeline-active.json`
