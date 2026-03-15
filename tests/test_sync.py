@@ -952,6 +952,23 @@ class TestSyncControlSurfaces(unittest.TestCase):
             self.assertTrue((rules_dir / "tests.md").exists())
             self.assertFalse((rules_dir / "old_rule.md").exists())
 
+    def test_sync_all_creates_claude_rules_from_instructions(self) -> None:
+        """sync_all() mirrors .github/instructions/ to .claude/rules/."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+            instructions_dir = project_root / ".github" / "instructions"
+            instructions_dir.mkdir(parents=True, exist_ok=True)
+            (instructions_dir / "tests.instructions.md").write_text(
+                '---\napplyTo: "tests/**"\n---\n\n# Test Policy\n'
+            )
+            sync_all(project_root, config)
+            rules_file = project_root / ".claude" / "rules" / "tests.md"
+            self.assertTrue(rules_file.exists())
+            content = rules_file.read_text(encoding="utf-8")
+            self.assertIn("paths:", content)
+            self.assertIn("# Test Policy", content)
+
 
 if __name__ == "__main__":
     unittest.main()
