@@ -9,6 +9,7 @@ from rich.console import Console
 from gzkit.superbook import (
     apply_draft,
     classify_lane,
+    collect_existing_semvers,
     generate_adr_draft,
     map_commits_to_chunks,
     next_semver,
@@ -56,10 +57,7 @@ def superbook_cmd(
 
     # Step 3: Determine semver
     if not semver:
-        from gzkit.ledger import Ledger  # noqa: PLC0415
-
-        ledger = Ledger(project_root / ".gzkit" / "ledger.jsonl")
-        existing = [e.id.replace("ADR-", "") for e in ledger.read_all() if e.event == "adr_created"]
+        existing = collect_existing_semvers(project_root)
         semver = next_semver(existing)
 
     # Step 4: Generate draft

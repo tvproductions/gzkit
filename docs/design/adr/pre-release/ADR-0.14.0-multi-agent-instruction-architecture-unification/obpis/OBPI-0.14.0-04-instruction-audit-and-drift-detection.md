@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.14.0-04-instruction-audit-and-drift-detection
-parent: ADR-0.14.0
+parent: ADR-0.14.0-multi-agent-instruction-architecture-unification
 item: 4
 lane: Heavy
 status: Draft
@@ -216,4 +216,3 @@ and one policy-versus-code mismatch with enough detail for remediation.
 **Date Completed:** -
 
 **Evidence Hash:** -
-

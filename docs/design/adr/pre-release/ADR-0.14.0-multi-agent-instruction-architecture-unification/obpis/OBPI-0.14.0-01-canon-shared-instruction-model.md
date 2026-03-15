@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.14.0-01-canon-shared-instruction-model
-parent: ADR-0.14.0
+parent: ADR-0.14.0-multi-agent-instruction-architecture-unification
 item: 1
 lane: Heavy
 status: Draft
@@ -220,4 +220,3 @@ minimal adapter-specific framing differences.
 **Date Completed:** -
 
 **Evidence Hash:** -
-
