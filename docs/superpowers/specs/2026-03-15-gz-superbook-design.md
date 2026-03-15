@@ -36,8 +36,13 @@ gz superbook forward \
 - `--plan` (required): path to superpowers plan document
 - `--semver` (optional): override auto-assigned semver
 - `--lane` (optional): override auto-classified lane (`lite`, `heavy`)
-- `--dry-run` (default): show draft without writing
-- `--apply`: write artifacts and emit ledger events
+- `--apply`: write artifacts and emit ledger events. Without this flag, the command runs in dry-run mode (shows draft without writing).
+
+**Semver auto-assignment:** When `--semver` is not provided, superbook scans the ledger for the highest existing `adr_created` semver and increments the minor version. Example: if the highest is `ADR-0.16.0`, the next assigned is `0.17.0`. Foundation semver (`0.0.x`) is never auto-assigned — it requires explicit `--semver 0.0.x`. If the ledger is empty, defaults to `0.1.0`. Collisions are checked before booking — if the semver already exists, the command errors with a suggestion for the next available.
+
+**Slug generation:** The ADR slug is derived from the spec title by lowercasing, replacing spaces with hyphens, and stripping non-alphanumeric characters (matching existing `gz plan` slug logic). Example: "AGENTS.md Tidy: Control Surface Schema and Rules Mirroring" → `agents-md-tidy-control-surface-schema-and-rules-mirroring`, truncated to 50 chars.
+
+**Directory bucket:** ADRs with semver `0.0.x` go to `docs/design/adr/foundation/`. All others go to `docs/design/adr/pre-release/`. This matches the existing directory convention.
 
 ### Artifact Mapping
 
@@ -69,6 +74,10 @@ Read spec and plan markdown, extracting structured data:
 - **From spec**: title, goal, architecture summary, design decisions, implementation scope (files to modify)
 - **From plan**: goal, tech stack, chunks (name + tasks), per-task file paths, per-task acceptance criteria
 - **From git log (retroactive only)**: commits between plan creation date and now, files changed per commit, commit messages
+
+**Commit-to-chunk mapping algorithm (retroactive only):**
+
+Each commit is assigned to a chunk by file-path overlap. For each commit, compute the set of changed files and intersect with each chunk's file-path set (union of all task file paths in that chunk). The chunk with the highest overlap score wins. Ties are broken by commit chronological order (earlier chunks first). Commits that match no chunk are collected as "unmapped" and presented to the human during review for manual assignment. The mapping is deterministic given the same plan and git history.
 
 #### Step 2: Auto-classify lane
 
@@ -128,10 +137,11 @@ Produce in-memory Pydantic models:
 - `list[LedgerEvent]`: `adr_created` + N × `obpi_created`
 
 For **retroactive** mode additionally:
-- OBPI status set to `Completed` (not `Draft`)
-- ADR status set to `Completed`
+- OBPI status set to `Pending-Attestation` (not `Completed` — human must still run `gz attest`)
+- ADR status set to `Pending-Attestation`
 - Evidence sections populated from git commits (SHA, message, files changed)
-- Gate check events generated from quality gate outputs
+- Gate 2 (tests) and Gate 3 (lint) are verified by running `gz test` and `gz lint` during booking. Pass/fail results are recorded in the evidence sections. If gates fail, status is set to `Draft` with a warning, not `Pending-Attestation`.
+- Gate 5 (human attestation) is never auto-set — the human must run `gz attest` after reviewing the booked artifacts
 
 For **forward** mode:
 - OBPI status set to `Draft`
@@ -196,7 +206,7 @@ docs/design/adr/pre-release/ADR-0.17.0-agents-md-tidy/
 {"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.17.0-05","parent":"ADR-0.17.0","ts":"...","source":"gz-superbook-retroactive"}
 ```
 
-The `source` field distinguishes superbook-generated events from manually-created ones.
+The `source` field is carried in the existing `LedgerEvent.extra` dict (not a new field). Superbook passes `extra={"source": "gz-superbook-retroactive"}` to the existing factory functions (`adr_created_event`, `obpi_created_event`). No ledger schema changes required.
 
 ## Implementation Architecture
 
@@ -300,14 +310,16 @@ class ADRDraft(BaseModel):
     intent: str
     decision: str
     checklist: list[str]
-    scorecard: dict[str, int]
+    scorecard: dict[str, int]  # {dimension: score} — rendered to text for ADR, not stored as DecompositionScorecard
     obpis: list[OBPIDraft]
 ```
+
+**Note on model types**: These are the first Pydantic models in the codebase (existing models use stdlib `dataclass`). This is intentional per the ADR-0.15.0 Pydantic migration. Superbook models are internal to the pipeline — they do not replace existing dataclasses. Where interop is needed (e.g., ledger events), superbook calls the existing factory functions which return dataclasses.
 
 ## Scope Exclusions
 
 - **TASK-level governance**: Pool ADR dependency — not implemented here. Tasks remain as OBPI work breakdown items.
-- **Automatic attestation**: Retroactive mode sets status to `Completed` but does NOT emit attestation events. Human must still run `gz attest` after reviewing the booked artifacts.
+- **Automatic attestation**: Retroactive mode sets status to `Pending-Attestation`, not `Completed`. Human must run `gz attest` after reviewing the booked artifacts.
 - **Superpowers workflow modification**: `gz superbook` wraps superpowers, does not modify its spec/plan/task workflow.
 
 ## Risk Mitigation
@@ -319,6 +331,16 @@ class ADRDraft(BaseModel):
 | Semver collision with existing ADRs | Check ledger for existing ADR with same semver before booking. Suggest next available. |
 | Scorecard/chunk count mismatch | Advisory warning — chunk count takes precedence. Human decides. |
 | Retroactive evidence gaps | If git commits can't be mapped to chunks cleanly, flag unmapped commits for human assignment. |
+| Duplicate booking | `--apply` checks ledger for existing `adr_created` event with the same semver AND checks filesystem for existing ADR directory. If either exists, the command errors with "already booked" and the existing artifact path. No `--force` flag — if re-booking is needed, delete the artifacts and ledger entries first. |
+| Foundational lane interop | "Foundational" is not a formal lane in `GzkitConfig` — it maps to `heavy` with a metadata note `foundation: true` in the ledger event `extra` dict. Auto-classification flags `0.0.x` semvers as foundational for the human review display, but the actual lane field is `heavy`. |
+
+## Relationship to Existing Commands
+
+`gz superbook` creates both ADR and OBPIs in a single operation, unlike the existing two-step `gz plan` + `gz specify` workflow. The generated artifacts are fully interchangeable — they use the same templates, the same ledger events, and are validated by the same `gz validate` and `gz obpi audit` commands. `gz superbook` is a batch-booking shortcut, not a separate artifact type.
+
+## Module Placement
+
+CLI registration lives in `src/gzkit/commands/superbook.py` (thin wrapper matching the `commands/plan.py` pattern). Domain logic lives in root-level modules `src/gzkit/superbook.py` and `src/gzkit/superbook_parser.py`. The parser can reuse `extract_markdown_section` from `src/gzkit/decomposition.py` for heading-based extraction.
 
 ## References
 
