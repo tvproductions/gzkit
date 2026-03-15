@@ -51,22 +51,24 @@ Follow the gzkit gate covenant for all changes:
 1. Check state: `gz state`
 2. Check status: `gz status`
 3. Create ADR for changes: `gz plan`
-4. For OBPI work after planning, run `gz-obpi-pipeline`
-5. Validate: `gz validate --documents`, `gz lint`, `gz typecheck`, `gz test`
-6. Request attestation: Human runs `gz attest`
-7. In the pipeline closeout stage, run `uv run gz git-sync --apply --lint --test` before final OBPI completion accounting
+4. For OBPI work after planning, start `uv run gz obpi pipeline <OBPI-ID>`
+5. The `gz-obpi-pipeline` skill remains available as a thin alias
+6. Validate: `gz validate --documents`, `gz lint`, `gz typecheck`, `gz test`
+7. Request attestation: Human runs `gz attest`
+8. In the pipeline closeout stage, run `uv run gz git-sync --apply --lint --test` before final OBPI completion accounting
 
 ## OBPI Acceptance
 
 OBPI closure follows `AGENTS.md` and is pipeline-first plus attestation-first:
 
-1. Run `gz-obpi-pipeline` after plan approval
-2. Present value narrative
-3. Present key proof
-4. Present verification evidence
-5. Wait for explicit human acceptance
-6. Run `uv run gz git-sync --apply --lint --test` before final completion receipt/accounting
-7. Only then mark brief status `Completed`
+1. Run `uv run gz obpi pipeline <OBPI-ID>` after plan approval
+2. Use `gz-obpi-pipeline` only as a thin alias over that runtime
+3. Present value narrative
+4. Present key proof
+5. Present verification evidence
+6. Wait for explicit human acceptance
+7. Run `uv run gz git-sync --apply --lint --test` before final completion receipt/accounting
+8. Only then mark brief status `Completed`
 
 Reference: `AGENTS.md` section `OBPI Acceptance Protocol`.
 

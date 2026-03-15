@@ -125,15 +125,14 @@ Detailed standards in the [OBPI Decomposition Matrix](docs/governance/GovZero/ob
 
 **Agent MUST NOT mark an OBPI brief as `Completed` without explicit human attestation when parent ADR lane is Heavy or Foundational (0.0.x).**
 
-**Pipeline mandate:** After plan approval for OBPI work, agents MUST invoke the
-OBPI execution pipeline (`gz-obpi-pipeline`) instead of implementing directly.
-The pipeline enforces the verify -> ceremony -> guarded git sync -> completion
-accounting sequence that gets lost in freeform execution. In gzkit, Stage 5
-uses `uv run gz git-sync --apply --lint --test` before final OBPI completion
-receipt emission and brief/ADR sync. If implementation is already complete,
-invoke with `--from=verify` or `--from=ceremony` to enter the governance
-stages. Freeform implementation without pipeline invocation is a process
-defect.
+**Pipeline mandate:** After plan approval for OBPI work, agents MUST start the
+canonical runtime surface `uv run gz obpi pipeline <OBPI-ID>` instead of
+implementing directly. The `gz-obpi-pipeline` skill remains a thin alias only.
+The runtime owns stage sequencing, marker state, and re-entry semantics. In
+gzkit, it preserves the verify -> ceremony -> guarded git sync -> completion
+accounting order, with `uv run gz git-sync --apply --lint --test` required
+before final OBPI completion receipt emission and brief/ADR sync. Freeform
+implementation without runtime invocation is a process defect.
 
 ### Ceremony Steps
 

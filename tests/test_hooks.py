@@ -576,6 +576,7 @@ class TestPipelineRouterHook(unittest.TestCase):
 
             self.assertEqual(result.returncode, 0)
             self.assertIn("OBPI plan approved: OBPI-0.12.0-03", result.stdout)
+            self.assertIn("uv run gz obpi pipeline OBPI-0.12.0-03", result.stdout)
             self.assertIn("/gz-obpi-pipeline OBPI-0.12.0-03", result.stdout)
             self.assertEqual(result.stderr, "")
 
@@ -677,6 +678,7 @@ class TestPipelineGateHook(unittest.TestCase):
 
             self.assertEqual(result.returncode, 2)
             self.assertIn("BLOCKED: Pipeline not invoked for OBPI-0.12.0-04.", result.stderr)
+            self.assertIn("uv run gz obpi pipeline OBPI-0.12.0-04", result.stderr)
             self.assertIn("/gz-obpi-pipeline OBPI-0.12.0-04", result.stderr)
             self.assertIn("--from=verify", result.stderr)
 
@@ -942,7 +944,7 @@ class TestPipelineCompletionReminderHook(unittest.TestCase):
             self.assertEqual(result.returncode, 0)
             self.assertEqual(result.stdout, "")
             self.assertIn("PIPELINE COMPLETION REMINDER", result.stderr)
-            self.assertIn("/gz-obpi-audit OBPI-0.12.0-05", result.stderr)
+            self.assertIn("uv run gz obpi pipeline OBPI-0.12.0-05 --from=ceremony", result.stderr)
             self.assertIn("/gz-obpi-pipeline OBPI-0.12.0-05 --from=ceremony", result.stderr)
 
     def test_emits_reminder_with_richer_marker_payload(self) -> None:
@@ -977,6 +979,7 @@ class TestPipelineCompletionReminderHook(unittest.TestCase):
             self.assertEqual(result.stdout, "")
             self.assertIn("PIPELINE COMPLETION REMINDER", result.stderr)
             self.assertIn("Active OBPI pipeline: OBPI-0.12.0-05", result.stderr)
+            self.assertIn("uv run gz obpi pipeline OBPI-0.12.0-05 --from=ceremony", result.stderr)
 
 
 if __name__ == "__main__":

@@ -41,11 +41,12 @@ This project uses gzkit for governance. Key commands:
 
 When completing an OBPI brief:
 
-1. Use `gz-obpi-pipeline` after plan approval instead of freeform implementation
-2. Provide value narrative + one key proof example
-3. Provide verification evidence (tests/commands/output)
-4. Wait for explicit human acceptance before setting `Completed` for Heavy/Foundation parent ADR work
-5. Run `uv run gz git-sync --apply --lint --test` before final OBPI completion receipt/accounting
+1. Use `uv run gz obpi pipeline <OBPI-ID>` after plan approval instead of freeform implementation
+2. Treat `gz-obpi-pipeline` as a thin alias over the canonical runtime
+3. Provide value narrative + one key proof example
+4. Provide verification evidence (tests/commands/output)
+5. Wait for explicit human acceptance before setting `Completed` for Heavy/Foundation parent ADR work
+6. Run `uv run gz git-sync --apply --lint --test` before final OBPI completion receipt/accounting
 
 Reference: `AGENTS.md` section `OBPI Acceptance Protocol`.
 

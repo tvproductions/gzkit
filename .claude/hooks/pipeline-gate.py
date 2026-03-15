@@ -15,8 +15,13 @@ import os
 import sys
 from pathlib import Path
 
-RECEIPT_FILE = ".plan-audit-receipt.json"
-LEGACY_MARKER = ".pipeline-active.json"
+from gzkit.pipeline_runtime import (
+    PIPELINE_LEGACY_MARKER,
+    PIPELINE_RECEIPT_FILE,
+    _load_pipeline_json,
+    _pipeline_plans_dir,
+    pipeline_gate_block_message,
+)
 
 
 def resolve_repo_path(cwd: str, file_path: str) -> str | None:
@@ -36,19 +41,11 @@ def resolve_repo_path(cwd: str, file_path: str) -> str | None:
     return rel_path.as_posix()
 
 
-def load_json(path: Path) -> dict | None:
-    """Best-effort JSON reader for receipt and marker files."""
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return None
-
-
 def marker_matches(marker_path: Path, obpi_id: str) -> bool:
     """Return whether a marker exists and matches the target OBPI."""
     if not marker_path.exists():
         return False
-    marker = load_json(marker_path)
+    marker = _load_pipeline_json(marker_path)
     return bool(marker and marker.get("obpi_id") == obpi_id)
 
 
@@ -68,8 +65,8 @@ def main() -> None:
         sys.exit(0)
 
     cwd_path = Path(input_data.get("cwd", os.getcwd())).resolve()
-    plans_dir = cwd_path / ".claude" / "plans"
-    receipt = load_json(plans_dir / RECEIPT_FILE)
+    plans_dir = _pipeline_plans_dir(cwd_path)
+    receipt = _load_pipeline_json(plans_dir / PIPELINE_RECEIPT_FILE)
     if not receipt:
         sys.exit(0)
 
@@ -82,26 +79,14 @@ def main() -> None:
     if marker_matches(obpi_marker, obpi_id):
         sys.exit(0)
 
-    legacy_marker = plans_dir / LEGACY_MARKER
+    legacy_marker = plans_dir / PIPELINE_LEGACY_MARKER
     if marker_matches(legacy_marker, obpi_id):
         sys.exit(0)
 
-    print(
-        f"BLOCKED: Pipeline not invoked for {obpi_id}.\n"
-        f"\n"
-        f"A plan-audit receipt exists but the governance pipeline has not\n"
-        f"been started. Implementation writes to src/ and tests/ are gated\n"
-        f"until the pipeline is invoked.\n"
-        f"\n"
-        f"REQUIRED: Invoke the pipeline:\n"
-        f"  /gz-obpi-pipeline {obpi_id}\n"
-        f"\n"
-        f"If implementation is already complete, use:\n"
-        f"  /gz-obpi-pipeline {obpi_id} --from=verify\n",
-        file=sys.stderr,
-    )
+    print(pipeline_gate_block_message(obpi_id), file=sys.stderr)
     sys.exit(2)
 
 
 if __name__ == "__main__":
     main()
+

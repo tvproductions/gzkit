@@ -10,7 +10,7 @@ Current hook surface in gzkit:
   OBPI plan against `.claude/plans/.plan-audit-receipt.json`.
 - `pipeline-router.py`
   PostToolUse (`ExitPlanMode`) hook that routes PASS receipts into
-  `gz-obpi-pipeline`.
+  the canonical `gz obpi pipeline` runtime.
 - `pipeline-gate.py`
   PreToolUse (`Write|Edit`) hook that blocks `src/` and `tests/`
   writes until the active pipeline marker exists.
