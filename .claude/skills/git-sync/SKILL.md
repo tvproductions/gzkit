@@ -1,6 +1,6 @@
 ---
 name: git-sync
-description: Run the guarded repository sync ritual. Lint/test gates run via pre-commit hooks.
+description: Run the guarded repository sync ritual with lint/test gates.
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
@@ -11,7 +11,7 @@ last_reviewed: 2026-02-21
 
 ## Git Sync
 
-Run the guarded repository sync ritual. Lint and test gates are enforced by pre-commit hooks, so `--lint --test` flags are redundant.
+Run the guarded repository sync ritual with lint/test gates.
 
 ## Trigger
 
@@ -32,8 +32,10 @@ Use the `gz git-sync` command flow (dry-run first, then apply as requested).
 
 1. Preview planned actions:
    `uv run gz git-sync`
-2. Execute sync:
+2. Execute git-only sync when requested:
    `uv run gz git-sync --apply`
+3. Execute full ritual with quality gates:
+   `uv run gz git-sync --apply --lint --test`
 
 ## Examples
 
@@ -41,7 +43,7 @@ Use the `gz git-sync` command flow (dry-run first, then apply as requested).
 
 **Input**: "git sync"
 
-**Output**: Runs `uv run gz git-sync --apply` (or dry-run first if safety confirmation is needed).
+**Output**: Runs `uv run gz git-sync --apply --lint --test` (or dry-run first if safety confirmation is needed).
 
 ## Constraints
 
