@@ -153,6 +153,64 @@ class TestAdapterTemplatesReferenceCanon(unittest.TestCase):
         self.assertIn("`test-skill`", content)
 
 
+class TestRootSurfaceSlimming(unittest.TestCase):
+    """Regression tests for OBPI-0.14.0-03 root surface slimming.
+
+    Ensures workflow prose stays relocated to skills and docs,
+    not re-introduced into root templates.
+    """
+
+    def setUp(self) -> None:
+        self.agents = render_template(
+            "agents",
+            project_name="test-project",
+            project_purpose="Test purpose",
+            tech_stack="Python 3.13+",
+            skills_canon_path=".gzkit/skills",
+            skills_claude_path=".claude/skills",
+            skills_codex_path=".agents/skills",
+            skills_copilot_path=".github/skills",
+            skills_catalog="(none)",
+            sync_date="2026-01-01",
+            local_content="",
+        )
+        self.copilot = render_template(
+            "copilot",
+            project_name="test-project",
+            project_purpose="Test purpose",
+            tech_stack="Python 3.13+",
+            coding_conventions="Ruff defaults",
+            skills_canon_path=".gzkit/skills",
+            skills_claude_path=".claude/skills",
+            skills_codex_path=".agents/skills",
+            skills_copilot_path=".github/skills",
+            build_commands="uv sync",
+            local_content="",
+        )
+
+    def test_agents_template_no_ceremony_steps(self) -> None:
+        """Ceremony steps relocated to gz-obpi-pipeline skill."""
+        self.assertNotIn("Present value narrative", self.agents)
+        self.assertIn("gz-obpi-pipeline", self.agents)
+
+    def test_agents_template_decomposition_references_doc(self) -> None:
+        """Decomposition methodology replaced with doc reference."""
+        self.assertIn("obpi-decomposition-matrix.md", self.agents)
+        self.assertNotIn("Step 1: Baseline Structural Template", self.agents)
+
+    def test_agents_template_execution_rules_condensed(self) -> None:
+        """Execution rules condensed to essentials with gz --help reference."""
+        self.assertIn("gz --help", self.agents)
+        self.assertIn("gz check", self.agents)
+        self.assertNotIn("gz prd", self.agents)
+        self.assertNotIn("gz constitute", self.agents)
+
+    def test_copilot_no_inline_ceremony(self) -> None:
+        """Copilot template defers OBPI ceremony to AGENTS.md."""
+        self.assertNotIn("Provide value narrative", self.copilot)
+        self.assertIn("AGENTS.md", self.copilot)
+
+
 class TestListTemplates(unittest.TestCase):
     """Tests for listing templates."""
 

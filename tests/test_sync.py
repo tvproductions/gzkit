@@ -418,14 +418,14 @@ class TestSyncControlSurfaces(unittest.TestCase):
             self.assertIn("guarded git sync -> completion", agents)
             self.assertIn("uv run gz obpi pipeline <OBPI-ID>", agents)
             self.assertIn("uv run gz git-sync --apply --lint --test", agents)
-            self.assertIn("uv run gz test", agents)
+            self.assertIn("uv run gz check", agents)
             self.assertIn("Documentation/process/template-only changes stay", agents)
             self.assertNotIn("uv run -m unittest discover tests", agents)
             # Slim CLAUDE.md delegates governance to .claude/rules/
             self.assertIn(".claude/rules/", claude)
             self.assertIn("AGENTS.md", claude)
             self.assertIn("uv run gz obpi pipeline <OBPI-ID>", copilot)
-            self.assertIn("uv run gz git-sync --apply --lint --test", copilot)
+            self.assertIn("AGENTS.md", copilot)
 
     def test_sync_manifest_uses_gz_native_verification_defaults(self) -> None:
         """Generated manifests use gz-native verification commands."""

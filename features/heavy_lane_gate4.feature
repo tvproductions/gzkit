@@ -32,4 +32,4 @@ Feature: Heavy lane Gate 4 governance
     Given the workspace is initialized in heavy mode
     Then the file "AGENTS.md" contains "Documentation/process/template-only changes stay"
     And the file "AGENTS.md" contains "command/API/schema/runtime-contract changes"
-    And the file "AGENTS.md" contains "uv run gz test"
+    And the file "AGENTS.md" contains "uv run gz check"
