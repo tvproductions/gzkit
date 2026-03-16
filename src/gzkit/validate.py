@@ -1273,6 +1273,11 @@ def validate_all(project_root: Path) -> ValidationResult:
     # Validate control surfaces
     errors.extend(validate_surfaces(project_root))
 
+    # Validate instruction audit (lazy import to avoid circular dependency)
+    from gzkit.instruction_audit import audit_instructions  # noqa: PLC0415
+
+    errors.extend(audit_instructions(project_root))
+
     return ValidationResult(
         valid=len(errors) == 0,
         errors=errors,

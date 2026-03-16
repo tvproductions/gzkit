@@ -71,6 +71,7 @@ from gzkit.hooks.claude import setup_claude_hooks
 from gzkit.hooks.copilot import setup_copilot_hooks, setup_copilotignore
 from gzkit.hooks.core import enrich_completed_receipt_evidence
 from gzkit.hooks.obpi import ObpiValidator, normalize_git_sync_state, normalize_scope_audit
+from gzkit.instruction_audit import audit_instructions
 from gzkit.interview import (
     check_interview_complete,
     format_answers_for_template,
@@ -4041,13 +4042,16 @@ def validate(
     check_documents: bool,
     check_surfaces: bool,
     check_ledger: bool,
+    check_instructions: bool,
     as_json: bool,
 ) -> None:
     """Validate governance artifacts against schemas."""
     project_root = get_project_root()
 
     # If no specific check requested, run all
-    run_all = not any([check_manifest, check_documents, check_surfaces, check_ledger])
+    run_all = not any(
+        [check_manifest, check_documents, check_surfaces, check_ledger, check_instructions]
+    )
 
     errors = []
 
@@ -4061,6 +4065,9 @@ def validate(
     if run_all or check_ledger:
         ledger_path = project_root / ".gzkit" / "ledger.jsonl"
         errors.extend(validate_ledger(ledger_path))
+
+    if run_all or check_instructions:
+        errors.extend(audit_instructions(project_root))
 
     if run_all or check_documents:
         # Validate documents based on manifest
@@ -5056,6 +5063,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p_validate.add_argument("--documents", dest="check_documents", action="store_true")
     p_validate.add_argument("--surfaces", dest="check_surfaces", action="store_true")
     p_validate.add_argument("--ledger", dest="check_ledger", action="store_true")
+    p_validate.add_argument("--instructions", dest="check_instructions", action="store_true")
     p_validate.add_argument("--json", dest="as_json", action="store_true")
     p_validate.set_defaults(
         func=lambda a: validate(
@@ -5063,6 +5071,7 @@ def _build_parser() -> argparse.ArgumentParser:
             check_documents=a.check_documents,
             check_surfaces=a.check_surfaces,
             check_ledger=a.check_ledger,
+            check_instructions=a.check_instructions,
             as_json=a.as_json,
         )
     )
