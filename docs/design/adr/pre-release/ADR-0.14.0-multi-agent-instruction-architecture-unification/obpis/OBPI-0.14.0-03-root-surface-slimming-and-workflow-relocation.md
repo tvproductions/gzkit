@@ -3,7 +3,7 @@ id: OBPI-0.14.0-03-root-surface-slimming-and-workflow-relocation
 parent: ADR-0.14.0-multi-agent-instruction-architecture-unification
 item: 3
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.14.0-03-root-surface-slimming-and-workflow-relocation: Root Surface Slimming and Workflow Relocation
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs\design\adr\pre-release\ADR-0.14.0-multi-agent-instruction-architecture-unification\ADR-0.14.0-multi-agent-instruction-architecture-unification.md`
 - **Checklist Item:** #3 - "OBPI-0.14.0-03: Slim generated root control surfaces and move recurring workflows out of always-loaded root files into skills/playbooks."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -195,9 +195,9 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
+- Files modified: `src/gzkit/templates/agents.md` (-45 lines), `src/gzkit/templates/copilot.md` (-8 lines), `.claude/agents/git-sync-repo.md` (-27 lines), `tests/test_sync.py`, `features/heavy_lane_gate4.feature`
+- Tests added: 4 regression tests in `tests/test_templates.py::TestRootSurfaceSlimming`
+- Date completed: 2026-03-16
 
 ## Value Narrative
 
@@ -211,10 +211,16 @@ Rendered root surfaces retain repo invariants and skill discovery, but no longer
 the full skill catalog or duplicate chore instructions already available in canonical
 skills.
 
+### Human Attestation
+
+- **Attestor:** Jeff
+- **Date:** 2026-03-16
+- **Status:** Accepted
+
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-16
 
 **Evidence Hash:** -
