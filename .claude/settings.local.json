@@ -61,7 +61,9 @@
       "Bash(wc -l /Users/jeff/Documents/Code/gzkit/tests/test_*.py /Users/jeff/Documents/Code/gzkit/tests/commands/test_*.py)",
       "Bash(find /Users/jeff/Documents/Code/gzkit/src/gzkit -type f -name \"*.py\" -exec wc -l {} +)",
       "Bash(python3 -c \"import sys,json; [print\\(json.loads\\(l\\)[''''event''''], json.loads\\(l\\)[''''id'''']\\) for l in sys.stdin]\")",
-      "Bash(python3 -c \"import sys,json; [print\\(json.loads\\(l\\)[''''id'''']\\) for l in sys.stdin]\")"
+      "Bash(python3 -c \"import sys,json; [print\\(json.loads\\(l\\)[''''id'''']\\) for l in sys.stdin]\")",
+      "Bash(find:*)",
+      "Bash(ls:*)"
     ]
   }
 }
