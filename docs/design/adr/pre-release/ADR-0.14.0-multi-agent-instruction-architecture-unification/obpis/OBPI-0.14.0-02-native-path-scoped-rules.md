@@ -3,7 +3,7 @@ id: OBPI-0.14.0-02-native-path-scoped-rules
 parent: ADR-0.14.0-multi-agent-instruction-architecture-unification
 item: 2
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.14.0-02-native-path-scoped-rules: Native Path-Scoped Instruction Surfaces
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs\design\adr\pre-release\ADR-0.14.0-multi-agent-instruction-architecture-unification\ADR-0.14.0-multi-agent-instruction-architecture-unification.md`
 - **Checklist Item:** #2 - "OBPI-0.14.0-02: Add native path-scoped instruction support with nested `AGENTS.md` for shared subtree rules and `.claude/rules/` for Claude-only rules."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -154,21 +154,21 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.14.0-02-01: Given a shared subtree rule, when gzkit generates control surfaces, then a nested `AGENTS.md` can be emitted for that subtree without duplicating unrelated root rules.
-- [ ] REQ-0.14.0-02-02: Given a Claude-only path rule, when gzkit generates Claude surfaces, then the rule is emitted under `.claude/rules/` instead of being hidden behind generic hook routing.
-- [ ] REQ-0.14.0-02-03: Given a repository with no path-specific rules, when surfaces are generated, then no empty or dead rule directories are created.
-- [ ] REQ-0.14.0-02-04: Given legacy `.github/instructions` inputs, when migration guidance runs, then shared rules are directed toward nested `AGENTS.md` and Claude-only rules toward `.claude/rules/` without assuming they are equivalent.
+- [x] REQ-0.14.0-02-01: Given a shared subtree rule, when gzkit generates control surfaces, then a nested `AGENTS.md` can be emitted for that subtree without duplicating unrelated root rules.
+- [x] REQ-0.14.0-02-02: Given a Claude-only path rule, when gzkit generates Claude surfaces, then the rule is emitted under `.claude/rules/` instead of being hidden behind generic hook routing.
+- [x] REQ-0.14.0-02-03: Given a repository with no path-specific rules, when surfaces are generated, then no empty or dead rule directories are created.
+- [x] REQ-0.14.0-02-04: Given legacy `.github/instructions` inputs, when migration guidance runs, then shared rules are directed toward nested `AGENTS.md` and Claude-only rules toward `.claude/rules/` without assuming they are equivalent.
 
 ## Completion Checklist
 
 <!-- Verify all gates before marking OBPI accepted. -->
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -179,25 +179,32 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded in brief frontmatter and ADR checklist item #2
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+Ran 68 tests in 0.285s — OK
+(14 new in tests/test_rules.py + 54 existing in tests/test_sync.py)
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+ruff check: All checks passed!
+ruff format: 5 files already formatted
 ```
+
+### Gate 5 (Human Attestation)
+
+Human attestation received 2026-03-15. Heavy lane requirement satisfied.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
+- Files created: `src/gzkit/rules.py` (366 lines), `tests/test_rules.py` (14 tests), `.claude/hooks/session-staleness-check.py`
+- Files modified: `src/gzkit/config.py`, `src/gzkit/sync.py`, `src/gzkit/validate.py`, `.claude/settings.json`, `.claude/hooks/README.md`
+- Hooks activated: `obpi-completion-validator.py`, `session-staleness-check.py`
+- Date completed: 2026-03-15
 
 ## Value Narrative
 
@@ -214,8 +221,8 @@ expansion.
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-15
 
 **Evidence Hash:** -
