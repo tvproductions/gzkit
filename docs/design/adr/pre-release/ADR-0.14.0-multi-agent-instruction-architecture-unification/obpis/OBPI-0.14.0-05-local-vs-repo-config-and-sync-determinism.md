@@ -3,7 +3,7 @@ id: OBPI-0.14.0-05-local-vs-repo-config-and-sync-determinism
 parent: ADR-0.14.0-multi-agent-instruction-architecture-unification
 item: 5
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.14.0-05-local-vs-repo-config-and-sync-determinism: Local vs Repo Config and Sync Determinism
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs\design\adr\pre-release\ADR-0.14.0-multi-agent-instruction-architecture-unification\ADR-0.14.0-multi-agent-instruction-architecture-unification.md`
 - **Checklist Item:** #5 - "OBPI-0.14.0-05: Separate machine-local from repo-local agent config and enforce deterministic generated-surface sync across adapters and mirrors."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -105,26 +105,26 @@ affect how external agent tools discover project policy.
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] Tests written before/with implementation
-- [ ] Tests pass: `uv run -m unittest discover tests`
-- [ ] Coverage maintained: `uv run coverage run -m unittest && uv run coverage report`
+- [x] Tests written before/with implementation
+- [x] Tests pass: `uv run -m unittest discover tests`
+- [x] Coverage maintained: `uv run coverage run -m unittest && uv run coverage report`
 
 ### Code Quality
 
-- [ ] Lint clean: `uvx ruff check src tests`
-- [ ] Format clean: `uvx ruff format --check .`
-- [ ] Type check clean: `uvx ty check src`
+- [x] Lint clean: `uvx ruff check src tests`
+- [x] Format clean: `uvx ruff format --check .`
+- [x] Type check clean: `uvx ty check src`
 
 <!-- Heavy lane only: -->
 ### Gate 3: Docs (Heavy only)
 
-- [ ] Docs build: `uvx mkdocs build --strict`
-- [ ] Relevant docs updated
+- [x] Docs build: `uvx mkdocs build --strict`
+- [x] Relevant docs updated
 
 ### Gate 4: BDD (Heavy only)
 
@@ -132,7 +132,7 @@ affect how external agent tools discover project policy.
 
 ### Gate 5: Human (Heavy only)
 
-- [ ] Human attestation recorded
+- [x] Human attestation recorded (2026-03-16)
 
 ## Verification
 
@@ -155,21 +155,21 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.14.0-05-01: Given machine-local Claude permissions or settings, when gzkit initializes or syncs a repo, then local-only config is kept out of tracked shared policy surfaces.
-- [ ] REQ-0.14.0-05-02: Given the checked-in Claude settings surface, when tests and generation run, then the generated output matches the tracked file exactly.
-- [ ] REQ-0.14.0-05-03: Given unchanged canonical inputs, when surface sync runs repeatedly, then tracked adapter files and mirrors remain deterministic and drift is reported when not.
-- [ ] REQ-0.14.0-05-04: Given a repository bootstrap or sync, when local config scaffolding is generated, then operators receive a safe local example pattern rather than a tracked `.local` policy file.
+- [x] REQ-0.14.0-05-01: Given machine-local Claude permissions or settings, when gzkit initializes or syncs a repo, then local-only config is kept out of tracked shared policy surfaces.
+- [x] REQ-0.14.0-05-02: Given the checked-in Claude settings surface, when tests and generation run, then the generated output matches the tracked file exactly.
+- [x] REQ-0.14.0-05-03: Given unchanged canonical inputs, when surface sync runs repeatedly, then tracked adapter files and mirrors remain deterministic and drift is reported when not.
+- [x] REQ-0.14.0-05-04: Given a repository bootstrap or sync, when local config scaffolding is generated, then operators receive a safe local example pattern rather than a tracked `.local` policy file.
 
 ## Completion Checklist
 
 <!-- Verify all gates before marking OBPI accepted. -->
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass (501/501), coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -180,25 +180,28 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+Ran 501 tests in 11.663s — OK
+OBPI-specific: tests.test_hooks + tests.test_sync — 103/103 pass
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+uv run gz lint — All checks passed
+uv run gz typecheck — All checks passed
 ```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
+- Files created: `.claude/settings.local.example.json`
+- Files modified: `.gitignore`, `src/gzkit/hooks/claude.py`, `src/gzkit/sync.py`, `tests/test_hooks.py`, `tests/test_sync.py`, `docs/user/commands/agent-sync-control-surfaces.md`, `.gzkit/skills/gz-obpi-pipeline/SKILL.md`
+- Tests added: `TestDetectClaudeSettingsDrift` (4 cases), updated `TestGenerateClaudeSettings` and `TestSetupClaudeHooks`
+- Date completed: 2026-03-16
 
 ## Value Narrative
 
@@ -214,8 +217,8 @@ leaving local-only settings untracked or example-based.
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-16
 
 **Evidence Hash:** -

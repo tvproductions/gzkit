@@ -1,0 +1,9 @@
+{
+  "_comment": "Machine-local overrides — not tracked in git. Copy to settings.local.json and edit. See docs/user/commands/agent-sync-control-surfaces.md § Local vs Repo Config.",
+  "permissions": {
+    "allow": [
+      "Bash(uv run:*)",
+      "WebSearch"
+    ]
+  }
+}

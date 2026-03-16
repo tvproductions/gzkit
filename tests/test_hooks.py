@@ -116,6 +116,8 @@ class TestGenerateClaudeSettings(unittest.TestCase):
         pretool_hooks = settings["hooks"]["PreToolUse"]
         posttool_hooks = settings["hooks"]["PostToolUse"]
 
+        self.assertFalse(settings["enabledPlugins"]["superpowers@claude-plugins-official"])
+
         self.assertEqual(
             pretool_hooks,
             [
@@ -133,7 +135,15 @@ class TestGenerateClaudeSettings(unittest.TestCase):
                     "hooks": [
                         {
                             "type": "command",
+                            "command": "uv run python .claude/hooks/session-staleness-check.py",
+                        },
+                        {
+                            "type": "command",
                             "command": "uv run python .claude/hooks/pipeline-gate.py",
+                        },
+                        {
+                            "type": "command",
+                            "command": ("uv run python .claude/hooks/obpi-completion-validator.py"),
                         },
                         {
                             "type": "command",
@@ -202,6 +212,8 @@ class TestSetupClaudeHooks(unittest.TestCase):
             pipeline_router = hooks_dir / "pipeline-router.py"
             pipeline_gate = hooks_dir / "pipeline-gate.py"
             pipeline_completion_reminder = hooks_dir / "pipeline-completion-reminder.py"
+            session_staleness_check = hooks_dir / "session-staleness-check.py"
+            obpi_completion_validator = hooks_dir / "obpi-completion-validator.py"
             ledger_writer = hooks_dir / "ledger-writer.py"
             readme = hooks_dir / "README.md"
             settings_path = project_root / ".claude" / "settings.json"
@@ -213,6 +225,8 @@ class TestSetupClaudeHooks(unittest.TestCase):
                 pipeline_router,
                 pipeline_gate,
                 pipeline_completion_reminder,
+                session_staleness_check,
+                obpi_completion_validator,
                 ledger_writer,
                 readme,
                 settings_path,
@@ -225,11 +239,14 @@ class TestSetupClaudeHooks(unittest.TestCase):
             self.assertIn(".claude/hooks/pipeline-router.py", created)
             self.assertIn(".claude/hooks/pipeline-gate.py", created)
             self.assertIn(".claude/hooks/pipeline-completion-reminder.py", created)
+            self.assertIn(".claude/hooks/session-staleness-check.py", created)
+            self.assertIn(".claude/hooks/obpi-completion-validator.py", created)
             self.assertIn(".claude/hooks/ledger-writer.py", created)
             self.assertIn(".claude/hooks/README.md", created)
             self.assertIn(".claude/settings.json", created)
 
             settings = json.loads(settings_path.read_text(encoding="utf-8"))
+            self.assertFalse(settings["enabledPlugins"]["superpowers@claude-plugins-official"])
             self.assertEqual(
                 settings["hooks"]["PreToolUse"],
                 [
@@ -247,7 +264,17 @@ class TestSetupClaudeHooks(unittest.TestCase):
                         "hooks": [
                             {
                                 "type": "command",
+                                "command": "uv run python .claude/hooks/session-staleness-check.py",
+                            },
+                            {
+                                "type": "command",
                                 "command": "uv run python .claude/hooks/pipeline-gate.py",
+                            },
+                            {
+                                "type": "command",
+                                "command": (
+                                    "uv run python .claude/hooks/obpi-completion-validator.py"
+                                ),
                             },
                             {
                                 "type": "command",
@@ -303,9 +330,12 @@ class TestSetupClaudeHooks(unittest.TestCase):
             self.assertIn("pipeline-router.py", readme_text)
             self.assertIn("pipeline-gate.py", readme_text)
             self.assertIn("pipeline-completion-reminder.py", readme_text)
+            self.assertIn("session-staleness-check.py", readme_text)
+            self.assertIn("obpi-completion-validator.py", readme_text)
             self.assertIn("src/gzkit/pipeline_runtime.py", readme_text)
             self.assertIn("Registration Order", readme_text)
             self.assertNotIn("not yet active in", readme_text)
+            self.assertNotIn("historical", readme_text)
             self.assertIn("hook that runs `ruff check --fix`", readme_text)
             self.assertIn("hook that records governance", readme_text)
 

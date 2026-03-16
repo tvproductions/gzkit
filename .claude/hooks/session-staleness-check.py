@@ -41,7 +41,6 @@ def _brief_is_completed(cwd: Path, obpi_id: str) -> bool:
     parts = stripped.rsplit("-", 1)
     if len(parts) < 2:
         return False
-    adr_version = parts[0]
 
     # Search design/adr for matching OBPI files
     adr_root = cwd / "docs" / "design" / "adr"

@@ -1,21 +1,21 @@
 ---
 name: gz-obpi-audit
-description: Audit OBPI brief status against actual code/test evidence. Records proof in JSONL ledger. Use when auditing a single OBPI brief against its evidence, recording proof after completing OBPI work, or as part of a reconciliation workflow.
+description: Audit OBPI brief status against actual code/test evidence. Records proof in JSONL ledger.
 category: obpi-pipeline
 compatibility: GovZero v6 framework with OBPI briefs
 metadata:
-  skill-version: "1.2.0"
+  skill-version: "1.1.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/adr-obpi-ghi-audit-linkage.md"
   govzero-gates-covered: "Gate 2 (TDD), brief status integrity"
-  govzero_layer: "Layer 1 — Evidence Gathering"
+  govzero_layer: "Layer 1 - Evidence Gathering"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-03-16
+last_reviewed: 2026-02-18
 ---
 
-# gz-obpi-audit (v1.2.0)
+# gz-obpi-audit (v1.1.0)
 
 ## Purpose
 
@@ -96,8 +96,6 @@ Each audit appends a JSON line:
     "covers_tags": ["@covers ADR-0.0.19"],
     "docstring_markers": ["PURE FUNCTION", "deterministic"]
   },
-  "narrative": "Manifest purity was assumed but never enforced. Now determinism tests and docstring contracts prove the manifest pipeline is a pure function of its inputs, preventing non-reproducible builds.",
-  "key_proof": "test_determinism_same_contract_same_hash: identical contract → identical manifest hash across 100 runs with stable seed",
   "criteria_evaluated": [
     {"criterion": "Warehouse docstrings document contract → manifest flow", "result": "PASS", "evidence": "manifest.py:266"},
     {"criterion": "Manifest generation is pure", "result": "PASS", "evidence": "test_determinism_same_contract_same_hash"},
@@ -193,45 +191,7 @@ For each acceptance criterion:
 | "No X in code" | grep returns empty |
 | "Y pattern used" | grep finds Y |
 
-### Step 5: Compose Narrative + Key Proof
-
-**Purpose:** Mechanical evidence (test counts, coverage percentages) proves the work *passes*,
-but doesn't explain the *value delivered*. This step captures the human-readable story.
-
-#### 5a. Value Narrative (2-3 sentences)
-
-Answer: **What problem existed before this OBPI, and what capability exists now?**
-
-- Focus on the before/after transformation, not implementation details
-- Name the concrete benefit to operators, consumers, or downstream systems
-- If the OBPI extracted, refactored, or migrated — explain what was unlocked
-
-**Example:**
-> Validation logic was trapped inside a test file, unreachable by production code.
-> Now `validate_handoff_document()` provides a single entry point for CLI commands and
-> automated workflows to catch placeholders, leaked credentials, and missing sections
-> in a fail-closed pass.
-
-#### 5b. Key Proof (concrete example)
-
-Provide **one usage example** showing the delivered capability in action:
-
-- A code snippet calling the new API with realistic inputs/outputs
-- A CLI invocation with representative output
-- A before/after comparison of behavior
-
-The example should be something a human reviewer can mentally execute to verify the
-claim in the narrative. Prefer examples that show the *interesting* behavior (e.g., catching
-a violation), not just the happy path.
-
-#### 5c. Record in brief and ledger
-
-- Include narrative + key proof in the brief's EVIDENCE section
-- Include in the ledger entry (see `narrative` and `key_proof` fields below)
-
----
-
-### Step 6: Write Ledger Entry
+### Step 5: Write Ledger Entry
 
 **CRITICAL:** Before making any changes, append a JSONL entry to the ledger.
 
@@ -243,16 +203,16 @@ mkdir -p docs/design/adr/adr-{series}/ADR-{id}-{slug}/logs/
 echo '{...json...}' >> docs/design/adr/adr-{series}/ADR-{id}-{slug}/logs/obpi-audit.jsonl
 ```
 
-### Step 7: Update Brief (if warranted)
+### Step 6: Update Brief (if warranted)
 
 If all criteria pass but brief status is "Accepted":
 
 1. Check all criteria boxes (`[ ]` → `[x]`)
-2. Add evidence section with narrative, key proof, and verification commands
+2. Add evidence section with commands
 3. Update status to `Completed`
 4. Add completion date
 
-### Step 8: Post-Sync
+### Step 7: Post-Sync
 
 ```bash
 /gz-obpi-sync ADR-0.0.19
@@ -332,12 +292,12 @@ cat logs/obpi-audit.jsonl | jq 'select(.action_taken == "brief_updated")'
 
 ---
 
-## Ledger Schema (v2)
+## Ledger Schema (v1)
 
 ```json
 {
   "type": "obpi-audit",
-  "$schema": "OBPI-AUDIT-LEDGER-v2",
+  "$schema": "OBPI-AUDIT-LEDGER-v1",
   "timestamp": "ISO-8601",
   "obpi_id": "OBPI-X.Y.Z-NN",
   "adr_id": "ADR-X.Y.Z",
@@ -355,8 +315,6 @@ cat logs/obpi-audit.jsonl | jq 'select(.action_taken == "brief_updated")'
     "docstring_markers": ["marker1", "marker2"],
     "bdd_scenarios": ["optional for Heavy"]
   },
-  "narrative": "2-3 sentence value statement: what problem existed, what capability now exists",
-  "key_proof": "Concrete usage example (code snippet, CLI invocation, or before/after comparison)",
   "criteria_evaluated": [
     {"criterion": "text", "result": "PASS|FAIL", "evidence": "location"}
   ],
@@ -365,6 +323,3 @@ cat logs/obpi-audit.jsonl | jq 'select(.action_taken == "brief_updated")'
   "session_id": "optional"
 }
 ```
-
-**v2 additions:** `narrative` and `key_proof` fields (both strings, required for new audits,
-absent in legacy v1 entries). Backward-compatible — consumers should treat missing fields as null.

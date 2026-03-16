@@ -1208,6 +1208,65 @@ def sync_claude_settings(project_root: Path, config: GzkitConfig) -> None:
         f.write("\n")
 
 
+def detect_claude_settings_drift(project_root: Path, config: GzkitConfig) -> list[str]:
+    """Compare generated settings against tracked .claude/settings.json.
+
+    Args:
+        project_root: Project root directory.
+        config: Project configuration.
+
+    Returns:
+        List of human-readable drift descriptions (empty = no drift).
+    """
+    expected = generate_claude_settings(config)
+
+    settings_path = project_root / config.paths.claude_settings
+    if not settings_path.exists():
+        return [f"Missing {config.paths.claude_settings} (expected by generator)"]
+
+    try:
+        actual = json.loads(settings_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as exc:
+        return [f"Cannot read {config.paths.claude_settings}: {exc}"]
+
+    diffs: list[str] = []
+
+    # Top-level keys
+    expected_keys = set(expected.keys())
+    actual_keys = set(actual.keys())
+    for key in sorted(expected_keys - actual_keys):
+        diffs.append(f"Missing top-level key: {key}")
+    for key in sorted(actual_keys - expected_keys):
+        diffs.append(f"Extra top-level key: {key}")
+
+    # Hook groups
+    for phase in ("PreToolUse", "PostToolUse"):
+        expected_hooks = expected.get("hooks", {}).get(phase, [])
+        actual_hooks = actual.get("hooks", {}).get(phase, [])
+
+        expected_matchers = [h.get("matcher", "") for h in expected_hooks]
+        actual_matchers = [h.get("matcher", "") for h in actual_hooks]
+
+        if expected_matchers != actual_matchers:
+            diffs.append(
+                f"{phase} matcher order differs: "
+                f"expected {expected_matchers}, got {actual_matchers}"
+            )
+            continue
+
+        for exp_group, act_group in zip(expected_hooks, actual_hooks, strict=True):
+            matcher = exp_group.get("matcher", "")
+            exp_cmds = [h.get("command", "") for h in exp_group.get("hooks", [])]
+            act_cmds = [h.get("command", "") for h in act_group.get("hooks", [])]
+            if exp_cmds != act_cmds:
+                diffs.append(
+                    f"{phase} [{matcher}] hook commands differ: "
+                    f"expected {len(exp_cmds)} hooks, got {len(act_cmds)}"
+                )
+
+    return diffs
+
+
 def sync_copilotignore(project_root: Path) -> None:
     """Generate .copilotignore for governance artifacts.
 

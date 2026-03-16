@@ -39,16 +39,9 @@ This project uses gzkit for governance. Key commands:
 
 ## OBPI Acceptance
 
-When completing an OBPI brief:
-
-1. Use `uv run gz obpi pipeline <OBPI-ID>` after plan approval instead of freeform implementation
-2. Treat `gz-obpi-pipeline` as a thin alias over the canonical runtime
-3. Provide value narrative + one key proof example
-4. Provide verification evidence (tests/commands/output)
-5. Wait for explicit human acceptance before setting `Completed` for Heavy/Foundation parent ADR work
-6. Run `uv run gz git-sync --apply --lint --test` before final OBPI completion receipt/accounting
-
-Reference: `AGENTS.md` section `OBPI Acceptance Protocol`.
+Follow the OBPI Acceptance Protocol defined in `AGENTS.md`. Key rule: use
+`uv run gz obpi pipeline <OBPI-ID>` after plan approval; never implement
+freeform. Heavy/Foundation lane work requires explicit human attestation.
 
 ## Skills
 
@@ -61,31 +54,7 @@ Use the canonical skill catalog and keep mirrors synced via `gz agent sync contr
 
 ### Available Skills
 
-#### ADR Lifecycle
-`gz-adr-create`, `gz-adr-eval`, `gz-adr-promote`, `gz-adr-status`, `gz-attest`, `gz-closeout`, `gz-plan`
-
-#### ADR Operations
-`gz-adr-autolink`, `gz-adr-check`, `gz-adr-emit-receipt`, `gz-adr-manager`, `gz-adr-map`, `gz-adr-recon`, `gz-adr-sync`, `gz-adr-verification`
-
-#### ADR Audit & Closeout
-`gz-adr-audit`, `gz-adr-closeout-ceremony`, `gz-audit`
-
-#### OBPI Pipeline
-`gz-obpi-audit`, `gz-obpi-brief`, `gz-obpi-pipeline`, `gz-obpi-reconcile`, `gz-obpi-sync`, `gz-plan-audit`, `gz-specify`
-
-#### Governance Infrastructure
-`gz-constitute`, `gz-gates`, `gz-implement`, `gz-init`, `gz-interview`, `gz-prd`, `gz-state`, `gz-status`, `gz-validate`
-
-#### Agent & Repository Operations
-`git-sync`, `gz-agent-sync`, `gz-check-config-paths`, `gz-migrate-semver`, `gz-register-adrs`, `gz-session-handoff`, `gz-superbook`, `gz-tidy`
-
-#### Code Quality
-`format`, `gz-arb`, `gz-check`, `gz-cli-audit`, `gz-typecheck`, `lint`, `test`
-
-#### Cross-Repository
-`airlineops-parity-scan`
-
-For details on any skill, read its `SKILL.md` in `.gzkit/skills/<skill-name>/`.
+See `AGENTS.md` § Available Skills for the complete skill catalog.
 
 ## Build Commands
 

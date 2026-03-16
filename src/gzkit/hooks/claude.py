@@ -8,7 +8,6 @@ from pathlib import Path
 from textwrap import dedent
 
 from gzkit.config import GzkitConfig
-from gzkit.hooks.core import write_hook_script
 
 
 def _instruction_router_script() -> str:
@@ -781,6 +780,511 @@ def _pipeline_completion_reminder_script() -> str:
     )
 
 
+def _session_staleness_check_script() -> str:
+    """Return the session staleness check hook script."""
+    return (
+        dedent(
+            """\
+            #!/usr/bin/env python3
+            \"\"\"Session Staleness Check Hook (gzkit adaptation).
+
+            PreToolUse hook on Write|Edit that detects stale pipeline artifacts
+            left from previous sessions and emits warnings so the agent can
+            clean up before hitting gate blocks.
+
+            Adapted from airlineops canonical session-staleness-check.py.
+            Uses gzkit's OBPI path structure (design/adr/.../obpis/) instead of
+            airlineops briefs layout.
+
+            Checks for:
+              1. .pipeline-active.json referencing a completed OBPI
+              2. .plan-audit-receipt.json referencing a completed OBPI
+
+            Non-blocking — emits warnings only (exit 0 always).
+            \"\"\"
+
+            import json
+            import sys
+            from pathlib import Path
+
+
+            def _read_json(path: Path) -> dict | None:
+                \"\"\"Read a JSON file, returning None on any error.\"\"\"
+                if not path.exists():
+                    return None
+                try:
+                    return json.loads(path.read_bytes())
+                except (json.JSONDecodeError, OSError):
+                    return None
+
+
+            def _brief_is_completed(cwd: Path, obpi_id: str) -> bool:
+                \"\"\"Check if the referenced OBPI brief has status Completed.
+
+                gzkit stores briefs under design/adr/pre-release/ADR-X.Y.Z-.../obpis/OBPI-*.md
+                \"\"\"
+                # Extract numeric prefix (e.g., OBPI-0.14.0-02-... -> 0.14.0)
+                stripped = obpi_id.replace("OBPI-", "")
+                parts = stripped.rsplit("-", 1)
+                if len(parts) < 2:
+                    return False
+
+                # Search design/adr for matching OBPI files
+                adr_root = cwd / "docs" / "design" / "adr"
+                if not adr_root.exists():
+                    return False
+
+                # gzkit uses pre-release/ADR-X.Y.Z-.../obpis/ structure
+                for brief_path in adr_root.rglob(f"OBPI-{stripped}*.md"):
+                    try:
+                        text = brief_path.read_text(encoding="utf-8")
+                        for line in text.splitlines()[:15]:
+                            if "Status:" in line and "Completed" in line:
+                                return True
+                    except OSError:
+                        continue
+
+                return False
+
+
+            def main():
+                \"\"\"Check for stale pipeline artifacts and warn.\"\"\"
+                try:
+                    input_data = json.load(sys.stdin)
+                except json.JSONDecodeError:
+                    sys.exit(0)
+
+                cwd = input_data.get("cwd", "")
+                if not cwd:
+                    sys.exit(0)
+
+                cwd_path = Path(cwd).resolve()
+                plans_dir = cwd_path / ".claude" / "plans"
+
+                marker_path = plans_dir / ".pipeline-active.json"
+                receipt_path = plans_dir / ".plan-audit-receipt.json"
+
+                marker = _read_json(marker_path)
+                receipt = _read_json(receipt_path)
+
+                warnings = []
+
+                if marker:
+                    obpi_id = marker.get("obpi_id", "")
+                    if obpi_id and _brief_is_completed(cwd_path, obpi_id):
+                        warnings.append(
+                            f"Stale .pipeline-active.json: references {obpi_id} "
+                            f"which is already Completed. "
+                            f"Clean up: delete {marker_path.relative_to(cwd_path)}"
+                        )
+
+                if receipt:
+                    obpi_id = receipt.get("obpi_id", "")
+                    if obpi_id and _brief_is_completed(cwd_path, obpi_id):
+                        warnings.append(
+                            f"Stale .plan-audit-receipt.json: references {obpi_id} "
+                            f"which is already Completed. "
+                            f"Clean up: delete {receipt_path.relative_to(cwd_path)}"
+                        )
+
+                if warnings:
+                    print(
+                        "SESSION STALENESS WARNING\\n"
+                        + "\\n".join(f"  - {w}" for w in warnings)
+                        + "\\n\\nClean up stale artifacts to avoid gate blocks.",
+                        file=sys.stderr,
+                    )
+
+                # Always non-blocking
+                sys.exit(0)
+
+
+            if __name__ == "__main__":
+                main()
+            """
+        )
+        + "\n"
+    )
+
+
+def _obpi_completion_validator_script() -> str:
+    """Return the OBPI completion validator hook script."""
+    return (
+        dedent(
+            """\
+            #!/usr/bin/env python3
+            \"\"\"OBPI Completion Validator Hook.
+
+            PreToolUse hook that gates OBPI brief completion by checking ledger evidence
+            before allowing status changes to 'Completed'.
+
+            Aligned with airlineops canonical obpi-completion-validator.py.
+            Uses ADR-local audit ledger ({adr-dir}/logs/obpi-audit.jsonl) as evidence source.
+
+            Adaptations from canonical:
+              - Path check: /obpis/OBPI- (gzkit) instead of /briefs/OBPI- (airlineops)
+              - Lane resolution: checks both ADR markdown and frontmatter for Heavy lane
+
+            Exit codes:
+              0 - Allow operation
+              2 - Block operation (evidence missing or attestation required)
+            \"\"\"
+
+            import json
+            import re
+            import sys
+            from pathlib import Path
+
+
+            def find_project_root() -> Path:
+                \"\"\"Find the project root by looking for .gzkit directory.\"\"\"
+                current = Path.cwd()
+                while current != current.parent:
+                    if (current / ".gzkit").is_dir():
+                        return current
+                    current = current.parent
+                return Path.cwd()
+
+
+            def find_parent_adr_dir(brief_path: Path) -> Path | None:
+                \"\"\"Find the parent ADR directory from a brief path.
+
+                gzkit stores briefs in /obpis/ (airlineops uses /briefs/).
+                \"\"\"
+                parent_dir = brief_path.parent
+                if parent_dir.name not in ("obpis", "briefs"):
+                    return None
+                return parent_dir.parent
+
+
+            def find_parent_adr_file(adr_dir: Path) -> Path | None:
+                \"\"\"Find the parent ADR markdown file.\"\"\"
+                for f in adr_dir.iterdir():
+                    if (
+                        f.name.startswith("ADR-")
+                        and f.name.endswith(".md")
+                        and re.match(r"ADR-[\\d.]+-", f.name)
+                    ):
+                        return f
+                return None
+
+
+            def check_status_change_to_completed(new_string: str) -> bool:
+                \"\"\"Check if the edit changes status to Completed.\"\"\"
+                status_patterns = [
+                    r"\\*\\*(?:Brief\\s+)?Status:\\*\\*\\s*Completed",
+                    r"^(?:Brief\\s+)?Status:\\s*Completed",
+                    r"^\\|\\s*(?:Brief\\s+)?Status\\s*\\|\\s*Completed\\s*\\|",
+                ]
+                return any(
+                    re.search(pattern, new_string, re.MULTILINE | re.IGNORECASE)
+                    for pattern in status_patterns
+                )
+
+
+            def extract_obpi_id(file_path: str) -> str | None:
+                \"\"\"Extract OBPI short ID (e.g. OBPI-0.14.0-04) from file path.\"\"\"
+                match = re.search(r"(OBPI-[\\d.]+-\\d+)", file_path)
+                return match.group(1) if match else None
+
+
+            def extract_adr_id(obpi_id: str) -> str | None:
+                \"\"\"Extract parent ADR ID from OBPI ID.
+
+                e.g. OBPI-0.14.0-04 -> ADR-0.14.0
+                \"\"\"
+                match = re.match(r"OBPI-([\\d.]+)-\\d+", obpi_id)
+                return f"ADR-{match.group(1)}" if match else None
+
+
+            def is_foundation_adr(adr_id: str) -> bool:
+                \"\"\"Check if ADR is foundation series (0.0.x).\"\"\"
+                return adr_id.startswith("ADR-0.0.")
+
+
+            def get_parent_adr_lane(adr_file: Path | None) -> str:
+                \"\"\"Determine parent ADR's lane (Heavy or Lite).\"\"\"
+                if adr_file is None:
+                    return "unknown"
+                try:
+                    content = adr_file.read_text(encoding="utf-8")
+                except OSError:
+                    return "unknown"
+
+                heavy_patterns = [
+                    r"##\\s*Lane[\\s\\S]{0,50}Heavy",
+                    r"\\*\\*Lane:\\*\\*\\s*Heavy",
+                    r"Lane:\\s*Heavy",
+                    r"\\|\\s*Lane\\s*\\|\\s*Heavy\\s*\\|",
+                ]
+                for pattern in heavy_patterns:
+                    if re.search(pattern, content, re.IGNORECASE):
+                        return "Heavy"
+
+                return "Lite"
+
+
+            def get_execution_mode(adr_file: Path | None) -> str:
+                \"\"\"Read execution mode from ADR's ## Execution Mode section.\"\"\"
+                if adr_file is None:
+                    return "normal"
+                try:
+                    content = adr_file.read_text(encoding="utf-8")
+                except OSError:
+                    return "normal"
+
+                exception_patterns = [
+                    r"\\*\\*Mode:\\*\\*\\s*Exception",
+                    r"Mode:\\s*Exception",
+                ]
+                for pattern in exception_patterns:
+                    if re.search(pattern, content, re.IGNORECASE):
+                        return "exception"
+
+                return "normal"
+
+
+            def has_audit_evidence(adr_dir: Path, obpi_id: str) -> bool:
+                \"\"\"Check if audit ledger entry exists for this OBPI in ADR-local ledger.\"\"\"
+                ledger_file = adr_dir / "logs" / "obpi-audit.jsonl"
+
+                if not ledger_file.exists():
+                    return False
+
+                try:
+                    with ledger_file.open("r", encoding="utf-8") as f:
+                        for line in f:
+                            line = line.strip()
+                            if not line:
+                                continue
+                            try:
+                                entry = json.loads(line)
+                                entry_type = entry.get("type", "")
+                                entry_obpi = entry.get("obpi_id", "")
+                                if entry_obpi == obpi_id and entry_type in (
+                                    "obpi-audit",
+                                    "obpi-completion",
+                                ):
+                                    return True
+                            except json.JSONDecodeError:
+                                continue
+                except OSError:
+                    return False
+
+                return False
+
+
+            def has_human_attestation(adr_dir: Path, obpi_id: str) -> bool:
+                \"\"\"Check if human attestation exists in ADR-local ledger for this OBPI.\"\"\"
+                ledger_file = adr_dir / "logs" / "obpi-audit.jsonl"
+
+                if not ledger_file.exists():
+                    return False
+
+                try:
+                    with ledger_file.open("r", encoding="utf-8") as f:
+                        for line in f:
+                            line = line.strip()
+                            if not line:
+                                continue
+                            try:
+                                entry = json.loads(line)
+                                entry_obpi = entry.get("obpi_id", "")
+                                if entry_obpi == obpi_id:
+                                    evidence = entry.get("evidence", {})
+                                    if evidence.get("human_attestation"):
+                                        return True
+                                    if entry.get("attestation_type") == "human":
+                                        return True
+                            except json.JSONDecodeError:
+                                continue
+                except OSError:
+                    return False
+
+                return False
+
+
+            def main():
+                \"\"\"Validate and gate OBPI completion.\"\"\"
+                try:
+                    input_data = json.load(sys.stdin)
+                except json.JSONDecodeError:
+                    sys.exit(0)
+
+                tool_input = input_data.get("tool_input", {})
+                file_path = tool_input.get("file_path", "")
+                new_string = tool_input.get("new_string", "") or tool_input.get("content", "")
+
+                # Normalize path
+                try:
+                    project_root = find_project_root()
+                    abs_path = Path(file_path).resolve()
+                    rel_path = abs_path.relative_to(project_root)
+                    rel_str = rel_path.as_posix()
+                except (ValueError, TypeError):
+                    sys.exit(0)
+
+                # 1. Is this an OBPI brief file? (gzkit uses /obpis/, airlineops uses /briefs/)
+                if "/obpis/OBPI-" not in rel_str or not rel_str.endswith(".md"):
+                    sys.exit(0)
+
+                # 2. Is this changing status to Completed?
+                if not check_status_change_to_completed(new_string):
+                    sys.exit(0)
+
+                # 3. Extract identifiers
+                obpi_id = extract_obpi_id(rel_str)
+                if not obpi_id:
+                    sys.exit(0)
+
+                adr_id = extract_adr_id(obpi_id)
+                if not adr_id:
+                    sys.exit(0)
+
+                # 4. Find parent ADR directory and file
+                adr_dir = find_parent_adr_dir(abs_path)
+                if not adr_dir or not adr_dir.exists():
+                    sys.exit(0)
+
+                adr_file = find_parent_adr_file(adr_dir)
+
+                # 5. Check for audit evidence in ADR-local ledger
+                if not has_audit_evidence(adr_dir, obpi_id):
+                    print(
+                        f"\\n\\u26d4 BLOCKED: Cannot mark {obpi_id} as Completed.\\n"
+                        f"\\n"
+                        f"No audit evidence found in {adr_dir.name}/logs/obpi-audit.jsonl\\n"
+                        f"\\n"
+                        f"REQUIRED: Run gz-obpi-audit first to verify and record evidence:\\n"
+                        f"  /gz-obpi-audit {obpi_id}\\n",
+                        file=sys.stderr,
+                    )
+                    sys.exit(2)
+
+                # 6. Check attestation requirements
+                execution_mode = get_execution_mode(adr_file)
+
+                if execution_mode == "exception":
+                    # Exception mode: self-close allowed. Audit evidence already
+                    # validated above. Human reviews at ADR closeout.
+                    sys.exit(0)
+
+                # Normal mode: check lane for attestation rigor
+                is_foundation = is_foundation_adr(adr_id)
+                parent_lane = get_parent_adr_lane(adr_file)
+                requires_human = is_foundation or parent_lane == "Heavy"
+
+                if requires_human and not has_human_attestation(adr_dir, obpi_id):
+                    lane_reason = "Foundation (0.0.x)" if is_foundation else "Heavy lane"
+                    print(
+                        f"\\n\\u26d4 BLOCKED: {obpi_id} requires human attestation.\\n"
+                        f"\\n"
+                        f"Parent {adr_id} is {lane_reason}.\\n"
+                        f"Per AGENTS.md, OBPIs under Heavy/Foundation ADRs "
+                        f"inherit attestation rigor.\\n"
+                        f"\\n"
+                        f"REQUIRED: Present evidence and receive human attestation:\\n"
+                        f"  1. Show verification command outputs and test results\\n"
+                        f"  2. Wait for human to respond 'attested' or 'approved'\\n"
+                        f"  3. Record attestation in ledger, then complete\\n",
+                        file=sys.stderr,
+                    )
+                    sys.exit(2)
+
+                # All validations passed
+                sys.exit(0)
+
+
+            if __name__ == "__main__":
+                main()
+            """
+        )
+        + "\n"
+    )
+
+
+def _ledger_writer_script() -> str:
+    """Return the ledger writer hook script."""
+    return (
+        dedent(
+            """\
+            #!/usr/bin/env python3
+            \"\"\"gzkit ledger writer and validator hook for claude.
+
+            This hook records governance artifact edits and enforces completion gates.
+            \"\"\"
+
+            import json
+            import os
+            import sys
+            from pathlib import Path
+
+
+            def find_project_root() -> Path:
+                \"\"\"Find the project root by looking for .gzkit directory.\"\"\"
+                current = Path.cwd()
+                while current != current.parent:
+                    if (current / ".gzkit").is_dir():
+                        return current
+                    current = current.parent
+                return Path.cwd()
+
+
+            def main() -> int:
+                \"\"\"Main hook entry point.\"\"\"
+                # Read tool use info from stdin (Claude Code format)
+                try:
+                    input_data = json.load(sys.stdin)
+                except json.JSONDecodeError:
+                    return 0  # Silently continue if no valid input
+
+                # Extract file path from tool use
+                tool_name = input_data.get("tool_name", "")
+                tool_input = input_data.get("tool_input", {})
+
+                if tool_name not in ("Edit", "Write"):
+                    return 0
+
+                file_path = tool_input.get("file_path", "")
+                if not file_path:
+                    return 0
+
+                # Make path relative to project root
+                project_root = find_project_root()
+                try:
+                    rel_path = Path(file_path).relative_to(project_root)
+                except ValueError:
+                    return 0
+
+                # Import gzkit and record edit/validate
+                sys.path.insert(0, str(project_root / "src"))
+                try:
+                    from gzkit.hooks.core import record_artifact_edit
+
+                    session = os.environ.get("CLAUDE_SESSION_ID") or os.environ.get(
+                        "COPILOT_SESSION_ID"
+                    )
+
+                    # This will trigger validation and raise if it fails
+                    record_artifact_edit(project_root, str(rel_path), session)
+
+                except ImportError:
+                    pass  # gzkit not installed, skip
+                except Exception as exc:
+                    print(f"\\n[GOVERNANCE BLOCK] {exc}\\n", file=sys.stderr)
+                    return 1
+
+                return 0
+
+
+            if __name__ == "__main__":
+                sys.exit(main())
+            """
+        )
+        + "\n"
+    )
+
+
 def _claude_hooks_readme() -> str:
     """Return the generated local README for the Claude hook surface."""
     return "\n".join(
@@ -789,9 +1293,15 @@ def _claude_hooks_readme() -> str:
             "",
             "Current hook surface in gzkit:",
             "",
+            "- `session-staleness-check.py`",
+            "  PreToolUse (`Write|Edit`) hook that detects stale pipeline",
+            "  artifacts from previous sessions and emits warnings.",
             "- `instruction-router.py`",
             "  PreToolUse (`Write|Edit`) hook that auto-surfaces",
             "  `.github/instructions/*.instructions.md` constraints.",
+            "- `obpi-completion-validator.py`",
+            "  PreToolUse (`Write|Edit`) hook that gates OBPI brief completion",
+            "  by checking ledger evidence before allowing status changes.",
             "- `plan-audit-gate.py`",
             "  PreToolUse (`ExitPlanMode`) hook that validates the latest",
             "  OBPI plan against `.claude/plans/.plan-audit-receipt.json`.",
@@ -819,14 +1329,13 @@ def _claude_hooks_readme() -> str:
             "  by the CLI and generated pipeline hooks.",
             "- The pipeline enforcement hooks are active in `.claude/settings.json`",
             "  with the generated runtime order described below.",
-            "- `.claude/hooks/obpi-completion-validator.py` remains a historical",
-            "  compatibility surface; it is not part of the active registration order.",
             "",
             "## Registration Order",
             "",
             "- `PreToolUse` `ExitPlanMode`: `plan-audit-gate.py`",
             "- `PostToolUse` `ExitPlanMode`: `pipeline-router.py`",
-            "- `PreToolUse` `Write|Edit`: `pipeline-gate.py`,",
+            "- `PreToolUse` `Write|Edit`: `session-staleness-check.py`,",
+            "  then `pipeline-gate.py`, then `obpi-completion-validator.py`,",
             "  then `instruction-router.py`",
             "- `PreToolUse` `Bash`: `pipeline-completion-reminder.py`",
             "- `PostToolUse` `Edit|Write`: `post-edit-ruff.py`,",
@@ -860,6 +1369,7 @@ def generate_claude_settings(config: GzkitConfig) -> dict:
     """
     hooks_dir = config.paths.claude_hooks
     return {
+        "enabledPlugins": {"superpowers@claude-plugins-official": False},
         "hooks": {
             "PreToolUse": [
                 {
@@ -876,7 +1386,15 @@ def generate_claude_settings(config: GzkitConfig) -> dict:
                     "hooks": [
                         {
                             "type": "command",
+                            "command": f"uv run python {hooks_dir}/session-staleness-check.py",
+                        },
+                        {
+                            "type": "command",
                             "command": f"uv run python {hooks_dir}/pipeline-gate.py",
+                        },
+                        {
+                            "type": "command",
+                            "command": f"uv run python {hooks_dir}/obpi-completion-validator.py",
                         },
                         {
                             "type": "command",
@@ -920,7 +1438,7 @@ def generate_claude_settings(config: GzkitConfig) -> dict:
                     ],
                 },
             ],
-        }
+        },
     }
 
 
@@ -943,9 +1461,6 @@ def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) ->
     hooks_path.mkdir(parents=True, exist_ok=True)
 
     # Write hook scripts
-    script_path = write_hook_script(project_root, "claude", config.paths.claude_hooks)
-    created.append(str(script_path.relative_to(project_root)))
-
     instruction_router_path = hooks_path / "instruction-router.py"
     _write_hook_file(instruction_router_path, _instruction_router_script(), executable=True)
     created.append(str(instruction_router_path.relative_to(project_root)))
@@ -973,6 +1488,18 @@ def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) ->
         executable=True,
     )
     created.append(str(pipeline_completion_reminder_path.relative_to(project_root)))
+
+    session_staleness_path = hooks_path / "session-staleness-check.py"
+    _write_hook_file(session_staleness_path, _session_staleness_check_script(), executable=True)
+    created.append(str(session_staleness_path.relative_to(project_root)))
+
+    obpi_validator_path = hooks_path / "obpi-completion-validator.py"
+    _write_hook_file(obpi_validator_path, _obpi_completion_validator_script(), executable=True)
+    created.append(str(obpi_validator_path.relative_to(project_root)))
+
+    ledger_writer_path = hooks_path / "ledger-writer.py"
+    _write_hook_file(ledger_writer_path, _ledger_writer_script(), executable=True)
+    created.append(str(ledger_writer_path.relative_to(project_root)))
 
     readme_path = hooks_path / "README.md"
     _write_hook_file(readme_path, _claude_hooks_readme())
