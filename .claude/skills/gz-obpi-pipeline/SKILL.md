@@ -265,7 +265,8 @@ Evidence is full-fidelity. Human reviews at ADR closeout.
 After attestation (Normal) or self-close (Exception):
 
 1. **Record attestation in ADR-level audit ledger** — Append a dedicated attestation entry to
-   `{adr-package}/logs/obpi-audit.jsonl`:
+   `{adr-package}/logs/obpi-audit.jsonl` BEFORE updating the brief. The `obpi-completion-validator.py`
+   hook checks this file for evidence. Without this entry, Step 4 will be BLOCKED.
 
    **Normal mode attestation entry format:**
    ```json
@@ -278,48 +279,24 @@ After attestation (Normal) or self-close (Exception):
    ```
 
    **Critical vocabulary:** Use `"human"` exactly (not `"human-attested"`, not `"attested"`).
+   The hook checks `attestation_type == "human"` or `evidence.human_attestation == true`.
 
-2. **Emit completion receipt to main ledger** — This is the step that unblocks the
-   `obpi-completion-validator.py` hook. The hook checks `.gzkit/ledger.jsonl` for an
-   `obpi_receipt_emitted` event matching this OBPI. Without this, Step 5 will be BLOCKED.
+   **Note:** The `obpi_id` in the ledger entry must match the OBPI short ID (e.g. `OBPI-0.14.0-04`),
+   which is what the hook extracts from the brief filename.
 
-   ```bash
-   uv run gz obpi emit-receipt <OBPI-FULL-SLUG> \
-     --event completed \
-     --attestor "human:<Name>" \
-     --evidence-json '{
-       "value_narrative": "<from Stage 5>",
-       "key_proof": "<from Stage 5>",
-       "human_attestation": true,
-       "attestation_text": "<user attestation text>",
-       "attestation_date": "<YYYY-MM-DD>",
-       "req_proof_inputs": [<structured REQ evidence>],
-       "obpi_completion": "attested_completed",
-       "attestation_requirement": "required",
-       "parent_adr": "<ADR-FULL-SLUG>",
-       "parent_lane": "<lite|heavy>"
-     }'
-   ```
-
-   **For Heavy/Foundation lane:** `--attestor` MUST use `human:<Name>` format.
-   **For Lite lane:** `--attestor` can be `agent:claude-code`.
-
-   **DO NOT skip this step.** If you proceed to Step 5 without emitting the receipt,
-   the hook will block the brief update and you will waste a tool call.
-
-3. Run guarded repo sync: `uv run gz git-sync --apply`
+2. Run guarded repo sync: `uv run gz git-sync --apply`
    - Lint and test gates are handled by pre-commit hooks; no need to pass `--lint --test`.
    - Abort if sync fails or leaves unresolved divergence/blockers.
-4. Run `/gz-obpi-audit {OBPI-ID}` to record full evidence ledger entry
-5. Update brief: check all criteria boxes, add evidence section, set status to `Completed`
-   - (Hook `obpi-completion-validator.py` enforces evidence requirements — receipt from Step 2 must exist)
-6. Run `/gz-obpi-sync {ADR-ID}` to propagate status to ADR table
-7. Release OBPI lock via `/gz-obpi-lock release {OBPI-ID}`
-8. Remove `.claude/plans/.pipeline-active-{OBPI-ID}.json` if it was created.
-9. Remove `.claude/plans/.pipeline-active.json` only when it still points at
+3. Run `/gz-obpi-audit {OBPI-ID}` to record full evidence ledger entry
+4. Update brief: check all criteria boxes, add evidence section, set status to `Completed`
+   - (Hook `obpi-completion-validator.py` checks ADR-local `logs/obpi-audit.jsonl` for evidence)
+5. Run `/gz-obpi-sync {ADR-ID}` to propagate status to ADR table
+6. Release OBPI lock via `/gz-obpi-lock release {OBPI-ID}`
+7. Remove `.claude/plans/.pipeline-active-{OBPI-ID}.json` if it was created.
+8. Remove `.claude/plans/.pipeline-active.json` only when it still points at
    the same OBPI as the per-OBPI marker.
-10. Run final `uv run gz git-sync --apply` to push brief and ADR table updates.
-11. Create handoff if more OBPIs remain for the ADR
+9. Run final `uv run gz git-sync --apply` to push brief and ADR table updates.
+10. Create handoff if more OBPIs remain for the ADR
 
 ---
 
@@ -350,7 +327,7 @@ Each stage records evidence to the OBPI audit ledger:
 | Stage 3 | Files changed, tests added |
 | Stage 4 | Verification outputs (pass/fail) |
 | Stage 5 | Attestation text + timestamp |
-| Stage 6 | ADR audit ledger entry (Step 1), completion receipt in `.gzkit/ledger.jsonl` (Step 2), full audit entry (Step 4), brief updated (Step 5), lock released |
+| Stage 6 | ADR audit ledger entry (Step 1), full audit entry (Step 3), brief updated (Step 4), lock released, markers cleaned |
 
 ---
 
@@ -437,6 +414,7 @@ The pipeline is complete when — and ONLY when — all of these are true:
 5. `/gz-obpi-sync` ran (Stage 6, Step 5)
 6. Lock released (Stage 6, Step 6)
 7. Pipeline markers cleaned up (Stage 6, Steps 7-8)
+8. Final sync pushed all changes (Stage 6, Step 9)
 
 If any of these have not happened, the pipeline is not complete. Do not claim otherwise.
 
