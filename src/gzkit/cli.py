@@ -53,6 +53,7 @@ from gzkit.commands.status import (
     _collect_obpi_files_for_adr,
     _inspect_obpi_brief,
     _summarize_obpi_rows,
+    adr_report_cmd,
     adr_status_cmd,
     obpi_reconcile_cmd,
     obpi_status_cmd,
@@ -4770,6 +4771,12 @@ def _build_parser() -> argparse.ArgumentParser:
     p_adr_status.set_defaults(
         func=lambda a: adr_status_cmd(adr=a.adr, as_json=a.as_json, show_gates=a.show_gates)
     )
+
+    p_adr_report = adr_commands.add_parser(
+        "report", help="Deterministic tabular report for one ADR"
+    )
+    p_adr_report.add_argument("adr")
+    p_adr_report.set_defaults(func=lambda a: adr_report_cmd(adr=a.adr))
 
     p_adr_promote = adr_commands.add_parser(
         "promote", help="Promote a pool ADR into canonical ADR package structure"

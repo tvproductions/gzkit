@@ -35,6 +35,7 @@ class PathConfig:
     claude_md: str = "CLAUDE.md"
     claude_hooks: str = ".claude/hooks"
     claude_settings: str = ".claude/settings.json"
+    claude_rules: str = ".claude/rules"
     claude_skills: str = ".claude/skills"
     codex_skills: str = ".agents/skills"
     copilot_skills: str = ".github/skills"
@@ -92,6 +93,7 @@ class GzkitConfig:
             claude_md=paths_data.get("claude_md", "CLAUDE.md"),
             claude_hooks=paths_data.get("claude_hooks", ".claude/hooks"),
             claude_settings=paths_data.get("claude_settings", ".claude/settings.json"),
+            claude_rules=paths_data.get("claude_rules", ".claude/rules"),
             claude_skills=paths_data.get("claude_skills", ".claude/skills"),
             codex_skills=paths_data.get("codex_skills", ".agents/skills"),
             copilot_skills=paths_data.get("copilot_skills", ".github/skills"),
@@ -132,6 +134,7 @@ class GzkitConfig:
                 "claude_md": self.paths.claude_md,
                 "claude_hooks": self.paths.claude_hooks,
                 "claude_settings": self.paths.claude_settings,
+                "claude_rules": self.paths.claude_rules,
                 "claude_skills": self.paths.claude_skills,
                 "codex_skills": self.paths.codex_skills,
                 "copilot_skills": self.paths.copilot_skills,
