@@ -3,11 +3,14 @@
 Current hook surface in gzkit:
 
 - `session-staleness-check.py`
-  PreToolUse (`Write|Edit`) hook that detects stale pipeline artifacts
-  from previous sessions and emits cleanup warnings.
+  PreToolUse (`Write|Edit`) hook that detects stale pipeline
+  artifacts from previous sessions and emits warnings.
 - `instruction-router.py`
   PreToolUse (`Write|Edit`) hook that auto-surfaces
   `.github/instructions/*.instructions.md` constraints.
+- `obpi-completion-validator.py`
+  PreToolUse (`Write|Edit`) hook that gates OBPI brief completion
+  by checking ledger evidence before allowing status changes.
 - `plan-audit-gate.py`
   PreToolUse (`ExitPlanMode`) hook that validates the latest
   OBPI plan against `.claude/plans/.plan-audit-receipt.json`.
@@ -17,10 +20,6 @@ Current hook surface in gzkit:
 - `pipeline-gate.py`
   PreToolUse (`Write|Edit`) hook that blocks `src/` and `tests/`
   writes until the runtime-owned active pipeline marker exists.
-- `obpi-completion-validator.py`
-  PreToolUse (`Write|Edit`) hook that gates OBPI brief completion
-  by checking ledger evidence before allowing status changes to
-  Completed. Lane-aware: Heavy/Foundation require human attestation.
 - `pipeline-completion-reminder.py`
   PreToolUse (`Bash`) hook that warns before `git commit` and
   `git push` when an active OBPI runtime still appears incomplete.
@@ -37,7 +36,8 @@ Current hook surface in gzkit:
   ported under `ADR-0.12.0-obpi-pipeline-enforcement-parity`.
 - `src/gzkit/pipeline_runtime.py` is the canonical shared runtime used
   by the CLI and generated pipeline hooks.
-- All pipeline enforcement hooks are active in `.claude/settings.json`.
+- The pipeline enforcement hooks are active in `.claude/settings.json`
+  with the generated runtime order described below.
 
 ## Registration Order
 

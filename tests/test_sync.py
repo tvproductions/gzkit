@@ -974,5 +974,86 @@ class TestSyncControlSurfaces(unittest.TestCase):
             self.assertIn("# Test Policy", content)
 
 
+class TestDetectClaudeSettingsDrift(unittest.TestCase):
+    """Tests for Claude settings drift detection."""
+
+    def _setup_synced(self, project_root: Path) -> GzkitConfig:
+        """Sync settings to disk and return config."""
+        import json
+
+        from gzkit.hooks.claude import generate_claude_settings
+
+        config = GzkitConfig(project_name="gzkit-test")
+        settings = generate_claude_settings(config)
+        settings_path = project_root / config.paths.claude_settings
+        settings_path.parent.mkdir(parents=True, exist_ok=True)
+        settings_path.write_text(json.dumps(settings, indent=2) + "\n", encoding="utf-8")
+        return config
+
+    def test_no_drift_when_synced(self) -> None:
+        """No drift when settings match generator output."""
+        from gzkit.sync import detect_claude_settings_drift
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = self._setup_synced(project_root)
+
+            diffs = detect_claude_settings_drift(project_root, config)
+
+            self.assertEqual(diffs, [])
+
+    def test_drift_on_extra_key(self) -> None:
+        """Detects extra top-level key in tracked settings."""
+        import json
+
+        from gzkit.sync import detect_claude_settings_drift
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = self._setup_synced(project_root)
+
+            settings_path = project_root / config.paths.claude_settings
+            data = json.loads(settings_path.read_text(encoding="utf-8"))
+            data["unexpectedKey"] = True
+            settings_path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+
+            diffs = detect_claude_settings_drift(project_root, config)
+
+            self.assertTrue(any("Extra top-level key: unexpectedKey" in d for d in diffs))
+
+    def test_drift_on_missing_hook(self) -> None:
+        """Detects removed hook in tracked settings."""
+        import json
+
+        from gzkit.sync import detect_claude_settings_drift
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = self._setup_synced(project_root)
+
+            settings_path = project_root / config.paths.claude_settings
+            data = json.loads(settings_path.read_text(encoding="utf-8"))
+            # Remove one hook from Write|Edit
+            write_edit = data["hooks"]["PreToolUse"][1]
+            write_edit["hooks"] = write_edit["hooks"][:1]
+            settings_path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+
+            diffs = detect_claude_settings_drift(project_root, config)
+
+            self.assertTrue(any("hook commands differ" in d for d in diffs))
+
+    def test_drift_on_missing_file(self) -> None:
+        """Detects missing settings.json."""
+        from gzkit.sync import detect_claude_settings_drift
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            diffs = detect_claude_settings_drift(project_root, config)
+
+            self.assertTrue(any("Missing" in d for d in diffs))
+
+
 if __name__ == "__main__":
     unittest.main()

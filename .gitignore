@@ -51,6 +51,7 @@ Thumbs.db
 # gzkit
 .gzkit.yaml.local
 .claude/hooks/.instruction-state.json
+.claude/settings.local.json
 
 # MkDocs
 site/
