@@ -3,7 +3,7 @@ id: OBPI-0.14.0-04-instruction-audit-and-drift-detection
 parent: ADR-0.14.0-multi-agent-instruction-architecture-unification
 item: 4
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.14.0-04-instruction-audit-and-drift-detection: Instruction Audit and Drift Detection
@@ -153,21 +153,21 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.14.0-04-01: Given an instruction file whose `applyTo` globs match no repository paths, when the audit runs, then it reports the rule as unreachable.
-- [ ] REQ-0.14.0-04-02: Given instruction content that references another project or conflicts with live repo patterns, when the audit runs, then it reports a drift defect instead of passing silently.
-- [ ] REQ-0.14.0-04-03: Given generated root and vendor surfaces, when their content drifts from canonical generation rules, then the audit reports the mismatch as a blocking or operator-visible defect.
-- [ ] REQ-0.14.0-04-04: Given instructions like `.github/instructions/models.instructions.md` that conflict with actual dataclass-heavy repo patterns, when the audit runs, then it reports a code-contract mismatch instead of accepting the instruction at face value.
+- [x] REQ-0.14.0-04-01: Given an instruction file whose `applyTo` globs match no repository paths, when the audit runs, then it reports the rule as unreachable.
+- [x] REQ-0.14.0-04-02: Given instruction content that references another project or conflicts with live repo patterns, when the audit runs, then it reports a drift defect instead of passing silently.
+- [x] REQ-0.14.0-04-03: Given generated root and vendor surfaces, when their content drifts from canonical generation rules, then the audit reports the mismatch as a blocking or operator-visible defect.
+- [x] REQ-0.14.0-04-04: Given instructions like `.github/instructions/models.instructions.md` that conflict with actual dataclass-heavy repo patterns, when the audit runs, then it reports a code-contract mismatch instead of accepting the instruction at face value.
 
 ## Completion Checklist
 
 <!-- Verify all gates before marking OBPI accepted. -->
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -178,25 +178,30 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+Ran 22 tests in 0.012s — OK
+Coverage: src/gzkit/instruction_audit.py — 91%
+Full suite: 497 tests OK, 89% overall coverage
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+uv run gz lint — All checks passed
+uv run gz typecheck — All checks passed
+uv run ruff format — All files formatted
 ```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
+- Files created: `src/gzkit/instruction_audit.py`, `tests/test_instruction_audit.py`
+- Files modified: `src/gzkit/cli.py`, `src/gzkit/validate.py`
+- Tests added: 22 (5 test classes)
+- Date completed: 2026-03-16
 
 ## Value Narrative
 
@@ -211,8 +216,8 @@ and one policy-versus-code mismatch with enough detail for remediation.
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-16
 
 **Evidence Hash:** -

@@ -162,13 +162,13 @@ and audit detection logic to exercise positive/negative controls).
 
 <!-- Each item becomes an OBPI (One Brief Per Item). Sequential numbering, no gaps. -->
 
-- [ ] OBPI-0.14.0-01: Establish the canonical instruction data model with `AGENTS.md`
+- [x] OBPI-0.14.0-01: Establish the canonical instruction data model with `AGENTS.md`
       as shared source and thin vendor adapter renders.
-- [ ] OBPI-0.14.0-02: Add native path-scoped instruction support with nested
+- [x] OBPI-0.14.0-02: Add native path-scoped instruction support with nested
       `AGENTS.md` for shared subtree rules and `.claude/rules/` for Claude-only rules.
-- [ ] OBPI-0.14.0-03: Slim generated root control surfaces and move recurring workflows
+- [x] OBPI-0.14.0-03: Slim generated root control surfaces and move recurring workflows
       out of always-loaded root files into skills/playbooks.
-- [ ] OBPI-0.14.0-04: Add instruction auditing that detects stale, conflicting,
+- [x] OBPI-0.14.0-04: Add instruction auditing that detects stale, conflicting,
       unreachable, or foreign-project rules and load-surface drift.
 - [ ] OBPI-0.14.0-05: Separate machine-local from repo-local agent config and enforce
       deterministic generated-surface sync across adapters and mirrors.
