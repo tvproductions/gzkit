@@ -3,7 +3,7 @@ id: OBPI-0.14.0-01-canon-shared-instruction-model
 parent: ADR-0.14.0-multi-agent-instruction-architecture-unification
 item: 1
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.14.0-01-canon-shared-instruction-model: Canonical Shared Instruction Model
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs\design\adr\pre-release\ADR-0.14.0-multi-agent-instruction-architecture-unification\ADR-0.14.0-multi-agent-instruction-architecture-unification.md`
 - **Checklist Item:** #1 - "OBPI-0.14.0-01: Establish the canonical instruction data model with `AGENTS.md` as shared source and thin vendor adapter renders."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -186,20 +186,26 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+uv run -m unittest tests.test_sync.TestSyncControlSurfaces tests.test_templates
+...
+OK
 ```
+
+Key proof: `uv run -m unittest tests.test_templates.TestAdapterTemplatesReferenceCanon` — 3 tests confirm adapters reference canon, agents keeps full catalog.
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+uv run ruff check src tests — All checks passed
+uv run ruff format --check . — clean
 ```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
+- Files modified: `src/gzkit/templates/copilot.md`, `src/gzkit/sync.py`, `tests/test_sync.py`, `tests/test_templates.py`
+- Tests added: `TestAdapterTemplatesReferenceCanon` (3 tests — adapters reference canon, agents keeps full catalog)
+- Date completed: 2026-03-15
+- Anchor commit: `8e93918`
 
 ## Value Narrative
 
@@ -213,10 +219,16 @@ One canonical instruction input renders `AGENTS.md`, `CLAUDE.md`, and
 `.github/copilot-instructions.md` with identical shared governance content and only
 minimal adapter-specific framing differences.
 
+### Human Attestation
+
+- Attestor: human:jeff
+- Attestation: accept, proceed git sync
+- Date: 2026-03-15
+
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-15
 
 **Evidence Hash:** -

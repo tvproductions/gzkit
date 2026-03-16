@@ -15,7 +15,15 @@
         "hooks": [
           {
             "type": "command",
+            "command": "uv run python .claude/hooks/session-staleness-check.py"
+          },
+          {
+            "type": "command",
             "command": "uv run python .claude/hooks/pipeline-gate.py"
+          },
+          {
+            "type": "command",
+            "command": "uv run python .claude/hooks/obpi-completion-validator.py"
           },
           {
             "type": "command",

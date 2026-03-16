@@ -16,6 +16,7 @@ from gzkit.ledger import (
     REQ_PROOF_INPUT_KINDS,
     REQ_PROOF_INPUT_STATUSES,
 )
+from gzkit.rules import validate_rule_placement
 from gzkit.schemas import load_schema
 
 
@@ -1121,6 +1122,15 @@ def validate_surfaces(project_root: Path) -> list[ValidationError]:
 
     errors.extend(_validate_skill_frontmatter(project_root))
     errors.extend(_validate_instruction_frontmatter(project_root))
+
+    for warning_msg in validate_rule_placement(project_root):
+        errors.append(
+            ValidationError(
+                type="surface",
+                artifact="rule-placement",
+                message=warning_msg,
+            )
+        )
 
     return errors
 
