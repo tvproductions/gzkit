@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
-"""OBPI Completion Validator Hook (gzkit adaptation).
+"""OBPI Completion Validator Hook.
 
 PreToolUse hook that gates OBPI brief completion by checking ledger evidence
 before allowing status changes to 'Completed'.
 
-Adapted from airlineops canonical obpi-completion-validator.py.
-Uses gzkit's ledger and lane resolution rather than standalone logic.
+Aligned with airlineops canonical obpi-completion-validator.py.
+Uses ADR-local audit ledger ({adr-dir}/logs/obpi-audit.jsonl) as evidence source.
 
 Adaptations from canonical:
   - Path check: /obpis/OBPI- (gzkit) instead of /briefs/OBPI- (airlineops)
-  - Ledger: .gzkit/ledger.jsonl (project-wide) instead of adr_dir/logs/obpi-audit.jsonl
-  - Evidence event: 'obpi_receipt_emitted' instead of 'obpi-audit'/'obpi-completion'
-  - Lane resolution: resolve_adr_lane() from ledger events instead of ADR markdown parsing
+  - Lane resolution: checks both ADR markdown and frontmatter for Heavy lane
 
 Exit codes:
   0 - Allow operation
@@ -34,6 +32,29 @@ def find_project_root() -> Path:
     return Path.cwd()
 
 
+def find_parent_adr_dir(brief_path: Path) -> Path | None:
+    """Find the parent ADR directory from a brief path.
+
+    gzkit stores briefs in /obpis/ (airlineops uses /briefs/).
+    """
+    parent_dir = brief_path.parent
+    if parent_dir.name not in ("obpis", "briefs"):
+        return None
+    return parent_dir.parent
+
+
+def find_parent_adr_file(adr_dir: Path) -> Path | None:
+    """Find the parent ADR markdown file."""
+    for f in adr_dir.iterdir():
+        if (
+            f.name.startswith("ADR-")
+            and f.name.endswith(".md")
+            and re.match(r"ADR-[\d.]+-", f.name)
+        ):
+            return f
+    return None
+
+
 def check_status_change_to_completed(new_string: str) -> bool:
     """Check if the edit changes status to Completed."""
     status_patterns = [
@@ -47,22 +68,15 @@ def check_status_change_to_completed(new_string: str) -> bool:
 
 
 def extract_obpi_id(file_path: str) -> str | None:
-    """Extract full OBPI ID (slug) from file path.
-
-    The ledger stores full slugs like 'OBPI-0.9.0-02-compatibility-adaptation-blocking-hooks',
-    so we extract the filename stem rather than just the numeric prefix.
-    """
-    path = Path(file_path)
-    stem = path.stem  # e.g. OBPI-0.9.0-02-compatibility-adaptation-blocking-hooks
-    if re.match(r"OBPI-[\d.]+-\d+", stem):
-        return stem
-    return None
+    """Extract OBPI short ID (e.g. OBPI-0.14.0-04) from file path."""
+    match = re.search(r"(OBPI-[\d.]+-\d+)", file_path)
+    return match.group(1) if match else None
 
 
 def extract_adr_id(obpi_id: str) -> str | None:
     """Extract parent ADR ID from OBPI ID.
 
-    e.g. OBPI-0.9.0-02-compatibility-adaptation-blocking-hooks -> ADR-0.9.0
+    e.g. OBPI-0.14.0-04 -> ADR-0.14.0
     """
     match = re.match(r"OBPI-([\d.]+)-\d+", obpi_id)
     return f"ADR-{match.group(1)}" if match else None
@@ -73,34 +87,105 @@ def is_foundation_adr(adr_id: str) -> bool:
     return adr_id.startswith("ADR-0.0.")
 
 
-def has_receipt_evidence(ledger_events: list, obpi_id: str) -> bool:
-    """Check if a completion receipt exists in the ledger for this OBPI.
+def get_parent_adr_lane(adr_file: Path | None) -> str:
+    """Determine parent ADR's lane (Heavy or Lite)."""
+    if adr_file is None:
+        return "unknown"
+    try:
+        content = adr_file.read_text(encoding="utf-8")
+    except OSError:
+        return "unknown"
 
-    Matches both exact ID and prefix (short ID like OBPI-0.9.0-02 matches
-    full slug OBPI-0.9.0-02-compatibility-adaptation-blocking-hooks).
-    """
-    for event in ledger_events:
-        data = event if isinstance(event, dict) else event.to_dict()
-        if data.get("event") != "obpi_receipt_emitted":
-            continue
-        event_id = data.get("id", "")
-        if event_id == obpi_id or obpi_id == event_id:
-            return True
+    heavy_patterns = [
+        r"##\s*Lane[\s\S]{0,50}Heavy",
+        r"\*\*Lane:\*\*\s*Heavy",
+        r"Lane:\s*Heavy",
+        r"\|\s*Lane\s*\|\s*Heavy\s*\|",
+    ]
+    for pattern in heavy_patterns:
+        if re.search(pattern, content, re.IGNORECASE):
+            return "Heavy"
+
+    return "Lite"
+
+
+def get_execution_mode(adr_file: Path | None) -> str:
+    """Read execution mode from ADR's ## Execution Mode section."""
+    if adr_file is None:
+        return "normal"
+    try:
+        content = adr_file.read_text(encoding="utf-8")
+    except OSError:
+        return "normal"
+
+    exception_patterns = [
+        r"\*\*Mode:\*\*\s*Exception",
+        r"Mode:\s*Exception",
+    ]
+    for pattern in exception_patterns:
+        if re.search(pattern, content, re.IGNORECASE):
+            return "exception"
+
+    return "normal"
+
+
+def has_audit_evidence(adr_dir: Path, obpi_id: str) -> bool:
+    """Check if audit ledger entry exists for this OBPI in ADR-local ledger."""
+    ledger_file = adr_dir / "logs" / "obpi-audit.jsonl"
+
+    if not ledger_file.exists():
+        return False
+
+    try:
+        with ledger_file.open("r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    entry = json.loads(line)
+                    entry_type = entry.get("type", "")
+                    entry_obpi = entry.get("obpi_id", "")
+                    if entry_obpi == obpi_id and entry_type in (
+                        "obpi-audit",
+                        "obpi-completion",
+                    ):
+                        return True
+                except json.JSONDecodeError:
+                    continue
+    except OSError:
+        return False
+
     return False
 
 
-def has_human_attestation(ledger_events: list, obpi_id: str) -> bool:
-    """Check if human attestation exists in the ledger for this OBPI."""
-    for event in ledger_events:
-        data = event if isinstance(event, dict) else event.to_dict()
-        if data.get("id") != obpi_id:
-            continue
-        if data.get("event") == "obpi_receipt_emitted":
-            attestor = data.get("attestor", "")
-            if attestor.startswith("human:"):
-                return True
-        if data.get("event") == "human_attestation":
-            return True
+def has_human_attestation(adr_dir: Path, obpi_id: str) -> bool:
+    """Check if human attestation exists in ADR-local ledger for this OBPI."""
+    ledger_file = adr_dir / "logs" / "obpi-audit.jsonl"
+
+    if not ledger_file.exists():
+        return False
+
+    try:
+        with ledger_file.open("r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    entry = json.loads(line)
+                    entry_obpi = entry.get("obpi_id", "")
+                    if entry_obpi == obpi_id:
+                        evidence = entry.get("evidence", {})
+                        if evidence.get("human_attestation"):
+                            return True
+                        if entry.get("attestation_type") == "human":
+                            return True
+                except json.JSONDecodeError:
+                    continue
+    except OSError:
+        return False
+
     return False
 
 
@@ -124,7 +209,7 @@ def main():
     except (ValueError, TypeError):
         sys.exit(0)
 
-    # 1. Is this an OBPI brief file? (gzkit uses /obpis/ not /briefs/)
+    # 1. Is this an OBPI brief file? (gzkit uses /obpis/, airlineops uses /briefs/)
     if "/obpis/OBPI-" not in rel_str or not rel_str.endswith(".md"):
         sys.exit(0)
 
@@ -141,37 +226,40 @@ def main():
     if not adr_id:
         sys.exit(0)
 
-    # 4. Load gzkit ledger
-    sys.path.insert(0, str(project_root / "src"))
-    try:
-        from gzkit.config import GzkitConfig
-        from gzkit.ledger import Ledger, resolve_adr_lane
-        from gzkit.pipeline_runtime import completion_receipt_missing_message
-
-        config = GzkitConfig.load(project_root / ".gzkit.json")
-        ledger = Ledger(project_root / config.paths.ledger)
-        events = ledger.read_all()
-    except (ImportError, Exception) as exc:
-        # If gzkit is not importable, allow the operation (fail-open for import errors)
-        print(f"Warning: Could not load gzkit ledger: {exc}", file=sys.stderr)
+    # 4. Find parent ADR directory and file
+    adr_dir = find_parent_adr_dir(abs_path)
+    if not adr_dir or not adr_dir.exists():
         sys.exit(0)
 
-    # 5. Check for receipt evidence in ledger
-    if not has_receipt_evidence(events, obpi_id):
-        print(completion_receipt_missing_message(obpi_id), file=sys.stderr)
+    adr_file = find_parent_adr_file(adr_dir)
+
+    # 5. Check for audit evidence in ADR-local ledger
+    if not has_audit_evidence(adr_dir, obpi_id):
+        print(
+            f"\n\u26d4 BLOCKED: Cannot mark {obpi_id} as Completed.\n"
+            f"\n"
+            f"No audit evidence found in {adr_dir.name}/logs/obpi-audit.jsonl\n"
+            f"\n"
+            f"REQUIRED: Run gz-obpi-audit first to verify and record evidence:\n"
+            f"  /gz-obpi-audit {obpi_id}\n",
+            file=sys.stderr,
+        )
         sys.exit(2)
 
-    # 6. Check lane for attestation requirements
+    # 6. Check attestation requirements
+    execution_mode = get_execution_mode(adr_file)
+
+    if execution_mode == "exception":
+        # Exception mode: self-close allowed. Audit evidence already
+        # validated above. Human reviews at ADR closeout.
+        sys.exit(0)
+
+    # Normal mode: check lane for attestation rigor
     is_foundation = is_foundation_adr(adr_id)
+    parent_lane = get_parent_adr_lane(adr_file)
+    requires_human = is_foundation or parent_lane == "Heavy"
 
-    graph = ledger.get_artifact_graph()
-    canonical_adr = ledger.canonicalize_id(adr_id)
-    parent_info = graph.get(canonical_adr, {})
-    parent_lane = resolve_adr_lane(parent_info, config.mode)
-
-    requires_human = is_foundation or parent_lane == "heavy"
-
-    if requires_human and not has_human_attestation(events, obpi_id):
+    if requires_human and not has_human_attestation(adr_dir, obpi_id):
         lane_reason = "Foundation (0.0.x)" if is_foundation else "Heavy lane"
         print(
             f"\n\u26d4 BLOCKED: {obpi_id} requires human attestation.\n"
