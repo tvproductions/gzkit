@@ -103,23 +103,13 @@ Skill behavior is standardized and synchronized by `gz agent sync control-surfac
   humans or external systems. Documentation/process/template-only changes stay
   Lite unless they change one of those external surfaces.
 
-### OBPI Decomposition Mandate (Matrix of Four Overlay)
+### OBPI Decomposition Mandate
 
-**Agent MUST right-size implementation units using a two-step decomposition protocol.**
-
-1.  **Step 1: Baseline Structural Template (Rule of Three)**: For complex ADRs, scaffold into three baseline layers (Registry, Core Execution, and Lifecycle/Operations).
-2.  **Step 2: Refining Overlay (Matrix of Four)**: Apply four core principles to each baseline unit. If a unit violates a principle, it MUST be further decomposed.
-3.  **Step 3: Deterministic Scorecard Gate**: Score dimensions (Data/State, Logic/Engine, Interface, Observability, Lineage) as 0/1/2, map to baseline range (`0-3 => 1-2`, `4-6 => 3`, `7-8 => 4`, `9-10 => 5+`), add mandatory split triggers, and set `Final Target OBPI Count`.
+Agent MUST right-size implementation units. Apply the decomposition protocol
+and scorecard defined in the
+[OBPI Decomposition Matrix](docs/governance/GovZero/obpi-decomposition-matrix.md).
 
 **1:1 Synchronization Mandate**: The ADR's Feature Checklist MUST remain in 1:1 synchronization with the OBPI brief files. No drift is permitted. Each checklist item maps to exactly one brief.
-
-**Core Principles (The Filter):**
--   **Single-Narrative**: No "and" in OBPI objectives.
--   **Testability Ceiling**: If verification clusters >5, decompose.
--   **State Anchor**: Isolate Ledger and state-writing logic.
--   **Surface Boundary**: Separate internal logic from external surfaces (CLI/API).
-
-Detailed standards in the [OBPI Decomposition Matrix](docs/governance/GovZero/obpi-decomposition-matrix.md).
 
 ## OBPI Acceptance Protocol
 
@@ -134,14 +124,8 @@ accounting order, with `uv run gz git-sync --apply --lint --test` required
 before final OBPI completion receipt emission and brief/ADR sync. Freeform
 implementation without runtime invocation is a process defect.
 
-### Ceremony Steps
-
-1. **Present value narrative**: Explain what problem existed before this OBPI and what capability exists now.
-2. **Present key proof**: Show one concrete usage example (code, CLI, or before/after behavior).
-3. **Present evidence**: Include verification command outputs, tests, and implementation summary.
-4. **Wait for human review**: Do not proceed until human acknowledges the evidence.
-5. **Receive explicit attestation**: Human responds with acceptance (`Accepted`, `Completed`, or equivalent).
-6. **Only then update status**: Record narrative, proof, and attestation in the brief; then set status to `Completed`.
+Ceremony steps and stage sequencing are defined in the `gz-obpi-pipeline`
+skill (`uv run gz obpi pipeline <OBPI-ID>`). Read it before presenting evidence.
 
 ### Lane Inheritance Rule
 
@@ -152,44 +136,16 @@ implementation without runtime invocation is a process defect.
 
 An OBPI inside a Heavy or Foundation ADR inherits the parent's attestation rigor, regardless of the OBPI's own lane designation.
 
-### Failure Mode Prevented
-
-This protocol prevents agents from presenting OBPI completion as fait accompli without human oversight.
-
 ## Execution Rules
 
-### Command Execution
-
-Always use `uv run` for Python commands:
-
-```bash
-uv run gz --help           # CLI entry point
-uv run gz test             # Run tests
-```
-
-### Quality Commands
+Always use `uv run` for Python commands. Run `gz --help` for the full command
+catalog.
 
 ```bash
-gz lint       # Ruff + PyMarkdown
-gz format     # Auto-format code
-gz test       # Run unit tests
-gz typecheck  # Type check with ty
-gz check      # All quality checks
-```
-
-### Governance Commands
-
-```bash
-gz init       # Initialize project
-gz prd        # Create PRD
-gz constitute # Create constitution
-gz specify    # Create brief
-gz plan       # Create ADR
-gz state      # Query ledger state
-gz status     # Display gate status
-gz attest     # Record attestation
-gz validate   # Schema validation
-gz agent sync control-surfaces  # Regenerate control surfaces
+uv run gz check     # All quality checks (lint, format, test, typecheck)
+uv run gz status    # Gate status
+uv run gz state     # Artifact relationships
+uv run gz agent sync control-surfaces  # Regenerate surfaces
 ```
 
 ## Control Surfaces
