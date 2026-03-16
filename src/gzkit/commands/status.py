@@ -1020,8 +1020,8 @@ def obpi_reconcile_cmd(obpi: str, as_json: bool) -> None:
         raise SystemExit(1)
 
 
-def adr_status_cmd(adr: str, as_json: bool, show_gates: bool) -> None:
-    """Display focused OBPI progress, lifecycle, and gate readiness for one ADR."""
+def _build_adr_status_result(adr: str) -> dict[str, Any]:
+    """Build the status result dict for a single ADR."""
     config = ensure_initialized()
     project_root = get_project_root()
     ledger = Ledger(project_root / config.paths.ledger)
@@ -1038,7 +1038,7 @@ def adr_status_cmd(adr: str, as_json: bool, show_gates: bool) -> None:
     gate_statuses = ledger.get_latest_gate_statuses(adr_id)
     gate4_na = _gate4_na_reason(project_root, lane)
     semantics = Ledger.derive_adr_semantics(info)
-    result = {
+    result: dict[str, Any] = {
         "adr": adr_id,
         "mode": config.mode,
         "lane": lane,
@@ -1068,12 +1068,19 @@ def adr_status_cmd(adr: str, as_json: bool, show_gates: bool) -> None:
     _apply_obpi_lifecycle_overrides(adr_id, result, obpi_summary)
     if gate4_na is not None:
         result["gate4_na_reason"] = gate4_na
+    return result
+
+
+def adr_status_cmd(adr: str, as_json: bool, show_gates: bool) -> None:
+    """Display focused OBPI progress, lifecycle, and gate readiness for one ADR."""
+    result = _build_adr_status_result(adr)
+    lane = cast(str, result["lane"])
 
     if as_json:
         print(json.dumps(result, indent=2))
         return
 
-    console.print(f"[bold]{adr_id}[/bold]")
+    console.print(f"[bold]{result['adr']}[/bold]")
     console.print(f"  Lifecycle: {result['lifecycle_status']}")
     console.print(f"  Closeout Phase: {result['closeout_phase']}")
     obpi_summary = cast(dict[str, Any], result.get("obpi_summary", {}))
@@ -1107,7 +1114,7 @@ def adr_status_cmd(adr: str, as_json: bool, show_gates: bool) -> None:
             console.print(f"  Gate 3 (Docs):  {_render_gate_status(result['gates'].get('3'))}")
             console.print(f"  Gate 4 (BDD):   {_render_gate_status(result['gates'].get('4'))}")
             if result["gates"].get("4") == "n/a":
-                console.print(f"                 ({gate4_na})")
+                console.print(f"                 ({result.get('gate4_na_reason', '')})")
             is_attested = bool(result.get("attested"))
             gate5_detail = (
                 f" ({result['attestation_term']})" if result.get("attestation_term") else ""
@@ -1117,3 +1124,76 @@ def adr_status_cmd(adr: str, as_json: bool, show_gates: bool) -> None:
                 + ("[green]PASS[/green]" if is_attested else "[yellow]PENDING[/yellow]")
                 + (gate5_detail if is_attested else "")
             )
+
+
+def _render_adr_report(result: dict[str, Any]) -> None:
+    """Render deterministic ASCII table report for a single ADR."""
+    obpi_summary = cast(dict[str, Any], result.get("obpi_summary", {}))
+    obpi_total = cast(int, obpi_summary.get("total", 0))
+    obpi_completed = cast(int, obpi_summary.get("completed", 0))
+    gates = cast(dict[str, str], result.get("gates", {}))
+    lane = cast(str, result.get("lane", "lite"))
+    qc_readiness, _qc_blockers = _qc_readiness(gates, lane, obpi_summary)
+    closeout_label = "READY" if result.get("closeout_ready") else "BLOCKED"
+    qc_label = "READY" if qc_readiness == "ready" else "PENDING"
+
+    # --- ADR Overview ---
+    adr_full = cast(str, result["adr"])
+    m = ADR_SEMVER_STATUS_ID_RE.match(adr_full)
+    adr_short = f"ADR-{m['major']}.{m['minor']}.{m['patch']}" if m else adr_full
+
+    overview = Table(title="ADR Overview", box=box.ASCII, padding=(0, 1))
+    overview.add_column("ADR", no_wrap=True)
+    overview.add_column("Lane", no_wrap=True)
+    overview.add_column("Life", no_wrap=True)
+    overview.add_column("Phase", no_wrap=True)
+    overview.add_column("OBPI", no_wrap=True)
+    overview.add_column("Closeout", no_wrap=True)
+    overview.add_column("QC", no_wrap=True)
+    overview.add_row(
+        adr_short,
+        lane,
+        cast(str, result.get("lifecycle_status", "Pending")),
+        cast(str, result.get("closeout_phase", "pre_closeout")),
+        f"{obpi_completed}/{obpi_total}",
+        closeout_label,
+        qc_label,
+    )
+    console.print(overview)
+
+    # --- OBPIs ---
+    obpi_rows = cast(list[dict[str, Any]], result.get("obpis", []))
+    obpi_table = Table(title="OBPIs", box=box.ASCII, padding=(0, 1))
+    obpi_table.add_column("#", no_wrap=True)
+    obpi_table.add_column("OBPI ID", overflow="fold")
+    obpi_table.add_column("State", no_wrap=True)
+    obpi_table.add_column("Brief", no_wrap=True)
+    obpi_table.add_column("Done", no_wrap=True)
+    for idx, row in enumerate(obpi_rows, 1):
+        obpi_table.add_row(
+            f"{idx:02d}",
+            cast(str, row.get("id", "")),
+            cast(str, row.get("runtime_state", "pending")),
+            cast(str, row.get("brief_status", "draft")),
+            "yes" if row.get("completed") else "no",
+        )
+    console.print(obpi_table)
+
+    # --- Issues ---
+    issues: list[str] = []
+    for idx, row in enumerate(obpi_rows, 1):
+        prefix = f"{idx:02d}"
+        for issue in cast(list[str], row.get("issues", [])):
+            issues.append(f"{prefix} {issue}")
+        for issue in cast(list[str], row.get("reflection_issues", [])):
+            issues.append(f"{prefix} {issue}")
+    if issues:
+        console.print("Issues")
+        for line in issues:
+            console.print(line)
+
+
+def adr_report_cmd(adr: str) -> None:
+    """Render deterministic tabular report for a single ADR."""
+    result = _build_adr_status_result(adr)
+    _render_adr_report(result)

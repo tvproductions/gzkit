@@ -5,7 +5,6 @@ Control surfaces are agent-specific files generated from governance canon.
 """
 
 import json
-import logging
 import re
 from datetime import date, timedelta
 from pathlib import Path
@@ -14,6 +13,8 @@ from typing import Any
 from gzkit.config import GzkitConfig
 from gzkit.hooks.claude import generate_claude_settings, setup_claude_hooks
 from gzkit.hooks.copilot import setup_copilot_hooks
+from gzkit.rules import sync_claude_rules as sync_claude_rules  # noqa: F401
+from gzkit.rules import sync_nested_agents_md as sync_nested_agents_md  # noqa: F401
 from gzkit.templates import render_template
 
 HEADER_ID_RE = re.compile(r"^#\s+((?:ADR|PRD)-[^\s:]+)")
@@ -1175,138 +1176,6 @@ def sync_claude_md(project_root: Path, config: GzkitConfig) -> None:
     claude_path.write_text(content, encoding="utf-8")
 
 
-_rules_logger = logging.getLogger(__name__)
-
-
-def _parse_instruction_frontmatter(content: str) -> dict[str, str]:
-    """Parse frontmatter from an instruction file.
-
-    Args:
-        content: Full file content.
-
-    Returns:
-        Dictionary of frontmatter key-value pairs.
-    """
-    lines = content.splitlines()
-    if not lines or lines[0].strip() != "---":
-        return {}
-
-    fm: dict[str, str] = {}
-    for raw in lines[1:]:
-        stripped = raw.strip()
-        if stripped == "---":
-            break
-        if not stripped or ":" not in stripped:
-            continue
-        key, value = stripped.split(":", 1)
-        fm[key.strip()] = value.strip().strip("\"'")
-    return fm
-
-
-def _extract_body_after_frontmatter(content: str) -> str:
-    """Return the body content after YAML frontmatter.
-
-    Args:
-        content: Full file content.
-
-    Returns:
-        Body text after the closing --- delimiter.
-    """
-    lines = content.splitlines()
-    if not lines or lines[0].strip() != "---":
-        return content
-
-    for idx, raw in enumerate(lines[1:], start=1):
-        if raw.strip() == "---":
-            return "\n".join(lines[idx + 1 :])
-    return content
-
-
-def _convert_apply_to_paths(apply_to: str) -> list[str]:
-    """Convert Copilot applyTo string to Claude paths list.
-
-    Args:
-        apply_to: Comma-separated glob patterns.
-
-    Returns:
-        List of trimmed glob patterns.
-    """
-    patterns = [p.strip() for p in apply_to.split(",") if p.strip()]
-
-    for pattern in patterns:
-        if any(c in pattern for c in "{}!"):
-            _rules_logger.warning(
-                "Glob pattern %r contains brace expansion or negation "
-                "which may not be supported by Claude Code paths matcher.",
-                pattern,
-            )
-
-    return patterns
-
-
-def sync_claude_rules(project_root: Path) -> list[str]:
-    """Mirror .github/instructions/*.instructions.md to .claude/rules/*.md.
-
-    Converts Copilot applyTo frontmatter to Claude paths frontmatter.
-    Deletes stale mirrored files. Creates directory if missing.
-
-    Args:
-        project_root: Project root directory.
-
-    Returns:
-        List of mirrored file paths (relative to project_root).
-    """
-    instructions_dir = project_root / ".github" / "instructions"
-    rules_dir = project_root / ".claude" / "rules"
-    rules_dir.mkdir(parents=True, exist_ok=True)
-
-    updated: list[str] = []
-    expected_names: set[str] = set()
-
-    if instructions_dir.exists():
-        for src_file in sorted(instructions_dir.iterdir()):
-            if not src_file.name.endswith(".instructions.md"):
-                continue
-
-            content = src_file.read_text(encoding="utf-8")
-            fm = _parse_instruction_frontmatter(content)
-
-            # Skip rules excluded from coding agents.
-            exclude = fm.get("excludeAgent", "")
-            if exclude in ("coding-agent", "all"):
-                continue
-
-            apply_to = fm.get("applyTo", "")
-            if not apply_to:
-                _rules_logger.warning("Skipping %s: no applyTo frontmatter.", src_file.name)
-                continue
-
-            body = _extract_body_after_frontmatter(content)
-            target_name = src_file.name.replace(".instructions.md", ".md")
-            expected_names.add(target_name)
-
-            # Build Claude rules content.
-            if apply_to.strip() == "**/*":
-                # Unconditional — no frontmatter needed.
-                output = body.lstrip("\n")
-            else:
-                paths = _convert_apply_to_paths(apply_to)
-                paths_yaml = "\n".join(f'  - "{p}"' for p in paths)
-                output = f"---\npaths:\n{paths_yaml}\n---\n{body}"
-
-            target = rules_dir / target_name
-            target.write_text(output, encoding="utf-8")
-            updated.append(str(target.relative_to(project_root)))
-
-    # Delete stale mirrored rules.
-    if rules_dir.exists():
-        for existing in rules_dir.iterdir():
-            if existing.is_file() and existing.name not in expected_names:
-                existing.unlink()
-
-    return updated
-
-
 def sync_copilot_instructions(project_root: Path, config: GzkitConfig) -> None:
     """Generate copilot-instructions.md from template + agents.local.md.
 
@@ -1411,7 +1280,8 @@ def sync_all(project_root: Path, config: GzkitConfig | None = None) -> list[str]
     sync_claude_md(project_root, config)
     updated.append(config.paths.claude_md)
 
-    updated.extend(sync_claude_rules(project_root))
+    updated.extend(sync_claude_rules(project_root, config))
+    updated.extend(sync_nested_agents_md(project_root, config))
 
     sync_copilot_instructions(project_root, config)
     updated.append(config.paths.copilot_instructions)
