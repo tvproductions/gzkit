@@ -1,4 +1,75 @@
 {
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python .claude/hooks/plan-audit-gate.py",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python .claude/hooks/session-staleness-check.py",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "uv run python .claude/hooks/pipeline-gate.py",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "uv run python .claude/hooks/obpi-completion-validator.py",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "uv run python .claude/hooks/instruction-router.py",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python .claude/hooks/pipeline-completion-reminder.py",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python .claude/hooks/post-edit-ruff.py",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python .claude/hooks/pipeline-router.py",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
   "permissions": {
     "allow": [
       "Bash(grep:*)",

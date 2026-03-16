@@ -1,0 +1,9 @@
+{
+  "obpi_id": "OBPI-0.14.0-04",
+  "agent": "claude-code",
+  "pid": 11584,
+  "session_id": "pipeline-verify",
+  "claimed_at": "2026-03-16T10:40:05.258782+00:00",
+  "branch": "main",
+  "ttl_minutes": 120
+}
