@@ -4,14 +4,16 @@ Handles .gzkit.json parsing and project configuration.
 """
 
 import json
-from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Literal
+from typing import Literal
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
-@dataclass
-class PathConfig:
+class PathConfig(BaseModel):
     """Path configuration for gzkit artifacts."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     # Design artifacts
     prd: str = "design/prd"
@@ -45,12 +47,13 @@ class PathConfig:
     skills: str = ".gzkit/skills"
 
 
-@dataclass
-class GzkitConfig:
+class GzkitConfig(BaseModel):
     """Root configuration for a gzkit-enabled project."""
 
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
     mode: Literal["lite", "heavy"] = "lite"
-    paths: PathConfig = field(default_factory=PathConfig)
+    paths: PathConfig = Field(default_factory=PathConfig)
     project_name: str = ""
 
     @classmethod
@@ -73,42 +76,13 @@ class GzkitConfig:
             data = json.loads(content) if content else {}
 
         paths_data = data.get("paths", {})
-        paths = PathConfig(
-            # Design artifacts
-            prd=paths_data.get("prd", "design/prd"),
-            constitutions=paths_data.get("constitutions", "design/constitutions"),
-            obpis=paths_data.get("obpis", "design/adr"),
-            adrs=paths_data.get("adrs", "design/adr"),
-            # Project structure
-            source_root=paths_data.get("source_root", "src"),
-            tests_root=paths_data.get("tests_root", "tests"),
-            docs_root=paths_data.get("docs_root", "docs"),
-            design_root=paths_data.get("design_root", "design"),
-            # gzkit internal
-            gzkit_dir=paths_data.get("gzkit_dir", ".gzkit"),
-            ledger=paths_data.get("ledger", ".gzkit/ledger.jsonl"),
-            manifest=paths_data.get("manifest", ".gzkit/manifest.json"),
-            # Control surfaces
-            agents_md=paths_data.get("agents_md", "AGENTS.md"),
-            claude_md=paths_data.get("claude_md", "CLAUDE.md"),
-            claude_hooks=paths_data.get("claude_hooks", ".claude/hooks"),
-            claude_settings=paths_data.get("claude_settings", ".claude/settings.json"),
-            claude_rules=paths_data.get("claude_rules", ".claude/rules"),
-            claude_skills=paths_data.get("claude_skills", ".claude/skills"),
-            codex_skills=paths_data.get("codex_skills", ".agents/skills"),
-            copilot_skills=paths_data.get("copilot_skills", ".github/skills"),
-            copilot_instructions=paths_data.get(
-                "copilot_instructions", ".github/copilot-instructions.md"
-            ),
-            discovery_index=paths_data.get("discovery_index", ".github/discovery-index.json"),
-            copilot_hooks=paths_data.get("copilot_hooks", ".github/copilot/hooks"),
-            skills=paths_data.get("skills", ".gzkit/skills"),
-        )
 
-        return cls(
-            mode=data.get("mode", "lite"),
-            paths=paths,
-            project_name=data.get("project_name", ""),
+        return cls.model_validate(
+            {
+                "mode": data.get("mode", "lite"),
+                "paths": paths_data,
+                "project_name": data.get("project_name", ""),
+            }
         )
 
     def save(self, path: Path | None = None) -> None:
@@ -119,34 +93,10 @@ class GzkitConfig:
         """
         config_path = path or Path(".gzkit.json")
 
-        data: dict[str, Any] = {
-            "mode": self.mode,
-            "paths": {
-                "prd": self.paths.prd,
-                "constitutions": self.paths.constitutions,
-                "obpis": self.paths.obpis,
-                "adrs": self.paths.adrs,
-                "source_root": self.paths.source_root,
-                "tests_root": self.paths.tests_root,
-                "docs_root": self.paths.docs_root,
-                "design_root": self.paths.design_root,
-                "agents_md": self.paths.agents_md,
-                "claude_md": self.paths.claude_md,
-                "claude_hooks": self.paths.claude_hooks,
-                "claude_settings": self.paths.claude_settings,
-                "claude_rules": self.paths.claude_rules,
-                "claude_skills": self.paths.claude_skills,
-                "codex_skills": self.paths.codex_skills,
-                "copilot_skills": self.paths.copilot_skills,
-                "copilot_instructions": self.paths.copilot_instructions,
-                "discovery_index": self.paths.discovery_index,
-                "copilot_hooks": self.paths.copilot_hooks,
-                "skills": self.paths.skills,
-            },
-        }
+        data = self.model_dump()
 
-        if self.project_name:
-            data["project_name"] = self.project_name
+        if not self.project_name:
+            data.pop("project_name", None)
 
         with open(config_path, "w") as f:
             json.dump(data, f, indent=2)

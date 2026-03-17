@@ -2,7 +2,7 @@
 id: OBPI-0.15.0-01-core-model-migration
 parent: ADR-0.15.0-pydantic-schema-enforcement
 item: 1
-lane: Heavy
+lane: Lite
 status: Draft
 ---
 
@@ -11,54 +11,50 @@ status: Draft
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.15.0-pydantic-schema-enforcement/ADR-0.15.0-pydantic-schema-enforcement.md`
-- **Checklist Item:** #1 - "OBPI-0.15.0-01: Core Model Migration"
+- **Checklist Item:** #1 - "OBPI-0.15.0-01: Migrate LedgerEvent, GzkitConfig, PathConfig, ValidationError, ValidationResult to Pydantic"
 
 **Status:** Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-Migrate the 5 core dataclass models to Pydantic BaseModel v2.
+Migrate the 5 core dataclass models (LedgerEvent, GzkitConfig, PathConfig, ValidationError, ValidationResult) to Pydantic BaseModel v2 with exact behavioral equivalence.
 
 ## Lane
 
-**Heavy** - This OBPI changes a command/API/schema/runtime contract surface.
-
-> Heavy is reserved for command/API/schema/runtime-contract changes. Process,
-> documentation, and template-only work stays Lite unless it changes one of
-> those external surfaces.
+**Lite** - Internal model layer change only; no CLI/API/schema contract changes.
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `src/gzkit/ledger.py` - LedgerEvent dataclass → BaseModel
+- `src/gzkit/config.py` - GzkitConfig, PathConfig dataclass → BaseModel
+- `src/gzkit/validate.py` - ValidationError, ValidationResult dataclass → BaseModel
+- `tests/test_ledger.py` - LedgerEvent test coverage
+- `tests/test_config.py` - GzkitConfig, PathConfig test coverage
+- `tests/test_validate.py` - ValidationError, ValidationResult test coverage
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
+- `src/gzkit/schemas/**` - Schema unification belongs to OBPI-04
+- `src/gzkit/superbook_models.py` - Already Pydantic; out of scope
+- `src/gzkit/commands/**` - Command layer unchanged
 - `docs/design/**` - ADR changes out of scope
-- New dependencies
+- New dependencies (pydantic already in pyproject.toml)
 - CI files, lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
-
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
+1. REQUIREMENT: Each migrated model MUST produce identical field values, defaults, and serialization output as the original dataclass.
+1. REQUIREMENT: `to_dict()` methods MUST be replaced with Pydantic `model_dump()` and callers updated.
+1. REQUIREMENT: `from_dict()` classmethods MUST be replaced with Pydantic `model_validate()` and callers updated.
+1. REQUIREMENT: GzkitConfig `load()`/`save()` MUST preserve JSON roundtrip behavior.
+1. NEVER: Change field names, field types, or default values during migration.
+1. NEVER: Add new validation rules that did not exist in the dataclass version.
+1. ALWAYS: Run the full test suite after each model migration to catch regressions immediately.
+1. ALWAYS: Follow the existing Pydantic pattern in `src/gzkit/superbook_models.py` for style consistency.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
 ## Discovery Checklist
-
-<!-- What to read before implementation. Complete this checklist first. -->
 
 **Governance (read once, cache):**
 
@@ -69,21 +65,21 @@ Migrate the 5 core dataclass models to Pydantic BaseModel v2.
 **Context:**
 
 - [ ] Parent ADR: `docs/design/adr/pre-release/ADR-0.15.0-pydantic-schema-enforcement/ADR-0.15.0-pydantic-schema-enforcement.md`
-- [ ] Related OBPIs in same ADR
+- [ ] Related OBPIs in same ADR (02: frontmatter models, 03: ledger discrimination, 04: schema generation)
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
+- [ ] `pydantic>=2.12.5` in pyproject.toml dependencies
+- [ ] `src/gzkit/ledger.py` exists with LedgerEvent dataclass
+- [ ] `src/gzkit/config.py` exists with GzkitConfig, PathConfig dataclasses
+- [ ] `src/gzkit/validate.py` exists with ValidationError, ValidationResult dataclasses
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+- [ ] Pattern to follow: `src/gzkit/superbook_models.py` (existing Pydantic models)
+- [ ] Test patterns: `tests/test_ledger.py`, `tests/test_config.py`, `tests/test_validate.py`
 
 ## Quality Gates
-
-<!-- Which gates apply and how to verify them. -->
 
 ### Gate 1: ADR
 
@@ -101,50 +97,26 @@ Migrate the 5 core dataclass models to Pydantic BaseModel v2.
 - [ ] Lint clean: `uv run gz lint`
 - [ ] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
-### Gate 3: Docs (Heavy only)
-
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
-
-### Gate 4: BDD (Heavy only)
-
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
-
-### Gate 5: Human (Heavy only)
-
-- [ ] Human attestation recorded
-
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
-uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
 uv run gz test
 
 # Specific verification for this OBPI
-command --to --verify
+uv run -m unittest tests.test_ledger tests.test_config tests.test_validate -v
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.15.0-01-01: Given/When/Then behavior criterion 1
-- [ ] REQ-0.15.0-01-02: Given/When/Then behavior criterion 2
-- [ ] REQ-0.15.0-01-03: Given/When/Then behavior criterion 3
+- [ ] REQ-0.15.0-01-01: Given a LedgerEvent constructed with the same arguments, when serialized via model_dump(), then the output matches the original to_dict() output exactly.
+- [ ] REQ-0.15.0-01-02: Given a GzkitConfig loaded from an existing manifest.json, when accessed via the same field paths, then all values match the dataclass version.
+- [ ] REQ-0.15.0-01-03: Given a PathConfig with default values, when each field is read, then all 24 path defaults are identical to the dataclass defaults.
+- [ ] REQ-0.15.0-01-04: Given a ValidationError and ValidationResult constructed with the same arguments, when serialized via model_dump(), then the output matches to_dict() exactly.
+- [ ] REQ-0.15.0-01-05: Given the full gzkit test suite (532+ tests), when run after migration, then zero regressions — all tests pass.
 
 ## Completion Checklist
-
-<!-- Verify all gates before marking OBPI accepted. -->
 
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
 - [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
@@ -156,9 +128,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
 ## Evidence
-
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
 
 ### Gate 1 (ADR)
 
@@ -174,24 +143,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ```text
 # Paste lint/format/type check output here
-```
-
-### Gate 3 (Docs)
-
-```text
-# Paste docs-build output here when Gate 3 applies
-```
-
-### Gate 4 (BDD)
-
-```text
-# Paste behave output here when Gate 4 applies
-```
-
-### Gate 5 (Human)
-
-```text
-# Record attestation text here when required by parent lane
 ```
 
 ## Value Narrative
@@ -219,9 +170,9 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `human:<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: n/a
+- Attestation: n/a
+- Date: n/a
 
 ---
 
