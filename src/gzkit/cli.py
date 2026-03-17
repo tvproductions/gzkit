@@ -4811,9 +4811,9 @@ def _build_parser() -> argparse.ArgumentParser:
     )
 
     p_adr_report = adr_commands.add_parser(
-        "report", help="Deterministic tabular report for one ADR"
+        "report", help="Deterministic tabular report (summary or single ADR)"
     )
-    p_adr_report.add_argument("adr")
+    p_adr_report.add_argument("adr", nargs="?", default=None)
     p_adr_report.set_defaults(func=lambda a: adr_report_cmd(adr=a.adr))
 
     p_adr_promote = adr_commands.add_parser(
