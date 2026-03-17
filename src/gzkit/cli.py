@@ -2998,19 +2998,26 @@ def _run_pipeline_verify_stage(
     obpi_id: str,
     obpi_content: str,
     lane: str,
+    resolved_parent: str,
+    requires_human_attestation: bool,
+    attestor: str | None,
+    evidence_json: str | None,
 ) -> None:
-    """Run the verify stage and either fail closed or print ceremony guidance."""
+    """Run the verify stage, then chain into ceremony and sync."""
     commands = _pipeline_verification_commands(obpi_content, lane)
+    verification_results: list[tuple[str, bool, str]] = []
     failures: list[tuple[str, str]] = []
     console.print("")
-    console.print("[bold]Verification[/bold]")
+    console.print("[bold]Stage 3: Verification[/bold]")
     for command in commands:
         result = run_command(command, cwd=project_root)
         if result.success:
             console.print(f"[green]PASS[/green] {command}")
+            verification_results.append((command, True, "pass"))
             continue
         detail = (result.stderr or result.stdout or f"exit code {result.returncode}").strip()
         failures.append((command, detail))
+        verification_results.append((command, False, detail))
         console.print(f"[red]FAIL[/red] {command}")
     if failures:
         refresh_pipeline_markers(
@@ -3024,61 +3031,137 @@ def _run_pipeline_verify_stage(
         raise SystemExit(1)
 
     console.print("")
-    console.print("Verification completed.")
-    console.print("Next:")
-    console.print(f"- Present evidence via: {pipeline_command(obpi_id, 'ceremony')}")
-    console.print("- Pipeline markers remain active until Stage 5 (Sync And Account) completes.")
+    console.print("Verification passed. Chaining into ceremony.")
+
+    _run_pipeline_ceremony_stage(
+        project_root=project_root,
+        plans_dir=plans_dir,
+        obpi_id=obpi_id,
+        obpi_content=obpi_content,
+        resolved_parent=resolved_parent,
+        requires_human_attestation=requires_human_attestation,
+        attestor=attestor,
+        evidence_json=evidence_json,
+        verification_results=verification_results,
+    )
 
 
 def _run_pipeline_ceremony_stage(
+    *,
+    project_root: Path,
     plans_dir: Path,
     obpi_id: str,
+    obpi_content: str,
     resolved_parent: str,
-    *,
     requires_human_attestation: bool,
+    attestor: str | None,
+    evidence_json: str | None,
+    verification_results: list[tuple[str, bool, str]] | None = None,
 ) -> None:
-    """Render ceremony guidance; markers persist until sync stage."""
+    """Render evidence and either pause for human gate or self-close and chain into sync."""
     console.print("")
-    console.print("[bold]Ceremony[/bold]")
-    console.print("- Present a value narrative.")
-    console.print("- Present one key proof example.")
-    console.print("- Present the verification outputs and files changed.")
+    console.print("[bold]Stage 4: Ceremony[/bold]")
+
+    if verification_results:
+        console.print("")
+        console.print("Verification evidence:")
+        for command, passed, detail in verification_results:
+            tag = "[green]PASS[/green]" if passed else f"[red]FAIL[/red] {detail}"
+            console.print(f"  {command}: {tag}")
+
     if requires_human_attestation:
-        console.print("- Obtain explicit human attestation before completion accounting.")
-    else:
+        console.print("")
+        console.print("[bold]Human attestation required.[/bold]")
+        console.print("Present verification evidence to the human for attestation.")
+        console.print("After receiving attestation, complete the pipeline with:")
         console.print(
-            "- Human attestation is optional for this OBPI; do not block "
-            "completion accounting on it."
+            f"  uv run gz obpi pipeline {obpi_id} --from=sync "
+            "--attestor human:<name> --evidence-json '<json>'"
         )
-    console.print("")
-    console.print("Next:")
-    console.print(f"- Complete sync stage: {pipeline_command(obpi_id, 'sync')}")
-    console.print("- Pipeline markers remain active until Stage 5 (Sync And Account) completes.")
+        console.print("")
+        console.print(
+            "The --evidence-json must include: value_narrative, key_proof, "
+            "human_attestation (true), attestation_text, attestation_date."
+        )
+        return
+
+    console.print("Human attestation not required. Self-closing and chaining into sync.")
+
+    effective_attestor = attestor or "agent:pipeline-autoclose"
+    effective_evidence = evidence_json
+    if not effective_evidence:
+        objective = extract_markdown_section(obpi_content, "Objective") or obpi_id
+        passed_commands = [cmd for cmd, passed, _ in (verification_results or []) if passed]
+        key_proof = "All verification checks passed: " + ", ".join(passed_commands)
+        auto_evidence = {
+            "value_narrative": objective.strip()[:500],
+            "key_proof": key_proof[:500],
+        }
+        effective_evidence = json.dumps(auto_evidence)
+
+    _run_pipeline_sync_stage(
+        project_root=project_root,
+        plans_dir=plans_dir,
+        obpi_id=obpi_id,
+        resolved_parent=resolved_parent,
+        attestor=effective_attestor,
+        evidence_json=effective_evidence,
+    )
 
 
 def _run_pipeline_sync_stage(
+    *,
+    project_root: Path,
     plans_dir: Path,
     obpi_id: str,
     resolved_parent: str,
+    attestor: str,
+    evidence_json: str,
 ) -> None:
-    """Run Stage 5: sync and account, then clear markers."""
+    """Run Stage 5: sync and account deterministically, then clear markers."""
     console.print("")
-    console.print("[bold]Sync And Account[/bold]")
-    attestor_hint = '"human:<name>"'
-    console.print(
-        "- Emit completion receipt: "
-        "uv run gz obpi emit-receipt "
-        f"{obpi_id} --event completed --attestor {attestor_hint} --evidence-json ..."
+    console.print("[bold]Stage 5: Sync And Account[/bold]")
+
+    emit_cmd = (
+        f"uv run gz obpi emit-receipt {obpi_id}"
+        f" --event completed"
+        f" --attestor {shlex.quote(attestor)}"
+        f" --evidence-json {shlex.quote(evidence_json)}"
     )
-    console.print(f"- Reconcile: uv run gz obpi reconcile {obpi_id}")
-    console.print(f"- Refresh parent ADR view: uv run gz adr status {resolved_parent} --json")
-    console.print(f"- Run guarded sync: {pipeline_git_sync_command()}")
+    steps: list[tuple[str, str]] = [
+        (emit_cmd, "Emit completion receipt"),
+        (f"uv run gz obpi reconcile {obpi_id}", "Reconcile OBPI"),
+        (f"uv run gz adr status {resolved_parent} --json", "Refresh parent ADR view"),
+        (pipeline_git_sync_command(), "Guarded repository sync"),
+    ]
+
+    for command, label in steps:
+        console.print(f"  {label}...")
+        result = run_command(command, cwd=project_root)
+        if result.success:
+            console.print(f"  [green]PASS[/green] {label}")
+        else:
+            detail = (result.stderr or result.stdout or f"exit code {result.returncode}").strip()
+            console.print(f"  [red]FAIL[/red] {label}")
+            if detail:
+                for line in detail.splitlines()[:10]:
+                    console.print(f"    {line}")
+            console.print(f"Stage 5 failed at: {label}")
+            raise SystemExit(1)
+
     remove_pipeline_markers(plans_dir, obpi_id)
     console.print("")
-    console.print("Pipeline markers cleared. Stage 5 complete.")
+    console.print(f"Pipeline complete. {obpi_id} synced and lock released.")
 
 
-def obpi_pipeline_cmd(obpi: str, start_from: str | None, *, clear_stale: bool = False) -> None:
+def obpi_pipeline_cmd(
+    obpi: str,
+    start_from: str | None,
+    *,
+    clear_stale: bool = False,
+    attestor: str | None = None,
+    evidence_json: str | None = None,
+) -> None:
     """Launch the OBPI pipeline runtime surface for one OBPI."""
     config = ensure_initialized()
     project_root = get_project_root()
@@ -3170,19 +3253,47 @@ def obpi_pipeline_cmd(obpi: str, start_from: str | None, *, clear_stale: bool = 
             obpi_id=obpi_id,
             obpi_content=obpi_content,
             lane=lane,
+            resolved_parent=resolved_parent,
+            requires_human_attestation=requires_human_attestation,
+            attestor=attestor,
+            evidence_json=evidence_json,
         )
         return
 
     if start_from == "ceremony":
         _run_pipeline_ceremony_stage(
-            plans_dir,
-            obpi_id,
-            resolved_parent,
+            project_root=project_root,
+            plans_dir=plans_dir,
+            obpi_id=obpi_id,
+            obpi_content=obpi_content,
+            resolved_parent=resolved_parent,
             requires_human_attestation=requires_human_attestation,
+            attestor=attestor,
+            evidence_json=evidence_json,
         )
         return
 
-    _run_pipeline_sync_stage(plans_dir, obpi_id, resolved_parent)
+    if start_from == "sync":
+        if not attestor:
+            raise GzCliError(
+                "--attestor is required for --from=sync. "
+                "Use --attestor human:<name> for attested OBPIs "
+                "or --attestor agent:<name> for self-closed OBPIs."
+            )
+        if not evidence_json:
+            raise GzCliError(
+                "--evidence-json is required for --from=sync. "
+                "Must include value_narrative and key_proof fields."
+            )
+        _run_pipeline_sync_stage(
+            project_root=project_root,
+            plans_dir=plans_dir,
+            obpi_id=obpi_id,
+            resolved_parent=resolved_parent,
+            attestor=attestor,
+            evidence_json=evidence_json,
+        )
+        return
 
 
 def obpi_validate_cmd(obpi_path: str) -> None:
@@ -5001,6 +5112,15 @@ def _build_parser() -> argparse.ArgumentParser:
         "--from", dest="start_from", choices=["verify", "ceremony", "sync"]
     )
     p_obpi_pipeline.add_argument(
+        "--attestor",
+        help="Attestor identity for Stage 5 (e.g. human:<name> or agent:<name>)",
+    )
+    p_obpi_pipeline.add_argument(
+        "--evidence-json",
+        dest="evidence_json",
+        help="JSON evidence payload for Stage 5 (value_narrative, key_proof, etc.)",
+    )
+    p_obpi_pipeline.add_argument(
         "--clear-stale",
         dest="clear_stale",
         action="store_true",
@@ -5008,7 +5128,11 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p_obpi_pipeline.set_defaults(
         func=lambda a: obpi_pipeline_cmd(
-            obpi=a.obpi, start_from=a.start_from, clear_stale=a.clear_stale
+            obpi=a.obpi,
+            start_from=a.start_from,
+            clear_stale=a.clear_stale,
+            attestor=a.attestor,
+            evidence_json=a.evidence_json,
         )
     )
 

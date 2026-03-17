@@ -196,12 +196,14 @@ class TestObpiPipelineCommand(unittest.TestCase):
             )
 
             self.assertEqual(result.exit_code, 0)
-            self.assertIn("Verification completed.", result.output)
-            self.assertIn("OBPI-0.13.0-01-runtime-command-contract --from=ceremony", result.output)
-            self.assertIn("Pipeline markers remain active", result.output)
-            executed = [call.args[0] for call in run_command_mock.call_args_list]
+            self.assertIn("Verification passed. Chaining into ceremony.", result.output)
+            self.assertIn("Stage 4: Ceremony", result.output)
+            self.assertIn("Human attestation required.", result.output)
+            self.assertIn("--from=sync", result.output)
+            # Verify the verification commands were executed (first 7 calls)
+            verify_commands = [call.args[0] for call in run_command_mock.call_args_list[:7]]
             self.assertEqual(
-                executed,
+                verify_commands,
                 [
                     "uv run gz validate --documents",
                     "uv run gz lint",
@@ -307,9 +309,10 @@ class TestObpiPipelineCommand(unittest.TestCase):
             )
 
             self.assertEqual(result.exit_code, 0)
-            self.assertIn("Ceremony", result.output)
-            self.assertIn("OBPI-0.13.0-01-runtime-command-contract --from=sync", result.output)
-            self.assertIn("Pipeline markers remain active", result.output)
+            self.assertIn("Stage 4: Ceremony", result.output)
+            self.assertIn("Human attestation required.", result.output)
+            self.assertIn("--from=sync", result.output)
+            self.assertIn("--attestor human:<name>", result.output)
             marker_path, legacy_path = self._pipeline_paths(Path.cwd())
             self.assertTrue(marker_path.exists())
             self.assertTrue(legacy_path.exists())
@@ -345,7 +348,8 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertEqual(payload["lane"], "heavy")
             self.assertEqual(payload, self._load_json(legacy_path))
 
-    def test_ceremony_lite_parent_omits_required_human_action(self) -> None:
+    @patch("gzkit.cli.run_command")
+    def test_ceremony_lite_parent_self_closes_and_chains_sync(self, run_command_mock) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
             self._seed_runtime(
@@ -355,6 +359,13 @@ class TestObpiPipelineCommand(unittest.TestCase):
                 parent_lane="lite",
                 config_mode="lite",
             )
+            run_command_mock.return_value = QualityResult(
+                success=True,
+                command="ok",
+                stdout="ok",
+                stderr="",
+                returncode=0,
+            )
 
             result = runner.invoke(
                 main,
@@ -362,17 +373,12 @@ class TestObpiPipelineCommand(unittest.TestCase):
             )
 
             self.assertEqual(result.exit_code, 0)
-            self.assertIn(
-                "Human attestation is optional for this OBPI; do not block completion",
-                result.output,
-            )
-            self.assertIn("accounting on it.", result.output)
+            self.assertIn("Self-closing and chaining into sync.", result.output)
+            self.assertIn("Stage 5: Sync And Account", result.output)
+            self.assertIn("Pipeline complete.", result.output)
             marker_path, legacy_path = self._pipeline_paths(Path.cwd())
-            payload = self._load_json(marker_path)
-            self.assertIsNone(payload["required_human_action"])
-            self.assertEqual(payload["lane"], "lite")
-            self.assertEqual(payload["parent_adr"], "ADR-1.2.3-lite-obpi-demo")
-            self.assertEqual(payload, self._load_json(legacy_path))
+            self.assertFalse(marker_path.exists())
+            self.assertFalse(legacy_path.exists())
 
     def test_ceremony_foundation_parent_requires_human_attestation(self) -> None:
         runner = CliRunner()
@@ -392,10 +398,9 @@ class TestObpiPipelineCommand(unittest.TestCase):
             )
 
             self.assertEqual(result.exit_code, 0)
-            self.assertIn(
-                "Obtain explicit human attestation before completion accounting.",
-                result.output,
-            )
+            self.assertIn("Human attestation required.", result.output)
+            self.assertIn("--from=sync", result.output)
+            self.assertIn("--attestor human:<name>", result.output)
             marker_path, legacy_path = self._pipeline_paths(
                 Path.cwd(), "OBPI-0.0.5-01-runtime-command-contract"
             )
@@ -409,7 +414,7 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertEqual(payload["parent_adr"], "ADR-0.0.5-foundation-obpi-demo")
             self.assertEqual(payload, self._load_json(legacy_path))
 
-    def test_sync_stage_clears_markers(self) -> None:
+    def test_sync_stage_requires_attestor(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
             self._seed_runtime(runner)
@@ -419,12 +424,48 @@ class TestObpiPipelineCommand(unittest.TestCase):
                 ["obpi", "pipeline", "OBPI-0.13.0-01-runtime-command-contract", "--from=sync"],
             )
 
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("--attestor is required", result.output)
+
+    @patch("gzkit.cli.run_command")
+    def test_sync_stage_executes_and_clears_markers(self, run_command_mock) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            self._seed_runtime(runner)
+            run_command_mock.return_value = QualityResult(
+                success=True,
+                command="ok",
+                stdout="ok",
+                stderr="",
+                returncode=0,
+            )
+            evidence = json.dumps({"value_narrative": "test", "key_proof": "proof"})
+
+            result = runner.invoke(
+                main,
+                [
+                    "obpi",
+                    "pipeline",
+                    "OBPI-0.13.0-01-runtime-command-contract",
+                    "--from=sync",
+                    "--attestor",
+                    "human:tester",
+                    "--evidence-json",
+                    evidence,
+                ],
+            )
+
             self.assertEqual(result.exit_code, 0)
-            self.assertIn("Sync And Account", result.output)
-            self.assertIn("Pipeline markers cleared", result.output)
+            self.assertIn("Stage 5: Sync And Account", result.output)
+            self.assertIn("Pipeline complete.", result.output)
             marker_path, legacy_path = self._pipeline_paths(Path.cwd())
             self.assertFalse(marker_path.exists())
             self.assertFalse(legacy_path.exists())
+            # Verify sync commands were executed
+            executed = [call.args[0] for call in run_command_mock.call_args_list]
+            self.assertTrue(any("emit-receipt" in cmd for cmd in executed))
+            self.assertTrue(any("reconcile" in cmd for cmd in executed))
+            self.assertTrue(any("git-sync" in cmd for cmd in executed))
 
     def test_blocks_when_brief_is_already_completed(self) -> None:
         runner = CliRunner()
