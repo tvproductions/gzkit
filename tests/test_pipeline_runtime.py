@@ -1,15 +1,19 @@
 import json
 import tempfile
 import unittest
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from gzkit.pipeline_runtime import (
+    clear_stale_pipeline_markers,
     extract_brief_status,
     find_active_pipeline_marker,
+    find_stale_pipeline_markers,
     load_plan_audit_receipt,
     pipeline_command,
     pipeline_completion_reminder_message,
     pipeline_gate_message,
+    pipeline_receipt_path,
     pipeline_resume_command,
     pipeline_router_message,
 )
@@ -53,6 +57,44 @@ class TestPipelineRuntime(unittest.TestCase):
 
             assert marker is not None
             self.assertEqual(marker["obpi_id"], "OBPI-0.13.0-05")
+
+    def test_find_active_pipeline_marker_skips_corrupted_marker(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            plans_dir = Path(tmpdir)
+            # First per-OBPI marker is corrupted JSON
+            (plans_dir / ".pipeline-active-OBPI-0.13.0-01.json").write_text(
+                "NOT VALID JSON{{{",
+                encoding="utf-8",
+            )
+            # Second per-OBPI marker is valid
+            (plans_dir / ".pipeline-active-OBPI-0.13.0-05.json").write_text(
+                json.dumps({"obpi_id": "OBPI-0.13.0-05", "current_stage": "implement"}) + "\n",
+                encoding="utf-8",
+            )
+
+            marker = find_active_pipeline_marker(plans_dir)
+
+            assert marker is not None
+            self.assertEqual(marker["obpi_id"], "OBPI-0.13.0-05")
+
+    def test_find_active_pipeline_marker_falls_through_to_legacy_after_corrupted(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            plans_dir = Path(tmpdir)
+            # Per-OBPI marker is corrupted
+            (plans_dir / ".pipeline-active-OBPI-0.13.0-01.json").write_text(
+                "CORRUPT",
+                encoding="utf-8",
+            )
+            # Legacy marker is valid
+            (plans_dir / ".pipeline-active.json").write_text(
+                json.dumps({"obpi_id": "OBPI-0.13.0-04", "current_stage": "verify"}) + "\n",
+                encoding="utf-8",
+            )
+
+            marker = find_active_pipeline_marker(plans_dir)
+
+            assert marker is not None
+            self.assertEqual(marker["obpi_id"], "OBPI-0.13.0-04")
 
     def test_extract_brief_status_reads_frontmatter_and_body_variants(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -118,6 +160,139 @@ class TestPipelineRuntime(unittest.TestCase):
             "uv run gz obpi pipeline OBPI-0.13.0-05-runtime-engine-integration --from=verify",
             pipeline_gate_message("OBPI-0.13.0-05-runtime-engine-integration"),
         )
+
+    # --- Issue #20: Per-OBPI receipts ---
+
+    def test_load_receipt_prefers_per_obpi_receipt_over_legacy(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            plans_dir = Path(tmpdir)
+            obpi_id = "OBPI-0.13.0-05"
+            # Legacy receipt targets a different OBPI
+            (plans_dir / ".plan-audit-receipt.json").write_text(
+                json.dumps({"obpi_id": "OBPI-0.13.0-01", "verdict": "PASS"}) + "\n",
+                encoding="utf-8",
+            )
+            # Per-OBPI receipt targets the correct OBPI
+            pipeline_receipt_path(plans_dir, obpi_id).write_text(
+                json.dumps({"obpi_id": obpi_id, "verdict": "PASS"}) + "\n",
+                encoding="utf-8",
+            )
+
+            state, warnings, receipt = load_plan_audit_receipt(plans_dir, obpi_id)
+
+            self.assertEqual(state, "pass")
+            self.assertEqual(warnings, [])
+            assert receipt is not None
+            self.assertEqual(receipt["obpi_id"], obpi_id)
+
+    def test_load_receipt_falls_back_to_legacy_when_no_per_obpi(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            plans_dir = Path(tmpdir)
+            obpi_id = "OBPI-0.13.0-05"
+            (plans_dir / ".plan-audit-receipt.json").write_text(
+                json.dumps({"obpi_id": obpi_id, "verdict": "PASS"}) + "\n",
+                encoding="utf-8",
+            )
+
+            state, warnings, receipt = load_plan_audit_receipt(plans_dir, obpi_id)
+
+            self.assertEqual(state, "pass")
+            assert receipt is not None
+            self.assertEqual(receipt["obpi_id"], obpi_id)
+
+    def test_load_receipt_discovery_finds_per_obpi_receipt(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            plans_dir = Path(tmpdir)
+            # No legacy receipt, only per-OBPI
+            pipeline_receipt_path(plans_dir, "OBPI-0.13.0-05").write_text(
+                json.dumps({"obpi_id": "OBPI-0.13.0-05", "verdict": "PASS"}) + "\n",
+                encoding="utf-8",
+            )
+
+            state, warnings, receipt = load_plan_audit_receipt(plans_dir, "")
+
+            self.assertEqual(state, "pass")
+            assert receipt is not None
+            self.assertEqual(receipt["obpi_id"], "OBPI-0.13.0-05")
+
+    # --- Issue #20: Stale marker detection ---
+
+    def test_find_stale_markers_detects_old_markers(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            plans_dir = Path(tmpdir)
+            old_time = (
+                (datetime.now(UTC) - timedelta(hours=5))
+                .replace(microsecond=0)
+                .isoformat()
+                .replace("+00:00", "Z")
+            )
+            (plans_dir / ".pipeline-active-OBPI-0.13.0-01.json").write_text(
+                json.dumps({"obpi_id": "OBPI-0.13.0-01", "updated_at": old_time}) + "\n",
+                encoding="utf-8",
+            )
+
+            stale = find_stale_pipeline_markers(plans_dir)
+
+            self.assertEqual(len(stale), 1)
+            self.assertEqual(stale[0][1]["obpi_id"], "OBPI-0.13.0-01")
+
+    def test_find_stale_markers_ignores_fresh_markers(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            plans_dir = Path(tmpdir)
+            fresh_time = datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+            (plans_dir / ".pipeline-active-OBPI-0.13.0-01.json").write_text(
+                json.dumps({"obpi_id": "OBPI-0.13.0-01", "updated_at": fresh_time}) + "\n",
+                encoding="utf-8",
+            )
+
+            stale = find_stale_pipeline_markers(plans_dir)
+
+            self.assertEqual(len(stale), 0)
+
+    def test_clear_stale_markers_removes_old_markers(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            plans_dir = Path(tmpdir)
+            old_time = (
+                (datetime.now(UTC) - timedelta(hours=5))
+                .replace(microsecond=0)
+                .isoformat()
+                .replace("+00:00", "Z")
+            )
+            marker_path = plans_dir / ".pipeline-active-OBPI-0.13.0-01.json"
+            marker_path.write_text(
+                json.dumps({"obpi_id": "OBPI-0.13.0-01", "updated_at": old_time}) + "\n",
+                encoding="utf-8",
+            )
+
+            removed = clear_stale_pipeline_markers(plans_dir)
+
+            self.assertEqual(len(removed), 1)
+            self.assertEqual(removed[0][1], "OBPI-0.13.0-01")
+            self.assertFalse(marker_path.exists())
+
+    def test_find_stale_markers_flags_corrupted_markers(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            plans_dir = Path(tmpdir)
+            (plans_dir / ".pipeline-active-OBPI-0.13.0-01.json").write_text(
+                "CORRUPT",
+                encoding="utf-8",
+            )
+
+            stale = find_stale_pipeline_markers(plans_dir)
+
+            self.assertEqual(len(stale), 1)
+
+    def test_find_stale_markers_flags_missing_updated_at(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            plans_dir = Path(tmpdir)
+            (plans_dir / ".pipeline-active-OBPI-0.13.0-01.json").write_text(
+                json.dumps({"obpi_id": "OBPI-0.13.0-01"}) + "\n",
+                encoding="utf-8",
+            )
+
+            stale = find_stale_pipeline_markers(plans_dir)
+
+            self.assertEqual(len(stale), 1)
 
 
 if __name__ == "__main__":
