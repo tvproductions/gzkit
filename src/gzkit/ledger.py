@@ -6,10 +6,11 @@ State is derived from the ledger, not stored separately.
 
 import json
 from collections.abc import Iterator
-from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path, PurePosixPath
 from typing import Any
+
+from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.utils import list_changed_files_between, resolve_git_head_commit
 
@@ -44,8 +45,7 @@ REQ_PROOF_INPUT_KINDS = {
 REQ_PROOF_INPUT_STATUSES = {"present", "missing"}
 
 
-@dataclass
-class LedgerEvent:
+class LedgerEvent(BaseModel):
     """A governance event recorded in the ledger.
 
     All events have:
@@ -57,17 +57,19 @@ class LedgerEvent:
     Event-specific fields are stored in extra.
     """
 
+    model_config = ConfigDict(extra="forbid")
+
     event: str
     id: str
-    ts: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
-    schema: str = LEDGER_SCHEMA
+    ts: str = Field(default_factory=lambda: datetime.now(UTC).isoformat())
+    schema_: str = Field(default=LEDGER_SCHEMA)
     parent: str | None = None
-    extra: dict[str, Any] = field(default_factory=dict)
+    extra: dict[str, Any] = Field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         result = {
-            "schema": self.schema,
+            "schema": self.schema_,
             "event": self.event,
             "id": self.id,
             "ts": self.ts,
@@ -96,7 +98,7 @@ class LedgerEvent:
             event=event,
             id=id_,
             ts=ts,
-            schema=schema,
+            schema_=schema,
             parent=parent,
             extra=extra,
         )

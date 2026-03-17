@@ -5,10 +5,11 @@ Validates documents, manifest/surfaces, and ledger events.
 
 import json
 import re
-from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+
+from pydantic import BaseModel, ConfigDict
 
 from gzkit.decomposition import parse_checklist_items, parse_scorecard
 from gzkit.ledger import (
@@ -20,9 +21,10 @@ from gzkit.rules import validate_rule_placement
 from gzkit.schemas import load_schema
 
 
-@dataclass
-class ValidationError:
+class ValidationError(BaseModel):
     """A validation error with context."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     type: str  # "schema", "frontmatter", "header", "manifest", "ledger", "surface"
     artifact: str  # Path or identifier
@@ -31,19 +33,13 @@ class ValidationError:
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
-        result = {
-            "type": self.type,
-            "artifact": self.artifact,
-            "message": self.message,
-        }
-        if self.field:
-            result["field"] = self.field
-        return result
+        return self.model_dump(exclude_none=True)
 
 
-@dataclass
-class ValidationResult:
+class ValidationResult(BaseModel):
     """Result of validation with errors."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     valid: bool
     errors: list[ValidationError]

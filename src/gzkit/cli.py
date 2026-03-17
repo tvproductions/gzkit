@@ -59,7 +59,7 @@ from gzkit.commands.status import (
     obpi_status_cmd,
     status,
 )
-from gzkit.config import GzkitConfig
+from gzkit.config import GzkitConfig, PathConfig
 from gzkit.decomposition import (
     DecompositionScorecard,
     compute_scorecard,
@@ -579,16 +579,17 @@ def init(mode: str, force: bool, dry_run: bool) -> None:
 
     # Create config with detected paths
     mode_literal = cast(Literal["lite", "heavy"], mode)
-    config = GzkitConfig(mode=mode_literal, project_name=project_name)
-    # Update paths based on detected structure
-    config.paths.design_root = design_root
-    config.paths.prd = f"{design_root}/prd"
-    config.paths.constitutions = f"{design_root}/constitutions"
-    config.paths.obpis = f"{design_root}/adr"
-    config.paths.adrs = f"{design_root}/adr"
-    config.paths.source_root = structure.get("source_root", "src")
-    config.paths.tests_root = structure.get("tests_root", "tests")
-    config.paths.docs_root = structure.get("docs_root", "docs")
+    paths = PathConfig(
+        design_root=design_root,
+        prd=f"{design_root}/prd",
+        constitutions=f"{design_root}/constitutions",
+        obpis=f"{design_root}/adr",
+        adrs=f"{design_root}/adr",
+        source_root=structure.get("source_root", "src"),
+        tests_root=structure.get("tests_root", "tests"),
+        docs_root=structure.get("docs_root", "docs"),
+    )
+    config = GzkitConfig(mode=mode_literal, paths=paths, project_name=project_name)
     config.save(project_root / ".gzkit.json")
 
     # Generate manifest

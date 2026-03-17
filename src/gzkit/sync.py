@@ -154,10 +154,12 @@ def scan_existing_artifacts(project_root: Path, design_root: str) -> dict[str, l
         for prd_file in prd_dir.rglob("PRD-*.md"):
             result["prds"].append(prd_file)
 
-    # Scan for ADRs (ADR-*.md pattern)
+    # Scan for ADRs (ADR-*.md pattern, excluding closeout forms)
     adr_dir = design_path / "adr"
     if adr_dir.exists():
         for adr_file in adr_dir.rglob("ADR-*.md"):
+            if adr_file.stem == "ADR-CLOSEOUT-FORM":
+                continue
             result["adrs"].append(adr_file)
 
     # Scan for OBPIs (OBPI-*.md pattern) nested under ADR directories.
