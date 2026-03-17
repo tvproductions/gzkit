@@ -1602,6 +1602,76 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
             self.assertFalse(row["found_file"])
             self.assertIn("linked in ledger but no OBPI file found", row["issues"])
 
+    def test_adr_report_renders_overview_and_obpi_tables(self) -> None:
+        """gz adr report renders deterministic ASCII tables."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+
+            result = runner.invoke(main, ["adr", "report", "ADR-0.1.0"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("ADR Overview", result.output)
+            self.assertIn("OBPIs", result.output)
+            self.assertIn("ADR-0.1.0", result.output)
+            self.assertIn("Pending", result.output)
+
+    def test_adr_report_shows_obpi_rows(self) -> None:
+        """gz adr report includes OBPI rows when OBPIs are linked."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            _write_obpi(obpi_path, "Draft", "draft", "Not started")
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+
+            result = runner.invoke(main, ["adr", "report", "ADR-0.1.0"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("OBPI-0.1.0-01-demo", result.output)
+            self.assertIn("draft", result.output)
+
+    def test_adr_report_shows_issues_section(self) -> None:
+        """gz adr report prints issues when OBPIs have problems."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-core-feature", "ADR-0.1.0"))
+
+            result = runner.invoke(main, ["adr", "report", "ADR-0.1.0"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("Issues", result.output)
+            self.assertIn("ledger proof of completion is missing", result.output)
+
+    def test_adr_report_accepts_semver_prefix(self) -> None:
+        """gz adr report resolves short semver prefixes."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+
+            result = runner.invoke(main, ["adr", "report", "0.1.0"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("ADR-0.1.0", result.output)
+
+    def test_adr_report_no_arg_renders_summary_table(self) -> None:
+        """gz adr report (no argument) renders the ADR summary table."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            runner.invoke(main, ["plan", "0.1.0"])
+
+            result = runner.invoke(main, ["adr", "report"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("ADR Status", result.output)
+            self.assertIn("ADR-0.1.0", result.output)
+            self.assertIn("Checks legend", result.output)
+
     def test_state_ready_json_only_includes_gate_ready_unattested_adrs(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():

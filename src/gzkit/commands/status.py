@@ -1193,7 +1193,15 @@ def _render_adr_report(result: dict[str, Any]) -> None:
             console.print(line)
 
 
-def adr_report_cmd(adr: str) -> None:
-    """Render deterministic tabular report for a single ADR."""
+def adr_report_cmd(adr: str | None) -> None:
+    """Render deterministic tabular report — summary when no ADR given, detail for one ADR."""
+    if adr is None:
+        config = ensure_initialized()
+        project_root = get_project_root()
+        ledger = Ledger(project_root / config.paths.ledger)
+        graph = ledger.get_artifact_graph()
+        adrs = _collect_adr_statuses(project_root, config, ledger, graph)
+        _render_status_table(adrs, config.mode)
+        return
     result = _build_adr_status_result(adr)
     _render_adr_report(result)

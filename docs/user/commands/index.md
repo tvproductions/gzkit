@@ -20,6 +20,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz status`](status.md) | Show multi-ADR OBPI progress and lifecycle status |
 | [`gz state`](state.md) | Show artifact graph and readiness filters |
 | [`gz adr status`](adr-status.md) | Show focused OBPI progress for one ADR |
+| [`gz adr report`](adr-report.md) | Deterministic tabular report (summary or single ADR) |
 | [`gz adr promote`](adr-promote.md) | Promote a pool ADR into canonical ADR package structure |
 | [`gz adr audit-check`](adr-audit-check.md) | Verify OBPI completeness/evidence for one ADR |
 | [`gz adr covers-check`](adr-covers-check.md) | Verify ADR/OBPI @covers traceability in tests |
