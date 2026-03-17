@@ -1,8 +1,30 @@
 # gzkit Release Notes
 
-## Unreleased
+## v0.14.0 (2026-03-17)
 
-_No unreleased entries._
+**ADR:** ADR-0.14.0 - Multi-Agent Instruction Architecture Unification
+
+Unified gzkit's multi-agent instruction delivery into a canonical-shared-plus-thin-adapters architecture, replacing duplicated root surfaces with a single shared model that renders into vendor-specific adapters.
+
+### Delivered
+
+- Canonical shared instruction model with `AGENTS.md` as single source and thin vendor adapter renders for Claude and Copilot
+- Native path-scoped instruction support via nested `AGENTS.md` and `.claude/rules/`
+- Root control surface slimming with recurring workflows relocated to skills/playbooks
+- Instruction auditing for stale, conflicting, unreachable, and foreign-project rules
+- Machine-local vs repo-tracked config separation with deterministic sync
+- Instruction eval suite and readiness checks with positive/negative controls
+
+### Gate Evidence
+
+All 5 GovZero gates satisfied.
+
+### Verification
+
+- `uv run gz closeout ADR-0.14.0-multi-agent-instruction-architecture-unification`
+- `uv run gz attest ADR-0.14.0-multi-agent-instruction-architecture-unification --status completed`
+- `uv run gz audit ADR-0.14.0-multi-agent-instruction-architecture-unification`
+- `uv run gz adr emit-receipt ADR-0.14.0-multi-agent-instruction-architecture-unification --event validated --attestor "human:jeff" --evidence-json ...`
 
 ## v0.12.0 (2026-03-13)
 
