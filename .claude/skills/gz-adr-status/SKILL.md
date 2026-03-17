@@ -54,8 +54,8 @@ uv run gz adr report ADR-0.3.0
 ## Output Contract
 
 - Run `uv run gz adr report` or `uv run gz adr report <ADR-ID>`.
-- Present the command output verbatim in a fenced `text` code block.
-- Do not precede the table with a prose recap. Optional commentary belongs after the table and only when the user asks for interpretation.
+- Do NOT re-print the command output — the user already sees it from the tool result.
+- Do not precede or follow the output with a prose recap. Optional commentary belongs only when the user asks for interpretation.
 
 ## References
 
