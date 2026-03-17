@@ -215,7 +215,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 <!-- Record GitHub defect linkage when defects are discovered during this OBPI.
      Use one bullet per issue so status surfaces can preserve traceability. -->
 
-- GHI-123 (open): defect title or short summary
+_No defects tracked._
 
 ## Human Attestation
 
