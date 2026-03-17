@@ -1028,11 +1028,18 @@ def _build_adr_status_result(adr: str) -> dict[str, Any]:
 
     adr_input = adr if adr.startswith("ADR-") else f"ADR-{adr}"
     canonical_adr = ledger.canonicalize_id(adr_input)
-    _adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
+    adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
     graph = ledger.get_artifact_graph()
     info = graph.get(adr_id)
     if not info or info.get("type") != "adr":
-        raise GzCliError(f"ADR not found in ledger: {adr_id}")
+        # Fallback: try the file stem when parsed ID doesn't match ledger
+        stem_id = adr_file.stem
+        if stem_id != adr_id:
+            info = graph.get(stem_id)
+            if info and info.get("type") == "adr":
+                adr_id = stem_id
+        if not info or info.get("type") != "adr":
+            raise GzCliError(f"ADR not found in ledger: {adr_id}")
 
     lane = resolve_adr_lane(info, config.mode)
     gate_statuses = ledger.get_latest_gate_statuses(adr_id)
