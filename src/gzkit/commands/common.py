@@ -51,6 +51,7 @@ COMMAND_DOCS: dict[str, str] = {
     "cli audit": "docs/user/commands/cli-audit.md",
     "parity check": "docs/user/commands/parity-check.md",
     "readiness audit": "docs/user/commands/readiness-audit.md",
+    "readiness eval": "docs/user/commands/readiness-eval.md",
     "adr status": "docs/user/commands/adr-status.md",
     "adr promote": "docs/user/commands/adr-promote.md",
     "adr audit-check": "docs/user/commands/adr-audit-check.md",
