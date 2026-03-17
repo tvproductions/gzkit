@@ -9,6 +9,7 @@ from typing import Any, cast
 
 PIPELINE_RECEIPT_FILE = ".plan-audit-receipt.json"
 PIPELINE_LEGACY_MARKER = ".pipeline-active.json"
+STALE_MARKER_HOURS = 4
 
 
 def pipeline_command(obpi_id: str, start_from: str | None = None) -> str:
@@ -48,6 +49,8 @@ def pipeline_stage_name(start_from: str | None) -> str:
         return "verify"
     if start_from == "ceremony":
         return "ceremony"
+    if start_from == "sync":
+        return "sync"
     return "implement"
 
 
@@ -83,6 +86,13 @@ def pipeline_stage_output(
                 if requires_human_attestation
                 else None
             ),
+            "next_command": pipeline_command(obpi_id, "sync"),
+            "resume_point": "sync",
+        }
+    if start_from == "sync":
+        return {
+            "blockers": [],
+            "required_human_action": None,
             "next_command": pipeline_git_sync_command(),
             "resume_point": None,
         }
@@ -182,13 +192,38 @@ def pipeline_concurrency_blockers(plans_dir: Path, obpi_id: str) -> list[str]:
     return blockers
 
 
+def pipeline_receipt_path(plans_dir: Path, obpi_id: str) -> Path:
+    """Return the per-OBPI receipt path."""
+    return plans_dir / f".plan-audit-receipt-{obpi_id}.json"
+
+
+def _resolve_receipt_path(plans_dir: Path, obpi_id: str) -> Path | None:
+    """Find the best receipt file: per-OBPI first, then legacy, then discovery."""
+    if obpi_id:
+        per_obpi = pipeline_receipt_path(plans_dir, obpi_id)
+        if per_obpi.exists():
+            return per_obpi
+    legacy = plans_dir / PIPELINE_RECEIPT_FILE
+    if legacy.exists():
+        return legacy
+    if not obpi_id:
+        candidates = sorted(
+            plans_dir.glob(".plan-audit-receipt-*.json"),
+            key=lambda p: p.stat().st_mtime,
+            reverse=True,
+        )
+        if candidates:
+            return candidates[0]
+    return None
+
+
 def load_plan_audit_receipt(
     plans_dir: Path,
     obpi_id: str,
 ) -> tuple[str, list[str], dict[str, Any] | None]:
     """Return receipt state plus non-fatal warnings."""
-    receipt_path = plans_dir / PIPELINE_RECEIPT_FILE
-    if not receipt_path.exists():
+    receipt_path = _resolve_receipt_path(plans_dir, obpi_id)
+    if receipt_path is None:
         return (
             "missing",
             ["plan-audit receipt is missing; proceeding with an explicit gap"],
@@ -229,6 +264,8 @@ def pipeline_stage_labels(start_from: str | None) -> list[str]:
         return ["1. Load Context", "3. Verify", "4. Present Evidence", "5. Sync And Account"]
     if start_from == "ceremony":
         return ["1. Load Context", "4. Present Evidence", "5. Sync And Account"]
+    if start_from == "sync":
+        return ["1. Load Context", "5. Sync And Account"]
     return [
         "1. Load Context",
         "2. Implement",
@@ -256,7 +293,7 @@ def find_active_pipeline_marker(plans_dir: Path) -> dict[str, Any] | None:
         marker = load_pipeline_json(marker_path)
         if marker is not None:
             return marker
-        return None
+        continue  # skip corrupted marker, check remaining
     return None
 
 
@@ -297,7 +334,7 @@ def pipeline_resume_command(marker: dict[str, Any]) -> str | None:
         return None
 
     resume_point = str(marker.get("resume_point") or "").strip()
-    if resume_point in {"verify", "ceremony"}:
+    if resume_point in {"verify", "ceremony", "sync"}:
         return pipeline_command(obpi_id, resume_point)
     if str(marker.get("current_stage") or "").strip() == "implement":
         return pipeline_command(obpi_id, "verify")
@@ -418,3 +455,45 @@ def completion_receipt_missing_message(obpi_id: str) -> str:
         "If verification already passed, continue with:\n"
         f"  {pipeline_command(obpi_id, 'ceremony')}\n"
     )
+
+
+def find_stale_pipeline_markers(
+    plans_dir: Path, *, max_age_hours: int = STALE_MARKER_HOURS
+) -> list[tuple[Path, dict[str, Any]]]:
+    """Return marker paths and payloads whose updated_at exceeds the TTL."""
+    now = datetime.now(UTC)
+    stale: list[tuple[Path, dict[str, Any]]] = []
+    candidates = sorted(plans_dir.glob(".pipeline-active-*.json"))
+    candidates.append(plans_dir / PIPELINE_LEGACY_MARKER)
+    for marker_path in candidates:
+        if not marker_path.exists():
+            continue
+        marker = load_pipeline_json(marker_path)
+        if marker is None:
+            stale.append((marker_path, {}))
+            continue
+        updated_at = str(marker.get("updated_at") or "")
+        if not updated_at:
+            stale.append((marker_path, marker))
+            continue
+        try:
+            marker_time = datetime.fromisoformat(updated_at.replace("Z", "+00:00"))
+        except ValueError:
+            stale.append((marker_path, marker))
+            continue
+        age_hours = (now - marker_time).total_seconds() / 3600
+        if age_hours > max_age_hours:
+            stale.append((marker_path, marker))
+    return stale
+
+
+def clear_stale_pipeline_markers(
+    plans_dir: Path, *, max_age_hours: int = STALE_MARKER_HOURS
+) -> list[tuple[Path, str]]:
+    """Remove stale markers and return removed paths with their OBPI IDs."""
+    removed: list[tuple[Path, str]] = []
+    for marker_path, marker in find_stale_pipeline_markers(plans_dir, max_age_hours=max_age_hours):
+        obpi_id = str(marker.get("obpi_id") or "unknown")
+        marker_path.unlink(missing_ok=True)
+        removed.append((marker_path, obpi_id))
+    return removed

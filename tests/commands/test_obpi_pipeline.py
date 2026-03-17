@@ -178,7 +178,7 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertFalse(legacy_path.exists())
 
     @patch("gzkit.cli.run_command")
-    def test_verify_runs_commands_and_clears_markers(self, run_command_mock) -> None:
+    def test_verify_runs_commands_and_preserves_markers(self, run_command_mock) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
             self._seed_runtime(runner)
@@ -198,6 +198,7 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             self.assertIn("Verification completed.", result.output)
             self.assertIn("OBPI-0.13.0-01-runtime-command-contract --from=ceremony", result.output)
+            self.assertIn("Pipeline markers remain active", result.output)
             executed = [call.args[0] for call in run_command_mock.call_args_list]
             self.assertEqual(
                 executed,
@@ -212,14 +213,11 @@ class TestObpiPipelineCommand(unittest.TestCase):
                 ],
             )
             marker_path, legacy_path = self._pipeline_paths(Path.cwd())
-            self.assertFalse(marker_path.exists())
-            self.assertFalse(legacy_path.exists())
+            self.assertTrue(marker_path.exists())
+            self.assertTrue(legacy_path.exists())
 
-    @patch("gzkit.cli.remove_pipeline_markers")
     @patch("gzkit.cli.run_command")
-    def test_verify_rewrites_markers_with_verify_stage_state(
-        self, run_command_mock, remove_markers_mock
-    ) -> None:
+    def test_verify_rewrites_markers_with_verify_stage_state(self, run_command_mock) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
             self._seed_runtime(runner)
@@ -252,7 +250,6 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertEqual(payload["parent_adr"], "ADR-0.13.0-obpi-pipeline-runtime-surface")
             self.assertEqual(payload["lane"], "heavy")
             self.assertEqual(payload, self._load_json(legacy_path))
-            remove_markers_mock.assert_called_once()
 
     @patch("gzkit.cli.run_command")
     def test_verify_failure_persists_blockers_and_resume_point(self, run_command_mock) -> None:
@@ -299,7 +296,7 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertEqual(payload["resume_point"], "verify")
             self.assertEqual(payload, self._load_json(legacy_path))
 
-    def test_ceremony_prints_next_steps_and_clears_markers(self) -> None:
+    def test_ceremony_prints_next_steps_and_preserves_markers(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
             self._seed_runtime(runner)
@@ -311,19 +308,13 @@ class TestObpiPipelineCommand(unittest.TestCase):
 
             self.assertEqual(result.exit_code, 0)
             self.assertIn("Ceremony", result.output)
-            self.assertIn(
-                "Run guarded sync: uv run gz git-sync --apply --lint --test", result.output
-            )
-            self.assertIn(
-                "uv run gz obpi reconcile OBPI-0.13.0-01-runtime-command-contract",
-                result.output,
-            )
+            self.assertIn("OBPI-0.13.0-01-runtime-command-contract --from=sync", result.output)
+            self.assertIn("Pipeline markers remain active", result.output)
             marker_path, legacy_path = self._pipeline_paths(Path.cwd())
-            self.assertFalse(marker_path.exists())
-            self.assertFalse(legacy_path.exists())
+            self.assertTrue(marker_path.exists())
+            self.assertTrue(legacy_path.exists())
 
-    @patch("gzkit.cli.remove_pipeline_markers")
-    def test_ceremony_rewrites_markers_with_ceremony_stage_state(self, remove_markers_mock) -> None:
+    def test_ceremony_rewrites_markers_with_ceremony_stage_state(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
             self._seed_runtime(runner)
@@ -345,15 +336,16 @@ class TestObpiPipelineCommand(unittest.TestCase):
                 "Present evidence and obtain explicit human attestation before "
                 "completion accounting.",
             )
-            self.assertEqual(payload["next_command"], "uv run gz git-sync --apply --lint --test")
-            self.assertIsNone(payload["resume_point"])
+            self.assertEqual(
+                payload["next_command"],
+                "uv run gz obpi pipeline OBPI-0.13.0-01-runtime-command-contract --from=sync",
+            )
+            self.assertEqual(payload["resume_point"], "sync")
             self.assertEqual(payload["parent_adr"], "ADR-0.13.0-obpi-pipeline-runtime-surface")
             self.assertEqual(payload["lane"], "heavy")
             self.assertEqual(payload, self._load_json(legacy_path))
-            remove_markers_mock.assert_called_once()
 
-    @patch("gzkit.cli.remove_pipeline_markers")
-    def test_ceremony_lite_parent_omits_required_human_action(self, remove_markers_mock) -> None:
+    def test_ceremony_lite_parent_omits_required_human_action(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
             self._seed_runtime(
@@ -375,19 +367,14 @@ class TestObpiPipelineCommand(unittest.TestCase):
                 result.output,
             )
             self.assertIn("accounting on it.", result.output)
-            self.assertIn('--attestor "<name>"', " ".join(result.output.split()))
             marker_path, legacy_path = self._pipeline_paths(Path.cwd())
             payload = self._load_json(marker_path)
             self.assertIsNone(payload["required_human_action"])
             self.assertEqual(payload["lane"], "lite")
             self.assertEqual(payload["parent_adr"], "ADR-1.2.3-lite-obpi-demo")
             self.assertEqual(payload, self._load_json(legacy_path))
-            remove_markers_mock.assert_called_once()
 
-    @patch("gzkit.cli.remove_pipeline_markers")
-    def test_ceremony_foundation_parent_requires_human_attestation(
-        self, remove_markers_mock
-    ) -> None:
+    def test_ceremony_foundation_parent_requires_human_attestation(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
             self._seed_runtime(
@@ -409,7 +396,6 @@ class TestObpiPipelineCommand(unittest.TestCase):
                 "Obtain explicit human attestation before completion accounting.",
                 result.output,
             )
-            self.assertIn('--attestor "human:<name>"', " ".join(result.output.split()))
             marker_path, legacy_path = self._pipeline_paths(
                 Path.cwd(), "OBPI-0.0.5-01-runtime-command-contract"
             )
@@ -422,7 +408,23 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertEqual(payload["lane"], "lite")
             self.assertEqual(payload["parent_adr"], "ADR-0.0.5-foundation-obpi-demo")
             self.assertEqual(payload, self._load_json(legacy_path))
-            remove_markers_mock.assert_called_once()
+
+    def test_sync_stage_clears_markers(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            self._seed_runtime(runner)
+
+            result = runner.invoke(
+                main,
+                ["obpi", "pipeline", "OBPI-0.13.0-01-runtime-command-contract", "--from=sync"],
+            )
+
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("Sync And Account", result.output)
+            self.assertIn("Pipeline markers cleared", result.output)
+            marker_path, legacy_path = self._pipeline_paths(Path.cwd())
+            self.assertFalse(marker_path.exists())
+            self.assertFalse(legacy_path.exists())
 
     def test_blocks_when_brief_is_already_completed(self) -> None:
         runner = CliRunner()

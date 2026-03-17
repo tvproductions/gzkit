@@ -48,7 +48,11 @@ def main() -> None:
             pipeline_completion_reminder_message,
             pipeline_plans_dir,
         )
-    except Exception:
+    except ImportError as exc:
+        print(
+            f"WARNING: pipeline-completion-reminder hook disabled — import failed: {exc}",
+            file=sys.stderr,
+        )
         sys.exit(0)
 
     plans_dir = pipeline_plans_dir(project_root)
