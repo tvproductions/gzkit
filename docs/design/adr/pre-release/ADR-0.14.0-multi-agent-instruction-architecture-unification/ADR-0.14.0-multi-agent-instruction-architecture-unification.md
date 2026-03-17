@@ -235,4 +235,4 @@ Specific rejection rationale:
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.14.0 | Pending | | | |
+| 0.14.0 | Completed | Test User | 2026-03-17 | completed |
