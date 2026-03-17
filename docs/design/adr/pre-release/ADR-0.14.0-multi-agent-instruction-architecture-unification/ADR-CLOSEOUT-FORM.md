@@ -77,3 +77,9 @@ Step 8 issue review result:
 Step 9 release notes confirmation:
 
 - `RELEASE_NOTES.md` updated with `## v0.14.0 (2026-03-17)` entry for ADR-0.14.0.
+
+Step 10 release publication:
+
+- Policy-mandated pre-release sync: `uv run gz git-sync --apply --lint --test`
+- Release created: `gh release create v0.14.0 --title "v0.14.0" --notes ...`
+- Release URL: <https://github.com/tvproductions/gzkit/releases/tag/v0.14.0>
