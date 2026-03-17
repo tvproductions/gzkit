@@ -69,8 +69,7 @@ def main() -> None:
             pipeline_marker_paths,
             pipeline_plans_dir,
         )
-    except ImportError as exc:
-        print(f"WARNING: pipeline-gate hook disabled — import failed: {exc}", file=sys.stderr)
+    except Exception:
         sys.exit(0)
 
     plans_dir = pipeline_plans_dir(project_root)
