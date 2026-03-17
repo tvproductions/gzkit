@@ -95,6 +95,7 @@ from gzkit.ledger import (
     resolve_adr_lane,
 )
 from gzkit.pipeline_runtime import (
+    clear_stale_pipeline_markers,
     load_plan_audit_receipt,
     pipeline_command,
     pipeline_concurrency_blockers,
@@ -3021,12 +3022,11 @@ def _run_pipeline_verify_stage(
             console.print(f"- {command}: {detail}")
         raise SystemExit(1)
 
-    remove_pipeline_markers(plans_dir, obpi_id)
     console.print("")
     console.print("Verification completed.")
     console.print("Next:")
     console.print(f"- Present evidence via: {pipeline_command(obpi_id, 'ceremony')}")
-    console.print("- The active implementation markers were cleared after successful verification.")
+    console.print("- Pipeline markers remain active until Stage 5 (Sync And Account) completes.")
 
 
 def _run_pipeline_ceremony_stage(
@@ -3036,8 +3036,7 @@ def _run_pipeline_ceremony_stage(
     *,
     requires_human_attestation: bool,
 ) -> None:
-    """Render ceremony guidance and clear active markers for that path."""
-    remove_pipeline_markers(plans_dir, obpi_id)
+    """Render ceremony guidance; markers persist until sync stage."""
     console.print("")
     console.print("[bold]Ceremony[/bold]")
     console.print("- Present a value narrative.")
@@ -3052,8 +3051,19 @@ def _run_pipeline_ceremony_stage(
         )
     console.print("")
     console.print("Next:")
-    console.print(f"- Run guarded sync: {pipeline_git_sync_command()}")
-    attestor_hint = '"human:<name>"' if requires_human_attestation else '"<name>"'
+    console.print(f"- Complete sync stage: {pipeline_command(obpi_id, 'sync')}")
+    console.print("- Pipeline markers remain active until Stage 5 (Sync And Account) completes.")
+
+
+def _run_pipeline_sync_stage(
+    plans_dir: Path,
+    obpi_id: str,
+    resolved_parent: str,
+) -> None:
+    """Run Stage 5: sync and account, then clear markers."""
+    console.print("")
+    console.print("[bold]Sync And Account[/bold]")
+    attestor_hint = '"human:<name>"'
     console.print(
         "- Emit completion receipt: "
         "uv run gz obpi emit-receipt "
@@ -3061,13 +3071,30 @@ def _run_pipeline_ceremony_stage(
     )
     console.print(f"- Reconcile: uv run gz obpi reconcile {obpi_id}")
     console.print(f"- Refresh parent ADR view: uv run gz adr status {resolved_parent} --json")
-    console.print("- The active implementation markers were cleared for the ceremony path.")
+    console.print(f"- Run guarded sync: {pipeline_git_sync_command()}")
+    remove_pipeline_markers(plans_dir, obpi_id)
+    console.print("")
+    console.print("Pipeline markers cleared. Stage 5 complete.")
 
 
-def obpi_pipeline_cmd(obpi: str, start_from: str | None) -> None:
+def obpi_pipeline_cmd(obpi: str, start_from: str | None, *, clear_stale: bool = False) -> None:
     """Launch the OBPI pipeline runtime surface for one OBPI."""
     config = ensure_initialized()
     project_root = get_project_root()
+
+    if clear_stale:
+        plans_dir = pipeline_plans_dir(project_root)
+        if plans_dir.is_dir():
+            removed = clear_stale_pipeline_markers(plans_dir)
+            if removed:
+                for marker_path, marker_obpi in removed:
+                    console.print(f"Removed stale marker: {marker_path.name} ({marker_obpi})")
+            else:
+                console.print("No stale markers found.")
+        else:
+            console.print("No stale markers found.")
+        return
+
     ledger = Ledger(project_root / config.paths.ledger)
 
     obpi_file, obpi_id = resolve_obpi_file(project_root, config, ledger, obpi)
@@ -3145,12 +3172,16 @@ def obpi_pipeline_cmd(obpi: str, start_from: str | None) -> None:
         )
         return
 
-    _run_pipeline_ceremony_stage(
-        plans_dir,
-        obpi_id,
-        resolved_parent,
-        requires_human_attestation=requires_human_attestation,
-    )
+    if start_from == "ceremony":
+        _run_pipeline_ceremony_stage(
+            plans_dir,
+            obpi_id,
+            resolved_parent,
+            requires_human_attestation=requires_human_attestation,
+        )
+        return
+
+    _run_pipeline_sync_stage(plans_dir, obpi_id, resolved_parent)
 
 
 def obpi_validate_cmd(obpi_path: str) -> None:
@@ -4899,10 +4930,20 @@ def _build_parser() -> argparse.ArgumentParser:
     p_obpi_pipeline = obpi_commands.add_parser(
         "pipeline", help="Launch the OBPI pipeline runtime surface"
     )
-    p_obpi_pipeline.add_argument("obpi")
-    p_obpi_pipeline.add_argument("--from", dest="start_from", choices=["verify", "ceremony"])
+    p_obpi_pipeline.add_argument("obpi", nargs="?", default="")
+    p_obpi_pipeline.add_argument(
+        "--from", dest="start_from", choices=["verify", "ceremony", "sync"]
+    )
+    p_obpi_pipeline.add_argument(
+        "--clear-stale",
+        dest="clear_stale",
+        action="store_true",
+        help="Remove pipeline markers older than 4 hours",
+    )
     p_obpi_pipeline.set_defaults(
-        func=lambda a: obpi_pipeline_cmd(obpi=a.obpi, start_from=a.start_from)
+        func=lambda a: obpi_pipeline_cmd(
+            obpi=a.obpi, start_from=a.start_from, clear_stale=a.clear_stale
+        )
     )
 
     p_obpi_reconcile = obpi_commands.add_parser(
