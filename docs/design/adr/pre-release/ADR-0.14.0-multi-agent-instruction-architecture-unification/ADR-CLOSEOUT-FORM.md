@@ -1,6 +1,6 @@
 # ADR Closeout Form: ADR-0.14.0-multi-agent-instruction-architecture-unification
 
-**Status**: Phase 1 — Attested
+**Status**: Phase 2 — Completed
 
 ---
 
@@ -31,27 +31,32 @@ Closeout evidence verified:
 
 | OBPI | Description | Status |
 |------|-------------|--------|
-| [OBPI-0.14.0-01](obpis/OBPI-0.14.0-01-canon-shared-instruction-model.md) | Canon shared instruction model | Completed |
-| [OBPI-0.14.0-02](obpis/OBPI-0.14.0-02-native-path-scoped-rules.md) | Native path-scoped rules | Completed |
-| [OBPI-0.14.0-03](obpis/OBPI-0.14.0-03-root-surface-slimming-and-workflow-relocation.md) | Root surface slimming and workflow relocation | Completed |
-| [OBPI-0.14.0-04](obpis/OBPI-0.14.0-04-instruction-audit-and-drift-detection.md) | Instruction audit and drift detection | Completed |
-| [OBPI-0.14.0-05](obpis/OBPI-0.14.0-05-local-vs-repo-config-and-sync-determinism.md) | Local vs repo config and sync determinism | Completed |
-| [OBPI-0.14.0-06](obpis/OBPI-0.14.0-06-instruction-evals-and-readiness-checks.md) | Instruction evals and readiness checks | Completed |
+| [OBPI-0.14.0-01-canon-shared-instruction-model](OBPI-0.14.0-01-canon-shared-instruction-model.md) | Canonical Shared Instruction Model | Completed |
+| [OBPI-0.14.0-02-native-path-scoped-rules](OBPI-0.14.0-02-native-path-scoped-rules.md) | Native Path-Scoped Instruction Surfaces | Completed |
+| [OBPI-0.14.0-03-root-surface-slimming-and-workflow-relocation](OBPI-0.14.0-03-root-surface-slimming-and-workflow-relocation.md) | Root Surface Slimming and Workflow Relocation | Completed |
+| [OBPI-0.14.0-04-instruction-audit-and-drift-detection](OBPI-0.14.0-04-instruction-audit-and-drift-detection.md) | Instruction Audit and Drift Detection | Completed |
+| [OBPI-0.14.0-05-local-vs-repo-config-and-sync-determinism](OBPI-0.14.0-05-local-vs-repo-config-and-sync-determinism.md) | Local vs Repo Config and Sync Determinism | Completed |
+| [OBPI-0.14.0-06-instruction-evals-and-readiness-checks](OBPI-0.14.0-06-instruction-evals-and-readiness-checks.md) | Instruction Evals and Readiness Checks | Completed |
 
 ## Human Attestation
 
 ### Verbatim Attestation
 
-- `attest completed`
+- `completed`
 
-**Attested by**: Jeff
-**Timestamp (UTC)**: 2026-03-17T09:22:16Z
+**Attested by**: Test User
+**Timestamp (UTC)**: 2026-03-17T09:30:20Z
 
 ---
 
 ## Post-Attestation (Phase 2)
 
 Recorded commands:
+
+- `uv run gz closeout ADR-0.14.0-multi-agent-instruction-architecture-unification`
+- `uv run gz attest ADR-0.14.0-multi-agent-instruction-architecture-unification --status completed`
+- `uv run gz audit ADR-0.14.0-multi-agent-instruction-architecture-unification`
+- `uv run gz adr emit-receipt ADR-0.14.0-multi-agent-instruction-architecture-unification --event validated --attestor "human:jeff" --evidence-json ...`
 
 Runbook walkthrough commands executed:
 
@@ -60,3 +65,15 @@ Runbook walkthrough commands executed:
 3. `uv run gz readiness audit` — 2.85/3.00
 4. `uv run gz check-config-paths` — Passed
 5. `uv run gz validate --documents --surfaces` — 28 errors (all on nested AGENTS.md, not ADR-0.14.0)
+
+Step 8 issue review result:
+
+- Queried open issues by ADR/OBPI/keyword:
+  - `gh issue list --search "ADR-0.14.0" --state open`
+  - `gh issue list --search "OBPI-0.14.0" --state open`
+  - `gh issue list --search "multi-agent instruction" --state open`
+- Result: no matching open issues; no closures performed.
+
+Step 9 release notes confirmation:
+
+- `RELEASE_NOTES.md` updated with `## v0.14.0 (2026-03-17)` entry for ADR-0.14.0.
