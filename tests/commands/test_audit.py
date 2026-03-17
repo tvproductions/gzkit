@@ -161,6 +161,14 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
         Path("tests").mkdir(parents=True, exist_ok=True)
         Path("tests/test_cli.py").write_text("import unittest\n")
         Path("tests/test_sync.py").write_text("import unittest\n")
+        # Eval suite surfaces: synced instruction → rule pair
+        Path(".github/instructions").mkdir(parents=True, exist_ok=True)
+        body = "# Governance Core\n\nRules here."
+        Path(".github/instructions/governance_core.instructions.md").write_text(
+            '---\napplyTo: "**/*"\n---\n\n' + body
+        )
+        Path(".claude/rules").mkdir(parents=True, exist_ok=True)
+        Path(".claude/rules/governance_core.md").write_text(body)
 
     def test_check_config_paths_passes_for_valid_layout(self) -> None:
         runner = CliRunner()

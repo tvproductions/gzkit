@@ -4003,7 +4003,17 @@ def readiness_audit_cmd(as_json: bool) -> None:
     )
     primitive_scores = _readiness_score_primitives(project_root, primitive_checks)
     overall_score = _readiness_overall_score(discipline_scores)
-    success = not required_failures and overall_score >= min_overall_score
+
+    # Run instruction eval suite for dimension-based scoring
+    from gzkit.instruction_eval import run_eval_suite
+
+    eval_result = run_eval_suite(project_root)
+    dimension_scores = {
+        ds.dimension: {"score": ds.score, "passed": ds.passed, "total": ds.total, "max_score": 3.0}
+        for ds in eval_result.dimension_scores
+    }
+
+    success = not required_failures and overall_score >= min_overall_score and eval_result.success
 
     result = {
         "framework": "Nate B. Jones four disciplines + five primitives (2026)",
@@ -4012,6 +4022,10 @@ def readiness_audit_cmd(as_json: bool) -> None:
         "overall_score": overall_score,
         "disciplines": discipline_scores,
         "primitives": primitive_scores,
+        "dimensions": dimension_scores,
+        "eval_cases": {
+            r.case_id: {"passed": r.passed, "detail": r.detail} for r in eval_result.results
+        },
         "required_failures": required_failures,
         "issues": issues,
     }
@@ -4051,6 +4065,14 @@ def readiness_audit_cmd(as_json: bool) -> None:
             )
         console.print(primitive_table)
 
+        dim_table = Table(title="Eval Dimensions (Behavioral)")
+        dim_table.add_column("Dimension")
+        dim_table.add_column("Score")
+        dim_table.add_column("Checks")
+        for ds in eval_result.dimension_scores:
+            dim_table.add_row(ds.dimension, f"{ds.score:.2f}/3.00", f"{ds.passed}/{ds.total}")
+        console.print(dim_table)
+
         if issues:
             console.print("Findings:")
             for issue in issues:
@@ -4059,7 +4081,50 @@ def readiness_audit_cmd(as_json: bool) -> None:
                     soft_wrap=True,
                 )
 
+        eval_failures = [r for r in eval_result.results if not r.passed]
+        if eval_failures:
+            console.print("Eval failures:")
+            for r in eval_failures:
+                console.print(f"  - {r.case_id}: {r.detail}", soft_wrap=True)
+
     if not success:
+        raise SystemExit(1)
+
+
+def readiness_eval_cmd(as_json: bool) -> None:
+    """Run instruction eval suite with positive/negative controls across dimensions."""
+    from gzkit.instruction_eval import run_eval_suite
+
+    project_root = get_project_root()
+    suite_result = run_eval_suite(project_root)
+
+    if as_json:
+        print(json.dumps(suite_result.model_dump(), indent=2))
+    else:
+        if suite_result.success:
+            console.print("[green]Instruction eval suite passed.[/green]")
+        else:
+            console.print("[red]Instruction eval suite failed.[/red]")
+        console.print(f"  {suite_result.passed}/{suite_result.total} cases passed")
+
+        dim_table = Table(title="Readiness Dimensions")
+        dim_table.add_column("Dimension")
+        dim_table.add_column("Score")
+        dim_table.add_column("Checks")
+        for ds in suite_result.dimension_scores:
+            dim_table.add_row(ds.dimension, f"{ds.score:.2f}/3.00", f"{ds.passed}/{ds.total}")
+        console.print(dim_table)
+
+        case_table = Table(title="Eval Cases")
+        case_table.add_column("Case")
+        case_table.add_column("Result")
+        case_table.add_column("Detail")
+        for r in suite_result.results:
+            status = "[green]PASS[/green]" if r.passed else "[red]FAIL[/red]"
+            case_table.add_row(r.case_id, status, r.detail)
+        console.print(case_table)
+
+    if not suite_result.success:
         raise SystemExit(1)
 
 
@@ -4989,6 +5054,11 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p_readiness_audit.add_argument("--json", dest="as_json", action="store_true")
     p_readiness_audit.set_defaults(func=lambda a: readiness_audit_cmd(as_json=a.as_json))
+    p_readiness_eval = readiness_commands.add_parser(
+        "eval", help="Run instruction eval suite with positive/negative controls"
+    )
+    p_readiness_eval.add_argument("--json", dest="as_json", action="store_true")
+    p_readiness_eval.set_defaults(func=lambda a: readiness_eval_cmd(as_json=a.as_json))
 
     p_git_sync = commands.add_parser("git-sync", help="Sync branch with guarded ritual")
     _add_git_sync_options(p_git_sync)
