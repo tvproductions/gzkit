@@ -50,6 +50,8 @@ protocol is consumed by the pipeline skill, not exposed as a user-facing surface
 1. REQUIREMENT: Code quality reviewer receives: files changed, test files, and evaluates against SOLID principles, file organization, test coverage, and maintainability.
 1. REQUIREMENT: Review verdicts use structured format: `{verdict: PASS|FAIL|CONCERNS, findings: [{severity: critical|important|minor, description, file, line}]}`.
 1. REQUIREMENT: Critical findings from either reviewer MUST block task advancement. Important findings are logged. Minor findings are noted but do not block.
+1. REQUIREMENT: Both reviewer subagents MUST be dispatched using their respective `.claude/agents/` files (`spec-reviewer.md`, `quality-reviewer.md`) which enforce read-only access via `tools: Read, Glob, Grep` — no Edit, Write, or Bash. This is structural independence: the reviewer literally cannot modify the code it reviews.
+1. REQUIREMENT: Reviewer subagents MUST use capable models (`sonnet` minimum, `opus` for complex reviews). Reviews always require judgment — never route to `haiku`.
 1. NEVER: Skip the spec compliance review — even for "simple" tasks.
 1. ALWAYS: Review cycle limit: max 2 fix cycles per task before escalating to BLOCKED.
 
@@ -59,7 +61,11 @@ protocol is consumed by the pipeline skill, not exposed as a user-facing surface
 
 ```text
 After implementer returns DONE/DONE_WITH_CONCERNS:
-  1. Dispatch spec compliance reviewer subagent
+  1. Dispatch spec compliance reviewer subagent:
+     - subagent_type: "spec-reviewer" (.claude/agents/spec-reviewer.md)
+     - model: "sonnet" (minimum — "opus" for complex tasks)
+     - Tools enforced: Read, Glob, Grep only (no write access)
+     - maxTurns: 15
      Input: task description, brief requirements, files_changed
      Output: {verdict, findings}
   2. If verdict == FAIL with critical findings:
@@ -67,7 +73,11 @@ After implementer returns DONE/DONE_WITH_CONCERNS:
      b. On return, re-dispatch spec compliance reviewer
      c. If still FAIL after 2 cycles → BLOCKED
   3. If verdict == PASS or CONCERNS-only:
-     Dispatch code quality reviewer subagent
+     Dispatch code quality reviewer subagent:
+     - subagent_type: "quality-reviewer" (.claude/agents/quality-reviewer.md)
+     - model: "sonnet" (minimum)
+     - Tools enforced: Read, Glob, Grep only (no write access)
+     - maxTurns: 15
      Input: files_changed, test files, quality criteria
      Output: {verdict, findings}
   4. If quality verdict has critical findings:
@@ -75,6 +85,10 @@ After implementer returns DONE/DONE_WITH_CONCERNS:
   5. Log all findings to pipeline evidence
   6. Advance to next task
 ```
+
+### Why Read-Only is Structural, Not Prompt-Based
+
+Reviewer independence is enforced by the Claude Code `tools` allowlist in the agent file, not by prompt instruction. The reviewer subagent literally cannot call Edit or Write — the Agent tool rejects unauthorized tool calls before execution. This makes "reviewer modifies what it reviews" impossible at the platform level, not just discouraged by convention.
 
 ## Edge Cases
 

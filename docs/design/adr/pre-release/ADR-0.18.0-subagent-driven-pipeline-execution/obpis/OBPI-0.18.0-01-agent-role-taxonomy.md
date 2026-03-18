@@ -34,6 +34,10 @@ The `gz roles` CLI surface ships in OBPI-05.
 - `src/gzkit/roles.py` — role taxonomy data model and handoff contracts
 - `tests/test_roles.py` — role taxonomy validation and handoff protocol tests
 - `docs/design/adr/pool/ADR-pool.agent-role-specialization.md` — mark as Superseded
+- `.claude/agents/implementer.md` — implementer agent file definition
+- `.claude/agents/spec-reviewer.md` — spec compliance reviewer agent file definition
+- `.claude/agents/quality-reviewer.md` — code quality reviewer agent file definition
+- `.claude/agents/narrator.md` — narrator agent file definition
 
 ## Denied Paths
 
@@ -48,6 +52,8 @@ The `gz roles` CLI surface ships in OBPI-05.
 1. REQUIREMENT: Each role MUST specify what artifacts it produces and what artifacts it consumes.
 1. REQUIREMENT: Handoff protocol MUST define the structured result format between roles (e.g., implementer returns `DONE`/`BLOCKED`/`NEEDS_CONTEXT`/`DONE_WITH_CONCERNS`).
 1. REQUIREMENT: Conflict resolution MUST specify precedence when two agents touch the same file.
+1. REQUIREMENT: Each role MUST be delivered as a `.claude/agents/{role}.md` file with YAML frontmatter specifying `tools`, `model`, `permissionMode`, `maxTurns`, and `skills` — the Claude Code primitives that enforce role boundaries at dispatch time.
+1. REQUIREMENT: Tool allowlists MUST enforce role boundaries structurally (not just via prompt instruction). Reviewers MUST NOT have Edit/Write tools. Implementers MUST have full write access.
 1. NEVER: Allow roles to be vendor-specific — roles are abstract; vendor binding is deployment.
 1. ALWAYS: A single agent session CAN fill multiple roles sequentially.
 
@@ -67,6 +73,12 @@ The `gz roles` CLI surface ships in OBPI-05.
 - **Consumes:** Plan task with scoped context (allowed files, test expectations, brief requirements)
 - **Pipeline mapping:** Stage 2 (dispatched per task)
 - **Result contract:** `{status: DONE|DONE_WITH_CONCERNS|NEEDS_CONTEXT|BLOCKED, files_changed: [...], tests_added: [...], concerns: [...]}`
+- **Agent file primitives:**
+  - `tools: Read, Edit, Write, Glob, Grep, Bash` — full write access
+  - `permissionMode: acceptEdits` — non-blocking file modifications
+  - `maxTurns: 25` — bounded loop to prevent runaway implementation
+  - `skills: [superpowers-tdd]` — TDD discipline injected into context
+  - `hooks.PreToolUse` on Edit/Write — validates file paths against brief allowlist
 
 ### Reviewer
 
@@ -76,18 +88,76 @@ The `gz roles` CLI surface ships in OBPI-05.
 - **Two sub-roles:**
   - **Spec Compliance Reviewer:** Verifies code matches plan/brief requirements line-by-line
   - **Code Quality Reviewer:** Evaluates architecture, SOLID, test coverage, maintainability
+- **Agent file primitives (both sub-roles):**
+  - `tools: Read, Glob, Grep` — **read-only enforced structurally** (no Edit/Write/Bash)
+  - `maxTurns: 15` — reviews are bounded; escalate rather than loop
+  - Spec reviewer `skills: [brief-requirements]` — brief requirements injected for line-by-line verification
+  - Quality reviewer `skills: [code-quality-criteria]` — SOLID, maintainability criteria injected
 
 ### Narrator
 
 - **Produces:** Evidence presentations, ceremony artifacts, documentation updates
 - **Consumes:** Implementation results, verification outputs, attestation records
 - **Pipeline mapping:** Stage 4 (ceremony presentation), Stage 5 (documentation sync)
+- **Agent file primitives:**
+  - `tools: Read, Glob, Grep, Bash` — reads evidence, runs presentation/sync commands
+  - `maxTurns: 10` — ceremony and sync are bounded operations
+
+## Agent File Templates (Design Input)
+
+Each role is delivered as a `.claude/agents/` Markdown file. The controller overrides `model` per-dispatch based on task complexity (OBPI-05).
+
+**`.claude/agents/implementer.md`:**
+```yaml
+---
+name: implementer
+description: Implements plan tasks with TDD discipline. Dispatched per-task by the pipeline controller.
+tools: Read, Edit, Write, Glob, Grep, Bash
+model: inherit
+permissionMode: acceptEdits
+maxTurns: 25
+---
+```
+
+**`.claude/agents/spec-reviewer.md`:**
+```yaml
+---
+name: spec-reviewer
+description: Verifies implementation matches plan/brief requirements. Read-only independent review.
+tools: Read, Glob, Grep
+model: inherit
+maxTurns: 15
+---
+```
+
+**`.claude/agents/quality-reviewer.md`:**
+```yaml
+---
+name: quality-reviewer
+description: Evaluates code architecture, SOLID, test coverage, maintainability. Read-only independent review.
+tools: Read, Glob, Grep
+model: inherit
+maxTurns: 15
+---
+```
+
+**`.claude/agents/narrator.md`:**
+```yaml
+---
+name: narrator
+description: Presents evidence for ceremony and documentation sync. Reads implementation and verification outputs.
+tools: Read, Glob, Grep, Bash
+model: inherit
+maxTurns: 10
+---
+```
 
 ## Edge Cases
 
 - A single agent fills Implementer + Reviewer sequentially (allowed but reviewer MUST re-read code independently, not trust implementer's report)
 - Two implementer subagents dispatched for tasks that unexpectedly overlap files (conflict resolution: first-to-commit wins; second must rebase)
 - Reviewer finds critical issue but implementer subagent is already terminated (orchestrator dispatches new implementer with reviewer feedback)
+- Agent file `maxTurns` exceeded before task completion — treat as BLOCKED, escalate to controller
 
 ## Quality Gates (Lite)
 
