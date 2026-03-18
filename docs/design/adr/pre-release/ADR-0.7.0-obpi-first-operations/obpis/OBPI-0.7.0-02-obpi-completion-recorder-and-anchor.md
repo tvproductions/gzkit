@@ -26,6 +26,10 @@ Record OBPI completion transitions as first-class runtime events with optional g
 - Tests added: `test_recorder_appends_receipt_to_ledger` in `tests/test_obpi_validator.py`
 - Date completed: 2026-03-04
 
+## Value Narrative
+
+Before this OBPI, OBPI completion transitions were fire-and-forget — no runtime event was recorded and there was no git anchor to prove when the work was done. After this OBPI, every completion transition emits a first-class ledger event with an optional git anchor commit, establishing temporal provenance for the OBPI lifecycle.
+
 ## Key Proof
 
 ```bash

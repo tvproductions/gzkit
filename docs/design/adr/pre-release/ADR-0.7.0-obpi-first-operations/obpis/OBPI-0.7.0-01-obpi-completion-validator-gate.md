@@ -26,6 +26,10 @@ Add a pre-completion validator gate that blocks OBPI `Completed` transitions whe
 - Tests added: `tests/test_obpi_validator.py` (8 scenarios)
 - Date completed: 2026-03-04
 
+## Value Narrative
+
+Before this OBPI, OBPI briefs could be marked Completed without any enforcement — there was no gate that checked whether required evidence or human attestation prerequisites were actually present. After this OBPI, a pre-completion validator blocks the Completed transition when evidence is missing, matching the AirlineOps parity contract for OBPI lifecycle enforcement.
+
 ## Key Proof
 
 ```bash
