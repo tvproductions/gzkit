@@ -183,6 +183,8 @@ def build_obpi_plan(
     title: str,
     objective: str,
     acceptance_criteria_seed: str | None = None,
+    allowed_paths: list[str] | None = None,
+    work_breakdown: list[str] | None = None,
 ) -> dict[str, object]:
     """Build deterministic OBPI artifact plan.
 
@@ -216,8 +218,34 @@ def build_obpi_plan(
         if lane == "heavy"
         else "This OBPI remains internal to the promoted ADR implementation scope."
     )
-    if acceptance_criteria_seed is None:
+    if not acceptance_criteria_seed:
         acceptance_criteria_seed = render_obpi_acceptance_seed(version, item)
+
+    # Build allowed/denied paths markdown from provided paths
+    if allowed_paths:
+        allowed_paths_md = "\n".join(f"- `{p}`" for p in allowed_paths)
+    else:
+        allowed_paths_md = (
+            "- `src/module/` - Reason this is in scope\n- `tests/test_module.py` - Reason"
+        )
+
+    denied_paths_md = (
+        "- Paths not listed in Allowed Paths\n- New dependencies\n- CI files, lockfiles"
+    )
+
+    # Build requirements markdown from work breakdown
+    if work_breakdown:
+        requirements_md = "\n".join(f"1. REQUIREMENT: {task_name}" for task_name in work_breakdown)
+    else:
+        requirements_md = (
+            "1. REQUIREMENT: First constraint\n"
+            "1. REQUIREMENT: Second constraint\n"
+            "1. NEVER: What must not happen\n"
+            "1. ALWAYS: What must always be true"
+        )
+
+    # Build work breakdown markdown
+    work_breakdown_md = "\n".join(f"- {task}" for task in work_breakdown) if work_breakdown else ""
 
     content = render_template(
         "obpi",
@@ -232,6 +260,10 @@ def build_obpi_plan(
         objective=objective,
         lane_requirements=lane_requirements,
         acceptance_criteria_seed=acceptance_criteria_seed,
+        allowed_paths_md=allowed_paths_md,
+        denied_paths_md=denied_paths_md,
+        requirements_md=requirements_md,
+        work_breakdown_md=work_breakdown_md,
     )
     obpi_dir = adr_file.parent / "obpis"
     obpi_file = obpi_dir / f"{obpi_id}.md"
@@ -454,6 +486,8 @@ def apply_draft(adr: ADRDraft, project_root: Path) -> list[str]:
             title=obpi.objective,
             objective=obpi.objective,
             acceptance_criteria_seed=criteria_md,
+            allowed_paths=obpi.allowed_paths,
+            work_breakdown=obpi.work_breakdown,
         )
         obpi_file = Path(str(plan["obpi_file"]))
         obpi_file.parent.mkdir(parents=True, exist_ok=True)

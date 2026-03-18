@@ -1,0 +1,110 @@
+---
+id: OBPI-0.18.0-02-implementer-subagent-dispatch
+parent: ADR-0.18.0-subagent-driven-pipeline-execution
+item: 2
+lane: Heavy
+status: Accepted
+---
+
+# OBPI-0.18.0-02: Controller/Worker Stage 2 — Implementer Subagent Dispatch
+
+## ADR Item
+
+- **Source ADR:** `docs/design/adr/pre-release/ADR-0.18.0-subagent-driven-pipeline-execution/ADR-0.18.0-subagent-driven-pipeline-execution.md`
+- **Checklist Item:** #2 — "Controller/worker Stage 2: dispatch fresh implementer subagents per plan task"
+
+**Status:** Accepted
+
+## Objective
+
+Refactor pipeline Stage 2 from single-session inline execution to a controller/worker pattern.
+The main session (controller) parses the approved plan into individual tasks and dispatches a
+fresh implementer subagent for each task. This prevents context pollution, enables model-aware
+routing, and keeps the orchestrator lean for Stages 3-5.
+
+## Lane
+
+**Heavy** — Changes the pipeline execution model, an external behavioral contract consumed by
+agents and documented in SKILL.md.
+
+## Allowed Paths
+
+- `.claude/skills/gz-obpi-pipeline/SKILL.md` — Stage 2 architecture documentation
+- `src/gzkit/pipeline_runtime.py` — dispatch loop, result handling, task state tracking
+- `tests/test_pipeline_dispatch.py` — dispatch and result handling tests
+- `features/subagent_pipeline.feature` — BDD scenarios for dispatch lifecycle
+- `features/steps/subagent_pipeline_steps.py` — BDD step implementations
+
+## Denied Paths
+
+- Stage 3/4/5 logic — other OBPIs or existing behavior
+- `src/gzkit/roles.py` — role data model belongs to OBPI-01
+- `src/gzkit/commands/` — CLI surface belongs to OBPI-05
+- CI files, lockfiles, new dependencies
+
+## Requirements (FAIL-CLOSED)
+
+1. REQUIREMENT: Stage 2 MUST dispatch one fresh subagent per plan task. Tasks are never batched.
+1. REQUIREMENT: Implementer subagents are dispatched sequentially, never in parallel. This prevents file conflicts and ensures each task builds on the previous one's changes.
+1. REQUIREMENT: Each subagent receives scoped context: task description, allowed file paths (from brief), test expectations, and brief requirements relevant to this task.
+1. REQUIREMENT: Each subagent MUST return a structured result: `{status, files_changed, tests_added, concerns}`.
+1. REQUIREMENT: Controller handles all four result statuses:
+   - `DONE` — advance to next task
+   - `DONE_WITH_CONCERNS` — log concerns, advance
+   - `NEEDS_CONTEXT` — provide requested context, re-dispatch
+   - `BLOCKED` — log blocker, attempt fix (2 tries), then handoff
+1. REQUIREMENT: Model-aware routing — simple tasks (1-2 files, mechanical changes) MAY use economical models; integration/architecture tasks MUST use capable models.
+1. NEVER: Dispatch multiple implementer subagents in parallel for the same OBPI.
+1. NEVER: Let the controller write implementation code directly — it orchestrates only.
+1. ALWAYS: After all tasks complete, the controller MUST proceed to Stage 3 immediately (Iron Law).
+
+> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+
+## Controller Loop (Design Input)
+
+```text
+For each task in approved_plan.tasks:
+  1. Compose subagent prompt:
+     - Task description and step-by-step instructions
+     - Allowed file paths (intersection of brief allowlist and task scope)
+     - Test expectations (what tests to write, what to verify)
+     - TDD discipline: write failing test -> verify failure -> implement -> verify pass
+  2. Select model based on task complexity
+  3. Dispatch implementer subagent via Agent tool
+  4. Receive structured result
+  5. Handle result status (advance / re-dispatch / fix / handoff)
+  6. Update task tracking (TaskUpdate)
+  7. [If reviewer protocol enabled] Dispatch reviewer subagents (OBPI-03)
+```
+
+## Edge Cases
+
+- Plan has zero tasks (degenerate case) — skip Stage 2, proceed to Stage 3
+- Subagent returns `NEEDS_CONTEXT` repeatedly (circuit breaker after 2 re-dispatches) — treat as BLOCKED
+- Subagent modifies files outside allowed paths — controller rejects result, re-dispatches with stricter scope
+- Subagent crashes or times out — treat as BLOCKED, log error, attempt re-dispatch once
+
+## Quality Gates (Heavy)
+
+### Gates 1-4: Implementation
+
+- [ ] Gate 1 (ADR): Intent recorded in brief
+- [ ] Gate 2 (TDD): Unit tests for dispatch loop, result handling, model routing
+- [ ] Gate 3 (Docs): SKILL.md updated, mkdocs build clean
+- [ ] Gate 4 (BDD): Dispatch lifecycle scenarios pass
+- [ ] Code Quality: Lint, format, type checks clean
+
+### Gate 5: Human Attestation (MANDATORY)
+
+1. [ ] Agent presents CLI commands for pipeline dispatch verification
+1. [ ] **STOP** — Agent waits for human to verify dispatch behavior
+1. [ ] **STOP** — Agent waits for human attestation response
+1. [ ] Agent records attestation in brief
+
+## Completion Checklist (Heavy)
+
+- [ ] Gates 1-4 pass
+- [ ] Gate 5 attestation commands presented
+- [ ] Gate 5 attestation RECEIVED from human
+- [ ] Attestation recorded in brief
+- [ ] OBPI marked completed ONLY AFTER attestation

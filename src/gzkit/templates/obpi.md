@@ -33,26 +33,20 @@ status: Draft
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+{allowed_paths_md}
 
 ## Denied Paths
 
 <!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
 
-- `docs/design/**` - ADR changes out of scope
-- New dependencies
-- CI files, lockfiles
+{denied_paths_md}
 
 ## Requirements (FAIL-CLOSED)
 
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
      These are the rules agents ground against. If not met, OBPI fails. -->
 
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
+{requirements_md}
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
