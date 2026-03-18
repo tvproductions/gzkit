@@ -10,6 +10,55 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 
+class VendorConfig(BaseModel):
+    """Configuration for a single agent vendor surface."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    enabled: bool = Field(False, description="Whether this vendor surface is generated")
+    surface_root: str = Field("", description="Root directory for vendor control surface")
+    instruction_format: str = Field(
+        "generic", description="Instruction format: claude-rules, github-instructions, generic"
+    )
+
+
+class VendorsConfig(BaseModel):
+    """Vendor enablement configuration for all supported agent harnesses."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    claude: VendorConfig = Field(
+        default_factory=lambda: VendorConfig(
+            enabled=True, surface_root=".claude", instruction_format="claude-rules"
+        ),
+        description="Claude Code agent surface",
+    )
+    copilot: VendorConfig = Field(
+        default_factory=lambda: VendorConfig(
+            enabled=False, surface_root=".github", instruction_format="github-instructions"
+        ),
+        description="GitHub Copilot agent surface",
+    )
+    codex: VendorConfig = Field(
+        default_factory=lambda: VendorConfig(
+            enabled=False, surface_root=".agents", instruction_format="generic"
+        ),
+        description="OpenAI Codex agent surface",
+    )
+    gemini: VendorConfig = Field(
+        default_factory=lambda: VendorConfig(
+            enabled=False, surface_root=".gemini", instruction_format="generic"
+        ),
+        description="Google Gemini CLI agent surface",
+    )
+    opencode: VendorConfig = Field(
+        default_factory=lambda: VendorConfig(
+            enabled=False, surface_root=".opencode", instruction_format="generic"
+        ),
+        description="OpenCode agent surface",
+    )
+
+
 class PathConfig(BaseModel):
     """Path configuration for gzkit artifacts."""
 
@@ -54,6 +103,7 @@ class GzkitConfig(BaseModel):
 
     mode: Literal["lite", "heavy"] = "lite"
     paths: PathConfig = Field(default_factory=PathConfig)
+    vendors: VendorsConfig = Field(default_factory=VendorsConfig)
     project_name: str = ""
 
     @classmethod
@@ -76,11 +126,13 @@ class GzkitConfig(BaseModel):
             data = json.loads(content) if content else {}
 
         paths_data = data.get("paths", {})
+        vendors_data = data.get("vendors", {})
 
         return cls.model_validate(
             {
                 "mode": data.get("mode", "lite"),
                 "paths": paths_data,
+                "vendors": vendors_data,
                 "project_name": data.get("project_name", ""),
             }
         )
