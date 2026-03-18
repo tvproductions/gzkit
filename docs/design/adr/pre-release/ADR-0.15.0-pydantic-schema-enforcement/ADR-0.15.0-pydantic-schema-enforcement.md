@@ -205,3 +205,9 @@ If "Request Changes," required fixes:
 1. …
 
 1. …
+
+## Attestation Block
+
+| Term | Status | Attested By | Date | Reason |
+|------|--------|-------------|------|--------|
+| 0.15.0 | Completed | Test User | 2026-03-18 | completed |
