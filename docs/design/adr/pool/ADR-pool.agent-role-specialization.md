@@ -1,6 +1,7 @@
 ---
 id: ADR-pool.agent-role-specialization
-status: Pool
+status: Superseded
+superseded_by: ADR-0.18.0-subagent-driven-pipeline-execution
 parent: PRD-GZKIT-1.0.0
 lane: lite
 enabler: null
@@ -11,7 +12,7 @@ inspired_by: anthropic-agentic-coding-trends-2026
 
 ## Status
 
-Pool
+Superseded — subsumed into [ADR-0.18.0-subagent-driven-pipeline-execution](../pre-release/ADR-0.18.0-subagent-driven-pipeline-execution/ADR-0.18.0-subagent-driven-pipeline-execution.md) as OBPI-0.18.0-01.
 
 ## Date
 
