@@ -54,45 +54,45 @@ This allows agents and humans to:
 
 ```bash
 # Run ruff via ARB (emits a lint receipt)
-uv run -m opsdev arb ruff
+uv run -m gzkit arb ruff
 
 # Run ruff with auto-fix via ARB
-uv run -m opsdev arb ruff --fix
+uv run -m gzkit arb ruff --fix
 
 # Wrap any command as a step receipt
-uv run -m opsdev arb step --name unittest -- uv run -m unittest -q
+uv run -m gzkit arb step --name unittest -- uv run -m unittest -q
 
 # Run type check via ARB
-uv run -m opsdev arb ty check . --exclude 'features/**'
+uv run -m gzkit arb ty check . --exclude 'features/**'
 
 # Run coverage via ARB
-uv run -m opsdev arb coverage run -m unittest discover -s tests -t .
+uv run -m gzkit arb coverage run -m unittest discover -s tests -t .
 ```
 
 ### Validate & Analyze Receipts
 
 ```bash
 # Validate recent receipts against JSON schemas (default: last 20 runs)
-uv run -m opsdev arb validate
+uv run -m gzkit arb validate
 
 # Validate only the last N receipts
-uv run -m opsdev arb validate --limit 50
+uv run -m gzkit arb validate --limit 50
 
 # Summarize recurring advice from recent lint receipts
-uv run -m opsdev arb advise
+uv run -m gzkit arb advise
 
 # Summarize advice from a specific category (lint, test, type, coverage)
-uv run -m opsdev arb advise --category lint
+uv run -m gzkit arb advise --category lint
 ```
 
 ### File Issues (Opt-In)
 
 ```bash
 # File an issue from a failing ARB ruff run
-uv run -m opsdev arb ruff --file-issue
+uv run -m gzkit arb ruff --file-issue
 
 # File an issue from a failing test run
-uv run -m opsdev arb step --name unittest -- uv run -m unittest -q --file-issue
+uv run -m gzkit arb step --name unittest -- uv run -m unittest -q --file-issue
 ```
 
 **Label:** Issues filed by ARB receive the `arb:auto-filed` label for easy tracking and filtering.
@@ -104,7 +104,7 @@ uv run -m opsdev arb step --name unittest -- uv run -m unittest -q --file-issue
 ### Schema Location
 
 - **Authoritative schema:** `data/schemas/arb_lint_receipt.schema.json`
-- **Schema ID:** `airlineops.arb.lint_receipt.v1`
+- **Schema ID:** `gzkit.arb.lint_receipt.v1`
 
 ### Receipt Storage
 
@@ -136,13 +136,13 @@ You run `uv run ruff check .` and it fails. You want to examine violations progr
 
 ```bash
 # Run via ARB to generate a receipt
-uv run -m opsdev arb ruff
+uv run -m gzkit arb ruff
 
 # Validate the receipt
-uv run -m opsdev arb validate --limit 1
+uv run -m gzkit arb validate --limit 1
 
 # Summarize advice
-uv run -m opsdev arb advise --category lint
+uv run -m gzkit arb advise --category lint
 ```
 
 The receipt shows exactly which files/lines violated which rules, with severity and context.
@@ -153,10 +153,10 @@ You have a custom validation script that doesn't integrate with ARB natively:
 
 ```bash
 # Wrap it as a generic step receipt
-uv run -m opsdev arb step --name custom-validation -- python scripts/validate_custom.py
+uv run -m gzkit arb step --name custom-validation -- python scripts/validate_custom.py
 
 # Validate the step receipt
-uv run -m opsdev arb validate --limit 1
+uv run -m gzkit arb validate --limit 1
 ```
 
 ### Example 3: File an Issue from a Failing Ruff Run
@@ -165,7 +165,7 @@ Ruff found violations that require discussion:
 
 ```bash
 # Run ruff via ARB and auto-file an issue
-uv run -m opsdev arb ruff --file-issue
+uv run -m gzkit arb ruff --file-issue
 
 # Result: GitHub issue created with title like "ARB: ruff violations (6 files, 12 lines)"
 # Labels: [arb:auto-filed]

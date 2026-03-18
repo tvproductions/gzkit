@@ -1,5 +1,5 @@
 ---
-applyTo: src/airlineops/cli/**,src/opsdev/commands/**
+applyTo: src/gzkit/commands/**
 ---
 
 # CLI Contract Doctrine
@@ -40,7 +40,7 @@ All paths, toggles, and periods from typed JSON settings or CLI flags — never 
 
 ```python
 # ❌ WRONG
-offline = os.getenv("AIRLINEOPS_OFFLINE") == "1"
+offline = os.getenv("GZKIT_OFFLINE") == "1"
 
 # ✅ RIGHT
 settings = load_settings()
@@ -63,7 +63,7 @@ offline = ns.offline or settings.network.offline
 
 - Prefer flags over positional args (`--dataset db28` not `db28`)
 - Use `-` separator (`--dry-run` not `--dry_run`)
-- Both CLIs (airlineops, opsdev) use same conventions
+- The gz CLI uses these conventions
 
 ---
 
@@ -91,41 +91,31 @@ Every command must:
 6. Keep lines ≤80 chars
 
 ```text
-Usage: airlineops warehouse bootstrap-db28 [options]
+Usage: gz gates --adr ADR-X.Y.Z [options]
 
-Bootstrap DB28 data into the warehouse.
+Run lane-required gate checks for an ADR.
 
 Options:
-  --start YYYY-MM    Start period
-  --end YYYY-MM      End period
-  --execute          Apply (default: dry-run)
+  --adr ADR_ID       Target ADR identifier
+  --dry-run          Show plan, don't execute
   --quiet            Suppress non-error output
   -h, --help         Show this help
 
 Examples:
-  airlineops warehouse bootstrap-db28 --start 2024-06 --end 2024-08
-  airlineops warehouse bootstrap-db28 --start 2024-06 --execute
+  gz gates --adr ADR-0.15.0
+  gz closeout ADR-0.15.0 --dry-run
 
 Exit codes:
   0   Success
-  2   No periods admitted
-  3   Mixed success/failure
+  1   Gate check failed
+  2   Configuration error
 ```
 
 ---
 
-## Calendars & Periods
+## Configuration
 
-**Source:** `config/calendars.json`
-
-| Type | Format | Example |
-|------|--------|---------|
-| Monthly | `YYYY-MM` | `2024-06` |
-| Quarterly | `YYYY-Qn` | `2024-Q2` |
-| AIRAC | `Cycle####` | `Cycle2413` |
-| Static | `STATIC` | `v2024` |
-
-Never hard-code period math. Use `airlineops.config.periods` helpers.
+All paths, toggles, and settings from typed JSON config or CLI flags — never ENV for behavior.
 
 ---
 
@@ -165,7 +155,7 @@ Never hard-code period math. Use `airlineops.config.periods` helpers.
 ## Enforcement
 
 ```bash
-uv run -m opsdev check-config-paths  # Must report 0 violations
+uv run gz check-config-paths  # Must report 0 violations
 ```
 
 Policy tests validate help structure, flag naming, exit code documentation.

@@ -2,8 +2,6 @@
 paths:
   - "src/**/*.py"
   - "tests/**/*.py"
-  - "src/opsdev/**/*.py"
-  - "scripts/**/*.py"
 ---
 
 # Cross-Platform Development Policy (Binding)
@@ -21,7 +19,7 @@ paths:
 | Encoding     | `encoding="utf-8"`              | Default encoding              |
 | Temp files   | Context managers                | Raw `shutil.rmtree()`         |
 | Subprocess   | List form, `uv run`             | `shell=True`, bare `python`   |
-| Cleanup      | `safe_rmtree()`, `gc.collect()` | `ignore_errors=True`          |
+| Cleanup      | Context managers, `gc.collect()` | `ignore_errors=True`          |
 | Line endings | `newline=""` for CSV            | Hard-coded `\r\n`             |
 
 ---
@@ -84,23 +82,11 @@ with tempfile.TemporaryDirectory() as temp_dir:
     # Cleanup automatic (Windows-safe)
 ```
 
-### Pattern 2: TempDBMixin for Databases
+### Pattern 2: Manual Cleanup
 
 ```python
-from tests._tempdb import TempDBMixin
-
-class TestDB(TempDBMixin, unittest.TestCase):
-    def test_query(self):
-        conn = sqlite3.connect(self.db_path)  # Cleanup automatic
-```
-
-### Pattern 3: Manual Cleanup
-
-```python
-from tests._tempdb import safe_rmtree
-
 def tearDown(self):
-    safe_rmtree(self.temp_dir)  # NOT shutil.rmtree()
+    shutil.rmtree(self.temp_dir)
 ```
 
 ---
@@ -112,9 +98,7 @@ def tearDown(self):
 **Solution:**
 
 - Use context managers for file operations
-- Use `TempDBMixin` for database tests
 - Call `gc.collect()` before cleanup if needed
-- Use `safe_rmtree()` (has retry logic)
 
 ---
 
@@ -137,24 +121,18 @@ subprocess.run(["python", "-m", "unittest"])  # Which python?
 For scripts conveying rich information to users (tables, progress, styled text):
 
 ```python
-# ✅ RIGHT - use create_console() for cross-platform Rich
-from airlineops.common.console import create_console
+# ✅ RIGHT - use Rich Console with encoding handling
+from rich.console import Console
 from rich.table import Table
 from rich import box
 
-console = create_console()
+console = Console()
 table = Table(title="Status", box=box.ROUNDED)
 table.add_column("Name")
 table.add_column("Status")
 table.add_row("item", "[green]OK[/green]")
 console.print(table)
-
-# ❌ WRONG - bare Console() without encoding handling
-from rich.console import Console
-console = Console()  # May fail on legacy Windows terminals
 ```
-
-The `create_console()` utility auto-detects terminal encoding and sets `legacy_windows` appropriately.
 
 ---
 
@@ -178,16 +156,15 @@ if sys.platform == "win32":
 
 - [ ] All file operations use `pathlib.Path`
 - [ ] All file I/O specifies `encoding="utf-8"`
-- [ ] Temp files use context managers or TempDBMixin
+- [ ] Temp files use context managers
 - [ ] No raw `shutil.rmtree()` in tearDown
 - [ ] No `shell=True` in subprocess
 - [ ] No hard-coded path separators
-- [ ] Rich output uses `create_console()` (not bare `Console()`)
+- [ ] Rich output uses `Console()` with proper encoding
 
 ---
 
 ## References
 
 - Test cleanup: `.github/instructions/tests.instructions.md`
-- TempDB: `tests/_tempdb.py`
 - ADR: ADR-0.0.1
