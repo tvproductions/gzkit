@@ -3,7 +3,7 @@ id: OBPI-0.16.0-01-content-type-registry
 parent: ADR-0.16.0-cms-architecture-formalization
 item: 1
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
@@ -47,38 +47,59 @@ Lite — ADR note + stdlib unittest + smoke (≤60s).
 
 ## QUALITY GATES (Lite)
 
-- [ ] Gate 1 (ADR): Intent recorded in this brief
-- [ ] Gate 2 (TDD): `uv run gz test` — all tests pass
-- [ ] Code Quality: `uv run gz lint` + `uv run gz typecheck` clean
+- [x] Gate 1 (ADR): Intent recorded in this brief
+- [x] Gate 2 (TDD): `uv run gz test` — 612 tests pass
+- [x] Code Quality: `uv run gz lint` + `uv run gz typecheck` clean
 
 ## Evidence
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+uv run -m unittest tests.test_registry -v
+Ran 24 tests in 0.001s — OK
+Full suite: 612 tests in 31s — OK
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+uv run gz lint — All checks passed
+uv run gz typecheck — All checks passed
+```
+
+### Implementation Summary
+
+- Files added: `src/gzkit/registry.py` (ContentType model, ContentTypeRegistry, singleton REGISTRY with 8 types)
+- Tests added: `tests/test_registry.py` (24 tests across 4 test classes)
+- Date completed: 2026-03-18
+- Defects noted: None
+
+### Key Proof
+
+```bash
+uv run -m unittest tests.test_registry.TestGlobalRegistry.test_all_eight_types_registered -v
+# test_all_eight_types_registered ... ok — ADR, OBPI, PRD, Constitution, Rule, Skill, Attestation, LedgerEvent
 ```
 
 ## Human Attestation
 
-- Attestor: `n/a`
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: human:Jeff
+- Attestation: Completed
+- Date: 2026-03-18
+
+## Tracked Defects
+
+_No defects tracked._
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-18
 
 **Evidence Hash:** -

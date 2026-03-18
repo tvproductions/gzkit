@@ -1,0 +1,15 @@
+{
+  "obpi_id": "OBPI-0.16.0-01-content-type-registry",
+  "parent_adr": "ADR-0.16.0-cms-architecture-formalization",
+  "lane": "Lite",
+  "entry": "full",
+  "execution_mode": "normal",
+  "current_stage": "stage-2-implement",
+  "started_at": "2026-03-18T16:00:43.116183+00:00",
+  "updated_at": "2026-03-18T16:00:43.116196+00:00",
+  "receipt_state": null,
+  "blockers": [],
+  "required_human_action": null,
+  "next_command": null,
+  "resume_point": null
+}
