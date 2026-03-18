@@ -1,34 +1,40 @@
-<!-- markdownlint-disable-file MD013 MD041 -->
+# ADR Closeout Form: ADR-0.15.0
 
-# ADR-0.15.0 Closeout Form
+**Status**: Phase 2 — Completed
 
-## ADR
+---
 
-ADR-0.15.0 — pydantic-schema-enforcement
+## Pre-Attestation Checklist
 
-## Status
+Closeout evidence verified:
 
-Pending
+- [x] All checklist items in ADR are complete
+- [x] All OBPIs have passing acceptance criteria
+- [x] Gate 2 (TDD): Tests pass
+- [ ] Gate 3 (Docs): Docs build passes
+- [ ] Gate 4 (BDD): Behave suite passes
+- [ ] Code reviewed
 
-## OBPI Completion Summary
+## Evidence Paths
 
-| OBPI | Title | Status |
-|------|-------|--------|
-| OBPI-0.15.0-01 | Core model migration | Pending |
-| OBPI-0.15.0-02 | Content type frontmatter models | Pending |
-| OBPI-0.15.0-03 | Ledger event discrimination | Pending |
-| OBPI-0.15.0-04 | Schema generation unification | Pending |
+| Gate | Evidence | Command/Path |
+|------|----------|--------------|
+| Gate 1 | ADR exists | `docs/design/adr/pre-release/ADR-0.15.0-pydantic-schema-enforcement/ADR-0.15.0-pydantic-schema-enforcement.md` |
+| Gate 2 (TDD) | Tests pass | `uv run gz test` |
+| Quality (Lint) | Lint passes | `uv run gz lint` |
+| Quality (Typecheck) | Typecheck passes | `uv run gz typecheck` |
+| Gate 5 | Human attests | `uv run gz attest ADR-0.15.0 --status completed` |
 
-## Gate Evidence
+## OBPI Status
 
-- Gate 1 (ADR): ADR-0.15.0 document created
-- Gate 2 (TDD): Pending
-- Code Quality: Pending
+| OBPI | Description | Status |
+|------|-------------|--------|
 
-## Human Observation
+## Human Attestation
 
-Pending
+### Verbatim Attestation
 
-## Attestation
+- `completed`
 
-Pending
+**Attested by**: Test User
+**Timestamp (UTC)**: 2026-03-18T10:34:42Z

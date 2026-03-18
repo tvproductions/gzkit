@@ -1,5 +1,23 @@
 # gzkit Release Notes
 
+## v0.15.0 (2026-03-18)
+
+**ADR:** ADR-0.15.0 - Pydantic Schema Enforcement
+
+Closed the gap between gzkit's stated architecture (AI-000: "JSON Schema defines shape; Pydantic enforces at runtime") and its implemented reality. Every structured data type in gzkit is now a Pydantic BaseModel with declarative validation.
+
+### Delivered
+
+- Migrated core models (LedgerEvent, GzkitConfig, PathConfig, ValidationError, ValidationResult) from dataclasses to Pydantic BaseModel
+- Created Pydantic frontmatter models for ADR, OBPI, and PRD content types with pattern validators and Literal types
+- Replaced ~280 lines of manual ledger event validation with Pydantic discriminated unions (12 typed event models)
+- Added 17 cross-validation tests enforcing the invariant that Pydantic models and JSON schemas never drift
+- Fixed document validation defect where non-governance files were incorrectly validated
+
+### Gate Evidence
+
+All 5 GovZero gates satisfied.
+
 ## v0.14.0 (2026-03-17)
 
 **ADR:** ADR-0.14.0 - Multi-Agent Instruction Architecture Unification

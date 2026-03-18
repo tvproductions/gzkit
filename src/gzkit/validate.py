@@ -431,6 +431,11 @@ def validate_document(path: Path, schema_name: str) -> list[ValidationError]:
 
     # Parse and validate
     frontmatter, body = parse_frontmatter(content)
+
+    # Skip files without frontmatter — they are not governance documents
+    if not frontmatter:
+        return []
+
     headers = extract_headers(body)
 
     errors.extend(validate_frontmatter(frontmatter, schema, str(path)))
