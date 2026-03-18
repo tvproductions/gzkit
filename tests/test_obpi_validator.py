@@ -55,7 +55,7 @@ class TestObpiValidator(unittest.TestCase):
         self.ledger = Ledger(self.ledger_path)
         self.ledger.append(project_init_event("test-project", "lite"))
 
-        self._git("init")
+        self._git("init", "-b", "main")
         self._git("config", "user.email", "test@example.com")
         self._git("config", "user.name", "Test User")
         self._commit_all("chore: initial")

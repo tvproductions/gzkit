@@ -2,7 +2,7 @@ import unittest
 from pathlib import Path
 
 from gzkit.cli import main
-from tests.commands.common import CliRunner
+from tests.commands.common import CliRunner, _quick_init
 
 
 class TestLintCommand(unittest.TestCase):
@@ -12,7 +12,7 @@ class TestLintCommand(unittest.TestCase):
         """lint command runs (may fail without src/tests)."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             # Create minimal structure
             Path("src").mkdir()
             Path("tests").mkdir()

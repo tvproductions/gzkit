@@ -2,7 +2,7 @@ import unittest
 from pathlib import Path
 
 from gzkit.cli import main
-from tests.commands.common import CliRunner
+from tests.commands.common import CliRunner, _quick_init
 
 
 class TestPlanCommand(unittest.TestCase):
@@ -12,7 +12,7 @@ class TestPlanCommand(unittest.TestCase):
         """plan creates ADR file."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             result = runner.invoke(main, ["plan", "0.1.0"])
             self.assertEqual(result.exit_code, 0)
             adr_path = Path("design/adr/ADR-0.1.0.md")

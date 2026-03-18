@@ -2,7 +2,7 @@ import unittest
 from pathlib import Path
 
 from gzkit.cli import main
-from tests.commands.common import CliRunner
+from tests.commands.common import CliRunner, _quick_init
 
 
 class TestSpecifyCommand(unittest.TestCase):
@@ -12,7 +12,7 @@ class TestSpecifyCommand(unittest.TestCase):
         """specify creates OBPI file."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             result = runner.invoke(
                 main, ["specify", "core-feature", "--parent", "ADR-0.1.0", "--item", "1"]
@@ -28,7 +28,7 @@ class TestSpecifyCommand(unittest.TestCase):
         """specify blocks pool ADR parents until promotion."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             result = runner.invoke(
                 main,
                 ["specify", "core-feature", "--parent", "ADR-pool.sample", "--item", "1"],
@@ -40,7 +40,7 @@ class TestSpecifyCommand(unittest.TestCase):
         """specify rejects checklist item numbers outside scorecard-backed checklist range."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             result = runner.invoke(
                 main, ["specify", "core-feature", "--parent", "ADR-0.1.0", "--item", "2"]

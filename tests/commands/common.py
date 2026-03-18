@@ -145,3 +145,72 @@ def _write_obpi(
             ]
         )
     path.write_text("\n".join(lines) + "\n")
+
+
+def _quick_init(mode: str = "lite") -> None:
+    """Lightweight project init for tests — skips sync_all and hook setup.
+
+    Creates the minimal scaffold that CLI commands need: .gzkit.json, manifest,
+    ledger with project_init event, and design directories.  ~5x faster than
+    ``runner.invoke(main, ["init"])`` because it avoids template rendering,
+    hook generation, and skill mirroring.
+    """
+    import json
+    from pathlib import Path
+
+    from gzkit.config import GzkitConfig
+    from gzkit.ledger import Ledger, project_init_event
+
+    project_root = Path.cwd()
+    gzkit_dir = project_root / ".gzkit"
+    gzkit_dir.mkdir(exist_ok=True)
+
+    config = GzkitConfig(mode=mode, project_name="test-project")  # type: ignore[arg-type]
+    config.save(project_root / ".gzkit.json")
+
+    manifest = {
+        "schema": "gzkit.manifest.v1",
+        "structure": {
+            "source_root": config.paths.source_root,
+            "tests_root": config.paths.tests_root,
+            "docs_root": config.paths.docs_root,
+            "design_root": config.paths.design_root,
+        },
+        "artifacts": {
+            "prd": {"path": config.paths.prd, "schema": "gzkit.prd.v1"},
+            "constitution": {"path": config.paths.constitutions, "schema": "gzkit.constitution.v1"},
+            "obpi": {"path": config.paths.adrs, "schema": "gzkit.obpi.v1"},
+            "adr": {"path": config.paths.adrs, "schema": "gzkit.adr.v1"},
+        },
+        "control_surfaces": {
+            "agents_md": "AGENTS.md",
+            "claude_md": "CLAUDE.md",
+            "hooks": ".claude/hooks",
+            "skills": ".gzkit/skills",
+            "claude_skills": ".claude/skills",
+            "codex_skills": ".agents/skills",
+            "copilot_skills": ".github/skills",
+            "instructions": ".github/instructions",
+            "claude_rules": ".claude/rules",
+        },
+        "verification": {
+            "lint": "uv run gz lint",
+            "format": "uv run gz format",
+            "typecheck": "uv run gz typecheck",
+            "test": "uv run gz test",
+            "docs": "uv run mkdocs build --strict",
+            "bdd": "uv run -m behave features/",
+        },
+        "gates": {"lite": [1, 2], "heavy": [1, 2, 3, 4, 5]},
+    }
+    (gzkit_dir / "manifest.json").write_text(
+        json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
+    )
+
+    ledger_path = gzkit_dir / "ledger.jsonl"
+    ledger_path.touch()
+    ledger = Ledger(ledger_path)
+    ledger.append(project_init_event("test-project", mode))
+
+    for d in ["prd", "constitutions", "adr"]:
+        (project_root / config.paths.design_root / d).mkdir(parents=True, exist_ok=True)

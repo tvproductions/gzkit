@@ -2,7 +2,7 @@ import unittest
 from pathlib import Path
 
 from gzkit.cli import main
-from tests.commands.common import CliRunner
+from tests.commands.common import CliRunner, _quick_init
 
 
 class TestGateCommands(unittest.TestCase):
@@ -12,7 +12,7 @@ class TestGateCommands(unittest.TestCase):
         """gates --gate 1 records gate_checked event."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             result = runner.invoke(main, ["gates", "--gate", "1"])
             self.assertEqual(result.exit_code, 0)

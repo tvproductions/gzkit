@@ -2,7 +2,7 @@ import unittest
 from pathlib import Path
 
 from gzkit.cli import main
-from tests.commands.common import CliRunner
+from tests.commands.common import CliRunner, _quick_init
 
 
 class TestValidateCommand(unittest.TestCase):
@@ -12,7 +12,7 @@ class TestValidateCommand(unittest.TestCase):
         """validate passes after init (with surface errors expected)."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             # Create AGENTS.md with required sections
             Path("AGENTS.md").write_text(
                 """# AGENTS.md
@@ -46,7 +46,7 @@ Rules here
         """--ledger performs strict ledger JSONL validation."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             with open(".gzkit/ledger.jsonl", "a") as ledger_file:
                 ledger_file.write("{not-json}\n")
 
@@ -58,7 +58,7 @@ Rules here
         """Default validate mode includes ledger validation."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             with open(".gzkit/ledger.jsonl", "a") as ledger_file:
                 ledger_file.write("{not-json}\n")
 

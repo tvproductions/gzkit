@@ -7,7 +7,7 @@ from gzkit.cli import main
 from gzkit.config import GzkitConfig
 from gzkit.ledger import Ledger, adr_created_event, obpi_created_event
 from gzkit.quality import QualityResult
-from tests.commands.common import CliRunner
+from tests.commands.common import CliRunner, _quick_init
 
 
 class TestObpiPipelineCommand(unittest.TestCase):
@@ -470,7 +470,7 @@ class TestObpiPipelineCommand(unittest.TestCase):
     def test_blocks_when_brief_is_already_completed(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init", "--mode", "heavy"])
+            _quick_init("heavy")
             config = GzkitConfig.load(Path(".gzkit.json"))
             parent_adr = "ADR-0.13.0-obpi-pipeline-runtime-surface"
             self._seed_parent_adr(config, parent_adr)

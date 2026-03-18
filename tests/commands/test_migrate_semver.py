@@ -6,7 +6,7 @@ from gzkit.ledger import (
     Ledger,
     adr_created_event,
 )
-from tests.commands.common import CliRunner
+from tests.commands.common import CliRunner, _quick_init
 
 
 class TestMigrateSemverCommand(unittest.TestCase):
@@ -16,7 +16,7 @@ class TestMigrateSemverCommand(unittest.TestCase):
         """migrate-semver records rename events used by status."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(adr_created_event("ADR-0.2.1-pool.gz-chores-system", "", "heavy"))
 
@@ -36,7 +36,7 @@ class TestMigrateSemverCommand(unittest.TestCase):
         """migrate-semver rewrites 1.0.0 pool ADR into ADR-pool.* ID."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(adr_created_event("ADR-1.0.0-pool.release-hardening", "", "lite"))
 
@@ -56,7 +56,7 @@ class TestMigrateSemverCommand(unittest.TestCase):
         """migrate-semver migrates semver-labeled pool ADR IDs to ADR-pool.* IDs."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(adr_created_event("ADR-0.6.0-pool.gz-chores-system", "", "heavy"))
 

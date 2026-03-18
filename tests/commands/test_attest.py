@@ -8,7 +8,7 @@ from gzkit.ledger import (
     adr_created_event,
     gate_checked_event,
 )
-from tests.commands.common import CliRunner, _init_git_repo
+from tests.commands.common import CliRunner, _init_git_repo, _quick_init
 
 
 class TestAttestSemantics(unittest.TestCase):
@@ -17,7 +17,7 @@ class TestAttestSemantics(unittest.TestCase):
     def test_attest_lite_requires_gate2(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             result = runner.invoke(main, ["attest", "ADR-0.1.0", "--status", "completed"])
             self.assertNotEqual(result.exit_code, 0)
@@ -26,7 +26,7 @@ class TestAttestSemantics(unittest.TestCase):
     def test_attest_heavy_requires_gate3(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init", "--mode", "heavy"])
+            _quick_init("heavy")
             runner.invoke(main, ["plan", "0.1.0", "--lane", "heavy"])
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
@@ -38,7 +38,7 @@ class TestAttestSemantics(unittest.TestCase):
     def test_attest_heavy_requires_gate4(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init", "--mode", "heavy"])
+            _quick_init("heavy")
             runner.invoke(main, ["plan", "0.1.0", "--lane", "heavy"])
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
@@ -51,7 +51,7 @@ class TestAttestSemantics(unittest.TestCase):
     def test_attest_force_bypass_requires_reason(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             result = runner.invoke(
                 main,
@@ -64,7 +64,7 @@ class TestAttestSemantics(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             result = runner.invoke(
                 main,
@@ -87,7 +87,7 @@ class TestAttestSemantics(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
-            runner.invoke(main, ["init", "--mode", "heavy"])
+            _quick_init("heavy")
             runner.invoke(main, ["plan", "0.1.0", "--lane", "heavy"])
 
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
@@ -116,7 +116,7 @@ class TestAttestSemantics(unittest.TestCase):
     def test_attest_rejects_pool_adr(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             config = GzkitConfig.load(Path(".gzkit.json"))
             pool_dir = Path(config.paths.adrs) / "pool"
             pool_dir.mkdir(parents=True, exist_ok=True)
@@ -153,7 +153,7 @@ class TestAttestSemantics(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
 
             # Register an OBPI so the ADR has incomplete work
@@ -183,7 +183,7 @@ class TestAttestSemantics(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
 
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
