@@ -3,7 +3,7 @@ from pathlib import Path
 
 from gzkit.cli import main
 from gzkit.config import GzkitConfig
-from tests.commands.common import CliRunner
+from tests.commands.common import CliRunner, _quick_init
 
 
 class TestRegisterAdrsCommand(unittest.TestCase):
@@ -13,7 +13,7 @@ class TestRegisterAdrsCommand(unittest.TestCase):
         """register-adrs appends adr_created for unregistered ADR files."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             config = GzkitConfig.load(Path(".gzkit.json"))
 
             adr_dir = Path(config.paths.adrs) / "pool"
@@ -48,7 +48,7 @@ class TestRegisterAdrsCommand(unittest.TestCase):
         """register-adrs keeps suffixed IDs and accepts non-semver pool IDs."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             config = GzkitConfig.load(Path(".gzkit.json"))
 
             adr_dir = Path(config.paths.adrs) / "pool"
@@ -86,7 +86,7 @@ class TestRegisterAdrsCommand(unittest.TestCase):
         """register-adrs --all can backfill missing OBPI links for one ADR package."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             config = GzkitConfig.load(Path(".gzkit.json"))
 
             adr_root = Path(config.paths.adrs) / "pre-release"

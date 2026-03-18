@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 
 from gzkit.cli import main
-from tests.commands.common import CliRunner
+from tests.commands.common import CliRunner, _quick_init
 
 
 def _write_registry(payload: dict[str, object]) -> None:
@@ -20,7 +20,7 @@ class TestChoresCommands(unittest.TestCase):
         """chores list prints configured chores."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             _write_registry(
                 {
                     "schema": "gzkit.chores.v1",
@@ -53,7 +53,7 @@ class TestChoresCommands(unittest.TestCase):
         """chores plan fails closed when registry is missing."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             result = runner.invoke(main, ["chores", "plan", "quality-check"])
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("BLOCKERS", result.output)
@@ -63,7 +63,7 @@ class TestChoresCommands(unittest.TestCase):
         """Registry loader rejects step.command shell strings."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             _write_registry(
                 {
                     "schema": "gzkit.chores.v1",
@@ -89,7 +89,7 @@ class TestChoresCommands(unittest.TestCase):
         """chore run executes argv-only steps and appends deterministic log path."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             _write_registry(
                 {
                     "schema": "gzkit.chores.v1",
@@ -127,7 +127,7 @@ class TestChoresCommands(unittest.TestCase):
         """chore run returns non-zero for timed out step and records log."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             _write_registry(
                 {
                     "schema": "gzkit.chores.v1",
@@ -163,7 +163,7 @@ class TestChoresCommands(unittest.TestCase):
         """chore run propagates failing return code and records failed log entry."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             _write_registry(
                 {
                     "schema": "gzkit.chores.v1",
@@ -200,7 +200,7 @@ class TestChoresCommands(unittest.TestCase):
         """chore run fails closed when step executable is missing."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             _write_registry(
                 {
                     "schema": "gzkit.chores.v1",
@@ -236,7 +236,7 @@ class TestChoresCommands(unittest.TestCase):
         """chore audit reports log status per chore."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             _write_registry(
                 {
                     "schema": "gzkit.chores.v1",
