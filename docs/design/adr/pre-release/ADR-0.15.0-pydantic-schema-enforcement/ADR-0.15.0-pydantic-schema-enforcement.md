@@ -102,10 +102,10 @@ generated from models rather than hand-authored separately.
 
 | # | OBPI | Specification Summary | Lane | Status |
 |---|------|----------------------|------|--------|
-| 1 | OBPI-0.15.0-01-core-model-migration | Migrate LedgerEvent, GzkitConfig, PathConfig, ValidationError, ValidationResult to Pydantic | Lite | Pending |
-| 2 | OBPI-0.15.0-02-content-type-frontmatter-models | Create Pydantic models for ADR, OBPI, PRD frontmatter with pattern validators | Lite | Pending |
-| 3 | OBPI-0.15.0-03-ledger-event-discrimination | Discriminated unions for typed ledger events; replace manual dispatch | Lite | Pending |
-| 4 | OBPI-0.15.0-04-schema-generation-unification | Verify/generate JSON Schema from Pydantic models; decide single-source direction | Lite | Pending |
+| 1 | OBPI-0.15.0-01-core-model-migration | Migrate LedgerEvent, GzkitConfig, PathConfig, ValidationError, ValidationResult to Pydantic | Lite | Completed |
+| 2 | OBPI-0.15.0-02-content-type-frontmatter-models | Create Pydantic models for ADR, OBPI, PRD frontmatter with pattern validators | Lite | Completed |
+| 3 | OBPI-0.15.0-03-ledger-event-discrimination | Discriminated unions for typed ledger events; replace manual dispatch | Lite | Completed |
+| 4 | OBPI-0.15.0-04-schema-generation-unification | Verify/generate JSON Schema from Pydantic models; decide single-source direction | Lite | Completed |
 
 **Briefs location:** `briefs/OBPI-0.15.0-*.md`
 
@@ -210,4 +210,4 @@ If "Request Changes," required fixes:
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.15.0 | Completed | Test User | 2026-03-18 | completed |
+| 0.15.0 | Completed | Jeff | 2026-03-18 | completed |

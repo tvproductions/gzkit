@@ -178,7 +178,7 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: Jeff
+- Attestor: human:Jeff
 - Attestation: Completed
 - Date: 2026-03-18
 

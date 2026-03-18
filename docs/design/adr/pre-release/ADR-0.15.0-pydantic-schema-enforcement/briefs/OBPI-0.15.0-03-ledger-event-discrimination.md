@@ -97,9 +97,9 @@ uv run -m unittest tests.test_ledger.TestTypedEventModels tests.test_ledger.Test
 
 ## Human Attestation
 
-- Attestor: `human:jeff`
-- Attestation: `attest completed`
-- Date: `2026-03-18`
+- Attestor: human:Jeff
+- Attestation: Completed
+- Date: 2026-03-18
 
 ---
 
