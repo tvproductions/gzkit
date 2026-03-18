@@ -69,7 +69,8 @@ def main() -> None:
             pipeline_marker_paths,
             pipeline_plans_dir,
         )
-    except Exception:
+    except ImportError as exc:
+        print(f"WARNING: pipeline-gate disabled — {exc}", file=sys.stderr)
         sys.exit(0)
 
     plans_dir = pipeline_plans_dir(project_root)
@@ -98,4 +99,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
