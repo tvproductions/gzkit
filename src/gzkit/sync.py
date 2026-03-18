@@ -13,6 +13,7 @@ from typing import Any
 from gzkit.config import GzkitConfig
 from gzkit.hooks.claude import generate_claude_settings, setup_claude_hooks
 from gzkit.hooks.copilot import setup_copilot_hooks
+from gzkit.rules import load_rules, render_rules_to_dir
 from gzkit.rules import sync_claude_rules as sync_claude_rules  # noqa: F401
 from gzkit.rules import sync_nested_agents_md as sync_nested_agents_md  # noqa: F401
 from gzkit.templates import render_template
@@ -1285,22 +1286,51 @@ AGENTS.md
     copilotignore_path.write_text(ignore_content, encoding="utf-8")
 
 
-def sync_skill_mirrors(project_root: Path, config: GzkitConfig) -> list[str]:
-    """Mirror canonical skills into all tool-local mirror paths.
+def _has_manifest_vendors(project_root: Path) -> bool:
+    """Check if the on-disk manifest has an explicit vendors section.
+
+    Used to distinguish legacy projects (no vendor gating) from projects that
+    have opted into vendor-aware sync via OBPI-0.16.0-03.  The check reads the
+    manifest BEFORE ``generate_manifest()`` regenerates it.
+    """
+    manifest_path = project_root / ".gzkit" / "manifest.json"
+    if not manifest_path.exists():
+        return False
+    try:
+        data = json.loads(manifest_path.read_text(encoding="utf-8"))
+        return "vendors" in data
+    except (json.JSONDecodeError, OSError):
+        return False
+
+
+def sync_skill_mirrors(
+    project_root: Path, config: GzkitConfig, *, vendor_aware: bool = False
+) -> list[str]:
+    """Mirror canonical skills into enabled vendor skill paths.
 
     Args:
         project_root: Project root directory.
         config: Project configuration.
+        vendor_aware: When True, skip disabled vendors. When False, sync all.
 
     Returns:
         List of mirrored files written.
     """
+    vendor_skill_map = {
+        "claude": config.paths.claude_skills,
+        "copilot": config.paths.copilot_skills,
+        "codex": config.paths.codex_skills,
+    }
+
     updated: list[str] = []
-    targets = [config.paths.claude_skills, config.paths.codex_skills, config.paths.copilot_skills]
     seen: set[str] = set()
-    for target in targets:
+    for vendor_name, target in vendor_skill_map.items():
         if target in seen or target == config.paths.skills:
             continue
+        if vendor_aware:
+            vendor_cfg = getattr(config.vendors, vendor_name, None)
+            if vendor_cfg is not None and not vendor_cfg.enabled:
+                continue
         seen.add(target)
         updated.extend(sync_skill_mirror(project_root, config.paths.skills, target))
     return updated
@@ -1326,6 +1356,9 @@ def sync_all(project_root: Path, config: GzkitConfig | None = None) -> list[str]
 
     updated: list[str] = []
 
+    # Check BEFORE manifest regeneration (backward compat: if absent, sync all)
+    vendor_aware = _has_manifest_vendors(project_root)
+
     # Generate manifest
     manifest = generate_manifest(project_root, config)
     write_manifest(project_root, manifest)
@@ -1334,33 +1367,55 @@ def sync_all(project_root: Path, config: GzkitConfig | None = None) -> list[str]
     # Migrate legacy skill layouts into canonical path when needed.
     updated.extend(bootstrap_canonical_skills(project_root, config))
 
-    # Generate control surfaces
+    # Vendor-neutral surfaces (always generated)
     sync_agents_md(project_root, config)
     updated.append(config.paths.agents_md)
-
-    sync_claude_md(project_root, config)
-    updated.append(config.paths.claude_md)
-
-    updated.extend(sync_claude_rules(project_root, config))
     updated.extend(sync_nested_agents_md(project_root, config))
 
-    sync_copilot_instructions(project_root, config)
-    updated.append(config.paths.copilot_instructions)
+    # Load canonical rules once for all vendor renderers
+    canonical_rules_dir = project_root / ".gzkit" / "rules"
+    canonical_rules = load_rules(canonical_rules_dir) if canonical_rules_dir.is_dir() else []
 
-    sync_discovery_index(project_root, config)
-    updated.append(config.paths.discovery_index)
+    # Claude surfaces
+    if not vendor_aware or config.vendors.claude.enabled:
+        sync_claude_md(project_root, config)
+        updated.append(config.paths.claude_md)
 
-    sync_claude_settings(project_root, config)
-    updated.append(config.paths.claude_settings)
+        if canonical_rules:
+            rendered = render_rules_to_dir(
+                canonical_rules, project_root / config.paths.claude_rules, "claude"
+            )
+            updated.extend(rendered)
+        else:
+            updated.extend(sync_claude_rules(project_root, config))
 
-    sync_copilotignore(project_root)
-    updated.append(".copilotignore")
+        sync_claude_settings(project_root, config)
+        updated.append(config.paths.claude_settings)
+        updated.extend(setup_claude_hooks(project_root, config))
 
-    # Update agent hooks to latest templates/logic
-    updated.extend(setup_claude_hooks(project_root, config))
-    updated.extend(setup_copilot_hooks(project_root, config))
+    # Copilot surfaces
+    if not vendor_aware or config.vendors.copilot.enabled:
+        if canonical_rules:
+            rendered = render_rules_to_dir(
+                canonical_rules,
+                project_root / ".github" / "instructions",
+                "copilot",
+            )
+            updated.extend(rendered)
+        else:
+            sync_copilot_instructions(project_root, config)
+            updated.append(config.paths.copilot_instructions)
 
-    mirrored = sync_skill_mirrors(project_root, config)
+        sync_discovery_index(project_root, config)
+        updated.append(config.paths.discovery_index)
+
+        sync_copilotignore(project_root)
+        updated.append(".copilotignore")
+
+        updated.extend(setup_copilot_hooks(project_root, config))
+
+    # Vendor-aware skill mirrors
+    mirrored = sync_skill_mirrors(project_root, config, vendor_aware=vendor_aware)
     updated.extend(mirrored)
 
     return sorted(set(updated))
