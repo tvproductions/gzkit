@@ -232,8 +232,29 @@ def _render_status_row(
 
 
 def _render_status_table(adrs: dict[str, dict[str, Any]], default_mode: str) -> None:
-    """Render ADR status as a stable tabular summary."""
-    table = Table(title="ADR Status", box=box.ASCII, padding=(0, 0))
+    """Render ADR status as a stable tabular summary with pool ADRs in a separate table."""
+    versioned: list[tuple[str, dict[str, Any]]] = []
+    pool: list[tuple[str, dict[str, Any]]] = []
+    for adr_id, info in sorted(adrs.items(), key=lambda item: _adr_status_sort_key(item[0])):
+        if _is_pool_adr_id(adr_id):
+            pool.append((adr_id, info))
+        else:
+            versioned.append((adr_id, info))
+
+    _render_adr_table("ADR Status", versioned, default_mode)
+    if pool:
+        console.print()
+        _render_adr_table("Pool ADRs", pool, default_mode)
+    console.print("Checks legend: O=OBPI completion, T=TDD, D=Docs, B=BDD, H=Human attestation")
+
+
+def _render_adr_table(
+    title: str,
+    rows: list[tuple[str, dict[str, Any]]],
+    default_mode: str,
+) -> None:
+    """Render a single ADR status table with the given title and rows."""
+    table = Table(title=title, box=box.ASCII, padding=(0, 0))
     table.add_column("ADR", overflow="fold")
     table.add_column("Life", no_wrap=True)
     table.add_column("Lane", no_wrap=True)
@@ -243,7 +264,7 @@ def _render_status_table(adrs: dict[str, dict[str, Any]], default_mode: str) -> 
     table.add_column("Checks", no_wrap=True)
     table.row_styles = ["none", "dim"]
 
-    for adr_id, info in sorted(adrs.items(), key=lambda item: _adr_status_sort_key(item[0])):
+    for adr_id, info in rows:
         lane = cast(str, info.get("lane", default_mode))
         gates = cast(dict[str, str], info.get("gates", {}))
         obpi_summary = cast(dict[str, Any], info.get("obpi_summary", {}))
@@ -266,7 +287,6 @@ def _render_status_table(adrs: dict[str, dict[str, Any]], default_mode: str) -> 
         )
 
     console.print(table)
-    console.print("Checks legend: O=OBPI completion, T=TDD, D=Docs, B=BDD, H=Human attestation")
 
 
 def status(as_json: bool, show_gates: bool, as_table: bool) -> None:
