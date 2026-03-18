@@ -14,7 +14,7 @@ from gzkit.ledger import (
     obpi_created_event,
     obpi_receipt_emitted_event,
 )
-from tests.commands.common import CliRunner, _init_git_repo, _write_obpi
+from tests.commands.common import CliRunner, _init_git_repo, _quick_init, _write_obpi
 
 
 class TestStatusCommand(unittest.TestCase):
@@ -24,7 +24,7 @@ class TestStatusCommand(unittest.TestCase):
         """status shows message when no ADRs."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             result = runner.invoke(main, ["status"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("No ADRs found", result.output)
@@ -33,7 +33,7 @@ class TestStatusCommand(unittest.TestCase):
         """status shows ADR when present."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             result = runner.invoke(main, ["status"])
             self.assertEqual(result.exit_code, 0)
@@ -43,7 +43,7 @@ class TestStatusCommand(unittest.TestCase):
         """status --show-gates shows Gate 2 PASS when latest gate check passed."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
 
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
@@ -57,7 +57,7 @@ class TestStatusCommand(unittest.TestCase):
         """status --show-gates shows Gate 2 FAIL when latest gate check failed."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
 
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
@@ -72,7 +72,7 @@ class TestStatusCommand(unittest.TestCase):
         """status output is OBPI/QC centric by default without gate rows."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
 
             result = runner.invoke(main, ["status"])
@@ -84,7 +84,7 @@ class TestStatusCommand(unittest.TestCase):
         """status --table renders a stable ADR summary table."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
 
             result = runner.invoke(main, ["status", "--table"])
@@ -102,7 +102,7 @@ class TestStatusCommand(unittest.TestCase):
         """status --table preserves long ADR ids instead of ellipsizing them."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             config = GzkitConfig.load(Path(".gzkit.json"))
             adr_dir = Path(config.paths.adrs)
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
@@ -123,7 +123,7 @@ class TestStatusCommand(unittest.TestCase):
         """status --table marks QC pending when linked OBPIs are incomplete."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
@@ -166,7 +166,7 @@ class TestStatusCommand(unittest.TestCase):
         """status --json sorts SemVer ADR ids numerically, not lexicographically."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             config = GzkitConfig.load(Path(".gzkit.json"))
             adr_dir = Path(config.paths.adrs)
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
@@ -190,7 +190,7 @@ class TestStatusCommand(unittest.TestCase):
         """status renders OBPI completion as the primary unit."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
@@ -250,7 +250,7 @@ class TestStatusCommand(unittest.TestCase):
         """obpi status --json reports the focused OBPI runtime payload."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
@@ -294,7 +294,7 @@ class TestStatusCommand(unittest.TestCase):
         """obpi status reports missing brief files explicitly."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
@@ -311,7 +311,7 @@ class TestStatusCommand(unittest.TestCase):
         """obpi status still inspects standalone OBPI briefs."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
@@ -336,7 +336,7 @@ class TestStatusCommand(unittest.TestCase):
         """obpi reconcile passes when ledger, file, and proof are coherent."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
@@ -375,7 +375,7 @@ class TestStatusCommand(unittest.TestCase):
         """obpi reconcile stays green when only the markdown reflection is stale."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
@@ -418,7 +418,7 @@ class TestStatusCommand(unittest.TestCase):
         """obpi reconcile emits BLOCKERS and exits non-zero when proof is missing."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
@@ -442,7 +442,7 @@ class TestStatusCommand(unittest.TestCase):
         """Anchor-aware reconcile fails when tracked files changed since completion."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
@@ -515,7 +515,7 @@ class TestStatusCommand(unittest.TestCase):
     def test_obpi_status_json_surfaces_tracked_defects_for_anchor_drift(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
@@ -598,7 +598,7 @@ class TestStatusCommand(unittest.TestCase):
         """Later completed sibling OBPIs should absorb shared-file drift for earlier siblings."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_dir = Path(config.paths.adrs) / "obpis"
@@ -740,7 +740,7 @@ class TestStatusCommand(unittest.TestCase):
         """Focused OBPI status includes anchor reconciliation fields."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
@@ -801,7 +801,7 @@ class TestStatusCommand(unittest.TestCase):
         """Key proof extraction still parses the file section without promoting canonical proof."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
@@ -844,7 +844,7 @@ class TestStatusCommand(unittest.TestCase):
         """Legacy Verification sections still parse as file proof without redefining lifecycle."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
@@ -904,7 +904,7 @@ class TestStatusCommand(unittest.TestCase):
         """Gate Evidence still parses as file proof without redefining ledger completion."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
@@ -965,7 +965,7 @@ class TestStatusCommand(unittest.TestCase):
         """Verification headings with legacy suffixes still parse as file proof only."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
@@ -1025,7 +1025,7 @@ class TestStatusCommand(unittest.TestCase):
         """Legacy validation-command bullets still parse as file proof only."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
@@ -1085,7 +1085,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
     def test_adr_status_default_hides_gate_breakdown(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
 
             result = runner.invoke(main, ["adr", "status", "ADR-0.1.0"])
@@ -1096,7 +1096,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
     def test_adr_status_accepts_semver_prefix_for_suffixed_adr(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             config = GzkitConfig.load(Path(".gzkit.json"))
             adr_path = Path(config.paths.adrs) / "ADR-0.5.0-skill-lifecycle-governance.md"
             adr_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1117,7 +1117,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
     def test_adr_status_show_gates_includes_gate_breakdown(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
 
             result = runner.invoke(main, ["adr", "status", "ADR-0.1.0", "--show-gates"])
@@ -1127,7 +1127,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
     def test_adr_status_heavy_features_missing_reports_gate4_pending(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init", "--mode", "heavy"])
+            _quick_init("heavy")
             runner.invoke(main, ["plan", "0.1.0", "--lane", "heavy"])
 
             result = runner.invoke(main, ["adr", "status", "ADR-0.1.0", "--json"])
@@ -1139,7 +1139,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
     def test_adr_status_legacy_semver_id_still_resolves(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init", "--mode", "heavy"])
+            _quick_init("heavy")
             config = GzkitConfig.load(Path(".gzkit.json"))
             adr_path = Path(config.paths.adrs) / "ADR-0.2.0-gate-verification.md"
             adr_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1157,7 +1157,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
     def test_adr_status_json_completed(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(attested_event("ADR-0.1.0", "completed", "human"))
@@ -1172,7 +1172,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
     def test_adr_status_json_obpi_incomplete_overrides_completed_lifecycle(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
@@ -1197,7 +1197,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
     def test_adr_status_qc_readiness_includes_obpi_completion_blocker(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
@@ -1218,7 +1218,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
     def test_adr_status_surfaces_closeout_blockers(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
@@ -1242,7 +1242,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
     def test_adr_status_closeout_blockers_include_tracked_defect_refs(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
@@ -1317,7 +1317,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
     def test_adr_status_json_validated(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(attested_event("ADR-0.1.0", "completed", "human"))
@@ -1333,7 +1333,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
     def test_adr_status_json_abandoned(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(attested_event("ADR-0.1.0", "dropped", "human", "out of scope"))
@@ -1347,7 +1347,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
     def test_obpi_scoped_validated_receipt_does_not_set_validated_lifecycle(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(
@@ -1373,7 +1373,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
     def test_status_json_includes_lifecycle_fields(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(attested_event("ADR-0.1.0", "partial", "human", "staged rollout"))
@@ -1388,7 +1388,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
     def test_status_json_obpi_incomplete_overrides_completed_lifecycle(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
@@ -1414,7 +1414,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
     def test_status_json_includes_obpi_summary_fields(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
@@ -1443,7 +1443,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
     def test_status_json_completed_status_with_empty_summary_stays_incomplete(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
@@ -1492,7 +1492,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
     def test_adr_status_json_pool_adr_ignores_attestation_for_lifecycle(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             config = GzkitConfig.load(Path(".gzkit.json"))
             pool_dir = Path(config.paths.adrs) / "pool"
             pool_dir.mkdir(parents=True, exist_ok=True)
@@ -1516,7 +1516,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
     def test_status_json_pool_adr_ignores_attestation_for_lifecycle(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             config = GzkitConfig.load(Path(".gzkit.json"))
             pool_dir = Path(config.paths.adrs) / "pool"
             pool_dir.mkdir(parents=True, exist_ok=True)
@@ -1540,7 +1540,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
     def test_adr_status_json_includes_obpi_rows(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
@@ -1587,7 +1587,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
     def test_adr_status_json_reports_missing_linked_obpi_file(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(obpi_created_event("OBPI-0.1.0-01-core-feature", "ADR-0.1.0"))
@@ -1606,7 +1606,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
         """gz adr report renders deterministic ASCII tables."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
 
             result = runner.invoke(main, ["adr", "report", "ADR-0.1.0"])
@@ -1620,7 +1620,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
         """gz adr report includes OBPI rows when OBPIs are linked."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "OBPI-0.1.0-01-demo.md"
@@ -1638,7 +1638,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
         """gz adr report prints issues when OBPIs have problems."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(obpi_created_event("OBPI-0.1.0-01-core-feature", "ADR-0.1.0"))
@@ -1652,7 +1652,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
         """gz adr report resolves short semver prefixes."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
 
             result = runner.invoke(main, ["adr", "report", "0.1.0"])
@@ -1663,7 +1663,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
         """gz adr report (no argument) renders the ADR summary table."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
 
             result = runner.invoke(main, ["adr", "report"])
@@ -1675,7 +1675,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
     def test_state_ready_json_only_includes_gate_ready_unattested_adrs(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             runner.invoke(main, ["plan", "0.2.0"])
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))

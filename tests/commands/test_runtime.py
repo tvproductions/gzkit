@@ -11,7 +11,7 @@ from gzkit.ledger import (
     obpi_created_event,
     obpi_receipt_emitted_event,
 )
-from tests.commands.common import CliRunner, _init_git_repo
+from tests.commands.common import CliRunner, _init_git_repo, _quick_init
 
 
 class TestAdrRuntimeCommands(unittest.TestCase):
@@ -96,7 +96,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     def test_closeout_missing_adr_fails(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             result = runner.invoke(main, ["closeout", "ADR-9.9.9"])
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("ADR not found", result.output)
@@ -104,7 +104,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     def test_closeout_records_event(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             _init_git_repo(Path.cwd())
             runner.invoke(main, ["plan", "0.1.0"])
             result = runner.invoke(main, ["closeout", "ADR-0.1.0"])
@@ -122,7 +122,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     def test_closeout_dry_run_writes_nothing(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             result = runner.invoke(main, ["closeout", "ADR-0.1.0", "--dry-run"])
             self.assertEqual(result.exit_code, 0)
@@ -132,7 +132,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     def test_closeout_includes_canonical_attestation_choices(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             result = runner.invoke(main, ["closeout", "ADR-0.1.0", "--dry-run"])
             self.assertEqual(result.exit_code, 0)
@@ -142,7 +142,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     def test_closeout_heavy_includes_bdd_command_when_features_missing(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init", "--mode", "heavy"])
+            _quick_init("heavy")
             runner.invoke(main, ["plan", "0.1.0", "--lane", "heavy"])
             result = runner.invoke(main, ["closeout", "ADR-0.1.0", "--dry-run"])
             self.assertEqual(result.exit_code, 0)
@@ -153,7 +153,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     def test_closeout_heavy_includes_bdd_command_when_features_exist(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init", "--mode", "heavy"])
+            _quick_init("heavy")
             runner.invoke(main, ["plan", "0.1.0", "--lane", "heavy"])
             Path("features").mkdir(exist_ok=True)
             result = runner.invoke(main, ["closeout", "ADR-0.1.0", "--dry-run"])
@@ -164,7 +164,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     def test_closeout_rejects_pool_adr(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init", "--mode", "heavy"])
+            _quick_init("heavy")
             self._create_pool_adr()
             result = runner.invoke(main, ["closeout", "ADR-pool.sample"])
             self.assertNotEqual(result.exit_code, 0)
@@ -175,7 +175,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     def test_closeout_blocks_when_obpi_proof_is_incomplete(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
@@ -201,7 +201,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     def test_closeout_json_includes_obpi_blockers(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
@@ -230,7 +230,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     def test_closeout_blocks_heavy_obpi_missing_required_human_attestation(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init", "--mode", "heavy"])
+            _quick_init("heavy")
             runner.invoke(main, ["plan", "0.1.0", "--lane", "heavy"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
@@ -266,7 +266,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     def test_audit_pre_attestation_fails(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             result = runner.invoke(main, ["audit", "ADR-0.1.0"])
             self.assertNotEqual(result.exit_code, 0)
@@ -275,7 +275,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     def test_audit_after_attestation_writes_artifacts(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             self._set_manifest_verification_noop()
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
@@ -292,7 +292,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     def test_audit_dry_run_after_attestation_writes_nothing(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             self._set_manifest_verification_noop()
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
@@ -307,7 +307,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     def test_audit_rejects_pool_adr(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init", "--mode", "heavy"])
+            _quick_init("heavy")
             self._create_pool_adr()
             result = runner.invoke(main, ["audit", "ADR-pool.sample"])
             self.assertNotEqual(result.exit_code, 0)
@@ -316,7 +316,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     def test_adr_audit_check_passes_for_completed_obpi_with_evidence(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
@@ -349,7 +349,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     def test_adr_audit_check_fails_for_incomplete_obpi(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
@@ -367,7 +367,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     def test_adr_audit_check_rejects_pool_adr(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init", "--mode", "heavy"])
+            _quick_init("heavy")
             self._create_pool_adr()
             result = runner.invoke(main, ["adr", "audit-check", "ADR-pool.sample"])
             self.assertNotEqual(result.exit_code, 0)
@@ -376,7 +376,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     def test_adr_covers_check_passes_for_adr_and_linked_obpi(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0"])
 
@@ -404,7 +404,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     def test_adr_covers_check_fails_when_obpi_cover_missing(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0"])
 
@@ -429,7 +429,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     def test_adr_covers_check_fails_when_criterion_missing_req_id(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0"])
 
@@ -464,7 +464,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     def test_adr_emit_receipt_records_event(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             result = runner.invoke(
                 main,
@@ -487,7 +487,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     def test_adr_emit_receipt_invalid_json_fails(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             result = runner.invoke(
                 main,
@@ -509,7 +509,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     def test_adr_emit_receipt_dry_run_writes_nothing(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             result = runner.invoke(
                 main,
@@ -531,7 +531,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     def test_adr_emit_receipt_rejects_pool_adr(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init", "--mode", "heavy"])
+            _quick_init("heavy")
             self._create_pool_adr()
             result = runner.invoke(
                 main,
@@ -551,7 +551,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     def test_obpi_emit_receipt_records_event(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0"])
             result = runner.invoke(
@@ -576,7 +576,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     def test_obpi_emit_receipt_invalid_json_fails(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0"])
             result = runner.invoke(
@@ -599,7 +599,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     def test_obpi_emit_receipt_dry_run_writes_nothing(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0"])
             result = runner.invoke(
@@ -627,7 +627,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     def test_obpi_emit_receipt_completed_requires_evidence(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0"])
             result = runner.invoke(
@@ -648,7 +648,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     def test_obpi_emit_receipt_completed_heavy_requires_human_attestation_evidence(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init", "--mode", "heavy"])
+            _quick_init("heavy")
             runner.invoke(main, ["plan", "0.1.0", "--lane", "heavy"])
             runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0", "--lane", "heavy"])
             result = runner.invoke(
@@ -674,7 +674,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     def test_obpi_emit_receipt_completed_heavy_records_attested_completion(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init", "--mode", "heavy"])
+            _quick_init("heavy")
             runner.invoke(main, ["plan", "0.1.0", "--lane", "heavy"])
             runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0", "--lane", "heavy"])
             result = runner.invoke(
@@ -707,7 +707,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _init_git_repo(Path("."))
-            runner.invoke(main, ["init", "--mode", "heavy"])
+            _quick_init("heavy")
             runner.invoke(main, ["plan", "0.1.0", "--lane", "heavy"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
@@ -745,7 +745,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     def test_obpi_emit_receipt_completed_enriches_structured_receipt_context(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init", "--mode", "heavy"])
+            _quick_init("heavy")
             runner.invoke(main, ["plan", "0.1.0", "--lane", "heavy"])
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
@@ -811,7 +811,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
     def test_obpi_emit_receipt_rejects_pool_linked_obpi(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init", "--mode", "heavy"])
+            _quick_init("heavy")
             self._create_pool_adr()
             config = GzkitConfig.load(Path(".gzkit.json"))
             obpi_path = Path(config.paths.adrs) / "pool" / "OBPI-pool.sample-01-demo.md"

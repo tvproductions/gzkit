@@ -7,7 +7,7 @@ from gzkit.ledger import (
     Ledger,
     adr_created_event,
 )
-from tests.commands.common import CliRunner
+from tests.commands.common import CliRunner, _quick_init
 
 
 class TestAdrPromoteCommand(unittest.TestCase):
@@ -42,7 +42,7 @@ class TestAdrPromoteCommand(unittest.TestCase):
     def test_adr_promote_dry_run_reports_actions(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             config = GzkitConfig.load(Path(".gzkit.json"))
             self._seed_pool_adr(config)
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
@@ -64,7 +64,7 @@ class TestAdrPromoteCommand(unittest.TestCase):
     def test_adr_promote_writes_files_and_ledger_rename(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             config = GzkitConfig.load(Path(".gzkit.json"))
             pool_file = self._seed_pool_adr(config)
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
@@ -113,7 +113,7 @@ class TestAdrPromoteCommand(unittest.TestCase):
     def test_adr_promote_fails_without_target_scope(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             config = GzkitConfig.load(Path(".gzkit.json"))
             pool_dir = Path(config.paths.adrs) / "pool"
             pool_dir.mkdir(parents=True, exist_ok=True)
@@ -153,7 +153,7 @@ class TestAdrPromoteCommand(unittest.TestCase):
     def test_adr_promote_rejects_non_pool_source(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.6.0"])
             result = runner.invoke(
                 main,

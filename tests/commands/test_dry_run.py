@@ -6,7 +6,7 @@ from gzkit.ledger import (
     Ledger,
     gate_checked_event,
 )
-from tests.commands.common import CliRunner
+from tests.commands.common import CliRunner, _quick_init
 
 
 class TestDryRunCommands(unittest.TestCase):
@@ -24,7 +24,7 @@ class TestDryRunCommands(unittest.TestCase):
         """prd --dry-run does not create PRD or ledger event."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             result = runner.invoke(main, ["prd", "TEST-1.0.0", "--dry-run"])
             self.assertEqual(result.exit_code, 0)
             self.assertFalse(Path("design/prd/PRD-TEST-1.0.0.md").exists())
@@ -35,7 +35,7 @@ class TestDryRunCommands(unittest.TestCase):
         """attest --dry-run does not record attestation."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))

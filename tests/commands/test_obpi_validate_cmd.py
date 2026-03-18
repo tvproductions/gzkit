@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 
 from gzkit.cli import main
-from tests.commands.common import CliRunner
+from tests.commands.common import CliRunner, _quick_init
 
 
 class TestObpiValidateCommand(unittest.TestCase):
@@ -24,7 +24,7 @@ class TestObpiValidateCommand(unittest.TestCase):
     def test_obpi_validate_prints_blockers_for_out_of_scope_changes(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
 
             self._git("init")
@@ -64,7 +64,7 @@ class TestObpiValidateCommand(unittest.TestCase):
     def test_obpi_validate_passes_for_allowlisted_changes(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+            _quick_init()
             runner.invoke(main, ["plan", "0.1.0"])
 
             self._git("init")
