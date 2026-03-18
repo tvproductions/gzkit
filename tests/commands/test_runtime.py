@@ -650,7 +650,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         with runner.isolated_filesystem():
             runner.invoke(main, ["init", "--mode", "heavy"])
             runner.invoke(main, ["plan", "0.1.0", "--lane", "heavy"])
-            runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0"])
+            runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0", "--lane", "heavy"])
             result = runner.invoke(
                 main,
                 [
@@ -676,7 +676,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         with runner.isolated_filesystem():
             runner.invoke(main, ["init", "--mode", "heavy"])
             runner.invoke(main, ["plan", "0.1.0", "--lane", "heavy"])
-            runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0"])
+            runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0", "--lane", "heavy"])
             result = runner.invoke(
                 main,
                 [
@@ -701,6 +701,46 @@ class TestAdrRuntimeCommands(unittest.TestCase):
             ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertIn('"obpi_completion":"attested_completed"', ledger_content)
             self.assertIn('"req_proof_inputs"', ledger_content)
+
+    def test_obpi_emit_receipt_lite_obpi_under_heavy_parent_accepts_agent_attestor(self) -> None:
+        """Lite-lane OBPI under Heavy parent does not require human attestor (GHI-24)."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _init_git_repo(Path("."))
+            runner.invoke(main, ["init", "--mode", "heavy"])
+            runner.invoke(main, ["plan", "0.1.0", "--lane", "heavy"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            self._write_obpi(
+                path=obpi_path,
+                status="Draft",
+                brief_status="Draft",
+                implementation_line="src/demo.py",
+                lane="Lite",
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            result = runner.invoke(
+                main,
+                [
+                    "obpi",
+                    "emit-receipt",
+                    "OBPI-0.1.0-01-demo",
+                    "--event",
+                    "completed",
+                    "--attestor",
+                    "agent:claude-code",
+                    "--evidence-json",
+                    (
+                        '{"value_narrative":"vendor manifest schema implemented",'
+                        '"key_proof":"config.vendors.claude.enabled returns True"}'
+                    ),
+                ],
+            )
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
+            self.assertIn('"obpi_completion":"completed"', ledger_content)
 
     def test_obpi_emit_receipt_completed_enriches_structured_receipt_context(self) -> None:
         runner = CliRunner()
