@@ -49,7 +49,8 @@ Separate prep from change via distinct commits. STOP if current pipeline skill h
 - `src/gzkit/pipeline_runtime.py` — canonical shared runtime for pipeline stages
 - `.claude/skills/gz-obpi-pipeline/SKILL.md` — pipeline skill definition
 - `.claude/skills/gz-obpi-lock/SKILL.md` — lock coordination for multi-agent work
-- Claude Code Agent tool — subagent dispatch mechanism
+- `.claude/agents/` — agent file definitions (Markdown + YAML frontmatter) for each pipeline role
+- Claude Code Agent tool — subagent dispatch mechanism (supports `model`, `isolation`, `run_in_background`)
 - Claude Code TaskCreate/TaskUpdate — task tracking within sessions
 
 ---
@@ -87,16 +88,34 @@ This ADR subsumes `ADR-pool.agent-role-specialization` by defining the role taxo
 - Subagent dispatch is an execution strategy within pipeline stages, not a new stage. The Iron Law (all 5 stages to completion) is unchanged.
 - The pipeline runtime (`pipeline_runtime.py`) gains subagent dispatch tracking, result aggregation, and status reporting.
 - The pipeline skill (`SKILL.md`) is updated with controller/worker architecture documentation.
+- Each pipeline role is defined as a reusable `.claude/agents/` Markdown file with YAML frontmatter specifying tool restrictions, model defaults, permission modes, and skill injections — the concrete Claude Code primitives that enforce role boundaries at dispatch time.
+
+### Claude Code Subagent Primitive Mapping
+
+The abstract role and dispatch concepts in this ADR map to concrete Claude Code agent primitives:
+
+| Concept | Claude Code Primitive | Where Defined |
+|---------|----------------------|---------------|
+| Role boundary enforcement | `tools` allowlist in agent frontmatter | `.claude/agents/{role}.md` |
+| Model-aware routing | `model` field in agent frontmatter + per-dispatch override | OBPI-05 model routing config |
+| Write permission for implementers | `permissionMode: acceptEdits` | `.claude/agents/implementer.md` |
+| Read-only reviewers | `tools: Read, Glob, Grep` (no Edit/Write) | `.claude/agents/spec-reviewer.md`, `quality-reviewer.md` |
+| Parallel verification isolation | `isolation: worktree` on Agent tool dispatch | OBPI-04 dispatch logic |
+| Concurrent verification | `run_in_background: true` on Agent tool dispatch | OBPI-04 dispatch logic |
+| File path enforcement | `hooks.PreToolUse` in agent frontmatter | `.claude/agents/implementer.md` |
+| Domain knowledge injection | `skills` field in agent frontmatter | Per-role agent files |
+| Agent loop bounds | `maxTurns` field in agent frontmatter | Per-role agent files |
 
 ### Alternatives Considered
 
 | Alternative | Why rejected |
 |-------------|-------------|
 | **Bigger context windows** | Treats the symptom (context exhaustion) not the cause (single-session conflation of implementation and governance). Does not address independent review or model optimization. Context windows grow but so does implementation complexity. |
-| **Parallel implementer subagents** | File conflicts between concurrent tasks are expensive to resolve. Superpowers explicitly prohibits parallel implementers — sequential dispatch with fresh context is strictly safer. Parallel dispatch is reserved for Stage 3 verification where tasks are read-only. |
+| **Parallel implementer subagents** | File conflicts between concurrent tasks are expensive to resolve. Superpowers explicitly prohibits parallel implementers — sequential dispatch with fresh context is strictly safer. Parallel dispatch is reserved for Stage 3 verification where `isolation: worktree` provides safe concurrent execution. |
 | **Skip review for Lite OBPIs** | Lite lane reduces *governance gates* (no BDD/docs/attestation), not *code quality*. Independent review catches bugs regardless of lane. The review protocol is internal and low-overhead. |
 | **External CI-based dispatch** | Would require infrastructure beyond the repository. gzkit's principle is that governance runs locally with `uv run gz`. Subagent dispatch via the Agent tool is local, auditable, and requires no external services. |
 | **Single-reviewer (not two-stage)** | Superpowers found that spec compliance and code quality are orthogonal concerns — reviewers optimizing for "does it match the spec?" systematically overlook architectural issues, and vice versa. Two reviewers with distinct briefs outperform one reviewer with a combined brief. |
+| **Prompt-only role enforcement** | Relying solely on prompt instructions for role boundaries (e.g., "do not modify files") is weaker than Claude Code's `tools` allowlist, which structurally prevents unauthorized tool use. Prompt instructions are best-effort; tool restrictions are enforced. |
 
 ### Checklist Item Necessity Table
 
@@ -238,6 +257,7 @@ This ADR follows the structural pattern of [ADR-0.14.0](../ADR-0.14.0-multi-agen
 - CLI / contracts: `src/gzkit/commands/roles.py`
 - Core modules: `src/gzkit/pipeline_runtime.py`, `src/gzkit/roles.py`
 - Skills: `.claude/skills/gz-obpi-pipeline/SKILL.md`
+- Agent files: `.claude/agents/implementer.md`, `.claude/agents/spec-reviewer.md`, `.claude/agents/quality-reviewer.md`, `.claude/agents/narrator.md`
 
 ### Tests
 

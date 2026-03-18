@@ -52,8 +52,11 @@ Stage 3 already runs verification; this changes how (parallel subagents vs seque
 1. REQUIREMENT: Verification results are aggregated by the controller: all REQs must PASS for Stage 3 to succeed.
 1. REQUIREMENT: If any verification subagent returns FAIL, the controller attempts one fix cycle (dispatch implementer with failure details), then re-verifies. If still failing after 1 retry, Stage 3 fails with handoff.
 1. REQUIREMENT: Baseline quality checks (`gz lint`, `gz typecheck`, `gz test`) always run inline in the controller — they are not dispatched to subagents. Only brief-specific requirement verification is parallelized.
-1. NEVER: Dispatch parallel verification subagents that would run overlapping test suites.
-1. ALWAYS: Fall back to sequential inline verification if requirement test paths cannot be determined.
+1. REQUIREMENT: Parallel verification subagents MUST be dispatched with `isolation: "worktree"` — each subagent operates on an isolated git worktree copy. This eliminates file-conflict risk and makes path-overlap analysis a performance optimization rather than a safety requirement.
+1. REQUIREMENT: Parallel verification subagents MUST be dispatched with `run_in_background: true` to enable concurrent execution. The controller is notified when each completes.
+1. REQUIREMENT: Verification subagents MUST use read-only tools (`Read, Glob, Grep, Bash`) — Bash is needed for running test commands but Edit/Write are denied since verification should not modify code.
+1. NEVER: Dispatch parallel verification subagents without worktree isolation.
+1. ALWAYS: Fall back to sequential inline verification if requirement test paths cannot be determined or worktree creation fails.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -65,22 +68,41 @@ Stage 3 entry:
   2. If baseline fails → attempt fix, retry once, fail with handoff
   3. Parse brief requirements into verification scopes:
      - For each REQ: identify test files, verification commands, expected outputs
-     - Compute path overlap matrix between REQs
+     - Compute path overlap matrix between REQs (performance optimization)
   4. Partition REQs into independent groups (no path overlap within group)
   5. For each independent group:
-     - If group has 1 REQ: dispatch single verification subagent
-     - If group has 2+ REQs with no overlap: dispatch parallel subagents
-     - If overlap detected: run sequentially in one subagent
-  6. Aggregate results: all PASS → Stage 3 succeeds → proceed to Stage 4
+     - Dispatch verification subagents with:
+       - isolation: "worktree" (each gets isolated repo copy)
+       - run_in_background: true (concurrent execution)
+       - tools: Read, Glob, Grep, Bash (read-only + test execution)
+     - If group has 1 REQ: dispatch single background subagent
+     - If group has 2+ REQs with no overlap: dispatch parallel background subagents
+     - If overlap detected: dispatch single subagent for the group (sequential within worktree)
+  6. Controller awaits completion notifications from all background subagents
+  7. Aggregate results: all PASS → Stage 3 succeeds → proceed to Stage 4
 ```
+
+### Worktree Isolation Rationale
+
+Claude Code's `isolation: "worktree"` creates a temporary git worktree for each subagent, giving it an isolated copy of the repository. This has two effects:
+
+1. **Safety** — Parallel verification subagents cannot interfere with each other's test state, even if they run overlapping test suites. The path-overlap analysis becomes a *performance optimization* (avoid redundant test runs) rather than a *safety requirement* (prevent conflicts).
+
+2. **Cleanup** — Worktrees are automatically cleaned up if the subagent makes no changes. Since verification subagents are read-only (no Edit/Write tools), worktrees are always cleaned up.
+
+### Background Execution
+
+Parallel subagents are dispatched with `run_in_background: true`. The controller does not poll — it is automatically notified when each subagent completes. This is more efficient than sequential dispatch and avoids busy-waiting.
 
 ## Edge Cases
 
 - Brief has zero explicit requirements — skip parallel dispatch, run only baseline checks
-- Brief has 1 requirement — dispatch single verification subagent (no parallelization benefit, but still isolated context)
-- All requirements overlap on the same test files — sequential fallback (no parallel dispatch)
-- Verification subagent times out — treat as FAIL, attempt retry
+- Brief has 1 requirement — dispatch single verification subagent in worktree (isolated context still beneficial)
+- All requirements overlap on the same test files — single worktree subagent runs all sequentially (overlap analysis triggers consolidation)
+- Verification subagent times out — treat as FAIL, attempt retry in fresh worktree
 - REQ-level entities exist (future: task-level-governance) — use REQ IDs as natural dispatch boundaries
+- Worktree creation fails (e.g., disk space, git state) — fall back to sequential inline verification with warning
+- Background subagent completes with error — controller receives notification, logs error, treats as FAIL
 
 ## Quality Gates (Lite)
 

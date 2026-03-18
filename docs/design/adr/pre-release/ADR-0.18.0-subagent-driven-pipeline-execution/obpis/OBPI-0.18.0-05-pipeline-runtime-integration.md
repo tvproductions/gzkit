@@ -44,6 +44,11 @@ surface, and modifies runtime behavior.
 - `docs/user/concepts/subagent-pipeline.md` — concept documentation
 - `docs/user/runbook.md` — runbook updates
 
+- `.claude/agents/implementer.md` — integration validation of agent file
+- `.claude/agents/spec-reviewer.md` — integration validation of agent file
+- `.claude/agents/quality-reviewer.md` — integration validation of agent file
+- `.claude/agents/narrator.md` — integration validation of agent file
+
 ## Denied Paths
 
 - Core dispatch logic already implemented in OBPI-02/03/04 (this OBPI integrates, not reimplements)
@@ -51,14 +56,15 @@ surface, and modifies runtime behavior.
 
 ## Requirements (FAIL-CLOSED)
 
-1. REQUIREMENT: Pipeline runtime MUST track subagent dispatch state: `{task_id, role, model, dispatched_at, completed_at, status, result}`.
+1. REQUIREMENT: Pipeline runtime MUST track subagent dispatch state: `{task_id, role, agent_file, model, isolation, background, dispatched_at, completed_at, status, result}`.
 1. REQUIREMENT: Dispatch state MUST be persisted in the pipeline active marker (`.claude/plans/.pipeline-active-{OBPI-ID}.json`) so status is queryable.
-1. REQUIREMENT: Result aggregation MUST compute: total tasks, completed, blocked, fix cycles, review findings by severity.
-1. REQUIREMENT: Model routing configuration MUST be declarative (not hardcoded): task complexity heuristics and model mappings defined in pipeline runtime config.
-1. REQUIREMENT: `gz roles` CLI MUST list the four roles with their handoff contracts.
-1. REQUIREMENT: `gz roles --pipeline {OBPI-ID}` MUST show which roles were dispatched and their results for a completed or active pipeline run.
-1. REQUIREMENT: Pipeline SKILL.md MUST document the controller/worker architecture including: dispatch sequence, result handling, review protocol, and REQ verification dispatch.
+1. REQUIREMENT: Result aggregation MUST compute: total tasks, completed, blocked, fix cycles, review findings by severity, model usage per role.
+1. REQUIREMENT: Model routing configuration MUST be declarative (not hardcoded): task complexity heuristics → model ID mappings (`haiku`/`sonnet`/`opus`) defined in pipeline runtime config.
+1. REQUIREMENT: `gz roles` CLI MUST list the four roles with their handoff contracts and corresponding `.claude/agents/` file paths.
+1. REQUIREMENT: `gz roles --pipeline {OBPI-ID}` MUST show which roles were dispatched, their model overrides, isolation mode, and results for a completed or active pipeline run.
+1. REQUIREMENT: Pipeline SKILL.md MUST document the controller/worker architecture including: dispatch sequence, agent file references, model routing, worktree isolation for parallel verification, and review protocol.
 1. REQUIREMENT: BDD scenarios MUST cover the full dispatch lifecycle: plan → dispatch → review → verify → ceremony → sync.
+1. REQUIREMENT: The four agent files (`.claude/agents/implementer.md`, `spec-reviewer.md`, `quality-reviewer.md`, `narrator.md`) MUST be validated as part of OBPI-05 integration — verifying tool restrictions, model defaults, maxTurns, and hooks are correctly wired.
 1. NEVER: Break the Iron Law — all 5 stages must still run to completion.
 1. ALWAYS: Subagent dispatch is opt-in per pipeline invocation (default: enabled). A `--no-subagents` flag allows fallback to inline execution for debugging.
 
@@ -66,30 +72,40 @@ surface, and modifies runtime behavior.
 
 ## Model Routing (Design Input)
 
+Agent files define `model: inherit` by default. The controller overrides this per-dispatch via the Agent tool's `model` parameter, which takes precedence over the agent file's frontmatter.
+
 ```text
-Task Complexity Heuristics:
-  SIMPLE (economical model):
+Task Complexity Heuristics → Claude Code Model IDs:
+  SIMPLE (haiku — fast, economical):
     - 1-2 files modified
     - Mechanical changes (rename, move, delete, format)
     - Test-only changes
     - Documentation updates
-  STANDARD (default model):
+  STANDARD (sonnet — balanced):
     - 3-5 files modified
     - Feature implementation within existing patterns
     - Integration with existing modules
-  COMPLEX (most capable model):
+  COMPLEX (opus — most capable):
     - 6+ files modified
     - New architectural patterns
     - Cross-module refactoring
-    - Review tasks (always complex — requires judgment)
+
+Role-Specific Overrides (not complexity-dependent):
+  Spec Compliance Reviewer: sonnet minimum, opus for complex briefs
+  Code Quality Reviewer: sonnet minimum, opus for architectural review
+  Narrator: sonnet (ceremony presentation requires coherent synthesis)
 ```
+
+The mapping is declarative in pipeline runtime config, not hardcoded. Agent files use `model: inherit` so the controller has full routing authority.
 
 ## Edge Cases
 
-- `--no-subagents` flag — entire pipeline runs inline (current behavior, preserved as fallback)
-- Pipeline resumes from handoff — dispatch state recovered from active marker, continue from last incomplete task
-- Model routing miscategorizes a task — reviewer catches quality issue, fix cycle dispatches at higher model tier
+- `--no-subagents` flag — entire pipeline runs inline (current behavior, preserved as fallback); no agent files loaded
+- Pipeline resumes from handoff — dispatch state recovered from active marker, continue from last incomplete task; agent files re-loaded from `.claude/agents/`
+- Model routing miscategorizes a task — reviewer catches quality issue, fix cycle dispatches at higher model tier (controller adjusts `model` parameter)
 - `gz roles --pipeline` for a pipeline that used `--no-subagents` — shows "inline execution (no subagent dispatch)"
+- Agent file missing or malformed — controller falls back to inline execution for that role with warning
+- Agent file `maxTurns` exceeded — controller logs turn count, treats as BLOCKED, records in dispatch state
 
 ## Quality Gates (Heavy)
 
@@ -106,8 +122,11 @@ Task Complexity Heuristics:
 **Attestation Commands:**
 
 ```bash
-# Verify gz roles CLI
+# Verify gz roles CLI (should list 4 roles with agent file paths)
 uv run gz roles
+
+# Verify agent files exist and have correct frontmatter
+ls -la .claude/agents/implementer.md .claude/agents/spec-reviewer.md .claude/agents/quality-reviewer.md .claude/agents/narrator.md
 
 # Verify pipeline with subagent dispatch
 uv run gz obpi pipeline OBPI-0.18.0-XX
@@ -115,7 +134,7 @@ uv run gz obpi pipeline OBPI-0.18.0-XX
 # Verify fallback mode
 uv run gz obpi pipeline OBPI-0.18.0-XX --no-subagents
 
-# Verify dispatch state in active marker
+# Verify dispatch state in active marker (should show agent_file, model, isolation fields)
 cat .claude/plans/.pipeline-active-OBPI-0.18.0-XX.json | python -m json.tool
 ```
 
