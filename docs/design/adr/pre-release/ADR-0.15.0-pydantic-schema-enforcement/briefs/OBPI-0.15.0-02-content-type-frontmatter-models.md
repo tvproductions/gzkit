@@ -75,11 +75,27 @@ uv run gz typecheck — All checks passed
 Coverage: 95.00% (frontmatter.py), 66.26% (scoped modules)
 ```
 
+### Implementation Summary
+
+- Files added: `src/gzkit/models/frontmatter.py` (AdrFrontmatter, ObpiFrontmatter, PrdFrontmatter)
+- Files modified: `src/gzkit/validate.py` (validate_frontmatter uses Pydantic model instantiation)
+- Tests added: `tests/test_models.py` (46 tests covering all three frontmatter models)
+- Date completed: 2026-03-18
+- Defects noted: None
+
+### Key Proof
+
+```bash
+uv run -m unittest tests.test_models -v
+# 46/46 pass — AdrFrontmatter, ObpiFrontmatter, PrdFrontmatter validated
+# Coverage: frontmatter.py 95.00%
+```
+
 ## Human Attestation
 
-- Attestor: `jeff`
-- Attestation: `attest completed`
-- Date: `2026-03-18`
+- Attestor: human:Jeff
+- Attestation: Completed
+- Date: 2026-03-18
 
 ---
 
