@@ -3,7 +3,7 @@ id: OBPI-0.16.0-02-rules-as-content
 parent: ADR-0.16.0-cms-architecture-formalization
 item: 2
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
@@ -49,38 +49,60 @@ Lite — ADR note + stdlib unittest + smoke (≤60s).
 
 ## QUALITY GATES (Lite)
 
-- [ ] Gate 1 (ADR): Intent recorded in this brief
-- [ ] Gate 2 (TDD): `uv run gz test` — all tests pass
-- [ ] Code Quality: `uv run gz lint` + `uv run gz typecheck` clean
+- [x] Gate 1 (ADR): Intent recorded in this brief
+- [x] Gate 2 (TDD): `uv run gz test` — 633 tests pass
+- [x] Code Quality: `uv run gz lint` + `uv run gz typecheck` clean
 
 ## Evidence
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+uv run -m unittest tests.test_rules tests.test_registry -v
+Ran 59 tests in 0.100s — OK
+Full suite: 633 tests in 31s — OK
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+uv run gz lint — All checks passed
+uv run gz typecheck — All checks passed
+```
+
+### Implementation Summary
+
+- Files added: `.gzkit/rules/` (11 canonical rule files), `RuleFrontmatter`/`CanonicalRule`/`load_rules()` in `src/gzkit/rules.py`
+- Tests added: 20 new tests across 5 test classes in `tests/test_rules.py`, 1 updated in `tests/test_registry.py`
+- Registry updated: Rule type now has `frontmatter_model=RuleFrontmatter`, `schema_name="rule"`
+- Date completed: 2026-03-18
+- Defects noted: None
+
+### Key Proof
+
+```bash
+uv run -m unittest tests.test_rules.TestLoadRules.test_load_actual_canonical_rules -v
+# test_load_actual_canonical_rules ... ok — loads all 11 rules from .gzkit/rules/, validates frontmatter
 ```
 
 ## Human Attestation
 
-- Attestor: `n/a`
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: human:Jeff
+- Attestation: Completed
+- Date: 2026-03-18
+
+## Tracked Defects
+
+_No defects tracked._
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-18
 
 **Evidence Hash:** -

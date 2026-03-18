@@ -1,0 +1,66 @@
+---
+id: chores
+paths:
+  - "src/gzkit/**"
+  - "config/**"
+  - ".github/skills/**"
+description: Chores workflow command sequences and evidence patterns
+---
+
+# Chores Workflow (gzkit)
+
+> **Purpose:** Enable agents to run repository chores effectively with clear, repeatable command sequences, aligned to gzkit guardrails.
+
+## Core Principles
+
+| Principle           | Description                                     |
+| ------------------- | ----------------------------------------------- |
+| **Plan-first**      | Generate or refresh a chore plan before any run |
+| **Lite by default** | Fast lane (<=60s), unit tests only              |
+| **Small diffs**     | Touch only files in scope for the chore         |
+| **CLI evidence**    | Never use raw SQL for attestation               |
+
+## Command Sequences
+
+### 1. Discover Chores
+
+```bash
+uv run gz chores list
+uv run gz chores show <chore_slug>
+```
+
+### 2. Plan & Advise
+
+```bash
+uv run gz chores plan <chore_slug> --replace
+uv run gz chores advise <chore_slug>
+```
+
+### 3. Apply Advice
+
+1. **Read advice** — Identify discrete actions
+2. **Create TODO list** — Exactly one item in-progress at a time
+3. **Implement surgically** — Minimal diffs, preserve behavior
+4. **Validate locally** — Lint, typecheck, tests
+5. **Sync if green** — Commit/push after validation passes
+
+```bash
+uv run ruff check . --fix && uv run ruff format .
+uvx ty check . --exclude 'features/**'
+uv run -m unittest -q
+```
+
+## Evidence & Attestation
+
+### Correct Evidence (CLI commands only)
+
+```bash
+uv run gz gates
+uv run behave features/<feature>.feature --tags=@schema
+```
+
+### Prohibited Evidence
+
+- Raw SQL statements
+- Direct DB queries for attestation
+- Bypassing CLI interface
