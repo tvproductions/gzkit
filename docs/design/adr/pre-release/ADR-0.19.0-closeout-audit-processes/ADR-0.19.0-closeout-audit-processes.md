@@ -1,60 +1,18 @@
 ---
-id: ADR-pool.audit-system
-status: Superseded
+id: ADR-0.19.0-closeout-audit-processes
+status: Proposed
+semver: 0.19.0
+lane: heavy
 parent: PRD-GZKIT-1.0.0
-lane: Heavy
-enabler: null
-promoted_to: ADR-0.19.0-closeout-audit-processes
+date: 2026-03-18
+promoted_from: ADR-pool.audit-system
 ---
 
-# ADR-pool.audit-system: Closeout & Audit Processes
-> Promoted to `ADR-0.19.0-closeout-audit-processes` on 2026-03-18. This pool file is retained as historical intake context.
-
-
-## Status
-
-Superseded
-
-## Date
-
-2026-01-23 (updated 2026-03-18)
-
-## Parent PRD
-
-[PRD-GZKIT-1.0.0](../../prd/PRD-GZKIT-1.0.0.md) — Phase 6: Audit
-
----
+# ADR-0.19.0-closeout-audit-processes: Closeout & Audit Processes
 
 ## Intent
 
 Make **closeout** and **audit** each a single end-to-end orchestrated command that runs its full pipeline without manual subcommand chaining. Both commands must behave identically in gzkit and airlineops.
-
----
-
-## Problem Statement
-
-Today, closeout and audit are fragmented multi-step processes requiring manual orchestration:
-
-**Closeout (current):**
-
-1. `gz closeout ADR-X.Y.Z` — initiates only, does not run gates
-2. `gz gates --adr ADR-X.Y.Z` — must be run separately to record gate results
-3. `gz attest ADR-X.Y.Z --status completed` — blocked until gates are formally recorded
-
-**Audit (current):**
-
-1. Manual creation of audit plan and proofs directory
-2. Separate execution of verification commands
-3. Manual value demonstration
-4. Separate receipt emission
-5. Manual status update to Validated
-
-**Cross-project inconsistency:**
-
-- gzkit: `gz closeout` (initiates) + `gz gates` (quality) + `gz attest` (record)
-- airlineops: `uv run -m opsdev gates` (quality only, different name, different scope)
-
-Operators must remember different command names and manual sequences per project.
 
 ---
 
@@ -93,6 +51,51 @@ Single command that:
 
 ---
 
+## Consequences
+
+### Positive
+
+- Promotion preserves backlog intent as executable ADR scope.
+- Checklist items now map 1:1 to generated OBPI briefs immediately.
+
+### Negative
+
+- Promotion fails closed when the pool ADR lacks actionable execution scope.
+
+## Decomposition Scorecard
+
+<!-- Deterministic OBPI sizing: score each dimension 0/1/2. -->
+<!-- Cutoffs are notional defaults and should be calibrated over time from project evidence. -->
+
+- Data/State: 2
+- Logic/Engine: 2
+- Interface: 2
+- Observability: 2
+- Lineage: 1
+- Dimension Total: 9
+- Baseline Range: 5+
+- Baseline Selected: 9
+- Split Single-Narrative: 0
+- Split Surface Boundary: 0
+- Split State Anchor: 0
+- Split Testability Ceiling: 0
+- Split Total: 0
+- Final Target OBPI Count: 9
+
+## Checklist
+
+<!-- Each item becomes an OBPI (One Brief Per Item). Sequential numbering, no gaps. -->
+
+- [ ] OBPI-0.19.0-01: `gz closeout ADR-X.Y.Z` — end-to-end closeout pipeline
+- [ ] OBPI-0.19.0-02: `gz audit ADR-X.Y.Z` — end-to-end audit pipeline
+- [ ] OBPI-0.19.0-03: Equivalent commands in airlineops (`opsdev closeout`, `opsdev audit`)
+- [ ] OBPI-0.19.0-04: Audit includes attestation record, gate results, evidence links
+- [ ] OBPI-0.19.0-05: `audit_generated` event appended to ledger
+- [ ] OBPI-0.19.0-06: Audit templates and evidence aggregation from ledger
+- [ ] OBPI-0.19.0-07: ADR status transition: Completed → Validated (after audit)
+- [ ] OBPI-0.19.0-08: Deprecate `gz gates` as a standalone command (subsumed by closeout)
+- [ ] OBPI-0.19.0-09: Deprecate manual `gz attest` during closeout (subsumed by closeout) ---
+
 ## Target Scope
 
 - `gz closeout ADR-X.Y.Z` — end-to-end closeout pipeline
@@ -120,3 +123,26 @@ Single command that:
 - Anchor drift and dirty worktree issues that block closeout today should be resolvable within the closeout pipeline itself (re-emit + commit cycle)
 - The closeout command should handle the emit-sync-emit pattern internally rather than requiring the operator to manually chain git-sync between receipt emissions
 - Audit's value demonstration step (currently manual) could be partially automated by running ADR-specific CLI commands from the ADR's evidence section
+
+## Q&A Transcript
+
+<!-- Interview transcript preserved for context -->
+
+Promotion derived from `ADR-pool.audit-system` on 2026-03-18; executable scope was carried forward from the pool ADR instead of reseeded as placeholders.
+
+## Evidence
+
+<!-- Links to tests, documentation, and other artifacts that prove completion -->
+
+- [ ] Tests: `tests/`
+- [ ] Docs: `docs/`
+
+## Alternatives Considered
+
+- Keep this work in the pool backlog until reprioritized.
+
+## Attestation Block
+
+| Term | Status | Attested By | Date | Reason |
+|------|--------|-------------|------|--------|
+| 0.19.0 | Pending | | | |
