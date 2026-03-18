@@ -8,9 +8,9 @@ import json
 from collections.abc import Iterator
 from datetime import UTC, datetime
 from pathlib import Path, PurePosixPath
-from typing import Any
+from typing import Any, ClassVar
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_serializer, model_validator
 
 from gzkit.utils import list_changed_files_between, resolve_git_head_commit
 
@@ -54,7 +54,10 @@ class LedgerEvent(BaseModel):
     - id: Artifact identifier
     - ts: ISO 8601 UTC timestamp
 
-    Event-specific fields are stored in extra.
+    Event-specific fields are stored in extra and flattened during serialization.
+
+    Use ``model_validate(data)`` to parse from a dict (replaces ``from_dict``).
+    Use ``model_dump()`` to serialize (replaces ``to_dict``).
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -66,9 +69,33 @@ class LedgerEvent(BaseModel):
     parent: str | None = None
     extra: dict[str, Any] = Field(default_factory=dict)
 
-    def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary for JSON serialization."""
-        result = {
+    _KNOWN_FIELDS: ClassVar[frozenset[str]] = frozenset({"schema", "event", "id", "ts", "parent"})
+
+    @model_validator(mode="before")
+    @classmethod
+    def _collect_extra_fields(cls, data: Any) -> Any:
+        """Map 'schema' key to 'schema_' and collect unknown keys into extra."""
+        if not isinstance(data, dict):
+            return data
+        result = dict(data)
+        # Map "schema" → "schema_" for Pydantic field name
+        if "schema" in result and "schema_" not in result:
+            result["schema_"] = result.pop("schema")
+        # Collect unknown keys into extra
+        extra_keys = set(result.keys()) - cls._KNOWN_FIELDS - {"schema_", "extra"}
+        if extra_keys:
+            existing_extra = result.get("extra", {})
+            if not isinstance(existing_extra, dict):
+                existing_extra = {}
+            for key in extra_keys:
+                existing_extra[key] = result.pop(key)
+            result["extra"] = existing_extra
+        return result
+
+    @model_serializer
+    def _serialize(self) -> dict[str, Any]:
+        """Serialize with schema_→schema mapping and extra flattened into top level."""
+        result: dict[str, Any] = {
             "schema": self.schema_,
             "event": self.event,
             "id": self.id,
@@ -79,29 +106,6 @@ class LedgerEvent(BaseModel):
         if self.extra:
             result.update(self.extra)
         return result
-
-    @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "LedgerEvent":
-        """Create event from dictionary."""
-        # Extract known fields
-        event = data.get("event", "")
-        id_ = data.get("id", "")
-        ts = data.get("ts", "")
-        schema = data.get("schema", LEDGER_SCHEMA)
-        parent = data.get("parent")
-
-        # Everything else goes in extra
-        extra_keys = set(data.keys()) - {"schema", "event", "id", "ts", "parent"}
-        extra = {k: data[k] for k in extra_keys}
-
-        return cls(
-            event=event,
-            id=id_,
-            ts=ts,
-            schema_=schema,
-            parent=parent,
-            extra=extra,
-        )
 
 
 # Event factory functions for type safety and documentation
@@ -1067,7 +1071,7 @@ class Ledger:
             self.create()
 
         with open(self.path, "a") as f:
-            json.dump(event.to_dict(), f, separators=(",", ":"))
+            json.dump(event.model_dump(), f, separators=(",", ":"))
             f.write("\n")
 
     def read_all(self) -> list[LedgerEvent]:
@@ -1085,7 +1089,7 @@ class Ledger:
                 line = line.strip()
                 if line:
                     data = json.loads(line)
-                    events.append(LedgerEvent.from_dict(data))
+                    events.append(LedgerEvent.model_validate(data))
 
         return events
 

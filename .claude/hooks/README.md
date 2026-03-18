@@ -29,6 +29,9 @@ Current hook surface in gzkit:
 - `ledger-writer.py`
   PostToolUse (`Write|Edit`) hook that records governance
   artifact edits via `gzkit.hooks.core.record_artifact_edit`.
+- `control-surface-sync.py`
+  PostToolUse (`Write|Edit`) hook that auto-syncs control surfaces
+  when canonical .gzkit/ files are edited.
 
 ## Notes
 
@@ -48,7 +51,7 @@ Current hook surface in gzkit:
   then `instruction-router.py`
 - `PreToolUse` `Bash`: `pipeline-completion-reminder.py`
 - `PostToolUse` `Edit|Write`: `post-edit-ruff.py`,
-  then `ledger-writer.py`
+  then `ledger-writer.py`, then `control-surface-sync.py`
 - Historical intake matrix:
   `docs/design/adr/pre-release/ADR-0.9.0-airlineops-surface-breadth-parity/
 claude-hooks-intake-matrix.md`

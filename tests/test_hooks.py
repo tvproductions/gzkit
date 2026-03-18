@@ -187,6 +187,10 @@ class TestGenerateClaudeSettings(unittest.TestCase):
                             "type": "command",
                             "command": "uv run python .claude/hooks/ledger-writer.py",
                         },
+                        {
+                            "type": "command",
+                            "command": "uv run python .claude/hooks/control-surface-sync.py",
+                        },
                     ],
                 },
             ],
@@ -215,6 +219,7 @@ class TestSetupClaudeHooks(unittest.TestCase):
             session_staleness_check = hooks_dir / "session-staleness-check.py"
             obpi_completion_validator = hooks_dir / "obpi-completion-validator.py"
             ledger_writer = hooks_dir / "ledger-writer.py"
+            control_surface_sync = hooks_dir / "control-surface-sync.py"
             readme = hooks_dir / "README.md"
             settings_path = project_root / ".claude" / "settings.json"
 
@@ -228,6 +233,7 @@ class TestSetupClaudeHooks(unittest.TestCase):
                 session_staleness_check,
                 obpi_completion_validator,
                 ledger_writer,
+                control_surface_sync,
                 readme,
                 settings_path,
             ):
@@ -242,6 +248,7 @@ class TestSetupClaudeHooks(unittest.TestCase):
             self.assertIn(".claude/hooks/session-staleness-check.py", created)
             self.assertIn(".claude/hooks/obpi-completion-validator.py", created)
             self.assertIn(".claude/hooks/ledger-writer.py", created)
+            self.assertIn(".claude/hooks/control-surface-sync.py", created)
             self.assertIn(".claude/hooks/README.md", created)
             self.assertIn(".claude/settings.json", created)
 
@@ -317,6 +324,10 @@ class TestSetupClaudeHooks(unittest.TestCase):
                             {
                                 "type": "command",
                                 "command": "uv run python .claude/hooks/ledger-writer.py",
+                            },
+                            {
+                                "type": "command",
+                                "command": "uv run python .claude/hooks/control-surface-sync.py",
                             },
                         ],
                     },
