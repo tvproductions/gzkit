@@ -3,7 +3,7 @@ id: OBPI-0.15.0-02-content-type-frontmatter-models
 parent: ADR-0.15.0-pydantic-schema-enforcement
 item: 2
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
@@ -49,38 +49,42 @@ Lite — ADR note + stdlib unittest + smoke (≤60s).
 
 ## QUALITY GATES (Lite)
 
-- [ ] Gate 1 (ADR): Intent recorded in this brief
-- [ ] Gate 2 (TDD): `uv run gz test` — all tests pass
-- [ ] Code Quality: `uv run gz lint` + `uv run gz typecheck` clean
+- [x] Gate 1 (ADR): Intent recorded in this brief
+- [x] Gate 2 (TDD): `uv run gz test` — all tests pass
+- [x] Code Quality: `uv run gz lint` + `uv run gz typecheck` clean
 
 ## Evidence
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+uv run -m unittest tests.test_models tests.test_validate -v
+Ran 46 tests in 0.005s — OK
+Full suite: 561 tests in 12s — OK
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+uv run ruff check src/gzkit/models/ src/gzkit/validate.py tests/test_models.py — All checks passed
+uv run gz typecheck — All checks passed
+Coverage: 95.00% (frontmatter.py), 66.26% (scoped modules)
 ```
 
 ## Human Attestation
 
-- Attestor: `n/a`
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `jeff`
+- Attestation: `attest completed`
+- Date: `2026-03-18`
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-18
 
 **Evidence Hash:** -
