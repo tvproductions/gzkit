@@ -708,3 +708,5 @@
 {"schema":"gzkit.ledger.v1","event":"gate_checked","id":"ADR-0.13.0-obpi-pipeline-runtime-surface","ts":"2026-03-18T11:32:08.137106+00:00","gate":3,"status":"pass","command":"uv run mkdocs build --strict","returncode":0,"evidence":"stdout/stderr captured"}
 {"schema":"gzkit.ledger.v1","event":"gate_checked","id":"ADR-0.13.0-obpi-pipeline-runtime-surface","ts":"2026-03-18T11:32:08.596081+00:00","gate":4,"status":"pass","command":"uv run -m behave features/","returncode":0,"evidence":"stdout/stderr captured"}
 {"schema":"gzkit.ledger.v1","event":"attested","id":"ADR-0.13.0-obpi-pipeline-runtime-surface","ts":"2026-03-18T11:32:13.530970+00:00","status":"completed","by":"Jeff"}
+{"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.unified-closeout-audit-processes.md","ts":"2026-03-18T11:42:44.359847+00:00","path":"docs/design/adr/pool/ADR-pool.unified-closeout-audit-processes.md"}
+{"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-pool.unified-closeout-audit-processes","ts":"2026-03-18T11:42:49.881147+00:00","parent":"PRD-GZKIT-1.0.0","lane":"heavy"}
