@@ -2636,11 +2636,21 @@ def _is_foundation_adr(adr_id: str) -> bool:
     return re.match(r"^ADR-0\.0\.\d+(?:[.-].*)?$", adr_id) is not None
 
 
-def _requires_human_obpi_attestation(parent_adr: str | None, parent_lane: str) -> bool:
-    """Return whether completed evidence must include human-attestation fields."""
+def _requires_human_obpi_attestation(
+    parent_adr: str | None, parent_lane: str, *, obpi_lane: str | None = None
+) -> bool:
+    """Return whether completed evidence must include human-attestation fields.
+
+    Foundation ADRs (0.0.x) always require human attestation.  For non-foundation
+    ADRs, Lite-lane OBPIs are self-closeable per AGENTS.md Lane Inheritance Rule.
+    """
     if not isinstance(parent_adr, str) or not parent_adr:
         return False
-    return parent_lane == "heavy" or _is_foundation_adr(parent_adr)
+    if _is_foundation_adr(parent_adr):
+        return True
+    if isinstance(obpi_lane, str) and obpi_lane.lower() == "lite":
+        return False
+    return parent_lane == "heavy"
 
 
 def _validate_obpi_completed_required_fields(evidence: dict[str, Any]) -> None:
@@ -2725,7 +2735,10 @@ def _validate_obpi_completion_evidence(
         )
 
     _validate_obpi_completed_required_fields(evidence)
-    requires_human_attestation = _requires_human_obpi_attestation(parent_adr, parent_lane)
+    obpi_lane = parse_frontmatter_value(obpi_content, "lane")
+    requires_human_attestation = _requires_human_obpi_attestation(
+        parent_adr, parent_lane, obpi_lane=obpi_lane
+    )
 
     if requires_human_attestation:
         _validate_obpi_human_attestation_fields(evidence, attestor)
