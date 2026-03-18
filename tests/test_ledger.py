@@ -27,20 +27,22 @@ from gzkit.ledger import (
 class TestLedgerEvent(unittest.TestCase):
     """Tests for LedgerEvent dataclass."""
 
-    def test_to_dict(self) -> None:
-        """Event converts to dictionary correctly."""
+    def test_model_dump(self) -> None:
+        """Event serializes via model_dump correctly."""
         event = LedgerEvent(
             event="test_event",
             id="test-id",
             ts="2026-01-01T00:00:00+00:00",
         )
-        d = event.to_dict()
+        d = event.model_dump()
         self.assertEqual(d["event"], "test_event")
         self.assertEqual(d["id"], "test-id")
         self.assertEqual(d["schema"], "gzkit.ledger.v1")
+        self.assertNotIn("schema_", d)
+        self.assertNotIn("extra", d)
 
-    def test_from_dict(self) -> None:
-        """Event parses from dictionary correctly."""
+    def test_model_validate(self) -> None:
+        """Event parses from dictionary via model_validate correctly."""
         data = {
             "schema": "gzkit.ledger.v1",
             "event": "adr_created",
@@ -49,11 +51,40 @@ class TestLedgerEvent(unittest.TestCase):
             "parent": "OBPI-core",
             "lane": "lite",
         }
-        event = LedgerEvent.from_dict(data)
+        event = LedgerEvent.model_validate(data)
         self.assertEqual(event.event, "adr_created")
         self.assertEqual(event.id, "ADR-0.1.0")
         self.assertEqual(event.parent, "OBPI-core")
         self.assertEqual(event.extra["lane"], "lite")
+
+    def test_model_dump_flattens_extra(self) -> None:
+        """model_dump flattens extra fields into top-level output."""
+        event = LedgerEvent(
+            event="adr_created",
+            id="ADR-0.1.0",
+            ts="2026-01-01T00:00:00+00:00",
+            parent="OBPI-core",
+            extra={"lane": "lite", "mode": "heavy"},
+        )
+        d = event.model_dump()
+        self.assertEqual(d["lane"], "lite")
+        self.assertEqual(d["mode"], "heavy")
+        self.assertEqual(d["parent"], "OBPI-core")
+        self.assertNotIn("extra", d)
+
+    def test_model_roundtrip(self) -> None:
+        """model_validate → model_dump roundtrip preserves data."""
+        original = {
+            "schema": "gzkit.ledger.v1",
+            "event": "obpi_created",
+            "id": "OBPI-0.1.0-01",
+            "ts": "2026-01-01T00:00:00+00:00",
+            "parent": "ADR-0.1.0",
+            "lane": "lite",
+        }
+        event = LedgerEvent.model_validate(original)
+        dumped = event.model_dump()
+        self.assertEqual(dumped, original)
 
 
 class TestEventFactories(unittest.TestCase):
