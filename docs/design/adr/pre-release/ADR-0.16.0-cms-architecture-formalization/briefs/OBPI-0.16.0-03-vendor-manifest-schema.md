@@ -3,7 +3,7 @@ id: OBPI-0.16.0-03-vendor-manifest-schema
 parent: ADR-0.16.0-cms-architecture-formalization
 item: 3
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
@@ -50,38 +50,41 @@ Lite — ADR note + stdlib unittest + smoke (≤60s).
 
 ## QUALITY GATES (Lite)
 
-- [ ] Gate 1 (ADR): Intent recorded in this brief
-- [ ] Gate 2 (TDD): `uv run gz test` — all tests pass
-- [ ] Code Quality: `uv run gz lint` + `uv run gz typecheck` clean
+- [x] Gate 1 (ADR): Intent recorded in this brief
+- [x] Gate 2 (TDD): `uv run gz test` — all tests pass (643 total, 17 vendor-specific)
+- [x] Code Quality: `uv run gz lint` + `uv run gz typecheck` clean
 
 ## Evidence
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+uv run -m unittest tests.test_config -v
+Ran 17 tests in 0.020s — OK
+uv run gz test — 643 tests, OK
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+uv run gz lint — All checks passed
+uv run gz typecheck — All checks passed
 ```
 
 ## Human Attestation
 
-- Attestor: `n/a`
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `self-close-exception (Lite lane)`
+- Attestation: `Self-closed per AGENTS.md Lane Inheritance Rule`
+- Date: `2026-03-18`
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-18
 
 **Evidence Hash:** -

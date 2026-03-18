@@ -123,6 +123,28 @@
       },
       "additionalProperties": false
     },
+    "vendors": {
+      "type": "object",
+      "description": "Vendor enablement configuration for agent harnesses",
+      "properties": {
+        "claude": {
+          "$ref": "#/$defs/vendorConfig"
+        },
+        "copilot": {
+          "$ref": "#/$defs/vendorConfig"
+        },
+        "codex": {
+          "$ref": "#/$defs/vendorConfig"
+        },
+        "gemini": {
+          "$ref": "#/$defs/vendorConfig"
+        },
+        "opencode": {
+          "$ref": "#/$defs/vendorConfig"
+        }
+      },
+      "additionalProperties": false
+    },
     "gates": {
       "type": "object",
       "description": "Gate configurations by lane",
@@ -155,6 +177,25 @@
         "schema": {
           "type": "string",
           "description": "Schema identifier for this artifact type"
+        }
+      },
+      "additionalProperties": false
+    },
+    "vendorConfig": {
+      "type": "object",
+      "required": ["enabled", "surface_root", "instruction_format"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether this vendor surface is generated"
+        },
+        "surface_root": {
+          "type": "string",
+          "description": "Root directory for vendor control surface"
+        },
+        "instruction_format": {
+          "type": "string",
+          "description": "Instruction format: claude-rules, github-instructions, generic"
         }
       },
       "additionalProperties": false
