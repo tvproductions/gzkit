@@ -4,11 +4,16 @@ Extracts instruction rule sync from sync.py and adds:
 - audience-based classification (shared vs claude-only)
 - nested AGENTS.md generation for shared subtree rules
 - rule placement validation
+- canonical rule loading and validation from .gzkit/rules/
+
+@covers ADR-0.16.0  OBPI-0.16.0-02 rules-as-content
 """
 
 import logging
 from pathlib import Path
+from typing import Any
 
+import yaml
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.config import GzkitConfig
@@ -364,3 +369,85 @@ def validate_rule_placement(project_root: Path) -> list[str]:
                     )
 
     return warnings
+
+
+# ---------------------------------------------------------------------------
+# Canonical rule loading (.gzkit/rules/)
+# ---------------------------------------------------------------------------
+
+
+class RuleFrontmatter(BaseModel):
+    """Vendor-neutral rule frontmatter schema.
+
+    Every canonical rule in ``.gzkit/rules/`` must have this frontmatter.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    id: str = Field(..., description="Rule identifier (kebab-case, e.g., 'governance-core')")
+    paths: list[str] = Field(
+        ..., description="Glob patterns for files this rule applies to", min_length=1
+    )
+    description: str = Field(..., description="One-line description of the rule's purpose")
+
+
+class CanonicalRule(BaseModel):
+    """A loaded canonical rule: validated frontmatter plus body content."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    frontmatter: RuleFrontmatter = Field(..., description="Validated rule frontmatter")
+    body: str = Field(..., description="Markdown body content (after frontmatter)")
+    source_path: str = Field(..., description="Path to the source .md file")
+
+
+def _parse_canonical_frontmatter(path: Path) -> tuple[dict[str, Any], str]:
+    """Parse a canonical rule file into (frontmatter_dict, body).
+
+    Raises ValueError if frontmatter delimiters are missing.
+    """
+    text = path.read_text(encoding="utf-8")
+    if not text.startswith("---"):
+        raise ValueError(f"Rule file missing frontmatter delimiter: {path}")
+
+    parts = text.split("---", 2)
+    if len(parts) < 3:
+        raise ValueError(f"Rule file has unclosed frontmatter: {path}")
+
+    fm_text = parts[1].strip()
+    body = parts[2].strip()
+
+    fm_dict: dict[str, Any] = yaml.safe_load(fm_text) or {}
+    return fm_dict, body
+
+
+def load_rule(path: Path) -> CanonicalRule:
+    """Load and validate a single canonical rule file.
+
+    Raises ValueError for parse errors, pydantic.ValidationError for
+    invalid frontmatter.
+    """
+    fm_dict, body = _parse_canonical_frontmatter(path)
+    frontmatter = RuleFrontmatter(**fm_dict)
+    return CanonicalRule(
+        frontmatter=frontmatter,
+        body=body,
+        source_path=str(path),
+    )
+
+
+def load_rules(rules_dir: Path) -> list[CanonicalRule]:
+    """Load and validate all canonical rules from a directory.
+
+    Returns a list of validated CanonicalRule objects sorted by rule ID.
+    Raises ValueError if the directory does not exist.
+    Raises pydantic.ValidationError if any rule has invalid frontmatter.
+    """
+    if not rules_dir.is_dir():
+        raise ValueError(f"Rules directory does not exist: {rules_dir}")
+
+    rules: list[CanonicalRule] = []
+    for md_file in sorted(rules_dir.glob("*.md")):
+        rules.append(load_rule(md_file))
+
+    return sorted(rules, key=lambda r: r.frontmatter.id)

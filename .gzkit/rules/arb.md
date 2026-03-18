@@ -1,0 +1,88 @@
+---
+id: arb
+paths:
+  - "**/*"
+description: ARB (Agent Self-Reporting) middleware QA workflow
+---
+
+# ARB (Agent Self-Reporting) Middleware
+
+**Version:** 1.0
+**Status:** Active
+**Last reviewed:** 2026-01-19
+
+ARB is a QA middleware layer that wraps real verification steps (lint, type check, tests, etc.) and emits structured JSON receipts for deterministic validation and governance auditing.
+
+---
+
+## Core Concept
+
+ARB intercepts QA command execution and records:
+
+- **Execution metadata** (timestamp, duration, environment)
+- **Input/output** (command, arguments, exit code, stderr/stdout)
+- **Structured findings** (linting violations, type errors, test failures)
+- **Receipt artifacts** (JSON schema-validated, persistent)
+
+This allows agents and humans to:
+
+1. Validate QA step outcomes programmatically
+2. Aggregate recurring patterns across runs
+3. File issues with deterministic evidence
+4. Audit compliance and enforcement
+
+---
+
+## When to Use ARB
+
+**Use ARB when:**
+
+- Debugging a failing QA step and you need a deterministic receipt artifact for validation
+- Updating enforcement flows and you want receipts produced as part of the normal run
+- Summarizing recurring advice from recent lint/test/coverage runs
+- Filing issues with structured evidence (lint violations, test failures, etc.)
+- Auditing QA compliance across an ADR or release cycle
+
+**Do NOT use ARB for:**
+
+- One-off interactive command execution (use the tool directly)
+- Time-sensitive operations (ARB adds receipt overhead; ~5-10% slower)
+- Steps where receipt artifacts would clutter the workspace unnecessarily
+
+---
+
+## Available Commands
+
+### Wrap a QA Tool (Generic)
+
+```bash
+uv run -m gzkit arb ruff
+uv run -m gzkit arb ruff --fix
+uv run -m gzkit arb step --name unittest -- uv run -m unittest -q
+uv run -m gzkit arb ty check . --exclude 'features/**'
+uv run -m gzkit arb coverage run -m unittest discover -s tests -t .
+```
+
+### Validate & Analyze Receipts
+
+```bash
+uv run -m gzkit arb validate
+uv run -m gzkit arb validate --limit 50
+uv run -m gzkit arb advise
+uv run -m gzkit arb advise --category lint
+```
+
+---
+
+## Receipt Schema & Storage
+
+- **Schema:** `data/schemas/arb_lint_receipt.schema.json`
+- **Storage:** `artifacts/receipts/`
+
+---
+
+## Exit Codes
+
+- **0:** Command succeeded; receipt created
+- **1:** Command failed; receipt created with error status
+- **2:** ARB internal error

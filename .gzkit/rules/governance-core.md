@@ -1,3 +1,10 @@
+---
+id: governance-core
+paths:
+  - "**/*"
+description: Non-negotiable governance workflow rules
+---
+
 # Governance Core (gzkit)
 
 ## Non-negotiable rules

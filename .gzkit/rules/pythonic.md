@@ -1,0 +1,44 @@
+---
+id: pythonic
+paths:
+  - "**/*.py"
+description: Pythonic standards and idiomatic code contract
+---
+
+# Pythonic Standards (Idiomatic Code Contract)
+
+## Core Principles
+
+1. **Clarity over cleverness** — explicit, readable, consistent code
+2. **Separation of concerns** — isolate IO, transforms, QC, persistence
+3. **Typed interfaces** — enforce with `uvx ty check .`
+4. **EAFP for IO, LBYL for contracts** — clear error boundaries
+5. **Context managers** — for files, DBs, sessions, progress phases
+6. **No mutable defaults** — use `None` + factory
+7. **Pydantic BaseModel for data** — TypedDict for shapes; see models policy
+8. **Explicit exceptions** — typed errors; **no bare `except:` / `except Exception:`**
+9. **Small units** — <=50 lines/function, <=600 lines/module, <=300 lines/class
+10. **No implicit globals** — explicit configuration and state
+
+## Size Limits & Refactoring
+
+**Limits:** Functions <=50 lines | Modules <=600 lines | Classes <=300 lines
+
+## Imports (PEP 8)
+
+- **Top-level imports only.** Standard library, third-party, then local.
+- **No lazy imports** unless required for optional dependencies or cycle avoidance.
+
+## Error Handling
+
+- Catch specific exceptions, translate to `core.errors`.
+- **No bare `except:` / `except Exception:`** outside CLI boundaries.
+
+## Toolchain (Astral)
+
+| Tool         | Role                  | Command                 |
+| ------------ | --------------------- | ----------------------- |
+| **uv**       | Environment/execution | `uv run` / `uvx`        |
+| **ruff**     | Linting/formatting    | `uv run ruff check .`   |
+| **ty**       | Static typing         | `uvx ty check .`        |
+| **unittest** | Testing               | `uv run -m unittest -q` |
