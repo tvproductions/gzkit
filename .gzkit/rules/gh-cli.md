@@ -1,7 +1,9 @@
 ---
+id: gh-cli
 paths:
   - ".github/**"
   - "docs/design/adr/**"
+description: GitHub CLI usage guardrails
 ---
 
 # GitHub CLI Guardrails (gzkit)

@@ -1,4 +1,7 @@
-"""Tests for gzkit.rules — instruction classification and nested AGENTS.md."""
+"""Tests for gzkit.rules — instruction classification, nested AGENTS.md, and canonical rules.
+
+@covers ADR-0.16.0  OBPI-0.16.0-02 rules-as-content
+"""
 
 import tempfile
 import unittest
@@ -268,3 +271,252 @@ class TestValidateRulePlacement(unittest.TestCase):
 
             self.assertTrue(len(warnings) > 0)
             self.assertIn("claude-only", warnings[0])
+
+
+# ---------------------------------------------------------------------------
+# Canonical rule tests (OBPI-0.16.0-02)
+# ---------------------------------------------------------------------------
+
+_VALID_RULE = """\
+---
+id: test-rule
+paths:
+  - "src/**/*.py"
+description: A test rule
+---
+
+# Test Rule
+
+Body content here.
+"""
+
+_VALID_RULE_MULTI_PATH = """\
+---
+id: multi-path
+paths:
+  - "src/**/*.py"
+  - "tests/**/*.py"
+description: Multi-path rule
+---
+
+# Multi-path Rule
+"""
+
+
+class TestRuleFrontmatter(unittest.TestCase):
+    """RuleFrontmatter Pydantic model constraints."""
+
+    def test_valid_frontmatter(self) -> None:
+        from gzkit.rules import RuleFrontmatter
+
+        fm = RuleFrontmatter(id="my-rule", paths=["src/**"], description="A rule")
+        self.assertEqual(fm.id, "my-rule")
+        self.assertEqual(fm.paths, ["src/**"])
+        self.assertEqual(fm.description, "A rule")
+
+    def test_frozen(self) -> None:
+        from pydantic import ValidationError
+
+        from gzkit.rules import RuleFrontmatter
+
+        fm = RuleFrontmatter(id="x", paths=["*"], description="d")
+        with self.assertRaises(ValidationError):
+            fm.id = "changed"  # type: ignore[misc]
+
+    def test_extra_forbid(self) -> None:
+        from pydantic import ValidationError
+
+        from gzkit.rules import RuleFrontmatter
+
+        with self.assertRaises(ValidationError):
+            RuleFrontmatter(
+                id="x",
+                paths=["*"],
+                description="d",
+                bogus="y",  # type: ignore[call-arg]
+            )
+
+    def test_paths_required_nonempty(self) -> None:
+        from pydantic import ValidationError
+
+        from gzkit.rules import RuleFrontmatter
+
+        with self.assertRaises(ValidationError):
+            RuleFrontmatter(id="x", paths=[], description="d")
+
+    def test_missing_required_fields(self) -> None:
+        from pydantic import ValidationError
+
+        from gzkit.rules import RuleFrontmatter
+
+        with self.assertRaises(ValidationError):
+            RuleFrontmatter(id="x")  # type: ignore[call-arg]
+
+
+class TestCanonicalRule(unittest.TestCase):
+    """CanonicalRule model."""
+
+    def test_valid_canonical_rule(self) -> None:
+        from gzkit.rules import CanonicalRule, RuleFrontmatter
+
+        fm = RuleFrontmatter(id="test", paths=["*"], description="d")
+        rule = CanonicalRule(frontmatter=fm, body="# Body", source_path="test.md")
+        self.assertEqual(rule.frontmatter.id, "test")
+        self.assertEqual(rule.body, "# Body")
+
+    def test_frozen(self) -> None:
+        from pydantic import ValidationError
+
+        from gzkit.rules import CanonicalRule, RuleFrontmatter
+
+        fm = RuleFrontmatter(id="test", paths=["*"], description="d")
+        rule = CanonicalRule(frontmatter=fm, body="# Body", source_path="test.md")
+        with self.assertRaises(ValidationError):
+            rule.body = "changed"  # type: ignore[misc]
+
+
+class TestLoadRule(unittest.TestCase):
+    """load_rule() file parsing and validation."""
+
+    def test_load_valid_rule(self) -> None:
+        from gzkit.rules import load_rule
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "test-rule.md"
+            path.write_text(_VALID_RULE, encoding="utf-8")
+
+            rule = load_rule(path)
+
+            self.assertEqual(rule.frontmatter.id, "test-rule")
+            self.assertEqual(rule.frontmatter.paths, ["src/**/*.py"])
+            self.assertEqual(rule.frontmatter.description, "A test rule")
+            self.assertIn("Body content here.", rule.body)
+
+    def test_load_multi_path_rule(self) -> None:
+        from gzkit.rules import load_rule
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "multi.md"
+            path.write_text(_VALID_RULE_MULTI_PATH, encoding="utf-8")
+
+            rule = load_rule(path)
+
+            self.assertEqual(len(rule.frontmatter.paths), 2)
+
+    def test_missing_frontmatter_raises_value_error(self) -> None:
+        from gzkit.rules import load_rule
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "bad.md"
+            path.write_text("# No frontmatter here", encoding="utf-8")
+
+            with self.assertRaises(ValueError):
+                load_rule(path)
+
+    def test_unclosed_frontmatter_raises_value_error(self) -> None:
+        from gzkit.rules import load_rule
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "bad.md"
+            path.write_text("---\nid: x\n# No closing delimiter", encoding="utf-8")
+
+            with self.assertRaises(ValueError):
+                load_rule(path)
+
+    def test_invalid_frontmatter_raises_validation_error(self) -> None:
+        from pydantic import ValidationError
+
+        from gzkit.rules import load_rule
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "bad.md"
+            path.write_text("---\nid: x\n---\n# Missing paths and description", encoding="utf-8")
+
+            with self.assertRaises(ValidationError):
+                load_rule(path)
+
+
+class TestLoadRules(unittest.TestCase):
+    """load_rules() directory loading."""
+
+    def test_load_multiple_rules_sorted_by_id(self) -> None:
+        from gzkit.rules import load_rules
+
+        with tempfile.TemporaryDirectory() as tmp:
+            rules_dir = Path(tmp)
+            (rules_dir / "zebra.md").write_text(
+                '---\nid: zebra\npaths:\n  - "**"\ndescription: Z rule\n---\n# Z',
+                encoding="utf-8",
+            )
+            (rules_dir / "alpha.md").write_text(
+                '---\nid: alpha\npaths:\n  - "**"\ndescription: A rule\n---\n# A',
+                encoding="utf-8",
+            )
+
+            rules = load_rules(rules_dir)
+
+            self.assertEqual(len(rules), 2)
+            self.assertEqual(rules[0].frontmatter.id, "alpha")
+            self.assertEqual(rules[1].frontmatter.id, "zebra")
+
+    def test_load_empty_directory(self) -> None:
+        from gzkit.rules import load_rules
+
+        with tempfile.TemporaryDirectory() as tmp:
+            rules = load_rules(Path(tmp))
+            self.assertEqual(rules, [])
+
+    def test_nonexistent_directory_raises_value_error(self) -> None:
+        from gzkit.rules import load_rules
+
+        with self.assertRaises(ValueError):
+            load_rules(Path("/nonexistent/path/rules"))
+
+    def test_load_actual_canonical_rules(self) -> None:
+        """Integration: load the real .gzkit/rules/ directory."""
+        from gzkit.rules import load_rules
+
+        rules_dir = Path(".gzkit/rules")
+        if not rules_dir.is_dir():
+            self.skipTest(".gzkit/rules/ not found")
+
+        rules = load_rules(rules_dir)
+
+        self.assertGreaterEqual(len(rules), 11)
+        ids = {r.frontmatter.id for r in rules}
+        self.assertIn("governance-core", ids)
+        self.assertIn("tests", ids)
+        self.assertIn("models", ids)
+        self.assertIn("pythonic", ids)
+        self.assertIn("cli", ids)
+
+
+class TestRegistryRuleIntegration(unittest.TestCase):
+    """Registry now has RuleFrontmatter for Rule type."""
+
+    def test_rule_type_has_frontmatter_model(self) -> None:
+        from gzkit.registry import REGISTRY
+        from gzkit.rules import RuleFrontmatter
+
+        rule_type = REGISTRY.get("Rule")
+        self.assertIs(rule_type.frontmatter_model, RuleFrontmatter)
+
+    def test_rule_type_has_schema_name(self) -> None:
+        from gzkit.registry import REGISTRY
+
+        rule_type = REGISTRY.get("Rule")
+        self.assertEqual(rule_type.schema_name, "rule")
+
+    def test_validate_artifact_rule_valid(self) -> None:
+        from gzkit.registry import REGISTRY
+
+        fm = {"id": "test-rule", "paths": ["src/**"], "description": "A rule"}
+        errors = REGISTRY.validate_artifact("Rule", fm, "test.md")
+        self.assertEqual(errors, [])
+
+    def test_validate_artifact_rule_invalid(self) -> None:
+        from gzkit.registry import REGISTRY
+
+        fm = {"id": "test-rule"}  # missing paths and description
+        errors = REGISTRY.validate_artifact("Rule", fm, "test.md")
+        self.assertGreater(len(errors), 0)

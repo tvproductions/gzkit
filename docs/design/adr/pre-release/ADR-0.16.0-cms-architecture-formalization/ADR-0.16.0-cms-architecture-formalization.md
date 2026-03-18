@@ -106,7 +106,7 @@ always schema-enforced.
 | # | OBPI | Specification Summary | Lane | Status |
 |---|------|----------------------|------|--------|
 | 1 | OBPI-0.16.0-01-content-type-registry | Formal registry of all governance content types with Pydantic models, schemas, lifecycle rules | Lite | Completed |
-| 2 | OBPI-0.16.0-02-rules-as-content | Implement .gzkit/rules/ as canonical content; define vendor-neutral rule format | Lite | Pending |
+| 2 | OBPI-0.16.0-02-rules-as-content | Implement .gzkit/rules/ as canonical content; define vendor-neutral rule format | Lite | Completed |
 | 3 | OBPI-0.16.0-03-vendor-manifest-schema | Extend manifest.json with vendors section; Pydantic model for vendor enablement | Lite | Pending |
 | 4 | OBPI-0.16.0-04-template-engine | Make gz agent sync vendor-aware; render canonical content to enabled vendor shapes | Lite | Pending |
 | 5 | OBPI-0.16.0-05-content-lifecycle-state-machine | Explicit Pydantic-enforced lifecycle transitions; ledger-recorded state changes | Lite | Pending |

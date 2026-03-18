@@ -129,6 +129,7 @@ REGISTRY = ContentTypeRegistry()
 def _bootstrap_registry() -> None:
     """Register all known governance content types."""
     from gzkit.models.frontmatter import AdrFrontmatter, ObpiFrontmatter, PrdFrontmatter
+    from gzkit.rules import RuleFrontmatter  # noqa: PLC0415 — avoids circular import
 
     REGISTRY.register(
         ContentType(
@@ -173,8 +174,8 @@ def _bootstrap_registry() -> None:
     REGISTRY.register(
         ContentType(
             name="Rule",
-            schema_name=None,
-            frontmatter_model=None,
+            schema_name="rule",
+            frontmatter_model=RuleFrontmatter,
             lifecycle_states=["Active", "Deprecated"],
             canonical_path_pattern=".gzkit/rules/**/*.md",
             vendor_rendering_rules={"mirror_to": ["claude", "github"]},

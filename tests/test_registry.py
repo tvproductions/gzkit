@@ -159,9 +159,14 @@ class TestGlobalRegistry(unittest.TestCase):
         self.assertIs(REGISTRY.get("PRD").frontmatter_model, PrdFrontmatter)
 
     def test_unschematized_types_have_no_model(self) -> None:
-        for name in ("Constitution", "Rule", "Skill", "Attestation"):
+        for name in ("Constitution", "Skill", "Attestation"):
             with self.subTest(name=name):
                 self.assertIsNone(REGISTRY.get(name).frontmatter_model)
+
+    def test_rule_has_frontmatter_model(self) -> None:
+        from gzkit.rules import RuleFrontmatter
+
+        self.assertIs(REGISTRY.get("Rule").frontmatter_model, RuleFrontmatter)
 
     def test_ledger_event_has_schema_but_no_frontmatter_model(self) -> None:
         le = REGISTRY.get("LedgerEvent")

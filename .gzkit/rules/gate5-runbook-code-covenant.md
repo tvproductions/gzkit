@@ -1,7 +1,9 @@
 ---
+id: gate5-runbook-code-covenant
 paths:
   - "docs/**"
   - "src/gzkit/**"
+description: Documentation-code covenant for Gate 5
 ---
 
 # Gate 5 Runbook-Code Covenant (gzkit)

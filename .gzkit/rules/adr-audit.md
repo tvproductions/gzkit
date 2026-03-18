@@ -1,6 +1,8 @@
 ---
+id: adr-audit
 paths:
   - "docs/design/adr/**"
+description: ADR audit verification procedures
 ---
 
 # ADR Audit (gzkit)
