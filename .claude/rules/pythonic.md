@@ -30,7 +30,7 @@ paths:
 
 ## Architecture & Typing
 
-**Structure:** Packages by concern (`core/`, `io/`, `pipeline/`, `datasets/`, `bootstrap/`). Dataset hooks in `warehouse/datasets/*`. Public API via `__all__`.
+**Structure:** Packages by concern (`commands/`, `hooks/`, `models/`, `schemas/`). Public API via `__all__`.
 
 **Typing:** Use `ty` for static checking. Public APIs annotated. `TypedDict` for shapes, Pydantic `BaseModel` for records. `# type: ignore` needs justification. No untyped new code.
 
@@ -148,5 +148,5 @@ PRs and CI enforce this file. Deviations require documented ADR.
 [lint]
 select = ["E", "F", "I", "BLE"]
 [lint.per-file-ignores]
-"src/airlineops/cli/entrypoint.py" = ["BLE001"]
+"src/gzkit/cli.py" = ["BLE001"]
 ```

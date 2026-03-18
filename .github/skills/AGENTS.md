@@ -3,9 +3,9 @@
 
 > Shared subtree rules. See root `AGENTS.md` for project-wide governance.
 
-# Copilot Chores Workflow (opsdev)
+# Chores Workflow (gzkit)
 
-> **Purpose:** Enable Copilot to run repository chores effectively with clear, repeatable command sequences, aligned to AirlineOps guardrails.
+> **Purpose:** Enable agents to run repository chores effectively with clear, repeatable command sequences, aligned to gzkit guardrails.
 
 ## Core Principles
 
@@ -21,16 +21,16 @@
 ### 1. Discover Chores
 
 ```bash
-uv run -m opsdev chores list
-uv run -m opsdev chores show <chore_slug>
+uv run gz chores list
+uv run gz chores show <chore_slug>
 ```
 
 ### 2. Plan & Advise
 
 ```bash
 # Replace plan to avoid drift
-uv run -m opsdev chores plan <chore_slug> --replace
-uv run -m opsdev chores advise <chore_slug>
+uv run gz chores plan <chore_slug> --replace
+uv run gz chores advise <chore_slug>
 ```
 
 ### 3. Apply Advice (Copilot Execution Steps)
@@ -51,18 +51,18 @@ uvx ty check . --exclude 'features/**'
 uv run -m unittest -q
 
 # Sync when ready
-uv run -m opsdev sync-repo --apply
+uv run gz sync-repo --apply
 ```
 
 ### 4. Run Chore (Lane Selection)
 
 ### 4. Run Chore
 
-Lane is selected from the chore registry entry in `config/opsdev.chores.json`.
-Confirm the configured lane with `uv run -m opsdev chores show <chore_slug>`.
+Lane is selected from the chore registry entry in `config/gzkit.chores.json`.
+Confirm the configured lane with `uv run gz chores show <chore_slug>`.
 
 ```bash
-uv run -m opsdev chores run <chore_slug>
+uv run gz chores run <chore_slug>
 ```
 
 ## Evidence & Attestation
@@ -71,9 +71,7 @@ uv run -m opsdev chores run <chore_slug>
 
 ```bash
 # External contract evidence (Heavy lane)
-uv run -m airlineops reports db1b --quarter 2025-Q1
-uv run -m airlineops warehouse discover bts_db28_ticket --quarter 2025-Q1
-uv run -m opsdev gates
+uv run gz gates
 uv run behave features/<feature>.feature --tags=@schema
 ```
 
@@ -89,11 +87,11 @@ uv run behave features/<feature>.feature --tags=@schema
 
 ```bash
 # 1. Plan & Advise
-uv run -m opsdev chores plan <chore_slug> --replace
-uv run -m opsdev chores advise <chore_slug>
+uv run gz chores plan <chore_slug> --replace
+uv run gz chores advise <chore_slug>
 
-# 2. Run the chore (lane comes from config/opsdev.chores.json)
-uv run -m opsdev chores run <chore_slug>
+# 2. Run the chore (lane comes from config/gzkit.chores.json)
+uv run gz chores run <chore_slug>
 
 # 3. Validate
 uv run ruff check . --fix && uv run ruff format .
@@ -101,24 +99,24 @@ uvx ty check . --exclude 'features/**'
 uv run -m unittest -q
 
 # 4. Sync
-uv run -m opsdev sync-repo --apply
+uv run gz sync-repo --apply
 ```
 
 ### Example 2: Contract/Docs/CLI Chore (Heavy)
 
 ```bash
 # 1. Plan & Advise
-uv run -m opsdev chores plan cli-contract-governance --replace
-uv run -m opsdev chores advise cli-contract-governance
+uv run gz chores plan cli-contract-governance --replace
+uv run gz chores advise cli-contract-governance
 
 # 2. Run the chore (configured lane: Heavy)
-uv run -m opsdev chores run cli-contract-governance
+uv run gz chores run cli-contract-governance
 
 # 3. Validate gates
-uv run -m opsdev gates
+uv run gz gates
 
 # 4. Sync
-uv run -m opsdev sync-repo --apply
+uv run gz sync-repo --apply
 ```
 
 ## Copilot Execution Checklist
