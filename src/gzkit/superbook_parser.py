@@ -149,12 +149,16 @@ def parse_plan(path: Path) -> PlanData:
             tasks.append(TaskData(name=task_name, file_paths=file_paths, steps=steps))
             all_file_paths.extend(file_paths)
 
+        # Synthesize acceptance criteria from task names when plan
+        # does not provide explicit criteria sections.
+        criteria = [t.name for t in tasks] if tasks else []
+
         chunks.append(
             ChunkData(
                 name=chunk_name,
                 tasks=tasks,
                 file_paths=sorted(set(all_file_paths)),
-                criteria=[],
+                criteria=criteria,
             )
         )
 
