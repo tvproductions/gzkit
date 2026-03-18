@@ -53,7 +53,9 @@ agents and documented in SKILL.md.
    - `DONE_WITH_CONCERNS` — log concerns, advance
    - `NEEDS_CONTEXT` — provide requested context, re-dispatch
    - `BLOCKED` — log blocker, attempt fix (2 tries), then handoff
-1. REQUIREMENT: Model-aware routing — simple tasks (1-2 files, mechanical changes) MAY use economical models; integration/architecture tasks MUST use capable models.
+1. REQUIREMENT: Model-aware routing — simple tasks (1-2 files, mechanical changes) MAY use economical models (`haiku`); integration/architecture tasks MUST use capable models (`opus`). The controller overrides the agent file's `model: inherit` via the Agent tool's `model` parameter per-dispatch.
+1. REQUIREMENT: Implementer subagent MUST be dispatched using the `.claude/agents/implementer.md` agent file, which enforces `permissionMode: acceptEdits` (non-blocking file writes) and `maxTurns: 25` (bounded loop).
+1. REQUIREMENT: File path enforcement MUST use a `hooks.PreToolUse` hook on Edit/Write tools that validates against the brief's allowed paths — structural enforcement, not prompt-only instruction.
 1. NEVER: Dispatch multiple implementer subagents in parallel for the same OBPI.
 1. NEVER: Let the controller write implementation code directly — it orchestrates only.
 1. ALWAYS: After all tasks complete, the controller MUST proceed to Stage 3 immediately (Iron Law).
@@ -69,20 +71,43 @@ For each task in approved_plan.tasks:
      - Allowed file paths (intersection of brief allowlist and task scope)
      - Test expectations (what tests to write, what to verify)
      - TDD discipline: write failing test -> verify failure -> implement -> verify pass
-  2. Select model based on task complexity
-  3. Dispatch implementer subagent via Agent tool
+  2. Select model based on task complexity:
+     - SIMPLE (1-2 files, mechanical) → model: "haiku"
+     - STANDARD (3-5 files, feature) → model: "sonnet"
+     - COMPLEX (6+ files, cross-module) → model: "opus"
+  3. Dispatch implementer subagent via Agent tool:
+     - subagent_type: "implementer" (references .claude/agents/implementer.md)
+     - model: override from step 2 (takes precedence over agent file's "inherit")
+     - Agent file enforces: tools allowlist, permissionMode, maxTurns, hooks
   4. Receive structured result
   5. Handle result status (advance / re-dispatch / fix / handoff)
   6. Update task tracking (TaskUpdate)
   7. [If reviewer protocol enabled] Dispatch reviewer subagents (OBPI-03)
 ```
 
+### File Path Enforcement Hook
+
+The implementer agent file includes a `PreToolUse` hook that validates Edit/Write targets against the brief's allowed paths. The controller generates a task-scoped allowlist and injects it as an environment variable before dispatch:
+
+```text
+hooks:
+  PreToolUse:
+    - matcher: "Edit|Write"
+      hooks:
+        - type: command
+          command: "./scripts/validate-allowed-paths.sh"
+```
+
+The validation script reads `$PIPELINE_ALLOWED_PATHS` and exits with code 2 (block) if the target file is outside scope. This is structural enforcement — the subagent cannot bypass it via prompt manipulation.
+
 ## Edge Cases
 
 - Plan has zero tasks (degenerate case) — skip Stage 2, proceed to Stage 3
 - Subagent returns `NEEDS_CONTEXT` repeatedly (circuit breaker after 2 re-dispatches) — treat as BLOCKED
-- Subagent modifies files outside allowed paths — controller rejects result, re-dispatches with stricter scope
+- Subagent attempts to modify files outside allowed paths — `PreToolUse` hook blocks the tool call (exit code 2); subagent must work within scope or return `BLOCKED`
 - Subagent crashes or times out — treat as BLOCKED, log error, attempt re-dispatch once
+- `maxTurns` (25) exceeded before task completion — Agent tool terminates subagent; controller treats as BLOCKED
+- Model override produces unexpected cost — controller logs model selection rationale for auditability
 
 ## Quality Gates (Heavy)
 

@@ -3,7 +3,7 @@ id: OBPI-0.15.0-03-ledger-event-discrimination
 parent: ADR-0.15.0-pydantic-schema-enforcement
 item: 3
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
@@ -51,38 +51,60 @@ Lite — ADR note + stdlib unittest + smoke (≤60s).
 
 ## QUALITY GATES (Lite)
 
-- [ ] Gate 1 (ADR): Intent recorded in this brief
-- [ ] Gate 2 (TDD): `uv run gz test` — all tests pass
-- [ ] Code Quality: `uv run gz lint` + `uv run gz typecheck` clean
+- [x] Gate 1 (ADR): Intent recorded in this brief
+- [x] Gate 2 (TDD): `uv run gz test` — 571 tests pass
+- [x] Code Quality: `uv run gz lint` + `uv run gz typecheck` clean
 
 ## Evidence
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+uv run -m unittest tests.test_ledger tests.test_validate -v
+Ran 69 tests in 0.013s — OK
+events.py coverage: 93.95%
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+uv run gz lint — All checks passed
+uv run gz typecheck — All checks passed
+```
+
+### Implementation Summary
+
+Created `src/gzkit/events.py` with:
+- Nested evidence models: `ReqProofInput`, `ScopeAudit`, `GitSyncState`, `ObpiReceiptEvidence`
+- 12 typed event models with `Literal` discriminators on the `event` field
+- `TypedLedgerEvent` discriminated union with `parse_typed_event()` entry point
+- Backward-compatible `.extra` property on typed events
+
+Updated `src/gzkit/validate.py`:
+- Replaced ~280 lines of manual validation (`_validate_obpi_receipt_evidence` and 6 sub-functions) with 20-line Pydantic model validation
+- Error field paths match exactly for backward-compatible error detection
+
+### Key Proof
+
+```bash
+uv run -m unittest tests.test_ledger.TestTypedEventModels tests.test_ledger.TestNestedEvidenceModels tests.test_validate.TestValidateLedger -v
+# 18/18 pass — typed models parse correctly, existing validation unchanged
 ```
 
 ## Human Attestation
 
-- Attestor: `n/a`
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `human:jeff`
+- Attestation: `attest completed`
+- Date: `2026-03-18`
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-18
 
 **Evidence Hash:** -

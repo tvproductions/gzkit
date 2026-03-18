@@ -10,13 +10,10 @@ from pathlib import Path
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict
+from pydantic import ValidationError as PydanticValidationError
 
 from gzkit.decomposition import parse_checklist_items, parse_scorecard
-from gzkit.ledger import (
-    OBPI_ATTESTATION_REQUIREMENTS,
-    REQ_PROOF_INPUT_KINDS,
-    REQ_PROOF_INPUT_STATUSES,
-)
+from gzkit.events import ObpiReceiptEvidence, pydantic_loc_to_field_path
 from gzkit.rules import validate_rule_placement
 from gzkit.schemas import load_schema
 
@@ -359,285 +356,31 @@ def _validate_obpi_receipt_evidence(
     ledger_path: Path,
     line_no: int,
 ) -> None:
+    """Validate obpi_receipt_emitted evidence via Pydantic discriminated model.
+
+    Replaces manual dispatch with ObpiReceiptEvidence model validation.
+    Pydantic errors are converted to gzkit ValidationError format with
+    matching field paths for backward-compatible error detection.
+    """
     evidence = entry.get("evidence")
     if not isinstance(evidence, dict):
         return
-
-    _validate_req_proof_inputs(evidence.get("req_proof_inputs"), errors, ledger_path, line_no)
-
-    attestation_requirement = evidence.get("attestation_requirement")
-    if (
-        attestation_requirement is not None
-        and attestation_requirement not in OBPI_ATTESTATION_REQUIREMENTS
-    ):
-        _append_ledger_error(
-            errors,
-            ledger_path,
-            line_no,
-            "evidence.attestation_requirement must be required or optional.",
-            field="evidence.attestation_requirement",
-        )
-
-    parent_lane = evidence.get("parent_lane")
-    if parent_lane is not None and parent_lane not in {"lite", "heavy"}:
-        _append_ledger_error(
-            errors,
-            ledger_path,
-            line_no,
-            "evidence.parent_lane must be lite or heavy.",
-            field="evidence.parent_lane",
-        )
-
-    attestation_date = evidence.get("attestation_date")
-    if attestation_date is not None and (
-        not isinstance(attestation_date, str)
-        or not re.match(r"^\d{4}-\d{2}-\d{2}$", attestation_date)
-    ):
-        _append_ledger_error(
-            errors,
-            ledger_path,
-            line_no,
-            "evidence.attestation_date must use YYYY-MM-DD when present.",
-            field="evidence.attestation_date",
-        )
-
-    _validate_scope_audit(evidence.get("scope_audit"), errors, ledger_path, line_no)
-    _validate_git_sync_state(evidence.get("git_sync_state"), errors, ledger_path, line_no)
-    _validate_recorder_metadata(evidence, errors, ledger_path, line_no)
-
-
-def _validate_string_array_field(
-    value: Any,
-    *,
-    field: str,
-    errors: list[ValidationError],
-    ledger_path: Path,
-    line_no: int,
-) -> None:
-    if not isinstance(value, list):
-        _append_ledger_error(
-            errors,
-            ledger_path,
-            line_no,
-            f"{field} must be an array of non-empty strings.",
-            field=field,
-        )
-        return
-    for index, item in enumerate(value):
-        if not isinstance(item, str) or not item.strip():
+    try:
+        ObpiReceiptEvidence.model_validate(evidence)
+    except PydanticValidationError as exc:
+        for err in exc.errors():
+            field_path = pydantic_loc_to_field_path("evidence", err["loc"])
+            msg = err.get("msg", "")
+            # Strip Pydantic's "Value error, " prefix for clean messages
+            if msg.startswith("Value error, "):
+                msg = msg[len("Value error, ") :]
             _append_ledger_error(
                 errors,
                 ledger_path,
                 line_no,
-                f"{field}[{index}] must be a non-empty string.",
-                field=f"{field}[{index}]",
+                f"{field_path} {msg}.",
+                field=field_path,
             )
-
-
-def _validate_scope_audit(
-    scope_audit: Any,
-    errors: list[ValidationError],
-    ledger_path: Path,
-    line_no: int,
-) -> None:
-    if scope_audit is None:
-        return
-    if not isinstance(scope_audit, dict):
-        _append_ledger_error(
-            errors,
-            ledger_path,
-            line_no,
-            "evidence.scope_audit must be an object.",
-            field="evidence.scope_audit",
-        )
-        return
-
-    for field in ("allowlist", "changed_files", "out_of_scope_files"):
-        _validate_string_array_field(
-            scope_audit.get(field),
-            field=f"evidence.scope_audit.{field}",
-            errors=errors,
-            ledger_path=ledger_path,
-            line_no=line_no,
-        )
-
-
-def _validate_git_sync_state(
-    git_sync_state: Any,
-    errors: list[ValidationError],
-    ledger_path: Path,
-    line_no: int,
-) -> None:
-    if git_sync_state is None:
-        return
-    if not isinstance(git_sync_state, dict):
-        _append_ledger_error(
-            errors,
-            ledger_path,
-            line_no,
-            "evidence.git_sync_state must be an object.",
-            field="evidence.git_sync_state",
-        )
-        return
-
-    for field in ("branch", "remote", "head", "remote_head"):
-        value = git_sync_state.get(field)
-        if value is not None and (not isinstance(value, str) or not value.strip()):
-            _append_ledger_error(
-                errors,
-                ledger_path,
-                line_no,
-                f"evidence.git_sync_state.{field} must be a non-empty string when present.",
-                field=f"evidence.git_sync_state.{field}",
-            )
-
-    for field in ("dirty", "diverged"):
-        value = git_sync_state.get(field)
-        if not isinstance(value, bool):
-            _append_ledger_error(
-                errors,
-                ledger_path,
-                line_no,
-                f"evidence.git_sync_state.{field} must be a boolean.",
-                field=f"evidence.git_sync_state.{field}",
-            )
-
-    for field in ("ahead", "behind"):
-        value = git_sync_state.get(field)
-        if not isinstance(value, int) or value < 0:
-            _append_ledger_error(
-                errors,
-                ledger_path,
-                line_no,
-                f"evidence.git_sync_state.{field} must be a non-negative integer.",
-                field=f"evidence.git_sync_state.{field}",
-            )
-
-    for field in ("actions", "warnings", "blockers"):
-        _validate_string_array_field(
-            git_sync_state.get(field),
-            field=f"evidence.git_sync_state.{field}",
-            errors=errors,
-            ledger_path=ledger_path,
-            line_no=line_no,
-        )
-
-
-def _validate_recorder_metadata(
-    evidence: dict[str, Any],
-    errors: list[ValidationError],
-    ledger_path: Path,
-    line_no: int,
-) -> None:
-    recorder_source = evidence.get("recorder_source")
-    if recorder_source is not None and (
-        not isinstance(recorder_source, str) or not recorder_source.strip()
-    ):
-        _append_ledger_error(
-            errors,
-            ledger_path,
-            line_no,
-            "evidence.recorder_source must be a non-empty string when present.",
-            field="evidence.recorder_source",
-        )
-
-    recorder_warnings = evidence.get("recorder_warnings")
-    if recorder_warnings is not None:
-        _validate_string_array_field(
-            recorder_warnings,
-            field="evidence.recorder_warnings",
-            errors=errors,
-            ledger_path=ledger_path,
-            line_no=line_no,
-        )
-
-
-def _validate_req_proof_input_item(
-    item: Any,
-    *,
-    index: int,
-    errors: list[ValidationError],
-    ledger_path: Path,
-    line_no: int,
-) -> None:
-    """Validate one structured REQ-proof input row."""
-    field_prefix = f"evidence.req_proof_inputs[{index}]"
-    if not isinstance(item, dict):
-        _append_ledger_error(
-            errors,
-            ledger_path,
-            line_no,
-            f"{field_prefix} must be an object.",
-            field=field_prefix,
-        )
-        return
-
-    for required in ("name", "kind", "source", "status"):
-        value = item.get(required)
-        if not isinstance(value, str) or not value.strip():
-            _append_ledger_error(
-                errors,
-                ledger_path,
-                line_no,
-                f"{field_prefix}.{required} must be a non-empty string.",
-                field=f"{field_prefix}.{required}",
-            )
-    if item.get("kind") not in REQ_PROOF_INPUT_KINDS:
-        _append_ledger_error(
-            errors,
-            ledger_path,
-            line_no,
-            f"{field_prefix}.kind must be a supported proof-input kind.",
-            field=f"{field_prefix}.kind",
-        )
-    if item.get("status") not in REQ_PROOF_INPUT_STATUSES:
-        _append_ledger_error(
-            errors,
-            ledger_path,
-            line_no,
-            f"{field_prefix}.status must be present or missing.",
-            field=f"{field_prefix}.status",
-        )
-    for optional_field in ("scope", "gap_reason"):
-        optional_value = item.get(optional_field)
-        if optional_value is None:
-            continue
-        if not isinstance(optional_value, str) or not optional_value.strip():
-            _append_ledger_error(
-                errors,
-                ledger_path,
-                line_no,
-                f"{field_prefix}.{optional_field} must be a non-empty string when present.",
-                field=f"{field_prefix}.{optional_field}",
-            )
-
-
-def _validate_req_proof_inputs(
-    req_inputs: Any,
-    errors: list[ValidationError],
-    ledger_path: Path,
-    line_no: int,
-) -> None:
-    """Validate the structured REQ-proof inputs payload when present."""
-    if req_inputs is None:
-        return
-    if not isinstance(req_inputs, list) or not req_inputs:
-        _append_ledger_error(
-            errors,
-            ledger_path,
-            line_no,
-            "evidence.req_proof_inputs must be a non-empty array when present.",
-            field="evidence.req_proof_inputs",
-        )
-        return
-    for index, item in enumerate(req_inputs):
-        _validate_req_proof_input_item(
-            item,
-            index=index,
-            errors=errors,
-            ledger_path=ledger_path,
-            line_no=line_no,
-        )
 
 
 def validate_document(path: Path, schema_name: str) -> list[ValidationError]:

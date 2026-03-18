@@ -784,5 +784,189 @@ class TestLedger(unittest.TestCase):
         self.assertTrue(semantics["completed"])
 
 
+class TestTypedEventModels(unittest.TestCase):
+    """Tests for typed event models and discriminated union parsing."""
+
+    def test_parse_typed_event_project_init(self) -> None:
+        """Discriminated union parses project_init into ProjectInitEvent."""
+        from gzkit.events import ProjectInitEvent, parse_typed_event
+
+        data = {
+            "schema": "gzkit.ledger.v1",
+            "event": "project_init",
+            "id": "myproject",
+            "ts": "2026-01-01T00:00:00+00:00",
+            "mode": "lite",
+        }
+        event = parse_typed_event(data)
+        self.assertIsInstance(event, ProjectInitEvent)
+        self.assertEqual(event.mode, "lite")
+        self.assertEqual(event.id, "myproject")
+
+    def test_parse_typed_event_adr_created(self) -> None:
+        """Discriminated union parses adr_created into AdrCreatedEvent."""
+        from gzkit.events import AdrCreatedEvent, parse_typed_event
+
+        data = {
+            "schema": "gzkit.ledger.v1",
+            "event": "adr_created",
+            "id": "ADR-0.1.0",
+            "ts": "2026-01-01T00:00:00+00:00",
+            "parent": "OBPI-core",
+            "lane": "lite",
+        }
+        event = parse_typed_event(data)
+        self.assertIsInstance(event, AdrCreatedEvent)
+        self.assertEqual(event.lane, "lite")
+        self.assertEqual(event.parent, "OBPI-core")
+
+    def test_parse_typed_event_obpi_receipt(self) -> None:
+        """Discriminated union parses obpi_receipt_emitted into ObpiReceiptEmittedEvent."""
+        from gzkit.events import ObpiReceiptEmittedEvent, parse_typed_event
+
+        data = {
+            "schema": "gzkit.ledger.v1",
+            "event": "obpi_receipt_emitted",
+            "id": "OBPI-0.6.0-01-demo",
+            "parent": "ADR-0.6.0-demo",
+            "ts": "2026-01-01T00:00:00+00:00",
+            "receipt_event": "validated",
+            "attestor": "human:jeff",
+            "evidence": {"acceptance": "observed"},
+            "obpi_completion": "completed",
+        }
+        event = parse_typed_event(data)
+        self.assertIsInstance(event, ObpiReceiptEmittedEvent)
+        self.assertEqual(event.receipt_event, "validated")
+        self.assertEqual(event.obpi_completion, "completed")
+
+    def test_typed_event_backward_compat_extra(self) -> None:
+        """Typed event .extra property returns event-specific fields as dict."""
+        from gzkit.events import AdrCreatedEvent, parse_typed_event
+
+        data = {
+            "schema": "gzkit.ledger.v1",
+            "event": "adr_created",
+            "id": "ADR-0.1.0",
+            "ts": "2026-01-01T00:00:00+00:00",
+            "lane": "lite",
+        }
+        event = parse_typed_event(data)
+        self.assertIsInstance(event, AdrCreatedEvent)
+        self.assertEqual(event.extra["lane"], "lite")
+
+    def test_typed_event_model_dump_roundtrip(self) -> None:
+        """Typed event model_dump produces same output as LedgerEvent."""
+        from gzkit.events import parse_typed_event
+
+        data = {
+            "schema": "gzkit.ledger.v1",
+            "event": "adr_created",
+            "id": "ADR-0.1.0",
+            "ts": "2026-01-01T00:00:00+00:00",
+            "parent": "OBPI-core",
+            "lane": "lite",
+        }
+        typed = parse_typed_event(data)
+        legacy = LedgerEvent.model_validate(data)
+        self.assertEqual(typed.model_dump(), legacy.model_dump())
+
+    def test_parse_typed_event_unknown_type_raises(self) -> None:
+        """Unknown event type raises ValueError from discriminated union."""
+        from pydantic import ValidationError as PydanticValidationError
+
+        from gzkit.events import parse_typed_event
+
+        data = {
+            "schema": "gzkit.ledger.v1",
+            "event": "mystery_event",
+            "id": "ADR-0.1.0",
+            "ts": "2026-01-01T00:00:00+00:00",
+        }
+        with self.assertRaises(PydanticValidationError):
+            parse_typed_event(data)
+
+
+class TestNestedEvidenceModels(unittest.TestCase):
+    """Tests for Pydantic nested evidence models."""
+
+    def test_valid_req_proof_input(self) -> None:
+        """Valid ReqProofInput parses successfully."""
+        from gzkit.events import ReqProofInput
+
+        data = {
+            "name": "key_proof",
+            "kind": "command",
+            "source": "uv run gz test",
+            "status": "present",
+        }
+        proof = ReqProofInput.model_validate(data)
+        self.assertEqual(proof.name, "key_proof")
+        self.assertEqual(proof.kind, "command")
+
+    def test_invalid_req_proof_kind_rejected(self) -> None:
+        """Invalid kind in ReqProofInput raises validation error."""
+        from pydantic import ValidationError as PydanticValidationError
+
+        from gzkit.events import ReqProofInput
+
+        data = {
+            "name": "key_proof",
+            "kind": "unknown",
+            "source": "uv run gz test",
+            "status": "present",
+        }
+        with self.assertRaises(PydanticValidationError):
+            ReqProofInput.model_validate(data)
+
+    def test_valid_obpi_receipt_evidence(self) -> None:
+        """Valid ObpiReceiptEvidence parses successfully."""
+        from gzkit.events import ObpiReceiptEvidence
+
+        data = {
+            "parent_lane": "heavy",
+            "attestation_requirement": "required",
+            "scope_audit": {
+                "allowlist": ["docs/design/**"],
+                "changed_files": ["docs/design/adr.md"],
+                "out_of_scope_files": [],
+            },
+            "git_sync_state": {
+                "branch": "main",
+                "remote": "origin",
+                "head": "abc1234",
+                "remote_head": "abc1234",
+                "dirty": False,
+                "ahead": 0,
+                "behind": 0,
+                "diverged": False,
+                "actions": [],
+                "warnings": [],
+                "blockers": [],
+            },
+        }
+        evidence = ObpiReceiptEvidence.model_validate(data)
+        self.assertEqual(evidence.parent_lane, "heavy")
+        self.assertIsNotNone(evidence.scope_audit)
+        self.assertIsNotNone(evidence.git_sync_state)
+
+    def test_pydantic_loc_to_field_path(self) -> None:
+        """Field path conversion produces expected dotted paths with indices."""
+        from gzkit.events import pydantic_loc_to_field_path
+
+        self.assertEqual(
+            pydantic_loc_to_field_path("evidence", ("req_proof_inputs", 0, "kind")),
+            "evidence.req_proof_inputs[0].kind",
+        )
+        self.assertEqual(
+            pydantic_loc_to_field_path("evidence", ("scope_audit", "allowlist", 0)),
+            "evidence.scope_audit.allowlist[0]",
+        )
+        self.assertEqual(
+            pydantic_loc_to_field_path("evidence", ("git_sync_state", "dirty")),
+            "evidence.git_sync_state.dirty",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
