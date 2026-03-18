@@ -31,10 +31,6 @@ class ValidationError(BaseModel):
     message: str
     field: str | None = None  # Specific field that failed
 
-    def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary for JSON serialization."""
-        return self.model_dump(exclude_none=True)
-
 
 class ValidationResult(BaseModel):
     """Result of validation with errors."""
@@ -43,13 +39,6 @@ class ValidationResult(BaseModel):
 
     valid: bool
     errors: list[ValidationError]
-
-    def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary for JSON serialization."""
-        return {
-            "valid": self.valid,
-            "errors": [e.to_dict() for e in self.errors],
-        }
 
 
 def parse_frontmatter(content: str) -> tuple[dict[str, Any], str]:

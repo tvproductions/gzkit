@@ -2444,7 +2444,7 @@ def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
         dry_run=dry_run,
         allowed=not blockers,
         blockers=blockers,
-        event=event.to_dict() if event is not None else None,
+        event=event.model_dump() if event is not None else None,
         gate_1_path=gate_1_path,
         obpi_summary=obpi_summary,
         obpi_rows=obpi_rows,
@@ -2819,7 +2819,7 @@ def adr_emit_receipt_cmd(
 
     if dry_run:
         console.print("[yellow]Dry run:[/yellow] no ledger event will be written.")
-        console.print(json.dumps(event.to_dict(), indent=2))
+        console.print(json.dumps(event.model_dump(), indent=2))
         return
 
     ledger.append(event)
@@ -2907,7 +2907,7 @@ def obpi_emit_receipt_cmd(
 
     if dry_run:
         console.print("[yellow]Dry run:[/yellow] no ledger event will be written.")
-        console.print(json.dumps(event.to_dict(), indent=2))
+        console.print(json.dumps(event.model_dump(), indent=2))
         return
 
     ledger.append(event)
@@ -4293,7 +4293,7 @@ def validate(
     if as_json:
         result = {
             "valid": len(errors) == 0,
-            "errors": [e.to_dict() for e in errors],
+            "errors": [e.model_dump(exclude_none=True) for e in errors],
         }
         print(json.dumps(result, indent=2))
         return

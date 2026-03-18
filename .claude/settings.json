@@ -64,6 +64,10 @@
           {
             "type": "command",
             "command": "uv run python .claude/hooks/ledger-writer.py"
+          },
+          {
+            "type": "command",
+            "command": "uv run python .claude/hooks/control-surface-sync.py"
           }
         ]
       }
