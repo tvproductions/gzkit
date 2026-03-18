@@ -148,4 +148,4 @@ placeholders.
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.13.0 | Pending | | | |
+| 0.13.0 | Completed | Jeff | 2026-03-18 | completed |
