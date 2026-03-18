@@ -210,4 +210,4 @@ If "Request Changes," required fixes:
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.15.0 | Completed | Jeff | 2026-03-18 | completed |
+| 0.15.0 | Completed | Jeffry Babb | 2026-03-18 | completed |
