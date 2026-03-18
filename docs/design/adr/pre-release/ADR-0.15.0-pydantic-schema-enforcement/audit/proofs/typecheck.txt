@@ -1,0 +1,13 @@
+$ uv run gz typecheck
+
+[returncode] 0
+
+[stdout]
+Running type checker...
+All checks passed!
+
+Type check passed.
+
+
+[stderr]
+
