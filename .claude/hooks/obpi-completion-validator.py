@@ -214,7 +214,12 @@ def main():
         sys.exit(0)
 
     # 2. Is this changing status to Completed?
+    #    If old_string already contains Completed, the file is already in that state
+    #    and this edit is not introducing a status transition — allow it through.
+    old_string = tool_input.get("old_string", "")
     if not check_status_change_to_completed(new_string):
+        sys.exit(0)
+    if old_string and check_status_change_to_completed(old_string):
         sys.exit(0)
 
     # 3. Extract identifiers
