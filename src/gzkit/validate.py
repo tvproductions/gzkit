@@ -108,6 +108,9 @@ def validate_frontmatter(
 ) -> list[ValidationError]:
     """Validate frontmatter against schema requirements.
 
+    Uses Pydantic model instantiation for ADR, OBPI, and PRD content types.
+    Falls back to schema-driven validation for unknown schemas.
+
     Args:
         frontmatter: Parsed frontmatter dictionary.
         schema: Schema with frontmatter requirements.
@@ -116,12 +119,20 @@ def validate_frontmatter(
     Returns:
         List of validation errors.
     """
-    errors = []
+    from gzkit.models.frontmatter import (
+        validate_frontmatter_model,  # noqa: PLC0415 — avoid circular import at module level
+    )
+
+    model_result = validate_frontmatter_model(frontmatter, schema, artifact_path)
+    if model_result is not None:
+        return [ValidationError(**err) for err in model_result]
+
+    # Fallback: schema-driven validation for unregistered schema IDs
+    errors: list[ValidationError] = []
     fm_schema = schema.get("properties", {}).get("frontmatter", {})
     required_fields = fm_schema.get("required", [])
     field_schemas = fm_schema.get("properties", {})
 
-    # Check required fields
     for field in required_fields:
         if field not in frontmatter:
             errors.append(
@@ -133,14 +144,12 @@ def validate_frontmatter(
                 )
             )
 
-    # Validate field patterns and enums
     for field, value in frontmatter.items():
         if field not in field_schemas:
             continue
 
         field_schema = field_schemas[field]
 
-        # Check pattern
         if "pattern" in field_schema:
             pattern = field_schema["pattern"]
             if not re.match(pattern, str(value)):
@@ -153,7 +162,6 @@ def validate_frontmatter(
                     )
                 )
 
-        # Check enum
         if "enum" in field_schema:
             allowed = field_schema["enum"]
             if value not in allowed:
