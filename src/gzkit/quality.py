@@ -40,6 +40,7 @@ def run_command(command: str, cwd: Path | None = None) -> QualityResult:
 
     Returns:
         QualityResult with command output.
+
     """
     try:
         result = subprocess.run(
@@ -74,6 +75,7 @@ def run_lint(project_root: Path) -> QualityResult:
 
     Returns:
         QualityResult from linting.
+
     """
     ruff_result = run_command("uvx ruff check src tests", cwd=project_root)
     path_contract_result = run_adr_path_contract_lint(project_root)
@@ -102,7 +104,6 @@ def run_adr_path_contract_lint(project_root: Path) -> QualityResult:
     This check blocks regressions to legacy series-folder links like
     ``docs/design/adr/adr-0.2.x/...``.
     """
-
     docs_design_root = project_root / "docs" / "design"
     files_to_scan: list[Path] = []
     if docs_design_root.exists():
@@ -176,6 +177,7 @@ def run_format_check(project_root: Path) -> QualityResult:
 
     Returns:
         QualityResult from format check.
+
     """
     return run_command("uvx ruff format --check .", cwd=project_root)
 
@@ -188,6 +190,7 @@ def run_format(project_root: Path) -> QualityResult:
 
     Returns:
         QualityResult from formatting.
+
     """
     # Run ruff format first
     format_result = run_command("uvx ruff format .", cwd=project_root)
@@ -215,6 +218,7 @@ def run_typecheck(project_root: Path) -> QualityResult:
 
     Returns:
         QualityResult from type checking.
+
     """
     return run_command("uvx ty check src", cwd=project_root)
 
@@ -227,6 +231,7 @@ def run_tests(project_root: Path) -> QualityResult:
 
     Returns:
         QualityResult from testing.
+
     """
     return run_command("uv run -m unittest discover tests", cwd=project_root)
 
@@ -266,6 +271,7 @@ def run_all_checks(project_root: Path) -> CheckResult:
 
     Returns:
         CheckResult with all check results.
+
     """
     lint = run_lint(project_root)
     format_check = run_format_check(project_root)
@@ -307,6 +313,7 @@ def run_pymarkdown(project_root: Path) -> QualityResult:
 
     Returns:
         QualityResult from PyMarkdown.
+
     """
     return run_command("uv run -m pymarkdown scan docs/", cwd=project_root)
 

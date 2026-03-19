@@ -48,6 +48,7 @@ def is_governance_artifact(path: str) -> bool:
 
     Returns:
         True if the path matches a governance pattern.
+
     """
     # Normalize path separators
     normalized = path.replace("\\", "/")
@@ -63,6 +64,7 @@ def validate_obpi_transition(project_root: Path, path: str) -> None:
 
     Raises:
         GzCliError: If validation fails.
+
     """
     validator = ObpiValidator(project_root)
     obpi_path = project_root / path
@@ -296,6 +298,7 @@ def record_artifact_edit(
 
     Returns:
         True if event was recorded, False otherwise.
+
     """
     if not is_governance_artifact(path):
         return False
@@ -348,6 +351,7 @@ def run_light_validation(project_root: Path) -> list[str]:
 
     Returns:
         List of validation issues (empty if all checks pass).
+
     """
     issues = []
 
@@ -378,6 +382,7 @@ def generate_hook_script(hook_type: str, project_root: Path) -> str:
 
     Returns:
         Python script content for the hook.
+
     """
     script = '''#!/usr/bin/env python3
 """gzkit ledger writer and validator hook for {hook_type}.
@@ -462,6 +467,7 @@ def write_hook_script(project_root: Path, hook_type: str, hooks_dir: str) -> Pat
 
     Returns:
         Path to the written hook script.
+
     """
     hooks_path = project_root / hooks_dir
     hooks_path.mkdir(parents=True, exist_ok=True)

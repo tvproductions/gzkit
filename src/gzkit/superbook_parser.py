@@ -23,6 +23,7 @@ def _extract_section(content: str, heading: str, level: int = 2) -> str:
 
     Returns:
         Section body text, or empty string if not found.
+
     """
     prefix = "#" * level
     pattern = re.compile(
@@ -58,6 +59,7 @@ def parse_spec(path: Path) -> SpecData:
 
     Returns:
         SpecData with extracted fields.
+
     """
     content = path.read_text(encoding="utf-8")
 
@@ -103,6 +105,7 @@ def parse_plan(path: Path) -> PlanData:
 
     Returns:
         PlanData with extracted chunks and tasks.
+
     """
     content = path.read_text(encoding="utf-8")
 
@@ -174,6 +177,7 @@ def extract_commits(plan_date: str, project_root: Path) -> list[CommitData]:
 
     Returns:
         List of CommitData sorted oldest-first.
+
     """
     try:
         result = subprocess.run(

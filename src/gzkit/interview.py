@@ -312,6 +312,7 @@ def get_interview_questions(document_type: str) -> list[Question]:
 
     Raises:
         ValueError: If document type is not supported.
+
     """
     if document_type not in INTERVIEWS:
         raise ValueError(f"Unknown document type: {document_type}")
@@ -327,6 +328,7 @@ def validate_answer(question: Question, answer: str) -> bool:
 
     Returns:
         True if valid, False otherwise.
+
     """
     if question.required and not answer.strip():
         return False
@@ -349,6 +351,7 @@ def format_transcript(
 
     Returns:
         Formatted markdown transcript.
+
     """
     questions = get_interview_questions(document_type)
     lines = []
@@ -377,6 +380,7 @@ def check_interview_complete(
 
     Returns:
         InterviewResult with completion status.
+
     """
     questions = get_interview_questions(document_type)
     missing = []
@@ -410,6 +414,7 @@ def format_answers_for_template(
 
     Returns:
         Dictionary suitable for template rendering.
+
     """
     # Start with the raw answers
     template_vars = dict(answers)
@@ -488,6 +493,7 @@ def parse_checklist_items(checklist_text: str) -> list[str]:
 
     Returns:
         List of checklist item descriptions.
+
     """
     items = []
     for line in checklist_text.strip().split("\n"):

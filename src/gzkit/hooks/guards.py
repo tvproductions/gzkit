@@ -94,6 +94,7 @@ def forbid_pytest() -> int:
     Returns:
         0 if no pytest usage found
         1 if pytest usage detected
+
     """
     root = Path(__file__).resolve().parents[3]
     findings: list[tuple[Path, list[str]]] = []

@@ -280,6 +280,7 @@ status: {status}
         self.assertEqual(receipt.id, final_path.stem)
         evidence = receipt.extra.get("evidence")
         self.assertIsInstance(evidence, dict)
+        assert isinstance(evidence, dict)
         self.assertEqual(evidence.get("key_proof"), "Verified")
         self.assertTrue(evidence.get("req_proof_inputs"))
         self.assertEqual(evidence.get("recorder_source"), "hook:auto")
@@ -306,6 +307,7 @@ status: {status}
 
         anchor = receipt.extra.get("anchor")
         self.assertIsNotNone(anchor)
+        assert isinstance(anchor, dict)
         self.assertNotEqual(anchor.get("commit"), "0000000")
         self.assertEqual(anchor.get("semver"), "0.1.0")
 
@@ -330,6 +332,7 @@ status: {status}
         receipt = [e for e in self.ledger.read_all() if e.event == "obpi_receipt_emitted"][-1]
         evidence = receipt.extra.get("evidence")
         self.assertIsInstance(evidence, dict)
+        assert isinstance(evidence, dict)
         self.assertIn(
             "Could not resolve HEAD commit for receipt anchor.",
             evidence.get("recorder_warnings", []),

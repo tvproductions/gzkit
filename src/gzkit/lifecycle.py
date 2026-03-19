@@ -25,6 +25,7 @@ class InvalidTransitionError(Exception):
         to_state: str,
         allowed: list[str] | None = None,
     ) -> None:
+        """Initialize with transition details."""
         self.content_type = content_type
         self.from_state = from_state
         self.to_state = to_state
@@ -152,6 +153,7 @@ class LifecycleStateMachine:
         Args:
             ledger: A ``Ledger`` instance. If None, transitions are validated
                     but no events are emitted.
+
         """
         self._ledger = ledger
 
@@ -176,6 +178,7 @@ class LifecycleStateMachine:
         Raises:
             InvalidTransitionError: If the transition is not allowed.
             KeyError: If the content type has no transition table.
+
         """
         if content_type not in TRANSITION_TABLES:
             raise KeyError(f"No transition table for content type: {content_type}")

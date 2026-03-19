@@ -1,0 +1,14 @@
+{
+  "criteria": [
+    {
+      "type": "exitCodeEquals",
+      "command": "uvx interrogate -v -f 85 -c pyproject.toml src/gzkit",
+      "expected": 0
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "uvx ruff check src/gzkit --select D",
+      "expected": 0
+    }
+  ]
+}

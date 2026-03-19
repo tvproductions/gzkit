@@ -1,0 +1,14 @@
+{
+  "criteria": [
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run -m unittest -q",
+      "expected": 0
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run gz check-config-paths",
+      "expected": 0
+    }
+  ]
+}

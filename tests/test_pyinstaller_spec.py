@@ -30,7 +30,9 @@ class TestPyInstallerSpec(unittest.TestCase):
             for path in Path("src/gzkit/templates").iterdir()
             if path.suffix == ".md"
         }
-        actual = set(namespace["TEMPLATES"])
+        templates = namespace["TEMPLATES"]
+        assert isinstance(templates, list)
+        actual = set(templates)
         self.assertSetEqual(actual, expected)
 
     def test_schema_data_paths_match_repository_schemas(self) -> None:
@@ -41,7 +43,9 @@ class TestPyInstallerSpec(unittest.TestCase):
             for path in Path("src/gzkit/schemas").iterdir()
             if path.suffix == ".json"
         }
-        actual = set(namespace["SCHEMAS"])
+        schemas = namespace["SCHEMAS"]
+        assert isinstance(schemas, list)
+        actual = set(schemas)
         self.assertSetEqual(actual, expected)
 
 

@@ -31,7 +31,7 @@ class TestContentTypeModel(unittest.TestCase):
             canonical_path_pattern="test/**/*.md",
         )
         with self.assertRaises(ValidationError):
-            ct.name = "Changed"  # type: ignore[misc]
+            ct.name = "Changed"
 
     def test_extra_forbid(self) -> None:
         with self.assertRaises(ValidationError):

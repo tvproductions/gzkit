@@ -102,7 +102,7 @@ Skill behavior is standardized and synchronized by `gz agent sync control-surfac
 `git-sync`, `gz-agent-sync`, `gz-check-config-paths`, `gz-migrate-semver`, `gz-register-adrs`, `gz-session-handoff`, `gz-superbook`, `gz-tidy`
 
 #### Code Quality
-`format`, `gz-arb`, `gz-check`, `gz-cli-audit`, `gz-typecheck`, `lint`, `test`
+`chore-runner`, `format`, `gz-arb`, `gz-check`, `gz-cli-audit`, `gz-typecheck`, `lint`, `test`
 
 #### Cross-Repository
 `airlineops-parity-scan`

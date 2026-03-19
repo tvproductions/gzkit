@@ -321,7 +321,7 @@ class TestRuleFrontmatter(unittest.TestCase):
 
         fm = RuleFrontmatter(id="x", paths=["*"], description="d")
         with self.assertRaises(ValidationError):
-            fm.id = "changed"  # type: ignore[misc]
+            fm.id = "changed"
 
     def test_extra_forbid(self) -> None:
         from pydantic import ValidationError
@@ -350,7 +350,7 @@ class TestRuleFrontmatter(unittest.TestCase):
         from gzkit.rules import RuleFrontmatter
 
         with self.assertRaises(ValidationError):
-            RuleFrontmatter(id="x")  # type: ignore[call-arg]
+            RuleFrontmatter(id="x")
 
 
 class TestCanonicalRule(unittest.TestCase):
@@ -372,7 +372,7 @@ class TestCanonicalRule(unittest.TestCase):
         fm = RuleFrontmatter(id="test", paths=["*"], description="d")
         rule = CanonicalRule(frontmatter=fm, body="# Body", source_path="test.md")
         with self.assertRaises(ValidationError):
-            rule.body = "changed"  # type: ignore[misc]
+            rule.body = "changed"
 
 
 class TestLoadRule(unittest.TestCase):

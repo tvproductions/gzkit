@@ -36,6 +36,7 @@ def audit_instruction_reachability(project_root: Path) -> list[ValidationError]:
 
     Returns:
         List of validation errors for unreachable patterns.
+
     """
     errors: list[ValidationError] = []
     instructions_dir = project_root / ".github" / "instructions"
@@ -85,6 +86,7 @@ def audit_foreign_references(project_root: Path) -> list[ValidationError]:
 
     Returns:
         List of validation errors for files containing foreign references.
+
     """
     errors: list[ValidationError] = []
 
@@ -141,6 +143,7 @@ def audit_generated_surface_drift(project_root: Path) -> list[ValidationError]:
 
     Returns:
         List of validation errors for drifted, missing, or orphan rules.
+
     """
     errors: list[ValidationError] = []
     instructions_dir = project_root / ".github" / "instructions"
@@ -240,6 +243,7 @@ def audit_code_contract_mismatches(project_root: Path) -> list[ValidationError]:
 
     Returns:
         List of validation errors for policy violations.
+
     """
     errors: list[ValidationError] = []
     instructions_dir = project_root / ".github" / "instructions"
@@ -295,6 +299,7 @@ def audit_instructions(project_root: Path) -> list[ValidationError]:
 
     Returns:
         Aggregated list of validation errors from all sub-audits.
+
     """
     errors: list[ValidationError] = []
     errors.extend(audit_instruction_reachability(project_root))

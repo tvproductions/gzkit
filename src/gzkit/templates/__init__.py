@@ -20,6 +20,7 @@ def load_template(name: str) -> str:
 
     Raises:
         FileNotFoundError: If template doesn't exist.
+
     """
     template_dir = files("gzkit.templates")
     template_file = template_dir.joinpath(f"{name}.md")
@@ -35,6 +36,7 @@ def render_template(name: str, **kwargs: Any) -> str:
 
     Returns:
         Rendered template content.
+
     """
     template = load_template(name)
 
@@ -67,6 +69,7 @@ def get_template_path(name: str) -> Path:
 
     Returns:
         Path to the template file.
+
     """
     template_dir = files("gzkit.templates")
     return Path(str(template_dir.joinpath(f"{name}.md")))
@@ -77,6 +80,7 @@ def list_templates() -> list[str]:
 
     Returns:
         List of template names (without .md extension).
+
     """
     template_dir = files("gzkit.templates")
     templates = []

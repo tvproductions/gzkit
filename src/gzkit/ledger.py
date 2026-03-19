@@ -944,6 +944,7 @@ class Ledger:
 
         Args:
             path: Path to the ledger.jsonl file.
+
         """
         self.path = path
 
@@ -961,6 +962,7 @@ class Ledger:
 
         Args:
             event: The event to append.
+
         """
         if not self.path.exists():
             self.create()
@@ -974,6 +976,7 @@ class Ledger:
 
         Returns:
             List of all events in chronological order.
+
         """
         if not self.path.exists():
             return []
@@ -1001,6 +1004,7 @@ class Ledger:
 
         Returns:
             Filtered list of events.
+
         """
         events = self.read_all()
 
@@ -1020,6 +1024,7 @@ class Ledger:
 
         Returns:
             Most recent event or None if not found.
+
         """
         events = self.query(artifact_id=artifact_id)
         return events[-1] if events else None
@@ -1062,6 +1067,7 @@ class Ledger:
 
         Returns:
             Mapping of gate number to latest status ("pass"/"fail").
+
         """
         latest: dict[int, str] = {}
         events = self.read_all()
@@ -1253,6 +1259,7 @@ class Ledger:
 
         Returns:
             Dictionary mapping artifact IDs to their info and relationships.
+
         """
         graph: dict[str, dict[str, Any]] = {}
         events = self.read_all()
@@ -1275,6 +1282,7 @@ class Ledger:
 
         Returns:
             List of artifact IDs without attestation events.
+
         """
         graph = self.get_artifact_graph()
         return [

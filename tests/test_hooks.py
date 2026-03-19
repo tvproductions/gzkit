@@ -842,7 +842,7 @@ class TestPipelineCompletionReminderHook(unittest.TestCase):
             check=False,
         )
 
-    def _write_marker(self, plans_dir: Path, name: str, payload: dict[str, str]) -> None:
+    def _write_marker(self, plans_dir: Path, name: str, payload: dict[str, object]) -> None:
         plans_dir.mkdir(parents=True, exist_ok=True)
         (plans_dir / name).write_text(json.dumps(payload) + "\n", encoding="utf-8")
 

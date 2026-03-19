@@ -189,6 +189,7 @@ class ObpiValidator:
     """Validates OBPI brief content against governance requirements."""
 
     def __init__(self, project_root: Path):
+        """Initialize validator with project root."""
         self.project_root = project_root
         self.config = GzkitConfig.load(project_root / ".gzkit.json")
         self.ledger = Ledger(project_root / self.config.paths.ledger)

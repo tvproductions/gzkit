@@ -18,6 +18,7 @@ def setup_copilot_hooks(project_root: Path, config: GzkitConfig | None = None) -
 
     Returns:
         List of files created/updated.
+
     """
     if config is None:
         config = GzkitConfig.load(project_root / ".gzkit.json")
@@ -39,6 +40,7 @@ def generate_copilotignore(project_root: Path) -> str:
 
     Returns:
         Content for .copilotignore file.
+
     """
     return """# gzkit governance artifacts
 # These files are generated/managed by gzkit and should not be modified by Copilot
@@ -61,6 +63,7 @@ def setup_copilotignore(project_root: Path) -> Path:
 
     Returns:
         Path to the created file.
+
     """
     content = generate_copilotignore(project_root)
     ignore_path = project_root / ".copilotignore"

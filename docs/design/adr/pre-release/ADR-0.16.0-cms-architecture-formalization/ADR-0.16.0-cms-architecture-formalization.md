@@ -216,4 +216,4 @@ If "Request Changes," required fixes:
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.16.0 | Completed | Jeff | 2026-03-19 | completed: Re-attesting with corrected ledger ID resolution; all gates verified passing in this session |
+| 0.16.0 | Completed | Jeffry Babb | 2026-03-19 | completed |

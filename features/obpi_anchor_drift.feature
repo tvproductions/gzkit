@@ -1,12 +1,13 @@
 Feature: OBPI anchor drift reconciliation
-  Completed OBPIs should fail closed on stale tracked scope without rewriting lifecycle state.
+  Completed OBPIs should preserve lifecycle state while reporting superseded anchors
+  when later siblings or ADR closeout commit on top of the anchor.
 
-  Scenario: Reconcile preserves completion state while reporting stale anchor drift
+  Scenario: Reconcile preserves completion state while reporting superseded anchor
     Given the workspace is initialized
     And ADR-0.1.0 exists
     And a completed OBPI with anchor-tracked receipt exists for OBPI-0.1.0-01-demo
     And the tracked module changes after the completion anchor
     When I run the gz command "obpi reconcile OBPI-0.1.0-01-demo --json"
-    Then the command exits non-zero
+    Then the command exits with code 0
     And JSON path "runtime_state" equals "completed"
-    And JSON path "anchor_state" equals "stale"
+    And JSON path "anchor_state" equals "superseded"
