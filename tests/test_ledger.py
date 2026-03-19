@@ -3,7 +3,6 @@
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
 
 from gzkit.ledger import (
     Ledger,
@@ -611,8 +610,8 @@ class TestLedger(unittest.TestCase):
         self.assertEqual(semantics["issues"], [])
         self.assertTrue(semantics["completed"])
 
-    def test_derive_obpi_semantics_reports_stale_anchor_when_scope_changes(self) -> None:
-        """Anchor drift is surfaced when files changed since completion overlap recorded scope."""
+    def test_derive_obpi_semantics_reports_superseded_anchor_when_scope_changes(self) -> None:
+        """Scope changes after OBPI completion mark anchor as superseded, not stale."""
         semantics = derive_obpi_semantics(
             {
                 "latest_receipt_event": "completed",
@@ -639,24 +638,19 @@ class TestLedger(unittest.TestCase):
             files_since_anchor=["src/gzkit/ledger.py", "docs/guide.md"],
         )
         self.assertEqual(semantics["runtime_state"], "completed")
-        self.assertEqual(semantics["anchor_state"], "stale")
+        self.assertEqual(semantics["anchor_state"], "superseded")
         self.assertEqual(semantics["anchor_drift_files"], ["src/gzkit/ledger.py"])
-        self.assertIn("completion anchor drifted in recorded OBPI scope", semantics["issues"])
         self.assertTrue(semantics["completed"])
 
-    @patch("gzkit.ledger.list_changed_files_between")
-    def test_derive_obpi_semantics_ignores_changes_absorbed_by_later_completed_sibling(
-        self, list_changed_files_between_mock
-    ) -> None:
-        """Later sibling completion scope should absorb shared-file drift from earlier siblings."""
-        list_changed_files_between_mock.return_value = []
+    def test_derive_obpi_semantics_superseded_by_later_sibling_commits(self) -> None:
+        """Later sibling commits supersede earlier OBPI anchors without invalidation."""
         info = {
             "parent": "ADR-0.13.0",
             "latest_receipt_event": "completed",
             "obpi_completion": "completed",
             "ledger_completed": True,
             "latest_evidence": {
-                "value_narrative": "Later sibling completions absorb shared-file drift safely.",
+                "value_narrative": "Later sibling completions supersede earlier anchors.",
                 "key_proof": "uv run gz obpi status OBPI-0.13.0-01 --json",
             },
             "latest_completion_evidence": {
@@ -669,43 +663,21 @@ class TestLedger(unittest.TestCase):
             "latest_completion_anchor": {"commit": "abc1234", "semver": "0.13.0"},
             "latest_completion_ts": "2026-03-14T10:00:00+00:00",
         }
-        artifact_graph = {
-            "OBPI-0.13.0-01-runtime-command-contract": {
-                **info,
-                "type": "obpi",
-            },
-            "OBPI-0.13.0-03-structured-stage-outputs": {
-                "type": "obpi",
-                "parent": "ADR-0.13.0",
-                "ledger_completed": True,
-                "latest_completion_ts": "2026-03-14T11:00:00+00:00",
-                "latest_completion_evidence": {
-                    "scope_audit": {
-                        "allowlist": ["src/gzkit/cli.py"],
-                        "changed_files": ["src/gzkit/cli.py"],
-                        "out_of_scope_files": [],
-                    }
-                },
-                "latest_completion_anchor": {"commit": "def5678", "semver": "0.13.0"},
-            },
-        }
 
         semantics = derive_obpi_semantics(
             info,
             obpi_id="OBPI-0.13.0-01-runtime-command-contract",
-            artifact_graph=artifact_graph,
             found_file=True,
             file_completed=True,
             implementation_evidence_ok=True,
             key_proof_ok=True,
-            project_root=Path("/tmp/fake"),
             current_head="fedcba9",
             files_since_anchor=["src/gzkit/cli.py"],
         )
 
         self.assertEqual(semantics["runtime_state"], "completed")
-        self.assertEqual(semantics["anchor_state"], "scope_clean")
-        self.assertEqual(semantics["anchor_drift_files"], [])
+        self.assertEqual(semantics["anchor_state"], "superseded")
+        self.assertEqual(semantics["anchor_drift_files"], ["src/gzkit/cli.py"])
         self.assertEqual(semantics["issues"], [])
         self.assertTrue(semantics["completed"])
 
@@ -736,11 +708,11 @@ class TestLedger(unittest.TestCase):
         )
         self.assertEqual(semantics["runtime_state"], "completed")
         self.assertEqual(semantics["anchor_state"], "missing")
-        self.assertIn("completion anchor evidence is missing", semantics["issues"])
+        self.assertIn("completion anchor evidence is missing", semantics["reflection_issues"])
         self.assertTrue(semantics["completed"])
 
-    def test_derive_obpi_semantics_reports_degraded_git_sync_receipt_state(self) -> None:
-        """Recorder-time git-sync blockers are surfaced as anchor-aware drift."""
+    def test_derive_obpi_semantics_records_git_sync_state_as_metadata(self) -> None:
+        """Recorder-time git-sync state is informational metadata, not a blocker."""
         semantics = derive_obpi_semantics(
             {
                 "latest_receipt_event": "completed",
@@ -775,12 +747,15 @@ class TestLedger(unittest.TestCase):
             current_head="abc1234",
         )
         self.assertEqual(semantics["runtime_state"], "completed")
-        self.assertEqual(semantics["anchor_state"], "degraded")
+        # Git-sync state at receipt time is metadata — anchor at HEAD is still current
+        self.assertEqual(semantics["anchor_state"], "current")
         self.assertIn(
             "completion git-sync evidence recorded blockers: Working tree is dirty.",
-            semantics["issues"],
+            semantics["reflection_issues"],
         )
-        self.assertIn("completion receipt was captured from a dirty worktree", semantics["issues"])
+        self.assertIn(
+            "completion receipt was captured from a dirty worktree", semantics["reflection_issues"]
+        )
         self.assertTrue(semantics["completed"])
 
 
