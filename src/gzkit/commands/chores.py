@@ -10,12 +10,12 @@ import json
 import re
 import shlex
 import subprocess
-from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from time import perf_counter
 from typing import cast
 
+from pydantic import BaseModel, ConfigDict
 from rich.table import Table
 
 from gzkit.commands.common import GzCliError, console, get_project_root
@@ -27,9 +27,10 @@ SHELL_OPERATORS_RE = re.compile(r"&&|\|\||[|<>]")
 LANE_TIMEOUTS: dict[str, int] = {"lite": 120, "medium": 300, "heavy": 900}
 
 
-@dataclass(frozen=True)
-class AcceptanceCriterion:
+class AcceptanceCriterion(BaseModel):
     """Single acceptance criterion from a chore's acceptance.json."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     criterion_type: str
     command: str
@@ -40,9 +41,10 @@ class AcceptanceCriterion:
     description: str | None = None
 
 
-@dataclass(frozen=True)
-class ChoreDefinition:
+class ChoreDefinition(BaseModel):
     """Validated chore definition loaded from v2.0 registry + acceptance.json."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     slug: str
     title: str
@@ -53,9 +55,10 @@ class ChoreDefinition:
     timeout_seconds: int
 
 
-@dataclass(frozen=True)
-class CriterionResult:
+class CriterionResult(BaseModel):
     """Execution result for one acceptance criterion."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     criterion: AcceptanceCriterion
     passed: bool

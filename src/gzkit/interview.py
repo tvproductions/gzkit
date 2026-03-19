@@ -5,16 +5,18 @@ Q&A is MANDATORY for PRD and ADR creation - the interview shapes the document.
 """
 
 from collections.abc import Callable
-from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
+
+from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.decomposition import build_checklist_seed, compute_scorecard, default_dimension_scores
 
 
-@dataclass
-class Question:
+class Question(BaseModel):
     """A question in an interview."""
+
+    model_config = ConfigDict(extra="forbid")
 
     id: str
     prompt: str
@@ -25,23 +27,25 @@ class Question:
     multiline: bool = False  # Whether to expect multi-line input
 
 
-@dataclass
-class Answer:
+class Answer(BaseModel):
     """An answer to a question."""
+
+    model_config = ConfigDict(extra="forbid")
 
     question_id: str
     value: str
     timestamp: str = ""
 
 
-@dataclass
-class InterviewResult:
+class InterviewResult(BaseModel):
     """Result of an interview session."""
+
+    model_config = ConfigDict(extra="forbid")
 
     document_type: str
     answers: dict[str, str]
     complete: bool
-    missing: list[str] = field(default_factory=list)
+    missing: list[str] = Field(default_factory=list)
     transcript: str = ""
 
     def to_dict(self) -> dict[str, Any]:

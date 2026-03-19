@@ -5,14 +5,16 @@ Provides unified interface to linting, formatting, testing, and type checking.
 
 import re
 import subprocess
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from pydantic import BaseModel, ConfigDict
 
-@dataclass
-class QualityResult:
+
+class QualityResult(BaseModel):
     """Result of a quality check."""
+
+    model_config = ConfigDict(extra="forbid")
 
     success: bool
     command: str
@@ -236,9 +238,10 @@ def run_tests(project_root: Path) -> QualityResult:
     return run_command("uv run -m unittest discover tests", cwd=project_root)
 
 
-@dataclass
-class CheckResult:
+class CheckResult(BaseModel):
     """Result of running all quality checks."""
+
+    model_config = ConfigDict(extra="forbid")
 
     success: bool
     lint: QualityResult
