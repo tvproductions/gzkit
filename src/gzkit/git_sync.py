@@ -6,6 +6,16 @@ from typing import Any
 
 from gzkit.utils import git_cmd
 
+_readiness_cache: dict[str, dict[str, Any]] = {}
+
+
+def invalidate_git_cache() -> None:
+    """Clear the cached git readiness state.
+
+    Call this after any operation that mutates git state (add, commit, push).
+    """
+    _readiness_cache.clear()
+
 
 def _skip_tokens(skip_value: str) -> set[str]:
     """Parse pre-commit SKIP env format into normalized token set."""
@@ -96,8 +106,18 @@ def _git_status_lines(project_root: Path) -> tuple[list[str], str | None]:
     return lines, None
 
 
-def assess_git_sync_readiness(project_root: Path, remote: str = "origin") -> dict[str, Any]:
-    """Return sync-readiness state for OBPI completion validation."""
+def assess_git_sync_readiness(
+    project_root: Path, remote: str = "origin", *, use_cache: bool = True
+) -> dict[str, Any]:
+    """Return sync-readiness state for OBPI completion validation.
+
+    Results are cached within the process to avoid redundant subprocess calls.
+    Pass ``use_cache=False`` to force a fresh capture (e.g., after git mutations).
+    """
+    cache_key = str(project_root.resolve())
+    if use_cache and cache_key in _readiness_cache:
+        return _readiness_cache[cache_key]
+
     blockers: list[str] = []
     warnings: list[str] = []
 
@@ -164,7 +184,7 @@ def assess_git_sync_readiness(project_root: Path, remote: str = "origin") -> dic
     if ahead > 0 or diverged:
         actions.append(f"git push {remote} {current_branch}")
 
-    return {
+    result = {
         "branch": current_branch,
         "remote": remote,
         "dirty": dirty,
@@ -175,3 +195,5 @@ def assess_git_sync_readiness(project_root: Path, remote: str = "origin") -> dic
         "warnings": warnings,
         "blockers": blockers,
     }
+    _readiness_cache[cache_key] = result
+    return result
