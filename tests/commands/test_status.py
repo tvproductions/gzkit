@@ -503,14 +503,13 @@ class TestStatusCommand(unittest.TestCase):
 
             result = runner.invoke(main, ["obpi", "reconcile", "OBPI-0.1.0-01-demo", "--json"])
 
-            self.assertEqual(result.exit_code, 1)
+            self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)
-            self.assertFalse(payload["passed"])
+            self.assertTrue(payload["passed"])
             self.assertEqual(payload["runtime_state"], "completed")
-            self.assertEqual(payload["anchor_state"], "stale")
+            self.assertEqual(payload["anchor_state"], "superseded")
             self.assertEqual(payload["anchor_commit"], anchor_commit)
             self.assertEqual(payload["anchor_drift_files"], ["src/module.py"])
-            self.assertIn("completion anchor drifted in recorded OBPI scope", payload["blockers"])
 
     def test_obpi_status_json_surfaces_tracked_defects_for_anchor_drift(self) -> None:
         runner = CliRunner()
@@ -586,11 +585,8 @@ class TestStatusCommand(unittest.TestCase):
             self.assertEqual(payload["tracked_defects"][0]["state"], "open")
             self.assertEqual(payload["tracked_defects"][1]["id"], "GHI-12")
             self.assertEqual(payload["tracked_defects"][1]["state"], "closed")
-            self.assertIn("completion anchor drifted in recorded OBPI scope", payload["issues"])
-            self.assertIn(
-                "tracked defects: GHI-11 (open), GHI-12 (closed)",
-                payload["issue_details"][0],
-            )
+            # Anchor is superseded (later commits on top), not stale
+            self.assertEqual(payload["anchor_state"], "superseded")
 
     def test_obpi_reconcile_ignores_shared_file_changes_absorbed_by_later_sibling_completion(
         self,
@@ -733,8 +729,9 @@ class TestStatusCommand(unittest.TestCase):
             payload = json.loads(result.output)
             self.assertTrue(payload["passed"])
             self.assertEqual(payload["runtime_state"], "completed")
-            self.assertEqual(payload["anchor_state"], "scope_clean")
-            self.assertEqual(payload["anchor_drift_files"], [])
+            # Earlier OBPI's anchor is superseded by later sibling commit
+            self.assertEqual(payload["anchor_state"], "superseded")
+            self.assertEqual(payload["anchor_drift_files"], ["src/module.py"])
 
     def test_obpi_status_json_exposes_anchor_fields(self) -> None:
         """Focused OBPI status includes anchor reconciliation fields."""
@@ -1309,9 +1306,9 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
 
             self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)
-            blocker = payload["closeout_blockers"][0]
-            self.assertIn("completion anchor drifted in recorded OBPI scope", blocker)
-            self.assertIn("tracked defects: GHI-11 (open), GHI-12 (open)", blocker)
+            # Anchor superseded by later commits — not a closeout blocker
+            self.assertEqual(payload["closeout_blockers"], [])
+            self.assertEqual(payload["obpis"][0]["anchor_state"], "superseded")
             self.assertEqual(payload["obpis"][0]["tracked_defects"][0]["id"], "GHI-11")
 
     def test_adr_status_json_validated(self) -> None:

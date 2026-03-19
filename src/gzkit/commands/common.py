@@ -274,6 +274,29 @@ def resolve_adr_file(project_root: Path, config: GzkitConfig, adr: str) -> tuple
     raise GzCliError(f"ADR not found: {adr}")
 
 
+def resolve_adr_ledger_id(
+    adr_file: Path,
+    adr_id: str,
+    ledger: Ledger,
+) -> str:
+    """Resolve an ADR ID to its ledger graph key, falling back to file stem.
+
+    When frontmatter ``id:`` (e.g. ``ADR-0.16.0``) differs from the ledger
+    registration key (e.g. ``ADR-0.16.0-cms-architecture-formalization``),
+    the file stem is tried as a fallback so that graph lookups succeed.
+    """
+    graph = ledger.get_artifact_graph()
+    info = graph.get(adr_id)
+    if info and info.get("type") == "adr":
+        return adr_id
+    stem_id = adr_file.stem
+    if stem_id != adr_id:
+        stem_info = graph.get(stem_id)
+        if stem_info and stem_info.get("type") == "adr":
+            return stem_id
+    return adr_id
+
+
 def resolve_target_adr(
     project_root: Path,
     config: GzkitConfig,
@@ -293,8 +316,8 @@ def resolve_target_adr(
     adr_id = adr if adr.startswith("ADR-") else f"ADR-{adr}"
     canonical_adr_id = ledger.canonicalize_id(adr_id)
 
-    _adr_file, resolved_adr_id = resolve_adr_file(project_root, config, canonical_adr_id)
-    return resolved_adr_id
+    adr_file, resolved_adr_id = resolve_adr_file(project_root, config, canonical_adr_id)
+    return resolve_adr_ledger_id(adr_file, resolved_adr_id, ledger)
 
 
 def resolve_obpi(
