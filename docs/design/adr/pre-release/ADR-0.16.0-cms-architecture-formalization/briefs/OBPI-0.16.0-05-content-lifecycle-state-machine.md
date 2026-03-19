@@ -76,9 +76,10 @@ Coverage: src/gzkit/lifecycle.py — 100.00%
 
 ### Implementation Summary
 
-Created `src/gzkit/lifecycle.py` with `LifecycleStateMachine` class, per-content-type
-transition tables (ADR, OBPI, PRD, Constitution, Rule, Skill), `InvalidTransitionError`,
-and ledger event emission via `lifecycle_transition_event()` in `src/gzkit/ledger.py`.
+- Module added: `src/gzkit/lifecycle.py` with `LifecycleStateMachine` class
+- Transition tables: per-content-type (ADR, OBPI, PRD, Constitution, Rule, Skill)
+- Error handling: `InvalidTransitionError` for invalid state transitions
+- Ledger integration: `lifecycle_transition_event()` in `src/gzkit/ledger.py`
 
 ### Key Proof
 

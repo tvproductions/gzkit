@@ -86,6 +86,24 @@ uv run gz lint — All checks passed
 uv run gz typecheck — All checks passed
 ```
 
+### Implementation Summary
+
+- Orchestration: refactored `sync_all()` in `src/gzkit/sync.py` to read `manifest.vendors` and gate per vendor
+- Renderers: `render_rule_for_claude()` and `render_rule_for_copilot()` in `src/gzkit/rules.py`
+- Batch output: `render_rules_to_dir()` with stale file cleanup and generated-file header
+- Claude format: `paths:` YAML frontmatter (global rules omit frontmatter)
+- Copilot format: `applyTo:` frontmatter
+- Vendor gating: disabled vendors produce no output; no stale artifacts
+
+### Key Proof
+
+```text
+$ uv run -m unittest tests.test_agent_sync.TestSyncAllVendorAware.test_disabled_vendor_skipped -v
+test_disabled_vendor_skipped ... ok
+```
+
+Disabled vendors are skipped entirely — no stale artifacts generated.
+
 ## Human Attestation
 
 - Attestor: `self-close-exception (Lite lane)`
