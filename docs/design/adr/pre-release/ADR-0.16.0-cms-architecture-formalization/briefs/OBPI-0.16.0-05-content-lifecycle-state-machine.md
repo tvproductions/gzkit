@@ -3,7 +3,7 @@ id: OBPI-0.16.0-05-content-lifecycle-state-machine
 parent: ADR-0.16.0-cms-architecture-formalization
 item: 5
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
@@ -49,38 +49,56 @@ Lite — ADR note + stdlib unittest + smoke (≤60s).
 
 ## QUALITY GATES (Lite)
 
-- [ ] Gate 1 (ADR): Intent recorded in this brief
-- [ ] Gate 2 (TDD): `uv run gz test` — all tests pass
-- [ ] Code Quality: `uv run gz lint` + `uv run gz typecheck` clean
+- [x] Gate 1 (ADR): Intent recorded in this brief
+- [x] Gate 2 (TDD): `uv run gz test` — all tests pass (676 tests, 21 lifecycle-specific)
+- [x] Code Quality: `uv run gz lint` + `uv run gz typecheck` clean
 
 ## Evidence
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+Ran 21 tests in 0.001s — OK
+Full suite: 676 tests in 9.1s — OK
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+uv run gz lint — All checks passed
+uv run gz typecheck — All checks passed
+Coverage: src/gzkit/lifecycle.py — 100.00%
 ```
+
+### Implementation Summary
+
+Created `src/gzkit/lifecycle.py` with `LifecycleStateMachine` class, per-content-type
+transition tables (ADR, OBPI, PRD, Constitution, Rule, Skill), `InvalidTransitionError`,
+and ledger event emission via `lifecycle_transition_event()` in `src/gzkit/ledger.py`.
+
+### Key Proof
+
+```text
+$ uv run -m unittest tests.test_lifecycle.TestTransitionTables.test_adr_pool_cannot_skip_to_completed -v
+test_adr_pool_cannot_skip_to_completed ... ok
+```
+
+Pool → Completed raises InvalidTransitionError; only Pool → Draft is allowed.
 
 ## Human Attestation
 
-- Attestor: `n/a`
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `Jeff`
+- Attestation: `attest completed`
+- Date: `2026-03-19`
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-19
 
 **Evidence Hash:** -
