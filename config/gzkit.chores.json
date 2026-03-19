@@ -1,35 +1,169 @@
 {
-  "schema": "gzkit.chores.v1",
-  "version": 1,
-  "chores": [
-    {
-      "slug": "quality-check",
-      "title": "Run full quality gates",
-      "lane": "lite",
-      "description": "Run the full gz quality gate set and capture deterministic evidence.",
-      "steps": [
-        {
-          "name": "run-gz-check",
-          "argv": [
-            "uv",
-            "run",
-            "gz",
-            "check"
-          ],
-          "timeout_seconds": 1200
+    "specVersion": "2.0",
+    "description": "Chore registry - points to self-contained chore definitions in ops/chores/",
+    "project": {
+        "name": "gzkit",
+        "root": ".",
+        "choresDir": "ops/chores",
+        "proofsPattern": "ops/chores/{slug}/proofs"
+    },
+    "lanes": {
+        "lite": {
+            "description": "Fast feedback; lint, typecheck, smoke tests (<=120s)",
+            "timeoutSeconds": 120,
+            "allowNetwork": false
+        },
+        "medium": {
+            "description": "Expanded checks; full unittest, light reports; still offline",
+            "timeoutSeconds": 300,
+            "allowNetwork": false
+        },
+        "heavy": {
+            "description": "Contracts/docs changed; full gates incl. coverage & security",
+            "timeoutSeconds": 900,
+            "allowNetwork": true
         }
-      ],
-      "evidence": {
-        "commands": [
-          "uv run gz check"
-        ]
-      },
-      "acceptance": {
-        "checks": [
-          "Command exits with status 0",
-          "No lint/type/test/parity/readiness blockers are reported"
-        ]
-      }
-    }
-  ]
+    },
+    "chores": [
+        {
+            "slug": "quality-check",
+            "title": "Run full quality gates",
+            "version": "2.0.0",
+            "path": "ops/chores/quality-check",
+            "lane": "lite"
+        },
+        {
+            "slug": "pythonic-refactoring",
+            "title": "Pythonic Refactoring (ruff + ty)",
+            "version": "1.0.0",
+            "path": "ops/chores/pythonic-refactoring",
+            "lane": "lite"
+        },
+        {
+            "slug": "complexity-reduction-xenon",
+            "title": "Complexity Reduction (Xenon C/C/C)",
+            "version": "1.0.0",
+            "path": "ops/chores/complexity-reduction-xenon",
+            "lane": "lite"
+        },
+        {
+            "slug": "module-sloc-cap-radon",
+            "title": "Module SLOC Cap (Radon)",
+            "version": "1.0.0",
+            "path": "ops/chores/module-sloc-cap-radon",
+            "lane": "lite"
+        },
+        {
+            "slug": "pep257-docstring-compliance",
+            "title": "PEP 257 Docstring Compliance (Style + Coverage)",
+            "version": "1.0.0",
+            "path": "ops/chores/pep257-docstring-compliance",
+            "lane": "lite"
+        },
+        {
+            "slug": "coverage-40pct",
+            "title": "Coverage >=40% Baseline",
+            "version": "1.0.0",
+            "path": "ops/chores/coverage-40pct",
+            "lane": "lite"
+        },
+        {
+            "slug": "test-isolation-compliance",
+            "title": "Test Isolation Compliance (Temp DB + Temp Dir)",
+            "version": "1.0.0",
+            "path": "ops/chores/test-isolation-compliance",
+            "lane": "lite"
+        },
+        {
+            "slug": "cross-platform-test-cleanup",
+            "title": "Cross-Platform Test Cleanup (Windows-Safe Patterns)",
+            "version": "1.0.0",
+            "path": "ops/chores/cross-platform-test-cleanup",
+            "lane": "medium"
+        },
+        {
+            "slug": "exceptions-and-logging-rationalization",
+            "title": "Exceptions & Logging Rationalization",
+            "version": "1.0.0",
+            "path": "ops/chores/exceptions-and-logging-rationalization",
+            "lane": "lite"
+        },
+        {
+            "slug": "config-paths-remediation",
+            "title": "Config Paths Remediation",
+            "version": "1.0.0",
+            "path": "ops/chores/config-paths-remediation",
+            "lane": "lite"
+        },
+        {
+            "slug": "repository-structure-normalization",
+            "title": "Repository Structure Normalization",
+            "version": "1.0.0",
+            "path": "ops/chores/repository-structure-normalization",
+            "lane": "lite"
+        },
+        {
+            "slug": "schema-and-config-drift-audit",
+            "title": "Schema Drift / Config Drift Audit",
+            "version": "1.0.0",
+            "path": "ops/chores/schema-and-config-drift-audit",
+            "lane": "lite"
+        },
+        {
+            "slug": "cli-contract-governance",
+            "title": "CLI Contract Governance (Drift & Evolution)",
+            "version": "1.0.0",
+            "path": "ops/chores/cli-contract-governance",
+            "lane": "heavy"
+        },
+        {
+            "slug": "validate-manpages",
+            "title": "Validate Manpages (Call Stack Alignment)",
+            "version": "1.0.0",
+            "path": "ops/chores/validate-manpages",
+            "lane": "lite"
+        },
+        {
+            "slug": "test-manpage-examples",
+            "title": "Test Manpage Examples (Executable Verification)",
+            "version": "1.0.0",
+            "path": "ops/chores/test-manpage-examples",
+            "lane": "heavy"
+        },
+        {
+            "slug": "sync-manpage-docstrings",
+            "title": "Sync Manpage Docstrings (One-Liner Alignment)",
+            "version": "1.0.0",
+            "path": "ops/chores/sync-manpage-docstrings",
+            "lane": "lite"
+        },
+        {
+            "slug": "skill-manifest-sync",
+            "title": "Skill Manifest Sync",
+            "version": "1.0.0",
+            "path": "ops/chores/skill-manifest-sync",
+            "lane": "lite"
+        },
+        {
+            "slug": "skill-authoring-quality",
+            "title": "Skill Authoring Quality (Anthropic Best Practices)",
+            "version": "1.0.0",
+            "path": "ops/chores/skill-authoring-quality",
+            "lane": "lite"
+        },
+        {
+            "slug": "evidence-integrity-audit",
+            "title": "OBPI Evidence Integrity Audit",
+            "version": "1.0.0",
+            "path": "ops/chores/evidence-integrity-audit",
+            "lane": "lite"
+        },
+        {
+            "slug": "arb-pattern-extraction",
+            "title": "ARB Pattern Extraction (Code Style Feedback Loop)",
+            "version": "1.0.0",
+            "path": "ops/chores/arb-pattern-extraction",
+            "lane": "lite"
+        }
+    ]
 }

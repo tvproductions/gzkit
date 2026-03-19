@@ -1,0 +1,9 @@
+{
+  "criteria": [
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run gz check",
+      "expected": 0
+    }
+  ]
+}

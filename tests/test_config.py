@@ -100,7 +100,7 @@ class TestVendorConfig(unittest.TestCase):
 
         config = VendorConfig(enabled=True, surface_root=".claude")
         with self.assertRaises(ValidationError):
-            config.enabled = False  # type: ignore[misc]
+            config.enabled = False
 
     def test_extra_forbid(self) -> None:
         """VendorConfig rejects unknown fields."""
@@ -191,7 +191,7 @@ class TestGzkitConfigVendors(unittest.TestCase):
             config = GzkitConfig.load(Path(f.name))
             self.assertTrue(config.vendors.claude.enabled)
             self.assertTrue(config.vendors.copilot.enabled)
-            self.assertFalse(config.codex.enabled) if hasattr(config, "codex") else None
+            self.assertFalse(config.codex.enabled) if hasattr(config, "codex") else None  # type: ignore[unresolved-attribute]
             # Unspecified vendors get defaults
             self.assertFalse(config.vendors.codex.enabled)
 

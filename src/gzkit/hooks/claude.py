@@ -398,7 +398,7 @@ def _control_surface_sync_script() -> str:
                 main()
             """
         )
-        + "\\n"
+        + "\n"
     )
 
 
@@ -1558,6 +1558,7 @@ def generate_claude_settings(config: GzkitConfig) -> dict:
 
     Returns:
         Settings dictionary for Claude Code.
+
     """
     hooks_dir = config.paths.claude_hooks
     return {
@@ -1647,6 +1648,7 @@ def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) ->
 
     Returns:
         List of files created/updated.
+
     """
     if config is None:
         config = GzkitConfig.load(project_root / ".gzkit.json")

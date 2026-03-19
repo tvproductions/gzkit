@@ -88,6 +88,7 @@ def detect_project_structure(project_root: Path) -> dict[str, str]:
 
     Returns:
         Dictionary of detected paths.
+
     """
     structure = {
         "source_root": "src",
@@ -142,6 +143,7 @@ def scan_existing_artifacts(project_root: Path, design_root: str) -> dict[str, l
 
     Returns:
         Dictionary with "prds", "adrs", and "obpis" keys containing lists of found file paths.
+
     """
     result: dict[str, list[Path]] = {"prds": [], "adrs": [], "obpis": []}
     design_path = project_root / design_root
@@ -187,6 +189,7 @@ def extract_artifact_id(file_path: Path) -> str:
 
     Returns:
         Artifact ID (e.g., "PRD-GZKIT-1.0.0" from "PRD-GZKIT-1.0.0.md").
+
     """
     # Remove .md extension and any path components
     return file_path.stem
@@ -260,6 +263,7 @@ def parse_artifact_metadata(file_path: Path) -> dict[str, str]:
 
     Returns:
         Dictionary with "id" and optionally "parent" keys.
+
     """
     result: dict[str, str] = {"id": file_path.stem}
 
@@ -283,6 +287,7 @@ def detect_project_name(project_root: Path) -> str:
 
     Returns:
         Detected project name.
+
     """
     pyproject = project_root / "pyproject.toml"
     if pyproject.exists():
@@ -310,6 +315,7 @@ def generate_manifest(
 
     Returns:
         Manifest dictionary.
+
     """
     if structure is None:
         structure = detect_project_structure(project_root)
@@ -360,6 +366,7 @@ def write_manifest(project_root: Path, manifest: dict[str, Any]) -> None:
     Args:
         project_root: Project root directory.
         manifest: Manifest dictionary.
+
     """
     manifest_path = project_root / ".gzkit" / "manifest.json"
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
@@ -377,6 +384,7 @@ def load_local_content(project_root: Path) -> str:
 
     Returns:
         Local content or empty string.
+
     """
     local_path = project_root / "agents.local.md"
     if local_path.exists():
@@ -392,6 +400,7 @@ def _extract_skill_description(skill_file: Path) -> str:
 
     Returns:
         Frontmatter `description`, body fallback, or a default message.
+
     """
     try:
         content = skill_file.read_text(encoding="utf-8")
@@ -438,6 +447,7 @@ def _extract_skill_frontmatter_field(skill_file: Path, field: str) -> str:
 
     Returns:
         Field value or empty string if not found.
+
     """
     try:
         content = skill_file.read_text(encoding="utf-8")
@@ -472,6 +482,7 @@ def collect_skills_catalog(
 
     Returns:
         Sorted list of skill metadata records.
+
     """
     skills_path = project_root / skills_dir
     if not skills_path.exists():
@@ -522,6 +533,7 @@ def render_skills_catalog(skills: list[dict[str, str]], *, categorized: bool = T
 
     Returns:
         Markdown catalog text.
+
     """
     if not skills:
         return "- No local skills found. Create one with `gz skill new <name>`."
@@ -574,6 +586,7 @@ def sync_skill_mirror(
 
     Returns:
         List of mirrored files that were written.
+
     """
     source_root = project_root / source_dir
     target_root = project_root / target_dir
@@ -1026,6 +1039,7 @@ def get_project_context(project_root: Path, config: GzkitConfig) -> dict[str, st
 
     Returns:
         Dictionary of template variables.
+
     """
     project_name = config.project_name or detect_project_name(project_root)
 
@@ -1157,6 +1171,7 @@ def sync_agents_md(project_root: Path, config: GzkitConfig) -> None:
     Args:
         project_root: Project root directory.
         config: Project configuration.
+
     """
     context = get_project_context(project_root, config)
     content = render_template("agents", **context)
@@ -1171,6 +1186,7 @@ def sync_claude_md(project_root: Path, config: GzkitConfig) -> None:
     Args:
         project_root: Project root directory.
         config: Project configuration.
+
     """
     context = get_project_context(project_root, config)
     content = render_template("claude", **context)
@@ -1185,6 +1201,7 @@ def sync_copilot_instructions(project_root: Path, config: GzkitConfig) -> None:
     Args:
         project_root: Project root directory.
         config: Project configuration.
+
     """
     context = get_project_context(project_root, config)
     content = render_template("copilot", **context)
@@ -1200,6 +1217,7 @@ def sync_claude_settings(project_root: Path, config: GzkitConfig) -> None:
     Args:
         project_root: Project root directory.
         config: Project configuration.
+
     """
     settings = generate_claude_settings(config)
 
@@ -1220,6 +1238,7 @@ def detect_claude_settings_drift(project_root: Path, config: GzkitConfig) -> lis
 
     Returns:
         List of human-readable drift descriptions (empty = no drift).
+
     """
     expected = generate_claude_settings(config)
 
@@ -1275,6 +1294,7 @@ def sync_copilotignore(project_root: Path) -> None:
 
     Args:
         project_root: Project root directory.
+
     """
     ignore_content = """# gzkit governance artifacts
 .gzkit/
@@ -1315,6 +1335,7 @@ def sync_skill_mirrors(
 
     Returns:
         List of mirrored files written.
+
     """
     vendor_skill_map = {
         "claude": config.paths.claude_skills,
@@ -1350,6 +1371,7 @@ def sync_all(project_root: Path, config: GzkitConfig | None = None) -> list[str]
 
     Returns:
         List of files that were updated.
+
     """
     if config is None:
         config = GzkitConfig.load(project_root / ".gzkit.json")

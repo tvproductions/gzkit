@@ -115,6 +115,7 @@ class GzkitConfig(BaseModel):
 
         Returns:
             Parsed configuration, or defaults if file not found.
+
         """
         config_path = path or Path(".gzkit.json")
 
@@ -142,6 +143,7 @@ class GzkitConfig(BaseModel):
 
         Args:
             path: Path to config file. Defaults to .gzkit.json in current directory.
+
         """
         config_path = path or Path(".gzkit.json")
 
@@ -162,5 +164,6 @@ class GzkitConfig(BaseModel):
 
         Returns:
             Path object for the requested path.
+
         """
         return Path(getattr(self.paths, name))

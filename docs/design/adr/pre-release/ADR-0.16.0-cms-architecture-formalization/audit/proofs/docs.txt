@@ -7,16 +7,17 @@ $ uv run mkdocs build --strict
 
 [stderr]
 INFO    -  Cleaning site directory
-INFO    -  Building documentation to directory: /Users/jeff/Documents/Code/gzkit/site
+INFO    -  Building documentation to directory: C:\Users\Jeff\source\repos\va\gzkit\site
 INFO    -  The following pages exist in the docs directory, but are not included in the "nav" configuration:
   - AGENTS.md
-  - governance/GovZero/obpi-pipeline-runbook.md
-  - superpowers/plans/2026-03-15-agents-md-tidy.md
-  - superpowers/plans/2026-03-15-gz-superbook.md
-  - superpowers/plans/2026-03-15-hexagonal-architecture-tuneup.md
-  - superpowers/specs/2026-03-15-agents-md-tidy-design.md
-  - superpowers/specs/2026-03-15-gz-superbook-design.md
-  - superpowers/specs/2026-03-15-hexagonal-architecture-tuneup-design.md
-  - user/commands/adr-report.md
-  - user/commands/readiness-eval.md
-INFO    -  Documentation built in 0.96 seconds
+  - governance\GovZero\obpi-pipeline-runbook.md
+  - superpowers\plans\2026-03-15-agents-md-tidy.md
+  - superpowers\plans\2026-03-15-gz-superbook.md
+  - superpowers\plans\2026-03-15-hexagonal-architecture-tuneup.md
+  - superpowers\specs\2026-03-15-agents-md-tidy-design.md
+  - superpowers\specs\2026-03-15-gz-superbook-design.md
+  - superpowers\specs\2026-03-15-hexagonal-architecture-tuneup-design.md
+  - user\commands\adr-report.md
+  - user\commands\readiness-eval.md
+INFO    -  Documentation built in 1.51 seconds
+

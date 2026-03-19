@@ -36,7 +36,7 @@ class TestAdrFrontmatter(unittest.TestCase):
             lane="lite",
             parent="OBPI-core",
             date="2026-01-01",
-            custom_field="allowed",
+            custom_field="allowed",  # type: ignore[unknown-argument]
         )
         self.assertEqual(fm.id, "ADR-0.1.0")
 
@@ -68,7 +68,7 @@ class TestAdrFrontmatter(unittest.TestCase):
         with self.assertRaises(PydanticValidationError) as ctx:
             AdrFrontmatter(
                 id="ADR-0.1.0",
-                status="Invalid",
+                status="Invalid",  # type: ignore[invalid-argument-type]
                 semver="0.1.0",
                 lane="lite",
                 parent="OBPI-core",
@@ -82,7 +82,7 @@ class TestAdrFrontmatter(unittest.TestCase):
                 id="ADR-0.1.0",
                 status="Draft",
                 semver="0.1.0",
-                lane="Lite",
+                lane="Lite",  # type: ignore[invalid-argument-type]
                 parent="OBPI-core",
                 date="2026-01-01",
             )
@@ -100,7 +100,7 @@ class TestAdrFrontmatter(unittest.TestCase):
 
     def test_missing_required_field(self) -> None:
         with self.assertRaises(PydanticValidationError) as ctx:
-            AdrFrontmatter(
+            AdrFrontmatter(  # type: ignore[missing-argument]
                 id="ADR-0.1.0",
                 status="Draft",
             )
@@ -178,7 +178,7 @@ class TestObpiFrontmatter(unittest.TestCase):
                 parent="ADR-0.1.0",
                 item="1",
                 lane="lite",
-                status="Closed",
+                status="Closed",  # type: ignore[invalid-argument-type]
             )
 
     def test_all_status_values(self) -> None:
@@ -218,14 +218,14 @@ class TestPrdFrontmatter(unittest.TestCase):
         with self.assertRaises(PydanticValidationError):
             PrdFrontmatter(
                 id="PRD-GZKIT-1.0.0",
-                status="Active",
+                status="Active",  # type: ignore[invalid-argument-type]
                 semver="1.0.0",
                 date="2026-01-01",
             )
 
     def test_missing_required_field(self) -> None:
         with self.assertRaises(PydanticValidationError) as ctx:
-            PrdFrontmatter(id="PRD-GZKIT-1.0.0")
+            PrdFrontmatter(id="PRD-GZKIT-1.0.0")  # type: ignore[missing-argument]
         missing_fields = {
             str(e["loc"][0]) for e in ctx.exception.errors() if e["type"] == "missing"
         }
@@ -267,6 +267,7 @@ class TestValidateFrontmatterModel(unittest.TestCase):
         fm = {"id": "ADR-0.1.0", "status": "Draft"}
         result = validate_frontmatter_model(fm, {"$id": "gzkit.adr.v1"}, "test.md")
         self.assertIsNotNone(result)
+        assert result is not None
         messages = [e["message"] for e in result]
         self.assertTrue(any("Missing required frontmatter field: semver" in m for m in messages))
 
@@ -281,6 +282,7 @@ class TestValidateFrontmatterModel(unittest.TestCase):
         }
         result = validate_frontmatter_model(fm, {"$id": "gzkit.adr.v1"}, "test.md")
         self.assertIsNotNone(result)
+        assert result is not None
         messages = [e["message"] for e in result]
         self.assertTrue(any("does not match pattern" in m for m in messages))
 
@@ -295,6 +297,7 @@ class TestValidateFrontmatterModel(unittest.TestCase):
         }
         result = validate_frontmatter_model(fm, {"$id": "gzkit.adr.v1"}, "test.md")
         self.assertIsNotNone(result)
+        assert result is not None
         messages = [e["message"] for e in result]
         self.assertTrue(any("must be one of" in m and "got 'Invalid'" in m for m in messages))
 
@@ -302,6 +305,7 @@ class TestValidateFrontmatterModel(unittest.TestCase):
         fm = {"id": "ADR-0.1.0"}
         result = validate_frontmatter_model(fm, {"$id": "gzkit.adr.v1"}, "test.md")
         self.assertIsNotNone(result)
+        assert result is not None
         for err in result:
             self.assertIn("type", err)
             self.assertIn("artifact", err)

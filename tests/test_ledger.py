@@ -775,6 +775,7 @@ class TestTypedEventModels(unittest.TestCase):
         }
         event = parse_typed_event(data)
         self.assertIsInstance(event, ProjectInitEvent)
+        assert isinstance(event, ProjectInitEvent)
         self.assertEqual(event.mode, "lite")
         self.assertEqual(event.id, "myproject")
 
@@ -792,6 +793,7 @@ class TestTypedEventModels(unittest.TestCase):
         }
         event = parse_typed_event(data)
         self.assertIsInstance(event, AdrCreatedEvent)
+        assert isinstance(event, AdrCreatedEvent)
         self.assertEqual(event.lane, "lite")
         self.assertEqual(event.parent, "OBPI-core")
 
@@ -812,6 +814,7 @@ class TestTypedEventModels(unittest.TestCase):
         }
         event = parse_typed_event(data)
         self.assertIsInstance(event, ObpiReceiptEmittedEvent)
+        assert isinstance(event, ObpiReceiptEmittedEvent)
         self.assertEqual(event.receipt_event, "validated")
         self.assertEqual(event.obpi_completion, "completed")
 

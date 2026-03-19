@@ -54,6 +54,7 @@ class ContentTypeRegistry:
     """
 
     def __init__(self) -> None:
+        """Initialize empty registry."""
         self._types: dict[str, ContentType] = {}
 
     def register(self, content_type: ContentType) -> None:
