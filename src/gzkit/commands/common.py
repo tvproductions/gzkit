@@ -16,9 +16,6 @@ from gzkit.ledger import (
     resolve_adr_lane,
 )
 from gzkit.sync import parse_artifact_metadata, scan_existing_artifacts
-from gzkit.utils import (
-    git_cmd,
-)
 
 
 class GzCliError(Exception):
@@ -212,95 +209,6 @@ def _canonical_attestation_term(attest_status: str, reason: str | None = None) -
     if attest_status in {"partial", "dropped"} and reason:
         return f"{base}: {reason}"
     return base
-
-
-def _compute_git_sync_state(project_root: Path, branch: str, remote: str) -> dict[str, Any]:
-    """Compute ahead/behind/divergence against remote branch."""
-    warnings: list[str] = []
-    ahead = 0
-    behind = 0
-    diverged = False
-
-    rc_head, head, err_head = git_cmd(project_root, "rev-parse", branch)
-    if rc_head != 0:
-        warnings.append(err_head or f"Could not resolve local branch: {branch}")
-        return {
-            "head": None,
-            "remote_head": None,
-            "ahead": ahead,
-            "behind": behind,
-            "diverged": diverged,
-            "warnings": warnings,
-        }
-
-    rc_remote, remote_head, err_remote = git_cmd(project_root, "rev-parse", f"{remote}/{branch}")
-    if rc_remote != 0:
-        warnings.append(err_remote or f"Could not resolve remote branch: {remote}/{branch}")
-        return {
-            "head": head,
-            "remote_head": None,
-            "ahead": ahead,
-            "behind": behind,
-            "diverged": diverged,
-            "warnings": warnings,
-        }
-
-    rc_ahead, ahead_s, _ = git_cmd(
-        project_root, "rev-list", "--count", f"{remote}/{branch}..{branch}"
-    )
-    rc_behind, behind_s, _ = git_cmd(
-        project_root, "rev-list", "--count", f"{branch}..{remote}/{branch}"
-    )
-    if rc_ahead == 0 and ahead_s.isdigit():
-        ahead = int(ahead_s)
-    if rc_behind == 0 and behind_s.isdigit():
-        behind = int(behind_s)
-    diverged = ahead > 0 and behind > 0
-
-    return {
-        "head": head,
-        "remote_head": remote_head,
-        "ahead": ahead,
-        "behind": behind,
-        "diverged": diverged,
-        "warnings": warnings,
-    }
-
-
-def _head_is_merge_commit(project_root: Path) -> bool:
-    """Return True when HEAD itself is a merge commit."""
-    rc_merge, merge_head, _ = git_cmd(project_root, "rev-list", "--max-count=1", "--merges", "HEAD")
-    rc_head, head_sha, _ = git_cmd(project_root, "rev-parse", "HEAD")
-    return rc_merge == 0 and rc_head == 0 and bool(merge_head) and merge_head == head_sha
-
-
-def _git_status_lines(project_root: Path) -> tuple[list[str], str | None]:
-    """Return porcelain status lines, or an error if status can't be read."""
-    rc_status, status_out, err_status = git_cmd(project_root, "status", "--porcelain")
-    if rc_status != 0:
-        return [], err_status or "Could not read git status."
-    lines = [line for line in status_out.splitlines() if line.strip()]
-    return lines, None
-
-
-def _skip_tokens(skip_value: str) -> set[str]:
-    """Parse pre-commit SKIP env format into normalized token set."""
-    tokens: set[str] = set()
-    for chunk in skip_value.split(","):
-        for token in chunk.split():
-            normalized = token.strip().lower()
-            if normalized:
-                tokens.add(normalized)
-    return tokens
-
-
-def _skip_disables_xenon(skip_tokens: set[str]) -> bool:
-    """Return True when SKIP tokens can disable xenon complexity hooks."""
-    if not skip_tokens:
-        return False
-    if "all" in skip_tokens or "xenon-complexity" in skip_tokens:
-        return True
-    return any(token.startswith("xenon") for token in skip_tokens)
 
 
 def resolve_adr_file(project_root: Path, config: GzkitConfig, adr: str) -> tuple[Path, str]:

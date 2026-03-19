@@ -24,16 +24,11 @@ from gzkit.commands.common import (
     COMMAND_DOCS,
     SEMVER_ONLY_RE,
     GzCliError,
-    _compute_git_sync_state,
     _confirm,
     _gate4_na_reason,
-    _git_status_lines,
-    _head_is_merge_commit,
     _is_pool_adr_id,
     _prompt_text,
     _reject_pool_adr_for_lifecycle,
-    _skip_disables_xenon,
-    _skip_tokens,
     _upsert_frontmatter_value,
     _write_adr_closeout_form,
     console,
@@ -66,6 +61,13 @@ from gzkit.decomposition import (
     extract_markdown_section,
     parse_checklist_items,
     parse_scorecard,
+)
+from gzkit.git_sync import (
+    _compute_git_sync_state,
+    _git_status_lines,
+    _head_is_merge_commit,
+    _skip_disables_xenon,
+    _skip_tokens,
 )
 from gzkit.hooks.claude import setup_claude_hooks
 from gzkit.hooks.copilot import setup_copilot_hooks, setup_copilotignore
@@ -5397,9 +5399,20 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+_cached_parser: argparse.ArgumentParser | None = None
+
+
+def _get_parser() -> argparse.ArgumentParser:
+    """Return a cached argument parser (built once, reused)."""
+    global _cached_parser  # noqa: PLW0603
+    if _cached_parser is None:
+        _cached_parser = _build_parser()
+    return _cached_parser
+
+
 def main(argv: list[str] | None = None) -> int:
     """argparse-based gz entrypoint."""
-    parser = _build_parser()
+    parser = _get_parser()
     try:
         args = parser.parse_args(argv)
     except SystemExit as exc:

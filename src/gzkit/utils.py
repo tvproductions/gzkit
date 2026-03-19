@@ -30,12 +30,21 @@ def git_cmd(project_root: Path, *args: str) -> tuple[int, str, str]:
     return run_exec(["git", *args], cwd=project_root)
 
 
+_git_cache: dict[str, str | None] = {}
+
+
 def resolve_git_head_commit(project_root: Path) -> str | None:
-    """Return the current HEAD short SHA, or None when unavailable."""
+    """Return the current HEAD short SHA, or None when unavailable.
+
+    Cached within the process to avoid redundant subprocess calls.
+    """
+    key = f"head:{project_root}"
+    if key in _git_cache:
+        return _git_cache[key]
     rc, head_sha, _err = git_cmd(project_root, "rev-parse", "--short=7", "HEAD")
-    if rc == 0 and head_sha:
-        return head_sha.strip()
-    return None
+    result = head_sha.strip() if rc == 0 and head_sha else None
+    _git_cache[key] = result
+    return result
 
 
 def list_changed_files_between(
