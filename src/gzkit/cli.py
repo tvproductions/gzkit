@@ -37,6 +37,7 @@ from gzkit.commands.common import (
     get_project_root,
     load_manifest,
     resolve_adr_file,
+    resolve_adr_ledger_id,
     resolve_obpi_file,
     resolve_target_adr,
 )
@@ -1095,7 +1096,8 @@ def adr_audit_check(adr: str, as_json: bool) -> None:
 
     adr_input = adr if adr.startswith("ADR-") else f"ADR-{adr}"
     canonical_adr = ledger.canonicalize_id(adr_input)
-    _adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
+    adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
+    adr_id = resolve_adr_ledger_id(adr_file, adr_id, ledger)
     _reject_pool_adr_for_lifecycle(adr_id, "audit-checked")
 
     obpi_files, expected_obpis = _collect_obpi_files_for_adr(project_root, config, ledger, adr_id)
@@ -1386,7 +1388,8 @@ def adr_covers_check(adr: str, as_json: bool) -> None:
 
     adr_input = adr if adr.startswith("ADR-") else f"ADR-{adr}"
     canonical_adr = ledger.canonicalize_id(adr_input)
-    _adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
+    adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
+    adr_id = resolve_adr_ledger_id(adr_file, adr_id, ledger)
     _reject_pool_adr_for_lifecycle(adr_id, "covers-checked")
 
     obpi_files, expected_obpis = _collect_obpi_files_for_adr(project_root, config, ledger, adr_id)
@@ -2396,6 +2399,7 @@ def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
     adr_input = adr if adr.startswith("ADR-") else f"ADR-{adr}"
     canonical_adr = ledger.canonicalize_id(adr_input)
     adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
+    adr_id = resolve_adr_ledger_id(adr_file, adr_id, ledger)
     _reject_pool_adr_for_lifecycle(adr_id, "closed out")
     graph = ledger.get_artifact_graph()
     adr_info = graph.get(adr_id, {})
@@ -2501,6 +2505,7 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
     adr_input = adr if adr.startswith("ADR-") else f"ADR-{adr}"
     canonical_adr = ledger.canonicalize_id(adr_input)
     adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
+    adr_id = resolve_adr_ledger_id(adr_file, adr_id, ledger)
     _reject_pool_adr_for_lifecycle(adr_id, "audited")
     graph = ledger.get_artifact_graph()
     adr_info = graph.get(adr_id)
@@ -2810,7 +2815,8 @@ def adr_emit_receipt_cmd(
 
     adr_input = adr if adr.startswith("ADR-") else f"ADR-{adr}"
     canonical_adr = ledger.canonicalize_id(adr_input)
-    _adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
+    adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
+    adr_id = resolve_adr_ledger_id(adr_file, adr_id, ledger)
     _reject_pool_adr_for_lifecycle(adr_id, "issued receipts")
 
     evidence: dict[str, Any] | None = None

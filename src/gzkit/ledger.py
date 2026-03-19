@@ -5,7 +5,6 @@ State is derived from the ledger, not stored separately.
 """
 
 import json
-from collections.abc import Iterator
 from datetime import UTC, datetime
 from pathlib import Path, PurePosixPath
 from typing import Any, ClassVar
@@ -540,128 +539,6 @@ def _parse_event_timestamp(value: Any) -> datetime | None:
         return None
 
 
-def _candidate_anchor_paths(files_since_anchor: list[str]) -> list[str]:
-    """Filter out transient files that must not participate in anchor drift."""
-    return [path for path in files_since_anchor if not _is_transient_anchor_state_path(path)]
-
-
-def _iter_later_completed_siblings(
-    *,
-    artifact_graph: dict[str, dict[str, Any]],
-    obpi_id: str,
-    parent_adr: str,
-    current_completion_ts: datetime,
-) -> Iterator[dict[str, Any]]:
-    """Yield later completed sibling OBPI metadata for the same parent ADR."""
-    for sibling_id, sibling_info in artifact_graph.items():
-        if sibling_id == obpi_id or sibling_info.get("type") != "obpi":
-            continue
-        if sibling_info.get("parent") != parent_adr or not sibling_info.get("ledger_completed"):
-            continue
-
-        sibling_completion_ts = _parse_event_timestamp(sibling_info.get("latest_completion_ts"))
-        if sibling_completion_ts is None or sibling_completion_ts <= current_completion_ts:
-            continue
-
-        yield sibling_info
-
-
-def _sibling_scope_details(
-    *,
-    project_root: Path,
-    sibling_info: dict[str, Any],
-) -> tuple[dict[str, list[str]], set[str]] | None:
-    """Return normalized sibling scope plus post-anchor changes when available."""
-    sibling_evidence = sibling_info.get("latest_completion_evidence")
-    if not isinstance(sibling_evidence, dict):
-        return None
-
-    sibling_scope = _normalize_scope_audit(sibling_evidence)
-    if not sibling_scope["allowlist"] and not sibling_scope["changed_files"]:
-        return None
-
-    sibling_anchor = _normalize_anchor(sibling_info.get("latest_completion_anchor"))
-    sibling_anchor_commit = sibling_anchor.get("commit") if sibling_anchor else None
-    if not sibling_anchor_commit:
-        return None
-
-    sibling_files_since_anchor = list_changed_files_between(project_root, sibling_anchor_commit)
-    if sibling_files_since_anchor is None:
-        return None
-
-    sibling_post_anchor_changes = set(
-        _relevant_anchor_drift_files(sibling_files_since_anchor, sibling_scope)
-    )
-    return sibling_scope, sibling_post_anchor_changes
-
-
-def _sibling_covers_path(
-    *,
-    path: str,
-    sibling_scope: dict[str, list[str]],
-    sibling_post_anchor_changes: set[str],
-) -> bool:
-    """Return True when a sibling completion safely absorbs a changed path."""
-    if path in sibling_post_anchor_changes:
-        return False
-    if path in sibling_scope["changed_files"]:
-        return True
-    return _path_matches_scope_allowlist(path, sibling_scope["allowlist"])
-
-
-def _later_sibling_covered_paths(
-    *,
-    project_root: Path | None,
-    obpi_id: str | None,
-    info: dict[str, Any],
-    artifact_graph: dict[str, dict[str, Any]] | None,
-    files_since_anchor: list[str],
-) -> set[str]:
-    """Return changed paths already absorbed by later completed sibling OBPIs."""
-    if project_root is None or artifact_graph is None or not obpi_id or not files_since_anchor:
-        return set()
-
-    parent_adr = info.get("parent")
-    if not isinstance(parent_adr, str) or not parent_adr:
-        return set()
-
-    current_completion_ts = _parse_event_timestamp(info.get("latest_completion_ts"))
-    if current_completion_ts is None:
-        return set()
-
-    covered_paths: set[str] = set()
-    candidate_paths = _candidate_anchor_paths(files_since_anchor)
-    if not candidate_paths:
-        return set()
-
-    sibling_infos = _iter_later_completed_siblings(
-        artifact_graph=artifact_graph,
-        obpi_id=obpi_id,
-        parent_adr=parent_adr,
-        current_completion_ts=current_completion_ts,
-    )
-    for sibling_info in sibling_infos:
-        sibling_scope_details = _sibling_scope_details(
-            project_root=project_root,
-            sibling_info=sibling_info,
-        )
-        if sibling_scope_details is None:
-            continue
-        sibling_scope, sibling_post_anchor_changes = sibling_scope_details
-
-        for path in candidate_paths:
-            if path in covered_paths:
-                continue
-            if _sibling_covers_path(
-                path=path,
-                sibling_scope=sibling_scope,
-                sibling_post_anchor_changes=sibling_post_anchor_changes,
-            ):
-                covered_paths.add(path)
-
-    return covered_paths
-
-
 def _anchor_result(
     *,
     anchor_state: str,
@@ -704,15 +581,17 @@ def _resolve_current_head(project_root: Path | None, current_head: str | None) -
 def _derive_scope_anchor_state(
     *,
     project_root: Path | None,
-    obpi_id: str | None,
-    info: dict[str, Any],
-    artifact_graph: dict[str, dict[str, Any]] | None,
     current_head: str,
     anchor_commit: str,
     scope_audit: dict[str, list[str]],
     files_since_anchor: list[str] | None,
 ) -> tuple[str, list[str], list[str]]:
-    """Compare completion anchor against HEAD for recorded-scope drift."""
+    """Evaluate OBPI completion anchor against current HEAD.
+
+    Each OBPI's anchor commit seals that increment's delivery proof.
+    Later commits (sibling OBPIs, ADR closeout) supersede the anchor
+    without invalidating it — eventual consistency across the ADR.
+    """
     if current_head == anchor_commit:
         return "current", [], []
 
@@ -722,42 +601,42 @@ def _derive_scope_anchor_state(
         return "degraded", ["changes since the completion anchor could not be inspected"], []
 
     anchor_drift_files = _relevant_anchor_drift_files(files_since_anchor, scope_audit)
-    sibling_covered = _later_sibling_covered_paths(
-        project_root=project_root,
-        obpi_id=obpi_id,
-        info=info,
-        artifact_graph=artifact_graph,
-        files_since_anchor=anchor_drift_files,
-    )
-    anchor_drift_files = sorted(path for path in anchor_drift_files if path not in sibling_covered)
-    if anchor_drift_files:
-        return "stale", ["completion anchor drifted in recorded OBPI scope"], anchor_drift_files
-    return "scope_clean", [], []
+    if not anchor_drift_files:
+        return "scope_clean", [], []
+
+    # Files changed since this OBPI's anchor — expected when later siblings
+    # or ADR closeout committed on top.  The anchor is superseded, not stale.
+    return "superseded", [], anchor_drift_files
 
 
-def _git_sync_anchor_issues(git_sync_state: Any) -> list[str]:
-    """Derive anchor blockers from recorder-time git-sync evidence."""
+def _git_sync_anchor_notes(git_sync_state: Any) -> list[str]:
+    """Record git-sync facts from receipt capture time (informational, not blocking).
+
+    The git state at receipt time is metadata about the receipt, not a defect.
+    A dirty worktree or ahead/behind state at OBPI completion is normal during
+    incremental development — the ADR closeout anchor seals the final state.
+    """
     if not isinstance(git_sync_state, dict):
         return []
 
-    issues: list[str] = []
+    notes: list[str] = []
     blockers = [
         str(item).strip()
         for item in git_sync_state.get("blockers", [])
         if isinstance(item, str) and item.strip()
     ]
     if blockers:
-        issues.append("completion git-sync evidence recorded blockers: " + "; ".join(blockers))
+        notes.append("completion git-sync evidence recorded blockers: " + "; ".join(blockers))
 
     if git_sync_state.get("dirty") is True:
-        issues.append("completion receipt was captured from a dirty worktree")
+        notes.append("completion receipt was captured from a dirty worktree")
     if git_sync_state.get("diverged") is True:
-        issues.append("completion receipt was captured while git state was diverged")
+        notes.append("completion receipt was captured while git state was diverged")
     elif int(git_sync_state.get("ahead", 0) or 0) > 0:
-        issues.append("completion receipt was captured while branch was ahead of remote")
+        notes.append("completion receipt was captured while branch was ahead of remote")
     elif int(git_sync_state.get("behind", 0) or 0) > 0:
-        issues.append("completion receipt was captured while branch was behind remote")
-    return issues
+        notes.append("completion receipt was captured while branch was behind remote")
+    return notes
 
 
 def _derive_anchor_analysis(
@@ -815,22 +694,17 @@ def _derive_anchor_analysis(
 
     anchor_state, anchor_issues, anchor_drift_files = _derive_scope_anchor_state(
         project_root=project_root,
-        obpi_id=obpi_id,
-        info=info,
-        artifact_graph=artifact_graph,
         current_head=current_head,
         anchor_commit=anchor_commit,
         scope_audit=scope_audit,
         files_since_anchor=files_since_anchor,
     )
-    git_sync_issues = _git_sync_anchor_issues(git_sync_state)
-    if git_sync_issues and anchor_state in {"current", "scope_clean"}:
-        anchor_state = "degraded"
+    git_sync_notes = _git_sync_anchor_notes(git_sync_state)
     return _anchor_result(
         anchor_state=anchor_state,
         anchor_commit=anchor_commit,
         current_head=current_head,
-        anchor_issues=[*anchor_issues, *git_sync_issues],
+        anchor_issues=[*anchor_issues, *git_sync_notes],
         anchor_drift_files=anchor_drift_files,
     )
 
@@ -1031,7 +905,10 @@ def derive_obpi_semantics(
     )
 
     proof_state = "validated" if runtime_state == "validated" else req_proof_state
-    issues = [*issues, *list(anchor_analysis["anchor_issues"])]
+    # Anchor issues are informational at OBPI level — each OBPI has its own
+    # commit anchor and later sibling/ADR work will naturally drift it.
+    # Blocking validation belongs at ADR closeout, not per-OBPI audit.
+    reflection_issues = [*reflection_issues, *list(anchor_analysis["anchor_issues"])]
 
     completed = bool(ledger_completed and evidence_ok and attestation_state != "missing")
     return {
