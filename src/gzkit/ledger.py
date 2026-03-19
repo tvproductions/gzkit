@@ -280,6 +280,24 @@ def artifact_renamed_event(old_id: str, new_id: str, reason: str | None = None) 
     )
 
 
+def lifecycle_transition_event(
+    artifact_id: str,
+    content_type: str,
+    from_state: str,
+    to_state: str,
+) -> LedgerEvent:
+    """Create a lifecycle state transition event."""
+    return LedgerEvent(
+        event="lifecycle_transition",
+        id=artifact_id,
+        extra={
+            "content_type": content_type,
+            "from_state": from_state,
+            "to_state": to_state,
+        },
+    )
+
+
 def parse_frontmatter_value(content: str, key: str) -> str | None:
     """Extract a single value from YAML frontmatter."""
     lines = content.splitlines()
