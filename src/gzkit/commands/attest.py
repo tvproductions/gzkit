@@ -20,6 +20,7 @@ from gzkit.commands.common import (
     get_project_root,
     load_manifest,
     resolve_adr_file,
+    resolve_adr_ledger_id,
 )
 from gzkit.commands.status import _adr_obpi_status_rows
 from gzkit.config import GzkitConfig
@@ -95,6 +96,7 @@ def attest(
 
     # Verify ADR exists (support nested ADR layout)
     adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
+    adr_id = resolve_adr_ledger_id(adr_file, adr_id, ledger)
     if _is_pool_adr_id(adr_id):
         raise GzCliError(
             f"Pool ADRs cannot be attested: {adr_id}. Promote this ADR from pool first."
