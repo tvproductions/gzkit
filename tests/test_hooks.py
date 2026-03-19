@@ -1024,5 +1024,224 @@ class TestPipelineCompletionReminderHook(unittest.TestCase):
             self.assertIn("uv run gz obpi pipeline OBPI-0.12.0-05 --from=ceremony", result.stderr)
 
 
+class TestObpiCompletionValidatorHook(unittest.TestCase):
+    """Tests for the obpi-completion-validator hook's brief content quality gate."""
+
+    def _create_hook(self, project_root: Path) -> Path:
+        config = GzkitConfig(project_name="gzkit-test")
+        setup_claude_hooks(project_root, config)
+        return project_root / ".claude" / "hooks" / "obpi-completion-validator.py"
+
+    def _run_hook(
+        self,
+        script_path: Path,
+        cwd: Path,
+        *,
+        file_path: str,
+        old_string: str = "",
+        new_string: str = "",
+        content: str = "",
+    ) -> subprocess.CompletedProcess[str]:
+        tool_input: dict[str, str] = {"file_path": file_path}
+        if content:
+            tool_input["content"] = content
+        else:
+            tool_input["old_string"] = old_string
+            tool_input["new_string"] = new_string
+        payload = {"tool_input": tool_input}
+        return subprocess.run(
+            [sys.executable, str(script_path)],
+            input=json.dumps(payload),
+            text=True,
+            capture_output=True,
+            check=False,
+            cwd=cwd,
+        )
+
+    def _write_obpi_brief(
+        self,
+        project_root: Path,
+        *,
+        status: str = "Draft",
+        summary: str = "",
+        key_proof: str = "",
+    ) -> Path:
+        adr_dir = project_root / "docs" / "design" / "adr" / "pre-release" / "ADR-0.99.0-test"
+        obpis_dir = adr_dir / "obpis"
+        obpis_dir.mkdir(parents=True, exist_ok=True)
+
+        brief_path = obpis_dir / "OBPI-0.99.0-01-test.md"
+        lines = [
+            "---",
+            "id: OBPI-0.99.0-01-test",
+            "parent: ADR-0.99.0-test",
+            f"status: {status}",
+            "---",
+            "",
+            "# OBPI-0.99.0-01 — test",
+            "",
+        ]
+        if summary:
+            lines += ["### Implementation Summary", "", summary, ""]
+        if key_proof:
+            lines += ["### Key Proof", "", key_proof, ""]
+
+        brief_path.write_text("\n".join(lines), encoding="utf-8")
+        return brief_path
+
+    def _setup_gzkit(self, project_root: Path) -> None:
+        gzkit_dir = project_root / ".gzkit"
+        gzkit_dir.mkdir(exist_ok=True)
+        (gzkit_dir / "manifest.json").write_text(
+            '{"schema":"gzkit.manifest.v1","structure":{"design_root":"docs/design"},'
+            '"gates":{"lite":[1,2],"heavy":[1,2,3,4,5]}}',
+            encoding="utf-8",
+        )
+
+    def test_blocks_completion_without_implementation_summary(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            self._setup_gzkit(project_root)
+            script_path = self._create_hook(project_root)
+            brief_path = self._write_obpi_brief(
+                project_root,
+                status="Draft",
+                key_proof="```\ntest output here\n```",
+            )
+
+            result = self._run_hook(
+                script_path,
+                project_root,
+                file_path=str(brief_path),
+                old_string="**Brief Status:** Draft",
+                new_string="**Brief Status:** Completed",
+            )
+
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("Implementation Summary", result.stderr)
+
+    def test_blocks_completion_without_key_proof(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            self._setup_gzkit(project_root)
+            script_path = self._create_hook(project_root)
+            brief_path = self._write_obpi_brief(
+                project_root,
+                status="Draft",
+                summary="- Module added: src/gzkit/foo.py",
+            )
+
+            result = self._run_hook(
+                script_path,
+                project_root,
+                file_path=str(brief_path),
+                old_string="**Brief Status:** Draft",
+                new_string="**Brief Status:** Completed",
+            )
+
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("Key Proof", result.stderr)
+
+    def test_blocks_completion_with_both_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            self._setup_gzkit(project_root)
+            script_path = self._create_hook(project_root)
+            brief_path = self._write_obpi_brief(project_root, status="Draft")
+
+            result = self._run_hook(
+                script_path,
+                project_root,
+                file_path=str(brief_path),
+                old_string="**Brief Status:** Draft",
+                new_string="**Brief Status:** Completed",
+            )
+
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("Implementation Summary", result.stderr)
+            self.assertIn("Key Proof", result.stderr)
+
+    def test_allows_completion_with_substantive_content(self) -> None:
+        """Hook allows status change when both sections have substantive content.
+
+        Note: The hook also checks for audit evidence (step 6), which will
+        block separately. This test verifies that the brief content quality
+        gate (step 5) passes, even if the hook still exits 2 for a different
+        reason.
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            self._setup_gzkit(project_root)
+            script_path = self._create_hook(project_root)
+            brief_path = self._write_obpi_brief(
+                project_root,
+                status="Draft",
+                summary="- Module added: src/gzkit/foo.py\n- Tests: 5 new tests",
+                key_proof="```\n$ uv run -m unittest tests.test_foo -v\nRan 5 tests — OK\n```",
+            )
+
+            result = self._run_hook(
+                script_path,
+                project_root,
+                file_path=str(brief_path),
+                old_string="**Brief Status:** Draft",
+                new_string="**Brief Status:** Completed",
+            )
+
+            # Should NOT mention brief content quality issues
+            self.assertNotIn("Implementation Summary", result.stderr)
+            self.assertNotIn("Key Proof", result.stderr)
+
+    def test_allows_non_completion_edit_without_checks(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            self._setup_gzkit(project_root)
+            script_path = self._create_hook(project_root)
+            brief_path = self._write_obpi_brief(project_root, status="Draft")
+
+            result = self._run_hook(
+                script_path,
+                project_root,
+                file_path=str(brief_path),
+                old_string="# OBPI-0.99.0-01",
+                new_string="# OBPI-0.99.0-01 — updated title",
+            )
+
+            self.assertEqual(result.returncode, 0)
+
+    def test_write_tool_checks_content_directly(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            self._setup_gzkit(project_root)
+            script_path = self._create_hook(project_root)
+
+            adr_dir = project_root / "docs" / "design" / "adr" / "pre-release" / "ADR-0.99.0-test"
+            obpis_dir = adr_dir / "obpis"
+            obpis_dir.mkdir(parents=True, exist_ok=True)
+            brief_path = obpis_dir / "OBPI-0.99.0-01-test.md"
+
+            # Write tool: content field has the full file
+            full_content = (
+                "---\n"
+                "id: OBPI-0.99.0-01-test\n"
+                "parent: ADR-0.99.0-test\n"
+                "status: Completed\n"
+                "---\n\n"
+                "# OBPI-0.99.0-01\n\n"
+                "**Brief Status:** Completed\n"
+            )
+
+            result = self._run_hook(
+                script_path,
+                project_root,
+                file_path=str(brief_path),
+                content=full_content,
+            )
+
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("Implementation Summary", result.stderr)
+            self.assertIn("Key Proof", result.stderr)
+
+
 if __name__ == "__main__":
     unittest.main()

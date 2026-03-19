@@ -75,6 +75,25 @@ uv run gz lint — All checks passed
 uv run gz typecheck — All checks passed
 ```
 
+### Implementation Summary
+
+- Models added: `VendorConfig` and `VendorsConfig` Pydantic models in `src/gzkit/config.py`
+- Fields: `enabled` (bool), `surface_root` (str), `instruction_format` (str) per vendor
+- Vendors: claude (enabled by default), copilot, codex, gemini, opencode (all disabled by default)
+- Config integration: `GzkitConfig.vendors` field exposes vendor enablement
+- Backward-compatible: configs without `vendors` key use defaults
+
+### Key Proof
+
+```text
+$ uv run -m unittest tests.test_config.TestVendorsConfig.test_defaults__claude_enabled -v
+test_defaults__claude_enabled ... ok
+$ uv run -m unittest tests.test_config.TestVendorsConfig.test_defaults__others_disabled -v
+test_defaults__others_disabled ... ok
+```
+
+Claude defaults to enabled; all other vendors default to disabled.
+
 ## Human Attestation
 
 - Attestor: `self-close-exception (Lite lane)`
