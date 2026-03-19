@@ -47,8 +47,7 @@ def main() -> None:
             pipeline_plans_dir,
             pipeline_router_message,
         )
-    except ImportError as exc:
-        print(f"WARNING: pipeline-router disabled — {exc}", file=sys.stderr)
+    except Exception:
         sys.exit(0)
 
     plans_dir = pipeline_plans_dir(project_root)
