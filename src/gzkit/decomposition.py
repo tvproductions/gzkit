@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+
+from pydantic import BaseModel, ConfigDict
 
 
-@dataclass(frozen=True)
-class DecompositionScorecard:
+class DecompositionScorecard(BaseModel):
     """Structured decomposition scorecard for one ADR."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     data_state: int
     logic_engine: int

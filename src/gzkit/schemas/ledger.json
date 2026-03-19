@@ -199,6 +199,22 @@
         "new_id": { "type": "string", "min_length": 1 },
         "reason": { "type": "string", "min_length": 1 }
       }
+    },
+    "adr_annotated": {
+      "required": ["annotation"],
+      "properties": {
+        "annotation": { "type": "string", "min_length": 1 },
+        "source_framework": { "type": "string", "min_length": 1 },
+        "rationale": { "type": "string", "min_length": 1 }
+      }
+    },
+    "lifecycle_transition": {
+      "required": ["content_type", "from_state", "to_state"],
+      "properties": {
+        "content_type": { "type": "string", "min_length": 1 },
+        "from_state": { "type": "string", "min_length": 1 },
+        "to_state": { "type": "string", "min_length": 1 }
+      }
     }
   }
 }

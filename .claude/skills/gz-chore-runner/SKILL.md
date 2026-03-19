@@ -1,5 +1,5 @@
 ---
-name: chore-runner
+name: gz-chore-runner
 description: Run a gzkit chore end-to-end (show, plan, advise, execute, validate). Use when executing scheduled maintenance, refactoring, or code quality work items from the chores registry.
 category: code-quality
 lifecycle_state: active
