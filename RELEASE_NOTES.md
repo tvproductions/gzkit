@@ -1,5 +1,23 @@
 # gzkit Release Notes
 
+## v0.16.0 (2026-03-19)
+
+**ADR:** ADR-0.16.0 - CMS Architecture Formalization
+
+Formalized gzkit's identity as a headless CMS for governance by implementing the Django-parallel architecture. Content types have a registry, canonical content has a template engine for vendor rendering, vendor enablement is manifest-driven and selective, and content lifecycle is an explicit state machine.
+
+### Delivered
+
+- Content type registry cataloging every governance artifact type with Pydantic models, schemas, lifecycle states, and rendering rules
+- Rules-as-content pattern: `.gzkit/rules/` as canonical source, rendered into vendor-specific mirrors by `gz agent sync`
+- Vendor manifest schema with selective enablement (`vendors.claude.enabled: true`)
+- Vendor-aware template engine in `gz agent sync control-surfaces`
+- Content lifecycle state machine with per-content-type transition tables, `InvalidTransitionError` enforcement, and ledger event emission
+
+### Gate Evidence
+
+All 5 GovZero gates satisfied.
+
 ## v0.15.0 (2026-03-18)
 
 **ADR:** ADR-0.15.0 - Pydantic Schema Enforcement
