@@ -43,33 +43,6 @@
     "docs": "uv run mkdocs build --strict",
     "bdd": "uv run -m behave features/"
   },
-  "vendors": {
-    "claude": {
-      "enabled": true,
-      "surface_root": ".claude",
-      "instruction_format": "claude-rules"
-    },
-    "copilot": {
-      "enabled": false,
-      "surface_root": ".github",
-      "instruction_format": "github-instructions"
-    },
-    "codex": {
-      "enabled": false,
-      "surface_root": ".agents",
-      "instruction_format": "generic"
-    },
-    "gemini": {
-      "enabled": false,
-      "surface_root": ".gemini",
-      "instruction_format": "generic"
-    },
-    "opencode": {
-      "enabled": false,
-      "surface_root": ".opencode",
-      "instruction_format": "generic"
-    }
-  },
   "gates": {
     "lite": [
       1,

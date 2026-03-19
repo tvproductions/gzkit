@@ -1,35 +1,40 @@
-<!-- markdownlint-disable-file MD013 MD041 -->
+# ADR Closeout Form: ADR-0.16.0
 
-# ADR-0.16.0 Closeout Form
+**Status**: Phase 2 — Completed
 
-## ADR
+---
 
-ADR-0.16.0 — cms-architecture-formalization
+## Pre-Attestation Checklist
 
-## Status
+Closeout evidence verified:
 
-Pending
+- [x] All checklist items in ADR are complete
+- [x] All OBPIs have passing acceptance criteria
+- [x] Gate 2 (TDD): Tests pass
+- [ ] Gate 3 (Docs): Docs build passes
+- [ ] Gate 4 (BDD): Behave suite passes
+- [ ] Code reviewed
 
-## OBPI Completion Summary
+## Evidence Paths
 
-| OBPI | Title | Status |
-|------|-------|--------|
-| OBPI-0.16.0-01 | Content type registry | Pending |
-| OBPI-0.16.0-02 | Rules as content | Pending |
-| OBPI-0.16.0-03 | Vendor manifest schema | Pending |
-| OBPI-0.16.0-04 | Template engine | Pending |
-| OBPI-0.16.0-05 | Content lifecycle state machine | Pending |
+| Gate | Evidence | Command/Path |
+|------|----------|--------------|
+| Gate 1 | ADR exists | `docs/design/adr/pre-release/ADR-0.16.0-cms-architecture-formalization/ADR-0.16.0-cms-architecture-formalization.md` |
+| Gate 2 (TDD) | Tests pass | `uv run gz test` |
+| Quality (Lint) | Lint passes | `uv run gz lint` |
+| Quality (Typecheck) | Typecheck passes | `uv run gz typecheck` |
+| Gate 5 | Human attests | `uv run gz attest ADR-0.16.0 --status completed` |
 
-## Gate Evidence
+## OBPI Status
 
-- Gate 1 (ADR): ADR-0.16.0 document created
-- Gate 2 (TDD): Pending
-- Code Quality: Pending
+| OBPI | Description | Status |
+|------|-------------|--------|
 
-## Human Observation
+## Human Attestation
 
-Pending
+### Verbatim Attestation
 
-## Attestation
+- `completed`
 
-Pending
+**Attested by**: Jeff
+**Timestamp (UTC)**: 2026-03-19T11:20:33Z
