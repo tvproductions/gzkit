@@ -366,6 +366,24 @@ class ArtifactRenamedEvent(_EventBase):
     reason: str | None = None
 
 
+class AdrAnnotatedEvent(_EventBase):
+    """adr_annotated event."""
+
+    event: Literal["adr_annotated"]
+    annotation: str
+    source_framework: str | None = None
+    rationale: str | None = None
+
+
+class LifecycleTransitionEvent(_EventBase):
+    """lifecycle_transition event."""
+
+    event: Literal["lifecycle_transition"]
+    content_type: str
+    from_state: str
+    to_state: str
+
+
 TypedLedgerEvent = Annotated[
     ProjectInitEvent
     | PrdCreatedEvent
@@ -378,7 +396,9 @@ TypedLedgerEvent = Annotated[
     | CloseoutInitiatedEvent
     | AuditReceiptEmittedEvent
     | ObpiReceiptEmittedEvent
-    | ArtifactRenamedEvent,
+    | ArtifactRenamedEvent
+    | AdrAnnotatedEvent
+    | LifecycleTransitionEvent,
     Field(discriminator="event"),
 ]
 

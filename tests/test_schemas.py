@@ -9,6 +9,7 @@ from typing import Literal, get_args, get_origin
 from pydantic import BaseModel
 
 from gzkit.events import (
+    AdrAnnotatedEvent,
     AdrCreatedEvent,
     ArtifactEditedEvent,
     ArtifactRenamedEvent,
@@ -17,6 +18,7 @@ from gzkit.events import (
     CloseoutInitiatedEvent,
     ConstitutionCreatedEvent,
     GateCheckedEvent,
+    LifecycleTransitionEvent,
     ObpiCreatedEvent,
     ObpiReceiptEmittedEvent,
     PrdCreatedEvent,
@@ -181,6 +183,8 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     "audit_receipt_emitted": AuditReceiptEmittedEvent,
     "obpi_receipt_emitted": ObpiReceiptEmittedEvent,
     "artifact_renamed": ArtifactRenamedEvent,
+    "adr_annotated": AdrAnnotatedEvent,
+    "lifecycle_transition": LifecycleTransitionEvent,
 }
 
 # Base fields present on _EventBase — not event-specific

@@ -169,13 +169,13 @@ class TestSkillCommands(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             runner.invoke(main, ["init"])
-            ok = QualityResult(True, "cmd", "", "", 0)
+            ok = QualityResult(success=True, command="cmd", stdout="", stderr="", returncode=0)
             warning_skill_audit = QualityResult(
-                True,
-                "uv run gz skill audit",
-                "Warnings: SKA-MIRROR-DIR-UNEXPECTED",
-                "",
-                0,
+                success=True,
+                command="uv run gz skill audit",
+                stdout="Warnings: SKA-MIRROR-DIR-UNEXPECTED",
+                stderr="",
+                returncode=0,
             )
             fake = CheckResult(
                 success=True,

@@ -4,10 +4,11 @@ Skills are reusable agent instructions that can be triggered contextually.
 """
 
 import re
-from dataclasses import dataclass
 from datetime import date, timedelta
 from pathlib import Path
 from typing import Any
+
+from pydantic import BaseModel, ConfigDict
 
 from gzkit.config import GzkitConfig
 from gzkit.templates import render_template
@@ -109,9 +110,10 @@ SKILL_GOVZERO_LAYERS = {
 }
 
 
-@dataclass
-class Skill:
+class Skill(BaseModel):
     """Represents a skill definition."""
+
+    model_config = ConfigDict(extra="forbid")
 
     name: str
     path: Path
@@ -126,9 +128,10 @@ class Skill:
         }
 
 
-@dataclass
-class SkillAuditIssue:
+class SkillAuditIssue(BaseModel):
     """Represents one skill-audit finding."""
+
+    model_config = ConfigDict(extra="forbid")
 
     severity: str  # error | warning
     code: str
@@ -147,9 +150,10 @@ class SkillAuditIssue:
         }
 
 
-@dataclass
-class SkillAuditReport:
+class SkillAuditReport(BaseModel):
     """Structured report from skill audit checks."""
+
+    model_config = ConfigDict(extra="forbid")
 
     valid: bool
     issues: list[SkillAuditIssue]

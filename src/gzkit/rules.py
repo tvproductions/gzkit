@@ -43,6 +43,20 @@ class ClassifiedRule(BaseModel):
 # ---------------------------------------------------------------------------
 
 
+def _skip_leading_comments(lines: list[str]) -> list[str]:
+    """Skip leading HTML comments and blank lines before YAML frontmatter."""
+    for idx, raw in enumerate(lines):
+        stripped = raw.strip()
+        if stripped == "---":
+            return lines[idx:]
+        if stripped.startswith("<!--") and stripped.endswith("-->"):
+            continue
+        if not stripped:
+            continue
+        break
+    return lines
+
+
 def _parse_instruction_frontmatter(content: str) -> dict[str, str]:
     """Parse frontmatter from an instruction file.
 
@@ -53,7 +67,7 @@ def _parse_instruction_frontmatter(content: str) -> dict[str, str]:
         Dictionary of frontmatter key-value pairs.
 
     """
-    lines = content.splitlines()
+    lines = _skip_leading_comments(content.splitlines())
     if not lines or lines[0].strip() != "---":
         return {}
 
@@ -79,7 +93,7 @@ def _extract_body_after_frontmatter(content: str) -> str:
         Body text after the closing --- delimiter.
 
     """
-    lines = content.splitlines()
+    lines = _skip_leading_comments(content.splitlines())
     if not lines or lines[0].strip() != "---":
         return content
 
