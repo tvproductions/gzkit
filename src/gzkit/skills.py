@@ -262,6 +262,7 @@ def scaffold_skill(
 
     Returns:
         Path to the created SKILL.md file.
+
     """
     skill_path = project_root / skills_dir / dir_name
     skill_path.mkdir(parents=True, exist_ok=True)
@@ -306,6 +307,7 @@ def scaffold_core_skills(project_root: Path, config: GzkitConfig | None = None) 
 
     Returns:
         List of paths to created SKILL.md files.
+
     """
     if config is None:
         config = GzkitConfig.load(project_root / ".gzkit.json")
@@ -332,6 +334,7 @@ def list_skills(project_root: Path, config: GzkitConfig | None = None) -> list[S
 
     Returns:
         List of Skill objects.
+
     """
     if config is None:
         config = GzkitConfig.load(project_root / ".gzkit.json")
@@ -370,6 +373,7 @@ def get_skill(
 
     Returns:
         Skill object or None if not found.
+
     """
     if config is None:
         config = GzkitConfig.load(project_root / ".gzkit.json")

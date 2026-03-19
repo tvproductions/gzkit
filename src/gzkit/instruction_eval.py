@@ -423,6 +423,7 @@ def run_eval_suite(
 
     Returns:
         EvalSuiteResult with per-case results and dimension scores.
+
     """
     if cases is None:
         cases = BASELINE_CASES

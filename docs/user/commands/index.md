@@ -56,6 +56,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz skill audit`](skill-audit.md) | Audit skill lifecycle metadata and mirror parity |
 | [`gz parity check`](parity-check.md) | Run deterministic parity regression checks |
 | [`gz readiness audit`](readiness-audit.md) | Audit agent-readiness maturity across core disciplines |
+| [`gz readiness eval`](readiness-eval.md) | Run instruction architecture eval suite with positive/negative controls |
 | [`gz check-config-paths`](check-config-paths.md) | Validate configured + manifest path coherence |
 | [`gz cli audit`](cli-audit.md) | Validate CLI docs/manpage coverage |
 | [`gz agent sync control-surfaces`](agent-sync-control-surfaces.md) | Regenerate control surfaces |

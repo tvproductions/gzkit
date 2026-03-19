@@ -25,6 +25,7 @@ def load_schema(name: str) -> dict[str, Any]:
 
     Raises:
         FileNotFoundError: If schema file doesn't exist.
+
     """
     schema_dir = files("gzkit.schemas")
     schema_file = schema_dir.joinpath(f"{name}.json")
@@ -39,6 +40,7 @@ def get_schema_path(name: str) -> Path:
 
     Returns:
         Path to the schema file.
+
     """
     schema_dir = files("gzkit.schemas")
     return Path(str(schema_dir.joinpath(f"{name}.json")))

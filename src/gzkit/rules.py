@@ -51,6 +51,7 @@ def _parse_instruction_frontmatter(content: str) -> dict[str, str]:
 
     Returns:
         Dictionary of frontmatter key-value pairs.
+
     """
     lines = content.splitlines()
     if not lines or lines[0].strip() != "---":
@@ -76,6 +77,7 @@ def _extract_body_after_frontmatter(content: str) -> str:
 
     Returns:
         Body text after the closing --- delimiter.
+
     """
     lines = content.splitlines()
     if not lines or lines[0].strip() != "---":
@@ -95,6 +97,7 @@ def _convert_apply_to_paths(apply_to: str) -> list[str]:
 
     Returns:
         List of trimmed glob patterns.
+
     """
     patterns = [p.strip() for p in apply_to.split(",") if p.strip()]
 
@@ -150,6 +153,7 @@ def classify_instruction_rules(project_root: Path) -> list[ClassifiedRule]:
 
     Returns:
         List of classified rules.
+
     """
     instructions_dir = project_root / ".github" / "instructions"
     if not instructions_dir.exists():
@@ -209,6 +213,7 @@ def sync_claude_rules(project_root: Path, config: GzkitConfig | None = None) -> 
 
     Returns:
         List of mirrored file paths (relative to project_root).
+
     """
     if config is None:
         config = GzkitConfig.load(project_root / ".gzkit.json")
@@ -269,6 +274,7 @@ def sync_nested_agents_md(project_root: Path, config: GzkitConfig | None = None)
 
     Returns:
         List of nested AGENTS.md file paths (relative to project_root).
+
     """
     if config is None:
         config = GzkitConfig.load(project_root / ".gzkit.json")
@@ -345,6 +351,7 @@ def validate_rule_placement(project_root: Path) -> list[str]:
 
     Returns:
         List of warning messages.
+
     """
     warnings: list[str] = []
     rules = classify_instruction_rules(project_root)
@@ -496,6 +503,7 @@ def render_rules_to_dir(
 
     Returns:
         List of written file paths (relative strings).
+
     """
     target_dir.mkdir(parents=True, exist_ok=True)
 

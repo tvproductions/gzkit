@@ -17,7 +17,14 @@ from rich.table import Table
 
 from gzkit import __version__
 from gzkit.commands.attest import attest
-from gzkit.commands.chores import chores_audit, chores_list, chores_plan, chores_run
+from gzkit.commands.chores import (
+    chores_advise,
+    chores_audit,
+    chores_list,
+    chores_plan,
+    chores_run,
+    chores_show,
+)
 from gzkit.commands.common import (
     ADR_SEMVER_ID_RE,
     ADR_SLUG_RE,
@@ -416,6 +423,7 @@ def run_interview(document_type: str) -> dict[str, str]:
 
     Raises:
         KeyboardInterrupt: If user cancels the interview.
+
     """
     console.print(f"\n[bold]Q&A Interview for {document_type.upper()}[/bold]")
     console.print("The interview shapes the document. Answer each question.\n")
@@ -467,6 +475,7 @@ def save_transcript(
 
     Returns:
         Path to the saved transcript.
+
     """
     transcript = format_transcript(document_type, answers)
 
@@ -5271,9 +5280,20 @@ def _build_parser() -> argparse.ArgumentParser:
         func=lambda a: chores_list()
     )
 
+    p_chores_show = chores_commands.add_parser("show", help="Display CHORE.md for one chore")
+    p_chores_show.add_argument("slug")
+    p_chores_show.set_defaults(func=lambda a: chores_show(slug=a.slug))
+
     p_chores_plan = chores_commands.add_parser("plan", help="Show plan details for one chore")
     p_chores_plan.add_argument("slug")
     p_chores_plan.set_defaults(func=lambda a: chores_plan(slug=a.slug))
+
+    p_chores_advise = chores_commands.add_parser(
+        "advise",
+        help="Dry-run criteria and report status",
+    )
+    p_chores_advise.add_argument("slug")
+    p_chores_advise.set_defaults(func=lambda a: chores_advise(slug=a.slug))
 
     p_chores_run = chores_commands.add_parser("run", help="Execute one chore by slug")
     p_chores_run.add_argument("slug")

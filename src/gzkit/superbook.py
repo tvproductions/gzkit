@@ -47,6 +47,7 @@ def classify_lane(spec: SpecData, plan: PlanData) -> LaneClassification:
 
     Returns:
         LaneClassification with inferred lane and triggering signals.
+
     """
     all_paths: list[str] = list(spec.file_scope)
     for chunk in plan.chunks:
@@ -71,6 +72,7 @@ def extract_semver(adr_id: str) -> str | None:
 
     Returns:
         Semver string like ``0.14.0``, or None if unparseable.
+
     """
     m = re.match(r"ADR-(\d+\.\d+\.\d+)", adr_id)
     return m.group(1) if m else None
@@ -84,6 +86,7 @@ def next_semver(existing: list[str]) -> str:
 
     Returns:
         Next semver string.
+
     """
     if not existing:
         return "0.1.0"
@@ -114,6 +117,7 @@ def collect_existing_semvers(project_root: Path) -> list[str]:
 
     Returns:
         Deduplicated list of semver strings.
+
     """
     from gzkit.ledger import Ledger  # noqa: PLC0415
 
@@ -156,6 +160,7 @@ def render_obpi_acceptance_seed(version: str, item: int, criteria: list[str] | N
         version: Semver string for REQ ID prefix.
         item: OBPI item number.
         criteria: Optional concrete criteria. Falls back to placeholders.
+
     """
     req_prefix = f"REQ-{version}-{item:02d}"
     if criteria:
@@ -202,6 +207,9 @@ def build_obpi_plan(
         title: Human-readable title.
         objective: One-sentence objective.
         acceptance_criteria_seed: Optional pre-formatted criteria markdown.
+        allowed_paths: Optional list of path globs the OBPI may touch.
+        work_breakdown: Optional list of work-breakdown task descriptions.
+
     """
     from gzkit.templates import render_template  # noqa: PLC0415
 
@@ -285,6 +293,7 @@ def map_chunks_to_obpis(plan: PlanData, semver: str, lane: str, adr_id: str) -> 
 
     Returns:
         List of OBPIDraft, one per chunk.
+
     """
     obpis: list[OBPIDraft] = []
     for idx, chunk in enumerate(plan.chunks, start=1):
@@ -337,6 +346,7 @@ def generate_adr_draft(
 
     Returns:
         ADRDraft with populated OBPIs.
+
     """
     slug = _slugify(spec.title)
     adr_id = f"ADR-{semver}-{slug}"
@@ -396,6 +406,7 @@ def present_draft(adr: ADRDraft) -> str:
 
     Returns:
         Formatted string for terminal display.
+
     """
     lines = [
         "",
@@ -431,6 +442,7 @@ def apply_draft(adr: ADRDraft, project_root: Path) -> list[str]:
 
     Returns:
         List of created file paths (relative to project_root).
+
     """
     from gzkit.ledger import Ledger, adr_created_event, obpi_created_event
     from gzkit.templates import render_template  # noqa: PLC0415
