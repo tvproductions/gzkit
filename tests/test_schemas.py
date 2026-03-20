@@ -1,6 +1,7 @@
 """Cross-validation tests: Pydantic models ↔ JSON schemas never drift.
 
 @covers ADR-0.15.0  OBPI-0.15.0-04 schema-generation-unification
+@covers ADR-0.17.0  OBPI-0.17.0-04 json-schemas-and-validation
 """
 
 import unittest
@@ -24,7 +25,11 @@ from gzkit.events import (
     PrdCreatedEvent,
     ProjectInitEvent,
 )
-from gzkit.models.frontmatter import AdrFrontmatter, ObpiFrontmatter, PrdFrontmatter
+from gzkit.models.frontmatter import (
+    AdrFrontmatter,
+    ObpiFrontmatter,
+    PrdFrontmatter,
+)
 from gzkit.schemas import get_schema_path, load_schema
 
 # ---------------------------------------------------------------------------
@@ -295,6 +300,184 @@ class TestSchemaLoading(unittest.TestCase):
         """load_schema() raises FileNotFoundError for unknown schemas."""
         with self.assertRaises(FileNotFoundError):
             load_schema("nonexistent_schema_xyz")
+
+
+# ---------------------------------------------------------------------------
+# Control-surface model ↔ .gzkit/schemas/ cross-validation
+# ---------------------------------------------------------------------------
+
+
+def _load_gzkit_schema(name: str) -> dict:
+    """Load a JSON schema from .gzkit/schemas/ (Layer 1 canonical schemas)."""
+    import json
+    from pathlib import Path
+
+    schema_path = Path(".gzkit") / "schemas" / f"{name}.schema.json"
+    return json.loads(schema_path.read_text(encoding="utf-8"))
+
+
+def _model_alias_map(model: type[BaseModel]) -> dict[str, str]:
+    """Build schema-field-name → model-field-name map from aliases.
+
+    For fields without aliases, the mapping is identity.
+    """
+    mapping: dict[str, str] = {}
+    for field_name, field_info in model.model_fields.items():
+        alias = field_info.alias
+        if alias is not None:
+            mapping[alias] = field_name
+        else:
+            mapping[field_name] = field_name
+    return mapping
+
+
+def _resolve_field(model: type[BaseModel], schema_field: str) -> str | None:
+    """Resolve a schema field name to the Pydantic model field name."""
+    alias_map = _model_alias_map(model)
+    return alias_map.get(schema_field)
+
+
+class TestSkillSchemaAlignment(unittest.TestCase):
+    """Verify SkillFrontmatter model matches .gzkit/schemas/skill.schema.json."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+        from gzkit.models.frontmatter import SkillFrontmatter
+
+        cls.model = SkillFrontmatter
+        cls.schema = _load_gzkit_schema("skill")
+
+    def test_required_fields_match(self) -> None:
+        """Schema-required fields are required in the Pydantic model."""
+        schema_required = set(self.schema.get("required", []))
+        model_required = _pydantic_required_fields(self.model)
+        # Map schema field names to model field names via aliases
+        resolved = set()
+        for f in schema_required:
+            model_field = _resolve_field(self.model, f)
+            self.assertIsNotNone(
+                model_field,
+                f"Schema required field '{f}' has no corresponding model field",
+            )
+            resolved.add(model_field)
+        missing = resolved - model_required
+        self.assertFalse(
+            missing,
+            f"SkillFrontmatter missing required fields: {missing}",
+        )
+
+    def test_enum_values_match(self) -> None:
+        """Enum constraints in schema match Literal values in model."""
+        schema_props = self.schema.get("properties", {})
+        for schema_field, field_schema in schema_props.items():
+            if "enum" not in field_schema:
+                continue
+            schema_enum = set(field_schema["enum"])
+            model_field = _resolve_field(self.model, schema_field)
+            if model_field is None:
+                continue
+            model_literals = _pydantic_literal_values(self.model, model_field)
+            if model_literals is None:
+                continue
+            with self.subTest(field=schema_field):
+                self.assertEqual(
+                    schema_enum,
+                    model_literals,
+                    f"SkillFrontmatter.{model_field} Literal values diverge "
+                    f"from skill.schema.json '{schema_field}' enum",
+                )
+
+    def test_pattern_constraints_match(self) -> None:
+        """Pattern constraints in schema match pattern metadata in model."""
+        schema_props = self.schema.get("properties", {})
+        for schema_field, field_schema in schema_props.items():
+            if "pattern" not in field_schema:
+                continue
+            model_field = _resolve_field(self.model, schema_field)
+            if model_field is None:
+                continue
+            model_pattern = _pydantic_field_pattern(self.model, model_field)
+            if model_pattern is None:
+                continue
+            with self.subTest(field=schema_field):
+                self.assertEqual(
+                    field_schema["pattern"],
+                    model_pattern,
+                    f"SkillFrontmatter.{model_field} pattern diverges "
+                    f"from skill.schema.json '{schema_field}'",
+                )
+
+    def test_all_schema_properties_have_model_fields(self) -> None:
+        """Every property in skill.schema.json has a corresponding model field."""
+        schema_props = set(self.schema.get("properties", {}).keys())
+        alias_map = _model_alias_map(self.model)
+        missing = schema_props - set(alias_map.keys())
+        self.assertFalse(
+            missing,
+            f"skill.schema.json properties without model fields: {missing}",
+        )
+
+
+class TestInstructionSchemaAlignment(unittest.TestCase):
+    """Verify InstructionFrontmatter model matches .gzkit/schemas/rule.schema.json."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+        from gzkit.models.frontmatter import InstructionFrontmatter
+
+        cls.model = InstructionFrontmatter
+        cls.schema = _load_gzkit_schema("rule")
+
+    def test_required_fields_match(self) -> None:
+        """Schema-required fields are required in the Pydantic model."""
+        schema_required = set(self.schema.get("required", []))
+        model_required = _pydantic_required_fields(self.model)
+        resolved = set()
+        for f in schema_required:
+            model_field = _resolve_field(self.model, f)
+            self.assertIsNotNone(
+                model_field,
+                f"Schema required field '{f}' has no corresponding model field",
+            )
+            resolved.add(model_field)
+        missing = resolved - model_required
+        self.assertFalse(
+            missing,
+            f"InstructionFrontmatter missing required fields: {missing}",
+        )
+
+    def test_enum_values_match(self) -> None:
+        """Enum constraints in schema match Literal values in model."""
+        schema_props = self.schema.get("properties", {})
+        for schema_field, field_schema in schema_props.items():
+            if "enum" not in field_schema:
+                continue
+            schema_enum = set(field_schema["enum"])
+            model_field = _resolve_field(self.model, schema_field)
+            if model_field is None:
+                continue
+            model_literals = _pydantic_literal_values(self.model, model_field)
+            if model_literals is None:
+                continue
+            with self.subTest(field=schema_field):
+                self.assertEqual(
+                    schema_enum,
+                    model_literals,
+                    f"InstructionFrontmatter.{model_field} Literal values diverge "
+                    f"from rule.schema.json '{schema_field}' enum",
+                )
+
+    def test_all_schema_properties_have_model_fields(self) -> None:
+        """Every property in rule.schema.json has a corresponding model field."""
+        schema_props = set(self.schema.get("properties", {}).keys())
+        alias_map = _model_alias_map(self.model)
+        missing = schema_props - set(alias_map.keys())
+        self.assertFalse(
+            missing,
+            f"rule.schema.json properties without model fields: {missing}",
+        )
 
 
 if __name__ == "__main__":
