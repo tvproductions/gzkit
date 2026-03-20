@@ -3,7 +3,7 @@ id: OBPI-0.18.0-01-agent-role-taxonomy
 parent: ADR-0.18.0-subagent-driven-pipeline-execution
 item: 1
 lane: Lite
-status: Accepted
+status: Completed
 ---
 
 # OBPI-0.18.0-01: Agent Role Taxonomy and Handoff Protocols
@@ -13,7 +13,7 @@ status: Accepted
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.18.0-subagent-driven-pipeline-execution/ADR-0.18.0-subagent-driven-pipeline-execution.md`
 - **Checklist Item:** #1 — "Agent role taxonomy: four roles, handoff protocols, conflict resolution (subsumes ADR-pool.agent-role-specialization)"
 
-**Status:** Accepted
+**Status:** Completed
 
 ## Objective
 
@@ -177,11 +177,33 @@ maxTurns: 10
 - [ ] Lint clean: `uv run gz lint`
 - [ ] Type check clean: `uv run gz typecheck`
 
+### Implementation Summary
+
+- Module: `src/gzkit/roles.py` — four roles (Planner, Implementer, Reviewer, Narrator) as Pydantic models with artifact contracts, tool boundary validation, and conflict resolution
+- Tests: `tests/test_roles.py` — 33 unit tests across 7 test classes (TestRoleTaxonomy, TestToolBoundaries, TestConflictResolution, TestHandoffProtocol, TestReviewResult, TestModelImmutability, TestStageMapping)
+- Agent files: `.claude/agents/{implementer,spec-reviewer,quality-reviewer,narrator}.md` — YAML frontmatter with tools, model, permissionMode, maxTurns
+- Pool ADR: `ADR-pool.agent-role-specialization` marked Superseded
+- Coverage: 99% on `src/gzkit/roles.py`
+
+### Key Proof
+
+```bash
+$ uv run -m unittest tests.test_roles -v
+test_exactly_four_roles_defined ... ok
+test_reviewer_has_no_write_tools ... ok
+test_validate_tool_boundaries_all_roles_clean ... ok
+test_precedence_order ... ok
+test_handoff_result_roundtrip ... ok
+...
+Ran 33 tests in 0.001s
+OK
+```
+
 ## Completion Checklist (Lite)
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Unit tests pass
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Coverage:** Coverage >= 40% maintained
-- [ ] **Pool ADR:** `ADR-pool.agent-role-specialization` marked Superseded
-- [ ] **OBPI Completion:** Record evidence in brief
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Unit tests pass
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Coverage:** Coverage >= 40% maintained (99%)
+- [x] **Pool ADR:** `ADR-pool.agent-role-specialization` marked Superseded
+- [x] **OBPI Completion:** Record evidence in brief
