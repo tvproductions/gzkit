@@ -1,17 +1,20 @@
 ---
 id: ADR-pool.task-level-governance
-status: Pool
+status: Superseded
 parent: PRD-GZKIT-1.0.0
 lane: heavy
 enabler: ADR-pool.spec-triangle-sync
 inspired_by: https://github.com/obra/superpowers
+promoted_to: ADR-0.22.0-task-level-governance
 ---
 
 # ADR-pool.task-level-governance: Task-Level Governance
+> Promoted to `ADR-0.22.0-task-level-governance` on 2026-03-20. This pool file is retained as historical intake context.
+
 
 ## Status
 
-Proposed
+Superseded
 
 ## Date
 

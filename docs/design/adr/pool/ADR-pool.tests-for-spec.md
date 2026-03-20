@@ -1,16 +1,19 @@
 ---
 id: ADR-pool.tests-for-spec
-status: Pool
+status: Superseded
 parent: PRD-GZKIT-1.0.0
 lane: heavy
 enabler: ADR-pool.spec-triangle-sync
+promoted_to: ADR-0.21.0-tests-for-spec
 ---
 
 # ADR-pool.tests-for-spec: Tests as Spec Verification Surface
+> Promoted to `ADR-0.21.0-tests-for-spec` on 2026-03-20. This pool file is retained as historical intake context.
+
 
 ## Status
 
-Proposed
+Superseded
 
 ## Date
 

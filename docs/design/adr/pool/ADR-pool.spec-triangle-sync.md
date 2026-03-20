@@ -1,16 +1,19 @@
 ---
 id: ADR-pool.spec-triangle-sync
-status: Pool
+status: Superseded
 parent: PRD-GZKIT-1.0.0
 lane: heavy
 enabler: ADR-0.7.0-obpi-first-operations
+promoted_to: ADR-0.20.0-spec-triangle-sync
 ---
 
 # ADR-pool.spec-triangle-sync: Spec-Test-Code Triangle Sync
+> Promoted to `ADR-0.20.0-spec-triangle-sync` on 2026-03-20. This pool file is retained as historical intake context.
+
 
 ## Status
 
-Proposed
+Superseded
 
 ## Date
 
