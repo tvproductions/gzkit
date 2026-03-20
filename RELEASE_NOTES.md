@@ -1,5 +1,23 @@
 # gzkit Release Notes
 
+## v0.17.0 (2026-03-20)
+
+**ADR:** ADR-0.17.0 - AGENTS.md Tidy: Control Surface Schema and Rules Mirroring
+
+Reduced context window bloat by ~80% through a three-layer control surface model: canonical artifacts in `.gzkit/`, generated vendor mirrors in `.claude/`/`.github/`/`.agents/`, and slim entry-point documents (AGENTS.md, CLAUDE.md). Governance rules reach all agents reliably while keeping always-loaded content minimal.
+
+### Delivered
+
+- Categorized skill catalog organizing 51 skills into 8 functional categories in AGENTS.md
+- Rules mirroring pipeline: canonical `.gzkit/rules/` rendered into vendor-specific formats (Claude rules, Copilot instructions)
+- Slim CLAUDE.md template (<=60 lines) delegating to `.claude/rules/` and `.claude/skills/`
+- JSON schemas (`skill.schema.json`, `rule.schema.json`) with Pydantic validation models
+- Manifest updated with `canonical_rules` and `canonical_schemas` entries; stale mirror cleanup; `gz-obpi-lock` promoted to canonical
+
+### Gate Evidence
+
+All 5 GovZero gates satisfied.
+
 ## v0.16.0 (2026-03-19)
 
 **ADR:** ADR-0.16.0 - CMS Architecture Formalization

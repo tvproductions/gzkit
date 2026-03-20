@@ -105,4 +105,4 @@ Manual gz plan + gz specify (two-step).
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.17.0 | Completed | Test User | 2026-03-15 | completed: Retroactive attestation: work completed via superpowers plan execution with all quality gates passing (lint, typecheck, test, 447 tests OK). Booked retroactively via gz superbook. |
+| 0.17.0 | Completed | Jeff | 2026-03-20 | completed |
