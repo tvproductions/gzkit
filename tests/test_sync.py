@@ -180,6 +180,44 @@ class TestGenerateManifest(unittest.TestCase):
             self.assertIn("typecheck", verification)
             self.assertIn("test", verification)
 
+    def test_manifest_includes_canonical_rules_and_schemas(self) -> None:
+        """Manifest control_surfaces includes canonical_rules and canonical_schemas."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig()
+
+            manifest = generate_manifest(project_root, config)
+
+            surfaces = manifest["control_surfaces"]
+            self.assertIn("canonical_rules", surfaces)
+            self.assertIn("canonical_schemas", surfaces)
+            self.assertEqual(surfaces["canonical_rules"], ".gzkit/rules")
+            self.assertEqual(surfaces["canonical_schemas"], ".gzkit/schemas")
+
+    def test_manifest_control_surfaces_complete(self) -> None:
+        """Manifest control_surfaces includes all expected keys."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig()
+
+            manifest = generate_manifest(project_root, config)
+
+            surfaces = manifest["control_surfaces"]
+            expected_keys = {
+                "agents_md",
+                "claude_md",
+                "hooks",
+                "skills",
+                "canonical_rules",
+                "canonical_schemas",
+                "claude_skills",
+                "codex_skills",
+                "copilot_skills",
+                "instructions",
+                "claude_rules",
+            }
+            self.assertEqual(set(surfaces.keys()), expected_keys)
+
 
 class TestScanExistingArtifacts(unittest.TestCase):
     """Tests for existing artifact scanning."""

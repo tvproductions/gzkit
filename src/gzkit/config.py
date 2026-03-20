@@ -80,6 +80,8 @@ class PathConfig(BaseModel):
     gzkit_dir: str = ".gzkit"
     ledger: str = ".gzkit/ledger.jsonl"
     manifest: str = ".gzkit/manifest.json"
+    canonical_rules: str = ".gzkit/rules"
+    canonical_schemas: str = ".gzkit/schemas"
 
     # Control surfaces
     agents_md: str = "AGENTS.md"

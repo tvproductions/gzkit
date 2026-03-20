@@ -29,6 +29,8 @@
     "claude_md": "CLAUDE.md",
     "hooks": ".claude/hooks",
     "skills": ".gzkit/skills",
+    "canonical_rules": ".gzkit/rules",
+    "canonical_schemas": ".gzkit/schemas",
     "claude_skills": ".claude/skills",
     "codex_skills": ".agents/skills",
     "copilot_skills": ".github/skills",

@@ -1,0 +1,202 @@
+---
+name: gz-obpi-lock
+description: Claim or release OBPI-level work locks for multi-agent coordination. Use when claiming an OBPI before starting work, releasing a lock after completing or abandoning work, or checking which OBPIs are currently claimed by agents.
+category: obpi-pipeline
+lifecycle_state: active
+owner: gzkit-governance
+last_reviewed: 2026-03-16
+---
+
+# gz-obpi-lock
+
+Claim or release OBPI-level work locks for multi-agent coordination.
+
+---
+
+## When to Use
+
+- Before starting work on an OBPI (claim it)
+- After completing or abandoning OBPI work (release it)
+- To check which OBPIs are currently claimed by agents
+
+---
+
+## Invocation
+
+```text
+/gz-obpi-lock claim OBPI-0.0.25-03
+/gz-obpi-lock release OBPI-0.0.25-03
+/gz-obpi-lock status                    # show all locks
+/gz-obpi-lock status ADR-0.0.25        # show locks for one ADR
+```
+
+---
+
+## Lock Mechanism
+
+**File-based locks** in `.gzkit/locks/` (gitignored — local coordination only).
+
+### Lock File Format
+
+Path: `.gzkit/locks/obpi/{OBPI-ID}.lock.json`
+
+```json
+{
+  "obpi_id": "OBPI-0.0.25-03",
+  "agent": "claude-code",
+  "pid": 12345,
+  "session_id": "abc123",
+  "claimed_at": "2026-02-14T12:00:00Z",
+  "branch": "master",
+  "ttl_minutes": 120
+}
+```
+
+### Lock Rules
+
+1. **Claim succeeds** if no lock file exists or existing lock is expired (past TTL)
+2. **Claim fails** if lock exists and is not expired — show who holds it
+3. **Release** deletes the lock file
+4. **Stale lock detection** — locks older than TTL are automatically released on next claim attempt
+5. **Same-agent re-claim** — if the claiming agent already holds the lock, refresh the timestamp
+6. **Exception mode concurrent locks** — When the parent ADR has `## Execution Mode: Exception (SVFR)`, multiple OBPIs from the same ADR can be locked concurrently by different agents. In Normal mode, only one OBPI lock per ADR at a time
+
+---
+
+## Procedure
+
+### Claim
+
+1. Check `.gzkit/locks/obpi/{OBPI-ID}.lock.json`
+2. If exists and not expired → report holder and fail
+3. If lock exists for a DIFFERENT OBPI in the same ADR:
+   - Read parent ADR for `## Execution Mode` section
+   - If Exception mode: allow concurrent claim (different OBPI, same ADR)
+   - If Normal mode: report conflict — only one OBPI per ADR at a time
+4. If exists and expired → warn about stale lock, auto-release, then claim
+5. Create lock file with agent identity and timestamp
+5. Report: "Claimed OBPI-0.0.25-03 (TTL: 120 min)"
+
+### Release
+
+1. Check lock file exists
+2. Verify current agent is the holder (or lock is expired)
+3. Delete lock file
+4. Report: "Released OBPI-0.0.25-03"
+
+### Status
+
+1. Glob `.gzkit/locks/obpi/*.lock.json`
+2. Parse each lock file
+3. Display table:
+
+```text
+OBPI WORK LOCKS
+═══════════════
+
+OBPI-0.0.25-03   claude-code   claimed 2h ago   expires in 0h   ⚠️ EXPIRED
+OBPI-0.0.25-04   codex         claimed 30m ago  expires in 90m  ✓ active
+```
+
+---
+
+## Agent Identity
+
+Agents identify themselves by environment:
+
+| Signal | Agent |
+|--------|-------|
+| `CLAUDE_CODE` env var or Claude Code runtime | `claude-code` |
+| `CODEX_SANDBOX` env var | `codex` |
+| VS Code Copilot context | `copilot` |
+| Fallback | `unknown-{PID}` |
+
+---
+
+## Integration with Pipeline
+
+The `/gz-obpi-pipeline` skill calls `/gz-obpi-lock claim` at Stage 1 (Load Context) and `/gz-obpi-lock release` at Stage 5 (Sync). On any abort or handoff, the pipeline also releases the lock to prevent orphaned locks.
+
+---
+
+## Conflict Detection
+
+### Shared File Registry
+
+Files known to cause multi-agent conflicts:
+
+| File Pattern | Conflict Type | Mitigation |
+|-------------|---------------|------------|
+| `docs/design/adr/*/adr_status.md` | ADR status table | Regenerate via `/gz-adr-sync` |
+| `**/logs/obpi-audit.jsonl` | Append-only ledger | JSONL merge driver (see below) |
+| `docs/design/adr/**/*.md` (status field) | Brief status | Lock prevents concurrent edits |
+| `.gzkit/insights/agent-insights.jsonl` | Append-only log | JSONL merge driver |
+
+### JSONL Merge Strategy
+
+For append-only JSONL files, conflicts are resolvable by union merge:
+
+1. Parse both sides as line arrays
+2. Union (deduplicate by timestamp + content hash)
+3. Sort by timestamp ascending
+4. Write merged result
+
+Add to `.gitattributes`:
+
+```gitattributes
+*.jsonl merge=union
+```
+
+The `merge=union` strategy keeps lines from both sides, which is correct for append-only ledgers.
+
+### Pre-Push Conflict Check
+
+Before pushing, agents should verify no divergence on shared files:
+
+```bash
+# Check if shared governance files have diverged from remote
+git fetch origin
+git diff --name-only origin/main..HEAD | grep -E '(adr_status|obpi-audit\.jsonl|agent-insights\.jsonl)'
+```
+
+If shared files appear in the diff, the agent should:
+1. Pull and rebase
+2. Regenerate computed files (`/gz-adr-sync`, `/gz-obpi-sync`)
+3. Re-push
+
+---
+
+## Worktree Isolation (Advanced)
+
+For heavy parallel workloads, each agent can use a separate git worktree:
+
+```bash
+# Create agent-specific worktree
+git worktree add ../gzkit-claude-code -b agent/claude-code/obpi-0.0.25-03
+
+# Work in the worktree
+cd ../gzkit-claude-code
+
+# Merge back
+cd ../gzkit
+git merge agent/claude-code/obpi-0.0.25-03
+git worktree remove ../gzkit-claude-code
+```
+
+**When to use worktrees:**
+- 2+ agents working on the same ADR simultaneously
+- OBPIs with overlapping file paths
+- Long-running implementation sessions (>2 hours)
+
+**When NOT to use worktrees:**
+- Single agent sessions (unnecessary overhead)
+- Quick fixes or single-OBPI work
+- OBPIs with non-overlapping paths
+
+---
+
+## Related
+
+- Pipeline integration: `/gz-obpi-pipeline` (Stage 1 claim, Stage 5 release)
+- Session handoff: `/gz-session-handoff` (preserves lock context)
+- Agent profiles: `AGENTS.md` § Agent Profiles
