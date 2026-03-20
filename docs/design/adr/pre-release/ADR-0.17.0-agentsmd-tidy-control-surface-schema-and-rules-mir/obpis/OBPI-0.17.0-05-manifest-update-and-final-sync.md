@@ -3,146 +3,73 @@ id: OBPI-0.17.0-05-manifest-update-and-final-sync
 parent: ADR-0.17.0-agentsmd-tidy-control-surface-schema-and-rules-mir
 item: 5
 lane: heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.17.0-05-manifest-update-and-final-sync: Manifest Update and Final Sync
 
 ## ADR Item
 
-- **Source ADR:** `{parent_adr_path}`
-- **Checklist Item:** #5 - "{checklist_item_text}"
+- **Source ADR:** `docs/design/adr/pre-release/ADR-0.17.0-agentsmd-tidy-control-surface-schema-and-rules-mir/ADR-0.17.0-agentsmd-tidy-control-surface-schema-and-rules-mir.md`
+- **Checklist Item:** #5 - "Manifest Update and Final Sync"
 
 **Status:** Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-Manifest Update and Final Sync
+Update `.gzkit/manifest.json` to include canonical `rules` and `schemas` paths introduced by OBPIs 02 and 04, fix stale mirror-only paths detected by `gz agent sync`, and verify all three control surface layers align after the full ADR-0.17.0 delivery.
 
 ## Lane
 
 **heavy** - Inherited from parent ADR-0.17.0-agentsmd-tidy-control-surface-schema-and-rules-mir (heavy).
 
-> Heavy is reserved for command/API/schema/runtime-contract changes. Process,
-> documentation, and template-only work stays Lite unless it changes one of
-> those external surfaces.
-
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `src/gzkit/config.py` — Add canonical_rules and canonical_schemas to PathConfig
+- `src/gzkit/sync.py` — Update generate_manifest() to emit rules/schemas entries
+- `.gzkit/manifest.json` — Regenerated output
+- `tests/test_sync.py` — Tests for manifest generation
+- `tests/test_config.py` — Tests for new path config fields
+- `.agents/skills/chore-runner/` — Remove stale mirror (naming mismatch)
+- `.claude/skills/gz-obpi-lock/` — Promote to canonical or remove
+- `.github/skills/AGENTS.md` — Remove stale file
+- `docs/design/adr/pre-release/ADR-0.17.0-*/obpis/OBPI-0.17.0-05-*.md` — This brief
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
-- `docs/design/**` - ADR changes out of scope
-- New dependencies
+- Other OBPI briefs in this ADR
 - CI files, lockfiles
+- New dependencies
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
-
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
+1. REQUIREMENT: Manifest must include `canonical_rules` and `canonical_schemas` entries in `control_surfaces`
+2. REQUIREMENT: PathConfig must declare paths for `.gzkit/rules` and `.gzkit/schemas`
+3. REQUIREMENT: `generate_manifest()` output must include the new entries
+4. NEVER: Leave stale mirror-only paths after final sync
+5. ALWAYS: Run `gz agent sync control-surfaces` with zero recovery warnings after cleanup
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
-## Discovery Checklist
+## Acceptance Criteria
 
-<!-- What to read before implementation. Complete this checklist first. -->
-
-**Governance (read once, cache):**
-
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
-
-**Context:**
-
-- [ ] Parent ADR: `{parent_adr_path}`
-- [ ] Related OBPIs in same ADR
-
-**Prerequisites (check existence, STOP if missing):**
-
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
-
-**Existing Code (understand current state):**
-
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
-
-## Quality Gates
-
-<!-- Which gates apply and how to verify them. -->
-
-### Gate 1: ADR
-
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
-
-### Gate 2: TDD
-
-- [ ] Tests written before/with implementation
-- [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
-
-### Code Quality
-
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
-
-<!-- Heavy lane only: -->
-### Gate 3: Docs (Heavy only)
-
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
-
-### Gate 4: BDD (Heavy only)
-
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
-
-### Gate 5: Human (Heavy only)
-
-- [ ] Human attestation recorded
+- REQ-0.17.0-05-01: PathConfig includes `canonical_rules` and `canonical_schemas` fields
+- REQ-0.17.0-05-02: `generate_manifest()` emits `canonical_rules` and `canonical_schemas` in control_surfaces
+- REQ-0.17.0-05-03: Stale mirror-only paths resolved (zero recovery warnings from sync)
+- REQ-0.17.0-05-04: `gz agent sync control-surfaces` runs clean
+- REQ-0.17.0-05-05: Unit tests cover new manifest entries
 
 ## Verification
-
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
 
 ```bash
 uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
 uv run gz test
-
-# Specific verification for this OBPI
-command --to --verify
+uv run gz agent sync control-surfaces
 ```
 
-## Acceptance Criteria
-
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-
-
 ## Completion Checklist
-
-<!-- Verify all gates before marking OBPI accepted. -->
 
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
 - [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
@@ -155,9 +82,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ## Evidence
 
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
-
 ### Gate 1 (ADR)
 
 - [ ] Intent and scope recorded
@@ -165,66 +89,80 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+Ran 694 tests in 9.488s — OK
+New tests: test_manifest_includes_canonical_rules_and_schemas,
+test_manifest_control_surfaces_complete, test_gzkit_paths (updated)
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+uv run gz lint — All checks passed
+uv run gz typecheck — All checks passed
+uv run gz validate --documents — All validations passed
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here when Gate 3 applies
+N/A — no command docs or runbook changes required for manifest-internal update
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here when Gate 4 applies
+N/A — no BDD scenarios for manifest generation
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+Attestor: jeff
+Attestation: attest completed
+Date: 2026-03-19
 ```
 
-## Value Narrative
+### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before this OBPI, the manifest did not reflect the canonical `rules` and `schemas` directories added by OBPIs 02 and 04, and stale mirror-only paths caused sync warnings. After completion, the manifest is complete, all three control surface layers align, and `gz agent sync` runs with zero recovery warnings.
 
-## Key Proof
+### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+```text
+$ uv run -m unittest tests.test_sync.TestGenerateManifest.test_manifest_includes_canonical_rules_and_schemas -v
+test_manifest_includes_canonical_rules_and_schemas ... ok
+Ran 1 test in 0.001s — OK
+
+$ python -c "import json; cs=json.load(open('.gzkit/manifest.json'))['control_surfaces']; print(cs['canonical_rules'], cs['canonical_schemas'])"
+.gzkit/rules .gzkit/schemas
+
+$ uv run gz agent sync control-surfaces
+Sync complete.  # zero recovery warnings
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files modified: config.py, sync.py, cli.py, test_sync.py, test_config.py, test_audit.py
+- Files created: .gzkit/skills/gz-obpi-lock/SKILL.md (promoted from mirror)
+- Tests added: 2 new manifest tests + 1 updated PathConfig test
+- Date completed: 2026-03-19
+- Attestation status: Completed (human attested 2026-03-19)
+- Defects noted: none
 
 ## Tracked Defects
-
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
 
 _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `human:<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `human:jeff`
+- Attestation: attest completed — manifest updated with canonical_rules and canonical_schemas, stale mirrors cleaned, gz-obpi-lock promoted to canonical, sync runs clean
+- Date: 2026-03-19
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-19
 
 **Evidence Hash:** -

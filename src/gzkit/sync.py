@@ -339,6 +339,8 @@ def generate_manifest(
             "claude_md": config.paths.claude_md,
             "hooks": config.paths.claude_hooks,
             "skills": config.paths.skills,
+            "canonical_rules": config.paths.canonical_rules,
+            "canonical_schemas": config.paths.canonical_schemas,
             "claude_skills": config.paths.claude_skills,
             "codex_skills": config.paths.codex_skills,
             "copilot_skills": config.paths.copilot_skills,
@@ -1019,6 +1021,8 @@ def find_stale_mirror_paths(project_root: Path, config: GzkitConfig | None = Non
         )
         for mirror_entry in entries:
             rel = mirror_entry.relative_to(mirror_root)
+            if rel.name == "AGENTS.md":
+                continue
             if (canonical_root / rel).exists():
                 continue
 

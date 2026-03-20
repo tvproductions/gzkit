@@ -93,7 +93,7 @@ Skill behavior is standardized and synchronized by `gz agent sync control-surfac
 `gz-adr-audit`, `gz-adr-closeout-ceremony`, `gz-audit`
 
 #### OBPI Pipeline
-`gz-obpi-audit`, `gz-obpi-brief`, `gz-obpi-pipeline`, `gz-obpi-reconcile`, `gz-obpi-sync`, `gz-plan-audit`, `gz-specify`
+`gz-obpi-audit`, `gz-obpi-brief`, `gz-obpi-lock`, `gz-obpi-pipeline`, `gz-obpi-reconcile`, `gz-obpi-sync`, `gz-plan-audit`, `gz-specify`
 
 #### Governance Infrastructure
 `gz-constitute`, `gz-gates`, `gz-implement`, `gz-init`, `gz-interview`, `gz-prd`, `gz-state`, `gz-status`, `gz-validate`

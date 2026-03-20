@@ -3418,6 +3418,8 @@ def _collect_control_surface_issues(
     dir_controls = {
         "hooks",
         "skills",
+        "canonical_rules",
+        "canonical_schemas",
         "claude_skills",
         "codex_skills",
         "copilot_skills",
