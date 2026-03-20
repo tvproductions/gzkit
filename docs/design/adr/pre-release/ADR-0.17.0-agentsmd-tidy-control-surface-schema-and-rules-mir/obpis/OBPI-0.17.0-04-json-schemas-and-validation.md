@@ -3,228 +3,235 @@ id: OBPI-0.17.0-04-json-schemas-and-validation
 parent: ADR-0.17.0-agentsmd-tidy-control-surface-schema-and-rules-mir
 item: 4
 lane: heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.17.0-04-json-schemas-and-validation: JSON Schemas and Validation
 
 ## ADR Item
 
-- **Source ADR:** `{parent_adr_path}`
-- **Checklist Item:** #4 - "{checklist_item_text}"
+- **Source ADR:** `docs/design/adr/pre-release/ADR-0.17.0-agentsmd-tidy-control-surface-schema-and-rules-mir/ADR-0.17.0-agentsmd-tidy-control-surface-schema-and-rules-mir.md`
+- **Checklist Item:** #4 - "JSON Schemas and Validation"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-JSON Schemas and Validation
+Wire the canonical Layer 1 JSON schemas (`.gzkit/schemas/skill.schema.json` and `rule.schema.json`) into the validation pipeline via Pydantic frontmatter models, replacing the hardcoded enum sets in `validate.py` and adding cross-validation tests that prevent schema/model drift.
 
 ## Lane
 
 **heavy** - Inherited from parent ADR-0.17.0-agentsmd-tidy-control-surface-schema-and-rules-mir (heavy).
 
-> Heavy is reserved for command/API/schema/runtime-contract changes. Process,
-> documentation, and template-only work stays Lite unless it changes one of
-> those external surfaces.
+> Heavy is reserved for command/API/schema/runtime-contract changes. This OBPI changes the validation contract for control surfaces (skills and instructions).
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `src/gzkit/models/frontmatter.py` - Add SkillFrontmatter and InstructionFrontmatter Pydantic models
+- `src/gzkit/validate.py` - Refactor `_validate_skill_frontmatter()` and `_validate_instruction_frontmatter()` to use models
+- `tests/test_schemas.py` - Add cross-validation tests for skill/rule schema alignment
+- `docs/design/adr/pre-release/ADR-0.17.0-*/obpis/OBPI-0.17.0-04-*.md` - This brief
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
-- `docs/design/**` - ADR changes out of scope
+- `.gzkit/schemas/` - Canonical schemas are read-only (already exist)
+- `src/gzkit/schemas/` - Document validation schemas (out of scope)
+- `src/gzkit/skills.py` - Procedural skill audit (not changed by this OBPI)
+- `src/gzkit/rules.py` - RuleFrontmatter for canonical rules (not changed)
+- `src/gzkit/cli.py` - No CLI flag changes
 - New dependencies
 - CI files, lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: `SkillFrontmatter` Pydantic model MUST mirror `.gzkit/schemas/skill.schema.json` field names, types, enums, and patterns.
+2. REQUIREMENT: `InstructionFrontmatter` Pydantic model MUST mirror `.gzkit/schemas/rule.schema.json` field names, types, enums, and required fields.
+3. REQUIREMENT: `_validate_skill_frontmatter()` MUST use `SkillFrontmatter` for validation instead of hardcoded `_VALID_SKILL_CATEGORIES` and `_VALID_LIFECYCLE_STATES` sets.
+4. REQUIREMENT: `_validate_instruction_frontmatter()` MUST use `InstructionFrontmatter` for validation instead of ad-hoc `applyTo` check.
+5. REQUIREMENT: Cross-validation tests MUST verify Pydantic model constraints match JSON schema constraints (required fields, enum values, patterns).
+6. NEVER: Remove or weaken existing validation — only replace the implementation mechanism.
+7. ALWAYS: All existing tests must continue to pass.
 
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if `.gzkit/schemas/skill.schema.json` or `.gzkit/schemas/rule.schema.json` are missing, print a BLOCKERS list and halt.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first. -->
-
 **Governance (read once, cache):**
 
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
+- [x] `AGENTS.md` - agent operating contract
+- [x] Parent ADR - three-layer control surface model
 
 **Context:**
 
-- [ ] Parent ADR: `{parent_adr_path}`
-- [ ] Related OBPIs in same ADR
+- [x] Parent ADR: `docs/design/adr/pre-release/ADR-0.17.0-*/`
+- [x] Related OBPIs: OBPI-01 (Skill Catalog), OBPI-02 (Rules Mirroring), OBPI-05 (Manifest Sync)
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
+- [x] `.gzkit/schemas/skill.schema.json` exists (52 lines, validates skill frontmatter)
+- [x] `.gzkit/schemas/rule.schema.json` exists (21 lines, validates instruction frontmatter)
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+- [x] `src/gzkit/models/frontmatter.py` — AdrFrontmatter, ObpiFrontmatter, PrdFrontmatter models exist; no skill/instruction models
+- [x] `src/gzkit/validate.py` lines 886-948 — `_validate_skill_frontmatter()` uses hardcoded sets
+- [x] `src/gzkit/validate.py` lines 954-995 — `_validate_instruction_frontmatter()` checks only `applyTo`
+- [x] `tests/test_schemas.py` — cross-validation for ADR/OBPI/PRD models; none for skill/rule
+- [x] `src/gzkit/rules.py` lines 400-412 — `RuleFrontmatter` for canonical rules (different from instruction schema)
 
 ## Quality Gates
 
-<!-- Which gates apply and how to verify them. -->
-
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] Tests written before/with implementation
-- [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
+- [x] Tests written before/with implementation
+- [x] Tests pass: `uv run gz test`
+- [x] Validation commands recorded in evidence with real outputs
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
 ### Gate 3: Docs (Heavy only)
 
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
+- [x] Docs build: `uv run mkdocs build --strict`
+- [x] N/A — no user-facing doc changes (internal validation mechanism)
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
+- [x] N/A — no behave features for schema validation internals
 
 ### Gate 5: Human (Heavy only)
 
-- [ ] Human attestation recorded
+- [x] Human attestation recorded
 
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
-uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
 uv run gz test
 
-# Specific verification for this OBPI
-command --to --verify
+# Specific verification: cross-validation tests pass
+uv run -m unittest tests.test_schemas -v
+
+# Specific verification: validate surfaces still works
+uv run gz validate --surfaces
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-
+- [x] REQ-0.17.0-04-01: `SkillFrontmatter` Pydantic model exists in `frontmatter.py` with fields matching `skill.schema.json`
+- [x] REQ-0.17.0-04-02: `InstructionFrontmatter` Pydantic model exists in `frontmatter.py` with fields matching `rule.schema.json`
+- [x] REQ-0.17.0-04-03: `_validate_skill_frontmatter()` uses `SkillFrontmatter` model (hardcoded sets removed)
+- [x] REQ-0.17.0-04-04: `_validate_instruction_frontmatter()` uses `InstructionFrontmatter` model
+- [x] REQ-0.17.0-04-05: Cross-validation tests for skill schema alignment pass in `test_schemas.py`
+- [x] REQ-0.17.0-04-06: Cross-validation tests for instruction/rule schema alignment pass in `test_schemas.py`
+- [x] REQ-0.17.0-04-07: `uv run gz validate --surfaces` produces equivalent results to before
 
 ## Completion Checklist
 
-<!-- Verify all gates before marking OBPI accepted. -->
-
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
 ## Evidence
 
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
-
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+$ uv run gz test
+Ran 692 tests in 19.403s — OK
+$ uv run -m unittest tests.test_schemas -v
+Ran 24 tests in 0.005s — OK (7 new cross-validation tests)
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+$ uv run gz lint
+All checks passed! Lint passed.
+$ uv run gz typecheck
+All checks passed! Type check passed.
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here when Gate 3 applies
+$ uv run mkdocs build --strict
+Documentation built in 2.31 seconds
+N/A — internal validation mechanism, no user-facing doc changes
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here when Gate 4 applies
+N/A — no behave features for schema validation internals
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+Human attestation: "attest completed" — 2026-03-19
 ```
 
 ## Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before this OBPI, skill and instruction frontmatter validation used hardcoded Python sets (`_VALID_SKILL_CATEGORIES`, `_VALID_LIFECYCLE_STATES`) and ad-hoc field checks, disconnected from the canonical JSON schemas in `.gzkit/schemas/`. Schema and validation could drift silently. Now, `SkillFrontmatter` and `InstructionFrontmatter` Pydantic models mirror the canonical schemas, the validators use these models, and 7 cross-validation tests prevent model/schema drift.
 
-## Key Proof
+### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+```text
+$ uv run -m unittest tests.test_schemas.TestSkillSchemaAlignment tests.test_schemas.TestInstructionSchemaAlignment -v
+test_all_schema_properties_have_model_fields (tests.test_schemas.TestSkillSchemaAlignment) ... ok
+test_enum_values_match (tests.test_schemas.TestSkillSchemaAlignment) ... ok
+test_pattern_constraints_match (tests.test_schemas.TestSkillSchemaAlignment) ... ok
+test_required_fields_match (tests.test_schemas.TestSkillSchemaAlignment) ... ok
+test_all_schema_properties_have_model_fields (tests.test_schemas.TestInstructionSchemaAlignment) ... ok
+test_enum_values_match (tests.test_schemas.TestInstructionSchemaAlignment) ... ok
+test_required_fields_match (tests.test_schemas.TestInstructionSchemaAlignment) ... ok
+Ran 7 tests in 0.005s — OK
+
+$ uv run gz validate --surfaces
+All validations passed.
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created/modified: `src/gzkit/models/frontmatter.py`, `src/gzkit/validate.py`, `tests/test_schemas.py`
+- Tests added: TestSkillSchemaAlignment (4 tests), TestInstructionSchemaAlignment (3 tests)
+- Date completed: 2026-03-19
+- Attestation status: Human attested
+- Defects noted: None
 
 ## Tracked Defects
-
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
 
 _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `human:<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `human:Jeff`
+- Attestation: attest completed
+- Date: 2026-03-19
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-19
 
 **Evidence Hash:** -

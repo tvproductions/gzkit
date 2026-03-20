@@ -1,6 +1,9 @@
-"""Pydantic frontmatter models for ADR, OBPI, and PRD content types.
+"""Pydantic frontmatter models for governance and control-surface content types.
 
-Each model mirrors the corresponding JSON schema in ``src/gzkit/schemas/``.
+Each model mirrors a corresponding JSON schema:
+- ADR, OBPI, PRD → ``src/gzkit/schemas/``
+- Skill, Instruction → ``.gzkit/schemas/``
+
 Pattern validators and Literal types enforce the same constraints that were
 previously checked procedurally in ``validate.py``.
 """
@@ -51,6 +54,57 @@ class PrdFrontmatter(BaseModel):
     status: Literal["Draft", "Review", "Approved", "Superseded"]
     semver: str = Field(..., pattern=r"^[0-9]+\.[0-9]+\.[0-9]+$")
     date: str = Field(..., pattern=r"^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
+
+
+# ---------------------------------------------------------------------------
+# Control-surface frontmatter models
+# ---------------------------------------------------------------------------
+
+
+class SkillFrontmatter(BaseModel):
+    """Skill SKILL.md frontmatter — mirrors ``.gzkit/schemas/skill.schema.json``."""
+
+    model_config = ConfigDict(frozen=True, extra="allow", populate_by_name=True)
+
+    description: str
+    name: str | None = Field(None, pattern=r"^[a-z0-9-]+$")
+    category: (
+        Literal[
+            "adr-lifecycle",
+            "adr-operations",
+            "adr-audit",
+            "obpi-pipeline",
+            "governance-infrastructure",
+            "agent-operations",
+            "code-quality",
+            "cross-repository",
+        ]
+        | None
+    ) = None
+    lifecycle_state: Literal["active", "deprecated", "draft", "retired"] | None = None
+    owner: str | None = None
+    last_reviewed: str | None = Field(None, pattern=r"^\d{4}-\d{2}-\d{2}$")
+    user_invocable: bool | None = Field(None, alias="user-invocable")
+    disable_model_invocation: bool | None = Field(None, alias="disable-model-invocation")
+    argument_hint: str | None = Field(None, alias="argument-hint")
+    allowed_tools: str | None = Field(None, alias="allowed-tools")
+    skill_model: str | None = Field(None, alias="model")
+    context: Literal["fork"] | None = None
+    agent: str | None = None
+
+
+class InstructionFrontmatter(BaseModel):
+    """Instruction frontmatter — mirrors ``.gzkit/schemas/rule.schema.json``."""
+
+    model_config = ConfigDict(frozen=True, extra="allow", populate_by_name=True)
+
+    apply_to: str = Field(..., alias="applyTo")
+    name: str | None = None
+    description: str | None = None
+    category: str | None = None
+    exclude_agent: Literal["code-review", "coding-agent", "all"] | None = Field(
+        None, alias="excludeAgent"
+    )
 
 
 # ---------------------------------------------------------------------------
