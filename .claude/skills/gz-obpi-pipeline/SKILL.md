@@ -149,14 +149,62 @@ Exception mode: Stage 4 = SELF-CLOSE (record evidence, proceed)
 
 ### Stage 2: Implement (skipped by `--from=verify` or `--from=ceremony`)
 
+Stage 2 uses a **controller/worker architecture**: the main session (controller)
+parses the approved plan into tasks and dispatches a fresh implementer subagent
+for each task. This prevents context pollution, enables model-aware routing,
+and keeps the orchestrator lean for Stages 3-5.
+
+#### Controller Loop
+
+```text
+For each task in approved_plan.tasks:
+  1. Classify task complexity (SIMPLE / STANDARD / COMPLEX)
+  2. Select model tier:
+     - SIMPLE (1-2 files)  → haiku
+     - STANDARD (3-5 files) → sonnet
+     - COMPLEX (6+ files)   → opus
+  3. Compose scoped prompt (task description, allowed files, test expectations)
+  4. Dispatch implementer subagent via Agent tool:
+     - subagent_type: "implementer"
+     - model: override from step 2
+  5. Parse structured HandoffResult from subagent output
+  6. Handle result status:
+     - DONE → advance to next task
+     - DONE_WITH_CONCERNS → log concerns, advance
+     - NEEDS_CONTEXT → provide context, re-dispatch (max 2 retries)
+     - BLOCKED → attempt fix (max 2 tries), then handoff
+```
+
+#### Runtime Functions
+
+The dispatch orchestration is implemented in `src/gzkit/pipeline_runtime.py`:
+
+- `extract_plan_tasks()` — parse plan markdown into task dicts
+- `classify_task_complexity()` — assess SIMPLE/STANDARD/COMPLEX
+- `select_dispatch_model()` — map complexity to model tier
+- `compose_implementer_prompt()` — build scoped subagent prompt
+- `parse_handoff_result()` — extract HandoffResult from output
+- `create_dispatch_state()` — initialize dispatch tracking
+- `advance_dispatch()` — mark task in-progress, increment count
+- `handle_task_result()` — process result, return next action
+
+#### Task List
+
 1. Create task list from plan steps
    - Normal mode: Last task MUST be "Present OBPI Acceptance Ceremony"
    - Exception mode: Last task MUST be "Record OBPI Evidence and Self-Close"
-2. Follow the approved plan step by step
+2. For each task, dispatch a fresh implementer subagent (sequential, never parallel)
 3. Keep edits inside the brief allowlist and transaction contract.
 4. Write code with tests (unittest, TempDBMixin for DB, coverage >= 40%)
 5. Run `uv run ruff check . --fix && uv run ruff format .` after code changes
 6. Run `uv run -m unittest -q` after implementation
+
+#### Constraints
+
+- Implementer subagents are dispatched **sequentially** — never in parallel.
+- The controller **never writes implementation code** — it orchestrates only.
+- Each subagent receives the `.claude/agents/implementer.md` agent file
+  (tools: Read/Edit/Write/Glob/Grep/Bash, permissionMode: acceptEdits, maxTurns: 25).
 
 **Abort if:** Tests fail after 2 fix attempts. Create handoff, release lock, and stop.
 
