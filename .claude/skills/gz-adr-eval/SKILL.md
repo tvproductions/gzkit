@@ -25,6 +25,28 @@ blocking QC step between ADR authoring and human proposal/defense review.
 It can be invoked for newly authored ADRs or for retroactive evaluation of an
 existing ADR package.
 
+## Independent Evaluation Rule
+
+**This skill MUST be dispatched as a separate subagent, not run inline by the
+authoring agent.** The agent that authored an ADR must not evaluate it — that
+is self-certification, and it produces inflated scores because the evaluator
+shares the authoring agent's sunk-cost bias and context.
+
+**Correct invocation (from gz-adr-create step 11):**
+
+```text
+Agent tool → subagent dispatched with: "/gz-adr-eval ADR-X.Y.Z"
+```
+
+The evaluator subagent reads the ADR and briefs with fresh context, scores
+against the framework rubric, and writes `EVALUATION_SCORECARD.md`. If the
+verdict is CONDITIONAL GO or NO GO, the authoring agent revises and
+re-dispatches a new evaluator subagent.
+
+**Rationale:** The same principle that drives OBPI-0.23.0-03 (reviewer agent
+role) applies here — independent evaluation prevents the "grading your own
+homework" failure mode.
+
 ---
 
 ## Trust Model
