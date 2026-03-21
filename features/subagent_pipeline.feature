@@ -156,3 +156,40 @@ Feature: Subagent pipeline dispatch lifecycle
     Then the dispatch action is "handoff"
     And task 2 remains pending
     And dispatch state has 1 blocked task
+
+  @dispatch @review
+  Scenario: Review dispatched after DONE task with both passing
+    Given a dispatch state with 2 tasks and 2 allowed paths
+    And task 1 is dispatched
+    When task 1 returns DONE
+    Then review should be dispatched for task 1
+    When both reviews pass for task 1
+    Then the review action is "advance"
+
+  @dispatch @review
+  Scenario: Review not dispatched for BLOCKED task
+    Given a dispatch state with 1 task and 1 allowed paths
+    And task 1 is dispatched
+    When task 1 returns BLOCKED
+    Then review should not be dispatched for task 1
+
+  @dispatch @review
+  Scenario: Critical spec finding triggers fix cycle
+    Given a dispatch state with 1 task and 2 allowed paths
+    And task 1 is dispatched
+    When task 1 returns DONE
+    And spec review finds critical issue for task 1
+    Then the review action is "fix"
+    And task 1 review fix count is 1
+
+  @dispatch @review
+  Scenario: Review blocked after max fix cycles
+    Given a dispatch state with 1 task and 2 allowed paths
+    And task 1 is dispatched
+    When task 1 returns DONE
+    And spec review finds critical issue for task 1
+    Then the review action is "fix"
+    When spec review finds critical issue for task 1
+    Then the review action is "fix"
+    When spec review finds critical issue for task 1
+    Then the review action is "blocked"
