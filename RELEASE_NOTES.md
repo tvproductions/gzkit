@@ -1,5 +1,26 @@
 # gzkit Release Notes
 
+## v0.18.0 (2026-03-21)
+
+**ADR:** ADR-0.18.0 - Subagent-Driven Pipeline Execution
+
+Evolved the gz-obpi-pipeline from single-session inline execution to a controller/worker architecture. Stage 2 dispatches fresh implementer subagents per plan task with model-aware routing (haiku/sonnet/opus by complexity). Two independent reviewer subagents (spec compliance + code quality) run after each task. Stage 3 dispatches parallel verification subagents for non-overlapping REQ paths using worktree isolation.
+
+### Delivered
+
+- Agent role taxonomy: four pipeline roles (Planner, Implementer, Reviewer, Narrator) with formal handoff contracts, tool restrictions, and conflict resolution
+- Controller/worker Stage 2: sequential implementer dispatch with structured result contracts (DONE, DONE_WITH_CONCERNS, NEEDS_CONTEXT, BLOCKED) and circuit breakers
+- Two-stage review protocol: concurrent spec compliance and code quality reviewers with fix cycles (max 2 per task before escalation)
+- REQ-level parallel verification dispatch in Stage 3 with wall-clock timing metrics
+- Pipeline runtime integration: dispatch state tracking, result aggregation, model routing config
+- New CLI surface: `gz roles` for querying role taxonomy and dispatch history
+- Agent file definitions in `.claude/agents/` with YAML frontmatter enforcing tool permissions and model defaults
+- `--no-subagents` fallback preserving inline execution for debugging
+
+### Gate Evidence
+
+All 5 GovZero gates satisfied.
+
 ## v0.17.0 (2026-03-20)
 
 **ADR:** ADR-0.17.0 - AGENTS.md Tidy: Control Surface Schema and Rules Mirroring
