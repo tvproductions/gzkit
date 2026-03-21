@@ -547,7 +547,7 @@ class TestVerificationModels(unittest.TestCase):
 
         scope = _make_scope(req_index=1)
         with self.assertRaises(ValidationError):
-            scope.req_index = 2  # type: ignore[misc]
+            scope.req_index = 2
 
     def test_scope_forbids_extra(self) -> None:
         from pydantic import ValidationError
@@ -564,14 +564,14 @@ class TestVerificationModels(unittest.TestCase):
 
         result = _make_result(req_index=1)
         with self.assertRaises(ValidationError):
-            result.outcome = VerificationOutcome.FAIL  # type: ignore[misc]
+            result.outcome = VerificationOutcome.FAIL
 
     def test_plan_is_frozen(self) -> None:
         from pydantic import ValidationError
 
         plan = VerificationPlan()
         with self.assertRaises(ValidationError):
-            plan.strategy = "parallel"  # type: ignore[misc]
+            plan.strategy = "parallel"
 
     def test_verification_outcome_values(self) -> None:
         self.assertEqual(VerificationOutcome.PASS, "PASS")

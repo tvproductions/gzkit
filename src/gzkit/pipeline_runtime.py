@@ -591,15 +591,18 @@ class DispatchState(BaseModel):
 
     @property
     def completed_count(self) -> int:
+        """Count of tasks with DONE or DONE_WITH_CONCERNS status."""
         done = {TaskStatus.DONE, TaskStatus.DONE_WITH_CONCERNS}
         return sum(1 for r in self.records if r.status in done)
 
     @property
     def blocked_count(self) -> int:
+        """Count of tasks with BLOCKED status."""
         return sum(1 for r in self.records if r.status == TaskStatus.BLOCKED)
 
     @property
     def is_finished(self) -> bool:
+        """True when all tasks have reached a terminal status."""
         terminal = {TaskStatus.DONE, TaskStatus.DONE_WITH_CONCERNS, TaskStatus.BLOCKED}
         return all(r.status in terminal for r in self.records)
 

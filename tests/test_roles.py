@@ -149,11 +149,10 @@ class TestHandoffProtocol(unittest.TestCase):
         self.assertEqual(original, restored)
 
     def test_handoff_result_rejects_extra_fields(self) -> None:
-
         with self.assertRaises(ValidationError):
             HandoffResult(
                 status=HandoffStatus.DONE,
-                extra_field="not allowed",
+                extra_field="not allowed",  # type: ignore[unknown-argument]
             )
 
     def test_all_handoff_statuses_exist(self) -> None:
@@ -271,12 +270,12 @@ class TestModelImmutability(unittest.TestCase):
     def test_handoff_result_is_frozen(self) -> None:
         result = HandoffResult(status=HandoffStatus.DONE)
         with self.assertRaises(ValidationError):
-            result.status = HandoffStatus.BLOCKED  # type: ignore[misc]
+            result.status = HandoffStatus.BLOCKED
 
     def test_review_result_is_frozen(self) -> None:
         result = ReviewResult(verdict=ReviewVerdict.PASS)
         with self.assertRaises(ValidationError):
-            result.verdict = ReviewVerdict.FAIL  # type: ignore[misc]
+            result.verdict = ReviewVerdict.FAIL
 
 
 if __name__ == "__main__":

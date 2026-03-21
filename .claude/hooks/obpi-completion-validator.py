@@ -63,8 +63,7 @@ def check_status_change_to_completed(new_string: str) -> bool:
         r"^\|\s*(?:Brief\s+)?Status\s*\|\s*Completed\s*\|",
     ]
     return any(
-        re.search(pattern, new_string, re.MULTILINE | re.IGNORECASE)
-        for pattern in status_patterns
+        re.search(pattern, new_string, re.MULTILINE | re.IGNORECASE) for pattern in status_patterns
     )
 
 
@@ -130,9 +129,16 @@ def get_execution_mode(adr_file: Path | None) -> str:
     return "normal"
 
 
-STRICT_PLACEHOLDERS = frozenset({
-    "-", "tbd", "(none)", "n/a", "...", "paste test output here",
-})
+STRICT_PLACEHOLDERS = frozenset(
+    {
+        "-",
+        "tbd",
+        "(none)",
+        "n/a",
+        "...",
+        "paste test output here",
+    }
+)
 
 
 def has_substantive_implementation_summary(content: str) -> bool:
@@ -375,4 +381,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
