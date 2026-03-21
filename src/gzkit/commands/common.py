@@ -649,3 +649,97 @@ def _update_adr_attestation_block(
         lines.insert(data_index, row)
 
     adr_file.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
+
+
+# ---------------------------------------------------------------------------
+# Version sync helpers
+# ---------------------------------------------------------------------------
+
+_VERSION_BADGE_RE = re.compile(r"(badge/version-)\d+\.\d+\.\d+(-blue\.svg)")
+
+
+def _extract_adr_version(adr_id: str) -> str | None:
+    """Extract the semver portion from an ADR ID like ``ADR-0.18.0-slug``."""
+    m = re.match(r"^ADR-(\d+\.\d+\.\d+)", adr_id)
+    return m.group(1) if m else None
+
+
+def _parse_semver_tuple(version: str) -> tuple[int, ...]:
+    """Convert ``"0.18.0"`` to ``(0, 18, 0)`` for comparison."""
+    return tuple(int(p) for p in version.split("."))
+
+
+def _read_current_project_version(project_root: Path) -> str | None:
+    """Read version from ``pyproject.toml``."""
+    pyproject = project_root / "pyproject.toml"
+    if not pyproject.exists():
+        return None
+    for line in pyproject.read_text(encoding="utf-8").splitlines():
+        m = re.match(r'^version\s*=\s*"(\d+\.\d+\.\d+)"', line)
+        if m:
+            return m.group(1)
+    return None
+
+
+def sync_project_version(project_root: Path, new_version: str) -> list[str]:
+    """Bump version in pyproject.toml, __init__.py, and README badge.
+
+    Returns a list of files that were updated (relative to *project_root*).
+    """
+    updated: list[str] = []
+
+    # pyproject.toml
+    pyproject = project_root / "pyproject.toml"
+    if pyproject.exists():
+        old = pyproject.read_text(encoding="utf-8")
+        new = re.sub(
+            r'^(version\s*=\s*")\d+\.\d+\.\d+(")',
+            rf"\g<1>{new_version}\2",
+            old,
+            count=1,
+            flags=re.MULTILINE,
+        )
+        if new != old:
+            pyproject.write_text(new, encoding="utf-8")
+            updated.append("pyproject.toml")
+
+    # src/gzkit/__init__.py
+    init_py = project_root / "src" / "gzkit" / "__init__.py"
+    if init_py.exists():
+        old = init_py.read_text(encoding="utf-8")
+        new = re.sub(
+            r'^(__version__\s*=\s*")\d+\.\d+\.\d+(")',
+            rf"\g<1>{new_version}\2",
+            old,
+            count=1,
+            flags=re.MULTILINE,
+        )
+        if new != old:
+            init_py.write_text(new, encoding="utf-8")
+            updated.append("src/gzkit/__init__.py")
+
+    # README.md badge
+    readme = project_root / "README.md"
+    if readme.exists():
+        old = readme.read_text(encoding="utf-8")
+        new = _VERSION_BADGE_RE.sub(rf"\g<1>{new_version}\2", old)
+        if new != old:
+            readme.write_text(new, encoding="utf-8")
+            updated.append("README.md")
+
+    return updated
+
+
+def check_version_sync(project_root: Path, adr_id: str) -> tuple[str | None, str | None, bool]:
+    """Check if project version should be bumped for this ADR closeout.
+
+    Returns ``(current_version, adr_version, needs_bump)``.
+    """
+    adr_version = _extract_adr_version(adr_id)
+    if adr_version is None:
+        return None, None, False
+    current = _read_current_project_version(project_root)
+    if current is None:
+        return None, adr_version, True
+    needs_bump = _parse_semver_tuple(adr_version) > _parse_semver_tuple(current)
+    return current, adr_version, needs_bump
