@@ -3,7 +3,7 @@ id: OBPI-0.18.0-04-req-verification-dispatch
 parent: ADR-0.18.0-subagent-driven-pipeline-execution
 item: 4
 lane: Lite
-status: Accepted
+status: Completed
 ---
 
 # OBPI-0.18.0-04: REQ-Level Parallel Verification Dispatch
@@ -13,7 +13,7 @@ status: Accepted
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.18.0-subagent-driven-pipeline-execution/ADR-0.18.0-subagent-driven-pipeline-execution.md`
 - **Checklist Item:** #4 — "REQ-level parallel verification dispatch in Stage 3"
 
-**Status:** Accepted
+**Status:** Completed
 
 ## Objective
 
@@ -108,26 +108,57 @@ Parallel subagents are dispatched with `run_in_background: true`. The controller
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR OBPI entry referenced
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR OBPI entry referenced
 
 ### Gate 2: TDD
 
-- [ ] Unit tests for path overlap detection
-- [ ] Unit tests for REQ partitioning into independent groups
-- [ ] Unit tests for parallel dispatch and result aggregation
-- [ ] Unit tests for sequential fallback
-- [ ] Tests pass: `uv run gz test`
+- [x] Unit tests for path overlap detection
+- [x] Unit tests for REQ partitioning into independent groups
+- [x] Unit tests for parallel dispatch and result aggregation
+- [x] Unit tests for sequential fallback
+- [x] Tests pass: `uv run gz test`
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 ## Completion Checklist (Lite)
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Unit tests pass
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Coverage:** Coverage >= 40% maintained
-- [ ] **OBPI Completion:** Record evidence in brief
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Unit tests pass
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Coverage:** Coverage >= 40% maintained
+- [x] **OBPI Completion:** Record evidence in brief
+
+### Implementation Summary
+
+- Models: VerificationScope, VerificationOutcome, VerificationResult, VerificationPlan added to pipeline_runtime.py
+- Extraction: extract_verification_scopes() parses brief REQUIREMENT lines into scopes with test paths
+- Overlap: compute_path_overlap() detects shared test paths between REQ pairs
+- Partitioning: partition_independent_groups() uses union-find to merge overlapping scopes into connected components
+- Planning: build_verification_plan() produces parallel/sequential/mixed strategy based on overlap analysis
+- Prompts: compose_verification_prompt() builds read-only subagent prompts with REQ text, test files, commands
+- Parsing: parse_verification_results() extracts structured results from subagent JSON output
+- Aggregation: aggregate_verification_results() requires all expected REQs to PASS; missing = FAIL
+- Fallback: should_fallback_to_sequential() triggers when strategy is sequential (no test paths or single group)
+
+### Key Proof
+
+```
+$ uv run -m unittest tests.test_verification_dispatch -v
+Ran 63 tests in 0.001s — OK
+
+$ uv run gz test
+Ran 906 tests — OK
+
+$ uv run gz lint
+All checks passed!
+
+$ uv run gz typecheck
+All checks passed!
+
+$ uv run coverage report --include='src/gzkit/pipeline_runtime.py'
+src/gzkit/pipeline_runtime.py     588    111    81%
+```
