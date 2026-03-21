@@ -3,7 +3,7 @@ id: OBPI-0.18.0-03-two-stage-review-protocol
 parent: ADR-0.18.0-subagent-driven-pipeline-execution
 item: 3
 lane: Lite
-status: Accepted
+status: Completed
 ---
 
 # OBPI-0.18.0-03: Two-Stage Review Protocol
@@ -13,7 +13,7 @@ status: Accepted
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.18.0-subagent-driven-pipeline-execution/ADR-0.18.0-subagent-driven-pipeline-execution.md`
 - **Checklist Item:** #3 — "Two-stage review protocol: spec compliance + code quality reviewer subagents"
 
-**Status:** Accepted
+**Status:** Completed
 
 ## Objective
 
@@ -101,25 +101,52 @@ Reviewer independence is enforced by the Claude Code `tools` allowlist in the ag
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR OBPI entry referenced
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR OBPI entry referenced
 
 ### Gate 2: TDD
 
-- [ ] Unit tests for review dispatch sequence
-- [ ] Unit tests for verdict handling (PASS/FAIL/CONCERNS)
-- [ ] Unit tests for fix cycle logic and escalation
-- [ ] Tests pass: `uv run gz test`
+- [x] Unit tests for review dispatch sequence
+- [x] Unit tests for verdict handling (PASS/FAIL/CONCERNS)
+- [x] Unit tests for fix cycle logic and escalation
+- [x] Tests pass: `uv run gz test`
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 ## Completion Checklist (Lite)
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Unit tests pass
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Coverage:** Coverage >= 40% maintained
-- [ ] **OBPI Completion:** Record evidence in brief
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Unit tests pass
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Coverage:** Coverage >= 40% maintained (54%)
+- [x] **OBPI Completion:** Record evidence in brief
+
+### Implementation Summary
+
+- Functions added: 8 review protocol functions in `pipeline_runtime.py` (lines 816-1045)
+- Constants: `MAX_REVIEW_FIX_CYCLES=2`, `REVIEW_MODEL_MAP` (sonnet minimum, opus for complex)
+- Dispatch routing: `should_dispatch_review()` gates on DONE/DONE_WITH_CONCERNS only
+- Prompt composition: `compose_spec_review_prompt()` with skeptic instruction, `compose_quality_review_prompt()` with SOLID/size/coverage criteria
+- Result parsing: `parse_review_result()` extracts structured `ReviewResult` from reviewer output
+- Blocking logic: `review_blocks_advancement()` blocks on FAIL or CONCERNS+critical; `review_has_critical_findings()` detects critical severity
+- Orchestration: `handle_review_cycle()` sequences spec→quality review with fix cycle limits
+- Model change: `review_fix_count` field added to `DispatchRecord`
+
+### Key Proof
+
+```
+$ uv run -m unittest tests.test_review_protocol -v
+Ran 70 tests in 0.001s — OK
+```
+
+Coverage: 54% on `pipeline_runtime.py` (threshold: 40%). Full suite: 843/843 pass.
+
+### Evidence
+
+- Tests: `tests/test_review_protocol.py` — 70 tests across 8 classes
+- Lint: `uv run gz lint` — clean
+- Typecheck: `uv run gz typecheck` — clean
+- Attestation: Human attested "completed" on 2026-03-21
