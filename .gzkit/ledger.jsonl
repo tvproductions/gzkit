@@ -951,3 +951,10 @@
 {"schema":"gzkit.ledger.v1","event":"gate_checked","id":"ADR-0.18.0-subagent-driven-pipeline-execution","ts":"2026-03-21T16:37:31.414997+00:00","gate":4,"status":"pass","command":"uv run -m behave features/","returncode":0,"evidence":"stdout/stderr captured"}
 {"schema":"gzkit.ledger.v1","event":"attested","id":"ADR-0.18.0-subagent-driven-pipeline-execution","ts":"2026-03-21T16:37:42.725281+00:00","status":"completed","by":"Jeffry Babb"}
 {"schema":"gzkit.ledger.v1","event":"audit_receipt_emitted","id":"ADR-0.18.0-subagent-driven-pipeline-execution","ts":"2026-03-21T16:38:25.866975+00:00","receipt_event":"validated","attestor":"Jeffry Babb","evidence":{"scope":"ADR-0.18.0-subagent-driven-pipeline-execution","date":"2026-03-21"},"anchor":{"commit":"bd071f0","semver":"0.18.0"}}
+{"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs\\design\\adr\\pool\\ADR-pool.attestation-advisory-agent.md","ts":"2026-03-21T17:16:09.869979+00:00","path":"docs\\design\\adr\\pool\\ADR-pool.attestation-advisory-agent.md"}
+{"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-pool.attestation-advisory-agent","ts":"2026-03-21T17:16:36.695587+00:00","parent":"PRD-GZKIT-1.0.0","lane":"heavy"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.22.0-01-task-entity-model","ts":"2026-03-21T17:16:36.709678+00:00","parent":"ADR-0.22.0-task-level-governance"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.22.0-02-task-ledger-events","ts":"2026-03-21T17:16:36.722979+00:00","parent":"ADR-0.22.0-task-level-governance"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.22.0-03-git-commit-linkage","ts":"2026-03-21T17:16:36.736214+00:00","parent":"ADR-0.22.0-task-level-governance"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.22.0-04-gz-task-cli","ts":"2026-03-21T17:16:36.748897+00:00","parent":"ADR-0.22.0-task-level-governance"}
+{"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.22.0-05-status-and-state-integration","ts":"2026-03-21T17:16:36.761692+00:00","parent":"ADR-0.22.0-task-level-governance"}
