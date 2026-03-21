@@ -412,5 +412,148 @@ class TestAdvanceDispatch(unittest.TestCase):
         self.assertEqual(state.records[0].dispatch_count, 2)
 
 
+# ---------------------------------------------------------------------------
+# Stage 2 dispatch loop contract
+# ---------------------------------------------------------------------------
+
+
+class TestStage2DispatchLoopContract(unittest.TestCase):
+    """Verify that the existing dispatch functions compose into a correct Stage 2 loop."""
+
+    def test_full_loop_creates_state_and_composes_prompts(self):
+        """State creation + prompt composition covers the full dispatch prep."""
+        tasks = [
+            {"id": "1", "description": "Add config parser"},
+            {"id": "2", "description": "Add validation logic"},
+        ]
+        allowed = ["src/config.py", "src/validate.py"]
+        reqs = ["REQUIREMENT: Config MUST parse TOML", "REQUIREMENT: Validation MUST reject nulls"]
+
+        state = create_dispatch_state("OBPI-0.18.0-06", "ADR-0.18.0", tasks, allowed)
+        self.assertEqual(len(state.records), 2)
+
+        # Each task can produce a scoped prompt with brief requirements
+        for rec in state.records:
+            prompt = compose_implementer_prompt(rec.task, reqs)
+            self.assertIn("Allowed Files", prompt)
+            self.assertIn("src/config.py", prompt)
+            self.assertIn("Brief Requirements", prompt)
+            self.assertIn("REQUIREMENT: Config MUST parse TOML", prompt)
+            self.assertIn("Rules", prompt)
+
+    def test_sequential_advance_and_result_handling(self):
+        """Tasks advance sequentially; each result is handled before the next dispatch."""
+        tasks = [
+            {"id": "1", "description": "Task A"},
+            {"id": "2", "description": "Task B"},
+            {"id": "3", "description": "Task C"},
+        ]
+        state = create_dispatch_state("OBPI-X", "ADR-X", tasks, ["a.py"])
+
+        for i in range(3):
+            idx = advance_dispatch(state, i)
+            self.assertEqual(idx, i)
+            result = HandoffResult(
+                status=HandoffStatus.DONE, files_changed=["a.py"], tests_added=[], concerns=[]
+            )
+            action = handle_task_result(state, i, result)
+            expected = "complete" if i == 2 else "advance"
+            self.assertEqual(action, expected)
+
+        self.assertTrue(state.is_finished)
+        self.assertEqual(state.completed_count, 3)
+        self.assertEqual(state.blocked_count, 0)
+
+    def test_blocked_task_halts_loop(self):
+        """A BLOCKED result after exhausting fix attempts halts the dispatch loop."""
+        tasks = [
+            {"id": "1", "description": "Task A"},
+            {"id": "2", "description": "Task B"},
+        ]
+        state = create_dispatch_state("OBPI-X", "ADR-X", tasks, ["a.py"])
+        blocked_result = HandoffResult(
+            status=HandoffStatus.BLOCKED,
+            files_changed=[],
+            tests_added=[],
+            concerns=["Missing dependency"],
+        )
+
+        # First dispatch → fix attempt
+        advance_dispatch(state, 0)
+        action = handle_task_result(state, 0, blocked_result)
+        self.assertEqual(action, "fix")
+
+        # Second dispatch → exhausts MAX_BLOCKED_FIX_ATTEMPTS → handoff
+        advance_dispatch(state, 0)
+        action2 = handle_task_result(state, 0, blocked_result)
+        self.assertEqual(action2, "handoff")
+        self.assertEqual(state.blocked_count, 1)
+        # Task B was never dispatched
+        self.assertEqual(state.records[1].status, TaskStatus.PENDING)
+
+    def test_needs_context_redispatches_once_then_blocks(self):
+        """NEEDS_CONTEXT allows one redispatch; second triggers block."""
+        tasks = [{"id": "1", "description": "Task A"}]
+        state = create_dispatch_state("OBPI-X", "ADR-X", tasks, ["a.py"])
+
+        # First dispatch
+        advance_dispatch(state, 0)
+        result_nc = HandoffResult(
+            status=HandoffStatus.NEEDS_CONTEXT, files_changed=[], tests_added=[], concerns=[]
+        )
+        action = handle_task_result(state, 0, result_nc)
+        self.assertEqual(action, "redispatch")
+
+        # Redispatch
+        advance_dispatch(state, 0)
+        action2 = handle_task_result(state, 0, result_nc)
+        self.assertEqual(action2, "handoff")
+
+    def test_done_with_concerns_logs_and_advances(self):
+        """DONE_WITH_CONCERNS logs concerns; returns 'complete' when last task."""
+        tasks = [{"id": "1", "description": "Task A"}, {"id": "2", "description": "Task B"}]
+        state = create_dispatch_state("OBPI-X", "ADR-X", tasks, ["a.py"])
+
+        # First task: DONE_WITH_CONCERNS on non-last task → advance
+        advance_dispatch(state, 0)
+        result = HandoffResult(
+            status=HandoffStatus.DONE_WITH_CONCERNS,
+            files_changed=["a.py"],
+            tests_added=[],
+            concerns=["Unclear spec for edge case"],
+        )
+        action = handle_task_result(state, 0, result)
+        self.assertEqual(action, "advance")
+        self.assertIn("Unclear spec for edge case", state.all_concerns)
+
+        # Second task: DONE → complete (last task)
+        advance_dispatch(state, 1)
+        result2 = HandoffResult(
+            status=HandoffStatus.DONE, files_changed=["a.py"], tests_added=[], concerns=[]
+        )
+        action2 = handle_task_result(state, 1, result2)
+        self.assertEqual(action2, "complete")
+
+    def test_model_routing_per_task_complexity(self):
+        """Each task gets the correct model based on file count."""
+        tasks = [
+            {"id": "1", "description": "Simple rename"},
+            {"id": "2", "description": "Complex refactor"},
+        ]
+        # 1 file → simple → haiku; 6 files → complex → opus
+        state_simple = create_dispatch_state("OBPI-X", "ADR-X", tasks[:1], ["a.py"])
+        self.assertEqual(state_simple.records[0].task.model, "haiku")
+
+        many_files = [f"src/mod{i}.py" for i in range(6)]
+        state_complex = create_dispatch_state("OBPI-X", "ADR-X", tasks[1:], many_files)
+        self.assertEqual(state_complex.records[0].task.model, "opus")
+
+    def test_empty_plan_produces_empty_state(self):
+        """An empty plan produces a dispatch state with no records."""
+        state = create_dispatch_state("OBPI-X", "ADR-X", [], ["a.py"])
+        self.assertEqual(len(state.records), 0)
+        self.assertTrue(state.is_finished)
+
+
 if __name__ == "__main__":
     unittest.main()

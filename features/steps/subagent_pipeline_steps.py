@@ -79,6 +79,7 @@ def step_create_state(context, count, paths):
 
 
 @given("task {idx:d} is dispatched")
+@when("task {idx:d} is dispatched")
 def step_dispatch_task(context, idx):
     advance_dispatch(context.dispatch_state, idx - 1)
 
@@ -304,4 +305,83 @@ def step_validate_agents(context):
 def step_validation_error_count(context, count):
     assert len(context.validation_errors) == count, (
         f"Expected {count} errors, got {len(context.validation_errors)}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Stage 2 dispatch loop
+# ---------------------------------------------------------------------------
+
+
+@given("a plan with {count:d} tasks")
+def step_plan_with_n_tasks(context, count):
+    context.plan_tasks = [{"id": str(i + 1), "description": f"Task {i + 1}"} for i in range(count)]
+
+
+@given("allowed paths {paths}")
+def step_allowed_paths(context, paths):
+    context.allowed_paths = json.loads(paths)
+
+
+@given("brief requirements {reqs}")
+def step_brief_requirements(context, reqs):
+    context.brief_requirements = json.loads(reqs)
+
+
+@when('the controller creates dispatch state for "{obpi_id}" under "{adr_id}"')
+def step_create_dispatch_state(context, obpi_id, adr_id):
+    context.dispatch_state = create_dispatch_state(
+        obpi_id, adr_id, context.plan_tasks, context.allowed_paths
+    )
+
+
+@when("dispatches each task sequentially with DONE results")
+def step_dispatch_all_done(context):
+    state = context.dispatch_state
+    context.prompts = []
+    reqs = getattr(context, "brief_requirements", [])
+    for i, rec in enumerate(state.records):
+        advance_dispatch(state, i)
+        prompt = compose_implementer_prompt(rec.task, reqs)
+        context.prompts.append(prompt)
+        result = HandoffResult(
+            status=HandoffStatus.DONE, files_changed=["a.py"], tests_added=[], concerns=[]
+        )
+        handle_task_result(state, i, result)
+
+
+@then("all {count:d} tasks are completed")
+def step_all_tasks_completed(context, count):
+    assert context.dispatch_state.completed_count == count, (
+        f"Expected {count} completed, got {context.dispatch_state.completed_count}"
+    )
+
+
+@then("dispatch state is finished")
+def step_dispatch_finished(context):
+    assert context.dispatch_state.is_finished, "Dispatch state is not finished"
+
+
+@then("each task prompt includes brief requirements")
+def step_prompts_include_reqs(context):
+    reqs = getattr(context, "brief_requirements", [])
+    for i, prompt in enumerate(context.prompts):
+        for req in reqs:
+            assert req in prompt, f"Task {i + 1} prompt missing requirement: {req}"
+
+
+@then("task {idx:d} remains pending")
+def step_task_pending(context, idx):
+    from gzkit.pipeline_runtime import TaskStatus
+
+    task_index = idx - 1
+    assert context.dispatch_state.records[task_index].status == TaskStatus.PENDING, (
+        f"Task {idx} is not PENDING"
+    )
+
+
+@then("dispatch state has {count:d} blocked task")
+def step_blocked_count(context, count):
+    assert context.dispatch_state.blocked_count == count, (
+        f"Expected {count} blocked, got {context.dispatch_state.blocked_count}"
     )
