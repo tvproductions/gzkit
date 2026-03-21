@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import tempfile
+from pathlib import Path
 
 from behave import given, then, when
 
@@ -10,11 +12,16 @@ from gzkit.pipeline_runtime import (
     DispatchTask,
     TaskComplexity,
     advance_dispatch,
+    aggregate_dispatch_results,
+    complete_subagent_dispatch_record,
     compose_implementer_prompt,
     create_dispatch_state,
+    create_subagent_dispatch_record,
     extract_plan_tasks,
     handle_task_result,
+    load_model_routing_config,
     parse_handoff_result,
+    validate_agent_files,
 )
 from gzkit.roles import HandoffResult, HandoffStatus
 
@@ -208,4 +215,93 @@ def step_parsed_status(context, status):
 def step_parsed_files(context, path):
     assert path in context.parsed_result.files_changed, (
         f"Expected '{path}' in {context.parsed_result.files_changed}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Dispatch tracking integration (OBPI-0.18.0-05)
+# ---------------------------------------------------------------------------
+
+
+@given('a subagent dispatch record for task {idx:d} as "{role}" with model "{model}"')
+def step_create_dispatch_record(context, idx, role, model):
+    context.dispatch_record = create_subagent_dispatch_record(idx, role, model)
+
+
+@when('the dispatch record is completed with status "{status}"')
+def step_complete_dispatch_record(context, status):
+    context.completed_record = complete_subagent_dispatch_record(context.dispatch_record, status)
+
+
+@then("the completed record has a completion timestamp")
+def step_record_has_completed_at(context):
+    assert context.completed_record.completed_at is not None
+
+
+@then('the completed record status is "{status}"')
+def step_record_status(context, status):
+    assert context.completed_record.status == status
+
+
+@given('{count:d} completed dispatch records with statuses "{statuses_csv}"')
+def step_create_completed_records(context, count, statuses_csv):
+    statuses = [s.strip() for s in statuses_csv.split(",")]
+    context.completed_records = []
+    for i, status in enumerate(statuses, 1):
+        rec = create_subagent_dispatch_record(i, "Implementer", "sonnet")
+        completed = complete_subagent_dispatch_record(rec, status)
+        context.completed_records.append(completed)
+
+
+@when("I aggregate dispatch results")
+def step_aggregate(context):
+    context.aggregation = aggregate_dispatch_results(context.completed_records)
+
+
+@then("aggregation shows {completed:d} completed and {blocked:d} blocked")
+def step_check_aggregation(context, completed, blocked):
+    assert context.aggregation.completed == completed, (
+        f"Expected {completed} completed, got {context.aggregation.completed}"
+    )
+    assert context.aggregation.blocked == blocked, (
+        f"Expected {blocked} blocked, got {context.aggregation.blocked}"
+    )
+
+
+@given("no pipeline config file")
+def step_no_config(context):
+    context.temp_dir = tempfile.mkdtemp()
+    context.project_root = Path(context.temp_dir)
+
+
+@when("I load model routing config")
+def step_load_routing(context):
+    context.routing_config = load_model_routing_config(context.project_root)
+
+
+@then('implementer simple model is "{model}"')
+def step_implementer_simple(context, model):
+    assert context.routing_config.implementer["simple"] == model
+
+
+@then('reviewer complex model is "{model}"')
+def step_reviewer_complex(context, model):
+    assert context.routing_config.reviewer["complex"] == model
+
+
+@given("a project directory with no agent files")
+def step_no_agent_files(context):
+    context.temp_dir = tempfile.mkdtemp()
+    context.project_root = Path(context.temp_dir)
+
+
+@when("I validate agent files")
+def step_validate_agents(context):
+    context.validation_errors = validate_agent_files(context.project_root)
+
+
+@then("validation finds {count:d} errors")
+def step_validation_error_count(context, count):
+    assert len(context.validation_errors) == count, (
+        f"Expected {count} errors, got {len(context.validation_errors)}"
     )

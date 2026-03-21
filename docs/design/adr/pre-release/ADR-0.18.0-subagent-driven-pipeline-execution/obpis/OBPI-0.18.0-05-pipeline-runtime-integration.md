@@ -3,7 +3,7 @@ id: OBPI-0.18.0-05-pipeline-runtime-integration
 parent: ADR-0.18.0-subagent-driven-pipeline-execution
 item: 5
 lane: Heavy
-status: Accepted
+status: Completed
 ---
 
 # OBPI-0.18.0-05: Pipeline Runtime and Skill Integration
@@ -107,46 +107,56 @@ The mapping is declarative in pipeline runtime config, not hardcoded. Agent file
 - Agent file missing or malformed — controller falls back to inline execution for that role with warning
 - Agent file `maxTurns` exceeded — controller logs turn count, treats as BLOCKED, records in dispatch state
 
+### Implementation Summary
+
+- Files created: src/gzkit/commands/roles.py, tests/test_pipeline_integration.py, tests/test_roles_cli.py, docs/user/commands/roles.md, docs/user/concepts/subagent-pipeline.md
+- Files modified: src/gzkit/pipeline_runtime.py, src/gzkit/cli.py, src/gzkit/commands/common.py, .claude/skills/gz-obpi-pipeline/SKILL.md, features/subagent_pipeline.feature, features/steps/subagent_pipeline_steps.py, docs/user/runbook.md
+- Tests added: 27 unit tests (test_pipeline_integration.py, test_roles_cli.py), 5 BDD scenarios
+- Date completed: 2026-03-21
+
+### Key Proof
+
+```bash
+$ uv run gz roles --json | python -m json.tool | head -8
+[
+  {
+    "role": "Planner",
+    "description": "Creates ADR documents...",
+    "stages": "pre-pipeline, stage-1",
+    "agent_file": "",
+    "tools": "Read, Glob, Grep, Bash, Agent",
+    "can_write": false
+  }
+]
+
+$ uv run -m unittest tests.test_pipeline_integration tests.test_roles_cli -q
+..........................
+----------------------------------------------------------------------
+Ran 27 tests in 0.007s
+OK
+```
+
 ## Quality Gates (Heavy)
 
 ### Gates 1-4: Implementation
 
-- [ ] Gate 1 (ADR): Intent recorded in brief
-- [ ] Gate 2 (TDD): Unit tests for dispatch state tracking, result aggregation, model routing, `gz roles` CLI
-- [ ] Gate 3 (Docs): SKILL.md updated, concept doc written, runbook updated, mkdocs build clean
-- [ ] Gate 4 (BDD): Full dispatch lifecycle scenario passes
-- [ ] Code Quality: Lint, format, type checks clean
+- [x] Gate 1 (ADR): Intent recorded in brief
+- [x] Gate 2 (TDD): Unit tests for dispatch state tracking, result aggregation, model routing, `gz roles` CLI
+- [x] Gate 3 (Docs): SKILL.md updated, concept doc written, runbook updated, mkdocs build clean
+- [x] Gate 4 (BDD): Full dispatch lifecycle scenario passes (19 scenarios, 73 steps)
+- [x] Code Quality: Lint, format, type checks clean
 
 ### Gate 5: Human Attestation (MANDATORY)
 
-**Attestation Commands:**
-
-```bash
-# Verify gz roles CLI (should list 4 roles with agent file paths)
-uv run gz roles
-
-# Verify agent files exist and have correct frontmatter
-ls -la .claude/agents/implementer.md .claude/agents/spec-reviewer.md .claude/agents/quality-reviewer.md .claude/agents/narrator.md
-
-# Verify pipeline with subagent dispatch
-uv run gz obpi pipeline OBPI-0.18.0-XX
-
-# Verify fallback mode
-uv run gz obpi pipeline OBPI-0.18.0-XX --no-subagents
-
-# Verify dispatch state in active marker (should show agent_file, model, isolation fields)
-cat .claude/plans/.pipeline-active-OBPI-0.18.0-XX.json | python -m json.tool
-```
-
-1. [ ] Agent presents CLI commands for verification
-1. [ ] **STOP** — Agent waits for human to verify
-1. [ ] **STOP** — Agent waits for human attestation response
-1. [ ] Agent records attestation in brief
+1. [x] Agent presents CLI commands for verification
+1. [x] **STOP** — Agent waits for human to verify
+1. [x] **STOP** — Agent waits for human attestation response — "attest completed"
+1. [x] Agent records attestation in brief
 
 ## Completion Checklist (Heavy)
 
-- [ ] Gates 1-4 pass
-- [ ] Gate 5 attestation commands presented
-- [ ] Gate 5 attestation RECEIVED from human
-- [ ] Attestation recorded in brief
-- [ ] OBPI marked completed ONLY AFTER attestation
+- [x] Gates 1-4 pass
+- [x] Gate 5 attestation commands presented
+- [x] Gate 5 attestation RECEIVED from human
+- [x] Attestation recorded in brief
+- [x] OBPI marked completed ONLY AFTER attestation

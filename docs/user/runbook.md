@@ -36,6 +36,10 @@ uv run gz obpi pipeline OBPI-<X.Y.Z-NN>
 #    src/gzkit/pipeline_runtime.py. Treat active pipeline markers as
 #    runtime-managed state; do not clear them by hand.
 
+# 2b) Inspect pipeline roles and dispatch history
+uv run gz roles
+uv run gz roles --pipeline OBPI-<X.Y.Z-NN>
+
 # 3) Verify this increment
 uv run gz implement --adr ADR-<X.Y.Z>
 uv run gz gates --gate 3 --adr ADR-<X.Y.Z>   # when docs changed

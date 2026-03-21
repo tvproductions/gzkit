@@ -105,3 +105,29 @@ Feature: Subagent pipeline dispatch lifecycle
     When I parse the handoff result
     Then the parsed status is "DONE"
     And the parsed files changed include "src/x.py"
+
+  @dispatch
+  Scenario: Dispatch record tracks subagent lifecycle
+    Given a subagent dispatch record for task 1 as "Implementer" with model "sonnet"
+    When the dispatch record is completed with status "done"
+    Then the completed record has a completion timestamp
+    And the completed record status is "done"
+
+  @dispatch
+  Scenario: Dispatch aggregation computes correct totals
+    Given 3 completed dispatch records with statuses "done,blocked,done_with_concerns"
+    When I aggregate dispatch results
+    Then aggregation shows 2 completed and 1 blocked
+
+  @dispatch
+  Scenario: Model routing loads defaults
+    Given no pipeline config file
+    When I load model routing config
+    Then implementer simple model is "haiku"
+    And reviewer complex model is "opus"
+
+  @dispatch
+  Scenario: Agent file validation detects missing files
+    Given a project directory with no agent files
+    When I validate agent files
+    Then validation finds 4 errors
