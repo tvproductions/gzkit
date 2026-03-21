@@ -2,11 +2,11 @@
 id: OBPI-0.19.0-05-audit-generated-event-appended-to-ledger
 parent: ADR-0.19.0-closeout-audit-processes
 item: 5
-lane: Heavy
+lane: Lite
 status: Draft
 ---
 
-# OBPI-0.19.0-05-audit-generated-event-appended-to-ledger: `audit_generated` event appended to ledger
+# OBPI-0.19.0-05: `audit_generated` Event Appended to Ledger
 
 ## ADR Item
 
@@ -17,73 +17,67 @@ status: Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-`audit_generated` event appended to ledger.
+Add an `audit_generated` ledger event factory function to `src/gzkit/ledger.py` and have `audit_cmd()` in `src/gzkit/cli.py` append this event to the ledger after successfully creating the AUDIT.md and AUDIT_PLAN.md artifacts, so that the audit lifecycle is recorded in the governance ledger and downstream consumers (status surfaces, artifact graph, reconciliation) can detect whether an ADR has been audited.
 
 ## Lane
 
-**Heavy** - This OBPI changes a command/API/schema/runtime contract surface.
+**Lite** - Inherited from parent ADR-0.19.0-closeout-audit-processes (lite per ledger `adr_created` event).
 
-> Heavy is reserved for command/API/schema/runtime-contract changes. Process,
-> documentation, and template-only work stays Lite unless it changes one of
-> those external surfaces.
+> This OBPI adds an internal ledger event type and a `ledger.append()` call inside an existing command. It does not change CLI flags, exit codes, subcommand surface, or machine-readable output schemas. The ledger event is an internal governance record, not an external contract.
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `src/gzkit/cli.py` - `audit_cmd()` function (line ~2634): add `ledger.append(audit_generated_event(...))` call after artifact creation succeeds
+- `src/gzkit/ledger.py` - Add `audit_generated_event()` factory function following the existing pattern (e.g., `closeout_initiated_event()` at line ~208); optionally extend `_apply_graph_event_metadata()` to surface audit state in the artifact graph
+- `tests/test_ledger.py` - Add tests for the `audit_generated_event()` factory function: correct event type, required fields, serialization round-trip
+- `tests/test_audit_pipeline.py` - Add integration test verifying that `audit_cmd()` appends the `audit_generated` event to the ledger with correct ADR ID, artifact paths, and result summary
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
-- Paths not listed in Allowed Paths
+- `src/gzkit/commands/common.py` - No changes to shared CLI utilities
+- `data/schemas/` - No new JSON schemas for this event (ledger events are schema-validated at the LedgerEvent model level)
+- `docs/user/commands/audit.md` - No CLI contract change
 - New dependencies
 - CI files, lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: `audit_generated_event()` MUST be a module-level factory function in `src/gzkit/ledger.py` returning a `LedgerEvent` with `event="audit_generated"`.
+2. REQUIREMENT: The event `id` field MUST be the canonical ADR identifier (e.g., `ADR-0.19.0-closeout-audit-processes`).
+3. REQUIREMENT: The event `extra` dict MUST include `audit_file` (relative path to AUDIT.md), `audit_plan_file` (relative path to AUDIT_PLAN.md), and `passed` (boolean indicating whether all verification commands succeeded).
+4. REQUIREMENT: `audit_cmd()` MUST call `ledger.append()` with the `audit_generated` event only after both AUDIT.md and AUDIT_PLAN.md have been written successfully and before the JSON/human output is rendered.
+5. NEVER: The `audit_generated` event MUST NOT be appended during `--dry-run` mode.
+6. NEVER: The `audit_generated` event MUST NOT be appended if the attestation blocker fires (exit 1 before artifact creation).
+7. ALWAYS: The factory function MUST follow the existing pattern established by `closeout_initiated_event()`: positional `adr_id`, keyword-optional extras, returns `LedgerEvent`.
 
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if `LedgerEvent` model or `Ledger.append()` is unavailable, print a BLOCKERS list and halt.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first. -->
-
 **Governance (read once, cache):**
 
-- [ ] `.github/discovery-index.json` - repo structure
 - [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
 - [ ] Parent ADR - understand full context
 
 **Context:**
 
 - [ ] Parent ADR: `docs/design/adr/pre-release/ADR-0.19.0-closeout-audit-processes/ADR-0.19.0-closeout-audit-processes.md`
-- [ ] Related OBPIs in same ADR
+- [ ] Related OBPIs: OBPI-0.19.0-02 (end-to-end audit pipeline), OBPI-0.19.0-04 (enriched audit report)
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
+- [ ] `src/gzkit/ledger.py` contains `LedgerEvent` model (line ~47) and factory functions (lines 111-317)
+- [ ] `src/gzkit/ledger.py` contains `Ledger.append()` method (line ~980)
+- [ ] `src/gzkit/cli.py` contains `audit_cmd()` function (line ~2634)
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+- [ ] `src/gzkit/ledger.py` lines 208-222: `closeout_initiated_event()` — pattern to follow for new event factory
+- [ ] `src/gzkit/ledger.py` lines 225-242: `audit_receipt_emitted_event()` — related audit event for reference
+- [ ] `src/gzkit/cli.py` lines 2741-2774: AUDIT.md write and output rendering — insertion point for ledger append
+- [ ] `tests/test_ledger.py` lines 1-23: existing test imports and pattern for event factory tests
 
 ## Quality Gates
-
-<!-- Which gates apply and how to verify them. -->
 
 ### Gate 1: ADR
 
@@ -101,50 +95,46 @@ status: Draft
 - [ ] Lint clean: `uv run gz lint`
 - [ ] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
-### Gate 3: Docs (Heavy only)
-
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
-
-### Gate 4: BDD (Heavy only)
-
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
-
-### Gate 5: Human (Heavy only)
-
-- [ ] Human attestation recorded
-
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
-uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
 uv run gz test
 
-# Specific verification for this OBPI
-command --to --verify
+# Specific verification: event factory exists and returns correct shape
+uv run python -c "
+from gzkit.ledger import audit_generated_event, LedgerEvent
+e = audit_generated_event(
+    adr_id='ADR-0.19.0-test',
+    audit_file='docs/design/adr/pre-release/ADR-0.19.0-test/audit/AUDIT.md',
+    audit_plan_file='docs/design/adr/pre-release/ADR-0.19.0-test/audit/AUDIT_PLAN.md',
+    passed=True,
+)
+assert isinstance(e, LedgerEvent), 'must return LedgerEvent'
+assert e.event == 'audit_generated', f'wrong event type: {e.event}'
+assert e.id == 'ADR-0.19.0-test', f'wrong id: {e.id}'
+d = e.model_dump()
+assert d['audit_file'].endswith('AUDIT.md'), 'missing audit_file'
+assert d['audit_plan_file'].endswith('AUDIT_PLAN.md'), 'missing audit_plan_file'
+assert d['passed'] is True, 'missing passed'
+print('PASS: audit_generated_event factory validated')
+"
+
+# Run specific tests
+uv run -m unittest tests.test_ledger -v -k audit_generated
+uv run -m unittest tests.test_audit_pipeline -v
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.19.0-05-01: Given/When/Then behavior criterion 1
-- [ ] REQ-0.19.0-05-02: Given/When/Then behavior criterion 2
-- [ ] REQ-0.19.0-05-03: Given/When/Then behavior criterion 3
+- [ ] REQ-0.19.0-05-01: Given `src/gzkit/ledger.py`, when `audit_generated_event()` is called with `adr_id`, `audit_file`, `audit_plan_file`, and `passed`, then it returns a `LedgerEvent` with `event="audit_generated"`, `id=adr_id`, and extras containing all three fields.
+- [ ] REQ-0.19.0-05-02: Given a successful `gz audit ADR-X.Y.Z` run (not dry-run), when AUDIT.md and AUDIT_PLAN.md are written, then the ledger file contains a new `audit_generated` event with the correct ADR ID and `passed` reflecting whether all verification commands succeeded.
+- [ ] REQ-0.19.0-05-03: Given `gz audit ADR-X.Y.Z --dry-run`, when the command completes, then no `audit_generated` event is appended to the ledger.
+- [ ] REQ-0.19.0-05-04: Given an ADR without attestation (blocker fires at line ~2650), when `gz audit ADR-X.Y.Z` exits with code 1, then no `audit_generated` event is appended to the ledger.
+- [ ] REQ-0.19.0-05-05: Given the `audit_generated_event()` factory, when `model_dump()` is called on the result, then the serialized dict contains `schema`, `event`, `id`, `ts`, `audit_file`, `audit_plan_file`, and `passed` at the top level (extras flattened per `LedgerEvent._serialize`).
 
 ## Completion Checklist
-
-<!-- Verify all gates before marking OBPI accepted. -->
 
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
 - [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
@@ -156,9 +146,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
 ## Evidence
-
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
 
 ### Gate 1 (ADR)
 
@@ -176,31 +163,17 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 # Paste lint/format/type check output here
 ```
 
-### Gate 3 (Docs)
-
-```text
-# Paste docs-build output here when Gate 3 applies
-```
-
-### Gate 4 (BDD)
-
-```text
-# Paste behave output here when Gate 4 applies
-```
-
-### Gate 5 (Human)
-
-```text
-# Record attestation text here when required by parent lane
-```
-
 ## Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before this OBPI, `gz audit` created AUDIT.md and AUDIT_PLAN.md files but left no trace in the governance ledger. Downstream status surfaces (`gz adr status`, `gz state`) had no way to determine whether an ADR had been audited, and reconciliation tools could not verify audit completion programmatically. After this OBPI, every successful audit run appends an `audit_generated` event to the ledger, making audit completion a queryable, first-class lifecycle fact that status surfaces and reconciliation can consume.
 
 ## Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+```text
+# Expected ledger event (after implementation):
+$ cat .gzkit/ledger.jsonl | grep audit_generated
+{"schema":"gzkit.ledger.v1","event":"audit_generated","id":"ADR-0.19.0-closeout-audit-processes","ts":"2026-03-21T12:00:00+00:00","audit_file":"docs/design/adr/pre-release/ADR-0.19.0-closeout-audit-processes/audit/AUDIT.md","audit_plan_file":"docs/design/adr/pre-release/ADR-0.19.0-closeout-audit-processes/audit/AUDIT_PLAN.md","passed":true}
+```
 
 ### Implementation Summary
 
@@ -212,16 +185,13 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ## Tracked Defects
 
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
-
 _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `human:<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `n/a` (Lite lane; parent ADR lane is lite per ledger)
+- Attestation: `n/a`
+- Date: `n/a`
 
 ---
 

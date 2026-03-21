@@ -2,11 +2,11 @@
 id: OBPI-0.19.0-03-equivalent-commands-in-airlineops-opsdev-closeout-opsdev-audit
 parent: ADR-0.19.0-closeout-audit-processes
 item: 3
-lane: Heavy
+lane: Lite
 status: Draft
 ---
 
-# OBPI-0.19.0-03-equivalent-commands-in-airlineops-opsdev-closeout-opsdev-audit: Equivalent commands in airlineops (`opsdev closeout`, `opsdev audit`)
+# OBPI-0.19.0-03: Equivalent commands in airlineops (`opsdev closeout`, `opsdev audit`)
 
 ## ADR Item
 
@@ -17,73 +17,69 @@ status: Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-Equivalent commands in airlineops (`opsdev closeout`, `opsdev audit`).
+Produce a binding parity checklist that maps every stage, exit code, error message, ledger event, and artifact of gzkit's `gz closeout` and `gz audit` pipelines to their airlineops equivalents (`opsdev closeout`, `opsdev audit`), ensuring an operator who learns the workflow in one project can execute it identically in the other — and provide a verification mechanism that detects parity drift between the two implementations.
 
 ## Lane
 
-**Heavy** - This OBPI changes a command/API/schema/runtime contract surface.
+**Lite** — Inherited from parent ADR lane (ledger `adr_created` event for ADR-0.19.0 records lane as `lite`).
 
-> Heavy is reserved for command/API/schema/runtime-contract changes. Process,
-> documentation, and template-only work stays Lite unless it changes one of
-> those external surfaces.
+> The parent ADR lane is Lite because this OBPI produces a cross-project parity checklist and verification document. It does not introduce or change any CLI surface, schema, or runtime contract within gzkit itself. The implementation work happens in airlineops; this OBPI's deliverable is the parity contract that governs that work.
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `docs/design/adr/pre-release/ADR-0.19.0-closeout-audit-processes/obpis/OBPI-0.19.0-03-equivalent-commands-in-airlineops-opsdev-closeout-opsdev-audit.md` — This brief file itself
+- `docs/design/adr/pre-release/ADR-0.19.0-closeout-audit-processes/parity-checklist.md` — Cross-project parity matrix document defining the stage-by-stage contract between gzkit and airlineops
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
-- Paths not listed in Allowed Paths
-- New dependencies
-- CI files, lockfiles
+- `src/gzkit/**` — No gzkit code changes in this OBPI; gzkit pipeline behavior is defined by OBPI-01 and OBPI-02
+- `tests/**` — No gzkit test changes; airlineops tests live in the airlineops repository
+- `.gzkit/ledger.jsonl` — Never edited manually
+- New dependencies, CI files, lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: The parity checklist MUST enumerate every pipeline stage of `gz closeout` (OBPI completion check, inline gate execution, gate result recording, attestation prompt, attestation recording, version bump, ADR status transition to Completed) and map each stage to the corresponding `opsdev closeout` stage with explicit same/different annotations.
+2. REQUIREMENT: The parity checklist MUST enumerate every pipeline stage of `gz audit` (attestation guard, audit directory creation, verification command execution, proof file writing, AUDIT_PLAN.md generation, AUDIT.md generation, validation receipt emission, ADR status transition to Validated) and map each stage to the corresponding `opsdev audit` stage.
+3. REQUIREMENT: The parity checklist MUST specify that `gz closeout` and `opsdev closeout` use the same exit codes: 0 for full success, 1 for blocker or gate failure. The exit code semantics MUST be identical — same conditions produce the same exit code in both projects.
+4. REQUIREMENT: The parity checklist MUST specify that error messages for common failure modes (unattested ADR, incomplete OBPIs, gate failure, missing ADR in ledger, pool ADR rejection) are textually identical between gzkit and airlineops, or document the exact permitted differences (e.g., tool name `gz` vs `opsdev`).
+5. REQUIREMENT: The parity checklist MUST specify that ledger event types emitted during closeout and audit are semantically identical between projects — same event names, same evidence schema shape, same required fields.
+6. REQUIREMENT: The parity checklist MUST specify that `--dry-run` and `--json` flag behavior is identical: same output structure, same fields in JSON mode, same human-readable format in default mode.
+7. NEVER: The parity checklist MUST NOT require gzkit and airlineops to share code. Parity means behavioral equivalence, not code sharing. Each project owns its implementation independently.
+8. NEVER: The parity checklist MUST NOT defer parity verification to "future work." The checklist itself is the verification instrument — each row is a testable assertion.
+9. ALWAYS: The parity checklist MUST be structured as a Markdown table with columns: Stage, gzkit Command/Behavior, airlineops Command/Behavior, Parity Status (Identical / Permitted Divergence / Gap).
+10. ALWAYS: Any row marked "Gap" in the parity checklist MUST include a linked GHI or OBPI reference for the remediation plan.
 
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if OBPI-0.19.0-01 and OBPI-0.19.0-02 are not at least in Draft status with defined pipeline stages, this OBPI cannot produce accurate parity mappings.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first. -->
-
 **Governance (read once, cache):**
 
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
+- [ ] `.github/discovery-index.json` — repo structure
+- [ ] `AGENTS.md` or `CLAUDE.md` — agent operating contract
+- [ ] Parent ADR — understand full context
 
 **Context:**
 
 - [ ] Parent ADR: `docs/design/adr/pre-release/ADR-0.19.0-closeout-audit-processes/ADR-0.19.0-closeout-audit-processes.md`
-- [ ] Related OBPIs in same ADR
+- [ ] OBPI-0.19.0-01 — defines the gzkit closeout pipeline stages
+- [ ] OBPI-0.19.0-02 — defines the gzkit audit pipeline stages
+- [ ] ADR-pool.airlineops-direct-governance-migration — cross-project command parity dependency
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
+- [ ] OBPI-0.19.0-01 brief exists with defined closeout pipeline stages
+- [ ] OBPI-0.19.0-02 brief exists with defined audit pipeline stages
+- [ ] airlineops repository exists and has `opsdev closeout` / `opsdev audit` command stubs or definitions
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+- [ ] `src/gzkit/cli.py` `closeout_cmd()` — current gzkit closeout behavior (line ~2494)
+- [ ] `src/gzkit/cli.py` `audit_cmd()` — current gzkit audit behavior (line ~2634)
+- [ ] airlineops equivalent command surface for `opsdev closeout` and `opsdev audit`
 
 ## Quality Gates
-
-<!-- Which gates apply and how to verify them. -->
 
 ### Gate 1: ADR
 
@@ -92,73 +88,54 @@ Equivalent commands in airlineops (`opsdev closeout`, `opsdev audit`).
 
 ### Gate 2: TDD
 
-- [ ] Tests written before/with implementation
-- [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
+- [ ] Parity checklist rows are testable assertions
+- [ ] Each row has a verification method (command comparison or output diff)
 
 ### Code Quality
 
 - [ ] Lint clean: `uv run gz lint`
 - [ ] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
-### Gate 3: Docs (Heavy only)
-
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
-
-### Gate 4: BDD (Heavy only)
-
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
-
-### Gate 5: Human (Heavy only)
-
-- [ ] Human attestation recorded
-
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
-uv run gz validate --documents
+# Verify this brief and parity checklist are well-formed Markdown
 uv run gz lint
-uv run gz typecheck
-uv run gz test
+uv run gz validate --documents
 
-# Specific verification for this OBPI
-command --to --verify
+# Verify gzkit closeout pipeline stages match parity checklist
+uv run gz closeout ADR-0.19.0 --dry-run --json
+
+# Verify gzkit audit pipeline stages match parity checklist
+uv run gz audit ADR-0.19.0 --dry-run --json
+
+# Cross-project verification (run in airlineops repo)
+# opsdev closeout <ADR-ID> --dry-run --json
+# opsdev audit <ADR-ID> --dry-run --json
+# diff the JSON schemas of both outputs to confirm structural parity
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.19.0-03-01: Given/When/Then behavior criterion 1
-- [ ] REQ-0.19.0-03-02: Given/When/Then behavior criterion 2
-- [ ] REQ-0.19.0-03-03: Given/When/Then behavior criterion 3
+- [ ] REQ-0.19.0-03-01: Given OBPI-0.19.0-01 defines the gzkit closeout pipeline stages, when the parity checklist is produced, then every closeout stage (OBPI check, gate execution, gate recording, attestation prompt, attestation recording, version bump, ADR status transition) has a corresponding row mapping to the `opsdev closeout` equivalent with a Parity Status of Identical, Permitted Divergence, or Gap.
+- [ ] REQ-0.19.0-03-02: Given OBPI-0.19.0-02 defines the gzkit audit pipeline stages, when the parity checklist is produced, then every audit stage (attestation guard, directory creation, verification execution, proof writing, plan generation, report generation, receipt emission, status transition) has a corresponding row mapping to the `opsdev audit` equivalent.
+- [ ] REQ-0.19.0-03-03: Given both closeout and audit checklists are complete, when the exit code rows are reviewed, then gzkit and airlineops use identical exit code semantics: 0 for full pipeline success, 1 for any blocker or failure, with the same conditions producing the same code.
+- [ ] REQ-0.19.0-03-04: Given the parity checklist is complete, when error message rows are reviewed, then common failure modes (unattested ADR, incomplete OBPIs, gate failure) produce textually identical messages modulo the tool name (`gz` vs `opsdev`).
+- [ ] REQ-0.19.0-03-05: Given the parity checklist is complete, when any row is marked "Gap", then that row includes a linked GHI number or OBPI reference identifying the remediation plan and timeline.
+- [ ] REQ-0.19.0-03-06: Given the `--dry-run --json` output of `gz closeout` and `opsdev closeout`, when the JSON schemas are compared, then the top-level keys and value types are structurally identical (same field names, same nesting, same array shapes).
 
 ## Completion Checklist
 
-<!-- Verify all gates before marking OBPI accepted. -->
-
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [ ] **Gate 2 (TDD):** Parity checklist rows are testable, verification method documented
 - [ ] **Code Quality:** Lint, format, type checks clean
 - [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
+- [ ] **Key Proof:** One concrete parity comparison is included
 - [ ] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
 ## Evidence
-
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
 
 ### Gate 1 (ADR)
 
@@ -167,7 +144,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+# Paste parity verification output here
 ```
 
 ### Code Quality
@@ -176,31 +153,27 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 # Paste lint/format/type check output here
 ```
 
-### Gate 3 (Docs)
-
-```text
-# Paste docs-build output here when Gate 3 applies
-```
-
-### Gate 4 (BDD)
-
-```text
-# Paste behave output here when Gate 4 applies
-```
-
-### Gate 5 (Human)
-
-```text
-# Record attestation text here when required by parent lane
-```
-
 ## Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before this OBPI, gzkit and airlineops closeout/audit commands evolved independently with no formal parity contract. An operator trained on `gz closeout` would encounter different stages, different error messages, and different exit code semantics when switching to `opsdev closeout` in airlineops. Parity was aspirational — stated in ADR text but never verified or enforced.
+
+After this OBPI, a structured parity checklist maps every pipeline stage, exit code, error message, and JSON output field between the two projects. Each row is a testable assertion. Any drift is visible as a "Gap" row with a linked remediation plan. Operators can switch between repositories knowing the workflow is behaviorally identical.
 
 ## Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+```text
+Parity Checklist (excerpt):
+
+| Stage                   | gzkit (`gz closeout`)                    | airlineops (`opsdev closeout`)           | Parity Status        |
+|-------------------------|------------------------------------------|------------------------------------------|----------------------|
+| OBPI completion check   | All OBPIs must be Completed              | All OBPIs must be Completed              | Identical            |
+| Inline gate execution   | run_command() for lint/test/typecheck    | run_command() for lint/test/typecheck    | Identical            |
+| Attestation prompt      | [Completed / Partial / Dropped]          | [Completed / Partial / Dropped]          | Identical            |
+| Version bump            | sync_project_version()                   | sync_project_version()                   | Identical            |
+| Exit code (success)     | 0                                        | 0                                        | Identical            |
+| Exit code (gate fail)   | 1                                        | 1                                        | Identical            |
+| Unattested error msg    | "gz audit requires human attestation..." | "opsdev audit requires human attest..."  | Permitted Divergence |
+```
 
 ### Implementation Summary
 
@@ -212,16 +185,13 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ## Tracked Defects
 
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
-
 _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `human:<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `n/a` (Lite lane — self-closeable after evidence)
+- Attestation: `n/a`
+- Date: `n/a`
 
 ---
 
