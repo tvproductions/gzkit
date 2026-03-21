@@ -3,7 +3,8 @@ id: OBPI-0.18.0-08-wire-req-verification-dispatch
 parent: ADR-0.18.0-subagent-driven-pipeline-execution
 item: 8
 lane: Heavy
-status: Pending
+status: Completed
+date_completed: 2026-03-21
 ---
 
 # OBPI-0.18.0-08: Wire REQ Verification Dispatch into Stage 3
@@ -13,7 +14,7 @@ status: Pending
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.18.0-subagent-driven-pipeline-execution/ADR-0.18.0-subagent-driven-pipeline-execution.md`
 - **Checklist Item:** #8 — "Wire REQ verification dispatch into Stage 3"
 
-**Status:** Pending
+**Status:** Completed
 
 ## Objective
 
@@ -68,27 +69,53 @@ Currently Stage 3 runs all verification sequentially in the main session.
 - Worktree creation fails (disk space, git state) — fall back to sequential inline verification with warning
 - Mixed results (some pass, some fail) — aggregate all, present complete picture before advancing
 
+### Implementation Summary
+
+- Files modified: `src/gzkit/pipeline_runtime.py`, `.claude/skills/gz-obpi-pipeline/SKILL.md` (+ 3 mirrors), `tests/test_pipeline_dispatch.py`, `features/subagent_pipeline.feature`, `features/steps/subagent_pipeline_steps.py`, `docs/user/runbook.md`
+- Tests added: 4 test classes (10 tests) in `tests/test_pipeline_dispatch.py`; 4 BDD scenarios in `features/subagent_pipeline.feature`
+- Date completed: 2026-03-21
+- Runtime functions added: `VerificationTimingMetrics`, `prepare_stage3_verification`, `compute_verification_timing`, `create_verification_dispatch_records`
+- SKILL.md Stage 3 rewritten with two-phase structure: Phase 1 (baseline quality checks) and Phase 2 (REQ-level verification dispatch with worktree isolation)
+
+### Key Proof
+
+```
+$ uv run -m unittest tests.test_pipeline_dispatch.TestStage3VerificationDispatchContract -v
+test_full_stage3_verification_flow ... ok
+test_no_subagents_flag_uses_sequential ... ok
+
+$ uv run -m behave features/subagent_pipeline.feature --tags=@stage3
+4 scenarios passed, 0 failed
+16 steps passed, 0 failed
+```
+
+### Human Attestation
+
+- Attestation text: "attest completed"
+- Attestation date: 2026-03-21
+- Attestation type: human
+
 ## Quality Gates (Heavy)
 
 ### Gates 1-4: Implementation
 
-- [ ] Gate 1 (ADR): Intent recorded in brief
-- [ ] Gate 2 (TDD): Unit tests for verification dispatch wiring
-- [ ] Gate 3 (Docs): SKILL.md updated, runbook updated
-- [ ] Gate 4 (BDD): Parallel verification scenario passes
-- [ ] Code Quality: Lint, format, type checks clean
+- [x] Gate 1 (ADR): Intent recorded in brief
+- [x] Gate 2 (TDD): Unit tests for verification dispatch wiring
+- [x] Gate 3 (Docs): SKILL.md updated, runbook updated
+- [x] Gate 4 (BDD): Parallel verification scenario passes
+- [x] Code Quality: Lint, format, type checks clean
 
 ### Gate 5: Human Attestation (MANDATORY)
 
-1. [ ] Agent presents CLI commands for verification
-1. [ ] **STOP** — Agent waits for human to verify
-1. [ ] **STOP** — Agent waits for human attestation response — "attest completed"
-1. [ ] Agent records attestation in brief
+1. [x] Agent presents CLI commands for verification
+1. [x] **STOP** — Agent waits for human to verify
+1. [x] **STOP** — Agent waits for human attestation response — "attest completed"
+1. [x] Agent records attestation in brief
 
 ## Completion Checklist (Heavy)
 
-- [ ] Gates 1-4 pass
-- [ ] Gate 5 attestation commands presented
-- [ ] Gate 5 attestation RECEIVED from human
-- [ ] Attestation recorded in brief
-- [ ] OBPI marked completed ONLY AFTER attestation
+- [x] Gates 1-4 pass
+- [x] Gate 5 attestation commands presented
+- [x] Gate 5 attestation RECEIVED from human
+- [x] Attestation recorded in brief
+- [x] OBPI marked completed ONLY AFTER attestation

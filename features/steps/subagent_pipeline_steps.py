@@ -461,3 +461,154 @@ def step_review_fix_count(context, idx, count):
     assert record.review_fix_count == count, (
         f"Expected review_fix_count {count}, got {record.review_fix_count}"
     )
+
+
+# ---------------------------------------------------------------------------
+# Stage 3 verification dispatch (OBPI-0.18.0-08)
+# ---------------------------------------------------------------------------
+
+
+@given("a brief with {count:d} requirements and distinct test paths")
+def step_brief_distinct_paths(context, count):
+    from gzkit.pipeline_runtime import VerificationScope, build_verification_plan
+
+    # Build scopes with distinct per-REQ test paths (as Stage 3 orchestrator would)
+    scopes = [
+        VerificationScope(
+            req_index=i,
+            requirement_text=f"REQ {i} must pass",
+            test_paths=[f"tests/test_{i}.py"],
+        )
+        for i in range(1, count + 1)
+    ]
+    context.verification_plan = build_verification_plan(scopes)
+    context._skip_prepare = True
+
+
+@given("a brief with {count:d} requirements and no test paths")
+def step_brief_no_paths(context, count):
+    lines = []
+    for i in range(1, count + 1):
+        lines.append(f"1. REQUIREMENT: REQ {i} must pass\n")
+    context.brief_content = "".join(lines)
+    context.test_paths = None
+    context._skip_prepare = False
+
+
+@when("I prepare Stage 3 verification")
+def step_prepare_stage3(context):
+    if getattr(context, "_skip_prepare", False):
+        return  # Plan already built in the Given step
+    from gzkit.pipeline_runtime import prepare_stage3_verification
+
+    context.verification_plan = prepare_stage3_verification(
+        context.brief_content, context.test_paths
+    )
+
+
+@then("the verification plan has {count:d} scopes")
+def step_plan_scope_count(context, count):
+    assert len(context.verification_plan.scopes) == count, (
+        f"Expected {count} scopes, got {len(context.verification_plan.scopes)}"
+    )
+
+
+@then('the verification strategy is "{strategy}"')
+def step_plan_strategy(context, strategy):
+    assert context.verification_plan.strategy == strategy, (
+        f"Expected strategy '{strategy}', got '{context.verification_plan.strategy}'"
+    )
+
+
+@given('a verification run of {seconds:d} seconds with strategy "{strategy}" and {groups:d} groups')
+def step_verification_run(context, seconds, strategy, groups):
+    context.timing_start_ns = 0
+    context.timing_end_ns = seconds * 1_000_000_000
+    context.timing_strategy = strategy
+    context.timing_groups = groups
+
+
+@when("I compute verification timing")
+def step_compute_timing(context):
+    from gzkit.pipeline_runtime import compute_verification_timing
+
+    context.timing_metrics = compute_verification_timing(
+        context.timing_start_ns,
+        context.timing_end_ns,
+        context.timing_strategy,
+        context.timing_groups,
+    )
+
+
+@then("elapsed seconds is {seconds:g}")
+def step_elapsed_seconds(context, seconds):
+    assert context.timing_metrics.elapsed_seconds == seconds, (
+        f"Expected {seconds}, got {context.timing_metrics.elapsed_seconds}"
+    )
+
+
+@then("time saved is greater than {value:d}")
+def step_time_saved_gt(context, value):
+    assert context.timing_metrics.time_saved_seconds > value, (
+        f"Expected > {value}, got {context.timing_metrics.time_saved_seconds}"
+    )
+
+
+@given("a verification plan with {count:d} scopes and PASS results")
+def step_plan_with_results(context, count):
+    from gzkit.pipeline_runtime import (
+        VerificationOutcome,
+        VerificationPlan,
+        VerificationResult,
+        VerificationScope,
+    )
+
+    scopes = [
+        VerificationScope(
+            req_index=i,
+            requirement_text=f"REQ {i}",
+            test_paths=[f"tests/test_{i}.py"],
+        )
+        for i in range(1, count + 1)
+    ]
+    context.verification_plan = VerificationPlan(
+        scopes=scopes,
+        independent_groups=[[i] for i in range(1, count + 1)],
+        strategy="parallel",
+    )
+    context.verification_results = [
+        VerificationResult(
+            req_index=i,
+            outcome=VerificationOutcome.PASS,
+            detail=f"REQ {i} passes",
+        )
+        for i in range(1, count + 1)
+    ]
+
+
+@when("I create verification dispatch records")
+def step_create_dispatch_records(context):
+    from gzkit.pipeline_runtime import create_verification_dispatch_records
+
+    context.dispatch_records = create_verification_dispatch_records(
+        context.verification_plan, context.verification_results
+    )
+
+
+@then("{count:d} dispatch records are created")
+def step_dispatch_record_count(context, count):
+    assert len(context.dispatch_records) == count, (
+        f"Expected {count} records, got {len(context.dispatch_records)}"
+    )
+
+
+@then('all dispatch records have role "{role}"')
+def step_all_records_role(context, role):
+    for rec in context.dispatch_records:
+        assert rec["role"] == role, f"Expected role '{role}', got '{rec['role']}'"
+
+
+@then("all dispatch records have stage {stage:d}")
+def step_all_records_stage(context, stage):
+    for rec in context.dispatch_records:
+        assert rec["stage"] == stage, f"Expected stage {stage}, got {rec['stage']}"
