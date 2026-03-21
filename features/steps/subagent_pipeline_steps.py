@@ -23,7 +23,10 @@ from gzkit.pipeline_runtime import (
     parse_handoff_result,
     validate_agent_files,
 )
-from gzkit.roles import HandoffResult, HandoffStatus
+from gzkit.roles import (
+    HandoffResult,
+    HandoffStatus,
+)
 
 # ---------------------------------------------------------------------------
 # Plan extraction
@@ -384,4 +387,77 @@ def step_task_pending(context, idx):
 def step_blocked_count(context, count):
     assert context.dispatch_state.blocked_count == count, (
         f"Expected {count} blocked, got {context.dispatch_state.blocked_count}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Two-stage review dispatch (OBPI-0.18.0-07)
+# ---------------------------------------------------------------------------
+
+
+@then("review should be dispatched for task {idx:d}")
+def step_review_should_dispatch(context, idx):
+    from gzkit.pipeline_runtime import should_dispatch_review
+
+    record = context.dispatch_state.records[idx - 1]
+    assert record.result is not None, f"Task {idx} has no result yet"
+    assert should_dispatch_review(record.result.status), (
+        f"Review should be dispatched for status {record.result.status}"
+    )
+
+
+@then("review should not be dispatched for task {idx:d}")
+def step_review_should_not_dispatch(context, idx):
+    from gzkit.pipeline_runtime import should_dispatch_review
+
+    record = context.dispatch_state.records[idx - 1]
+    assert record.result is not None, f"Task {idx} has no result yet"
+    assert not should_dispatch_review(record.result.status), (
+        f"Review should NOT be dispatched for status {record.result.status}"
+    )
+
+
+@when("both reviews pass for task {idx:d}")
+def step_both_reviews_pass(context, idx):
+    from gzkit.pipeline_runtime import handle_review_cycle
+    from gzkit.roles import ReviewResult, ReviewVerdict
+
+    spec_pass = ReviewResult(verdict=ReviewVerdict.PASS, findings=[], summary="OK")
+    quality_pass = ReviewResult(verdict=ReviewVerdict.PASS, findings=[], summary="OK")
+    context.review_action = handle_review_cycle(
+        context.dispatch_state, idx - 1, spec_pass, quality_pass
+    )
+
+
+@then('the review action is "{action}"')
+def step_check_review_action(context, action):
+    assert context.review_action == action, (
+        f"Expected review action '{action}', got '{context.review_action}'"
+    )
+
+
+@when("spec review finds critical issue for task {idx:d}")
+def step_spec_critical(context, idx):
+    from gzkit.pipeline_runtime import handle_review_cycle
+    from gzkit.roles import ReviewFinding, ReviewFindingSeverity, ReviewResult, ReviewVerdict
+
+    spec_fail = ReviewResult(
+        verdict=ReviewVerdict.FAIL,
+        findings=[
+            ReviewFinding(
+                file="a.py",
+                severity=ReviewFindingSeverity.CRITICAL,
+                message="Requirement not met",
+            )
+        ],
+        summary="Fails spec",
+    )
+    context.review_action = handle_review_cycle(context.dispatch_state, idx - 1, spec_fail, None)
+
+
+@then("task {idx:d} review fix count is {count:d}")
+def step_review_fix_count(context, idx, count):
+    record = context.dispatch_state.records[idx - 1]
+    assert record.review_fix_count == count, (
+        f"Expected review_fix_count {count}, got {record.review_fix_count}"
     )

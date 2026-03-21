@@ -26,7 +26,10 @@ from gzkit.pipeline_runtime import (
     parse_handoff_result,
     select_dispatch_model,
 )
-from gzkit.roles import HandoffResult, HandoffStatus
+from gzkit.roles import (
+    HandoffResult,
+    HandoffStatus,
+)
 
 # ---------------------------------------------------------------------------
 # Task complexity classification
@@ -553,6 +556,252 @@ class TestStage2DispatchLoopContract(unittest.TestCase):
         state = create_dispatch_state("OBPI-X", "ADR-X", [], ["a.py"])
         self.assertEqual(len(state.records), 0)
         self.assertTrue(state.is_finished)
+
+
+# ---------------------------------------------------------------------------
+# Stage 2 review dispatch wiring contract (OBPI-0.18.0-07)
+# ---------------------------------------------------------------------------
+
+
+class TestStage2ReviewDispatchContract(unittest.TestCase):
+    """Verify that review protocol functions compose into Stage 2 review wiring."""
+
+    def test_review_dispatched_only_for_done_statuses(self):
+        """should_dispatch_review returns True only for DONE/DONE_WITH_CONCERNS."""
+        from gzkit.pipeline_runtime import should_dispatch_review
+
+        self.assertTrue(should_dispatch_review(HandoffStatus.DONE))
+        self.assertTrue(should_dispatch_review(HandoffStatus.DONE_WITH_CONCERNS))
+        self.assertFalse(should_dispatch_review(HandoffStatus.BLOCKED))
+        self.assertFalse(should_dispatch_review(HandoffStatus.NEEDS_CONTEXT))
+
+    def test_spec_review_prompt_includes_task_and_requirements(self):
+        """compose_spec_review_prompt threads brief requirements and files changed."""
+        from gzkit.pipeline_runtime import compose_spec_review_prompt
+
+        task = DispatchTask(
+            task_id=1,
+            description="Add validation",
+            allowed_paths=["src/a.py"],
+            complexity=TaskComplexity.SIMPLE,
+            model="haiku",
+        )
+        reqs = ["Config MUST parse TOML", "Validation MUST reject nulls"]
+        files_changed = ["src/a.py", "tests/test_a.py"]
+
+        prompt = compose_spec_review_prompt(task, reqs, files_changed)
+        self.assertIn("Add validation", prompt)
+        self.assertIn("src/a.py", prompt)
+        self.assertIn("tests/test_a.py", prompt)
+        self.assertIn("Config MUST parse TOML", prompt)
+        self.assertIn("Validation MUST reject nulls", prompt)
+        self.assertIn("Verify everything independently", prompt)
+
+    def test_quality_review_prompt_includes_files_and_criteria(self):
+        """compose_quality_review_prompt includes changed and test files."""
+        from gzkit.pipeline_runtime import compose_quality_review_prompt
+
+        files_changed = ["src/config.py"]
+        test_files = ["tests/test_config.py"]
+
+        prompt = compose_quality_review_prompt(files_changed, test_files)
+        self.assertIn("src/config.py", prompt)
+        self.assertIn("tests/test_config.py", prompt)
+        self.assertIn("SOLID principles", prompt)
+        self.assertIn("Size limits", prompt)
+
+    def test_review_model_never_haiku(self):
+        """Reviews always use sonnet or opus, never haiku."""
+        from gzkit.pipeline_runtime import select_review_model
+
+        self.assertEqual(select_review_model(TaskComplexity.SIMPLE), "sonnet")
+        self.assertEqual(select_review_model(TaskComplexity.STANDARD), "sonnet")
+        self.assertEqual(select_review_model(TaskComplexity.COMPLEX), "opus")
+
+    def test_review_cycle_advance_when_both_pass(self):
+        """handle_review_cycle returns 'advance' when both reviews pass."""
+        from gzkit.pipeline_runtime import handle_review_cycle
+        from gzkit.roles import ReviewResult, ReviewVerdict
+
+        tasks = [{"id": "1", "description": "Task A"}]
+        state = create_dispatch_state("OBPI-X", "ADR-X", tasks, ["a.py"])
+        advance_dispatch(state, 0)
+
+        spec_pass = ReviewResult(verdict=ReviewVerdict.PASS, findings=[], summary="OK")
+        quality_pass = ReviewResult(verdict=ReviewVerdict.PASS, findings=[], summary="OK")
+
+        action = handle_review_cycle(state, 0, spec_pass, quality_pass)
+        self.assertEqual(action, "advance")
+
+    def test_review_cycle_fix_on_critical_spec_finding(self):
+        """handle_review_cycle returns 'fix' when spec has critical findings."""
+        from gzkit.pipeline_runtime import handle_review_cycle
+        from gzkit.roles import (
+            ReviewFinding,
+            ReviewFindingSeverity,
+            ReviewResult,
+            ReviewVerdict,
+        )
+
+        tasks = [{"id": "1", "description": "Task A"}]
+        state = create_dispatch_state("OBPI-X", "ADR-X", tasks, ["a.py"])
+        advance_dispatch(state, 0)
+
+        spec_fail = ReviewResult(
+            verdict=ReviewVerdict.FAIL,
+            findings=[
+                ReviewFinding(
+                    file="a.py",
+                    severity=ReviewFindingSeverity.CRITICAL,
+                    message="Requirement not met",
+                )
+            ],
+            summary="Fails spec",
+        )
+        quality_pass = ReviewResult(verdict=ReviewVerdict.PASS, findings=[], summary="OK")
+
+        action = handle_review_cycle(state, 0, spec_fail, quality_pass)
+        self.assertEqual(action, "fix")
+        self.assertEqual(state.records[0].review_fix_count, 1)
+
+    def test_review_cycle_blocked_after_max_fix_cycles(self):
+        """handle_review_cycle returns 'blocked' after MAX_REVIEW_FIX_CYCLES."""
+        from gzkit.pipeline_runtime import MAX_REVIEW_FIX_CYCLES, handle_review_cycle
+        from gzkit.roles import (
+            ReviewFinding,
+            ReviewFindingSeverity,
+            ReviewResult,
+            ReviewVerdict,
+        )
+
+        tasks = [{"id": "1", "description": "Task A"}]
+        state = create_dispatch_state("OBPI-X", "ADR-X", tasks, ["a.py"])
+        advance_dispatch(state, 0)
+
+        spec_fail = ReviewResult(
+            verdict=ReviewVerdict.FAIL,
+            findings=[
+                ReviewFinding(
+                    file="a.py",
+                    severity=ReviewFindingSeverity.CRITICAL,
+                    message="Still broken",
+                )
+            ],
+            summary="Fails spec",
+        )
+
+        # Exhaust fix cycles
+        for _ in range(MAX_REVIEW_FIX_CYCLES):
+            action = handle_review_cycle(state, 0, spec_fail, None)
+            self.assertEqual(action, "fix")
+
+        # One more should block
+        action = handle_review_cycle(state, 0, spec_fail, None)
+        self.assertEqual(action, "blocked")
+
+    def test_full_loop_with_review_after_each_task(self):
+        """End-to-end: dispatch 2 tasks, review after each, both pass, loop completes."""
+        from gzkit.pipeline_runtime import (
+            compose_quality_review_prompt,
+            compose_spec_review_prompt,
+            handle_review_cycle,
+            should_dispatch_review,
+        )
+        from gzkit.roles import ReviewResult, ReviewVerdict
+
+        tasks = [
+            {"id": "1", "description": "Add model"},
+            {"id": "2", "description": "Add tests"},
+        ]
+        reqs = ["Model MUST validate input"]
+        state = create_dispatch_state("OBPI-07", "ADR-0.18.0", tasks, ["src/m.py", "tests/t.py"])
+
+        for i in range(2):
+            # Implementer dispatch
+            advance_dispatch(state, i)
+            impl_result = HandoffResult(
+                status=HandoffStatus.DONE,
+                files_changed=["src/m.py"],
+                tests_added=["tests/t.py"],
+                concerns=[],
+            )
+            handle_task_result(state, i, impl_result)
+
+            # Review dispatch (only if DONE/DONE_WITH_CONCERNS)
+            self.assertTrue(should_dispatch_review(impl_result.status))
+
+            # Compose review prompts
+            spec_prompt = compose_spec_review_prompt(
+                state.records[i].task, reqs, impl_result.files_changed
+            )
+            quality_prompt = compose_quality_review_prompt(
+                impl_result.files_changed, impl_result.tests_added
+            )
+            self.assertIn("Add model" if i == 0 else "Add tests", spec_prompt)
+            self.assertIn("src/m.py", quality_prompt)
+
+            # Both reviews pass
+            spec_pass = ReviewResult(verdict=ReviewVerdict.PASS, findings=[], summary="OK")
+            quality_pass = ReviewResult(verdict=ReviewVerdict.PASS, findings=[], summary="OK")
+            review_action = handle_review_cycle(state, i, spec_pass, quality_pass)
+            self.assertEqual(review_action, "advance")
+
+        self.assertTrue(state.is_finished)
+        self.assertEqual(state.completed_count, 2)
+
+    def test_fix_cycle_redispatches_implementer_with_findings(self):
+        """After review returns 'fix', implementer is redispatched; review runs again."""
+        from gzkit.pipeline_runtime import handle_review_cycle, should_dispatch_review
+        from gzkit.roles import (
+            ReviewFinding,
+            ReviewFindingSeverity,
+            ReviewResult,
+            ReviewVerdict,
+        )
+
+        tasks = [{"id": "1", "description": "Task A"}]
+        state = create_dispatch_state("OBPI-X", "ADR-X", tasks, ["a.py"])
+
+        # First dispatch → implementer completes
+        advance_dispatch(state, 0)
+        impl_result = HandoffResult(
+            status=HandoffStatus.DONE, files_changed=["a.py"], tests_added=[], concerns=[]
+        )
+        handle_task_result(state, 0, impl_result)
+        self.assertTrue(should_dispatch_review(impl_result.status))
+
+        # Review finds critical issue
+        spec_fail = ReviewResult(
+            verdict=ReviewVerdict.FAIL,
+            findings=[
+                ReviewFinding(
+                    file="a.py",
+                    severity=ReviewFindingSeverity.CRITICAL,
+                    message="Missing null check",
+                )
+            ],
+            summary="Fails",
+        )
+        review_action = handle_review_cycle(state, 0, spec_fail, None)
+        self.assertEqual(review_action, "fix")
+
+        # Redispatch implementer with finding context
+        advance_dispatch(state, 0)
+        impl_result2 = HandoffResult(
+            status=HandoffStatus.DONE, files_changed=["a.py"], tests_added=[], concerns=[]
+        )
+        handle_task_result(state, 0, impl_result2)
+
+        # Re-review passes
+        spec_pass = ReviewResult(verdict=ReviewVerdict.PASS, findings=[], summary="OK")
+        review_action2 = handle_review_cycle(state, 0, spec_pass, None)
+        self.assertEqual(review_action2, "advance")
+
+    def test_no_review_for_blocked_task(self):
+        """BLOCKED tasks should not trigger review dispatch."""
+        from gzkit.pipeline_runtime import should_dispatch_review
+
+        self.assertFalse(should_dispatch_review(HandoffStatus.BLOCKED))
 
 
 if __name__ == "__main__":

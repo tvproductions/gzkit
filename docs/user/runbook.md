@@ -53,6 +53,22 @@ uv run gz roles --pipeline OBPI-<X.Y.Z-NN>
 #      cat .claude/plans/.pipeline-active-OBPI-<X.Y.Z-NN>.json | python -m json.tool
 #
 #    Dispatch records show: task_id, role, model, timestamps, status, result.
+#
+# 2d) Two-stage review dispatch
+#    After each implementer task completes (DONE or DONE_WITH_CONCERNS),
+#    two independent reviewer subagents are dispatched concurrently:
+#      - Spec reviewer: verifies code matches brief requirements
+#      - Quality reviewer: evaluates SOLID, size limits, test coverage
+#
+#    Reviews use sonnet (simple/standard tasks) or opus (complex tasks).
+#    Critical review findings trigger a fix cycle — the implementer is
+#    redispatched with the finding as context, then re-reviewed.
+#    Maximum 2 fix cycles per task before escalating to the user.
+#
+#    --no-subagents skips review dispatch (inline mode has no independent review).
+#
+#    Review findings are recorded in the dispatch state alongside
+#    implementer records for the Stage 4 ceremony.
 
 # 3) Verify this increment
 uv run gz implement --adr ADR-<X.Y.Z>
