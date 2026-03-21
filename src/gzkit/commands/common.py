@@ -54,6 +54,7 @@ COMMAND_DOCS: dict[str, str] = {
     "adr audit-check": "docs/user/commands/adr-audit-check.md",
     "adr covers-check": "docs/user/commands/adr-covers-check.md",
     "adr emit-receipt": "docs/user/commands/adr-emit-receipt.md",
+    "roles": "docs/user/commands/roles.md",
     "obpi status": "docs/user/commands/obpi-status.md",
     "obpi pipeline": "docs/user/commands/obpi-pipeline.md",
     "obpi validate": "docs/user/commands/obpi-validate.md",

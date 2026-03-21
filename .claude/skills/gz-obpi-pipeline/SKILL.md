@@ -416,6 +416,55 @@ If a pipeline hook blocks a write, that means the pipeline is not active or evid
 
 ---
 
+## Controller/Worker Architecture
+
+The pipeline uses a controller/worker dispatch model for Stages 2 and 3:
+
+### Controller (Main Session)
+
+- Reads the approved plan and extracts tasks via `extract_plan_tasks()`
+- Creates `DispatchState` with model-aware routing per task
+- Dispatches implementer subagents per task (sequential)
+- Receives structured `HandoffResult` from each subagent
+- Dispatches reviewer subagents (spec + quality) after each implementation
+- Handles fix cycles when reviews find blocking issues
+- Dispatches verification subagents for REQ-level verification in Stage 3
+- Persists dispatch state to the pipeline marker via `persist_dispatch_state()`
+
+### Workers (Subagent Sessions)
+
+| Role | Agent File | Default Model | Isolation |
+|------|-----------|---------------|-----------|
+| Implementer | `.claude/agents/implementer.md` | complexity-routed | inline |
+| Spec Reviewer | `.claude/agents/spec-reviewer.md` | sonnet/opus | inline |
+| Quality Reviewer | `.claude/agents/quality-reviewer.md` | sonnet/opus | inline |
+| Narrator | `.claude/agents/narrator.md` | inherit | inline |
+
+### Model Routing
+
+Model selection is declarative via `.gzkit/pipeline-config.json` (optional):
+
+| Complexity | File Count | Implementer | Reviewer |
+|-----------|-----------|-------------|---------|
+| Simple | 1-2 files | haiku | sonnet |
+| Standard | 3-5 files | sonnet | sonnet |
+| Complex | 6+ files | opus | opus |
+
+### Dispatch State Tracking
+
+Each subagent dispatch is recorded as a `SubagentDispatchRecord` with: task_id,
+role, agent_file, model, isolation, background, timestamps, status, and result.
+Records are persisted in the pipeline active marker. On pipeline completion,
+`persist_dispatch_summary()` writes a historical summary for `gz roles --pipeline`
+queries.
+
+### Fallback Mode
+
+`--no-subagents` flag on `gz obpi pipeline` disables subagent dispatch and runs
+the entire pipeline inline (single session). Useful for debugging.
+
+---
+
 ## Related
 
 - OBPI Acceptance Protocol: `AGENTS.md` § OBPI Acceptance Protocol
