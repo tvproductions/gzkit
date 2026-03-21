@@ -21,5 +21,5 @@ INFO    -  The following pages exist in the docs directory, but are not included
   - user\commands\readiness-eval.md
   - user\commands\roles.md
   - user\concepts\subagent-pipeline.md
-INFO    -  Documentation built in 1.55 seconds
+INFO    -  Documentation built in 1.58 seconds
 
