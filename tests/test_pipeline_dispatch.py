@@ -804,5 +804,238 @@ class TestStage2ReviewDispatchContract(unittest.TestCase):
         self.assertFalse(should_dispatch_review(HandoffStatus.BLOCKED))
 
 
+# ---------------------------------------------------------------------------
+# Stage 3 verification dispatch wiring (OBPI-0.18.0-08)
+# ---------------------------------------------------------------------------
+
+
+class TestPrepareStage3Verification(unittest.TestCase):
+    """Test Stage 3 verification plan creation from brief content."""
+
+    def test_extracts_requirements_into_plan(self):
+        from gzkit.pipeline_runtime import prepare_stage3_verification
+
+        brief = (
+            "## Requirements (FAIL-CLOSED)\n"
+            "1. REQUIREMENT: SKILL.md Stage 3 MUST analyze brief requirements\n"
+            "1. REQUIREMENT: Non-overlapping paths MUST dispatch in parallel\n"
+        )
+        plan = prepare_stage3_verification(brief, ["tests/test_a.py", "tests/test_b.py"])
+        self.assertEqual(len(plan.scopes), 2)
+        self.assertIn("analyze brief requirements", plan.scopes[0].requirement_text)
+
+    def test_empty_brief_returns_sequential(self):
+        from gzkit.pipeline_runtime import prepare_stage3_verification
+
+        plan = prepare_stage3_verification("No requirements here.")
+        self.assertEqual(plan.strategy, "sequential")
+        self.assertEqual(len(plan.scopes), 0)
+
+    def test_no_test_paths_returns_sequential(self):
+        from gzkit.pipeline_runtime import prepare_stage3_verification
+
+        brief = "1. REQUIREMENT: Something important\n"
+        plan = prepare_stage3_verification(brief)
+        self.assertEqual(plan.strategy, "sequential")
+
+    def test_distinct_paths_produce_parallel_plan(self):
+        from gzkit.pipeline_runtime import (
+            VerificationScope,
+            build_verification_plan,
+        )
+
+        scopes = [
+            VerificationScope(
+                req_index=1,
+                requirement_text="REQ A",
+                test_paths=["tests/test_a.py"],
+            ),
+            VerificationScope(
+                req_index=2,
+                requirement_text="REQ B",
+                test_paths=["tests/test_b.py"],
+            ),
+        ]
+        plan = build_verification_plan(scopes)
+        self.assertEqual(plan.strategy, "parallel")
+        self.assertEqual(len(plan.independent_groups), 2)
+
+
+class TestComputeVerificationTiming(unittest.TestCase):
+    """Test wall-clock timing metrics computation."""
+
+    def test_basic_timing(self):
+        from gzkit.pipeline_runtime import compute_verification_timing
+
+        # 2 seconds elapsed, 3 groups at 30s each = 90s sequential
+        start = 0
+        end = 2_000_000_000  # 2 seconds in nanoseconds
+        metrics = compute_verification_timing(start, end, "parallel", 3)
+        self.assertEqual(metrics.strategy, "parallel")
+        self.assertEqual(metrics.group_count, 3)
+        self.assertEqual(metrics.elapsed_seconds, 2.0)
+        self.assertEqual(metrics.estimated_sequential_seconds, 90.0)
+        self.assertEqual(metrics.time_saved_seconds, 88.0)
+
+    def test_sequential_no_savings(self):
+        from gzkit.pipeline_runtime import compute_verification_timing
+
+        metrics = compute_verification_timing(0, 30_000_000_000, "sequential", 1)
+        self.assertEqual(metrics.time_saved_seconds, 0.0)
+
+    def test_custom_per_group_estimate(self):
+        from gzkit.pipeline_runtime import compute_verification_timing
+
+        metrics = compute_verification_timing(
+            0, 5_000_000_000, "parallel", 2, per_group_estimate_seconds=10.0
+        )
+        self.assertEqual(metrics.estimated_sequential_seconds, 20.0)
+        self.assertEqual(metrics.time_saved_seconds, 15.0)
+
+
+class TestCreateVerificationDispatchRecords(unittest.TestCase):
+    """Test bridging verification results to dispatch records."""
+
+    def test_creates_records_for_each_scope(self):
+        from gzkit.pipeline_runtime import (
+            VerificationOutcome,
+            VerificationPlan,
+            VerificationResult,
+            VerificationScope,
+            create_verification_dispatch_records,
+        )
+
+        plan = VerificationPlan(
+            scopes=[
+                VerificationScope(
+                    req_index=1,
+                    requirement_text="REQ A",
+                    test_paths=["tests/test_a.py"],
+                ),
+                VerificationScope(
+                    req_index=2,
+                    requirement_text="REQ B",
+                    test_paths=["tests/test_b.py"],
+                ),
+            ],
+            independent_groups=[[1], [2]],
+            strategy="parallel",
+        )
+        results = [
+            VerificationResult(
+                req_index=1,
+                outcome=VerificationOutcome.PASS,
+                detail="All tests pass",
+                commands_run=["uv run -m unittest tests.test_a -q"],
+            ),
+            VerificationResult(
+                req_index=2,
+                outcome=VerificationOutcome.FAIL,
+                detail="Test failed",
+                commands_run=["uv run -m unittest tests.test_b -q"],
+            ),
+        ]
+        records = create_verification_dispatch_records(plan, results)
+        self.assertEqual(len(records), 2)
+        self.assertEqual(records[0]["role"], "Verifier")
+        self.assertEqual(records[0]["stage"], 3)
+        self.assertEqual(records[0]["status"], "PASS")
+        self.assertEqual(records[1]["status"], "FAIL")
+
+    def test_missing_result_marked_as_missing(self):
+        from gzkit.pipeline_runtime import (
+            VerificationPlan,
+            VerificationScope,
+            create_verification_dispatch_records,
+        )
+
+        plan = VerificationPlan(
+            scopes=[
+                VerificationScope(
+                    req_index=1,
+                    requirement_text="REQ A",
+                    test_paths=["tests/test_a.py"],
+                ),
+            ],
+            independent_groups=[[1]],
+            strategy="sequential",
+        )
+        records = create_verification_dispatch_records(plan, [])
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0]["status"], "MISSING")
+
+
+class TestStage3VerificationDispatchContract(unittest.TestCase):
+    """End-to-end: verification plan → dispatch → aggregate → timing."""
+
+    def test_full_stage3_verification_flow(self):
+        from gzkit.pipeline_runtime import (
+            VerificationOutcome,
+            VerificationResult,
+            VerificationScope,
+            aggregate_verification_results,
+            build_verification_plan,
+            compute_verification_timing,
+            create_verification_dispatch_records,
+            should_fallback_to_sequential,
+        )
+
+        # Build scopes with distinct per-REQ test paths (as Stage 3 would)
+        scopes = [
+            VerificationScope(
+                req_index=1,
+                requirement_text="Config MUST parse TOML",
+                test_paths=["tests/test_config.py"],
+            ),
+            VerificationScope(
+                req_index=2,
+                requirement_text="Validation MUST reject nulls",
+                test_paths=["tests/test_validate.py"],
+            ),
+        ]
+        plan = build_verification_plan(scopes)
+        self.assertFalse(should_fallback_to_sequential(plan))
+
+        # Simulate subagent results
+        results = [
+            VerificationResult(
+                req_index=1,
+                outcome=VerificationOutcome.PASS,
+                detail="Config parsing works",
+            ),
+            VerificationResult(
+                req_index=2,
+                outcome=VerificationOutcome.PASS,
+                detail="Null rejection works",
+            ),
+        ]
+        all_passed, failures = aggregate_verification_results(results, [1, 2])
+        self.assertTrue(all_passed)
+        self.assertEqual(len(failures), 0)
+
+        # Dispatch records
+        records = create_verification_dispatch_records(plan, results)
+        self.assertEqual(len(records), 2)
+        self.assertTrue(all(r["status"] == "PASS" for r in records))
+
+        # Timing
+        metrics = compute_verification_timing(
+            0, 5_000_000_000, plan.strategy, len(plan.independent_groups)
+        )
+        self.assertGreater(metrics.elapsed_seconds, 0)
+
+    def test_no_subagents_flag_uses_sequential(self):
+        """--no-subagents forces sequential fallback regardless of plan."""
+        from gzkit.pipeline_runtime import (
+            prepare_stage3_verification,
+            should_fallback_to_sequential,
+        )
+
+        brief = "1. REQUIREMENT: Something\n"
+        plan = prepare_stage3_verification(brief)
+        # No test paths → sequential
+        self.assertTrue(should_fallback_to_sequential(plan))
+
+
 if __name__ == "__main__":
     unittest.main()

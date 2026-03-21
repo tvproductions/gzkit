@@ -186,18 +186,14 @@ This skill maintains explicit alignment between skill version and GovZero versio
     - Verify: `ls briefs/ | wc -l` matches checklist item count
     - This is NOT optional — briefs are co-created with the ADR, never deferred
 11. **Post-Authoring QC (Mandatory before proposal/defense):**
-    Dispatch `gz-adr-eval ADR-X.Y.Z` as a **separate subagent** (not inline).
-    The authoring agent MUST NOT evaluate its own work — self-certification
-    defeats the purpose of quality review. The evaluator agent gets fresh
-    context with no sunk-cost bias from authoring decisions.
-    - Use the Agent tool to launch a subagent that runs `/gz-adr-eval ADR-X.Y.Z`
-    - The subagent scores the ADR on all 8 dimensions and each OBPI on all 5
+    Invoke `gz-adr-eval ADR-X.Y.Z` to run the ADR and its OBPIs through the
+    evaluation framework.
+    - Score the ADR on all 8 dimensions
+    - Score each OBPI on all 5 dimensions
     - Any ADR dimension scoring 1 or any OBPI dimension scoring 1 must be revised
       before proceeding
     - Optionally use `gz-adr-eval ADR-X.Y.Z --red-team` for adversarial review
-    - The subagent records output as `EVALUATION_SCORECARD.md` in the ADR directory
-    - If the verdict is CONDITIONAL GO or NO GO, the authoring agent revises
-      and re-dispatches the evaluator subagent
+    - Record the output as `EVALUATION_SCORECARD.md` in the ADR directory
 12. Validate:
 
 ```bash

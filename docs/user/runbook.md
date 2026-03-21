@@ -74,6 +74,22 @@ uv run gz roles --pipeline OBPI-<X.Y.Z-NN>
 uv run gz implement --adr ADR-<X.Y.Z>
 uv run gz gates --gate 3 --adr ADR-<X.Y.Z>   # when docs changed
 uv run gz lint
+#
+# 3b) REQ-level parallel verification dispatch (Stage 3 Phase 2)
+#    After baseline checks pass, Stage 3 analyzes brief requirements for
+#    non-overlapping test paths and dispatches parallel verification
+#    subagents using worktree isolation.
+#
+#    Requirements with overlapping test paths run sequentially within a
+#    single subagent. Requirements with non-overlapping paths dispatch
+#    concurrently via `isolation: worktree` + `run_in_background: true`.
+#
+#    --no-subagents skips parallel verification dispatch and runs all
+#    verification sequentially inline (same as pre-0.18.0 behavior).
+#
+#    Wall-clock timing metrics are recorded for parallel vs sequential
+#    comparison. Inspect via the pipeline marker:
+#      cat .claude/plans/.pipeline-active-OBPI-<X.Y.Z-NN>.json | python -m json.tool
 
 # 4) Present the OBPI ceremony and only then update the brief
 #    (status Completed only after attestation when required)
