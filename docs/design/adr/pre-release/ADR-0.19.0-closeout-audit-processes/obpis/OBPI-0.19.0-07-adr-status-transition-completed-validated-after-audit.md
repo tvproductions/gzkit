@@ -2,88 +2,78 @@
 id: OBPI-0.19.0-07-adr-status-transition-completed-validated-after-audit
 parent: ADR-0.19.0-closeout-audit-processes
 item: 7
-lane: Heavy
+lane: Lite
 status: Draft
 ---
 
-# OBPI-0.19.0-07-adr-status-transition-completed-validated-after-audit: ADR status transition: Completed → Validated (after audit)
+# OBPI-0.19.0-07: ADR Status Transition Completed -> Validated After Audit
 
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.19.0-closeout-audit-processes/ADR-0.19.0-closeout-audit-processes.md`
-- **Checklist Item:** #7 - "OBPI-0.19.0-07: ADR status transition: Completed → Validated (after audit)"
+- **Checklist Item:** #7 — "ADR status transition: Completed -> Validated (after audit)"
 
 **Status:** Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-ADR status transition: Completed → Validated (after audit).
+Make `audit_cmd()` automatically transition the ADR lifecycle status from Completed to Validated after a successful audit pass by calling `LifecycleStateMachine.transition()` and appending a `lifecycle_transition` event to the ledger, eliminating the current requirement for operators to manually invoke `gz adr emit-receipt` to record the post-audit state change.
 
 ## Lane
 
-**Heavy** - This OBPI changes a command/API/schema/runtime contract surface.
-
-> Heavy is reserved for command/API/schema/runtime-contract changes. Process,
-> documentation, and template-only work stays Lite unless it changes one of
-> those external surfaces.
+**Lite** — Internal lifecycle automation; no new CLI subcommands, flags, or output schema changes. The `Completed -> Validated` transition already exists in `ADR_TRANSITIONS` (lifecycle.py line 59). This OBPI wires the existing state machine into `audit_cmd` so the transition fires automatically on audit success.
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `src/gzkit/cli.py` — `audit_cmd()` function to add lifecycle transition call after successful audit
+- `src/gzkit/lifecycle.py` — `LifecycleStateMachine` class (consumed, not modified unless edge-case handling needed)
+- `src/gzkit/ledger.py` — `lifecycle_transition_event()` factory and `Ledger` class (consumed, not modified)
+- `tests/test_lifecycle.py` — new test cases for the audit-triggered transition path
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
-- Paths not listed in Allowed Paths
-- New dependencies
-- CI files, lockfiles
+- `src/gzkit/commands/attest.py` — attestation flow is separate; OBPI-09 handles its deprecation
+- `docs/user/commands/` — no new CLI surface; existing command docs remain valid
+- `.gzkit/ledger.jsonl` — never edited manually
+- CI files, lockfiles, new dependencies
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: `audit_cmd()` MUST call `LifecycleStateMachine.transition(adr_id, "ADR", "Completed", "Validated")` only when all audit verification commands pass (zero failures).
+1. REQUIREMENT: The `lifecycle_transition` event MUST be appended to the ledger with `from_state="Completed"` and `to_state="Validated"` after the audit proof artifacts are written.
+1. REQUIREMENT: When `--dry-run` is active, the transition MUST NOT be executed or recorded.
+1. REQUIREMENT: When audit has any failures (non-zero `failures` counter), the transition MUST NOT fire and the ADR MUST remain in Completed state.
+1. REQUIREMENT: If the ADR is not in Completed state when audit runs, the transition MUST be skipped gracefully (no crash) and a warning printed to stderr.
+1. NEVER: Bypass the `LifecycleStateMachine` validation — always use `sm.transition()`, never append the event directly.
+1. ALWAYS: Preserve the existing audit output (proof files, AUDIT.md, AUDIT_PLAN.md) unchanged.
 
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if `LifecycleStateMachine` or `lifecycle_transition_event` are missing from `lifecycle.py`/`ledger.py`, print a BLOCKERS list and halt.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first. -->
-
 **Governance (read once, cache):**
 
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
+- [ ] `AGENTS.md` or `CLAUDE.md` — agent operating contract
+- [ ] Parent ADR: `docs/design/adr/pre-release/ADR-0.19.0-closeout-audit-processes/ADR-0.19.0-closeout-audit-processes.md`
 
 **Context:**
 
-- [ ] Parent ADR: `docs/design/adr/pre-release/ADR-0.19.0-closeout-audit-processes/ADR-0.19.0-closeout-audit-processes.md`
-- [ ] Related OBPIs in same ADR
+- [ ] `src/gzkit/lifecycle.py` — `ADR_TRANSITIONS` table, `LifecycleStateMachine.transition()` method
+- [ ] `src/gzkit/ledger.py` — `lifecycle_transition_event()` factory, `Ledger.append()`, `Ledger.get_artifact_graph()`
+- [ ] `src/gzkit/cli.py` lines 2634-2774 — `audit_cmd()` current implementation
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
+- [ ] `src/gzkit/lifecycle.py` exists with `LifecycleStateMachine` class
+- [ ] `src/gzkit/ledger.py` exists with `lifecycle_transition_event()` factory
+- [ ] `ADR_TRANSITIONS` includes `TransitionRule(from_state="Completed", to_state="Validated")`
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+- [ ] Pattern to follow: `LifecycleStateMachine` usage in existing commands
+- [ ] Test patterns: `tests/test_lifecycle.py` — `TestStateMachineIntegration` class
 
 ## Quality Gates
-
-<!-- Which gates apply and how to verify them. -->
 
 ### Gate 1: ADR
 
@@ -101,53 +91,29 @@ ADR status transition: Completed → Validated (after audit).
 - [ ] Lint clean: `uv run gz lint`
 - [ ] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
-### Gate 3: Docs (Heavy only)
+## Acceptance Criteria
 
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
-
-### Gate 4: BDD (Heavy only)
-
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
-
-### Gate 5: Human (Heavy only)
-
-- [ ] Human attestation recorded
+- [ ] REQ-0.19.0-07-01: Given an ADR in Completed state with all audit verification commands passing, when `gz audit ADR-X.Y.Z` completes, then a `lifecycle_transition` event with `from_state="Completed"` and `to_state="Validated"` is appended to the ledger.
+- [ ] REQ-0.19.0-07-02: Given an ADR in Completed state with one or more audit verification commands failing, when `gz audit ADR-X.Y.Z` completes, then no `lifecycle_transition` event is appended and the ADR remains in Completed state.
+- [ ] REQ-0.19.0-07-03: Given `gz audit ADR-X.Y.Z --dry-run`, when the command completes, then no `lifecycle_transition` event is appended to the ledger regardless of verification outcomes.
+- [ ] REQ-0.19.0-07-04: Given an ADR that is not in Completed state (e.g., Accepted or Validated), when `gz audit ADR-X.Y.Z` runs, then the lifecycle transition is skipped without error and a warning is printed.
+- [ ] REQ-0.19.0-07-05: Given a successful audit run, when the `lifecycle_transition` event is written, then existing audit artifacts (AUDIT.md, AUDIT_PLAN.md, proofs/) are unmodified by the transition logic.
 
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
-uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
 uv run gz test
 
 # Specific verification for this OBPI
-command --to --verify
+uv run -m unittest tests.test_lifecycle -v
 ```
 
-## Acceptance Criteria
-
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.19.0-07-01: Given/When/Then behavior criterion 1
-- [ ] REQ-0.19.0-07-02: Given/When/Then behavior criterion 2
-- [ ] REQ-0.19.0-07-03: Given/When/Then behavior criterion 3
-
-## Completion Checklist
-
-<!-- Verify all gates before marking OBPI accepted. -->
+## Completion Checklist (Lite)
 
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [ ] **Gate 2 (TDD):** Unit tests pass
 - [ ] **Code Quality:** Lint, format, type checks clean
 - [ ] **Value Narrative:** Problem-before vs capability-now is documented
 - [ ] **Key Proof:** One concrete usage example is included
@@ -156,9 +122,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
 ## Evidence
-
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
 
 ### Gate 1 (ADR)
 
@@ -176,31 +139,22 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 # Paste lint/format/type check output here
 ```
 
-### Gate 3 (Docs)
-
-```text
-# Paste docs-build output here when Gate 3 applies
-```
-
-### Gate 4 (BDD)
-
-```text
-# Paste behave output here when Gate 4 applies
-```
-
-### Gate 5 (Human)
-
-```text
-# Record attestation text here when required by parent lane
-```
-
 ## Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+**Before:** After a successful `gz audit`, the ADR remains in Completed state. Operators must separately invoke `gz adr emit-receipt` to transition the ADR to Validated, creating a manual gap where audited ADRs appear incomplete in status dashboards.
+
+**After:** `gz audit` automatically transitions the ADR from Completed to Validated when all verification commands pass, ensuring the ledger reflects the true governance state without manual intervention.
 
 ## Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+```bash
+# After implementation, a successful audit will produce:
+$ uv run gz audit ADR-0.19.0
+  lint: PASS
+  typecheck: PASS
+  test: PASS
+  Lifecycle transition: Completed -> Validated (ADR-0.19.0-closeout-audit-processes)
+```
 
 ### Implementation Summary
 
@@ -212,16 +166,13 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ## Tracked Defects
 
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
-
 _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `human:<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `n/a` (Lite lane — self-closeable after evidence)
+- Attestation: `n/a`
+- Date: `n/a`
 
 ---
 
