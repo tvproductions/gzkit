@@ -63,6 +63,7 @@ Last reviewed: 2026-02-09
 | ADR-pool | Manifest Contracts | ADR | Pool | 2025-11-09 | 2026-01-30 |  | No | [ADR-pool](../../design/adr/pool/ADR-pool.manifest-contracts/ADR-pool.manifest-contracts.md) |
 | ADR-pool | dbt/DVC/Pact Emulation | ADR | Pool | 2025-12-06 | 2026-01-30 |  | No | [ADR-pool](../../design/adr/pool/ADR-pool.dbt-dvc-pact-emulation.md) |
 | ADR-pool | NAIP Historical Archive | ADR | Pool | 2025-11-09 | 2026-01-30 |  | No | [ADR-pool](../../design/adr/pool/ADR-pool.naip-historical-archive.md) |
+| ADR-pool | Attestation Advisory Agent | ADR | Pool | 2026-03-21 |  |  | No | [ADR-pool](../../design/adr/pool/ADR-pool.attestation-advisory-agent.md) |
 | ADR-0.2.0 | Aviation Core Time-Series Forecasting Framework | ADR | Accepted | Unknown |  |  | No | [ADR-0.2.0](../../design/adr/adr-0.2.x/ADR-0.2.0-aviationcore-time-series-forecasting-framework.md) |
 | ADR-0.2.11 | Atmospheric Climatology Modeling (NAIP Climo Engine) | ADR | Accepted | Unknown |  |  | No | [ADR-0.2.11](../../design/adr/adr-0.2.x/ADR-0.2.11-Atmos-Climatology.md) |
 | ADR-0.4.0 | Schedule Development Using NAIP Atmospheric Climatology | ADR | Accepted | Unknown |  |  | No | [ADR-0.4.0](../../design/adr/adr-0.4.x/ADR-0.4.0-Schedule-Dev-Atmos.md) |
