@@ -1342,6 +1342,92 @@ def should_fallback_to_sequential(plan: VerificationPlan) -> bool:
 
 
 # ---------------------------------------------------------------------------
+# Stage 3 verification dispatch wiring (OBPI-0.18.0-08)
+# ---------------------------------------------------------------------------
+
+
+class VerificationTimingMetrics(BaseModel):
+    """Wall-clock timing metrics for Stage 3 verification dispatch."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    strategy: str = Field(..., description="Dispatch strategy used")
+    group_count: int = Field(..., description="Number of independent groups")
+    elapsed_seconds: float = Field(..., description="Total wall-clock seconds")
+    estimated_sequential_seconds: float = Field(
+        0.0, description="Estimated sequential time for comparison"
+    )
+    time_saved_seconds: float = Field(0.0, description="Estimated time saved by parallelism")
+
+
+def prepare_stage3_verification(
+    brief_content: str,
+    test_paths: list[str] | None = None,
+) -> VerificationPlan:
+    """Build a Stage 3 verification plan from brief content.
+
+    Composes ``extract_verification_scopes`` and ``build_verification_plan``
+    into a single call for Stage 3 orchestration. If no requirements are
+    found, returns a sequential plan (baseline-only verification).
+    """
+    scopes = extract_verification_scopes(brief_content, test_paths)
+    return build_verification_plan(scopes)
+
+
+def compute_verification_timing(
+    start_ns: int,
+    end_ns: int,
+    strategy: str,
+    group_count: int,
+    per_group_estimate_seconds: float = 30.0,
+) -> VerificationTimingMetrics:
+    """Compute wall-clock timing metrics for Stage 3 dispatch.
+
+    ``start_ns`` and ``end_ns`` are monotonic nanosecond timestamps
+    (from ``time.monotonic_ns()``).  ``per_group_estimate_seconds`` is
+    the estimated sequential time per group for savings calculation.
+    """
+    elapsed = (end_ns - start_ns) / 1e9
+    estimated_sequential = group_count * per_group_estimate_seconds
+    saved = max(0.0, estimated_sequential - elapsed)
+    return VerificationTimingMetrics(
+        strategy=strategy,
+        group_count=group_count,
+        elapsed_seconds=round(elapsed, 2),
+        estimated_sequential_seconds=round(estimated_sequential, 2),
+        time_saved_seconds=round(saved, 2),
+    )
+
+
+def create_verification_dispatch_records(
+    plan: VerificationPlan,
+    results: list[VerificationResult],
+) -> list[dict[str, Any]]:
+    """Bridge Stage 3 verification results to dispatch tracking records.
+
+    Maps each ``VerificationResult`` to a dispatch-compatible dict for
+    persistence in the pipeline marker alongside Stage 2 dispatch records.
+    """
+    result_map = {r.req_index: r for r in results}
+    records: list[dict[str, Any]] = []
+    for scope in plan.scopes:
+        result = result_map.get(scope.req_index)
+        records.append(
+            {
+                "task_id": scope.req_index,
+                "role": "Verifier",
+                "model": "sonnet",
+                "stage": 3,
+                "requirement": scope.requirement_text,
+                "status": result.outcome if result else "MISSING",
+                "detail": result.detail if result else "No result received",
+                "commands_run": list(result.commands_run) if result else [],
+            }
+        )
+    return records
+
+
+# ---------------------------------------------------------------------------
 # Subagent dispatch tracking and integration (OBPI-0.18.0-05)
 # ---------------------------------------------------------------------------
 

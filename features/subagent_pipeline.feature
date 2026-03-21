@@ -193,3 +193,31 @@ Feature: Subagent pipeline dispatch lifecycle
     Then the review action is "fix"
     When spec review finds critical issue for task 1
     Then the review action is "blocked"
+
+  @dispatch @stage3
+  Scenario: Stage 3 builds verification plan from brief requirements
+    Given a brief with 2 requirements and distinct test paths
+    When I prepare Stage 3 verification
+    Then the verification plan has 2 scopes
+    And the verification strategy is "parallel"
+
+  @dispatch @stage3
+  Scenario: Stage 3 falls back to sequential with no test paths
+    Given a brief with 2 requirements and no test paths
+    When I prepare Stage 3 verification
+    Then the verification strategy is "sequential"
+
+  @dispatch @stage3
+  Scenario: Stage 3 records timing metrics
+    Given a verification run of 5 seconds with strategy "parallel" and 3 groups
+    When I compute verification timing
+    Then elapsed seconds is 5.0
+    And time saved is greater than 0
+
+  @dispatch @stage3
+  Scenario: Stage 3 creates dispatch records from verification results
+    Given a verification plan with 2 scopes and PASS results
+    When I create verification dispatch records
+    Then 2 dispatch records are created
+    And all dispatch records have role "Verifier"
+    And all dispatch records have stage 3
