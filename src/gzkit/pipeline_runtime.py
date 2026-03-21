@@ -1339,3 +1339,249 @@ def should_fallback_to_sequential(plan: VerificationPlan) -> bool:
     - All scopes are in a single group (no parallelism benefit)
     """
     return plan.strategy == "sequential"
+
+
+# ---------------------------------------------------------------------------
+# Subagent dispatch tracking and integration (OBPI-0.18.0-05)
+# ---------------------------------------------------------------------------
+
+AGENT_FILE_MAP: dict[str, str] = {
+    "Implementer": ".claude/agents/implementer.md",
+    "Reviewer": ".claude/agents/spec-reviewer.md",
+    "QualityReviewer": ".claude/agents/quality-reviewer.md",
+    "Narrator": ".claude/agents/narrator.md",
+    "Planner": "",
+}
+
+PIPELINE_CONFIG_FILE = ".gzkit/pipeline-config.json"
+DISPATCH_SUMMARY_PREFIX = ".pipeline-dispatch-"
+
+
+class SubagentDispatchRecord(BaseModel):
+    """Per-dispatch tracking record persisted in the pipeline marker."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    task_id: int = Field(..., description="1-based task index")
+    role: str = Field(..., description="Role name (Implementer, Reviewer, etc.)")
+    agent_file: str = Field(..., description="Path to .claude/agents/ file")
+    model: str = Field(..., description="Model tier used for dispatch")
+    isolation: str = Field("inline", description="Isolation mode (inline or worktree)")
+    background: bool = Field(False, description="Whether dispatched in background")
+    dispatched_at: str = Field(..., description="ISO-8601 dispatch timestamp")
+    completed_at: str | None = Field(None, description="ISO-8601 completion timestamp")
+    status: str = Field("pending", description="Dispatch status")
+    result: dict[str, Any] | None = Field(None, description="Serialized result payload")
+
+
+class DispatchAggregation(BaseModel):
+    """Result aggregation computed from completed dispatch records."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    total_tasks: int = Field(..., description="Total dispatch records")
+    completed: int = Field(..., description="Records with done status")
+    blocked: int = Field(..., description="Records with blocked status")
+    fix_cycles: int = Field(..., description="Total re-dispatch attempts")
+    review_findings_by_severity: dict[str, int] = Field(
+        default_factory=dict, description="Finding counts keyed by severity"
+    )
+    model_usage_per_role: dict[str, dict[str, int]] = Field(
+        default_factory=dict, description="Model usage counts per role"
+    )
+
+
+class ModelRoutingConfig(BaseModel):
+    """Declarative model routing configuration."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    implementer: dict[str, str] = Field(
+        default_factory=lambda: {"simple": "haiku", "standard": "sonnet", "complex": "opus"},
+    )
+    reviewer: dict[str, str] = Field(
+        default_factory=lambda: {"simple": "sonnet", "standard": "sonnet", "complex": "opus"},
+    )
+    verifier: dict[str, str] = Field(
+        default_factory=lambda: {"simple": "sonnet", "standard": "sonnet", "complex": "opus"},
+    )
+
+
+def load_model_routing_config(project_root: Path) -> ModelRoutingConfig:
+    """Load model routing config from project or return defaults."""
+    config_path = project_root / PIPELINE_CONFIG_FILE
+    if config_path.is_file():
+        raw = json.loads(config_path.read_text(encoding="utf-8"))
+        routing = raw.get("model_routing")
+        if isinstance(routing, dict):
+            return ModelRoutingConfig(**routing)
+    return ModelRoutingConfig()
+
+
+def get_agent_file_for_role(role_name: str) -> str:
+    """Map a role name to its agent file path."""
+    return AGENT_FILE_MAP.get(role_name, "")
+
+
+def create_subagent_dispatch_record(
+    task_id: int,
+    role: str,
+    model: str,
+    *,
+    isolation: str = "inline",
+    background: bool = False,
+) -> SubagentDispatchRecord:
+    """Create a new dispatch record with the current UTC timestamp."""
+    return SubagentDispatchRecord(
+        task_id=task_id,
+        role=role,
+        agent_file=get_agent_file_for_role(role),
+        model=model,
+        isolation=isolation,
+        background=background,
+        dispatched_at=datetime.now(UTC).isoformat(),
+        status="in_progress",
+    )
+
+
+def complete_subagent_dispatch_record(
+    record: SubagentDispatchRecord,
+    status: str,
+    result: dict[str, Any] | None = None,
+) -> SubagentDispatchRecord:
+    """Return a new record with completion timestamp and final status."""
+    return record.model_copy(
+        update={
+            "completed_at": datetime.now(UTC).isoformat(),
+            "status": status,
+            "result": result,
+        },
+    )
+
+
+def persist_dispatch_state(
+    plans_dir: Path,
+    obpi_id: str,
+    records: list[SubagentDispatchRecord],
+) -> None:
+    """Persist dispatch records into the active pipeline marker."""
+    marker_path = plans_dir / f".pipeline-active-{obpi_id}.json"
+    if not marker_path.is_file():
+        return
+    marker = json.loads(marker_path.read_text(encoding="utf-8"))
+    marker["dispatch_state"] = [r.model_dump() for r in records]
+    marker_path.write_text(json.dumps(marker, indent=2) + "\n", encoding="utf-8")
+
+
+def load_dispatch_state(
+    plans_dir: Path,
+    obpi_id: str,
+) -> list[SubagentDispatchRecord]:
+    """Load dispatch records from the active pipeline marker."""
+    marker_path = plans_dir / f".pipeline-active-{obpi_id}.json"
+    if not marker_path.is_file():
+        return []
+    marker = json.loads(marker_path.read_text(encoding="utf-8"))
+    raw_records = marker.get("dispatch_state", [])
+    if not isinstance(raw_records, list):
+        return []
+    return [SubagentDispatchRecord(**r) for r in raw_records]
+
+
+def aggregate_dispatch_results(
+    records: list[SubagentDispatchRecord],
+) -> DispatchAggregation:
+    """Compute aggregation from a list of dispatch records."""
+    done_statuses = {"done", "done_with_concerns"}
+    completed = sum(1 for r in records if r.status in done_statuses)
+    blocked = sum(1 for r in records if r.status == "blocked")
+
+    # Count re-dispatches by looking for duplicate task_ids
+    task_dispatch_counts: dict[int, int] = {}
+    for r in records:
+        task_dispatch_counts[r.task_id] = task_dispatch_counts.get(r.task_id, 0) + 1
+    fix_cycles = sum(max(0, c - 1) for c in task_dispatch_counts.values())
+
+    # Aggregate review findings by severity from result payloads
+    severity_counts: dict[str, int] = {}
+    for r in records:
+        if r.result and "findings" in r.result:
+            for finding in r.result["findings"]:
+                sev = str(finding.get("severity", "info")).lower()
+                severity_counts[sev] = severity_counts.get(sev, 0) + 1
+
+    # Model usage per role
+    model_usage: dict[str, dict[str, int]] = {}
+    for r in records:
+        role_usage = model_usage.setdefault(r.role, {})
+        role_usage[r.model] = role_usage.get(r.model, 0) + 1
+
+    return DispatchAggregation(
+        total_tasks=len(records),
+        completed=completed,
+        blocked=blocked,
+        fix_cycles=fix_cycles,
+        review_findings_by_severity=severity_counts,
+        model_usage_per_role=model_usage,
+    )
+
+
+def persist_dispatch_summary(
+    plans_dir: Path,
+    obpi_id: str,
+    aggregation: DispatchAggregation,
+    records: list[SubagentDispatchRecord],
+) -> Path:
+    """Write dispatch summary for historical queries after marker cleanup."""
+    summary_path = plans_dir / f"{DISPATCH_SUMMARY_PREFIX}{obpi_id}.json"
+    payload = {
+        "obpi_id": obpi_id,
+        "aggregation": aggregation.model_dump(),
+        "records": [r.model_dump() for r in records],
+    }
+    summary_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    return summary_path
+
+
+def load_dispatch_summary(plans_dir: Path, obpi_id: str) -> dict[str, Any] | None:
+    """Load persisted dispatch summary for historical queries."""
+    summary_path = plans_dir / f"{DISPATCH_SUMMARY_PREFIX}{obpi_id}.json"
+    if not summary_path.is_file():
+        return None
+    return cast(dict[str, Any], json.loads(summary_path.read_text(encoding="utf-8")))
+
+
+def validate_agent_files(project_root: Path) -> list[str]:
+    """Validate that all pipeline agent files exist with required frontmatter.
+
+    Returns a list of validation error messages (empty = all valid).
+    """
+    errors: list[str] = []
+    required_keys = {"name", "tools"}
+    for role_name, rel_path in AGENT_FILE_MAP.items():
+        if not rel_path:
+            continue
+        agent_path = project_root / rel_path
+        if not agent_path.is_file():
+            errors.append(f"{rel_path}: file not found (role: {role_name})")
+            continue
+        content = agent_path.read_text(encoding="utf-8")
+        if not content.startswith("---"):
+            errors.append(f"{rel_path}: missing YAML frontmatter (role: {role_name})")
+            continue
+        parts = content.split("---", 2)
+        if len(parts) < 3:
+            errors.append(f"{rel_path}: malformed frontmatter (role: {role_name})")
+            continue
+        frontmatter = parts[1]
+        found_keys = set()
+        for line in frontmatter.strip().splitlines():
+            if ":" in line:
+                key = line.split(":", 1)[0].strip()
+                found_keys.add(key)
+        missing = required_keys - found_keys
+        if missing:
+            errors.append(
+                f"{rel_path}: missing frontmatter keys {sorted(missing)} (role: {role_name})"
+            )
+    return errors

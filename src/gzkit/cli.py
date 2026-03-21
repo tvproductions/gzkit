@@ -49,6 +49,7 @@ from gzkit.commands.common import (
     resolve_target_adr,
 )
 from gzkit.commands.plan import plan_cmd
+from gzkit.commands.roles import roles_cmd
 from gzkit.commands.state import state
 from gzkit.commands.status import (
     _adr_closeout_readiness,
@@ -5158,6 +5159,12 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Remove pipeline markers older than 4 hours",
     )
+    p_obpi_pipeline.add_argument(
+        "--no-subagents",
+        dest="no_subagents",
+        action="store_true",
+        help="Disable subagent dispatch (single-session fallback)",
+    )
     p_obpi_pipeline.set_defaults(
         func=lambda a: obpi_pipeline_cmd(
             obpi=a.obpi,
@@ -5306,6 +5313,11 @@ def _build_parser() -> argparse.ArgumentParser:
     chores_audit_target.add_argument("--all", dest="all_chores", action="store_true")
     chores_audit_target.add_argument("--slug")
     p_chores_audit.set_defaults(func=lambda a: chores_audit(all_chores=a.all_chores, slug=a.slug))
+
+    p_roles = commands.add_parser("roles", help="List pipeline agent roles and handoff contracts")
+    p_roles.add_argument("--pipeline", help="Show dispatch history for an OBPI pipeline run")
+    p_roles.add_argument("--json", dest="as_json", action="store_true")
+    p_roles.set_defaults(func=lambda a: roles_cmd(pipeline=a.pipeline, as_json=a.as_json))
 
     p_implement = commands.add_parser("implement", help="Run Gate 2 and record result")
     p_implement.add_argument("--adr")
