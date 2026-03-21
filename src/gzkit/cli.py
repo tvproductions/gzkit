@@ -38,6 +38,7 @@ from gzkit.commands.common import (
     _reject_pool_adr_for_lifecycle,
     _upsert_frontmatter_value,
     _write_adr_closeout_form,
+    check_version_sync,
     console,
     ensure_initialized,
     get_git_user,
@@ -47,6 +48,7 @@ from gzkit.commands.common import (
     resolve_adr_ledger_id,
     resolve_obpi_file,
     resolve_target_adr,
+    sync_project_version,
 )
 from gzkit.commands.plan import plan_cmd
 from gzkit.commands.roles import roles_cmd
@@ -2477,11 +2479,24 @@ def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
             _render_closeout_output(result, dry_run=dry_run)
         raise SystemExit(1)
 
+    # Version sync check
+    current_ver, adr_ver, needs_bump = check_version_sync(project_root, adr_id)
+
     if dry_run:
         if as_json:
+            result["version_sync"] = {
+                "current": current_ver,
+                "target": adr_ver,
+                "needs_bump": needs_bump,
+            }
             print(json.dumps(result, indent=2))
             return
         _render_closeout_output(result, dry_run=True)
+        if needs_bump:
+            console.print(
+                f"  Version sync: would bump {current_ver} → {adr_ver} "
+                f"(pyproject.toml, __init__.py, README.md)"
+            )
         return
 
     assert event is not None
@@ -2496,13 +2511,34 @@ def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
         attestation_command=attestation_command,
     )
     event.extra["evidence"]["closeout_form"] = str(closeout_form.relative_to(project_root))
+
+    # Bump version files when ADR version exceeds current project version
+    version_updated: list[str] = []
+    if needs_bump and adr_ver is not None:
+        version_updated = sync_project_version(project_root, adr_ver)
+        event.extra["evidence"]["version_sync"] = {
+            "previous": current_ver,
+            "new": adr_ver,
+            "files_updated": version_updated,
+        }
+
     ledger.append(event)
 
     if as_json:
+        result["version_sync"] = {
+            "current": current_ver,
+            "target": adr_ver,
+            "needs_bump": needs_bump,
+            "files_updated": version_updated,
+        }
         print(json.dumps(result, indent=2))
         return
 
     _render_closeout_output(result, dry_run=False)
+    if version_updated:
+        console.print(
+            f"[green]Version sync:[/green] {current_ver} → {adr_ver} ({', '.join(version_updated)})"
+        )
 
 
 def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
