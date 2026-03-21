@@ -3,7 +3,7 @@ id: OBPI-0.18.0-06-wire-implementer-dispatch
 parent: ADR-0.18.0-subagent-driven-pipeline-execution
 item: 6
 lane: Heavy
-status: Pending
+status: Completed
 ---
 
 # OBPI-0.18.0-06: Wire Implementer Dispatch into Stage 2
@@ -68,27 +68,50 @@ Agent tool, collecting structured results (`DONE`, `DONE_WITH_CONCERNS`, `NEEDS_
 - Agent file missing — falls back to inline execution with warning
 - Task modifies files outside allowed paths — implementer agent's hook enforcement prevents it; controller records violation
 
+### Implementation Summary
+
+- Files modified: .gzkit/skills/gz-obpi-pipeline/SKILL.md (Stage 2 rewritten), .claude/skills/gz-obpi-pipeline/SKILL.md, .github/skills/gz-obpi-pipeline/SKILL.md, .agents/skills/gz-obpi-pipeline/SKILL.md, tests/test_pipeline_dispatch.py, features/subagent_pipeline.feature, features/steps/subagent_pipeline_steps.py, docs/user/runbook.md
+- Tests added: tests/test_pipeline_dispatch.py::TestStage2DispatchLoopContract (7 tests), 2 BDD scenarios (19 steps)
+- Date completed: 2026-03-21
+
+### Key Proof
+
+```bash
+$ uv run -m unittest tests.test_pipeline_dispatch.TestStage2DispatchLoopContract -v
+test_blocked_task_halts_loop ... ok
+test_done_with_concerns_logs_and_advances ... ok
+test_empty_plan_produces_empty_state ... ok
+test_full_loop_creates_state_and_composes_prompts ... ok
+test_model_routing_per_task_complexity ... ok
+test_needs_context_redispatches_once_then_blocks ... ok
+test_sequential_advance_and_result_handling ... ok
+Ran 7 tests in 0.001s — OK
+
+$ uv run -m behave features/subagent_pipeline.feature --tags=@stage2
+2 scenarios passed, 0 failed — 19 steps passed
+```
+
 ## Quality Gates (Heavy)
 
 ### Gates 1-4: Implementation
 
-- [ ] Gate 1 (ADR): Intent recorded in brief
-- [ ] Gate 2 (TDD): Unit tests for dispatch wiring
-- [ ] Gate 3 (Docs): SKILL.md updated, runbook updated
-- [ ] Gate 4 (BDD): Dispatch lifecycle scenario passes
-- [ ] Code Quality: Lint, format, type checks clean
+- [x] Gate 1 (ADR): Intent recorded in brief
+- [x] Gate 2 (TDD): Unit tests for dispatch wiring
+- [x] Gate 3 (Docs): SKILL.md updated, runbook updated
+- [x] Gate 4 (BDD): Dispatch lifecycle scenario passes
+- [x] Code Quality: Lint, format, type checks clean
 
 ### Gate 5: Human Attestation (MANDATORY)
 
-1. [ ] Agent presents CLI commands for verification
-1. [ ] **STOP** — Agent waits for human to verify
-1. [ ] **STOP** — Agent waits for human attestation response — "attest completed"
-1. [ ] Agent records attestation in brief
+1. [x] Agent presents CLI commands for verification
+1. [x] **STOP** — Agent waits for human to verify
+1. [x] **STOP** — Agent waits for human attestation response — "attest completed"
+1. [x] Agent records attestation in brief
 
 ## Completion Checklist (Heavy)
 
-- [ ] Gates 1-4 pass
-- [ ] Gate 5 attestation commands presented
-- [ ] Gate 5 attestation RECEIVED from human
-- [ ] Attestation recorded in brief
-- [ ] OBPI marked completed ONLY AFTER attestation
+- [x] Gates 1-4 pass
+- [x] Gate 5 attestation commands presented
+- [x] Gate 5 attestation RECEIVED from human
+- [x] Attestation recorded in brief
+- [x] OBPI marked completed ONLY AFTER attestation

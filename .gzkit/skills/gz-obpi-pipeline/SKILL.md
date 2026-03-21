@@ -149,11 +149,65 @@ Exception mode: Stage 4 = SELF-CLOSE (record evidence, proceed)
 
 ### Stage 2: Implement (skipped by `--from=verify` or `--from=ceremony`)
 
-1. Create task list from plan steps
+**Check the `--no-subagents` flag first.** If set, skip to the [Inline Fallback](#inline-fallback-no-subagents) below.
+
+#### Subagent Dispatch Mode (default)
+
+1. **Extract plan tasks** from the approved plan file using `extract_plan_tasks()` patterns (headings or numbered items).
+2. **Create task list:**
    - Normal mode: Last task MUST be "Present OBPI Acceptance Ceremony"
    - Exception mode: Last task MUST be "Record OBPI Evidence and Self-Close"
+3. **Read brief requirements** — extract the `## Requirements (FAIL-CLOSED)` section from the OBPI brief. These are passed to each implementer as scoped context.
+4. **For each plan task** (sequential — one implementer at a time, never parallel):
+
+   a. **Classify complexity** based on allowed file count:
+      - 1-2 files → `simple`
+      - 3-5 files → `standard`
+      - 6+ files → `complex`
+
+   b. **Select model tier:**
+      - `simple` → `haiku` (fast, economical)
+      - `standard` → `sonnet` (balanced)
+      - `complex` → `opus` (most capable)
+
+   c. **Compose implementer prompt** with scoped context:
+      - Task description from the plan
+      - Allowed files from the brief allowlist
+      - Test expectations from the brief
+      - Brief requirements (the FAIL-CLOSED list)
+      - Implementer rules from `.claude/agents/implementer.md`
+
+   d. **Dispatch via Agent tool:**
+      ```
+      Agent tool call:
+        subagent_type: "implementer"
+        model: <selected tier from step b>
+        prompt: <composed prompt from step c>
+        description: "Implement task N: <short description>"
+      ```
+
+   e. **Parse HandoffResult** from the subagent output — look for a JSON code block with `status`, `files_changed`, `tests_added`, `concerns` fields.
+
+   f. **Record dispatch** — create a `SubagentDispatchRecord` with task_id, role="Implementer", model, timestamps, and result. Persist to the pipeline active marker.
+
+   g. **Handle result status:**
+      - `DONE` → advance to next task
+      - `DONE_WITH_CONCERNS` → log concerns to dispatch state, advance to next task
+      - `NEEDS_CONTEXT` → provide additional context from the brief and redispatch **once**. A second `NEEDS_CONTEXT` is treated as `BLOCKED`.
+      - `BLOCKED` → halt Stage 2, record blocker reason, present to user. **Do not continue to the next task.**
+
+5. **Persist dispatch state** after each task completes (success or failure).
+6. **After all tasks complete:** persist dispatch summary for `gz roles --pipeline` queries.
+
+**Abort if:** Any task returns `BLOCKED` after retry. Create handoff, release lock, and stop.
+
+#### Inline Fallback (`--no-subagents`)
+
+When `--no-subagents` is set, Stage 2 runs entirely in the main session (no Agent tool dispatch):
+
+1. Create task list from plan steps (same as above)
 2. Follow the approved plan step by step
-3. Keep edits inside the brief allowlist and transaction contract.
+3. Keep edits inside the brief allowlist and transaction contract
 4. Write code with tests (unittest, TempDBMixin for DB, coverage >= 40%)
 5. Run `uv run ruff check . --fix && uv run ruff format .` after code changes
 6. Run `uv run -m unittest -q` after implementation
