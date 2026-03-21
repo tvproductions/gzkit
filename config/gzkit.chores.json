@@ -164,6 +164,13 @@
             "version": "1.0.0",
             "path": "ops/chores/arb-pattern-extraction",
             "lane": "lite"
+        },
+        {
+            "slug": "skill-command-doc-parity",
+            "title": "Skill & Command Documentation Parity",
+            "version": "1.0.0",
+            "path": "ops/chores/skill-command-doc-parity",
+            "lane": "heavy"
         }
     ]
 }
