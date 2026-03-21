@@ -126,6 +126,9 @@ The abstract role and dispatch concepts in this ADR map to concrete Claude Code 
 | 3 | Two-Stage Review | No independent review — implementer self-reviews. Quality regressions caught later in Stage 3 or (worse) by the human in Stage 4. |
 | 4 | REQ Verification | Stage 3 runs sequentially on all requirements. No wall-clock improvement on OBPIs with many non-overlapping requirements. |
 | 5 | Runtime Integration | Dispatch patterns exist but nothing is wired together. No CLI surface, no state tracking, no SKILL.md documentation. Pipeline cannot actually use subagents. |
+| 6 | Wire Implementer Dispatch | Stage 2 has dispatch machinery but SKILL.md still executes inline. The core value proposition — fresh subagents per task — is unrealized. |
+| 7 | Wire Two-Stage Review | Implementer tasks complete without independent review. Quality regressions caught late or missed entirely. |
+| 8 | Wire REQ Verification | Stage 3 verification runs sequentially. No wall-clock improvement from parallel dispatch on multi-REQ briefs. |
 
 ## Interfaces
 
@@ -149,6 +152,9 @@ The Completion Checklist is substantiated by OBPI fulfillment.
 | 3 | OBPI-0.18.0-03 | Two-stage review protocol: spec compliance + code quality reviewer subagents | Lite | Pending |
 | 4 | OBPI-0.18.0-04 | REQ-level parallel verification dispatch in Stage 3 | Lite | Pending |
 | 5 | OBPI-0.18.0-05 | Pipeline runtime and skill integration: dispatch tracking, result aggregation, model routing | Heavy | Pending |
+| 6 | OBPI-0.18.0-06 | Wire implementer dispatch into Stage 2 of the pipeline skill | Heavy | Pending |
+| 7 | OBPI-0.18.0-07 | Wire two-stage review into the pipeline flow after each implementation task | Heavy | Pending |
+| 8 | OBPI-0.18.0-08 | Wire REQ verification dispatch into Stage 3 | Heavy | Pending |
 
 **Briefs location:** `obpis/OBPI-0.18.0-*.md` (each brief is a **Level 2 WBS** element)
 
@@ -183,13 +189,17 @@ OBPI-01 (role taxonomy)
   ├──► OBPI-02 (implementer dispatch)   ─┐
   ├──► OBPI-03 (reviewer protocol)       ├──► OBPI-05 (runtime integration)
   └──► OBPI-04 (REQ verification)       ─┘
+                                           │
+                                           ├──► OBPI-06 (wire implementer → Stage 2)
+                                           │      └──► OBPI-07 (wire review → after each task)
+                                           └──► OBPI-08 (wire REQ verification → Stage 3)
 ```
 
-**Critical path:** OBPI-01 → OBPI-02 → OBPI-05
+**Critical path:** OBPI-01 → OBPI-02 → OBPI-05 → OBPI-06 → OBPI-07
 
-**Parallelization:** After OBPI-01 completes, OBPIs 02, 03, and 04 can run concurrently. OBPI-05 sequences after 02, 03, 04 (needs all dispatch patterns defined to integrate).
+**Parallelization:** After OBPI-01 completes, OBPIs 02, 03, and 04 can run concurrently. OBPI-05 sequences after 02, 03, 04. After OBPI-05, OBPI-06 and OBPI-08 can run concurrently. OBPI-07 sequences after OBPI-06 (review wiring depends on implementer dispatch being wired).
 
-**Theoretical minimum stages:** 3 (01 alone → 02+03+04 in parallel → 05 alone)
+**Theoretical minimum stages:** 5 (01 → 02+03+04 → 05 → 06+08 → 07)
 
 ---
 
