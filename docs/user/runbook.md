@@ -40,6 +40,20 @@ uv run gz obpi pipeline OBPI-<X.Y.Z-NN>
 uv run gz roles
 uv run gz roles --pipeline OBPI-<X.Y.Z-NN>
 
+# 2c) Subagent dispatch operation
+#    Stage 2 dispatches fresh implementer subagents per plan task by default.
+#    Each task is classified by complexity (simple/standard/complex) and
+#    routed to the appropriate model tier (haiku/sonnet/opus).
+#
+#    --no-subagents flag disables dispatch and runs Stage 2 inline (single
+#    session, current behavior preserved as fallback for debugging).
+#
+#    If a task returns BLOCKED after retry, Stage 2 halts and creates a
+#    handoff. Inspect dispatch state in the pipeline marker:
+#      cat .claude/plans/.pipeline-active-OBPI-<X.Y.Z-NN>.json | python -m json.tool
+#
+#    Dispatch records show: task_id, role, model, timestamps, status, result.
+
 # 3) Verify this increment
 uv run gz implement --adr ADR-<X.Y.Z>
 uv run gz gates --gate 3 --adr ADR-<X.Y.Z>   # when docs changed

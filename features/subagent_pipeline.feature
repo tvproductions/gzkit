@@ -131,3 +131,28 @@ Feature: Subagent pipeline dispatch lifecycle
     Given a project directory with no agent files
     When I validate agent files
     Then validation finds 4 errors
+
+  @dispatch @stage2
+  Scenario: Stage 2 dispatch loop executes tasks sequentially
+    Given a plan with 3 tasks
+    And allowed paths ["src/a.py", "src/b.py"]
+    And brief requirements ["Config MUST parse TOML", "Validation MUST reject nulls"]
+    When the controller creates dispatch state for "OBPI-0.18.0-06" under "ADR-0.18.0"
+    And dispatches each task sequentially with DONE results
+    Then all 3 tasks are completed
+    And dispatch state is finished
+    And each task prompt includes brief requirements
+
+  @dispatch @stage2
+  Scenario: Stage 2 halts on BLOCKED task after fix attempts
+    Given a plan with 2 tasks
+    And allowed paths ["src/a.py"]
+    When the controller creates dispatch state for "OBPI-X" under "ADR-X"
+    And task 1 is dispatched
+    And task 1 returns BLOCKED
+    Then the dispatch action is "fix"
+    When task 1 is dispatched
+    And task 1 returns BLOCKED
+    Then the dispatch action is "handoff"
+    And task 2 remains pending
+    And dispatch state has 1 blocked task
