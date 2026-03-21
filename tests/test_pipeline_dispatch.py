@@ -127,17 +127,15 @@ class TestExtractPlanTasks(unittest.TestCase):
 class TestComposeImplementerPrompt(unittest.TestCase):
     """Verify implementer prompt structure."""
 
-    def _make_task(self, **overrides):
-        defaults = {
-            "task_id": 1,
-            "description": "Add feature X",
-            "allowed_paths": ["src/gzkit/example.py"],
-            "test_expectations": ["test_feature_x passes"],
-            "complexity": TaskComplexity.SIMPLE,
-            "model": "haiku",
-        }
-        defaults.update(overrides)
-        return DispatchTask(**defaults)
+    def _make_task(self, **overrides: object) -> DispatchTask:
+        return DispatchTask(
+            task_id=overrides.get("task_id", 1),  # type: ignore[arg-type]
+            description=overrides.get("description", "Add feature X"),  # type: ignore[arg-type]
+            allowed_paths=overrides.get("allowed_paths", ["src/gzkit/example.py"]),  # type: ignore[arg-type]
+            test_expectations=overrides.get("test_expectations", ["test_feature_x passes"]),  # type: ignore[arg-type]
+            complexity=overrides.get("complexity", TaskComplexity.SIMPLE),  # type: ignore[arg-type]
+            model=overrides.get("model", "haiku"),  # type: ignore[arg-type]
+        )
 
     def test_contains_task_heading(self):
         task = self._make_task()
@@ -202,27 +200,27 @@ class TestParseHandoffResult(unittest.TestCase):
     def test_valid_done_result(self):
         output = f"Some text\n{self._result_json('DONE', files_changed=['a.py'])}\nMore"
         result = parse_handoff_result(output)
-        self.assertIsNotNone(result)
+        assert result is not None
         self.assertEqual(result.status, HandoffStatus.DONE)
         self.assertEqual(result.files_changed, ["a.py"])
 
     def test_done_with_concerns(self):
         output = self._result_json("DONE_WITH_CONCERNS", concerns=["might break X"])
         result = parse_handoff_result(output)
-        self.assertIsNotNone(result)
+        assert result is not None
         self.assertEqual(result.status, HandoffStatus.DONE_WITH_CONCERNS)
         self.assertEqual(result.concerns, ["might break X"])
 
     def test_blocked_result(self):
         output = self._result_json("BLOCKED", concerns=["missing dep"])
         result = parse_handoff_result(output)
-        self.assertIsNotNone(result)
+        assert result is not None
         self.assertEqual(result.status, HandoffStatus.BLOCKED)
 
     def test_needs_context_result(self):
         output = self._result_json("NEEDS_CONTEXT", concerns=["need schema"])
         result = parse_handoff_result(output)
-        self.assertIsNotNone(result)
+        assert result is not None
         self.assertEqual(result.status, HandoffStatus.NEEDS_CONTEXT)
 
     def test_no_json_block_returns_none(self):
