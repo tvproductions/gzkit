@@ -326,7 +326,7 @@ class TestParseReviewResult(unittest.TestCase):
     def test_valid_pass_verdict(self):
         output = self._review_json("PASS", summary="Everything looks good")
         result = parse_review_result(output)
-        self.assertIsNotNone(result)
+        assert result is not None
         self.assertEqual(result.verdict, ReviewVerdict.PASS)
         self.assertEqual(result.findings, [])
         self.assertEqual(result.summary, "Everything looks good")
@@ -337,7 +337,7 @@ class TestParseReviewResult(unittest.TestCase):
         ]
         output = self._review_json("FAIL", findings=findings, summary="Requirement gap")
         result = parse_review_result(output)
-        self.assertIsNotNone(result)
+        assert result is not None
         self.assertEqual(result.verdict, ReviewVerdict.FAIL)
         self.assertEqual(len(result.findings), 1)
         self.assertEqual(result.findings[0].severity, ReviewFindingSeverity.CRITICAL)
@@ -351,7 +351,7 @@ class TestParseReviewResult(unittest.TestCase):
         ]
         output = self._review_json("CONCERNS", findings=findings, summary="A few concerns")
         result = parse_review_result(output)
-        self.assertIsNotNone(result)
+        assert result is not None
         self.assertEqual(result.verdict, ReviewVerdict.CONCERNS)
         self.assertEqual(len(result.findings), 2)
 
@@ -364,7 +364,7 @@ class TestParseReviewResult(unittest.TestCase):
         ]
         output = self._review_json("CONCERNS", findings=findings)
         result = parse_review_result(output)
-        self.assertIsNotNone(result)
+        assert result is not None
         severities = {f.severity for f in result.findings}
         self.assertEqual(
             severities,
@@ -392,14 +392,14 @@ class TestParseReviewResult(unittest.TestCase):
         second = self._review_json("FAIL", summary="second block")
         output = f"Some text.\n{first}\nMore text.\n{second}\n"
         result = parse_review_result(output)
-        self.assertIsNotNone(result)
+        assert result is not None
         self.assertEqual(result.verdict, ReviewVerdict.PASS)
         self.assertEqual(result.summary, "first block")
 
     def test_pass_with_no_findings_succeeds(self):
         output = self._review_json("PASS")
         result = parse_review_result(output)
-        self.assertIsNotNone(result)
+        assert result is not None
         self.assertEqual(result.verdict, ReviewVerdict.PASS)
         self.assertEqual(result.findings, [])
 
@@ -411,7 +411,7 @@ class TestParseReviewResult(unittest.TestCase):
             + "\n\nEnd of review."
         )
         result = parse_review_result(prose)
-        self.assertIsNotNone(result)
+        assert result is not None
         self.assertEqual(result.verdict, ReviewVerdict.PASS)
 
     def test_empty_string_returns_none(self):

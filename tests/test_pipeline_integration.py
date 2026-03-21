@@ -213,7 +213,7 @@ class TestDispatchSummary(unittest.TestCase):
             self.assertTrue(path.is_file())
 
             loaded = load_dispatch_summary(plans_dir, obpi_id)
-            self.assertIsNotNone(loaded)
+            assert loaded is not None
             self.assertEqual(loaded["obpi_id"], obpi_id)
             self.assertEqual(loaded["aggregation"]["total_tasks"], 1)
 
