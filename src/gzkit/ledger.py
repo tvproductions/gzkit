@@ -279,6 +279,26 @@ def artifact_renamed_event(old_id: str, new_id: str, reason: str | None = None) 
     )
 
 
+def adr_eval_completed_event(
+    adr_id: str,
+    verdict: str,
+    adr_weighted_total: float,
+    obpi_count: int,
+    action_item_count: int,
+) -> LedgerEvent:
+    """Create an ADR evaluation completed event."""
+    return LedgerEvent(
+        event="adr_eval_completed",
+        id=adr_id,
+        extra={
+            "verdict": verdict,
+            "adr_weighted_total": adr_weighted_total,
+            "obpi_count": obpi_count,
+            "action_item_count": action_item_count,
+        },
+    )
+
+
 def lifecycle_transition_event(
     artifact_id: str,
     content_type: str,

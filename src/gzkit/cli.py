@@ -1673,6 +1673,68 @@ def _print_adr_promotion_applied(project_root: Path, promotion_plan: dict[str, A
     console.print(f"  Updated: {pool_file.relative_to(project_root)}")
 
 
+def adr_eval_cmd(adr_id: str, as_json: bool, write_scorecard: bool) -> None:
+    """Evaluate ADR/OBPI quality with deterministic structural checks."""
+    from gzkit.adr_eval import (  # noqa: PLC0415
+        EvalVerdict,
+        evaluate_adr,
+        render_scorecard_markdown,
+        resolve_adr_package,
+    )
+    from gzkit.ledger import adr_eval_completed_event  # noqa: PLC0415
+
+    config = ensure_initialized()
+    project_root = get_project_root()
+    adr_input = adr_id if adr_id.startswith("ADR-") else f"ADR-{adr_id}"
+
+    result = evaluate_adr(project_root, adr_input)
+
+    if write_scorecard:
+        adr_path, _, _ = resolve_adr_package(project_root, adr_input)
+        scorecard_path = adr_path.parent / "EVALUATION_SCORECARD.md"
+        scorecard_path.write_text(render_scorecard_markdown(result), encoding="utf-8")
+
+    ledger = Ledger(project_root / config.paths.ledger)
+    ledger.append(
+        adr_eval_completed_event(
+            adr_id=adr_input,
+            verdict=result.verdict.value,
+            adr_weighted_total=result.adr_weighted_total,
+            obpi_count=len(result.obpi_scores),
+            action_item_count=len(result.action_items),
+        )
+    )
+
+    if as_json:
+        print(json.dumps(result.model_dump(), indent=2))
+    else:
+        console.print(f"ADR Eval: {adr_input} — {result.verdict.replace('_', ' ')}")
+        console.print(f"  Weighted total: {result.adr_weighted_total:.2f}/4.0")
+        console.print(f"  OBPIs scored: {len(result.obpi_scores)}")
+        if result.action_items:
+            console.print("  Action items:")
+            for item in result.action_items[:5]:
+                console.print(f"    - {item}")
+
+    if result.verdict != EvalVerdict.GO:
+        raise SystemExit(3)
+
+
+def _check_scaffold_obpis(project_root: Path, promotion_plan: dict[str, Any]) -> int:
+    """Count promoted OBPIs that contain only template scaffold content."""
+    from gzkit.hooks.obpi import ObpiValidator  # noqa: PLC0415
+
+    validator = ObpiValidator(project_root)
+    obpi_plans = cast(list[dict[str, Any]], promotion_plan["obpi_plans"])
+    scaffold_count = 0
+    for plan in obpi_plans:
+        obpi_path = cast(Path, plan["obpi_file"])
+        warnings = validator.validate_file(obpi_path)
+        if warnings:
+            scaffold_count += 1
+    return scaffold_count
+
+
 def adr_promote_cmd(
     pool_adr: str,
     semver: str,
@@ -1683,6 +1745,7 @@ def adr_promote_cmd(
     target_status: str,
     as_json: bool,
     dry_run: bool,
+    force: bool = False,
 ) -> None:
     """Promote a pool ADR into canonical ADR package structure."""
     config = ensure_initialized()
@@ -1720,6 +1783,33 @@ def adr_promote_cmd(
 
     _apply_adr_promotion(ledger, promotion_plan)
     _print_adr_promotion_applied(project_root, promotion_plan)
+
+    obpi_plans = cast(list[dict[str, Any]], promotion_plan["obpi_plans"])
+    scaffold_count = _check_scaffold_obpis(project_root, promotion_plan)
+    if scaffold_count and not force:
+        console.print(
+            f"\n[red]Promotion blocked:[/red] {scaffold_count}/{len(obpi_plans)} OBPI briefs "
+            f"contain template scaffold — author briefs before implementation."
+        )
+        console.print("  Pass --force to override. (GHI #27)")
+        raise SystemExit(1)
+
+    # Quality gate: deterministic ADR/OBPI evaluation
+    if not force:
+        from gzkit.adr_eval import EvalVerdict, evaluate_adr  # noqa: PLC0415
+
+        target_adr_id = cast(str, promotion_plan["target_adr_id"])
+        eval_result = evaluate_adr(project_root, target_adr_id)
+        if eval_result.verdict != EvalVerdict.GO:
+            console.print(
+                f"\n[red]Promotion blocked:[/red] eval verdict "
+                f"{eval_result.verdict.replace('_', ' ')}"
+            )
+            console.print(f"  Weighted total: {eval_result.adr_weighted_total:.2f}/4.0")
+            for item in eval_result.action_items[:5]:
+                console.print(f"  - {item}")
+            console.print(f"  Run: gz adr eval {target_adr_id}")
+            raise SystemExit(3)
 
 
 def git_sync(
@@ -5088,6 +5178,11 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p_adr_promote.add_argument("--json", dest="as_json", action="store_true")
     p_adr_promote.add_argument("--dry-run", action="store_true")
+    p_adr_promote.add_argument(
+        "--force",
+        action="store_true",
+        help="Override scaffold quality gate (briefs contain only template defaults)",
+    )
     p_adr_promote.set_defaults(
         func=lambda a: adr_promote_cmd(
             pool_adr=a.pool_adr,
@@ -5099,6 +5194,23 @@ def _build_parser() -> argparse.ArgumentParser:
             target_status=a.target_status,
             as_json=a.as_json,
             dry_run=a.dry_run,
+            force=a.force,
+        )
+    )
+
+    p_adr_eval = adr_commands.add_parser(
+        "eval", help="Evaluate ADR/OBPI quality (deterministic scoring)"
+    )
+    p_adr_eval.add_argument("adr_id", help="ADR identifier (e.g., ADR-0.19.0)")
+    p_adr_eval.add_argument("--json", dest="as_json", action="store_true")
+    p_adr_eval.add_argument(
+        "--no-scorecard", dest="write_scorecard", action="store_false", default=True
+    )
+    p_adr_eval.set_defaults(
+        func=lambda a: adr_eval_cmd(
+            adr_id=a.adr_id,
+            as_json=a.as_json,
+            write_scorecard=a.write_scorecard,
         )
     )
 
