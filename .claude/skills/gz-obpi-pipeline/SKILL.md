@@ -279,8 +279,13 @@ After attestation (Normal) or self-close (Exception):
    The hook checks `attestation_type == "human"` or `evidence.human_attestation == true`.
 
 2. Run `/gz-obpi-audit {OBPI-ID}` to record full evidence ledger entry
-3. Update brief: check all criteria boxes, add evidence section, set status to `Completed`
-   - (Hooks `obpi-completion-validator.py` enforce evidence requirements)
+3. Update brief: check all criteria boxes, add evidence sections, set status to `Completed`
+   - **BEFORE setting status to Completed**, add these `###` (H3) sections to the brief:
+     - `### Implementation Summary` — bullet list with `- Key: value` format (files created, files modified, tests added, date completed)
+     - `### Key Proof` — concrete command + output (e.g., test run output, CLI output)
+   - The `obpi-completion-validator.py` hook enforces these sections exist with substantive content.
+     It will BLOCK the status change if they are missing or placeholder-only.
+   - Heading level MUST be `###` (H3), not `##` (H2). The hook matches `### Implementation Summary` exactly.
 4. Run `uv run gz obpi reconcile {OBPI-ID}` to confirm receipt and brief agree.
 5. Run `uv run gz adr status {PARENT-ADR} --json` so the parent ADR view
    reflects the reconciled OBPI state.
