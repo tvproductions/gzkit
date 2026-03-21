@@ -2,11 +2,11 @@
 id: OBPI-0.19.0-01-gz-closeout-adr-x-y-z-end-to-end-closeout-pipeline
 parent: ADR-0.19.0-closeout-audit-processes
 item: 1
-lane: Heavy
+lane: Lite
 status: Draft
 ---
 
-# OBPI-0.19.0-01-gz-closeout-adr-x-y-z-end-to-end-closeout-pipeline: `gz closeout ADR-X.Y.Z` — end-to-end closeout pipeline
+# OBPI-0.19.0-01: `gz closeout ADR-X.Y.Z` — end-to-end closeout pipeline
 
 ## ADR Item
 
@@ -17,73 +17,71 @@ status: Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-`gz closeout ADR-X.Y.Z` — end-to-end closeout pipeline.
+Transform `closeout_cmd()` from a passive reporter that lists verification steps into an active orchestrator that runs quality gates inline, prompts for human attestation, records the attestation event in the ledger, bumps the project version to match the ADR semver, and marks the ADR as Completed — all within a single command invocation so operators cannot skip intermediate steps.
 
 ## Lane
 
-**Heavy** - This OBPI changes a command/API/schema/runtime contract surface.
+**Lite** — Inherited from parent ADR lane (ledger `adr_created` event for ADR-0.19.0 records lane as `lite`).
 
-> Heavy is reserved for command/API/schema/runtime-contract changes. Process,
-> documentation, and template-only work stays Lite unless it changes one of
-> those external surfaces.
+> The parent ADR lane is Lite because this work orchestrates existing internal capabilities (gates, attest, version sync) into a pipeline. No new external CLI surface is created — `gz closeout` already exists. The change is behavioral: it runs steps inline instead of listing them.
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `src/gzkit/cli.py` — Contains `closeout_cmd()` (line ~2494), `_closeout_verification_steps()`, `_render_closeout_output()`, `_closeout_result_payload()`, and `_write_adr_closeout_form()` which must be modified to run gates inline and orchestrate attestation
+- `src/gzkit/commands/common.py` — Contains `run_command()` helper and `COMMAND_DOCS` registry; may need shared utilities for inline gate execution and attestation prompting
+- `tests/test_closeout_pipeline.py` — New test module for end-to-end closeout pipeline coverage including gate execution, attestation recording, version bump, and ADR completion marking
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
-- Paths not listed in Allowed Paths
-- New dependencies
-- CI files, lockfiles
+- `src/gzkit/ledger.py` — Ledger event schema is reused, not changed (ADR non-goal)
+- `.gzkit/ledger.jsonl` — Never edited manually
+- `src/gzkit/commands/audit.py` — Audit pipeline is OBPI-02 scope
+- `docs/user/commands/closeout.md` — Docs update is a separate concern unless output format changes
+- New dependencies, CI files, lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: `closeout_cmd()` MUST execute each verification step returned by `_closeout_verification_steps()` via `run_command()` inline, not merely list them in output. Each gate result (pass/fail, exit code, label) MUST be captured and included in the ledger event evidence.
+2. REQUIREMENT: If any inline gate execution fails (non-zero exit code), `closeout_cmd()` MUST halt the pipeline, report which gate failed with its output, and exit with code 1. Partial gate results MUST still be recorded in the closeout event evidence.
+3. REQUIREMENT: After all gates pass, `closeout_cmd()` MUST prompt for human attestation by presenting the attestation choices (`Completed`, `Completed - Partial: [reason]`, `Dropped - [reason]`) and recording the operator's selection as an `attestation` ledger event via the existing `attest` machinery.
+4. REQUIREMENT: `closeout_cmd()` MUST call `check_version_sync()` and `sync_project_version()` to bump version files when the ADR semver exceeds the current project version, and record the version sync result in the ledger event evidence.
+5. REQUIREMENT: After attestation and version bump succeed, `closeout_cmd()` MUST mark the ADR status as `Completed` in the ledger by appending the appropriate status-transition event.
+6. REQUIREMENT: `--dry-run` MUST show the full pipeline plan (gates that would run, attestation that would be prompted, version that would be bumped) without executing any gate, writing any ledger event, or modifying any file.
+7. REQUIREMENT: `--json` MUST emit a single JSON object to stdout containing all pipeline stage results (gate results array, attestation record, version sync record, ADR status transition) with logs to stderr.
+8. NEVER: `closeout_cmd()` MUST NOT skip the attestation prompt — even for Lite lane ADRs, the operator must explicitly confirm completion.
+9. NEVER: `closeout_cmd()` MUST NOT modify the ledger event schema. Existing event types (`closeout_initiated`, `attestation`, `gate_checked`) are reused.
+10. ALWAYS: Exit code 0 means all gates passed, attestation recorded, version bumped, and ADR marked Completed. Exit code 1 means a blocker or gate failure halted the pipeline.
 
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if prerequisites are missing (incomplete OBPIs, missing ADR file, ADR not in ledger), print a BLOCKERS list and halt with exit code 1.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first. -->
-
 **Governance (read once, cache):**
 
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
+- [ ] `.github/discovery-index.json` — repo structure
+- [ ] `AGENTS.md` or `CLAUDE.md` — agent operating contract
+- [ ] Parent ADR — understand full context
 
 **Context:**
 
 - [ ] Parent ADR: `docs/design/adr/pre-release/ADR-0.19.0-closeout-audit-processes/ADR-0.19.0-closeout-audit-processes.md`
-- [ ] Related OBPIs in same ADR
+- [ ] Related OBPIs: OBPI-0.19.0-08 (deprecate `gz gates`), OBPI-0.19.0-09 (deprecate manual `gz attest` during closeout)
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
+- [ ] `src/gzkit/cli.py` — `closeout_cmd()` exists at line ~2494
+- [ ] `src/gzkit/cli.py` — `_closeout_verification_steps()` exists at line ~2378
+- [ ] `src/gzkit/cli.py` — `run_command()` import exists for subprocess execution
+- [ ] `src/gzkit/cli.py` — `check_version_sync()` and `sync_project_version()` imports exist
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+- [ ] Pattern to follow: `audit_cmd()` at line ~2634 already runs `run_command()` in a loop and captures results — same pattern needed for closeout gates
+- [ ] Pattern to follow: `tests/commands/test_gates.py` — test harness for gate commands
+- [ ] Pattern to follow: `tests/commands/test_attest.py` — test harness for attestation
+- [ ] Test infrastructure: `tests/commands/common.py` — `CliRunner` and `_quick_init()` helpers
 
 ## Quality Gates
-
-<!-- Which gates apply and how to verify them. -->
 
 ### Gate 1: ADR
 
@@ -101,50 +99,37 @@ status: Draft
 - [ ] Lint clean: `uv run gz lint`
 - [ ] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
-### Gate 3: Docs (Heavy only)
-
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
-
-### Gate 4: BDD (Heavy only)
-
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
-
-### Gate 5: Human (Heavy only)
-
-- [ ] Human attestation recorded
-
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
-uv run gz validate --documents
-uv run gz lint
-uv run gz typecheck
+# Unit tests for closeout pipeline
+uv run python -m unittest tests.test_closeout_pipeline -v
+
+# Full test suite
 uv run gz test
 
-# Specific verification for this OBPI
-command --to --verify
+# Quality gates
+uv run gz lint
+uv run gz typecheck
+
+# Specific verification: closeout dry-run shows inline gate plan
+uv run gz closeout ADR-0.19.0 --dry-run
+
+# Specific verification: closeout JSON output includes gate results
+uv run gz closeout ADR-0.19.0 --dry-run --json
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.19.0-01-01: Given/When/Then behavior criterion 1
-- [ ] REQ-0.19.0-01-02: Given/When/Then behavior criterion 2
-- [ ] REQ-0.19.0-01-03: Given/When/Then behavior criterion 3
+- [ ] REQ-0.19.0-01-01: Given an ADR with all OBPIs completed, when `gz closeout ADR-X.Y.Z` is run, then each quality gate (lint, typecheck, test, and docs/BDD for heavy lane) is executed inline via `run_command()` and the gate pass/fail results are captured in the ledger event evidence.
+- [ ] REQ-0.19.0-01-02: Given a closeout where one quality gate fails (non-zero exit code), when `gz closeout ADR-X.Y.Z` is run, then the pipeline halts at the failing gate, reports which gate failed and its output, records partial results in evidence, and exits with code 1.
+- [ ] REQ-0.19.0-01-03: Given all quality gates pass, when `gz closeout ADR-X.Y.Z` is run, then the command prompts for human attestation with the standard choices and records the attestation event in the ledger.
+- [ ] REQ-0.19.0-01-04: Given attestation is recorded and the ADR semver exceeds the current project version, when `gz closeout ADR-X.Y.Z` is run, then `sync_project_version()` bumps pyproject.toml, `__init__.py`, and README.md, and the version sync result is recorded in the ledger event evidence.
+- [ ] REQ-0.19.0-01-05: Given attestation and version bump succeed, when `gz closeout ADR-X.Y.Z` is run, then the ADR status transitions to Completed via a ledger status-transition event and the command exits with code 0.
+- [ ] REQ-0.19.0-01-06: Given any ADR, when `gz closeout ADR-X.Y.Z --dry-run` is run, then the full pipeline plan is displayed (gates to run, attestation to prompt, version to bump) without executing any gate, writing any ledger event, or modifying any file.
+- [ ] REQ-0.19.0-01-07: Given any ADR, when `gz closeout ADR-X.Y.Z --json` is run, then the output is a single valid JSON object containing gate results, attestation record, version sync, and ADR status transition, with all non-JSON output directed to stderr.
 
 ## Completion Checklist
-
-<!-- Verify all gates before marking OBPI accepted. -->
 
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
 - [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
@@ -156,9 +141,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
 ## Evidence
-
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
 
 ### Gate 1 (ADR)
 
@@ -176,31 +158,27 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 # Paste lint/format/type check output here
 ```
 
-### Gate 3 (Docs)
-
-```text
-# Paste docs-build output here when Gate 3 applies
-```
-
-### Gate 4 (BDD)
-
-```text
-# Paste behave output here when Gate 4 applies
-```
-
-### Gate 5 (Human)
-
-```text
-# Record attestation text here when required by parent lane
-```
-
 ## Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before this OBPI, `gz closeout` was a passive reporter: it checked OBPI completion, listed verification commands the operator should run manually, printed attestation instructions, and recorded a `closeout_initiated` event. The operator then had to manually run `gz lint`, `gz test`, `gz typecheck`, `gz attest`, and hope they did not skip any step. In practice, ADRs routinely ended up partially closed out — attestation missing, version never bumped, gates never actually executed.
+
+After this OBPI, `gz closeout ADR-X.Y.Z` is a single orchestrated pipeline that runs gates inline, halts on failure, prompts for attestation, bumps version, and marks the ADR Completed. The operator runs one command; the pipeline enforces the full sequence.
 
 ## Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+```text
+$ uv run gz closeout ADR-0.19.0 --dry-run
+Dry run: no ledger event will be written.
+  Would initiate closeout for: ADR-0.19.0-closeout-audit-processes
+  Gate 1 (ADR): docs/design/adr/pre-release/ADR-0.19.0-closeout-audit-processes/ADR-0.19.0-closeout-audit-processes.md
+  OBPI Completion: 9/9 complete
+  Would run: Gate 2 (TDD): uv run gz test
+  Would run: Quality (Lint): uv run gz lint
+  Would run: Quality (Typecheck): uv run gz typecheck
+  Would prompt for attestation: [Completed | Completed - Partial | Dropped]
+  Version sync: would bump 0.18.0 -> 0.19.0 (pyproject.toml, __init__.py, README.md)
+  Would transition ADR status: Proposed -> Completed
+```
 
 ### Implementation Summary
 
@@ -212,16 +190,13 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ## Tracked Defects
 
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
-
 _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `human:<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `n/a` (Lite lane — self-closeable after evidence)
+- Attestation: `n/a`
+- Date: `n/a`
 
 ---
 
