@@ -702,8 +702,10 @@ class TestAdrRuntimeCommands(unittest.TestCase):
             self.assertIn('"obpi_completion":"attested_completed"', ledger_content)
             self.assertIn('"req_proof_inputs"', ledger_content)
 
-    def test_obpi_emit_receipt_lite_obpi_under_heavy_parent_accepts_agent_attestor(self) -> None:
-        """Lite-lane OBPI under Heavy parent does not require human attestor (GHI-24)."""
+    def test_obpi_emit_receipt_lite_obpi_under_heavy_parent_requires_human_attestation(
+        self,
+    ) -> None:
+        """Lite-lane OBPI under Heavy parent inherits parent attestation rigor."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             _init_git_repo(Path("."))
@@ -718,6 +720,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                 brief_status="Draft",
                 implementation_line="src/demo.py",
                 lane="Lite",
+                human_attestation=("human:jeff", "attest completed", "2026-03-21"),
             )
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
@@ -730,17 +733,20 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                     "--event",
                     "completed",
                     "--attestor",
-                    "agent:claude-code",
+                    "human:jeff",
                     "--evidence-json",
                     (
                         '{"value_narrative":"vendor manifest schema implemented",'
-                        '"key_proof":"config.vendors.claude.enabled returns True"}'
+                        '"key_proof":"config.vendors.claude.enabled returns True",'
+                        '"human_attestation":true,'
+                        '"attestation_text":"attest completed",'
+                        '"attestation_date":"2026-03-21"}'
                     ),
                 ],
             )
             self.assertEqual(result.exit_code, 0, msg=result.output)
             ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
-            self.assertIn('"obpi_completion":"completed"', ledger_content)
+            self.assertIn('"obpi_completion":"attested_completed"', ledger_content)
 
     def test_obpi_emit_receipt_completed_enriches_structured_receipt_context(self) -> None:
         runner = CliRunner()
