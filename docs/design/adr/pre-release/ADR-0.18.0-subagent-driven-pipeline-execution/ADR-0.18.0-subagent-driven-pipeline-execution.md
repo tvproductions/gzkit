@@ -311,3 +311,9 @@ If "Request Changes," required fixes:
 1. ...
 
 1. ...
+
+## Attestation Block
+
+| Term | Status | Attested By | Date | Reason |
+|------|--------|-------------|------|--------|
+| 0.18.0 | Completed | Jeffry Babb | 2026-03-21 | completed |

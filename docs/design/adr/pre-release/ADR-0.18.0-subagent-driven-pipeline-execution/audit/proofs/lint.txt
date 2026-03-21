@@ -1,0 +1,14 @@
+$ uv run gz lint
+
+[returncode] 0
+
+[stdout]
+Running linters...
+All checks passed!
+
+ADR path contract check passed.
+Lint passed.
+
+
+[stderr]
+
