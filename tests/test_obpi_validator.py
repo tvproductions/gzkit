@@ -380,3 +380,75 @@ status: {status}
 
         errors = self.validator.validate_file(path)
         self.assertIn("Merge commit at HEAD. Linearize history before completion.", errors)
+
+    # ------------------------------------------------------------------
+    # Template scaffold detection (GHI #27)
+    # ------------------------------------------------------------------
+
+    def _create_scaffold_obpi(self, adr_id: str, *, status: str = "Draft") -> Path:
+        """Create an OBPI with the exact template defaults from superbook."""
+        self._register_adr(adr_id)
+        obpi_id = f"OBPI-{adr_id}-01"
+        path = self.project_root / f"{obpi_id}.md"
+        path.write_text(
+            f"---\nid: {obpi_id}\nparent: {adr_id}\nstatus: {status}\n---\n\n"
+            f"# {obpi_id}\n\n"
+            "## Allowed Paths\n"
+            "- `src/module/` - Reason this is in scope\n"
+            "- `tests/test_module.py` - Reason\n\n"
+            "## Requirements (FAIL-CLOSED)\n"
+            "1. REQUIREMENT: First constraint\n"
+            "1. REQUIREMENT: Second constraint\n"
+            "1. NEVER: What must not happen\n"
+            "1. ALWAYS: What must always be true\n\n"
+            "## Acceptance Criteria\n"
+            "- [ ] REQ-0.1.0-01-01: Given/When/Then behavior criterion 1\n"
+            "- [ ] REQ-0.1.0-01-02: Given/When/Then behavior criterion 2\n\n"
+            "### Implementation Summary\n"
+            "- Files created/modified:\n"
+            "- Tests added:\n\n"
+            "## Key Proof\n\n",
+            encoding="utf-8",
+        )
+        return path
+
+    def test_draft_scaffold_detected(self):
+        """Draft OBPIs with template scaffold return warnings."""
+        path = self._create_scaffold_obpi("ADR-0.1.0", status="Draft")
+        errors = self.validator.validate_file(path)
+        self.assertTrue(len(errors) >= 3, f"Expected >=3 scaffold warnings, got {errors}")
+        self.assertTrue(any("src/module/" in e for e in errors))
+        self.assertTrue(any("First constraint" in e for e in errors))
+        self.assertTrue(any("Given/When/Then" in e for e in errors))
+
+    def test_completed_scaffold_also_detected(self):
+        """Completed OBPIs with template scaffold include scaffold errors."""
+        path = self._create_scaffold_obpi("ADR-0.1.0", status="Completed")
+        errors = self.validator.validate_file(path)
+        self.assertTrue(any("src/module/" in e for e in errors))
+
+    def test_draft_without_scaffold_passes(self):
+        """Draft OBPIs with real content return no warnings."""
+        path = self._create_obpi("ADR-0.1.0", status="Draft", summary="- Done: Real work")
+        errors = self.validator.validate_file(path)
+        self.assertEqual(errors, [])
+
+    def test_scaffold_partial_detection(self):
+        """Brief with only some scaffold sections still catches those."""
+        self._register_adr("ADR-0.1.0")
+        obpi_id = "OBPI-ADR-0.1.0-01"
+        path = self.project_root / f"{obpi_id}.md"
+        path.write_text(
+            f"---\nid: {obpi_id}\nparent: ADR-0.1.0\nstatus: Draft\n---\n\n"
+            f"# {obpi_id}\n\n"
+            "## Allowed Paths\n"
+            "- `src/gzkit/closeout.py` - Real path\n\n"
+            "## Requirements (FAIL-CLOSED)\n"
+            "1. REQUIREMENT: First constraint\n\n"
+            "## Acceptance Criteria\n"
+            "- [ ] REQ-0.1.0-01-01: Closeout bumps version\n",
+            encoding="utf-8",
+        )
+        errors = self.validator.validate_file(path)
+        self.assertEqual(len(errors), 1)
+        self.assertIn("First constraint", errors[0])

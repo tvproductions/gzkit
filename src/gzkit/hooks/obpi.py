@@ -27,8 +27,16 @@ STRICT_PLACEHOLDERS = {
     "one-sentence concrete outcome",
 }
 
+# Template defaults emitted by superbook.build_obpi_plan() that indicate
+# an OBPI brief was auto-generated but never authored.
+TEMPLATE_SCAFFOLD_MARKERS: dict[str, list[str]] = {
+    "Allowed Paths": ["src/module/"],
+    "Requirements (FAIL-CLOSED)": ["First constraint", "Second constraint"],
+    "Acceptance Criteria": ["Given/When/Then behavior criterion"],
+}
 
-def _section_body(content: str, heading: str) -> str | None:
+
+def section_body(content: str, heading: str) -> str | None:
     """Return the body of an H2/H3 section when present."""
     for marker in ("##", "###"):
         pattern = (
@@ -45,7 +53,7 @@ def _section_body(content: str, heading: str) -> str | None:
 
 def extract_allowed_paths(content: str) -> list[str]:
     """Extract normalized allowlist patterns from an OBPI brief."""
-    section = _section_body(content, "Allowed Paths")
+    section = section_body(content, "Allowed Paths")
     if not section:
         return []
 
@@ -210,11 +218,13 @@ class ObpiValidator:
         content = obpi_path.read_text(encoding="utf-8")
         status = (parse_frontmatter_value(content, "status") or "").strip().lower()
 
-        # Only enforce completion rules if status is 'completed'
+        # Check for template scaffold on any status — these indicate a brief
+        # was auto-generated but never authored.  GHI #27.
+        scaffold_warnings = self._detect_template_scaffold(content)
         if status != "completed":
-            return []
+            return scaffold_warnings
 
-        errors = []
+        errors = list(scaffold_warnings)
 
         # 1. Resolve Lane Inheritance
         parent_id = parse_frontmatter_value(content, "parent")
@@ -251,6 +261,26 @@ class ObpiValidator:
 
         return errors
 
+    def _detect_template_scaffold(self, content: str) -> list[str]:
+        """Detect auto-generated template defaults that were never authored.
+
+        Returns a list of warnings identifying which sections still contain
+        the scaffold defaults emitted by ``superbook.build_obpi_plan()``.
+        """
+        warnings: list[str] = []
+        for section_name, markers in TEMPLATE_SCAFFOLD_MARKERS.items():
+            body = self._section_body(content, section_name)
+            if body is None:
+                continue
+            for marker in markers:
+                if marker in body:
+                    warnings.append(
+                        f"'{section_name}' contains template placeholder "
+                        f"'{marker}' — brief was auto-generated but never authored."
+                    )
+                    break
+        return warnings
+
     def _validate_changed_files(self, changed_files: list[str], allowlist: list[str]) -> list[str]:
         """Validate the live changed-file set against the allowlist."""
         errors: list[str] = []
@@ -275,7 +305,7 @@ class ObpiValidator:
 
     def _section_body(self, content: str, heading: str) -> str | None:
         """Return the body of an H2/H3 section when present."""
-        return _section_body(content, heading)
+        return section_body(content, heading)
 
     def _is_placeholder(self, text: str) -> bool:
         """Return True if text consists only of placeholder tokens."""
