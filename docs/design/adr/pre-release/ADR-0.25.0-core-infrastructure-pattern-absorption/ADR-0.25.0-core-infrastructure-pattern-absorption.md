@@ -54,14 +54,49 @@ date: 2026-03-21
 
 ## Feature Checklist — Appraisal of Completeness
 
-- Scope and surface
-  - External contract may change (Heavy lane) — new modules may introduce new CLI capabilities or change behavior of existing commands
-- Tests
-  - Each absorbed module must have unit tests; coverage >= 40%
-- Docs
-  - Decision rationale documented per OBPI (absorb/confirm/exclude)
-- OBPI mapping
-  - Each numbered checklist item maps to one brief; 17 items = 17 briefs
+1. **OBPI-0.25.0-01:** Attestation pattern comparison and decision for
+   `core/attestation.py`
+2. **OBPI-0.25.0-02:** Progress facade comparison and decision for
+   `core/progress.py`
+3. **OBPI-0.25.0-03:** Signature and artifact-fingerprinting comparison and
+   decision for `core/signature.py`
+4. **OBPI-0.25.0-04:** World-state snapshot comparison and decision for
+   `core/world_state.py`
+5. **OBPI-0.25.0-05:** Dataset-version utility comparison and decision for
+   `core/dataset_version.py`
+6. **OBPI-0.25.0-06:** Registry pattern comparison and decision for
+   `core/registry.py`
+7. **OBPI-0.25.0-07:** Core types comparison and decision for `core/types.py`
+8. **OBPI-0.25.0-08:** Ledger pattern comparison and decision for
+   `core/ledger.py`
+9. **OBPI-0.25.0-09:** Schema utility comparison and decision for
+   `core/schema.py`
+10. **OBPI-0.25.0-10:** Error hierarchy comparison and decision for
+    `core/errors.py`
+11. **OBPI-0.25.0-11:** Hook dispatch comparison and decision for
+    `core/hooks.py`
+12. **OBPI-0.25.0-12:** Admission-control comparison and decision for
+    `core/admission.py`
+13. **OBPI-0.25.0-13:** QC interface comparison and decision for `core/qc.py`
+14. **OBPI-0.25.0-14:** Cross-platform OS utility comparison and decision for
+    `common/os.py`
+15. **OBPI-0.25.0-15:** Manifest loading/validation comparison and decision for
+    `common/manifests.py`
+16. **OBPI-0.25.0-16:** Configuration-helper comparison and decision for
+    `common/config.py`
+17. **OBPI-0.25.0-17:** Console abstraction comparison and decision for
+    `common/console.py`
+
+Support obligations for the checklist above:
+
+- Parent ADR is Heavy because the program explicitly permits absorption into
+  shared runtime and operator-facing surfaces
+- Each numbered checklist item maps 1:1 to one brief and one module-comparison
+  record
+- `Absorb` outcomes require tests and, when operator-visible behavior changes,
+  Gate 4 behavioral proof
+- `Confirm` and `Exclude` outcomes still require comparison-based rationale
+  grounded in both codebases
 
 ## Intent
 
@@ -73,6 +108,37 @@ gzkit must own all reusable core infrastructure patterns. airlineops's `core/` a
 - For each module: read both implementations, compare maturity/completeness/robustness, document decision
 - Three possible outcomes per module: **Absorb** (airlineops is better), **Confirm** (gzkit is sufficient), **Exclude** (domain-specific, does not belong in gzkit)
 - Absorbed modules must follow gzkit conventions: Pydantic BaseModel, pathlib.Path, UTF-8 encoding, no bare except
+
+### Alternatives Considered
+
+| Alternative | Why rejected |
+|-------------|-------------|
+| **Single mega-OBPI for all 17 modules** | Too opaque. A monolithic absorption effort would hide per-module rationale, make partial progress hard to review, and break the subtraction-test audit trail. |
+| **Group modules into a few broad domains instead of per-module decisions** | Better than one mega-OBPI, but still too coarse. Stronger modules would mask weaker ones, and reviewers could not see exactly which reusable patterns did or did not move upstream. |
+| **Only absorb modules missing from gzkit and skip side-by-side comparisons where gzkit already has an implementation** | This would bias the program toward gzkit-by-default and violate the ADR's own critical constraint that airlineops wins where it is more battle-tested. |
+| **Use file size or rough surface similarity as the sufficiency test** | Length is not proof of maturity, edge-case handling, or better abstractions. The anti-pattern here is deciding without reading both implementations completely. |
+
+### Checklist Item Necessity Table
+
+| # | OBPI | If removed, what specific capability is lost? |
+|---|------|----------------------------------------------|
+| 1 | Attestation | No explicit decision on whether gzkit is missing reusable attestation infrastructure. |
+| 2 | Progress | No grounded decision on whether gzkit needs a unified progress facade. |
+| 3 | Signature | No decision on cryptographic hashing/fingerprinting absorption, leaving a likely generic primitive stranded. |
+| 4 | World state | No decision on immutable snapshot/state identity patterns. |
+| 5 | Dataset version | No decision on whether airlineops version-management logic is reusable or airline-specific. |
+| 6 | Registry | No explicit proof that gzkit's registry truly subsumes airlineops's pattern. |
+| 7 | Types | No decision on whether shared type definitions belong upstream. |
+| 8 | Ledger | No explicit comparison proving gzkit's ledger already covers airlineops needs. |
+| 9 | Schema | No grounded decision on whether airlineops has reusable schema utilities. |
+| 10 | Errors | No decision on whether gzkit should standardize around a core exception hierarchy. |
+| 11 | Hooks | No explicit comparison of hook-dispatch patterns across repositories. |
+| 12 | Admission | No decision on whether admission-control belongs in gzkit as generic governance infrastructure. |
+| 13 | QC | No proof that gzkit's quality surface subsumes airlineops's QC interface ideas. |
+| 14 | OS | No decision on whether cross-platform OS helpers should move upstream. |
+| 15 | Manifests | No grounded decision on manifest loading/validation reuse. |
+| 16 | Config | No explicit comparison proving gzkit config helpers are sufficient. |
+| 17 | Console | No decision on whether airlineops has cleaner console abstractions worth extracting into gzkit. |
 
 ## Interfaces
 
@@ -106,11 +172,65 @@ gzkit must own all reusable core infrastructure patterns. airlineops's `core/` a
 
 **WBS Completeness Rule:** Every row in this table has a corresponding brief file.
 
+**Dependency Graph:**
+
+```text
+All 17 OBPIs can begin as comparison units once the tidy-first cross-reference
+matrix is assembled.
+
+Comparison tranche (parallelizable):
+  01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17
+
+Implementation / proof consequence:
+  Any OBPI with an Absorb decision
+    └──► module adaptation + tests
+           └──► docs / Gate 4 proof when operator-visible behavior changes
+```
+
+**Critical path:** assemble the cross-reference matrix, complete the slowest
+comparison tranche, then execute any absorb-path implementation and behavioral
+verification required by the winning modules.
+
+**Verification spine:**
+
+- All OBPIs: comparison rationale recorded in the corresponding brief
+- Absorb outcomes: module/tests exist and `uv run gz test` passes
+- Heavy surface changes: `uv run -m behave features/core_infrastructure.feature`
+  or equivalent module-level BDD proof passes when operator-visible behavior
+  changes
+- Whole package: `uv run gz lint` and `uv run gz validate --documents`
+
 **Lane definitions:**
 
-- **Heavy** — All OBPIs are Heavy because absorbed infrastructure may change external contracts
+- **Heavy** — All OBPIs inherit Heavy scrutiny because every comparison may end
+  in absorption into shared runtime or operator-facing surfaces. Gate 4 is
+  required when the chosen path changes operator-visible behavior; a brief may
+  record BDD as `N/A` only when the final decision is `Confirm` or `Exclude`
+  with no external-surface change.
 
 ---
+
+## Non-Goals
+
+- No wholesale rewrite of gzkit infrastructure beyond the specific module
+  selected by an `Absorb` decision.
+- No assumption that airlineops always wins because it is older or more
+  battle-tested, or that gzkit always wins because it is larger.
+- No absorption of airline-specific semantics that fail the subtraction test.
+- No bundling of multiple module decisions into one undocumented rationale.
+- No uncontrolled refactor of unrelated gzkit command flows while evaluating a
+  module comparison.
+
+### Scope Creep Guardrails
+
+- If a comparison exposes a larger architectural redesign beyond the target
+  module, split that redesign into a follow-on ADR or OBPI instead of hiding it
+  inside the absorption brief.
+- If a module is confirmed as sufficient in gzkit, do not invent refactor work
+  just to force an absorption outcome.
+- If a module changes operator-visible behavior, attach Gate 4 proof to that
+  module's brief instead of deferring behavioral verification to a later
+  catch-all step.
 
 ## Rationale
 
@@ -123,11 +243,24 @@ airlineops's `core/` and `common/` packages represent 1,700+ lines of battle-tes
 - New modules in gzkit may require new tests, documentation, and integration work
 - Some airlineops modules may be excluded as domain-specific (e.g., dataset_version.py may have airline-specific semantics)
 
+## Long-Term Validity Guards
+
+- The 17-brief matrix is the audit trail for the subtraction test; future
+  companion absorption work should not skip per-module rationale.
+- Any future reusable airlineops core/common module added without an upstream
+  gzkit decision record is doctrinal drift.
+- `Confirm` decisions are not permanent exemptions; if airlineops later grows a
+  materially stronger generic pattern, the comparison should be re-opened.
+- `Absorb` decisions must leave behind tests and, where relevant, behavioral
+  proof so the upstreamed pattern remains verifiable after airlineops evolves.
+
 ## Evidence (Four Gates)
 
 - **ADR:** this document
 - **TDD (required):** `tests/test_core_*.py` — unit tests for each absorbed module
-- **BDD (Heavy):** `features/core_infrastructure.feature` — if new CLI surfaces are introduced
+- **BDD (Heavy):** `features/core_infrastructure.feature` or module-specific
+  behavioral proof when absorbed infrastructure changes operator-visible
+  behavior; otherwise record `N/A` with rationale in the brief decision
 - **Docs:** Decision rationale documented per OBPI brief
 
 ---
