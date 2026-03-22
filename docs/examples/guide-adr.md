@@ -253,6 +253,12 @@ A ready-to-use ADR template is available at:
 
 ---
 
+## Video Companion
+
+See [Part 3 of the video tutorial series](presentations/part3-script.md) for
+a narrated walkthrough of the ADR template, the decomposition scorecard, and
+the reading list example.
+
 ## Further Reading
 
 - [Michael Nygard's original ADR proposal](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions)

@@ -159,6 +159,11 @@ A ready-to-use PRD template is available at:
 
 ---
 
+## Video Companion
+
+See [Part 2 of the video tutorial series](presentations/part2-script.md) for
+a narrated walkthrough of the PRD template with the reading list example.
+
 ## Further Reading
 
 - *Inspired* by Marty Cagan — Industry-standard on product thinking
