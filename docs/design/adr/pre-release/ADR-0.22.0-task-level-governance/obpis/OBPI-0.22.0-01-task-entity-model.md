@@ -57,6 +57,20 @@ Define the TASK entity as a Pydantic BaseModel with identifier scheme `TASK-<sem
 - [ ] REQ-0.22.0-01-03: Given a TASK in `pending` state, when transitioned directly to `completed`, then an error is raised.
 - [ ] REQ-0.22.0-01-04: Given plan text "Implement the REQ model" with parent context OBPI-0.20.0-01/REQ-0.20.0-01-01, when factory is called, then a TASK entity is created with auto-generated seq number.
 - [ ] REQ-0.22.0-01-05: Given all 5 lifecycle states, when enumerated, then exactly {pending, in_progress, completed, blocked, escalated} are present.
+- [ ] REQ-0.22.0-01-06: Given a TASK in `blocked` state, when transitioned to `in_progress`, then the model allows resume as a valid transition.
+
+## Verification Commands (Concrete)
+
+```bash
+uv run -m unittest tests.test_tasks -v
+# Expected: TASK parsing, transitions, and plan-derivation tests pass
+
+uv run gz lint
+# Expected: lint passes after task model edits
+
+uv run gz typecheck
+# Expected: task model types remain clean
+```
 
 ## Completion Checklist (Lite)
 

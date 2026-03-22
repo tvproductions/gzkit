@@ -17,7 +17,11 @@ status: Accepted
 
 ## Objective
 
-Define four TASK-level ledger event types (`task_started`, `task_completed`, `task_blocked`, `task_escalated`) following the existing event model patterns in `events.py`. Events are appended to the JSONL ledger for audit and traceability.
+Define four TASK-level ledger event types (`task_started`, `task_completed`,
+`task_blocked`, `task_escalated`) following the existing event model patterns
+in `events.py`. `task_started` covers both initial start and resume from
+blocked state. Events are appended to the JSONL ledger for audit and
+traceability.
 
 ## Lane
 
@@ -39,6 +43,7 @@ Define four TASK-level ledger event types (`task_started`, `task_completed`, `ta
 
 1. REQUIREMENT: Define four event types: `task_started`, `task_completed`, `task_blocked`, `task_escalated`.
 1. REQUIREMENT: Each event MUST include: type, timestamp, task_id, obpi_id, adr_id, agent.
+1. REQUIREMENT: `task_started` MUST be valid for both `pending -> in_progress` starts and `blocked -> in_progress` resumes; this ADR does not introduce a separate resume event type.
 1. REQUIREMENT: `task_blocked` MUST include a `reason` field.
 1. REQUIREMENT: `task_escalated` MUST include a `reason` field and optional `escalated_to` field.
 1. REQUIREMENT: Events MUST follow existing Pydantic event model patterns in `events.py` (discriminated union).
@@ -52,6 +57,20 @@ Define four TASK-level ledger event types (`task_started`, `task_completed`, `ta
 - [ ] REQ-0.22.0-02-01: Given a `task_started` event, when serialized to JSON, then includes type, timestamp, task_id, obpi_id, adr_id, agent.
 - [ ] REQ-0.22.0-02-02: Given a `task_blocked` event with reason "Missing dependency", when serialized, then reason field is present.
 - [ ] REQ-0.22.0-02-03: Given all four event types, when parsed via the discriminated union, then each resolves to the correct event model.
+- [ ] REQ-0.22.0-02-04: Given a blocked TASK resuming to `in_progress`, when the event is emitted, then `task_started` is reused rather than a new resume event type.
+
+## Verification Commands (Concrete)
+
+```bash
+uv run -m unittest tests.test_tasks -v
+# Expected: event serialization and discriminated-union tests pass
+
+uv run gz lint
+# Expected: lint passes after event-model edits
+
+uv run gz typecheck
+# Expected: event model types remain clean
+```
 
 ## Completion Checklist (Lite)
 
