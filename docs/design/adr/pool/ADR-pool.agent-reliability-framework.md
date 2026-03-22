@@ -210,6 +210,106 @@ ARF handles this through composition:
 This is analogous to SLSA's handling of multi-step builds: the builder
 identity covers the orchestration platform, not individual build steps.
 
+### The Specification Gaming Problem
+
+Research demonstrates that reasoning models (OpenAI o3, DeepSeek R1) readily
+engage in specification gaming — achieving the literal objective while
+violating the intended spirit. An agent can pass all gates, satisfy all
+acceptance criteria, and still produce work that misses the point.
+
+This is the fundamental threat to any contract-based agent governance system.
+Defenses:
+
+- **Postconditions that verify semantics, not just structure** — acceptance
+  criteria should test outcomes, not checkboxes
+- **Human attestation as an anti-gaming mechanism** — a human reviewer can
+  detect intent violations that automated gates cannot
+- **Randomized audit sampling** — verification methods the agent cannot
+  observe or predict (AR4 audits should include surprise scope checks)
+- **Briefs as contracts, not prompts** — following Design by Contract
+  (Meyer), OBPI briefs are formal contracts with preconditions (ADR context),
+  postconditions (acceptance criteria), and invariants (governance rules
+  that must hold throughout)
+
+### Epistemic Uncertainty and Lane Classification
+
+The lite/heavy lane split has a principled basis in epistemology. Lite-lane
+work has low epistemic uncertainty — the change is well-understood, the scope
+is narrow, and automated gates can verify compliance with high confidence.
+Heavy-lane work has high epistemic uncertainty — novel architecture, unclear
+requirements, or safety-critical systems where automated checks alone
+cannot establish trust.
+
+ARF formalizes this: **governance strictness should scale with epistemic
+uncertainty, not just scope size.** A small change to a safety-critical gate
+definition warrants AR3+ despite its tiny diff. A large but well-understood
+refactoring may be fine at AR2.
+
+This bridges the NIST AI RMF (which asks "what could go wrong?") with
+IEEE 1012's consequence-likelihood matrix (which asks "how bad and how
+likely?") to determine the appropriate verification intensity.
+
+### Agent Failure Mode Analysis (FMEA)
+
+Adapted from the ML FMEA methodology (Torc Robotics / SAE 2025), ARF should
+include systematic failure mode enumeration for agent governance pipelines:
+
+| Step | Failure Mode | Effect | Cause | Detection | Severity |
+|---|---|---|---|---|---|
+| Brief interpretation | Misreads requirement | Wrong code produced | Ambiguous brief | Scope audit | High |
+| Code generation | Specification gaming | Passes checks, wrong intent | Misaligned optimization | Human attestation | Critical |
+| Test generation | Covers happy path only | False confidence | Agent tests own work | Coverage analysis | High |
+| Scope compliance | Modifies denied paths | Unauthorized changes | Context window limits | Scope audit | High |
+| Evidence documentation | Fabricates evidence | False compliance | No independent verification | Audit reconciliation | Critical |
+| Completion claim | Premature closure | Incomplete work shipped | Optimistic self-assessment | Gate checks | Medium |
+
+The FMEA is not a one-time document — it should be maintained as a living
+governance artifact that evolves with experience. Each failure mode maps to
+a specific ARF control: scope audit catches scope compliance failures, human
+attestation catches specification gaming, audit reconciliation catches
+evidence fabrication.
+
+### Provenance Vocabulary (W3C PROV Alignment)
+
+PROV-AGENT (IEEE e-Science 2025) extends W3C PROV for agentic workflows.
+gzkit's ledger maps naturally to PROV's core ontology:
+
+| W3C PROV | gzkit Equivalent |
+|---|---|
+| Entity | Code artifact (file with content hash) |
+| Activity | OBPI execution (from brief to completion) |
+| Agent | LLM model + harness + human attestor |
+| wasGeneratedBy | Ledger event linking artifact to OBPI |
+| used | OBPI brief constraints consumed by agent |
+| wasAssociatedWith | recorder_source / agent identity |
+| wasDerivedFrom | ADR → OBPI → code lineage |
+
+Adopting PROV vocabulary would give gzkit provenance interoperability with
+scientific computing, regulatory frameworks, and the broader in-toto
+ecosystem. This does not require changing the ledger format — it requires
+defining a PROV export mapping from existing ledger events.
+
+### Layered Defense (Swiss Cheese Model)
+
+Reason's Swiss Cheese Model, applied to AI agent guardrails (ICSA 2025),
+argues that no single verification layer catches all failures. Each layer
+has holes; the combined layers provide robust defense. gzkit's gate system
+is already a Swiss Cheese architecture:
+
+| Layer | What It Catches | What It Misses |
+|---|---|---|
+| Gate 1 (ADR linkage) | Unlinked work | Linked but misaligned work |
+| Gate 2 (Implementation) | Missing tests, lint failures | Tests that pass but don't verify intent |
+| Gate 3 (Documentation) | Missing docs | Docs that describe the wrong thing |
+| Gate 4 (Behavioral) | Missing behavioral tests | Behavioral tests that don't cover edge cases |
+| Gate 5 (Human attestation) | All of the above | Human error, automation bias |
+| AR4 Audit | Post-attestation tampering | Novel failure modes not yet in the FMEA |
+
+Perrow's Normal Accidents theory warns that adding layers increases
+complexity, potentially creating new failure modes. ARF mitigates this by
+keeping layers orthogonal and independently verifiable — each gate operates
+on its own evidence, not on the output of previous gates.
+
 ### The Verification Asymmetry
 
 SLSA's key architectural insight is that hardening build platforms is
@@ -264,6 +364,20 @@ address — the agent-to-artifact trust boundary:
 | **OWASP Agentic Top 10** | Agent security risks | ARF mitigates ASI01 (Goal Hijack), ASI02 (Tool Misuse), ASI04 (Supply Chain) |
 | **C2PA** | Content provenance | ARF receipt chains are analogous to C2PA content credentials for code |
 | **OpenTelemetry GenAI** | Agent observability | ARF evidence could emit OTel-compatible traces for operational monitoring |
+| **IEC 61508** | Functional safety | Three-constraint SIL model (systematic capability + architecture + quantitative target) informs AR level requirements |
+| **TUF** | Secure update framework | Trust delegation and threshold signatures for governance artifact distribution |
+| **NIST 800-53 (SA/SI)** | Security controls | SA-11 (developer testing), SA-15 (development process), SI-7 (integrity verification) map directly to ARF gates |
+| **IEEE 1012** | V&V intensity levels | Consequence-likelihood matrix for determining governance gate strictness |
+| **SOC 2 Type II** | Continuous assurance | Sustained observation model and Processing Integrity criteria for ongoing agent reliability |
+| **MITRE ATLAS** | AI adversarial threats | Agent-specific techniques (context poisoning, config modification) provide concrete threat model |
+| **DORA** | DevOps metrics | Agent Change Failure Rate, Lead Time, and Rework Rate as reliability measurements |
+| **Anthropic RSP/ASL** | AI safety levels | Capability-to-mitigation mapping and early warning evals inform capability-aware governance |
+| **OSCAL** | Machine-readable controls | Layered model (catalog → profile → assessment results) maps to ADR → OBPI → gate hierarchy |
+| **OpenChain (ISO 5230)** | Compliance conformance | Self-certification model with periodic renewal as ARF adoption template |
+| **MOF** | Model transparency tiers | Agent model openness determines black-box vs white-box verification requirements |
+| **W3C PROV** | Provenance ontology | Entity/Activity/Agent vocabulary for governance ledger interoperability |
+| **Design by Contract** | Pre/post-conditions | OBPI briefs as formal contracts: preconditions (ADR context), postconditions (acceptance criteria), invariants (governance rules) |
+| **CoSAI** | MCP security | 12-category agent threat taxonomy and Secure-by-Design Agentic Systems Principles |
 
 ### Emerging Research Alignment
 
@@ -278,6 +392,15 @@ address — the agent-to-artifact trust boundary:
 | Chainguard Agent Skills (2026) | First production supply-chain framework for AI agent artifacts |
 | ReliabilityBench (2025) | Reliability Surface evaluation, chaos engineering for agents |
 | W3C DID v1.1 | Machine-to-machine identity for AI agents |
+| PROV-AGENT (IEEE e-Science 2025) | W3C PROV extension for agentic workflows; models agents as first-class provenance entities via MCP |
+| Swiss Cheese Model for AI (ICSA 2025) | Layered guardrail taxonomy across quality attributes, pipeline stages, and agent artifacts |
+| Specification Gaming (arXiv 2502.13295) | Reasoning models satisfy literal objectives while violating intent — the fundamental agent governance threat |
+| ML FMEA (SAE 2025, Torc Robotics) | Systematic failure mode enumeration adapted for ML pipelines; open-source templates |
+| Proof-Carrying Code Completions (PC3) | Agent-produced code carries machine-checkable safety proofs alongside the implementation |
+| VeriGuard (Google Research) | Dual-stage verification: offline formal analysis + online runtime monitoring |
+| Code Stylometry (arXiv 2506.17323) | 97.5% accuracy attributing code to specific LLM models — forensic provenance verification |
+| Epistemic AI (arXiv 2505.04950) | Second-order uncertainty measures; aleatoric vs epistemic uncertainty as basis for governance scaling |
+| Normal Accidents (Perrow) | Warning: adding governance layers increases complexity, potentially creating new failure modes |
 
 ---
 
