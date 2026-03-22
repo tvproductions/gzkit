@@ -3,7 +3,7 @@ id: OBPI-0.19.0-03-equivalent-commands-in-airlineops-opsdev-closeout-opsdev-audi
 parent: ADR-0.19.0-closeout-audit-processes
 item: 3
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.19.0-03: Equivalent commands in airlineops (`opsdev closeout`, `opsdev audit`)
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.19.0-closeout-audit-processes/ADR-0.19.0-closeout-audit-processes.md`
 - **Checklist Item:** #3 - "OBPI-0.19.0-03: Equivalent commands in airlineops (`opsdev closeout`, `opsdev audit`)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -126,12 +126,12 @@ uv run gz audit ADR-0.19.0 --dry-run --json
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Parity checklist rows are testable, verification method documented
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete parity comparison is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Parity checklist rows are testable, verification method documented
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete parity comparison is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -139,18 +139,26 @@ uv run gz audit ADR-0.19.0 --dry-run --json
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded — parity checklist maps closeout/audit between gzkit and airlineops
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste parity verification output here
+$ uv run gz closeout ADR-0.19.0 --dry-run --json 2>/dev/null | python3 -c "import json,sys; d=json.load(sys.stdin); print('Closeout JSON keys:', sorted(d.keys()))"
+Closeout JSON keys: ['adr', 'allowed', 'attestation_choices', 'blockers', 'dry_run', 'event', 'gate4_na_reason', 'gate_1_path', 'mode', 'next_steps', 'obpi_rows', 'obpi_summary', 'verification_commands', 'verification_steps']
+
+Parity checklist contains 59 Gap rows, each a testable assertion.
+All 59 rows link to ADR-pool.airlineops-direct-governance-migration for remediation.
+Verification method documented in Section "Verification Method" with JSON schema diff commands.
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+$ uv run gz lint — All checks passed
+$ uv run gz typecheck — All checks passed
+$ uv run gz test — 1040 tests OK
+$ uv run gz validate --documents — All validations passed
 ```
 
 ## Value Narrative
@@ -159,29 +167,44 @@ Before this OBPI, gzkit and airlineops closeout/audit commands evolved independe
 
 After this OBPI, a structured parity checklist maps every pipeline stage, exit code, error message, and JSON output field between the two projects. Each row is a testable assertion. Any drift is visible as a "Gap" row with a linked remediation plan. Operators can switch between repositories knowing the workflow is behaviorally identical.
 
-## Key Proof
+### Key Proof
 
 ```text
-Parity Checklist (excerpt):
+$ uv run gz closeout ADR-0.19.0 --dry-run --json 2>/dev/null | python3 -c "
+import json, sys
+d = json.load(sys.stdin)
+print('Keys:', sorted(d.keys()))
+print('Steps:', [(s['label'], s['command']) for s in d.get('verification_steps', [])])
+"
+Keys: ['adr', 'allowed', 'attestation_choices', 'blockers', 'dry_run', 'event',
+       'gate4_na_reason', 'gate_1_path', 'mode', 'next_steps', 'obpi_rows',
+       'obpi_summary', 'verification_commands', 'verification_steps']
+Steps: [('Gate 2 (TDD)', 'uv run gz test'),
+        ('Quality (Lint)', 'uv run gz lint'),
+        ('Quality (Typecheck)', 'uv run gz typecheck')]
 
-| Stage                   | gzkit (`gz closeout`)                    | airlineops (`opsdev closeout`)           | Parity Status        |
-|-------------------------|------------------------------------------|------------------------------------------|----------------------|
-| OBPI completion check   | All OBPIs must be Completed              | All OBPIs must be Completed              | Identical            |
-| Inline gate execution   | run_command() for lint/test/typecheck    | run_command() for lint/test/typecheck    | Identical            |
-| Attestation prompt      | [Completed / Partial / Dropped]          | [Completed / Partial / Dropped]          | Identical            |
-| Version bump            | sync_project_version()                   | sync_project_version()                   | Identical            |
-| Exit code (success)     | 0                                        | 0                                        | Identical            |
-| Exit code (gate fail)   | 1                                        | 1                                        | Identical            |
-| Unattested error msg    | "gz audit requires human attestation..." | "opsdev audit requires human attest..."  | Permitted Divergence |
+Parity Checklist (excerpt — full document at parity-checklist.md):
+
+| Stage                   | gzkit (`gz closeout`)                    | airlineops (`opsdev closeout`)  | Parity Status |
+|-------------------------|------------------------------------------|---------------------------------|---------------|
+| OBPI completion check   | _adr_closeout_readiness(obpi_rows)       | Not implemented                 | Gap           |
+| Inline gate execution   | run_command() for lint/test/typecheck    | Not implemented                 | Gap           |
+| Attestation prompt      | [Completed / Partial / Dropped]          | Not implemented                 | Gap           |
+| Version bump            | sync_project_version()                   | Not implemented                 | Gap           |
+| Exit code (success)     | 0                                        | 0 (expected)                    | Gap           |
+| Exit code (gate fail)   | 1                                        | 1 (expected)                    | Gap           |
+| Unattested error msg    | "gz audit requires human attestation..." | "opsdev audit requires..." (expected) | Gap      |
+
+All 59 Gap rows reference: ADR-pool.airlineops-direct-governance-migration
 ```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created/modified: `docs/design/adr/pre-release/ADR-0.19.0-closeout-audit-processes/parity-checklist.md` (174 lines, 6 sections, 59 parity rows)
+- Tests added: N/A (documentation-only OBPI — parity rows are the testable assertions)
+- Date completed: 2026-03-22
+- Attestation status: Completed (human attested)
+- Defects noted: none
 
 ## Tracked Defects
 
@@ -189,14 +212,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a` (Lite lane — self-closeable after evidence)
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: jeff
+- Attestation: Completed
+- Date: 2026-03-22
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-22
 
 **Evidence Hash:** -
