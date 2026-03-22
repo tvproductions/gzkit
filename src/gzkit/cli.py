@@ -2937,6 +2937,101 @@ def _run_audit_verifications(
     return result_rows, failures
 
 
+def _collect_audit_enrichment(
+    adr_id: str,
+    adr_file: Path,
+    project_root: Path,
+    ledger: "Ledger",
+) -> dict[str, Any]:
+    """Collect attestation record, gate results, and evidence links for audit enrichment."""
+    # Attestation record
+    attested_events = ledger.query(event_type="attested", artifact_id=adr_id)
+    if attested_events:
+        latest = attested_events[-1]
+        attestation_record: dict[str, Any] = {
+            "attestor": latest.extra.get("by", "unknown"),
+            "status": latest.extra.get("status", "unknown"),
+            "timestamp": latest.ts,
+        }
+    else:
+        attestation_record = {}
+
+    # Gate results
+    gate_events = ledger.query(event_type="gate_checked", artifact_id=adr_id)
+    gate_results: list[dict[str, Any]] = [
+        {
+            "gate": e.extra.get("gate"),
+            "status": e.extra.get("status"),
+            "command": e.extra.get("command"),
+            "returncode": e.extra.get("returncode"),
+        }
+        for e in gate_events
+    ]
+
+    # Evidence links — OBPI brief files and optional closeout form
+    obpi_dir = adr_file.parent / "obpis"
+    obpi_files = sorted(obpi_dir.glob("OBPI-*.md")) if obpi_dir.exists() else []
+    closeout_form = adr_file.parent / "closeout" / "CLOSEOUT.md"
+
+    evidence_links: list[str] = [f.relative_to(project_root).as_posix() for f in obpi_files]
+    if closeout_form.exists():
+        evidence_links.append(closeout_form.relative_to(project_root).as_posix())
+
+    return {
+        "attestation_record": attestation_record,
+        "gate_results": gate_results,
+        "evidence_links": evidence_links,
+    }
+
+
+def _build_attestation_section(attestation_record: dict[str, Any]) -> list[str]:
+    """Build Attestation Record section lines for AUDIT.md."""
+    lines = ["## Attestation Record", ""]
+    if attestation_record:
+        lines += [
+            f"- Attestor: {attestation_record['attestor']}",
+            f"- Status: {attestation_record['status']}",
+            f"- Timestamp: {attestation_record['timestamp']}",
+        ]
+    else:
+        lines.append("No attestation record found.")
+    lines.append("")
+    return lines
+
+
+def _build_gate_results_section(gate_results: list[dict[str, Any]]) -> list[str]:
+    """Build Gate Results section lines for AUDIT.md."""
+    lines = ["## Gate Results", ""]
+    if gate_results:
+        lines += [
+            "| Gate | Status | Command | Return Code |",
+            "|------|--------|---------|-------------|",
+        ]
+        for gr in gate_results:
+            lines.append(
+                f"| {gr['gate']} | {gr['status']} | `{gr['command']}` | {gr['returncode']} |"
+            )
+    else:
+        lines.append("No prior gate results recorded.")
+    lines.append("")
+    return lines
+
+
+def _build_evidence_links_section(evidence_links: list[str]) -> list[str]:
+    """Build Evidence Links section lines for AUDIT.md."""
+    lines = ["## Evidence Links", ""]
+    if evidence_links:
+        for link in evidence_links:
+            if link.endswith("CLOSEOUT.md"):
+                lines.append(f"- Closeout: `{link}`")
+            else:
+                lines.append(f"- `{link}`")
+    else:
+        lines.append("No evidence links found.")
+    lines.append("")
+    return lines
+
+
 def _write_audit_artifacts(
     adr_id: str,
     adr_file: Path,
@@ -2944,8 +3039,9 @@ def _write_audit_artifacts(
     proofs_dir: Path,
     result_rows: list[dict[str, Any]],
     project_root: Path,
-) -> tuple[Path, Path]:
-    """Write AUDIT_PLAN.md and AUDIT.md, return their paths."""
+    ledger: "Ledger | None" = None,
+) -> tuple[Path, Path, dict[str, Any]]:
+    """Write AUDIT_PLAN.md and AUDIT.md, return their paths and enrichment data."""
     plan_file = audit_dir / "AUDIT_PLAN.md"
     plan_file.write_text(
         "\n".join(
@@ -2953,7 +3049,7 @@ def _write_audit_artifacts(
                 f"# Audit Plan: {adr_id}",
                 "",
                 "## Scope",
-                f"- ADR: `{adr_file.relative_to(project_root)}`",
+                f"- ADR: `{adr_file.relative_to(project_root).as_posix()}`",
                 "",
                 "## Verification Commands",
             ]
@@ -2961,28 +3057,40 @@ def _write_audit_artifacts(
             + [
                 "",
                 "## Proof Output",
-                f"- Directory: `{proofs_dir.relative_to(project_root)}`",
+                f"- Directory: `{proofs_dir.relative_to(project_root).as_posix()}`",
             ]
         )
         + "\n",
         encoding="utf-8",
     )
 
+    # Collect enrichment data from ledger
+    enrichment: dict[str, Any] = {
+        "attestation_record": {},
+        "gate_results": [],
+        "evidence_links": [],
+    }
+    if ledger is not None:
+        enrichment = _collect_audit_enrichment(adr_id, adr_file, project_root, ledger)
+
     audit_file = audit_dir / "AUDIT.md"
-    audit_lines = [
+    audit_lines: list[str] = [
         f"# Audit: {adr_id}",
         "",
-        f"- ADR: `{adr_file.relative_to(project_root)}`",
+        f"- ADR: `{adr_file.relative_to(project_root).as_posix()}`",
         "",
-        "## Results",
     ]
+    audit_lines += _build_attestation_section(enrichment["attestation_record"])
+    audit_lines += _build_gate_results_section(enrichment["gate_results"])
+    audit_lines += _build_evidence_links_section(enrichment["evidence_links"])
+    audit_lines.append("## Results")
     for row in result_rows:
         status = "PASS" if row["success"] else "FAIL"
         audit_lines.append(
             f"- **{row['label']}**: {status} (`{row['command']}`) -> `{row['proof_file']}`"
         )
     audit_file.write_text("\n".join(audit_lines) + "\n", encoding="utf-8")
-    return plan_file, audit_file
+    return plan_file, audit_file, enrichment
 
 
 def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
@@ -3053,13 +3161,14 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
 
     proofs_dir.mkdir(parents=True, exist_ok=True)
     result_rows, failures = _run_audit_verifications(commands, proofs_dir, project_root)
-    plan_file, audit_file = _write_audit_artifacts(
+    plan_file, audit_file, enrichment = _write_audit_artifacts(
         adr_id,
         adr_file,
         audit_dir,
         proofs_dir,
         result_rows,
         project_root,
+        ledger=ledger,
     )
 
     # Emit validation receipt (always — even on failure, to record the audit)
@@ -3101,6 +3210,9 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
             "evidence": receipt_evidence,
         },
         "status_transition": status_transition,
+        "attestation_record": enrichment["attestation_record"],
+        "gate_results": enrichment["gate_results"],
+        "evidence_links": enrichment["evidence_links"],
     }
     if as_json:
         print(json.dumps(output, indent=2))
