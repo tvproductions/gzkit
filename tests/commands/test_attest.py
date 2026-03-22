@@ -95,8 +95,6 @@ class TestAttestSemantics(unittest.TestCase):
             ledger.append(gate_checked_event("ADR-0.1.0", 3, "pass", "docs", 0))
             ledger.append(gate_checked_event("ADR-0.1.0", 4, "pass", "bdd", 0))
 
-            closeout = runner.invoke(main, ["closeout", "ADR-0.1.0"])
-            self.assertEqual(closeout.exit_code, 0)
             result = runner.invoke(main, ["attest", "ADR-0.1.0", "--status", "completed"])
             self.assertEqual(result.exit_code, 0)
 

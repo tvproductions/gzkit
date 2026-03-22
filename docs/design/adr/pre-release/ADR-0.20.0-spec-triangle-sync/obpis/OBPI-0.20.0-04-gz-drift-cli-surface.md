@@ -11,13 +11,16 @@ status: Accepted
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.20.0-spec-triangle-sync/ADR-0.20.0-spec-triangle-sync.md`
-- **Checklist Item:** #4 — "`gz drift` CLI surface with human/JSON/plain output modes"
+- **Checklist Item:** #4 — "`gz drift` CLI surface with human/JSON/plain output modes and repository signal scanning"
 
 **Status:** Accepted
 
 ## Objective
 
-Expose the drift detection engine via a `gz drift` CLI command that scans the repository's OBPI briefs and test files, computes drift, and presents results in human-readable (default), `--json`, and `--plain` output modes.
+Expose the drift detection engine via a `gz drift` CLI command that scans the
+repository's OBPI briefs, existing `@covers` references in test files, and the
+active repository change set, computes drift, and presents results in
+human-readable (default), `--json`, and `--plain` output modes.
 
 ## Lane
 
@@ -41,11 +44,12 @@ Expose the drift detection engine via a `gz drift` CLI command that scans the re
 ## Requirements (FAIL-CLOSED)
 
 1. REQUIREMENT: `gz drift` MUST scan all OBPI briefs under `docs/design/adr/` and extract REQ entities.
-1. REQUIREMENT: `gz drift` MUST scan test files for `@covers` decorator references to build test linkage.
-1. REQUIREMENT: Default output MUST be human-readable table showing unlinked specs and orphan tests.
+1. REQUIREMENT: `gz drift` MUST scan test files for existing `@covers` decorator references to build test linkage. This ADR consumes existing references only; enforcement remains ADR-0.21.0 scope.
+1. REQUIREMENT: `gz drift` MUST inspect the active repository change set (or an explicitly supplied diff window) to build changed code vertices for unjustified-code-change detection.
+1. REQUIREMENT: Default output MUST be human-readable tables showing unlinked specs, orphan tests, and unjustified code changes.
 1. REQUIREMENT: `--json` MUST output valid JSON DriftReport to stdout; logs to stderr.
 1. REQUIREMENT: `--plain` MUST output one record per line (grep-friendly).
-1. REQUIREMENT: Exit code 0 when no drift detected; exit code 1 when drift exists.
+1. REQUIREMENT: Exit code 0 when no drift detected; exit code 1 when any drift category exists.
 1. REQUIREMENT: `-h`/`--help` MUST include description, usage, options, and at least one example.
 1. NEVER: Use LLM inference in the CLI path.
 1. ALWAYS: Lines in help text <= 80 chars.
@@ -84,11 +88,12 @@ Expose the drift detection engine via a `gz drift` CLI command that scans the re
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.20.0-04-01: Given a repository with drift, when `gz drift` is run, then human-readable output shows unlinked specs and orphan tests in a table.
+- [ ] REQ-0.20.0-04-01: Given a repository with drift, when `gz drift` is run, then human-readable output shows unlinked specs, orphan tests, and unjustified code changes in tables.
 - [ ] REQ-0.20.0-04-02: Given a repository with drift, when `gz drift --json` is run, then valid JSON DriftReport is written to stdout.
 - [ ] REQ-0.20.0-04-03: Given a repository with no drift, when `gz drift` is run, then exit code is 0 and output confirms no drift.
-- [ ] REQ-0.20.0-04-04: Given a repository with drift, when `gz drift` is run, then exit code is 1.
-- [ ] REQ-0.20.0-04-05: Given `gz drift --help`, then output includes description, usage, options, and example.
+- [ ] REQ-0.20.0-04-04: Given a repository with drift in any category, when `gz drift` is run, then exit code is 1.
+- [ ] REQ-0.20.0-04-05: Given changed source files without any matching governance justification in the inspected window, when `gz drift` is run, then unjustified code changes are reported.
+- [ ] REQ-0.20.0-04-06: Given `gz drift --help`, then output includes description, usage, options, and example.
 
 ## Completion Checklist (Heavy)
 

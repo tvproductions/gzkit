@@ -1,6 +1,7 @@
 import json
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from gzkit.cli import main
 from gzkit.config import GzkitConfig
@@ -101,23 +102,27 @@ class TestAdrRuntimeCommands(unittest.TestCase):
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("ADR not found", result.output)
 
-    def test_closeout_records_event(self) -> None:
+    @patch("builtins.input", return_value="1")
+    def test_closeout_records_event(self, _mock_input) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
             _init_git_repo(Path.cwd())
+            self._set_manifest_verification_noop()
             runner.invoke(main, ["plan", "0.1.0"])
             result = runner.invoke(main, ["closeout", "ADR-0.1.0"])
-            self.assertEqual(result.exit_code, 0)
+            self.assertEqual(result.exit_code, 0, result.output)
             ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertIn("closeout_initiated", ledger_content)
+            self.assertIn("attested", ledger_content)
+            self.assertIn("lifecycle_transition", ledger_content)
             config = GzkitConfig.load(Path(".gzkit.json"))
             adr_file = next(Path(config.paths.adrs).rglob("ADR-0.1.0.md"))
             closeout_form = adr_file.parent / "ADR-CLOSEOUT-FORM.md"
             self.assertTrue(closeout_form.exists())
             closeout_content = closeout_form.read_text(encoding="utf-8")
             self.assertIn("# ADR Closeout Form: ADR-0.1.0", closeout_content)
-            self.assertIn("Awaiting explicit human attestation.", closeout_content)
+            self.assertIn("**Status**: Phase 2 — Completed", closeout_content)
 
     def test_closeout_dry_run_writes_nothing(self) -> None:
         runner = CliRunner()

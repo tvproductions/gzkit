@@ -30,6 +30,8 @@ Integrate drift detection as an advisory (non-blocking) check in `gz check`. Whe
 - `tests/test_triangle.py` — integration tests for advisory check
 - `docs/user/commands/check.md` — update check command docs with drift section
 - `docs/user/runbook.md` — update runbook with drift checking workflow
+- `features/check_drift_advisory.feature` — BDD acceptance scenarios for advisory output
+- `features/steps/check_drift_advisory_steps.py` — BDD step implementations
 
 ## Denied Paths
 
@@ -72,6 +74,11 @@ Integrate drift detection as an advisory (non-blocking) check in `gz check`. Whe
 - [ ] `docs/user/runbook.md` updated with drift workflow
 - [ ] `uv run mkdocs build --strict` passes
 
+### Gate 4: BDD
+
+- [ ] `features/check_drift_advisory.feature` with advisory drift scenarios
+- [ ] `uv run -m behave features/check_drift_advisory.feature` passes
+
 ### Gate 5: Human
 
 - [ ] Human attestation recorded
@@ -82,12 +89,14 @@ Integrate drift detection as an advisory (non-blocking) check in `gz check`. Whe
 - [ ] REQ-0.20.0-05-02: Given a repository with drift, when `gz check` is run, then exit code is 0 (drift is advisory, not blocking).
 - [ ] REQ-0.20.0-05-03: Given a repository with no drift, when `gz check` is run, then no drift section appears in output.
 - [ ] REQ-0.20.0-05-04: Given `gz check --json`, when drift exists, then JSON output includes a drift object with `advisory: true`.
+- [ ] REQ-0.20.0-05-05: Given advisory drift findings including unjustified code changes, when `gz check` is run, then the output labels them as advisory rather than blocking.
 
 ## Completion Checklist (Heavy)
 
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
 - [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
 - [ ] **Gate 3 (Docs):** Docs updated, docs build passes
+- [ ] **Gate 4 (BDD):** Advisory scenarios pass
 - [ ] **Gate 5 (Human):** Human attestation recorded
 - [ ] **Code Quality:** Lint, format, type checks clean
 
@@ -103,6 +112,12 @@ Integrate drift detection as an advisory (non-blocking) check in `gz check`. Whe
 
 ```text
 # Paste mkdocs build output here
+```
+
+### Gate 4 (BDD)
+
+```text
+# Paste behave output here
 ```
 
 ### Gate 5 (Human)

@@ -31,11 +31,15 @@ from gzkit.commands.common import (
     COMMAND_DOCS,
     SEMVER_ONLY_RE,
     GzCliError,
+    _canonical_attestation_term,
+    _closeout_form_attestation_text,
+    _closeout_form_timestamp,
     _confirm,
     _gate4_na_reason,
     _is_pool_adr_id,
     _prompt_text,
     _reject_pool_adr_for_lifecycle,
+    _update_adr_attestation_block,
     _upsert_frontmatter_value,
     _write_adr_closeout_form,
     check_version_sync,
@@ -95,10 +99,12 @@ from gzkit.ledger import (
     Ledger,
     adr_created_event,
     artifact_renamed_event,
+    attested_event,
     audit_receipt_emitted_event,
     closeout_initiated_event,
     constitution_created_event,
     gate_checked_event,
+    lifecycle_transition_event,
     normalize_req_proof_inputs,
     obpi_created_event,
     obpi_receipt_emitted_event,
@@ -2491,8 +2497,307 @@ def _closeout_next_steps(adr_id: str, blocking_ids: list[str]) -> list[str]:
     return steps
 
 
+def _closeout_gate_number(label: str) -> int:
+    """Extract gate number from a verification step label."""
+    if label.startswith("Gate "):
+        try:
+            return int(label.split("(")[0].strip().split()[-1])
+        except (ValueError, IndexError):
+            pass
+    return 2  # Quality checks (lint, typecheck) default to gate 2
+
+
+def _prompt_closeout_attestation(*, quiet: bool = False) -> tuple[str, str | None]:
+    """Interactive attestation prompt for the closeout pipeline.
+
+    Returns ``(attest_status, reason)`` tuple.
+    """
+    if not quiet:
+        print("Attestation choices:")
+        print("  1. Completed")
+        print("  2. Completed - Partial (requires reason)")
+        print("  3. Dropped (requires reason)")
+        selection = input("Select [1/2/3]: ").strip()
+    else:
+        selection = input().strip()
+
+    if selection == "1":
+        return "completed", None
+    if selection == "2":
+        reason = input("" if quiet else "Reason: ").strip()
+        if not reason:
+            raise GzCliError("Reason required for partial attestation")
+        return "partial", reason
+    if selection == "3":
+        reason = input("" if quiet else "Reason: ").strip()
+        if not reason:
+            raise GzCliError("Reason required for dropped attestation")
+        return "dropped", reason
+    raise GzCliError(f"Invalid selection: {selection}. Expected 1, 2, or 3.")
+
+
+def _abort_closeout_with_blockers(
+    *,
+    adr_id: str,
+    lane: str,
+    dry_run: bool,
+    blockers: list[str],
+    gate_1_path: str,
+    obpi_summary: dict[str, Any],
+    obpi_rows: list[dict[str, Any]],
+    verification_steps: list[tuple[str, str]],
+    gate4_na_reason: str | None,
+    attestation_choices: list[str],
+    next_steps: list[str],
+    as_json: bool,
+) -> None:
+    result = _closeout_result_payload(
+        adr_id=adr_id,
+        lane=lane,
+        dry_run=dry_run,
+        allowed=False,
+        blockers=blockers,
+        event=None,
+        gate_1_path=gate_1_path,
+        obpi_summary=obpi_summary,
+        obpi_rows=obpi_rows,
+        verification_steps=verification_steps,
+        gate4_na_reason=gate4_na_reason,
+        attestation_choices=attestation_choices,
+        next_steps=next_steps,
+    )
+    if as_json:
+        print(json.dumps(result, indent=2))
+    else:
+        _render_closeout_output(result, dry_run=dry_run)
+    raise SystemExit(1)
+
+
+def _render_closeout_dry_run(
+    *,
+    adr_id: str,
+    lane: str,
+    gate_1_path: str,
+    obpi_summary: dict[str, Any],
+    obpi_rows: list[dict[str, Any]],
+    verification_steps: list[tuple[str, str]],
+    gate4_na_reason: str | None,
+    attestation_choices: list[str],
+    current_ver: str | None,
+    adr_ver: str | None,
+    needs_bump: bool,
+    as_json: bool,
+) -> None:
+    result = _closeout_result_payload(
+        adr_id=adr_id,
+        lane=lane,
+        dry_run=True,
+        allowed=True,
+        blockers=[],
+        event=None,
+        gate_1_path=gate_1_path,
+        obpi_summary=obpi_summary,
+        obpi_rows=obpi_rows,
+        verification_steps=verification_steps,
+        gate4_na_reason=gate4_na_reason,
+        attestation_choices=attestation_choices,
+        next_steps=[],
+    )
+    if as_json:
+        result["version_sync"] = {
+            "current": current_ver,
+            "target": adr_ver,
+            "needs_bump": needs_bump,
+        }
+        print(json.dumps(result, indent=2))
+        return
+    _render_closeout_output(result, dry_run=True)
+    if needs_bump:
+        console.print(
+            f"  Version sync: would bump {current_ver} → {adr_ver} "
+            f"(pyproject.toml, __init__.py, README.md)"
+        )
+
+
+def _record_closeout_initiation(
+    *,
+    project_root: Path,
+    ledger: Ledger,
+    adr_id: str,
+    lane: str,
+    gate_1_path: str,
+    obpi_files: dict[str, Path],
+    obpi_summary: dict[str, Any],
+    verification_steps: list[tuple[str, str]],
+) -> None:
+    evidence = {
+        "adr_file": gate_1_path,
+        "obpi_files": [str(path.relative_to(project_root)) for path in obpi_files.values()],
+        "obpi_summary": obpi_summary,
+        "verification_steps": [
+            {"label": label, "command": command} for label, command in verification_steps
+        ],
+    }
+    init_event = closeout_initiated_event(
+        adr_id=adr_id,
+        by=get_git_user(),
+        mode=lane,
+        evidence=evidence,
+    )
+    ledger.append(init_event)
+
+
+def _run_closeout_quality_gates(
+    *,
+    adr_id: str,
+    project_root: Path,
+    ledger: Ledger,
+    verification_steps: list[tuple[str, str]],
+    as_json: bool,
+) -> list[dict[str, Any]]:
+    gate_results: list[dict[str, Any]] = []
+    for label, command in verification_steps:
+        if not as_json:
+            console.print(f"  Running {label}...", end=" ")
+        qr = run_command(command, cwd=project_root)
+        gate_num = _closeout_gate_number(label)
+        gate_status = "pass" if qr.success else "fail"
+        gate_results.append(
+            {
+                "label": label,
+                "command": command,
+                "returncode": qr.returncode,
+                "success": qr.success,
+            }
+        )
+        ledger.append(
+            gate_checked_event(
+                adr_id,
+                gate_num,
+                gate_status,
+                command,
+                qr.returncode,
+            )
+        )
+        if not as_json:
+            if qr.success:
+                console.print("[green]PASS[/green]")
+            else:
+                console.print("[red]FAIL[/red]")
+                output_snippet = (qr.stderr or qr.stdout).strip()[:200]
+                if output_snippet:
+                    console.print(f"    {output_snippet}")
+        if qr.success:
+            continue
+
+        fail_result = {
+            "adr": adr_id,
+            "pipeline_stage": "gates",
+            "gate_results": gate_results,
+            "halted": True,
+        }
+        if as_json:
+            print(json.dumps(fail_result, indent=2))
+        else:
+            failed = gate_results[-1]
+            console.print(
+                f"[red]Closeout halted:[/red] {failed['label']} failed "
+                f"(exit {failed['returncode']})"
+            )
+        raise SystemExit(1)
+    return gate_results
+
+
+def _complete_closeout_pipeline(
+    *,
+    project_root: Path,
+    ledger: Ledger,
+    adr_id: str,
+    adr_file: Path,
+    obpi_rows: list[dict[str, Any]],
+    verification_steps: list[tuple[str, str]],
+    current_ver: str | None,
+    adr_ver: str | None,
+    needs_bump: bool,
+    gate_results: list[dict[str, Any]],
+    as_json: bool,
+) -> None:
+    if not as_json:
+        console.print("\n  All quality gates passed.")
+    attest_status, reason = _prompt_closeout_attestation(quiet=as_json)
+    attester = get_git_user()
+    ledger.append(attested_event(adr_id, attest_status, attester, reason))
+
+    version_updated: list[str] = []
+    if needs_bump and adr_ver is not None:
+        version_updated = sync_project_version(project_root, adr_ver)
+
+    to_state = "Dropped" if attest_status == "dropped" else "Completed"
+    ledger.append(lifecycle_transition_event(adr_id, "adr", "Proposed", to_state))
+
+    canonical_term = _canonical_attestation_term(attest_status, reason)
+    gate_statuses = ledger.get_latest_gate_statuses(adr_id)
+    attestation_text = _closeout_form_attestation_text(attest_status, reason)
+    timestamp_utc = _closeout_form_timestamp()
+    _write_adr_closeout_form(
+        project_root,
+        adr_id,
+        adr_file,
+        obpi_rows,
+        verification_steps,
+        gate_statuses,
+        attestation_command=f"uv run gz closeout {adr_id}",
+        attestation_text=attestation_text,
+        attestation_term=canonical_term,
+        attester=attester,
+        timestamp_utc=timestamp_utc,
+    )
+    _update_adr_attestation_block(
+        adr_file,
+        adr_id,
+        canonical_term=canonical_term,
+        attester=attester,
+        attestation_date=date.today().isoformat(),
+        attestation_reason=attestation_text,
+    )
+
+    if as_json:
+        output = {
+            "adr": adr_id,
+            "gate_results": gate_results,
+            "attestation": {
+                "status": attest_status,
+                "by": attester,
+                "reason": reason,
+            },
+            "version_sync": {
+                "current": current_ver,
+                "target": adr_ver,
+                "needs_bump": needs_bump,
+                "files_updated": version_updated,
+            },
+            "status_transition": {
+                "from": "Proposed",
+                "to": to_state,
+            },
+        }
+        print(json.dumps(output, indent=2))
+        return
+
+    console.print(f"\n[green]Closeout complete:[/green] {adr_id}")
+    console.print(f"  Attestation: {canonical_term} (by {attester})")
+    if version_updated:
+        console.print(f"  Version sync: {current_ver} → {adr_ver} ({', '.join(version_updated)})")
+    console.print(f"  ADR status: {to_state}")
+
+
 def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
-    """Initiate closeout mode for an ADR and record a closeout event."""
+    """Run the end-to-end closeout pipeline for an ADR.
+
+    Executes quality gates inline, prompts for human attestation, bumps the
+    project version, and marks the ADR as Completed — all within a single
+    command invocation.
+    """
     config = ensure_initialized()
     project_root = get_project_root()
     manifest = load_manifest(project_root)
@@ -2517,118 +2822,89 @@ def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
         adr_id, cast(list[str], closeout_readiness.get("blocking_ids", []))
     )
 
-    closeout_form = adr_file.parent / "ADR-CLOSEOUT-FORM.md"
     gate_1_path = str(adr_file.relative_to(project_root))
     attestation_choices = ["Completed", "Completed - Partial: [reason]", "Dropped - [reason]"]
-    attestation_command = f"uv run gz attest {adr_id} --status completed"
-    evidence = {
-        "adr_file": gate_1_path,
-        "closeout_form": (
-            str(closeout_form.relative_to(project_root)) if closeout_form.exists() else None
-        ),
-        "obpi_files": [str(path.relative_to(project_root)) for path in obpi_files.values()],
-        "obpi_summary": obpi_summary,
-        "obpi_rows": obpi_rows,
-        "verification_commands": [command for _label, command in verification_steps],
-        "verification_steps": [
-            {"label": label, "command": command} for label, command in verification_steps
-        ],
-        "gate4_na_reason": gate4_na_reason,
-        "attestation_choices": attestation_choices,
-        "attestation_command": attestation_command,
-    }
-    event = None
-    if not blockers:
-        event = closeout_initiated_event(
+
+    # --- Blocker check ---
+    if blockers:
+        _abort_closeout_with_blockers(
             adr_id=adr_id,
-            by=get_git_user(),
-            mode=lane,
-            evidence=evidence,
+            lane=lane,
+            dry_run=dry_run,
+            blockers=blockers,
+            gate_1_path=gate_1_path,
+            obpi_summary=obpi_summary,
+            obpi_rows=obpi_rows,
+            verification_steps=verification_steps,
+            gate4_na_reason=gate4_na_reason,
+            attestation_choices=attestation_choices,
+            next_steps=next_steps,
+            as_json=as_json,
         )
 
-    result = _closeout_result_payload(
-        adr_id=adr_id,
-        lane=lane,
-        dry_run=dry_run,
-        allowed=not blockers,
-        blockers=blockers,
-        event=event.model_dump() if event is not None else None,
-        gate_1_path=gate_1_path,
-        obpi_summary=obpi_summary,
-        obpi_rows=obpi_rows,
-        verification_steps=verification_steps,
-        gate4_na_reason=gate4_na_reason,
-        attestation_choices=attestation_choices,
-        next_steps=next_steps,
-    )
-
-    if blockers:
-        if as_json:
-            print(json.dumps(result, indent=2))
-        else:
-            _render_closeout_output(result, dry_run=dry_run)
-        raise SystemExit(1)
-
-    # Version sync check
+    # --- Version sync check (needed for dry-run display and active pipeline) ---
     current_ver, adr_ver, needs_bump = check_version_sync(project_root, adr_id)
 
+    # --- Dry run: show full pipeline plan without executing ---
     if dry_run:
-        if as_json:
-            result["version_sync"] = {
-                "current": current_ver,
-                "target": adr_ver,
-                "needs_bump": needs_bump,
-            }
-            print(json.dumps(result, indent=2))
-            return
-        _render_closeout_output(result, dry_run=True)
-        if needs_bump:
-            console.print(
-                f"  Version sync: would bump {current_ver} → {adr_ver} "
-                f"(pyproject.toml, __init__.py, README.md)"
-            )
-        return
-
-    assert event is not None
-    gate_statuses = ledger.get_latest_gate_statuses(adr_id)
-    _write_adr_closeout_form(
-        project_root,
-        adr_id,
-        adr_file,
-        obpi_rows,
-        verification_steps,
-        gate_statuses,
-        attestation_command=attestation_command,
-    )
-    event.extra["evidence"]["closeout_form"] = str(closeout_form.relative_to(project_root))
-
-    # Bump version files when ADR version exceeds current project version
-    version_updated: list[str] = []
-    if needs_bump and adr_ver is not None:
-        version_updated = sync_project_version(project_root, adr_ver)
-        event.extra["evidence"]["version_sync"] = {
-            "previous": current_ver,
-            "new": adr_ver,
-            "files_updated": version_updated,
-        }
-
-    ledger.append(event)
-
-    if as_json:
-        result["version_sync"] = {
-            "current": current_ver,
-            "target": adr_ver,
-            "needs_bump": needs_bump,
-            "files_updated": version_updated,
-        }
-        print(json.dumps(result, indent=2))
-        return
-
-    _render_closeout_output(result, dry_run=False)
-    if version_updated:
-        console.print(
-            f"[green]Version sync:[/green] {current_ver} → {adr_ver} ({', '.join(version_updated)})"
+        _render_closeout_dry_run(
+            adr_id=adr_id,
+            lane=lane,
+            gate_1_path=gate_1_path,
+            obpi_summary=obpi_summary,
+            obpi_rows=obpi_rows,
+            verification_steps=verification_steps,
+            gate4_na_reason=gate4_na_reason,
+            attestation_choices=attestation_choices,
+            current_ver=current_ver,
+            adr_ver=adr_ver,
+            needs_bump=needs_bump,
+            as_json=as_json,
         )
+        return
+
+    # ===== ACTIVE PIPELINE =====
+
+    # Stage: Record closeout initiation
+    _record_closeout_initiation(
+        project_root=project_root,
+        ledger=ledger,
+        adr_id=adr_id,
+        lane=lane,
+        gate_1_path=gate_1_path,
+        obpi_files=obpi_files,
+        obpi_summary=obpi_summary,
+        verification_steps=verification_steps,
+    )
+
+    obpi_total = int(obpi_summary.get("total", 0))
+    obpi_completed = int(obpi_summary.get("completed", 0))
+    if not as_json:
+        console.print(f"[bold]Closeout pipeline: {adr_id}[/bold]")
+        console.print(f"  Gate 1 (ADR): {gate_1_path}")
+        console.print(f"  OBPI Completion: {obpi_completed}/{obpi_total} complete")
+
+    # Stage: Run quality gates inline
+    gate_results = _run_closeout_quality_gates(
+        adr_id=adr_id,
+        project_root=project_root,
+        ledger=ledger,
+        verification_steps=verification_steps,
+        as_json=as_json,
+    )
+    _complete_closeout_pipeline(
+        project_root=project_root,
+        ledger=ledger,
+        adr_id=adr_id,
+        adr_file=adr_file,
+        obpi_rows=obpi_rows,
+        verification_steps=verification_steps,
+        current_ver=current_ver,
+        adr_ver=adr_ver,
+        needs_bump=needs_bump,
+        gate_results=gate_results,
+        as_json=as_json,
+    )
 
 
 def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
