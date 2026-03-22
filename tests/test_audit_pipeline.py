@@ -418,3 +418,65 @@ class TestAuditEnrichmentJsonKeys(unittest.TestCase):
             self.assertIn("status", first)
             self.assertIn("command", first)
             self.assertIn("returncode", first)
+
+
+class TestAuditGeneratedLedgerEvent(unittest.TestCase):
+    """audit_cmd() appends audit_generated event to ledger (OBPI-0.19.0-05)."""
+
+    @patch("gzkit.cli.run_command")
+    def test_audit_generated_event_in_ledger(self, mock_run):
+        """Successful audit appends audit_generated with correct fields."""
+        mock_run.return_value = _make_qr()
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _setup_attested_adr(runner)
+            result = runner.invoke(main, ["audit", "ADR-0.1.0"])
+            self.assertEqual(result.exit_code, 0, result.output)
+            ledger_text = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
+            self.assertIn('"audit_generated"', ledger_text)
+            # Parse the specific event
+            events = [json.loads(line) for line in ledger_text.strip().splitlines()]
+            audit_events = [e for e in events if e["event"] == "audit_generated"]
+            self.assertEqual(len(audit_events), 1)
+            evt = audit_events[0]
+            self.assertEqual(evt["id"], "ADR-0.1.0")
+            self.assertIn("AUDIT.md", evt["audit_file"])
+            self.assertIn("AUDIT_PLAN.md", evt["audit_plan_file"])
+            self.assertTrue(evt["passed"])
+
+    @patch("gzkit.cli.run_command")
+    def test_audit_generated_passed_false_on_failure(self, mock_run):
+        """Failed verification records passed=False in audit_generated event."""
+        mock_run.return_value = _make_qr(success=False, returncode=1)
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _setup_attested_adr(runner)
+            runner.invoke(main, ["audit", "ADR-0.1.0"])
+            ledger_text = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
+            events = [json.loads(line) for line in ledger_text.strip().splitlines()]
+            audit_events = [e for e in events if e["event"] == "audit_generated"]
+            self.assertEqual(len(audit_events), 1)
+            self.assertFalse(audit_events[0]["passed"])
+
+    def test_dry_run_no_audit_generated_event(self):
+        """--dry-run does NOT append audit_generated event."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _setup_attested_adr(runner)
+            result = runner.invoke(main, ["audit", "ADR-0.1.0", "--dry-run"])
+            self.assertEqual(result.exit_code, 0, result.output)
+            ledger_text = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
+            self.assertNotIn("audit_generated", ledger_text)
+
+    def test_attestation_blocker_no_audit_generated_event(self):
+        """Attestation blocker (exit 1) does NOT append audit_generated event."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _init_git_repo(Path.cwd())
+            _quick_init()
+            runner.invoke(main, ["plan", "0.1.0"])
+            # No attestation — should block
+            result = runner.invoke(main, ["audit", "ADR-0.1.0"])
+            self.assertEqual(result.exit_code, 1)
+            ledger_text = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
+            self.assertNotIn("audit_generated", ledger_text)

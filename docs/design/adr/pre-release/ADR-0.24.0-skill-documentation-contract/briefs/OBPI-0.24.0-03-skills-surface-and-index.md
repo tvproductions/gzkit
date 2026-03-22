@@ -48,3 +48,10 @@ Create the `docs/user/skills/` directory with a categorized index page and integ
 - [ ] Gate 1 (ADR): Intent recorded in this brief
 - [ ] Gate 2 (TDD): `uv run mkdocs build --strict` passes with index
 - [ ] Code Quality: `uv run gz lint` passes
+
+## VERIFICATION COMMANDS
+
+- `uv run mkdocs build --strict`
+- `test -f docs/user/skills/index.md`
+- `rg -n "Skills:" mkdocs.yml`
+- `rg -n "adr-operations|validation|operations" docs/user/skills/index.md`

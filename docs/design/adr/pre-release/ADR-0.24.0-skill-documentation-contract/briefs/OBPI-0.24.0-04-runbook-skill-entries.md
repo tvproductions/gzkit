@@ -48,3 +48,9 @@ Add skill invocation entries to `docs/user/runbook.md` and `docs/governance/gove
 - [ ] Gate 1 (ADR): Intent recorded in this brief
 - [ ] Gate 2 (TDD): `uv run mkdocs build --strict` passes
 - [ ] Code Quality: `uv run gz lint` passes
+
+## VERIFICATION COMMANDS
+
+- `uv run mkdocs build --strict`
+- `rg -n "\\]\\(.*skills/.*\\.md\\)" docs/user/runbook.md docs/governance/governance_runbook.md`
+- `rg -n "what the skill does|why it's invoked|workflow" docs/user/runbook.md docs/governance/governance_runbook.md`
