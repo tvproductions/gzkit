@@ -1,0 +1,9 @@
+{
+  "obpi_id": "OBPI-0.19.0-01",
+  "agent": "claude-code",
+  "pid": null,
+  "session_id": "gz-obpi-pipeline-0.19.0-01",
+  "claimed_at": "2026-03-22T00:00:00Z",
+  "branch": "main",
+  "ttl_minutes": 120
+}

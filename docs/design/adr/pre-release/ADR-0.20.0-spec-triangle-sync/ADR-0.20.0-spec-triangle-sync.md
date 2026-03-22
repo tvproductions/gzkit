@@ -41,7 +41,7 @@ Separate prep from change via distinct commits. STOP if REQ identifier format is
 - `gz drift` CLI surface exposes drift reports in human/JSON/plain modes
 - Drift integrates as an advisory check in `gz check`
 
-**Critical Constraint:** This ADR defines the triangle FRAMEWORK — the vertices, edges, and drift detection model. The concrete `@covers` decorator mechanism and deep test traceability enforcement belong to ADR-0.21.0 (tests-for-spec). This ADR provides the data model and detection engine that 0.21.0 builds on.
+**Critical Constraint:** This ADR defines the triangle FRAMEWORK — the vertices, edges, drift detection model, and deterministic extraction of existing linkage signals. The concrete `@covers` decorator enforcement model, coverage-anchor scanning, and deep requirement-level test traceability belong to ADR-0.21.0 (tests-for-spec). This ADR provides the data model and detection engine that 0.21.0 builds on.
 
 **Anti-Pattern Warning:** A failed implementation looks like: drift detection that only works on manually maintained linkage files rather than extracting linkage from existing governance artifacts (briefs, tests). The triangle must be derived from artifacts that already exist in the workflow, not from new metadata that agents must remember to maintain.
 
@@ -50,23 +50,26 @@ Separate prep from change via distinct commits. STOP if REQ identifier format is
 - `src/gzkit/triangle.py` — triangle data model and drift detection engine
 - `src/gzkit/commands/drift.py` — CLI surface
 - OBPI briefs — REQ sections are the "spec" vertex of the triangle
-- Test files — `@covers` decorators are the "test→spec" edge (mechanism owned by ADR-0.21.0)
+- Test files — existing `@covers` references provide the "test→spec" signal; enforcement and deep scanning remain ADR-0.21.0 scope
 - `gz check` — drift becomes an advisory check
 
 ---
 
 ## Feature Checklist — Appraisal of Completeness
 
-- Scope and surface
-  - External contract changed (Heavy lane): new `gz drift` CLI command, changes to `gz check` output
-- Tests
-  - stdlib unittest guards REQ model, linkage extraction, and drift detection
-  - BDD scenarios for `gz drift` CLI contract
-- Docs
-  - `gz drift` command documentation in `docs/user/commands/`
-  - Runbook updated with drift checking workflow
-- OBPI mapping
-  - Each numbered ADR checklist item maps to one brief; acceptance recorded in the brief
+1. **OBPI-0.20.0-01:** Define the REQ entity and triangle data model.
+2. **OBPI-0.20.0-02:** Extract REQ entities from OBPI brief acceptance criteria.
+3. **OBPI-0.20.0-03:** Compute drift across spec, test, and code signals, including unjustified code changes.
+4. **OBPI-0.20.0-04:** Expose `gz drift` with repository scanning and human/JSON/plain output modes.
+5. **OBPI-0.20.0-05:** Integrate drift into `gz check` as an advisory, non-blocking Heavy-lane surface.
+
+Support obligations for the checklist above:
+
+- External contract changed (Heavy lane): new `gz drift` CLI command, changes to `gz check` output
+- stdlib unittest guards REQ model, linkage extraction, drift detection, and advisory integration
+- BDD scenarios cover both `gz drift` and `gz check` advisory output contracts
+- Docs updated in `docs/user/commands/drift.md`, `docs/user/commands/check.md`, and `docs/user/runbook.md`
+- Each numbered ADR checklist item maps to one brief; acceptance recorded in the brief
 
 ## Intent
 
@@ -81,10 +84,10 @@ The triangle concept draws from Drew Breunig's "spec-driven triangle" framing an
 - Define the triangle data model: three vertex types (Spec/REQ, Test, Code), three edge types (covers, proves, justifies), and a LinkageRecord that captures observed relationships.
 - Formalize the REQ entity as a Pydantic model with identifier scheme `REQ-<semver>-<obpi>-<seq>`, extractable from OBPI brief acceptance criteria sections.
 - Build a brief REQ extractor that parses existing OBPI briefs to discover REQ entities and their status (checked/unchecked).
-- Build a drift detection engine that, given extracted REQs and test linkage data, computes: unlinked specs (REQs with no test), orphan tests (tests claiming non-existent REQs), and coverage gaps.
-- Expose drift via `gz drift` CLI with human-readable (default), `--json`, and `--plain` output modes.
+- Build a drift detection engine that, given extracted REQs, test linkage data, and code change signals, computes: unlinked specs (REQs with no test), orphan tests (tests claiming non-existent REQs), and unjustified code changes.
+- Expose drift via `gz drift` CLI with human-readable (default), `--json`, and `--plain` output modes by scanning OBPI briefs, existing `@covers` references, and the active code change set.
 - Integrate drift as an advisory check in `gz check` — warn on drift but do not fail gates (advisory→required rollout is a future decision).
-- All checks are deterministic — no LLM inference. Structured signals (REQ IDs, @covers decorators, file change sets) provide sufficient data for drift detection.
+- All checks are deterministic — no LLM inference. Structured signals (REQ IDs, existing `@covers` references, and file change sets) provide sufficient data for drift detection.
 
 ### Boundary with ADR-0.21.0
 
@@ -95,9 +98,9 @@ This ADR defines the triangle framework and data model. ADR-0.21.0 (tests-for-sp
 | REQ entity model | `@covers` decorator enforcement |
 | Triangle vertex/edge types | Coverage anchor scanning |
 | Brief REQ extraction | Requirement-level coverage reporting |
-| Drift detection engine | ADR audit traceability integration |
-| `gz drift` CLI | Language-agnostic proof metadata |
-| Advisory gate integration | Migration plan for legacy tests |
+| Deterministic extraction of existing `@covers` references for drift linkage | ADR audit traceability integration |
+| Drift detection engine, including unjustified code-change classification | Language-agnostic proof metadata |
+| `gz drift` CLI and advisory `gz check` integration | Migration plan for legacy tests |
 
 ### Alternatives Considered
 
@@ -114,9 +117,9 @@ This ADR defines the triangle framework and data model. ADR-0.21.0 (tests-for-sp
 |---|------|----------------------------------------------|
 | 1 | REQ entity and triangle data model | No typed representation of requirements or triangle relationships. Everything downstream operates on untyped strings. |
 | 2 | Brief REQ extraction | The "spec" vertex of the triangle has no data source. Drift detection cannot know what requirements exist. |
-| 3 | Drift detection engine | Linkage data exists but nothing computes drift. Broken linkages remain invisible. |
-| 4 | gz drift CLI | Drift engine exists but operators and agents cannot invoke it. No external surface. |
-| 5 | Advisory gate integration | Drift is queryable but not part of the standard quality check flow. Agents don't see drift unless they explicitly run `gz drift`. |
+| 3 | Drift detection engine | Linkage data exists but nothing computes spec/test drift or classifies unjustified code changes. Broken linkages remain invisible. |
+| 4 | gz drift CLI | Drift engine exists but operators and agents cannot invoke it against live briefs, test linkage, and the active code change set. No external surface. |
+| 5 | Advisory gate integration | Drift is queryable but not part of the standard quality check flow. Agents do not see advisory findings unless they explicitly run `gz drift`. |
 
 ## Interfaces
 
@@ -124,6 +127,8 @@ This ADR defines the triangle framework and data model. ADR-0.21.0 (tests-for-sp
 - **CLI (external contract):** `uv run gz check` — gains advisory drift check
 - **Internal:** `src/gzkit/triangle.py` — triangle data model and drift engine
 - **Input contract:** OBPI briefs with `## Acceptance Criteria` containing `REQ-<semver>-<obpi>-<seq>` identifiers
+- **Input contract:** Test files with existing `@covers("REQ-...")` references
+- **Input contract:** Active repository change set (or explicit diff window) for code-change classification
 
 ## OBPI Decomposition — Work Breakdown Structure (Level 1)
 
@@ -131,8 +136,8 @@ This ADR defines the triangle framework and data model. ADR-0.21.0 (tests-for-sp
 |---|------|----------------------|------|--------|
 | 1 | OBPI-0.20.0-01 | REQ entity model, triangle vertex/edge types, linkage record schema | Lite | Pending |
 | 2 | OBPI-0.20.0-02 | Brief REQ extraction: parse OBPI briefs to discover REQ entities | Lite | Pending |
-| 3 | OBPI-0.20.0-03 | Drift detection engine: compute unlinked specs, orphan tests, coverage gaps | Lite | Pending |
-| 4 | OBPI-0.20.0-04 | `gz drift` CLI surface with human/JSON/plain output modes | Heavy | Pending |
+| 3 | OBPI-0.20.0-03 | Drift detection engine: compute unlinked specs, orphan tests, and unjustified code changes | Lite | Pending |
+| 4 | OBPI-0.20.0-04 | `gz drift` CLI surface with human/JSON/plain output modes and repository signal scanning | Heavy | Pending |
 | 5 | OBPI-0.20.0-05 | Advisory gate integration: wire drift into `gz check` | Heavy | Pending |
 
 **Briefs location:** `obpis/OBPI-0.20.0-*.md`
@@ -141,9 +146,9 @@ This ADR defines the triangle framework and data model. ADR-0.21.0 (tests-for-sp
 
 ```text
 OBPI-01 (data model)
-  ├──► OBPI-02 (brief extraction)  ─┐
-  │                                  ├──► OBPI-04 (CLI surface) ──► OBPI-05 (gate integration)
-  └──► OBPI-03 (drift engine)     ─┘
+  ├──► OBPI-02 (brief extraction) ──┐
+  ├──► OBPI-03 (drift engine)      ─┼──► OBPI-04 (CLI surface) ──► OBPI-05 (gate integration)
+  └──► existing linkage signals    ──┘
 ```
 
 **Critical path:** OBPI-01 → OBPI-02 → OBPI-03 → OBPI-04 → OBPI-05
@@ -155,7 +160,7 @@ OBPI-01 (data model)
 - No replacement of ADR/OBPI governance authority.
 - No mandatory heavy orchestration runtime.
 - No hard requirement for one specific coding agent provider.
-- No `@covers` decorator enforcement or scanning — that is ADR-0.21.0 scope.
+- No `@covers` decorator enforcement, coverage-anchor scanning, or requirement-level proof semantics — that is ADR-0.21.0 scope. Deterministic extraction of existing `@covers` references for drift linkage is in scope here.
 - No LLM inference for drift detection — deterministic checks only.
 - No required (fail-closed) drift gates — advisory mode only in this ADR.
 
@@ -163,7 +168,7 @@ OBPI-01 (data model)
 
 If any of these emerge during implementation, create a new ADR rather than expanding this one:
 
-- `@covers` decorator scanning and coverage enforcement → ADR-0.21.0
+- `@covers` decorator enforcement, coverage-anchor scanning, and requirement-level proof semantics → ADR-0.21.0
 - TASK entity definition or lifecycle → ADR-0.22.0
 - Execution memory graph or session history → `ADR-pool.execution-memory-graph`
 - Drift auto-remediation (automatically fixing broken linkages) → new pool ADR
@@ -185,6 +190,7 @@ The triangle-sync framework makes drift visible early — during implementation,
 - New `gz drift` CLI command becomes part of the operator surface
 - `gz check` output gains an advisory drift section
 - REQ entities gain a formal Pydantic model — first step toward the full four-tier hierarchy
+- Code changes without governance justification become queryable as deterministic drift findings
 - ADR-0.21.0 (tests-for-spec) builds on this data model for deep traceability
 - ADR-0.22.0 (task-level-governance) extends the model with TASK entities
 
@@ -192,8 +198,8 @@ The triangle-sync framework makes drift visible early — during implementation,
 
 - **ADR:** this document
 - **TDD (required):** `tests/test_triangle.py`
-- **BDD (external contract changed):** `features/triangle_drift.feature`
-- **Docs:** `docs/user/commands/drift.md`, updated `docs/user/runbook.md`
+- **BDD (external contract changed):** `features/triangle_drift.feature`, `features/check_drift_advisory.feature`
+- **Docs:** `docs/user/commands/drift.md`, `docs/user/commands/check.md`, updated `docs/user/runbook.md`
 
 ---
 
@@ -216,16 +222,18 @@ The triangle-sync framework makes drift visible early — during implementation,
 ### Source & Contracts
 
 - CLI / contracts: `src/gzkit/commands/drift.py`
+- CLI / contracts: `src/gzkit/commands/check.py`
 - Core modules: `src/gzkit/triangle.py`
 
 ### Tests
 
 - Unit: `tests/test_triangle.py`
-- BDD: `features/triangle_drift.feature`
+- BDD: `features/triangle_drift.feature`, `features/check_drift_advisory.feature`
 
 ### Docs
 
 - Commands: `docs/user/commands/drift.md`
+- Commands: `docs/user/commands/check.md`
 - Runbook: `docs/user/runbook.md` (updated)
 
 ### Summary Deltas (git window)
@@ -242,6 +250,7 @@ The triangle-sync framework makes drift visible early — during implementation,
 |---|---|---|---|---|
 | src/gzkit/triangle.py | P | REQ model, drift detection | Test output | |
 | src/gzkit/commands/drift.py | P | `gz drift` CLI surface | Test output | |
+| src/gzkit/commands/check.py | P | `gz check` drift advisory surface | Test output | |
 | docs/user/commands/drift.md | P | Command documentation | Rendered docs | |
 
 ### SIGN-OFF — Post-Ship Tidy
