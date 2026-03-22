@@ -39,7 +39,13 @@ promoted_from: ADR-pool.tests-for-spec
 - ADR audit uses coverage data to verify requirement fulfillment
 - Operator documentation with migration guide for legacy tests
 
-**Critical Constraint:** This ADR deepens the Test→Spec edge of the triangle defined in ADR-0.20.0. It builds on the REQ entity model and linkage schema from 0.20.0 — it does NOT redefine them. The `@covers` decorator feeds linkage records into the triangle framework.
+**Critical Constraint:** This ADR deepens the Test→Spec edge of the triangle
+defined in ADR-0.20.0. It builds on the REQ entity model and linkage schema
+from 0.20.0 — it does NOT redefine them. The `@covers` decorator feeds
+linkage records into the triangle framework. REQ existence validation consumes
+the brief-extraction output from ADR-0.20.0, loaded once per process into a
+deterministic cached requirement registry before import-time linkage
+registration.
 
 **Anti-Pattern Warning:** A failed implementation looks like: `@covers` decorators that are syntactically valid but semantically unchecked — tests claim to cover REQs that don't exist, and nothing detects the mismatch. The decorator must validate against actual REQ entities from briefs.
 
@@ -55,16 +61,28 @@ promoted_from: ADR-pool.tests-for-spec
 
 ## Feature Checklist — Appraisal of Completeness
 
-- Scope and surface
-  - External contract changed (Heavy lane): new `gz covers` CLI command, changes to audit output
-- Tests
-  - stdlib unittest guards decorator registration, scanner, and coverage computation
-  - BDD scenarios for `gz covers` CLI
-- Docs
-  - Command documentation in `docs/user/commands/covers.md`
-  - Annotation guide in `docs/user/concepts/test-traceability.md`
-- OBPI mapping
-  - Each numbered checklist item maps to one brief
+1. **OBPI-0.21.0-01:** `@covers` decorator with REQ format validation,
+   brief-backed REQ existence validation, and linkage registration
+2. **OBPI-0.21.0-02:** Coverage anchor scanner: walk test tree, discover
+   annotations, produce LinkageRecords, and compute ADR/OBPI/REQ rollups
+3. **OBPI-0.21.0-03:** `gz covers` CLI with ADR/OBPI/REQ granularity and
+   human/JSON/plain output
+4. **OBPI-0.21.0-04:** ADR audit integration: wire coverage into
+   `gz adr audit-check`
+5. **OBPI-0.21.0-05:** Operator docs, migration guide, and language-agnostic
+   proof metadata contract for non-Python stacks
+
+Support obligations for the checklist above:
+
+- External contract changed (Heavy lane): new `gz covers` CLI command, changes
+  to audit output, and operator-facing traceability doctrine
+- stdlib unittest guards decorator validation, scanner behavior, CLI output,
+  and audit integration
+- BDD scenarios cover `gz covers` and audit-surface proof expectations
+- Docs updated in `docs/user/commands/covers.md`,
+  `docs/user/concepts/test-traceability.md`, and migration/runbook guidance
+- Each numbered ADR checklist item maps to one brief and one concrete
+  verification-command set
 
 ## Intent
 
@@ -78,22 +96,28 @@ This ADR formalizes the Test→Spec edge of the triangle (defined in ADR-0.20.0)
 
 ## Decision
 
-- Formalize `@covers` as a decorator that registers test→REQ linkage and validates the REQ identifier format.
+- Formalize `@covers` as a decorator that registers test→REQ linkage,
+  validates the REQ identifier format, and fail-closes when the referenced REQ
+  is not present in the extracted brief-defined requirement set.
 - Build a coverage anchor scanner that walks the test tree, discovers all `@covers` annotations, and produces LinkageRecords (using the triangle data model from ADR-0.20.0).
 - Expose coverage reporting via `gz covers` CLI with three granularity levels: by ADR (`gz covers ADR-0.20.0`), by OBPI (`gz covers OBPI-0.20.0-01`), or all (`gz covers`).
 - Integrate coverage data into `gz adr audit-check` so requirement fulfillment is part of the audit pipeline.
-- Produce operator documentation with compliant annotation examples and a migration guide for legacy tests.
-- Define a language-agnostic proof metadata contract (comments, frontmatter, or config-file annotations) for non-Python test stacks.
+- Produce operator documentation with compliant annotation examples, a
+  migration guide for legacy tests, and a language-agnostic proof metadata
+  contract (comments, frontmatter, or config-file annotations) for non-Python
+  test stacks so the doctrine is portable without making Python decorators the
+  only valid proof surface. In ADR-0.21.0 this contract is documentation-only;
+  any runtime ingestion of non-Python proof metadata requires a future ADR.
 
 ### Boundary with ADR-0.20.0
 
 | Owned by 0.20.0 | Owned by 0.21.0 |
 |------------------|-----------------|
-| REQ entity model | `@covers` decorator implementation |
+| REQ entity model | `@covers` decorator implementation and REQ existence validation |
 | Triangle vertex/edge types | Coverage anchor scanning |
 | LinkageRecord schema | `gz covers` CLI |
 | Drift detection engine | ADR audit integration |
-| `gz drift` CLI | Operator docs and migration guide |
+| `gz drift` CLI | Operator docs, migration guide, and language-agnostic proof metadata contract |
 
 ### Alternatives Considered
 
@@ -102,16 +126,17 @@ This ADR formalizes the Test→Spec edge of the triangle (defined in ADR-0.20.0)
 | **Inline comments instead of decorators** | Comments are not programmatically discoverable without fragile regex. Decorators register in Python's runtime and are scannable via AST. |
 | **Mandatory 100% REQ coverage** | Too aggressive for initial rollout. Advisory reporting first, with a coverage floor (similar to 40% line coverage) as a future gate. |
 | **Single-level coverage (REQ only)** | Operators need to ask "is ADR-0.15.0 fully proven?" not just "is REQ-0.15.0-03-02 proven?" Multi-level rollup is essential. |
+| **Python-only proof contract** | Would lock the doctrine to one test-stack syntax. gzkit needs a portable proof metadata contract so non-Python tests can declare equivalent REQ linkage without pretending decorators exist everywhere. |
 
 ### Checklist Item Necessity Table
 
 | # | OBPI | If removed, what specific capability is lost? |
 |---|------|----------------------------------------------|
-| 1 | @covers decorator and registration | No mechanism to declare test→REQ linkage. Coverage is undiscoverable. |
+| 1 | @covers decorator, validation, and registration | No mechanism to declare test→REQ linkage, and invalid or non-existent REQ claims would silently pollute coverage data. |
 | 2 | Coverage anchor scanner | @covers exists but nothing collects the annotations. No aggregate view. |
 | 3 | gz covers CLI | Scanner works but operators can't invoke it. No external surface. |
 | 4 | ADR audit integration | Coverage data exists but audit doesn't use it. Auditors still grep manually. |
-| 5 | Operator docs and migration guide | Tooling exists but developers don't know how to use it. Adoption stalls. |
+| 5 | Operator docs, migration guide, and language-agnostic proof metadata contract | Tooling exists but developers cannot adopt it safely, and non-Python stacks have no sanctioned equivalent proof syntax. |
 
 ## Interfaces
 
@@ -124,11 +149,11 @@ This ADR formalizes the Test→Spec edge of the triangle (defined in ADR-0.20.0)
 
 | # | OBPI | Specification Summary | Lane | Status |
 |---|------|----------------------|------|--------|
-| 1 | OBPI-0.21.0-01 | `@covers` decorator with REQ validation and linkage registration | Lite | Pending |
+| 1 | OBPI-0.21.0-01 | `@covers` decorator with REQ format validation, brief-backed REQ existence validation, and linkage registration | Lite | Pending |
 | 2 | OBPI-0.21.0-02 | Coverage anchor scanner: walk test tree, discover annotations, produce LinkageRecords | Lite | Pending |
 | 3 | OBPI-0.21.0-03 | `gz covers` CLI with ADR/OBPI/REQ granularity and human/JSON/plain output | Heavy | Pending |
 | 4 | OBPI-0.21.0-04 | ADR audit integration: wire coverage into `gz adr audit-check` | Heavy | Pending |
-| 5 | OBPI-0.21.0-05 | Operator docs, annotation examples, and legacy test migration guide | Heavy | Pending |
+| 5 | OBPI-0.21.0-05 | Operator docs, annotation examples, legacy test migration guide, and language-agnostic proof metadata contract | Heavy | Pending |
 
 **Briefs location:** `obpis/OBPI-0.21.0-*.md`
 
@@ -143,11 +168,22 @@ OBPI-01 (@covers decorator)
 
 **Critical path:** OBPI-01 → OBPI-02 → OBPI-03 → OBPI-04
 
+**Verification spine:**
+
+- OBPI-01: `uv run -m unittest tests.test_traceability -v`
+- OBPI-02: `uv run -m unittest tests.test_traceability -v`
+- OBPI-03: `uv run gz covers --help`,
+  `uv run -m behave features/test_traceability.feature`
+- OBPI-04: `uv run gz adr audit-check ADR-0.20.0 --json`
+- OBPI-05: `uv run mkdocs build --strict`
+
 ## Non-Goals
 
 - No immediate mandate for branch-level 100% requirement coverage.
 - No replacement of code coverage tools — requirement coverage is orthogonal to line coverage.
 - No lock-in to decorator syntax if equivalent metadata surfaces emerge later.
+- No runtime implementation for non-Python proof discovery in this ADR beyond
+  documenting the equivalent metadata contract and migration path.
 - No changes to the REQ entity model — that belongs to ADR-0.20.0.
 
 ### Scope Creep Guardrails
@@ -169,6 +205,19 @@ The `@covers` pattern — already informally used in gzkit — makes this explic
 - ADR audit gains automated requirement proof checking
 - Legacy tests without `@covers` are not broken but are reported as uncovered
 - ADR-0.22.0 (task-level-governance) can link TASKs to REQs through the same traceability chain
+
+## Long-Term Validity Guards
+
+- `tests/test_traceability.py` is the regression contract for decorator
+  behavior, unknown-REQ rejection, scanner rollups, and audit/CLI integration.
+- `features/test_traceability.feature` is the external-surface regression
+  contract for `gz covers` and audit proof reporting.
+- `docs/user/concepts/test-traceability.md` and `docs/user/runbook.md` define
+  the operator-facing proof metadata contract. Non-Python patterns remain
+  documentation-only until a future ADR adds discovery/runtime support.
+- Any future runtime ingestion of comment/frontmatter/config-file proof
+  metadata without a new ADR is invalid and should be treated as doctrinal
+  drift.
 
 ## Evidence (Four Gates)
 
