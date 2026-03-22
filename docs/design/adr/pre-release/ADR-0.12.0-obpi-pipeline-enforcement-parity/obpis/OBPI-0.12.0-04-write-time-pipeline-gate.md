@@ -310,7 +310,7 @@ OBPI receipt emitted.
   Attestor: human:jeff
 ```
 
-## Value Narrative
+### Value Narrative
 
 Before this tranche, gzkit had the plan-exit router and the active-marker
 contract, but nothing stopped agents from writing to `src/` or `tests/` before
@@ -318,7 +318,7 @@ actually entering the OBPI pipeline. This OBPI ports the missing write-time
 gate so PASS-audited implementation work must pass through the pipeline marker
 bridge instead of proceeding as freeform edits.
 
-## Key Proof
+### Key Proof
 
 ```text
 $ printf '{"cwd":"<temp-workspace>","tool_input":{"file_path":"src/demo.py"}}' | python3 .claude/hooks/pipeline-gate.py

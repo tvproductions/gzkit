@@ -210,7 +210,7 @@ $ uv run mkdocs build --strict
 Documentation built in 0.85 seconds with informational notices only.
 ```
 
-## Value Narrative
+### Value Narrative
 
 Before this OBPI reconciliation, gzkit carried the non-blocking Claude hook files
 and settings wiring in the working tree, but the canonical generator contract did
@@ -220,7 +220,7 @@ After this OBPI, the non-blocking `.claude/hooks` tranche is reproducible from
 rationale for the remaining canonical hooks, and verification evidence shows the
 surface is governance-safe.
 
-## Key Proof
+### Key Proof
 
 The generated Claude settings now preserve the OBPI-01 hook tranche exactly:
 

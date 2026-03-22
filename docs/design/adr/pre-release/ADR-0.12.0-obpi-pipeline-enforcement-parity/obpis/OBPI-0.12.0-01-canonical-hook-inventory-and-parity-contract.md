@@ -270,7 +270,7 @@ Took 0min 0.274s
 Human attestation received on 2026-03-12: "attest completed for obpi-0.12.0-01"
 ```
 
-## Value Narrative
+### Value Narrative
 
 Before this OBPI, gzkit knew the missing enforcement hooks only as a generic
 parity gap. The repo had no contract that said which exact canonical artifacts
@@ -282,7 +282,7 @@ spells out every hook target, the receipt and marker file contracts, the
 successor OBPI ownership, and the fail-closed constraints that later runtime
 work must preserve.
 
-## Key Proof
+### Key Proof
 
 ```text
 $ rg -n 'ADR-0.12.0|OBPI-0.12.0-07|plan-audit|pipeline-router|pipeline-gate|pipeline-completion-reminder' \

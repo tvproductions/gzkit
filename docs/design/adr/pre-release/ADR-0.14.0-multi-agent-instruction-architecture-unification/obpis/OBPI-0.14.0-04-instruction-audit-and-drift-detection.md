@@ -203,13 +203,13 @@ uv run ruff format — All files formatted
 - Tests added: 22 (5 test classes)
 - Date completed: 2026-03-16
 
-## Value Narrative
+### Value Narrative
 
 Before this OBPI, stale or conflicting instructions could sit in the repo without any
 product signal, silently shaping tool behavior or wasting operator attention. After
 this OBPI, gzkit will identify these defects explicitly and make them auditable.
 
-## Key Proof
+### Key Proof
 
 An audit run flags at least one unreachable rule, one foreign-project carryover case,
 and one policy-versus-code mismatch with enough detail for remediation.

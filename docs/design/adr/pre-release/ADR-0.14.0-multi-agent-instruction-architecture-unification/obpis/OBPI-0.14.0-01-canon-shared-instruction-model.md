@@ -207,13 +207,13 @@ uv run ruff format --check . — clean
 - Date completed: 2026-03-15
 - Anchor commit: `8e93918`
 
-## Value Narrative
+### Value Narrative
 
 Before this OBPI, gzkit generated overlapping root instruction contracts that were easy
 to drift apart and expensive for agents to load. After this OBPI, shared repo rules
 will exist once and vendor files will become cheaper, clearer adapter surfaces.
 
-## Key Proof
+### Key Proof
 
 One canonical instruction input renders `AGENTS.md`, `CLAUDE.md`, and
 `.github/copilot-instructions.md` with identical shared governance content and only

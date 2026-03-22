@@ -201,7 +201,7 @@ N/A — no behave features for CLAUDE.md template
 Human attestation: "attest completed" — 2026-03-19
 ```
 
-## Value Narrative
+### Value Narrative
 
 Before this OBPI, CLAUDE.md could grow unbounded as governance content was added directly, causing context window bloat for Claude Code sessions. Now, CLAUDE.md is generated from a slim 50-line template that delegates skills to `.claude/skills/`, rules to `.claude/rules/`, and defers to `AGENTS.md` as the authoritative contract. Regression tests in `TestRootSurfaceSlimming` and `TestAdapterTemplatesReferenceCanon` prevent re-introduction of bloated content.
 

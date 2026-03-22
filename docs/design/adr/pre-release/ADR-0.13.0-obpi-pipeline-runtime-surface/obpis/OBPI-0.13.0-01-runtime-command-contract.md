@@ -279,7 +279,7 @@ OBPI receipt emitted.
   Attestor: human:jeff
 ```
 
-## Value Narrative
+### Value Narrative
 
 <!-- What problem existed before this OBPI, and what capability exists now? -->
 
@@ -291,7 +291,7 @@ exists as a code-owned command surface with launch, `--from=verify`, and
 `ADR-0.12.0` hook chain, and fail-closed blockers for missing/invalid
 governance prerequisites.
 
-## Key Proof
+### Key Proof
 
 <!-- One concrete usage example, command, or before/after behavior. -->
 

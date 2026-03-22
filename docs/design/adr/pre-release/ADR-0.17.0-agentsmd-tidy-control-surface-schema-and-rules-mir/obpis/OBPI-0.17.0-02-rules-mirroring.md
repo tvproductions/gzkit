@@ -207,7 +207,7 @@ N/A — no behave features for rules mirroring structure
 Human attestation: "attest completed" — 2026-03-19
 ```
 
-## Value Narrative
+### Value Narrative
 
 Before this OBPI, governance rules existed as ad-hoc files in vendor-specific directories with no canonical source of truth or validation. Rules could drift between Claude and Copilot mirrors undetected. Now, `.gzkit/rules/` serves as the validated canonical source with Pydantic frontmatter, and `gz agent sync control-surfaces` renders vendor-specific mirrors with format transformation, stale cleanup, and drift detection via `instruction_audit.py`.
 

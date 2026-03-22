@@ -161,7 +161,7 @@ $ uv run gz test — 1040 tests OK
 $ uv run gz validate --documents — All validations passed
 ```
 
-## Value Narrative
+### Value Narrative
 
 Before this OBPI, gzkit and airlineops closeout/audit commands evolved independently with no formal parity contract. An operator trained on `gz closeout` would encounter different stages, different error messages, and different exit code semantics when switching to `opsdev closeout` in airlineops. Parity was aspirational — stated in ADR text but never verified or enforced.
 

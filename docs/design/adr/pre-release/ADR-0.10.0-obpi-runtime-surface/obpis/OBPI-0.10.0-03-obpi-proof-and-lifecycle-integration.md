@@ -208,7 +208,7 @@ $ uv run -m behave features/
 16 steps passed, 0 failed, 0 skipped
 ```
 
-## Value Narrative
+### Value Narrative
 
 Before this change, OBPI runtime proof existed in status/reconcile internals, but
 ADR closeout still behaved like an ADR-only ceremony. Operators could start
@@ -220,7 +220,7 @@ Now the same OBPI runtime issues that drive `gz obpi status` and
 stops before `closeout_initiated` is recorded, prints `BLOCKERS:`, and points
 operators at the exact OBPI reconcile commands needed to clear the proof gap.
 
-## Key Proof
+### Key Proof
 
 - `uv run gz obpi status OBPI-0.10.0-03-obpi-proof-and-lifecycle-integration --json`
   now reports `runtime_state: attested_completed`,

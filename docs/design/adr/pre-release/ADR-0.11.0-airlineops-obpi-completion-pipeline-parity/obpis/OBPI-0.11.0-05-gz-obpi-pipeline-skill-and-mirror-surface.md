@@ -216,7 +216,7 @@ Took 0min 0.212s
 Human attestation received on 2026-03-12: "I'll attest completed"
 ```
 
-## Value Narrative
+### Value Narrative
 
 Before this tranche, gzkit had a canonical `gz-obpi-pipeline` skill, but the
 post-attestation closeout order still allowed completion accounting to be
@@ -225,7 +225,7 @@ is explicit across canon, mirrors, generated agent surfaces, and operator docs:
 guarded `git sync` runs before final completion receipt/accounting and the
 later brief/ADR reconciliation steps.
 
-## Key Proof
+### Key Proof
 
 ```text
 Canonical gzkit now contains `.gzkit/skills/gz-obpi-pipeline/SKILL.md`, and the
