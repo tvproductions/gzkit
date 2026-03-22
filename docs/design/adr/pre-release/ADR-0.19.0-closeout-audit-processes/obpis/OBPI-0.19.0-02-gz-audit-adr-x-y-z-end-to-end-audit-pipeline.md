@@ -3,7 +3,7 @@ id: OBPI-0.19.0-02-gz-audit-adr-x-y-z-end-to-end-audit-pipeline
 parent: ADR-0.19.0-closeout-audit-processes
 item: 2
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.19.0-02: `gz audit ADR-X.Y.Z` — end-to-end audit pipeline
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.19.0-closeout-audit-processes/ADR-0.19.0-closeout-audit-processes.md`
 - **Checklist Item:** #2 - "OBPI-0.19.0-02: `gz audit ADR-X.Y.Z` — end-to-end audit pipeline"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -130,12 +130,12 @@ uv run gz audit ADR-0.19.0 --dry-run --json
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -143,18 +143,21 @@ uv run gz audit ADR-0.19.0 --dry-run --json
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+$ uv run python -m unittest tests.test_audit_pipeline -v
+Ran 9 tests in 0.818s — OK
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+$ uv run gz lint — All checks passed
+$ uv run gz typecheck — All checks passed
+$ uv run gz test — 1040 tests OK
 ```
 
 ## Value Narrative
@@ -163,28 +166,31 @@ Before this OBPI, `gz audit` created proof artifacts (AUDIT_PLAN.md, AUDIT.md, p
 
 After this OBPI, `gz audit ADR-X.Y.Z` runs the full post-attestation reconciliation pipeline: verification, artifact creation, receipt emission, and status transition. The validation receipt lives in the ledger alongside all other governance events, and the ADR status reflects the actual audit outcome.
 
-## Key Proof
+### Key Proof
 
 ```text
-$ uv run gz audit ADR-0.19.0 --dry-run
-Dry run: no files will be written.
-  Would create: docs/design/adr/pre-release/ADR-0.19.0-closeout-audit-processes/audit
-  Would create: docs/design/adr/pre-release/ADR-0.19.0-closeout-audit-processes/audit/proofs
-  Would run: uv run gz test
-  Would run: uv run gz lint
-  Would run: uv run gz typecheck
-  Would run: uv run mkdocs build --strict
-  Would emit validation receipt to ledger
-  Would transition ADR status: Completed -> Validated
+$ uv run python -m unittest tests.test_audit_pipeline -v
+test_audit_creates_artifacts ... ok
+test_audit_blocks_without_attestation ... ok
+test_dry_run_json_includes_receipt_and_transition ... ok
+test_dry_run_shows_receipt_and_transition_plan ... ok
+test_artifacts_still_written_on_failure ... ok
+test_no_transition_on_failure ... ok
+test_json_contains_all_fields ... ok
+test_validation_receipt_in_ledger ... ok
+test_adr_transitions_to_validated ... ok
+----------------------------------------------------------------------
+Ran 9 tests in 0.818s
+OK
 ```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created/modified: `src/gzkit/cli.py`, `tests/test_audit_pipeline.py`
+- Tests added: 9 tests covering all 10 requirements
+- Date completed: 2026-03-22
+- Attestation status: Completed (human attested)
+- Defects noted: none
 
 ## Tracked Defects
 
@@ -192,14 +198,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a` (Lite lane — self-closeable after evidence)
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: jeff
+- Attestation: Completed
+- Date: 2026-03-22
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-22
 
 **Evidence Hash:** -
