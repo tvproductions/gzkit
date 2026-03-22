@@ -4,118 +4,85 @@
 
 ---
 
+> **Video companion:** This tutorial mirrors the six-part
+> [video series](presentations/index.md). Watch Parts 1-5 first for
+> the concepts, then use this tutorial as a hands-on walkthrough.
+
 ## What You'll Build
 
 A **reading list tracker** — a small Python CLI where users can add books,
 mark them as read, and list books by status. Simple enough to finish in a
 few sessions, complex enough to make real design decisions.
 
-This tutorial walks through the full governance cycle:
+This tutorial walks through the full governance cycle using templates:
 
 ```text
-gz init → gz prd → gz plan → gz specify → implement → gz gates → gz closeout → gz attest
+Setup → Write PRD → Write ADR → Create Tasks → Implement → Verify → Closeout → Attest
 ```
 
-By the end, you'll have a governed project with a PRD, one ADR, tasks
-with passing tests, and a human attestation on the ledger.
+By the end you'll have a governed project with a PRD, one ADR, tasks
+with passing tests, and a human-attested completion record.
 
 ---
 
 ## Prerequisites
 
-```bash
-# Install gzkit
-uv tool install gzkit
-
-# Verify installation
-gz --help
-
-# Create your project
-mkdir reading-list && cd reading-list
-git init
-mkdir -p src tests docs
-```
+- Python 3.13+ installed
+- [uv](https://docs.astral.sh/uv/) installed (`pip install uv` or see uv docs)
+- Git installed and configured
+- A text editor (VS Code recommended)
 
 ---
 
-## Step 1: Initialize Governance
+## Step 1: Set Up Your Project
 
 ```bash
-gz init --mode lite
+# Create the project with uv
+uv init reading-list --python 3.13
+cd reading-list
+
+# Add pydantic (we'll need it for data models)
+uv add pydantic
+
+# Create the project structure
+mkdir -p src/reading_list tests docs/design/prd docs/design/adr
+
+# Initialize git
+git init
+git add -A
+git commit -m "Initial project scaffold"
 ```
 
-**What happens:** GZKit creates its governance infrastructure in your project.
-
-**Expected output:**
-
-```
-Initializing gzkit for reading-list in lite mode...
-  Created docs/design/prd/
-  Created docs/design/constitutions/
-  Created docs/design/adr/
-  Scaffolded 15 core skills
-  Generated AGENTS.md
-  Generated CLAUDE.md
-
-gzkit initialized successfully!
-
-Next steps:
-  gz prd <name>       Create a PRD
-  gz status           Check OBPI progress and lifecycle status
-  gz validate         Validate artifacts
-```
-
-**What was created:**
+**Your project now looks like:**
 
 ```text
 reading-list/
-├── .gzkit/
-│   ├── ledger.jsonl          ← Governance audit trail (1 event so far)
-│   ├── manifest.json         ← Project schema and gate definitions
-│   └── skills/               ← Governance skill definitions
-├── .gzkit.json               ← Project config (paths, mode)
-├── docs/design/
-│   ├── prd/                  ← PRDs go here
-│   ├── constitutions/        ← Project principles go here
-│   └── adr/                  ← ADRs and tasks go here
-├── AGENTS.md                 ← AI agent operating contract
-└── CLAUDE.md                 ← Claude-specific overlay
+├── .python-version
+├── pyproject.toml       ← uv created this for you
+├── src/reading_list/    ← Your source code goes here
+├── tests/               ← Your tests go here
+└── docs/design/
+    ├── prd/             ← PRDs go here
+    └── adr/             ← ADRs and tasks go here
 ```
 
-**Check the ledger:**
-
-```bash
-cat .gzkit/ledger.jsonl
-```
-
-```json
-{"schema":"gzkit.ledger.v1","event":"project_init","id":"reading-list","ts":"2026-03-08T14:00:00.000000+00:00","mode":"lite"}
-```
-
-One event — your project exists in the governance record.
-
-`✶ Insight ─────────────────────────────────────`
-The ledger is append-only JSONL (one JSON object per line). Every governance
-action — creating a PRD, running gates, attesting — adds an event. This is
-your audit trail. Nobody (including AI) can silently delete history.
-`─────────────────────────────────────────────────`
+> **With gzkit CLI (coming soon):**
+> ```bash
+> uv tool install gzkit
+> gz init --mode lite
+> ```
+> This will scaffold the governance structure automatically, including
+> a ledger, manifest, and skill definitions.
 
 ---
 
 ## Step 2: Write Your PRD
 
-```bash
-gz prd READING-LIST-1.0.0 --title "Reading List Tracker"
-```
+Create a file at `docs/design/prd/PRD-READING-LIST-1.0.0.md`. You can
+copy the [PRD template](templates/prd-template.md) as a starting point,
+then fill in the sections.
 
-**Expected output:**
-
-```
-Created PRD: docs/design/prd/PRD-READING-LIST-1.0.0.md
-```
-
-Now open `docs/design/prd/PRD-READING-LIST-1.0.0.md` and fill it in. Here's
-what a completed student PRD looks like:
+Here's what a completed student PRD looks like:
 
 ```markdown
 ---
@@ -145,16 +112,6 @@ seeing at a glance what to read next and what they've completed.
 - The CLI is the only interface (no web, no GUI)
 - Data is stored locally (no cloud, no accounts)
 
-## Gate Mapping
-
-| Gate | Lane | Requirement |
-|------|------|-------------|
-| Gate 1 (ADR) | All | All changes have ADRs |
-| Gate 2 (TDD) | All | Tests pass |
-| Gate 3 (Docs) | Heavy | Documentation updated |
-| Gate 4 (BDD) | Heavy | Behavior tests pass |
-| Gate 5 (Human) | Heavy | Human attestation recorded |
-
 ## Q&A Transcript
 
 Q: Why a CLI instead of a web app?
@@ -172,24 +129,29 @@ A: Keeps the project self-contained. Students can run it anywhere
 | 1.0.0 | Pending | | | |
 ```
 
+**Commit your PRD:**
+
+```bash
+git add docs/design/prd/
+git commit -m "Add PRD: Reading List Tracker"
+```
+
+> **With gzkit CLI (coming soon):**
+> ```bash
+> gz prd READING-LIST-1.0.0 --title "Reading List Tracker"
+> ```
+> This generates the file from the template and records a `prd_created`
+> event in the governance ledger.
+
 ---
 
-## Step 3: Create Your First ADR
+## Step 3: Write Your First ADR
 
 Your PRD describes *what* to build. Now decide *how* to approach the first
 feature — storing and retrieving books.
 
-```bash
-gz plan 0.1.0 --title "Book storage and retrieval" --lane lite
-```
-
-**Expected output:**
-
-```
-Created ADR: docs/design/adr/ADR-0.1.0/ADR-0.1.0.md
-```
-
-Open the generated ADR and fill it in:
+Create `docs/design/adr/ADR-0.1.0/ADR-0.1.0.md`. Copy the
+[ADR template](templates/adr-template.md) and fill it in:
 
 ```markdown
 ---
@@ -241,7 +203,7 @@ between CLI sessions and support filtering by status.
 | Interface | 1 | CLI commands (add, list, update) |
 | Observability | 0 | No logging or metrics needed |
 | Lineage | 0 | No upstream/downstream |
-| **Total** | **3** | **3-4 OBPIs recommended** |
+| **Total** | **3** | **3-4 tasks recommended** |
 
 ## Checklist
 
@@ -281,48 +243,30 @@ A: Pydantic validates input at creation time. A dataclass would accept
 | 0.1.0 | Pending | | | |
 ```
 
-`✶ Insight ─────────────────────────────────────`
-Notice the Decomposition Scorecard. Each dimension is scored 0/1/2. The total
-suggests how many tasks (OBPIs) this ADR needs. A score of 3 suggests 3-4
-tasks. This prevents both under-decomposition (one giant task) and over-
-decomposition (ten trivial tasks).
-`─────────────────────────────────────────────────`
+**Commit your ADR:**
+
+```bash
+mkdir -p docs/design/adr/ADR-0.1.0
+git add docs/design/adr/
+git commit -m "Add ADR-0.1.0: Book storage and retrieval"
+```
+
+> **With gzkit CLI (coming soon):**
+> ```bash
+> gz plan 0.1.0 --title "Book storage and retrieval" --lane lite
+> ```
 
 ---
 
 ## Step 4: Create Tasks From the Checklist
 
-Each ADR checklist item becomes a task. Create them with `gz specify`:
+Each ADR checklist item becomes a task. Create a file for each one in
+`docs/design/adr/ADR-0.1.0/obpis/`. Copy the
+[Task template](templates/task-template.md) as a starting point.
 
-```bash
-gz specify "Book model" --parent ADR-0.1.0 --item 1 --lane lite
-gz specify "SQLite repository" --parent ADR-0.1.0 --item 2 --lane lite
-gz specify "CLI commands" --parent ADR-0.1.0 --item 3 --lane lite
-gz specify "Unit tests" --parent ADR-0.1.0 --item 4 --lane lite
-```
+Here's Task 1 as a fully worked example:
 
-**Expected output (for each):**
-
-```
-Created OBPI: docs/design/adr/ADR-0.1.0/obpis/OBPI-0.1.0-01-book-model.md
-Created OBPI: docs/design/adr/ADR-0.1.0/obpis/OBPI-0.1.0-02-sqlite-repository.md
-Created OBPI: docs/design/adr/ADR-0.1.0/obpis/OBPI-0.1.0-03-cli-commands.md
-Created OBPI: docs/design/adr/ADR-0.1.0/obpis/OBPI-0.1.0-04-unit-tests.md
-```
-
-**Your project now looks like:**
-
-```text
-docs/design/adr/ADR-0.1.0/
-├── ADR-0.1.0.md
-└── obpis/
-    ├── OBPI-0.1.0-01-book-model.md
-    ├── OBPI-0.1.0-02-sqlite-repository.md
-    ├── OBPI-0.1.0-03-cli-commands.md
-    └── OBPI-0.1.0-04-unit-tests.md
-```
-
-Fill in each task brief. Here's Task 1 as an example:
+**`docs/design/adr/ADR-0.1.0/obpis/OBPI-0.1.0-01-book-model.md`:**
 
 ```markdown
 ---
@@ -375,6 +319,42 @@ author (str), status (to-read | reading | done), and date_added (date).
 
     python -m unittest tests.test_models -v
 ```
+
+Create the remaining task files in the same directory:
+
+| File | Checklist Item |
+|------|---------------|
+| `OBPI-0.1.0-01-book-model.md` | #1 — Book model with Pydantic |
+| `OBPI-0.1.0-02-sqlite-repository.md` | #2 — SQLite repository |
+| `OBPI-0.1.0-03-cli-commands.md` | #3 — CLI commands |
+| `OBPI-0.1.0-04-unit-tests.md` | #4 — Unit tests |
+
+**Your project structure now:**
+
+```text
+docs/design/adr/ADR-0.1.0/
+├── ADR-0.1.0.md
+└── obpis/
+    ├── OBPI-0.1.0-01-book-model.md
+    ├── OBPI-0.1.0-02-sqlite-repository.md
+    ├── OBPI-0.1.0-03-cli-commands.md
+    └── OBPI-0.1.0-04-unit-tests.md
+```
+
+**Commit your tasks:**
+
+```bash
+git add docs/design/adr/ADR-0.1.0/obpis/
+git commit -m "Add task briefs for ADR-0.1.0"
+```
+
+> **With gzkit CLI (coming soon):**
+> ```bash
+> gz specify "Book model" --parent ADR-0.1.0 --item 1 --lane lite
+> gz specify "SQLite repository" --parent ADR-0.1.0 --item 2 --lane lite
+> gz specify "CLI commands" --parent ADR-0.1.0 --item 3 --lane lite
+> gz specify "Unit tests" --parent ADR-0.1.0 --item 4 --lane lite
+> ```
 
 ---
 
@@ -478,168 +458,176 @@ OK
 ```
 
 All acceptance criteria for Task 1 are met. Update the task brief status
-from `Draft` to `Completed` (in Lite lane, you can self-close tasks).
+from `Draft` to `Completed`.
 
-Repeat for Tasks 2-4: implement, test, verify, update status.
+**Commit and repeat:**
+
+```bash
+git add src/ tests/
+git commit -m "Implement Task 1: Book model with Pydantic"
+```
+
+Repeat for Tasks 2-4: implement, test, verify, update status, commit.
 
 ---
 
-## Step 6: Run the Gates
+## Step 6: Verify
 
-Once all tasks are implemented and tests pass:
+Once all tasks are implemented and tests pass, run a full verification:
 
 ```bash
-gz gates --adr ADR-0.1.0
+# Run all tests
+uv run -m unittest discover tests -v
+
+# Check code quality (if you have ruff installed)
+uv run ruff check .
+uv run ruff format --check .
 ```
 
-**Expected output (Lite lane — Gates 1 and 2):**
+**Expected test output:**
 
 ```
-Running gates for ADR-0.1.0 (lite lane)...
+test_accepts_all_valid_statuses (tests.test_models.TestBook) ... ok
+test_defaults_date_added (tests.test_models.TestBook) ... ok
+test_rejects_empty_author (tests.test_models.TestBook) ... ok
+test_rejects_empty_title (tests.test_models.TestBook) ... ok
+test_rejects_invalid_status (tests.test_models.TestBook) ... ok
+test_valid_book (tests.test_models.TestBook) ... ok
 
-Gate 1 (ADR): ✓ pass
-  ADR file exists: docs/design/adr/ADR-0.1.0/ADR-0.1.0.md
+----------------------------------------------------------------------
+Ran 18 tests in 0.045s
 
-Gate 2 (TDD): ✓ pass
-  Command: uv run -m unittest discover tests
-  Ran 18 tests in 0.045s — OK
-
-All required gates passed.
+OK
 ```
 
-**What happened in the ledger:**
+Update the ADR's evidence section to record what passed:
 
-```json
-{"schema":"gzkit.ledger.v1","event":"gate_checked","id":"ADR-0.1.0","gate":1,"status":"pass",...}
-{"schema":"gzkit.ledger.v1","event":"gate_checked","id":"ADR-0.1.0","gate":2,"status":"pass",...}
+```markdown
+## Evidence
+
+- [x] Tests: `uv run -m unittest discover tests` — 18 tests, all pass
+- [x] Lint: `uv run ruff check .` — clean
 ```
+
+**Commit:**
+
+```bash
+git add docs/design/adr/ADR-0.1.0/
+git commit -m "Update ADR-0.1.0 evidence: all gates pass"
+```
+
+> **With gzkit CLI (coming soon):**
+> ```bash
+> gz gates --adr ADR-0.1.0
+> ```
+> This runs the gate checks automatically and records pass/fail events
+> in the governance ledger.
 
 ---
 
 ## Step 7: Closeout
 
-Present the work for review:
+Present the work for review. In a classroom setting, this is where you
+**show your work to the instructor**.
 
-```bash
-gz closeout ADR-0.1.0
-```
+Create a brief summary of what was delivered, what was verified, and
+what the evidence shows. Walk through:
 
-**Expected output:**
+1. The PRD — what you set out to build
+2. The ADR — the design decisions you made
+3. The tasks — how you decomposed the work
+4. The tests — proof that acceptance criteria are met
+5. The code — a quick walkthrough of the implementation
 
-```
-ADR Closeout: ADR-0.1.0
+The instructor observes the test output live and reviews the artifacts.
 
-Lane: lite
-
-Next Steps:
-1. Run verification commands below
-2. Observe output
-3. When ready, run: gz attest ADR-0.1.0 --status <choice>
-
-Verification Commands:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Gate 2 (TDD):
-  uv run -m unittest discover tests
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Attestation choices:
-  gz attest ADR-0.1.0 --status completed
-  gz attest ADR-0.1.0 --status partial --reason "..."
-  gz attest ADR-0.1.0 --status dropped --reason "..."
-```
-
-In a classroom setting, this is where you **show your work to the
-instructor**. Run the verification commands live. The instructor observes
-the output and makes an attestation decision.
+> **With gzkit CLI (coming soon):**
+> ```bash
+> gz closeout ADR-0.1.0
+> ```
+> This generates a structured closeout report with verification commands
+> and attestation choices.
 
 ---
 
 ## Step 8: Attest
 
-After the instructor (or you, in Lite lane) reviews:
+After the instructor (or you, in Lite lane) reviews the work:
+
+Update the ADR's attestation block:
+
+```markdown
+## Attestation Block
+
+| Term | Status | Attested By | Date | Reason |
+|------|--------|-------------|------|--------|
+| 0.1.0 | Completed | Your Name | 2026-03-08 | All tests pass, acceptance criteria met |
+```
+
+Update the ADR status from `Draft` to `Completed`.
+
+**Commit the attestation:**
 
 ```bash
-gz attest ADR-0.1.0 --status completed
+git add docs/design/adr/ADR-0.1.0/
+git commit -m "Attest ADR-0.1.0: completed"
 ```
 
-**Expected output:**
-
-```
-Checking prerequisite gates...
-
-Attestation recorded:
-  ADR: ADR-0.1.0
-  Term: Completed
-  By: Your Name
-  Date: 2026-03-08
-```
-
-**Final ledger state** (check with `cat .gzkit/ledger.jsonl`):
-
-```json
-{"event":"project_init","id":"reading-list",...}
-{"event":"prd_created","id":"PRD-READING-LIST-1.0.0",...}
-{"event":"adr_created","id":"ADR-0.1.0","lane":"lite",...}
-{"event":"obpi_created","id":"OBPI-0.1.0-01-book-model","parent":"ADR-0.1.0",...}
-{"event":"obpi_created","id":"OBPI-0.1.0-02-sqlite-repository","parent":"ADR-0.1.0",...}
-{"event":"obpi_created","id":"OBPI-0.1.0-03-cli-commands","parent":"ADR-0.1.0",...}
-{"event":"obpi_created","id":"OBPI-0.1.0-04-unit-tests","parent":"ADR-0.1.0",...}
-{"event":"gate_checked","id":"ADR-0.1.0","gate":1,"status":"pass",...}
-{"event":"gate_checked","id":"ADR-0.1.0","gate":2,"status":"pass",...}
-{"event":"closeout_initiated","id":"ADR-0.1.0",...}
-{"event":"attested","id":"ADR-0.1.0","status":"completed","by":"Your Name",...}
-```
-
-Ten events tell the complete story of your first governed feature — from
-project creation to human sign-off. Every event is timestamped and immutable.
+> **With gzkit CLI (coming soon):**
+> ```bash
+> gz attest ADR-0.1.0 --status completed
+> ```
+> This records a timestamped `attested` event in the governance ledger
+> and checks prerequisite gates before allowing attestation.
 
 ---
 
-## Step 9: Check Status
+## Step 9: Review Your Git Log
 
 ```bash
-gz status
+git log --oneline
 ```
 
 **Expected output:**
 
 ```
-Project: reading-list
-
-ADRs (1 total)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  ADR-0.1.0 (lite)
-    Status: Completed
-    Gate 1 ✓ pass | Gate 2 ✓ pass
-    Attested by: Your Name (2026-03-08)
-
-Total completed: 1 / 1
+abc1234 Attest ADR-0.1.0: completed
+def5678 Update ADR-0.1.0 evidence: all gates pass
+789abcd Implement Task 4: Unit tests
+456efab Implement Task 3: CLI commands
+123cdef Implement Task 2: SQLite repository
+890abcd Implement Task 1: Book model with Pydantic
+567efab Add task briefs for ADR-0.1.0
+234cdef Add ADR-0.1.0: Book storage and retrieval
+901abcd Add PRD: Reading List Tracker
+678efab Initial project scaffold
 ```
+
+Ten commits tell the complete story of your first governed feature — from
+project setup to human sign-off. Each commit is a checkpoint you can
+return to, review, or demonstrate.
 
 ---
 
 ## What You Just Did
 
 ```text
-Step 1: gz init           → Created governance infrastructure
-Step 2: gz prd            → Defined WHAT to build and WHY
-Step 3: gz plan           → Decided HOW to approach one feature
-Step 4: gz specify (x4)   → Decomposed the feature into 4 tasks
-Step 5: (implement)       → Wrote code and tests
-Step 6: gz gates          → Verified quality gates pass
-Step 7: gz closeout       → Presented work for review
-Step 8: gz attest         → Recorded human sign-off
-Step 9: gz status         → Confirmed the record
+Step 1: uv init + structure   → Created project with proper tooling
+Step 2: Write PRD              → Defined WHAT to build and WHY
+Step 3: Write ADR              → Decided HOW to approach one feature
+Step 4: Create Tasks (x4)      → Decomposed the feature into 4 tasks
+Step 5: Implement              → Wrote code and tests
+Step 6: Verify                 → Confirmed all tests and checks pass
+Step 7: Closeout               → Presented work for review
+Step 8: Attest                 → Recorded human sign-off
+Step 9: Review git log         → Confirmed the record
 ```
 
-The governance artifacts (PRD, ADR, task briefs, ledger) are not paperwork —
-they are the **evidence that you made the design decisions**, not the AI.
-When your instructor asks "why did you choose SQLite?", the answer is in
-ADR-0.1.0. When they ask "how did you verify it works?", the gate evidence
-is in the ledger.
+The governance artifacts (PRD, ADR, task briefs, attestation) are not
+paperwork — they are the **evidence that you made the design decisions**,
+not the AI. When your instructor asks "why did you choose SQLite?", the
+answer is in ADR-0.1.0. When they ask "how did you verify it works?",
+the test results and evidence section tell the story.
 
 ---
 
@@ -648,17 +636,22 @@ is in the ledger.
 Your PRD likely has more features. Create a new ADR for the next one:
 
 ```bash
-gz plan 0.2.0 --title "Reading statistics and recommendations" --lane lite
+mkdir -p docs/design/adr/ADR-0.2.0
 ```
 
-Each feature gets its own ADR. Each ADR gets its own tasks. The cycle
-repeats until your PRD is fulfilled.
+Create `ADR-0.2.0.md` from the template. Each feature gets its own ADR.
+Each ADR gets its own tasks. The cycle repeats until your PRD is fulfilled.
 
 ---
 
 ## Related Guides
 
 - [PRD Guide](guide-prd.md) — Deep dive on writing PRDs
+  ([Video: Part 2](presentations/index.md))
 - [ADR Guide](guide-adr.md) — Deep dive on ADR structure and lifecycle
+  ([Video: Part 3](presentations/index.md))
 - [Task Guide](guide-tasks.md) — Deep dive on task decomposition
+  ([Video: Part 4](presentations/index.md))
 - [Glossary](glossary.md) — Governance terms defined
+- [Video Tutorial Series](presentations/index.md) — Six-part video
+  companion covering the full governance cycle

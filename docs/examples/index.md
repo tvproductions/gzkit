@@ -5,17 +5,29 @@
 ---
 
 This directory contains student-oriented guides, templates, and assessments
-for learning software engineering governance practices. The materials distill
-professional governance patterns from gzkit into approachable forms for
-graduate coursework.
+for learning software engineering governance practices. All materials use a
+**template-first approach** — you create governance artifacts manually from
+templates using a text editor and git. No special tooling required.
+
+> **New here?** Start with the [video tutorial series](presentations/index.md),
+> then work through the [First Project tutorial](tutorial-first-project.md).
+
+## Presentations
+
+| Resource | What You'll Learn |
+|----------|-------------------|
+| [Video Tutorial Series](presentations/index.md) | Six-part video series covering the full governance cycle with a worked example |
+
+Individual parts cover: why governance matters, PRDs, ADRs, task decomposition,
+implementation, and the full cycle in review. Slide decks included.
 
 ## Guides
 
-| Guide | What You'll Learn |
-|-------|-------------------|
-| [PRD Guide](guide-prd.md) | What a Product Requirements Document is, why you write one, and how to write one well |
-| [ADR Guide](guide-adr.md) | What an Architecture Decision Record is, why design decisions should be recorded, and how to write one |
-| [Task Guide](guide-tasks.md) | How to decompose features into small, testable tasks with clear acceptance criteria |
+| Guide | What You'll Learn | Video |
+|-------|-------------------|-------|
+| [PRD Guide](guide-prd.md) | What a Product Requirements Document is, why you write one, and how to write one well | [Part 2](presentations/part2-script.md) |
+| [ADR Guide](guide-adr.md) | What an Architecture Decision Record is, why design decisions should be recorded, and how to write one | [Part 3](presentations/part3-script.md) |
+| [Task Guide](guide-tasks.md) | How to decompose features into small, testable tasks with clear acceptance criteria | [Part 4](presentations/part4-script.md) |
 
 **Recommended reading order:** PRD Guide → ADR Guide → Task Guide
 
@@ -23,10 +35,10 @@ graduate coursework.
 
 | Tutorial | What You'll Do |
 |----------|---------------|
-| [First Project](tutorial-first-project.md) | Build a reading list tracker through the full governance cycle (gz init → gz attest) with worked command output |
+| [First Project](tutorial-first-project.md) | Build a reading list tracker from templates through the full governance cycle (setup → attest) with worked examples |
 | [RHEA Bootstrap](tutorial-rhea-bootstrap.md) | Bootstrap a real greenfield library project with gzkit — the litmus test for student readiness |
 
-**Start here:** The First Project tutorial walks through every command with
+**Start here:** The First Project tutorial walks through every step with
 expected output. Do this before your own project.
 
 ## Reference

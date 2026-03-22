@@ -245,6 +245,12 @@ A ready-to-use task template is available at:
 
 ---
 
+## Video Companion
+
+See [Part 4 of the video tutorial series](presentations/part4-script.md) for
+a narrated walkthrough of task decomposition, the INVEST criteria, and the
+task template with the reading list example.
+
 ## Related Guides
 
 - [PRD Guide](guide-prd.md) — Defining what to build
