@@ -10,6 +10,7 @@ from gzkit.ledger import (
     adr_created_event,
     artifact_renamed_event,
     attested_event,
+    audit_generated_event,
     audit_receipt_emitted_event,
     closeout_initiated_event,
     constitution_created_event,
@@ -944,6 +945,66 @@ class TestNestedEvidenceModels(unittest.TestCase):
             pydantic_loc_to_field_path("evidence", ("git_sync_state", "dirty")),
             "evidence.git_sync_state.dirty",
         )
+
+
+class TestAuditGeneratedEvent(unittest.TestCase):
+    """Tests for audit_generated_event() factory (OBPI-0.19.0-05)."""
+
+    def test_event_type(self) -> None:
+        """Factory returns LedgerEvent with event='audit_generated'."""
+        evt = audit_generated_event(
+            adr_id="ADR-0.1.0",
+            audit_file="docs/design/adr/pre-release/ADR-0.1.0/audit/AUDIT.md",
+            audit_plan_file="docs/design/adr/pre-release/ADR-0.1.0/audit/AUDIT_PLAN.md",
+            passed=True,
+        )
+        self.assertIsInstance(evt, LedgerEvent)
+        self.assertEqual(evt.event, "audit_generated")
+        self.assertEqual(evt.id, "ADR-0.1.0")
+
+    def test_extra_fields(self) -> None:
+        """Factory stores audit_file, audit_plan_file, and passed in extra."""
+        evt = audit_generated_event(
+            adr_id="ADR-0.2.0",
+            audit_file="path/to/AUDIT.md",
+            audit_plan_file="path/to/AUDIT_PLAN.md",
+            passed=False,
+        )
+        self.assertEqual(evt.extra["audit_file"], "path/to/AUDIT.md")
+        self.assertEqual(evt.extra["audit_plan_file"], "path/to/AUDIT_PLAN.md")
+        self.assertFalse(evt.extra["passed"])
+
+    def test_serialization_round_trip(self) -> None:
+        """model_dump() flattens extras to top level and model_validate() restores."""
+        evt = audit_generated_event(
+            adr_id="ADR-0.3.0",
+            audit_file="a/AUDIT.md",
+            audit_plan_file="a/AUDIT_PLAN.md",
+            passed=True,
+        )
+        dumped = evt.model_dump()
+        self.assertEqual(dumped["schema"], "gzkit.ledger.v1")
+        self.assertEqual(dumped["event"], "audit_generated")
+        self.assertEqual(dumped["id"], "ADR-0.3.0")
+        self.assertEqual(dumped["audit_file"], "a/AUDIT.md")
+        self.assertEqual(dumped["audit_plan_file"], "a/AUDIT_PLAN.md")
+        self.assertTrue(dumped["passed"])
+        # Round-trip: parse serialized form back
+        restored = LedgerEvent.model_validate(dumped)
+        self.assertEqual(restored.event, "audit_generated")
+        self.assertEqual(restored.extra["audit_file"], "a/AUDIT.md")
+        self.assertEqual(restored.extra["passed"], True)
+
+    def test_passed_false(self) -> None:
+        """Factory correctly records passed=False for failed audits."""
+        evt = audit_generated_event(
+            adr_id="ADR-0.4.0",
+            audit_file="b/AUDIT.md",
+            audit_plan_file="b/AUDIT_PLAN.md",
+            passed=False,
+        )
+        dumped = evt.model_dump()
+        self.assertFalse(dumped["passed"])
 
 
 if __name__ == "__main__":

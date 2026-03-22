@@ -100,6 +100,7 @@ from gzkit.ledger import (
     adr_created_event,
     artifact_renamed_event,
     attested_event,
+    audit_generated_event,
     audit_receipt_emitted_event,
     closeout_initiated_event,
     constitution_created_event,
@@ -3169,6 +3170,16 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
         result_rows,
         project_root,
         ledger=ledger,
+    )
+
+    # Record audit_generated event in ledger
+    ledger.append(
+        audit_generated_event(
+            adr_id=adr_id,
+            audit_file=str(audit_file.relative_to(project_root)),
+            audit_plan_file=str(plan_file.relative_to(project_root)),
+            passed=failures == 0,
+        )
     )
 
     # Emit validation receipt (always — even on failure, to record the audit)
