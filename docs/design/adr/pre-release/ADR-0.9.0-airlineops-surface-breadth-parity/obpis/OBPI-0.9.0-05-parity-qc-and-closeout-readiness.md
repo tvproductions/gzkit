@@ -215,7 +215,7 @@ $ uv run -m behave features/
 16 steps passed, 0 failed, 0 skipped
 ```
 
-## Value Narrative
+### Value Narrative
 
 Before this OBPI, ADR-0.9.0 had already imported the approved parity tranches, but
 its final brief was still a template, the parent ADR checklist did not reflect the
@@ -225,7 +225,7 @@ QC package, the parent ADR checklist matches the actual OBPI state, and the ledg
 contains a completion receipt that makes the ADR ready for its separate closeout
 and attestation step.
 
-## Key Proof
+### Key Proof
 
 ```text
 $ uv run gz adr status ADR-0.9.0-airlineops-surface-breadth-parity --json

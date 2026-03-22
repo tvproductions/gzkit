@@ -166,7 +166,7 @@ $ uv run mkdocs build --strict
 Documentation built successfully.
 ```
 
-## Key Proof
+### Key Proof
 
 `uv run gz chores run quality-check` completed and appended a dated runner log entry at:
 `docs/design/briefs/chores/CHORE-quality-check/logs/CHORE-LOG.md`

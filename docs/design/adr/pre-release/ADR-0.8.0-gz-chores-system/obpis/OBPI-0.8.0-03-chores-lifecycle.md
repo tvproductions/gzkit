@@ -171,11 +171,11 @@ $ uv run mkdocs build --strict
 Documentation built successfully.
 ```
 
-## Value Narrative
+### Value Narrative
 
 Before this OBPI closeout, lifecycle behavior existed but completion evidence for list/plan/audit command contracts was not captured in the OBPI ledger chain. After this OBPI, lifecycle command proofs, gate verification, and checklist linkage are documented and ready for heavy-lane human attestation.
 
-## Key Proof
+### Key Proof
 
 `uv run gz chores plan quality-check` and `uv run gz chores audit --all` now provide deterministic lifecycle evidence tied to:
 `docs/design/briefs/chores/CHORE-quality-check/logs/CHORE-LOG.md`

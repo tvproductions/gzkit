@@ -161,7 +161,7 @@ $ uv run gz typecheck — All checks passed
 $ uv run gz test — 1031 tests OK
 ```
 
-## Value Narrative
+### Value Narrative
 
 Before this OBPI, `gz closeout` was a passive reporter: it checked OBPI completion, listed verification commands the operator should run manually, printed attestation instructions, and recorded a `closeout_initiated` event. The operator then had to manually run `gz lint`, `gz test`, `gz typecheck`, `gz attest`, and hope they did not skip any step. In practice, ADRs routinely ended up partially closed out — attestation missing, version never bumped, gates never actually executed.
 

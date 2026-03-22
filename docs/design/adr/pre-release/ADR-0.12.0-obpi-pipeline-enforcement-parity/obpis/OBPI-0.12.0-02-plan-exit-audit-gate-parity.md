@@ -245,7 +245,7 @@ Took 0min 0.318s
 Human attestation received on 2026-03-12: "attest completed"
 ```
 
-## Value Narrative
+### Value Narrative
 
 Before this OBPI, gzkit had the `gz-plan-audit` skill and receipt contract but
 no native hook implementation that could enforce “audit before exiting plan
@@ -253,7 +253,7 @@ mode.” After this tranche, the blocking hook exists as a tested generated
 surface with faithful receipt semantics, and the repo documents it honestly as
 ported but not yet wired into active Claude settings.
 
-## Key Proof
+### Key Proof
 
 Direct hook target:
 

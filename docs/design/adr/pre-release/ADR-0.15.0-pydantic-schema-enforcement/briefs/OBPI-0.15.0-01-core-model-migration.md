@@ -148,11 +148,11 @@ uv run ruff check <scoped files> — All checks passed
 uv run gz typecheck — All checks passed
 ```
 
-## Value Narrative
+### Value Narrative
 
 Before this OBPI, the 5 core models were Pydantic BaseModels but retained legacy `to_dict()` and `from_dict()` wrapper methods, creating a dual API where callers used ad-hoc serialization instead of Pydantic's native `model_dump()`/`model_validate()`. Now all 5 models use Pydantic's native serialization exclusively, with a `model_validator(mode="before")` and `model_serializer` on LedgerEvent that preserves the `schema_`→`schema` mapping and extra-field flattening behavior.
 
-## Key Proof
+### Key Proof
 
 ```bash
 uv run python -c "

@@ -212,7 +212,7 @@ Took 0min 0.252s
 Human attestation received on 2026-03-12: "attest completed"
 ```
 
-## Value Narrative
+### Value Narrative
 
 Before this tranche, gzkit still carried contradictory habits across doctrine,
 templates, generated control surfaces, and operator docs: Heavy-lane guidance
@@ -223,7 +223,7 @@ surfaces, and the operator runbooks all describe one coherent OBPI-first flow:
 verify, attest when required, run guarded `git sync`, then record final OBPI
 completion accounting and reconcile status from the synced state.
 
-## Key Proof
+### Key Proof
 
 ```text
 The regenerated operator contract in `AGENTS.md` now states both sides of the

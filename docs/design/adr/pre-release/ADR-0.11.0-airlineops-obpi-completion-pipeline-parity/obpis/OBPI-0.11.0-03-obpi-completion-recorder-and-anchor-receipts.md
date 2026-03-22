@@ -130,7 +130,7 @@ uv run -m behave features/
 - [x] **Key Proof:** One concrete usage example is included
 - [x] **OBPI Acceptance:** Evidence recorded below
 
-## Value Narrative
+### Value Narrative
 
 Before this tranche, gzkit could emit OBPI completion receipts, but the
 receipts were too coarse for later drift analysis. Hook-driven completion writes
@@ -197,7 +197,7 @@ $ uv run -m behave features/
 16 steps passed, 0 failed, 0 skipped
 ```
 
-## Key Proof
+### Key Proof
 
 ```text
 Focused proof surface:

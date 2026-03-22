@@ -189,14 +189,14 @@ mkdocs build --strict: Documentation built in 0.99 seconds
 - Tests added: 15 (TestBaselineCases: 6, TestRunEvalSuite: 8, TestExtensibility: 1)
 - Date completed: 2026-03-17
 
-## Value Narrative
+### Value Narrative
 
 Before this OBPI, gzkit could generate instruction files but had limited proof that the
 surfaces produced the intended agent behavior. After this OBPI, instruction changes can
 be evaluated using a stable, extensible behavioral suite that scores across outcome,
 process, style, and efficiency dimensions with both positive and negative controls.
 
-## Key Proof
+### Key Proof
 
 `uv run gz readiness eval` executes a baseline ten-prompt suite that catches both a
 passing positive control and a failing negative control for the supported instruction

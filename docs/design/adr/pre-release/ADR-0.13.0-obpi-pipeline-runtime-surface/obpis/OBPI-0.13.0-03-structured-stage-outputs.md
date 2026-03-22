@@ -233,7 +233,7 @@ $ uv run -m behave features/
 Human attestation received on 2026-03-14: "attest completed and git sync"
 ```
 
-## Value Narrative
+### Value Narrative
 
 Before this OBPI, the active marker payload only exposed stage-state metadata.
 Agents and operators could infer the next step from prose output, but they
@@ -242,7 +242,7 @@ action, or resume guidance. After this OBPI, the existing marker files expose
 those stage outputs directly while keeping the same file locations and
 preserving backward compatibility for current consumers.
 
-## Key Proof
+### Key Proof
 
 ```text
 $ uv run gz obpi pipeline OBPI-0.13.0-03-structured-stage-outputs --from=verify
