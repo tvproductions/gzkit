@@ -42,6 +42,7 @@ from gzkit.commands.common import (
     _update_adr_attestation_block,
     _upsert_frontmatter_value,
     _write_adr_closeout_form,
+    aggregate_audit_evidence,
     check_version_sync,
     console,
     ensure_initialized,
@@ -2938,73 +2939,23 @@ def _run_audit_verifications(
     return result_rows, failures
 
 
-def _collect_audit_enrichment(
-    adr_id: str,
-    adr_file: Path,
-    project_root: Path,
-    ledger: "Ledger",
-) -> dict[str, Any]:
-    """Collect attestation record, gate results, and evidence links for audit enrichment."""
-    # Attestation record
-    attested_events = ledger.query(event_type="attested", artifact_id=adr_id)
-    if attested_events:
-        latest = attested_events[-1]
-        attestation_record: dict[str, Any] = {
-            "attestor": latest.extra.get("by", "unknown"),
-            "status": latest.extra.get("status", "unknown"),
-            "timestamp": latest.ts,
-        }
-    else:
-        attestation_record = {}
-
-    # Gate results
-    gate_events = ledger.query(event_type="gate_checked", artifact_id=adr_id)
-    gate_results: list[dict[str, Any]] = [
-        {
-            "gate": e.extra.get("gate"),
-            "status": e.extra.get("status"),
-            "command": e.extra.get("command"),
-            "returncode": e.extra.get("returncode"),
-        }
-        for e in gate_events
-    ]
-
-    # Evidence links — OBPI brief files and optional closeout form
-    obpi_dir = adr_file.parent / "obpis"
-    obpi_files = sorted(obpi_dir.glob("OBPI-*.md")) if obpi_dir.exists() else []
-    closeout_form = adr_file.parent / "closeout" / "CLOSEOUT.md"
-
-    evidence_links: list[str] = [f.relative_to(project_root).as_posix() for f in obpi_files]
-    if closeout_form.exists():
-        evidence_links.append(closeout_form.relative_to(project_root).as_posix())
-
-    return {
-        "attestation_record": attestation_record,
-        "gate_results": gate_results,
-        "evidence_links": evidence_links,
-    }
+def _format_attestation_content(attestation: dict[str, Any] | None) -> str:
+    """Format attestation data as markdown content for the audit template."""
+    if attestation:
+        return "\n".join(
+            [
+                f"- Attestor: {attestation['by']}",
+                f"- Status: {attestation['status']}",
+                f"- Timestamp: {attestation['ts']}",
+            ]
+        )
+    return "No attestation record found."
 
 
-def _build_attestation_section(attestation_record: dict[str, Any]) -> list[str]:
-    """Build Attestation Record section lines for AUDIT.md."""
-    lines = ["## Attestation Record", ""]
-    if attestation_record:
-        lines += [
-            f"- Attestor: {attestation_record['attestor']}",
-            f"- Status: {attestation_record['status']}",
-            f"- Timestamp: {attestation_record['timestamp']}",
-        ]
-    else:
-        lines.append("No attestation record found.")
-    lines.append("")
-    return lines
-
-
-def _build_gate_results_section(gate_results: list[dict[str, Any]]) -> list[str]:
-    """Build Gate Results section lines for AUDIT.md."""
-    lines = ["## Gate Results", ""]
+def _format_gate_results_content(gate_results: list[dict[str, Any]]) -> str:
+    """Format gate results as markdown content for the audit template."""
     if gate_results:
-        lines += [
+        lines = [
             "| Gate | Status | Command | Return Code |",
             "|------|--------|---------|-------------|",
         ]
@@ -3012,25 +2963,51 @@ def _build_gate_results_section(gate_results: list[dict[str, Any]]) -> list[str]
             lines.append(
                 f"| {gr['gate']} | {gr['status']} | `{gr['command']}` | {gr['returncode']} |"
             )
-    else:
-        lines.append("No prior gate results recorded.")
-    lines.append("")
-    return lines
+        return "\n".join(lines)
+    return "No prior gate results recorded."
 
 
-def _build_evidence_links_section(evidence_links: list[str]) -> list[str]:
-    """Build Evidence Links section lines for AUDIT.md."""
-    lines = ["## Evidence Links", ""]
+def _format_obpi_summary_content(obpi_completions: list[dict[str, Any]]) -> str:
+    """Format OBPI completion data as markdown content for the audit template."""
+    if obpi_completions:
+        lines = [
+            "| OBPI | Receipt Event | Completed |",
+            "|------|---------------|-----------|",
+        ]
+        for obpi in obpi_completions:
+            completed = "Yes" if obpi["ledger_completed"] else "No"
+            receipt = obpi.get("receipt_event") or "—"
+            lines.append(f"| {obpi['obpi_id']} | {receipt} | {completed} |")
+        return "\n".join(lines)
+    return "No OBPI completion records found."
+
+
+def _format_evidence_links_content(evidence_links: list[str]) -> str:
+    """Format evidence links as markdown content for the audit template."""
     if evidence_links:
+        lines: list[str] = []
         for link in evidence_links:
             if link.endswith("CLOSEOUT.md"):
                 lines.append(f"- Closeout: `{link}`")
             else:
                 lines.append(f"- `{link}`")
-    else:
-        lines.append("No evidence links found.")
-    lines.append("")
-    return lines
+        return "\n".join(lines)
+    return "No evidence links found."
+
+
+def _collect_evidence_links(
+    adr_file: Path,
+    project_root: Path,
+) -> list[str]:
+    """Collect filesystem-based evidence links for the audit report."""
+    obpi_dir = adr_file.parent / "obpis"
+    obpi_files = sorted(obpi_dir.glob("OBPI-*.md")) if obpi_dir.exists() else []
+    closeout_form = adr_file.parent / "closeout" / "CLOSEOUT.md"
+
+    evidence_links: list[str] = [f.relative_to(project_root).as_posix() for f in obpi_files]
+    if closeout_form.exists():
+        evidence_links.append(closeout_form.relative_to(project_root).as_posix())
+    return evidence_links
 
 
 def _write_audit_artifacts(
@@ -3042,55 +3019,82 @@ def _write_audit_artifacts(
     project_root: Path,
     ledger: "Ledger | None" = None,
 ) -> tuple[Path, Path, dict[str, Any]]:
-    """Write AUDIT_PLAN.md and AUDIT.md, return their paths and enrichment data."""
-    plan_file = audit_dir / "AUDIT_PLAN.md"
-    plan_file.write_text(
-        "\n".join(
-            [
-                f"# Audit Plan: {adr_id}",
-                "",
-                "## Scope",
-                f"- ADR: `{adr_file.relative_to(project_root).as_posix()}`",
-                "",
-                "## Verification Commands",
-            ]
-            + [f"- `{row['command']}`" for row in result_rows]
-            + [
-                "",
-                "## Proof Output",
-                f"- Directory: `{proofs_dir.relative_to(project_root).as_posix()}`",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    """Write AUDIT_PLAN.md and AUDIT.md from templates, return paths and enrichment data."""
+    adr_path = adr_file.relative_to(project_root).as_posix()
+    generated_ts = date.today().isoformat()
+
+    # --- AUDIT_PLAN.md ---
+    verification_commands = "\n".join(f"- `{row['command']}`" for row in result_rows)
+    plan_content = render_template(
+        "audit_plan",
+        adr_id=adr_id,
+        adr_path=adr_path,
+        generated_ts=generated_ts,
+        verification_commands_section=verification_commands,
+        proofs_dir=proofs_dir.relative_to(project_root).as_posix(),
     )
+    plan_file = audit_dir / "AUDIT_PLAN.md"
+    plan_file.write_text(plan_content, encoding="utf-8")
 
-    # Collect enrichment data from ledger
-    enrichment: dict[str, Any] = {
-        "attestation_record": {},
-        "gate_results": [],
-        "evidence_links": [],
-    }
+    # --- Aggregate evidence from ledger ---
+    evidence_links = _collect_evidence_links(adr_file, project_root)
     if ledger is not None:
-        enrichment = _collect_audit_enrichment(adr_id, adr_file, project_root, ledger)
+        graph = ledger.get_artifact_graph()
+        aggregated = aggregate_audit_evidence(ledger, adr_id, graph)
+    else:
+        aggregated = {
+            "obpi_completions": [],
+            "gate_results": [],
+            "attestation": None,
+            "closeout": None,
+        }
 
-    audit_file = audit_dir / "AUDIT.md"
-    audit_lines: list[str] = [
-        f"# Audit: {adr_id}",
-        "",
-        f"- ADR: `{adr_file.relative_to(project_root).as_posix()}`",
-        "",
-    ]
-    audit_lines += _build_attestation_section(enrichment["attestation_record"])
-    audit_lines += _build_gate_results_section(enrichment["gate_results"])
-    audit_lines += _build_evidence_links_section(enrichment["evidence_links"])
-    audit_lines.append("## Results")
+    # --- Extract typed values from aggregated evidence ---
+    obpi_completions = cast(list[dict[str, Any]], aggregated["obpi_completions"])
+    gate_results = cast(list[dict[str, Any]], aggregated["gate_results"])
+    attestation_data = cast(dict[str, Any] | None, aggregated["attestation"])
+
+    # --- Format sections for template ---
+    attestation_section = _format_attestation_content(attestation_data)
+    gate_results_section = _format_gate_results_content(gate_results)
+    obpi_summary_section = _format_obpi_summary_content(obpi_completions)
+    evidence_links_section = _format_evidence_links_content(evidence_links)
+
+    verification_lines: list[str] = []
     for row in result_rows:
-        status = "PASS" if row["success"] else "FAIL"
-        audit_lines.append(
-            f"- **{row['label']}**: {status} (`{row['command']}`) -> `{row['proof_file']}`"
+        row_status = "PASS" if row["success"] else "FAIL"
+        verification_lines.append(
+            f"- **{row['label']}**: {row_status} (`{row['command']}`) -> `{row['proof_file']}`"
         )
-    audit_file.write_text("\n".join(audit_lines) + "\n", encoding="utf-8")
+    verification_results_section = "\n".join(verification_lines)
+
+    # --- AUDIT.md ---
+    audit_content = render_template(
+        "audit",
+        adr_id=adr_id,
+        adr_path=adr_path,
+        generated_ts=generated_ts,
+        attestation_section=attestation_section,
+        gate_results_section=gate_results_section,
+        obpi_summary_section=obpi_summary_section,
+        verification_results_section=verification_results_section,
+        evidence_links_section=evidence_links_section,
+    )
+    audit_file = audit_dir / "AUDIT.md"
+    audit_file.write_text(audit_content, encoding="utf-8")
+
+    # --- Build enrichment dict for JSON output compatibility ---
+    enrichment: dict[str, Any] = {
+        "attestation_record": {
+            "attestor": attestation_data["by"],
+            "status": attestation_data["status"],
+            "timestamp": attestation_data["ts"],
+        }
+        if attestation_data
+        else {},
+        "gate_results": gate_results,
+        "evidence_links": evidence_links,
+    }
     return plan_file, audit_file, enrichment
 
 
