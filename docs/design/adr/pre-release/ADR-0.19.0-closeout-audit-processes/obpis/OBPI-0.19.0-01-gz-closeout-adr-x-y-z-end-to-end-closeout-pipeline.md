@@ -3,7 +3,7 @@ id: OBPI-0.19.0-01-gz-closeout-adr-x-y-z-end-to-end-closeout-pipeline
 parent: ADR-0.19.0-closeout-audit-processes
 item: 1
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.19.0-01: `gz closeout ADR-X.Y.Z` — end-to-end closeout pipeline
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.19.0-closeout-audit-processes/ADR-0.19.0-closeout-audit-processes.md`
 - **Checklist Item:** #1 - "OBPI-0.19.0-01: `gz closeout ADR-X.Y.Z` — end-to-end closeout pipeline"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -131,12 +131,12 @@ uv run gz closeout ADR-0.19.0 --dry-run --json
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -144,18 +144,21 @@ uv run gz closeout ADR-0.19.0 --dry-run --json
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+$ uv run python -m unittest tests.test_closeout_pipeline -v
+Ran 13 tests in 1.208s — OK
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+$ uv run gz lint — All checks passed
+$ uv run gz typecheck — All checks passed
+$ uv run gz test — 1031 tests OK
 ```
 
 ## Value Narrative
@@ -164,29 +167,35 @@ Before this OBPI, `gz closeout` was a passive reporter: it checked OBPI completi
 
 After this OBPI, `gz closeout ADR-X.Y.Z` is a single orchestrated pipeline that runs gates inline, halts on failure, prompts for attestation, bumps version, and marks the ADR Completed. The operator runs one command; the pipeline enforces the full sequence.
 
-## Key Proof
+### Key Proof
 
 ```text
-$ uv run gz closeout ADR-0.19.0 --dry-run
-Dry run: no ledger event will be written.
-  Would initiate closeout for: ADR-0.19.0-closeout-audit-processes
-  Gate 1 (ADR): docs/design/adr/pre-release/ADR-0.19.0-closeout-audit-processes/ADR-0.19.0-closeout-audit-processes.md
-  OBPI Completion: 9/9 complete
-  Would run: Gate 2 (TDD): uv run gz test
-  Would run: Quality (Lint): uv run gz lint
-  Would run: Quality (Typecheck): uv run gz typecheck
-  Would prompt for attestation: [Completed | Completed - Partial | Dropped]
-  Version sync: would bump 0.18.0 -> 0.19.0 (pyproject.toml, __init__.py, README.md)
-  Would transition ADR status: Proposed -> Completed
+$ uv run python -m unittest tests.test_closeout_pipeline -v
+test_dry_run_json_includes_version_sync ... ok
+test_dry_run_shows_plan_no_execution ... ok
+test_exit_0_on_success ... ok
+test_exit_1_on_gate_failure ... ok
+test_json_output_contains_all_stages ... ok
+test_json_output_on_gate_failure ... ok
+test_attestation_never_skipped ... ok
+test_attestation_recorded_in_ledger ... ok
+test_adr_marked_completed ... ok
+test_gate_failure_halts_pipeline ... ok
+test_gates_run_inline_and_pass ... ok
+test_partial_gate_results_recorded_on_failure ... ok
+test_version_bump_when_needed ... ok
+----------------------------------------------------------------------
+Ran 13 tests in 1.208s
+OK
 ```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created/modified: `src/gzkit/cli.py`, `tests/test_closeout_pipeline.py`
+- Tests added: 13 tests covering all 10 requirements
+- Date completed: 2026-03-22
+- Attestation status: Completed (human attested)
+- Defects noted: none
 
 ## Tracked Defects
 
@@ -194,14 +203,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a` (Lite lane — self-closeable after evidence)
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: jeff
+- Attestation: Completed
+- Date: 2026-03-22
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-22
 
 **Evidence Hash:** -
