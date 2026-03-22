@@ -730,6 +730,87 @@ def sync_project_version(project_root: Path, new_version: str) -> list[str]:
     return updated
 
 
+def aggregate_audit_evidence(
+    ledger: "Ledger",
+    adr_id: str,
+    graph: dict[str, Any],
+) -> dict[str, Any]:
+    """Aggregate governance evidence from the ledger for audit report rendering.
+
+    Queries the ledger for OBPI receipt, gate check, attestation, and closeout
+    events scoped to ``adr_id`` and returns a structured dict suitable for
+    template rendering.
+
+    Args:
+        ledger: Ledger instance to query.
+        adr_id: The canonical ADR identifier.
+        graph: Artifact graph from ``ledger.get_artifact_graph()``.
+
+    Returns:
+        Dict with keys ``obpi_completions``, ``gate_results``, ``attestation``,
+        and ``closeout``.
+
+    """
+    # OBPI completions — enumerate child OBPIs from graph
+    obpi_completions: list[dict[str, Any]] = []
+    adr_info = graph.get(adr_id, {})
+    children: list[str] = sorted(adr_info.get("children", []))
+    for child_id in children:
+        child_info = graph.get(child_id, {})
+        if child_info.get("type") != "obpi":
+            continue
+        receipt_event = child_info.get("latest_receipt_event")
+        ledger_completed = bool(child_info.get("ledger_completed"))
+        obpi_completions.append(
+            {
+                "obpi_id": child_id,
+                "receipt_event": receipt_event,
+                "ledger_completed": ledger_completed,
+            }
+        )
+
+    # Gate results — query gate_checked events for the ADR
+    gate_events = ledger.query(event_type="gate_checked", artifact_id=adr_id)
+    gate_results: list[dict[str, Any]] = [
+        {
+            "gate": e.extra.get("gate"),
+            "status": e.extra.get("status"),
+            "command": e.extra.get("command"),
+            "returncode": e.extra.get("returncode"),
+        }
+        for e in gate_events
+    ]
+
+    # Attestation — latest attested event
+    attested_events = ledger.query(event_type="attested", artifact_id=adr_id)
+    attestation: dict[str, Any] | None = None
+    if attested_events:
+        latest = attested_events[-1]
+        attestation = {
+            "by": latest.extra.get("by", "unknown"),
+            "status": latest.extra.get("status", "unknown"),
+            "ts": latest.ts,
+        }
+
+    # Closeout — latest closeout_initiated event
+    closeout_events = ledger.query(event_type="closeout_initiated", artifact_id=adr_id)
+    closeout: dict[str, Any] | None = None
+    if closeout_events:
+        latest = closeout_events[-1]
+        closeout = {
+            "by": latest.extra.get("by", "unknown"),
+            "mode": latest.extra.get("mode", "unknown"),
+            "ts": latest.ts,
+        }
+
+    return {
+        "obpi_completions": obpi_completions,
+        "gate_results": gate_results,
+        "attestation": attestation,
+        "closeout": closeout,
+    }
+
+
 def check_version_sync(project_root: Path, adr_id: str) -> tuple[str | None, str | None, bool]:
     """Check if project version should be bumped for this ADR closeout.
 

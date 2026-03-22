@@ -127,20 +127,20 @@ uv run -m unittest tests.test_audit_pipeline -v
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.19.0-06-01: Given `src/gzkit/templates/`, when the templates directory is listed, then `audit.md` and `audit_plan.md` exist as `.format()`-style templates with named placeholders for `adr_id`, `adr_path`, `attestation_section`, `gate_results_section`, `obpi_summary_section`, `verification_results_section`, and `evidence_links_section`.
-- [ ] REQ-0.19.0-06-02: Given a ledger containing `obpi_receipt_emitted`, `gate_checked`, `attested`, and `closeout_initiated` events for ADR-X.Y.Z, when `aggregate_audit_evidence(ledger, adr_id, graph)` is called, then it returns a dict with `obpi_completions`, `gate_results`, `attestation`, and `closeout` keys populated from the ledger events.
-- [ ] REQ-0.19.0-06-03: Given `audit_cmd()` after refactoring, when `gz audit ADR-X.Y.Z` runs successfully, then AUDIT.md is rendered from the `audit.md` template with evidence aggregated from the ledger, not from inline string assembly.
-- [ ] REQ-0.19.0-06-04: Given an ADR with three completed OBPIs in the ledger, when the audit report is generated, then the OBPI completion summary section lists all three OBPIs with their completion status and receipt event type.
-- [ ] REQ-0.19.0-06-05: Given the same ledger state, when `aggregate_audit_evidence()` is called twice, then both calls return identical dicts (deterministic ordering).
+- [x] REQ-0.19.0-06-01: Given `src/gzkit/templates/`, when the templates directory is listed, then `audit.md` and `audit_plan.md` exist as `.format()`-style templates with named placeholders for `adr_id`, `adr_path`, `attestation_section`, `gate_results_section`, `obpi_summary_section`, `verification_results_section`, and `evidence_links_section`.
+- [x] REQ-0.19.0-06-02: Given a ledger containing `obpi_receipt_emitted`, `gate_checked`, `attested`, and `closeout_initiated` events for ADR-X.Y.Z, when `aggregate_audit_evidence(ledger, adr_id, graph)` is called, then it returns a dict with `obpi_completions`, `gate_results`, `attestation`, and `closeout` keys populated from the ledger events.
+- [x] REQ-0.19.0-06-03: Given `audit_cmd()` after refactoring, when `gz audit ADR-X.Y.Z` runs successfully, then AUDIT.md is rendered from the `audit.md` template with evidence aggregated from the ledger, not from inline string assembly.
+- [x] REQ-0.19.0-06-04: Given an ADR with three completed OBPIs in the ledger, when the audit report is generated, then the OBPI completion summary section lists all three OBPIs with their completion status and receipt event type.
+- [x] REQ-0.19.0-06-05: Given the same ledger state, when `aggregate_audit_evidence()` is called twice, then both calls return identical dicts (deterministic ordering).
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -148,69 +148,61 @@ uv run -m unittest tests.test_audit_pipeline -v
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+uv run -m unittest tests.test_audit_pipeline -v
+Ran 39 tests in 1.5s — OK
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+uv run gz lint — All checks passed
+uv run gz typecheck — All checks passed
+uv run gz test — 1074 tests pass
 ```
 
-## Value Narrative
+### Value Narrative
 
 Before this OBPI, audit reports were assembled from inline string concatenation in `audit_cmd()`, producing minimal content that listed only verification command pass/fail results. The reports contained no governance evidence from the ledger — no OBPI completion status, no historical gate results, no attestation context. Operators who needed a comprehensive audit trail had to manually query the ledger and correlate events. After this OBPI, audit reports are rendered from maintainable templates that aggregate all governance evidence from the ledger into structured sections, making AUDIT.md a complete, reproducible audit artifact that captures the full lifecycle history of the ADR.
 
-## Key Proof
+### Key Proof
 
 ```text
-# Expected audit.md template structure (after implementation):
-$ cat src/gzkit/templates/audit.md
-# Audit: {adr_id}
+$ uv run python -c "from gzkit.templates import load_template; t = load_template('audit'); print('Has OBPI summary:', '{obpi_summary_section}' in t)"
+Has OBPI summary: True
 
-- ADR: `{adr_path}`
-- Generated: {generated_ts}
+$ uv run python -c "from gzkit.commands.common import aggregate_audit_evidence; import inspect; print(inspect.signature(aggregate_audit_evidence))"
+(ledger, adr_id, graph)
 
-## Attestation Record
-{attestation_section}
+$ uv run -m unittest tests.test_audit_pipeline.TestAuditTemplatesExist -v
+test_audit_plan_template_exists_and_has_placeholders ... ok
+test_audit_template_exists_and_has_placeholders ... ok
+test_templates_use_format_not_jinja ... ok
+Ran 3 tests in 0.001s — OK
 
-## Gate Results (from ledger)
-{gate_results_section}
-
-## OBPI Completion Summary
-{obpi_summary_section}
-
-## Verification Results
-{verification_results_section}
-
-## Evidence Links
-{evidence_links_section}
-
-# Expected aggregate_audit_evidence output:
-{
-  "obpi_completions": [
-    {"obpi_id": "OBPI-0.19.0-01-...", "receipt_event": "completed", "ledger_completed": true}
-  ],
-  "gate_results": [
-    {"gate": 2, "status": "pass", "command": "uv run gz test", "returncode": 0}
-  ],
-  "attestation": {"by": "human:Jeff", "status": "completed", "ts": "2026-03-21T..."},
-  "closeout": {"by": "agent", "mode": "standard", "ts": "2026-03-21T..."}
-}
+$ uv run -m unittest tests.test_audit_pipeline.TestAggregateAuditEvidence -v
+test_attestation_populated ... ok
+test_closeout_populated ... ok
+test_deterministic_ordering ... ok
+test_empty_ledger_returns_defaults ... ok
+test_gate_results_structure ... ok
+test_obpi_completions_lists_all_children ... ok
+test_returns_all_required_keys ... ok
+Ran 7 tests in 0.015s — OK
 ```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created: `src/gzkit/templates/audit.md`, `src/gzkit/templates/audit_plan.md`
+- Files modified: `src/gzkit/cli.py`, `src/gzkit/commands/common.py`, `tests/test_audit_pipeline.py`
+- Tests added: 14 new tests (39 total in test_audit_pipeline.py)
+- Date completed: 2026-03-22
+- Attestation status: Completed (human attested)
+- Defects noted: None
 
 ## Tracked Defects
 
@@ -218,14 +210,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a` (Lite lane; parent ADR lane is lite per ledger)
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `human:Jeff`
+- Attestation: `Completed`
+- Date: `2026-03-22`
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-22
 
 **Evidence Hash:** -
