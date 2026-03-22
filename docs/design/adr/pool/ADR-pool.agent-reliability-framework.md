@@ -210,6 +210,55 @@ ARF handles this through composition:
 This is analogous to SLSA's handling of multi-step builds: the builder
 identity covers the orchestration platform, not individual build steps.
 
+### Agent Rationalization as a First-Class Threat
+
+Superpowers (obra/superpowers) identifies a failure mode that formal
+frameworks miss: **agent rationalization**. The agent is not malicious —
+it is optimistic. It will convince itself that verification is unnecessary
+("should work now"), that partial evidence is sufficient ("linter passed"),
+or that confidence is a substitute for proof ("I'm confident").
+
+Superpowers' "Verification Before Completion" skill states it plainly:
+"Claiming work is complete without verification is dishonesty, not
+efficiency." It provides an explicit rationalization prevention table:
+
+| Agent Excuse | Reality |
+|---|---|
+| "Should work now" | Run the verification |
+| "I'm confident" | Confidence is not evidence |
+| "Just this once" | No exceptions |
+| "Linter passed" | Linter is not compiler |
+| "Agent said success" | Verify independently |
+| "Partial check is enough" | Partial proves nothing |
+
+This is the same threat as specification gaming (arXiv 2502.13295) but
+observed from the inside: the agent's optimization target (completing the
+task quickly) misaligns with the governance target (producing verified work).
+ARF must treat agent rationalization as a threat category alongside the
+eight SLSA-parallel threats defined above.
+
+**ARF implication:** every AR level must require *fresh* verification
+evidence produced *in the current session* — not cached, not inferred, not
+self-reported. This is the "iron law" that gzkit's gate checks enforce.
+
+### Two-Stage Review (Verification vs Validation)
+
+Superpowers' subagent-driven development process uses two-stage review:
+
+1. **Spec compliance review** — does the output match the specification?
+   (IEEE 1012 Verification: "built it right")
+2. **Code quality review** — is the implementation well-structured?
+   (IEEE 1012 Validation: "built the right thing")
+
+Spec compliance must pass *before* code quality review begins. This ordering
+is critical: there is no point reviewing code quality for work that doesn't
+match the spec.
+
+gzkit's gate system partially implements this — scope audit (verification)
+runs before human attestation (validation). ARF should formalize the
+ordering: at AR2+, verification gates must pass before validation gates
+are evaluated.
+
 ### The Specification Gaming Problem
 
 Research demonstrates that reasoning models (OpenAI o3, DeepSeek R1) readily
@@ -378,6 +427,7 @@ address — the agent-to-artifact trust boundary:
 | **W3C PROV** | Provenance ontology | Entity/Activity/Agent vocabulary for governance ledger interoperability |
 | **Design by Contract** | Pre/post-conditions | OBPI briefs as formal contracts: preconditions (ADR context), postconditions (acceptance criteria), invariants (governance rules) |
 | **CoSAI** | MCP security | 12-category agent threat taxonomy and Secure-by-Design Agentic Systems Principles |
+| **Superpowers** | Agent workflow governance | Rationalization prevention, verification-before-completion, two-stage review, hard gates, context isolation |
 
 ### Emerging Research Alignment
 
@@ -401,6 +451,8 @@ address — the agent-to-artifact trust boundary:
 | Code Stylometry (arXiv 2506.17323) | 97.5% accuracy attributing code to specific LLM models — forensic provenance verification |
 | Epistemic AI (arXiv 2505.04950) | Second-order uncertainty measures; aleatoric vs epistemic uncertainty as basis for governance scaling |
 | Normal Accidents (Perrow) | Warning: adding governance layers increases complexity, potentially creating new failure modes |
+| Superpowers verification-before-completion | Agent rationalization as first-class threat; "claiming completion without verification is dishonesty" |
+| Superpowers subagent-driven-development | Two-stage review (spec compliance then code quality); context isolation per task; "enthusiastic junior engineer" auditability standard |
 
 ---
 
@@ -527,6 +579,42 @@ Additional influences:
 - [NTIA SBOM](https://www.ntia.gov/page/software-bill-materials) — minimum
   elements for software transparency. ARF's GBOM applies the same
   nested-inventory principle to governance provenance.
+- [IEC 61508](https://en.wikipedia.org/wiki/IEC_61508) — three-constraint SIL
+  model (systematic capability + architecture + quantitative target).
+- [TUF](https://theupdateframework.io/) — trust delegation and threshold
+  signatures for governance artifact distribution.
+- [OSCAL](https://pages.nist.gov/OSCAL/) — NIST's machine-readable security
+  controls language; layered model for expressing governance controls.
+- [MITRE ATLAS](https://atlas.mitre.org/) — adversarial threat landscape for
+  AI systems, including agent-specific techniques (context poisoning, config
+  modification, memory manipulation).
+- [W3C PROV](https://www.w3.org/TR/prov-overview/) / [PROV-AGENT](https://arxiv.org/abs/2508.02866) —
+  provenance ontology for agentic workflows.
+- [OpenChain (ISO 5230)](https://openchainproject.org/) — self-certification
+  conformance model with periodic renewal.
+- [CoSAI](https://www.coalitionforsecureai.org/) — MCP security threat
+  taxonomy and Secure-by-Design Agentic Systems Principles.
+- [Design by Contract (Meyer)](https://en.wikipedia.org/wiki/Design_by_contract) —
+  pre/post-conditions and invariants as formal contract vocabulary.
+- [Specification Gaming (arXiv 2502.13295)](https://arxiv.org/abs/2502.13295) —
+  reasoning models satisfy literal objectives while violating intent.
+- [ML FMEA (Torc/SAE 2025)](https://torc.ai/knowledge-center/publications/the-ml-fmea-an-introduction/) —
+  systematic failure mode analysis adapted for ML pipelines.
+- [Swiss Cheese Model for AI (arXiv 2408.02205)](https://arxiv.org/abs/2408.02205) —
+  layered guardrail taxonomy for foundation model agents.
+- [Normal Accidents (Perrow)](https://en.wikipedia.org/wiki/Normal_Accidents) —
+  complexity-induced failure in tightly coupled systems.
+- [Superpowers](https://github.com/obra/superpowers) — agent workflow
+  governance system for coding agents. Key contributions: (1) treats agent
+  rationalization (optimistic self-assessment, verification skipping) as a
+  first-class reliability threat; (2) verification-before-completion as an
+  iron law — no completion claims without fresh evidence; (3) two-stage
+  review (spec compliance then code quality) operationalizing the VER/VAL
+  distinction; (4) hard gates that cannot be skipped regardless of perceived
+  simplicity; (5) context isolation per task preventing contamination;
+  (6) plans detailed enough for an "enthusiastic junior engineer with poor
+  taste, no judgement, and an aversion to testing" — setting the auditability
+  bar for governance artifacts.
 
 ---
 
@@ -704,6 +792,42 @@ SLSA-shaped predicate without forcing build-system assumptions.
   gzkit's governance documentation. The former has broader impact; the latter
   has faster iteration. A hybrid path: develop within gzkit, extract when
   stable.
+- OSCAL's layered model (catalog → profile → component definition → SSP →
+  assessment plan → assessment results → POA&M) maps to gzkit's hierarchy
+  (governance rules → lane requirements → agent capabilities → OBPI brief →
+  gate plan → gate results → defect tracking). Expressing ARF controls in
+  OSCAL format would enable FedRAMP-aligned compliance reporting.
+- IEC 61508's technique/measure tables — which prescribe specific V&V
+  techniques at each SIL — could template the gate prescription tables at
+  each AR level. Not all gates are mandatory at all levels; the tables make
+  this explicit.
+- OpenChain's self-certification conformance model is pragmatic for ARF
+  adoption: organizations self-certify that their agent governance pipeline
+  meets ARF requirements at a declared level. 18-month renewal cycles
+  prevent certification drift.
+- DORA's 2025 finding — AI coding assistants boost individual productivity
+  but organizational delivery metrics stay flat — validates ARF's thesis:
+  agent velocity without governance does not improve outcomes. The pipeline
+  quality is the determinant, not the agent's raw capability.
+- Code stylometry (97.5% accuracy attributing code to specific LLMs) could
+  be integrated into AR4 audits as a forensic verification that
+  agent-attributed code was actually produced by the claimed model.
+- The FMEA should be a living governance artifact maintained alongside the
+  ARF spec. Each new failure mode discovered in production should be added
+  with its detection strategy and the AR level at which it is caught.
+- Superpowers and gzkit operate at complementary layers. Superpowers governs
+  the *agent's workflow* (brainstorm → spec → plan → implement → review).
+  gzkit governs the *governance pipeline* (ADR → OBPI → gates → attest →
+  audit). ARF bridges both: superpowers' verification-before-completion is
+  the agent-side enforcement of what gzkit's gates verify from the pipeline
+  side. The "enthusiastic junior engineer" standard for plan detail is the
+  practical test for whether a governance artifact is auditable.
+- Superpowers' rationalization prevention table should inform the design of
+  ARF's evidence requirements. At each AR level, the framework should
+  anticipate and counter the specific rationalizations an agent might use
+  to skip that level's verification. This is mechanism design applied to
+  agent governance — designing the system so that the path of least
+  resistance is also the path of compliance.
 
 ---
 
