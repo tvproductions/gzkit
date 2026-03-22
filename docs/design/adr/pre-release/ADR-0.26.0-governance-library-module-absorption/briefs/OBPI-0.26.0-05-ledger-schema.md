@@ -79,8 +79,7 @@ its inline schema handling adequately covers the same capability.
 ### Gate 4: BDD
 
 - [ ] If the chosen path changes operator-visible behavior, the brief names
-  `features/governance_library.feature` or equivalent module-level behavioral
-  proof
+  `features/heavy_lane_gate4.feature` as the Gate 4 behavioral proof artifact
 - [ ] Otherwise the brief records `N/A` rationale for no external-surface
   change
 
@@ -116,6 +115,9 @@ rg -n 'Absorb|Confirm|Exclude' docs/design/adr/pre-release/ADR-0.26.0-governance
 
 uv run gz test
 # Expected: comparison or absorbed implementation remains green
+
+uv run -m behave features/heavy_lane_gate4.feature
+# Expected: only required when operator-visible behavior changes
 
 rg -n 'Gate 4|N/A|behavioral proof' docs/design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/briefs/OBPI-0.26.0-05-ledger-schema.md
 # Expected: completed brief captures operator-visible proof requirement or N/A rationale
