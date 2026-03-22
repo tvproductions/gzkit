@@ -15,11 +15,18 @@ date: 2026-03-21
 
 ## OBJECTIVE
 
-Evaluate `opsdev/lib/adr.py` (1,588 lines) against gzkit's partial ADR management in `cli.py` and determine: Absorb (opsdev is better), Confirm (gzkit is sufficient), or Exclude (domain-specific). The opsdev module is the largest in the library at 1,588 lines, providing comprehensive ADR lifecycle management including creation, status transitions, validation, and querying. gzkit's current equivalent is partial coverage scattered across cli.py, which mixes ADR management logic with CLI command handling. The 1,588-line dedicated module almost certainly contains governance depth that a monolithic CLI file does not replicate.
+Evaluate `../airlineops/src/opsdev/lib/adr.py` (1,588 lines) against gzkit's
+partial ADR management in `src/gzkit/cli.py` and determine: Absorb (opsdev is
+better), Confirm (gzkit is sufficient), or Exclude (domain-specific). The
+opsdev module is the largest in the library, providing comprehensive ADR
+lifecycle management including creation, status transitions, validation, and
+querying. gzkit's current equivalent is partial coverage scattered across
+`src/gzkit/cli.py`, which mixes ADR management logic with CLI command
+handling.
 
 ## SOURCE MATERIAL
 
-- **opsdev:** `../opsdev/lib/adr.py` (1,588 lines)
+- **opsdev:** `../airlineops/src/opsdev/lib/adr.py` (1,588 lines)
 - **gzkit equivalent:** Partial in `src/gzkit/cli.py`
 
 ## ASSUMPTIONS
@@ -53,10 +60,74 @@ Evaluate `opsdev/lib/adr.py` (1,588 lines) against gzkit's partial ADR managemen
 
 ## QUALITY GATES (Heavy)
 
-- [ ] Gate 1 (ADR): Intent recorded in this brief
-- [ ] Gate 2 (TDD): `uv run gz test` passes
-- [ ] Gate 3 (Docs): Decision rationale documented
-- [ ] Gate 5 (Attestation): Human attestation required (Heavy lane)
+### Gate 1: ADR
+
+- [ ] Intent recorded in this brief
+
+### Gate 2: TDD
+
+- [ ] Comparison-driven tests pass: `uv run gz test`
+- [ ] If `Absorb`, adapted gzkit module/tests are added or updated
+
+### Gate 3: Docs
+
+- [ ] Completed brief records a final `Absorb` / `Confirm` / `Exclude`
+  decision
+- [ ] Comparison rationale names concrete capability differences and the chosen
+  outcome
+
+### Gate 4: BDD
+
+- [ ] If the chosen path changes operator-visible behavior, the brief names
+  `features/governance_library.feature` or equivalent module-level behavioral
+  proof
+- [ ] Otherwise the brief records `N/A` rationale for no external-surface
+  change
+
+### Gate 5: Human
+
+- [ ] Human attestation required (Heavy lane)
+
+## Acceptance Criteria
+
+- [ ] REQ-0.26.0-01-01: Given the completed comparison, then the brief records
+  one final decision: `Absorb`, `Confirm`, or `Exclude`.
+- [ ] REQ-0.26.0-01-02: Given the decision rationale, then it cites concrete
+  capability, robustness, or ergonomics differences between opsdev and gzkit.
+- [ ] REQ-0.26.0-01-03: Given an `Absorb` outcome, then gzkit contains the
+  adapted module/tests needed to carry the pattern safely.
+- [ ] REQ-0.26.0-01-04: Given a `Confirm` or `Exclude` outcome, then the brief
+  explains why no upstream absorption is warranted.
+- [ ] REQ-0.26.0-01-05: Given any operator-visible behavior change, then Gate 4
+  behavioral proof is present; otherwise the brief records `N/A` with
+  rationale.
+
+## Verification Commands (Concrete)
+
+```bash
+test -f ../airlineops/src/opsdev/lib/adr.py
+# Expected: opsdev source under review exists
+
+test -f src/gzkit/cli.py
+# Expected: gzkit comparison target exists before or after the decision
+
+rg -n 'Absorb|Confirm|Exclude' docs/design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/briefs/OBPI-0.26.0-01-adr-management.md
+# Expected: completed brief records one final decision
+
+uv run gz test
+# Expected: comparison or absorbed implementation remains green
+
+rg -n 'Gate 4|N/A|behavioral proof' docs/design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/briefs/OBPI-0.26.0-01-adr-management.md
+# Expected: completed brief captures operator-visible proof requirement or N/A rationale
+```
+
+## Completion Checklist (Heavy)
+
+- [ ] **Gate 1 (ADR):** Intent recorded
+- [ ] **Gate 2 (TDD):** Tests pass
+- [ ] **Gate 3 (Docs):** Decision rationale completed
+- [ ] **Gate 4 (BDD):** Behavioral proof present or `N/A` recorded with rationale
+- [ ] **Gate 5 (Human):** Attestation recorded
 
 ## Closing Argument
 
