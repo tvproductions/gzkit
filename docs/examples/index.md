@@ -55,7 +55,8 @@ Ready-to-use templates in this directory:
 |----------|----------|
 | [PRD Template](templates/prd-template.md) | Starting a new project — define what you're building and why |
 | [ADR Template](templates/adr-template.md) | Making a design decision — record the choice, alternatives, and tradeoffs |
-| [Task Template](templates/task-template.md) | Breaking an ADR into work items — one task per feature checklist item |
+| [REQ Template](templates/req-template.md) | Breaking an ADR into requirements — one REQ per requirements checklist item |
+| [Task Template](templates/task-template.md) | Leaf work items under a REQ — one concrete thing to build, fix, or change |
 
 ## Distribution
 
@@ -89,8 +90,9 @@ use. The mapping:
 | Student Concept | GZKit Professional Equivalent |
 |----------------|------------------------------|
 | PRD | PRD (same concept, lighter template) |
-| ADR | ADR with Feature Checklist |
-| Task | OBPI Brief (One Brief Per Item) |
+| ADR | ADR with Requirements Checklist |
+| REQ | OBPI Brief (One Brief Per Item) |
+| Task | Leaf work item within an OBPI |
 | "All tests pass" | Gate 2 (TDD) |
 | Instructor review | Gate 5 (Human Attestation) |
 

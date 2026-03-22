@@ -262,7 +262,7 @@ git commit -m "Add ADR-0.1.0: Book storage and retrieval"
 
 Each ADR checklist item becomes a task. Create a file for each one in
 `docs/design/adr/ADR-0.1.0/obpis/`. Copy the
-[Task template](templates/task-template.md) as a starting point.
+[REQ template](templates/req-template.md) as a starting point.
 
 Here's Task 1 as a fully worked example:
 

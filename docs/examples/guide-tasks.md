@@ -240,8 +240,10 @@ acceptance criteria and a way to verify completion.**
 
 ## Templates
 
-A ready-to-use task template is available at:
-[templates/task-template.md](templates/task-template.md)
+Ready-to-use templates for the PRD → ADR → REQ → Task hierarchy:
+
+- [REQ Template](templates/req-template.md) — Requirement brief (one per ADR checklist item)
+- [Task Template](templates/task-template.md) — Leaf work item (concrete things to build under a REQ)
 
 ---
 

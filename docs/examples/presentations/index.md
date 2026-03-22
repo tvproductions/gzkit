@@ -55,7 +55,8 @@ the full governance cycle.
 |----------|---------|
 | [PRD Template](../templates/prd-template.md) | Starting template for Part 2 |
 | [ADR Template](../templates/adr-template.md) | Starting template for Part 3 |
-| [Task Template](../templates/task-template.md) | Starting template for Part 4 |
+| [REQ Template](../templates/req-template.md) | Starting template for Part 4 (requirement briefs) |
+| [Task Template](../templates/task-template.md) | Starting template for Part 4 (leaf work items) |
 | [PRD Guide](../guide-prd.md) | Deep-dive reference for PRDs |
 | [ADR Guide](../guide-adr.md) | Deep-dive reference for ADRs |
 | [Task Guide](../guide-tasks.md) | Deep-dive reference for task decomposition |
