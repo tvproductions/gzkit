@@ -52,6 +52,19 @@ Define the git commit linkage contract: TASK IDs appear in commit message traile
 - [ ] REQ-0.22.0-03-03: Given a commit with two Task trailers, when parsed, then both TASK IDs are returned.
 - [ ] REQ-0.22.0-03-04: Given TASK-0.20.0-01-01-01, when resolved, then chain is: TASK→REQ-0.20.0-01-01→OBPI-0.20.0-01→ADR-0.20.0.
 
+## Verification Commands (Concrete)
+
+```bash
+uv run -m unittest tests.test_tasks -v
+# Expected: trailer parsing and formatting tests pass
+
+uv run gz lint
+# Expected: lint passes after commit-linkage edits
+
+uv run gz typecheck
+# Expected: commit-linkage types remain clean
+```
+
 ## Completion Checklist (Lite)
 
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
