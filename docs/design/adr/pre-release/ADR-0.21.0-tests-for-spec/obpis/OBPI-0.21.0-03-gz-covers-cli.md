@@ -21,7 +21,7 @@ Expose requirement coverage reporting via `gz covers` CLI. Operators can query c
 
 ## Lane
 
-**Heavy** — New CLI command (external contract).
+**Heavy** — New CLI command (external contract). Requires docs, BDD, and human attestation.
 
 ## Allowed Paths
 
@@ -55,6 +55,32 @@ Expose requirement coverage reporting via `gz covers` CLI. Operators can query c
 - [ ] REQ-0.21.0-03-02: Given `gz covers ADR-0.20.0`, then shows only REQs under that ADR.
 - [ ] REQ-0.21.0-03-03: Given `gz covers --json`, then outputs valid JSON coverage report.
 - [ ] REQ-0.21.0-03-04: Given `gz covers --help`, then shows description, usage, options, example.
+
+## Verification Commands (Concrete)
+
+```bash
+uv run gz covers --help
+# Expected: description, usage, options, and example are present
+
+uv run gz covers ADR-0.20.0 --json
+# Expected: valid JSON coverage report for ADR-0.20.0 only
+
+uv run gz covers OBPI-0.20.0-01 --plain
+# Expected: one record per line for the target OBPI
+
+uv run -m unittest tests.test_traceability -v
+# Expected: CLI smoke tests pass for human/JSON/plain modes
+
+uv run -m behave features/test_traceability.feature
+# Expected: covers CLI BDD scenarios pass
+
+uv run mkdocs build --strict
+# Expected: command docs render cleanly
+
+uv run gz lint
+uv run gz typecheck
+# Expected: CLI surface remains lint/type clean
+```
 
 ## Completion Checklist (Heavy)
 

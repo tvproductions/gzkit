@@ -50,6 +50,19 @@ Build a scanner that walks the test directory tree, discovers all `@covers` anno
 - [ ] REQ-0.21.0-02-02: Given 8 REQs in briefs and 5 `@covers` annotations, when coverage is computed, then report shows 5/8 covered (62.5%).
 - [ ] REQ-0.21.0-02-03: Given coverage data, when rolled up by ADR, then shows per-ADR coverage percentage.
 
+## Verification Commands (Concrete)
+
+```bash
+uv run -m unittest tests.test_traceability -v
+# Expected: scanner tests pass for discovery, line-number capture, and rollup math
+
+uv run gz lint
+# Expected: lint passes after scanner implementation
+
+uv run gz typecheck
+# Expected: scanner/linkage types remain clean
+```
+
 ## Completion Checklist (Lite)
 
 - [ ] **Gate 1 (ADR):** Intent recorded in brief

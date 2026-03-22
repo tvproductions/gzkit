@@ -2907,8 +2907,90 @@ def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
     )
 
 
+def _run_audit_verifications(
+    commands: list[tuple[str, str]],
+    proofs_dir: Path,
+    project_root: Path,
+) -> tuple[list[dict[str, Any]], int]:
+    """Execute verification commands, write proof files, return results and failure count."""
+    result_rows: list[dict[str, Any]] = []
+    failures = 0
+    for label, command in commands:
+        result = run_command(command, cwd=project_root)
+        proof_file = proofs_dir / f"{label}.txt"
+        proof_file.write_text(
+            f"$ {command}\n\n[returncode] {result.returncode}\n\n"
+            f"[stdout]\n{result.stdout}\n\n[stderr]\n{result.stderr}\n",
+            encoding="utf-8",
+        )
+        result_rows.append(
+            {
+                "label": label,
+                "command": command,
+                "returncode": result.returncode,
+                "success": result.success,
+                "proof_file": str(proof_file.relative_to(project_root)),
+            }
+        )
+        if not result.success:
+            failures += 1
+    return result_rows, failures
+
+
+def _write_audit_artifacts(
+    adr_id: str,
+    adr_file: Path,
+    audit_dir: Path,
+    proofs_dir: Path,
+    result_rows: list[dict[str, Any]],
+    project_root: Path,
+) -> tuple[Path, Path]:
+    """Write AUDIT_PLAN.md and AUDIT.md, return their paths."""
+    plan_file = audit_dir / "AUDIT_PLAN.md"
+    plan_file.write_text(
+        "\n".join(
+            [
+                f"# Audit Plan: {adr_id}",
+                "",
+                "## Scope",
+                f"- ADR: `{adr_file.relative_to(project_root)}`",
+                "",
+                "## Verification Commands",
+            ]
+            + [f"- `{row['command']}`" for row in result_rows]
+            + [
+                "",
+                "## Proof Output",
+                f"- Directory: `{proofs_dir.relative_to(project_root)}`",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    audit_file = audit_dir / "AUDIT.md"
+    audit_lines = [
+        f"# Audit: {adr_id}",
+        "",
+        f"- ADR: `{adr_file.relative_to(project_root)}`",
+        "",
+        "## Results",
+    ]
+    for row in result_rows:
+        status = "PASS" if row["success"] else "FAIL"
+        audit_lines.append(
+            f"- **{row['label']}**: {status} (`{row['command']}`) -> `{row['proof_file']}`"
+        )
+    audit_file.write_text("\n".join(audit_lines) + "\n", encoding="utf-8")
+    return plan_file, audit_file
+
+
 def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
-    """Run an ADR audit routine and store proof artifacts."""
+    """Run the end-to-end audit pipeline for an ADR.
+
+    Executes verification commands, creates proof artifacts, emits a
+    validation receipt to the ledger, and transitions the ADR to Validated.
+    """
     config = ensure_initialized()
     project_root = get_project_root()
     manifest = load_manifest(project_root)
@@ -2948,86 +3030,64 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
     commands = _manifest_verification_commands(manifest, include_docs=include_docs)
 
     if dry_run:
+        dry_payload = {
+            "adr": adr_id,
+            "dry_run": True,
+            "audit_dir": str(audit_dir.relative_to(project_root)),
+            "proofs_dir": str(proofs_dir.relative_to(project_root)),
+            "commands": [command for _label, command in commands],
+            "validation_receipt": {"would_emit": True, "event": "validated"},
+            "status_transition": {"from": "Completed", "to": "Validated"},
+        }
         if as_json:
-            print(
-                json.dumps(
-                    {
-                        "adr": adr_id,
-                        "dry_run": True,
-                        "audit_dir": str(audit_dir.relative_to(project_root)),
-                        "proofs_dir": str(proofs_dir.relative_to(project_root)),
-                        "commands": [command for _label, command in commands],
-                    },
-                    indent=2,
-                )
-            )
+            print(json.dumps(dry_payload, indent=2))
             return
         console.print("[yellow]Dry run:[/yellow] no files will be written.")
         console.print(f"  Would create: {audit_dir.relative_to(project_root)}")
         console.print(f"  Would create: {proofs_dir.relative_to(project_root)}")
         for _label, command in commands:
             console.print(f"  Would run: {command}")
+        console.print("  Would emit validation receipt to ledger")
+        console.print("  Would transition ADR status: Completed → Validated")
         return
 
     proofs_dir.mkdir(parents=True, exist_ok=True)
-    result_rows: list[dict[str, Any]] = []
-    failures = 0
-    for label, command in commands:
-        result = run_command(command, cwd=project_root)
-        proof_file = proofs_dir / f"{label}.txt"
-        proof_file.write_text(
-            f"$ {command}\n\n[returncode] {result.returncode}\n\n"
-            f"[stdout]\n{result.stdout}\n\n[stderr]\n{result.stderr}\n",
-            encoding="utf-8",
-        )
-        result_rows.append(
-            {
-                "label": label,
-                "command": command,
-                "returncode": result.returncode,
-                "success": result.success,
-                "proof_file": str(proof_file.relative_to(project_root)),
-            }
-        )
-        if not result.success:
-            failures += 1
-
-    plan_file = audit_dir / "AUDIT_PLAN.md"
-    plan_file.write_text(
-        "\n".join(
-            [
-                f"# Audit Plan: {adr_id}",
-                "",
-                "## Scope",
-                f"- ADR: `{adr_file.relative_to(project_root)}`",
-                "",
-                "## Verification Commands",
-            ]
-            + [f"- `{row['command']}`" for row in result_rows]
-            + [
-                "",
-                "## Proof Output",
-                f"- Directory: `{proofs_dir.relative_to(project_root)}`",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    result_rows, failures = _run_audit_verifications(commands, proofs_dir, project_root)
+    plan_file, audit_file = _write_audit_artifacts(
+        adr_id,
+        adr_file,
+        audit_dir,
+        proofs_dir,
+        result_rows,
+        project_root,
     )
 
-    audit_file = audit_dir / "AUDIT.md"
-    audit_lines = [
-        f"# Audit: {adr_id}",
-        "",
-        f"- ADR: `{adr_file.relative_to(project_root)}`",
-        "",
-        "## Results",
-    ]
-    for row in result_rows:
-        status = "PASS" if row["success"] else "FAIL"
-        audit_lines.append(
-            f"- **{row['label']}**: {status} (`{row['command']}`) -> `{row['proof_file']}`"
+    # Emit validation receipt (always — even on failure, to record the audit)
+    pass_count = sum(1 for r in result_rows if r["success"])
+    fail_count = failures
+    auditor = get_git_user()
+    receipt_evidence = {
+        "audit_date": date.today().isoformat(),
+        "pass_count": pass_count,
+        "fail_count": fail_count,
+        "audit_file": str(audit_file.relative_to(project_root)),
+        "audit_plan_file": str(plan_file.relative_to(project_root)),
+        "proofs_dir": str(proofs_dir.relative_to(project_root)),
+    }
+    ledger.append(
+        audit_receipt_emitted_event(
+            adr_id=adr_id,
+            receipt_event="validated",
+            attestor=auditor,
+            evidence=receipt_evidence,
         )
-    audit_file.write_text("\n".join(audit_lines) + "\n", encoding="utf-8")
+    )
+
+    # Transition ADR to Validated only if all checks passed
+    status_transition = None
+    if failures == 0:
+        ledger.append(lifecycle_transition_event(adr_id, "adr", "Completed", "Validated"))
+        status_transition = {"from": "Completed", "to": "Validated"}
 
     output = {
         "adr": adr_id,
@@ -3035,16 +3095,27 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
         "audit_plan_file": str(plan_file.relative_to(project_root)),
         "results": result_rows,
         "passed": failures == 0,
+        "validation_receipt": {
+            "event": "validated",
+            "attestor": auditor,
+            "evidence": receipt_evidence,
+        },
+        "status_transition": status_transition,
     }
     if as_json:
         print(json.dumps(output, indent=2))
     else:
         console.print(f"[bold]Audit results for {adr_id}[/bold]")
         for row in result_rows:
-            status = "[green]PASS[/green]" if row["success"] else "[red]FAIL[/red]"
-            console.print(f"  {row['label']}: {status}")
+            row_status = "[green]PASS[/green]" if row["success"] else "[red]FAIL[/red]"
+            console.print(f"  {row['label']}: {row_status}")
         console.print(f"Audit plan: {plan_file.relative_to(project_root)}")
         console.print(f"Audit report: {audit_file.relative_to(project_root)}")
+        console.print(f"Validation receipt: emitted (by {auditor})")
+        if status_transition:
+            console.print("ADR status: Completed → Validated")
+        else:
+            console.print("[yellow]ADR status: NOT transitioned (failures detected)[/yellow]")
 
     if failures:
         raise SystemExit(1)
