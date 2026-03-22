@@ -1,5 +1,5 @@
 [project]
-name = "gzkit"
+name = "py-gzkit"
 version = "0.18.0"
 description = "GovZero Kit: A Development Covenant for Human-AI Collaboration"
 readme = "README.md"
@@ -20,8 +20,8 @@ classifiers = [
 ]
 
 dependencies = [
-    "behave>=1.2.6",
     "pydantic>=2.12.5",
+    "pyyaml>=6.0",
     "rich>=13.0",
 ]
 
@@ -72,6 +72,7 @@ indent-style = "space"
 
 [dependency-groups]
 dev = [
+    "behave>=1.2.6",
     "coverage>=7.13.4",
     "mkdocs==1.6.1",
     "mkdocs-material==9.7.1",
