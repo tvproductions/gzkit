@@ -160,7 +160,7 @@ $ uv run gz typecheck — All checks passed
 $ uv run gz test — 1040 tests OK
 ```
 
-## Value Narrative
+### Value Narrative
 
 Before this OBPI, `gz audit` created proof artifacts (AUDIT_PLAN.md, AUDIT.md, proof text files) but stopped there. The operator then had to manually run `gz adr emit-receipt ADR-X.Y.Z --event validated` and somehow ensure the ADR status transitioned to Validated. In practice, operators ran the audit, saw the pass/fail table, and moved on — leaving the ADR in Completed status with no validation receipt in the ledger. The audit existed as files on disk but was invisible to ledger-based governance queries.
 

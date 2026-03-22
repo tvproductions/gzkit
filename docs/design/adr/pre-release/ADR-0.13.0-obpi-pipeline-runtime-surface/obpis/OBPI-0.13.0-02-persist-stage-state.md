@@ -310,7 +310,7 @@ OBPI receipt emitted.
   Attestor: human:jeff
 ```
 
-## Value Narrative
+### Value Narrative
 
 <!-- What problem existed before this OBPI, and what capability exists now? -->
 
@@ -323,7 +323,7 @@ files carry machine-readable stage state for the active pipeline run, including
 `receipt_state`, while keeping the same file paths and preserving hook
 compatibility.
 
-## Key Proof
+### Key Proof
 
 <!-- One concrete usage example, command, or before/after behavior. -->
 

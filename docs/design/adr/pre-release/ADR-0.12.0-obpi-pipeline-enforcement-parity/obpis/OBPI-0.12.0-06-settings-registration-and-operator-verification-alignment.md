@@ -301,7 +301,7 @@ OBPI receipt emitted.
   Attestor: human:jeff
 ```
 
-## Value Narrative
+### Value Narrative
 
 Before this tranche, gzkit had the full set of pipeline-enforcement hooks on
 disk, but the actual Claude runtime still left them unwired, which meant the
@@ -309,7 +309,7 @@ OBPI pipeline contract depended on operator memory instead of active settings.
 Now the hook chain can be enforced through `.claude/settings.json`, so the
 runtime behavior, tests, and operator docs all describe the same active path.
 
-## Key Proof
+### Key Proof
 
 ```text
 $ sed -n '1,260p' .claude/settings.json

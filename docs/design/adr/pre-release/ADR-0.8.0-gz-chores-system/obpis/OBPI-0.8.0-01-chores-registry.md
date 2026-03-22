@@ -166,7 +166,7 @@ $ uv run gz cli audit
 CLI audit passed.
 ```
 
-## Key Proof
+### Key Proof
 
 `uv run gz chores run quality-check` completed successfully and wrote a dated log entry:
 `docs/design/briefs/chores/CHORE-quality-check/logs/CHORE-LOG.md`

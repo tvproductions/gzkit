@@ -130,7 +130,7 @@ uv run -m behave features/
 - [x] **Key Proof:** One concrete usage example is included
 - [x] **OBPI Acceptance:** Evidence recorded below
 
-## Value Narrative
+### Value Narrative
 
 Before this tranche, gzkit had partial OBPI completion enforcement spread
 across hooks and docs, but there was no single fail-closed validator command
@@ -200,7 +200,7 @@ $ uv run -m behave features/
 16 steps passed, 0 failed, 0 skipped
 ```
 
-## Key Proof
+### Key Proof
 
 ```text
 Concrete operator surface:

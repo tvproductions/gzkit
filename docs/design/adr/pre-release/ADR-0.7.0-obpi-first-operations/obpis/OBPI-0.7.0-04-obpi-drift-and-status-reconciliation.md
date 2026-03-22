@@ -24,11 +24,11 @@ Expose OBPI completion drift and reconciliation signals in status/audit surfaces
 - Files modified: `src/gzkit/commands/status.py` (added DRIFT detection and reporting), `src/gzkit/ledger.py` (added ledger-first completion tracking).
 - Date completed: 2026-03-04
 
-## Value Narrative
+### Value Narrative
 
 Before this OBPI, operators had no way to see when a completed OBPI's evidence had diverged from the recorded ledger state. After this OBPI, the status command detects and reports drift between file-claimed completion and ledger proof, enabling targeted reconciliation instead of opaque ADR-level claims.
 
-## Key Proof
+### Key Proof
 
 ```bash
 # Status command now detects and reports drift:

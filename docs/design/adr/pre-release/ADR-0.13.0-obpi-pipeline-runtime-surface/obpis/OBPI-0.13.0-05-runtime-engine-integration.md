@@ -248,7 +248,7 @@ OBPI receipt emitted.
   Attestor: human:jeff
 ```
 
-## Value Narrative
+### Value Narrative
 
 Before this tranche, the CLI, generated hooks, and dormant compatibility hook
 each carried their own interpretation of receipt loading, marker state, and
@@ -257,7 +257,7 @@ generated scripts, and stale prose. After this tranche, one shared runtime
 engine owns the stage-state contract and every operator-facing pipeline surface
 points at the same canonical next commands.
 
-## Key Proof
+### Key Proof
 
 ```text
 $ uv run python -m unittest tests.test_pipeline_runtime tests.test_hooks tests.commands.test_obpi_pipeline -v

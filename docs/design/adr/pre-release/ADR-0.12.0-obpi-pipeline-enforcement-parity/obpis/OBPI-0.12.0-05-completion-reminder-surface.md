@@ -297,7 +297,7 @@ OBPI receipt emitted.
   Attestor: human:jeff
 ```
 
-## Value Narrative
+### Value Narrative
 
 Before this tranche, gzkit could create and enforce OBPI pipeline state, but it
 still lacked the final operator-facing reminder that catches the easy failure
@@ -305,7 +305,7 @@ mode where a commit or push happens before the brief and sync steps are closed
 out. Now the generated hook surface can warn on that incomplete state without
 reinterpreting the contract into a blocking gate.
 
-## Key Proof
+### Key Proof
 
 ```text
 $ printf '{"cwd":"<temp-workspace>","tool_input":{"command":"git push origin main"}}' | uv run python .claude/hooks/pipeline-completion-reminder.py

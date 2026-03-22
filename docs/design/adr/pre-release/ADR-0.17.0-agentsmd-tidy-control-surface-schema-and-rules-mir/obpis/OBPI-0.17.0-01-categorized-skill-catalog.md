@@ -179,7 +179,7 @@ N/A — no behave features for AGENTS.md catalog structure
 Human attestation: "attest completed" — 2026-03-19
 ```
 
-## Value Narrative
+### Value Narrative
 
 Before this OBPI, AGENTS.md listed skills in an unstructured way, making it difficult for agents and operators to discover relevant skills by domain. Now the catalog organizes all 51 canonical skills into 8 functional categories (ADR Lifecycle, ADR Operations, ADR Audit & Closeout, OBPI Pipeline, Governance Infrastructure, Agent & Repository Operations, Code Quality, Cross-Repository), enabling domain-based skill discovery.
 

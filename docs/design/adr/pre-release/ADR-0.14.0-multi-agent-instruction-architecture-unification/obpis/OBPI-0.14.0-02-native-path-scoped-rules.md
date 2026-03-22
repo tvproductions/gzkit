@@ -206,14 +206,14 @@ Human attestation received 2026-03-15. Heavy lane requirement satisfied.
 - Hooks activated: `obpi-completion-validator.py`, `session-staleness-check.py`
 - Date completed: 2026-03-15
 
-## Value Narrative
+### Value Narrative
 
 Before this OBPI, gzkit had no native shared subtree instruction surface and Claude
 path guidance depended heavily on hook routing. After this OBPI, shared and
 Claude-specific scoped rules will live in their native locations with explicit
 placement semantics.
 
-## Key Proof
+### Key Proof
 
 A sample rule set can generate one nested `AGENTS.md` under a subtree and one
 `.claude/rules/*.md` file for a Claude-only path case, with no redundant root-surface

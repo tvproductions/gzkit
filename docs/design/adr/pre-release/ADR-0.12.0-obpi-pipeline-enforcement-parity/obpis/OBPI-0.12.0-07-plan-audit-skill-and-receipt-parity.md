@@ -275,7 +275,7 @@ Took 0min 0.259s
 Human attestation received on 2026-03-12: "attest completed for obpi-0.12.0-07"
 ```
 
-## Value Narrative
+### Value Narrative
 
 Before this OBPI, gzkit documented a missing `gz-plan-audit` dependency but had
 no canonical skill surface for operators to run, no mirrored control surfaces,
@@ -284,7 +284,7 @@ gzkit. After this tranche, the skill exists canonically in `.gzkit/skills/`,
 the receipt format is frozen for later hook consumers, and the operator-facing
 story distinguishes manual audit use from still-pending blocking enforcement.
 
-## Key Proof
+### Key Proof
 
 ```text
 $ uv run gz skill audit --json

@@ -224,7 +224,7 @@ $ uv run -m behave features/
 Human attestation received on 2026-03-14: "attest completed"
 ```
 
-## Value Narrative
+### Value Narrative
 
 Before this OBPI, Stage 4 always presented human attestation as a mandatory
 step. That was correct for Heavy and Foundation work, but it was wrong for Lite
@@ -232,7 +232,7 @@ OBPIs and created drift between the pipeline surface and the canonical receipt
 rule. After this OBPI, the pipeline runtime and marker payload preserve human
 attestation as an explicit authority boundary only where GovZero requires it.
 
-## Key Proof
+### Key Proof
 
 ```text
 $ uv run gz obpi pipeline OBPI-0.13.0-04-human-gate-boundary --from=ceremony

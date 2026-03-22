@@ -318,7 +318,7 @@ OBPI receipt emitted.
   Attestor: human:jeff
 ```
 
-## Value Narrative
+### Value Narrative
 
 Before this tranche, gzkit had a plan-audit receipt and a documented pipeline
 mandate, but no generated router artifact to carry approved plan work into
@@ -327,7 +327,7 @@ note. This OBPI ports the PASS-only router surface and tightens the Stage 1 /
 Stage 5 marker contract so later enforcement hooks have a concrete bridge to
 consume.
 
-## Key Proof
+### Key Proof
 
 ```text
 $ printf '{"cwd":"<temp-workspace>"}' | uv run python .claude/hooks/pipeline-router.py

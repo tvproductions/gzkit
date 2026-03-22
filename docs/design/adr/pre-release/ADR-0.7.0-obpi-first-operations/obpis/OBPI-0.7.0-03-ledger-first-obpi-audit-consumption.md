@@ -24,11 +24,11 @@ Make OBPI completion/audit checks consume ledger proof as primary evidence inste
 - Files modified: `src/gzkit/ledger.py` (added `ledger_completed` to artifact graph), `src/gzkit/commands/status.py` (updated `_inspect_obpi_brief` to prioritize ledger), `src/gzkit/cli.py` (passed graph to audit checks).
 - Date completed: 2026-03-04
 
-## Value Narrative
+### Value Narrative
 
 Before this OBPI, OBPI completion and audit checks relied on parsing brief markdown files as the source of truth. After this OBPI, audit checks consume ledger proof as primary evidence, making completion state deterministic and resistant to brief text drift.
 
-## Key Proof
+### Key Proof
 
 ```bash
 # Audit check now explicitly requires ledger proof:

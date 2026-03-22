@@ -199,13 +199,13 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - Tests added: 4 regression tests in `tests/test_templates.py::TestRootSurfaceSlimming`
 - Date completed: 2026-03-16
 
-## Value Narrative
+### Value Narrative
 
 Before this OBPI, root files carried too much procedural detail, increasing context
 cost and drift risk. After this OBPI, root surfaces will stay small and durable while
 skills become the one place recurring multi-step workflows actually live.
 
-## Key Proof
+### Key Proof
 
 Rendered root surfaces retain repo invariants and skill discovery, but no longer embed
 the full skill catalog or duplicate chore instructions already available in canonical

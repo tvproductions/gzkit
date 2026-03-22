@@ -139,13 +139,13 @@ uv run -m unittest tests.test_attest_deprecation -v
 # Paste lint/format/type check output here
 ```
 
-## Value Narrative
+### Value Narrative
 
 **Before:** `gz attest` operates identically whether or not closeout has been initiated for an ADR. Operators who have already run `gz closeout` may redundantly invoke `gz attest` outside the closeout pipeline, creating duplicate attestation events or confusion about which workflow produced the attestation record.
 
 **After:** `gz attest` detects when closeout is active for the target ADR and warns the operator that attestation is now managed by `gz closeout`. The command still executes for backward compatibility and edge cases, but the warning guides operators toward the canonical consolidated workflow, reducing duplicate attestation and workflow confusion.
 
-## Key Proof
+### Key Proof
 
 ```bash
 # After implementation, attest during active closeout produces:

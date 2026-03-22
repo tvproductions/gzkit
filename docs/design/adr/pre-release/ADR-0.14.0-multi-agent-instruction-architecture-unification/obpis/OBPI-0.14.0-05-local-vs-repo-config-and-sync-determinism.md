@@ -203,14 +203,14 @@ uv run gz typecheck — All checks passed
 - Tests added: `TestDetectClaudeSettingsDrift` (4 cases), updated `TestGenerateClaudeSettings` and `TestSetupClaudeHooks`
 - Date completed: 2026-03-16
 
-## Value Narrative
+### Value Narrative
 
 Before this OBPI, machine-local permissions and checked-in settings could blur
 together, weakening trust in generated surfaces. After this OBPI, repo policy and
 local workstation state will be separated and deterministic sync will become
 enforceable.
 
-## Key Proof
+### Key Proof
 
 Running surface generation reproduces the tracked `.claude/settings.json` exactly while
 leaving local-only settings untracked or example-based.

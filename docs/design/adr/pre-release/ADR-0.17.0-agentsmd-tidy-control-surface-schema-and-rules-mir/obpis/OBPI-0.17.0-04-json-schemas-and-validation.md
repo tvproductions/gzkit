@@ -189,7 +189,7 @@ N/A — no behave features for schema validation internals
 Human attestation: "attest completed" — 2026-03-19
 ```
 
-## Value Narrative
+### Value Narrative
 
 Before this OBPI, skill and instruction frontmatter validation used hardcoded Python sets (`_VALID_SKILL_CATEGORIES`, `_VALID_LIFECYCLE_STATES`) and ad-hoc field checks, disconnected from the canonical JSON schemas in `.gzkit/schemas/`. Schema and validation could drift silently. Now, `SkillFrontmatter` and `InstructionFrontmatter` Pydantic models mirror the canonical schemas, the validators use these models, and 7 cross-validation tests prevent model/schema drift.
 

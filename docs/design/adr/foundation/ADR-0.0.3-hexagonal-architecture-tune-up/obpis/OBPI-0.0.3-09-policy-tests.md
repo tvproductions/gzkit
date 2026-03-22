@@ -177,11 +177,11 @@ uv run -m unittest discover -s tests/policy -v
 # Record attestation text here when required by parent lane
 ```
 
-## Value Narrative
+### Value Narrative
 
 <!-- What problem existed before this OBPI, and what capability exists now? -->
 
-## Key Proof
+### Key Proof
 
 <!-- One concrete usage example, command, or before/after behavior. -->
 

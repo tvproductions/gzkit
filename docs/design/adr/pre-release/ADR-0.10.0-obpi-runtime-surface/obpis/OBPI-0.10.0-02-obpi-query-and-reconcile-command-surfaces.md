@@ -132,7 +132,7 @@ uv run gz obpi validate docs/design/adr/pre-release/ADR-0.10.0-obpi-runtime-surf
 - [x] **Key Proof:** One concrete usage example is included
 - [x] **OBPI Acceptance:** Evidence recorded below
 
-## Value Narrative
+### Value Narrative
 
 Before this closeout pass, `gz obpi status` and `gz obpi reconcile` were already
 implemented, documented, and covered by focused tests, but this OBPI still
@@ -216,7 +216,7 @@ $ uv run -m behave features/
 16 steps passed, 0 failed, 0 skipped
 ```
 
-## Key Proof
+### Key Proof
 
 - `uv run gz obpi emit-receipt OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces --event completed --attestor human:jeff --evidence-json ...`
   records completed proof and human attestation for the heavy-lane OBPI.

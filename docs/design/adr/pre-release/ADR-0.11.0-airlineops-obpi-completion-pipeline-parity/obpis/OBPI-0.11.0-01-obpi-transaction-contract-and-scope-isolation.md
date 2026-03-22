@@ -127,7 +127,7 @@ uv run -m behave features/
 - [x] **Key Proof:** One concrete usage example is included
 - [x] **OBPI Acceptance:** Evidence recorded below
 
-## Value Narrative
+### Value Narrative
 
 Before this tranche, gzkit had a transaction-contract page, but it still left
 real execution compatibility rules implicit even after the AirlineOps pipeline
@@ -187,7 +187,7 @@ $ uv run -m behave features/
 16 steps passed, 0 failed, 0 skipped
 ```
 
-## Key Proof
+### Key Proof
 
 ```text
 Canonical doctrine now distinguishes execution-boundary law from runtime-state law:

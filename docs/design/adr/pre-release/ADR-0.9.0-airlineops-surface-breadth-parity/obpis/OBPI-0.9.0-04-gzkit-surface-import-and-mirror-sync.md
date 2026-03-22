@@ -195,7 +195,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 <!-- Record observations during/after implementation.
      Command outputs, file:line references, dates. -->
 
-## Key Proof
+### Key Proof
 
 ```text
 $ cmp -s .gzkit/governance/ontology.schema.json ../airlineops/.gzkit/governance/ontology.schema.json && echo schema-match

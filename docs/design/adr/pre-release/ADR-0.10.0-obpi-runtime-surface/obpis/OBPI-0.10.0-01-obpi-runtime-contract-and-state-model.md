@@ -154,7 +154,7 @@ so later status/reconcile/lifecycle surfaces do not re-derive authority semantic
 - [x] **Key Proof:** One concrete usage example is included
 - [x] **OBPI Acceptance:** Evidence recorded below
 
-## Value Narrative
+### Value Narrative
 
 Before this OBPI closeout pass, the runtime contract itself was already present
 in code and docs, but `ADR-0.10.0` still had a governance defect: its OBPI files
@@ -227,7 +227,7 @@ $ uv run -m behave features/
 16 steps passed, 0 failed, 0 skipped
 ```
 
-## Key Proof
+### Key Proof
 
 ```text
 $ uv run gz register-adrs ADR-0.10.0-obpi-runtime-surface --all

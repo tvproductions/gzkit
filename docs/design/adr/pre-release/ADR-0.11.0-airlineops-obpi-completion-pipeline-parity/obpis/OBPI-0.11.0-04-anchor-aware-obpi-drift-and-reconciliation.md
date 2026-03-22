@@ -163,7 +163,7 @@ $ uv run -m behave features/
 2 features passed, 4 scenarios passed
 ```
 
-## Value Narrative
+### Value Narrative
 
 Before this tranche, `gz obpi reconcile` could only fail on missing proof or
 ledger/brief disagreement, so completed OBPIs had no repository-state-aware way
@@ -173,7 +173,7 @@ git-sync evidence directly from ledger receipts so operator surfaces can
 distinguish generic proof drift from anchor drift with remediation-ready OBPI
 reasons.
 
-## Key Proof
+### Key Proof
 
 ```text
 Focused proof surface:

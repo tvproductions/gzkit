@@ -140,13 +140,13 @@ uv run gz gates --help
 # Paste lint/format/type check output here
 ```
 
-## Value Narrative
+### Value Narrative
 
 **Before:** `gz gates` runs as a standalone command with no indication that it has been subsumed by `gz closeout`. Operators use two separate commands (`gz gates` then `gz closeout`) creating confusion about the canonical workflow and risking incomplete closeout procedures.
 
 **After:** `gz gates` prints a clear deprecation warning on every invocation directing operators to `gz closeout`, while continuing to function for backward compatibility. The command docs reflect the deprecation, guiding new operators to the consolidated pipeline from the start.
 
-## Key Proof
+### Key Proof
 
 ```bash
 # After implementation:

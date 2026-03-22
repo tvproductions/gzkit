@@ -139,13 +139,13 @@ uv run -m unittest tests.test_lifecycle -v
 # Paste lint/format/type check output here
 ```
 
-## Value Narrative
+### Value Narrative
 
 **Before:** After a successful `gz audit`, the ADR remains in Completed state. Operators must separately invoke `gz adr emit-receipt` to transition the ADR to Validated, creating a manual gap where audited ADRs appear incomplete in status dashboards.
 
 **After:** `gz audit` automatically transitions the ADR from Completed to Validated when all verification commands pass, ensuring the ledger reflects the true governance state without manual intervention.
 
-## Key Proof
+### Key Proof
 
 ```bash
 # After implementation, a successful audit will produce:
