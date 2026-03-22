@@ -51,9 +51,9 @@ parent_prd: PRD-[PROJECT]-[VERSION]
 | [Option A] | [Advantage] | [Drawback] | [Reason for rejection] |
 | [Option B] | [Advantage] | [Drawback] | [Reason for rejection] |
 
-## Feature Checklist
+## Requirements Checklist
 
-<!-- Observable outcomes. Each item becomes a Task.
+<!-- Observable outcomes. Each item becomes a Requirement (REQ).
      Items should be demonstrable and testable. -->
 
 1. [ ] [Observable outcome — something you can show working]

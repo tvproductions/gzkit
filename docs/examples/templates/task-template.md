@@ -1,7 +1,6 @@
 ---
-id: TASK-[ADR]-[NN]
-parent_adr: ADR-[NNN]
-checklist_item: [N]
+id: TASK-[REQ]-[NN]
+parent_req: REQ-[ADR]-[NN]
 status: Not Started
 author: [Your Name]
 date: [YYYY-MM-DD]
@@ -9,37 +8,26 @@ date: [YYYY-MM-DD]
 
 # Task [NN]: [Task Title]
 
-**From:** ADR-[NNN] checklist item #[N]
+**From:** REQ-[ADR]-[NN]
 
-## Objective
+## What To Do
 
-<!-- One sentence: what does "done" look like for this task? -->
+<!-- One sentence: what concrete work item does this task accomplish? -->
 
-[What concrete deliverable does this task produce?]
+[What specific thing will you build, fix, or change?]
 
-## Scope
+## Files
 
-<!-- What files/modules will you create or modify? -->
+<!-- Which files will you create or modify? -->
 
-- `path/to/new_file.py` — [what it does]
-- `path/to/existing_file.py` — [what changes]
-- `tests/test_feature.py` — [what tests]
+- `path/to/file.py` — [what you'll do to it]
 
-## Requirements
-
-<!-- Specific constraints. Use MUST/MUST NOT language. -->
-
-1. MUST [constraint]
-2. MUST [constraint]
-3. MUST NOT [constraint]
-
-## Acceptance Criteria
+## Done When
 
 <!-- Testable checkboxes. Every box must be checkable with a test or demo. -->
 
-- [ ] [Criterion — something you can verify with a test]
+- [ ] [Criterion — something you can verify]
 - [ ] [Criterion — something you can demonstrate]
-- [ ] [Criterion]
 - [ ] All tests pass: `[test command]`
 
 ## Verification
@@ -47,14 +35,5 @@ date: [YYYY-MM-DD]
 <!-- Commands to prove the task is complete. Copy-paste and run. -->
 
 ```bash
-# Run tests
-[your test command]
-
-# Specific verification
-[command that demonstrates the feature works]
+[your test or verification command]
 ```
-
-## Notes
-
-<!-- Optional: anything useful for implementation — links, patterns to follow,
-     known gotchas. Remove this section if empty. -->
