@@ -7,7 +7,7 @@ GZKit has two distribution channels:
 | Channel | Command | Who It's For |
 |---------|---------|-------------|
 | **GitHub Release** | Download `gz.exe` from Releases page | Students — zero Python install needed |
-| **PyPI** | `uv tool install gzkit` or `pip install gzkit` | Developers who already have Python/uv |
+| **PyPI** | `uv tool install py-gzkit` or `pip install py-gzkit` | Developers who already have Python/uv |
 
 Both are triggered by pushing a version tag.
 
@@ -53,16 +53,15 @@ This triggers the release workflow (`.github/workflows/release.yml`), which:
 Go to `https://github.com/<owner>/gzkit/releases` — you should see the new
 release with three downloadable binaries.
 
-## Optional: Publishing to PyPI
+## PyPI Publishing
 
-The release workflow has a commented-out `pypi` job. To enable it:
+The release workflow publishes `py-gzkit` to PyPI automatically via trusted publishers (OIDC — no tokens needed). This is configured through:
 
-1. Create a PyPI account at [pypi.org](https://pypi.org)
-2. Generate an API token (Account Settings → API tokens)
-3. Add the token as a GitHub repository secret named `PYPI_TOKEN`
-4. Uncomment the `pypi` job in `.github/workflows/release.yml`
+1. A pending publisher on [pypi.org](https://pypi.org/manage/account/publishing/) linking `tvproductions/gzkit` + `release.yml`
+2. A `pypi` environment in the GitHub repo settings
+3. The `pypi` job in `.github/workflows/release.yml`
 
-After that, every tagged release will also publish to PyPI.
+Every tagged release publishes to PyPI alongside the GitHub Release.
 
 ## Local Build (Testing)
 
