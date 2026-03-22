@@ -11,15 +11,15 @@ Date: 2026-03-22
 | # | Dimension | Weight | Score (1-4) | Weighted |
 |---|-----------|--------|-------------|----------|
 | 1 | Problem Clarity | 15% | 3 | 0.45 |
-| 2 | Decision Justification | 15% | 2 | 0.30 |
-| 3 | Feature Checklist | 15% | 2 | 0.30 |
-| 4 | OBPI Decomposition | 15% | 2 | 0.30 |
-| 5 | Lane Assignment | 10% | 2 | 0.20 |
-| 6 | Scope Discipline | 10% | 2 | 0.20 |
-| 7 | Evidence Requirements | 10% | 2 | 0.20 |
-| 8 | Architectural Alignment | 10% | 2 | 0.20 |
+| 2 | Decision Justification | 15% | 3 | 0.45 |
+| 3 | Feature Checklist | 15% | 4 | 0.60 |
+| 4 | OBPI Decomposition | 15% | 3 | 0.45 |
+| 5 | Lane Assignment | 10% | 3 | 0.30 |
+| 6 | Scope Discipline | 10% | 3 | 0.30 |
+| 7 | Evidence Requirements | 10% | 3 | 0.30 |
+| 8 | Architectural Alignment | 10% | 3 | 0.30 |
 
-**WEIGHTED TOTAL: 2.15/4.0**
+**WEIGHTED TOTAL: 3.15/4.0**
 **THRESHOLD: 3.0 (GO), 2.5 (CONDITIONAL GO), <2.5 (NO GO)**
 
 ## ADR Dimension Rationale
@@ -27,126 +27,151 @@ Date: 2026-03-22
 1. **Problem Clarity - 3/4**
    The problem is concrete in
    [ADR-0.26.0-governance-library-module-absorption.md](./ADR-0.26.0-governance-library-module-absorption.md):
-   opsdev holds a large set of governance-library modules, gzkit only has
-   partial or missing equivalents, and the subtraction test is explicit. The
-   before/after state is understandable and the module inventory is specific.
-   It remains a 3 because the tidy-first audit is still promised rather than
-   summarized, so the baseline evidence is asserted more than demonstrated.
+   opsdev holds a substantial package of reusable governance-library modules,
+   gzkit has only partial or missing equivalents, and the subtraction test is
+   explicit. The module inventory and before/after state are clear, and the ADR
+   now summarizes the cross-reference matrix directly. It remains a 3 because
+   the matrix is still a high-level summary rather than a deeper capability
+   audit with findings per module.
 
-2. **Decision Justification - 2/4**
-   The ADR has a clear decision envelope and a useful anti-pattern warning in
-   [ADR-0.26.0-governance-library-module-absorption.md](./ADR-0.26.0-governance-library-module-absorption.md),
-   but it stops short of a full justification stack. There is no
-   `Alternatives Considered` section, no necessity table explaining why each
-   checklist item must exist, and limited treatment of counterarguments such as
-   why some modules should stay inline or stay repo-local.
+2. **Decision Justification - 3/4**
+   The ADR now has an alternatives table, a checklist necessity table, and the
+   existing anti-pattern framing in
+   [ADR-0.26.0-governance-library-module-absorption.md](./ADR-0.26.0-governance-library-module-absorption.md).
+   It now defends module-by-module comparison against grouped and
+   gzkit-by-default shortcuts, and it fixes the stale companion-source path to
+   `../airlineops/src/opsdev/lib/`. That is solid and internally consistent.
 
-3. **Feature Checklist - 2/4**
-   The package does contain 12 WBS rows and 12 corresponding briefs, so the
-   work inventory is complete. The structural weakness is that
-   `## Feature Checklist — Appraisal of Completeness` is not itself a 12-item
-   capability checklist; it is a short set of meta-obligations. That leaves
-   the ADR without a necessity table or a direct answer to "what capability is
-   lost if item N disappears?" which stronger local ADRs already provide.
+3. **Feature Checklist - 4/4**
+   The structural defect is fixed. The ADR now presents 12 numbered capability
+   items that map 1:1 to the 12 briefs, and the necessity table explains the
+   concrete loss if any item is removed. The items are consistent in
+   granularity and logically ordered.
 
-4. **OBPI Decomposition - 2/4**
-   One module per brief is a defensible boundary and the numbering is complete.
-   The score stays at 2 because the package does not publish a dependency
-   graph, critical path, or parallelization plan, and several briefs bundle
-   comparison, decision, absorption, adaptation, and tests into work units that
-   likely exceed the intended 1-3 day size, especially
-   [OBPI-0.26.0-01-adr-management.md](./briefs/OBPI-0.26.0-01-adr-management.md),
-   [OBPI-0.26.0-02-references.md](./briefs/OBPI-0.26.0-02-references.md), and
-   [OBPI-0.26.0-03-adr-recon.md](./briefs/OBPI-0.26.0-03-adr-recon.md).
+4. **OBPI Decomposition - 3/4**
+   The package now has an explicit dependency graph, critical path, and
+   verification spine in
+   [ADR-0.26.0-governance-library-module-absorption.md](./ADR-0.26.0-governance-library-module-absorption.md).
+   The module-per-brief split is auditable and parallelizable. It remains a 3
+   rather than a 4 because effort still varies materially across the largest
+   modules, especially ADR management, references, and ADR reconciliation.
 
-5. **Lane Assignment - 2/4**
-   The ADR explains why the parent work is Heavy in broad terms, and it does
-   acknowledge human attestation and possible BDD proof. The weakness is the
-   blanket application of Heavy to all 12 briefs without a more granular
-   argument against the `AGENTS.md` rule that Heavy is reserved for external
-   contract changes. Some modules may indeed change shared runtime or
-   operator-facing behavior, but that case is not made item by item.
+5. **Lane Assignment - 3/4**
+   Heavy lane is now justified more precisely: every comparison may culminate in
+   absorption into shared runtime or operator-facing surfaces, and Gate 4 is
+   explicitly conditional on actual operator-visible change. That aligns the
+   lane rationale with `AGENTS.md` better than the earlier blanket assertion.
 
-6. **Scope Discipline - 2/4**
-   Scope is implied through the module list and brief-level non-goals, but the
-   ADR itself does not provide ADR-level `Non-Goals`, explicit scope-creep
-   guardrails, or a tested explanation of what is intentionally excluded. That
-   makes the overall package boundary understandable but still too implicit.
+6. **Scope Discipline - 3/4**
+   The ADR now includes `## Non-Goals` and `### Scope Creep Guardrails` in
+   [ADR-0.26.0-governance-library-module-absorption.md](./ADR-0.26.0-governance-library-module-absorption.md).
+   The boundaries are clear: no hidden architectural rewrite, no forced
+   absorption, no bundling of multiple module decisions into one undocumented
+   rationale.
 
-7. **Evidence Requirements - 2/4**
-   The package names broad evidence classes in
-   [ADR-0.26.0-governance-library-module-absorption.md](./ADR-0.26.0-governance-library-module-absorption.md)
-   and every brief includes a Heavy gate checklist. The defect is that the
-   proof contract is still generic: `tests/test_lib_*.py`, possible BDD, and
-   documented rationale. The briefs do not include concrete verification
-   commands, module-specific acceptance criteria, or explicit Gate 4 handling
-   per outcome, so "done" is not yet operationally precise.
+7. **Evidence Requirements - 3/4**
+   The package now has an ADR-level verification spine and every brief now
+   carries Gate 4 treatment, acceptance criteria, concrete verification
+   commands, and a heavy completion checklist. An evaluator can now write the
+   proof plan directly from the package. It stays at 3 because most proof is
+   still grep/path/test driven rather than richer module-specific runtime
+   checks.
 
-8. **Architectural Alignment - 2/4**
-   The ADR names real integration points in `src/gzkit/cli.py`,
-   `src/gzkit/ledger.py`, `src/gzkit/validate.py`, and `src/gzkit/sync.py`,
-   which is useful. It still trails the strongest local exemplars, especially
-   [ADR-0.25.0-core-infrastructure-pattern-absorption.md](../ADR-0.25.0-core-infrastructure-pattern-absorption/ADR-0.25.0-core-infrastructure-pattern-absorption.md),
-   because it lacks the alternatives table, necessity table, dependency graph,
-   verification spine, and ADR-level scope guardrails that repository-standard
-   heavy ADRs now use.
+8. **Architectural Alignment - 3/4**
+   The ADR names real local integration points and now follows the same
+   structural pattern as strong local heavy ADRs, especially
+   [ADR-0.25.0-core-infrastructure-pattern-absorption.md](../ADR-0.25.0-core-infrastructure-pattern-absorption/ADR-0.25.0-core-infrastructure-pattern-absorption.md):
+   alternatives, necessity, dependency framing, scope guardrails, and long-term
+   validity guards. It is solidly aligned with repository standards.
 
 ## OBPI-Level Scores
 
 | OBPI | Independence | Testability | Value | Size | Clarity | Avg |
 |------|-------------|-------------|-------|------|---------|-----|
-| 01 | 3 | 2 | 4 | 2 | 3 | 2.8 |
-| 02 | 3 | 2 | 4 | 2 | 2 | 2.6 |
-| 03 | 3 | 2 | 4 | 2 | 2 | 2.6 |
-| 04 | 3 | 2 | 4 | 2 | 3 | 2.8 |
-| 05 | 3 | 2 | 4 | 2 | 3 | 2.8 |
-| 06 | 3 | 2 | 4 | 3 | 2 | 2.8 |
-| 07 | 3 | 2 | 4 | 3 | 2 | 2.8 |
-| 08 | 3 | 2 | 3 | 3 | 3 | 2.8 |
-| 09 | 3 | 2 | 3 | 3 | 2 | 2.6 |
-| 10 | 3 | 2 | 3 | 3 | 3 | 2.8 |
-| 11 | 3 | 2 | 3 | 3 | 3 | 2.8 |
-| 12 | 3 | 2 | 3 | 3 | 2 | 2.6 |
+| 01 | 4 | 3 | 4 | 2 | 3 | 3.2 |
+| 02 | 4 | 3 | 4 | 2 | 3 | 3.2 |
+| 03 | 4 | 3 | 4 | 2 | 3 | 3.2 |
+| 04 | 4 | 3 | 4 | 3 | 3 | 3.4 |
+| 05 | 4 | 3 | 4 | 3 | 3 | 3.4 |
+| 06 | 4 | 3 | 4 | 4 | 3 | 3.6 |
+| 07 | 4 | 3 | 4 | 4 | 3 | 3.6 |
+| 08 | 4 | 3 | 3 | 4 | 3 | 3.4 |
+| 09 | 4 | 3 | 3 | 4 | 3 | 3.4 |
+| 10 | 4 | 3 | 3 | 4 | 3 | 3.4 |
+| 11 | 4 | 3 | 3 | 4 | 3 | 3.4 |
+| 12 | 4 | 3 | 3 | 4 | 3 | 3.4 |
 
 **OBPI THRESHOLD: Average >= 3.0 per OBPI. Any OBPI scoring 1 on any
 dimension must be revised.**
 
 ## OBPI Notes
 
-- **Package-wide strength:** the 12 briefs cleanly cover the 12 modules named
-  in the ADR, and each brief establishes a comparison frame, a target surface,
-  and a decision envelope.
-- **Package-wide defect:** every brief uses nearly identical proof language.
-  Testability bottoms out at 2 across the board because the package never gets
-  to concrete verification commands or module-specific acceptance checks.
-- **No-equivalent briefs (02, 03, 06, 07, 09, 12)** preserve an impossible
-  `Confirm` branch in `## REQUIREMENTS (FAIL-CLOSED)` even though their
-  objectives say there is no gzkit equivalent. That is a clarity defect.
-- **Largest scheduling risk:** the biggest modules still look oversized for a
-  single OBPI once comparison, adaptation, tests, and heavy-lane proof are all
-  included.
+- **Package-wide strength:** each brief now owns one module, one decision
+  envelope, one proof contract, and one Heavy-lane gate stack. That makes the
+  package reviewable rather than impressionistic.
+- **Package-wide improvement:** the earlier proof defect is resolved. Every
+  brief now defines acceptance criteria, verification commands, Gate 4
+  treatment, and a completion checklist.
+- **No-equivalent briefs (02, 03, 06, 07, 09, 12)** no longer preserve an
+  impossible `Confirm` branch, which materially improves clarity and execution
+  safety.
+- **Path-level defect fixed:** the package now points at the real companion
+  source root `../airlineops/src/opsdev/lib/` instead of the stale and missing
+  `../opsdev/lib/`.
+- **Largest residual risk:** actual implementation effort still varies sharply
+  across modules, so the schedule may be uneven even though the decision
+  framing is now sound.
 
 ## Red-Team Challenges
 
-Not run. Re-run `gz-adr-eval ADR-0.26.0 --red-team` to add the 10-challenge
-adversarial review.
+| # | Challenge | Result | Notes |
+|---|-----------|--------|-------|
+| 1 | So What? | Pass | The ADR now includes a necessity table for all 12 checklist items, and each item names the concrete upstream decision gap that would remain if removed. |
+| 2 | Scope | Pass | The ADR now states ADR-level non-goals and scope-creep guardrails. The strongest "should be in scope" candidate is the cross-reference matrix itself, but the ADR frames it as prerequisite evidence rather than hidden implementation scope. |
+| 3 | Alternative | Fail | The current one-module-per-brief shape is defensible, but OBPI-01 through OBPI-03 still look oversized because each bundles comparison, decision, absorption path, tests, and Heavy-lane proof. The ADR acknowledges this risk but does not yet define the split trigger or fallback decomposition. |
+| 4 | Dependency | Pass | The dependency graph is explicit: comparison work can run in parallel after the matrix is assembled, and only absorb-path implementation creates downstream work. That is a resilient graph with a clear single gating prerequisite. |
+| 5 | Gold Standard | Pass | Against [ADR-0.25.0-core-infrastructure-pattern-absorption.md](../ADR-0.25.0-core-infrastructure-pattern-absorption/ADR-0.25.0-core-infrastructure-pattern-absorption.md), this ADR now matches the expected heavy-ADR structure. Its remaining weakness is the still-unsummarized audit matrix, but that is not a structural blocker. |
+| 6 | Timeline | Pass | The ADR names the critical path and the parallel comparison tranche explicitly. The theoretical minimum wall-clock time is: cross-reference matrix first, then all 12 comparisons in parallel, then only the winning absorb-path modules proceed to adaptation and proof. |
+| 7 | Evidence | Pass | Every brief now provides concrete verification commands, a gate stack, and completion criteria. The proof contract is generic in places, but it is no longer underspecified. |
+| 8 | Consumer | Pass | The package now answers the primary maintainer questions directly: the ADR summarizes the cross-reference matrix, and Gate 4 now names `features/heavy_lane_gate4.feature` as the concrete behavioral-proof artifact for operator-visible CLI or generated-surface changes. |
+| 9 | Regression | Pass | The ADR now includes long-term validity guards and explicitly says `Confirm` is not a permanent exemption. Silent drift remains possible, but the document now defines the doctrinal checks that should trigger re-opened comparison. |
+| 10 | Parity | Pass | The weakest claim is "gzkit's governance layer is at least as capable as opsdev's for all generic governance patterns." Red-team view: that does not hold today; it only holds if the comparison-and-absorption program succeeds. The ADR survives the challenge because it frames that as the program objective, not as already-proven current state. |
+
+**RED-TEAM FAILURE COUNT: 1**
+**RED-TEAM THRESHOLD: <=2 failures = GO, 3-4 = CONDITIONAL GO, >=5 = NO GO**
+
+### Red-Team Findings
+
+1. **OBPI size risk remains real.** The largest comparison units still combine
+   evaluation and possible implementation/proof obligations into one brief.
+   That is manageable, but only if execution explicitly splits the absorb path
+   once a module comparison confirms substantial work.
+2. **Consumer-facing evidence is now concrete.** The ADR summarizes the
+   cross-reference matrix and names
+   `features/heavy_lane_gate4.feature` as the Gate 4 artifact when
+   operator-visible behavior changes.
+
+### Red-Team Verdict
+
+GO. The package survives adversarial review because the failures are limited to
+execution-risk and evidence-specificity concerns rather than structural
+incoherence. The ADR is ready for proposal/defense review, but implementation
+should treat the two findings above as active risks.
 
 ## Overall Verdict
 
-[ ] GO - Ready for proposal/defense review
+[x] GO - Ready for proposal/defense review
 [ ] CONDITIONAL GO - Address items below, then re-evaluate
-[x] NO GO - Structural revision required
+[ ] NO GO - Structural revision required
 
 ## Action Items
 
-1. Replace the current meta-only feature checklist with 12 numbered capability
-   items and add a necessity table explaining the concrete loss if any one is
-   removed.
-2. Add `Alternatives Considered`, ADR-level `Non-Goals`, and explicit scope
-   guardrails so the package boundary is defended instead of implied.
-3. Publish the dependency graph, critical path, and verification spine at the
-   ADR level; then add concrete verification commands, acceptance criteria, and
-   Gate 4 handling to every brief.
-4. Remove impossible `Confirm` branches from briefs that explicitly declare
-   "gzkit equivalent: None" and re-score the package after those clarity
-   defects are fixed.
+1. No blocking structural actions.
+2. Optional improvement: summarize the tidy-first cross-reference audit in the
+   ADR once gathered to strengthen Problem Clarity from solid to exemplary.
+3. Optional improvement: if any `Absorb` path changes operator-visible
+   behavior outside the current heavy-lane CLI/generated-surface path, record
+   the exact additional Gate 4 artifact in the affected brief.
+4. Warning: if implementation planning shows OBPI-01 through OBPI-03 are
+   larger than expected, split the execution path while preserving the current
+   decision-record shape.

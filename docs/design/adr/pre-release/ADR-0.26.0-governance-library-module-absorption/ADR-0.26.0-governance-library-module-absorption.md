@@ -18,6 +18,30 @@ date: 2026-03-21
   1. Audit opsdev `lib/` governance library modules to catalog every reusable governance primitive and its maturity level.
   1. Create a cross-reference matrix mapping each opsdev lib module to its gzkit equivalent (or lack thereof).
 
+### Cross-Reference Matrix Summary
+
+| Opsdev module | Current gzkit equivalent | Comparison posture |
+|---------------|--------------------------|--------------------|
+| `adr.py` | `src/gzkit/cli.py` (partial) | Decide whether ADR lifecycle logic should stay inline or move into a dedicated library |
+| `references.py` | None | Strong absorption candidate unless link semantics are ops-specific |
+| `adr_recon.py` | None | Strong absorption candidate unless reconciliation logic is ops-specific |
+| `adr_governance.py` | `src/gzkit/ledger.py` (partial) | Decide whether current policy enforcement is sufficient or should be split into a dedicated library |
+| `ledger_schema.py` | `src/gzkit/ledger.py` (partial) | Decide whether schema/versioning should remain inline or become a first-class module |
+| `drift_detection.py` | None | Strong absorption candidate unless drift semantics are ops-specific |
+| `adr_traceability.py` | None | Strong absorption candidate unless traceability semantics are ops-specific |
+| `validation_receipt.py` | `src/gzkit/validate.py` (partial) | Decide whether current validation output already satisfies receipt-level audit requirements |
+| `adr_audit_ledger.py` | None | Strong absorption candidate unless ADR-specific audit semantics should remain implicit |
+| `cli_audit.py` | `src/gzkit/cli.py` (partial) | Decide whether reusable CLI-audit logic should stay inline or move into a dedicated library |
+| `artifacts.py` | `src/gzkit/sync.py` (partial) | Decide whether artifact discovery/integrity belongs in a library rather than sync-only code |
+| `docs.py` | None | Strong absorption candidate unless documentation logic is too ops-specific for gzkit |
+
+**Matrix summary:** 6 modules have partial gzkit equivalents (`adr`,
+`adr_governance`, `ledger_schema`, `validation_receipt`, `cli_audit`,
+`artifacts`) and 6 currently have no gzkit equivalent (`references`,
+`adr_recon`, `drift_detection`, `adr_traceability`, `adr_audit_ledger`,
+`docs`). The matrix therefore justifies the 12-way comparison split and the
+focus on dedicated-library versus inline-runtime decisions.
+
 **Date Added:** 2026-03-21
 **Date Closed:**
 **Status:** Proposed
@@ -150,6 +174,13 @@ gzkit must own all reusable governance library primitives. opsdev's `lib/` packa
 
 **WBS Completeness Rule:** Every row in this table has a corresponding brief file.
 
+**Execution warning:** `OBPI-0.26.0-01`, `OBPI-0.26.0-02`, and
+`OBPI-0.26.0-03` are decision units first, not guaranteed single execution
+chunks. If comparison shows that `Absorb` requires substantial implementation
+or broad refactoring, split the absorb path into follow-on execution
+units/tasks before code changes rather than forcing one brief to carry the full
+comparison-plus-implementation load.
+
 **Dependency Graph:**
 
 ```text
@@ -173,8 +204,9 @@ verification required by the winning modules.
 
 - All OBPIs: comparison rationale recorded in the corresponding brief
 - Absorb outcomes: module/tests exist and `uv run gz test` passes
-- Heavy surface changes: `features/governance_library.feature` or equivalent
-  module-level behavioral proof passes when operator-visible behavior changes
+- Heavy surface changes: `uv run -m behave features/heavy_lane_gate4.feature`
+  passes when absorbed governance-library work changes operator-visible CLI or
+  generated-surface behavior; otherwise the brief must record `N/A` rationale
 - Whole package: `uv run gz lint` and `uv run gz validate --documents`
 
 **Lane definitions:**
@@ -240,8 +272,8 @@ opsdev's `lib/` package represents ~6,200 lines of domain-agnostic governance pr
 
 - **ADR:** this document
 - **TDD (required):** `tests/test_lib_*.py` — unit tests for each absorbed module
-- **BDD (Heavy):** `features/governance_library.feature` or module-specific
-  behavioral proof when absorbed governance libraries change operator-visible
+- **BDD (Heavy):** `features/heavy_lane_gate4.feature` when absorbed
+  governance-library work changes operator-visible CLI or generated-surface
   behavior; otherwise record `N/A` with rationale in the brief decision
 - **Docs:** Decision rationale documented per OBPI brief
 
