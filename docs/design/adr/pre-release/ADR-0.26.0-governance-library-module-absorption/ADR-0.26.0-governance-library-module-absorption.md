@@ -28,7 +28,7 @@ date: 2026-03-21
 
 **Role:** Absorption evaluator — comparing opsdev governance library primitives against gzkit equivalents, determining which implementation is superior, and absorbing the best into gzkit.
 
-**Purpose:** When this ADR is complete, gzkit owns all reusable governance library primitives that currently reside in `opsdev/lib/`. For each of the 12 modules, gzkit either absorbed the opsdev implementation (because it was superior), confirmed its own implementation is sufficient (with documented rationale), or explicitly excluded the module as domain-specific.
+**Purpose:** When this ADR is complete, gzkit owns all reusable governance library primitives that currently reside in `../airlineops/src/opsdev/lib/`. For each of the 12 modules, gzkit either absorbed the opsdev implementation (because it was superior), confirmed its own implementation is sufficient (with documented rationale), or explicitly excluded the module as domain-specific.
 
 **Goals:**
 
@@ -43,23 +43,48 @@ date: 2026-03-21
 
 **Integration Points:**
 
-- `src/gzkit/cli.py` — CLI command handling (compare with `opsdev/lib/adr.py`, `opsdev/lib/cli_audit.py`)
-- `src/gzkit/ledger.py` — event ledger (compare with `opsdev/lib/adr_governance.py`, `opsdev/lib/ledger_schema.py`)
-- `src/gzkit/validate.py` — validation (compare with `opsdev/lib/validation_receipt.py`)
-- `src/gzkit/sync.py` — artifact sync (compare with `opsdev/lib/artifacts.py`)
+- `src/gzkit/cli.py` — CLI command handling (compare with `../airlineops/src/opsdev/lib/adr.py`, `../airlineops/src/opsdev/lib/cli_audit.py`)
+- `src/gzkit/ledger.py` — event ledger (compare with `../airlineops/src/opsdev/lib/adr_governance.py`, `../airlineops/src/opsdev/lib/ledger_schema.py`)
+- `src/gzkit/validate.py` — validation (compare with `../airlineops/src/opsdev/lib/validation_receipt.py`)
+- `src/gzkit/sync.py` — artifact sync (compare with `../airlineops/src/opsdev/lib/artifacts.py`)
 
 ---
 
 ## Feature Checklist — Appraisal of Completeness
 
-- Scope and surface
-  - External contract may change (Heavy lane) — absorbed governance libraries may introduce new CLI capabilities or change behavior of existing commands
-- Tests
-  - Each absorbed module must have unit tests; coverage >= 40%
-- Docs
-  - Decision rationale documented per OBPI (absorb/confirm/exclude)
-- OBPI mapping
-  - Each numbered checklist item maps to one brief; 12 items = 12 briefs
+1. **OBPI-0.26.0-01:** ADR-management comparison and decision for `lib/adr.py`
+2. **OBPI-0.26.0-02:** Reference-resolution comparison and decision for
+   `lib/references.py`
+3. **OBPI-0.26.0-03:** ADR-reconciliation comparison and decision for
+   `lib/adr_recon.py`
+4. **OBPI-0.26.0-04:** Governance-policy comparison and decision for
+   `lib/adr_governance.py`
+5. **OBPI-0.26.0-05:** Ledger-schema comparison and decision for
+   `lib/ledger_schema.py`
+6. **OBPI-0.26.0-06:** Drift-detection comparison and decision for
+   `lib/drift_detection.py`
+7. **OBPI-0.26.0-07:** ADR-traceability comparison and decision for
+   `lib/adr_traceability.py`
+8. **OBPI-0.26.0-08:** Validation-receipt comparison and decision for
+   `lib/validation_receipt.py`
+9. **OBPI-0.26.0-09:** ADR-audit-ledger comparison and decision for
+   `lib/adr_audit_ledger.py`
+10. **OBPI-0.26.0-10:** CLI-audit comparison and decision for `lib/cli_audit.py`
+11. **OBPI-0.26.0-11:** Artifact-management comparison and decision for
+    `lib/artifacts.py`
+12. **OBPI-0.26.0-12:** Documentation-library comparison and decision for
+    `lib/docs.py`
+
+Support obligations for the checklist above:
+
+- Parent ADR is Heavy because the program explicitly permits absorption into
+  shared runtime and operator-facing surfaces
+- Each numbered checklist item maps 1:1 to one brief and one module-comparison
+  record
+- `Absorb` outcomes require tests and, when operator-visible behavior changes,
+  Gate 4 behavioral proof
+- `Confirm` and `Exclude` outcomes still require comparison-based rationale
+  grounded in both codebases
 
 ## Intent
 
@@ -71,6 +96,32 @@ gzkit must own all reusable governance library primitives. opsdev's `lib/` packa
 - For each module: read both implementations, compare maturity/completeness/robustness, document decision
 - Three possible outcomes per module: **Absorb** (opsdev is better), **Confirm** (gzkit is sufficient), **Exclude** (domain-specific, does not belong in gzkit)
 - Absorbed modules must follow gzkit conventions: Pydantic BaseModel, pathlib.Path, UTF-8 encoding, no bare except
+
+### Alternatives Considered
+
+| Alternative | Why rejected |
+|-------------|-------------|
+| **Single mega-OBPI for all 12 modules** | Too opaque. A monolithic governance-library absorption effort would hide per-module rationale, blur which primitives actually moved upstream, and make partial review or partial completion hard to audit. |
+| **Group modules into a few broad domains instead of one module per brief** | Better than one mega-OBPI, but still too coarse. Stronger modules would mask weaker ones, and reviewers could not see exactly which generic governance primitives were accepted, rejected, or confirmed. |
+| **Only absorb modules with no gzkit equivalent and skip side-by-side comparisons where gzkit already has partial coverage** | This would bias the program toward gzkit-by-default and violate the ADR's own critical constraint that opsdev wins where it has materially stronger governance depth. |
+| **Use file size or broad surface similarity as the sufficiency test** | Length and naming are not proof of maturity, error handling, auditability, or better abstractions. The anti-pattern here is deciding without reading both implementations completely. |
+
+### Checklist Item Necessity Table
+
+| # | OBPI | If removed, what specific capability is lost? |
+|---|------|----------------------------------------------|
+| 1 | ADR management | No explicit decision on whether gzkit should keep lifecycle management interleaved in `cli.py` or upstream a stronger dedicated ADR-management library. |
+| 2 | References | No grounded decision on whether gzkit needs reusable reference-resolution and link-management primitives. |
+| 3 | ADR recon | No decision on whether gzkit is missing reconciliation logic that checks ADR metadata, briefs, ledger state, and filesystem state together. |
+| 4 | ADR governance | No explicit comparison proving gzkit's current governance-policy enforcement is sufficient or showing why opsdev's dedicated enforcement layer should move upstream. |
+| 5 | Ledger schema | No decision on whether gzkit should adopt a dedicated schema/versioning layer for ledger entries. |
+| 6 | Drift detection | No grounded decision on governance-drift detection, leaving a likely generic integrity primitive stranded in opsdev. |
+| 7 | ADR traceability | No explicit decision on whether gzkit should own reusable ADR-to-artifact traceability chains. |
+| 8 | Validation receipt | No explicit comparison proving gzkit validation output already has the receipt structure and audit semantics opsdev provides. |
+| 9 | ADR audit ledger | No decision on whether ADR-specific lifecycle audit semantics should remain implicit in the general ledger or become a dedicated upstream capability. |
+| 10 | CLI audit | No grounded decision on whether gzkit's CLI audit surface already subsumes opsdev's reusable contract-verification primitives. |
+| 11 | Artifacts | No explicit comparison proving gzkit's sync logic already covers artifact discovery, cataloging, and integrity verification. |
+| 12 | Docs | No decision on whether governance-document generation and validation should remain ad hoc rather than becoming an explicit upstream library capability. |
 
 ## Interfaces
 
@@ -99,11 +150,67 @@ gzkit must own all reusable governance library primitives. opsdev's `lib/` packa
 
 **WBS Completeness Rule:** Every row in this table has a corresponding brief file.
 
+**Dependency Graph:**
+
+```text
+All 12 OBPIs can begin as comparison units once the tidy-first cross-reference
+matrix is assembled.
+
+Comparison tranche (parallelizable):
+  01 02 03 04 05 06 07 08 09 10 11 12
+
+Implementation / proof consequence:
+  Any OBPI with an Absorb decision
+    └──► module adaptation + tests
+           └──► docs / Gate 4 proof when operator-visible behavior changes
+```
+
+**Critical path:** assemble the cross-reference matrix, complete the slowest
+comparison tranche, then execute any absorb-path implementation and behavioral
+verification required by the winning modules.
+
+**Verification spine:**
+
+- All OBPIs: comparison rationale recorded in the corresponding brief
+- Absorb outcomes: module/tests exist and `uv run gz test` passes
+- Heavy surface changes: `features/governance_library.feature` or equivalent
+  module-level behavioral proof passes when operator-visible behavior changes
+- Whole package: `uv run gz lint` and `uv run gz validate --documents`
+
 **Lane definitions:**
 
-- **Heavy** — All OBPIs are Heavy because absorbed governance libraries may change external contracts
+- **Heavy** — All OBPIs inherit Heavy scrutiny because every comparison may end
+  in absorption into shared runtime or operator-facing surfaces. Gate 4 is
+  required when the chosen path changes operator-visible behavior; a brief may
+  record BDD as `N/A` only when the final decision is `Confirm` or `Exclude`
+  with no external-surface change.
 
 ---
+
+## Non-Goals
+
+- No wholesale rewrite of gzkit governance internals beyond the specific module
+  selected by an `Absorb` decision.
+- No assumption that opsdev always wins because it is older, or that gzkit
+  always wins because it already has a command surface.
+- No absorption of ops-specific semantics that fail the subtraction test.
+- No bundling of multiple module decisions into one undocumented rationale.
+- No uncontrolled refactor of unrelated command flows while evaluating one
+  governance-library comparison.
+
+### Scope Creep Guardrails
+
+- If a comparison exposes a larger architectural redesign beyond the target
+  module, split that redesign into a follow-on ADR or OBPI instead of hiding it
+  inside the absorption brief.
+- If a module is confirmed as sufficient in gzkit, do not invent refactor work
+  just to force an absorption outcome.
+- If a module changes operator-visible behavior, attach Gate 4 proof to that
+  module's brief instead of deferring behavioral verification to a later
+  catch-all step.
+- If a no-equivalent module is excluded, the brief must name the exact
+  ops-specific semantics that fail the subtraction test rather than relying on
+  a generic "does not fit" assertion.
 
 ## Rationale
 
@@ -117,11 +224,25 @@ opsdev's `lib/` package represents ~6,200 lines of domain-agnostic governance pr
 - gzkit gains dedicated governance library modules instead of mixing governance logic into CLI commands
 - Some opsdev modules may have overlap requiring careful merge rather than wholesale absorption
 
+## Long-Term Validity Guards
+
+- The 12-brief matrix is the audit trail for the governance-library subtraction
+  test; future companion absorption work should not skip per-module rationale.
+- Any future reusable opsdev governance module added without an upstream gzkit
+  decision record is doctrinal drift.
+- `Confirm` decisions are not permanent exemptions; if opsdev later grows a
+  materially stronger generic governance primitive, the comparison should be
+  re-opened.
+- `Absorb` decisions must leave behind tests and, where relevant, behavioral
+  proof so the upstreamed capability remains verifiable after opsdev evolves.
+
 ## Evidence (Four Gates)
 
 - **ADR:** this document
 - **TDD (required):** `tests/test_lib_*.py` — unit tests for each absorbed module
-- **BDD (Heavy):** `features/governance_library.feature` — if new CLI surfaces are introduced
+- **BDD (Heavy):** `features/governance_library.feature` or module-specific
+  behavioral proof when absorbed governance libraries change operator-visible
+  behavior; otherwise record `N/A` with rationale in the brief decision
 - **Docs:** Decision rationale documented per OBPI brief
 
 ---
@@ -149,7 +270,7 @@ opsdev's `lib/` package represents ~6,200 lines of domain-agnostic governance pr
 
 ### Source & Contracts
 
-- opsdev source: `../opsdev/lib/`
+- opsdev source: `../airlineops/src/opsdev/lib/`
 - gzkit target: `src/gzkit/` — new or enhanced modules
 
 ### Tests
