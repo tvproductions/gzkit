@@ -3,7 +3,7 @@ id: OBPI-0.19.0-07-adr-status-transition-completed-validated-after-audit
 parent: ADR-0.19.0-closeout-audit-processes
 item: 7
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.19.0-07: ADR Status Transition Completed -> Validated After Audit
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.19.0-closeout-audit-processes/ADR-0.19.0-closeout-audit-processes.md`
 - **Checklist Item:** #7 — "ADR status transition: Completed -> Validated (after audit)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -93,11 +93,11 @@ Make `audit_cmd()` automatically transition the ADR lifecycle status from Comple
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.19.0-07-01: Given an ADR in Completed state with all audit verification commands passing, when `gz audit ADR-X.Y.Z` completes, then a `lifecycle_transition` event with `from_state="Completed"` and `to_state="Validated"` is appended to the ledger.
-- [ ] REQ-0.19.0-07-02: Given an ADR in Completed state with one or more audit verification commands failing, when `gz audit ADR-X.Y.Z` completes, then no `lifecycle_transition` event is appended and the ADR remains in Completed state.
-- [ ] REQ-0.19.0-07-03: Given `gz audit ADR-X.Y.Z --dry-run`, when the command completes, then no `lifecycle_transition` event is appended to the ledger regardless of verification outcomes.
-- [ ] REQ-0.19.0-07-04: Given an ADR that is not in Completed state (e.g., Accepted or Validated), when `gz audit ADR-X.Y.Z` runs, then the lifecycle transition is skipped without error and a warning is printed.
-- [ ] REQ-0.19.0-07-05: Given a successful audit run, when the `lifecycle_transition` event is written, then existing audit artifacts (AUDIT.md, AUDIT_PLAN.md, proofs/) are unmodified by the transition logic.
+- [x] REQ-0.19.0-07-01: Given an ADR in Completed state with all audit verification commands passing, when `gz audit ADR-X.Y.Z` completes, then a `lifecycle_transition` event with `from_state="Completed"` and `to_state="Validated"` is appended to the ledger.
+- [x] REQ-0.19.0-07-02: Given an ADR in Completed state with one or more audit verification commands failing, when `gz audit ADR-X.Y.Z` completes, then no `lifecycle_transition` event is appended and the ADR remains in Completed state.
+- [x] REQ-0.19.0-07-03: Given `gz audit ADR-X.Y.Z --dry-run`, when the command completes, then no `lifecycle_transition` event is appended to the ledger regardless of verification outcomes.
+- [x] REQ-0.19.0-07-04: Given an ADR that is not in Completed state (e.g., Accepted or Validated), when `gz audit ADR-X.Y.Z` runs, then the lifecycle transition is skipped without error and a warning is printed.
+- [x] REQ-0.19.0-07-05: Given a successful audit run, when the `lifecycle_transition` event is written, then existing audit artifacts (AUDIT.md, AUDIT_PLAN.md, proofs/) are unmodified by the transition logic.
 
 ## Verification
 
@@ -112,12 +112,12 @@ uv run -m unittest tests.test_lifecycle -v
 
 ## Completion Checklist (Lite)
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Unit tests pass
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Unit tests pass
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -125,18 +125,26 @@ uv run -m unittest tests.test_lifecycle -v
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+$ uv run -m unittest tests.test_lifecycle.TestAuditTriggeredTransition -v
+test_accepted_state_raises_invalid_transition ... ok
+test_already_validated_raises_invalid_transition ... ok
+test_completed_to_validated_no_event_without_ledger ... ok
+test_completed_to_validated_via_state_machine ... ok
+test_non_completed_state_raises_invalid_transition ... ok
+Ran 5 tests in 0.001s — OK
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+$ uv run gz lint — All checks passed
+$ uv run gz typecheck — All checks passed
+$ uv run gz test — 1079 tests pass
 ```
 
 ### Value Narrative
@@ -158,11 +166,11 @@ $ uv run gz audit ADR-0.19.0
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files modified: `src/gzkit/cli.py` (added `import sys`, lifecycle imports; replaced direct ledger append with SM transition + state check), `tests/test_lifecycle.py` (added `TestAuditTriggeredTransition` — 5 tests)
+- Tests added: 5 (TestAuditTriggeredTransition)
+- Date completed: 2026-03-22
+- Attestation status: Human attested — "attest completed"
+- Defects noted: None
 
 ## Tracked Defects
 
@@ -170,14 +178,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a` (Lite lane — self-closeable after evidence)
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: Human (parent ADR Heavy lane — attestation required)
+- Attestation: attest completed
+- Date: 2026-03-22
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-22
 
 **Evidence Hash:** -

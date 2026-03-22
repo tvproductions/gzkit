@@ -9,6 +9,7 @@ import json
 import os
 import re
 import shlex
+import sys
 from datetime import date
 from pathlib import Path
 from typing import Any, Literal, cast
@@ -115,6 +116,7 @@ from gzkit.ledger import (
     project_init_event,
     resolve_adr_lane,
 )
+from gzkit.lifecycle import InvalidTransitionError, LifecycleStateMachine
 from gzkit.pipeline_runtime import (
     clear_stale_pipeline_markers,
     load_plan_audit_receipt,
@@ -3207,11 +3209,29 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
         )
     )
 
-    # Transition ADR to Validated only if all checks passed
+    # Transition ADR to Validated only if all checks passed and ADR is in Completed state.
+    # Uses LifecycleStateMachine for validation (REQ-0.19.0-07-01, REQ-06 NEVER bypass).
     status_transition = None
     if failures == 0:
-        ledger.append(lifecycle_transition_event(adr_id, "adr", "Completed", "Validated"))
-        status_transition = {"from": "Completed", "to": "Validated"}
+        semantics = Ledger.derive_adr_semantics(adr_info)
+        current_state = semantics["lifecycle_status"]
+        if current_state != "Completed":
+            print(
+                f"Warning: ADR {adr_id} is in '{current_state}' state, not 'Completed'. "
+                "Skipping lifecycle transition to Validated.",
+                file=sys.stderr,
+            )
+        else:
+            try:
+                sm = LifecycleStateMachine(ledger)
+                sm.transition(adr_id, "ADR", "Completed", "Validated")
+                status_transition = {"from": "Completed", "to": "Validated"}
+            except InvalidTransitionError:
+                print(
+                    f"Warning: lifecycle transition Completed → Validated failed for {adr_id}. "
+                    "The ADR state may be inconsistent.",
+                    file=sys.stderr,
+                )
 
     output = {
         "adr": adr_id,

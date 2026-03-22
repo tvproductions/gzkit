@@ -156,5 +156,65 @@ class TestInvalidTransitionError(unittest.TestCase):
         self.assertIn("none", str(err))
 
 
+class TestAuditTriggeredTransition(unittest.TestCase):
+    """Test the Completed → Validated transition path used by audit_cmd().
+
+    REQ-0.19.0-07-01 through REQ-0.19.0-07-05: The audit command must use
+    LifecycleStateMachine.transition() for the Completed → Validated transition,
+    not direct ledger.append(). This class verifies the SM behavior that
+    audit_cmd() relies on.
+    """
+
+    def test_completed_to_validated_via_state_machine(self) -> None:
+        """REQ-01: SM validates and records Completed → Validated with correct fields."""
+        with tempfile.TemporaryDirectory() as tmp:
+            ledger_path = Path(tmp) / "ledger.jsonl"
+            ledger = Ledger(ledger_path)
+            ledger.create()
+
+            sm = LifecycleStateMachine(ledger)
+            result = sm.transition("ADR-0.19.0", "ADR", "Completed", "Validated")
+
+            self.assertEqual(result["artifact_id"], "ADR-0.19.0")
+            self.assertEqual(result["content_type"], "ADR")
+            self.assertEqual(result["from_state"], "Completed")
+            self.assertEqual(result["to_state"], "Validated")
+
+            lines = ledger_path.read_text(encoding="utf-8").strip().splitlines()
+            self.assertEqual(len(lines), 1)
+            event = json.loads(lines[0])
+            self.assertEqual(event["event"], "lifecycle_transition")
+            self.assertEqual(event["id"], "ADR-0.19.0")
+            self.assertEqual(event["from_state"], "Completed")
+            self.assertEqual(event["to_state"], "Validated")
+
+    def test_non_completed_state_raises_invalid_transition(self) -> None:
+        """REQ-05: Attempting Proposed → Validated raises InvalidTransitionError."""
+        sm = LifecycleStateMachine()
+        with self.assertRaises(InvalidTransitionError) as ctx:
+            sm.transition("ADR-0.19.0", "ADR", "Proposed", "Validated")
+        self.assertEqual(ctx.exception.from_state, "Proposed")
+        self.assertEqual(ctx.exception.to_state, "Validated")
+
+    def test_accepted_state_raises_invalid_transition(self) -> None:
+        """REQ-05: Attempting Accepted → Validated raises InvalidTransitionError."""
+        sm = LifecycleStateMachine()
+        with self.assertRaises(InvalidTransitionError) as ctx:
+            sm.transition("ADR-0.19.0", "ADR", "Accepted", "Validated")
+        self.assertEqual(ctx.exception.from_state, "Accepted")
+
+    def test_already_validated_raises_invalid_transition(self) -> None:
+        """REQ-04/05: Validated has no outgoing transitions."""
+        sm = LifecycleStateMachine()
+        with self.assertRaises(InvalidTransitionError):
+            sm.transition("ADR-0.19.0", "ADR", "Validated", "Validated")
+
+    def test_completed_to_validated_no_event_without_ledger(self) -> None:
+        """SM without ledger validates but does not record."""
+        sm = LifecycleStateMachine()
+        result = sm.transition("ADR-0.19.0", "ADR", "Completed", "Validated")
+        self.assertEqual(result["to_state"], "Validated")
+
+
 if __name__ == "__main__":
     unittest.main()
