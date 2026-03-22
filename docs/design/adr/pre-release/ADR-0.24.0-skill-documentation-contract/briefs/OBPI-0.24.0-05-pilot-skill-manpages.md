@@ -29,9 +29,9 @@ Write manpages for a representative set of skills using the template from OBPI-0
 - Modifying SKILL.md files based on manpage authoring insights
 - Automating manpage generation
 
-## PILOT CANDIDATES
+## PILOT SET (minimum)
 
-Representative skills spanning categories:
+Required pilot skills spanning categories:
 
 1. `gz-adr-map` (adr-operations) — workflow-based, no backing command, multiple steps
 1. `gz-adr-create` (adr-operations) — complex skill with assets, templates, and co-creation rules
@@ -59,3 +59,9 @@ Representative skills spanning categories:
 - [ ] Gate 1 (ADR): Intent recorded in this brief
 - [ ] Gate 2 (TDD): `uv run mkdocs build --strict` passes with all pilot manpages
 - [ ] Code Quality: `uv run gz lint` passes
+
+## VERIFICATION COMMANDS
+
+- `uv run mkdocs build --strict`
+- `test -f docs/user/skills/gz-adr-map.md docs/user/skills/gz-adr-create.md docs/user/skills/gz-arb.md docs/user/skills/gz-check.md docs/user/skills/gz-session-handoff.md docs/user/skills/gz-chore-runner.md`
+- `rg -n "^## When to Use$" docs/user/skills/gz-adr-map.md docs/user/skills/gz-adr-create.md docs/user/skills/gz-arb.md docs/user/skills/gz-check.md docs/user/skills/gz-session-handoff.md docs/user/skills/gz-chore-runner.md`

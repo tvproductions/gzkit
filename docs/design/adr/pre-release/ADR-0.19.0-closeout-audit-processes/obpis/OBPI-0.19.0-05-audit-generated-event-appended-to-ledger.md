@@ -3,7 +3,7 @@ id: OBPI-0.19.0-05-audit-generated-event-appended-to-ledger
 parent: ADR-0.19.0-closeout-audit-processes
 item: 5
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.19.0-05: `audit_generated` Event Appended to Ledger
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.19.0-closeout-audit-processes/ADR-0.19.0-closeout-audit-processes.md`
 - **Checklist Item:** #5 - "OBPI-0.19.0-05: `audit_generated` event appended to ledger"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -128,20 +128,20 @@ uv run -m unittest tests.test_audit_pipeline -v
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.19.0-05-01: Given `src/gzkit/ledger.py`, when `audit_generated_event()` is called with `adr_id`, `audit_file`, `audit_plan_file`, and `passed`, then it returns a `LedgerEvent` with `event="audit_generated"`, `id=adr_id`, and extras containing all three fields.
-- [ ] REQ-0.19.0-05-02: Given a successful `gz audit ADR-X.Y.Z` run (not dry-run), when AUDIT.md and AUDIT_PLAN.md are written, then the ledger file contains a new `audit_generated` event with the correct ADR ID and `passed` reflecting whether all verification commands succeeded.
-- [ ] REQ-0.19.0-05-03: Given `gz audit ADR-X.Y.Z --dry-run`, when the command completes, then no `audit_generated` event is appended to the ledger.
-- [ ] REQ-0.19.0-05-04: Given an ADR without attestation (blocker fires at line ~2650), when `gz audit ADR-X.Y.Z` exits with code 1, then no `audit_generated` event is appended to the ledger.
-- [ ] REQ-0.19.0-05-05: Given the `audit_generated_event()` factory, when `model_dump()` is called on the result, then the serialized dict contains `schema`, `event`, `id`, `ts`, `audit_file`, `audit_plan_file`, and `passed` at the top level (extras flattened per `LedgerEvent._serialize`).
+- [x] REQ-0.19.0-05-01: Given `src/gzkit/ledger.py`, when `audit_generated_event()` is called with `adr_id`, `audit_file`, `audit_plan_file`, and `passed`, then it returns a `LedgerEvent` with `event="audit_generated"`, `id=adr_id`, and extras containing all three fields.
+- [x] REQ-0.19.0-05-02: Given a successful `gz audit ADR-X.Y.Z` run (not dry-run), when AUDIT.md and AUDIT_PLAN.md are written, then the ledger file contains a new `audit_generated` event with the correct ADR ID and `passed` reflecting whether all verification commands succeeded.
+- [x] REQ-0.19.0-05-03: Given `gz audit ADR-X.Y.Z --dry-run`, when the command completes, then no `audit_generated` event is appended to the ledger.
+- [x] REQ-0.19.0-05-04: Given an ADR without attestation (blocker fires at line ~2650), when `gz audit ADR-X.Y.Z` exits with code 1, then no `audit_generated` event is appended to the ledger.
+- [x] REQ-0.19.0-05-05: Given the `audit_generated_event()` factory, when `model_dump()` is called on the result, then the serialized dict contains `schema`, `event`, `id`, `ts`, `audit_file`, `audit_plan_file`, and `passed` at the top level (extras flattened per `LedgerEvent._serialize`).
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -149,39 +149,61 @@ uv run -m unittest tests.test_audit_pipeline -v
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+$ uv run -m unittest tests.test_ledger.TestAuditGeneratedEvent tests.test_audit_pipeline.TestAuditGeneratedLedgerEvent -v
+test_event_type ... ok
+test_extra_fields ... ok
+test_passed_false ... ok
+test_serialization_round_trip ... ok
+test_attestation_blocker_no_audit_generated_event ... ok
+test_audit_generated_event_in_ledger ... ok
+test_audit_generated_passed_false_on_failure ... ok
+test_dry_run_no_audit_generated_event ... ok
+Ran 8 tests in 0.386s — OK
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+$ uv run gz lint
+All checks passed!
+$ uv run gz typecheck
+All checks passed!
+$ uv run gz test
+Ran 1060 tests in 14.196s — OK
 ```
 
-## Value Narrative
+### Value Narrative
 
 Before this OBPI, `gz audit` created AUDIT.md and AUDIT_PLAN.md files but left no trace in the governance ledger. Downstream status surfaces (`gz adr status`, `gz state`) had no way to determine whether an ADR had been audited, and reconciliation tools could not verify audit completion programmatically. After this OBPI, every successful audit run appends an `audit_generated` event to the ledger, making audit completion a queryable, first-class lifecycle fact that status surfaces and reconciliation can consume.
 
-## Key Proof
+### Key Proof
 
 ```text
-# Expected ledger event (after implementation):
-$ cat .gzkit/ledger.jsonl | grep audit_generated
-{"schema":"gzkit.ledger.v1","event":"audit_generated","id":"ADR-0.19.0-closeout-audit-processes","ts":"2026-03-21T12:00:00+00:00","audit_file":"docs/design/adr/pre-release/ADR-0.19.0-closeout-audit-processes/audit/AUDIT.md","audit_plan_file":"docs/design/adr/pre-release/ADR-0.19.0-closeout-audit-processes/audit/AUDIT_PLAN.md","passed":true}
+$ uv run python -c "
+from gzkit.ledger import audit_generated_event
+e = audit_generated_event(
+    adr_id='ADR-0.19.0-closeout-audit-processes',
+    audit_file='docs/design/adr/pre-release/ADR-0.19.0-closeout-audit-processes/audit/AUDIT.md',
+    audit_plan_file='docs/design/adr/pre-release/ADR-0.19.0-closeout-audit-processes/audit/AUDIT_PLAN.md',
+    passed=True,
+)
+print(e.model_dump())
+"
+{'schema': 'gzkit.ledger.v1', 'event': 'audit_generated', 'id': 'ADR-0.19.0-closeout-audit-processes', 'ts': '2026-03-22T...', 'audit_file': 'docs/design/adr/pre-release/ADR-0.19.0-closeout-audit-processes/audit/AUDIT.md', 'audit_plan_file': 'docs/design/adr/pre-release/ADR-0.19.0-closeout-audit-processes/audit/AUDIT_PLAN.md', 'passed': True}
 ```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files modified: `src/gzkit/ledger.py`, `src/gzkit/cli.py`, `tests/test_ledger.py`, `tests/test_audit_pipeline.py`
+- Tests added: 8 (4 unit + 4 integration)
+- Date completed: 2026-03-22
+- Attestation status: Completed (human attested)
+- Defects noted: None
 
 ## Tracked Defects
 
@@ -189,14 +211,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a` (Lite lane; parent ADR lane is lite per ledger)
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: jeff (Lite lane under Heavy parent ADR — human attestation required)
+- Attestation: Completed
+- Date: 2026-03-22
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-22
 
 **Evidence Hash:** -

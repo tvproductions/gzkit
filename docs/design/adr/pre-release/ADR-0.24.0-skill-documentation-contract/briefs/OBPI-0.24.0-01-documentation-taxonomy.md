@@ -48,3 +48,9 @@ Define and document the three-layer documentation taxonomy for gzkit: what artif
 - [ ] Gate 1 (ADR): Intent recorded in this brief
 - [ ] Gate 2 (TDD): `uv run mkdocs build --strict` passes with taxonomy document
 - [ ] Code Quality: `uv run gz lint` passes
+
+## VERIFICATION COMMANDS
+
+- `uv run mkdocs build --strict`
+- `rg -n "Manpages|Runbook entries|Docstrings|Linkage model" docs/governance/documentation-taxonomy.md`
+- `rg -n "documentation-taxonomy\\.md" docs/design/adr/pre-release/ADR-0.24.0-skill-documentation-contract/ADR-0.24.0-skill-documentation-contract.md`

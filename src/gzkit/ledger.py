@@ -222,6 +222,24 @@ def closeout_initiated_event(
     )
 
 
+def audit_generated_event(
+    adr_id: str,
+    audit_file: str,
+    audit_plan_file: str,
+    passed: bool,
+) -> LedgerEvent:
+    """Create an audit-generated event recording that audit artifacts were created."""
+    return LedgerEvent(
+        event="audit_generated",
+        id=adr_id,
+        extra={
+            "audit_file": audit_file,
+            "audit_plan_file": audit_plan_file,
+            "passed": passed,
+        },
+    )
+
+
 def audit_receipt_emitted_event(
     adr_id: str,
     receipt_event: str,

@@ -47,3 +47,9 @@ Create a standardized skill manpage template at `docs/user/skills/_TEMPLATE.md` 
 - [ ] Gate 1 (ADR): Intent recorded in this brief
 - [ ] Gate 2 (TDD): `uv run mkdocs build --strict` passes with template
 - [ ] Code Quality: `uv run gz lint` passes
+
+## VERIFICATION COMMANDS
+
+- `uv run mkdocs build --strict`
+- `rg -n "^## (Purpose|When to Use|What to Expect|Invocation|Supporting Files|Related Skills/Commands)$" docs/user/skills/_TEMPLATE.md`
+- `rg -n "operator|workflow|SKILL\\.md" docs/user/skills/_TEMPLATE.md`
