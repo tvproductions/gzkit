@@ -2314,6 +2314,12 @@ def implement_cmd(adr: str | None) -> None:
 
 def gates_cmd(gate_number: int | None, adr: str | None) -> None:
     """Run applicable gates for the current lane and record results."""
+    print(
+        "Deprecated: `gz gates` is deprecated and will be removed in a "
+        "future release. Use `gz closeout` instead, which runs gates as part of the "
+        "closeout pipeline.",
+        file=sys.stderr,
+    )
     config = ensure_initialized()
     project_root = get_project_root()
 

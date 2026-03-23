@@ -1,5 +1,9 @@
 # gz gates
 
+> **Deprecated:** `gz gates` is deprecated and will be removed in a future
+> release. Use [`gz closeout`](closeout.md) instead, which runs gates as part
+> of the closeout pipeline.
+
 Run applicable gates for the current lane and record results in the ledger.
 
 ---
