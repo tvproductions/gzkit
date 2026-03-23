@@ -2624,7 +2624,7 @@ def _render_closeout_dry_run(
     _render_closeout_output(result, dry_run=True)
     if needs_bump:
         console.print(
-            f"  Version sync: would bump {current_ver} → {adr_ver} "
+            f"  Version sync: would bump {current_ver} -> {adr_ver} "
             f"(pyproject.toml, __init__.py, README.md)"
         )
 
@@ -2797,7 +2797,7 @@ def _complete_closeout_pipeline(
     console.print(f"\n[green]Closeout complete:[/green] {adr_id}")
     console.print(f"  Attestation: {canonical_term} (by {attester})")
     if version_updated:
-        console.print(f"  Version sync: {current_ver} → {adr_ver} ({', '.join(version_updated)})")
+        console.print(f"  Version sync: {current_ver} -> {adr_ver} ({', '.join(version_updated)})")
     console.print(f"  ADR status: {to_state}")
 
 
@@ -3169,7 +3169,7 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
         for _label, command in commands:
             console.print(f"  Would run: {command}")
         console.print("  Would emit validation receipt to ledger")
-        console.print("  Would transition ADR status: Completed → Validated")
+        console.print("  Would transition ADR status: Completed -> Validated")
         return
 
     proofs_dir.mkdir(parents=True, exist_ok=True)
@@ -3234,7 +3234,7 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
                 status_transition = {"from": "Completed", "to": "Validated"}
             except InvalidTransitionError:
                 print(
-                    f"Warning: lifecycle transition Completed → Validated failed for {adr_id}. "
+                    f"Warning: lifecycle transition Completed -> Validated failed for {adr_id}. "
                     "The ADR state may be inconsistent.",
                     file=sys.stderr,
                 )
@@ -3266,7 +3266,7 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
         console.print(f"Audit report: {audit_file.relative_to(project_root)}")
         console.print(f"Validation receipt: emitted (by {auditor})")
         if status_transition:
-            console.print("ADR status: Completed → Validated")
+            console.print("ADR status: Completed -> Validated")
         else:
             console.print("[yellow]ADR status: NOT transitioned (failures detected)[/yellow]")
 
