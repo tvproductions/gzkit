@@ -3,7 +3,7 @@ id: OBPI-0.0.3-01-hexagonal-skeleton
 parent: ADR-0.0.3-hexagonal-architecture-tune-up
 item: 1
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.3-01-hexagonal-skeleton: Hexagonal Skeleton
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.3-hexagonal-architecture-tune-up/ADR-0.0.3-hexagonal-architecture-tune-up.md`
 - **Checklist Item:** #1 - "OBPI-0.0.3-01: Hexagonal Skeleton"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -127,25 +127,25 @@ uv run -m unittest tests.test_ports -v
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.3-01-01: `src/gzkit/ports/interfaces.py` exists and defines FileStore Protocol
-- [ ] REQ-0.0.3-01-02: `src/gzkit/ports/interfaces.py` defines ProcessRunner Protocol
-- [ ] REQ-0.0.3-01-03: `src/gzkit/ports/interfaces.py` defines LedgerStore Protocol
-- [ ] REQ-0.0.3-01-04: `src/gzkit/ports/interfaces.py` defines ConfigStore Protocol
-- [ ] REQ-0.0.3-01-05: `src/gzkit/ports/__init__.py` re-exports all four Protocols
-- [ ] REQ-0.0.3-01-06: `src/gzkit/core/__init__.py` exists (empty, structural)
-- [ ] REQ-0.0.3-01-07: `src/gzkit/adapters/__init__.py` exists (empty, structural)
-- [ ] REQ-0.0.3-01-08: `ports/` imports only `typing` and `pathlib` — no external dependencies
-- [ ] REQ-0.0.3-01-09: All files pass lint and type check
-- [ ] REQ-0.0.3-01-10: Unit tests verify Protocol definitions are importable and structurally correct
+- [x] REQ-0.0.3-01-01: `src/gzkit/ports/interfaces.py` exists and defines FileStore Protocol
+- [x] REQ-0.0.3-01-02: `src/gzkit/ports/interfaces.py` defines ProcessRunner Protocol
+- [x] REQ-0.0.3-01-03: `src/gzkit/ports/interfaces.py` defines LedgerStore Protocol
+- [x] REQ-0.0.3-01-04: `src/gzkit/ports/interfaces.py` defines ConfigStore Protocol
+- [x] REQ-0.0.3-01-05: `src/gzkit/ports/__init__.py` re-exports all four Protocols
+- [x] REQ-0.0.3-01-06: `src/gzkit/core/__init__.py` exists (empty, structural)
+- [x] REQ-0.0.3-01-07: `src/gzkit/adapters/__init__.py` exists (empty, structural)
+- [x] REQ-0.0.3-01-08: `ports/` imports only `typing` and `pathlib` — no external dependencies
+- [x] REQ-0.0.3-01-09: All files pass lint and type check
+- [x] REQ-0.0.3-01-10: Unit tests verify Protocol definitions are importable and structurally correct
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -153,24 +153,28 @@ uv run -m unittest tests.test_ports -v
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded in this brief
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+$ uv run -m unittest tests.test_ports -v
+Ran 19 tests in 0.001s — OK
+Tests cover: Protocol imports, method signatures, boundary constraints, directory structure
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+$ uv run gz lint — All checks passed
+$ uv run gz typecheck — All checks passed
+$ uv run gz test — 1079 tests pass
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here
+$ uv run mkdocs build --strict — Documentation built successfully
 ```
 
 ### Gate 4 (BDD)
@@ -182,20 +186,55 @@ N/A — No CLI surface changes
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here
+Attestor: human (operator)
+Attestation: "attest completed"
+Date: 2026-03-23
 ```
 
 ### Value Narrative
 
+Before this OBPI, gzkit had a flat module layout with no architectural boundaries — domain
+logic, I/O, and CLI concerns were mixed freely across modules. Now, three-layer hexagonal
+skeleton exists (ports/, core/, adapters/) with four Protocol interfaces that define I/O
+boundaries via structural subtyping, enabling subsequent OBPIs to extract domain logic and
+create test fakes.
+
 ### Key Proof
+
+```text
+$ uv run python -c "from gzkit.ports import FileStore, ProcessRunner, LedgerStore, ConfigStore; print('All protocols importable')"
+All protocols importable
+
+$ uv run -m unittest tests.test_ports -v
+test_filestore_importable ... ok
+test_processrunner_importable ... ok
+test_ledgerstore_importable ... ok
+test_configstore_importable ... ok
+test_has_read_text ... ok
+test_has_write_text ... ok
+test_has_exists ... ok
+test_has_iterdir ... ok
+test_has_run ... ok
+test_has_append ... ok
+test_has_read_all ... ok
+test_has_load ... ok
+test_has_save ... ok
+test_ports_interfaces_imports_only_stdlib ... ok
+test_ports_init_imports_only_from_ports ... ok
+test_adapters_init_exists ... ok
+test_core_init_exists ... ok
+test_ports_init_exists ... ok
+test_ports_interfaces_exists ... ok
+Ran 19 tests in 0.001s — OK
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created/modified: src/gzkit/ports/__init__.py, src/gzkit/ports/interfaces.py, src/gzkit/core/__init__.py, src/gzkit/adapters/__init__.py, tests/test_ports.py
+- Tests added: tests/test_ports.py (19 tests)
+- Date completed: 2026-03-23
+- Attestation status: Human attested
+- Defects noted: None
 
 ## Tracked Defects
 
@@ -203,14 +242,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `human:<name>` — required (parent ADR is Heavy, Foundation series)
-- Attestation: substantive attestation text required
-- Date: YYYY-MM-DD
+- Attestor: `human:jeff` — required (parent ADR is Heavy, Foundation series)
+- Attestation: attest completed
+- Date: 2026-03-23
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-23
 
 **Evidence Hash:** -
