@@ -1,5 +1,28 @@
 # gzkit Release Notes
 
+## v0.19.0 (2026-03-22)
+
+**ADR:** ADR-0.19.0 - Closeout & Audit Processes
+
+Consolidated the six-command ADR closeout workflow into a single `gz closeout ADR-X.Y.Z` pipeline that runs OBPI verification, quality gates, attestation prompt, version bump, and ledger recording in one pass. Added a matching `gz audit ADR-X.Y.Z` pipeline for post-attestation reconciliation with audit artifacts, validation receipts, and Completed-to-Validated lifecycle transition. Deprecated `gz gates` and standalone `gz attest` during closeout as both are now subsumed by the consolidated pipeline.
+
+### Delivered
+
+- `gz closeout ADR-X.Y.Z`: end-to-end closeout pipeline (OBPI check, gates, attestation, version bump, status transition)
+- `gz audit ADR-X.Y.Z`: end-to-end audit pipeline (attestation guard, artifacts, validation receipt, Completed -> Validated transition)
+- Cross-project parity checklist for airlineops (`opsdev closeout`, `opsdev audit`)
+- Audit enrichment: attestation record, gate results, and evidence links in AUDIT.md
+- `audit_generated` ledger event emitted on successful audit
+- Audit templates (`audit.md`, `audit_plan.md`) with `.format()` rendering and evidence aggregation from ledger
+- ADR lifecycle transition Completed -> Validated via LifecycleStateMachine
+- `gz gates` deprecation warning directing operators to `gz closeout`
+- `gz attest` deprecation warning when closeout is active for the target ADR
+- Unicode arrow fix for Windows cp1252 console encoding (GHI #28)
+
+### Gate Evidence
+
+All 5 GovZero gates satisfied.
+
 ## v0.18.0 (2026-03-21)
 
 **ADR:** ADR-0.18.0 - Subagent-Driven Pipeline Execution
