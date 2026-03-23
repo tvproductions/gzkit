@@ -239,6 +239,23 @@ If any intervening changes occur (new commit, staged file, or regenerated artifa
 
 **Why this matters:** The release tags the commit as a governance milestone. The human attestation (Gate 5) is the authority that allows this release to exist.
 
+### Step 10b: Verify Git Tag
+
+After creating the release, verify the git tag exists locally and fetch if needed. CI workflows depend on tags.
+
+```bash
+# Verify tag exists locally
+git tag -l "vX.Y.Z"
+
+# If missing, fetch from remote
+git fetch origin --tags
+
+# Confirm tag points to expected commit
+git log --oneline -1 vX.Y.Z
+```
+
+**Why this matters:** `gh release create` creates the tag on the remote but not locally. CI pipelines that trigger on version tags will not fire if the tag is missing or points to the wrong commit.
+
 ### Step 11: Present Ceremony Summary
 
 Display the ceremony completion table:
@@ -257,6 +274,7 @@ Display the ceremony completion table:
 ║   Step 8: GitHub Issues reviewed                          ✓      ║
 ║   Step 9: RELEASE_NOTES.md updated                        ✓      ║
 ║   Step 10: GitHub Release vX.Y.Z created                  ✓      ║
+║   Step 10b: Git tag verified locally                      ✓      ║
 ╚══════════════════════════════════════════════════════════════════╝
 ```
 
@@ -275,7 +293,8 @@ Display the ceremony completion table:
 9. **MUST** update RELEASE_NOTES.md with release entry
 10. **MUST** run `uv run gz git-sync --apply --lint --test` immediately before any `gh release create` or release update command
 11. **MUST** create GitHub release with title = semver only (vX.Y.Z)
-12. **MUST** display ceremony completion summary table
+12. **MUST** verify git tag exists locally after release creation (fetch if needed) — CI workflows depend on tags
+13. **MUST** display ceremony completion summary table
 
 ---
 
