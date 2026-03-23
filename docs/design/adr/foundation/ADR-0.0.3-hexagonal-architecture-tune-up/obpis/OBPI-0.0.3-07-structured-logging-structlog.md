@@ -6,7 +6,7 @@ lane: Heavy
 status: Draft
 ---
 
-# OBPI-0.0.3-07-structured-logging-structlog: Structured Logging (structlog)
+# OBPI-0.0.3-07-structured-logging-structlog: Structured Logging
 
 ## ADR Item
 
@@ -17,73 +17,60 @@ status: Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-Structured Logging (structlog)
+Integrate structlog for structured logging with correlation IDs, verbosity levels tied to CLI flags, JSON file output for machine consumption, and human-readable console output — with configuration in the CLI layer and binding-only usage in core.
 
 ## Lane
 
-**Heavy** - This OBPI changes a command/API/schema/runtime contract surface.
-
-> Heavy is reserved for command/API/schema/runtime-contract changes. Process,
-> documentation, and template-only work stays Lite unless it changes one of
-> those external surfaces.
+**Heavy** — Adds a new dependency (structlog) and establishes cross-layer logging contract.
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `src/gzkit/cli/logging.py` — structlog configuration (processors, formatters, levels)
+- `src/gzkit/cli/__init__.py` — Update to export logging setup
+- `pyproject.toml` — Add structlog dependency
+- `tests/test_logging.py` — Unit tests for logging configuration
+- `docs/design/adr/foundation/ADR-0.0.3-hexagonal-architecture-tune-up/obpis/OBPI-0.0.3-07-structured-logging-structlog.md` — This brief
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
-- `docs/design/**` - ADR changes out of scope
-- New dependencies
+- `src/gzkit/core/**` — Core uses structlog binding only; config is CLI layer
+- `src/gzkit/commands/**` — Retrofitting commands with structlog is incremental
+- `src/gzkit/cli.py` — CLI entry point wiring is incremental
+- `src/gzkit/ports/` — Port definitions are OBPI-01
+- `docs/design/**` — ADR changes out of scope
 - CI files, lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: structlog is configured in the CLI layer (`src/gzkit/cli/logging.py`) — never in core
+2. REQUIREMENT: Core layer uses structlog binding only: `structlog.get_logger()`, `.bind()`, `.msg()`
+3. REQUIREMENT: Logging configuration supports 4 verbosity levels tied to CLI flags: quiet, normal, verbose, debug
+4. REQUIREMENT: JSON file output writes structured log events for machine parsing
+5. REQUIREMENT: Console output uses human-readable rendering for interactive use
+6. REQUIREMENT: Correlation IDs are bound at request/command entry and propagated through the call stack
+7. REQUIREMENT: `configure_logging(verbosity, log_file)` is the single configuration entry point
+8. NEVER: Configure structlog processors or formatters in `core/` — core binds context only
+9. NEVER: Use stdlib `logging` directly — all logging goes through structlog
+10. ALWAYS: Log output respects `--quiet` flag (errors only) and `--json` flag (JSON format)
 
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if `src/gzkit/cli/__init__.py` does not exist (OBPI-06), halt.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first. -->
+**Prerequisites (STOP if missing):**
 
-**Governance (read once, cache):**
-
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
+- [ ] `src/gzkit/cli/__init__.py` exists (OBPI-06 completed)
 
 **Context:**
 
-- [ ] Parent ADR: `docs/design/adr/foundation/ADR-0.0.3-hexagonal-architecture-tune-up/ADR-0.0.3-hexagonal-architecture-tune-up.md`
-- [ ] Related OBPIs in same ADR
+- [ ] Parent ADR — Structured logging specification
+- [ ] structlog documentation — Processor pipeline and configuration patterns
 
-**Prerequisites (check existence, STOP if missing):**
+**Existing Code:**
 
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
-
-**Existing Code (understand current state):**
-
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+- [ ] Grep for `print(`, `logging.` across `src/gzkit/` to understand current logging patterns
 
 ## Quality Gates
-
-<!-- Which gates apply and how to verify them. -->
 
 ### Gate 1: ADR
 
@@ -92,24 +79,22 @@ Structured Logging (structlog)
 
 ### Gate 2: TDD
 
-- [ ] Tests written before/with implementation
+- [ ] Tests verify logging configuration produces correct output format
+- [ ] Tests verify correlation ID propagation
 - [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
 
 ### Code Quality
 
 - [ ] Lint clean: `uv run gz lint`
 - [ ] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
 ### Gate 3: Docs (Heavy only)
 
 - [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
+- [ ] N/A — Logging infrastructure, no CLI command surface change
 
 ### Gate 5: Human (Heavy only)
 
@@ -117,32 +102,28 @@ Structured Logging (structlog)
 
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
-uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
 uv run gz test
 
-# Specific verification for this OBPI
-command --to --verify
+# Specific verification
+python -c "from gzkit.cli.logging import configure_logging; configure_logging('normal'); import structlog; log = structlog.get_logger(); print('Logging configured')"
+uv run -m unittest tests.test_logging -v
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-
+- [ ] REQ-0.0.3-07-01: `src/gzkit/cli/logging.py` exists with `configure_logging()` entry point
+- [ ] REQ-0.0.3-07-02: structlog added to `pyproject.toml` dependencies
+- [ ] REQ-0.0.3-07-03: 4 verbosity levels configurable (quiet, normal, verbose, debug)
+- [ ] REQ-0.0.3-07-04: JSON file output produces valid structured log events
+- [ ] REQ-0.0.3-07-05: Console output is human-readable
+- [ ] REQ-0.0.3-07-06: Correlation IDs bind at command entry
+- [ ] REQ-0.0.3-07-07: Core layer code can bind context without importing CLI logging config
+- [ ] REQ-0.0.3-07-08: Unit tests cover all verbosity levels and output formats
 
 ## Completion Checklist
-
-<!-- Verify all gates before marking OBPI accepted. -->
 
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
 - [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
@@ -154,9 +135,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
 ## Evidence
-
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
 
 ### Gate 1 (ADR)
 
@@ -177,28 +155,24 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here when Gate 3 applies
+# Paste docs-build output here
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here when Gate 4 applies
+N/A — Logging infrastructure
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+# Record attestation text here
 ```
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
-
 ### Key Proof
-
-<!-- One concrete usage example, command, or before/after behavior. -->
 
 ### Implementation Summary
 
@@ -210,16 +184,13 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ## Tracked Defects
 
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
-
 _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `human:<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `human:<name>` — required (parent ADR is Heavy, Foundation series)
+- Attestation: substantive attestation text required
+- Date: YYYY-MM-DD
 
 ---
 

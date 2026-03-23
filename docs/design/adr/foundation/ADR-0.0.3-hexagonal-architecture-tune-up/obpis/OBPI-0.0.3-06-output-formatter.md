@@ -17,73 +17,62 @@ status: Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-Output Formatter
+Create `src/gzkit/cli/formatters.py` with a single OutputFormatter chokepoint supporting 5 output modes (human, json, quiet, verbose, debug), establishing the `cli/` subpackage under `src/gzkit/`.
 
 ## Lane
 
-**Heavy** - This OBPI changes a command/API/schema/runtime contract surface.
-
-> Heavy is reserved for command/API/schema/runtime-contract changes. Process,
-> documentation, and template-only work stays Lite unless it changes one of
-> those external surfaces.
+**Heavy** — Creates a new CLI adapter subpackage and defines the output contract surface for all commands.
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `src/gzkit/cli/__init__.py` — New CLI adapter package init
+- `src/gzkit/cli/formatters.py` — OutputFormatter with 5 modes
+- `tests/test_formatters.py` — Unit tests for OutputFormatter
+- `docs/design/adr/foundation/ADR-0.0.3-hexagonal-architecture-tune-up/obpis/OBPI-0.0.3-06-output-formatter.md` — This brief
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
-- `docs/design/**` - ADR changes out of scope
-- New dependencies
+- `src/gzkit/cli.py` — Existing CLI entry point (wiring is incremental)
+- `src/gzkit/commands/**` — Existing commands (wiring formatter into commands is incremental)
+- `src/gzkit/core/` — Core must not know about output formatting
+- `src/gzkit/ports/` — Port definitions are OBPI-01
+- `docs/design/**` — ADR changes out of scope
+- New dependencies (Rich is already available)
 - CI files, lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: OutputFormatter supports exactly 5 modes: `human`, `json`, `quiet`, `verbose`, `debug`
+2. REQUIREMENT: `human` mode outputs tables, colors, and progress via Rich
+3. REQUIREMENT: `json` mode sends valid JSON to stdout and logs to stderr — never mixed
+4. REQUIREMENT: `quiet` mode outputs errors only (stderr)
+5. REQUIREMENT: `verbose` mode outputs debug-level information
+6. REQUIREMENT: OutputFormatter is a single chokepoint — all CLI output flows through it
+7. REQUIREMENT: Mode selection maps to CLI flags: default=human, `--json`=json, `--quiet`=quiet, `--verbose`=verbose
+8. NEVER: Import OutputFormatter in `core/` or `ports/` — it lives in the CLI adapter layer only
+9. NEVER: Mix data and logs on the same stream in json mode
+10. ALWAYS: OutputFormatter respects `NO_COLOR` environment variable in human mode
 
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if OBPI-0.0.3-01 skeleton is not complete, halt.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first. -->
+**Prerequisites (STOP if missing):**
 
-**Governance (read once, cache):**
-
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
+- [ ] `src/gzkit/core/__init__.py` exists (OBPI-01 completed)
+- [ ] `src/gzkit/adapters/__init__.py` exists (OBPI-01 completed)
 
 **Context:**
 
-- [ ] Parent ADR: `docs/design/adr/foundation/ADR-0.0.3-hexagonal-architecture-tune-up/ADR-0.0.3-hexagonal-architecture-tune-up.md`
-- [ ] Related OBPIs in same ADR
+- [ ] Parent ADR — Output contract specification and layer rules
+- [ ] `.claude/rules/cli.md` — Output contract (default, `--json`, `--plain`)
 
-**Prerequisites (check existence, STOP if missing):**
+**Existing Code:**
 
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
-
-**Existing Code (understand current state):**
-
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+- [ ] `src/gzkit/commands/` — Current output patterns to understand (not to modify)
+- [ ] `src/gzkit/cli.py` — Current CLI entry point structure
 
 ## Quality Gates
-
-<!-- Which gates apply and how to verify them. -->
 
 ### Gate 1: ADR
 
@@ -92,24 +81,22 @@ Output Formatter
 
 ### Gate 2: TDD
 
-- [ ] Tests written before/with implementation
+- [ ] Tests verify each output mode produces correct format
+- [ ] Tests verify json mode stdout/stderr separation
 - [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
 
 ### Code Quality
 
 - [ ] Lint clean: `uv run gz lint`
 - [ ] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
 ### Gate 3: Docs (Heavy only)
 
 - [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
+- [ ] N/A — Formatter is infrastructure; CLI surface wiring is incremental
 
 ### Gate 5: Human (Heavy only)
 
@@ -117,32 +104,28 @@ Output Formatter
 
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
-uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
 uv run gz test
 
-# Specific verification for this OBPI
-command --to --verify
+# Specific verification
+python -c "from gzkit.cli.formatters import OutputFormatter; f = OutputFormatter('json'); print('Formatter importable')"
+uv run -m unittest tests.test_formatters -v
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-
+- [ ] REQ-0.0.3-06-01: `src/gzkit/cli/` package exists with `__init__.py`
+- [ ] REQ-0.0.3-06-02: `OutputFormatter` class supports `human` mode with Rich tables/colors
+- [ ] REQ-0.0.3-06-03: `OutputFormatter` supports `json` mode (data→stdout, logs→stderr)
+- [ ] REQ-0.0.3-06-04: `OutputFormatter` supports `quiet` mode (errors only)
+- [ ] REQ-0.0.3-06-05: `OutputFormatter` supports `verbose` mode
+- [ ] REQ-0.0.3-06-06: `OutputFormatter` supports `debug` mode
+- [ ] REQ-0.0.3-06-07: `OutputFormatter` respects `NO_COLOR` in human mode
+- [ ] REQ-0.0.3-06-08: Unit tests cover all 5 modes
 
 ## Completion Checklist
-
-<!-- Verify all gates before marking OBPI accepted. -->
 
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
 - [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
@@ -154,9 +137,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
 ## Evidence
-
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
 
 ### Gate 1 (ADR)
 
@@ -177,28 +157,24 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here when Gate 3 applies
+# Paste docs-build output here
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here when Gate 4 applies
+N/A — Formatter infrastructure
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+# Record attestation text here
 ```
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
-
 ### Key Proof
-
-<!-- One concrete usage example, command, or before/after behavior. -->
 
 ### Implementation Summary
 
@@ -210,16 +186,13 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ## Tracked Defects
 
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
-
 _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `human:<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `human:<name>` — required (parent ADR is Heavy, Foundation series)
+- Attestation: substantive attestation text required
+- Date: YYYY-MM-DD
 
 ---
 

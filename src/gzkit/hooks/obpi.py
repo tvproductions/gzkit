@@ -27,8 +27,8 @@ STRICT_PLACEHOLDERS = {
     "one-sentence concrete outcome",
 }
 
-# Template defaults emitted by superbook.build_obpi_plan() that indicate
-# an OBPI brief was auto-generated but never authored.
+# Template defaults emitted by OBPI scaffolding that indicate
+# a brief was auto-generated but never authored.
 TEMPLATE_SCAFFOLD_MARKERS: dict[str, list[str]] = {
     "Allowed Paths": ["src/module/"],
     "Requirements (FAIL-CLOSED)": ["First constraint", "Second constraint"],
@@ -265,7 +265,7 @@ class ObpiValidator:
         """Detect auto-generated template defaults that were never authored.
 
         Returns a list of warnings identifying which sections still contain
-        the scaffold defaults emitted by ``superbook.build_obpi_plan()``.
+        the scaffold defaults emitted by OBPI template scaffolding.
         """
         warnings: list[str] = []
         for section_name, markers in TEMPLATE_SCAFFOLD_MARKERS.items():

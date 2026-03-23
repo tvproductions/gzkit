@@ -11,79 +11,65 @@ status: Draft
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.3-hexagonal-architecture-tune-up/ADR-0.0.3-hexagonal-architecture-tune-up.md`
-- **Checklist Item:** #5 - "OBPI-0.0.3-05: Config Precedence & Injection"
+- **Checklist Item:** #5 - "OBPI-0.0.3-05: Config Precedence & Injection (ENV-Optional)"
 
 **Status:** Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-Config Precedence & Injection
+Refactor `src/gzkit/config.py` to implement an ENV-optional precedence chain (defaults → config file → environment → CLI args), a single `load_config()` entry point, constructor injection for all consumers, and a Pydantic-based immutable config model satisfying the ConfigStore port Protocol.
 
 ## Lane
 
-**Heavy** - This OBPI changes a command/API/schema/runtime contract surface.
-
-> Heavy is reserved for command/API/schema/runtime-contract changes. Process,
-> documentation, and template-only work stays Lite unless it changes one of
-> those external surfaces.
+**Heavy** — Changes the configuration contract surface and introduces constructor injection pattern.
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `src/gzkit/config.py` — Config model refactor (precedence chain, Pydantic model)
+- `src/gzkit/adapters/config.py` — ConfigStore adapter implementation
+- `src/gzkit/core/__init__.py` — Update if config types needed in core
+- `tests/test_config.py` — Update existing config tests
+- `tests/test_config_precedence.py` — New tests for precedence chain
+- `docs/design/adr/foundation/ADR-0.0.3-hexagonal-architecture-tune-up/obpis/OBPI-0.0.3-05-config-precedence-injection.md` — This brief
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
-- `docs/design/**` - ADR changes out of scope
-- New dependencies
+- `src/gzkit/cli.py` — CLI wiring of config injection is incremental/future
+- `src/gzkit/commands/**` — Command-level injection migration is incremental
+- `src/gzkit/ports/interfaces.py` — Port definitions are OBPI-01 (already exists)
+- `docs/design/**` — ADR changes out of scope
+- New dependencies (beyond Pydantic, already in use)
 - CI files, lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: Config precedence chain is: defaults → config file → environment → CLI args (later wins)
+2. REQUIREMENT: Single `load_config()` function is the only entry point for config loading
+3. REQUIREMENT: Config model uses Pydantic `BaseModel` with `ConfigDict(frozen=True, extra="forbid")`
+4. REQUIREMENT: The config adapter satisfies the `ConfigStore` port Protocol
+5. REQUIREMENT: Services receive config via constructor injection — never read ENV directly
+6. REQUIREMENT: Only `NO_COLOR`, `FORCE_COLOR`, and `TERM` are allowed ENV reads (presentation concerns)
+7. NEVER: Read `os.environ` or `os.getenv()` outside the config loading layer (except allowlisted vars)
+8. NEVER: Use mutable config state — config is frozen after load
+9. ALWAYS: Config model fields use type hints (`str | None`, not `Optional[str]`)
+10. ALWAYS: All existing config tests continue to pass
 
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if OBPI-0.0.3-01 skeleton is not complete, halt.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first. -->
+**Prerequisites (STOP if missing):**
 
-**Governance (read once, cache):**
+- [ ] `src/gzkit/ports/interfaces.py` exists with ConfigStore Protocol (OBPI-01)
+- [ ] `src/gzkit/adapters/__init__.py` exists (OBPI-01)
 
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
+**Existing Code:**
 
-**Context:**
-
-- [ ] Parent ADR: `docs/design/adr/foundation/ADR-0.0.3-hexagonal-architecture-tune-up/ADR-0.0.3-hexagonal-architecture-tune-up.md`
-- [ ] Related OBPIs in same ADR
-
-**Prerequisites (check existence, STOP if missing):**
-
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
-
-**Existing Code (understand current state):**
-
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+- [ ] `src/gzkit/config.py` — Current config implementation
+- [ ] `tests/test_config.py` — Current config tests
+- [ ] Grep for `os.environ` and `os.getenv` across `src/gzkit/` to find scattered ENV reads
 
 ## Quality Gates
-
-<!-- Which gates apply and how to verify them. -->
 
 ### Gate 1: ADR
 
@@ -92,24 +78,22 @@ Config Precedence & Injection
 
 ### Gate 2: TDD
 
-- [ ] Tests written before/with implementation
+- [ ] Tests verify precedence chain (each layer overrides previous)
+- [ ] Tests verify config immutability
 - [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
 
 ### Code Quality
 
 - [ ] Lint clean: `uv run gz lint`
 - [ ] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
 ### Gate 3: Docs (Heavy only)
 
 - [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
+- [ ] N/A — Config is internal infrastructure, no CLI command surface change
 
 ### Gate 5: Human (Heavy only)
 
@@ -117,32 +101,27 @@ Config Precedence & Injection
 
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
-uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
 uv run gz test
 
-# Specific verification for this OBPI
-command --to --verify
+# Specific verification
+python -c "from gzkit.config import load_config; c = load_config(); print(f'Config loaded: frozen={c.model_config.get(\"frozen\", False)}')"
+uv run -m unittest tests.test_config_precedence -v
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-
+- [ ] REQ-0.0.3-05-01: `load_config()` implements defaults → file → env → CLI precedence
+- [ ] REQ-0.0.3-05-02: Config model uses `ConfigDict(frozen=True, extra="forbid")`
+- [ ] REQ-0.0.3-05-03: Config adapter satisfies ConfigStore Protocol
+- [ ] REQ-0.0.3-05-04: No `os.environ`/`os.getenv` outside config loader (except allowlist)
+- [ ] REQ-0.0.3-05-05: Config model uses modern type hints (`str | None`)
+- [ ] REQ-0.0.3-05-06: Existing config tests pass unchanged
+- [ ] REQ-0.0.3-05-07: Precedence chain tests cover all four layers
 
 ## Completion Checklist
-
-<!-- Verify all gates before marking OBPI accepted. -->
 
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
 - [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
@@ -154,9 +133,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
 ## Evidence
-
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
 
 ### Gate 1 (ADR)
 
@@ -177,28 +153,24 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here when Gate 3 applies
+# Paste docs-build output here
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here when Gate 4 applies
+N/A — Config infrastructure
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+# Record attestation text here
 ```
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
-
 ### Key Proof
-
-<!-- One concrete usage example, command, or before/after behavior. -->
 
 ### Implementation Summary
 
@@ -210,16 +182,13 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ## Tracked Defects
 
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
-
 _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `human:<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `human:<name>` — required (parent ADR is Heavy, Foundation series)
+- Attestation: substantive attestation text required
+- Date: YYYY-MM-DD
 
 ---
 

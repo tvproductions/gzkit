@@ -17,73 +17,75 @@ status: Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-Domain Extraction
+Extract core business logic from existing flat modules into `src/gzkit/core/`, creating `core/models.py`, `core/lifecycle.py`, `core/scoring.py`, and `core/validation_rules.py` while maintaining backward-compatible re-exports from original module paths.
 
 ## Lane
 
-**Heavy** - This OBPI changes a command/API/schema/runtime contract surface.
-
-> Heavy is reserved for command/API/schema/runtime-contract changes. Process,
-> documentation, and template-only work stays Lite unless it changes one of
-> those external surfaces.
+**Heavy** — Moves domain logic into a new architectural layer with import boundary constraints.
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `src/gzkit/core/__init__.py` — Core package exports
+- `src/gzkit/core/models.py` — Domain models extracted from `models/`
+- `src/gzkit/core/lifecycle.py` — ADR/OBPI state machines extracted from `lifecycle.py`
+- `src/gzkit/core/scoring.py` — Scorecard computation extracted from `decomposition.py`
+- `src/gzkit/core/validation_rules.py` — Pure validation logic extracted from `validate.py`
+- `src/gzkit/lifecycle.py` — Thin re-export shim after extraction
+- `src/gzkit/decomposition.py` — Thin re-export shim after extraction
+- `src/gzkit/validate.py` — Thin re-export shim after extraction
+- `src/gzkit/models/__init__.py` — Update exports to delegate to `core/models.py`
+- `tests/test_core_lifecycle.py` — Unit tests for extracted lifecycle logic
+- `tests/test_core_scoring.py` — Unit tests for extracted scoring logic
+- `tests/test_core_validation.py` — Unit tests for extracted validation logic
+- `tests/test_core_models.py` — Unit tests for extracted domain models
+- `docs/design/adr/foundation/ADR-0.0.3-hexagonal-architecture-tune-up/obpis/OBPI-0.0.3-02-domain-extraction.md` — This brief
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
-- `docs/design/**` - ADR changes out of scope
+- `src/gzkit/ports/` — Port definitions are OBPI-01 (must already exist)
+- `src/gzkit/adapters/` — Adapter implementations are later OBPIs
+- `src/gzkit/core/exceptions.py` — Exception hierarchy is OBPI-03
+- `src/gzkit/config.py` — Config refactor is OBPI-05
+- `src/gzkit/cli.py` — CLI layer changes out of scope
+- `src/gzkit/commands/**` — Command refactoring out of scope
+- `docs/design/**` — ADR changes out of scope
 - New dependencies
 - CI files, lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: `core/` imports only `ports/` (Protocols), `pydantic`, `structlog` (binding only), and stdlib
+2. REQUIREMENT: `core/` NEVER imports from `cli/`, `commands/`, `adapters/`, `rich`, `argparse`
+3. REQUIREMENT: Original modules (`lifecycle.py`, `decomposition.py`, `validate.py`) become thin re-export shims so downstream imports do not break
+4. REQUIREMENT: All existing tests continue to pass after extraction without modification
+5. REQUIREMENT: Extracted logic is pure domain — no I/O, no filesystem access, no subprocess calls
+6. REQUIREMENT: Each extracted module has corresponding unit tests in `tests/`
+7. NEVER: Remove original module files — they become re-export shims
+8. NEVER: Change the public API of any existing function during extraction
+9. ALWAYS: Core domain models use Pydantic `BaseModel` with `ConfigDict(frozen=True, extra="forbid")`
+10. ALWAYS: Preserve all existing function signatures and return types
 
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if OBPI-0.0.3-01 skeleton is not complete, halt.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first. -->
+**Prerequisites (STOP if missing):**
 
-**Governance (read once, cache):**
-
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
-
-**Context:**
-
-- [ ] Parent ADR: `docs/design/adr/foundation/ADR-0.0.3-hexagonal-architecture-tune-up/ADR-0.0.3-hexagonal-architecture-tune-up.md`
-- [ ] Related OBPIs in same ADR
-
-**Prerequisites (check existence, STOP if missing):**
-
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
+- [ ] `src/gzkit/ports/interfaces.py` exists (OBPI-01 completed)
+- [ ] `src/gzkit/core/__init__.py` exists (OBPI-01 completed)
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+- [ ] `src/gzkit/lifecycle.py` — State machine logic to extract
+- [ ] `src/gzkit/decomposition.py` — Scorecard computation to extract
+- [ ] `src/gzkit/validate.py` — Validation rules to extract
+- [ ] `src/gzkit/models/` — Domain models to extract
+- [ ] `tests/test_lifecycle.py` — Existing lifecycle tests
+- [ ] `tests/test_decomposition.py` — Existing decomposition tests
+- [ ] `tests/test_validate.py` — Existing validation tests
+- [ ] `tests/test_models.py` — Existing model tests
 
 ## Quality Gates
-
-<!-- Which gates apply and how to verify them. -->
 
 ### Gate 1: ADR
 
@@ -92,24 +94,22 @@ Domain Extraction
 
 ### Gate 2: TDD
 
-- [ ] Tests written before/with implementation
+- [ ] Unit tests written for each extracted core module
+- [ ] All existing tests continue to pass unchanged
 - [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
 
 ### Code Quality
 
 - [ ] Lint clean: `uv run gz lint`
 - [ ] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
 ### Gate 3: Docs (Heavy only)
 
 - [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
+- [ ] N/A — Internal refactoring, no CLI surface changes
 
 ### Gate 5: Human (Heavy only)
 
@@ -117,32 +117,39 @@ Domain Extraction
 
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
-uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
 uv run gz test
 
-# Specific verification for this OBPI
-command --to --verify
+# Verify re-exports work (downstream imports unchanged)
+python -c "from gzkit.lifecycle import LifecycleState; print('re-export works')"
+python -c "from gzkit.core.lifecycle import LifecycleState; print('core import works')"
+
+# Verify core layer boundary
+python -c "
+import ast, pathlib
+for f in pathlib.Path('src/gzkit/core').glob('*.py'):
+    tree = ast.parse(f.read_text())
+    for n in ast.walk(tree):
+        if isinstance(n, ast.ImportFrom) and n.module:
+            assert not any(n.module.startswith(p) for p in ('gzkit.cli', 'gzkit.commands', 'gzkit.adapters')), f'{f}: forbidden import {n.module}'
+print('Core boundary clean')
+"
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-
+- [ ] REQ-0.0.3-02-01: `src/gzkit/core/lifecycle.py` contains ADR/OBPI state machine logic
+- [ ] REQ-0.0.3-02-02: `src/gzkit/core/scoring.py` contains scorecard computation logic
+- [ ] REQ-0.0.3-02-03: `src/gzkit/core/validation_rules.py` contains pure validation logic
+- [ ] REQ-0.0.3-02-04: `src/gzkit/core/models.py` contains domain models
+- [ ] REQ-0.0.3-02-05: Original modules are thin re-export shims
+- [ ] REQ-0.0.3-02-06: All existing tests pass without modification
+- [ ] REQ-0.0.3-02-07: `core/` has no forbidden imports (cli, commands, adapters, rich, argparse)
+- [ ] REQ-0.0.3-02-08: New unit tests cover extracted core modules
 
 ## Completion Checklist
-
-<!-- Verify all gates before marking OBPI accepted. -->
 
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
 - [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
@@ -154,9 +161,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
 ## Evidence
-
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
 
 ### Gate 1 (ADR)
 
@@ -177,28 +181,24 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here when Gate 3 applies
+# Paste docs-build output here
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here when Gate 4 applies
+N/A — Internal refactoring
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+# Record attestation text here
 ```
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
-
 ### Key Proof
-
-<!-- One concrete usage example, command, or before/after behavior. -->
 
 ### Implementation Summary
 
@@ -210,16 +210,13 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ## Tracked Defects
 
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
-
 _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `human:<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `human:<name>` — required (parent ADR is Heavy, Foundation series)
+- Attestation: substantive attestation text required
+- Date: YYYY-MM-DD
 
 ---
 
