@@ -3,7 +3,7 @@ id: OBPI-0.19.0-09-deprecate-manual-gz-attest-during-closeout-subsumed-by-closeo
 parent: ADR-0.19.0-closeout-audit-processes
 item: 9
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.19.0-09: Deprecate Manual `gz attest` During Closeout (Subsumed by Closeout)
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.19.0-closeout-audit-processes/ADR-0.19.0-closeout-audit-processes.md`
 - **Checklist Item:** #9 — "Deprecate manual `gz attest` during closeout (subsumed by closeout)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -94,10 +94,10 @@ Add conditional deprecation logic to the `attest()` function in `src/gzkit/comma
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.19.0-09-01: Given an ADR with a `closeout_initiated` event in the ledger, when `gz attest ADR-X.Y.Z --status completed` is invoked, then a deprecation warning containing "deprecated" and "gz closeout" is printed to stderr before attestation proceeds.
-- [ ] REQ-0.19.0-09-02: Given an ADR without a `closeout_initiated` event in the ledger, when `gz attest ADR-X.Y.Z --status completed` is invoked, then no deprecation warning is printed and attestation proceeds normally.
-- [ ] REQ-0.19.0-09-03: Given an ADR with a `closeout_initiated` event, when `gz attest ADR-X.Y.Z --status completed` completes after the warning, then the `attested` ledger event, closeout form, and ADR attestation block are all written identically to pre-deprecation behavior.
-- [ ] REQ-0.19.0-09-04: Given `gz attest ADR-X.Y.Z --status completed --dry-run` with closeout active, when the command runs, then the deprecation warning is still shown but no ledger event is written (dry-run semantics preserved).
+- [x] REQ-0.19.0-09-01: Given an ADR with a `closeout_initiated` event in the ledger, when `gz attest ADR-X.Y.Z --status completed` is invoked, then a deprecation warning containing "deprecated" and "gz closeout" is printed to stderr before attestation proceeds.
+- [x] REQ-0.19.0-09-02: Given an ADR without a `closeout_initiated` event in the ledger, when `gz attest ADR-X.Y.Z --status completed` is invoked, then no deprecation warning is printed and attestation proceeds normally.
+- [x] REQ-0.19.0-09-03: Given an ADR with a `closeout_initiated` event, when `gz attest ADR-X.Y.Z --status completed` completes after the warning, then the `attested` ledger event, closeout form, and ADR attestation block are all written identically to pre-deprecation behavior.
+- [x] REQ-0.19.0-09-04: Given `gz attest ADR-X.Y.Z --status completed --dry-run` with closeout active, when the command runs, then the deprecation warning is still shown but no ledger event is written (dry-run semantics preserved).
 
 ## Verification
 
@@ -112,12 +112,12 @@ uv run -m unittest tests.test_attest_deprecation -v
 
 ## Completion Checklist (Lite)
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Unit tests pass
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Unit tests pass
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -125,18 +125,24 @@ uv run -m unittest tests.test_attest_deprecation -v
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+test_warning_shown_when_closeout_active ... ok
+test_no_warning_without_closeout ... ok
+test_attestation_recorded_after_warning ... ok
+test_dry_run_shows_warning_no_ledger_write ... ok
+Ran 4 tests in 0.536s — OK
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+uv run gz lint — All checks passed
+uv run gz typecheck — All checks passed
+uv run gz test — 1086 tests passed
 ```
 
 ### Value Narrative
@@ -171,11 +177,11 @@ Attestation recorded:
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created/modified: `src/gzkit/commands/attest.py`, `tests/test_attest_deprecation.py`
+- Tests added: 4 (test_warning_shown_when_closeout_active, test_no_warning_without_closeout, test_attestation_recorded_after_warning, test_dry_run_shows_warning_no_ledger_write)
+- Date completed: 2026-03-22
+- Attestation status: Human attested
+- Defects noted: None
 
 ## Tracked Defects
 
@@ -183,14 +189,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a` (Lite lane — self-closeable after evidence)
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: Jeff (human operator)
+- Attestation: attest completed
+- Date: 2026-03-22
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-22
 
 **Evidence Hash:** -

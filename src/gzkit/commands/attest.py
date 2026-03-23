@@ -76,6 +76,19 @@ def _check_obpi_completion(
         )
 
 
+def _warn_if_closeout_active(ledger: Ledger, adr_id: str) -> None:
+    """Print a deprecation warning when closeout is already active for this ADR."""
+    graph = ledger.get_artifact_graph()
+    adr_info = graph.get(adr_id)
+    if adr_info and adr_info.get("closeout_initiated"):
+        console.print(
+            "[yellow]Deprecated:[/yellow] Closeout is active for "
+            f"{adr_id}. Attestation is now managed by "
+            f"`gz closeout {adr_id}`. Standalone `gz attest` during "
+            "closeout is deprecated and will be removed in a future release.",
+        )
+
+
 def attest(
     adr: str,
     attest_status: str,
@@ -101,6 +114,9 @@ def attest(
         raise GzCliError(
             f"Pool ADRs cannot be attested: {adr_id}. Promote this ADR from pool first."
         )
+
+    # Warn when closeout pipeline is active (OBPI-0.19.0-09)
+    _warn_if_closeout_active(ledger, adr_id)
 
     snapshot = _attestation_gate_snapshot(project_root, config, ledger, adr_id)
     if force and not snapshot["ready"] and not reason:
