@@ -1,5 +1,5 @@
 ---
-id: OBPI-0.0.4-01
+id: OBPI-0.0.4-01-cli-module-restructure
 title: CLI Module Restructure
 parent: ADR-0.0.4-cli-standards-presentation-foundation
 status: Pending
