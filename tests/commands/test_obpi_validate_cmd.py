@@ -99,3 +99,46 @@ class TestObpiValidateCommand(unittest.TestCase):
 
             self.assertEqual(result.exit_code, 0)
             self.assertIn("OBPI Validation Passed", result.output)
+
+    def test_obpi_validate_adr_flag_batch_validates(self) -> None:
+        """#30: --adr flag validates all briefs under an ADR."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            runner.invoke(main, ["plan", "0.1.0"])
+
+            adr_dir = Path("design/adr")
+            obpi_dir = adr_dir / "obpis"
+            obpi_dir.mkdir(parents=True, exist_ok=True)
+
+            # One scaffold stub, one authored brief
+            (obpi_dir / "OBPI-0.1.0-01-stub.md").write_text(
+                "---\nid: OBPI-0.1.0-01-stub\nparent: ADR-0.1.0\n"
+                "item: 1\nlane: Lite\nstatus: Draft\n---\n\n"
+                "## Allowed Paths\n- `src/module/` - Reason\n\n"
+                "## Requirements (FAIL-CLOSED)\n1. REQUIREMENT: First constraint\n",
+                encoding="utf-8",
+            )
+            (obpi_dir / "OBPI-0.1.0-02-real.md").write_text(
+                "---\nid: OBPI-0.1.0-02-real\nparent: ADR-0.1.0\n"
+                "item: 2\nlane: Lite\nstatus: Draft\n---\n\n"
+                "## Allowed Paths\n- `src/gzkit/ports/` - Port definitions\n\n"
+                "## Requirements (FAIL-CLOSED)\n"
+                "1. REQUIREMENT: Ports use typing.Protocol\n",
+                encoding="utf-8",
+            )
+
+            result = runner.invoke(main, ["obpi", "validate", "--adr", "ADR-0.1.0"])
+
+            self.assertEqual(result.exit_code, 1)
+            self.assertIn("FAIL", result.output)
+            self.assertIn("PASS", result.output)
+            self.assertIn("1/2 briefs failed", result.output)
+
+    def test_obpi_validate_no_args_shows_error(self) -> None:
+        """Calling with neither path nor --adr shows an error."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            result = runner.invoke(main, ["obpi", "validate"])
+            self.assertEqual(result.exit_code, 1)
