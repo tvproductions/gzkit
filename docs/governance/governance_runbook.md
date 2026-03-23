@@ -42,6 +42,8 @@ uv run gz gates --adr ADR-<X.Y.Z>
 uv run gz cli audit
 uv run gz check-config-paths
 uv run gz validate --documents --surfaces
+uv run gz obpi validate --adr ADR-<X.Y.Z>
+uv run gz adr evaluate ADR-<X.Y.Z>
 uv run mkdocs build --strict
 ```
 
@@ -99,7 +101,21 @@ uv run gz adr promote ADR-pool.<slug> --semver X.Y.Z --status proposed
 /gz-obpi-brief
 ```
 
-4. Validate artifact and document integrity.
+4. Validate briefs are authored (not template stubs).
+
+```bash
+uv run gz obpi validate --adr ADR-<X.Y.Z>
+```
+
+5. Evaluate ADR and OBPI quality before proceeding.
+
+```bash
+uv run gz adr evaluate ADR-<X.Y.Z>
+```
+
+A NO GO verdict blocks pipeline execution. Address action items and re-evaluate.
+
+6. Validate artifact and document integrity.
 
 ```bash
 uv run gz validate --documents
@@ -119,8 +135,14 @@ uv run gz adr status ADR-<X.Y.Z> --json
 uv run gz status --table
 ```
 
-2. Plan the OBPI and exit plan mode with an approved plan.
-3. Invoke the OBPI execution pipeline.
+2. Validate the target brief is authored (not a template stub).
+
+```bash
+uv run gz obpi validate <path-to-brief>
+```
+
+3. Plan the OBPI and exit plan mode with an approved plan.
+4. Invoke the OBPI execution pipeline.
 
 ```text
 /gz-obpi-pipeline OBPI-<X.Y.Z-NN>
