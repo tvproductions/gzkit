@@ -100,10 +100,19 @@ Writes `EVALUATION_SCORECARD.md` in the ADR package directory containing:
 
 ---
 
+## Pipeline Enforcement
+
+When a scorecard exists with a **NO GO** verdict, `gz obpi pipeline` Stage 1 treats it as a blocker and aborts. This makes the evaluation a blocking gate for pipeline execution — run `gz adr evaluate` before starting OBPI work, and address NO GO action items before invoking the pipeline.
+
+GO and CONDITIONAL GO verdicts do not block. Missing scorecards do not block (evaluation is optional until run).
+
+---
+
 ## Related Commands
 
 | Command | Relationship |
 |---------|--------------|
 | `gz adr audit-check` | Post-implementation evidence verification (downstream) |
-| `gz obpi validate` | Single-brief completion readiness check |
+| `gz obpi validate` | Single-brief or batch completion readiness check |
+| `gz obpi validate --adr` | Batch-validate all briefs under an ADR |
 | `gz adr report` | Status view without scoring |
