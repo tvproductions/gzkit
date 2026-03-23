@@ -1,5 +1,5 @@
 ---
-id: OBPI-0.0.4-05
+id: OBPI-0.0.4-05-epilog-templates
 title: Epilog Templates
 parent: ADR-0.0.4-cli-standards-presentation-foundation
 status: Pending

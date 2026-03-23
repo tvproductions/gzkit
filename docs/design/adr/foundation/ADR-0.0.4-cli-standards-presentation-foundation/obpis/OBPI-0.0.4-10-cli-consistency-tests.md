@@ -1,5 +1,5 @@
 ---
-id: OBPI-0.0.4-10
+id: OBPI-0.0.4-10-cli-consistency-tests
 title: CLI Consistency Tests
 parent: ADR-0.0.4-cli-standards-presentation-foundation
 status: Pending

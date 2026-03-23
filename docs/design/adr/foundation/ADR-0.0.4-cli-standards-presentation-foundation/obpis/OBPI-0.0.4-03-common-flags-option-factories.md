@@ -1,5 +1,5 @@
 ---
-id: OBPI-0.0.4-03
+id: OBPI-0.0.4-03-common-flags-option-factories
 title: Common Flags & Standard Option Factories
 parent: ADR-0.0.4-cli-standards-presentation-foundation
 status: Pending
