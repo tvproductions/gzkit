@@ -23,6 +23,8 @@ gzkit's execution pipeline (5-stage, subagent-dispatched, gate-enforced) is matu
 | **superpowers** (obra) | Methodology layer — TDD discipline, anti-rationalization, evidence-before-claims | Brainstorming gate, universal anti-rationalization tables, 5-step evidence protocol, systematic debugging, standalone code review |
 | **spec-kit** (GitHub) | Specification engine — specs govern code, not reverse | Ambiguity markers with resolution enforcement, cross-artifact consistency analysis, constitution-as-executable-gate, specification quality checklist |
 | **GSD** (gsd-build) | Execution orchestrator — context-fresh parallel waves | Decision locking (D-01/D-02), task-level `<verify>`, 4-level artifact verification, plan-checker adversarial loop, user profiling, context budget discipline, analysis paralysis guard |
+| **BMAD** (bmadcode) | Documentation-heavy upfront planning — locked requirements, role-based analysis | Lossless document distillation for context efficiency, mechanical edge-case path enumeration, elicitation method registry, pre-implementation readiness gate |
+| **AI Labs community** | Practitioner patterns from production Claude Code usage | Hook-based TDD enforcement (exit code 2), predictive failure analysis, token-efficient structured plan format (feature.json) |
 
 ## 3. Capability Matrix
 
@@ -201,9 +203,10 @@ These capabilities enhance `gz-obpi-pipeline` stages 2 and 3.
 - AGENTS.md gains compaction-awareness guidance: save progress to handoff before context limits, don't stop tasks early, save state before compaction
 - Interface extraction: plans include key interface signatures in task context blocks to reduce redundant codebase exploration by implementers
 **Limitation:** Context budget tracking is advisory, not enforced. There is no programmatic way to measure token consumption during a Claude Code session. The annotations guide human and agent judgment but cannot gate execution.
+**Operational evidence:** Real-world superpowers testing revealed that at ~50% context consumption, agents lose skill awareness and revert to default unstructured behavior. Context pressure doesn't just degrade output quality — it causes **skill amnesia**. This makes context discipline a governance concern, not just an efficiency one: ungoverned agent behavior is a governance failure.
 **Pool ADR:** Complements `ADR-pool.progressive-context-disclosure` (context tier system) and `ADR-pool.focused-context-loader` (per-ADR context payloads).
-**GovZero fit:** Operational efficiency. No governance artifact changes.
-**Priority:** P3 — important for long sessions but not a governance gap.
+**GovZero fit:** Prevents governance regression under context pressure.
+**Priority:** P2 — context pressure causes skill amnesia, making this a governance concern (upgraded from P3).
 
 ---
 
@@ -236,6 +239,7 @@ Capabilities that span the agent lifecycle.
   - Unresolved blockers
   - Current session's pipeline markers
 - Optional session-start hook that runs `gz status --orientation` and injects output as context
+- **Post-compaction re-orientation:** Orientation must also fire after context compaction, not just session start. Real-world testing (superpowers in production) revealed that after ~50% context consumption and compaction, agents lose skill awareness entirely and revert to unstructured behavior. The orientation hook should be triggered by `compact` events in addition to `startup` events.
 - Orientation document is ephemeral (not persisted) — generated from authoritative sources on demand
 **Pool ADR:** Subsumes `ADR-pool.universal-agent-onboarding` (`gz onboard` command). This CAP proposes `gz status --orientation` as the implementation vehicle — a subcommand of existing `gz status` rather than a new top-level command. The pool ADR's `--vendor` and `--resume` flags remain valid extensions.
 **GovZero fit:** No new persistent state. Derived from existing ledger/status infrastructure.
@@ -330,6 +334,63 @@ Capabilities that span the agent lifecycle.
 **GovZero fit:** Discipline infrastructure. No governance artifact changes.
 **Priority:** P2 — low effort, high leverage across all skills.
 
+#### CAP-20: Hook-Based TDD Enforcement
+
+**Source:** AI Labs community practice (exit-code-2 hooks protecting test files)
+**Gap:** gzkit has hooks (`pipeline-gate.py`, `obpi-completion-validator.py`) for pipeline and OBPI completion enforcement, but no hook preventing agents from modifying test files during implementation. The TDD discipline (CAP-15) relies on skill instructions ("don't modify tests") rather than mechanical enforcement.
+**Proposed change:**
+- Pre-tool-use hook that blocks modifications to test directories and files matching `*test*` patterns
+- Returns exit code 2 (blocking error) with message: "Test file modifications blocked during implementation. Fix the implementation to pass the existing tests."
+- Hook is active during pipeline Stage 2 (implementation) and deactivated during explicit test-writing tasks
+- Configurable via `.claude/settings.json` with path patterns
+**GovZero fit:** Extends existing hook infrastructure. Mechanical enforcement of TDD discipline.
+**Priority:** P1 — low effort, high leverage. Makes CAP-15 enforceable rather than advisory.
+
+#### CAP-21: Predictive Failure Analysis
+
+**Source:** AI Labs community practice (post-test failure prediction)
+**Gap:** gzkit's verification (Stage 3) checks whether tests pass and gates are green. It does not ask "what failure patterns from other systems could apply here?" A codebase that passes all tests can still have 18+ latent issues detectable by pattern-matching against known failure modes.
+**Proposed change:**
+- New verification phase after Stage 3 gates pass (or integrated as Stage 3b):
+  - Agent reviews implementation and identifies potential failure modes by pattern-matching against known categories: null handling, race conditions, error path coverage, input boundary conditions, state management edge cases, security patterns, resource cleanup
+  - Findings classified as Critical (likely production failure) / Warning (possible edge case) / Note (defensive improvement)
+  - Critical findings block Stage 4 (evidence presentation)
+  - Warning/Note findings included in evidence presentation for human review
+- Can be run standalone via `gz predict-failures` skill for ad-hoc analysis
+- Anti-rationalization: "All tests passing does not mean all failure modes are covered"
+**GovZero fit:** Extends verification without changing gate structure. Produces evidence artifacts.
+**Priority:** P2 — meaningful but requires careful scoping to avoid unbounded analysis.
+
+#### CAP-22: Token-Efficient Structured Plan Format
+
+**Source:** AI Labs community practice (feature.json pattern)
+**Gap:** gzkit plans are markdown prose. Task tracking happens in TodoWrite (ephemeral) or brief status fields (manual). No structured, parseable format for plans with built-in completion tracking.
+**Proposed change:**
+- Plans produced by `gz-plan` include a structured JSON sidecar (`.claude/plans/<adr-id>-plan.json`) alongside the markdown plan:
+```json
+{
+  "adr": "ADR-X.Y.Z",
+  "obpi": "OBPI-X.Y.Z-NN",
+  "tasks": [
+    {
+      "id": "T-01",
+      "name": "Add structlog dependency",
+      "files": ["pyproject.toml", "src/gzkit/logging.py"],
+      "verify": "uv run -m unittest tests/test_logging.py",
+      "done": "structlog imported and configured",
+      "status": "pending",
+      "decision_refs": ["D-01"]
+    }
+  ]
+}
+```
+- Pipeline Stage 2 reads this sidecar to track task completion and run per-task verification (CAP-06)
+- Status updates are written back to the sidecar as tasks complete
+- `gz status --plan` can report plan progress from the sidecar
+- Markdown plan remains the human-readable artifact; JSON sidecar is the machine-readable companion
+**GovZero fit:** Sidecar is ephemeral (pipeline-scoped, not ledger-persisted). Plan markdown remains the governed artifact.
+**Priority:** P2 — medium effort. Requires plan generation and pipeline parsing changes.
+
 ---
 
 ## 4. Priority Summary
@@ -344,6 +405,7 @@ Capabilities that span the agent lifecycle.
 | CAP-06 | Per-task verification stanzas | GSD | Low |
 | CAP-07 | Universal evidence protocol | superpowers | Low |
 | CAP-13 | Session-start orientation protocol | superpowers + GSD | Low |
+| CAP-20 | Hook-based TDD enforcement | AI Labs community | Low |
 
 ### P2 — Meaningful uplift, requires more design
 
@@ -358,13 +420,15 @@ Capabilities that span the agent lifecycle.
 | CAP-16 | Native systematic debugging skill | superpowers | Medium |
 | CAP-17 | Standalone code review skills | superpowers | Medium |
 | CAP-19 | Anti-rationalization standard section | superpowers | Low |
+| CAP-21 | Predictive failure analysis | AI Labs community | Medium |
+| CAP-22 | Token-efficient structured plan format | AI Labs community | Medium |
+| CAP-11 | Context budget and skill persistence | GSD + superpowers field data | Medium |
 
 ### P3 — Operational hygiene, lower urgency
 
 | ID | Capability | Source | Effort |
 |---|---|---|---|
 | CAP-10 | Analysis paralysis guard | GSD | Low |
-| CAP-11 | Context budget annotations | GSD + Claude best practices | Medium |
 | CAP-14 | Operator profile | GSD | Medium |
 | CAP-18 | Requirements traceability | spec-kit | Medium |
 
@@ -380,18 +444,18 @@ CAP-01 + CAP-02 + CAP-03 + CAP-05
 Subsumes pool ADRs: `pre-planning-interview`. Complements: `spec-delta-markers`.
 
 **ADR candidate B1: Per-Task Verification and Evidence Protocol**
-CAP-06 + CAP-07
-*Tightens the execution feedback loop. Both P1, both low effort, tightly coupled — verification stanzas need the evidence protocol to be meaningful.*
+CAP-06 + CAP-07 + CAP-22
+*Tightens the execution feedback loop. Verification stanzas (CAP-06) need the evidence protocol (CAP-07) to be meaningful, and the structured plan sidecar (CAP-22) provides the machine-readable format for per-task tracking.*
 Complements pool ADR: `task-level-governance` (ADR-0.22.0, already promoted).
 
 **ADR candidate B2: Agent Execution Intelligence**
-CAP-08 + CAP-09 + CAP-10
-*Enhances agent decision-making during execution. Mixed priority (P2/P3), moderate effort, independent of B1.*
+CAP-08 + CAP-09 + CAP-10 + CAP-21
+*Enhances agent decision-making and verification depth during execution. CAP-21 (predictive failure analysis) extends CAP-09's goal-backward verification into failure prediction.*
 Complements pool ADRs: `graduated-oversight-model`, `controlled-agency-recovery`.
 
 **ADR candidate C: Skill Behavioral Hardening** (extends existing pool ADR)
-CAP-15 + CAP-16 + CAP-17 + CAP-19
-*Native skills for TDD, debugging, code review, and anti-rationalization. New skills, no existing skill modification.*
+CAP-15 + CAP-16 + CAP-17 + CAP-19 + CAP-20
+*Native skills for TDD (CAP-15) with mechanical hook enforcement (CAP-20), debugging, code review, and anti-rationalization. New skills + one new hook.*
 Subsumes pool ADR: `skill-behavioral-hardening` (this spec adds competitive analysis context and concrete source attribution that the pool ADR lacks).
 
 **ADR candidate D: Orientation and Adaptation**
@@ -412,16 +476,17 @@ Complements pool ADR: ADR-0.21.0 (tests-for-spec, already promoted).
 ### Dependency graph between ADR candidates
 
 ```
-A (Pre-Pipeline) ─────────► B1 (Verification + Evidence)
+A (Pre-Pipeline) ─────────► B1 (Verification + Evidence + Plan Format)
        │                            │
        │                            ▼
        └──► CAP-05 references ► E1 (Constitution Gate)
                                     │
-B2 (Execution Intelligence)         │ [independent]
+B2 (Execution Intelligence          │ [independent]
+    + Predictive Failure Analysis)   │
        │                            │
        └── CAP-10 references ► CAP-08 (within B2)
 
-C (Skill Hardening) ──► CAP-19 template consumed by ──► B1, B2, D
+C (Skill Hardening + TDD Hook) ──► CAP-19 template consumed by ──► B1, B2, D
 
 D (Orientation) [independent]
 
@@ -476,7 +541,55 @@ This spec overlaps with existing pool ADRs. Dispositions:
 
 ---
 
-## 8. Competitive Position After Absorption
+## 8. Cross-Cutting Recommendations
+
+These observations don't warrant individual CAPs but should inform implementation across multiple capabilities.
+
+### XML Structuring for Agent-Facing Instructions
+
+GSD deliberately uses XML-formatted agent instructions. The Claude best practices documentation confirms: "XML tags help Claude parse complex prompts unambiguously, especially when your prompt mixes instructions, context, examples, and variable inputs." This is a performance optimization, not a stylistic choice.
+
+**Recommendation:** When implementing CAPs that modify agent prompts (CAP-08 deviation rules, CAP-19 anti-rationalization sections, CAP-20 TDD hook instructions, implementer/reviewer agent templates), use semantic XML tags for behavioral sections:
+```xml
+<invariants>   <!-- never-break rules -->
+<workflow>     <!-- sequential steps -->
+<deviation_rules tier="1"> <!-- auto-fix boundaries -->
+<invalid_excuses> <!-- rationalization prevention -->
+```
+Human-facing documents (ADRs, briefs, runbooks) remain markdown. Agent-facing instruction blocks within skills and agent definitions adopt XML boundaries where mixing instructions, context, and examples in a single prompt.
+
+### Lossless Document Compression (Distillation)
+
+BMAD introduces a "Distillator" that compresses governance/planning documents into token-efficient formats while proving no information is lost. The round-trip validation reconstructs the original document from only the distillate and flags `[POSSIBLE GAP]` where information might have been lost.
+
+**Recommendation:** When implementing CAP-11 (context budget) and CAP-13 (orientation), consider a distillation step for long governance artifacts (ADRs, briefs, constitutions) that produces compressed representations for agent consumption. The compressed form is ephemeral (not persisted alongside the full artifact). This directly mitigates the skill-amnesia failure mode — if governance context takes fewer tokens, skill awareness persists longer under context pressure.
+
+This is an implementation technique, not a governance change. The full artifact remains authoritative; the distillate is a context-efficiency optimization.
+
+### Edge Case Hunter (Mechanical Path Enumeration)
+
+BMAD's Edge Case Hunter mechanically traces every branching path in code (conditionals, loops, error handlers, early returns, domain boundaries) and reports only unhandled paths. This is method-driven, not attitude-driven — it doesn't editorialize, it enumerates.
+
+**Recommendation:** When implementing CAP-21 (predictive failure analysis), include mechanical path enumeration as a complementary technique alongside pattern-based failure prediction. CAP-21 pattern-matches against known failure categories (null handling, race conditions, etc.). Path enumeration catches gaps that don't fit known categories — the "unknown unknowns" of unhandled code paths.
+
+### Research Confidence Levels in Design Exploration
+
+GSD's research phase produces findings with confidence metadata (HIGH/MEDIUM/LOW) indicating source trustworthiness. When implementing CAP-01 (structured design exploration), research findings during ADR creation should carry confidence levels:
+- **HIGH:** Official documentation, verified API responses, Context7 MCP output
+- **MEDIUM:** Web search cross-checked against 2+ sources
+- **LOW:** Model training data, unverified web results (flagged as such)
+
+This prevents design decisions from being made on speculative foundations.
+
+### Elicitation Method Registry for Design Exploration
+
+BMAD maintains a registry of critique/analysis methods (Socratic questioning, first principles, red teaming, etc.) and selects 5 methods based on content type, complexity, and risk level, rather than applying a fixed brainstorming pattern.
+
+**Recommendation:** When implementing CAP-01 (structured design exploration), the questioning phase should adapt its analysis method to the ADR's domain. Infrastructure ADRs benefit from first-principles analysis. User-facing ADRs benefit from scenario-based questioning. Security-sensitive ADRs benefit from red-teaming. A lightweight method-selection step at the start of design exploration improves question quality.
+
+---
+
+## 9. Competitive Position After Absorption
 
 | Dimension | Before | After | Parity with |
 |---|---|---|---|
@@ -494,6 +607,9 @@ This spec overlaps with existing pool ADRs. Dispositions:
 | Anti-rationalization | Pipeline skill has extensive table; other skills have none | All completion-claiming skills | superpowers |
 | Context budget | No formal tracking (subagent dispatch provides implicit budget isolation) | Advisory annotations + compaction awareness guidance | GSD |
 | User adaptation | Feedback memories (13 rules capturing style/workflow preferences) | Structured profile + adaptive behavior | GSD (lighter) |
+| TDD mechanical enforcement | Skill instructions only ("don't modify tests") | Hook-based blocking (exit code 2) + skill discipline | AI Labs community |
+| Failure prediction | Not present (verification = "did tests pass?") | Post-gate failure pattern analysis against known categories | AI Labs community |
+| Plan machine-readability | Markdown prose plans, ephemeral TodoWrite tracking | JSON sidecar with per-task status, verification, and decision refs | AI Labs community |
 
 **Retained advantages over all three tools:**
 - 5-gate covenant with lane-based rigor (none of the three have this)
