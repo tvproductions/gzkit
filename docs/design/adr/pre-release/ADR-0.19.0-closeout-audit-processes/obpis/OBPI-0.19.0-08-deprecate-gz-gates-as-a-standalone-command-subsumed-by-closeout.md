@@ -3,7 +3,7 @@ id: OBPI-0.19.0-08-deprecate-gz-gates-as-a-standalone-command-subsumed-by-closeo
 parent: ADR-0.19.0-closeout-audit-processes
 item: 8
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.19.0-08: Deprecate `gz gates` as Standalone Command (Subsumed by Closeout)
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.19.0-closeout-audit-processes/ADR-0.19.0-closeout-audit-processes.md`
 - **Checklist Item:** #8 — "Deprecate `gz gates` as a standalone command (subsumed by closeout)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -53,49 +53,49 @@ Add a deprecation warning to `gates_cmd()` in `src/gzkit/cli.py` so that when op
 
 **Governance (read once, cache):**
 
-- [ ] `AGENTS.md` or `CLAUDE.md` — agent operating contract
-- [ ] Parent ADR: `docs/design/adr/pre-release/ADR-0.19.0-closeout-audit-processes/ADR-0.19.0-closeout-audit-processes.md`
+- [x] `AGENTS.md` or `CLAUDE.md` — agent operating contract
+- [x] Parent ADR: `docs/design/adr/pre-release/ADR-0.19.0-closeout-audit-processes/ADR-0.19.0-closeout-audit-processes.md`
 
 **Context:**
 
-- [ ] `src/gzkit/cli.py` lines 2305-2354 — `gates_cmd()` current implementation
-- [ ] `src/gzkit/cli.py` lines 2494-2632 — `closeout_cmd()` which subsumes gate execution
-- [ ] `docs/user/commands/gates.md` — current command documentation
+- [x] `src/gzkit/cli.py` lines 2305-2354 — `gates_cmd()` current implementation
+- [x] `src/gzkit/cli.py` lines 2494-2632 — `closeout_cmd()` which subsumes gate execution
+- [x] `docs/user/commands/gates.md` — current command documentation
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] `src/gzkit/cli.py` exists with `gates_cmd()` function
-- [ ] `docs/user/commands/gates.md` exists
+- [x] `src/gzkit/cli.py` exists with `gates_cmd()` function
+- [x] `docs/user/commands/gates.md` exists
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: existing deprecation patterns in the codebase (search for "deprecated" in cli.py)
-- [ ] Test patterns: `tests/test_lifecycle.py` for test structure conventions
+- [x] Pattern to follow: existing deprecation patterns in the codebase (search for "deprecated" in cli.py)
+- [x] Test patterns: `tests/test_lifecycle.py` for test structure conventions
 
 ## Quality Gates
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] Tests written before/with implementation
-- [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
+- [x] Tests written before/with implementation
+- [x] Tests pass: `uv run gz test`
+- [x] Validation commands recorded in evidence with real outputs
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.19.0-08-01: Given an operator invokes `gz gates`, when the command starts, then a deprecation warning containing "deprecated" and "gz closeout" is printed to stderr before gate execution begins.
-- [ ] REQ-0.19.0-08-02: Given an operator invokes `gz gates --gate 2`, when the command completes, then Gate 2 executes normally and produces the same exit code and ledger events as before the deprecation.
-- [ ] REQ-0.19.0-08-03: Given `closeout_cmd()` calls `_run_gate_1` through `_run_gate_5` internally, when closeout runs, then no deprecation warning is emitted (only `gates_cmd` entry point triggers the warning).
-- [ ] REQ-0.19.0-08-04: Given `docs/user/commands/gates.md`, when an operator reads the documentation, then a deprecation notice is visible at the top stating the command is subsumed by `gz closeout`.
+- [x] REQ-0.19.0-08-01: Given an operator invokes `gz gates`, when the command starts, then a deprecation warning containing "deprecated" and "gz closeout" is printed to stderr before gate execution begins.
+- [x] REQ-0.19.0-08-02: Given an operator invokes `gz gates --gate 2`, when the command completes, then Gate 2 executes normally and produces the same exit code and ledger events as before the deprecation.
+- [x] REQ-0.19.0-08-03: Given `closeout_cmd()` calls `_run_gate_1` through `_run_gate_5` internally, when closeout runs, then no deprecation warning is emitted (only `gates_cmd` entry point triggers the warning).
+- [x] REQ-0.19.0-08-04: Given `docs/user/commands/gates.md`, when an operator reads the documentation, then a deprecation notice is visible at the top stating the command is subsumed by `gz closeout`.
 
 ## Verification
 
@@ -113,12 +113,12 @@ uv run gz gates --help
 
 ## Completion Checklist (Lite)
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Unit tests pass
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Unit tests pass
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -126,18 +126,24 @@ uv run gz gates --help
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+$ uv run -m unittest tests.test_gates_deprecation -v
+test_deprecation_warning_emitted ... ok
+test_gate_runners_importable_independently ... ok
+test_gates_still_execute_after_warning ... ok
+Ran 3 tests in 0.008s — OK
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+$ uv run gz lint — All checks passed
+$ uv run gz typecheck — All checks passed
+$ uv run gz test — 1082 tests pass
 ```
 
 ### Value Narrative
@@ -149,22 +155,22 @@ uv run gz gates --help
 ### Key Proof
 
 ```bash
-# After implementation:
 $ uv run gz gates --adr ADR-0.19.0
-[yellow]Deprecated:[/yellow] `gz gates` is deprecated and will be removed in a future release.
-Use `gz closeout ADR-0.19.0` instead, which runs gates as part of the closeout pipeline.
+Deprecated: `gz gates` is deprecated and will be removed in a future release.
+Use `gz closeout` instead, which runs gates as part of the closeout pipeline.
 
-[bold]Gate 1 (ADR):[/bold] ...
-[bold]Gate 2 (TDD):[/bold] ...
+Gate 1 (ADR): ...
+Gate 2 (TDD): ...
 ```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created: `tests/test_gates_deprecation.py` (3 tests)
+- Files modified: `src/gzkit/cli.py` (deprecation print to stderr in `gates_cmd()`), `docs/user/commands/gates.md` (deprecation notice blockquote)
+- Tests added: 3 (TestGatesDeprecationWarning)
+- Date completed: 2026-03-22
+- Attestation status: Human attested — "attest completed"
+- Defects noted: None
 
 ## Tracked Defects
 
@@ -172,14 +178,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a` (Lite lane — self-closeable after evidence)
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: Human
+- Attestation: attest completed
+- Date: 2026-03-22
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-22
 
 **Evidence Hash:** -
