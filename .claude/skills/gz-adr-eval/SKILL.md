@@ -1,6 +1,6 @@
 ---
 name: gz-adr-eval
-description: Post-authoring quality evaluation for ADRs and OBPIs. Scores ADRs on 8 weighted dimensions, OBPIs on 5 dimensions, and can run 10 structured red-team challenges before proposal/defense. CLI surface is `gz adr evaluate`.
+description: Post-authoring quality evaluation for ADRs and OBPIs. Scores ADRs on 8 weighted dimensions, OBPIs on 5 dimensions, and can run 10 structured red-team challenges before proposal/defense.
 category: adr-lifecycle
 compatibility: GovZero v6 framework; adapted from AirlineOps for gzkit ADR package layouts
 metadata:
