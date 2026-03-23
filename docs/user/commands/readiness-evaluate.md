@@ -1,4 +1,4 @@
-# gz readiness eval
+# gz readiness evaluate
 
 Run the instruction architecture eval suite with positive and negative controls across four readiness dimensions.
 
@@ -7,7 +7,7 @@ Run the instruction architecture eval suite with positive and negative controls 
 ## Usage
 
 ```bash
-gz readiness eval [--json]
+gz readiness evaluate [--json]
 ```
 
 ---
@@ -34,7 +34,7 @@ Scoring is 0.00-3.00 per dimension. The command fails when any eval case fails.
 ## Example
 
 ```bash
-uv run gz readiness eval
+uv run gz readiness evaluate
 ```
 
 ---

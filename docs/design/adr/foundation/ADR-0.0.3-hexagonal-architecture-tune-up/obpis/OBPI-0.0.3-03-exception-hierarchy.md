@@ -6,84 +6,71 @@ lane: Heavy
 status: Draft
 ---
 
-# OBPI-0.0.3-03-exception-hierarchy: Exception Hierarchy
+# OBPI-0.0.3-03-exception-hierarchy: Exception Hierarchy & Exit Codes
 
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.3-hexagonal-architecture-tune-up/ADR-0.0.3-hexagonal-architecture-tune-up.md`
-- **Checklist Item:** #3 - "OBPI-0.0.3-03: Exception Hierarchy"
+- **Checklist Item:** #3 - "OBPI-0.0.3-03: Exception Hierarchy & Exit Codes"
 
 **Status:** Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-Exception Hierarchy
+Create `src/gzkit/core/exceptions.py` with a retryability-oriented domain exception hierarchy (GzError, TransientError, PermanentError, OperatorError, PolicyError) and a deterministic exit code mapping (0/1/2/3).
 
 ## Lane
 
-**Heavy** - This OBPI changes a command/API/schema/runtime contract surface.
-
-> Heavy is reserved for command/API/schema/runtime-contract changes. Process,
-> documentation, and template-only work stays Lite unless it changes one of
-> those external surfaces.
+**Heavy** — Defines a public exception contract and exit code schema that CLI and adapters depend on.
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `src/gzkit/core/exceptions.py` — Exception hierarchy definition
+- `src/gzkit/core/__init__.py` — Re-export exception classes
+- `tests/test_core_exceptions.py` — Unit tests for exception hierarchy
+- `docs/design/adr/foundation/ADR-0.0.3-hexagonal-architecture-tune-up/obpis/OBPI-0.0.3-03-exception-hierarchy.md` — This brief
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
-- `docs/design/**` - ADR changes out of scope
+- `src/gzkit/cli.py` — Wiring exceptions into CLI is future work
+- `src/gzkit/commands/**` — Command error handling migration is future work
+- `src/gzkit/adapters/` — Adapter exception translation is future work
+- `docs/design/**` — ADR changes out of scope
 - New dependencies
 - CI files, lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: `GzError` is the base exception for all gzkit domain errors
+2. REQUIREMENT: `TransientError(GzError)` represents retryable failures (network, temp I/O) → exit code 2
+3. REQUIREMENT: `PermanentError(GzError)` represents non-retryable failures (data corruption, schema mismatch) → exit code 1
+4. REQUIREMENT: `OperatorError(GzError)` represents human-action-needed failures (config, permissions) → exit code 1
+5. REQUIREMENT: `PolicyError(GzError)` represents governance policy breaches → exit code 3
+6. REQUIREMENT: Each exception class has an `exit_code` property returning its mapped integer
+7. REQUIREMENT: Exit code mapping matches the ADR's Standard 4-Code Map (0=success, 1=user/config, 2=system/IO, 3=policy)
+8. NEVER: Use bare `except:` or `except Exception:` — always catch specific exception types
+9. NEVER: Define exceptions outside `core/exceptions.py` — this is the single source
+10. ALWAYS: Exception classes are importable via `from gzkit.core.exceptions import GzError`
 
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if `src/gzkit/core/__init__.py` does not exist (OBPI-01), halt.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first. -->
+**Prerequisites (STOP if missing):**
 
-**Governance (read once, cache):**
-
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
+- [ ] `src/gzkit/core/__init__.py` exists (OBPI-01 completed)
 
 **Context:**
 
-- [ ] Parent ADR: `docs/design/adr/foundation/ADR-0.0.3-hexagonal-architecture-tune-up/ADR-0.0.3-hexagonal-architecture-tune-up.md`
-- [ ] Related OBPIs in same ADR
+- [ ] Parent ADR — Exit code mapping table and exception hierarchy design
+- [ ] `.claude/rules/cli.md` — Exit code contract (Standard 4-Code Map)
+- [ ] `.claude/rules/pythonic.md` — Exception handling conventions
 
-**Prerequisites (check existence, STOP if missing):**
+**Existing Code:**
 
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
-
-**Existing Code (understand current state):**
-
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+- [ ] Grep for existing exception patterns in `src/gzkit/` to understand current ad-hoc error handling
 
 ## Quality Gates
-
-<!-- Which gates apply and how to verify them. -->
 
 ### Gate 1: ADR
 
@@ -92,24 +79,22 @@ Exception Hierarchy
 
 ### Gate 2: TDD
 
-- [ ] Tests written before/with implementation
+- [ ] Tests verify each exception class exists and has correct `exit_code`
+- [ ] Tests verify inheritance hierarchy
 - [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
 
 ### Code Quality
 
 - [ ] Lint clean: `uv run gz lint`
 - [ ] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
 ### Gate 3: Docs (Heavy only)
 
 - [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
+- [ ] N/A — Exception hierarchy is internal contract, no CLI surface change yet
 
 ### Gate 5: Human (Heavy only)
 
@@ -117,32 +102,30 @@ Exception Hierarchy
 
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
-uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
 uv run gz test
 
-# Specific verification for this OBPI
-command --to --verify
+# Specific verification
+python -c "from gzkit.core.exceptions import GzError, TransientError, PermanentError, OperatorError, PolicyError; print('All exceptions importable')"
+python -c "from gzkit.core.exceptions import TransientError; assert TransientError('x').exit_code == 2"
+python -c "from gzkit.core.exceptions import PolicyError; assert PolicyError('x').exit_code == 3"
+uv run -m unittest tests.test_core_exceptions -v
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-
+- [ ] REQ-0.0.3-03-01: `GzError` base exception exists in `core/exceptions.py`
+- [ ] REQ-0.0.3-03-02: `TransientError` has `exit_code == 2`
+- [ ] REQ-0.0.3-03-03: `PermanentError` has `exit_code == 1`
+- [ ] REQ-0.0.3-03-04: `OperatorError` has `exit_code == 1`
+- [ ] REQ-0.0.3-03-05: `PolicyError` has `exit_code == 3`
+- [ ] REQ-0.0.3-03-06: All exception classes inherit from `GzError`
+- [ ] REQ-0.0.3-03-07: Exception classes are importable via `gzkit.core.exceptions`
+- [ ] REQ-0.0.3-03-08: Unit tests verify hierarchy and exit code mapping
 
 ## Completion Checklist
-
-<!-- Verify all gates before marking OBPI accepted. -->
 
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
 - [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
@@ -154,9 +137,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
 ## Evidence
-
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
 
 ### Gate 1 (ADR)
 
@@ -177,28 +157,24 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here when Gate 3 applies
+# Paste docs-build output here
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here when Gate 4 applies
+N/A — No CLI surface changes yet
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+# Record attestation text here
 ```
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
-
 ### Key Proof
-
-<!-- One concrete usage example, command, or before/after behavior. -->
 
 ### Implementation Summary
 
@@ -210,16 +186,13 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ## Tracked Defects
 
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
-
 _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `human:<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `human:<name>` — required (parent ADR is Heavy, Foundation series)
+- Attestation: substantive attestation text required
+- Date: YYYY-MM-DD
 
 ---
 

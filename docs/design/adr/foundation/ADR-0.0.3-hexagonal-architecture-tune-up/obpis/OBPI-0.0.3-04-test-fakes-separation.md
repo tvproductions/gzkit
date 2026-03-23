@@ -17,73 +17,67 @@ status: Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-Test Fakes & Separation
+Create `tests/fakes/` directory with in-memory implementations of the four port Protocols (FileStore, ProcessRunner, LedgerStore, ConfigStore), and establish `tests/unit/`, `tests/integration/`, and `tests/policy/` directories for test separation.
 
 ## Lane
 
-**Heavy** - This OBPI changes a command/API/schema/runtime contract surface.
-
-> Heavy is reserved for command/API/schema/runtime-contract changes. Process,
-> documentation, and template-only work stays Lite unless it changes one of
-> those external surfaces.
+**Heavy** — Introduces new test infrastructure packages and establishes architectural test boundaries.
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `tests/fakes/__init__.py` — Fakes package init, re-exports all fakes
+- `tests/fakes/filesystem.py` — In-memory FileStore implementation
+- `tests/fakes/process.py` — In-memory ProcessRunner (canned results)
+- `tests/fakes/ledger.py` — In-memory LedgerStore (list-backed)
+- `tests/fakes/config.py` — In-memory ConfigStore (dict-backed)
+- `tests/unit/__init__.py` — Unit test package init
+- `tests/integration/__init__.py` — Integration test package init
+- `tests/policy/__init__.py` — Policy test package init
+- `tests/test_fakes.py` — Tests verifying fakes satisfy Protocol contracts
+- `docs/design/adr/foundation/ADR-0.0.3-hexagonal-architecture-tune-up/obpis/OBPI-0.0.3-04-test-fakes-separation.md` — This brief
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
-- `docs/design/**` - ADR changes out of scope
+- `src/gzkit/**` — No source changes (test infrastructure only)
+- `tests/test_*.py` (existing) — Do not move or modify existing tests
+- `tests/commands/**` (existing) — Do not move or modify existing command tests
+- `docs/design/**` — ADR changes out of scope
 - New dependencies
 - CI files, lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: Each fake satisfies its corresponding Protocol via structural subtyping (duck typing) — no inheritance from the Protocol class
+2. REQUIREMENT: `tests/fakes/` imports only from `gzkit.ports` and stdlib
+3. REQUIREMENT: `InMemoryFileStore` stores content in a `dict[str, str]` keyed by path string
+4. REQUIREMENT: `InMemoryProcessRunner` returns configurable canned `(exit_code, stdout, stderr)` tuples
+5. REQUIREMENT: `InMemoryLedgerStore` uses a `list[dict]` as backing store
+6. REQUIREMENT: `InMemoryConfigStore` uses a `dict` as backing store
+7. REQUIREMENT: All existing tests in `tests/` and `tests/commands/` continue to pass unchanged
+8. NEVER: Move existing test files — this OBPI creates new directories only
+9. NEVER: Import from `cli/`, `commands/`, or `adapters/` in fakes
+10. ALWAYS: Fakes are deterministic — no randomness, no I/O, no side effects
 
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if `src/gzkit/ports/interfaces.py` does not exist (OBPI-01), halt.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first. -->
+**Prerequisites (STOP if missing):**
 
-**Governance (read once, cache):**
-
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
+- [ ] `src/gzkit/ports/interfaces.py` exists with four Protocol definitions (OBPI-01 completed)
 
 **Context:**
 
-- [ ] Parent ADR: `docs/design/adr/foundation/ADR-0.0.3-hexagonal-architecture-tune-up/ADR-0.0.3-hexagonal-architecture-tune-up.md`
-- [ ] Related OBPIs in same ADR
+- [ ] Parent ADR — Test directory structure and import rules
+- [ ] `.claude/rules/tests.md` — Test policy (stdlib unittest, no pytest, DB isolation)
 
-**Prerequisites (check existence, STOP if missing):**
+**Existing Code:**
 
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
-
-**Existing Code (understand current state):**
-
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+- [ ] `tests/` — Current flat test layout
+- [ ] `tests/commands/` — Current command test layout
+- [ ] `src/gzkit/ports/interfaces.py` — Protocol signatures to implement
 
 ## Quality Gates
-
-<!-- Which gates apply and how to verify them. -->
 
 ### Gate 1: ADR
 
@@ -92,24 +86,22 @@ Test Fakes & Separation
 
 ### Gate 2: TDD
 
-- [ ] Tests written before/with implementation
+- [ ] Tests verify each fake satisfies its Protocol contract
+- [ ] All existing tests still pass
 - [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
 
 ### Code Quality
 
 - [ ] Lint clean: `uv run gz lint`
 - [ ] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
 ### Gate 3: Docs (Heavy only)
 
 - [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
+- [ ] N/A — Test infrastructure, no CLI surface changes
 
 ### Gate 5: Human (Heavy only)
 
@@ -117,32 +109,28 @@ Test Fakes & Separation
 
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
-uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
 uv run gz test
 
-# Specific verification for this OBPI
-command --to --verify
+# Specific verification
+python -c "from tests.fakes import InMemoryFileStore, InMemoryProcessRunner, InMemoryLedgerStore, InMemoryConfigStore; print('All fakes importable')"
+uv run -m unittest tests.test_fakes -v
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-
+- [ ] REQ-0.0.3-04-01: `tests/fakes/filesystem.py` contains InMemoryFileStore satisfying FileStore Protocol
+- [ ] REQ-0.0.3-04-02: `tests/fakes/process.py` contains InMemoryProcessRunner satisfying ProcessRunner Protocol
+- [ ] REQ-0.0.3-04-03: `tests/fakes/ledger.py` contains InMemoryLedgerStore satisfying LedgerStore Protocol
+- [ ] REQ-0.0.3-04-04: `tests/fakes/config.py` contains InMemoryConfigStore satisfying ConfigStore Protocol
+- [ ] REQ-0.0.3-04-05: `tests/unit/`, `tests/integration/`, `tests/policy/` directories exist with `__init__.py`
+- [ ] REQ-0.0.3-04-06: Fakes import only from `gzkit.ports` and stdlib
+- [ ] REQ-0.0.3-04-07: All existing tests pass unchanged
+- [ ] REQ-0.0.3-04-08: Protocol conformance tests verify each fake
 
 ## Completion Checklist
-
-<!-- Verify all gates before marking OBPI accepted. -->
 
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
 - [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
@@ -154,9 +142,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
 ## Evidence
-
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
 
 ### Gate 1 (ADR)
 
@@ -177,28 +162,24 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here when Gate 3 applies
+# Paste docs-build output here
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here when Gate 4 applies
+N/A — Test infrastructure only
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+# Record attestation text here
 ```
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
-
 ### Key Proof
-
-<!-- One concrete usage example, command, or before/after behavior. -->
 
 ### Implementation Summary
 
@@ -210,16 +191,13 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ## Tracked Defects
 
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
-
 _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `human:<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `human:<name>` — required (parent ADR is Heavy, Foundation series)
+- Attestation: substantive attestation text required
+- Date: YYYY-MM-DD
 
 ---
 

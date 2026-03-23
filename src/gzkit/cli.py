@@ -198,6 +198,8 @@ SEMVER_ID_RENAMES: tuple[tuple[str, str], ...] = (
         "OBPI-0.4.0-01-skill-source-centralization",
     ),
     ("OBPI-0.8.0-01-skill-source-centralization", "OBPI-0.4.0-01-skill-source-centralization"),
+    # Foundation ADR scaffold → full-slug migration.
+    ("ADR-0.0.4", "ADR-0.0.4-cli-standards-presentation-foundation"),
 )
 
 
@@ -820,14 +822,33 @@ def _normalized_objective_from_checklist_item(checklist_item_text: str) -> str:
     return f"{objective}."
 
 
-def _slugify_obpi_name(value: str) -> str:
-    """Convert checklist text into a stable OBPI slug suffix.
+def _extract_semver(adr_id: str) -> str | None:
+    """Extract the semver portion from an ADR identifier.
 
-    Delegates to :func:`gzkit.superbook.slugify_obpi_name`.
+    Handles both bare (``ADR-0.14.0``) and slugged
+    (``ADR-0.14.0-multi-agent-...``) forms.
     """
-    from gzkit.superbook import slugify_obpi_name  # noqa: PLC0415
+    m = re.match(r"ADR-(\d+\.\d+\.\d+)", adr_id)
+    return m.group(1) if m else None
 
-    return slugify_obpi_name(value)
+
+def _slugify_obpi_name(value: str) -> str:
+    """Convert checklist text into a stable OBPI slug suffix."""
+    stripped = re.sub(r"`([^`]*)`", r"\1", value)
+    slug = re.sub(r"[^a-zA-Z0-9]+", "-", stripped).strip("-").lower()
+    return slug or "scope-item"
+
+
+def _render_obpi_acceptance_seed(version: str, item: int) -> str:
+    """Create placeholder acceptance criteria seed for an OBPI."""
+    req_prefix = f"REQ-{version}-{item:02d}"
+    return "\n".join(
+        [
+            f"- [ ] {req_prefix}-01: Given/When/Then behavior criterion 1",
+            f"- [ ] {req_prefix}-02: Given/When/Then behavior criterion 2",
+            f"- [ ] {req_prefix}-03: Given/When/Then behavior criterion 3",
+        ]
+    )
 
 
 def _build_obpi_plan(
@@ -842,23 +863,61 @@ def _build_obpi_plan(
     title: str,
     objective: str,
 ) -> dict[str, Any]:
-    """Build deterministic OBPI artifact plan.
+    """Build deterministic OBPI artifact plan."""
+    from gzkit.templates import render_template  # noqa: PLC0415
 
-    Delegates to :func:`gzkit.superbook.build_obpi_plan`.
-    """
-    from gzkit.superbook import build_obpi_plan  # noqa: PLC0415
-
-    return build_obpi_plan(
-        project_root=project_root,
-        adr_file=adr_file,
-        parent_adr_id=parent_adr_id,
-        item=item,
-        checklist_item_text=checklist_item_text,
-        lane=lane,
-        name=name,
-        title=title,
-        objective=objective,
+    version = _extract_semver(parent_adr_id) or parent_adr_id.replace("ADR-", "").split("-")[0]
+    obpi_id = f"OBPI-{version}-{item:02d}-{name}"
+    lane_cap = lane.capitalize()
+    lane_requirements = (
+        "All 5 gates required: ADR, TDD, Docs, BDD, Human attestation"
+        if lane == "heavy"
+        else "Gates 1, 2 required: ADR, TDD"
     )
+    lane_rationale = (
+        "This OBPI changes a command/API/schema/runtime contract surface."
+        if lane == "heavy"
+        else "This OBPI remains internal to the promoted ADR implementation scope."
+    )
+    acceptance_criteria_seed = _render_obpi_acceptance_seed(version, item)
+    allowed_paths_md = (
+        "- `src/module/` - Reason this is in scope\n- `tests/test_module.py` - Reason"
+    )
+    denied_paths_md = (
+        "- Paths not listed in Allowed Paths\n- New dependencies\n- CI files, lockfiles"
+    )
+    requirements_md = (
+        "1. REQUIREMENT: First constraint\n"
+        "1. REQUIREMENT: Second constraint\n"
+        "1. NEVER: What must not happen\n"
+        "1. ALWAYS: What must always be true"
+    )
+
+    content = render_template(
+        "obpi",
+        id=obpi_id,
+        title=title,
+        parent_adr=parent_adr_id,
+        parent_adr_path=str(adr_file.relative_to(project_root)),
+        item_number=str(item),
+        checklist_item_text=checklist_item_text,
+        lane=lane_cap,
+        lane_rationale=lane_rationale,
+        objective=objective,
+        lane_requirements=lane_requirements,
+        acceptance_criteria_seed=acceptance_criteria_seed,
+        allowed_paths_md=allowed_paths_md,
+        denied_paths_md=denied_paths_md,
+        requirements_md=requirements_md,
+        work_breakdown_md="",
+    )
+    obpi_dir = adr_file.parent / "obpis"
+    obpi_file = obpi_dir / f"{obpi_id}.md"
+    return {
+        "obpi_id": obpi_id,
+        "obpi_file": obpi_file,
+        "content": content,
+    }
 
 
 def _pool_title_from_content(content: str) -> str | None:
@@ -4105,20 +4164,6 @@ def _collect_obpi_path_contract_issues(
     return issues
 
 
-def _superbook_dispatch(
-    mode: str,
-    spec_path: str,
-    plan_path: str,
-    semver: str | None,
-    lane: str | None,
-    apply: bool,
-) -> None:
-    """Dispatch to superbook command implementation."""
-    from gzkit.commands.superbook import superbook_cmd  # noqa: PLC0415
-
-    superbook_cmd(mode, spec_path, plan_path, semver=semver, lane=lane, apply=apply)
-
-
 def check_config_paths_cmd(as_json: bool) -> None:
     """Validate that configured and manifest-declared paths exist and are coherent."""
     config = ensure_initialized()
@@ -5561,31 +5606,6 @@ def _build_parser() -> argparse.ArgumentParser:
         )
     )
 
-    # superbook
-    p_superbook = commands.add_parser(
-        "superbook", help="Bridge superpowers artifacts to GovZero governance"
-    )
-    p_superbook.add_argument("mode", choices=["retroactive", "forward"], help="Booking mode")
-    p_superbook.add_argument("--spec", required=True, help="Path to superpowers spec")
-    p_superbook.add_argument("--plan", required=True, help="Path to superpowers plan")
-    p_superbook.add_argument("--semver", default=None, help="Override auto-assigned semver")
-    p_superbook.add_argument(
-        "--lane", default=None, choices=["lite", "heavy"], help="Override lane"
-    )
-    p_superbook.add_argument(
-        "--apply", action="store_true", help="Write artifacts (default: dry-run)"
-    )
-    p_superbook.set_defaults(
-        func=lambda a: _superbook_dispatch(
-            mode=a.mode,
-            spec_path=a.spec,
-            plan_path=a.plan,
-            semver=a.semver,
-            lane=a.lane,
-            apply=a.apply,
-        )
-    )
-
     p_state = commands.add_parser("state", help="Query ledger state and relationships")
     p_state.add_argument("--json", dest="as_json", action="store_true")
     p_state.add_argument("--blocked", action="store_true")
@@ -5699,7 +5719,7 @@ def _build_parser() -> argparse.ArgumentParser:
     )
 
     p_adr_eval = adr_commands.add_parser(
-        "eval", help="Evaluate ADR/OBPI quality (deterministic scoring)"
+        "evaluate", help="Evaluate ADR/OBPI quality (deterministic scoring)"
     )
     p_adr_eval.add_argument("adr_id", help="ADR identifier (e.g., ADR-0.19.0)")
     p_adr_eval.add_argument("--json", dest="as_json", action="store_true")
@@ -5861,7 +5881,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p_readiness_audit.add_argument("--json", dest="as_json", action="store_true")
     p_readiness_audit.set_defaults(func=lambda a: readiness_audit_cmd(as_json=a.as_json))
     p_readiness_eval = readiness_commands.add_parser(
-        "eval", help="Run instruction eval suite with positive/negative controls"
+        "evaluate", help="Run instruction eval suite with positive/negative controls"
     )
     p_readiness_eval.add_argument("--json", dest="as_json", action="store_true")
     p_readiness_eval.set_defaults(func=lambda a: readiness_eval_cmd(as_json=a.as_json))

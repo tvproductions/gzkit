@@ -22,6 +22,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz adr status`](adr-status.md) | Show focused OBPI progress for one ADR |
 | [`gz adr report`](adr-report.md) | Deterministic tabular report (summary or single ADR) |
 | [`gz adr promote`](adr-promote.md) | Promote a pool ADR into canonical ADR package structure |
+| [`gz adr evaluate`](adr-evaluate.md) | Evaluate ADR/OBPI quality (deterministic scoring with verdict) |
 | [`gz adr audit-check`](adr-audit-check.md) | Verify OBPI completeness/evidence for one ADR |
 | [`gz adr covers-check`](adr-covers-check.md) | Verify ADR/OBPI @covers traceability in tests |
 | [`gz closeout`](closeout.md) | Present closeout paths/commands and record closeout initiation |
@@ -57,7 +58,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz skill audit`](skill-audit.md) | Audit skill lifecycle metadata and mirror parity |
 | [`gz parity check`](parity-check.md) | Run deterministic parity regression checks |
 | [`gz readiness audit`](readiness-audit.md) | Audit agent-readiness maturity across core disciplines |
-| [`gz readiness eval`](readiness-eval.md) | Run instruction architecture eval suite with positive/negative controls |
+| [`gz readiness evaluate`](readiness-evaluate.md) | Run instruction architecture eval suite with positive/negative controls |
 | [`gz check-config-paths`](check-config-paths.md) | Validate configured + manifest path coherence |
 | [`gz cli audit`](cli-audit.md) | Validate CLI docs/manpage coverage |
 | [`gz agent sync control-surfaces`](agent-sync-control-surfaces.md) | Regenerate control surfaces |
