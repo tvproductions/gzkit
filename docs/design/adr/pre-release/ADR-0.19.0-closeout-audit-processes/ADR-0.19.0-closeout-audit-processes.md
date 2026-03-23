@@ -230,4 +230,4 @@ Promotion derived from `ADR-pool.audit-system` on 2026-03-18; executable scope w
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.19.0 | Pending | | | |
+| 0.19.0 | Completed | Jeffry Babb | 2026-03-22 | completed |
