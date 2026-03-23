@@ -1,5 +1,5 @@
 ---
-id: OBPI-0.0.4-04
+id: OBPI-0.0.4-04-help-text-completeness
 title: Help Text Completeness
 parent: ADR-0.0.4-cli-standards-presentation-foundation
 status: Pending

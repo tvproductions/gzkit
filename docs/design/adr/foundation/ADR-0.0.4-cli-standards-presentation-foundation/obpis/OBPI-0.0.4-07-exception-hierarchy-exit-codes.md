@@ -1,5 +1,5 @@
 ---
-id: OBPI-0.0.4-07
+id: OBPI-0.0.4-07-exception-hierarchy-exit-codes
 title: Exception Hierarchy & Exit Codes
 parent: ADR-0.0.4-cli-standards-presentation-foundation
 status: Pending

@@ -1,5 +1,5 @@
 ---
-id: OBPI-0.0.4-06
+id: OBPI-0.0.4-06-output-formatter
 title: OutputFormatter
 parent: ADR-0.0.4-cli-standards-presentation-foundation
 status: Pending

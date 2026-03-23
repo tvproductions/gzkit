@@ -1,5 +1,5 @@
 ---
-id: OBPI-0.0.4-09
+id: OBPI-0.0.4-09-progress-indication
 title: Progress Indication
 parent: ADR-0.0.4-cli-standards-presentation-foundation
 status: Pending
