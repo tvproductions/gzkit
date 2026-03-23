@@ -810,6 +810,12 @@ def specify(
     ledger.append(obpi_created_event(obpi_id, resolved_parent))
 
     console.print(f"Created OBPI: {obpi_file}")
+    console.print(
+        "[yellow]Warning:[/yellow] Brief contains template defaults and needs authoring "
+        "before pipeline execution."
+    )
+    console.print(f"  Next step: author {obpi_file} with real scope, requirements, and criteria.")
+    console.print("  Validate with: uv run gz obpi validate " + str(obpi_file))
 
 
 def _normalized_objective_from_checklist_item(checklist_item_text: str) -> str:
@@ -4006,11 +4012,19 @@ def obpi_pipeline_cmd(
         return
 
 
-def obpi_validate_cmd(obpi_path: str) -> None:
-    """Validate an OBPI brief file for completion readiness."""
-    ensure_initialized()
+def obpi_validate_cmd(obpi_path: str | None, adr_id: str | None) -> None:
+    """Validate OBPI brief(s) for completion readiness."""
+    config = ensure_initialized()
     project_root = get_project_root()
     validator = ObpiValidator(project_root)
+
+    if adr_id and not obpi_path:
+        _obpi_validate_batch(project_root, config, validator, adr_id)
+        return
+
+    if not obpi_path:
+        console.print("[red]Error:[/red] Provide an OBPI path or --adr flag.")
+        raise SystemExit(1)
 
     path = Path(obpi_path)
     if not path.is_absolute():
@@ -4026,6 +4040,48 @@ def obpi_validate_cmd(obpi_path: str) -> None:
         raise SystemExit(1)
 
     console.print(f"[green]OBPI Validation Passed:[/green] {path.name}")
+
+
+def _obpi_validate_batch(
+    project_root: Path,
+    config: Any,
+    validator: ObpiValidator,
+    adr_id: str,
+) -> None:
+    """Validate all OBPI briefs under an ADR package."""
+    from gzkit.ledger import Ledger  # noqa: PLC0415
+
+    ledger = Ledger(project_root / config.paths.ledger)
+    adr_input = adr_id if adr_id.startswith("ADR-") else f"ADR-{adr_id}"
+    canonical = ledger.canonicalize_id(adr_input)
+    adr_file, resolved = resolve_adr_file(project_root, config, canonical)
+
+    obpi_dir = adr_file.parent / "obpis"
+    if not obpi_dir.is_dir():
+        console.print(f"[red]No obpis/ directory found for {resolved}[/red]")
+        raise SystemExit(1)
+
+    briefs = sorted(obpi_dir.glob("OBPI-*.md"))
+    if not briefs:
+        console.print(f"[red]No OBPI briefs found in {obpi_dir}[/red]")
+        raise SystemExit(1)
+
+    total_errors = 0
+    for brief_path in briefs:
+        errors = validator.validate_file(brief_path)
+        if errors:
+            total_errors += 1
+            console.print(f"[red]FAIL[/red] {brief_path.name}")
+            for error in errors:
+                console.print(f"  - {error}")
+        else:
+            console.print(f"[green]PASS[/green] {brief_path.name}")
+
+    console.print()
+    if total_errors:
+        console.print(f"[red]{total_errors}/{len(briefs)} briefs failed validation[/red]")
+        raise SystemExit(1)
+    console.print(f"[green]All {len(briefs)} briefs passed validation[/green]")
 
 
 def _append_path_issue(issues: list[dict[str, str]], path: str, issue: str) -> None:
@@ -5845,10 +5901,20 @@ def _build_parser() -> argparse.ArgumentParser:
     p_obpi_reconcile.set_defaults(func=lambda a: obpi_reconcile_cmd(obpi=a.obpi, as_json=a.as_json))
 
     p_obpi_validate = obpi_commands.add_parser(
-        "validate", help="Validate OBPI brief for completion readiness"
+        "validate", help="Validate OBPI brief(s) for completion readiness"
     )
-    p_obpi_validate.add_argument("obpi_path", help="Path to the OBPI brief file")
-    p_obpi_validate.set_defaults(func=lambda a: obpi_validate_cmd(obpi_path=a.obpi_path))
+    p_obpi_validate.add_argument(
+        "obpi_path", nargs="?", default=None, help="Path to a single OBPI brief file"
+    )
+    p_obpi_validate.add_argument(
+        "--adr",
+        dest="adr_id",
+        default=None,
+        help="Validate all OBPI briefs under an ADR (e.g., --adr ADR-0.0.3)",
+    )
+    p_obpi_validate.set_defaults(
+        func=lambda a: obpi_validate_cmd(obpi_path=a.obpi_path, adr_id=a.adr_id)
+    )
 
     p_check_paths = commands.add_parser(
         "check-config-paths", help="Validate config/manifest paths are coherent"
