@@ -22,6 +22,12 @@ uv run gz status
 uv run gz status --table
 uv run gz adr status ADR-<X.Y.Z> --json
 
+# 1b) Validate OBPI briefs before pipeline (catches template stubs)
+uv run gz obpi validate --adr ADR-<X.Y.Z>
+
+# 1c) Evaluate ADR quality (NO GO verdict blocks pipeline)
+uv run gz adr evaluate ADR-<X.Y.Z>
+
 # 2) Execute the OBPI through the staged pipeline
 uv run gz obpi pipeline OBPI-<X.Y.Z-NN>
 

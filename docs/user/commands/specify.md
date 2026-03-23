@@ -66,7 +66,14 @@ gz specify add-login --parent ADR-0.4.0-skill-capability-mirroring --item 2 --dr
 
 ```
 Created OBPI: docs/design/adr/pre-release/ADR-0.4.0-skill-capability-mirroring/obpis/OBPI-0.4.0-02-add-login.md
+Warning: Brief contains template defaults and needs authoring before pipeline execution.
+  Next step: author <path> with real scope, requirements, and criteria.
+  Validate with: uv run gz obpi validate <path>
 ```
+
+The created brief is a **template stub** with placeholder content (e.g., `"First constraint"`,
+`"src/module/"`). It must be authored with real scope, requirements, and acceptance criteria before
+the OBPI pipeline will accept it. Use `gz obpi validate` to verify the brief is properly authored.
 
 ---
 
@@ -102,6 +109,8 @@ The created brief contains:
 
 1. (Optional) Create a PRD with `gz prd`
 2. Create an ADR with `gz plan`
-3. Create an OBPI with `gz specify --parent ADR-...`
-4. Implement the solution
-5. Attest with `gz attest`
+3. Create an OBPI stub with `gz specify --parent ADR-...`
+4. **Author the brief** with real scope, requirements, and acceptance criteria
+5. Validate the brief: `gz obpi validate <path>`
+6. Execute the OBPI through the pipeline: `gz obpi pipeline OBPI-...`
+7. Attest with `gz attest` (Heavy/Foundation lane)
