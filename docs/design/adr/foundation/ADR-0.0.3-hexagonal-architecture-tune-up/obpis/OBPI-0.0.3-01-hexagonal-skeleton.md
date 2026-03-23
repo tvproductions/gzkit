@@ -17,73 +17,73 @@ status: Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-Hexagonal Skeleton
+Create the three-layer directory skeleton (`src/gzkit/ports/`, `src/gzkit/core/`, `src/gzkit/adapters/`) with `__init__.py` files and define the four port Protocol interfaces (FileStore, ProcessRunner, LedgerStore, ConfigStore) in `src/gzkit/ports/interfaces.py`.
 
 ## Lane
 
-**Heavy** - This OBPI changes a command/API/schema/runtime contract surface.
-
-> Heavy is reserved for command/API/schema/runtime-contract changes. Process,
-> documentation, and template-only work stays Lite unless it changes one of
-> those external surfaces.
+**Heavy** — Creates new package structure and public Protocol interfaces that all subsequent OBPIs depend on.
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `src/gzkit/ports/__init__.py` — New package init
+- `src/gzkit/ports/interfaces.py` — Four Protocol definitions
+- `src/gzkit/core/__init__.py` — New package init (empty, structure only)
+- `src/gzkit/adapters/__init__.py` — New package init (empty, structure only)
+- `tests/test_ports.py` — Protocol interface tests
+- `docs/design/adr/foundation/ADR-0.0.3-hexagonal-architecture-tune-up/obpis/OBPI-0.0.3-01-hexagonal-skeleton.md` — This brief
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
-- `docs/design/**` - ADR changes out of scope
+- `src/gzkit/cli.py` — Existing CLI (not this OBPI)
+- `src/gzkit/commands/**` — Existing commands (not this OBPI)
+- `src/gzkit/config.py` — Config refactor is OBPI-05
+- `src/gzkit/ledger.py` — Adapter extraction is OBPI-02
+- `src/gzkit/lifecycle.py` — Domain extraction is OBPI-02
+- `src/gzkit/validate.py` — Domain extraction is OBPI-02
+- `src/gzkit/decomposition.py` — Domain extraction is OBPI-02
+- `src/gzkit/core/models.py` — Domain extraction is OBPI-02
+- `src/gzkit/core/exceptions.py` — Exception hierarchy is OBPI-03
+- `tests/fakes/` — Test fakes are OBPI-04
+- `docs/design/**` — ADR changes out of scope
 - New dependencies
 - CI files, lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
-
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
+1. REQUIREMENT: `src/gzkit/ports/interfaces.py` defines exactly four Protocol classes: FileStore, ProcessRunner, LedgerStore, ConfigStore
+2. REQUIREMENT: All four Protocols use `typing.Protocol` for structural subtyping — adapters satisfy them implicitly via duck typing
+3. REQUIREMENT: `ports/` imports only `typing` and stdlib type annotations (`pathlib.Path`)
+4. REQUIREMENT: Each Protocol method has a type-annotated signature matching the ADR specification
+5. REQUIREMENT: `src/gzkit/core/__init__.py` and `src/gzkit/adapters/__init__.py` are created but empty (structure only)
+6. REQUIREMENT: `src/gzkit/ports/__init__.py` re-exports all four Protocol classes
+7. NEVER: Import from `cli/`, `commands/`, `adapters/`, `rich`, `argparse`, or any external library in `ports/`
+8. NEVER: Add concrete implementations in `ports/` — protocols only
+9. NEVER: Modify any existing module — this OBPI creates new files only
+10. ALWAYS: All new files pass `uv run gz lint` and `uv run gz typecheck`
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first. -->
-
 **Governance (read once, cache):**
 
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
+- [ ] `AGENTS.md` — Agent operating contract
+- [ ] Parent ADR: `docs/design/adr/foundation/ADR-0.0.3-hexagonal-architecture-tune-up/ADR-0.0.3-hexagonal-architecture-tune-up.md`
 
 **Context:**
 
-- [ ] Parent ADR: `docs/design/adr/foundation/ADR-0.0.3-hexagonal-architecture-tune-up/ADR-0.0.3-hexagonal-architecture-tune-up.md`
-- [ ] Related OBPIs in same ADR
-
-**Prerequisites (check existence, STOP if missing):**
-
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
+- [ ] ADR Port Interfaces section — exact Protocol signatures
+- [ ] ADR Layer Import Rules section — boundary constraints
+- [ ] ADR Target Project Structure section — directory layout
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+- [ ] `src/gzkit/ledger.py` — Current ledger I/O patterns (informs LedgerStore Protocol)
+- [ ] `src/gzkit/config.py` — Current config I/O patterns (informs ConfigStore Protocol)
+- [ ] `src/gzkit/lifecycle.py` — Current file I/O patterns (informs FileStore Protocol)
+- [ ] `src/gzkit/quality.py` — Current subprocess patterns (informs ProcessRunner Protocol)
 
 ## Quality Gates
-
-<!-- Which gates apply and how to verify them. -->
 
 ### Gate 1: ADR
 
@@ -92,7 +92,7 @@ Hexagonal Skeleton
 
 ### Gate 2: TDD
 
-- [ ] Tests written before/with implementation
+- [ ] Tests written for Protocol interface contracts
 - [ ] Tests pass: `uv run gz test`
 - [ ] Validation commands recorded in evidence with real outputs
 
@@ -101,15 +101,13 @@ Hexagonal Skeleton
 - [ ] Lint clean: `uv run gz lint`
 - [ ] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
 ### Gate 3: Docs (Heavy only)
 
 - [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
+- [ ] N/A — No CLI/API surface changes in this OBPI
 
 ### Gate 5: Human (Heavy only)
 
@@ -117,32 +115,30 @@ Hexagonal Skeleton
 
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
-uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
 uv run gz test
 
 # Specific verification for this OBPI
-command --to --verify
+python -c "from gzkit.ports import FileStore, ProcessRunner, LedgerStore, ConfigStore; print('All protocols importable')"
+uv run -m unittest tests.test_ports -v
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-
+- [ ] REQ-0.0.3-01-01: `src/gzkit/ports/interfaces.py` exists and defines FileStore Protocol
+- [ ] REQ-0.0.3-01-02: `src/gzkit/ports/interfaces.py` defines ProcessRunner Protocol
+- [ ] REQ-0.0.3-01-03: `src/gzkit/ports/interfaces.py` defines LedgerStore Protocol
+- [ ] REQ-0.0.3-01-04: `src/gzkit/ports/interfaces.py` defines ConfigStore Protocol
+- [ ] REQ-0.0.3-01-05: `src/gzkit/ports/__init__.py` re-exports all four Protocols
+- [ ] REQ-0.0.3-01-06: `src/gzkit/core/__init__.py` exists (empty, structural)
+- [ ] REQ-0.0.3-01-07: `src/gzkit/adapters/__init__.py` exists (empty, structural)
+- [ ] REQ-0.0.3-01-08: `ports/` imports only `typing` and `pathlib` — no external dependencies
+- [ ] REQ-0.0.3-01-09: All files pass lint and type check
+- [ ] REQ-0.0.3-01-10: Unit tests verify Protocol definitions are importable and structurally correct
 
 ## Completion Checklist
-
-<!-- Verify all gates before marking OBPI accepted. -->
 
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
 - [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
@@ -154,9 +150,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
 ## Evidence
-
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
 
 ### Gate 1 (ADR)
 
@@ -177,28 +170,24 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here when Gate 3 applies
+# Paste docs-build output here
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here when Gate 4 applies
+N/A — No CLI surface changes
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+# Record attestation text here
 ```
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
-
 ### Key Proof
-
-<!-- One concrete usage example, command, or before/after behavior. -->
 
 ### Implementation Summary
 
@@ -210,16 +199,13 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ## Tracked Defects
 
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
-
 _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `human:<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `human:<name>` — required (parent ADR is Heavy, Foundation series)
+- Attestation: substantive attestation text required
+- Date: YYYY-MM-DD
 
 ---
 
