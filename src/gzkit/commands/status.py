@@ -94,6 +94,7 @@ def _build_adr_status_entry(
     ledger: Ledger,
     adr_id: str,
     info: dict[str, Any],
+    obpi_index: list[tuple[str, str, Path]] | None = None,
 ) -> dict[str, Any]:
     """Build enriched ADR status payload for one ADR."""
     entry = dict(info)
@@ -111,7 +112,7 @@ def _build_adr_status_entry(
     if gate4_na is not None:
         entry["gate4_na_reason"] = gate4_na
 
-    obpi_rows = _adr_obpi_status_rows(project_root, config, ledger, adr_id)
+    obpi_rows = _adr_obpi_status_rows(project_root, config, ledger, adr_id, obpi_index=obpi_index)
     entry.update(Ledger.derive_adr_semantics(entry))
     _apply_pool_adr_status_overrides(adr_id, entry)
     entry["obpis"] = obpi_rows
@@ -149,11 +150,14 @@ def _collect_adr_statuses(
     graph: dict[str, dict[str, Any]],
 ) -> dict[str, dict[str, Any]]:
     """Collect enriched status payload for each ADR in the graph."""
+    obpi_index = _build_obpi_index(project_root, config, ledger)
     adrs: dict[str, dict[str, Any]] = {}
     for adr_id, info in graph.items():
         if info.get("type") != "adr":
             continue
-        adrs[adr_id] = _build_adr_status_entry(project_root, config, ledger, adr_id, info)
+        adrs[adr_id] = _build_adr_status_entry(
+            project_root, config, ledger, adr_id, info, obpi_index=obpi_index
+        )
     return adrs
 
 
@@ -594,11 +598,29 @@ def _inspect_obpi_brief(
     }
 
 
+def _build_obpi_index(
+    project_root: Path,
+    config: GzkitConfig,
+    ledger: Ledger,
+) -> list[tuple[str, str, Path]]:
+    """Scan all OBPI files once and return (canonical_id, canonical_parent, path) tuples."""
+    artifacts = scan_existing_artifacts(project_root, config.paths.design_root)
+    index: list[tuple[str, str, Path]] = []
+    for obpi_file in artifacts.get("obpis", []):
+        metadata = parse_artifact_metadata(obpi_file)
+        obpi_id = ledger.canonicalize_id(metadata.get("id", obpi_file.stem))
+        parent = metadata.get("parent", "")
+        canonical_parent = ledger.canonicalize_id(parent) if parent else ""
+        index.append((obpi_id, canonical_parent, obpi_file))
+    return index
+
+
 def _collect_obpi_files_for_adr(
     project_root: Path,
     config: GzkitConfig,
     ledger: Ledger,
     adr_id: str,
+    obpi_index: list[tuple[str, str, Path]] | None = None,
 ) -> tuple[dict[str, Path], list[str]]:
     if _is_pool_adr_id(adr_id):
         return {}, []
@@ -612,13 +634,11 @@ def _collect_obpi_files_for_adr(
         if graph.get(child_id, {}).get("type") == "obpi"
     ]
 
-    artifacts = scan_existing_artifacts(project_root, config.paths.design_root)
+    if obpi_index is None:
+        obpi_index = _build_obpi_index(project_root, config, ledger)
+
     obpi_files: dict[str, Path] = {}
-    for obpi_file in artifacts.get("obpis", []):
-        metadata = parse_artifact_metadata(obpi_file)
-        obpi_id = ledger.canonicalize_id(metadata.get("id", obpi_file.stem))
-        parent = metadata.get("parent", "")
-        canonical_parent = ledger.canonicalize_id(parent) if parent else ""
+    for obpi_id, canonical_parent, obpi_file in obpi_index:
         if canonical_parent == canonical_adr or obpi_id in expected_obpis:
             obpi_files[obpi_id] = obpi_file
 
@@ -630,9 +650,12 @@ def _adr_obpi_status_rows(
     config: GzkitConfig,
     ledger: Ledger,
     adr_id: str,
+    obpi_index: list[tuple[str, str, Path]] | None = None,
 ) -> list[dict[str, Any]]:
     """Build per-OBPI status rows for a target ADR."""
-    obpi_files, expected_obpis = _collect_obpi_files_for_adr(project_root, config, ledger, adr_id)
+    obpi_files, expected_obpis = _collect_obpi_files_for_adr(
+        project_root, config, ledger, adr_id, obpi_index=obpi_index
+    )
     rows: list[dict[str, Any]] = []
     graph = ledger.get_artifact_graph()
 
