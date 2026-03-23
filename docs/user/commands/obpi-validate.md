@@ -1,6 +1,6 @@
 # gz obpi validate
 
-Validate one OBPI brief for completion readiness.
+Validate OBPI brief(s) for completion readiness and scaffold detection.
 
 ---
 
@@ -8,19 +8,30 @@ Validate one OBPI brief for completion readiness.
 
 ```bash
 gz obpi validate <path-to-obpi-brief>
+gz obpi validate --adr ADR-X.Y.Z
 ```
 
-The argument is a filesystem path to the OBPI brief. Relative paths resolve from
-the current workspace root.
+Single-file mode takes a filesystem path to one OBPI brief. Relative paths resolve from the current workspace root.
+
+Batch mode (`--adr`) discovers and validates all OBPI briefs in the ADR package's `obpis/` directory.
 
 ---
 
 ## Runtime Behavior
 
-`gz obpi validate` is the pre-completion gate for OBPI brief files whose
-frontmatter `status` is `Completed`.
+### Scaffold Detection (all statuses)
 
-For completed briefs it fails closed on:
+For any brief regardless of status, the validator detects template placeholders left by `gz specify` or other scaffolding:
+
+- `src/module/` in Allowed Paths
+- `First constraint` or `Second constraint` in Requirements
+- `Given/When/Then behavior criterion` in Acceptance Criteria
+
+Scaffold detection warns that the brief was auto-generated but never authored.
+
+### Completion Readiness (status: Completed)
+
+For completed briefs the validator additionally fails closed on:
 
 - missing or empty `Allowed Paths`
 - changed files outside the OBPI allowlist
@@ -29,24 +40,34 @@ For completed briefs it fails closed on:
 - missing git-sync readiness prerequisites
 - missing heavy/foundation human-attestation evidence
 
-Git-sync validation uses a syncable-state contract. Dirty work is allowed when
-the changed files remain in scope; hard blockers such as "not a git repo",
-merge-head state, or unsafe `SKIP` values are not.
-
-Text mode prints `BLOCKERS:` followed by one blocker per line and exits `1`
-when validation fails. Passing validation exits `0`.
+Text mode prints `BLOCKERS:` followed by one blocker per line and exits `1` when validation fails. Passing validation exits `0`.
 
 ---
 
-## Example
+## Options
+
+| Option | Description |
+|--------|-------------|
+| `<path>` | Path to a single OBPI brief file |
+| `--adr ADR-X.Y.Z` | Validate all OBPI briefs under an ADR package |
+
+---
+
+## Examples
 
 ```bash
-uv run gz obpi validate docs/design/adr/pre-release/ADR-0.11.0-airlineops-obpi-completion-pipeline-parity/obpis/OBPI-0.11.0-02-obpi-completion-validator-and-git-sync-gate.md
+# Single brief
+uv run gz obpi validate docs/design/adr/foundation/ADR-0.0.3-hexagonal-architecture-tune-up/obpis/OBPI-0.0.3-01-hexagonal-skeleton.md
+
+# All briefs under an ADR
+uv run gz obpi validate --adr ADR-0.0.3
 ```
 
 ```text
-OBPI Validation Failed: OBPI-0.11.0-02-obpi-completion-validator-and-git-sync-gate.md
-BLOCKERS:
-- Changed-files audit found out-of-allowlist path: docs/user/runbook.md. Amend the OBPI or revert the change.
-- Refusing completion validation with SKIP that can bypass xenon complexity checks.
+PASS OBPI-0.0.3-01-hexagonal-skeleton.md
+PASS OBPI-0.0.3-02-domain-extraction.md
+FAIL OBPI-0.0.3-03-exception-hierarchy.md
+  - 'Requirements (FAIL-CLOSED)' contains template placeholder 'First constraint'
+
+1/3 briefs failed validation
 ```

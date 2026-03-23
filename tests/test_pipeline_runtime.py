@@ -295,5 +295,117 @@ class TestPipelineRuntime(unittest.TestCase):
             self.assertEqual(len(stale), 1)
 
 
+class TestValidateBriefForPipeline(unittest.TestCase):
+    """Tests for validate_brief_for_pipeline (#29)."""
+
+    def test_scaffold_brief_returns_errors(self) -> None:
+        from gzkit.pipeline_runtime import validate_brief_for_pipeline
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            (root / ".gzkit.json").write_text(
+                json.dumps(
+                    {
+                        "version": "1.0",
+                        "paths": {"ledger": ".gzkit/ledger.jsonl", "design_root": "docs/design"},
+                    }
+                ),
+                encoding="utf-8",
+            )
+            (root / ".gzkit").mkdir(exist_ok=True)
+            (root / ".gzkit" / "ledger.jsonl").write_text("", encoding="utf-8")
+
+            brief = root / "brief.md"
+            brief.write_text(
+                "---\nid: OBPI-0.1.0-01-demo\nparent: ADR-0.1.0\n"
+                "item: 1\nlane: Lite\nstatus: Draft\n---\n\n"
+                "## Allowed Paths\n- `src/module/` - Reason\n\n"
+                "## Requirements (FAIL-CLOSED)\n1. REQUIREMENT: First constraint\n",
+                encoding="utf-8",
+            )
+
+            errors = validate_brief_for_pipeline(root, brief)
+            self.assertTrue(len(errors) > 0)
+            self.assertTrue(any("template placeholder" in e for e in errors))
+
+    def test_authored_brief_returns_no_errors(self) -> None:
+        from gzkit.pipeline_runtime import validate_brief_for_pipeline
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            (root / ".gzkit.json").write_text(
+                json.dumps(
+                    {
+                        "version": "1.0",
+                        "paths": {"ledger": ".gzkit/ledger.jsonl", "design_root": "docs/design"},
+                    }
+                ),
+                encoding="utf-8",
+            )
+            (root / ".gzkit").mkdir(exist_ok=True)
+            (root / ".gzkit" / "ledger.jsonl").write_text("", encoding="utf-8")
+
+            brief = root / "brief.md"
+            brief.write_text(
+                "---\nid: OBPI-0.1.0-01-demo\nparent: ADR-0.1.0\n"
+                "item: 1\nlane: Lite\nstatus: Draft\n---\n\n"
+                "## Allowed Paths\n- `src/gzkit/ports/` - Port definitions\n\n"
+                "## Requirements (FAIL-CLOSED)\n"
+                "1. REQUIREMENT: Ports use typing.Protocol\n",
+                encoding="utf-8",
+            )
+
+            errors = validate_brief_for_pipeline(root, brief)
+            self.assertEqual(errors, [])
+
+
+class TestCheckAdrEvaluationVerdict(unittest.TestCase):
+    """Tests for check_adr_evaluation_verdict (#32)."""
+
+    def test_no_scorecard_returns_empty(self) -> None:
+        from gzkit.pipeline_runtime import check_adr_evaluation_verdict
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            errors = check_adr_evaluation_verdict(Path(tmpdir))
+            self.assertEqual(errors, [])
+
+    def test_go_verdict_returns_empty(self) -> None:
+        from gzkit.pipeline_runtime import check_adr_evaluation_verdict
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            adr_dir = Path(tmpdir)
+            (adr_dir / "EVALUATION_SCORECARD.md").write_text(
+                "# Scorecard\n\n**Overall Verdict:** GO\n",
+                encoding="utf-8",
+            )
+            errors = check_adr_evaluation_verdict(adr_dir)
+            self.assertEqual(errors, [])
+
+    def test_conditional_go_returns_empty(self) -> None:
+        from gzkit.pipeline_runtime import check_adr_evaluation_verdict
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            adr_dir = Path(tmpdir)
+            (adr_dir / "EVALUATION_SCORECARD.md").write_text(
+                "# Scorecard\n\n**Overall Verdict:** CONDITIONAL GO\n",
+                encoding="utf-8",
+            )
+            errors = check_adr_evaluation_verdict(adr_dir)
+            self.assertEqual(errors, [])
+
+    def test_no_go_returns_blocker(self) -> None:
+        from gzkit.pipeline_runtime import check_adr_evaluation_verdict
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            adr_dir = Path(tmpdir)
+            (adr_dir / "EVALUATION_SCORECARD.md").write_text(
+                "# Scorecard\n\n**Overall Verdict:** NO GO\n",
+                encoding="utf-8",
+            )
+            errors = check_adr_evaluation_verdict(adr_dir)
+            self.assertEqual(len(errors), 1)
+            self.assertIn("NO GO", errors[0])
+
+
 if __name__ == "__main__":
     unittest.main()

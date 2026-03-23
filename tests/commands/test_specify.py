@@ -47,3 +47,16 @@ class TestSpecifyCommand(unittest.TestCase):
             )
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("out of range", result.output)
+
+    def test_specify_warns_about_template_defaults(self) -> None:
+        """#31: specify warns that the brief needs authoring after creation."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            runner.invoke(main, ["plan", "0.1.0"])
+            result = runner.invoke(
+                main, ["specify", "core-feature", "--parent", "ADR-0.1.0", "--item", "1"]
+            )
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("template defaults", result.output)
+            self.assertIn("needs authoring", result.output)

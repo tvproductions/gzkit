@@ -317,6 +317,49 @@ def find_obpi_brief(docs_root: Path, obpi_id: str) -> Path | None:
     return matches[0] if matches else None
 
 
+def validate_brief_for_pipeline(project_root: Path, brief_path: Path) -> list[str]:
+    """Run scaffold detection on a brief before pipeline execution.
+
+    Returns a list of blocking errors.  An empty list means the brief
+    is safe to execute against.
+    """
+    from gzkit.hooks.obpi import ObpiValidator  # noqa: PLC0415
+
+    validator = ObpiValidator(project_root)
+    return validator.validate_file(brief_path)
+
+
+def check_adr_evaluation_verdict(adr_dir: Path) -> list[str]:
+    """Check for a NO GO evaluation scorecard in the ADR directory.
+
+    Returns a list of blocking errors if a NO GO verdict is found.
+    Returns an empty list if no scorecard exists (advisory, not required)
+    or if the verdict is GO or CONDITIONAL GO.
+    """
+    scorecard_path = adr_dir / "EVALUATION_SCORECARD.md"
+    if not scorecard_path.exists():
+        return []
+
+    try:
+        content = scorecard_path.read_text(encoding="utf-8")
+    except OSError:
+        return []
+
+    import re  # noqa: PLC0415
+
+    verdict_match = re.search(r"\*\*(?:Overall\s+)?Verdict[:\s]*\*\*\s*(\S+(?:\s+\S+)*)", content)
+    if not verdict_match:
+        return []
+
+    verdict = verdict_match.group(1).strip().upper()
+    if "NO GO" in verdict or "NO_GO" in verdict or "NOGO" in verdict:
+        return [
+            f"ADR evaluation scorecard verdict is NO GO ({scorecard_path.name}). "
+            "Revise the ADR or OBPIs and re-run: uv run gz adr evaluate <ADR-ID>"
+        ]
+    return []
+
+
 def extract_brief_status(brief_path: Path) -> str | None:
     """Extract the brief status from a brief file."""
     try:
