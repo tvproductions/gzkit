@@ -3,7 +3,7 @@ id: OBPI-0.0.3-07-structured-logging-structlog
 parent: ADR-0.0.3-hexagonal-architecture-tune-up
 item: 7
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.3-07-structured-logging-structlog: Structured Logging
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.3-hexagonal-architecture-tune-up/ADR-0.0.3-hexagonal-architecture-tune-up.md`
 - **Checklist Item:** #7 - "OBPI-0.0.3-07: Structured Logging (structlog)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -59,46 +59,46 @@ Integrate structlog for structured logging with correlation IDs, verbosity level
 
 **Prerequisites (STOP if missing):**
 
-- [ ] `src/gzkit/cli/__init__.py` exists (OBPI-06 completed)
+- [x] `src/gzkit/cli/__init__.py` exists (OBPI-06 completed)
 
 **Context:**
 
-- [ ] Parent ADR — Structured logging specification
-- [ ] structlog documentation — Processor pipeline and configuration patterns
+- [x] Parent ADR — Structured logging specification
+- [x] structlog documentation — Processor pipeline and configuration patterns
 
 **Existing Code:**
 
-- [ ] Grep for `print(`, `logging.` across `src/gzkit/` to understand current logging patterns
+- [x] Grep for `print(`, `logging.` across `src/gzkit/` to understand current logging patterns
 
 ## Quality Gates
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] Tests verify logging configuration produces correct output format
-- [ ] Tests verify correlation ID propagation
-- [ ] Tests pass: `uv run gz test`
+- [x] Tests verify logging configuration produces correct output format
+- [x] Tests verify correlation ID propagation
+- [x] Tests pass: `uv run gz test`
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 ### Gate 3: Docs (Heavy only)
 
-- [ ] Docs build: `uv run mkdocs build --strict`
+- [x] Docs build: `uv run mkdocs build --strict`
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] N/A — Logging infrastructure, no CLI command surface change
+- [x] N/A — Logging infrastructure, no CLI command surface change
 
 ### Gate 5: Human (Heavy only)
 
-- [ ] Human attestation recorded
+- [x] Human attestation recorded
 
 ## Verification
 
@@ -114,23 +114,23 @@ uv run -m unittest tests.test_logging -v
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.3-07-01: `src/gzkit/cli/logging.py` exists with `configure_logging()` entry point
-- [ ] REQ-0.0.3-07-02: structlog added to `pyproject.toml` dependencies
-- [ ] REQ-0.0.3-07-03: 4 verbosity levels configurable (quiet, normal, verbose, debug)
-- [ ] REQ-0.0.3-07-04: JSON file output produces valid structured log events
-- [ ] REQ-0.0.3-07-05: Console output is human-readable
-- [ ] REQ-0.0.3-07-06: Correlation IDs bind at command entry
-- [ ] REQ-0.0.3-07-07: Core layer code can bind context without importing CLI logging config
-- [ ] REQ-0.0.3-07-08: Unit tests cover all verbosity levels and output formats
+- [x] REQ-0.0.3-07-01: `src/gzkit/cli/logging.py` exists with `configure_logging()` entry point
+- [x] REQ-0.0.3-07-02: structlog added to `pyproject.toml` dependencies
+- [x] REQ-0.0.3-07-03: 4 verbosity levels configurable (quiet, normal, verbose, debug)
+- [x] REQ-0.0.3-07-04: JSON file output produces valid structured log events
+- [x] REQ-0.0.3-07-05: Console output is human-readable
+- [x] REQ-0.0.3-07-06: Correlation IDs bind at command entry
+- [x] REQ-0.0.3-07-07: Core layer code can bind context without importing CLI logging config
+- [x] REQ-0.0.3-07-08: Unit tests cover all verbosity levels and output formats
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -138,24 +138,28 @@ uv run -m unittest tests.test_logging -v
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded in this brief
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+$ uv run -m unittest tests.test_logging -v
+Ran 23 tests in 0.007s — OK
+23 tests across 8 classes: ConfigureLogging(3), VerbosityLevels(7), JsonFileOutput(3), ConsoleOutput(2), CorrelationId(4), CoreLayerBinding(2), ExportFromCliPackage(2)
+Coverage: 98% on src/gzkit/cli/logging.py
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+$ uv run gz lint — All checks passed
+$ uv run gz typecheck — All checks passed
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here
+$ uv run mkdocs build --strict — Documentation built in 0.96 seconds
 ```
 
 ### Gate 4 (BDD)
@@ -167,20 +171,46 @@ N/A — Logging infrastructure
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here
+Attestor: human:jeff
+Attestation: "attest completed"
+Date: 2026-03-24
 ```
 
 ### Value Narrative
 
+Before this OBPI, gzkit had no structured logging — diagnostic output used ad-hoc print() and console.print() with no correlation tracking, no machine-parseable file output, and no verbosity control. Now, structlog provides structured logging with correlation IDs, 4 verbosity levels tied to CLI flags, JSON file output for machine consumption, and human-readable console rendering — all configured in the CLI adapter layer while core code uses binding-only.
+
 ### Key Proof
+
+```bash
+$ uv run python -c "
+from gzkit.cli.logging import configure_logging, bind_correlation_id
+import structlog, tempfile, json
+from pathlib import Path
+cid = bind_correlation_id('demo-req-42')
+with tempfile.TemporaryDirectory() as tmp:
+    log_file = Path(tmp) / 'app.log'
+    configure_logging('normal', log_file=log_file)
+    log = structlog.get_logger()
+    log.info('processing request', user='jeff', action='deploy')
+    import logging
+    for h in logging.getLogger().handlers: h.flush()
+    entry = json.loads(log_file.read_text().strip())
+    print(f'correlation_id: {entry[\"correlation_id\"]}')
+    print(f'event: {entry[\"event\"]}')
+"
+correlation_id: demo-req-42
+event: processing request
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created: src/gzkit/cli/logging.py, tests/test_logging.py
+- Files modified: src/gzkit/cli/__init__.py (added exports), pyproject.toml (added structlog>=24.0)
+- Tests added: tests/test_logging.py (23 tests across 8 classes)
+- Date completed: 2026-03-24
+- Attestation status: Human attested
+- Defects noted: None
 
 ## Tracked Defects
 
@@ -188,14 +218,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `human:<name>` — required (parent ADR is Heavy, Foundation series)
-- Attestation: substantive attestation text required
-- Date: YYYY-MM-DD
+- Attestor: human:jeff
+- Attestation: attest completed
+- Date: 2026-03-24
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-24
 
 **Evidence Hash:** -
