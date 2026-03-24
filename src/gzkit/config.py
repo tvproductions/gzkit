@@ -169,3 +169,34 @@ class GzkitConfig(BaseModel):
 
         """
         return Path(getattr(self.paths, name))
+
+
+def load_config(
+    *,
+    path: Path | None = None,
+    cli_overrides: dict[str, str] | None = None,
+) -> GzkitConfig:
+    """Single entry point for config loading.
+
+    Precedence (later wins): defaults → config file → CLI args.
+
+    Args:
+        path: Path to config file. Defaults to .gzkit.json in current directory.
+        cli_overrides: CLI argument overrides (key=value pairs for top-level fields).
+
+    Returns:
+        Frozen GzkitConfig with all layers merged.
+
+    """
+    # Layer 1: Pydantic model defaults (automatic)
+    # Layer 2: load from config file
+    file_config = GzkitConfig.load(path)
+
+    if not cli_overrides:
+        return file_config
+
+    # Layer 3: apply CLI overrides
+    data = file_config.model_dump()
+    data.update(cli_overrides)
+
+    return GzkitConfig.model_validate(data)
