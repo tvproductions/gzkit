@@ -68,7 +68,7 @@ class TestAuditAttestationGuard(unittest.TestCase):
 class TestAuditArtifacts(unittest.TestCase):
     """Audit creates artifacts and runs commands (REQ-02)."""
 
-    @patch("gzkit.cli.run_command")
+    @patch("gzkit.cli.main.run_command")
     def test_audit_creates_artifacts(self, mock_run):
         mock_run.return_value = _make_qr()
         runner = CliRunner()
@@ -87,7 +87,7 @@ class TestAuditArtifacts(unittest.TestCase):
 class TestAuditReceiptEmission(unittest.TestCase):
     """Audit emits a validation receipt to the ledger (REQ-03)."""
 
-    @patch("gzkit.cli.run_command")
+    @patch("gzkit.cli.main.run_command")
     def test_validation_receipt_in_ledger(self, mock_run):
         mock_run.return_value = _make_qr()
         runner = CliRunner()
@@ -103,7 +103,7 @@ class TestAuditReceiptEmission(unittest.TestCase):
 class TestAuditStatusTransition(unittest.TestCase):
     """Audit transitions ADR to Validated when all pass (REQ-04)."""
 
-    @patch("gzkit.cli.run_command")
+    @patch("gzkit.cli.main.run_command")
     def test_adr_transitions_to_validated(self, mock_run):
         mock_run.return_value = _make_qr()
         runner = CliRunner()
@@ -119,7 +119,7 @@ class TestAuditStatusTransition(unittest.TestCase):
 class TestAuditFailureNoTransition(unittest.TestCase):
     """Audit does NOT transition ADR on failure (REQ-05, REQ-08)."""
 
-    @patch("gzkit.cli.run_command")
+    @patch("gzkit.cli.main.run_command")
     def test_no_transition_on_failure(self, mock_run):
         mock_run.return_value = _make_qr(success=False, returncode=1)
         runner = CliRunner()
@@ -133,7 +133,7 @@ class TestAuditFailureNoTransition(unittest.TestCase):
             # But no lifecycle transition
             self.assertNotIn("lifecycle_transition", ledger_text)
 
-    @patch("gzkit.cli.run_command")
+    @patch("gzkit.cli.main.run_command")
     def test_artifacts_still_written_on_failure(self, mock_run):
         mock_run.return_value = _make_qr(success=False, returncode=1)
         runner = CliRunner()
@@ -173,7 +173,7 @@ class TestAuditDryRun(unittest.TestCase):
 class TestAuditJsonOutput(unittest.TestCase):
     """--json emits structured output with all stages (REQ-07)."""
 
-    @patch("gzkit.cli.run_command")
+    @patch("gzkit.cli.main.run_command")
     def test_json_contains_all_fields(self, mock_run):
         mock_run.return_value = _make_qr()
         runner = CliRunner()
@@ -369,7 +369,7 @@ class TestAuditMdEvidenceLinks(unittest.TestCase):
 class TestAuditEnrichmentJsonKeys(unittest.TestCase):
     """REQ-04: JSON output must contain enrichment keys alongside existing keys."""
 
-    @patch("gzkit.cli.run_command")
+    @patch("gzkit.cli.main.run_command")
     def test_json_output_contains_enrichment_keys(self, mock_run):
         mock_run.return_value = _make_qr()
         runner = CliRunner()
@@ -382,7 +382,7 @@ class TestAuditEnrichmentJsonKeys(unittest.TestCase):
             self.assertIn("gate_results", data)
             self.assertIn("evidence_links", data)
 
-    @patch("gzkit.cli.run_command")
+    @patch("gzkit.cli.main.run_command")
     def test_json_output_preserves_existing_keys(self, mock_run):
         mock_run.return_value = _make_qr()
         runner = CliRunner()
@@ -398,7 +398,7 @@ class TestAuditEnrichmentJsonKeys(unittest.TestCase):
             self.assertIn("results", data)
             self.assertIn("passed", data)
 
-    @patch("gzkit.cli.run_command")
+    @patch("gzkit.cli.main.run_command")
     def test_attestation_record_has_correct_fields(self, mock_run):
         mock_run.return_value = _make_qr()
         runner = CliRunner()
@@ -414,7 +414,7 @@ class TestAuditEnrichmentJsonKeys(unittest.TestCase):
             self.assertEqual(rec["attestor"], "Test User")
             self.assertEqual(rec["status"], "completed")
 
-    @patch("gzkit.cli.run_command")
+    @patch("gzkit.cli.main.run_command")
     def test_gate_results_list_has_correct_structure(self, mock_run):
         mock_run.return_value = _make_qr()
         runner = CliRunner()
@@ -436,7 +436,7 @@ class TestAuditEnrichmentJsonKeys(unittest.TestCase):
 class TestAuditGeneratedLedgerEvent(unittest.TestCase):
     """audit_cmd() appends audit_generated event to ledger (OBPI-0.19.0-05)."""
 
-    @patch("gzkit.cli.run_command")
+    @patch("gzkit.cli.main.run_command")
     def test_audit_generated_event_in_ledger(self, mock_run):
         """Successful audit appends audit_generated with correct fields."""
         mock_run.return_value = _make_qr()
@@ -457,7 +457,7 @@ class TestAuditGeneratedLedgerEvent(unittest.TestCase):
             self.assertIn("AUDIT_PLAN.md", evt["audit_plan_file"])
             self.assertTrue(evt["passed"])
 
-    @patch("gzkit.cli.run_command")
+    @patch("gzkit.cli.main.run_command")
     def test_audit_generated_passed_false_on_failure(self, mock_run):
         """Failed verification records passed=False in audit_generated event."""
         mock_run.return_value = _make_qr(success=False, returncode=1)

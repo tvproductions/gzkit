@@ -177,7 +177,7 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertFalse(marker_path.exists())
             self.assertFalse(legacy_path.exists())
 
-    @patch("gzkit.cli.run_command")
+    @patch("gzkit.cli.main.run_command")
     def test_verify_runs_commands_and_preserves_markers(self, run_command_mock) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -218,7 +218,7 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertTrue(marker_path.exists())
             self.assertTrue(legacy_path.exists())
 
-    @patch("gzkit.cli.run_command")
+    @patch("gzkit.cli.main.run_command")
     def test_verify_rewrites_markers_with_verify_stage_state(self, run_command_mock) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -253,7 +253,7 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertEqual(payload["lane"], "heavy")
             self.assertEqual(payload, self._load_json(legacy_path))
 
-    @patch("gzkit.cli.run_command")
+    @patch("gzkit.cli.main.run_command")
     def test_verify_failure_persists_blockers_and_resume_point(self, run_command_mock) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -348,7 +348,7 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertEqual(payload["lane"], "heavy")
             self.assertEqual(payload, self._load_json(legacy_path))
 
-    @patch("gzkit.cli.run_command")
+    @patch("gzkit.cli.main.run_command")
     def test_ceremony_lite_parent_self_closes_and_chains_sync(self, run_command_mock) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -427,7 +427,7 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("--attestor is required", result.output)
 
-    @patch("gzkit.cli.run_command")
+    @patch("gzkit.cli.main.run_command")
     def test_sync_stage_executes_and_clears_markers(self, run_command_mock) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():

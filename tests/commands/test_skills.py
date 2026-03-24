@@ -187,7 +187,7 @@ class TestSkillCommands(unittest.TestCase):
                 parity_check=ok,
                 readiness_audit=ok,
             )
-            with patch("gzkit.cli.run_all_checks", return_value=fake):
+            with patch("gzkit.cli.main.run_all_checks", return_value=fake):
                 result = runner.invoke(main, ["check"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("all checks passed", result.output.lower())
