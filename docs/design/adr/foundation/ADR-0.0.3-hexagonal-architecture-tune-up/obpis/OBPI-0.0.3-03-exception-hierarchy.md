@@ -3,7 +3,7 @@ id: OBPI-0.0.3-03-exception-hierarchy
 parent: ADR-0.0.3-hexagonal-architecture-tune-up
 item: 3
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.3-03-exception-hierarchy: Exception Hierarchy & Exit Codes
@@ -116,23 +116,23 @@ uv run -m unittest tests.test_core_exceptions -v
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.3-03-01: `GzError` base exception exists in `core/exceptions.py`
-- [ ] REQ-0.0.3-03-02: `TransientError` has `exit_code == 2`
-- [ ] REQ-0.0.3-03-03: `PermanentError` has `exit_code == 1`
-- [ ] REQ-0.0.3-03-04: `OperatorError` has `exit_code == 1`
-- [ ] REQ-0.0.3-03-05: `PolicyError` has `exit_code == 3`
-- [ ] REQ-0.0.3-03-06: All exception classes inherit from `GzError`
-- [ ] REQ-0.0.3-03-07: Exception classes are importable via `gzkit.core.exceptions`
-- [ ] REQ-0.0.3-03-08: Unit tests verify hierarchy and exit code mapping
+- [x] REQ-0.0.3-03-01: `GzError` base exception exists in `core/exceptions.py`
+- [x] REQ-0.0.3-03-02: `TransientError` has `exit_code == 2`
+- [x] REQ-0.0.3-03-03: `PermanentError` has `exit_code == 1`
+- [x] REQ-0.0.3-03-04: `OperatorError` has `exit_code == 1`
+- [x] REQ-0.0.3-03-05: `PolicyError` has `exit_code == 3`
+- [x] REQ-0.0.3-03-06: All exception classes inherit from `GzError`
+- [x] REQ-0.0.3-03-07: Exception classes are importable via `gzkit.core.exceptions`
+- [x] REQ-0.0.3-03-08: Unit tests verify hierarchy and exit code mapping
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -140,24 +140,28 @@ uv run -m unittest tests.test_core_exceptions -v
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded in this brief
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+$ uv run -m unittest tests.test_core_exceptions -v
+Ran 15 tests in 0.000s — OK
+Tests cover: hierarchy, exit codes, usability, import paths
+$ uv run gz test — 1127 tests pass
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+$ uv run gz lint — All checks passed
+$ uv run gz typecheck — All checks passed
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here
+$ uv run mkdocs build --strict — Documentation built successfully
 ```
 
 ### Gate 4 (BDD)
@@ -169,20 +173,32 @@ N/A — No CLI surface changes yet
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here
+Attestor: human (operator)
+Attestation: "attest completed"
+Date: 2026-03-23
 ```
 
 ### Value Narrative
 
+Before this OBPI, gzkit had no unified exception hierarchy — errors were ad-hoc with no
+retryability classification or deterministic exit code mapping. Now, five domain exception
+classes exist with a clear inheritance hierarchy and exit codes matching the ADR Standard
+4-Code Map (0/1/2/3), enabling CLI commands to return consistent exit codes.
+
 ### Key Proof
+
+```text
+$ uv run python -c "from gzkit.core.exceptions import TransientError; assert TransientError('x').exit_code == 2"
+$ uv run python -c "from gzkit.core.exceptions import PolicyError; assert PolicyError('x').exit_code == 3"
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created/modified: src/gzkit/core/exceptions.py, tests/test_core_exceptions.py
+- Tests added: tests/test_core_exceptions.py (15 tests)
+- Date completed: 2026-03-23
+- Attestation status: Human attested
+- Defects noted: None
 
 ## Tracked Defects
 
@@ -190,14 +206,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `human:<name>` — required (parent ADR is Heavy, Foundation series)
-- Attestation: substantive attestation text required
-- Date: YYYY-MM-DD
+- Attestor: `human:jeff` — required (parent ADR is Heavy, Foundation series)
+- Attestation: attest completed
+- Date: 2026-03-23
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-23
 
 **Evidence Hash:** -
