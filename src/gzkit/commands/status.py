@@ -468,7 +468,11 @@ def _extract_human_attestation(content: str) -> dict[str, Any]:
     attestation_match = re.search(r"^- Attestation:\s*(.+)$", body, flags=re.MULTILINE)
     date_match = re.search(r"^- Date:\s*(\d{4}-\d{2}-\d{2})$", body, flags=re.MULTILINE)
 
-    attestor = attestor_match.group(1).strip() if attestor_match else None
+    attestor_raw = attestor_match.group(1).strip() if attestor_match else None
+    # Strip markdown backticks and trailing annotations (e.g. "— required ...")
+    attestor = (
+        attestor_raw.strip("`").split("—")[0].split(" — ")[0].strip() if attestor_raw else None
+    )
     attestation_text = attestation_match.group(1).strip() if attestation_match else None
     attestation_date = date_match.group(1).strip() if date_match else None
     valid = bool(
