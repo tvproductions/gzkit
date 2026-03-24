@@ -22,5 +22,13 @@ from gzkit.cli.main import (  # noqa: F401
     _run_gate_5,
     _write_audit_artifacts,
 )
+from gzkit.cli.progress import progress_bar, progress_phase, progress_spinner
 
-__all__ = ["OutputFormatter", "bind_correlation_id", "configure_logging"]
+__all__ = [
+    "OutputFormatter",
+    "bind_correlation_id",
+    "configure_logging",
+    "progress_bar",
+    "progress_phase",
+    "progress_spinner",
+]
