@@ -6,6 +6,14 @@ A Development Covenant for Human-AI Collaboration.
 import argparse
 
 from gzkit import __version__
+from gzkit.cli.helpers import (
+    add_adr_option,
+    add_common_flags,
+    add_dry_run_flag,
+    add_force_flag,
+    add_json_flag,
+    add_table_flag,
+)
 from gzkit.cli.parser import StableArgumentParser
 from gzkit.commands.adr_audit import (
     adr_audit_check,
@@ -97,7 +105,7 @@ def _add_git_sync_options(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--no-auto-add", dest="auto_add", action="store_false")
     parser.add_argument("--push", dest="allow_push", action="store_true", default=True)
     parser.add_argument("--no-push", dest="allow_push", action="store_false")
-    parser.add_argument("--json", dest="as_json", action="store_true", help="Output as JSON")
+    add_json_flag(parser, help_override="Output as JSON")
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -111,26 +119,27 @@ def _build_parser() -> argparse.ArgumentParser:
         action="version",
         version=f"gzkit {__version__}",
     )
+    add_common_flags(parser)
 
     commands = parser.add_subparsers(dest="command")
     commands.required = True
 
     p_init = commands.add_parser("init", help="Initialize gzkit in the current project")
     p_init.add_argument("--mode", choices=["lite", "heavy"], default="lite")
-    p_init.add_argument("--force", action="store_true")
-    p_init.add_argument("--dry-run", action="store_true")
+    add_force_flag(p_init)
+    add_dry_run_flag(p_init)
     p_init.set_defaults(func=lambda a: init(mode=a.mode, force=a.force, dry_run=a.dry_run))
 
     p_prd = commands.add_parser("prd", help="Create a new PRD")
     p_prd.add_argument("name")
     p_prd.add_argument("--title")
-    p_prd.add_argument("--dry-run", action="store_true")
+    add_dry_run_flag(p_prd)
     p_prd.set_defaults(func=lambda a: prd(name=a.name, title=a.title, dry_run=a.dry_run))
 
     p_constitute = commands.add_parser("constitute", help="Create a new constitution")
     p_constitute.add_argument("name")
     p_constitute.add_argument("--title")
-    p_constitute.add_argument("--dry-run", action="store_true")
+    add_dry_run_flag(p_constitute)
     p_constitute.set_defaults(
         func=lambda a: constitute(name=a.name, title=a.title, dry_run=a.dry_run)
     )
@@ -141,7 +150,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p_specify.add_argument("--item", type=int, default=1)
     p_specify.add_argument("--lane", choices=["lite", "heavy"], default="lite")
     p_specify.add_argument("--title")
-    p_specify.add_argument("--dry-run", action="store_true")
+    add_dry_run_flag(p_specify)
     p_specify.set_defaults(
         func=lambda a: specify(
             name=a.name,
@@ -169,7 +178,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p_plan.add_argument("--split-state-anchor", action="store_true")
     p_plan.add_argument("--split-testability-ceiling", action="store_true")
     p_plan.add_argument("--baseline-selected", type=int)
-    p_plan.add_argument("--dry-run", action="store_true")
+    add_dry_run_flag(p_plan)
     p_plan.set_defaults(
         func=lambda a: plan_cmd(
             name=a.name,
@@ -192,17 +201,15 @@ def _build_parser() -> argparse.ArgumentParser:
     )
 
     p_state = commands.add_parser("state", help="Query ledger state and relationships")
-    p_state.add_argument("--json", dest="as_json", action="store_true")
+    add_json_flag(p_state)
     p_state.add_argument("--blocked", action="store_true")
     p_state.add_argument("--ready", action="store_true")
     p_state.set_defaults(func=lambda a: state(as_json=a.as_json, blocked=a.blocked, ready=a.ready))
 
     p_status = commands.add_parser("status", help="Show OBPI progress and ADR lifecycle status")
-    p_status.add_argument("--json", dest="as_json", action="store_true")
-    p_status.add_argument(
-        "--table",
-        action="store_true",
-        help="Show a tabular ADR summary (ADR, lifecycle, lane, OBPI, QC).",
+    add_json_flag(p_status)
+    add_table_flag(
+        p_status, help_override="Show a tabular ADR summary (ADR, lifecycle, lane, OBPI, QC)."
     )
     p_status.add_argument(
         "--show-gates",
@@ -217,16 +224,16 @@ def _build_parser() -> argparse.ArgumentParser:
         "closeout", help="Initiate closeout mode and record closeout event"
     )
     p_closeout.add_argument("adr")
-    p_closeout.add_argument("--json", dest="as_json", action="store_true")
-    p_closeout.add_argument("--dry-run", action="store_true")
+    add_json_flag(p_closeout)
+    add_dry_run_flag(p_closeout)
     p_closeout.set_defaults(
         func=lambda a: closeout_cmd(adr=a.adr, as_json=a.as_json, dry_run=a.dry_run)
     )
 
     p_audit = commands.add_parser("audit", help="Run ADR audit routine and persist proof artifacts")
     p_audit.add_argument("adr")
-    p_audit.add_argument("--json", dest="as_json", action="store_true")
-    p_audit.add_argument("--dry-run", action="store_true")
+    add_json_flag(p_audit)
+    add_dry_run_flag(p_audit)
     p_audit.set_defaults(func=lambda a: audit_cmd(adr=a.adr, as_json=a.as_json, dry_run=a.dry_run))
 
     p_adr = commands.add_parser("adr", help="ADR-focused governance commands")
@@ -235,7 +242,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
     p_adr_status = adr_commands.add_parser("status", help="Show focused OBPI progress for one ADR")
     p_adr_status.add_argument("adr")
-    p_adr_status.add_argument("--json", dest="as_json", action="store_true")
+    add_json_flag(p_adr_status)
     p_adr_status.add_argument(
         "--show-gates",
         action="store_true",
@@ -281,12 +288,11 @@ def _build_parser() -> argparse.ArgumentParser:
         default="proposed",
         help="Initial promoted ADR status (default: proposed)",
     )
-    p_adr_promote.add_argument("--json", dest="as_json", action="store_true")
-    p_adr_promote.add_argument("--dry-run", action="store_true")
-    p_adr_promote.add_argument(
-        "--force",
-        action="store_true",
-        help="Override scaffold quality gate (briefs contain only template defaults)",
+    add_json_flag(p_adr_promote)
+    add_dry_run_flag(p_adr_promote)
+    add_force_flag(
+        p_adr_promote,
+        help_override="Override scaffold quality gate (briefs contain only template defaults)",
     )
     p_adr_promote.set_defaults(
         func=lambda a: adr_promote_cmd(
@@ -307,7 +313,7 @@ def _build_parser() -> argparse.ArgumentParser:
         "evaluate", help="Evaluate ADR/OBPI quality (deterministic scoring)"
     )
     p_adr_eval.add_argument("adr_id", help="ADR identifier (e.g., ADR-0.19.0)")
-    p_adr_eval.add_argument("--json", dest="as_json", action="store_true")
+    add_json_flag(p_adr_eval)
     p_adr_eval.add_argument(
         "--no-scorecard", dest="write_scorecard", action="store_false", default=True
     )
@@ -323,14 +329,14 @@ def _build_parser() -> argparse.ArgumentParser:
         "audit-check", help="Verify linked OBPIs are complete with evidence"
     )
     p_adr_audit_check.add_argument("adr")
-    p_adr_audit_check.add_argument("--json", dest="as_json", action="store_true")
+    add_json_flag(p_adr_audit_check)
     p_adr_audit_check.set_defaults(func=lambda a: adr_audit_check(adr=a.adr, as_json=a.as_json))
 
     p_adr_covers_check = adr_commands.add_parser(
         "covers-check", help="Verify @covers traceability for ADR, OBPIs, and REQ acceptance IDs"
     )
     p_adr_covers_check.add_argument("adr")
-    p_adr_covers_check.add_argument("--json", dest="as_json", action="store_true")
+    add_json_flag(p_adr_covers_check)
     p_adr_covers_check.set_defaults(func=lambda a: adr_covers_check(adr=a.adr, as_json=a.as_json))
 
     p_adr_emit = adr_commands.add_parser(
@@ -342,7 +348,7 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p_adr_emit.add_argument("--attestor", required=True)
     p_adr_emit.add_argument("--evidence-json")
-    p_adr_emit.add_argument("--dry-run", action="store_true")
+    add_dry_run_flag(p_adr_emit)
     p_adr_emit.set_defaults(
         func=lambda a: adr_emit_receipt_cmd(
             adr=a.adr,
@@ -366,7 +372,7 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p_obpi_emit.add_argument("--attestor", required=True)
     p_obpi_emit.add_argument("--evidence-json")
-    p_obpi_emit.add_argument("--dry-run", action="store_true")
+    add_dry_run_flag(p_obpi_emit)
     p_obpi_emit.set_defaults(
         func=lambda a: obpi_emit_receipt_cmd(
             obpi=a.obpi,
@@ -381,7 +387,7 @@ def _build_parser() -> argparse.ArgumentParser:
         "status", help="Show focused runtime status for one OBPI"
     )
     p_obpi_status.add_argument("obpi")
-    p_obpi_status.add_argument("--json", dest="as_json", action="store_true")
+    add_json_flag(p_obpi_status)
     p_obpi_status.set_defaults(func=lambda a: obpi_status_cmd(obpi=a.obpi, as_json=a.as_json))
 
     p_obpi_pipeline = obpi_commands.add_parser(
@@ -426,7 +432,7 @@ def _build_parser() -> argparse.ArgumentParser:
         "reconcile", help="Fail-closed runtime reconciliation for one OBPI"
     )
     p_obpi_reconcile.add_argument("obpi")
-    p_obpi_reconcile.add_argument("--json", dest="as_json", action="store_true")
+    add_json_flag(p_obpi_reconcile)
     p_obpi_reconcile.set_defaults(func=lambda a: obpi_reconcile_cmd(obpi=a.obpi, as_json=a.as_json))
 
     p_obpi_validate = obpi_commands.add_parser(
@@ -448,14 +454,14 @@ def _build_parser() -> argparse.ArgumentParser:
     p_check_paths = commands.add_parser(
         "check-config-paths", help="Validate config/manifest paths are coherent"
     )
-    p_check_paths.add_argument("--json", dest="as_json", action="store_true")
+    add_json_flag(p_check_paths)
     p_check_paths.set_defaults(func=lambda a: check_config_paths_cmd(as_json=a.as_json))
 
     p_cli = commands.add_parser("cli", help="CLI governance commands")
     cli_commands = p_cli.add_subparsers(dest="cli_command")
     cli_commands.required = True
     p_cli_audit = cli_commands.add_parser("audit", help="Audit CLI docs/manpage coverage")
-    p_cli_audit.add_argument("--json", dest="as_json", action="store_true")
+    add_json_flag(p_cli_audit)
     p_cli_audit.set_defaults(func=lambda a: cli_audit_cmd(as_json=a.as_json))
 
     p_parity = commands.add_parser("parity", help="Parity governance commands")
@@ -464,7 +470,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p_parity_check = parity_commands.add_parser(
         "check", help="Run deterministic parity regression checks"
     )
-    p_parity_check.add_argument("--json", dest="as_json", action="store_true")
+    add_json_flag(p_parity_check)
     p_parity_check.set_defaults(func=lambda a: parity_check_cmd(as_json=a.as_json))
 
     p_readiness = commands.add_parser("readiness", help="Agent readiness governance commands")
@@ -473,12 +479,12 @@ def _build_parser() -> argparse.ArgumentParser:
     p_readiness_audit = readiness_commands.add_parser(
         "audit", help="Audit readiness across disciplines and primitives"
     )
-    p_readiness_audit.add_argument("--json", dest="as_json", action="store_true")
+    add_json_flag(p_readiness_audit)
     p_readiness_audit.set_defaults(func=lambda a: readiness_audit_cmd(as_json=a.as_json))
     p_readiness_eval = readiness_commands.add_parser(
         "evaluate", help="Run instruction eval suite with positive/negative controls"
     )
-    p_readiness_eval.add_argument("--json", dest="as_json", action="store_true")
+    add_json_flag(p_readiness_eval)
     p_readiness_eval.set_defaults(func=lambda a: readiness_eval_cmd(as_json=a.as_json))
 
     p_git_sync = commands.add_parser("git-sync", help="Sync branch with guarded ritual")
@@ -498,7 +504,7 @@ def _build_parser() -> argparse.ArgumentParser:
     )
 
     p_migrate = commands.add_parser("migrate-semver", help="Record SemVer ID rename events")
-    p_migrate.add_argument("--dry-run", action="store_true")
+    add_dry_run_flag(p_migrate)
     p_migrate.set_defaults(func=lambda a: migrate_semver(dry_run=a.dry_run))
 
     p_register_adrs = commands.add_parser(
@@ -528,7 +534,7 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_false",
         help="Register all ADRs (pool + non-pool)",
     )
-    p_register_adrs.add_argument("--dry-run", action="store_true")
+    add_dry_run_flag(p_register_adrs)
     p_register_adrs.set_defaults(
         func=lambda a: register_adrs(
             lane=a.lane,
@@ -573,16 +579,16 @@ def _build_parser() -> argparse.ArgumentParser:
 
     p_roles = commands.add_parser("roles", help="List pipeline agent roles and handoff contracts")
     p_roles.add_argument("--pipeline", help="Show dispatch history for an OBPI pipeline run")
-    p_roles.add_argument("--json", dest="as_json", action="store_true")
+    add_json_flag(p_roles)
     p_roles.set_defaults(func=lambda a: roles_cmd(pipeline=a.pipeline, as_json=a.as_json))
 
     p_implement = commands.add_parser("implement", help="Run Gate 2 and record result")
-    p_implement.add_argument("--adr")
+    add_adr_option(p_implement)
     p_implement.set_defaults(func=lambda a: implement_cmd(adr=a.adr))
 
     p_gates = commands.add_parser("gates", help="Run lane-required gates")
     p_gates.add_argument("--gate", dest="gate_number", type=int)
-    p_gates.add_argument("--adr")
+    add_adr_option(p_gates)
     p_gates.set_defaults(func=lambda a: gates_cmd(gate_number=a.gate_number, adr=a.adr))
 
     p_attest = commands.add_parser("attest", help="Record human attestation")
@@ -594,8 +600,8 @@ def _build_parser() -> argparse.ArgumentParser:
         choices=["completed", "partial", "dropped"],
     )
     p_attest.add_argument("--reason")
-    p_attest.add_argument("--force", action="store_true")
-    p_attest.add_argument("--dry-run", action="store_true")
+    add_force_flag(p_attest)
+    add_dry_run_flag(p_attest)
     p_attest.set_defaults(
         func=lambda a: attest(
             adr=a.adr,
@@ -618,7 +624,7 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Validate all OBPI briefs against the canonical OBPI schema",
     )
-    p_validate.add_argument("--json", dest="as_json", action="store_true")
+    add_json_flag(p_validate)
     p_validate.set_defaults(
         func=lambda a: validate(
             check_manifest=a.check_manifest,
@@ -634,7 +640,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p_tidy = commands.add_parser("tidy", help="Run maintenance checks and cleanup")
     p_tidy.add_argument("--check", dest="check_only", action="store_true")
     p_tidy.add_argument("--fix", action="store_true")
-    p_tidy.add_argument("--dry-run", action="store_true")
+    add_dry_run_flag(p_tidy)
     p_tidy.set_defaults(func=lambda a: tidy(check_only=a.check_only, fix=a.fix, dry_run=a.dry_run))
 
     commands.add_parser("lint", help="Run lint checks").set_defaults(func=lambda a: lint())
@@ -661,7 +667,7 @@ def _build_parser() -> argparse.ArgumentParser:
         "audit",
         help="Audit skill lifecycle and mirror parity",
     )
-    p_skill_audit.add_argument("--json", action="store_true", dest="as_json")
+    add_json_flag(p_skill_audit)
     p_skill_audit.add_argument(
         "--strict",
         action="store_true",
@@ -697,10 +703,23 @@ def _build_parser() -> argparse.ArgumentParser:
         "control-surfaces",
         help="Regenerate agent control surfaces from governance canon",
     )
-    p_control_surfaces.add_argument("--dry-run", action="store_true")
+    add_dry_run_flag(p_control_surfaces)
     p_control_surfaces.set_defaults(func=lambda a: sync_control_surfaces(dry_run=a.dry_run))
 
+    # Register common flags on every subcommand so users can write
+    # ``gz status --verbose`` (not only ``gz --verbose status``).
+    _propagate_common_flags(parser)
+
     return parser
+
+
+def _propagate_common_flags(parser: argparse.ArgumentParser) -> None:
+    """Recursively apply ``add_common_flags`` to all nested subparsers."""
+    for action in parser._actions:
+        if isinstance(action, argparse._SubParsersAction):
+            for subparser in action.choices.values():
+                add_common_flags(subparser)
+                _propagate_common_flags(subparser)
 
 
 _cached_parser: argparse.ArgumentParser | None = None
@@ -714,6 +733,13 @@ def _get_parser() -> argparse.ArgumentParser:
     return _cached_parser
 
 
+def _apply_debug_mode() -> None:
+    """Enable DEBUG-level logging and full tracebacks."""
+    import logging
+
+    logging.basicConfig(level=logging.DEBUG, format="%(levelname)s: %(name)s: %(message)s")
+
+
 def main(argv: list[str] | None = None) -> int:
     """argparse-based gz entrypoint."""
     parser = _get_parser()
@@ -721,6 +747,9 @@ def main(argv: list[str] | None = None) -> int:
         args = parser.parse_args(argv)
     except SystemExit as exc:
         return int(exc.code) if isinstance(exc.code, int) else 1
+
+    if getattr(args, "debug", False):
+        _apply_debug_mode()
 
     handler = getattr(args, "func", None)
     if handler is None:
@@ -731,6 +760,8 @@ def main(argv: list[str] | None = None) -> int:
         handler(args)
         return 0
     except GzCliError as exc:
+        if getattr(args, "debug", False):
+            raise
         console.print(f"[red]{exc}[/red]")
         return 2
     except SystemExit as exc:
