@@ -176,4 +176,4 @@ Manual gz plan + gz specify (two-step).
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.3 | Pending | | | |
+| 0.0.3 | Completed | Jeff | 2026-03-24 | completed |

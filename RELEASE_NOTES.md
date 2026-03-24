@@ -1,5 +1,27 @@
 # gzkit Release Notes
 
+## v0.0.3 (2026-03-24)
+
+**ADR:** ADR-0.0.3 - Hexagonal Architecture Tune-Up
+
+Separated core domain logic from I/O and CLI concerns via ports and adapters, established a retryability-oriented exception hierarchy, introduced test fakes for all port boundaries, enforced ENV-optional config precedence with constructor injection, added a unified OutputFormatter with 5 modes, integrated structlog with correlation IDs and JSON file output, added progress indication with mode-dependent suppression, and machine-enforced all architectural rules via AST-scanning policy tests.
+
+### Delivered
+
+- Three-layer hexagonal architecture: core/ (domain), ports/ (Protocol interfaces), adapters/ (concrete I/O)
+- Domain extraction: lifecycle, scoring, validation_rules, models moved to core/
+- Exception hierarchy: TransientError, PermanentError, OperatorError with retryability classification
+- Test fakes: InMemoryFileStore, InMemoryLedgerStore, FakeProcessRunner satisfying port Protocols
+- Config precedence: frozen GzkitConfig via constructor injection, no env var reads
+- OutputFormatter: human, JSON, quiet, verbose, debug modes with single chokepoint
+- Structured logging: structlog with correlation IDs, verbosity levels, JSON file output
+- Progress indication: Rich spinner/progress bars with mode-dependent suppression
+- Policy tests: 22 AST-scanning tests enforcing import boundaries, env var allowlist, and snake_case naming
+
+### Gate Evidence
+
+All 5 GovZero gates satisfied.
+
 ## v0.19.0 (2026-03-22)
 
 **ADR:** ADR-0.19.0 - Closeout & Audit Processes
