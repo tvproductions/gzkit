@@ -3,7 +3,7 @@ id: OBPI-0.0.3-06-output-formatter
 parent: ADR-0.0.3-hexagonal-architecture-tune-up
 item: 6
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.3-06-output-formatter: Output Formatter
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.3-hexagonal-architecture-tune-up/ADR-0.0.3-hexagonal-architecture-tune-up.md`
 - **Checklist Item:** #6 - "OBPI-0.0.3-06: Output Formatter"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -59,48 +59,48 @@ Create `src/gzkit/cli/formatters.py` with a single OutputFormatter chokepoint su
 
 **Prerequisites (STOP if missing):**
 
-- [ ] `src/gzkit/core/__init__.py` exists (OBPI-01 completed)
-- [ ] `src/gzkit/adapters/__init__.py` exists (OBPI-01 completed)
+- [x] `src/gzkit/core/__init__.py` exists (OBPI-01 completed)
+- [x] `src/gzkit/adapters/__init__.py` exists (OBPI-01 completed)
 
 **Context:**
 
-- [ ] Parent ADR — Output contract specification and layer rules
-- [ ] `.claude/rules/cli.md` — Output contract (default, `--json`, `--plain`)
+- [x] Parent ADR — Output contract specification and layer rules
+- [x] `.claude/rules/cli.md` — Output contract (default, `--json`, `--plain`)
 
 **Existing Code:**
 
-- [ ] `src/gzkit/commands/` — Current output patterns to understand (not to modify)
-- [ ] `src/gzkit/cli.py` — Current CLI entry point structure
+- [x] `src/gzkit/commands/` — Current output patterns to understand (not to modify)
+- [x] `src/gzkit/cli.py` — Current CLI entry point structure
 
 ## Quality Gates
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] Tests verify each output mode produces correct format
-- [ ] Tests verify json mode stdout/stderr separation
-- [ ] Tests pass: `uv run gz test`
+- [x] Tests verify each output mode produces correct format
+- [x] Tests verify json mode stdout/stderr separation
+- [x] Tests pass: `uv run gz test`
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 ### Gate 3: Docs (Heavy only)
 
-- [ ] Docs build: `uv run mkdocs build --strict`
+- [x] Docs build: `uv run mkdocs build --strict`
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] N/A — Formatter is infrastructure; CLI surface wiring is incremental
+- [x] N/A — Formatter is infrastructure; CLI surface wiring is incremental
 
 ### Gate 5: Human (Heavy only)
 
-- [ ] Human attestation recorded
+- [x] Human attestation recorded
 
 ## Verification
 
@@ -116,23 +116,23 @@ uv run -m unittest tests.test_formatters -v
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.3-06-01: `src/gzkit/cli/` package exists with `__init__.py`
-- [ ] REQ-0.0.3-06-02: `OutputFormatter` class supports `human` mode with Rich tables/colors
-- [ ] REQ-0.0.3-06-03: `OutputFormatter` supports `json` mode (data→stdout, logs→stderr)
-- [ ] REQ-0.0.3-06-04: `OutputFormatter` supports `quiet` mode (errors only)
-- [ ] REQ-0.0.3-06-05: `OutputFormatter` supports `verbose` mode
-- [ ] REQ-0.0.3-06-06: `OutputFormatter` supports `debug` mode
-- [ ] REQ-0.0.3-06-07: `OutputFormatter` respects `NO_COLOR` in human mode
-- [ ] REQ-0.0.3-06-08: Unit tests cover all 5 modes
+- [x] REQ-0.0.3-06-01: `src/gzkit/cli/` package exists with `__init__.py`
+- [x] REQ-0.0.3-06-02: `OutputFormatter` class supports `human` mode with Rich tables/colors
+- [x] REQ-0.0.3-06-03: `OutputFormatter` supports `json` mode (data→stdout, logs→stderr)
+- [x] REQ-0.0.3-06-04: `OutputFormatter` supports `quiet` mode (errors only)
+- [x] REQ-0.0.3-06-05: `OutputFormatter` supports `verbose` mode
+- [x] REQ-0.0.3-06-06: `OutputFormatter` supports `debug` mode
+- [x] REQ-0.0.3-06-07: `OutputFormatter` respects `NO_COLOR` in human mode
+- [x] REQ-0.0.3-06-08: Unit tests cover all 5 modes
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -140,24 +140,29 @@ uv run -m unittest tests.test_formatters -v
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded in this brief
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+$ uv run -m unittest tests.test_formatters -v
+Ran 40 tests in 0.004s — OK
+40 tests across 9 classes: Init(5), Human(4), Json(5), Quiet(7), Verbose(3), Debug(3), NoColor(3), ModeFromFlags(8), ImportBoundary(2)
+$ uv run gz test — 1242 tests (pre-existing failures only, 0 new)
+Coverage: 96% on src/gzkit/cli/formatters.py
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+$ uv run gz lint — All checks passed
+$ uv run gz typecheck — All checks passed
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here
+$ uv run mkdocs build --strict — Documentation built in 0.97 seconds
 ```
 
 ### Gate 4 (BDD)
@@ -169,20 +174,32 @@ N/A — Formatter infrastructure
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here
+Attestor: human:jeff
+Attestation: "attest completed"
+Date: 2026-03-24
 ```
 
 ### Value Narrative
 
+Before this OBPI, gzkit had no unified output formatting — commands directly called `console.print()` and `print()` ad hoc, with no consistent behavior for `--json`, `--quiet`, or `--verbose` flags. Now, a single `OutputFormatter` chokepoint exists in the `cli/` adapter layer supporting 5 output modes with proper stdout/stderr separation in json mode and `NO_COLOR` respect.
+
 ### Key Proof
+
+```bash
+$ uv run python -c "from gzkit.cli.formatters import OutputFormatter; f = OutputFormatter('json'); print('Formatter importable')"
+Formatter importable
+$ uv run -m unittest tests.test_formatters.TestJsonMode.test_data_and_logs_never_mix_on_stdout -v
+test_data_and_logs_never_mix_on_stdout ... ok
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created: src/gzkit/cli/__init__.py, src/gzkit/cli/formatters.py, tests/test_formatters.py
+- Files relocated: src/gzkit/cli.py → src/gzkit/cli/main.py (content unchanged, re-exports preserved)
+- Tests added: tests/test_formatters.py (40 tests across 9 classes)
+- Date completed: 2026-03-24
+- Attestation status: Human attested
+- Defects noted: None
 
 ## Tracked Defects
 
@@ -190,14 +207,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `human:<name>` — required (parent ADR is Heavy, Foundation series)
-- Attestation: substantive attestation text required
-- Date: YYYY-MM-DD
+- Attestor: human:jeff
+- Attestation: attest completed
+- Date: 2026-03-24
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-24
 
 **Evidence Hash:** -
