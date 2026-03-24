@@ -6,6 +6,7 @@ A Development Covenant for Human-AI Collaboration.
 import argparse
 
 from gzkit import __version__
+from gzkit.cli.parser import StableArgumentParser
 from gzkit.commands.adr_audit import (
     adr_audit_check,
     adr_covers_check,
@@ -101,7 +102,7 @@ def _add_git_sync_options(parser: argparse.ArgumentParser) -> None:
 
 def _build_parser() -> argparse.ArgumentParser:
     """Build argparse parser tree for gz CLI."""
-    parser = argparse.ArgumentParser(
+    parser = StableArgumentParser(
         prog="gz",
         description="gzkit: A Development Covenant for Human-AI Collaboration.",
     )
@@ -611,6 +612,12 @@ def _build_parser() -> argparse.ArgumentParser:
     p_validate.add_argument("--surfaces", dest="check_surfaces", action="store_true")
     p_validate.add_argument("--ledger", dest="check_ledger", action="store_true")
     p_validate.add_argument("--instructions", dest="check_instructions", action="store_true")
+    p_validate.add_argument(
+        "--briefs",
+        dest="check_briefs",
+        action="store_true",
+        help="Validate all OBPI briefs against the canonical OBPI schema",
+    )
     p_validate.add_argument("--json", dest="as_json", action="store_true")
     p_validate.set_defaults(
         func=lambda a: validate(
@@ -619,6 +626,7 @@ def _build_parser() -> argparse.ArgumentParser:
             check_surfaces=a.check_surfaces,
             check_ledger=a.check_ledger,
             check_instructions=a.check_instructions,
+            check_briefs=a.check_briefs,
             as_json=a.as_json,
         )
     )

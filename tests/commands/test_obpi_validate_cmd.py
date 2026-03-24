@@ -83,12 +83,28 @@ class TestObpiValidateCommand(unittest.TestCase):
                 "status: Completed\n"
                 "---\n\n"
                 "# OBPI-0.1.0-01-demo\n\n"
+                "## ADR Item\n"
+                "- **Source ADR:** ADR-0.1.0\n"
+                "- **Checklist Item:** #1\n\n"
+                "## Objective\n"
+                "Demo objective.\n\n"
+                "## Lane\n"
+                "**Lite**\n\n"
                 "## Allowed Paths\n"
                 "- `docs/design/adr/pre-release/ADR-0.1.0/**` - in scope\n"
                 "- `src/**` - in scope\n\n"
+                "## Denied Paths\n"
+                "- None\n\n"
+                "## Requirements (FAIL-CLOSED)\n"
+                "1. MUST pass lint.\n\n"
+                "## Quality Gates\n"
+                "### Gate 1: ADR\n"
+                "- [x] Intent recorded\n\n"
+                "## Acceptance Criteria\n"
+                "- [x] REQ-0.1.0-01-01: Demo passes\n\n"
                 "### Implementation Summary\n"
                 "- Files created/modified: src/demo.py\n\n"
-                "## Key Proof\n"
+                "### Key Proof\n"
                 "uv run gz adr status ADR-0.1.0 --json\n",
                 encoding="utf-8",
             )
@@ -122,9 +138,17 @@ class TestObpiValidateCommand(unittest.TestCase):
             (obpi_dir / "OBPI-0.1.0-02-real.md").write_text(
                 "---\nid: OBPI-0.1.0-02-real\nparent: ADR-0.1.0\n"
                 "item: 2\nlane: Lite\nstatus: Draft\n---\n\n"
+                "## ADR Item\n- **Source ADR:** ADR-0.1.0\n"
+                "- **Checklist Item:** #2\n\n"
+                "## Objective\nDefine port interfaces.\n\n"
+                "## Lane\n**Lite**\n\n"
                 "## Allowed Paths\n- `src/gzkit/ports/` - Port definitions\n\n"
+                "## Denied Paths\n- None\n\n"
                 "## Requirements (FAIL-CLOSED)\n"
-                "1. REQUIREMENT: Ports use typing.Protocol\n",
+                "1. MUST use typing.Protocol for ports.\n\n"
+                "## Quality Gates\n### Gate 1: ADR\n- [ ] Intent recorded\n\n"
+                "## Acceptance Criteria\n"
+                "- [ ] REQ-0.1.0-02-01: Ports defined\n",
                 encoding="utf-8",
             )
 
