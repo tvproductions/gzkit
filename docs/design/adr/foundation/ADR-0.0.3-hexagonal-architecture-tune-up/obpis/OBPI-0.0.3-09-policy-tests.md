@@ -3,7 +3,7 @@ id: OBPI-0.0.3-09-policy-tests
 parent: ADR-0.0.3-hexagonal-architecture-tune-up
 item: 9
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.3-09-policy-tests: Policy Tests (Architectural Enforcement)
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.3-hexagonal-architecture-tune-up/ADR-0.0.3-hexagonal-architecture-tune-up.md`
 - **Checklist Item:** #9 - "OBPI-0.0.3-09: Policy Tests (Architectural Enforcement)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -82,32 +82,32 @@ AST-scanning tests in `tests/policy/` that enforce import boundaries, ENV usage 
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] Tests written before/with implementation
-- [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
+- [x] Tests written before/with implementation
+- [x] Tests pass: `uv run gz test`
+- [x] Validation commands recorded in evidence with real outputs
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 ### Gate 3: Docs (Heavy only)
 
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
+- [x] Docs build: `uv run mkdocs build --strict`
+- [x] Relevant docs updated
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
+- [x] Acceptance scenarios pass: `uv run -m behave features/`
 
 ### Gate 5: Human (Heavy only)
 
-- [ ] Human attestation recorded
+- [x] Human attestation recorded
 
 ## Verification
 
@@ -123,21 +123,21 @@ uv run -m unittest discover -s tests/policy -v
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.3-09-01: `test_import_boundaries.py` exists and verifies core/ import rules via AST scanning
-- [ ] REQ-0.0.3-09-02: `test_import_boundaries.py` verifies ports/ import rules via AST scanning
-- [ ] REQ-0.0.3-09-03: `test_env_usage.py` exists and detects `os.getenv`/`os.environ` outside allowlist
-- [ ] REQ-0.0.3-09-04: `test_naming_conventions.py` exists and verifies snake_case module naming
-- [ ] REQ-0.0.3-09-05: All policy tests discoverable via `uv run gz test`
-- [ ] REQ-0.0.3-09-06: Policy tests import zero modules from `src/gzkit/`
+- [x] REQ-0.0.3-09-01: `test_import_boundaries.py` exists and verifies core/ import rules via AST scanning
+- [x] REQ-0.0.3-09-02: `test_import_boundaries.py` verifies ports/ import rules via AST scanning
+- [x] REQ-0.0.3-09-03: `test_env_usage.py` exists and detects `os.getenv`/`os.environ` outside allowlist
+- [x] REQ-0.0.3-09-04: `test_naming_conventions.py` exists and verifies snake_case module naming
+- [x] REQ-0.0.3-09-05: All policy tests discoverable via `uv run gz test`
+- [x] REQ-0.0.3-09-06: Policy tests import zero modules from `src/gzkit/`
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -145,53 +145,67 @@ uv run -m unittest discover -s tests/policy -v
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded in brief objective and requirements sections
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+$ uv run -m unittest discover -s tests/policy -v
+Ran 22 tests in 0.128s — OK
+(10 import boundary + 7 env usage + 5 naming convention tests)
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+$ uv run gz lint → All checks passed!
+$ uv run gz typecheck → All checks passed!
+$ uv run gz test → Ran 1306 tests — OK
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here when Gate 3 applies
+$ uv run mkdocs build --strict → Documentation built in 0.93 seconds
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here when Gate 4 applies
+$ uv run -m behave features/
+3 features passed, 0 failed, 0 skipped
+35 scenarios passed, 0 failed, 0 skipped
+164 steps passed, 0 failed, 0 skipped
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+Attestor: human (jeff)
+Attestation: "attest completed"
+Date: 2026-03-24
 ```
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before this OBPI, hexagonal architecture layer boundaries were enforced only by convention and code review. A developer could add `import rich` to a core module with no automated guard. Now, AST-scanning policy tests machine-verify import boundaries, env var discipline, and naming conventions on every test run.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+```bash
+$ uv run -m unittest discover -s tests/policy -v
+# 22 tests verify: core/ import boundaries, ports/ type-only imports,
+# env var allowlist compliance, and snake_case naming — all via AST scanning
+# with zero application code imports.
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created/modified: tests/policy/test_import_boundaries.py, tests/policy/test_env_usage.py, tests/policy/test_naming_conventions.py
+- Tests added: 22 (10 import boundary, 7 env usage, 5 naming convention)
+- Date completed: 2026-03-24
+- Attestation status: Human attested
+- Defects noted: None
 
 ## Tracked Defects
 
@@ -200,14 +214,14 @@ uv run -m unittest discover -s tests/policy -v
 
 ## Human Attestation
 
-- Attestor: `human:<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `human:jeff`
+- Attestation: attest completed
+- Date: 2026-03-24
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-24
 
 **Evidence Hash:** -
