@@ -61,8 +61,8 @@ def _scaffold_project(tmp: Path, *, lane: str = "lite") -> Path:
 class TestGatesDeprecationWarning(unittest.TestCase):
     """REQ-0.19.0-08-01/02/03: gates_cmd emits deprecation warning."""
 
-    @patch("gzkit.cli.get_project_root")
-    @patch("gzkit.cli.ensure_initialized")
+    @patch("gzkit.cli.main.get_project_root")
+    @patch("gzkit.cli.main.ensure_initialized")
     def test_deprecation_warning_emitted(
         self, mock_init: unittest.mock.MagicMock, mock_root: unittest.mock.MagicMock
     ) -> None:
@@ -82,8 +82,8 @@ class TestGatesDeprecationWarning(unittest.TestCase):
             self.assertIn("deprecated", warning_text)
             self.assertIn("gz closeout", warning_text)
 
-    @patch("gzkit.cli.get_project_root")
-    @patch("gzkit.cli.ensure_initialized")
+    @patch("gzkit.cli.main.get_project_root")
+    @patch("gzkit.cli.main.ensure_initialized")
     def test_gates_still_execute_after_warning(
         self, mock_init: unittest.mock.MagicMock, mock_root: unittest.mock.MagicMock
     ) -> None:
@@ -99,12 +99,12 @@ class TestGatesDeprecationWarning(unittest.TestCase):
 
             with (
                 patch("sys.stderr", io.StringIO()),
-                patch("gzkit.cli.console"),
-                patch("gzkit.cli.load_manifest", return_value=manifest),
-                patch("gzkit.cli.resolve_target_adr", return_value="ADR-TEST"),
-                patch("gzkit.cli.resolve_adr_lane", return_value="lite"),
-                patch("gzkit.cli._run_gate_1", return_value=True) as mock_gate1,
-                patch("gzkit.cli._run_gate_2", return_value=True) as mock_gate2,
+                patch("gzkit.cli.main.console"),
+                patch("gzkit.cli.main.load_manifest", return_value=manifest),
+                patch("gzkit.cli.main.resolve_target_adr", return_value="ADR-TEST"),
+                patch("gzkit.cli.main.resolve_adr_lane", return_value="lite"),
+                patch("gzkit.cli.main._run_gate_1", return_value=True) as mock_gate1,
+                patch("gzkit.cli.main._run_gate_2", return_value=True) as mock_gate2,
             ):
                 gates_cmd(gate_number=None, adr="ADR-TEST")
 

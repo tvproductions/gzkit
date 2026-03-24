@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.3-hexagonal-architecture-tune-up/ADR-0.0.3-hexagonal-architecture-tune-up.md`
 - **Checklist Item:** #8 - "OBPI-0.0.3-08: Progress Indication"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -75,31 +75,31 @@ Create progress indication utilities in the CLI adapter layer (`src/gzkit/cli/pr
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] Tests verify progress displays in human mode
-- [ ] Tests verify progress suppression in quiet/json modes
-- [ ] Tests pass: `uv run gz test`
+- [x] Tests verify progress displays in human mode
+- [x] Tests verify progress suppression in quiet/json modes
+- [x] Tests pass: `uv run gz test`
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 ### Gate 3: Docs (Heavy only)
 
-- [ ] Docs build: `uv run mkdocs build --strict`
+- [x] Docs build: `uv run mkdocs build --strict`
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] N/A — Progress is internal infrastructure
+- [x] N/A — Progress is internal infrastructure
 
 ### Gate 5: Human (Heavy only)
 
-- [ ] Human attestation recorded
+- [x] Human attestation recorded
 
 ## Verification
 
@@ -115,23 +115,23 @@ uv run -m unittest tests.test_progress -v
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.3-08-01: `src/gzkit/cli/progress.py` exists with progress context manager
-- [ ] REQ-0.0.3-08-02: Progress displays Rich spinner/bar in human mode
-- [ ] REQ-0.0.3-08-03: Progress suppressed in quiet mode
-- [ ] REQ-0.0.3-08-04: Progress suppressed in json mode
-- [ ] REQ-0.0.3-08-05: Phase-based step counting works (e.g., "[1/3]")
-- [ ] REQ-0.0.3-08-06: Progress output goes to stderr
-- [ ] REQ-0.0.3-08-07: Context manager cleans up on exception
-- [ ] REQ-0.0.3-08-08: Unit tests cover mode-dependent display/suppression
+- [x] REQ-0.0.3-08-01: `src/gzkit/cli/progress.py` exists with progress context manager
+- [x] REQ-0.0.3-08-02: Progress displays Rich spinner/bar in human mode
+- [x] REQ-0.0.3-08-03: Progress suppressed in quiet mode
+- [x] REQ-0.0.3-08-04: Progress suppressed in json mode
+- [x] REQ-0.0.3-08-05: Phase-based step counting works (e.g., "[1/3]")
+- [x] REQ-0.0.3-08-06: Progress output goes to stderr
+- [x] REQ-0.0.3-08-07: Context manager cleans up on exception
+- [x] REQ-0.0.3-08-08: Unit tests cover mode-dependent display/suppression
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -139,24 +139,25 @@ uv run -m unittest tests.test_progress -v
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+Ran 19 tests in 0.005s — OK
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+uv run gz lint — All checks passed!
+uv run gz typecheck — All checks passed!
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here
+uv run mkdocs build --strict — Documentation built in 0.97 seconds
 ```
 
 ### Gate 4 (BDD)
@@ -168,20 +169,47 @@ N/A — Progress infrastructure
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here
+attest completed — 2026-03-24
 ```
 
 ### Value Narrative
 
+Before this OBPI, gzkit CLI commands had no progress indication — long-running operations ran silently. Now, `progress_phase`, `progress_spinner`, and `progress_bar` context managers provide Rich-powered visual feedback on stderr, with automatic suppression in quiet/json modes.
+
 ### Key Proof
+
+```bash
+$ uv run -m unittest tests.test_progress -v
+test_importable_from_cli_package ... ok
+test_all_display_modes ... ok
+test_all_suppressed_modes ... ok
+test_bar_cleanup_on_exception ... ok
+test_bar_runs_in_human_mode ... ok
+test_bar_suppressed_in_json_mode ... ok
+test_bar_suppressed_in_quiet_mode ... ok
+test_phase_cleanup_on_exception ... ok
+test_phase_debug_mode_shows_progress ... ok
+test_phase_runs_in_human_mode ... ok
+test_phase_suppressed_in_json_mode ... ok
+test_phase_suppressed_in_quiet_mode ... ok
+test_phase_verbose_mode_shows_progress ... ok
+test_phase_with_step_counting ... ok
+test_phase_without_step_counting ... ok
+test_spinner_cleanup_on_exception ... ok
+test_spinner_runs_in_human_mode ... ok
+test_spinner_suppressed_in_json_mode ... ok
+test_spinner_suppressed_in_quiet_mode ... ok
+Ran 19 tests in 0.005s — OK
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created: `src/gzkit/cli/progress.py`, `tests/test_progress.py`
+- Files modified: `src/gzkit/cli/__init__.py`
+- Tests added: 19 (test_progress.py)
+- Date completed: 2026-03-24
+- Attestation status: Human attested
+- Defects noted: None
 
 ## Tracked Defects
 
@@ -189,14 +217,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `human:<name>` — required (parent ADR is Heavy, Foundation series)
-- Attestation: substantive attestation text required
-- Date: YYYY-MM-DD
+- Attestor: `human:jeff` — required (parent ADR is Heavy, Foundation series)
+- Attestation: attest completed
+- Date: 2026-03-24
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-24
 
 **Evidence Hash:** -

@@ -28,7 +28,7 @@ def _make_qr(success: bool = True, command: str = "test", returncode: int = 0) -
 class TestCloseoutPipelineGates(unittest.TestCase):
     """Closeout executes verification steps inline via run_command (REQ-01)."""
 
-    @patch("gzkit.cli.run_command")
+    @patch("gzkit.cli.main.run_command")
     @patch("builtins.input", return_value="1")
     def test_gates_run_inline_and_pass(self, _mock_input, mock_run):
         mock_run.return_value = _make_qr()
@@ -44,7 +44,7 @@ class TestCloseoutPipelineGates(unittest.TestCase):
             self.assertIn("gate_checked", ledger_text)
             self.assertIn('"pass"', ledger_text)
 
-    @patch("gzkit.cli.run_command")
+    @patch("gzkit.cli.main.run_command")
     def test_gate_failure_halts_pipeline(self, mock_run):
         """Pipeline halts on first gate failure with exit 1 (REQ-02)."""
         mock_run.return_value = _make_qr(success=False, returncode=1)
@@ -59,7 +59,7 @@ class TestCloseoutPipelineGates(unittest.TestCase):
             self.assertIn("gate_checked", ledger_text)
             self.assertIn('"fail"', ledger_text)
 
-    @patch("gzkit.cli.run_command")
+    @patch("gzkit.cli.main.run_command")
     def test_partial_gate_results_recorded_on_failure(self, mock_run):
         """Partial gate results are recorded when a later gate fails (REQ-02)."""
         call_count = 0
@@ -87,7 +87,7 @@ class TestCloseoutPipelineGates(unittest.TestCase):
 class TestCloseoutPipelineAttestation(unittest.TestCase):
     """Closeout prompts for attestation after gates pass (REQ-03)."""
 
-    @patch("gzkit.cli.run_command")
+    @patch("gzkit.cli.main.run_command")
     @patch("builtins.input", return_value="1")
     def test_attestation_recorded_in_ledger(self, _mock_input, mock_run):
         mock_run.return_value = _make_qr()
@@ -102,7 +102,7 @@ class TestCloseoutPipelineAttestation(unittest.TestCase):
             self.assertIn("attested", ledger_text)
             self.assertIn("completed", ledger_text)
 
-    @patch("gzkit.cli.run_command")
+    @patch("gzkit.cli.main.run_command")
     @patch("builtins.input", return_value="1")
     def test_attestation_never_skipped(self, mock_input, mock_run):
         """Attestation prompt must always execute — never skipped (REQ-08)."""
@@ -119,7 +119,7 @@ class TestCloseoutPipelineAttestation(unittest.TestCase):
 class TestCloseoutPipelineVersionBump(unittest.TestCase):
     """Closeout bumps version when ADR semver exceeds project (REQ-04)."""
 
-    @patch("gzkit.cli.run_command")
+    @patch("gzkit.cli.main.run_command")
     @patch("builtins.input", return_value="1")
     def test_version_bump_when_needed(self, _mock_input, mock_run):
         mock_run.return_value = _make_qr()
@@ -141,7 +141,7 @@ class TestCloseoutPipelineVersionBump(unittest.TestCase):
 class TestCloseoutPipelineCompletion(unittest.TestCase):
     """Closeout marks ADR Completed after attestation (REQ-05)."""
 
-    @patch("gzkit.cli.run_command")
+    @patch("gzkit.cli.main.run_command")
     @patch("builtins.input", return_value="1")
     def test_adr_marked_completed(self, _mock_input, mock_run):
         mock_run.return_value = _make_qr()
@@ -192,7 +192,7 @@ class TestCloseoutDryRun(unittest.TestCase):
 class TestCloseoutJsonOutput(unittest.TestCase):
     """--json emits structured JSON with all pipeline results (REQ-07)."""
 
-    @patch("gzkit.cli.run_command")
+    @patch("gzkit.cli.main.run_command")
     @patch("builtins.input", return_value="1")
     def test_json_output_contains_all_stages(self, _mock_input, mock_run):
         mock_run.return_value = _make_qr()
@@ -209,7 +209,7 @@ class TestCloseoutJsonOutput(unittest.TestCase):
             self.assertIn("version_sync", data)
             self.assertIn("status_transition", data)
 
-    @patch("gzkit.cli.run_command")
+    @patch("gzkit.cli.main.run_command")
     def test_json_output_on_gate_failure(self, mock_run):
         mock_run.return_value = _make_qr(success=False, returncode=1)
         runner = CliRunner()
@@ -227,7 +227,7 @@ class TestCloseoutJsonOutput(unittest.TestCase):
 class TestCloseoutExitCodes(unittest.TestCase):
     """Exit code 0 = full success, exit code 1 = failure (REQ-10)."""
 
-    @patch("gzkit.cli.run_command")
+    @patch("gzkit.cli.main.run_command")
     @patch("builtins.input", return_value="1")
     def test_exit_0_on_success(self, _mock_input, mock_run):
         mock_run.return_value = _make_qr()
@@ -239,7 +239,7 @@ class TestCloseoutExitCodes(unittest.TestCase):
             result = runner.invoke(main, ["closeout", "ADR-0.1.0"])
             self.assertEqual(result.exit_code, 0)
 
-    @patch("gzkit.cli.run_command")
+    @patch("gzkit.cli.main.run_command")
     def test_exit_1_on_gate_failure(self, mock_run):
         mock_run.return_value = _make_qr(success=False, returncode=1)
         runner = CliRunner()
