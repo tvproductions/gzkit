@@ -825,3 +825,17 @@ def check_version_sync(project_root: Path, adr_id: str) -> tuple[str | None, str
         return None, adr_version, True
     needs_bump = _parse_semver_tuple(adr_version) > _parse_semver_tuple(current)
     return current, adr_version, needs_bump
+
+
+def _cli_main():  # type: ignore[no-untyped-def]
+    """Return the gzkit.cli.main module for test-mock compatibility.
+
+    Tests patch dependencies at ``gzkit.cli.main.<name>``.  After the
+    cli/main.py restructure (OBPI-0.0.4-01), handler functions live in
+    separate command modules.  This helper lets command modules look up
+    shared dependencies through main.py's namespace so ``mock.patch``
+    targets continue to work.
+    """
+    import sys  # deferred to avoid top-level import of sys just for this helper
+
+    return sys.modules["gzkit.cli.main"]

@@ -12,17 +12,17 @@ unchanged.
 from gzkit.cli.formatters import OutputFormatter
 from gzkit.cli.logging import bind_correlation_id, configure_logging
 from gzkit.cli.main import *  # noqa: F401, F403
+from gzkit.cli.progress import progress_bar, progress_phase, progress_spinner
 
 # Re-export private names that existing tests import directly.
-from gzkit.cli.main import (  # noqa: F401
+from gzkit.commands.audit_cmd import _write_audit_artifacts  # noqa: F401
+from gzkit.commands.gates import (  # noqa: F401
     _run_gate_1,
     _run_gate_2,
     _run_gate_3,
     _run_gate_4,
     _run_gate_5,
-    _write_audit_artifacts,
 )
-from gzkit.cli.progress import progress_bar, progress_phase, progress_spinner
 
 __all__ = [
     "OutputFormatter",
