@@ -1,9 +1,16 @@
 """Unit tests for gzkit.cli.helpers.common_flags."""
 
 import argparse
+import contextlib
+import io
 import unittest
 
 from gzkit.cli.helpers.common_flags import add_common_flags
+
+
+def _quiet_stderr() -> contextlib.redirect_stderr[io.StringIO]:
+    """Redirect stderr to suppress argparse error messages during tests."""
+    return contextlib.redirect_stderr(io.StringIO())
 
 
 class TestAddCommonFlagsRegistration(unittest.TestCase):
@@ -54,14 +61,14 @@ class TestMutualExclusion(unittest.TestCase):
     def test_quiet_and_verbose_together_raises(self) -> None:
         parser = argparse.ArgumentParser(prog="test")
         add_common_flags(parser)
-        with self.assertRaises(SystemExit) as ctx:
+        with _quiet_stderr(), self.assertRaises(SystemExit) as ctx:
             parser.parse_args(["--quiet", "--verbose"])
         self.assertEqual(ctx.exception.code, 2)
 
     def test_verbose_and_quiet_together_raises(self) -> None:
         parser = argparse.ArgumentParser(prog="test")
         add_common_flags(parser)
-        with self.assertRaises(SystemExit) as ctx:
+        with _quiet_stderr(), self.assertRaises(SystemExit) as ctx:
             parser.parse_args(["--verbose", "--quiet"])
         self.assertEqual(ctx.exception.code, 2)
 
@@ -109,7 +116,7 @@ class TestIdempotency(unittest.TestCase):
         parser = argparse.ArgumentParser(prog="test")
         add_common_flags(parser)
         add_common_flags(parser)
-        with self.assertRaises(SystemExit):
+        with _quiet_stderr(), self.assertRaises(SystemExit):
             parser.parse_args(["--quiet", "--verbose"])
 
 
@@ -163,7 +170,7 @@ class TestShortFlags(unittest.TestCase):
     def test_short_q_and_v_together_raise(self) -> None:
         parser = argparse.ArgumentParser(prog="test")
         add_common_flags(parser)
-        with self.assertRaises(SystemExit) as ctx:
+        with _quiet_stderr(), self.assertRaises(SystemExit) as ctx:
             parser.parse_args(["-q", "-v"])
         self.assertEqual(ctx.exception.code, 2)
 

@@ -75,7 +75,14 @@ Lane rule: `lite` requires Gates 1-2; `heavy` requires Gates 1-5.
 
 - OBPI is the atomic implementation unit.
 - ADR status is a roll-up of OBPI completion plus attestation.
-- Heavy or Foundation parent ADRs require explicit human attestation before OBPI/ADR completion claims.
+- **Lane inheritance:** If the parent ADR is Heavy or Foundation (0.0.x), human attestation is required for all OBPIs regardless of their individual lane designation.
+
+### ADR series selection
+
+When creating or promoting an ADR, pick the next available version in the correct series:
+
+- **0.0.x (Foundation):** Infrastructure, governance framework, developer tooling. No GitHub releases.
+- **0.x.0+ (Feature):** User-facing capability, external contracts, observable behavior changes. Release tags created on validation.
 
 ---
 

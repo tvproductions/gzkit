@@ -1,16 +1,17 @@
 ---
-id: ADR-pool.evaluation-infrastructure
-status: Pool
+id: ADR-0.0.5-evaluation-infrastructure
+status: Pending
+semver: 0.0.5
 parent: PRD-GZKIT-1.0.0
 lane: lite
 enabler: ADR-pool.ai-runtime-foundations
 ---
 
-# ADR-pool.evaluation-infrastructure
+# ADR-0.0.5: Evaluation Infrastructure
 
 ## Status
 
-Proposed
+Pending
 
 ## Date
 
