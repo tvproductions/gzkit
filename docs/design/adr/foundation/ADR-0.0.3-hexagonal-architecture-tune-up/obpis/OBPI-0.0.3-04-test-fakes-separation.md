@@ -218,8 +218,8 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: human — attested via pipeline ceremony
-- Attestation: "attest completed"
+- Attestor: human:jeff
+- Attestation: attest completed
 - Date: 2026-03-23
 
 ---
