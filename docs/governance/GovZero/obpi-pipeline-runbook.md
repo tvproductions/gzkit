@@ -216,26 +216,32 @@ not met.
 - Attestation type and text available
 - Pipeline marker active
 
-**Execution (deterministic — all scripted):**
+**Execution (deterministic — two-sync pattern):**
 1. Record attestation in ADR-level audit ledger (`{adr-package}/logs/obpi-audit.jsonl`)
    - Must happen BEFORE brief update (hook enforces this)
    - Use exact `attestation_type` vocabulary: `"human"` or `"self-close-exception"`
 2. Run OBPI audit: `uv run gz obpi audit {OBPI-ID}`
 3. Update brief: check criteria boxes, add evidence section, set status to `Completed`
-4. Run reconcile: `uv run gz obpi reconcile {OBPI-ID}`
-5. Refresh parent ADR view: `uv run gz adr status {PARENT-ADR} --json`
-6. Release OBPI lock
-7. Remove pipeline markers (per-OBPI and legacy if matching)
-8. Run guarded sync: `uv run gz git-sync --apply --lint --test`
+4. Release OBPI lock
+5. Remove pipeline markers (per-OBPI and legacy if matching)
+6. **Git-sync #1:** `uv run gz git-sync --apply --lint --test`
+   Commits governance edits (steps 1-5). Tree is clean with deterministic commit hash.
+7. **Emit completion receipt:** `uv run gz obpi emit-receipt {OBPI-ID} --event completed --attestor {name} --evidence-json '{...}'`
+   Captures clean anchor from the commit in step 6. Receipt `git_sync_state.dirty` = `false`.
+8. Run reconcile: `uv run gz obpi reconcile {OBPI-ID}`
+9. Refresh parent ADR view: `uv run gz adr status {PARENT-ADR} --json`
+10. **Git-sync #2:** `uv run gz git-sync --apply --lint --test`
+    Commits receipt (step 7) and reconcile output (step 8).
 
 **Exit contract:**
 - Attestation entry in ledger
 - OBPI audit entry in ledger
 - Brief status = `Completed`
+- Completion receipt emitted with clean anchor (no dirty worktree)
 - Reconcile confirms brief and ledger agree
 - Lock released
 - Pipeline markers removed
-- Changes pushed via git-sync
+- Changes pushed via two git-sync cycles
 
 **Failure modes:**
 | Condition | Action |
