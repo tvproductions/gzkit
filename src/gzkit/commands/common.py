@@ -827,7 +827,7 @@ def check_version_sync(project_root: Path, adr_id: str) -> tuple[str | None, str
     return current, adr_version, needs_bump
 
 
-def _cli_main():  # type: ignore[no-untyped-def]
+def _cli_main():
     """Return the gzkit.cli.main module for test-mock compatibility.
 
     Tests patch dependencies at ``gzkit.cli.main.<name>``.  After the

@@ -17,7 +17,7 @@ class TestProgressSpinner(unittest.TestCase):
     def test_spinner_runs_in_human_mode(self) -> None:
         """Spinner executes without error in human mode."""
         formatter = OutputFormatter(mode="human")
-        with progress_spinner("Working...", formatter):
+        with patch.object(sys, "stderr", io.StringIO()), progress_spinner("Working...", formatter):
             pass  # Body executes successfully
 
     def test_spinner_suppressed_in_quiet_mode(self) -> None:
@@ -40,7 +40,11 @@ class TestProgressSpinner(unittest.TestCase):
     def test_spinner_cleanup_on_exception(self) -> None:
         """Spinner cleans up properly when body raises an exception."""
         formatter = OutputFormatter(mode="human")
-        with self.assertRaises(ValueError), progress_spinner("Working...", formatter):
+        with (
+            patch.object(sys, "stderr", io.StringIO()),
+            self.assertRaises(ValueError),
+            progress_spinner("Working...", formatter),
+        ):
             raise ValueError("test error")
 
 
@@ -50,13 +54,16 @@ class TestProgressPhase(unittest.TestCase):
     def test_phase_runs_in_human_mode(self) -> None:
         """Phase executes without error in human mode."""
         formatter = OutputFormatter(mode="human")
-        with progress_phase("Linting...", formatter):
+        with patch.object(sys, "stderr", io.StringIO()), progress_phase("Linting...", formatter):
             pass
 
     def test_phase_with_step_counting(self) -> None:
         """Phase with step/total executes without error."""
         formatter = OutputFormatter(mode="human")
-        with progress_phase("Linting...", formatter, step=1, total=3):
+        with (
+            patch.object(sys, "stderr", io.StringIO()),
+            progress_phase("Linting...", formatter, step=1, total=3),
+        ):
             pass
 
     def test_phase_suppressed_in_quiet_mode(self) -> None:
@@ -90,6 +97,7 @@ class TestProgressPhase(unittest.TestCase):
         """Phase cleans up properly when body raises."""
         formatter = OutputFormatter(mode="human")
         with (
+            patch.object(sys, "stderr", io.StringIO()),
             self.assertRaises(RuntimeError),
             progress_phase("Processing...", formatter, step=1, total=2),
         ):
@@ -98,19 +106,28 @@ class TestProgressPhase(unittest.TestCase):
     def test_phase_without_step_counting(self) -> None:
         """Phase without step/total shows plain label."""
         formatter = OutputFormatter(mode="human")
-        with progress_phase("Building docs...", formatter):
+        with (
+            patch.object(sys, "stderr", io.StringIO()),
+            progress_phase("Building docs...", formatter),
+        ):
             pass
 
     def test_phase_verbose_mode_shows_progress(self) -> None:
         """Phase is displayed in verbose mode."""
         formatter = OutputFormatter(mode="verbose")
-        with progress_phase("Checking...", formatter, step=1, total=2):
+        with (
+            patch.object(sys, "stderr", io.StringIO()),
+            progress_phase("Checking...", formatter, step=1, total=2),
+        ):
             pass  # Should not raise
 
     def test_phase_debug_mode_shows_progress(self) -> None:
         """Phase is displayed in debug mode."""
         formatter = OutputFormatter(mode="debug")
-        with progress_phase("Debugging...", formatter, step=1, total=1):
+        with (
+            patch.object(sys, "stderr", io.StringIO()),
+            progress_phase("Debugging...", formatter, step=1, total=1),
+        ):
             pass  # Should not raise
 
 
@@ -120,7 +137,10 @@ class TestProgressBar(unittest.TestCase):
     def test_bar_runs_in_human_mode(self) -> None:
         """Progress bar executes without error in human mode."""
         formatter = OutputFormatter(mode="human")
-        with progress_bar("Processing files", formatter, total=10) as progress:
+        with (
+            patch.object(sys, "stderr", io.StringIO()),
+            progress_bar("Processing files", formatter, total=10) as progress,
+        ):
             self.assertIsNotNone(progress)
 
     def test_bar_suppressed_in_quiet_mode(self) -> None:
@@ -147,7 +167,11 @@ class TestProgressBar(unittest.TestCase):
     def test_bar_cleanup_on_exception(self) -> None:
         """Progress bar cleans up on exception."""
         formatter = OutputFormatter(mode="human")
-        with self.assertRaises(ValueError), progress_bar("Processing", formatter, total=10):
+        with (
+            patch.object(sys, "stderr", io.StringIO()),
+            self.assertRaises(ValueError),
+            progress_bar("Processing", formatter, total=10),
+        ):
             raise ValueError("bar error")
 
 
@@ -170,7 +194,7 @@ class TestModeIntegration(unittest.TestCase):
         """Human, verbose, and debug modes allow progress display."""
         for mode in ("human", "verbose", "debug"):
             formatter = OutputFormatter(mode=mode)
-            with self.subTest(mode=mode):
+            with self.subTest(mode=mode), patch.object(sys, "stderr", io.StringIO()):
                 with progress_spinner("test", formatter):
                     pass
                 with progress_phase("test", formatter, step=1, total=1):

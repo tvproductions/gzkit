@@ -9,6 +9,8 @@ from io import StringIO
 from pathlib import Path
 from unittest.mock import patch
 
+from rich.console import Console
+
 from gzkit.commands.roles import roles_cmd
 from gzkit.pipeline_runtime import (
     aggregate_dispatch_results,
@@ -101,8 +103,10 @@ class TestRolesPipelineOutput(unittest.TestCase):
             plans_dir.mkdir(parents=True)
             mock_root.return_value = root  # type: ignore[union-attr]
 
+            quiet_console = Console(file=StringIO(), quiet=True)
             with (
                 patch("gzkit.commands.roles.pipeline_plans_dir", return_value=plans_dir),
+                patch("gzkit.commands.roles.console", quiet_console),
                 self.assertRaises(SystemExit) as ctx,
             ):
                 roles_cmd(pipeline="OBPI-NONEXISTENT")
