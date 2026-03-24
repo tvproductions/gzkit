@@ -10,6 +10,7 @@ unchanged.
 """
 
 from gzkit.cli.formatters import OutputFormatter
+from gzkit.cli.logging import bind_correlation_id, configure_logging
 from gzkit.cli.main import *  # noqa: F401, F403
 
 # Re-export private names that existing tests import directly.
@@ -22,4 +23,4 @@ from gzkit.cli.main import (  # noqa: F401
     _write_audit_artifacts,
 )
 
-__all__ = ["OutputFormatter"]
+__all__ = ["OutputFormatter", "bind_correlation_id", "configure_logging"]
