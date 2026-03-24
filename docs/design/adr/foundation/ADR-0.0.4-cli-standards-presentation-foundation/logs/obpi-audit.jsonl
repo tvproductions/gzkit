@@ -1,0 +1,1 @@
+{"type": "obpi-audit", "timestamp": "2026-03-24T11:24:02.429125+00:00", "obpi_id": "OBPI-0.0.4-01", "adr_id": "ADR-0.0.4", "attestation_type": "human", "evidence": {"human_attestation": true, "attestation_text": "attest completed", "attestation_date": "2026-03-24"}, "action_taken": "attestation_recorded", "agent": "claude-code"}
