@@ -3,7 +3,7 @@ id: OBPI-0.0.3-02-domain-extraction
 parent: ADR-0.0.3-hexagonal-architecture-tune-up
 item: 2
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.3-02-domain-extraction: Domain Extraction
@@ -140,23 +140,23 @@ print('Core boundary clean')
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.3-02-01: `src/gzkit/core/lifecycle.py` contains ADR/OBPI state machine logic
-- [ ] REQ-0.0.3-02-02: `src/gzkit/core/scoring.py` contains scorecard computation logic
-- [ ] REQ-0.0.3-02-03: `src/gzkit/core/validation_rules.py` contains pure validation logic
-- [ ] REQ-0.0.3-02-04: `src/gzkit/core/models.py` contains domain models
-- [ ] REQ-0.0.3-02-05: Original modules are thin re-export shims
-- [ ] REQ-0.0.3-02-06: All existing tests pass without modification
-- [ ] REQ-0.0.3-02-07: `core/` has no forbidden imports (cli, commands, adapters, rich, argparse)
-- [ ] REQ-0.0.3-02-08: New unit tests cover extracted core modules
+- [x] REQ-0.0.3-02-01: `src/gzkit/core/lifecycle.py` contains ADR/OBPI state machine logic
+- [x] REQ-0.0.3-02-02: `src/gzkit/core/scoring.py` contains scorecard computation logic
+- [x] REQ-0.0.3-02-03: `src/gzkit/core/validation_rules.py` contains pure validation logic
+- [x] REQ-0.0.3-02-04: `src/gzkit/core/models.py` contains domain models
+- [x] REQ-0.0.3-02-05: Original modules are thin re-export shims
+- [x] REQ-0.0.3-02-06: All existing tests pass without modification
+- [x] REQ-0.0.3-02-07: `core/` has no forbidden imports (cli, commands, adapters, rich, argparse)
+- [x] REQ-0.0.3-02-08: New unit tests cover extracted core modules
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -164,24 +164,27 @@ print('Core boundary clean')
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded in this brief
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+$ uv run -m unittest tests.test_core_lifecycle tests.test_core_scoring tests.test_core_validation tests.test_core_models -v
+Ran 33 tests in 0.030s — OK
+$ uv run gz test — 1112 tests pass (all existing tests unchanged)
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+$ uv run gz lint — All checks passed
+$ uv run gz typecheck — All checks passed
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here
+$ uv run mkdocs build --strict — Documentation built successfully
 ```
 
 ### Gate 4 (BDD)
@@ -193,20 +196,45 @@ N/A — Internal refactoring
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here
+Attestor: human (operator)
+Attestation: "attest completed"
+Date: 2026-03-23
 ```
 
 ### Value Narrative
 
+Before this OBPI, domain logic (lifecycle rules, decomposition scoring, validation models,
+frontmatter models) was scattered across flat modules with no architectural separation. Now,
+pure domain logic lives in src/gzkit/core/ with strict import boundaries, while original
+modules serve as backward-compatible re-export shims — all 1079 existing tests pass unchanged.
+
 ### Key Proof
+
+```text
+$ uv run python -c "from gzkit.core.lifecycle import TRANSITION_TABLES; print('core import works')"
+core import works
+$ uv run python -c "from gzkit.lifecycle import LifecycleStateMachine; print('re-export works')"
+re-export works
+$ uv run python -c "
+import ast, pathlib
+for f in pathlib.Path('src/gzkit/core').glob('*.py'):
+    if f.name == '__init__.py': continue
+    tree = ast.parse(f.read_text())
+    for n in ast.walk(tree):
+        if isinstance(n, ast.ImportFrom) and n.module:
+            assert not any(n.module.startswith(p) for p in ('gzkit.cli', 'gzkit.commands', 'gzkit.adapters'))
+print('Core boundary clean')
+"
+Core boundary clean
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created/modified: core/lifecycle.py, core/scoring.py, core/validation_rules.py, core/models.py, lifecycle.py (shim), decomposition.py (shim), validate.py (updated imports), models/__init__.py (shim), models/frontmatter.py (shim)
+- Tests added: test_core_lifecycle.py (11), test_core_scoring.py (8), test_core_validation.py (7), test_core_models.py (7) = 33 new tests
+- Date completed: 2026-03-23
+- Attestation status: Human attested
+- Defects noted: None
 
 ## Tracked Defects
 
@@ -214,14 +242,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `human:<name>` — required (parent ADR is Heavy, Foundation series)
-- Attestation: substantive attestation text required
-- Date: YYYY-MM-DD
+- Attestor: `human:jeff` — required (parent ADR is Heavy, Foundation series)
+- Attestation: attest completed
+- Date: 2026-03-23
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-23
 
 **Evidence Hash:** -

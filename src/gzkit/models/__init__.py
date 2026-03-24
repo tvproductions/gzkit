@@ -1,6 +1,6 @@
 """Pydantic models for gzkit governance artifacts."""
 
-from gzkit.models.frontmatter import (
+from gzkit.core.models import (
     AdrFrontmatter,
     ObpiFrontmatter,
     PrdFrontmatter,
