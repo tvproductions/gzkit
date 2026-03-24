@@ -204,7 +204,7 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `human:jeff` — required (parent ADR is Heavy, Foundation series)
+- Attestor: human:jeff
 - Attestation: attest completed
 - Date: 2026-03-24
 
