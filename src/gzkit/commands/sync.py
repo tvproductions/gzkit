@@ -121,6 +121,48 @@ def _run_sync_prechecks(
             blockers.append("Tests failed before sync.")
 
 
+def _build_sync_commit_message(staged_files: list[str]) -> str:
+    """Build a descriptive commit message from staged file paths."""
+    if not staged_files:
+        return "chore: sync staged changes (gz git-sync)"
+
+    # Classify changes by top-level area
+    areas: dict[str, list[str]] = {}
+    for path in staged_files:
+        parts = Path(path).parts
+        if len(parts) >= 2 and parts[0] == "src":
+            area = "/".join(parts[:3])  # src/gzkit/commands etc.
+        elif len(parts) >= 2 and parts[0] == "docs":
+            area = "/".join(parts[:3])  # docs/design/adr etc.
+        elif len(parts) >= 2 and parts[0] == "tests":
+            area = "tests"
+        elif len(parts) >= 2 and parts[0] == ".claude":
+            area = ".claude"
+        elif len(parts) >= 2 and parts[0] == ".gzkit":
+            area = ".gzkit"
+        elif len(parts) >= 2 and parts[0] == "config":
+            area = "config"
+        else:
+            area = parts[0] if parts else "root"
+        areas.setdefault(area, []).append(path)
+
+    # Build summary from areas
+    area_summaries = []
+    for area in sorted(areas):
+        count = len(areas[area])
+        label = area.replace("src/gzkit/", "")
+        if count == 1:
+            area_summaries.append(label)
+        else:
+            area_summaries.append(f"{label} ({count} files)")
+
+    summary = ", ".join(area_summaries[:4])
+    if len(area_summaries) > 4:
+        summary += f" +{len(area_summaries) - 4} more"
+
+    return f"chore: update {summary} (gz git-sync)"
+
+
 def _commit_staged_changes(project_root: Path, blockers: list[str], executed: list[str]) -> None:
     """Create sync auto-commit when staged changes are present."""
     if blockers:
@@ -130,11 +172,14 @@ def _commit_staged_changes(project_root: Path, blockers: list[str], executed: li
     if rc_staged != 0 or not staged_out.strip():
         return
 
+    staged_files = [f for f in staged_out.strip().splitlines() if f.strip()]
+    message = _build_sync_commit_message(staged_files)
+
     rc_commit, _out_commit, err_commit = git_cmd(
         project_root,
         "commit",
         "-m",
-        "chore: auto-commit staged changes (gz git-sync)",
+        message,
     )
     if rc_commit == 0:
         executed.append("git commit")

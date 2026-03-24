@@ -57,28 +57,37 @@ Create a compliant OBPI markdown brief that maps to exactly one ADR checklist it
 
 ## Procedure
 
-1. **If lane is Heavy:** Read `assets/HEAVY_LANE_PLAN_TEMPLATE.md` FIRST. This is mandatory.
-1. Set the OBPI H1 to `{obpi_id}: {title}`.
-1. Include the standard header fields:
+1. **Scaffold from the canonical template first.** Run `gz specify` to generate the brief:
 
-   - **ADR Item**
-   - **Source ADR**
-   - **Checklist Item**
-   - **Status**
+   ```bash
+   uv run gz specify --name <kebab-name> --parent <ADR-X.Y.Z> --item <N> --lane <lite|heavy> --title "<title>"
+   ```
 
-1. Write these sections (in order):
+   This creates the brief with all required sections from `src/gzkit/templates/obpi.md`. **NEVER hand-author a brief from scratch.** The scaffolded file is the starting point.
 
-   - Objective
-   - Lane
-   - Allowed Paths
-   - Denied Paths
-   - Requirements (FAIL-CLOSED)
-   - Verification
-   - Acceptance Criteria (This Brief)
-   - Evidence
+2. **If lane is Heavy:** Read `assets/HEAVY_LANE_PLAN_TEMPLATE.md` BEFORE authoring. This is mandatory.
+3. **Author the scaffolded brief.** Replace all template placeholders with substantive content:
 
-1. Ensure the brief is scoped to one checklist item.
-1. Ensure Verification uses repo-standard commands (prefer `uv run ...`).
+   - Objective — one-sentence concrete outcome
+   - Lane — rationale for lane choice
+   - Allowed Paths — explicit repo paths
+   - Denied Paths — explicit exclusions
+   - Requirements (FAIL-CLOSED) — numbered MUST/NEVER rules
+   - Discovery Checklist — prerequisites to read before implementation
+   - Quality Gates — which gates apply
+   - Verification — concrete `uv run ...` commands
+   - Acceptance Criteria — deterministic REQ IDs
+
+4. **Validate structural conformance** after authoring:
+
+   ```bash
+   uv run gz obpi validate <path-to-brief>
+   ```
+
+   This checks required frontmatter fields, required section headings, and template scaffold markers. The brief MUST pass before implementation begins.
+
+5. Ensure the brief is scoped to one checklist item.
+6. Ensure Verification uses repo-standard commands (prefer `uv run ...`).
 
 ## Failure Modes
 

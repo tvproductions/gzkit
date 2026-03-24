@@ -513,8 +513,23 @@ def obpi_pipeline_cmd(
         return
 
 
+def _validate_brief_structure(project_root: Path, brief_path: Path) -> list[str]:
+    """Validate OBPI brief structural conformance against the OBPI schema.
+
+    Checks required frontmatter fields and required section headings,
+    independent of completion status.
+    """
+    from gzkit.validate import validate_document  # noqa: PLC0415
+
+    schema_errors = validate_document(brief_path, "obpi")
+    return [
+        f"[{e.type}] {e.message}" + (f" (field: {e.field})" if e.field else "")
+        for e in schema_errors
+    ]
+
+
 def obpi_validate_cmd(obpi_path: str | None, adr_id: str | None) -> None:
-    """Validate OBPI brief(s) for completion readiness."""
+    """Validate OBPI brief(s) for structural conformance and completion readiness."""
     config = ensure_initialized()
     project_root = get_project_root()
     validator = ObpiValidator(project_root)
@@ -531,12 +546,17 @@ def obpi_validate_cmd(obpi_path: str | None, adr_id: str | None) -> None:
     if not path.is_absolute():
         path = project_root / path
 
-    errors = validator.validate_file(path)
+    # Structural conformance check (always runs, regardless of status)
+    structure_errors = _validate_brief_structure(project_root, path)
 
-    if errors:
+    # Completion readiness check (ObpiValidator)
+    completion_errors = validator.validate_file(path)
+
+    all_errors = structure_errors + completion_errors
+    if all_errors:
         console.print(f"[red]OBPI Validation Failed:[/red] {path.name}")
         console.print("BLOCKERS:")
-        for error in errors:
+        for error in all_errors:
             console.print(f"- {error}")
         raise SystemExit(1)
 
@@ -569,11 +589,13 @@ def _obpi_validate_batch(
 
     total_errors = 0
     for brief_path in briefs:
-        errors = validator.validate_file(brief_path)
-        if errors:
+        structure_errors = _validate_brief_structure(project_root, brief_path)
+        completion_errors = validator.validate_file(brief_path)
+        all_errors = structure_errors + completion_errors
+        if all_errors:
             total_errors += 1
             console.print(f"[red]FAIL[/red] {brief_path.name}")
-            for error in errors:
+            for error in all_errors:
                 console.print(f"  - {error}")
         else:
             console.print(f"[green]PASS[/green] {brief_path.name}")
