@@ -3,7 +3,7 @@ id: OBPI-0.0.4-04-help-text-completeness
 parent: ADR-0.0.4-cli-standards-presentation-foundation
 item: 4
 lane: heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.4-04: Help Text Completeness
@@ -131,21 +131,21 @@ uv run -m unittest tests.test_help_text_completeness -v
 
 ## Acceptance Criteria
 
-- [ ] **REQ-0.0.4-04-01:** Recursive parser audit finds zero undocumented arguments (`help=` non-None, non-SUPPRESS on every argument)
-- [ ] **REQ-0.0.4-04-02:** Recursive parser audit finds zero commands without `description=` on their parser
-- [ ] **REQ-0.0.4-04-03:** No help text contains `TODO`, `FIXME`, `XXX`, or `print(`
-- [ ] **REQ-0.0.4-04-04:** All help text lines are under 80 characters
-- [ ] **REQ-0.0.4-04-05:** `uv run gz lint` passes clean
-- [ ] **REQ-0.0.4-04-06:** `uv run gz test` passes clean
+- [x] **REQ-0.0.4-04-01:** Recursive parser audit finds zero undocumented arguments (`help=` non-None, non-SUPPRESS on every argument)
+- [x] **REQ-0.0.4-04-02:** Recursive parser audit finds zero commands without `description=` on their parser
+- [x] **REQ-0.0.4-04-03:** No help text contains `TODO`, `FIXME`, `XXX`, or `print(`
+- [x] **REQ-0.0.4-04-04:** All help text lines are under 80 characters
+- [x] **REQ-0.0.4-04-05:** `uv run gz lint` passes clean
+- [x] **REQ-0.0.4-04-06:** `uv run gz test` passes clean
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -153,53 +153,65 @@ uv run -m unittest tests.test_help_text_completeness -v
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded in this brief
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+uv run -m unittest tests.test_help_text_completeness -v
+5 tests pass (REQ-01 through REQ-04 + formatter_class)
+uv run gz test — 1367 tests pass
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+uv run gz lint — All checks passed
+uv run ruff format — clean
+uv run gz typecheck — pre-existing warnings only (not introduced by this OBPI)
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here
+uv run mkdocs build --strict — Documentation built in 0.93 seconds
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here
+N/A — no BDD features scoped to this OBPI
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+Human attestation: "attest completed" — 2026-03-24
 ```
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before this OBPI, approximately half of gzkit's ~130 CLI arguments lacked help= strings and nearly all 50+ parsers/subparsers lacked description= strings. Operators running gz --help saw undocumented arguments. Now every argument and parser across all 35 top-level commands has action-oriented help text under 80 characters, enforced by a recursive parser audit test.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+```text
+$ uv run -m unittest tests.test_help_text_completeness -v
+test_all_arguments_have_help ... ok
+test_all_parsers_have_description ... ok
+test_formatter_class_set ... ok
+test_help_text_under_80_chars ... ok
+test_no_forbidden_patterns_in_help ... ok
+Ran 5 tests in 0.110s — OK
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created/modified: tests/test_help_text_completeness.py (new), src/gzkit/cli/main.py (modified)
+- Tests added: 5 tests in test_help_text_completeness.py
+- Date completed: 2026-03-24
+- Attestation status: Human attested completed
+- Defects noted: None
 
 ## Tracked Defects
 
@@ -207,14 +219,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a`
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `jeff`
+- Attestation: `attest completed`
+- Date: `2026-03-24`
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-24
 
 **Evidence Hash:** -

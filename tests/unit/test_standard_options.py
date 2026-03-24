@@ -1,6 +1,8 @@
 """Unit tests for gzkit.cli.helpers.standard_options."""
 
 import argparse
+import contextlib
+import io
 import unittest
 
 from gzkit.cli.helpers.standard_options import (
@@ -202,7 +204,7 @@ class TestAddAdrOption(unittest.TestCase):
     def test_required_true_raises_when_omitted(self) -> None:
         parser = argparse.ArgumentParser(prog="test")
         add_adr_option(parser, required=True)
-        with self.assertRaises(SystemExit) as ctx:
+        with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as ctx:
             parser.parse_args([])
         self.assertEqual(ctx.exception.code, 2)
 

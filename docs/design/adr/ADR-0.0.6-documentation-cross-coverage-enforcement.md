@@ -1,13 +1,13 @@
 ---
-id: ADR-0.0.5
+id: ADR-0.0.6-documentation-cross-coverage-enforcement
 status: Draft
-semver: 0.0.5
+semver: 0.0.6
 lane: heavy
 parent:
 date: 2026-03-23
 ---
 
-# ADR-0.0.5: Documentation Cross-Coverage Enforcement
+# ADR-0.0.6: Documentation Cross-Coverage Enforcement
 
 ## Intent
 
@@ -88,9 +88,9 @@ New maintenance surface (manifest). Mitigated by the scanner catching drift auto
 
 ## Checklist
 
-- [ ] OBPI-0.0.5-01: AST Scanner — Discover CLI commands and verify documentation surfaces
-- [ ] OBPI-0.0.5-02: Documentation Manifest — Declare per-command documentation obligations
-- [ ] OBPI-0.0.5-03: Chore Registration and Enforcement — Register as chore, produce actionable report
+- [ ] OBPI-0.0.6-01: AST Scanner — Discover CLI commands and verify documentation surfaces
+- [ ] OBPI-0.0.6-02: Documentation Manifest — Declare per-command documentation obligations
+- [ ] OBPI-0.0.6-03: Chore Registration and Enforcement — Register as chore, produce actionable report
 
 ## Q&A Transcript
 
@@ -109,4 +109,4 @@ Single-layer scanner without manifest. Rejected because the manifest makes oblig
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.5 | Pending | | | |
+| 0.0.6 | Pending | | | |
