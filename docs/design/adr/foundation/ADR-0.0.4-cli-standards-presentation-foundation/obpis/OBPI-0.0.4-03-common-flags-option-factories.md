@@ -3,7 +3,7 @@ id: OBPI-0.0.4-03-common-flags-option-factories
 parent: ADR-0.0.4-cli-standards-presentation-foundation
 item: 3
 lane: heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.4-03: Common Flags & Standard Option Factories
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.4-cli-standards-presentation-foundation/ADR-0.0.4-cli-standards-presentation-foundation.md`
 - **Checklist Item:** #3 - "Common flags (--quiet, --verbose, --debug, --json) and standard option factories"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -130,23 +130,23 @@ uv run -m gzkit status --help    # verify --json from factory
 
 ## Acceptance Criteria
 
-- [ ] **REQ-0.0.4-03-01:** `add_common_flags()` exists and is called on all command parsers
-- [ ] **REQ-0.0.4-03-02:** `--quiet`, `--verbose`, `--debug` accepted by every command
-- [ ] **REQ-0.0.4-03-03:** `--quiet` and `--verbose` are mutually exclusive (simultaneous use rejected)
-- [ ] **REQ-0.0.4-03-04:** All `--json`, `--adr`, `--dry-run`, `--force`, `--table` use factory functions
-- [ ] **REQ-0.0.4-03-05:** Help text from factories matches canonical wording
-- [ ] **REQ-0.0.4-03-06:** No duplicate option errors when factories are called
-- [ ] **REQ-0.0.4-03-07:** Unit tests exist for each factory function
-- [ ] **REQ-0.0.4-03-08:** `uv run gz lint` and `uv run gz test` pass clean
+- [x] **REQ-0.0.4-03-01:** `add_common_flags()` exists and is called on all command parsers
+- [x] **REQ-0.0.4-03-02:** `--quiet`, `--verbose`, `--debug` accepted by every command
+- [x] **REQ-0.0.4-03-03:** `--quiet` and `--verbose` are mutually exclusive (simultaneous use rejected)
+- [x] **REQ-0.0.4-03-04:** All `--json`, `--adr`, `--dry-run`, `--force`, `--table` use factory functions
+- [x] **REQ-0.0.4-03-05:** Help text from factories matches canonical wording
+- [x] **REQ-0.0.4-03-06:** No duplicate option errors when factories are called
+- [x] **REQ-0.0.4-03-07:** Unit tests exist for each factory function
+- [x] **REQ-0.0.4-03-08:** `uv run gz lint` and `uv run gz test` pass clean
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -154,53 +154,68 @@ uv run -m gzkit status --help    # verify --json from factory
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+Ran 40 tests in 0.009s — OK
+tests/unit/test_common_flags.py: 18 tests
+tests/unit/test_standard_options.py: 22 tests
+Full suite: 1362 tests pass
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+uv run gz lint: All checks passed
+uv run gz typecheck: Passed (1 pre-existing warning in roles.py)
+uv run ruff format: 177 files unchanged
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here when Gate 3 applies
+uv run mkdocs build --strict: Documentation built in 3.69 seconds
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here when Gate 4 applies
+N/A — no BDD scenarios defined for this OBPI
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+Attestor: jbabb
+Attestation: attest completed
+Date: 2026-03-24
 ```
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before this OBPI, every command defined its own --json, --dry-run, --force, and --adr flags
+independently (~20 ad-hoc --json, ~15 --dry-run) with inconsistent help text and no common
+flags (--quiet, --verbose, --debug). Now, reusable factory functions enforce canonical help
+text, consistent dest naming, and idempotent registration. Every command inherits --quiet,
+--verbose, and --debug. --debug activates DEBUG-level logging and full tracebacks.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+```text
+$ uv run gz status --help
+usage: gz status [-h] [--json] [--table] [--show-gates] [--quiet | --verbose] [--debug]
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created: common_flags.py, standard_options.py, test_common_flags.py, test_standard_options.py
+- Files modified: helpers/__init__.py, cli/main.py
+- Tests added: 40
+- Date completed: 2026-03-24
+- Attestation status: Completed (human)
+- Defects noted: None
 
 ## Tracked Defects
 
@@ -208,14 +223,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a`
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `jbabb`
+- Attestation: `attest completed`
+- Date: `2026-03-24`
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-24
 
 **Evidence Hash:** -
