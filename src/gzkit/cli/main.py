@@ -13,6 +13,7 @@ from gzkit.cli.helpers import (
     add_force_flag,
     add_json_flag,
     add_table_flag,
+    build_epilog,
 )
 from gzkit.cli.parser import StableArgumentParser
 from gzkit.commands.adr_audit import (
@@ -163,6 +164,13 @@ def _build_parser() -> argparse.ArgumentParser:
         "init",
         help="Initialize gzkit in the current project",
         description="Initialize gzkit governance scaffolding in the current directory.",
+        epilog=build_epilog(
+            [
+                "gz init",
+                "gz init --mode heavy",
+                "gz init --force --dry-run",
+            ]
+        ),
     )
     p_init.add_argument(
         "--mode",
@@ -178,6 +186,13 @@ def _build_parser() -> argparse.ArgumentParser:
         "prd",
         help="Create a new PRD",
         description="Create a new product requirements document.",
+        epilog=build_epilog(
+            [
+                "gz prd my-product",
+                'gz prd my-product --title "My Product Requirements"',
+                "gz prd my-product --dry-run",
+            ]
+        ),
     )
     p_prd.add_argument("name", help="PRD slug name (kebab-case)")
     p_prd.add_argument("--title", help="PRD title override")
@@ -188,6 +203,13 @@ def _build_parser() -> argparse.ArgumentParser:
         "constitute",
         help="Create a new constitution",
         description="Create a new governance constitution document.",
+        epilog=build_epilog(
+            [
+                "gz constitute my-constitution",
+                'gz constitute my-constitution --title "Project Constitution"',
+                "gz constitute my-constitution --dry-run",
+            ]
+        ),
     )
     p_constitute.add_argument("name", help="Constitution slug name (kebab-case)")
     p_constitute.add_argument("--title", help="Constitution title override")
@@ -200,6 +222,13 @@ def _build_parser() -> argparse.ArgumentParser:
         "specify",
         help="Create a new OBPI",
         description="Create a new OBPI brief linked to a parent ADR.",
+        epilog=build_epilog(
+            [
+                "gz specify my-feature --parent ADR-0.1.0",
+                "gz specify my-feature --parent ADR-0.1.0 --item 3 --lane heavy",
+                "gz specify my-feature --parent ADR-0.1.0 --dry-run",
+            ]
+        ),
     )
     p_specify.add_argument("name", help="OBPI slug name (kebab-case)")
     p_specify.add_argument("--parent", required=True, help="Parent ADR identifier (e.g. ADR-0.0.4)")
@@ -224,6 +253,13 @@ def _build_parser() -> argparse.ArgumentParser:
         "plan",
         help="Create a new ADR",
         description="Create a new Architecture Decision Record with scoring.",
+        epilog=build_epilog(
+            [
+                "gz plan my-feature --semver 0.1.0 --lane lite",
+                'gz plan my-feature --semver 0.2.0 --lane heavy --title "My Feature"',
+                "gz plan my-feature --semver 0.1.0 --dry-run",
+            ]
+        ),
     )
     p_plan.add_argument("name", help="ADR slug name (kebab-case)")
     p_plan.add_argument(
@@ -300,6 +336,13 @@ def _build_parser() -> argparse.ArgumentParser:
         "state",
         help="Query ledger state and relationships",
         description="Query artifact graph, blockers, and readiness from ledger.",
+        epilog=build_epilog(
+            [
+                "gz state --json",
+                "gz state --blocked",
+                "gz state --ready",
+            ]
+        ),
     )
     add_json_flag(p_state)
     p_state.add_argument("--blocked", action="store_true", help="Show only blocked artifacts")
@@ -312,6 +355,13 @@ def _build_parser() -> argparse.ArgumentParser:
         "status",
         help="Show OBPI progress and ADR lifecycle status",
         description="Display OBPI completion progress and ADR lifecycle state.",
+        epilog=build_epilog(
+            [
+                "gz status --table",
+                "gz status --json",
+                "gz status --show-gates",
+            ]
+        ),
     )
     add_json_flag(p_status)
     add_table_flag(
@@ -330,6 +380,13 @@ def _build_parser() -> argparse.ArgumentParser:
         "closeout",
         help="Initiate closeout mode and record closeout event",
         description="Begin ADR closeout and generate closeout form.",
+        epilog=build_epilog(
+            [
+                "gz closeout ADR-0.1.0",
+                "gz closeout ADR-0.1.0 --dry-run",
+                "gz closeout ADR-0.1.0 --json",
+            ]
+        ),
     )
     p_closeout.add_argument("adr", help="ADR identifier to close out (e.g. ADR-0.0.4)")
     add_json_flag(p_closeout)
@@ -342,6 +399,13 @@ def _build_parser() -> argparse.ArgumentParser:
         "audit",
         help="Run ADR audit routine and persist proof artifacts",
         description="Run post-attestation audit and persist proof artifacts.",
+        epilog=build_epilog(
+            [
+                "gz audit ADR-0.1.0",
+                "gz audit ADR-0.1.0 --dry-run",
+                "gz audit ADR-0.1.0 --json",
+            ]
+        ),
     )
     p_audit.add_argument("adr", help="ADR identifier to audit (e.g. ADR-0.0.4)")
     add_json_flag(p_audit)
@@ -352,6 +416,13 @@ def _build_parser() -> argparse.ArgumentParser:
         "adr",
         help="ADR-focused governance commands",
         description="ADR lifecycle, evaluation, and evidence commands.",
+        epilog=build_epilog(
+            [
+                "gz adr status ADR-0.1.0",
+                "gz adr report",
+                "gz adr report ADR-0.1.0",
+            ]
+        ),
     )
     adr_commands = p_adr.add_subparsers(dest="adr_command")
     adr_commands.required = True
@@ -360,6 +431,13 @@ def _build_parser() -> argparse.ArgumentParser:
         "status",
         help="Show focused OBPI progress for one ADR",
         description="Display detailed OBPI progress for a single ADR.",
+        epilog=build_epilog(
+            [
+                "gz adr status ADR-0.1.0",
+                "gz adr status ADR-0.1.0 --json",
+                "gz adr status ADR-0.1.0 --show-gates",
+            ]
+        ),
     )
     p_adr_status.add_argument("adr", help="ADR identifier (e.g. ADR-0.0.4)")
     add_json_flag(p_adr_status)
@@ -376,6 +454,12 @@ def _build_parser() -> argparse.ArgumentParser:
         "report",
         help="Deterministic tabular report (summary or single ADR)",
         description="Produce deterministic tabular report for all or one ADR.",
+        epilog=build_epilog(
+            [
+                "gz adr report",
+                "gz adr report ADR-0.1.0",
+            ]
+        ),
     )
     p_adr_report.add_argument(
         "adr", nargs="?", default=None, help="ADR identifier (omit for summary)"
@@ -386,6 +470,13 @@ def _build_parser() -> argparse.ArgumentParser:
         "promote",
         help="Promote a pool ADR into canonical ADR package structure",
         description="Move a backlog pool ADR into versioned ADR package.",
+        epilog=build_epilog(
+            [
+                "gz adr promote ADR-pool.my-feature --semver 0.2.0",
+                "gz adr promote ADR-pool.my-feature --semver 0.2.0 --lane heavy",
+                "gz adr promote ADR-pool.my-feature --semver 0.2.0 --dry-run",
+            ]
+        ),
     )
     p_adr_promote.add_argument("pool_adr", help="Pool ADR id (e.g., ADR-pool.gz-chores-system)")
     p_adr_promote.add_argument(
@@ -439,6 +530,13 @@ def _build_parser() -> argparse.ArgumentParser:
         "evaluate",
         help="Evaluate ADR/OBPI quality (deterministic scoring)",
         description="Score ADR quality across weighted dimensions.",
+        epilog=build_epilog(
+            [
+                "gz adr evaluate ADR-0.1.0",
+                "gz adr evaluate ADR-0.1.0 --json",
+                "gz adr evaluate ADR-0.1.0 --no-scorecard",
+            ]
+        ),
     )
     p_adr_eval.add_argument("adr_id", help="ADR identifier (e.g., ADR-0.19.0)")
     add_json_flag(p_adr_eval)
@@ -461,6 +559,12 @@ def _build_parser() -> argparse.ArgumentParser:
         "audit-check",
         help="Verify linked OBPIs are complete with evidence",
         description="Check that all linked OBPIs have passing evidence.",
+        epilog=build_epilog(
+            [
+                "gz adr audit-check ADR-0.1.0",
+                "gz adr audit-check ADR-0.1.0 --json",
+            ]
+        ),
     )
     p_adr_audit_check.add_argument("adr", help="ADR identifier (e.g. ADR-0.0.4)")
     add_json_flag(p_adr_audit_check)
@@ -470,6 +574,12 @@ def _build_parser() -> argparse.ArgumentParser:
         "covers-check",
         help="Verify @covers traceability for ADR, OBPIs, and REQ IDs",
         description="Scan tests for @covers decorators and verify linkage.",
+        epilog=build_epilog(
+            [
+                "gz adr covers-check ADR-0.1.0",
+                "gz adr covers-check ADR-0.1.0 --json",
+            ]
+        ),
     )
     p_adr_covers_check.add_argument("adr", help="ADR identifier (e.g. ADR-0.0.4)")
     add_json_flag(p_adr_covers_check)
@@ -479,6 +589,12 @@ def _build_parser() -> argparse.ArgumentParser:
         "emit-receipt",
         help="Emit completed/validated receipt event for an ADR",
         description="Record a receipt event in the ledger for an ADR.",
+        epilog=build_epilog(
+            [
+                'gz adr emit-receipt ADR-0.1.0 --event completed --attestor "Jane Doe"',
+                'gz adr emit-receipt ADR-0.1.0 --event validated --attestor "Jane Doe" --dry-run',
+            ]
+        ),
     )
     p_adr_emit.add_argument("adr", help="ADR identifier (e.g. ADR-0.0.4)")
     p_adr_emit.add_argument(
@@ -505,6 +621,13 @@ def _build_parser() -> argparse.ArgumentParser:
         "obpi",
         help="OBPI-focused governance commands",
         description="OBPI lifecycle, pipeline, and evidence commands.",
+        epilog=build_epilog(
+            [
+                "gz obpi status OBPI-0.1.0-01",
+                "gz obpi pipeline OBPI-0.1.0-01",
+                "gz obpi reconcile OBPI-0.1.0-01",
+            ]
+        ),
     )
     obpi_commands = p_obpi.add_subparsers(dest="obpi_command")
     obpi_commands.required = True
@@ -513,6 +636,12 @@ def _build_parser() -> argparse.ArgumentParser:
         "emit-receipt",
         help="Emit completed/validated receipt event for an OBPI",
         description="Record a receipt event in the ledger for an OBPI.",
+        epilog=build_epilog(
+            [
+                'gz obpi emit-receipt OBPI-0.1.0-01 --event completed --attestor "Jane Doe"',
+                'gz obpi emit-receipt OBPI-0.1.0-01 --event validated --attestor "Jane Doe"',
+            ]
+        ),
     )
     p_obpi_emit.add_argument("obpi", help="OBPI identifier (e.g. OBPI-0.0.4-01)")
     p_obpi_emit.add_argument(
@@ -539,6 +668,12 @@ def _build_parser() -> argparse.ArgumentParser:
         "status",
         help="Show focused runtime status for one OBPI",
         description="Display runtime status and evidence for a single OBPI.",
+        epilog=build_epilog(
+            [
+                "gz obpi status OBPI-0.1.0-01",
+                "gz obpi status OBPI-0.1.0-01 --json",
+            ]
+        ),
     )
     p_obpi_status.add_argument("obpi", help="OBPI identifier (e.g. OBPI-0.0.4-01)")
     add_json_flag(p_obpi_status)
@@ -548,6 +683,13 @@ def _build_parser() -> argparse.ArgumentParser:
         "pipeline",
         help="Launch the OBPI pipeline runtime surface",
         description="Run or query the OBPI pipeline lifecycle runtime.",
+        epilog=build_epilog(
+            [
+                "gz obpi pipeline OBPI-0.1.0-01",
+                "gz obpi pipeline OBPI-0.1.0-01 --from verify",
+                "gz obpi pipeline --clear-stale",
+            ]
+        ),
     )
     p_obpi_pipeline.add_argument(
         "obpi", nargs="?", default="", help="OBPI identifier (e.g. OBPI-0.0.4-01)"
@@ -593,6 +735,12 @@ def _build_parser() -> argparse.ArgumentParser:
         "reconcile",
         help="Fail-closed runtime reconciliation for one OBPI",
         description="Reconcile OBPI receipt and brief for consistency.",
+        epilog=build_epilog(
+            [
+                "gz obpi reconcile OBPI-0.1.0-01",
+                "gz obpi reconcile OBPI-0.1.0-01 --json",
+            ]
+        ),
     )
     p_obpi_reconcile.add_argument("obpi", help="OBPI identifier (e.g. OBPI-0.0.4-01)")
     add_json_flag(p_obpi_reconcile)
@@ -602,6 +750,12 @@ def _build_parser() -> argparse.ArgumentParser:
         "validate",
         help="Validate OBPI brief(s) for completion readiness",
         description="Check OBPI briefs against the canonical completion schema.",
+        epilog=build_epilog(
+            [
+                "gz obpi validate docs/design/adr/my-adr/obpis/OBPI-0.1.0-01-my-feature.md",
+                "gz obpi validate --adr ADR-0.1.0",
+            ]
+        ),
     )
     p_obpi_validate.add_argument(
         "obpi_path", nargs="?", default=None, help="Path to a single OBPI brief file"
@@ -620,6 +774,12 @@ def _build_parser() -> argparse.ArgumentParser:
         "check-config-paths",
         help="Validate config/manifest paths are coherent",
         description="Verify configured and manifest path coherence.",
+        epilog=build_epilog(
+            [
+                "gz check-config-paths",
+                "gz check-config-paths --json",
+            ]
+        ),
     )
     add_json_flag(p_check_paths)
     p_check_paths.set_defaults(func=lambda a: check_config_paths_cmd(as_json=a.as_json))
@@ -628,6 +788,12 @@ def _build_parser() -> argparse.ArgumentParser:
         "cli",
         help="CLI governance commands",
         description="CLI documentation and coverage audit commands.",
+        epilog=build_epilog(
+            [
+                "gz cli audit",
+                "gz cli audit --json",
+            ]
+        ),
     )
     cli_commands = p_cli.add_subparsers(dest="cli_command")
     cli_commands.required = True
@@ -635,6 +801,12 @@ def _build_parser() -> argparse.ArgumentParser:
         "audit",
         help="Audit CLI docs/manpage coverage",
         description="Check CLI command documentation and manpage parity.",
+        epilog=build_epilog(
+            [
+                "gz cli audit",
+                "gz cli audit --json",
+            ]
+        ),
     )
     add_json_flag(p_cli_audit)
     p_cli_audit.set_defaults(func=lambda a: cli_audit_cmd(as_json=a.as_json))
@@ -643,6 +815,12 @@ def _build_parser() -> argparse.ArgumentParser:
         "parity",
         help="Parity governance commands",
         description="Cross-repository parity regression commands.",
+        epilog=build_epilog(
+            [
+                "gz parity check",
+                "gz parity check --json",
+            ]
+        ),
     )
     parity_commands = p_parity.add_subparsers(dest="parity_command")
     parity_commands.required = True
@@ -650,6 +828,12 @@ def _build_parser() -> argparse.ArgumentParser:
         "check",
         help="Run deterministic parity regression checks",
         description="Execute deterministic parity regression checks.",
+        epilog=build_epilog(
+            [
+                "gz parity check",
+                "gz parity check --json",
+            ]
+        ),
     )
     add_json_flag(p_parity_check)
     p_parity_check.set_defaults(func=lambda a: parity_check_cmd(as_json=a.as_json))
@@ -658,6 +842,12 @@ def _build_parser() -> argparse.ArgumentParser:
         "readiness",
         help="Agent readiness governance commands",
         description="Agent readiness audit and evaluation commands.",
+        epilog=build_epilog(
+            [
+                "gz readiness audit",
+                "gz readiness evaluate",
+            ]
+        ),
     )
     readiness_commands = p_readiness.add_subparsers(dest="readiness_command")
     readiness_commands.required = True
@@ -665,6 +855,12 @@ def _build_parser() -> argparse.ArgumentParser:
         "audit",
         help="Audit readiness across disciplines and primitives",
         description="Audit agent readiness across all disciplines.",
+        epilog=build_epilog(
+            [
+                "gz readiness audit",
+                "gz readiness audit --json",
+            ]
+        ),
     )
     add_json_flag(p_readiness_audit)
     p_readiness_audit.set_defaults(func=lambda a: readiness_audit_cmd(as_json=a.as_json))
@@ -672,6 +868,12 @@ def _build_parser() -> argparse.ArgumentParser:
         "evaluate",
         help="Run instruction eval suite with positive/negative controls",
         description="Execute instruction evaluation with control cases.",
+        epilog=build_epilog(
+            [
+                "gz readiness evaluate",
+                "gz readiness evaluate --json",
+            ]
+        ),
     )
     add_json_flag(p_readiness_eval)
     p_readiness_eval.set_defaults(func=lambda a: readiness_eval_cmd(as_json=a.as_json))
@@ -680,6 +882,13 @@ def _build_parser() -> argparse.ArgumentParser:
         "git-sync",
         help="Sync branch with guarded ritual",
         description="Commit, lint-gate, test-gate, and push in one ritual.",
+        epilog=build_epilog(
+            [
+                "gz git-sync --apply --lint --test",
+                "gz git-sync --apply --no-push",
+                "gz git-sync --json",
+            ]
+        ),
     )
     _add_git_sync_options(p_git_sync)
     p_git_sync.set_defaults(
@@ -700,6 +909,12 @@ def _build_parser() -> argparse.ArgumentParser:
         "migrate-semver",
         help="Record SemVer ID rename events",
         description="Record semver identifier migration events in ledger.",
+        epilog=build_epilog(
+            [
+                "gz migrate-semver",
+                "gz migrate-semver --dry-run",
+            ]
+        ),
     )
     add_dry_run_flag(p_migrate)
     p_migrate.set_defaults(func=lambda a: migrate_semver(dry_run=a.dry_run))
@@ -708,6 +923,13 @@ def _build_parser() -> argparse.ArgumentParser:
         "register-adrs",
         help="Register ADR packages missing from ledger state",
         description="Reconcile on-disk ADR packages with governance ledger.",
+        epilog=build_epilog(
+            [
+                "gz register-adrs",
+                "gz register-adrs ADR-0.1.0 ADR-0.2.0",
+                "gz register-adrs --all --dry-run",
+            ]
+        ),
     )
     p_register_adrs.add_argument(
         "targets",
@@ -746,6 +968,13 @@ def _build_parser() -> argparse.ArgumentParser:
         "chores",
         help="Chore registry and execution commands",
         description="Discover, plan, execute, and audit repository chores.",
+        epilog=build_epilog(
+            [
+                "gz chores list",
+                "gz chores show my-chore",
+                "gz chores run my-chore",
+            ]
+        ),
     )
     chores_commands = p_chores.add_subparsers(dest="chores_command")
     chores_commands.required = True
@@ -754,12 +983,22 @@ def _build_parser() -> argparse.ArgumentParser:
         "list",
         help="List chores from registry",
         description="Display all registered chores and their status.",
+        epilog=build_epilog(
+            [
+                "gz chores list",
+            ]
+        ),
     ).set_defaults(func=lambda a: chores_list())
 
     p_chores_show = chores_commands.add_parser(
         "show",
         help="Display CHORE.md for one chore",
         description="Show the full chore definition for a given slug.",
+        epilog=build_epilog(
+            [
+                "gz chores show my-chore",
+            ]
+        ),
     )
     p_chores_show.add_argument("slug", help="Chore slug identifier")
     p_chores_show.set_defaults(func=lambda a: chores_show(slug=a.slug))
@@ -768,6 +1007,11 @@ def _build_parser() -> argparse.ArgumentParser:
         "plan",
         help="Show plan details for one chore",
         description="Display the execution plan for a given chore.",
+        epilog=build_epilog(
+            [
+                "gz chores plan my-chore",
+            ]
+        ),
     )
     p_chores_plan.add_argument("slug", help="Chore slug identifier")
     p_chores_plan.set_defaults(func=lambda a: chores_plan(slug=a.slug))
@@ -776,6 +1020,11 @@ def _build_parser() -> argparse.ArgumentParser:
         "advise",
         help="Dry-run criteria and report status",
         description="Evaluate chore criteria and advise on readiness.",
+        epilog=build_epilog(
+            [
+                "gz chores advise my-chore",
+            ]
+        ),
     )
     p_chores_advise.add_argument("slug", help="Chore slug identifier")
     p_chores_advise.set_defaults(func=lambda a: chores_advise(slug=a.slug))
@@ -784,6 +1033,11 @@ def _build_parser() -> argparse.ArgumentParser:
         "run",
         help="Execute one chore by slug",
         description="Execute a single chore and record results.",
+        epilog=build_epilog(
+            [
+                "gz chores run my-chore",
+            ]
+        ),
     )
     p_chores_run.add_argument("slug", help="Chore slug identifier")
     p_chores_run.set_defaults(func=lambda a: chores_run(slug=a.slug))
@@ -792,6 +1046,12 @@ def _build_parser() -> argparse.ArgumentParser:
         "audit",
         help="Audit chore log presence",
         description="Verify chore execution logs are present.",
+        epilog=build_epilog(
+            [
+                "gz chores audit --all",
+                "gz chores audit --slug my-chore",
+            ]
+        ),
     )
     chores_audit_target = p_chores_audit.add_mutually_exclusive_group(required=True)
     chores_audit_target.add_argument(
@@ -804,6 +1064,13 @@ def _build_parser() -> argparse.ArgumentParser:
         "roles",
         help="List pipeline agent roles and handoff contracts",
         description="Display agent roles and pipeline dispatch history.",
+        epilog=build_epilog(
+            [
+                "gz roles",
+                "gz roles --pipeline OBPI-0.1.0-01",
+                "gz roles --json",
+            ]
+        ),
     )
     p_roles.add_argument("--pipeline", help="Show dispatch history for an OBPI pipeline run")
     add_json_flag(p_roles)
@@ -813,6 +1080,11 @@ def _build_parser() -> argparse.ArgumentParser:
         "implement",
         help="Run Gate 2 and record result",
         description="Execute Gate 2 verification and record result event.",
+        epilog=build_epilog(
+            [
+                "gz implement --adr ADR-0.1.0",
+            ]
+        ),
     )
     add_adr_option(p_implement)
     p_implement.set_defaults(func=lambda a: implement_cmd(adr=a.adr))
@@ -821,6 +1093,12 @@ def _build_parser() -> argparse.ArgumentParser:
         "gates",
         help="Run lane-required gates",
         description="Execute lane-required governance gates for an ADR.",
+        epilog=build_epilog(
+            [
+                "gz gates --adr ADR-0.1.0",
+                "gz gates --adr ADR-0.1.0 --gate 2",
+            ]
+        ),
     )
     p_gates.add_argument(
         "--gate", dest="gate_number", type=int, help="Run a specific gate number only"
@@ -832,6 +1110,13 @@ def _build_parser() -> argparse.ArgumentParser:
         "attest",
         help="Record human attestation",
         description="Record explicit human attestation for an ADR.",
+        epilog=build_epilog(
+            [
+                "gz attest ADR-0.1.0 --status completed",
+                'gz attest ADR-0.1.0 --status partial --reason "OBPIs 3-5 deferred"',
+                "gz attest ADR-0.1.0 --status completed --dry-run",
+            ]
+        ),
     )
     p_attest.add_argument("adr", help="ADR identifier to attest (e.g. ADR-0.0.4)")
     p_attest.add_argument(
@@ -858,6 +1143,13 @@ def _build_parser() -> argparse.ArgumentParser:
         "validate",
         help="Validate governance artifacts",
         description="Check governance artifacts against schema rules.",
+        epilog=build_epilog(
+            [
+                "gz validate --manifest --ledger",
+                "gz validate --documents --surfaces",
+                "gz validate --briefs --json",
+            ]
+        ),
     )
     p_validate.add_argument(
         "--manifest",
@@ -906,6 +1198,13 @@ def _build_parser() -> argparse.ArgumentParser:
         "tidy",
         help="Run maintenance checks and cleanup",
         description="Run maintenance checks and apply cleanup routines.",
+        epilog=build_epilog(
+            [
+                "gz tidy --check",
+                "gz tidy --fix",
+                "gz tidy --fix --dry-run",
+            ]
+        ),
     )
     p_tidy.add_argument(
         "--check", dest="check_only", action="store_true", help="Report issues without fixing"
@@ -918,32 +1217,64 @@ def _build_parser() -> argparse.ArgumentParser:
         "lint",
         help="Run lint checks",
         description="Run Ruff linter on the codebase.",
+        epilog=build_epilog(
+            [
+                "gz lint",
+            ]
+        ),
     ).set_defaults(func=lambda a: lint())
     commands.add_parser(
         "format",
         help="Run formatter",
         description="Run Ruff formatter on the codebase.",
+        epilog=build_epilog(
+            [
+                "gz format",
+            ]
+        ),
     ).set_defaults(func=lambda a: format_cmd())
     commands.add_parser(
         "test",
         help="Run tests",
         description="Run the unittest test suite.",
+        epilog=build_epilog(
+            [
+                "gz test",
+            ]
+        ),
     ).set_defaults(func=lambda a: test())
     commands.add_parser(
         "typecheck",
         help="Run type checks",
         description="Run static type analysis with ty.",
+        epilog=build_epilog(
+            [
+                "gz typecheck",
+            ]
+        ),
     ).set_defaults(func=lambda a: typecheck())
     commands.add_parser(
         "check",
         help="Run all quality checks",
         description="Run lint, format, typecheck, and test in sequence.",
+        epilog=build_epilog(
+            [
+                "gz check",
+            ]
+        ),
     ).set_defaults(func=lambda a: check())
 
     p_skill = commands.add_parser(
         "skill",
         help="Skill management commands",
         description="Create, list, and audit gzkit skills.",
+        epilog=build_epilog(
+            [
+                "gz skill list",
+                "gz skill new my-skill",
+                "gz skill audit",
+            ]
+        ),
     )
     skill_commands = p_skill.add_subparsers(dest="skill_command")
     skill_commands.required = True
@@ -952,6 +1283,12 @@ def _build_parser() -> argparse.ArgumentParser:
         "new",
         help="Create a new skill",
         description="Scaffold a new skill directory and SKILL.md.",
+        epilog=build_epilog(
+            [
+                "gz skill new my-skill",
+                'gz skill new my-skill --description "Does something useful"',
+            ]
+        ),
     )
     p_skill_new.add_argument("name", help="Skill name (kebab-case)")
     p_skill_new.add_argument("--description", help="Short description of the skill")
@@ -961,11 +1298,23 @@ def _build_parser() -> argparse.ArgumentParser:
         "list",
         help="List all skills",
         description="Display all registered skills and their status.",
+        epilog=build_epilog(
+            [
+                "gz skill list",
+            ]
+        ),
     ).set_defaults(func=lambda a: skill_list())
     p_skill_audit = skill_commands.add_parser(
         "audit",
         help="Audit skill lifecycle and mirror parity",
         description="Check skill files, mirrors, and review freshness.",
+        epilog=build_epilog(
+            [
+                "gz skill audit",
+                "gz skill audit --strict",
+                "gz skill audit --json",
+            ]
+        ),
     )
     add_json_flag(p_skill_audit)
     p_skill_audit.add_argument(
@@ -991,6 +1340,13 @@ def _build_parser() -> argparse.ArgumentParser:
         "interview",
         help="Interactive document interview",
         description="Run an interactive interview to generate a document.",
+        epilog=build_epilog(
+            [
+                "gz interview prd",
+                "gz interview adr",
+                "gz interview obpi",
+            ]
+        ),
     )
     p_interview.add_argument(
         "document_type",
@@ -1003,6 +1359,11 @@ def _build_parser() -> argparse.ArgumentParser:
         "agent",
         help="Agent-specific operations",
         description="Agent synchronization and management commands.",
+        epilog=build_epilog(
+            [
+                "gz agent sync control-surfaces",
+            ]
+        ),
     )
     agent_commands = p_agent.add_subparsers(dest="agent_command")
     agent_commands.required = True
@@ -1011,6 +1372,12 @@ def _build_parser() -> argparse.ArgumentParser:
         "sync",
         help="Agent synchronization commands",
         description="Synchronize agent control surfaces and mirrors.",
+        epilog=build_epilog(
+            [
+                "gz agent sync control-surfaces",
+                "gz agent sync control-surfaces --dry-run",
+            ]
+        ),
     )
     agent_sync_commands = p_agent_sync.add_subparsers(dest="agent_sync_command")
     agent_sync_commands.required = True
@@ -1019,6 +1386,12 @@ def _build_parser() -> argparse.ArgumentParser:
         "control-surfaces",
         help="Regenerate agent control surfaces from governance canon",
         description="Rebuild CLAUDE.md and mirrors from governance source.",
+        epilog=build_epilog(
+            [
+                "gz agent sync control-surfaces",
+                "gz agent sync control-surfaces --dry-run",
+            ]
+        ),
     )
     add_dry_run_flag(p_control_surfaces)
     p_control_surfaces.set_defaults(func=lambda a: sync_control_surfaces(dry_run=a.dry_run))
