@@ -3,7 +3,11 @@
 Implements the CLI Doctrine 4-code map.
 """
 
+from __future__ import annotations
+
 import textwrap
+
+from gzkit.core.exceptions import GzkitError
 
 EXIT_SUCCESS = 0
 """Command completed successfully."""
@@ -24,3 +28,15 @@ STANDARD_EXIT_CODES_EPILOG = textwrap.dedent("""\
         2   System/IO error
         3   Policy breach
 """)
+
+
+def exit_code_for(exc: Exception) -> int:
+    """Map an exception to the standard 4-code exit code.
+
+    If *exc* is a :class:`GzkitError` (or subclass), the exit code is read
+    from the ``exit_code`` property on the exception itself.  For any other
+    exception type, the default is :data:`EXIT_USER_ERROR` (1).
+    """
+    if isinstance(exc, GzkitError):
+        return exc.exit_code
+    return EXIT_USER_ERROR
