@@ -24,13 +24,10 @@ class _NoHyphenBreaksFormatter(argparse.RawDescriptionHelpFormatter):
 
     def _fill_text(self, text: str, width: int, indent: str) -> str:
         text = textwrap.dedent(text)
-        return textwrap.fill(
-            text,
-            width,
-            initial_indent=indent,
-            subsequent_indent=indent,
-            break_on_hyphens=False,
-        )
+        # Preserve newlines for description/epilog (RawDescriptionHelpFormatter
+        # contract) while preventing hyphen breaks within each line.
+        lines = text.splitlines(keepends=True)
+        return "".join(indent + line for line in lines)
 
 
 class StableArgumentParser(argparse.ArgumentParser):
