@@ -105,9 +105,9 @@ def tidy(check_only: bool, fix: bool, dry_run: bool) -> None:
     result = validate_all(project_root)
 
     if result.errors:
-        console.print(f"[yellow]Found {len(result.errors)} issue(s):[/yellow]\n")
+        console.print(f"  ⚠ [yellow]Found {len(result.errors)} issue(s):[/yellow]\n")
         for error in result.errors:
-            console.print(f"  [{error.type}] {error.message}")
+            console.print(f"    → [{error.type}] {error.message}")
 
     # Check for orphans
     ledger = Ledger(project_root / config.paths.ledger)
@@ -121,24 +121,24 @@ def tidy(check_only: bool, fix: bool, dry_run: bool) -> None:
     ]
 
     if orphan_obpis:
-        console.print("\n[yellow]Orphaned OBPIs (no ADRs):[/yellow]")
+        console.print("\n  ⚠ [yellow]Orphaned OBPIs (no ADRs):[/yellow]")
         for obpi_id in orphan_obpis:
-            console.print(f"  {obpi_id}")
+            console.print(f"    → {obpi_id}")
 
     # Find ADRs without attestation
     pending = ledger.get_pending_attestations()
     if pending:
-        console.print("\n[yellow]ADRs pending attestation:[/yellow]")
+        console.print("\n  ⚠ [yellow]ADRs pending attestation:[/yellow]")
         for adr_id in pending:
-            console.print(f"  {adr_id}")
+            console.print(f"    → {adr_id}")
 
     if fix:
         if dry_run:
-            console.print("\n[yellow]Dry run:[/yellow] would sync control surfaces.")
+            console.print("\n  → [yellow]Dry run:[/yellow] would sync control surfaces.")
         else:
             # Run sync to fix surface alignment
             sync_all(project_root, config)
-            console.print("\n[green]Synced control surfaces.[/green]")
+            console.print("\n  [green]✓ Synced control surfaces.[/green]")
 
     if not result.errors and not orphan_obpis and not pending:
-        console.print("[green]All checks passed. Project is tidy.[/green]")
+        console.print("[green]✓ All checks passed. Project is tidy.[/green]")
