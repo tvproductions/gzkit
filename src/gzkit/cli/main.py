@@ -15,6 +15,7 @@ from gzkit.cli.helpers import (
     add_table_flag,
     build_epilog,
 )
+from gzkit.cli.helpers.exit_codes import exit_code_for
 from gzkit.cli.parser import StableArgumentParser
 from gzkit.commands.adr_audit import (
     adr_audit_check,
@@ -39,7 +40,7 @@ from gzkit.commands.cli_audit import cli_audit_cmd
 from gzkit.commands.closeout import closeout_cmd
 from gzkit.commands.common import (
     COMMAND_DOCS,  # noqa: F401 — backward-compat re-export
-    GzCliError,
+    GzCliError,  # noqa: F401 — backward-compat re-export
     console,
     ensure_initialized,  # noqa: F401 — test-mock compat
     get_project_root,  # noqa: F401 — test-mock compat
@@ -79,6 +80,7 @@ from gzkit.commands.status import (
 from gzkit.commands.sync import git_sync
 from gzkit.commands.tidy import sync_control_surfaces, tidy
 from gzkit.commands.validate_cmd import validate
+from gzkit.core.exceptions import GzkitError
 from gzkit.ledger import resolve_adr_lane  # noqa: F401 — test-mock compat
 from gzkit.quality import run_all_checks, run_command  # noqa: F401 — test-mock compat
 from gzkit.skills import DEFAULT_MAX_REVIEW_AGE_DAYS
@@ -1450,16 +1452,27 @@ def main(argv: list[str] | None = None) -> int:
     try:
         handler(args)
         return 0
-    except GzCliError as exc:
+    except GzkitError as exc:
         if getattr(args, "debug", False):
-            raise
+            import sys
+            import traceback
+
+            traceback.print_exc(file=sys.stderr)
         console.print(f"[red]{exc}[/red]")
-        return 2
+        return exit_code_for(exc)
     except SystemExit as exc:
         return int(exc.code) if isinstance(exc.code, int) else 1
     except KeyboardInterrupt:
         console.print("[yellow]Interrupted.[/yellow]")
         return 130
+    except Exception as exc:
+        if getattr(args, "debug", False):
+            import sys
+            import traceback
+
+            traceback.print_exc(file=sys.stderr)
+        console.print(f"[red]Unexpected error: {exc}[/red]")
+        return exit_code_for(exc)
 
 
 if __name__ == "__main__":

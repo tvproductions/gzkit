@@ -11,6 +11,7 @@ from typing import Any, cast
 from rich.console import Console
 
 from gzkit.config import GzkitConfig
+from gzkit.core.exceptions import GzkitError
 from gzkit.ledger import (
     Ledger,
     resolve_adr_lane,
@@ -18,8 +19,13 @@ from gzkit.ledger import (
 from gzkit.sync import parse_artifact_metadata, scan_existing_artifacts
 
 
-class GzCliError(Exception):
-    """User-facing CLI error."""
+class GzCliError(GzkitError):
+    """User-facing CLI error.
+
+    Inherits from :class:`GzkitError` so the CLI boundary can catch the
+    entire typed hierarchy with a single ``except GzkitError`` clause.
+    Exit code defaults to 1 (user/config error) via the base class.
+    """
 
 
 console = Console(
