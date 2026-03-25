@@ -1,6 +1,6 @@
 """Quality commands (lint, format, test, typecheck, check)."""
 
-from gzkit.commands.common import _cli_main, console, get_project_root
+from gzkit.commands.common import console, get_project_root
 from gzkit.quality import run_format, run_lint, run_tests, run_typecheck
 
 
@@ -82,23 +82,42 @@ def typecheck() -> None:
 
 def check() -> None:
     """Run all quality checks (lint + format + typecheck + test + governance audits)."""
-    project_root = get_project_root()
+    from gzkit.cli.formatters import OutputFormatter
+    from gzkit.quality import (
+        run_format_check,
+        run_parity_check,
+        run_readiness_audit,
+        run_skill_audit,
+    )
 
-    console.print("Running all quality checks...\n")
-    result = _cli_main().run_all_checks(project_root)
+    project_root = get_project_root()
+    fmt = OutputFormatter()
+
+    steps = [
+        ("Lint", run_lint),
+        ("Format", run_format_check),
+        ("Typecheck", run_typecheck),
+        ("Test", run_tests),
+        ("Skill audit", run_skill_audit),
+        ("Parity check", run_parity_check),
+        ("Readiness audit", run_readiness_audit),
+    ]
+
+    results: list[tuple[str, bool]] = []
+    with fmt.progress_context(len(steps), "Running quality checks") as progress:
+        for name, runner in steps:
+            progress.advance(name)
+            result = runner(project_root)
+            results.append((name, result.success))
 
     def _sym(ok: bool) -> str:
         return "[green]✓[/green]" if ok else "[red]❌[/red]"
 
-    console.print(f"  {_sym(result.lint.success)} [bold]Lint[/bold]")
-    console.print(f"  {_sym(result.format.success)} [bold]Format[/bold]")
-    console.print(f"  {_sym(result.typecheck.success)} [bold]Typecheck[/bold]")
-    console.print(f"  {_sym(result.test.success)} [bold]Test[/bold]")
-    console.print(f"  {_sym(result.skill_audit.success)} [bold]Skill audit[/bold]")
-    console.print(f"  {_sym(result.parity_check.success)} [bold]Parity check[/bold]")
-    console.print(f"  {_sym(result.readiness_audit.success)} [bold]Readiness audit[/bold]")
+    for name, success in results:
+        console.print(f"  {_sym(success)} [bold]{name}[/bold]")
 
-    if result.success:
+    all_passed = all(s for _, s in results)
+    if all_passed:
         console.print("\n[green]✓ All checks passed.[/green]")
     else:
         console.print("\n[red]❌ Some checks failed.[/red]")

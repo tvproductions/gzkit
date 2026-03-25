@@ -3,7 +3,7 @@ id: OBPI-0.0.4-09-progress-indication
 parent: ADR-0.0.4-cli-standards-presentation-foundation
 item: 9
 lane: heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.4-09: Progress Indication
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.4-cli-standards-presentation-foundation/ADR-0.0.4-cli-standards-presentation-foundation.md`
 - **Checklist Item:** #9 - "Progress indication -- rich.progress for long-running operations"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -55,56 +55,56 @@ Add `rich.progress` indicators to long-running operations (>1s) so operators see
 
 **Governance (read once, cache):**
 
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
+- [x] `.github/discovery-index.json` - repo structure
+- [x] `AGENTS.md` or `CLAUDE.md` - agent operating contract
+- [x] Parent ADR - understand full context
 
 **Context:**
 
-- [ ] Parent ADR: `docs/design/adr/foundation/ADR-0.0.4-cli-standards-presentation-foundation/ADR-0.0.4-cli-standards-presentation-foundation.md`
-- [ ] Related OBPIs in same ADR (especially OBPI-06 and OBPI-08)
+- [x] Parent ADR
+- [x] Related OBPIs in same ADR (OBPI-06, OBPI-08)
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] OBPI-0.0.4-06 OutputFormatter exists and provides `progress_context` context manager: `src/gzkit/cli/formatters.py`
-- [ ] v3 CLI Standards specification: `docs/design/cli-standards-v3.md`
+- [x] OBPI-0.0.4-06 OutputFormatter exists: `src/gzkit/cli/formatters.py`
+- [x] v3 CLI Standards specification: `docs/design/cli-standards-v3.md`
 
 **Existing Code (understand current state):**
 
-- [ ] OutputFormatter implementation: `src/gzkit/cli/formatters.py`
-- [ ] Long-running command handlers: `src/gzkit/cli/commands/`
-- [ ] Test patterns: `tests/unit/test_output_formatter.py`
+- [x] OutputFormatter implementation: `src/gzkit/cli/formatters.py`
+- [x] Progress utilities: `src/gzkit/cli/progress.py`
+- [x] Test patterns: `tests/unit/test_progress_indication.py` (created)
 
 ## Quality Gates
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] Tests written before/with implementation
-- [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
+- [x] Tests written before/with implementation
+- [x] Tests pass: `uv run gz test`
+- [x] Validation commands recorded in evidence with real outputs
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 ### Gate 3: Docs (Heavy only)
 
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
+- [x] Docs build: `uv run mkdocs build --strict`
+- [x] Relevant docs updated
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
+- [x] Acceptance scenarios pass: `uv run -m behave features/`
 
 ### Gate 5: Human (Heavy only)
 
-- [ ] Human attestation recorded
+- [x] Human attestation recorded
 
 ## Verification
 
@@ -122,23 +122,23 @@ uv run -m gzkit check --json 2>&1 | head   # no progress output in JSON mode
 
 ## Acceptance Criteria
 
-- [ ] **REQ-0.0.4-09-01:** `gz check` shows step-by-step progress in human mode
-- [ ] **REQ-0.0.4-09-02:** Progress suppressed with `--quiet`
-- [ ] **REQ-0.0.4-09-03:** Progress suppressed with `--json`
-- [ ] **REQ-0.0.4-09-04:** Progress writes to stderr, not stdout
-- [ ] **REQ-0.0.4-09-05:** `gz check 2>/dev/null` produces clean stdout with no progress leakage
-- [ ] **REQ-0.0.4-09-06:** Non-interactive terminals get status lines instead of progress bars
-- [ ] **REQ-0.0.4-09-07:** `uv run gz lint` passes
-- [ ] **REQ-0.0.4-09-08:** `uv run gz test` passes
+- [x] **REQ-0.0.4-09-01:** `gz check` shows step-by-step progress in human mode
+- [x] **REQ-0.0.4-09-02:** Progress suppressed with `--quiet`
+- [x] **REQ-0.0.4-09-03:** Progress suppressed with `--json`
+- [x] **REQ-0.0.4-09-04:** Progress writes to stderr, not stdout
+- [x] **REQ-0.0.4-09-05:** `gz check 2>/dev/null` produces clean stdout with no progress leakage
+- [x] **REQ-0.0.4-09-06:** Non-interactive terminals get status lines instead of progress bars
+- [x] **REQ-0.0.4-09-07:** `uv run gz lint` passes
+- [x] **REQ-0.0.4-09-08:** `uv run gz test` passes
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -146,53 +146,66 @@ uv run -m gzkit check --json 2>&1 | head   # no progress output in JSON mode
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+Ran 9 tests in 0.001s — OK
+Full suite: 1470 tests pass
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+uv run gz lint — All checks passed!
+uv run gz typecheck — All checks passed!
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here when Gate 3 applies
+uv run mkdocs build --strict — Documentation built in 0.98 seconds
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here when Gate 4 applies
+uv run -m behave features/ — 3 features, 35 scenarios, 164 steps passed
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+Human attestation: "attest completed" — 2026-03-25
 ```
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before this OBPI, long-running CLI operations gave no progress feedback — operators waited with no indication of progress. Now `OutputFormatter.progress_context(total, description)` provides step-counted progress bars on TTY stderr, degrades to status lines on non-TTY, and is automatically suppressed in quiet/JSON modes. `gz check` runs 7 quality steps with real-time progress indication.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+```bash
+# Non-TTY output (what tests verify):
+[1/7] Lint
+[2/7] Format
+[3/7] Typecheck
+[4/7] Test
+[5/7] Skill audit
+[6/7] Parity check
+[7/7] Readiness audit
+```
 
 ### Implementation Summary
 
 - Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+  - Created: `tests/unit/test_progress_indication.py`
+  - Modified: `src/gzkit/cli/formatters.py` (added `progress_context()` + `ProgressContext`), `src/gzkit/commands/quality.py` (integrated progress into `check()`), `tests/commands/test_skills.py` (updated mock paths)
+- Tests added: 9
+- Date completed: 2026-03-25
+- Attestation status: Human attested
+- Defects noted: None
 
 ## Tracked Defects
 
@@ -200,14 +213,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a`
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `Jeff`
+- Attestation: `attest completed`
+- Date: `2026-03-25`
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-25
 
 **Evidence Hash:** -

@@ -299,3 +299,99 @@ class OutputFormatter:
         Always emitted; never suppressed.
         """
         print(f"BLOCKERS: {message}", file=sys.stderr)
+
+    def progress_context(self, total: int, description: str = "Working") -> ProgressContext:
+        """Return a progress context manager for step-counted work.
+
+        In human mode with a TTY: renders a Rich progress bar on stderr.
+        In human mode without a TTY: prints ``[step/total] description`` to stderr.
+        In quiet/JSON modes: all output suppressed (no-op advance).
+
+        Args:
+            total: Number of steps (must be a known count, never indeterminate).
+            description: Label for the progress display.
+
+        Returns:
+            A context manager whose ``advance(label)`` method ticks progress.
+        """
+        suppressed = self._mode in (OutputMode.QUIET, OutputMode.JSON)
+        is_tty = sys.stderr.isatty() if not suppressed else False
+        return ProgressContext(
+            total=total,
+            description=description,
+            suppressed=suppressed,
+            is_tty=is_tty,
+        )
+
+
+class ProgressContext:
+    """Step-counted progress display.
+
+    Use as a context manager and call :meth:`advance` for each step.
+    """
+
+    def __init__(
+        self,
+        *,
+        total: int,
+        description: str,
+        suppressed: bool,
+        is_tty: bool,
+    ) -> None:
+        self._total = total
+        self._description = description
+        self._suppressed = suppressed
+        self._is_tty = is_tty
+        self._current = 0
+        self._progress: Any = None
+        self._task_id: Any = None
+
+    def __enter__(self) -> ProgressContext:
+        if self._suppressed:
+            return self
+
+        if self._is_tty:
+            from rich.progress import (
+                BarColumn,
+                MofNCompleteColumn,
+                Progress,
+                TextColumn,
+                TimeElapsedColumn,
+            )
+
+            console = Console(file=sys.stderr)
+            self._progress = Progress(
+                TextColumn("[progress.description]{task.description}"),
+                BarColumn(),
+                MofNCompleteColumn(),
+                TimeElapsedColumn(),
+                console=console,
+            )
+            self._progress.start()
+            self._task_id = self._progress.add_task(self._description, total=self._total)
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        if self._progress is not None:
+            self._progress.stop()
+
+    def advance(self, label: str | None = None) -> None:
+        """Tick one step forward.
+
+        Args:
+            label: Optional label for this step (shown in non-TTY mode).
+        """
+        self._current += 1
+        if self._suppressed:
+            return
+
+        if self._is_tty and self._progress is not None:
+            desc = label if label else self._description
+            self._progress.update(self._task_id, advance=1, description=desc)
+        else:
+            # Non-TTY: periodic status lines to stderr
+            step_label = label if label else self._description
+            print(
+                f"[{self._current}/{self._total}] {step_label}",
+                file=sys.stderr,
+            )
