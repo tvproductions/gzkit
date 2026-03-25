@@ -259,8 +259,8 @@ def _render_adr_table(
     default_mode: str,
 ) -> None:
     """Render a single ADR status table with the given title and rows."""
-    table = Table(title=title, box=box.ASCII, padding=(0, 0))
-    table.add_column("ADR", overflow="fold")
+    table = Table(title=title, box=box.ROUNDED, padding=(0, 0))
+    table.add_column("ADR", overflow="fold", min_width=35)
     table.add_column("Life", no_wrap=True)
     table.add_column("Lane", no_wrap=True)
     table.add_column("OBPI", justify="right", no_wrap=True)
@@ -1191,7 +1191,7 @@ def _render_adr_report(result: dict[str, Any]) -> None:
     m = ADR_SEMVER_STATUS_ID_RE.match(adr_full)
     adr_short = f"ADR-{m['major']}.{m['minor']}.{m['patch']}" if m else adr_full
 
-    overview = Table(title="ADR Overview", box=box.ASCII, padding=(0, 1))
+    overview = Table(title="ADR Overview", box=box.ROUNDED, padding=(0, 1))
     overview.add_column("ADR", no_wrap=True)
     overview.add_column("Lane", no_wrap=True)
     overview.add_column("Life", no_wrap=True)
@@ -1212,7 +1212,7 @@ def _render_adr_report(result: dict[str, Any]) -> None:
 
     # --- OBPIs ---
     obpi_rows = cast(list[dict[str, Any]], result.get("obpis", []))
-    obpi_table = Table(title="OBPIs", box=box.ASCII, padding=(0, 1))
+    obpi_table = Table(title="OBPIs", box=box.ROUNDED, padding=(0, 1))
     obpi_table.add_column("#", no_wrap=True)
     obpi_table.add_column("OBPI ID", overflow="fold")
     obpi_table.add_column("State", no_wrap=True)
