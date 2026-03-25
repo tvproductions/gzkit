@@ -3,7 +3,7 @@ id: OBPI-0.0.4-05-epilog-templates
 parent: ADR-0.0.4-cli-standards-presentation-foundation
 item: 5
 lane: heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.4-05: Epilog Templates
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.4-cli-standards-presentation-foundation/ADR-0.0.4-cli-standards-presentation-foundation.md`
 - **Checklist Item:** #5 - "Epilog templates — examples and exit codes on every command"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -96,32 +96,32 @@ Exit codes
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] Tests written before/with implementation
-- [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
+- [x] Tests written before/with implementation
+- [x] Tests pass: `uv run gz test`
+- [x] Validation commands recorded in evidence with real outputs
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 ### Gate 3: Docs (Heavy only)
 
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
+- [x] Docs build: `uv run mkdocs build --strict`
+- [x] Relevant docs updated
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
+- [x] Acceptance scenarios pass: `uv run -m behave features/`
 
 ### Gate 5: Human (Heavy only)
 
-- [ ] Human attestation recorded
+- [x] Human attestation recorded
 
 ## Verification
 
@@ -133,28 +133,28 @@ uv run gz test
 
 # Specific verification for this OBPI
 uv run -m unittest tests.test_epilog -v
-uv run -m gzkit status --help  # verify epilog renders
-uv run -m gzkit adr --help     # verify subcommand epilog renders
+uv run gz status --help  # verify epilog renders
+uv run gz adr --help     # verify subcommand epilog renders
 ```
 
 ## Acceptance Criteria
 
-- [ ] **REQ-0.0.4-05-01:** `build_epilog()` helper exists in `src/gzkit/cli/helpers/epilog.py` with signature `build_epilog(examples: list[str], *, exit_codes: str | None = None) -> str`
-- [ ] **REQ-0.0.4-05-02:** All top-level commands have non-empty `.epilog` values
-- [ ] **REQ-0.0.4-05-03:** All subcommands have non-empty `.epilog` values
-- [ ] **REQ-0.0.4-05-04:** Every epilog contains "Examples" and "Exit codes" sections
-- [ ] **REQ-0.0.4-05-05:** All example commands in epilogs are syntactically valid `gz` invocations
-- [ ] **REQ-0.0.4-05-06:** `uv run gz lint` passes
-- [ ] **REQ-0.0.4-05-07:** `uv run gz test` passes
+- [x] **REQ-0.0.4-05-01:** `build_epilog()` helper exists in `src/gzkit/cli/helpers/epilog.py` with signature `build_epilog(examples: list[str], *, exit_codes: str | None = None) -> str`
+- [x] **REQ-0.0.4-05-02:** All top-level commands have non-empty `.epilog` values
+- [x] **REQ-0.0.4-05-03:** All subcommands have non-empty `.epilog` values
+- [x] **REQ-0.0.4-05-04:** Every epilog contains "Examples" and "Exit codes" sections
+- [x] **REQ-0.0.4-05-05:** All example commands in epilogs are syntactically valid `gz` invocations
+- [x] **REQ-0.0.4-05-06:** `uv run gz lint` passes
+- [x] **REQ-0.0.4-05-07:** `uv run gz test` passes
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -162,53 +162,71 @@ uv run -m gzkit adr --help     # verify subcommand epilog renders
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+uv run -m unittest tests.test_epilog -v
+12 tests, 0 failures, 0.008s
+
+uv run gz test
+1379 tests, 0 failures, 15.572s
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+uv run gz lint — All checks passed
+uv run gz typecheck — All checks passed
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here
+uv run mkdocs build --strict — Documentation built in 0.95 seconds
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here
+N/A — no BDD features specific to epilog templates
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+Human attestation: "Attest completed." — 2026-03-24
 ```
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before this OBPI, no gzkit CLI command had epilog text — `--help` output ended after the options list with no examples or exit code documentation. Operators had to read source code or external docs to discover usage patterns. Now every command and subcommand displays formatted Examples and Exit codes sections in `--help`, matching the airlineops reference pattern.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+```
+$ gz status --help
+...
+Examples
+    gz status --table
+    gz status --json
+    gz status --show-gates
+
+Exit codes
+    0   Success
+    1   User/config error
+    2   System/IO error
+    3   Policy breach
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created/modified: `src/gzkit/cli/helpers/epilog.py` (new), `src/gzkit/cli/helpers/__init__.py`, `src/gzkit/cli/main.py`, `src/gzkit/cli/parser.py`, `tests/test_epilog.py` (new)
+- Tests added: 12 (tests/test_epilog.py)
+- Date completed: 2026-03-24
+- Attestation status: Human attested
+- Defects noted: Fixed _NoHyphenBreaksFormatter._fill_text collapsing epilog newlines
 
 ## Tracked Defects
 
@@ -216,14 +234,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a`
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `Jeff`
+- Attestation: `Attest completed.`
+- Date: `2026-03-24`
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-24
 
 **Evidence Hash:** -

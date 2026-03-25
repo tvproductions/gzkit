@@ -196,20 +196,6 @@ def resolve_would_be_content(abs_path: Path, tool_input: dict) -> str:
     return current
 
 
-def _obpi_id_matches(entry_obpi: str, short_id: str) -> bool:
-    """Match OBPI IDs by exact match or short-ID prefix.
-
-    The hook extracts a short ID (e.g. ``OBPI-0.0.4-04``) from the file path,
-    but ledger entries may use the full slug (e.g. ``OBPI-0.0.4-04-help-text-completeness``).
-    Accept either exact match or prefix match where the full ID starts with
-    ``{short_id}-`` (the trailing hyphen prevents ``OBPI-0.0.4-04`` from
-    matching ``OBPI-0.0.4-041``).
-    """
-    if entry_obpi == short_id:
-        return True
-    return entry_obpi.startswith(f"{short_id}-")
-
-
 def has_audit_evidence(adr_dir: Path, obpi_id: str) -> bool:
     """Check if audit ledger entry exists for this OBPI in ADR-local ledger."""
     ledger_file = adr_dir / "logs" / "obpi-audit.jsonl"
@@ -227,7 +213,7 @@ def has_audit_evidence(adr_dir: Path, obpi_id: str) -> bool:
                     entry = json.loads(line)
                     entry_type = entry.get("type", "")
                     entry_obpi = entry.get("obpi_id", "")
-                    if _obpi_id_matches(entry_obpi, obpi_id) and entry_type in (
+                    if entry_obpi == obpi_id and entry_type in (
                         "obpi-audit",
                         "obpi-completion",
                     ):
@@ -256,7 +242,7 @@ def has_human_attestation(adr_dir: Path, obpi_id: str) -> bool:
                 try:
                     entry = json.loads(line)
                     entry_obpi = entry.get("obpi_id", "")
-                    if _obpi_id_matches(entry_obpi, obpi_id):
+                    if entry_obpi == obpi_id:
                         evidence = entry.get("evidence", {})
                         if evidence.get("human_attestation"):
                             return True
