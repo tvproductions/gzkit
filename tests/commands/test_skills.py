@@ -5,7 +5,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from gzkit.cli import main
-from gzkit.quality import CheckResult, QualityResult
+from gzkit.quality import QualityResult
 from tests.commands.common import CliRunner
 
 
@@ -177,17 +177,15 @@ class TestSkillCommands(unittest.TestCase):
                 stderr="",
                 returncode=0,
             )
-            fake = CheckResult(
-                success=True,
-                lint=ok,
-                format=ok,
-                typecheck=ok,
-                test=ok,
-                skill_audit=warning_skill_audit,
-                parity_check=ok,
-                readiness_audit=ok,
-            )
-            with patch("gzkit.cli.main.run_all_checks", return_value=fake):
+            with (
+                patch("gzkit.commands.quality.run_lint", return_value=ok),
+                patch("gzkit.quality.run_format_check", return_value=ok),
+                patch("gzkit.commands.quality.run_typecheck", return_value=ok),
+                patch("gzkit.commands.quality.run_tests", return_value=ok),
+                patch("gzkit.quality.run_skill_audit", return_value=warning_skill_audit),
+                patch("gzkit.quality.run_parity_check", return_value=ok),
+                patch("gzkit.quality.run_readiness_audit", return_value=ok),
+            ):
                 result = runner.invoke(main, ["check"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("all checks passed", result.output.lower())
