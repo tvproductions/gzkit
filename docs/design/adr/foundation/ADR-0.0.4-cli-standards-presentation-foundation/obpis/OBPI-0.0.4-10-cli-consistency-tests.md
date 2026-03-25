@@ -3,7 +3,7 @@ id: OBPI-0.0.4-10-cli-consistency-tests
 parent: ADR-0.0.4-cli-standards-presentation-foundation
 item: 10
 lane: heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.4-10: CLI Consistency Tests
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.4-cli-standards-presentation-foundation/ADR-0.0.4-cli-standards-presentation-foundation.md`
 - **Checklist Item:** #10 - "CLI consistency tests — policy enforcement via recursive parser auditor"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -86,32 +86,32 @@ Create policy tests that enforce CLI conventions automatically via a recursive p
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] Tests written before/with implementation
-- [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
+- [x] Tests written before/with implementation
+- [x] Tests pass: `uv run gz test`
+- [x] Validation commands recorded in evidence with real outputs
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 ### Gate 3: Docs (Heavy only)
 
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
+- [x] Docs build: `uv run mkdocs build --strict`
+- [x] Relevant docs updated
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
+- [x] Acceptance scenarios pass: `uv run -m behave features/`
 
 ### Gate 5: Human (Heavy only)
 
-- [ ] Human attestation recorded
+- [x] Human attestation recorded
 
 ## Verification
 
@@ -130,22 +130,22 @@ The tests ARE the test plan -- they validate all prior OBPI deliverables. Manual
 
 ## Acceptance Criteria
 
-- [ ] **REQ-0.0.4-10-01:** `tests/policy/test_cli_consistency.py` exists with recursive parser auditor that walks the full argparse tree
-- [ ] **REQ-0.0.4-10-02:** No-underscore-flags test catches `--dry_run` style violations
-- [ ] **REQ-0.0.4-10-03:** Description-required test fails when any parser lacks `.description`
-- [ ] **REQ-0.0.4-10-04:** Help-text-required test fails when any argument/option has `None` or `SUPPRESS` help
-- [ ] **REQ-0.0.4-10-05:** Epilog-required test fails when any parser lacks a non-empty `.epilog` containing "Examples" and "Exit codes"
-- [ ] **REQ-0.0.4-10-06:** `tests/policy/test_import_boundaries.py` enforces command modules do not import from `core/` adapters and do not call `os.getenv()` outside allowlist
-- [ ] **REQ-0.0.4-10-07:** All policy tests pass: `uv run gz test` and `uv run gz lint` clean
+- [x] **REQ-0.0.4-10-01:** `tests/policy/test_cli_consistency.py` exists with recursive parser auditor that walks the full argparse tree
+- [x] **REQ-0.0.4-10-02:** No-underscore-flags test catches `--dry_run` style violations
+- [x] **REQ-0.0.4-10-03:** Description-required test fails when any parser lacks `.description`
+- [x] **REQ-0.0.4-10-04:** Help-text-required test fails when any argument/option has `None` or `SUPPRESS` help
+- [x] **REQ-0.0.4-10-05:** Epilog-required test fails when any parser lacks a non-empty `.epilog` containing "Examples" and "Exit codes"
+- [x] **REQ-0.0.4-10-06:** `tests/policy/test_import_boundaries.py` enforces command modules do not import from `core/` adapters and do not call `os.getenv()` outside allowlist
+- [x] **REQ-0.0.4-10-07:** All policy tests pass: `uv run gz test` and `uv run gz lint` clean
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -153,53 +153,59 @@ The tests ARE the test plan -- they validate all prior OBPI deliverables. Manual
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+Ran 7 tests in 0.165s — OK (test_cli_consistency)
+Ran 13 tests in 0.108s — OK (test_import_boundaries)
+Full suite: 1480 tests pass
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+uv run gz lint — All checks passed
+uv run gz typecheck — All checks passed
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here when Gate 3 applies
+uv run mkdocs build --strict — Documentation built in 0.90 seconds
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here when Gate 4 applies
+No BDD scenarios specific to this OBPI — policy tests ARE the acceptance tests.
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+Human attestation: "attest completed" — 2026-03-25
 ```
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before this OBPI, gzkit had no automated enforcement of CLI conventions. New commands could be added with missing help text, underscore flags, no epilogs, or debugging artifacts — and nothing would catch it until human review. Now, a recursive parser auditor walks the entire argparse tree on every test run and catches regressions automatically, while AST-based policy tests enforce import boundaries and env-var hygiene in command modules.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+```bash
+uv run -m unittest tests.policy.test_cli_consistency -v
+# 7/7 tests pass: underscore flags, descriptions, help text, epilogs, debug artifacts, render speed, self-isolation
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created/modified: tests/policy/test_cli_consistency.py (created), tests/policy/test_import_boundaries.py (modified)
+- Tests added: 10 (7 consistency + 3 boundary)
+- Date completed: 2026-03-25
+- Attestation status: Human attested
+- Defects noted: None
 
 ## Tracked Defects
 
@@ -207,14 +213,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a`
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `Jeff`
+- Attestation: `attest completed`
+- Date: `2026-03-25`
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-25
 
 **Evidence Hash:** -

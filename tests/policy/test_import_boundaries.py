@@ -46,6 +46,35 @@ PORTS_ALLOWED_MODULES = frozenset(
     }
 )
 
+COMMANDS_DIR = SRC_ROOT / "commands"
+
+# Commands are allowed to import from these gzkit sub-packages
+COMMANDS_ALLOWED_GZKIT_PREFIXES = (
+    "gzkit.commands",  # intra-package
+    "gzkit.core",  # domain layer
+    "gzkit.cli",  # CLI helpers
+    "gzkit.ports",  # port interfaces
+    "gzkit.ledger",  # ledger access
+    "gzkit.quality",  # quality checks
+    "gzkit.skills",  # skill utilities
+)
+
+# Commands must NOT import from these
+COMMANDS_FORBIDDEN_PREFIXES = ("gzkit.adapters",)  # adapter layer (should go through ports)
+
+# Env vars permitted anywhere in commands/
+COMMAND_ENV_ALLOWLIST: frozenset[str] = frozenset({"NO_COLOR", "FORCE_COLOR"})
+
+# Per-file exceptions for env-var access beyond COMMAND_ENV_ALLOWLIST.
+# Each entry maps filename -> frozenset of additionally-allowed var names,
+# with a comment explaining the rationale.
+COMMAND_ENV_EXCEPTIONS: dict[str, frozenset[str]] = {
+    # sync.py reads SKIP to detect CI/hook bypass tokens, mirroring the same
+    # guard used in git_sync; this is a deliberate policy-enforcement read,
+    # not a configuration lookup that should move to core.
+    "sync.py": frozenset({"SKIP"}),
+}
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -83,6 +112,68 @@ def _collect_imports(tree: ast.Module) -> list[tuple[str, str]]:
 def _top_level_module(dotted_name: str) -> str:
     """Return the first component of a dotted module name."""
     return dotted_name.split(".")[0]
+
+
+def _is_os_attr(node: ast.expr, attr: str) -> bool:
+    """Return True if *node* is `os.<attr>` (Attribute access on bare `os` name)."""
+    return (
+        isinstance(node, ast.Attribute)
+        and isinstance(node.value, ast.Name)
+        and node.value.id == "os"
+        and node.attr == attr
+    )
+
+
+def _string_value(node: ast.expr) -> str | None:
+    """Return the string value of a Constant string node, or None."""
+    if isinstance(node, ast.Constant) and isinstance(node.value, str):
+        return node.value
+    return None
+
+
+def _collect_command_env_violations(
+    tree: ast.Module, allowlist: frozenset[str]
+) -> list[tuple[int, str, str]]:
+    """Walk *tree* and return env-var violations outside *allowlist*.
+
+    Returns a list of (line_number, access_form, var_name) triples for each
+    usage of an env var not in *allowlist*.
+
+    Detected patterns:
+    - ``os.getenv("VAR")``
+    - ``os.environ.get("VAR")``
+    - ``os.environ["VAR"]``
+    """
+    violations: list[tuple[int, str, str]] = []
+
+    for node in ast.walk(tree):
+        # os.getenv("VAR", ...) — ast.Call
+        if isinstance(node, ast.Call) and _is_os_attr(node.func, "getenv"):
+            if node.args:
+                var_name = _string_value(node.args[0])
+                if var_name is not None and var_name not in allowlist:
+                    violations.append((node.lineno, "os.getenv", var_name))
+
+        # os.environ.get("VAR", ...) — ast.Call on a chained Attribute
+        elif isinstance(node, ast.Call):
+            func = node.func
+            if (
+                isinstance(func, ast.Attribute)
+                and func.attr == "get"
+                and _is_os_attr(func.value, "environ")
+                and node.args
+            ):
+                var_name = _string_value(node.args[0])
+                if var_name is not None and var_name not in allowlist:
+                    violations.append((node.lineno, "os.environ.get", var_name))
+
+        # os.environ["VAR"] — ast.Subscript
+        elif isinstance(node, ast.Subscript) and _is_os_attr(node.value, "environ"):
+            var_name = _string_value(node.slice)
+            if var_name is not None and var_name not in allowlist:
+                violations.append((node.lineno, "os.environ[...]", var_name))
+
+    return violations
 
 
 # ---------------------------------------------------------------------------
@@ -214,6 +305,72 @@ class TestPortsImportBoundaries(unittest.TestCase):
                         + ", ".join(violations)
                         + f"\nAllowed: {sorted(PORTS_ALLOWED_MODULES)}"
                     )
+
+
+class TestCommandImportBoundaries(unittest.TestCase):
+    """commands/ must not import from gzkit.adapters directly.
+
+    Commands should go through core/ports, not reach into the adapters layer.
+    """
+
+    def test_commands_files_exist(self) -> None:
+        """Sanity check: commands/ directory contains at least one .py file."""
+        files = _collect_py_files(COMMANDS_DIR)
+        self.assertGreater(len(files), 0, f"No .py files found in {COMMANDS_DIR}")
+
+    def test_commands_no_adapter_imports(self) -> None:
+        """command files must not import from gzkit.adapters."""
+        for path in _collect_py_files(COMMANDS_DIR):
+            with self.subTest(file=path.name):
+                tree = _parse_file(path)
+                violations: list[str] = []
+                for _kind, module in _collect_imports(tree):
+                    for forbidden_prefix in COMMANDS_FORBIDDEN_PREFIXES:
+                        if module == forbidden_prefix or module.startswith(forbidden_prefix + "."):
+                            violations.append(
+                                f"imports '{module}' (forbidden prefix '{forbidden_prefix}')"
+                            )
+                if violations:
+                    self.fail(
+                        f"{path.name}: commands/ import boundary violations "
+                        f"(commands must not reach into gzkit.adapters directly — "
+                        f"use core/ports instead):\n" + "\n".join(violations)
+                    )
+
+
+class TestCommandEnvUsage(unittest.TestCase):
+    """Command handlers must not call os.getenv() outside a narrow allowlist.
+
+    Only terminal-color env vars (NO_COLOR, FORCE_COLOR) are permitted in the
+    commands layer.  Any additional env-var reads indicate configuration that
+    should be routed through core services or explicit CLI flags instead.
+
+    Known exceptions are listed in COMMAND_ENV_EXCEPTIONS with explanations.
+    """
+
+    def test_commands_no_unapproved_env_access(self) -> None:
+        """Scan all files in src/gzkit/commands/ for unapproved env-var reads."""
+        all_violations: list[str] = []
+
+        for path in _collect_py_files(COMMANDS_DIR):
+            # Per-file exceptions: {filename: frozenset of allowed extra var names}
+            extra_allowed = COMMAND_ENV_EXCEPTIONS.get(path.name, frozenset())
+            effective_allowlist = COMMAND_ENV_ALLOWLIST | extra_allowed
+
+            with self.subTest(file=path.name):
+                tree = _parse_file(path)
+                violations = _collect_command_env_violations(tree, effective_allowlist)
+                for lineno, form, var_name in violations:
+                    rel = path.relative_to(COMMANDS_DIR.parent.parent)
+                    all_violations.append(
+                        f"{rel}:{lineno}: {form}({var_name!r}) — not in allowlist "
+                        f"(allowlist for this file: {sorted(effective_allowlist)})"
+                    )
+
+        if all_violations:
+            self.fail(
+                "Unapproved env-var access in commands/ detected:\n" + "\n".join(all_violations)
+            )
 
 
 class TestPolicyTestIsolation(unittest.TestCase):
