@@ -87,31 +87,19 @@ def check() -> None:
     console.print("Running all quality checks...\n")
     result = _cli_main().run_all_checks(project_root)
 
-    # Lint
-    console.print("[bold]Lint:[/bold]", "PASS" if result.lint.success else "FAIL")
+    def _sym(ok: bool) -> str:
+        return "[green]✓[/green]" if ok else "[red]❌[/red]"
 
-    # Format
-    console.print("[bold]Format:[/bold]", "PASS" if result.format.success else "FAIL")
-
-    # Typecheck
-    console.print("[bold]Typecheck:[/bold]", "PASS" if result.typecheck.success else "FAIL")
-
-    # Test
-    console.print("[bold]Test:[/bold]", "PASS" if result.test.success else "FAIL")
-
-    # Skill audit
-    console.print("[bold]Skill audit:[/bold]", "PASS" if result.skill_audit.success else "FAIL")
-
-    # Parity check
-    console.print("[bold]Parity check:[/bold]", "PASS" if result.parity_check.success else "FAIL")
-
-    # Readiness audit
-    console.print(
-        "[bold]Readiness audit:[/bold]", "PASS" if result.readiness_audit.success else "FAIL"
-    )
+    console.print(f"  {_sym(result.lint.success)} [bold]Lint[/bold]")
+    console.print(f"  {_sym(result.format.success)} [bold]Format[/bold]")
+    console.print(f"  {_sym(result.typecheck.success)} [bold]Typecheck[/bold]")
+    console.print(f"  {_sym(result.test.success)} [bold]Test[/bold]")
+    console.print(f"  {_sym(result.skill_audit.success)} [bold]Skill audit[/bold]")
+    console.print(f"  {_sym(result.parity_check.success)} [bold]Parity check[/bold]")
+    console.print(f"  {_sym(result.readiness_audit.success)} [bold]Readiness audit[/bold]")
 
     if result.success:
-        console.print("\n[green]All checks passed.[/green]")
+        console.print("\n[green]✓ All checks passed.[/green]")
     else:
-        console.print("\n[red]Some checks failed.[/red]")
+        console.print("\n[red]❌ Some checks failed.[/red]")
         raise SystemExit(1)

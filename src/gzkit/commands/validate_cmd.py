@@ -113,14 +113,41 @@ def validate(
         print(json.dumps(result, indent=2))
         return
 
+    # Show what was validated
+    scopes: list[str] = []
+    run_all = not any(
+        [
+            check_manifest,
+            check_documents,
+            check_surfaces,
+            check_ledger,
+            check_instructions,
+            check_briefs,
+        ]
+    )
+    if run_all or check_manifest:
+        scopes.append("manifest")
+    if run_all or check_surfaces:
+        scopes.append("surfaces")
+    if run_all or check_ledger:
+        scopes.append("ledger")
+    if run_all or check_instructions:
+        scopes.append("instructions")
+    if run_all or check_briefs:
+        scopes.append("briefs")
+    if run_all or check_documents:
+        scopes.append("documents")
+
+    console.print(f"[bold]Validated:[/bold] {', '.join(scopes)}\n")
+
     if errors:
-        console.print(f"[red]Validation failed with {len(errors)} error(s):[/red]\n")
+        console.print(f"[red]❌ Validation failed with {len(errors)} error(s):[/red]\n")
         for error in errors:
-            console.print(f"  [{error.type}] {error.artifact}")
+            console.print(f"   [red]→[/red] [{error.type}] {error.artifact}")
             console.print(f"    {error.message}")
             if error.field:
                 console.print(f"    Field: {error.field}")
             console.print()
         raise SystemExit(1)
     else:
-        console.print("[green]All validations passed.[/green]")
+        console.print(f"[green]✓ All validations passed ({len(scopes)} scopes).[/green]")

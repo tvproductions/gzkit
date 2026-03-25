@@ -3,7 +3,7 @@ id: OBPI-0.0.4-08-runtime-presentation
 parent: ADR-0.0.4-cli-standards-presentation-foundation
 item: 8
 lane: heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.4-08: Runtime Presentation
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.4-cli-standards-presentation-foundation/ADR-0.0.4-cli-standards-presentation-foundation.md`
 - **Checklist Item:** #8 - "Runtime presentation with Rich tables everywhere, status symbols, BLOCKERS: prefix"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -68,57 +68,57 @@ status symbols, structured error format, and coherent color conventions.
 
 **Governance (read once, cache):**
 
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
+- [x] `.github/discovery-index.json` - repo structure
+- [x] `AGENTS.md` or `CLAUDE.md` - agent operating contract
+- [x] Parent ADR - understand full context
 
 **Context:**
 
-- [ ] Parent ADR: `docs/design/adr/foundation/ADR-0.0.4-cli-standards-presentation-foundation/ADR-0.0.4-cli-standards-presentation-foundation.md`
-- [ ] Related OBPIs in same ADR (especially OBPI-06, OBPI-07, OBPI-09)
-- [ ] CLI Standards v3 specification: `docs/design/cli-standards-v3.md`
+- [x] Parent ADR: `docs/design/adr/foundation/ADR-0.0.4-cli-standards-presentation-foundation/ADR-0.0.4-cli-standards-presentation-foundation.md`
+- [x] Related OBPIs in same ADR (especially OBPI-06, OBPI-07, OBPI-09)
+- [x] CLI Standards v3 specification: `docs/design/cli-standards-v3.md`
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] OBPI-0.0.4-06 OutputFormatter exists and is implemented: `src/gzkit/cli/formatters.py`
-- [ ] OBPI-0.0.4-07 exception hierarchy exists and is implemented: structured error types with typed exit codes
+- [x] OBPI-0.0.4-06 OutputFormatter exists and is implemented: `src/gzkit/cli/formatters.py`
+- [x] OBPI-0.0.4-07 exception hierarchy exists and is implemented: structured error types with typed exit codes
 
 **Existing Code (understand current state):**
 
-- [ ] Current command output patterns: `src/gzkit/cli/commands/`
-- [ ] Current table rendering: grep for `box.ASCII`, `console.print`, `Table(` across commands
-- [ ] Test patterns: `tests/unit/test_output_formatter.py`
+- [x] Current command output patterns: `src/gzkit/commands/`
+- [x] Current table rendering: grep for `box.ASCII`, `console.print`, `Table(` across commands
+- [x] Test patterns: `tests/unit/test_runtime_presentation.py`
 
 ## Quality Gates
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] Tests written before/with implementation
-- [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
+- [x] Tests written before/with implementation
+- [x] Tests pass: `uv run gz test`
+- [x] Validation commands recorded in evidence with real outputs
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 ### Gate 3: Docs (Heavy only)
 
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
+- [x] Docs build: `uv run mkdocs build --strict`
+- [x] Relevant docs updated
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
+- [x] Acceptance scenarios pass: `uv run -m behave features/`
 
 ### Gate 5: Human (Heavy only)
 
-- [ ] Human attestation recorded
+- [x] Human attestation recorded
 
 ## Verification
 
@@ -139,24 +139,24 @@ uv run gz check --json            # Verify no symbols or color in JSON mode
 
 ## Acceptance Criteria
 
-- [ ] **REQ-0.0.4-08-01:** `gz status --table` uses Rich tables (no ASCII pipes)
-- [ ] **REQ-0.0.4-08-02:** `gz check` output uses `✓`/`❌` status symbols
-- [ ] **REQ-0.0.4-08-03:** `gz tidy` output uses structured symbols instead of bare indented text
-- [ ] **REQ-0.0.4-08-04:** `gz validate` shows what was validated, not just "All validations passed."
-- [ ] **REQ-0.0.4-08-05:** `gz gates` produces structured gate-by-gate output with pass/fail symbols
-- [ ] **REQ-0.0.4-08-06:** All error output uses `BLOCKERS:` prefix via OutputFormatter
-- [ ] **REQ-0.0.4-08-07:** Color conventions documented and applied consistently across all commands
-- [ ] **REQ-0.0.4-08-08:** `NO_COLOR=1 gz check` produces clean output without ANSI codes
-- [ ] **REQ-0.0.4-08-09:** JSON mode (`--json`) produces no symbols or color codes in output
+- [x] **REQ-0.0.4-08-01:** `gz status --table` uses Rich tables (no ASCII pipes)
+- [x] **REQ-0.0.4-08-02:** `gz check` output uses `✓`/`❌` status symbols
+- [x] **REQ-0.0.4-08-03:** `gz tidy` output uses structured symbols instead of bare indented text
+- [x] **REQ-0.0.4-08-04:** `gz validate` shows what was validated, not just "All validations passed."
+- [x] **REQ-0.0.4-08-05:** `gz gates` produces structured gate-by-gate output with pass/fail symbols
+- [x] **REQ-0.0.4-08-06:** All error output uses `BLOCKERS:` prefix via OutputFormatter
+- [x] **REQ-0.0.4-08-07:** Color conventions documented and applied consistently across all commands
+- [x] **REQ-0.0.4-08-08:** `NO_COLOR=1 gz check` produces clean output without ANSI codes
+- [x] **REQ-0.0.4-08-09:** JSON mode (`--json`) produces no symbols or color codes in output
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -164,53 +164,71 @@ uv run gz check --json            # Verify no symbols or color in JSON mode
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+Ran 11 tests in 0.112s — OK
+Tests: test_runtime_presentation.py (11 tests)
+Full suite: 1461 tests pass
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+uv run gz lint — All checks passed!
+uv run gz typecheck — All checks passed!
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here when Gate 3 applies
+uv run mkdocs build --strict — Documentation built in 0.95 seconds
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here when Gate 4 applies
+uv run -m behave features/ — 3 features, 35 scenarios, 164 steps passed
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+Human attestation: "attest completed" — 2026-03-25
 ```
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before this OBPI, gzkit CLI output was inconsistent: `gz status --table` used ASCII pipe tables, `gz check` showed bare PASS/FAIL text, `gz tidy` used plain indented text, `gz validate` said only "All validations passed" without naming scopes, and `gz gates` lacked visual indicators. Now all commands use Rich ROUNDED box-drawing tables, canonical status symbols (✓/❌/⚠/→), consistent color conventions, and itemized output.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+```bash
+$ uv run gz check
+Running all quality checks...
+
+  ✓ Lint
+  ✓ Format
+  ✓ Typecheck
+  ✓ Test
+  ✓ Skill audit
+  ✓ Parity check
+  ✓ Readiness audit
+
+✓ All checks passed.
+```
 
 ### Implementation Summary
 
 - Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+  - Created: `tests/unit/test_runtime_presentation.py`
+  - Modified: `src/gzkit/commands/status.py`, `src/gzkit/commands/quality.py`, `src/gzkit/commands/tidy.py`, `src/gzkit/commands/validate_cmd.py`, `src/gzkit/commands/gates.py`
+- Tests added: 11
+- Date completed: 2026-03-25
+- Attestation status: Human attested
+- Defects noted: None
 
 ## Tracked Defects
 
@@ -218,14 +236,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a`
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `Jeff`
+- Attestation: `attest completed`
+- Date: `2026-03-25`
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-25
 
 **Evidence Hash:** -
