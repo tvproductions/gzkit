@@ -334,3 +334,48 @@ def run_parity_check(project_root: Path) -> QualityResult:
 def run_readiness_audit(project_root: Path) -> QualityResult:
     """Run readiness audit over four disciplines and five primitives."""
     return run_command("uv run gz readiness audit", cwd=project_root)
+
+
+def run_eval(project_root: Path) -> QualityResult:
+    """Run offline eval harnesses against reference datasets.
+
+    Loads all eval datasets, scores each case per surface, and returns
+    a QualityResult with structured output. Fully deterministic — no
+    network calls or LLM invocations.
+
+    Args:
+        project_root: Project root directory (unused — datasets are loaded
+            from the package-relative data/eval/ directory).
+
+    Returns:
+        QualityResult with eval suite output.
+    """
+    from gzkit.eval.runner import run_eval_suite
+
+    try:
+        result = run_eval_suite()
+        lines = [
+            f"Eval suite: {result.surfaces_scored} surfaces scored",
+            f"Overall score: {result.overall_score}/4.0",
+            f"Success: {result.success}",
+        ]
+        for ss in result.surface_scores:
+            lines.append(
+                f"  {ss.surface}: {ss.overall}/4.0 "
+                f"({ss.cases_passed}/{ss.cases_total} cases passed)"
+            )
+        return QualityResult(
+            success=result.success,
+            command="eval harness",
+            stdout="\n".join(lines),
+            stderr="",
+            returncode=0 if result.success else 1,
+        )
+    except Exception as exc:
+        return QualityResult(
+            success=False,
+            command="eval harness",
+            stdout="",
+            stderr=str(exc),
+            returncode=2,
+        )
