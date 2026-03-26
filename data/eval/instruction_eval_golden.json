@@ -1,0 +1,66 @@
+{
+  "surface": "instruction_eval",
+  "version": "1.0.0",
+  "description": "Reference datasets for instruction architecture eval — agent loading, workflow relocation, and drift detection.",
+  "cases": [
+    {
+      "id": "instruction-eval-golden-01",
+      "type": "golden_path",
+      "description": "Well-formed project with all instruction surfaces present — AGENTS.md with Project Identity, .claude/rules synced, .gzkit/skills populated, command docs indexed.",
+      "input": {
+        "agents_md": "# Agents\n\n## Project Identity\n\ngzkit governance toolkit\n",
+        "claude_rules": ["governance_core.md"],
+        "github_instructions": ["governance_core.instructions.md"],
+        "gzkit_skills": ["gz-test"],
+        "command_docs_index": "# Commands\n\n- readiness audit\n- parity check\n- skill audit\n"
+      },
+      "expected_output": {
+        "total_cases": 10,
+        "passed": 10,
+        "success": true,
+        "dimensions": {
+          "outcome": {"passed": 3, "total": 3},
+          "process": {"passed": 2, "total": 2},
+          "style": {"passed": 2, "total": 2},
+          "efficiency": {"passed": 3, "total": 3}
+        }
+      }
+    },
+    {
+      "id": "instruction-eval-edge-missing-agents",
+      "type": "edge_case",
+      "description": "Project with no AGENTS.md — codex-load-positive must fail.",
+      "input": {
+        "agents_md": null,
+        "claude_rules": ["governance_core.md"],
+        "github_instructions": ["governance_core.instructions.md"],
+        "gzkit_skills": ["gz-test"],
+        "command_docs_index": "# Commands\n\n- readiness audit\n"
+      },
+      "expected_output": {
+        "total_cases": 10,
+        "passed_lt": 10,
+        "success": false,
+        "failed_cases": ["codex-load-positive"]
+      }
+    },
+    {
+      "id": "instruction-eval-edge-empty-rules",
+      "type": "edge_case",
+      "description": "Project with empty .claude/rules/ directory — claude-load-positive must fail.",
+      "input": {
+        "agents_md": "# Agents\n\n## Project Identity\n\ngzkit\n",
+        "claude_rules": [],
+        "github_instructions": ["governance_core.instructions.md"],
+        "gzkit_skills": ["gz-test"],
+        "command_docs_index": "# Commands\n"
+      },
+      "expected_output": {
+        "total_cases": 10,
+        "passed_lt": 10,
+        "success": false,
+        "failed_cases": ["claude-load-positive"]
+      }
+    }
+  ]
+}
