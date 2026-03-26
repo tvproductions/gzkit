@@ -1,0 +1,5 @@
+{
+  "schema": "gzkit.eval_thresholds.v1",
+  "default_threshold": 0.5,
+  "surface_thresholds": {}
+}

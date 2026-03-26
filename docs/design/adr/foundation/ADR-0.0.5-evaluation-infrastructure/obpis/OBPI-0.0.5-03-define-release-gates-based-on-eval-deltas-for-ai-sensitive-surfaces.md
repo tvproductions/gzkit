@@ -3,7 +3,7 @@ id: OBPI-0.0.5-03-define-release-gates-based-on-eval-deltas-for-ai-sensitive-sur
 parent: ADR-0.0.5-evaluation-infrastructure
 item: 3
 lane: lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.5-03: Eval-Delta Release Gates
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.5-evaluation-infrastructure/ADR-0.0.5-evaluation-infrastructure.md`
 - **Checklist Item:** #3 - "Eval-delta release gates for AI-sensitive surfaces"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -82,19 +82,19 @@ results as an additional signal within the existing gate, not a new gate.
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] Tests written before/with implementation
-- [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
+- [x] Tests written before/with implementation
+- [x] Tests pass: `uv run gz test`
+- [x] Validation commands recorded in evidence with real outputs
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 ## Verification
 
@@ -110,55 +110,67 @@ uv run -m unittest tests/eval/test_delta_gates.py -v
 
 ## Acceptance Criteria
 
-- [ ] **REQ-0.0.5-03-01:** Gate 2 in `gates.py` includes eval results when
+- [x] **REQ-0.0.5-03-01:** Gate 2 in `gates.py` includes eval results when
   `data/eval/` contains datasets, and skips gracefully when absent.
-- [ ] **REQ-0.0.5-03-02:** Eval thresholds are configurable in `config/` with
+- [x] **REQ-0.0.5-03-02:** Eval thresholds are configurable in `config/` with
   sensible defaults (suggested: 0.5 score drop per dimension).
-- [ ] **REQ-0.0.5-03-03:** Gate failure output names the regressed surface,
+- [x] **REQ-0.0.5-03-03:** Gate failure output names the regressed surface,
   dimension, baseline score, and current score.
-- [ ] **REQ-0.0.5-03-04:** Gate results are persisted to the ledger via
+- [x] **REQ-0.0.5-03-04:** Gate results are persisted to the ledger via
   `gate_checked_event()`.
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 ## Evidence
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+Ran 20 tests in 0.044s — OK
+tests/eval/test_delta_gates.py: 20/20 pass
+Full suite: 1530 tests pass
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+uv run gz lint — All checks passed
+uv run gz typecheck — All checks passed
 ```
 
 ### Value Narrative
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+
+Before this OBPI, Gate 2 only ran deterministic tests — there was no mechanism to detect
+regressions in eval scores across commits. Now, Gate 2 automatically compares eval harness
+scores against stored baselines and blocks the gate when any dimension drops beyond a
+configurable threshold.
 
 ### Key Proof
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+```bash
+uv run -m unittest tests/eval/test_delta_gates.py -v
+# 20 tests covering: threshold config, baseline storage, delta comparison,
+# regression output formatting, and gate integration (skip/detect/record)
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created/modified: `config/eval_thresholds.json`, `src/gzkit/eval/delta.py`, `src/gzkit/commands/gates.py`, `src/gzkit/cli/main.py`
+- Tests added: `tests/eval/test_delta_gates.py` (20 tests)
+- Date completed: 2026-03-26
+- Attestation status: Human attested
+- Defects noted: None
 
 ## Tracked Defects
 
@@ -166,12 +178,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a`
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `jeff`
+- Attestation: `attest completed`
+- Date: `2026-03-26`
 
 ---
 
-**Brief Status:** Draft
-**Date Completed:** -
+**Brief Status:** Completed
+**Date Completed:** 2026-03-26
 **Evidence Hash:** -
