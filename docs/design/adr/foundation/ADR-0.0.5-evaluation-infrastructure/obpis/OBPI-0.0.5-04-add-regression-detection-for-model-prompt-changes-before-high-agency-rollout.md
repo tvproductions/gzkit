@@ -3,7 +3,7 @@ id: OBPI-0.0.5-04-add-regression-detection-for-model-prompt-changes-before-high-
 parent: ADR-0.0.5-evaluation-infrastructure
 item: 4
 lane: lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.5-04: Regression Detection for Model/Prompt Changes
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.5-evaluation-infrastructure/ADR-0.0.5-evaluation-infrastructure.md`
 - **Checklist Item:** #4 - "Regression detection for model/prompt changes before high-agency rollout"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -113,57 +113,72 @@ python -c "from gzkit.eval.regression import RegressionReport; print(RegressionR
 
 ## Acceptance Criteria
 
-- [ ] **REQ-0.0.5-04-01:** A baseline store in `artifacts/baselines/` persists
+- [x] **REQ-0.0.5-04-01:** A baseline store in `artifacts/baselines/` persists
   eval scores keyed by commit hash and surface name.
-- [ ] **REQ-0.0.5-04-02:** A comparison engine produces a `RegressionReport`
+- [x] **REQ-0.0.5-04-02:** A comparison engine produces a `RegressionReport`
   listing each regressed dimension with baseline and current scores.
-- [ ] **REQ-0.0.5-04-03:** The first eval run against a surface with no
+- [x] **REQ-0.0.5-04-03:** The first eval run against a surface with no
   baseline creates the baseline and reports "no prior baseline" (not a failure).
-- [ ] **REQ-0.0.5-04-04:** Regression reports are serializable to ARB-compatible
+- [x] **REQ-0.0.5-04-04:** Regression reports are serializable to ARB-compatible
   JSON for receipt integration.
-- [ ] **REQ-0.0.5-04-05:** Baseline updates require explicit invocation (e.g.,
+- [x] **REQ-0.0.5-04-05:** Baseline updates require explicit invocation (e.g.,
   `--update-baseline` flag), not implicit acceptance.
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 ## Evidence
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+Ran 23 tests in 0.099s — OK
+  TestBaselineStore (5 tests): save/load round-trip, JSON structure, missing returns None, frozen, extra forbid
+  TestComparisonEngine (8 tests): regression detected, within threshold, exact threshold, improvement, multiple surfaces, frozen, extra forbid, all deltas
+  TestFirstRunHandling (4 tests): no prior baseline, no auto-create, create initial, skip existing
+  TestArbReceiptCompatibility (4 tests): JSON serialization, pass case, baselines created, frozen
+  TestExplicitUpdateControl (2 tests): explicit overwrite, comparison never updates
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+uv run gz lint       → All checks passed
+uv run gz typecheck  → All checks passed
+uv run gz test       → 1553 tests OK
 ```
 
 ### Value Narrative
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+
+Before this OBPI, gzkit had no standalone regression detection with commit-tracked baselines. The delta module (OBPI-03) provided gate-level regression checking but lacked commit provenance, dataset version tracking, and ARB receipt integration. Now there is a complete regression detection module storing baselines with full provenance in `artifacts/baselines/`, producing frozen `RegressionReport` models, and serializing to ARB-compatible receipts — all with explicit-only baseline updates.
 
 ### Key Proof
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+```bash
+uv run -m unittest tests/eval/test_regression.py -v
+# 23/23 pass
+
+python -c "from gzkit.eval.regression import RegressionReport; print(list(RegressionReport.model_fields.keys()))"
+# ['timestamp', 'commit_hash', 'surfaces_checked', 'deltas', 'regressions', 'passed', 'baseline_created', 'no_prior_baseline']
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created: `src/gzkit/eval/regression.py`, `tests/eval/test_regression.py`, `data/schemas/eval_baseline.schema.json`
+- Tests added: 23
+- Date completed: 2026-03-26
+- Attestation status: Human attested
+- Defects noted: None
 
 ## Tracked Defects
 
@@ -171,12 +186,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a`
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `jeff`
+- Attestation: `attest completed`
+- Date: `2026-03-26`
 
 ---
 
-**Brief Status:** Draft
-**Date Completed:** -
+**Brief Status:** Completed
+**Date Completed:** 2026-03-26
 **Evidence Hash:** -
