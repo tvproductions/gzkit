@@ -19,6 +19,22 @@ gz cli audit [--json]
 - `docs/user/commands/index.md` links to each required page
 - `README.md` Quick Start command examples parse against the live CLI
 
+### Cross-Coverage (AST-driven)
+
+Discovers all CLI commands by parsing `cli/main.py` and verifies six documentation
+surfaces per command:
+
+| Surface | Verification |
+|---------|-------------|
+| Manpage | `docs/user/commands/<slug>.md` exists |
+| Index entry | Listed in `docs/user/commands/index.md` |
+| Operator runbook | Referenced in `docs/user/runbook.md` |
+| Governance runbook | Referenced in `docs/governance/governance_runbook.md` |
+| Docstring | Handler function has non-empty docstring |
+| COMMAND_DOCS mapping | Registered in `COMMAND_DOCS` dict |
+
+Also detects orphaned documentation referencing removed commands.
+
 ---
 
 ## Example

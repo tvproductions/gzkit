@@ -1,11 +1,17 @@
 """CLI audit command implementation."""
 
+from __future__ import annotations
+
 import json
 import re
 import shlex
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from gzkit.commands.common import COMMAND_DOCS, console, get_project_root
+
+if TYPE_CHECKING:
+    from gzkit.doc_coverage.models import CoverageReport
 
 
 def _extract_readme_quickstart_commands(
@@ -100,6 +106,68 @@ def _collect_readme_quickstart_issues(project_root: Path) -> list[dict[str, str]
     return issues
 
 
+def _collect_cross_coverage_issues(
+    project_root: Path,
+) -> tuple[list[dict[str, str]], CoverageReport]:
+    """Run AST-driven cross-coverage scan and return (issues, report)."""
+    from gzkit.doc_coverage.models import CoverageReport  # noqa: PLC0415
+    from gzkit.doc_coverage.scanner import check_surfaces_report  # noqa: PLC0415
+
+    try:
+        report = check_surfaces_report(project_root)
+    except FileNotFoundError:
+        return [], CoverageReport(
+            commands_discovered=0,
+            commands_fully_covered=0,
+            commands_with_gaps=0,
+            coverage=[],
+            orphaned=[],
+            passed=True,
+        )
+
+    issues: list[dict[str, str]] = []
+    for cmd_cov in report.coverage:
+        if not cmd_cov.all_passed:
+            for surface in cmd_cov.surfaces:
+                if not surface.passed:
+                    issues.append(
+                        {
+                            "path": f"cross-coverage:{cmd_cov.command}",
+                            "issue": f"missing {surface.surface}: {surface.detail}",
+                        }
+                    )
+    for orphan in report.orphaned:
+        issues.append(
+            {
+                "path": "cross-coverage:orphan",
+                "issue": f"orphaned {orphan.surface}: {orphan.reference} ({orphan.detail})",
+            }
+        )
+    return issues, report
+
+
+def _print_cross_coverage_summary(coverage_report: CoverageReport) -> None:
+    """Print the human-readable cross-coverage section."""
+    if coverage_report.passed:
+        console.print(
+            f"[green]Cross-coverage: {coverage_report.commands_fully_covered}/"
+            f"{coverage_report.commands_discovered} commands fully covered.[/green]"
+        )
+        return
+    console.print(
+        f"\n[yellow]Cross-coverage: {coverage_report.commands_with_gaps}/"
+        f"{coverage_report.commands_discovered} commands have gaps.[/yellow]"
+    )
+    for cmd_cov in coverage_report.coverage:
+        if not cmd_cov.all_passed:
+            missing = [s.surface for s in cmd_cov.surfaces if not s.passed]
+            console.print(f"  - {cmd_cov.command}: missing {', '.join(missing)}")
+    if coverage_report.orphaned:
+        console.print("\n[yellow]Orphaned documentation:[/yellow]")
+        for orphan in coverage_report.orphaned:
+            console.print(f"  - {orphan.reference}: {orphan.detail}")
+
+
 def cli_audit_cmd(as_json: bool) -> None:
     """Validate CLI manpage/doc coverage for command surfaces."""
     project_root = get_project_root()
@@ -119,12 +187,7 @@ def cli_audit_cmd(as_json: bool) -> None:
         content = doc_path.read_text(encoding="utf-8")
         expected_heading = f"# gz {command_name}"
         if not content.lstrip().startswith(expected_heading):
-            issues.append(
-                {
-                    "path": doc_rel,
-                    "issue": f"expected heading `{expected_heading}`",
-                }
-            )
+            issues.append({"path": doc_rel, "issue": f"expected heading `{expected_heading}`"})
 
         basename = Path(doc_rel).name
         if index_content and basename not in index_content:
@@ -134,15 +197,20 @@ def cli_audit_cmd(as_json: bool) -> None:
 
     issues.extend(_collect_readme_quickstart_issues(project_root))
 
-    result = {"valid": not issues, "issues": issues}
+    cc_issues, coverage_report = _collect_cross_coverage_issues(project_root)
+    issues.extend(cc_issues)
+
+    result = {"valid": not issues, "issues": issues, "cross_coverage": coverage_report.model_dump()}
     if as_json:
         print(json.dumps(result, indent=2))
-    elif not issues:
-        console.print("[green]CLI audit passed.[/green]")
     else:
-        console.print("[red]CLI audit failed.[/red]")
-        for issue in issues:
-            console.print(f"  - {issue['path']}: {issue['issue']}")
+        if not issues:
+            console.print("[green]CLI audit passed.[/green]")
+        else:
+            console.print("[red]CLI audit failed.[/red]")
+            for issue in issues:
+                console.print(f"  - {issue['path']}: {issue['issue']}")
+        _print_cross_coverage_summary(coverage_report)
 
     if issues:
         raise SystemExit(1)
