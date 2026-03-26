@@ -77,7 +77,9 @@ def _run_gate_2(
     )
     if result.success:
         console.print("  [green]✓[/green] Gate 2 (TDD): [green]PASS[/green]")
-        return True
+        # REQ-1: include eval results when datasets exist
+        eval_ok = _run_eval_delta(project_root, ledger, adr_id)
+        return eval_ok
     console.print("  [red]❌[/red] Gate 2 (TDD): [red]FAIL[/red]")
     return False
 
@@ -141,6 +143,71 @@ def _run_gate_4(project_root: Path, ledger: Ledger, adr_id: str, command: str) -
 def _run_gate_5() -> bool:
     console.print("  [yellow]⚠[/yellow] Gate 5 (Human): [yellow]PENDING[/yellow] (manual)")
     return True
+
+
+def _run_eval_delta(
+    project_root: Path,
+    ledger: Ledger,
+    adr_id: str,
+) -> bool:
+    """Run eval delta check as part of Gate 2.
+
+    Runs the eval suite, compares against stored baselines, and reports
+    regressions. Gracefully skips when eval datasets are absent (REQ-2).
+    Records results via gate_checked_event (REQ-6).
+    """
+    from gzkit.eval.delta import (
+        check_regressions,
+        format_regression_output,
+        load_thresholds,
+    )
+    from gzkit.eval.runner import run_eval_suite
+
+    data_dir = project_root / "data" / "eval"
+    baselines_dir = data_dir / "baselines"
+
+    # REQ-2: graceful skip when no eval datasets
+    if not data_dir.exists() or not any(data_dir.glob("*.json")):
+        console.print("  [dim]↳ Eval delta: skipped (no eval datasets)[/dim]")
+        _record_gate_result(ledger, adr_id, 2, "pass", "eval-delta", 0, "skipped: no eval datasets")
+        return True
+
+    try:
+        current = run_eval_suite()
+    except Exception as exc:
+        console.print(f"  [red]❌[/red] Eval delta: ERROR ({exc})")
+        _record_gate_result(ledger, adr_id, 2, "fail", "eval-delta", 1, str(exc))
+        return False
+
+    # REQ-2: graceful skip when no baselines to compare against
+    if not baselines_dir.exists() or not any(baselines_dir.glob("*.baseline.json")):
+        console.print(
+            f"  [dim]↳ Eval delta: skipped (no baselines) — "
+            f"{current.surfaces_scored} surfaces scored, "
+            f"overall {current.overall_score}/4.0[/dim]"
+        )
+        _record_gate_result(ledger, adr_id, 2, "pass", "eval-delta", 0, "skipped: no baselines")
+        return True
+
+    config = load_thresholds()
+    result = check_regressions(current, config=config, baselines_dir=baselines_dir)
+    output = format_regression_output(result)
+
+    # REQ-6: record via gate_checked_event
+    status = "pass" if result.passed else "fail"
+    evidence = output
+    _record_gate_result(
+        ledger, adr_id, 2, status, "eval-delta", 0 if result.passed else 1, evidence
+    )
+
+    if result.passed:
+        console.print(f"  [green]✓[/green] {output}")
+        return True
+
+    # REQ-5: regression output includes surface, dimension, baseline, current
+    for line in output.split("\n"):
+        console.print(f"  [red]{line}[/red]")
+    return False
 
 
 def implement_cmd(adr: str | None) -> None:
