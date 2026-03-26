@@ -205,10 +205,10 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertEqual(
                 verify_commands,
                 [
-                    "uv run gz validate --documents",
                     "uv run gz lint",
                     "uv run gz typecheck",
                     "uv run gz test",
+                    "uv run gz validate --documents",
                     "python -c \"print('verify ok')\"",
                     "uv run mkdocs build --strict",
                     "uv run -m behave features/",

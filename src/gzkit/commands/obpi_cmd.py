@@ -136,11 +136,18 @@ def obpi_emit_receipt_cmd(
     console.print(f"  Attestor: {attestor}")
 
 
+BASELINE_VERIFICATION = [
+    "uv run gz lint",
+    "uv run gz typecheck",
+    "uv run gz test",
+]
+
+
 def _pipeline_verification_commands(obpi_content: str, lane: str) -> list[str]:
     """Parse the Verification block into executable shell commands."""
+    commands: list[str] = list(BASELINE_VERIFICATION)
     section = extract_markdown_section(obpi_content, "Verification") or ""
     matches = re.findall(r"```bash\n(.*?)```", section, flags=re.DOTALL)
-    commands: list[str] = []
     for block in matches:
         for raw_line in block.splitlines():
             line = raw_line.strip()
