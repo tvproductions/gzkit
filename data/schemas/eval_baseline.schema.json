@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Eval Baseline",
+  "description": "Stored eval baseline for one AI-sensitive surface. Records commit hash, timestamp, per-dimension scores, and dataset version.",
+  "type": "object",
+  "required": ["surface", "commit_hash", "timestamp", "dimension_scores", "dataset_version"],
+  "properties": {
+    "surface": {
+      "type": "string",
+      "description": "AI-sensitive surface identifier"
+    },
+    "commit_hash": {
+      "type": "string",
+      "description": "Git commit hash when baseline was recorded"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 timestamp of baseline creation"
+    },
+    "dimension_scores": {
+      "type": "object",
+      "description": "Dimension name to baseline score mapping",
+      "additionalProperties": {
+        "type": "number"
+      }
+    },
+    "dataset_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Eval dataset version used to produce this baseline"
+    }
+  },
+  "additionalProperties": false
+}
