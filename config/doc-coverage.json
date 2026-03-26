@@ -1,0 +1,567 @@
+{
+  "version": "1.0.0",
+  "description": "Per-command documentation obligation manifest for gzkit CLI commands",
+  "commands": {
+    "init": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "prd": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "constitute": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "specify": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "plan": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "state": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "status": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "closeout": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "audit": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "adr status": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "adr report": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "adr promote": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "adr evaluate": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "adr audit-check": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "adr covers-check": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "adr emit-receipt": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "obpi emit-receipt": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "obpi status": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "obpi pipeline": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "obpi reconcile": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "obpi validate": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "implement": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "gates": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "attest": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "validate": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "roles": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "register-adrs": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "migrate-semver": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "check-config-paths": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "cli audit": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "parity check": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "readiness audit": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "readiness evaluate": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "git-sync": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": false
+    },
+    "lint": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": false
+    },
+    "format": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": false
+    },
+    "test": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": false
+    },
+    "typecheck": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": false
+    },
+    "check": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": false
+    },
+    "tidy": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": false
+    },
+    "chores list": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": false
+    },
+    "chores show": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": false
+    },
+    "chores plan": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": false
+    },
+    "chores advise": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": false
+    },
+    "chores run": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": false
+    },
+    "chores audit": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": false
+    },
+    "skill new": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": false
+    },
+    "skill list": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": false
+    },
+    "skill audit": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": false
+    },
+    "interview": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": false
+    },
+    "agent sync control-surfaces": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": false
+    }
+  }
+}

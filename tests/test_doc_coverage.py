@@ -1,15 +1,23 @@
 """Tests for the gzkit.doc_coverage package.
 
 Covers AST discovery, surface verification, orphan detection, models,
-and end-to-end integration.
+manifest loading, and end-to-end integration.
 """
 
+import json
 import tempfile
 import unittest
 from pathlib import Path
 
 from pydantic import ValidationError
 
+from gzkit.doc_coverage.manifest import (
+    CommandEntry,
+    DocCoverageManifest,
+    SurfaceRequirements,
+    find_undeclared_commands,
+    load_manifest,
+)
 from gzkit.doc_coverage.models import (
     CommandCoverage,
     CoverageReport,
@@ -450,6 +458,281 @@ class TestIntegration(unittest.TestCase):
             report.commands_fully_covered + report.commands_with_gaps,
             "commands_discovered must equal fully_covered + with_gaps",
         )
+
+
+# ---------------------------------------------------------------------------
+# 6. Manifest Model Tests
+# ---------------------------------------------------------------------------
+
+
+class TestManifestModels(unittest.TestCase):
+    """Test Pydantic models for the documentation coverage manifest."""
+
+    def _make_surfaces(self, **overrides: bool) -> SurfaceRequirements:
+        defaults = {
+            "manpage": True,
+            "index_entry": True,
+            "operator_runbook": True,
+            "governance_runbook": False,
+            "docstring": True,
+            "command_docs_mapping": True,
+        }
+        defaults.update(overrides)
+        return SurfaceRequirements(**defaults)
+
+    def _make_entry(self, governance_relevant: bool = False) -> CommandEntry:
+        return CommandEntry(
+            surfaces=self._make_surfaces(governance_runbook=governance_relevant),
+            governance_relevant=governance_relevant,
+        )
+
+    def test_surface_requirements_frozen(self) -> None:
+        surfaces = self._make_surfaces()
+        with self.assertRaises((TypeError, ValidationError)):
+            surfaces.manpage = False  # type: ignore[misc]
+
+    def test_surface_requirements_extra_forbid(self) -> None:
+        with self.assertRaises(ValidationError):
+            SurfaceRequirements(
+                manpage=True,
+                index_entry=True,
+                operator_runbook=True,
+                governance_runbook=False,
+                docstring=True,
+                command_docs_mapping=True,
+                extra_field=True,  # type: ignore[call-arg]
+            )
+
+    def test_command_entry_frozen(self) -> None:
+        entry = self._make_entry()
+        with self.assertRaises((TypeError, ValidationError)):
+            entry.governance_relevant = True  # type: ignore[misc]
+
+    def test_command_entry_extra_forbid(self) -> None:
+        with self.assertRaises(ValidationError):
+            CommandEntry(
+                surfaces=self._make_surfaces(),
+                governance_relevant=False,
+                unknown=True,  # type: ignore[call-arg]
+            )
+
+    def test_manifest_frozen(self) -> None:
+        manifest = DocCoverageManifest(
+            version="1.0.0",
+            description="Test",
+            commands={"init": self._make_entry()},
+        )
+        with self.assertRaises((TypeError, ValidationError)):
+            manifest.version = "2.0.0"  # type: ignore[misc]
+
+    def test_manifest_extra_forbid(self) -> None:
+        with self.assertRaises(ValidationError):
+            DocCoverageManifest(
+                version="1.0.0",
+                description="Test",
+                commands={"init": self._make_entry()},
+                extra_field="forbidden",  # type: ignore[call-arg]
+            )
+
+    def test_governance_relevant_entry(self) -> None:
+        entry = self._make_entry(governance_relevant=True)
+        self.assertTrue(entry.governance_relevant)
+        self.assertTrue(entry.surfaces.governance_runbook)
+
+    def test_non_governance_entry(self) -> None:
+        entry = self._make_entry(governance_relevant=False)
+        self.assertFalse(entry.governance_relevant)
+        self.assertFalse(entry.surfaces.governance_runbook)
+
+
+# ---------------------------------------------------------------------------
+# 7. Manifest Loader Tests
+# ---------------------------------------------------------------------------
+
+
+class TestLoadManifest(unittest.TestCase):
+    """Test manifest loading from JSON files."""
+
+    def _write_manifest(self, root: Path, data: dict) -> None:
+        config_dir = root / "config"
+        config_dir.mkdir(parents=True, exist_ok=True)
+        (config_dir / "doc-coverage.json").write_text(json.dumps(data), encoding="utf-8")
+
+    def _valid_manifest_data(self) -> dict:
+        return {
+            "version": "1.0.0",
+            "description": "Test manifest",
+            "commands": {
+                "init": {
+                    "surfaces": {
+                        "manpage": True,
+                        "index_entry": True,
+                        "operator_runbook": True,
+                        "governance_runbook": True,
+                        "docstring": True,
+                        "command_docs_mapping": True,
+                    },
+                    "governance_relevant": True,
+                },
+                "lint": {
+                    "surfaces": {
+                        "manpage": True,
+                        "index_entry": True,
+                        "operator_runbook": True,
+                        "governance_runbook": False,
+                        "docstring": True,
+                        "command_docs_mapping": True,
+                    },
+                    "governance_relevant": False,
+                },
+            },
+        }
+
+    def test_load_valid_manifest(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_manifest(root, self._valid_manifest_data())
+            manifest = load_manifest(root)
+            self.assertIsInstance(manifest, DocCoverageManifest)
+            self.assertEqual(manifest.version, "1.0.0")
+            self.assertEqual(len(manifest.commands), 2)
+            self.assertIn("init", manifest.commands)
+            self.assertIn("lint", manifest.commands)
+
+    def test_load_manifest_governance_flag(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_manifest(root, self._valid_manifest_data())
+            manifest = load_manifest(root)
+            self.assertTrue(manifest.commands["init"].governance_relevant)
+            self.assertFalse(manifest.commands["lint"].governance_relevant)
+
+    def test_load_manifest_missing_file(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            with self.assertRaises(FileNotFoundError):
+                load_manifest(root)
+
+    def test_load_manifest_invalid_json(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            config_dir = root / "config"
+            config_dir.mkdir(parents=True)
+            (config_dir / "doc-coverage.json").write_text("not valid json", encoding="utf-8")
+            with self.assertRaises(json.JSONDecodeError):
+                load_manifest(root)
+
+    def test_load_manifest_missing_required_surface(self) -> None:
+        data = self._valid_manifest_data()
+        del data["commands"]["init"]["surfaces"]["docstring"]
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_manifest(root, data)
+            with self.assertRaises(ValidationError):
+                load_manifest(root)
+
+    def test_load_manifest_extra_field_rejected(self) -> None:
+        data = self._valid_manifest_data()
+        data["commands"]["init"]["extra"] = True
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_manifest(root, data)
+            with self.assertRaises(ValidationError):
+                load_manifest(root)
+
+
+# ---------------------------------------------------------------------------
+# 8. Undeclared Command Detection Tests
+# ---------------------------------------------------------------------------
+
+
+class TestFindUndeclaredCommands(unittest.TestCase):
+    """Test detection of commands missing from the manifest."""
+
+    def _make_manifest(self, command_names: list[str]) -> DocCoverageManifest:
+        commands = {}
+        for name in command_names:
+            commands[name] = CommandEntry(
+                surfaces=SurfaceRequirements(
+                    manpage=True,
+                    index_entry=True,
+                    operator_runbook=True,
+                    governance_runbook=False,
+                    docstring=True,
+                    command_docs_mapping=True,
+                ),
+                governance_relevant=False,
+            )
+        return DocCoverageManifest(
+            version="1.0.0",
+            description="Test",
+            commands=commands,
+        )
+
+    def test_no_undeclared_when_all_present(self) -> None:
+        manifest = self._make_manifest(["init", "lint", "test"])
+        undeclared = find_undeclared_commands(manifest, {"init", "lint", "test"})
+        self.assertEqual(undeclared, [])
+
+    def test_undeclared_commands_detected(self) -> None:
+        manifest = self._make_manifest(["init"])
+        undeclared = find_undeclared_commands(manifest, {"init", "lint", "format"})
+        self.assertEqual(undeclared, ["format", "lint"])
+
+    def test_undeclared_returns_sorted(self) -> None:
+        manifest = self._make_manifest([])
+        undeclared = find_undeclared_commands(manifest, {"z-cmd", "a-cmd", "m-cmd"})
+        self.assertEqual(undeclared, ["a-cmd", "m-cmd", "z-cmd"])
+
+    def test_manifest_extras_ignored(self) -> None:
+        manifest = self._make_manifest(["init", "lint", "extra"])
+        undeclared = find_undeclared_commands(manifest, {"init", "lint"})
+        self.assertEqual(undeclared, [])
+
+
+# ---------------------------------------------------------------------------
+# 9. Manifest Integration Tests
+# ---------------------------------------------------------------------------
+
+
+class TestManifestIntegration(unittest.TestCase):
+    """Test the real manifest against the real project."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.project_root = Path(__file__).resolve().parent.parent
+
+    def test_real_manifest_loads(self) -> None:
+        manifest = load_manifest(self.project_root)
+        self.assertIsInstance(manifest, DocCoverageManifest)
+        self.assertGreater(len(manifest.commands), 0)
+
+    def test_real_manifest_covers_all_discovered_commands(self) -> None:
+        manifest = load_manifest(self.project_root)
+        discovered = scan_cli_commands(self.project_root)
+        discovered_names = {c.name for c in discovered}
+        undeclared = find_undeclared_commands(manifest, discovered_names)
+        self.assertEqual(
+            undeclared,
+            [],
+            f"Commands discovered by AST but missing from manifest: {undeclared}",
+        )
+
+    def test_real_manifest_governance_flag_matches_runbook_surface(self) -> None:
+        manifest = load_manifest(self.project_root)
+        for name, entry in manifest.commands.items():
+            if entry.governance_relevant:
+                self.assertTrue(
+                    entry.surfaces.governance_runbook,
+                    f"'{name}' is governance_relevant but governance_runbook is False",
+                )
+
+    def test_real_manifest_validates_against_schema(self) -> None:
+        schema_path = self.project_root / "data" / "schemas" / "doc_coverage_manifest.schema.json"
+        self.assertTrue(schema_path.exists(), "Schema file must exist")
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+        self.assertEqual(schema["title"], "Documentation Coverage Manifest")
+        self.assertIn("commands", schema["properties"])
 
 
 if __name__ == "__main__":
