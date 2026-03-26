@@ -1,0 +1,48 @@
+{
+  "surface": "agents_md",
+  "version": "1.0.0",
+  "description": "Reference datasets for AGENTS.md operating contract evaluation — required sections and structural completeness.",
+  "cases": [
+    {
+      "id": "agents-eval-golden-01",
+      "type": "golden_path",
+      "description": "Complete AGENTS.md with Project Identity, Agent Profiles, Operating Contract, and OBPI Acceptance Protocol sections.",
+      "input": {
+        "agents_content": "# AGENTS.md\n\n## Project Identity\n\ngzkit — governance toolkit for AI-assisted development.\n\n## Agent Profiles\n\n### Claude Code\n\nPrimary agent. Full read/write access.\n\n### Codex\n\nSecondary agent. Read-only governance surfaces.\n\n## Operating Contract\n\n- Read AGENTS.md before implementation work.\n- Use uv run for all Python execution.\n- Never bypass Gate 5 attestation.\n\n## OBPI Acceptance Protocol\n\nPresent evidence table. Wait for human attestation.\n\n## Execution Modes\n\n### Normal\n\nHuman gate at Stage 4.\n\n### Exception (SVFR)\n\nSelf-close with full evidence.\n"
+      },
+      "expected_output": {
+        "valid": true,
+        "sections_present": ["Project Identity", "Agent Profiles", "Operating Contract", "OBPI Acceptance Protocol"],
+        "has_execution_modes": true,
+        "agent_count": 2
+      }
+    },
+    {
+      "id": "agents-eval-edge-missing-sections",
+      "type": "edge_case",
+      "description": "AGENTS.md with only Project Identity — missing required operating contract and agent profiles.",
+      "input": {
+        "agents_content": "# AGENTS.md\n\n## Project Identity\n\ngzkit — governance toolkit.\n"
+      },
+      "expected_output": {
+        "valid": false,
+        "sections_present": ["Project Identity"],
+        "missing_sections": ["Agent Profiles", "Operating Contract", "OBPI Acceptance Protocol"],
+        "has_execution_modes": false
+      }
+    },
+    {
+      "id": "agents-eval-edge-empty-contract",
+      "type": "edge_case",
+      "description": "AGENTS.md with all section headings but empty content — structural shell.",
+      "input": {
+        "agents_content": "# AGENTS.md\n\n## Project Identity\n\n## Agent Profiles\n\n## Operating Contract\n\n## OBPI Acceptance Protocol\n"
+      },
+      "expected_output": {
+        "valid": false,
+        "sections_present": ["Project Identity", "Agent Profiles", "Operating Contract", "OBPI Acceptance Protocol"],
+        "empty_sections": ["Project Identity", "Agent Profiles", "Operating Contract", "OBPI Acceptance Protocol"]
+      }
+    }
+  ]
+}

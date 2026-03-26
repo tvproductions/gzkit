@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Eval Dataset",
+  "description": "Reference dataset for AI-sensitive surface evaluation. Each dataset contains golden-path and edge-case fixtures for one surface.",
+  "type": "object",
+  "required": ["surface", "version", "description", "cases"],
+  "properties": {
+    "surface": {
+      "type": "string",
+      "description": "AI-sensitive surface identifier"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Dataset version (semver)"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of what this dataset covers"
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "description", "input", "expected_output"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique case identifier within the dataset"
+          },
+          "type": {
+            "enum": ["golden_path", "edge_case"],
+            "description": "Whether this is a golden-path or edge-case fixture"
+          },
+          "description": {
+            "type": "string",
+            "description": "What this case tests"
+          },
+          "input": {
+            "type": "object",
+            "description": "Surface-specific input data for the eval"
+          },
+          "expected_output": {
+            "type": "object",
+            "description": "Expected evaluation result"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

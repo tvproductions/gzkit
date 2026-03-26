@@ -1079,8 +1079,11 @@ def _build_adr_status_result(adr: str) -> dict[str, Any]:
     ledger = Ledger(project_root / config.paths.ledger)
 
     adr_input = adr if adr.startswith("ADR-") else f"ADR-{adr}"
-    canonical_adr = ledger.canonicalize_id(adr_input)
-    adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
+    try:
+        adr_file, adr_id = resolve_adr_file(project_root, config, adr_input)
+    except GzCliError:
+        canonical_adr = ledger.canonicalize_id(adr_input)
+        adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
     adr_id = resolve_adr_ledger_id(adr_file, adr_id, ledger)
     graph = ledger.get_artifact_graph()
     info = graph.get(adr_id)

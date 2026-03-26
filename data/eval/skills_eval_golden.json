@@ -1,0 +1,50 @@
+{
+  "surface": "skills",
+  "version": "1.0.0",
+  "description": "Reference datasets for SKILL.md structural evaluation — required sections and behavioral triggers.",
+  "cases": [
+    {
+      "id": "skills-eval-golden-01",
+      "type": "golden_path",
+      "description": "SKILL.md with all required sections: title, when to use, invocation, procedure, and related.",
+      "input": {
+        "skill_content": "# gz-example\n\nExample skill for testing.\n\n## When to Use\n\n- When running examples\n- When testing skill infrastructure\n\n## Invocation\n\n```text\n/gz-example\n/gz-example --verbose\n```\n\n## Procedure\n\n1. Load context\n2. Execute example\n3. Report results\n\n## Related\n\n- `/gz-other` for related operations",
+        "skill_name": "gz-example"
+      },
+      "expected_output": {
+        "valid": true,
+        "sections_present": ["When to Use", "Invocation", "Procedure"],
+        "has_trigger": true,
+        "has_examples": true
+      }
+    },
+    {
+      "id": "skills-eval-edge-missing-trigger",
+      "type": "edge_case",
+      "description": "SKILL.md missing When to Use section — no behavioral trigger defined.",
+      "input": {
+        "skill_content": "# gz-broken\n\nBroken skill.\n\n## Procedure\n\n1. Do something\n",
+        "skill_name": "gz-broken"
+      },
+      "expected_output": {
+        "valid": false,
+        "missing_sections": ["When to Use", "Invocation"],
+        "has_trigger": false
+      }
+    },
+    {
+      "id": "skills-eval-edge-empty-procedure",
+      "type": "edge_case",
+      "description": "SKILL.md with empty Procedure section — structural shell with no actionable content.",
+      "input": {
+        "skill_content": "# gz-empty\n\nEmpty skill.\n\n## When to Use\n\n- When testing\n\n## Invocation\n\n```text\n/gz-empty\n```\n\n## Procedure\n\n",
+        "skill_name": "gz-empty"
+      },
+      "expected_output": {
+        "valid": false,
+        "empty_sections": ["Procedure"],
+        "has_trigger": true
+      }
+    }
+  ]
+}

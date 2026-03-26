@@ -1,0 +1,55 @@
+{
+  "surface": "rules",
+  "version": "1.0.0",
+  "description": "Reference datasets for .claude/rules/ structural evaluation — frontmatter validity and path-scoping.",
+  "cases": [
+    {
+      "id": "rules-eval-golden-01",
+      "type": "golden_path",
+      "description": "Rule file with correct YAML frontmatter containing paths array and substantive body content.",
+      "input": {
+        "rule_content": "---\npaths:\n  - \"src/**/*.py\"\n  - \"tests/**/*.py\"\n---\n\n# Cross-Platform Policy\n\nUse pathlib.Path for all file operations.\nSpecify encoding=\"utf-8\" for all file I/O.\n",
+        "rule_name": "cross-platform.md"
+      },
+      "expected_output": {
+        "valid": true,
+        "has_frontmatter": true,
+        "paths_count": 2,
+        "has_body": true,
+        "drift_risk": false
+      }
+    },
+    {
+      "id": "rules-eval-edge-no-paths",
+      "type": "edge_case",
+      "description": "Rule file with frontmatter but no paths glob — applies globally, drift risk.",
+      "input": {
+        "rule_content": "---\n---\n\n# Global Rule\n\nThis rule has no path scoping.\n",
+        "rule_name": "global-rule.md"
+      },
+      "expected_output": {
+        "valid": false,
+        "has_frontmatter": true,
+        "paths_count": 0,
+        "drift_risk": true
+      }
+    },
+    {
+      "id": "rules-eval-edge-stale-path",
+      "type": "edge_case",
+      "description": "Rule file with paths pointing to non-existent directory — stale reference.",
+      "input": {
+        "rule_content": "---\npaths:\n  - \"legacy/old_module/**\"\n---\n\n# Legacy Module Policy\n\nRules for the old module.\n",
+        "rule_name": "legacy-rule.md",
+        "project_paths_exist": ["src/", "tests/"]
+      },
+      "expected_output": {
+        "valid": false,
+        "has_frontmatter": true,
+        "paths_count": 1,
+        "stale_paths": ["legacy/old_module/**"],
+        "drift_risk": true
+      }
+    }
+  ]
+}

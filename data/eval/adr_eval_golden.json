@@ -1,0 +1,49 @@
+{
+  "surface": "adr_eval",
+  "version": "1.0.0",
+  "description": "Reference datasets for ADR quality evaluation — 8-dimension scoring and verdict determination.",
+  "cases": [
+    {
+      "id": "adr-eval-golden-01",
+      "type": "golden_path",
+      "description": "Well-formed ADR with clear problem statement, justified decisions, complete feature checklist, OBPI decomposition, lane assignment, scoped non-goals, evidence requirements, and architectural integration.",
+      "input": {
+        "adr_content": "---\nid: ADR-0.99.0-test-surface\nstatus: Pending\nsemver: 0.99.0\nlane: lite\n---\n\n# ADR-0.99.0: Test Surface\n\n## Status\n\nPending\n\n## Problem Statement\n\nThe system lacks automated regression detection for model changes.\n\n**Before:** Changes ship without quality measurement.\n**After:** Eval harnesses catch regressions before merge.\n**So what:** Blind deployments risk operator trust.\n\n## Decisions\n\n### Decision 1: Use deterministic fixtures\n\nStore expected input/output pairs as versioned JSON.\n\n**Why:** Reproducible without network or LLM calls.\n**Alternatives considered:**\n- *Live API calls* -- rejected: flaky and costly.\n\n## Feature Checklist\n\n1. **Reference datasets** for workflows\n2. **Eval harnesses** as quality checks\n\n## OBPI Decomposition\n\n| # | OBPI | Lane | Dependencies |\n|---|------|------|--------------|\n| 01 | Reference datasets | Lite | None |\n| 02 | Eval harnesses | Lite | 01 |\n\n## Lane\n\nLite — data fixtures and test infrastructure only.\n\n## Non-Goals\n\n- Runtime production monitoring\n- LLM-as-judge evaluation\n\n## Dependencies\n\nNone.\n\n## Architectural Integration Points\n\n| Integration | Module | Purpose |\n|------------|--------|---------|\n| Quality runners | quality.py | Add run_eval() |\n| Gate 2 | gates.py | Eval feeds into TDD gate |",
+        "obpi_count": 2
+      },
+      "expected_output": {
+        "verdict": "GO",
+        "weighted_total_gte": 3.0,
+        "dimensions_scored": 8,
+        "all_dimensions_gte": 2
+      }
+    },
+    {
+      "id": "adr-eval-edge-no-decisions",
+      "type": "edge_case",
+      "description": "ADR with no Decisions section — Decision Justification dimension scores 1.",
+      "input": {
+        "adr_content": "---\nid: ADR-0.98.0-incomplete\nstatus: Pending\nsemver: 0.98.0\nlane: lite\n---\n\n# ADR-0.98.0: Incomplete ADR\n\n## Status\n\nPending\n\n## Problem Statement\n\nSomething needs fixing.\n\n## Feature Checklist\n\n1. **Fix it**\n\n## OBPI Decomposition\n\n| # | OBPI | Lane |\n|---|------|------|\n| 01 | Fix | Lite |",
+        "obpi_count": 1
+      },
+      "expected_output": {
+        "verdict": "NO_GO",
+        "weighted_total_lt": 3.0,
+        "decision_justification_score": 1
+      }
+    },
+    {
+      "id": "adr-eval-edge-no-obpis",
+      "type": "edge_case",
+      "description": "ADR with no OBPI Decomposition — decomposition dimension scores 1.",
+      "input": {
+        "adr_content": "---\nid: ADR-0.97.0-no-obpis\nstatus: Pending\nsemver: 0.97.0\nlane: lite\n---\n\n# ADR-0.97.0: No OBPIs\n\n## Status\n\nPending\n\n## Problem Statement\n\nSomething needs fixing but no decomposition.\n\n**Before:** Broken.\n**After:** Fixed.\n**So what:** Users are blocked.\n\n## Decisions\n\n### Decision 1: Fix directly\n\nJust fix it.\n\n**Why:** Simplest path.\n\n## Feature Checklist\n\n1. **Fix it**",
+        "obpi_count": 0
+      },
+      "expected_output": {
+        "verdict": "NO_GO",
+        "obpi_decomposition_score": 1
+      }
+    }
+  ]
+}
