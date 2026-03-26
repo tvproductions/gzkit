@@ -16,33 +16,22 @@ from gzkit.pipeline_runtime import (
 
 def _find_orphan_receipts(plans_dir: Path) -> list[tuple[Path, str]]:
     """Find receipts with no matching pipeline marker or plan file."""
+    receipt_paths = sorted(plans_dir.glob(".plan-audit-receipt-*.json"))
+    legacy = plans_dir / ".plan-audit-receipt.json"
+    if legacy.exists():
+        receipt_paths.append(legacy)
+    plan_files = [p for p in plans_dir.glob("*.md") if p.is_file()]
     orphans: list[tuple[Path, str]] = []
-    for receipt_path in sorted(plans_dir.glob(".plan-audit-receipt-*.json")):
+    for receipt_path in receipt_paths:
         receipt = load_pipeline_json(receipt_path)
         if receipt is None:
             orphans.append((receipt_path, "unreadable"))
             continue
         obpi_id = str(receipt.get("obpi_id") or "unknown")
-        marker_path = plans_dir / f".pipeline-active-{obpi_id}.json"
-        has_marker = marker_path.exists()
-        plan_files = list(plans_dir.glob("*.md"))
-        has_plan = any(obpi_id in p.read_text(encoding="utf-8") for p in plan_files if p.is_file())
+        has_marker = (plans_dir / f".pipeline-active-{obpi_id}.json").exists()
+        has_plan = any(obpi_id in p.read_text(encoding="utf-8") for p in plan_files)
         if not has_marker and not has_plan:
             orphans.append((receipt_path, obpi_id))
-    # Also check legacy receipt
-    legacy = plans_dir / ".plan-audit-receipt.json"
-    if legacy.exists():
-        receipt = load_pipeline_json(legacy)
-        if receipt is not None:
-            obpi_id = str(receipt.get("obpi_id") or "unknown")
-            marker_path = plans_dir / f".pipeline-active-{obpi_id}.json"
-            has_marker = marker_path.exists()
-            plan_files = list(plans_dir.glob("*.md"))
-            has_plan = any(
-                obpi_id in p.read_text(encoding="utf-8") for p in plan_files if p.is_file()
-            )
-            if not has_marker and not has_plan:
-                orphans.append((legacy, obpi_id))
     return orphans
 
 
