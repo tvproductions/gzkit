@@ -117,7 +117,7 @@ def _extract_human_attestation(content: str) -> dict[str, str] | None:
         return None
     attestor_match = re.search(r"^- Attestor:\s*(.+)$", body, flags=re.MULTILINE)
     attestation_match = re.search(r"^- Attestation:\s*(.+)$", body, flags=re.MULTILINE)
-    date_match = re.search(r"^- Date:\s*(\d{4}-\d{2}-\d{2})$", body, flags=re.MULTILINE)
+    date_match = re.search(r"^- Date:\s*`?(\d{4}-\d{2}-\d{2})`?$", body, flags=re.MULTILINE)
     if not attestor_match or not attestation_match or not date_match:
         return None
     return {

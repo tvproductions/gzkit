@@ -56,7 +56,12 @@ class TestProgressStdout(unittest.TestCase):
         for mode in OutputMode:
             fmt = OutputFormatter(mode)
             stdout_capture = io.StringIO()
-            with patch("sys.stdout", stdout_capture), fmt.progress_context(2, "test") as ctx:
+            stderr_capture = io.StringIO()
+            with (
+                patch("sys.stdout", stdout_capture),
+                patch("sys.stderr", stderr_capture),
+                fmt.progress_context(2, "test") as ctx,
+            ):
                 ctx.advance("a")
                 ctx.advance("b")
             self.assertEqual(

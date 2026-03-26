@@ -293,7 +293,7 @@ def _run_pipeline_ceremony_stage(
         console.print("After receiving attestation, complete the pipeline with:")
         console.print(
             f"  uv run gz obpi pipeline {obpi_id} --from=sync "
-            "--attestor human:<name> --evidence-json '<json>'"
+            "--attestor <name> --evidence-json '<json>'"
         )
         console.print("")
         console.print(
@@ -494,8 +494,8 @@ def obpi_pipeline_cmd(
         if not attestor:
             raise GzCliError(
                 "--attestor is required for --from=sync. "
-                "Use --attestor human:<name> for attested OBPIs "
-                "or --attestor agent:<name> for self-closed OBPIs."
+                "Use --attestor <name> for attested OBPIs "
+                "or --attestor agent:<name> for agent-closed OBPIs."
             )
         if not evidence_json:
             raise GzCliError(
