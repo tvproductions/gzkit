@@ -403,10 +403,9 @@ def _validate_obpi_completed_required_fields(evidence: dict[str, Any]) -> None:
 
 def _validate_obpi_human_attestation_fields(evidence: dict[str, Any], attestor: str) -> None:
     """Validate heavy/foundation human-attestation evidence contract."""
-    if not attestor.lower().startswith("human:"):
-        raise GzCliError(
-            "Heavy/Foundation OBPI completion requires --attestor to use human:<name> format."
-        )
+    placeholder_names = {"n/a", "tbd", "todo", "none", "-", "...", ""}
+    if attestor.strip().lower() in placeholder_names:
+        raise GzCliError("Heavy/Foundation OBPI completion requires --attestor to be a real name.")
     if evidence.get("human_attestation") is not True:
         raise GzCliError(
             "Heavy/Foundation OBPI completion requires evidence.human_attestation=true."
