@@ -3,7 +3,7 @@ id: OBPI-0.0.5-02-add-offline-eval-harnesses-as-first-class-quality-checks
 parent: ADR-0.0.5-evaluation-infrastructure
 item: 2
 lane: lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.5-02: Offline Eval Harnesses
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.5-evaluation-infrastructure/ADR-0.0.5-evaluation-infrastructure.md`
 - **Checklist Item:** #2 - "Offline eval harnesses as first-class quality checks"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -105,56 +105,68 @@ python -c "from gzkit.eval.runner import run_eval_suite; print(run_eval_suite.__
 
 ## Acceptance Criteria
 
-- [ ] **REQ-0.0.5-02-01:** An eval runner in `src/gzkit/eval/runner.py` loads
+- [x] **REQ-0.0.5-02-01:** An eval runner in `src/gzkit/eval/runner.py` loads
   datasets by surface name, executes scoring, and returns typed `EvalSuiteScore`
   results.
-- [ ] **REQ-0.0.5-02-02:** `quality.py` exposes `run_eval()` that returns
+- [x] **REQ-0.0.5-02-02:** `quality.py` exposes `run_eval()` that returns
   `QualityResult` with structured eval output.
-- [ ] **REQ-0.0.5-02-03:** Scoring dimensions are defined per surface with
+- [x] **REQ-0.0.5-02-03:** Scoring dimensions are defined per surface with
   numeric (0-4) scores, matching the pattern in `adr_eval.py`.
-- [ ] **REQ-0.0.5-02-04:** Unit tests verify scoring logic against known-good
+- [x] **REQ-0.0.5-02-04:** Unit tests verify scoring logic against known-good
   and known-bad fixture inputs.
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 ## Evidence
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+Ran 13 tests in 0.008s — OK
+Coverage: 99% (scorer.py + runner.py)
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+uv run gz lint — All checks passed
+uv run gz typecheck — All checks passed
 ```
 
 ### Value Narrative
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+
+Reference datasets from OBPI-01 had no scoring engine to consume them. Now per-surface
+scorers evaluate fixture inputs structurally (0-4 per dimension), a runner aggregates
+results into typed EvalSuiteScore models, and quality.py exposes run_eval() for
+integration with the existing quality pipeline.
 
 ### Key Proof
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+```python
+from gzkit.eval.runner import run_eval_suite
+r = run_eval_suite()
+# 5 surfaces, overall=2.7/4.0, success=True
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created: src/gzkit/eval/scorer.py, src/gzkit/eval/runner.py, tests/eval/test_harness.py
+- Files modified: src/gzkit/quality.py (added run_eval())
+- Tests added: 13 (6 test classes — scoring, golden/edge, runner, quality integration, determinism)
+- Date completed: 2026-03-26
+- Attestation status: Human attested (Completed)
+- Defects noted: None
 
 ## Tracked Defects
 
@@ -162,12 +174,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a`
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: Jeff
+- Attestation: Completed — eval harnesses with per-surface scoring, runner, and quality.py integration.
+- Date: 2026-03-26
 
 ---
 
-**Brief Status:** Draft
-**Date Completed:** -
+**Brief Status:** Completed
+**Date Completed:** 2026-03-26
 **Evidence Hash:** -
