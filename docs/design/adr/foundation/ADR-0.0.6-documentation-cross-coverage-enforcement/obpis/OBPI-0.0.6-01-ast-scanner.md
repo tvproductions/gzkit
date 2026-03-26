@@ -3,7 +3,7 @@ id: OBPI-0.0.6-01-ast-scanner
 parent: ADR-0.0.6-documentation-cross-coverage-enforcement
 item: 1
 lane: heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.6-01: AST Scanner
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.6-documentation-cross-coverage-enforcement/ADR-0.0.6-documentation-cross-coverage-enforcement.md`
 - **Checklist Item:** #1 - "AST Scanner -- Discover CLI commands and verify documentation surfaces"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -127,68 +127,78 @@ uv run gz cli audit
 
 ## Acceptance Criteria
 
-- [ ] **REQ-0.0.6-01-01:** An AST scanner module discovers all CLI subcommands
+- [x] **REQ-0.0.6-01-01:** An AST scanner module discovers all CLI subcommands
   from `cli/main.py` without executing the code.
-- [ ] **REQ-0.0.6-01-02:** The scanner checks all 6 documentation surfaces per
+- [x] **REQ-0.0.6-01-02:** The scanner checks all 6 documentation surfaces per
   command and produces a typed `CoverageReport`.
-- [ ] **REQ-0.0.6-01-03:** Orphaned documentation (manpages for removed commands)
+- [x] **REQ-0.0.6-01-03:** Orphaned documentation (manpages for removed commands)
   is detected and reported.
-- [ ] **REQ-0.0.6-01-04:** `gz cli audit` output includes the new cross-coverage
+- [x] **REQ-0.0.6-01-04:** `gz cli audit` output includes the new cross-coverage
   checks.
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Gate 3 (Docs):** Docs build, cli-audit manpage updated
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Gate 3 (Docs):** Docs build, cli-audit manpage updated
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 ## Evidence
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+Ran 30 tests in 1.211s — OK
+Coverage: 86% (threshold: 40%)
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+Lint: All checks passed
+Typecheck: All checks passed
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here
+mkdocs build --strict: Documentation built in 0.85 seconds
+docs/user/commands/cli-audit.md updated with Cross-Coverage section
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here
+Attestation: "attest completed" — 2026-03-26
 ```
 
 ### Value Narrative
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+
+Before this OBPI, `gz cli audit` only checked COMMAND_DOCS entries against file existence — a manually maintained dict that drifted from reality. Four QC commands were merged without runbook or manpage coverage, caught only by manual audit. Now an AST-driven scanner discovers all 51 CLI subcommands directly from source and verifies six documentation surfaces per command, detecting both gaps and orphaned documentation automatically.
 
 ### Key Proof
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+```bash
+$ uv run python -c "from gzkit.doc_coverage.scanner import scan_cli_commands; print(len(scan_cli_commands()))"
+51
+$ uv run python -c "from gzkit.doc_coverage.scanner import check_surfaces_report; r = check_surfaces_report(); print(f'{r.commands_discovered} commands, {r.commands_fully_covered} covered')"
+51 commands, 15 covered
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created/modified: src/gzkit/doc_coverage/{__init__,models,scanner}.py, src/gzkit/commands/cli_audit.py, docs/user/commands/cli-audit.md
+- Tests added: tests/test_doc_coverage.py (25 tests), tests/commands/test_cli_audit.py (5 tests)
+- Date completed: 2026-03-26
+- Attestation status: Human attested
+- Defects noted: None
 
 ## Tracked Defects
 
@@ -196,12 +206,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor:
-- Attestation:
-- Date:
+- Attestor: jeff
+- Attestation: attest completed
+- Date: 2026-03-26
 
 ---
 
-**Brief Status:** Draft
-**Date Completed:** -
+**Brief Status:** Completed
+**Date Completed:** 2026-03-26
 **Evidence Hash:** -
