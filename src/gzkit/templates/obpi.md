@@ -211,7 +211,7 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `human:<name>` when required, otherwise `n/a`
+- Attestor: `<name>` when required, otherwise `n/a`
 - Attestation: substantive attestation text or `n/a`
 - Date: YYYY-MM-DD or `n/a`
 

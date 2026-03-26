@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.4-cli-standards-presentation-foundation
-status: Draft
+status: Completed
 semver: 0.0.4
 lane: heavy
 parent:
@@ -159,4 +159,4 @@ OBPI-10 (consistency tests) ── last, validates everything
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.4 | Pending | | | |
+| 0.0.4 | Completed | Jeff | 2026-03-25 | completed |

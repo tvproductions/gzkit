@@ -312,7 +312,7 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertIn("Stage 4: Ceremony", result.output)
             self.assertIn("Human attestation required.", result.output)
             self.assertIn("--from=sync", result.output)
-            self.assertIn("--attestor human:<name>", result.output)
+            self.assertIn("--attestor <name>", result.output)
             marker_path, legacy_path = self._pipeline_paths(Path.cwd())
             self.assertTrue(marker_path.exists())
             self.assertTrue(legacy_path.exists())
@@ -400,7 +400,7 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             self.assertIn("Human attestation required.", result.output)
             self.assertIn("--from=sync", result.output)
-            self.assertIn("--attestor human:<name>", result.output)
+            self.assertIn("--attestor <name>", result.output)
             marker_path, legacy_path = self._pipeline_paths(
                 Path.cwd(), "OBPI-0.0.5-01-runtime-command-contract"
             )

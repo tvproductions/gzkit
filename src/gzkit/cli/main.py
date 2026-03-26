@@ -704,7 +704,7 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p_obpi_pipeline.add_argument(
         "--attestor",
-        help="Attestor identity for Stage 5 (e.g. human:<name> or agent:<name>)",
+        help="Attestor identity for Stage 5 (e.g. jeff or agent:<name>)",
     )
     p_obpi_pipeline.add_argument(
         "--evidence-json",

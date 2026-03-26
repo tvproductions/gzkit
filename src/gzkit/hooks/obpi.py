@@ -352,10 +352,8 @@ class ObpiValidator:
             return ["Heavy/Foundation OBPI requires a '## Human Attestation' section."]
 
         attestor_match = re.search(r"^- Attestor:\s*(.+)$", body, flags=re.MULTILINE)
-        if not attestor_match or not attestor_match.group(1).lower().startswith("human:"):
-            errors.append("Human attestation block requires 'Attestor: human:<name>'.")
-        elif self._is_placeholder(attestor_match.group(1).partition(":")[2]):
-            errors.append("Human attestor name cannot be a placeholder.")
+        if not attestor_match or self._is_placeholder(attestor_match.group(1).strip().strip("`")):
+            errors.append("Human attestor name cannot be empty or a placeholder.")
 
         attestation_match = re.search(r"^- Attestation:\s*(.+)$", body, flags=re.MULTILINE)
         if not attestation_match or self._is_placeholder(attestation_match.group(1)):

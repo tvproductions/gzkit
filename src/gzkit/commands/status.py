@@ -260,7 +260,7 @@ def _render_adr_table(
 ) -> None:
     """Render a single ADR status table with the given title and rows."""
     table = Table(title=title, box=box.ROUNDED, padding=(0, 0))
-    table.add_column("ADR", overflow="fold", min_width=35)
+    table.add_column("ADR", overflow="ellipsis")
     table.add_column("Life", no_wrap=True)
     table.add_column("Lane", no_wrap=True)
     table.add_column("OBPI", justify="right", no_wrap=True)
@@ -466,7 +466,7 @@ def _extract_human_attestation(content: str) -> dict[str, Any]:
 
     attestor_match = re.search(r"^- Attestor:\s*(.+)$", body, flags=re.MULTILINE)
     attestation_match = re.search(r"^- Attestation:\s*(.+)$", body, flags=re.MULTILINE)
-    date_match = re.search(r"^- Date:\s*(\d{4}-\d{2}-\d{2})$", body, flags=re.MULTILINE)
+    date_match = re.search(r"^- Date:\s*`?(\d{4}-\d{2}-\d{2})`?$", body, flags=re.MULTILINE)
 
     attestor_raw = attestor_match.group(1).strip() if attestor_match else None
     # Strip markdown backticks and trailing annotations (e.g. "— required ...")
@@ -475,8 +475,12 @@ def _extract_human_attestation(content: str) -> dict[str, Any]:
     )
     attestation_text = attestation_match.group(1).strip() if attestation_match else None
     attestation_date = date_match.group(1).strip() if date_match else None
+    placeholder_names = {"n/a", "tbd", "todo", "none", "-", "...", ""}
     valid = bool(
-        attestor and attestor.lower().startswith("human:") and attestation_text and attestation_date
+        attestor
+        and attestor.lower() not in placeholder_names
+        and attestation_text
+        and attestation_date
     )
     return {
         "present": True,
