@@ -34,14 +34,17 @@ class TestPipelineBaselineVerification(unittest.TestCase):
             "## Verification\n\n"
             "```bash\n"
             "uv run gz lint\n"
+            "uv run gz typecheck\n"
             "uv run gz test\n"
             "uv run gz validate --documents\n"
             "```\n"
         )
         result = _pipeline_verification_commands(brief, "lite")
         lint_count = result.count("uv run gz lint")
+        typecheck_count = result.count("uv run gz typecheck")
         test_count = result.count("uv run gz test")
         self.assertEqual(lint_count, 1)
+        self.assertEqual(typecheck_count, 1)
         self.assertEqual(test_count, 1)
 
     def test_heavy_lane_extras_append_after_brief_commands(self) -> None:
