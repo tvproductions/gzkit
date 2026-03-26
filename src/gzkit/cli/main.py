@@ -64,6 +64,7 @@ from gzkit.commands.interview_cmd import interview
 from gzkit.commands.obpi_cmd import obpi_emit_receipt_cmd, obpi_pipeline_cmd, obpi_validate_cmd
 from gzkit.commands.parity import parity_check_cmd
 from gzkit.commands.plan import plan_cmd
+from gzkit.commands.preflight import preflight_cmd
 from gzkit.commands.quality import check, format_cmd, lint, test, typecheck
 from gzkit.commands.readiness import readiness_audit_cmd, readiness_eval_cmd
 from gzkit.commands.register import migrate_semver, register_adrs
@@ -786,6 +787,26 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     add_json_flag(p_check_paths)
     p_check_paths.set_defaults(func=lambda a: check_config_paths_cmd(as_json=a.as_json))
+
+    p_preflight = commands.add_parser(
+        "preflight",
+        help="Scan for stale pipeline artifacts",
+        description="Detect and clean stale markers, orphan receipts, and expired locks.",
+        epilog=build_epilog(
+            [
+                "gz preflight",
+                "gz preflight --apply",
+                "gz preflight --json",
+            ]
+        ),
+    )
+    p_preflight.add_argument(
+        "--apply",
+        action="store_true",
+        help="Remove stale artifacts (default: dry-run report only)",
+    )
+    add_json_flag(p_preflight)
+    p_preflight.set_defaults(func=lambda a: preflight_cmd(apply=a.apply, as_json=a.as_json))
 
     p_cli = commands.add_parser(
         "cli",

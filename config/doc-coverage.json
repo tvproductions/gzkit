@@ -321,6 +321,17 @@
       },
       "governance_relevant": true
     },
+    "preflight": {
+      "surfaces": {
+        "manpage": false,
+        "index_entry": false,
+        "operator_runbook": false,
+        "governance_runbook": false,
+        "docstring": true,
+        "command_docs_mapping": false
+      },
+      "governance_relevant": false
+    },
     "cli audit": {
       "surfaces": {
         "manpage": true,
