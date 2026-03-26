@@ -50,6 +50,7 @@ from gzkit.commands.common import (
 )
 from gzkit.commands.config_paths import check_config_paths_cmd
 from gzkit.commands.gates import (
+    _run_eval_delta,  # noqa: F401 — test-mock compat
     _run_gate_1,  # noqa: F401 — test-mock compat
     _run_gate_2,  # noqa: F401 — test-mock compat
     _run_gate_3,  # noqa: F401 — test-mock compat
