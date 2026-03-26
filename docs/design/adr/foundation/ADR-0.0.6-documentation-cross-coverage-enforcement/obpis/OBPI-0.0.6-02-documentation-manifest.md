@@ -3,7 +3,7 @@ id: OBPI-0.0.6-02-documentation-manifest
 parent: ADR-0.0.6-documentation-cross-coverage-enforcement
 item: 2
 lane: lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.6-02: Documentation Manifest
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.6-documentation-cross-coverage-enforcement/ADR-0.0.6-documentation-cross-coverage-enforcement.md`
 - **Checklist Item:** #2 - "Documentation Manifest -- Declare per-command documentation obligations"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -109,55 +109,75 @@ uv run -m unittest tests/test_doc_coverage.py -v -k manifest
 
 ## Acceptance Criteria
 
-- [ ] **REQ-0.0.6-02-01:** `config/doc-coverage.json` exists with an entry for
+- [x] **REQ-0.0.6-02-01:** `config/doc-coverage.json` exists with an entry for
   every current CLI command.
-- [ ] **REQ-0.0.6-02-02:** A JSON schema in `data/schemas/` validates the
+- [x] **REQ-0.0.6-02-02:** A JSON schema in `data/schemas/` validates the
   manifest structure.
-- [ ] **REQ-0.0.6-02-03:** A Pydantic loader in `src/gzkit/doc_coverage/`
+- [x] **REQ-0.0.6-02-03:** A Pydantic loader in `src/gzkit/doc_coverage/`
   deserializes the manifest into typed, immutable models.
-- [ ] **REQ-0.0.6-02-04:** Each entry declares required surfaces and a
+- [x] **REQ-0.0.6-02-04:** Each entry declares required surfaces and a
   `governance_relevant` flag.
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 ## Evidence
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded in brief and parent ADR checklist item #2
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+Ran 47 tests in 0.218s — OK (13 manifest-specific)
+Coverage: 90% on src/gzkit/doc_coverage/*
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+uv run gz lint — All checks passed
+uv run gz typecheck — All checks passed
+uv run gz test — 1605 tests OK
 ```
 
 ### Value Narrative
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+
+Before this OBPI, documentation obligations per CLI command were implicit — scattered
+across scanner logic, the COMMAND_DOCS dict, and individual chores. When new commands
+were added, there was no single source declaring which surfaces were required. Now,
+`config/doc-coverage.json` is an explicit, schema-validated manifest declaring all 6
+documentation surfaces and a governance_relevant flag for every CLI command, loadable
+as immutable Pydantic models.
 
 ### Key Proof
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+```bash
+uv run python3 -c "
+from gzkit.doc_coverage.manifest import load_manifest, find_undeclared_commands
+from gzkit.doc_coverage.scanner import scan_cli_commands
+m = load_manifest(); cmds = scan_cli_commands()
+print(f'{len(m.commands)} declared, {len(cmds)} discovered, '
+      f'{len(find_undeclared_commands(m, {c.name for c in cmds}))} undeclared')
+"
+# Output: 51 declared, 51 discovered, 0 undeclared
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created: `config/doc-coverage.json`, `data/schemas/doc_coverage_manifest.schema.json`, `src/gzkit/doc_coverage/manifest.py`
+- Files modified: `src/gzkit/doc_coverage/__init__.py`, `tests/test_doc_coverage.py`
+- Tests added: 30 new tests (4 classes: ManifestModels, LoadManifest, FindUndeclaredCommands, ManifestIntegration)
+- Date completed: 2026-03-26
+- Attestation status: Human attested
+- Defects noted: None
 
 ## Tracked Defects
 
@@ -165,12 +185,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a`
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `jeff`
+- Attestation: `attest completed`
+- Date: `2026-03-26`
 
 ---
 
-**Brief Status:** Draft
-**Date Completed:** -
+**Brief Status:** Completed
+**Date Completed:** 2026-03-26
 **Evidence Hash:** -

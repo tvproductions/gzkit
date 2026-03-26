@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Documentation Coverage Manifest",
+  "description": "Per-command documentation obligation manifest. Declares which of the six documentation surfaces are required for each CLI command and whether the command is governance-relevant.",
+  "type": "object",
+  "required": ["version", "description", "commands"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Manifest version (semver)"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of the manifest"
+    },
+    "commands": {
+      "type": "object",
+      "description": "Per-command documentation obligations. Keys are command names as discovered by the AST scanner (e.g. 'init', 'adr status').",
+      "additionalProperties": {
+        "$ref": "#/$defs/commandEntry"
+      },
+      "minProperties": 1
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "commandEntry": {
+      "type": "object",
+      "required": ["surfaces", "governance_relevant"],
+      "properties": {
+        "surfaces": {
+          "$ref": "#/$defs/surfaceRequirements"
+        },
+        "governance_relevant": {
+          "type": "boolean",
+          "description": "When true, the governance runbook surface is checked during documentation coverage scans."
+        }
+      },
+      "additionalProperties": false
+    },
+    "surfaceRequirements": {
+      "type": "object",
+      "required": [
+        "manpage",
+        "index_entry",
+        "operator_runbook",
+        "governance_runbook",
+        "docstring",
+        "command_docs_mapping"
+      ],
+      "properties": {
+        "manpage": {
+          "type": "boolean",
+          "description": "Requires a docs/user/commands/{slug}.md file"
+        },
+        "index_entry": {
+          "type": "boolean",
+          "description": "Requires an entry in docs/user/commands/index.md"
+        },
+        "operator_runbook": {
+          "type": "boolean",
+          "description": "Requires a reference in docs/user/runbook.md"
+        },
+        "governance_runbook": {
+          "type": "boolean",
+          "description": "Requires a reference in docs/governance/governance_runbook.md"
+        },
+        "docstring": {
+          "type": "boolean",
+          "description": "Requires a docstring on the command handler function"
+        },
+        "command_docs_mapping": {
+          "type": "boolean",
+          "description": "Requires an entry in COMMAND_DOCS (common.py)"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
