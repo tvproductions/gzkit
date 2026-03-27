@@ -49,6 +49,7 @@ COMMAND_DOCS: dict[str, str] = {
     "register-adrs": "docs/user/commands/register-adrs.md",
     "skill audit": "docs/user/commands/skill-audit.md",
     "closeout": "docs/user/commands/closeout.md",
+    "covers": "docs/user/commands/covers.md",
     "drift": "docs/user/commands/drift.md",
     "audit": "docs/user/commands/audit.md",
     "check-config-paths": "docs/user/commands/check-config-paths.md",
