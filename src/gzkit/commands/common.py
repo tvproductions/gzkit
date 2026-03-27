@@ -72,6 +72,19 @@ COMMAND_DOCS: dict[str, str] = {
     "chores run": "docs/user/commands/chores-run.md",
     "chores audit": "docs/user/commands/chores-audit.md",
     "agent sync control-surfaces": "docs/user/commands/agent-sync-control-surfaces.md",
+    "adr report": "docs/user/commands/adr-report.md",
+    "check": "docs/user/commands/check.md",
+    "chores advise": "docs/user/commands/chores-advise.md",
+    "chores show": "docs/user/commands/chores-show.md",
+    "format": "docs/user/commands/format.md",
+    "interview": "docs/user/commands/interview.md",
+    "lint": "docs/user/commands/lint.md",
+    "skill list": "docs/user/commands/skill-list.md",
+    "skill new": "docs/user/commands/skill-new.md",
+    "test": "docs/user/commands/test.md",
+    "tidy": "docs/user/commands/tidy.md",
+    "typecheck": "docs/user/commands/typecheck.md",
+    "validate": "docs/user/commands/validate.md",
 }
 
 ADR_SEMVER_ID_RE = re.compile(r"^ADR-\d+\.\d+\.\d+(?:[.-][A-Za-z0-9][A-Za-z0-9.-]*)?$")
