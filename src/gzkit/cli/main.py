@@ -63,7 +63,12 @@ from gzkit.commands.gates import (
 )
 from gzkit.commands.init_cmd import constitute, init, prd
 from gzkit.commands.interview_cmd import interview
-from gzkit.commands.obpi_cmd import obpi_emit_receipt_cmd, obpi_pipeline_cmd, obpi_validate_cmd
+from gzkit.commands.obpi_cmd import (
+    obpi_emit_receipt_cmd,
+    obpi_pipeline_cmd,
+    obpi_validate_cmd,
+    obpi_withdraw_cmd,
+)
 from gzkit.commands.parity import parity_check_cmd
 from gzkit.commands.plan import plan_cmd
 from gzkit.commands.preflight import preflight_cmd
@@ -774,6 +779,27 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p_obpi_validate.set_defaults(
         func=lambda a: obpi_validate_cmd(obpi_path=a.obpi_path, adr_id=a.adr_id)
+    )
+
+    p_obpi_withdraw = obpi_commands.add_parser(
+        "withdraw",
+        help="Withdraw a phantom or erroneous OBPI from the ledger",
+        description=(
+            "Record an obpi_withdrawn event. The OBPI remains in the"
+            " ledger but is excluded from counts."
+        ),
+        epilog=build_epilog(
+            [
+                'gz obpi withdraw OBPI-0.21.0-01 --reason "phantom entry from promotion"',
+                'gz obpi withdraw OBPI-0.21.0-01 --reason "duplicate" --dry-run',
+            ]
+        ),
+    )
+    p_obpi_withdraw.add_argument("obpi", help="OBPI identifier (e.g. OBPI-0.21.0-01)")
+    p_obpi_withdraw.add_argument("--reason", required=True, help="Reason for withdrawal")
+    add_dry_run_flag(p_obpi_withdraw)
+    p_obpi_withdraw.set_defaults(
+        func=lambda a: obpi_withdraw_cmd(obpi=a.obpi, reason=a.reason, dry_run=a.dry_run)
     )
 
     p_check_paths = commands.add_parser(

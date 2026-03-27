@@ -3,6 +3,7 @@
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 
 from gzkit.ledger import (
     Ledger,
@@ -19,6 +20,7 @@ from gzkit.ledger import (
     normalize_req_proof_inputs,
     obpi_created_event,
     obpi_receipt_emitted_event,
+    obpi_withdrawn_event,
     prd_created_event,
     project_init_event,
 )
@@ -115,6 +117,14 @@ class TestEventFactories(unittest.TestCase):
         self.assertEqual(event.event, "obpi_created")
         self.assertEqual(event.id, "OBPI-core")
         self.assertEqual(event.parent, "ADR-0.1.0")
+
+    def test_obpi_withdrawn_event(self) -> None:
+        """obpi_withdrawn_event creates correct event with parent and reason."""
+        event = obpi_withdrawn_event("OBPI-0.21.0-01", "ADR-0.21.0", "phantom entry")
+        self.assertEqual(event.event, "obpi_withdrawn")
+        self.assertEqual(event.id, "OBPI-0.21.0-01")
+        self.assertEqual(event.parent, "ADR-0.21.0")
+        self.assertEqual(event.extra["reason"], "phantom entry")
 
     def test_adr_created_event(self) -> None:
         """adr_created_event creates correct event with parent and lane."""
@@ -363,6 +373,35 @@ class TestLedger(unittest.TestCase):
             obpi = graph["OBPI-0.6.0-01-demo"]
             self.assertEqual(obpi["latest_receipt_event"], "validated")
             self.assertTrue(obpi["validated"])
+
+    def test_get_artifact_graph_marks_withdrawn_obpi(self) -> None:
+        """Withdrawn OBPIs are marked withdrawn=True in the graph."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ledger_path = Path(tmpdir) / "ledger.jsonl"
+            ledger = Ledger(ledger_path)
+
+            ledger.append(adr_created_event("ADR-0.21.0", "", "heavy"))
+            ledger.append(obpi_created_event("OBPI-0.21.0-01", "ADR-0.21.0"))
+            ledger.append(obpi_created_event("OBPI-0.21.0-02", "ADR-0.21.0"))
+            ledger.append(obpi_withdrawn_event("OBPI-0.21.0-01", "ADR-0.21.0", "phantom"))
+
+            graph = ledger.get_artifact_graph()
+            self.assertTrue(graph["OBPI-0.21.0-01"]["withdrawn"])
+            self.assertEqual(graph["OBPI-0.21.0-01"]["withdrawn_reason"], "phantom")
+            self.assertFalse(graph["OBPI-0.21.0-02"]["withdrawn"])
+
+    def test_derive_obpi_semantics_withdrawn_returns_withdrawn_state(self) -> None:
+        """Withdrawn OBPIs return runtime_state='withdrawn' and completed=False."""
+        info: dict[str, Any] = {"withdrawn": True, "type": "obpi"}
+        semantics = derive_obpi_semantics(
+            info,
+            found_file=False,
+            file_completed=False,
+            implementation_evidence_ok=False,
+            key_proof_ok=False,
+        )
+        self.assertEqual(semantics["runtime_state"], "withdrawn")
+        self.assertFalse(semantics["completed"])
 
     def test_derive_adr_semantics_maps_lifecycle_and_terms(self) -> None:
         """Derived semantics map attestation and receipts to canonical lifecycle fields."""

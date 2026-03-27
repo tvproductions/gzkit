@@ -1,0 +1,43 @@
+$ uv run mkdocs build --strict
+
+[returncode] 0
+
+[stdout]
+
+
+[stderr]
+INFO    -  Cleaning site directory
+INFO    -  Building documentation to directory: /Users/jeff/Documents/Code/gzkit/site
+INFO    -  The following pages exist in the docs directory, but are not included in the "nav" configuration:
+  - AGENTS.md
+  - examples/presentations/index.md
+  - examples/presentations/complete-series-script.md
+  - examples/presentations/part1-script.md
+  - examples/presentations/part2-script.md
+  - examples/presentations/part3-script.md
+  - examples/presentations/part4-script.md
+  - examples/presentations/part5-script.md
+  - examples/presentations/part6-script.md
+  - examples/templates/req-template.md
+  - governance/GovZero/obpi-pipeline-runbook.md
+  - superpowers/plans/2026-03-26-pipeline-reliability-improvements.md
+  - superpowers/specs/2026-03-26-pipeline-reliability-improvements-design.md
+  - user/commands/adr-evaluate.md
+  - user/commands/adr-report.md
+  - user/commands/check.md
+  - user/commands/chores-advise.md
+  - user/commands/chores-show.md
+  - user/commands/drift.md
+  - user/commands/format.md
+  - user/commands/interview.md
+  - user/commands/lint.md
+  - user/commands/readiness-evaluate.md
+  - user/commands/roles.md
+  - user/commands/skill-list.md
+  - user/commands/skill-new.md
+  - user/commands/test.md
+  - user/commands/tidy.md
+  - user/commands/typecheck.md
+  - user/commands/validate.md
+  - user/concepts/subagent-pipeline.md
+INFO    -  Documentation built in 1.04 seconds
