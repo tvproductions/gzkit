@@ -4,6 +4,7 @@
 @covers OBPI-0.20.0-01-req-entity-and-triangle-data-model
 @covers OBPI-0.20.0-02-brief-req-extraction
 @covers OBPI-0.20.0-03-drift-detection-engine
+@covers OBPI-0.20.0-05-advisory-gate-integration
 """
 
 from __future__ import annotations
@@ -1125,6 +1126,140 @@ class TestDriftHelpText(unittest.TestCase):
                 80,
                 f"Help line too long ({len(line)} chars): {line!r}",
             )
+
+
+class TestDriftAdvisoryResult(unittest.TestCase):
+    """@covers REQ-0.20.0-05-01
+    @covers REQ-0.20.0-05-02
+    @covers REQ-0.20.0-05-03
+    @covers REQ-0.20.0-05-04
+    @covers REQ-0.20.0-05-05
+    """
+
+    def test_advisory_result_with_drift(self) -> None:
+        """REQ-0.20.0-05-01: Advisory result captures drift findings."""
+        from gzkit.quality import DriftAdvisoryResult
+
+        result = DriftAdvisoryResult(
+            has_drift=True,
+            unlinked_specs=["REQ-0.1.0-01-01"],
+            orphan_tests=[],
+            unjustified_code_changes=[],
+            total_drift_count=1,
+            scan_timestamp="2026-03-27T00:00:00Z",
+        )
+        self.assertTrue(result.advisory)
+        self.assertTrue(result.has_drift)
+        self.assertEqual(result.total_drift_count, 1)
+
+    def test_advisory_result_no_drift(self) -> None:
+        """REQ-0.20.0-05-03: No drift section when no findings."""
+        from gzkit.quality import DriftAdvisoryResult
+
+        result = DriftAdvisoryResult(
+            has_drift=False,
+            unlinked_specs=[],
+            orphan_tests=[],
+            unjustified_code_changes=[],
+            total_drift_count=0,
+            scan_timestamp="2026-03-27T00:00:00Z",
+        )
+        self.assertFalse(result.has_drift)
+        self.assertEqual(result.total_drift_count, 0)
+
+    def test_advisory_flag_always_true(self) -> None:
+        """REQ-0.20.0-05-02: Advisory flag is always true (drift never blocks)."""
+        from gzkit.quality import DriftAdvisoryResult
+
+        result = DriftAdvisoryResult(
+            has_drift=True,
+            unlinked_specs=["REQ-0.1.0-01-01"],
+            orphan_tests=["REQ-99.0.0-01-01"],
+            unjustified_code_changes=["src/gzkit/foo.py"],
+            total_drift_count=3,
+            scan_timestamp="2026-03-27T00:00:00Z",
+        )
+        self.assertTrue(result.advisory)
+
+    def test_to_dict_includes_advisory_flag(self) -> None:
+        """REQ-0.20.0-05-04: JSON output includes advisory: true."""
+        from gzkit.quality import DriftAdvisoryResult
+
+        result = DriftAdvisoryResult(
+            has_drift=True,
+            unlinked_specs=["REQ-0.1.0-01-01"],
+            orphan_tests=[],
+            unjustified_code_changes=[],
+            total_drift_count=1,
+            scan_timestamp="2026-03-27T00:00:00Z",
+        )
+        d = result.to_dict()
+        self.assertTrue(d["advisory"])
+        self.assertTrue(d["has_drift"])
+        self.assertEqual(d["total_drift_count"], 1)
+        self.assertIn("unlinked_specs", d)
+
+    def test_check_result_includes_drift(self) -> None:
+        """REQ-0.20.0-05-04: CheckResult includes drift in to_dict."""
+        from gzkit.quality import CheckResult, DriftAdvisoryResult, QualityResult
+
+        qr = QualityResult(success=True, command="test", stdout="", stderr="", returncode=0)
+        drift = DriftAdvisoryResult(
+            has_drift=False,
+            unlinked_specs=[],
+            orphan_tests=[],
+            unjustified_code_changes=[],
+            total_drift_count=0,
+            scan_timestamp="2026-03-27T00:00:00Z",
+        )
+        cr = CheckResult(
+            success=True,
+            lint=qr,
+            format=qr,
+            typecheck=qr,
+            test=qr,
+            skill_audit=qr,
+            parity_check=qr,
+            readiness_audit=qr,
+            drift=drift,
+        )
+        d = cr.to_dict()
+        self.assertIn("drift", d)
+        self.assertTrue(d["drift"]["advisory"])
+
+    def test_check_result_without_drift(self) -> None:
+        """CheckResult to_dict works when drift is None (backward compat)."""
+        from gzkit.quality import CheckResult, QualityResult
+
+        qr = QualityResult(success=True, command="test", stdout="", stderr="", returncode=0)
+        cr = CheckResult(
+            success=True,
+            lint=qr,
+            format=qr,
+            typecheck=qr,
+            test=qr,
+            skill_audit=qr,
+            parity_check=qr,
+            readiness_audit=qr,
+        )
+        d = cr.to_dict()
+        self.assertNotIn("drift", d)
+
+    def test_advisory_labels_unjustified_as_advisory(self) -> None:
+        """REQ-0.20.0-05-05: Unjustified code changes are labeled advisory."""
+        from gzkit.quality import DriftAdvisoryResult
+
+        result = DriftAdvisoryResult(
+            has_drift=True,
+            unlinked_specs=[],
+            orphan_tests=[],
+            unjustified_code_changes=["src/gzkit/foo.py"],
+            total_drift_count=1,
+            scan_timestamp="2026-03-27T00:00:00Z",
+        )
+        d = result.to_dict()
+        self.assertTrue(d["advisory"])
+        self.assertEqual(d["unjustified_code_changes"], ["src/gzkit/foo.py"])
 
 
 if __name__ == "__main__":
