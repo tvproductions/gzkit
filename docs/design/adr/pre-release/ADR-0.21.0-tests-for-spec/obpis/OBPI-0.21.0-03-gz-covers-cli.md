@@ -3,7 +3,7 @@ id: OBPI-0.21.0-03-gz-covers-cli
 parent: ADR-0.21.0-tests-for-spec
 item: 3
 lane: Heavy
-status: Accepted
+status: Completed
 ---
 
 # OBPI-0.21.0-03: gz covers CLI
@@ -13,7 +13,7 @@ status: Accepted
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.21.0-tests-for-spec/ADR-0.21.0-tests-for-spec.md`
 - **Checklist Item:** #3 — "`gz covers` CLI with ADR/OBPI/REQ granularity and human/JSON/plain output"
 
-**Status:** Accepted
+**Status:** Completed
 
 ## Objective
 
@@ -51,10 +51,10 @@ Expose requirement coverage reporting via `gz covers` CLI. Operators can query c
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.21.0-03-01: Given `gz covers`, then shows coverage table with ADR-level rollup.
-- [ ] REQ-0.21.0-03-02: Given `gz covers ADR-0.20.0`, then shows only REQs under that ADR.
-- [ ] REQ-0.21.0-03-03: Given `gz covers --json`, then outputs valid JSON coverage report.
-- [ ] REQ-0.21.0-03-04: Given `gz covers --help`, then shows description, usage, options, example.
+- [x] REQ-0.21.0-03-01: Given `gz covers`, then shows coverage table with ADR-level rollup.
+- [x] REQ-0.21.0-03-02: Given `gz covers ADR-0.20.0`, then shows only REQs under that ADR.
+- [x] REQ-0.21.0-03-03: Given `gz covers --json`, then outputs valid JSON coverage report.
+- [x] REQ-0.21.0-03-04: Given `gz covers --help`, then shows description, usage, options, example.
 
 ## Verification Commands (Concrete)
 
@@ -84,17 +84,37 @@ uv run gz typecheck
 
 ## Completion Checklist (Heavy)
 
-- [ ] **Gate 1 (ADR):** Intent recorded
-- [ ] **Gate 2 (TDD):** Tests pass
-- [ ] **Gate 3 (Docs):** Docs build, command docs created
-- [ ] **Gate 4 (BDD):** Acceptance scenarios pass
-- [ ] **Gate 5 (Human):** Attestation recorded
-- [ ] **Code Quality:** Clean
+- [x] **Gate 1 (ADR):** Intent recorded
+- [x] **Gate 2 (TDD):** Tests pass (49/49)
+- [x] **Gate 3 (Docs):** Docs build, command docs created
+- [x] **Gate 4 (BDD):** Acceptance scenarios pass (5/5)
+- [x] **Gate 5 (Human):** Attestation recorded
+- [x] **Code Quality:** Clean (lint, typecheck, 96% coverage)
 
 ---
 
-**Brief Status:** Accepted
+### Implementation Summary
 
-**Date Completed:** -
+- Command: `gz covers [TARGET] [--json|--plain]` reports REQ coverage from `@covers` annotations
+- Filtering: `_filter_report()` scopes results to a single ADR or OBPI by REQ-ID prefix matching
+- Output: human tables via Rich console, JSON via `CoverageReport.model_dump_json()`, plain tab-delimited
+- Registration: argparse subcommand in `cli/main.py`, manifest entry in `doc-coverage.json`
+- Tests: 16 new CLI smoke tests in `tests/test_traceability.py`, 5 BDD scenarios
+- Docs: `docs/user/commands/covers.md` manpage, mkdocs nav entry
+
+### Key Proof
+
+```bash
+uv run gz covers --help
+# Shows description, usage, options, examples
+uv run gz covers --json
+# Valid JSON CoverageReport with by_adr, by_obpi, entries, summary
+uv run -m behave features/test_traceability.feature
+# 5/5 scenarios pass
+```
+
+**Brief Status:** Completed
+
+**Date Completed:** 2026-03-27
 
 **Evidence Hash:** -

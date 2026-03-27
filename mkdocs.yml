@@ -85,6 +85,7 @@ nav:
     - gz adr audit-check: user/commands/adr-audit-check.md
     - gz adr covers-check: user/commands/adr-covers-check.md
     - gz adr emit-receipt: user/commands/adr-emit-receipt.md
+    - gz covers: user/commands/covers.md
     - gz obpi status: user/commands/obpi-status.md
     - gz obpi pipeline: user/commands/obpi-pipeline.md
     - gz obpi validate: user/commands/obpi-validate.md

@@ -49,6 +49,7 @@ from gzkit.commands.common import (
     resolve_target_adr,  # noqa: F401 — test-mock compat
 )
 from gzkit.commands.config_paths import check_config_paths_cmd
+from gzkit.commands.covers import covers_cmd  # noqa: F401 — used in _build_parser
 from gzkit.commands.drift import drift_cmd  # noqa: F401 — used in _build_parser
 from gzkit.commands.gates import (
     _run_eval_delta,  # noqa: F401 — test-mock compat
@@ -1324,6 +1325,54 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p_drift.set_defaults(
         func=lambda a: drift_cmd(
+            as_json=a.as_json,
+            plain=a.plain,
+            adr_dir=a.adr_dir,
+            test_dir=a.test_dir,
+        )
+    )
+
+    # --- gz covers ---
+    p_covers = commands.add_parser(
+        "covers",
+        help="Report requirement coverage from @covers annotations",
+        description="Report requirement coverage at ADR, OBPI, or REQ granularity.",
+        epilog=build_epilog(
+            [
+                "gz covers",
+                "gz covers ADR-0.20.0",
+                "gz covers OBPI-0.20.0-01",
+                "gz covers --json",
+                "gz covers ADR-0.20.0 --plain",
+            ]
+        ),
+    )
+    p_covers.add_argument(
+        "target",
+        nargs="?",
+        default=None,
+        help="ADR-X.Y.Z or OBPI-X.Y.Z-NN to filter (default: all)",
+    )
+    add_json_flag(p_covers)
+    p_covers.add_argument(
+        "--plain",
+        action="store_true",
+        default=False,
+        help="One record per line (grep-friendly)",
+    )
+    p_covers.add_argument(
+        "--adr-dir",
+        default=None,
+        help="Override ADR directory to scan (default: docs/design/adr)",
+    )
+    p_covers.add_argument(
+        "--test-dir",
+        default=None,
+        help="Override test directory to scan (default: tests)",
+    )
+    p_covers.set_defaults(
+        func=lambda a: covers_cmd(
+            target=a.target,
             as_json=a.as_json,
             plain=a.plain,
             adr_dir=a.adr_dir,
