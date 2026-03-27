@@ -171,6 +171,14 @@
             "version": "1.0.0",
             "path": "ops/chores/skill-command-doc-parity",
             "lane": "heavy"
+        },
+        {
+            "slug": "doc-coverage",
+            "title": "Documentation Cross-Coverage Enforcement",
+            "version": "1.0.0",
+            "path": "ops/chores/doc-coverage",
+            "lane": "heavy",
+            "frequency": "per-release"
         }
     ]
 }

@@ -195,3 +195,9 @@ None. The existing quality infrastructure provides all required integration poin
   artifacts.
 - The existing `instruction_eval.py` 10-case baseline is the proof of concept.
   This ADR scales that pattern to all AI-sensitive surfaces.
+
+## Attestation Block
+
+| Term | Status | Attested By | Date | Reason |
+|------|--------|-------------|------|--------|
+| 0.0.5 | Completed | Jeff | 2026-03-26 | completed |

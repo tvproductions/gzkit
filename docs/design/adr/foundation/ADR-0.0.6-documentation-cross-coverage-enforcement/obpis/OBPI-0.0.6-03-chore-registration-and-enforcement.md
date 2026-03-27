@@ -3,7 +3,7 @@ id: OBPI-0.0.6-03-chore-registration-and-enforcement
 parent: ADR-0.0.6-documentation-cross-coverage-enforcement
 item: 3
 lane: heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.6-03: Chore Registration and Enforcement
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.6-documentation-cross-coverage-enforcement/ADR-0.0.6-documentation-cross-coverage-enforcement.md`
 - **Checklist Item:** #3 - "Chore Registration and Enforcement -- Register as chore, produce actionable gap report"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -122,68 +122,88 @@ uv run gz chores run doc-coverage --json
 
 ## Acceptance Criteria
 
-- [ ] **REQ-0.0.6-03-01:** `doc-coverage` chore is registered in
+- [x] **REQ-0.0.6-03-01:** `doc-coverage` chore is registered in
   `config/gzkit.chores.json` with `per-release` frequency.
-- [ ] **REQ-0.0.6-03-02:** `gz chores run doc-coverage` produces a human-readable
+- [x] **REQ-0.0.6-03-02:** `gz chores run doc-coverage` produces a human-readable
   gap report listing each missing surface with the expected path.
-- [ ] **REQ-0.0.6-03-03:** The chore exits 1 when gaps exist and 0 when all
+- [x] **REQ-0.0.6-03-03:** The chore exits 1 when gaps exist and 0 when all
   surfaces are present.
-- [ ] **REQ-0.0.6-03-04:** `--json` flag produces machine-readable JSON output
+- [x] **REQ-0.0.6-03-04:** `--json` flag produces machine-readable JSON output
   to stdout.
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Gate 3 (Docs):** Docs build, chore documented
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Gate 3 (Docs):** Docs build, chore documented
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 ## Evidence
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+Ran 62 tests in 1.199s — OK
+Coverage: 90% (src/gzkit/doc_coverage/*)
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+uv run gz lint — All checks passed
+uv run gz typecheck — All checks passed
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here
+uv run gz validate --documents — All validations passed
+uv run mkdocs build --strict — Built in 0.95s, no warnings
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here
+Human attestation: "attest completed" — 2026-03-26
 ```
 
 ### Value Narrative
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+
+Before this OBPI, documentation obligations were checked piecemeal — no single
+tool enforced the full documentation contract across all required surfaces for
+every command. Now, `gz chores run doc-coverage` loads the manifest, invokes the
+AST scanner, and produces an actionable gap report that fails closed on missing
+required surfaces.
 
 ### Key Proof
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+```bash
+$ uv run gz chores run doc-coverage
+Chore criterion failed:
+- chore: doc-coverage
+- criterion: uv run -m gzkit.doc_coverage.runner
+- detail: exit 1 != 0
+# Correctly detects 77 pre-existing documentation gaps across 36 commands.
+
+$ uv run -m gzkit.doc_coverage.runner --json | python3 -c "import json,sys; d=json.load(sys.stdin); print(f'gaps={len(d[\"gaps\"])} checked={d[\"commands_checked\"]}')"
+gaps=77 checked=52
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created: `src/gzkit/doc_coverage/runner.py`, `data/schemas/doc-coverage-report.schema.json`, `ops/chores/doc-coverage/{CHORE.md,acceptance.json,README.md,proofs/.gitkeep}`
+- Files modified: `src/gzkit/doc_coverage/models.py`, `src/gzkit/doc_coverage/__init__.py`, `config/gzkit.chores.json`, `tests/test_doc_coverage.py`
+- Tests added: 16 (gap report models, runner integration, chore registration)
+- Date completed: 2026-03-26
+- Attestation status: Human attested
+- Defects noted: None
 
 ## Tracked Defects
 
@@ -191,12 +211,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor:
-- Attestation:
-- Date:
+- Attestor: Jeff
+- Attestation: attest completed
+- Date: 2026-03-26
 
 ---
 
-**Brief Status:** Draft
-**Date Completed:** -
+**Brief Status:** Completed
+**Date Completed:** 2026-03-26
 **Evidence Hash:** -

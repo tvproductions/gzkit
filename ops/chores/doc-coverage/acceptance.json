@@ -1,0 +1,10 @@
+{
+  "criteria": [
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run -m gzkit.doc_coverage.runner",
+      "expected": 0,
+      "description": "All required documentation surfaces present per manifest"
+    }
+  ]
+}
