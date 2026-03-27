@@ -19,12 +19,31 @@ This document is procedural ("how to"), not policy ("what the rules are"). Canon
 ```bash
 uv run gz status --table
 uv run gz adr status ADR-<X.Y.Z> --json
+uv run gz adr report
 uv run gz state --json
 uv run gz adr audit-check ADR-<X.Y.Z>
+uv run gz adr covers-check ADR-<X.Y.Z>
 uv run gz gates --adr ADR-<X.Y.Z>
+uv run gz obpi status OBPI-<X.Y.Z-NN>
+uv run gz roles
 ```
 
 ### Lifecycle execution
+
+```bash
+uv run gz init                        # Initialize governance scaffolding
+uv run gz prd                         # Create Product Requirements Document
+uv run gz constitute                  # Create constitution artifact
+uv run gz plan                        # Create an ADR
+uv run gz specify                     # Create implementation brief (OBPI)
+uv run gz obpi pipeline OBPI-<X.Y.Z-NN>  # Execute OBPI pipeline
+uv run gz obpi reconcile OBPI-<X.Y.Z-NN> # Fail-closed reconciliation
+uv run gz obpi emit-receipt OBPI-<X.Y.Z-NN> --event completed --attestor "<name>" --evidence-json '{...}'
+uv run gz migrate-semver              # Record SemVer rename events
+uv run gz register-adrs               # Register existing ADR packages
+```
+
+Skill-based entry points:
 
 ```text
 /gz-adr-create
@@ -44,6 +63,8 @@ uv run gz check-config-paths
 uv run gz validate --documents --surfaces
 uv run gz obpi validate --adr ADR-<X.Y.Z>
 uv run gz adr evaluate ADR-<X.Y.Z>
+uv run gz readiness evaluate
+uv run gz parity check
 uv run mkdocs build --strict
 ```
 

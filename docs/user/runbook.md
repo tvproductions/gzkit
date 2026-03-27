@@ -273,15 +273,64 @@ uv run gz adr emit-receipt ADR-0.6.0-pool-promotion-protocol --event validated -
 - `uv run gz test`
 - `uv run -m behave features/` (heavy lane)
 - `uv run gz lint`
+- `uv run gz format` (auto-fix formatting)
 - `uv run gz typecheck`
+- `uv run gz tidy`
 - `uv run mkdocs build --strict`
 - `uv run gz validate --documents`
 - `uv run gz cli audit`
 - `uv run gz check-config-paths`
 - `uv run gz adr audit-check ADR-<X.Y.Z>`
+- `uv run gz adr covers-check ADR-<X.Y.Z>`
+- `uv run gz adr report`
 - `uv run gz adr status ADR-<X.Y.Z> --json`
+- `uv run gz adr promote ADR-pool.<slug> --semver X.Y.Z`
 - `uv run gz status --json`
+- `uv run gz state --json`
 - `uv run gz readiness audit`
+- `uv run gz readiness evaluate`
+- `uv run gz parity check`
+- `uv run gz obpi status OBPI-<X.Y.Z-NN>`
+- `uv run gz agent sync control-surfaces`
+
+---
+
+## Governance Planning Commands
+
+```bash
+# Create governance artifacts
+uv run gz init                     # Initialize gzkit in a repository
+uv run gz prd                      # Create a Product Requirements Document
+uv run gz constitute               # Create a constitution artifact
+uv run gz plan                     # Create an ADR
+uv run gz specify                  # Create an implementation brief (OBPI)
+uv run gz interview                # Run interactive governance interviews
+uv run gz migrate-semver           # Record SemVer ID rename events
+uv run gz register-adrs            # Register existing ADR packages into ledger
+```
+
+---
+
+## Chores Commands
+
+```bash
+uv run gz chores list              # List declared chores
+uv run gz chores show <slug>       # Display CHORE.md for one chore
+uv run gz chores advise <slug>     # Dry-run criteria and report status
+uv run gz chores plan <slug>       # Show plan details for one chore
+uv run gz chores run <slug>        # Execute and log one chore
+uv run gz chores audit --all       # Audit log presence for all chores
+```
+
+---
+
+## Skill Commands
+
+```bash
+uv run gz skill new <name>         # Create a new skill scaffold
+uv run gz skill list               # List all discovered skills
+uv run gz skill audit              # Audit skill lifecycle metadata
+```
 
 ---
 

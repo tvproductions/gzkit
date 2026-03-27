@@ -375,20 +375,22 @@ def find_orphaned_docs(
                 )
             )
 
-    # Check manpage files whose slug doesn't map to a discovered command
+    # Check manpage files whose slug doesn't map to a discovered command.
+    # Build a slug set from discovered names so hyphenated commands like
+    # "adr audit-check" match their manpage slug "adr-audit-check".
+    discovered_slugs = {name.replace(" ", "-") for name in discovered_names}
     commands_dir = project_root / "docs" / "user" / "commands"
     if commands_dir.exists():
         for md_file in sorted(commands_dir.glob("*.md")):
             if md_file.name == "index.md":
                 continue
             slug = md_file.stem  # filename without .md
-            cmd_name = slug.replace("-", " ")
-            if cmd_name not in discovered_names:
+            if slug not in discovered_slugs:
                 orphans.append(
                     OrphanedDoc(
                         surface="manpage",
                         reference=str(md_file.relative_to(project_root)),
-                        detail=f"Manpage '{md_file.name}' has no matching command '{cmd_name}'",
+                        detail=f"Manpage '{md_file.name}' has no matching discovered command",
                     )
                 )
 
