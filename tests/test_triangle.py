@@ -3,6 +3,7 @@
 @covers ADR-0.20.0-spec-triangle-sync
 @covers OBPI-0.20.0-01-req-entity-and-triangle-data-model
 @covers OBPI-0.20.0-02-brief-req-extraction
+@covers OBPI-0.20.0-03-drift-detection-engine
 """
 
 from __future__ import annotations
@@ -16,6 +17,8 @@ from pydantic import ValidationError
 
 from gzkit.triangle import (
     DiscoveredReq,
+    DriftReport,
+    DriftSummary,
     EdgeType,
     LinkageRecord,
     ReqEntity,
@@ -23,6 +26,7 @@ from gzkit.triangle import (
     ReqStatus,
     VertexRef,
     VertexType,
+    detect_drift,
     extract_reqs_from_brief,
     scan_briefs,
 )
@@ -570,6 +574,301 @@ class TestDiscoveredReqModel(unittest.TestCase):
         )
         with self.assertRaises(ValidationError):
             req.source_path = "other.md"  # type: ignore[misc]
+
+
+# ---------------------------------------------------------------------------
+# OBPI-0.20.0-03: Drift detection engine tests
+# ---------------------------------------------------------------------------
+
+FIXED_TIMESTAMP = "2026-03-27T00:00:00Z"
+
+
+def _make_req(semver: str, obpi: str, criterion: str) -> ReqEntity:
+    """Helper to create a ReqEntity for drift tests."""
+    return ReqEntity(
+        id=ReqId(semver=semver, obpi_item=obpi, criterion_index=criterion),
+        description=f"Criterion {criterion}",
+        status=ReqStatus.UNCHECKED,
+        parent_obpi=f"OBPI-{semver}-{obpi}",
+    )
+
+
+def _make_covers_linkage(req_id_str: str) -> LinkageRecord:
+    """Helper to create a COVERS linkage record."""
+    return LinkageRecord(
+        source=VertexRef(vertex_type=VertexType.TEST, identifier=f"test_for_{req_id_str}"),
+        target=VertexRef(vertex_type=VertexType.SPEC, identifier=req_id_str),
+        edge_type=EdgeType.COVERS,
+    )
+
+
+def _make_justifies_linkage(code_id: str, req_id_str: str) -> LinkageRecord:
+    """Helper to create a JUSTIFIES linkage record."""
+    return LinkageRecord(
+        source=VertexRef(vertex_type=VertexType.CODE, identifier=code_id),
+        target=VertexRef(vertex_type=VertexType.SPEC, identifier=req_id_str),
+        edge_type=EdgeType.JUSTIFIES,
+    )
+
+
+def _make_code_vertex(identifier: str) -> VertexRef:
+    """Helper to create a changed code vertex."""
+    return VertexRef(vertex_type=VertexType.CODE, identifier=identifier)
+
+
+class TestDriftDetectionNoDrift(unittest.TestCase):
+    """@covers REQ-0.20.0-03-01"""
+
+    def test_all_reqs_covered_no_drift(self) -> None:
+        """REQ-0.20.0-03-01: 5 REQs, 5 matching linkages, no drift."""
+        reqs = [_make_req("0.15.0", "01", f"0{i}") for i in range(1, 6)]
+        linkages = [_make_covers_linkage(str(r.id)) for r in reqs]
+
+        report = detect_drift(reqs, linkages, [], FIXED_TIMESTAMP)
+
+        self.assertEqual(report.unlinked_specs, [])
+        self.assertEqual(report.orphan_tests, [])
+        self.assertEqual(report.unjustified_code_changes, [])
+        self.assertEqual(report.summary.total_drift_count, 0)
+
+
+class TestDriftDetectionUnlinkedSpecs(unittest.TestCase):
+    """@covers REQ-0.20.0-03-01
+    @covers REQ-0.20.0-03-02
+    """
+
+    def test_all_reqs_unlinked(self) -> None:
+        """REQ-0.20.0-03-02: 5 REQs, 0 linkages, all 5 unlinked."""
+        reqs = [_make_req("0.15.0", "01", f"0{i}") for i in range(1, 6)]
+
+        report = detect_drift(reqs, [], [], FIXED_TIMESTAMP)
+
+        self.assertEqual(len(report.unlinked_specs), 5)
+        self.assertEqual(report.summary.unlinked_spec_count, 5)
+        for req in reqs:
+            self.assertIn(str(req.id), report.unlinked_specs)
+
+    def test_partial_coverage(self) -> None:
+        """Some REQs covered, others not."""
+        reqs = [_make_req("0.15.0", "01", f"0{i}") for i in range(1, 4)]
+        linkages = [_make_covers_linkage(str(reqs[0].id))]
+
+        report = detect_drift(reqs, linkages, [], FIXED_TIMESTAMP)
+
+        self.assertEqual(len(report.unlinked_specs), 2)
+        self.assertNotIn(str(reqs[0].id), report.unlinked_specs)
+        self.assertIn(str(reqs[1].id), report.unlinked_specs)
+        self.assertIn(str(reqs[2].id), report.unlinked_specs)
+
+
+class TestDriftDetectionOrphanTests(unittest.TestCase):
+    """@covers REQ-0.20.0-03-03"""
+
+    def test_orphan_tests_detected(self) -> None:
+        """REQ-0.20.0-03-03: 3 REQs, 5 linkages (2 non-existent), 2 orphaned."""
+        reqs = [_make_req("0.15.0", "01", f"0{i}") for i in range(1, 4)]
+        linkages = [
+            _make_covers_linkage(str(reqs[0].id)),
+            _make_covers_linkage(str(reqs[1].id)),
+            _make_covers_linkage(str(reqs[2].id)),
+            _make_covers_linkage("REQ-0.15.0-01-99"),
+            _make_covers_linkage("REQ-0.15.0-02-88"),
+        ]
+
+        report = detect_drift(reqs, linkages, [], FIXED_TIMESTAMP)
+
+        self.assertEqual(len(report.orphan_tests), 2)
+        self.assertIn("REQ-0.15.0-01-99", report.orphan_tests)
+        self.assertIn("REQ-0.15.0-02-88", report.orphan_tests)
+        self.assertEqual(report.summary.orphan_test_count, 2)
+
+
+class TestDriftDetectionUnjustifiedCode(unittest.TestCase):
+    """@covers REQ-0.20.0-03-04"""
+
+    def test_unjustified_code_changes(self) -> None:
+        """REQ-0.20.0-03-04: 2 changed vertices, 1 justifies, 1 unjustified."""
+        reqs = [_make_req("0.15.0", "01", "01")]
+        changed = [
+            _make_code_vertex("gzkit.triangle.detect_drift"),
+            _make_code_vertex("gzkit.triangle.unrelated_func"),
+        ]
+        linkages = [
+            _make_justifies_linkage("gzkit.triangle.detect_drift", str(reqs[0].id)),
+        ]
+
+        report = detect_drift(reqs, linkages, changed, FIXED_TIMESTAMP)
+
+        self.assertEqual(len(report.unjustified_code_changes), 1)
+        self.assertIn("gzkit.triangle.unrelated_func", report.unjustified_code_changes)
+        self.assertEqual(report.summary.unjustified_code_change_count, 1)
+
+    def test_all_code_justified(self) -> None:
+        """All changed code has justifies edges."""
+        reqs = [_make_req("0.15.0", "01", "01")]
+        changed = [_make_code_vertex("gzkit.module.func")]
+        linkages = [_make_justifies_linkage("gzkit.module.func", str(reqs[0].id))]
+
+        report = detect_drift(reqs, linkages, changed, FIXED_TIMESTAMP)
+
+        self.assertEqual(report.unjustified_code_changes, [])
+
+    def test_no_changed_code(self) -> None:
+        """No changed code vertices, no unjustified."""
+        report = detect_drift([], [], [], FIXED_TIMESTAMP)
+        self.assertEqual(report.unjustified_code_changes, [])
+
+
+class TestDriftDetectionDeterminism(unittest.TestCase):
+    """@covers REQ-0.20.0-03-05"""
+
+    def test_identical_inputs_identical_outputs(self) -> None:
+        """REQ-0.20.0-03-05: Same inputs produce equal DriftReports."""
+        reqs = [_make_req("0.15.0", "01", f"0{i}") for i in range(1, 4)]
+        linkages = [
+            _make_covers_linkage(str(reqs[0].id)),
+            _make_covers_linkage("REQ-0.15.0-01-99"),
+        ]
+        changed = [_make_code_vertex("gzkit.module.func")]
+
+        report1 = detect_drift(reqs, linkages, changed, FIXED_TIMESTAMP)
+        report2 = detect_drift(reqs, linkages, changed, FIXED_TIMESTAMP)
+
+        self.assertEqual(report1, report2)
+        self.assertEqual(report1.model_dump_json(), report2.model_dump_json())
+
+
+class TestDriftReportModel(unittest.TestCase):
+    """@covers REQ-0.20.0-03-04
+    @covers REQ-0.20.0-03-05
+    """
+
+    def test_json_serialization_roundtrip(self) -> None:
+        """DriftReport serializable to JSON and back."""
+        reqs = [_make_req("0.15.0", "01", "01")]
+        report = detect_drift(reqs, [], [], FIXED_TIMESTAMP)
+
+        json_str = report.model_dump_json()
+        restored = DriftReport.model_validate_json(json_str)
+        self.assertEqual(report, restored)
+
+    def test_report_is_valid_json(self) -> None:
+        report = detect_drift([], [], [], FIXED_TIMESTAMP)
+        parsed = json.loads(report.model_dump_json())
+        self.assertIn("unlinked_specs", parsed)
+        self.assertIn("orphan_tests", parsed)
+        self.assertIn("unjustified_code_changes", parsed)
+        self.assertIn("summary", parsed)
+        self.assertIn("scan_timestamp", parsed)
+
+    def test_frozen_immutability(self) -> None:
+        report = detect_drift([], [], [], FIXED_TIMESTAMP)
+        with self.assertRaises(ValidationError):
+            report.scan_timestamp = "changed"  # type: ignore[misc]
+
+    def test_summary_counts_correct(self) -> None:
+        """Summary counts match list lengths."""
+        reqs = [_make_req("0.15.0", "01", f"0{i}") for i in range(1, 4)]
+        changed = [_make_code_vertex("func.a"), _make_code_vertex("func.b")]
+        linkages = [_make_covers_linkage("REQ-0.15.0-01-99")]
+
+        report = detect_drift(reqs, linkages, changed, FIXED_TIMESTAMP)
+
+        self.assertEqual(report.summary.unlinked_spec_count, len(report.unlinked_specs))
+        self.assertEqual(report.summary.orphan_test_count, len(report.orphan_tests))
+        self.assertEqual(
+            report.summary.unjustified_code_change_count,
+            len(report.unjustified_code_changes),
+        )
+        self.assertEqual(
+            report.summary.total_drift_count,
+            report.summary.unlinked_spec_count
+            + report.summary.orphan_test_count
+            + report.summary.unjustified_code_change_count,
+        )
+
+    def test_results_sorted_semantically(self) -> None:
+        """Results sorted by identifier using semantic version order."""
+        reqs = [
+            _make_req("0.15.0", "03", "01"),
+            _make_req("0.15.0", "01", "01"),
+            _make_req("0.15.0", "02", "01"),
+        ]
+
+        report = detect_drift(reqs, [], [], FIXED_TIMESTAMP)
+
+        self.assertEqual(
+            report.unlinked_specs,
+            [
+                "REQ-0.15.0-01-01",
+                "REQ-0.15.0-02-01",
+                "REQ-0.15.0-03-01",
+            ],
+        )
+
+
+class TestDriftDetectionMixed(unittest.TestCase):
+    """@covers REQ-0.20.0-03-01
+    @covers REQ-0.20.0-03-02
+    @covers REQ-0.20.0-03-03
+    @covers REQ-0.20.0-03-04
+    """
+
+    def test_all_drift_categories(self) -> None:
+        """Mixed scenario: unlinked, orphan, and unjustified all present."""
+        reqs = [
+            _make_req("0.15.0", "01", "01"),
+            _make_req("0.15.0", "01", "02"),
+        ]
+        linkages = [
+            _make_covers_linkage("REQ-0.15.0-01-01"),
+            _make_covers_linkage("REQ-0.15.0-99-01"),
+            _make_justifies_linkage("gzkit.justified_func", "REQ-0.15.0-01-01"),
+        ]
+        changed = [
+            _make_code_vertex("gzkit.justified_func"),
+            _make_code_vertex("gzkit.unjustified_func"),
+        ]
+
+        report = detect_drift(reqs, linkages, changed, FIXED_TIMESTAMP)
+
+        self.assertEqual(report.unlinked_specs, ["REQ-0.15.0-01-02"])
+        self.assertEqual(report.orphan_tests, ["REQ-0.15.0-99-01"])
+        self.assertEqual(report.unjustified_code_changes, ["gzkit.unjustified_func"])
+        self.assertEqual(report.summary.total_drift_count, 3)
+
+    def test_empty_inputs(self) -> None:
+        """No REQs, no linkages, no changes, zero drift."""
+        report = detect_drift([], [], [], FIXED_TIMESTAMP)
+
+        self.assertEqual(report.unlinked_specs, [])
+        self.assertEqual(report.orphan_tests, [])
+        self.assertEqual(report.unjustified_code_changes, [])
+        self.assertEqual(report.summary.total_drift_count, 0)
+
+
+class TestDriftSummaryModel(unittest.TestCase):
+    """@covers REQ-0.20.0-03-04"""
+
+    def test_summary_frozen(self) -> None:
+        summary = DriftSummary(
+            unlinked_spec_count=1,
+            orphan_test_count=2,
+            unjustified_code_change_count=3,
+            total_drift_count=6,
+        )
+        with self.assertRaises(ValidationError):
+            summary.total_drift_count = 0  # type: ignore[misc]
+
+    def test_summary_extra_forbidden(self) -> None:
+        with self.assertRaises(ValidationError):
+            DriftSummary(
+                unlinked_spec_count=0,
+                orphan_test_count=0,
+                unjustified_code_change_count=0,
+                total_drift_count=0,
+                extra=1,  # type: ignore[call-arg]
+            )
 
 
 if __name__ == "__main__":
