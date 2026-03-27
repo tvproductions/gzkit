@@ -21,6 +21,7 @@ from gzkit.triangle import (
     EdgeType,
     LinkageRecord,
     ReqId,
+    ReqKind,
     VertexRef,
     VertexType,
     scan_briefs,
@@ -29,6 +30,8 @@ from gzkit.triangle import (
 logger = logging.getLogger(__name__)
 
 _F = TypeVar("_F")
+
+_TESTABLE_KIND = ReqKind.CODE
 
 # ---------------------------------------------------------------------------
 # Global linkage registry
@@ -330,7 +333,11 @@ def compute_coverage(
 
     Pure computation — no I/O. Deterministic: same inputs always produce same
     outputs. Results sorted by identifier (semantic version ordering).
+    Doc-kind REQs (tagged ``[doc]`` in briefs) are excluded — tests are for code.
     """
+    # Filter to testable REQs only — doc REQs have no test surface
+    testable_reqs = [r for r in known_reqs if r.entity.kind == _TESTABLE_KIND]
+
     # Build map: REQ ID → list of covering test identifiers
     coverage_map: dict[str, list[str]] = {}
     for record in linkage_records:
@@ -340,7 +347,7 @@ def compute_coverage(
 
     # Build per-REQ entries
     entries: list[CoverageEntry] = []
-    for dreq in known_reqs:
+    for dreq in testable_reqs:
         req_str = str(dreq.entity.id)
         tests = sorted(set(coverage_map.get(req_str, [])))
         entries.append(CoverageEntry(req_id=req_str, covered=len(tests) > 0, covering_tests=tests))
