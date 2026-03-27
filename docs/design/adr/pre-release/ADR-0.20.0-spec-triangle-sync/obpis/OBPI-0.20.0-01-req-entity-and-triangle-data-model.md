@@ -3,7 +3,7 @@ id: OBPI-0.20.0-01-req-entity-and-triangle-data-model
 parent: ADR-0.20.0-spec-triangle-sync
 item: 1
 lane: Lite
-status: Accepted
+status: Completed
 ---
 
 # OBPI-0.20.0-01: REQ Entity and Triangle Data Model
@@ -13,7 +13,7 @@ status: Accepted
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.20.0-spec-triangle-sync/ADR-0.20.0-spec-triangle-sync.md`
 - **Checklist Item:** #1 — "REQ entity model, triangle vertex/edge types, linkage record schema"
 
-**Status:** Accepted
+**Status:** Completed
 
 ## Objective
 
@@ -52,60 +52,75 @@ Define the foundational Pydantic data models for the spec-test-code triangle: th
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item referenced
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist item referenced
 
 ### Gate 2: TDD
 
-- [ ] Unit tests validate REQ model creation and identifier parsing
-- [ ] Unit tests validate vertex/edge type enums
-- [ ] Unit tests validate LinkageRecord serialization roundtrip
-- [ ] Tests pass: `uv run gz test`
+- [x] Unit tests validate REQ model creation and identifier parsing
+- [x] Unit tests validate vertex/edge type enums
+- [x] Unit tests validate LinkageRecord serialization roundtrip
+- [x] Tests pass: `uv run gz test`
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.20.0-01-01: Given a valid REQ string `REQ-0.15.0-03-02`, when parsed, then returns a REQ entity with semver=0.15.0, obpi_item=03, criterion_index=02.
-- [ ] REQ-0.20.0-01-02: Given an invalid REQ string `REQ-invalid`, when parsed, then raises a ValidationError.
-- [ ] REQ-0.20.0-01-03: Given a LinkageRecord with source=Test vertex and target=Spec vertex, when serialized to JSON and back, then roundtrip preserves all fields.
-- [ ] REQ-0.20.0-01-04: Given all three edge types, when enumerated, then exactly {covers, proves, justifies} are present.
+- [x] REQ-0.20.0-01-01: Given a valid REQ string `REQ-0.15.0-03-02`, when parsed, then returns a REQ entity with semver=0.15.0, obpi_item=03, criterion_index=02.
+- [x] REQ-0.20.0-01-02: Given an invalid REQ string `REQ-invalid`, when parsed, then raises a ValidationError.
+- [x] REQ-0.20.0-01-03: Given a LinkageRecord with source=Test vertex and target=Spec vertex, when serialized to JSON and back, then roundtrip preserves all fields.
+- [x] REQ-0.20.0-01-04: Given all three edge types, when enumerated, then exactly {covers, proves, justifies} are present.
 
 ## Completion Checklist (Lite)
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Unit tests pass
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Coverage:** Coverage >= 40% maintained
-- [ ] **OBPI Completion:** Record evidence in brief
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Unit tests pass
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Coverage:** Coverage >= 40% maintained
+- [x] **OBPI Completion:** Record evidence in brief
 
 ## Evidence
+
+### Implementation Summary
+
+- Files created: `src/gzkit/triangle.py`, `tests/test_triangle.py`
+- Tests added: 32 unit tests covering REQ parsing, vertex/edge enums, LinkageRecord roundtrip
+- Date completed: 2026-03-27
+
+### Key Proof
+
+```text
+$ uv run -m unittest tests.test_triangle -v
+Ran 32 tests in 0.001s — OK
+```
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+Ran 32 tests in 0.001s — OK (tests/test_triangle.py)
+Full suite: 1663 tests pass
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/type check output here
+uv run gz lint — All checks passed
+uv run gz typecheck — All checks passed
 ```
 
 ## Human Attestation
 
-- Attestor: `n/a` (Lite lane)
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: Jeffry Babb
+- Attestation: completed
+- Date: 2026-03-27
 
 ---
 
-**Brief Status:** Accepted
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-27
 
 **Evidence Hash:** -
