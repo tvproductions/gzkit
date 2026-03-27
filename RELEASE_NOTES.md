@@ -1,5 +1,25 @@
 # gzkit Release Notes
 
+## v0.20.0 (2026-03-27)
+
+**ADR:** ADR-0.20.0 - Spec-Test-Code Triangle Sync
+
+Introduced the spec-test-code triangle framework for detecting governance drift. REQ entities in OBPI briefs, `@covers` references in tests, and code change sets form three vertices of a triangle. The drift detection engine identifies broken linkages: unlinked specs (REQs with no test), orphan tests (tests covering absent REQs), and unjustified code changes. A new `gz drift` command exposes drift reports in human, JSON, and plain output modes. Drift is integrated into `gz check` as an advisory (non-blocking) check, surfacing findings early without gating the workflow.
+
+### Delivered
+
+- REQ entity Pydantic model with `REQ-<semver>-<obpi>-<seq>` identifier scheme and lifecycle
+- Brief REQ extractor: parses OBPI acceptance criteria to discover REQ entities
+- Drift detection engine: computes unlinked specs, orphan tests, and unjustified code changes
+- `gz drift` CLI with `--json` and `--plain` output modes and configurable `--adr-dir`/`--test-dir`
+- `gz check` advisory drift integration: drift findings appended after blocking checks with `advisory: true` in JSON output
+- Command docs: `docs/user/commands/drift.md`, updated `docs/user/commands/check.md`
+- BDD scenarios: `features/triangle_drift.feature`, `features/check_drift_advisory.feature`
+
+### Gate Evidence
+
+All 5 GovZero gates satisfied.
+
 ## v0.19.0 (2026-03-22)
 
 **ADR:** ADR-0.19.0 - Closeout & Audit Processes
