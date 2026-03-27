@@ -9,17 +9,20 @@ from unittest.mock import patch
 
 from gzkit.cli.formatters import OutputFormatter
 from gzkit.cli.progress import progress_bar, progress_phase, progress_spinner
+from gzkit.traceability import covers
 
 
 class TestProgressSpinner(unittest.TestCase):
     """Tests for progress_spinner context manager."""
 
+    @covers("REQ-0.0.3-08-02")
     def test_spinner_runs_in_human_mode(self) -> None:
         """Spinner executes without error in human mode."""
         formatter = OutputFormatter(mode="human")
         with patch.object(sys, "stderr", io.StringIO()), progress_spinner("Working...", formatter):
             pass  # Body executes successfully
 
+    @covers("REQ-0.0.3-08-03")
     def test_spinner_suppressed_in_quiet_mode(self) -> None:
         """Spinner is suppressed (no output) in quiet mode."""
         formatter = OutputFormatter(mode="quiet")
@@ -29,6 +32,7 @@ class TestProgressSpinner(unittest.TestCase):
         # In quiet mode, no spinner output at all
         self.assertEqual(stderr_capture.getvalue(), "")
 
+    @covers("REQ-0.0.3-08-04")
     def test_spinner_suppressed_in_json_mode(self) -> None:
         """Spinner is suppressed (no output) in json mode."""
         formatter = OutputFormatter(mode="json")
@@ -37,6 +41,7 @@ class TestProgressSpinner(unittest.TestCase):
             pass
         self.assertEqual(stderr_capture.getvalue(), "")
 
+    @covers("REQ-0.0.3-08-07")
     def test_spinner_cleanup_on_exception(self) -> None:
         """Spinner cleans up properly when body raises an exception."""
         formatter = OutputFormatter(mode="human")
@@ -57,6 +62,7 @@ class TestProgressPhase(unittest.TestCase):
         with patch.object(sys, "stderr", io.StringIO()), progress_phase("Linting...", formatter):
             pass
 
+    @covers("REQ-0.0.3-08-05")
     def test_phase_with_step_counting(self) -> None:
         """Phase with step/total executes without error."""
         formatter = OutputFormatter(mode="human")
@@ -178,6 +184,7 @@ class TestProgressBar(unittest.TestCase):
 class TestModeIntegration(unittest.TestCase):
     """Integration tests for mode-dependent progress behavior."""
 
+    @covers("REQ-0.0.3-08-08")
     def test_all_suppressed_modes(self) -> None:
         """Both quiet and json suppress all progress types."""
         for mode in ("quiet", "json"):
@@ -206,6 +213,7 @@ class TestModeIntegration(unittest.TestCase):
 class TestImportBoundary(unittest.TestCase):
     """Verify progress is a CLI adapter concern only."""
 
+    @covers("REQ-0.0.3-08-01")
     def test_importable_from_cli_package(self) -> None:
         """Progress utilities are importable from gzkit.cli.progress."""
         from gzkit.cli.progress import progress_bar, progress_phase, progress_spinner
