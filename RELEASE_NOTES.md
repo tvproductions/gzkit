@@ -1,5 +1,25 @@
 # gzkit Release Notes
 
+## v0.21.0 (2026-03-27)
+
+**ADR:** ADR-0.21.0 - Tests as Spec Verification Surface
+
+Formalized the `@covers` decorator as a first-class test-to-spec traceability mechanism. Tests declare which governance requirements they prove via `@covers("REQ-X.Y.Z-NN-MM")`, with format validation and brief-backed REQ existence checking. A coverage anchor scanner walks the test tree to discover all annotations and produce LinkageRecords. The `gz covers` CLI reports requirement coverage at ADR, OBPI, and REQ granularity levels. ADR audit integration feeds coverage data into `gz adr audit-check` for automated requirement fulfillment verification. Operator documentation includes annotation examples, a migration guide for legacy tests, and a language-agnostic proof metadata contract for non-Python test stacks.
+
+### Delivered
+
+- `@covers` decorator with REQ format validation, brief-backed existence validation, and linkage registration
+- Coverage anchor scanner: test tree walk, annotation discovery, LinkageRecord production, ADR/OBPI/REQ rollups
+- `gz covers` CLI with ADR/OBPI/REQ granularity and human/JSON/plain output modes
+- ADR audit integration: coverage data wired into `gz adr audit-check`
+- Operator docs: `docs/user/commands/covers.md`, `docs/user/concepts/test-traceability.md`, migration guide, language-agnostic proof metadata contract
+- BDD scenarios: `features/test_traceability.feature`
+- `gz obpi withdraw` command for deregistering phantom/erroneous OBPI ledger entries (GHI #39)
+
+### Gate Evidence
+
+All 5 GovZero gates satisfied.
+
 ## v0.20.0 (2026-03-27)
 
 **ADR:** ADR-0.20.0 - Spec-Test-Code Triangle Sync
