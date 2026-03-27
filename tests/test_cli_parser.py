@@ -56,6 +56,7 @@ class TestStableArgumentParserError(unittest.TestCase):
     """REQ-0.0.4-02-02, REQ-0.0.4-02-03: Error format and exit code."""
 
     @covers("REQ-0.0.4-02-02")
+    @covers("REQ-0.0.4-07-02")
     def test_error_writes_blockers_prefix_to_stderr(self) -> None:
         parser = StableArgumentParser(prog="gz")
         captured = io.StringIO()
@@ -132,6 +133,7 @@ class TestStableArgumentParserIntegration(unittest.TestCase):
     """REQ-0.0.4-02-01, REQ-0.0.4-02-08: Integration checks."""
 
     @covers("REQ-0.0.4-02-01")
+    @covers("REQ-0.0.4-07-03")
     def test_parser_is_used_in_main(self) -> None:
         """Verify StableArgumentParser is the top-level parser in cli/main.py."""
         from gzkit.cli.main import _build_parser
