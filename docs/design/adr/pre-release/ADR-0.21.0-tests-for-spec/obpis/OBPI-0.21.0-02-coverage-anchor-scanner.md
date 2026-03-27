@@ -3,7 +3,7 @@ id: OBPI-0.21.0-02-coverage-anchor-scanner
 parent: ADR-0.21.0-tests-for-spec
 item: 2
 lane: Lite
-status: Accepted
+status: Completed
 ---
 
 # OBPI-0.21.0-02: Coverage Anchor Scanner
@@ -13,7 +13,7 @@ status: Accepted
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.21.0-tests-for-spec/ADR-0.21.0-tests-for-spec.md`
 - **Checklist Item:** #2 — "Coverage anchor scanner: walk test tree, discover annotations, produce LinkageRecords"
 
-**Status:** Accepted
+**Status:** Completed
 
 ## Objective
 
@@ -46,9 +46,9 @@ Build a scanner that walks the test directory tree, discovers all `@covers` anno
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.21.0-02-01: Given a test tree with 10 `@covers` annotations across 5 files, when scanned, then 10 LinkageRecords are produced with correct file paths.
-- [ ] REQ-0.21.0-02-02: Given 8 REQs in briefs and 5 `@covers` annotations, when coverage is computed, then report shows 5/8 covered (62.5%).
-- [ ] REQ-0.21.0-02-03: Given coverage data, when rolled up by ADR, then shows per-ADR coverage percentage.
+- [x] REQ-0.21.0-02-01: Given a test tree with 10 `@covers` annotations across 5 files, when scanned, then 10 LinkageRecords are produced with correct file paths.
+- [x] REQ-0.21.0-02-02: Given 8 REQs in briefs and 5 `@covers` annotations, when coverage is computed, then report shows 5/8 covered (62.5%).
+- [x] REQ-0.21.0-02-03: Given coverage data, when rolled up by ADR, then shows per-ADR coverage percentage.
 
 ## Verification Commands (Concrete)
 
@@ -65,14 +65,34 @@ uv run gz typecheck
 
 ## Completion Checklist (Lite)
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Unit tests pass
-- [ ] **Code Quality:** Lint, format, type checks clean
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Unit tests pass
+- [x] **Code Quality:** Lint, format, type checks clean
 
 ---
 
-**Brief Status:** Accepted
+### Implementation Summary
 
-**Date Completed:** -
+- Scanner: `scan_test_tree()` in `src/gzkit/traceability.py` — AST-based discovery of `@covers` annotations across Python test files, no execution
+- Coverage: `compute_coverage()` produces `CoverageReport` with rollups at ADR, OBPI, and REQ levels
+- Models: `CoverageEntry`, `CoverageRollup`, `CoverageReport` — frozen Pydantic models with JSON serialization
+- Tests: 18 new tests in `tests/test_traceability.py` (9 scanner, 9 coverage rollup)
+- Coverage: 83% on `src/gzkit/traceability.py` (threshold: 40%)
+
+### Key Proof
+
+```
+$ uv run -m unittest tests.test_traceability -v
+Ran 38 tests in 0.005s  OK
+```
+
+```
+$ uv run gz lint && uv run gz typecheck
+Lint passed. Type check passed.
+```
+
+**Brief Status:** Completed
+
+**Date Completed:** 2026-03-27
 
 **Evidence Hash:** -
