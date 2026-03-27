@@ -159,6 +159,21 @@ def reset_registry() -> None:
 # ---------------------------------------------------------------------------
 
 
+def _iter_test_functions(
+    tree: ast.Module,
+) -> list[ast.FunctionDef | ast.AsyncFunctionDef]:
+    """Yield module-level and class-level function defs, skipping nested inner functions."""
+    funcs: list[ast.FunctionDef | ast.AsyncFunctionDef] = []
+    for top_node in ast.iter_child_nodes(tree):
+        if isinstance(top_node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            funcs.append(top_node)
+        elif isinstance(top_node, ast.ClassDef):
+            for child in ast.iter_child_nodes(top_node):
+                if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    funcs.append(child)
+    return funcs
+
+
 def scan_test_tree(test_dir: pathlib.Path) -> list[LinkageRecord]:
     """Walk a test directory and discover all @covers annotations via AST.
 
@@ -175,10 +190,7 @@ def scan_test_tree(test_dir: pathlib.Path) -> list[LinkageRecord]:
             logger.warning("Skipping unparseable file: %s", py_file)
             continue
 
-        for node in ast.walk(tree):
-            if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                continue
-
+        for node in _iter_test_functions(tree):
             for deco in node.decorator_list:
                 req_str = _extract_covers_arg(deco)
                 if req_str is None:
