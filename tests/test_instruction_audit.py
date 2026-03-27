@@ -1,4 +1,7 @@
-"""Tests for gzkit.instruction_audit — instruction audit and drift detection."""
+"""Tests for gzkit.instruction_audit — instruction audit and drift detection.
+
+@covers ADR-0.17.0  OBPI-0.17.0-02 rules-mirroring
+"""
 
 import tempfile
 import unittest
@@ -11,6 +14,7 @@ from gzkit.instruction_audit import (
     audit_instruction_reachability,
     audit_instructions,
 )
+from gzkit.traceability import covers
 
 
 def _instruction_file(apply_to: str, body: str, *, exclude_agent: str | None = None) -> str:
@@ -25,8 +29,12 @@ def _instruction_file(apply_to: str, body: str, *, exclude_agent: str | None = N
 
 
 class TestReachability(unittest.TestCase):
-    """Test audit_instruction_reachability()."""
+    """Test audit_instruction_reachability().
 
+    @covers REQ-0.17.0-02-06
+    """
+
+    @covers("REQ-0.17.0-02-06")
     def test_glob_matches_files_passes(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -41,6 +49,7 @@ class TestReachability(unittest.TestCase):
 
             self.assertEqual(errors, [])
 
+    @covers("REQ-0.17.0-02-06")
     def test_glob_matches_nothing_errors(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -164,8 +173,12 @@ class TestForeignReferences(unittest.TestCase):
 
 
 class TestDrift(unittest.TestCase):
-    """Test audit_generated_surface_drift()."""
+    """Test audit_generated_surface_drift().
 
+    @covers REQ-0.17.0-02-06
+    """
+
+    @covers("REQ-0.17.0-02-06")
     def test_synced_content_passes(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -183,6 +196,7 @@ class TestDrift(unittest.TestCase):
 
             self.assertEqual(errors, [])
 
+    @covers("REQ-0.17.0-02-06")
     def test_missing_rule_file_errors(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -201,6 +215,7 @@ class TestDrift(unittest.TestCase):
             self.assertEqual(len(errors), 1)
             self.assertIn("missing", errors[0].message)
 
+    @covers("REQ-0.17.0-02-06")
     def test_drifted_content_errors(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -219,6 +234,7 @@ class TestDrift(unittest.TestCase):
             self.assertEqual(len(errors), 1)
             self.assertIn("drifted", errors[0].message)
 
+    @covers("REQ-0.17.0-02-06")
     def test_orphan_rule_errors(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
