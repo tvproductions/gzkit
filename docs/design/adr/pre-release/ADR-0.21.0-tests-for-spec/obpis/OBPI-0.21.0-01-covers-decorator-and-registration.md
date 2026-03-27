@@ -3,7 +3,7 @@ id: OBPI-0.21.0-01-covers-decorator-and-registration
 parent: ADR-0.21.0-tests-for-spec
 item: 1
 lane: Lite
-status: Accepted
+status: Completed
 ---
 
 # OBPI-0.21.0-01: @covers Decorator and Registration
@@ -13,7 +13,7 @@ status: Accepted
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.21.0-tests-for-spec/ADR-0.21.0-tests-for-spec.md`
 - **Checklist Item:** #1 — "`@covers` decorator with REQ validation and linkage registration"
 
-**Status:** Accepted
+**Status:** Completed
 
 ## Objective
 
@@ -55,11 +55,11 @@ registry cached for deterministic import-time validation.
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.21.0-01-01: Given `@covers("REQ-0.15.0-03-02")` on a test method, when the module is imported, then a LinkageRecord is registered.
-- [ ] REQ-0.21.0-01-02: Given `@covers("INVALID")` on a test method, when the module is imported, then ValueError is raised.
-- [ ] REQ-0.21.0-01-03: Given `@covers("REQ-9.9.9-99-99")` on a test method, when the module is imported, then ValueError is raised because the REQ does not exist in extracted briefs.
-- [ ] REQ-0.21.0-01-04: Given two `@covers` decorators on one test, when imported, then two LinkageRecords are registered.
-- [ ] REQ-0.21.0-01-05: Given `@covers("REQ-0.15.0-03-02")` on a test, when the test runs, then test behavior is unchanged.
+- [x] REQ-0.21.0-01-01: Given `@covers("REQ-0.15.0-03-02")` on a test method, when the module is imported, then a LinkageRecord is registered.
+- [x] REQ-0.21.0-01-02: Given `@covers("INVALID")` on a test method, when the module is imported, then ValueError is raised.
+- [x] REQ-0.21.0-01-03: Given `@covers("REQ-9.9.9-99-99")` on a test method, when the module is imported, then ValueError is raised because the REQ does not exist in extracted briefs.
+- [x] REQ-0.21.0-01-04: Given two `@covers` decorators on one test, when imported, then two LinkageRecords are registered.
+- [x] REQ-0.21.0-01-05: Given `@covers("REQ-0.15.0-03-02")` on a test, when the test runs, then test behavior is unchanged.
 
 ## Verification Commands (Concrete)
 
@@ -76,14 +76,36 @@ uv run gz typecheck
 
 ## Completion Checklist (Lite)
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Unit tests pass
-- [ ] **Code Quality:** Lint, format, type checks clean
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Unit tests pass
+- [x] **Code Quality:** Lint, format, type checks clean
 
 ---
 
-**Brief Status:** Accepted
+### Implementation Summary
 
-**Date Completed:** -
+- Module: `src/gzkit/traceability.py` — `@covers` decorator with format validation, brief-backed REQ existence checking, and LinkageRecord registration
+- Registry: Global `_LINKAGE_REGISTRY` collects all linkages; `_KNOWN_REQS` cache loads once per process from `scan_briefs()`
+- Tests: `tests/test_traceability.py` — 20 unit tests covering format validation, existence validation, linkage registration, metadata-only behavior, unittest+standalone compatibility
+- Coverage: 72% on `src/gzkit/traceability.py` (threshold: 40%)
+
+### Key Proof
+
+```
+$ uv run -m unittest tests.test_traceability -v
+Ran 20 tests in 0.000s  OK
+```
+
+```
+$ uv run gz lint
+Lint passed.
+
+$ uv run gz typecheck
+Type check passed.
+```
+
+**Brief Status:** Completed
+
+**Date Completed:** 2026-03-27
 
 **Evidence Hash:** -
