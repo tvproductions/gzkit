@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Documentation Coverage Gap Report",
+  "description": "Machine-readable output of the doc-coverage chore runner.",
+  "type": "object",
+  "required": [
+    "passed",
+    "commands_discovered",
+    "commands_checked",
+    "commands_with_gaps",
+    "gaps",
+    "undeclared_commands",
+    "orphaned_docs"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "passed": {
+      "type": "boolean",
+      "description": "True when no gaps, no undeclared commands, and no orphaned docs."
+    },
+    "commands_discovered": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total CLI commands found by AST scanning."
+    },
+    "commands_checked": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Commands with entries in the documentation manifest."
+    },
+    "commands_with_gaps": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Commands missing at least one required surface."
+    },
+    "gaps": {
+      "type": "array",
+      "description": "Individual documentation gaps (required surface missing).",
+      "items": {
+        "type": "object",
+        "required": ["command", "surface", "detail"],
+        "additionalProperties": false,
+        "properties": {
+          "command": {
+            "type": "string",
+            "description": "CLI command name."
+          },
+          "surface": {
+            "type": "string",
+            "description": "Missing surface name.",
+            "enum": [
+              "manpage",
+              "index_entry",
+              "operator_runbook",
+              "governance_runbook",
+              "docstring",
+              "command_docs_mapping"
+            ]
+          },
+          "detail": {
+            "type": "string",
+            "description": "Explanation of what is missing."
+          }
+        }
+      }
+    },
+    "undeclared_commands": {
+      "type": "array",
+      "description": "Commands discovered by AST but not declared in the manifest.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "orphaned_docs": {
+      "type": "array",
+      "description": "Documentation referencing removed or renamed commands.",
+      "items": {
+        "type": "object",
+        "required": ["surface", "reference", "detail"],
+        "additionalProperties": false,
+        "properties": {
+          "surface": {
+            "type": "string",
+            "description": "Which surface has the orphan."
+          },
+          "reference": {
+            "type": "string",
+            "description": "The orphaned reference (file path or key)."
+          },
+          "detail": {
+            "type": "string",
+            "description": "Explanation of why this is orphaned."
+          }
+        }
+      }
+    }
+  }
+}

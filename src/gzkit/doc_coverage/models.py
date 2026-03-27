@@ -46,3 +46,41 @@ class CoverageReport(BaseModel):
         ..., description="Documentation referencing removed commands"
     )
     passed: bool = Field(..., description="True only when no gaps and no orphans")
+
+
+class GapItem(BaseModel):
+    """A single documentation gap: a required surface that is missing."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    command: str = Field(..., description="CLI command name")
+    surface: str = Field(..., description="Missing surface name")
+    detail: str = Field(..., description="Explanation of what is missing")
+
+
+class OrphanedDocItem(BaseModel):
+    """Serialisable orphaned doc entry for the gap report."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    surface: str = Field(..., description="Which surface has the orphan")
+    reference: str = Field(..., description="The orphaned reference (file path or key)")
+    detail: str = Field(..., description="Explanation of why this is orphaned")
+
+
+class DocCoverageGapReport(BaseModel):
+    """Manifest-aware gap report produced by the doc-coverage chore runner."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    passed: bool = Field(..., description="True when no gaps, no undeclared, no orphans")
+    commands_discovered: int = Field(..., description="Total commands found by AST scanning")
+    commands_checked: int = Field(..., description="Commands with manifest entries")
+    commands_with_gaps: int = Field(..., description="Commands missing required surfaces")
+    gaps: list[GapItem] = Field(..., description="Individual documentation gaps")
+    undeclared_commands: list[str] = Field(
+        ..., description="Commands discovered but not declared in manifest"
+    )
+    orphaned_docs: list[OrphanedDocItem] = Field(
+        ..., description="Documentation referencing removed commands"
+    )

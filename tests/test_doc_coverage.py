@@ -1,7 +1,7 @@
 """Tests for the gzkit.doc_coverage package.
 
 Covers AST discovery, surface verification, orphan detection, models,
-manifest loading, and end-to-end integration.
+manifest loading, runner gap detection, and end-to-end integration.
 """
 
 import json
@@ -733,6 +733,196 @@ class TestManifestIntegration(unittest.TestCase):
         schema = json.loads(schema_path.read_text(encoding="utf-8"))
         self.assertEqual(schema["title"], "Documentation Coverage Manifest")
         self.assertIn("commands", schema["properties"])
+
+
+# ---------------------------------------------------------------------------
+# 10. Gap Report Model Tests
+# ---------------------------------------------------------------------------
+
+
+class TestGapReportModels(unittest.TestCase):
+    """Test Pydantic models for the gap report."""
+
+    def test_gap_item_frozen(self) -> None:
+        from gzkit.doc_coverage.models import GapItem
+
+        gap = GapItem(command="lint", surface="manpage", detail="Missing lint.md")
+        with self.assertRaises((TypeError, ValidationError)):
+            gap.command = "format"  # type: ignore[misc]
+
+    def test_gap_item_extra_forbid(self) -> None:
+        from gzkit.doc_coverage.models import GapItem
+
+        with self.assertRaises(ValidationError):
+            GapItem(
+                command="lint",
+                surface="manpage",
+                detail="Missing",
+                extra="forbidden",  # type: ignore[call-arg]
+            )
+
+    def test_orphaned_doc_item_frozen(self) -> None:
+        from gzkit.doc_coverage.models import OrphanedDocItem
+
+        item = OrphanedDocItem(surface="manpage", reference="ghost.md", detail="No match")
+        with self.assertRaises((TypeError, ValidationError)):
+            item.surface = "index"  # type: ignore[misc]
+
+    def test_gap_report_frozen(self) -> None:
+        from gzkit.doc_coverage.models import DocCoverageGapReport
+
+        report = DocCoverageGapReport(
+            passed=True,
+            commands_discovered=1,
+            commands_checked=1,
+            commands_with_gaps=0,
+            gaps=[],
+            undeclared_commands=[],
+            orphaned_docs=[],
+        )
+        with self.assertRaises((TypeError, ValidationError)):
+            report.passed = False  # type: ignore[misc]
+
+    def test_gap_report_extra_forbid(self) -> None:
+        from gzkit.doc_coverage.models import DocCoverageGapReport
+
+        with self.assertRaises(ValidationError):
+            DocCoverageGapReport(
+                passed=True,
+                commands_discovered=1,
+                commands_checked=1,
+                commands_with_gaps=0,
+                gaps=[],
+                undeclared_commands=[],
+                orphaned_docs=[],
+                extra="forbidden",  # type: ignore[call-arg]
+            )
+
+    def test_gap_report_serializes_to_json(self) -> None:
+        from gzkit.doc_coverage.models import DocCoverageGapReport, GapItem
+
+        gap = GapItem(command="lint", surface="manpage", detail="Missing lint.md")
+        report = DocCoverageGapReport(
+            passed=False,
+            commands_discovered=52,
+            commands_checked=52,
+            commands_with_gaps=1,
+            gaps=[gap],
+            undeclared_commands=[],
+            orphaned_docs=[],
+        )
+        data = report.model_dump()
+        self.assertFalse(data["passed"])
+        self.assertEqual(len(data["gaps"]), 1)
+        self.assertEqual(data["gaps"][0]["command"], "lint")
+
+
+# ---------------------------------------------------------------------------
+# 11. Runner Integration Tests
+# ---------------------------------------------------------------------------
+
+
+class TestBuildGapReport(unittest.TestCase):
+    """Test the runner gap report against the real project."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.project_root = Path(__file__).resolve().parent.parent
+
+    def test_build_gap_report_returns_valid_report(self) -> None:
+        from gzkit.doc_coverage.runner import build_gap_report
+
+        report = build_gap_report(self.project_root)
+        from gzkit.doc_coverage.models import DocCoverageGapReport
+
+        self.assertIsInstance(report, DocCoverageGapReport)
+        self.assertGreater(report.commands_discovered, 0)
+        self.assertGreater(report.commands_checked, 0)
+
+    def test_build_gap_report_no_undeclared_commands(self) -> None:
+        from gzkit.doc_coverage.runner import build_gap_report
+
+        report = build_gap_report(self.project_root)
+        self.assertEqual(
+            report.undeclared_commands,
+            [],
+            f"Undeclared commands: {report.undeclared_commands}",
+        )
+
+    def test_gap_report_json_conforms_to_schema(self) -> None:
+        from gzkit.doc_coverage.runner import build_gap_report
+
+        report = build_gap_report(self.project_root)
+        data = report.model_dump()
+        schema_path = self.project_root / "data" / "schemas" / "doc-coverage-report.schema.json"
+        self.assertTrue(schema_path.exists(), "Gap report schema must exist")
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+        # Verify top-level required keys match schema
+        for key in schema["required"]:
+            self.assertIn(key, data, f"Missing required key: {key}")
+        # Verify no extra keys
+        for key in data:
+            self.assertIn(key, schema["properties"], f"Unexpected key: {key}")
+
+
+class TestRunDocCoverage(unittest.TestCase):
+    """Test the run_doc_coverage entry point."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.project_root = Path(__file__).resolve().parent.parent
+
+    def test_run_returns_int(self) -> None:
+        from gzkit.doc_coverage.runner import run_doc_coverage
+
+        result = run_doc_coverage(self.project_root, json_output=False)
+        self.assertIsInstance(result, int)
+        self.assertIn(result, (0, 1))
+
+    def test_run_json_mode_returns_int(self) -> None:
+        from gzkit.doc_coverage.runner import run_doc_coverage
+
+        result = run_doc_coverage(self.project_root, json_output=True)
+        self.assertIsInstance(result, int)
+        self.assertIn(result, (0, 1))
+
+
+# ---------------------------------------------------------------------------
+# 12. Chore Registration Test
+# ---------------------------------------------------------------------------
+
+
+class TestChoreRegistration(unittest.TestCase):
+    """Verify the doc-coverage chore is properly registered."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.project_root = Path(__file__).resolve().parent.parent
+
+    def test_doc_coverage_in_chore_registry(self) -> None:
+        registry_path = self.project_root / "config" / "gzkit.chores.json"
+        data = json.loads(registry_path.read_text(encoding="utf-8"))
+        slugs = [c["slug"] for c in data["chores"]]
+        self.assertIn("doc-coverage", slugs, "doc-coverage chore must be registered")
+
+    def test_doc_coverage_chore_frequency(self) -> None:
+        registry_path = self.project_root / "config" / "gzkit.chores.json"
+        data = json.loads(registry_path.read_text(encoding="utf-8"))
+        entry = next(c for c in data["chores"] if c["slug"] == "doc-coverage")
+        self.assertEqual(entry.get("frequency"), "per-release")
+
+    def test_doc_coverage_chore_dir_exists(self) -> None:
+        chore_dir = self.project_root / "ops" / "chores" / "doc-coverage"
+        self.assertTrue(chore_dir.is_dir(), "Chore directory must exist")
+        self.assertTrue((chore_dir / "CHORE.md").exists(), "CHORE.md must exist")
+        self.assertTrue((chore_dir / "acceptance.json").exists(), "acceptance.json must exist")
+        self.assertTrue((chore_dir / "README.md").exists(), "README.md must exist")
+
+    def test_doc_coverage_schema_exists(self) -> None:
+        schema_path = self.project_root / "data" / "schemas" / "doc-coverage-report.schema.json"
+        self.assertTrue(schema_path.exists(), "Gap report schema must exist")
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+        self.assertEqual(schema["title"], "Documentation Coverage Gap Report")
 
 
 if __name__ == "__main__":
