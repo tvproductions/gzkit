@@ -232,4 +232,4 @@ reports it as undeclared.
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.6 | Pending | | | |
+| 0.0.6 | Completed | Jeff | 2026-03-26 | completed |
