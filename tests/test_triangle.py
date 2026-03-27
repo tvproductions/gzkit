@@ -35,7 +35,7 @@ from gzkit.triangle import (
 
 class TestReqIdParsing(unittest.TestCase):
     """@covers REQ-0.20.0-01-01
-    @covers REQ-0.20.0-01-07
+    @covers REQ-0.20.0-01-02
     """
 
     def test_parse_valid_req_id(self) -> None:
@@ -158,7 +158,7 @@ class TestEdgeTypes(unittest.TestCase):
 
 
 class TestVertexRef(unittest.TestCase):
-    """@covers REQ-0.20.0-01-05"""
+    """@covers REQ-0.20.0-01-03"""
 
     def test_create_spec_vertex(self) -> None:
         ref = VertexRef(
@@ -198,7 +198,7 @@ class TestVertexRef(unittest.TestCase):
 
 class TestLinkageRecord(unittest.TestCase):
     """@covers REQ-0.20.0-01-03
-    @covers REQ-0.20.0-01-05
+    @covers REQ-0.20.0-01-04
     """
 
     def _make_linkage(self) -> LinkageRecord:
@@ -886,12 +886,15 @@ class TestScanCoversReferences(unittest.TestCase):
         """REQ-0.20.0-04-02: Extract @covers REQ references from test files."""
         from gzkit.commands.drift import scan_covers_references
 
+        # Build fixture content via f-string so the @covers pattern does not
+        # appear literally in this source file (avoids false-positive orphans
+        # when gz drift scans the tests/ directory).
+        tag = "@" + "covers"
+        fixture = f'"""{tag} REQ-0.1.0-01-01\n{tag} REQ-0.1.0-01-02\n"""\nimport unittest\n'
+
         with tempfile.TemporaryDirectory() as tmp:
             test_file = Path(tmp) / "test_example.py"
-            test_file.write_text(
-                '"""@covers REQ-0.1.0-01-01\n@covers REQ-0.1.0-01-02\n"""\nimport unittest\n',
-                encoding="utf-8",
-            )
+            test_file.write_text(fixture, encoding="utf-8")
 
             linkages = scan_covers_references(Path(tmp))
 
@@ -913,9 +916,10 @@ class TestScanCoversReferences(unittest.TestCase):
     def test_scan_skips_non_python_files(self) -> None:
         from gzkit.commands.drift import scan_covers_references
 
+        tag = "@" + "covers"
         with tempfile.TemporaryDirectory() as tmp:
             md_file = Path(tmp) / "notes.md"
-            md_file.write_text("@covers REQ-0.1.0-01-01\n", encoding="utf-8")
+            md_file.write_text(f"{tag} REQ-0.1.0-01-01\n", encoding="utf-8")
 
             linkages = scan_covers_references(Path(tmp))
 
@@ -1031,12 +1035,13 @@ class TestFormatJson(unittest.TestCase):
 
 
 class TestDriftCmdExitCodes(unittest.TestCase):
-    """@covers REQ-0.20.0-04-07
+    """@covers REQ-0.20.0-04-03
+    @covers REQ-0.20.0-04-04
     @covers OBPI-0.20.0-04-gz-drift-cli-surface
     """
 
     def test_exit_0_no_drift(self) -> None:
-        """REQ-0.20.0-04-07: Exit 0 when no drift detected."""
+        """REQ-0.20.0-04-03: Exit 0 when no drift detected."""
         from unittest.mock import patch as _patch
 
         from gzkit.commands.drift import drift_cmd
@@ -1056,7 +1061,7 @@ class TestDriftCmdExitCodes(unittest.TestCase):
                 )
 
     def test_exit_1_with_drift(self) -> None:
-        """REQ-0.20.0-04-07: Exit 1 when drift detected."""
+        """REQ-0.20.0-04-04: Exit 1 when drift detected."""
         from unittest.mock import patch as _patch
 
         from gzkit.commands.drift import drift_cmd
@@ -1090,12 +1095,12 @@ class TestDriftCmdExitCodes(unittest.TestCase):
 
 
 class TestDriftHelpText(unittest.TestCase):
-    """@covers REQ-0.20.0-04-08
+    """@covers REQ-0.20.0-04-06
     @covers OBPI-0.20.0-04-gz-drift-cli-surface
     """
 
     def test_help_includes_description(self) -> None:
-        """REQ-0.20.0-04-08: Help includes description, options, example."""
+        """REQ-0.20.0-04-06: Help includes description, options, example."""
         import subprocess as sp
 
         result = sp.run(
@@ -1111,7 +1116,7 @@ class TestDriftHelpText(unittest.TestCase):
         self.assertIn("Examples", result.stdout)
 
     def test_help_lines_under_80_chars(self) -> None:
-        """REQ-0.20.0-04-10: Help text lines <= 80 chars."""
+        """REQ-0.20.0-04-06: Help text lines <= 80 chars."""
         import subprocess as sp
 
         result = sp.run(

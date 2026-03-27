@@ -150,8 +150,8 @@ class LinkageRecord(BaseModel):
 
 _AC_LINE_PATTERN = re.compile(
     r"^-\s+\[(?P<check>[xX ])\]\s+"
-    r"(?P<req_id>REQ-\d+\.\d+\.\d+-\d+-\d+)"
-    r":\s*(?P<description>.+)$"
+    r"\*{0,2}(?P<req_id>REQ-\d+\.\d+\.\d+-\d+-\d+)"
+    r":\*{0,2}\s*(?P<description>.+)$"
 )
 
 
