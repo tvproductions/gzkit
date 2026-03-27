@@ -67,6 +67,13 @@ class ReqStatus(enum.StrEnum):
     UNCHECKED = "unchecked"
 
 
+class ReqKind(enum.StrEnum):
+    """Whether a REQ is testable code or documentation-only."""
+
+    CODE = "code"
+    DOC = "doc"
+
+
 class ReqEntity(BaseModel):
     """A single requirement extracted from an OBPI brief acceptance criteria section."""
 
@@ -76,6 +83,7 @@ class ReqEntity(BaseModel):
     description: str = Field(..., description="Human-readable criterion text")
     status: ReqStatus = Field(..., description="Checked or unchecked in the brief")
     parent_obpi: str = Field(..., description="Parent OBPI reference (e.g. 'OBPI-0.15.0-03')")
+    kind: ReqKind = Field(ReqKind.CODE, description="Code (testable) or doc (non-testable)")
 
 
 # ---------------------------------------------------------------------------
@@ -151,7 +159,7 @@ class LinkageRecord(BaseModel):
 _AC_LINE_PATTERN = re.compile(
     r"^-\s+\[(?P<check>[xX ])\]\s+"
     r"\*{0,2}(?P<req_id>REQ-\d+\.\d+\.\d+-\d+-\d+)"
-    r":\*{0,2}\s*(?P<description>.+)$"
+    r":\*{0,2}\s*(?:\[(?P<kind>doc)\]\s+)?(?P<description>.+)$"
 )
 
 
@@ -210,6 +218,7 @@ def extract_reqs_from_brief(content: str, parent_obpi: str) -> list[ReqEntity]:
             continue
 
         status = ReqStatus.CHECKED if m.group("check").lower() == "x" else ReqStatus.UNCHECKED
+        kind = ReqKind.DOC if m.group("kind") == "doc" else ReqKind.CODE
 
         reqs.append(
             ReqEntity(
@@ -217,6 +226,7 @@ def extract_reqs_from_brief(content: str, parent_obpi: str) -> list[ReqEntity]:
                 description=m.group("description").strip(),
                 status=status,
                 parent_obpi=parent_obpi,
+                kind=kind,
             )
         )
 
