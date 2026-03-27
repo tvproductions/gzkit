@@ -24,6 +24,8 @@ from gzkit.ledger import (
     audit_receipt_emitted_event,
     normalize_req_proof_inputs,
 )
+from gzkit.traceability import CoverageEntry, compute_coverage, scan_test_tree
+from gzkit.triangle import ReqId, scan_briefs
 from gzkit.utils import capture_validation_anchor
 
 
@@ -77,12 +79,26 @@ def adr_audit_check(adr: str, as_json: bool) -> None:
             complete.append(obpi_id)
 
     passed = not findings
+
+    adr_dir = project_root / config.paths.adrs
+    coverage = _compute_adr_coverage(project_root, adr_id, adr_dir)
+    advisory_findings: list[dict[str, Any]] = [
+        {
+            "id": u["req_id"],
+            "issue": "REQ not covered by any @covers test annotation.",
+            "severity": "advisory",
+        }
+        for u in coverage["uncovered"]
+    ]
+
     result = {
         "adr": adr_id,
         "passed": passed,
         "checked_obpis": sorted(obpi_files.keys()),
         "complete_obpis": complete,
         "findings": findings,
+        "coverage": coverage,
+        "advisory_findings": advisory_findings,
     }
 
     if as_json:
@@ -100,9 +116,109 @@ def adr_audit_check(adr: str, as_json: bool) -> None:
                 finding_id = finding.get("id") or "(none)"
                 issue = finding.get("issue", "")
                 console.print(f"  - {finding_id}: {issue}")
+        _print_coverage_section(coverage, advisory_findings)
 
     if not passed:
         raise SystemExit(1)
+
+
+def _extract_adr_semver(adr_id: str) -> str | None:
+    """Extract X.Y.Z semantic version from an ADR identifier."""
+    match = re.match(r"^ADR-(\d+\.\d+\.\d+)", adr_id)
+    return match.group(1) if match else None
+
+
+def _compute_adr_coverage(
+    project_root: Path, adr_id: str, adr_dir: Path | None = None
+) -> dict[str, Any]:
+    """Compute requirement coverage for an ADR's REQs (advisory, non-blocking)."""
+    empty: dict[str, Any] = {
+        "total_reqs": 0,
+        "covered_reqs": 0,
+        "uncovered_reqs": 0,
+        "coverage_percent": 0.0,
+        "by_obpi": [],
+        "uncovered": [],
+    }
+    semver = _extract_adr_semver(adr_id)
+    if not semver:
+        return empty
+
+    if adr_dir is None:
+        adr_dir = project_root / "docs" / "design" / "adr"
+    tests_dir = project_root / "tests"
+    if not adr_dir.is_dir() or not tests_dir.is_dir():
+        return empty
+
+    discovered = scan_briefs(adr_dir)
+    linkage_records = scan_test_tree(tests_dir)
+    report = compute_coverage(discovered, linkage_records)
+
+    prefix = f"REQ-{semver}-"
+    adr_entries = [e for e in report.entries if e.req_id.startswith(prefix)]
+    if not adr_entries:
+        return empty
+
+    total = len(adr_entries)
+    covered = sum(1 for e in adr_entries if e.covered)
+
+    obpi_groups: dict[str, list[CoverageEntry]] = {}
+    for entry in adr_entries:
+        parsed = ReqId.parse(entry.req_id)
+        obpi_key = f"OBPI-{parsed.semver}-{parsed.obpi_item}"
+        obpi_groups.setdefault(obpi_key, []).append(entry)
+
+    by_obpi = []
+    for obpi_key in sorted(obpi_groups):
+        group = obpi_groups[obpi_key]
+        g_total = len(group)
+        g_covered = sum(1 for e in group if e.covered)
+        by_obpi.append(
+            {
+                "obpi": obpi_key,
+                "total_reqs": g_total,
+                "covered_reqs": g_covered,
+                "uncovered_reqs": g_total - g_covered,
+                "coverage_percent": round(g_covered / g_total * 100, 1) if g_total > 0 else 0.0,
+            }
+        )
+
+    return {
+        "total_reqs": total,
+        "covered_reqs": covered,
+        "uncovered_reqs": total - covered,
+        "coverage_percent": round(covered / total * 100, 1),
+        "by_obpi": by_obpi,
+        "uncovered": [
+            {"req_id": e.req_id, "severity": "advisory"} for e in adr_entries if not e.covered
+        ],
+    }
+
+
+def _print_coverage_section(
+    coverage: dict[str, Any],
+    advisory_findings: list[dict[str, Any]],
+) -> None:
+    """Render human-readable coverage section for audit-check output."""
+    total = coverage["total_reqs"]
+    if total == 0:
+        console.print("\n[bold]Coverage:[/bold] No REQs found for this ADR.")
+        return
+
+    covered = coverage["covered_reqs"]
+    pct = coverage["coverage_percent"]
+    console.print(f"\n[bold]Coverage:[/bold] {covered}/{total} REQs covered ({pct}%)")
+    for row in coverage["by_obpi"]:
+        obpi = row["obpi"]
+        cov = row["covered_reqs"]
+        tot = row["total_reqs"]
+        pct_obpi = row["coverage_percent"]
+        console.print(f"  {obpi}: {cov}/{tot} ({pct_obpi}%)")
+
+    if advisory_findings:
+        console.print("[yellow]Advisory:[/yellow] Uncovered REQs:")
+        for finding in advisory_findings:
+            console.print(f"  - {finding['id']}")
 
 
 def _collect_covers_annotations(project_root: Path) -> dict[str, list[str]]:
