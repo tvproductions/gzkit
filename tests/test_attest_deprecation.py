@@ -11,6 +11,7 @@ from pathlib import Path
 
 from gzkit.cli import main
 from gzkit.ledger import Ledger, closeout_initiated_event
+from gzkit.traceability import covers
 from tests.commands.common import CliRunner, _init_git_repo, _quick_init
 
 
@@ -32,6 +33,7 @@ def _setup_adr_with_closeout(runner: CliRunner, project_root: Path) -> Ledger:
 class TestAttestDeprecationWarning(unittest.TestCase):
     """REQ-0.19.0-09-01/02: Deprecation warning when closeout is active."""
 
+    @covers("REQ-0.19.0-09-01")
     def test_warning_shown_when_closeout_active(self):
         """REQ-01: gz attest prints deprecation warning when closeout_initiated exists."""
         runner = CliRunner()
@@ -48,6 +50,7 @@ class TestAttestDeprecationWarning(unittest.TestCase):
             self.assertIn("closeout", result.output.lower())
             self.assertIn("deprecated", result.output.lower())
 
+    @covers("REQ-0.19.0-09-02")
     def test_no_warning_without_closeout(self):
         """REQ-02: No deprecation warning when no closeout_initiated event exists."""
         runner = CliRunner()
@@ -66,6 +69,7 @@ class TestAttestDeprecationWarning(unittest.TestCase):
 class TestAttestDeprecationContinuesNormally(unittest.TestCase):
     """REQ-0.19.0-09-03: Attestation proceeds normally after the warning."""
 
+    @covers("REQ-0.19.0-09-03")
     def test_attestation_recorded_after_warning(self):
         """REQ-03: Attestation event and closeout form written despite warning."""
         runner = CliRunner()
@@ -93,6 +97,7 @@ class TestAttestDeprecationContinuesNormally(unittest.TestCase):
 class TestAttestDeprecationDryRun(unittest.TestCase):
     """REQ-0.19.0-09-04: Dry-run shows warning but writes no ledger event."""
 
+    @covers("REQ-0.19.0-09-04")
     def test_dry_run_shows_warning_no_ledger_write(self):
         """REQ-04: --dry-run with closeout active shows warning, no ledger event."""
         runner = CliRunner()
