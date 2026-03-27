@@ -679,3 +679,176 @@ class TestComputeCoverage(unittest.TestCase):
         json_str = report.model_dump_json()
         self.assertIn("by_adr", json_str)
         self.assertIn("by_obpi", json_str)
+
+
+# ---------------------------------------------------------------------------
+# OBPI-03: gz covers CLI tests
+# ---------------------------------------------------------------------------
+
+
+class TestCoversCLIHelp(unittest.TestCase):
+    """gz covers --help works and shows required elements."""
+
+    def test_help_exits_zero(self):
+        import io
+        from contextlib import redirect_stderr, redirect_stdout
+
+        from gzkit.cli import main
+
+        out = io.StringIO()
+        with redirect_stdout(out), redirect_stderr(out):
+            try:
+                code = main(["covers", "--help"])
+            except SystemExit as exc:
+                code = exc.code
+        self.assertEqual(code, 0)
+        text = out.getvalue()
+        self.assertIn("--json", text)
+        self.assertIn("--plain", text)
+
+    def test_help_shows_description(self):
+        import contextlib
+        import io
+        from contextlib import redirect_stderr, redirect_stdout
+
+        from gzkit.cli import main
+
+        out = io.StringIO()
+        with redirect_stdout(out), redirect_stderr(out), contextlib.suppress(SystemExit):
+            main(["covers", "--help"])
+        text = out.getvalue()
+        self.assertIn("coverage", text.lower())
+
+    def test_help_shows_examples(self):
+        import contextlib
+        import io
+        from contextlib import redirect_stderr, redirect_stdout
+
+        from gzkit.cli import main
+
+        out = io.StringIO()
+        with redirect_stdout(out), redirect_stderr(out), contextlib.suppress(SystemExit):
+            main(["covers", "--help"])
+        text = out.getvalue()
+        self.assertIn("gz covers", text)
+
+
+class TestCoversCLIOutput(unittest.TestCase):
+    """gz covers produces correct output in all three modes."""
+
+    def setUp(self):
+        self._tmpdir = tempfile.TemporaryDirectory()
+        self.tmp = Path(self._tmpdir.name)
+        self.adr_dir = self.tmp / "design" / "adr" / "pre-release" / "ADR-0.15.0"
+        self.adr_dir.mkdir(parents=True)
+        obpis = self.adr_dir / "obpis"
+        obpis.mkdir()
+        (obpis / "OBPI-0.15.0-03-demo.md").write_text(
+            "---\n"
+            "id: OBPI-0.15.0-03-demo\n"
+            "parent: ADR-0.15.0\n"
+            "item: 3\n"
+            "lane: Lite\n"
+            "status: Accepted\n"
+            "---\n\n"
+            "# OBPI-0.15.0-03: Demo\n\n"
+            "## Acceptance Criteria\n\n"
+            "- [ ] REQ-0.15.0-03-01: First criterion.\n"
+            "- [ ] REQ-0.15.0-03-02: Second criterion.\n",
+            encoding="utf-8",
+        )
+
+        self.test_dir = self.tmp / "tests"
+        self.test_dir.mkdir()
+        (self.test_dir / "test_demo.py").write_text(
+            textwrap.dedent("""\
+                from gzkit.traceability import covers
+
+                @covers("REQ-0.15.0-03-01")
+                def test_one():
+                    pass
+            """),
+            encoding="utf-8",
+        )
+
+    def tearDown(self):
+        self._tmpdir.cleanup()
+
+    def _run_covers(self, extra_args: list[str] | None = None) -> tuple[int, str]:
+        import io
+        from contextlib import redirect_stderr, redirect_stdout
+
+        from gzkit.cli import main
+
+        args = [
+            "covers",
+            "--adr-dir",
+            str(self.adr_dir.parent),
+            "--test-dir",
+            str(self.test_dir),
+        ]
+        if extra_args:
+            args.extend(extra_args)
+        out = io.StringIO()
+        with redirect_stdout(out), redirect_stderr(out):
+            try:
+                code = main(args)
+            except SystemExit as exc:
+                code = exc.code
+        return 0 if code is None else int(code), out.getvalue()
+
+    def test_exit_code_always_zero(self):
+        code, _ = self._run_covers()
+        self.assertEqual(code, 0)
+
+    def test_json_output_valid(self):
+        import json
+
+        code, output = self._run_covers(["--json"])
+        self.assertEqual(code, 0)
+        data = json.loads(output)
+        self.assertIn("by_adr", data)
+        self.assertIn("by_obpi", data)
+        self.assertIn("entries", data)
+        self.assertIn("summary", data)
+
+    def test_json_shows_coverage_data(self):
+        import json
+
+        _, output = self._run_covers(["--json"])
+        data = json.loads(output)
+        self.assertEqual(data["summary"]["total_reqs"], 2)
+        self.assertEqual(data["summary"]["covered_reqs"], 1)
+
+    def test_plain_one_record_per_line(self):
+        _, output = self._run_covers(["--plain"])
+        lines = output.strip().splitlines()
+        self.assertEqual(len(lines), 2)
+        self.assertIn("covered", lines[0])
+        self.assertIn("uncovered", lines[1])
+
+    def test_human_shows_summary(self):
+        code, output = self._run_covers()
+        self.assertEqual(code, 0)
+        self.assertIn("Summary", output)
+
+    def test_filter_by_adr(self):
+        import json
+
+        _, output = self._run_covers(["ADR-0.15.0", "--json"])
+        data = json.loads(output)
+        self.assertEqual(data["summary"]["total_reqs"], 2)
+
+    def test_filter_by_obpi(self):
+        import json
+
+        _, output = self._run_covers(["OBPI-0.15.0-03", "--json"])
+        data = json.loads(output)
+        self.assertEqual(data["summary"]["total_reqs"], 2)
+
+    def test_filter_nonexistent_adr_returns_empty(self):
+        import json
+
+        _, output = self._run_covers(["ADR-9.9.9", "--json"])
+        data = json.loads(output)
+        self.assertEqual(data["summary"]["total_reqs"], 0)
