@@ -29,6 +29,7 @@ OBPI_RUNTIME_STATES = {
     "attested_completed",
     "validated",
     "drift",
+    "withdrawn",
 }
 OBPI_COMPLETED_RUNTIME_STATES = {"completed", "attested_completed", "validated"}
 OBPI_PROOF_STATES = {"missing", "partial", "recorded", "validated"}
@@ -139,6 +140,16 @@ def obpi_created_event(obpi_id: str, parent: str) -> LedgerEvent:
         event="obpi_created",
         id=obpi_id,
         parent=parent,
+    )
+
+
+def obpi_withdrawn_event(obpi_id: str, parent: str, reason: str) -> LedgerEvent:
+    """Create an OBPI withdrawn event."""
+    return LedgerEvent(
+        event="obpi_withdrawn",
+        id=obpi_id,
+        parent=parent,
+        extra={"reason": reason},
     )
 
 
@@ -849,6 +860,29 @@ def _derive_obpi_runtime_state(
     return "pending"
 
 
+def _withdrawn_obpi_semantics() -> dict[str, Any]:
+    """Return canonical semantics for a withdrawn OBPI."""
+    return {
+        "runtime_state": "withdrawn",
+        "proof_state": "missing",
+        "attestation_requirement": "optional",
+        "attestation_state": "not_required",
+        "req_proof_state": "missing",
+        "req_proof_inputs": [],
+        "req_proof_summary": {"state": "missing", "present": 0, "total": 0},
+        "completed": False,
+        "ledger_completed": False,
+        "evidence_ok": False,
+        "reflection_issues": [],
+        "anchor_state": "none",
+        "anchor_commit": None,
+        "current_head": None,
+        "anchor_issues": [],
+        "anchor_drift_files": [],
+        "issues": [],
+    }
+
+
 def derive_obpi_semantics(
     info: dict[str, Any],
     *,
@@ -865,6 +899,8 @@ def derive_obpi_semantics(
     files_since_anchor: list[str] | None = None,
 ) -> dict[str, Any]:
     """Derive shared OBPI runtime semantics from ledger and brief evidence."""
+    if info.get("withdrawn"):
+        return _withdrawn_obpi_semantics()
     latest_receipt_event = info.get("latest_receipt_event")
     obpi_completion = info.get("obpi_completion")
     ledger_completed = bool(info.get("ledger_completed"))
@@ -1148,6 +1184,8 @@ class Ledger:
             "attested": False,
         }
         if event.event == "obpi_created":
+            entry["withdrawn"] = False
+            entry["withdrawn_reason"] = None
             entry["latest_receipt_event"] = None
             entry["latest_evidence"] = None
             entry["latest_completion_evidence"] = None
@@ -1278,6 +1316,19 @@ class Ledger:
         if receipt_event == "validated":
             graph[canonical_id]["validated"] = True
 
+    @staticmethod
+    def _apply_obpi_withdrawn_metadata(
+        graph: dict[str, dict[str, Any]],
+        canonical_id: str,
+        event: LedgerEvent,
+    ) -> None:
+        if event.event != "obpi_withdrawn" or canonical_id not in graph:
+            return
+        if graph[canonical_id].get("type") != "obpi":
+            return
+        graph[canonical_id]["withdrawn"] = True
+        graph[canonical_id]["withdrawn_reason"] = event.extra.get("reason")
+
     @classmethod
     def _apply_graph_event_metadata(
         cls,
@@ -1291,6 +1342,7 @@ class Ledger:
         cls._apply_closeout_metadata(graph, canonical_id, event)
         cls._apply_audit_receipt_metadata(graph, canonical_id, event)
         cls._apply_obpi_receipt_metadata(graph, canonical_id, event)
+        cls._apply_obpi_withdrawn_metadata(graph, canonical_id, event)
 
     def get_artifact_graph(self) -> dict[str, dict[str, Any]]:
         """Build a graph of artifacts and their relationships.

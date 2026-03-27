@@ -640,6 +640,7 @@ def _collect_obpi_files_for_adr(
         child_id
         for child_id in adr_info.get("children", [])
         if graph.get(child_id, {}).get("type") == "obpi"
+        and not graph.get(child_id, {}).get("withdrawn", False)
     ]
 
     if obpi_index is None:

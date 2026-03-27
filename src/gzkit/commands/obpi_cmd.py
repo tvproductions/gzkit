@@ -28,6 +28,7 @@ from gzkit.ledger import (
     Ledger,
     normalize_req_proof_inputs,
     obpi_receipt_emitted_event,
+    obpi_withdrawn_event,
     resolve_adr_lane,
 )
 from gzkit.pipeline_runtime import (
@@ -44,6 +45,40 @@ from gzkit.pipeline_runtime import (
     write_pipeline_markers,
 )
 from gzkit.utils import capture_validation_anchor
+
+
+def obpi_withdraw_cmd(obpi: str, reason: str, dry_run: bool) -> None:
+    """Withdraw a phantom or erroneous OBPI from the ledger."""
+    config = ensure_initialized()
+    project_root = get_project_root()
+    ledger = Ledger(project_root / config.paths.ledger)
+
+    canonical_id = ledger.canonicalize_id(obpi)
+    graph = ledger.get_artifact_graph()
+    info = graph.get(canonical_id, {})
+    if info.get("type") != "obpi":
+        raise GzCliError(f"OBPI not found in ledger: {canonical_id}")
+    if info.get("withdrawn"):
+        raise GzCliError(f"OBPI is already withdrawn: {canonical_id}")
+
+    parent = info.get("parent", "")
+    event = obpi_withdrawn_event(
+        obpi_id=canonical_id,
+        parent=parent if isinstance(parent, str) else "",
+        reason=reason,
+    )
+
+    if dry_run:
+        console.print("[yellow]Dry run:[/yellow] no ledger event will be written.")
+        console.print(json.dumps(event.model_dump(), indent=2))
+        return
+
+    ledger.append(event)
+    console.print("[green]OBPI withdrawn.[/green]")
+    console.print(f"  OBPI: {canonical_id}")
+    if parent:
+        console.print(f"  Parent ADR: {parent}")
+    console.print(f"  Reason: {reason}")
 
 
 def obpi_emit_receipt_cmd(
