@@ -3,7 +3,7 @@ id: OBPI-0.20.0-04-gz-drift-cli-surface
 parent: ADR-0.20.0-spec-triangle-sync
 item: 4
 lane: Heavy
-status: Accepted
+status: Completed
 ---
 
 # OBPI-0.20.0-04: gz drift CLI Surface
@@ -88,58 +88,90 @@ human-readable (default), `--json`, and `--plain` output modes.
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.20.0-04-01: Given a repository with drift, when `gz drift` is run, then human-readable output shows unlinked specs, orphan tests, and unjustified code changes in tables.
-- [ ] REQ-0.20.0-04-02: Given a repository with drift, when `gz drift --json` is run, then valid JSON DriftReport is written to stdout.
-- [ ] REQ-0.20.0-04-03: Given a repository with no drift, when `gz drift` is run, then exit code is 0 and output confirms no drift.
-- [ ] REQ-0.20.0-04-04: Given a repository with drift in any category, when `gz drift` is run, then exit code is 1.
-- [ ] REQ-0.20.0-04-05: Given changed source files without any matching governance justification in the inspected window, when `gz drift` is run, then unjustified code changes are reported.
-- [ ] REQ-0.20.0-04-06: Given `gz drift --help`, then output includes description, usage, options, and example.
+- [x] REQ-0.20.0-04-01: Given a repository with drift, when `gz drift` is run, then human-readable output shows unlinked specs, orphan tests, and unjustified code changes in tables.
+- [x] REQ-0.20.0-04-02: Given a repository with drift, when `gz drift --json` is run, then valid JSON DriftReport is written to stdout.
+- [x] REQ-0.20.0-04-03: Given a repository with no drift, when `gz drift` is run, then exit code is 0 and output confirms no drift.
+- [x] REQ-0.20.0-04-04: Given a repository with drift in any category, when `gz drift` is run, then exit code is 1.
+- [x] REQ-0.20.0-04-05: Given changed source files without any matching governance justification in the inspected window, when `gz drift` is run, then unjustified code changes are reported.
+- [x] REQ-0.20.0-04-06: Given `gz drift --help`, then output includes description, usage, options, and example.
 
 ## Completion Checklist (Heavy)
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Gate 3 (Docs):** Docs build, command docs created
-- [ ] **Gate 4 (BDD):** Acceptance scenarios pass
-- [ ] **Gate 5 (Human):** Human attestation recorded
-- [ ] **Code Quality:** Lint, format, type checks clean
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Gate 3 (Docs):** Docs build, command docs created
+- [x] **Gate 4 (BDD):** Acceptance scenarios pass
+- [x] **Gate 5 (Human):** Human attestation recorded
+- [x] **Code Quality:** Lint, format, type checks clean
 
 ## Evidence
+
+### Implementation Summary
+
+- Created: `src/gzkit/commands/drift.py` — drift CLI command with scanning, formatting, exit codes
+- Created: `docs/user/commands/drift.md` — command documentation with examples
+- Created: `features/triangle_drift.feature` — 4 BDD acceptance scenarios
+- Created: `features/steps/triangle_drift_steps.py` — BDD step implementations
+- Modified: `src/gzkit/cli/main.py` — register drift subcommand
+- Modified: `tests/test_triangle.py` — 16 new CLI smoke tests (82 total)
+
+### Key Proof
+
+```text
+$ uv run gz drift --json
+{
+  "unlinked_specs": [],
+  "orphan_tests": [],
+  "unjustified_code_changes": [],
+  "summary": {
+    "total_drift_count": 0
+  }
+}
+Exit code: 0
+
+$ uv run -m unittest tests.test_triangle -q
+Ran 82 tests in 0.343s — OK
+
+$ uv run -m behave features/triangle_drift.feature
+4 scenarios passed, 0 failed — 22 steps passed
+```
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+Ran 82 tests in 0.343s — OK
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Paste mkdocs build output here
+uv run mkdocs build --strict — pass
+docs/user/commands/drift.md created
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here
+4 scenarios passed, 0 failed, 0 skipped
+22 steps passed, 0 failed, 0 skipped
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation here
+Human attestation: "attest completed" — 2026-03-27
 ```
 
 ## Human Attestation
 
-- Attestor: `human:<name>`
-- Attestation:
-- Date:
+- Attestor: `human:jeff`
+- Attestation: attest completed
+- Date: 2026-03-27
 
 ---
 
-**Brief Status:** Accepted
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-27
 
 **Evidence Hash:** -

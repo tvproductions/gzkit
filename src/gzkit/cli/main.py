@@ -49,6 +49,7 @@ from gzkit.commands.common import (
     resolve_target_adr,  # noqa: F401 — test-mock compat
 )
 from gzkit.commands.config_paths import check_config_paths_cmd
+from gzkit.commands.drift import drift_cmd  # noqa: F401 — used in _build_parser
 from gzkit.commands.gates import (
     _run_eval_delta,  # noqa: F401 — test-mock compat
     _run_gate_1,  # noqa: F401 — test-mock compat
@@ -1287,6 +1288,45 @@ def _build_parser() -> argparse.ArgumentParser:
             ]
         ),
     ).set_defaults(func=lambda a: check())
+
+    p_drift = commands.add_parser(
+        "drift",
+        help="Detect spec-test-code drift",
+        description="Detect spec-test-code governance drift.",
+        epilog=build_epilog(
+            [
+                "gz drift",
+                "gz drift --json",
+                "gz drift --plain",
+                "gz drift --adr-dir path/to/adrs",
+            ]
+        ),
+    )
+    add_json_flag(p_drift)
+    p_drift.add_argument(
+        "--plain",
+        action="store_true",
+        default=False,
+        help="One record per line (grep-friendly)",
+    )
+    p_drift.add_argument(
+        "--adr-dir",
+        default=None,
+        help="Override ADR directory to scan (default: docs/design/adr)",
+    )
+    p_drift.add_argument(
+        "--test-dir",
+        default=None,
+        help="Override test directory to scan (default: tests)",
+    )
+    p_drift.set_defaults(
+        func=lambda a: drift_cmd(
+            as_json=a.as_json,
+            plain=a.plain,
+            adr_dir=a.adr_dir,
+            test_dir=a.test_dir,
+        )
+    )
 
     p_skill = commands.add_parser(
         "skill",
