@@ -3,7 +3,7 @@ id: OBPI-0.20.0-03-drift-detection-engine
 parent: ADR-0.20.0-spec-triangle-sync
 item: 3
 lane: Lite
-status: Accepted
+status: Completed
 ---
 
 # OBPI-0.20.0-03: Drift Detection Engine
@@ -13,7 +13,7 @@ status: Accepted
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.20.0-spec-triangle-sync/ADR-0.20.0-spec-triangle-sync.md`
 - **Checklist Item:** #3 — "Drift detection engine: compute unlinked specs, orphan tests, and unjustified code changes"
 
-**Status:** Accepted
+**Status:** Completed
 
 ## Objective
 
@@ -56,52 +56,90 @@ I/O, no CLI.
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
+- [x] Intent and scope recorded in this OBPI brief
 
 ### Gate 2: TDD
 
-- [ ] Unit tests with table-driven data: no drift, all drift, mixed drift, unjustified code change
-- [ ] Unit tests verify determinism (same input → same output)
-- [ ] Tests pass: `uv run gz test`
+- [x] Unit tests with table-driven data: no drift, all drift, mixed drift, unjustified code change
+- [x] Unit tests verify determinism (same input → same output)
+- [x] Tests pass: `uv run gz test`
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.20.0-03-01: Given 5 REQs and 5 matching test linkages, when drift is computed, then unlinked_specs and orphan_tests are both empty.
-- [ ] REQ-0.20.0-03-02: Given 5 REQs and 0 test linkages, when drift is computed, then unlinked_specs contains all 5 REQs.
-- [ ] REQ-0.20.0-03-03: Given 3 REQs and 5 test linkages (2 referencing non-existent REQs), when drift is computed, then orphan_tests contains the 2 orphaned linkages.
-- [ ] REQ-0.20.0-03-04: Given 2 changed code vertices and only 1 `justifies` edge to an in-scope REQ, when drift is computed, then unjustified_code_changes contains the remaining changed code vertex.
-- [ ] REQ-0.20.0-03-05: Given identical inputs run twice, when drift is computed, then both DriftReports are equal.
+- [x] REQ-0.20.0-03-01: Given 5 REQs and 5 matching test linkages, when drift is computed, then unlinked_specs and orphan_tests are both empty.
+- [x] REQ-0.20.0-03-02: Given 5 REQs and 0 test linkages, when drift is computed, then unlinked_specs contains all 5 REQs.
+- [x] REQ-0.20.0-03-03: Given 3 REQs and 5 test linkages (2 referencing non-existent REQs), when drift is computed, then orphan_tests contains the 2 orphaned linkages.
+- [x] REQ-0.20.0-03-04: Given 2 changed code vertices and only 1 `justifies` edge to an in-scope REQ, when drift is computed, then unjustified_code_changes contains the remaining changed code vertex.
+- [x] REQ-0.20.0-03-05: Given identical inputs run twice, when drift is computed, then both DriftReports are equal.
 
 ## Completion Checklist (Lite)
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Unit tests pass
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Coverage:** Coverage >= 40% maintained
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Unit tests pass
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Coverage:** Coverage >= 40% maintained
 
 ## Evidence
+
+### Implementation Summary
+
+- Engine: `detect_drift()` pure function in `src/gzkit/triangle.py`
+- Models: `DriftSummary` and `DriftReport` Pydantic models with frozen/forbid config
+- Inputs: REQ entities, linkage records, changed code vertices, scan timestamp
+- Outputs: Deterministic DriftReport with unlinked_specs, orphan_tests, unjustified_code_changes
+- Sorting: Semantic version order for REQ IDs via `_req_id_sort_key()`
+- Tests: 18 new drift detection tests across 8 test classes in `tests/test_triangle.py`
+
+### Key Proof
+
+```text
+$ uv run -m unittest tests.test_triangle -v 2>&1 | grep -E '(drift|Drift)'
+test_identical_inputs_identical_outputs ... ok
+test_all_drift_categories ... ok
+test_empty_inputs ... ok
+test_all_reqs_covered_no_drift ... ok
+test_orphan_tests_detected ... ok
+test_all_code_justified ... ok
+test_no_changed_code ... ok
+test_unjustified_code_changes ... ok
+test_all_reqs_unlinked ... ok
+test_partial_coverage ... ok
+test_frozen_immutability ... ok
+test_json_serialization_roundtrip ... ok
+test_report_is_valid_json ... ok
+test_results_sorted_semantically ... ok
+test_summary_counts_correct ... ok
+test_summary_extra_forbidden ... ok
+test_summary_frozen ... ok
+
+Ran 66 tests in 0.004s — OK
+
+$ uv run coverage report --include='src/gzkit/triangle.py'
+src/gzkit/triangle.py    159      6    96%
+```
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+Ran 66 tests in 0.004s — OK
+Coverage: 96% (threshold: 40%)
 ```
 
 ## Human Attestation
 
-- Attestor: `n/a` (Lite lane)
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: Jeff
+- Attestation: attest completed
+- Date: 2026-03-27
 
 ---
 
-**Brief Status:** Accepted
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-27
 
 **Evidence Hash:** -

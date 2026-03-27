@@ -269,3 +269,94 @@ def scan_briefs(directory: pathlib.Path) -> list[DiscoveredReq]:
 
     discovered.sort(key=lambda d: _req_sort_key(d.entity.id))
     return discovered
+
+
+# ---------------------------------------------------------------------------
+# Drift detection engine (OBPI-0.20.0-03)
+# ---------------------------------------------------------------------------
+
+
+def _req_id_sort_key(req_id_str: str) -> tuple[tuple[int, ...], int, int]:
+    """Sort key for REQ ID strings using semantic version ordering."""
+    try:
+        parsed = ReqId.parse(req_id_str)
+        return _req_sort_key(parsed)
+    except ValueError:
+        return ((999, 999, 999), 999, 999)
+
+
+class DriftSummary(BaseModel):
+    """Counts of each drift category."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    unlinked_spec_count: int = Field(..., description="REQs with no test coverage")
+    orphan_test_count: int = Field(..., description="Test linkages referencing non-existent REQs")
+    unjustified_code_change_count: int = Field(
+        ..., description="Code changes without spec justification"
+    )
+    total_drift_count: int = Field(..., description="Sum of all drift findings")
+
+
+class DriftReport(BaseModel):
+    """Result of drift detection across the spec-test-code triangle."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    unlinked_specs: list[str] = Field(..., description="REQ IDs with no test coverage")
+    orphan_tests: list[str] = Field(
+        ..., description="Test linkage target REQ IDs not found in briefs"
+    )
+    unjustified_code_changes: list[str] = Field(
+        ..., description="Changed code identifiers without justifies edges"
+    )
+    summary: DriftSummary = Field(..., description="Counts of each drift category")
+    scan_timestamp: str = Field(..., description="ISO-8601 timestamp of the scan")
+
+
+def detect_drift(
+    reqs: list[ReqEntity],
+    linkage_records: list[LinkageRecord],
+    changed_code_vertices: list[VertexRef],
+    scan_timestamp: str,
+) -> DriftReport:
+    """Compute drift across the spec-test-code triangle.
+
+    Pure computation — no I/O. Deterministic: same inputs always produce same outputs.
+    Results sorted by identifier (semantic version order for REQs, alphabetical for code).
+    """
+    known_req_ids = {str(req.id) for req in reqs}
+
+    covered_req_ids: set[str] = set()
+    test_target_req_ids: set[str] = set()
+    for record in linkage_records:
+        if record.edge_type == EdgeType.COVERS:
+            target_id = record.target.identifier
+            test_target_req_ids.add(target_id)
+            if target_id in known_req_ids:
+                covered_req_ids.add(target_id)
+
+    unlinked = sorted(known_req_ids - covered_req_ids, key=_req_id_sort_key)
+    orphans = sorted(test_target_req_ids - known_req_ids, key=_req_id_sort_key)
+
+    justified_code_ids: set[str] = set()
+    for record in linkage_records:
+        if record.edge_type == EdgeType.JUSTIFIES:
+            justified_code_ids.add(record.source.identifier)
+
+    unjustified = sorted(
+        v.identifier for v in changed_code_vertices if v.identifier not in justified_code_ids
+    )
+
+    return DriftReport(
+        unlinked_specs=unlinked,
+        orphan_tests=orphans,
+        unjustified_code_changes=unjustified,
+        summary=DriftSummary(
+            unlinked_spec_count=len(unlinked),
+            orphan_test_count=len(orphans),
+            unjustified_code_change_count=len(unjustified),
+            total_drift_count=len(unlinked) + len(orphans) + len(unjustified),
+        ),
+        scan_timestamp=scan_timestamp,
+    )
