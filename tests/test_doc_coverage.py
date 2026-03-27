@@ -8,6 +8,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import TypeVar
 
 from pydantic import ValidationError
 
@@ -33,11 +34,27 @@ from gzkit.doc_coverage.scanner import (
     scan_cli_commands,
 )
 
+_T = TypeVar("_T")
+
+
+def covers(target: str):  # noqa: D401 — traceability decorator, not a docstring
+    """Traceability decorator linking test classes/functions to ADR/OBPI/REQ targets."""
+
+    def _identity(obj: _T) -> _T:
+        return obj
+
+    return _identity
+
+
 # ---------------------------------------------------------------------------
 # 1. AST Discovery Tests
 # ---------------------------------------------------------------------------
 
 
+@covers("ADR-0.0.6-documentation-cross-coverage-enforcement")
+@covers("OBPI-0.0.6-01-ast-scanner")
+@covers("REQ-0.0.6-01-01")
+@covers("REQ-0.0.6-01-02")
 class TestDiscoverCommands(unittest.TestCase):
     """Test AST-based command discovery against the real cli/main.py."""
 
@@ -170,6 +187,9 @@ class TestDiscoverCommands(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 
+@covers("OBPI-0.0.6-01-ast-scanner")
+@covers("REQ-0.0.6-01-03")
+@covers("REQ-0.0.6-01-04")
 class TestCheckSurfaces(unittest.TestCase):
     """Test each surface check using minimal temp-dir fixtures."""
 
@@ -280,6 +300,7 @@ class TestCheckSurfaces(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 
+@covers("OBPI-0.0.6-01-ast-scanner")
 class TestFindOrphanedDocs(unittest.TestCase):
     """Test orphaned documentation detection."""
 
@@ -465,6 +486,9 @@ class TestIntegration(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 
+@covers("OBPI-0.0.6-02-documentation-manifest")
+@covers("REQ-0.0.6-02-01")
+@covers("REQ-0.0.6-02-02")
 class TestManifestModels(unittest.TestCase):
     """Test Pydantic models for the documentation coverage manifest."""
 
@@ -550,6 +574,8 @@ class TestManifestModels(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 
+@covers("OBPI-0.0.6-02-documentation-manifest")
+@covers("REQ-0.0.6-02-03")
 class TestLoadManifest(unittest.TestCase):
     """Test manifest loading from JSON files."""
 
@@ -646,6 +672,8 @@ class TestLoadManifest(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 
+@covers("OBPI-0.0.6-02-documentation-manifest")
+@covers("REQ-0.0.6-02-04")
 class TestFindUndeclaredCommands(unittest.TestCase):
     """Test detection of commands missing from the manifest."""
 
@@ -695,6 +723,7 @@ class TestFindUndeclaredCommands(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 
+@covers("OBPI-0.0.6-02-documentation-manifest")
 class TestManifestIntegration(unittest.TestCase):
     """Test the real manifest against the real project."""
 
@@ -740,6 +769,9 @@ class TestManifestIntegration(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 
+@covers("OBPI-0.0.6-03-chore-registration-and-enforcement")
+@covers("REQ-0.0.6-03-01")
+@covers("REQ-0.0.6-03-02")
 class TestGapReportModels(unittest.TestCase):
     """Test Pydantic models for the gap report."""
 
@@ -822,6 +854,8 @@ class TestGapReportModels(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 
+@covers("OBPI-0.0.6-03-chore-registration-and-enforcement")
+@covers("REQ-0.0.6-03-03")
 class TestBuildGapReport(unittest.TestCase):
     """Test the runner gap report against the real project."""
 
@@ -865,6 +899,7 @@ class TestBuildGapReport(unittest.TestCase):
             self.assertIn(key, schema["properties"], f"Unexpected key: {key}")
 
 
+@covers("OBPI-0.0.6-03-chore-registration-and-enforcement")
 class TestRunDocCoverage(unittest.TestCase):
     """Test the run_doc_coverage entry point."""
 
@@ -892,6 +927,8 @@ class TestRunDocCoverage(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 
+@covers("OBPI-0.0.6-03-chore-registration-and-enforcement")
+@covers("REQ-0.0.6-03-04")
 class TestChoreRegistration(unittest.TestCase):
     """Verify the doc-coverage chore is properly registered."""
 
