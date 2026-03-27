@@ -442,6 +442,17 @@
       },
       "governance_relevant": false
     },
+    "drift": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": false
+    },
     "tidy": {
       "surfaces": {
         "manpage": true,

@@ -871,5 +871,261 @@ class TestDriftSummaryModel(unittest.TestCase):
             )
 
 
+# ---------------------------------------------------------------------------
+# OBPI-0.20.0-04: Drift CLI surface tests
+# ---------------------------------------------------------------------------
+
+
+class TestScanCoversReferences(unittest.TestCase):
+    """@covers REQ-0.20.0-04-02
+    @covers OBPI-0.20.0-04-gz-drift-cli-surface
+    """
+
+    def test_scan_finds_covers_in_docstring(self) -> None:
+        """REQ-0.20.0-04-02: Extract @covers REQ references from test files."""
+        from gzkit.commands.drift import scan_covers_references
+
+        with tempfile.TemporaryDirectory() as tmp:
+            test_file = Path(tmp) / "test_example.py"
+            test_file.write_text(
+                '"""@covers REQ-0.1.0-01-01\n@covers REQ-0.1.0-01-02\n"""\nimport unittest\n',
+                encoding="utf-8",
+            )
+
+            linkages = scan_covers_references(Path(tmp))
+
+        self.assertEqual(len(linkages), 2)
+        targets = {r.target.identifier for r in linkages}
+        self.assertEqual(targets, {"REQ-0.1.0-01-01", "REQ-0.1.0-01-02"})
+        for linkage in linkages:
+            self.assertEqual(linkage.edge_type, EdgeType.COVERS)
+            self.assertEqual(linkage.source.vertex_type, VertexType.TEST)
+            self.assertEqual(linkage.target.vertex_type, VertexType.SPEC)
+
+    def test_scan_empty_directory(self) -> None:
+        from gzkit.commands.drift import scan_covers_references
+
+        with tempfile.TemporaryDirectory() as tmp:
+            linkages = scan_covers_references(Path(tmp))
+        self.assertEqual(linkages, [])
+
+    def test_scan_skips_non_python_files(self) -> None:
+        from gzkit.commands.drift import scan_covers_references
+
+        with tempfile.TemporaryDirectory() as tmp:
+            md_file = Path(tmp) / "notes.md"
+            md_file.write_text("@covers REQ-0.1.0-01-01\n", encoding="utf-8")
+
+            linkages = scan_covers_references(Path(tmp))
+
+        self.assertEqual(linkages, [])
+
+    def test_scan_ignores_non_req_covers(self) -> None:
+        from gzkit.commands.drift import scan_covers_references
+
+        with tempfile.TemporaryDirectory() as tmp:
+            test_file = Path(tmp) / "test_example.py"
+            test_file.write_text(
+                '"""@covers ADR-0.1.0-some-feature\n@covers OBPI-0.1.0-01-feature\n"""\n',
+                encoding="utf-8",
+            )
+
+            linkages = scan_covers_references(Path(tmp))
+
+        self.assertEqual(linkages, [])
+
+
+class TestFormatHuman(unittest.TestCase):
+    """@covers REQ-0.20.0-04-04
+    @covers OBPI-0.20.0-04-gz-drift-cli-surface
+    """
+
+    def test_no_drift_message(self) -> None:
+        """REQ-0.20.0-04-04: Human output says no drift when clean."""
+        from gzkit.commands.drift import _format_human
+
+        report = detect_drift([], [], [], FIXED_TIMESTAMP)
+        output = _format_human(report)
+        self.assertIn("No drift detected", output)
+
+    def test_drift_shows_categories(self) -> None:
+        from gzkit.commands.drift import _format_human
+
+        reqs = [_make_req("0.15.0", "01", "01")]
+        report = detect_drift(reqs, [], [], FIXED_TIMESTAMP)
+        output = _format_human(report)
+        self.assertIn("Unlinked Specs", output)
+        self.assertIn("REQ-0.15.0-01-01", output)
+        self.assertIn("Summary:", output)
+
+    def test_orphan_tests_shown(self) -> None:
+        from gzkit.commands.drift import _format_human
+
+        linkages = [_make_covers_linkage("REQ-0.1.0-99-01")]
+        report = detect_drift([], linkages, [], FIXED_TIMESTAMP)
+        output = _format_human(report)
+        self.assertIn("Orphan Tests", output)
+        self.assertIn("REQ-0.1.0-99-01", output)
+
+    def test_unjustified_shown(self) -> None:
+        from gzkit.commands.drift import _format_human
+
+        changed = [_make_code_vertex("src/gzkit/module.py")]
+        report = detect_drift([], [], changed, FIXED_TIMESTAMP)
+        output = _format_human(report)
+        self.assertIn("Unjustified Code Changes", output)
+        self.assertIn("src/gzkit/module.py", output)
+
+
+class TestFormatPlain(unittest.TestCase):
+    """@covers REQ-0.20.0-04-06
+    @covers OBPI-0.20.0-04-gz-drift-cli-surface
+    """
+
+    def test_plain_no_drift(self) -> None:
+        """REQ-0.20.0-04-06: Plain output is empty when no drift."""
+        from gzkit.commands.drift import _format_plain
+
+        report = detect_drift([], [], [], FIXED_TIMESTAMP)
+        output = _format_plain(report)
+        self.assertEqual(output, "")
+
+    def test_plain_one_per_line(self) -> None:
+        from gzkit.commands.drift import _format_plain
+
+        reqs = [_make_req("0.15.0", "01", "01")]
+        linkages = [_make_covers_linkage("REQ-0.1.0-99-01")]
+        changed = [_make_code_vertex("src/gzkit/module.py")]
+        report = detect_drift(reqs, linkages, changed, FIXED_TIMESTAMP)
+        output = _format_plain(report)
+        lines = output.strip().split("\n")
+        self.assertEqual(len(lines), 3)
+        self.assertTrue(lines[0].startswith("unlinked\t"))
+        self.assertTrue(lines[1].startswith("orphan\t"))
+        self.assertTrue(lines[2].startswith("unjustified\t"))
+
+
+class TestFormatJson(unittest.TestCase):
+    """@covers REQ-0.20.0-04-05
+    @covers OBPI-0.20.0-04-gz-drift-cli-surface
+    """
+
+    def test_json_output_valid(self) -> None:
+        """REQ-0.20.0-04-05: JSON output is valid DriftReport JSON."""
+        reqs = [_make_req("0.15.0", "01", "01")]
+        report = detect_drift(reqs, [], [], FIXED_TIMESTAMP)
+        json_str = report.model_dump_json(indent=2)
+        parsed = json.loads(json_str)
+        self.assertIn("unlinked_specs", parsed)
+        self.assertIn("orphan_tests", parsed)
+        self.assertIn("unjustified_code_changes", parsed)
+        self.assertIn("summary", parsed)
+        self.assertIn("scan_timestamp", parsed)
+
+    def test_json_roundtrip(self) -> None:
+        reqs = [_make_req("0.15.0", "01", "01")]
+        report = detect_drift(reqs, [], [], FIXED_TIMESTAMP)
+        restored = DriftReport.model_validate_json(report.model_dump_json())
+        self.assertEqual(report, restored)
+
+
+class TestDriftCmdExitCodes(unittest.TestCase):
+    """@covers REQ-0.20.0-04-07
+    @covers OBPI-0.20.0-04-gz-drift-cli-surface
+    """
+
+    def test_exit_0_no_drift(self) -> None:
+        """REQ-0.20.0-04-07: Exit 0 when no drift detected."""
+        from unittest.mock import patch as _patch
+
+        from gzkit.commands.drift import drift_cmd
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            adr_dir = tmp_path / "adrs"
+            adr_dir.mkdir()
+            test_dir = tmp_path / "tests"
+            test_dir.mkdir()
+
+            with _patch("gzkit.commands.drift.get_changed_files", return_value=[]):
+                drift_cmd(
+                    as_json=True,
+                    adr_dir=str(adr_dir),
+                    test_dir=str(test_dir),
+                )
+
+    def test_exit_1_with_drift(self) -> None:
+        """REQ-0.20.0-04-07: Exit 1 when drift detected."""
+        from unittest.mock import patch as _patch
+
+        from gzkit.commands.drift import drift_cmd
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            adr_dir = tmp_path / "adrs"
+            adr_dir.mkdir()
+            test_dir = tmp_path / "tests"
+            test_dir.mkdir()
+
+            brief = adr_dir / "OBPI-0.1.0-01-test.md"
+            brief.write_text(
+                _make_brief(
+                    "OBPI-0.1.0-01-test",
+                    [("REQ-0.1.0-01-01", False, "Criterion")],
+                ),
+                encoding="utf-8",
+            )
+
+            with (
+                _patch("gzkit.commands.drift.get_changed_files", return_value=[]),
+                self.assertRaises(SystemExit) as cm,
+            ):
+                drift_cmd(
+                    as_json=True,
+                    adr_dir=str(adr_dir),
+                    test_dir=str(test_dir),
+                )
+            self.assertEqual(cm.exception.code, 1)
+
+
+class TestDriftHelpText(unittest.TestCase):
+    """@covers REQ-0.20.0-04-08
+    @covers OBPI-0.20.0-04-gz-drift-cli-surface
+    """
+
+    def test_help_includes_description(self) -> None:
+        """REQ-0.20.0-04-08: Help includes description, options, example."""
+        import subprocess as sp
+
+        result = sp.run(
+            ["uv", "run", "gz", "drift", "--help"],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        )
+        self.assertEqual(result.returncode, 0)
+        self.assertIn("drift", result.stdout)
+        self.assertIn("--json", result.stdout)
+        self.assertIn("--plain", result.stdout)
+        self.assertIn("Examples", result.stdout)
+
+    def test_help_lines_under_80_chars(self) -> None:
+        """REQ-0.20.0-04-10: Help text lines <= 80 chars."""
+        import subprocess as sp
+
+        result = sp.run(
+            ["uv", "run", "gz", "drift", "--help"],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        )
+        for line in result.stdout.splitlines():
+            self.assertLessEqual(
+                len(line),
+                80,
+                f"Help line too long ({len(line)} chars): {line!r}",
+            )
+
+
 if __name__ == "__main__":
     unittest.main()

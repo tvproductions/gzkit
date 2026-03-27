@@ -50,6 +50,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | Command | Description |
 |---------|-------------|
 | [`gz check`](check.md) | Run full quality checks (lint, typecheck, test) in one pass |
+| [`gz drift`](drift.md) | Detect spec-test-code governance drift |
 | [`gz lint`](lint.md) | Run code linting checks |
 | [`gz format`](format.md) | Auto-format code |
 | [`gz test`](test.md) | Run unit tests |
