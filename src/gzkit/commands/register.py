@@ -51,6 +51,27 @@ SEMVER_ID_RENAMES: tuple[tuple[str, str], ...] = (
     ("ADR-0.1.0", "ADR-0.1.0-enforced-governance-foundation"),
     ("ADR-0.2.0", "ADR-0.2.0-gate-verification"),
     ("ADR-0.3.0", "ADR-0.3.0-airlineops-canon-reconciliation"),
+    # ADR-0.20.0 promotion slug → brief slug reconciliation.
+    (
+        "OBPI-0.20.0-01-define-triangle-sync-semantics-for-spec-tests-code-spec",
+        "OBPI-0.20.0-01-req-entity-and-triangle-data-model",
+    ),
+    (
+        "OBPI-0.20.0-02-capture-implementation-decisions-as-first-class-governance-artifacts",
+        "OBPI-0.20.0-02-brief-req-extraction",
+    ),
+    (
+        "OBPI-0.20.0-03-add-drift-surfaces-that-detect",
+        "OBPI-0.20.0-03-drift-detection-engine",
+    ),
+    (
+        "OBPI-0.20.0-04-provide-lightweight-command-checkpoints-suitable-for-fast-ai-assisted-loops",
+        "OBPI-0.20.0-04-gz-drift-cli-surface",
+    ),
+    (
+        "OBPI-0.20.0-05-keep-deterministic-checks-as-default-use-llm-inference-only-where-structured-signals-are-absent",
+        "OBPI-0.20.0-05-advisory-gate-integration",
+    ),
     # Legacy OBPIs for ADR-0.1.0 registered without slugs.
     ("OBPI-0.1.0-01", "OBPI-0.1.0-01-gz-init"),
     ("OBPI-0.1.0-02", "OBPI-0.1.0-02-gz-prd"),

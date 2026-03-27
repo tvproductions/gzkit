@@ -7,9 +7,13 @@ used by the drift detection engine (ADR-0.20.0).
 from __future__ import annotations
 
 import enum
+import logging
+import pathlib
 import re
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # REQ identifier
@@ -138,3 +142,130 @@ class LinkageRecord(BaseModel):
     evidence_line: int | None = Field(
         None, description="Line number where the linkage was observed"
     )
+
+
+# ---------------------------------------------------------------------------
+# Brief REQ extraction (OBPI-0.20.0-02)
+# ---------------------------------------------------------------------------
+
+_AC_LINE_PATTERN = re.compile(
+    r"^-\s+\[(?P<check>[xX ])\]\s+"
+    r"(?P<req_id>REQ-\d+\.\d+\.\d+-\d+-\d+)"
+    r":\s*(?P<description>.+)$"
+)
+
+
+class DiscoveredReq(BaseModel):
+    """A REQ entity paired with the source file path where it was found."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    entity: ReqEntity = Field(..., description="The discovered REQ entity")
+    source_path: str = Field(..., description="File path where the REQ was found")
+
+
+def _req_sort_key(req_id: ReqId) -> tuple[tuple[int, ...], int, int]:
+    """Generate a sort key for semantic version ordering."""
+    semver_parts = tuple(int(p) for p in req_id.semver.split("."))
+    return (semver_parts, int(req_id.obpi_item), int(req_id.criterion_index))
+
+
+def extract_reqs_from_brief(content: str, parent_obpi: str) -> list[ReqEntity]:
+    """Extract REQ entities from the Acceptance Criteria section of an OBPI brief.
+
+    Parses checkbox state and description from lines like::
+
+        - [ ] REQ-0.15.0-03-01: Some criterion
+        - [x] REQ-0.15.0-03-01: Completed criterion
+
+    Malformed REQ lines are logged as warnings and skipped.
+    Results are sorted by REQ identifier (semantic version ordering).
+    """
+    in_section = False
+    reqs: list[ReqEntity] = []
+
+    for line in content.splitlines():
+        stripped = line.strip()
+
+        if stripped.startswith("## Acceptance Criteria"):
+            in_section = True
+            continue
+        if in_section and stripped.startswith("## "):
+            break
+
+        if not in_section or not stripped.startswith("- ["):
+            continue
+
+        m = _AC_LINE_PATTERN.match(stripped)
+        if m is None:
+            if "REQ-" in stripped:
+                logger.warning("Malformed REQ line (skipped): %s", stripped)
+            continue
+
+        raw_req_id = m.group("req_id")
+        try:
+            req_id = ReqId.parse(raw_req_id)
+        except ValueError:
+            logger.warning("Malformed REQ identifier (skipped): %s", raw_req_id)
+            continue
+
+        status = ReqStatus.CHECKED if m.group("check").lower() == "x" else ReqStatus.UNCHECKED
+
+        reqs.append(
+            ReqEntity(
+                id=req_id,
+                description=m.group("description").strip(),
+                status=status,
+                parent_obpi=parent_obpi,
+            )
+        )
+
+    reqs.sort(key=lambda e: _req_sort_key(e.id))
+    return reqs
+
+
+def _parse_frontmatter_id(content: str) -> str | None:
+    """Extract the ``id`` field from YAML frontmatter."""
+    in_fm = False
+    for line in content.splitlines():
+        if line.strip() == "---":
+            if not in_fm:
+                in_fm = True
+                continue
+            break
+        if in_fm:
+            m = re.match(r"^id:\s*(.+)$", line)
+            if m:
+                return m.group(1).strip()
+    return None
+
+
+def _extract_obpi_short_id(frontmatter_id: str) -> str | None:
+    """Extract short OBPI ID (e.g. ``OBPI-0.20.0-02``) from a full frontmatter id."""
+    m = re.match(r"(OBPI-\d+\.\d+\.\d+-\d+)", frontmatter_id)
+    return m.group(1) if m else None
+
+
+def scan_briefs(directory: pathlib.Path) -> list[DiscoveredReq]:
+    """Scan a directory tree for OBPI brief files and extract all REQ entities.
+
+    Returns discovered REQs with their source file paths, sorted by REQ identifier
+    (semantic version ordering).
+    """
+
+    discovered: list[DiscoveredReq] = []
+
+    for md_file in sorted(pathlib.Path(directory).rglob("*.md")):
+        content = md_file.read_text(encoding="utf-8")
+
+        fm_id = _parse_frontmatter_id(content)
+        if fm_id is None or not fm_id.startswith("OBPI-"):
+            continue
+
+        parent_obpi = _extract_obpi_short_id(fm_id) or fm_id
+
+        for req in extract_reqs_from_brief(content, parent_obpi):
+            discovered.append(DiscoveredReq(entity=req, source_path=str(md_file)))
+
+    discovered.sort(key=lambda d: _req_sort_key(d.entity.id))
+    return discovered
