@@ -47,6 +47,21 @@ SEMVER_ID_RENAMES: tuple[tuple[str, str], ...] = (
     ("OBPI-0.8.0-01-skill-source-centralization", "OBPI-0.4.0-01-skill-source-centralization"),
     # Foundation ADR scaffold -> full-slug migration.
     ("ADR-0.0.4", "ADR-0.0.4-cli-standards-presentation-foundation"),
+    # Legacy ADRs registered without slugs.
+    ("ADR-0.1.0", "ADR-0.1.0-enforced-governance-foundation"),
+    ("ADR-0.2.0", "ADR-0.2.0-gate-verification"),
+    ("ADR-0.3.0", "ADR-0.3.0-airlineops-canon-reconciliation"),
+    # Legacy OBPIs for ADR-0.1.0 registered without slugs.
+    ("OBPI-0.1.0-01", "OBPI-0.1.0-01-gz-init"),
+    ("OBPI-0.1.0-02", "OBPI-0.1.0-02-gz-prd"),
+    ("OBPI-0.1.0-03", "OBPI-0.1.0-03-gz-constitute"),
+    ("OBPI-0.1.0-04", "OBPI-0.1.0-04-gz-specify"),
+    ("OBPI-0.1.0-05", "OBPI-0.1.0-05-gz-plan"),
+    ("OBPI-0.1.0-06", "OBPI-0.1.0-06-gz-state"),
+    ("OBPI-0.1.0-07", "OBPI-0.1.0-07-gz-status"),
+    ("OBPI-0.1.0-08", "OBPI-0.1.0-08-gz-attest"),
+    ("OBPI-0.1.0-09", "OBPI-0.1.0-09-ledger-writer-hook"),
+    ("OBPI-0.1.0-10", "OBPI-0.1.0-10-templates"),
 )
 
 
