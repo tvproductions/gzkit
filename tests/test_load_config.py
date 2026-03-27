@@ -7,11 +7,13 @@ from pathlib import Path
 
 from gzkit.adapters.config import FileConfigStore
 from gzkit.config import GzkitConfig, load_config
+from gzkit.traceability import covers
 
 
 class TestLoadConfigDefaults(unittest.TestCase):
     """load_config() returns frozen GzkitConfig with defaults."""
 
+    @covers("REQ-0.0.3-05-01")
     def test_missing_file_returns_defaults(self) -> None:
         """load_config() with missing file returns Pydantic defaults."""
         config = load_config(path=Path("/nonexistent/.gzkit.json"))
@@ -19,6 +21,7 @@ class TestLoadConfigDefaults(unittest.TestCase):
         self.assertEqual(config.mode, "lite")
         self.assertEqual(config.project_name, "")
 
+    @covers("REQ-0.0.3-05-02")
     def test_returns_frozen_config(self) -> None:
         """Returned config is frozen (immutable)."""
         from pydantic import ValidationError
@@ -43,6 +46,7 @@ class TestLoadConfigPrecedence(unittest.TestCase):
             self.assertEqual(config.mode, "heavy")
             self.assertEqual(config.project_name, "myproject")
 
+    @covers("REQ-0.0.3-05-07")
     def test_cli_overrides_override_file(self) -> None:
         """CLI overrides beat config file values (layer 3 > layer 2)."""
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -92,6 +96,7 @@ class TestLoadConfigPrecedence(unittest.TestCase):
             config = load_config(path=config_path, cli_overrides={})
             self.assertEqual(config.mode, "heavy")
 
+    @covers("REQ-0.0.3-05-04")
     def test_no_env_parameter_exists(self) -> None:
         """load_config() does not accept an env parameter."""
         import inspect
@@ -140,6 +145,7 @@ class TestFileConfigStore(unittest.TestCase):
         store = FileConfigStore()
         self.assertEqual(store._path, Path(".gzkit.json"))
 
+    @covers("REQ-0.0.3-05-03")
     def test_satisfies_config_store_protocol(self) -> None:
         """FileConfigStore satisfies ConfigStore Protocol (duck-type check)."""
         from typing import Protocol, runtime_checkable

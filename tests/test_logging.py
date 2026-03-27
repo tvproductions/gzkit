@@ -17,6 +17,7 @@ from gzkit.cli.logging import (
     bind_correlation_id,
     configure_logging,
 )
+from gzkit.traceability import covers
 
 
 class TestConfigureLogging(unittest.TestCase):
@@ -33,6 +34,7 @@ class TestConfigureLogging(unittest.TestCase):
         root = logging.getLogger()
         root.handlers.clear()
 
+    @covers("REQ-0.0.3-07-03")
     def test_configure_logging_accepts_all_verbosities(self) -> None:
         for verbosity in ("quiet", "normal", "verbose", "debug"):
             buf = io.StringIO()
@@ -43,6 +45,7 @@ class TestConfigureLogging(unittest.TestCase):
         configure_logging(console_stream=buf)
         # Should not raise
 
+    @covers("REQ-0.0.3-07-01")
     def test_configure_logging_is_single_entry_point(self) -> None:
         """Verify configure_logging is importable from cli.logging."""
         from gzkit.cli.logging import configure_logging as cl
@@ -145,6 +148,7 @@ class TestJsonFileOutput(unittest.TestCase):
             self.assertEqual(parsed["event"], "test event")
             self.assertEqual(parsed["key"], "value")
 
+    @covers("REQ-0.0.3-07-04")
     def test_json_file_contains_valid_json(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             log_path = Path(tmp) / "test.log"
@@ -194,6 +198,7 @@ class TestConsoleOutput(unittest.TestCase):
             handler.close()
         root.handlers.clear()
 
+    @covers("REQ-0.0.3-07-05")
     def test_console_output_is_human_readable(self) -> None:
         buf = io.StringIO()
         configure_logging("normal", console_stream=buf)
@@ -229,6 +234,7 @@ class TestCorrelationId(unittest.TestCase):
             handler.close()
         root.handlers.clear()
 
+    @covers("REQ-0.0.3-07-06")
     def test_bind_correlation_id_returns_id(self) -> None:
         cid = bind_correlation_id("my-request-123")
         self.assertEqual(cid, "my-request-123")
