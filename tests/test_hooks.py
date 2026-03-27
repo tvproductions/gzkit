@@ -21,34 +21,42 @@ from gzkit.traceability import covers
 class TestIsGovernanceArtifact(unittest.TestCase):
     """Tests for governance artifact detection."""
 
+    @covers("REQ-0.12.0-01-01")
     def test_design_prd(self) -> None:
         """Detects PRD in design directory."""
         self.assertTrue(is_governance_artifact("design/prd/PRD-TEST.md"))
 
+    @covers("REQ-0.12.0-01-01")
     def test_design_adr(self) -> None:
         """Detects ADR in design directory."""
         self.assertTrue(is_governance_artifact("design/adr/ADR-0.1.0.md"))
 
+    @covers("REQ-0.12.0-01-01")
     def test_design_obpis(self) -> None:
         """Detects OBPI in design directory."""
         self.assertTrue(is_governance_artifact("design/obpis/OBPI-core.md"))
 
+    @covers("REQ-0.12.0-01-01")
     def test_docs_adr(self) -> None:
         """Detects ADR in docs directory."""
         self.assertTrue(is_governance_artifact("docs/adr/ADR-0.1.0.md"))
 
+    @covers("REQ-0.12.0-01-01")
     def test_agents_md(self) -> None:
         """Detects AGENTS.md."""
         self.assertTrue(is_governance_artifact("AGENTS.md"))
 
+    @covers("REQ-0.12.0-01-01")
     def test_claude_md(self) -> None:
         """Detects CLAUDE.md."""
         self.assertTrue(is_governance_artifact("CLAUDE.md"))
 
+    @covers("REQ-0.12.0-01-01")
     def test_source_code(self) -> None:
         """Source code is not a governance artifact."""
         self.assertFalse(is_governance_artifact("src/gzkit/cli.py"))
 
+    @covers("REQ-0.12.0-01-01")
     def test_test_file(self) -> None:
         """Test file is not a governance artifact."""
         self.assertFalse(is_governance_artifact("tests/test_cli.py"))
@@ -57,6 +65,7 @@ class TestIsGovernanceArtifact(unittest.TestCase):
 class TestGenerateHookScript(unittest.TestCase):
     """Tests for hook script generation."""
 
+    @covers("REQ-0.12.0-01-02")
     def test_generates_python_script(self) -> None:
         """Generates valid Python script."""
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -67,6 +76,7 @@ class TestGenerateHookScript(unittest.TestCase):
             self.assertIn("def main()", script)
             self.assertIn("json.load(sys.stdin)", script)
 
+    @covers("REQ-0.12.0-01-02")
     def test_includes_hook_type(self) -> None:
         """Script includes hook type in docstring."""
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -78,6 +88,7 @@ class TestGenerateHookScript(unittest.TestCase):
 class TestWriteHookScript(unittest.TestCase):
     """Tests for writing hook scripts."""
 
+    @covers("REQ-0.12.0-01-02")
     def test_creates_hook_file(self) -> None:
         """Creates hook script file."""
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -87,6 +98,7 @@ class TestWriteHookScript(unittest.TestCase):
             self.assertTrue(script_path.exists())
             self.assertEqual(script_path.name, "ledger-writer.py")
 
+    @covers("REQ-0.12.0-01-02")
     def test_makes_executable(self) -> None:
         """Hook script is executable."""
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -393,6 +405,7 @@ class TestPlanAuditGateHook(unittest.TestCase):
         )
         return receipt_path
 
+    @covers("REQ-0.12.0-02-01")
     def test_allows_when_plans_dir_is_missing(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
@@ -403,6 +416,7 @@ class TestPlanAuditGateHook(unittest.TestCase):
             self.assertEqual(result.returncode, 0)
             self.assertEqual(result.stderr, "")
 
+    @covers("REQ-0.12.0-02-01")
     def test_allows_when_latest_plan_has_no_obpi(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
@@ -414,6 +428,8 @@ class TestPlanAuditGateHook(unittest.TestCase):
 
             self.assertEqual(result.returncode, 0)
 
+    @covers("REQ-0.12.0-02-01")
+    @covers("REQ-0.12.0-02-02")
     def test_blocks_when_obpi_plan_has_no_receipt(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
@@ -427,6 +443,7 @@ class TestPlanAuditGateHook(unittest.TestCase):
             self.assertIn("BLOCKED: Cannot exit plan mode - plan audit required.", result.stderr)
             self.assertIn("/gz-plan-audit OBPI-0.12.0-02", result.stderr)
 
+    @covers("REQ-0.12.0-02-02")
     def test_allows_when_matching_pass_receipt_is_newer_than_plan(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
@@ -441,6 +458,7 @@ class TestPlanAuditGateHook(unittest.TestCase):
 
             self.assertEqual(result.returncode, 0)
 
+    @covers("REQ-0.12.0-02-02")
     def test_allows_when_matching_fail_receipt_is_newer_than_plan(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
