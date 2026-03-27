@@ -8,6 +8,7 @@ import inspect
 import unittest
 from pathlib import Path
 
+from gzkit.traceability import covers
 from tests.fakes import (
     InMemoryConfigStore,
     InMemoryFileStore,
@@ -23,15 +24,19 @@ from tests.fakes.process import InMemoryProcessRunner as _ProcessRunnerDirect
 class TestFakesPackageImports(unittest.TestCase):
     """Verify __init__.py re-exports all four fakes."""
 
+    @covers("REQ-0.0.3-04-01")
     def test_import_in_memory_file_store(self) -> None:
         self.assertIs(InMemoryFileStore, _FileStoreDirect)
 
+    @covers("REQ-0.0.3-04-02")
     def test_import_in_memory_process_runner(self) -> None:
         self.assertIs(InMemoryProcessRunner, _ProcessRunnerDirect)
 
+    @covers("REQ-0.0.3-04-03")
     def test_import_in_memory_ledger_store(self) -> None:
         self.assertIs(InMemoryLedgerStore, _LedgerStoreDirect)
 
+    @covers("REQ-0.0.3-04-04")
     def test_import_in_memory_config_store(self) -> None:
         self.assertIs(InMemoryConfigStore, _ConfigStoreDirect)
 
@@ -52,6 +57,7 @@ class TestProtocolMethodPresence(unittest.TestCase):
                     f"{cls.__name__} must expose callable '{method}'",
                 )
 
+    @covers("REQ-0.0.3-04-08")
     def test_file_store_protocol_methods(self) -> None:
         self._assert_methods(InMemoryFileStore, self.FILE_STORE_METHODS)
 

@@ -20,10 +20,12 @@ from gzkit.traceability import covers
 class TestOutputFormatterInit(unittest.TestCase):
     """Test formatter initialisation and mode validation."""
 
+    @covers("REQ-0.0.3-06-02")
     def test_default_mode_is_human(self) -> None:
         fmt = OutputFormatter()
         self.assertEqual(fmt.mode, "human")
 
+    @covers("REQ-0.0.3-06-08")
     def test_all_valid_modes_accepted(self) -> None:
         for mode in ("human", "json", "quiet", "verbose", "debug"):
             fmt = OutputFormatter(mode)
@@ -84,6 +86,7 @@ class TestHumanMode(unittest.TestCase):
         fmt.data({"key": "value"})
         self.assertIn("key", buf.getvalue())
 
+    @covers("REQ-0.0.3-06-04")
     def test_err_goes_to_stderr(self) -> None:
         fmt = OutputFormatter("human")
         with patch("sys.stderr", new_callable=io.StringIO) as mock_err:
@@ -94,6 +97,7 @@ class TestHumanMode(unittest.TestCase):
 class TestJsonMode(unittest.TestCase):
     """Test json mode — data to stdout, logs to stderr."""
 
+    @covers("REQ-0.0.3-06-03")
     @covers("REQ-0.0.4-06-02")
     def test_data_outputs_valid_json_to_stdout(self) -> None:
         fmt = OutputFormatter("json")
@@ -158,6 +162,7 @@ class TestJsonMode(unittest.TestCase):
 class TestQuietMode(unittest.TestCase):
     """Test quiet mode — errors only."""
 
+    @covers("REQ-0.0.3-06-04")
     @covers("REQ-0.0.4-06-04")
     def test_print_suppressed(self) -> None:
         fmt = OutputFormatter("quiet")
@@ -229,6 +234,7 @@ class TestQuietMode(unittest.TestCase):
 class TestVerboseMode(unittest.TestCase):
     """Test verbose mode — debug-level information."""
 
+    @covers("REQ-0.0.3-06-05")
     def test_verbose_message_shown(self) -> None:
         fmt = OutputFormatter("verbose")
         buf = io.StringIO()
@@ -266,6 +272,7 @@ class TestVerboseMode(unittest.TestCase):
 class TestDebugMode(unittest.TestCase):
     """Test debug mode — full diagnostic output."""
 
+    @covers("REQ-0.0.3-06-06")
     def test_debug_message_shown(self) -> None:
         fmt = OutputFormatter("debug")
         buf = io.StringIO()
@@ -303,6 +310,7 @@ class TestDebugMode(unittest.TestCase):
 class TestNoColor(unittest.TestCase):
     """Test NO_COLOR environment variable support."""
 
+    @covers("REQ-0.0.3-06-07")
     @covers("REQ-0.0.4-06-01")
     def test_no_color_respected_in_human_mode(self) -> None:
         with patch.dict(os.environ, {"NO_COLOR": "1"}):

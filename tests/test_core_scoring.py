@@ -12,11 +12,13 @@ from gzkit.core.scoring import (
     extract_markdown_section,
     parse_checklist_items,
 )
+from gzkit.traceability import covers
 
 
 class TestCoreDecompositionScorecard(unittest.TestCase):
     """Verify DecompositionScorecard is importable from core."""
 
+    @covers("REQ-0.0.3-02-02")
     def test_scorecard_frozen(self) -> None:
         card = compute_scorecard(
             data_state=1,
