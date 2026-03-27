@@ -268,6 +268,58 @@ uv run gz adr emit-receipt ADR-0.6.0-pool-promotion-protocol --event validated -
 
 ---
 
+## Test Traceability and Coverage Adoption
+
+Use `@covers` decorators to link tests to governance requirements. Coverage
+reporting is informational --- no tests break if annotations are absent.
+
+```bash
+# Check current coverage for an ADR
+uv run gz covers ADR-<X.Y.Z>
+
+# Check coverage for a single OBPI
+uv run gz covers OBPI-<X.Y.Z-NN>
+
+# Full summary across all ADRs
+uv run gz covers
+
+# Machine-readable coverage report
+uv run gz covers --json
+```
+
+### Annotating Tests During OBPI Work
+
+When implementing an OBPI, annotate your tests as you write them:
+
+```python
+from gzkit.traceability import covers
+
+@covers("REQ-X.Y.Z-NN-MM")
+def test_my_feature(self):
+    ...
+```
+
+After annotating, verify coverage improved:
+
+```bash
+uv run gz covers OBPI-<X.Y.Z-NN>
+```
+
+### Non-Python Tests
+
+Non-Python test stacks use comment-based annotations:
+
+```text
+// @covers REQ-X.Y.Z-NN-MM
+```
+
+These are valid governance proof for manual audits but are not yet
+discovered by `gz covers`. See
+[Test Traceability concept guide](concepts/test-traceability.md)
+for full details and migration guidance.
+
+---
+
 ## Verification Checklist (OBPI + ADR)
 
 - `uv run gz test`

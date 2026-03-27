@@ -3,7 +3,7 @@ id: OBPI-0.21.0-05-operator-docs-and-migration
 parent: ADR-0.21.0-tests-for-spec
 item: 5
 lane: Heavy
-status: Accepted
+status: Completed
 ---
 
 # OBPI-0.21.0-05: Operator Docs and Migration Guide
@@ -13,7 +13,7 @@ status: Accepted
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.21.0-tests-for-spec/ADR-0.21.0-tests-for-spec.md`
 - **Checklist Item:** #5 — "Operator docs, annotation examples, and legacy test migration guide"
 
-**Status:** Accepted
+**Status:** Completed
 
 ## Objective
 
@@ -52,37 +52,37 @@ Produce operator-facing documentation with compliant `@covers` annotation exampl
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
+- [x] Intent and scope recorded in this OBPI brief
 
 ### Gate 2: TDD
 
-- [ ] Example syntax remains aligned with `tests/test_traceability.py`
-- [ ] Tests pass: `uv run -m unittest tests.test_traceability -v`
+- [x] Example syntax remains aligned with `tests/test_traceability.py`
+- [x] Tests pass: `uv run -m unittest tests.test_traceability -v`
 
 ### Gate 3: Docs
 
-- [ ] `docs/user/concepts/test-traceability.md` updated with examples,
+- [x] `docs/user/concepts/test-traceability.md` updated with examples,
   migration guidance, and language-agnostic contract
-- [ ] `docs/user/runbook.md` updated with rollout/adoption workflow
-- [ ] `uv run mkdocs build --strict` passes
+- [x] `docs/user/runbook.md` updated with rollout/adoption workflow
+- [x] `uv run mkdocs build --strict` passes
 
 ### Gate 4: BDD
 
-- [ ] Documented operator flow remains covered by
+- [x] Documented operator flow remains covered by
   `features/test_traceability.feature`
-- [ ] `uv run -m behave features/test_traceability.feature` passes
+- [x] `uv run -m behave features/test_traceability.feature` passes
 
 ### Gate 5: Human
 
-- [ ] Human attestation recorded
+- [x] Human attestation recorded
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.21.0-05-01: Given the concept guide, then it includes 3+ compliant annotation examples.
-- [ ] REQ-0.21.0-05-02: Given the migration guide, then it describes incremental adoption without breaking existing tests.
-- [ ] REQ-0.21.0-05-03: Given `uv run mkdocs build --strict`, then docs build succeeds.
-- [ ] REQ-0.21.0-05-04: Given the concept guide, then the language-agnostic proof metadata contract is presented as a first-class supported pattern.
-- [ ] REQ-0.21.0-05-05: Given the operator docs, then they state that non-Python proof metadata is documentation-only until a future ADR adds runtime discovery.
+- [x] REQ-0.21.0-05-01: Given the concept guide, then it includes 3+ compliant annotation examples.
+- [x] REQ-0.21.0-05-02: Given the migration guide, then it describes incremental adoption without breaking existing tests.
+- [x] REQ-0.21.0-05-03: Given `uv run mkdocs build --strict`, then docs build succeeds.
+- [x] REQ-0.21.0-05-04: Given the concept guide, then the language-agnostic proof metadata contract is presented as a first-class supported pattern.
+- [x] REQ-0.21.0-05-05: Given the operator docs, then they state that non-Python proof metadata is documentation-only until a future ADR adds runtime discovery.
 
 ## Verification Commands (Concrete)
 
@@ -105,16 +105,40 @@ uv run mkdocs build --strict
 
 ## Completion Checklist (Heavy)
 
-- [ ] **Gate 1 (ADR):** Intent recorded
-- [ ] **Gate 2 (TDD):** Tests pass
-- [ ] **Gate 3 (Docs):** Docs build passes
-- [ ] **Gate 4 (BDD):** Acceptance scenarios pass
-- [ ] **Gate 5 (Human):** Attestation recorded
+- [x] **Gate 1 (ADR):** Intent recorded
+- [x] **Gate 2 (TDD):** Tests pass
+- [x] **Gate 3 (Docs):** Docs build passes
+- [x] **Gate 4 (BDD):** Acceptance scenarios pass
+- [x] **Gate 5 (Human):** Attestation recorded
+
+### Implementation Summary
+
+- Files created: docs/user/concepts/test-traceability.md (concept guide with 5 @covers examples, 4-step migration guide, language-agnostic proof metadata contract)
+- Files modified: docs/user/runbook.md (added Test Traceability and Coverage Adoption section), mkdocs.yml (added nav entry)
+- Tests added: (none — docs-only OBPI, existing tests verified aligned)
+- Date completed: 2026-03-27
+
+### Key Proof
+
+```
+$ rg -n '@covers\("REQ-' docs/user/concepts/test-traceability.md
+44:    @covers("REQ-0.6.0-01-01")
+61:    @covers("REQ-0.21.0-03-01")
+62:    @covers("REQ-0.21.0-03-02")
+77:    @covers("REQ-0.21.0-04-01")
+171:    @covers("REQ-0.15.0-03-01")
+
+$ uv run mkdocs build --strict
+INFO - Documentation built in 0.94 seconds
+
+$ uv run -m behave features/test_traceability.feature
+7 scenarios passed, 0 failed, 0 skipped
+```
 
 ---
 
-**Brief Status:** Accepted
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-27
 
 **Evidence Hash:** -
