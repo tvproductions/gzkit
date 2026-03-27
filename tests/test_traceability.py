@@ -852,3 +852,145 @@ class TestCoversCLIOutput(unittest.TestCase):
         _, output = self._run_covers(["ADR-9.9.9", "--json"])
         data = json.loads(output)
         self.assertEqual(data["summary"]["total_reqs"], 0)
+
+
+# ---------------------------------------------------------------------------
+# OBPI-04: ADR audit integration tests
+# ---------------------------------------------------------------------------
+
+
+class TestExtractAdrSemver(unittest.TestCase):
+    """_extract_adr_semver extracts X.Y.Z from ADR identifiers."""
+
+    def test_simple_adr_id(self):
+        from gzkit.commands.adr_audit import _extract_adr_semver
+
+        self.assertEqual(_extract_adr_semver("ADR-0.20.0"), "0.20.0")
+
+    def test_adr_with_suffix(self):
+        from gzkit.commands.adr_audit import _extract_adr_semver
+
+        self.assertEqual(_extract_adr_semver("ADR-0.21.0-tests-for-spec"), "0.21.0")
+
+    def test_invalid_format_returns_none(self):
+        from gzkit.commands.adr_audit import _extract_adr_semver
+
+        self.assertIsNone(_extract_adr_semver("INVALID"))
+
+    def test_pool_adr_returns_none(self):
+        from gzkit.commands.adr_audit import _extract_adr_semver
+
+        self.assertIsNone(_extract_adr_semver("ADR-pool.my-feature"))
+
+
+class TestComputeAdrCoverage(unittest.TestCase):
+    """_compute_adr_coverage returns scoped coverage data for an ADR."""
+
+    def setUp(self):
+        self._tmpdir = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmpdir.name)
+        self.adr_dir = self.root / "docs" / "design" / "adr"
+
+        # Create ADR/OBPI brief structure with 2 REQs
+        adr_pkg = self.adr_dir / "ADR-0.15.0"
+        obpis = adr_pkg / "obpis"
+        obpis.mkdir(parents=True)
+        (obpis / "OBPI-0.15.0-03-demo.md").write_text(
+            "---\n"
+            "id: OBPI-0.15.0-03-demo\n"
+            "parent: ADR-0.15.0\n"
+            "item: 3\n"
+            "lane: Lite\n"
+            "status: Accepted\n"
+            "---\n\n"
+            "# OBPI-0.15.0-03: Demo\n\n"
+            "## Acceptance Criteria\n\n"
+            "- [ ] REQ-0.15.0-03-01: First criterion.\n"
+            "- [ ] REQ-0.15.0-03-02: Second criterion.\n",
+            encoding="utf-8",
+        )
+
+        # Create test file covering only REQ-01
+        tests_dir = self.root / "tests"
+        tests_dir.mkdir()
+        (tests_dir / "test_sample.py").write_text(
+            textwrap.dedent("""\
+                from gzkit.traceability import covers
+
+                @covers("REQ-0.15.0-03-01")
+                def test_one():
+                    pass
+            """),
+            encoding="utf-8",
+        )
+
+    def tearDown(self):
+        self._tmpdir.cleanup()
+
+    def test_returns_coverage_for_adr(self):
+        from gzkit.commands.adr_audit import _compute_adr_coverage
+
+        result = _compute_adr_coverage(self.root, "ADR-0.15.0", self.adr_dir)
+        self.assertEqual(result["total_reqs"], 2)
+        self.assertEqual(result["covered_reqs"], 1)
+        self.assertEqual(result["uncovered_reqs"], 1)
+        self.assertEqual(result["coverage_percent"], 50.0)
+
+    def test_includes_per_obpi_data(self):
+        from gzkit.commands.adr_audit import _compute_adr_coverage
+
+        result = _compute_adr_coverage(self.root, "ADR-0.15.0", self.adr_dir)
+        self.assertEqual(len(result["by_obpi"]), 1)
+        obpi = result["by_obpi"][0]
+        self.assertEqual(obpi["obpi"], "OBPI-0.15.0-03")
+        self.assertEqual(obpi["total_reqs"], 2)
+        self.assertEqual(obpi["covered_reqs"], 1)
+
+    def test_uncovered_reqs_listed(self):
+        from gzkit.commands.adr_audit import _compute_adr_coverage
+
+        result = _compute_adr_coverage(self.root, "ADR-0.15.0", self.adr_dir)
+        self.assertEqual(len(result["uncovered"]), 1)
+        self.assertEqual(result["uncovered"][0]["req_id"], "REQ-0.15.0-03-02")
+        self.assertEqual(result["uncovered"][0]["severity"], "advisory")
+
+    def test_nonexistent_adr_returns_empty(self):
+        from gzkit.commands.adr_audit import _compute_adr_coverage
+
+        result = _compute_adr_coverage(self.root, "ADR-9.9.9", self.adr_dir)
+        self.assertEqual(result["total_reqs"], 0)
+        self.assertEqual(result["by_obpi"], [])
+
+    def test_invalid_adr_returns_empty(self):
+        from gzkit.commands.adr_audit import _compute_adr_coverage
+
+        result = _compute_adr_coverage(self.root, "INVALID", self.adr_dir)
+        self.assertEqual(result["total_reqs"], 0)
+
+    def test_coverage_does_not_block_audit(self):
+        """Coverage is advisory — uncovered REQs never make passed=False."""
+        from gzkit.commands.adr_audit import _compute_adr_coverage
+
+        result = _compute_adr_coverage(self.root, "ADR-0.15.0", self.adr_dir)
+        # Coverage data has uncovered REQs but no "passed" key —
+        # pass/fail is determined by findings, not coverage
+        self.assertNotIn("passed", result)
+        self.assertEqual(result["uncovered_reqs"], 1)
+
+    def test_all_covered_returns_empty_uncovered(self):
+        """When all REQs are covered, uncovered list is empty."""
+        (self.root / "tests" / "test_sample2.py").write_text(
+            textwrap.dedent("""\
+                from gzkit.traceability import covers
+
+                @covers("REQ-0.15.0-03-02")
+                def test_two():
+                    pass
+            """),
+            encoding="utf-8",
+        )
+        from gzkit.commands.adr_audit import _compute_adr_coverage
+
+        result = _compute_adr_coverage(self.root, "ADR-0.15.0", self.adr_dir)
+        self.assertEqual(result["covered_reqs"], 2)
+        self.assertEqual(result["uncovered"], [])

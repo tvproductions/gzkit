@@ -39,3 +39,19 @@ Feature: Requirement coverage reporting CLI
     When I run the gz command "covers --json --adr-dir design/adr --test-dir tests"
     Then the command exits with code 0
     And JSON path "summary.total_reqs" equals "0"
+
+  Scenario: Audit-check includes coverage section in JSON output
+    Given the workspace is initialized
+    And ADR-0.1.0 exists
+    And an OBPI brief with covered and uncovered REQs exists
+    When I run the gz command "adr audit-check ADR-0.1.0 --json"
+    Then JSON path "coverage.total_reqs" equals "2"
+    And JSON path "coverage.covered_reqs" equals "1"
+    And JSON path "coverage.uncovered_reqs" equals "1"
+
+  Scenario: Audit-check shows uncovered REQs as advisory findings
+    Given the workspace is initialized
+    And ADR-0.1.0 exists
+    And an OBPI brief with covered and uncovered REQs exists
+    When I run the gz command "adr audit-check ADR-0.1.0 --json"
+    Then JSON path "advisory_findings" is not empty
