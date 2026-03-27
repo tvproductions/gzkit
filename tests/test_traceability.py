@@ -60,6 +60,7 @@ class TestCoversFormatValidation(unittest.TestCase):
 
         self.assertEqual(test_fn(), 42)
 
+    @covers("REQ-0.21.0-01-02")
     def test_invalid_format_raises_value_error(self):
         with self.assertRaises(ValueError) as ctx:
 
@@ -101,6 +102,7 @@ class TestCoversExistenceValidation(unittest.TestCase):
     def tearDown(self):
         reset_registry()
 
+    @covers("REQ-0.21.0-01-03")
     def test_unknown_req_raises_value_error(self):
         with self.assertRaises(ValueError) as ctx:
 
@@ -138,6 +140,7 @@ class TestCoversLinkageRegistration(unittest.TestCase):
     def tearDown(self):
         reset_registry()
 
+    @covers("REQ-0.21.0-01-01")
     def test_single_covers_registers_one_linkage(self):
         @covers("REQ-0.15.0-03-02")
         def test_fn():
@@ -157,6 +160,7 @@ class TestCoversLinkageRegistration(unittest.TestCase):
         self.assertEqual(record.target.identifier, "REQ-0.15.0-03-02")
         self.assertIn("test_fn", record.source.identifier)
 
+    @covers("REQ-0.21.0-01-04")
     def test_multiple_covers_register_multiple_linkages(self):
         @covers("REQ-0.15.0-03-01")
         @covers("REQ-0.15.0-03-02")
@@ -188,6 +192,7 @@ class TestCoversMetadataOnly(unittest.TestCase):
     def tearDown(self):
         reset_registry()
 
+    @covers("REQ-0.21.0-01-05")
     def test_return_value_preserved(self):
         @covers("REQ-0.15.0-03-02")
         def test_fn():
@@ -326,6 +331,7 @@ def _make_req(semver: str, obpi_item: str, criterion: str, parent_obpi: str) -> 
 class TestScanTestTree(unittest.TestCase):
     """AST-based scanner discovers @covers annotations across test files."""
 
+    @covers("REQ-0.21.0-02-01")
     def test_discovers_annotations_across_files(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -574,6 +580,7 @@ class TestComputeCoverage(unittest.TestCase):
             )
         return records
 
+    @covers("REQ-0.21.0-02-02")
     def test_overall_coverage_percentage(self):
         known = self._make_known_reqs()
         linkages = self._make_linkage_records()
@@ -584,6 +591,7 @@ class TestComputeCoverage(unittest.TestCase):
         self.assertEqual(report.summary.uncovered_reqs, 3)
         self.assertEqual(report.summary.coverage_percent, 62.5)
 
+    @covers("REQ-0.21.0-02-03")
     def test_per_adr_rollup(self):
         known = self._make_known_reqs()
         linkages = self._make_linkage_records()
@@ -689,6 +697,7 @@ class TestComputeCoverage(unittest.TestCase):
 class TestCoversCLIHelp(unittest.TestCase):
     """gz covers --help works and shows required elements."""
 
+    @covers("REQ-0.21.0-03-04")
     def test_help_exits_zero(self):
         import io
         from contextlib import redirect_stderr, redirect_stdout
@@ -801,6 +810,7 @@ class TestCoversCLIOutput(unittest.TestCase):
         code, _ = self._run_covers()
         self.assertEqual(code, 0)
 
+    @covers("REQ-0.21.0-03-03")
     def test_json_output_valid(self):
         import json
 
@@ -827,11 +837,13 @@ class TestCoversCLIOutput(unittest.TestCase):
         self.assertIn("covered", lines[0])
         self.assertIn("uncovered", lines[1])
 
+    @covers("REQ-0.21.0-03-01")
     def test_human_shows_summary(self):
         code, output = self._run_covers()
         self.assertEqual(code, 0)
         self.assertIn("Summary", output)
 
+    @covers("REQ-0.21.0-03-02")
     def test_filter_by_adr(self):
         import json
 
@@ -927,6 +939,7 @@ class TestComputeAdrCoverage(unittest.TestCase):
     def tearDown(self):
         self._tmpdir.cleanup()
 
+    @covers("REQ-0.21.0-04-01")
     def test_returns_coverage_for_adr(self):
         from gzkit.commands.adr_audit import _compute_adr_coverage
 
@@ -936,6 +949,7 @@ class TestComputeAdrCoverage(unittest.TestCase):
         self.assertEqual(result["uncovered_reqs"], 1)
         self.assertEqual(result["coverage_percent"], 50.0)
 
+    @covers("REQ-0.21.0-04-03")
     def test_includes_per_obpi_data(self):
         from gzkit.commands.adr_audit import _compute_adr_coverage
 
@@ -946,6 +960,7 @@ class TestComputeAdrCoverage(unittest.TestCase):
         self.assertEqual(obpi["total_reqs"], 2)
         self.assertEqual(obpi["covered_reqs"], 1)
 
+    @covers("REQ-0.21.0-04-02")
     def test_uncovered_reqs_listed(self):
         from gzkit.commands.adr_audit import _compute_adr_coverage
 
