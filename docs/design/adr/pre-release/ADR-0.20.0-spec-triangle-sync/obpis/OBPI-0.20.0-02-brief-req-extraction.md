@@ -3,7 +3,7 @@ id: OBPI-0.20.0-02-brief-req-extraction
 parent: ADR-0.20.0-spec-triangle-sync
 item: 2
 lane: Lite
-status: Accepted
+status: Completed
 ---
 
 # OBPI-0.20.0-02: Brief REQ Extraction
@@ -13,7 +13,7 @@ status: Accepted
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.20.0-spec-triangle-sync/ADR-0.20.0-spec-triangle-sync.md`
 - **Checklist Item:** #2 — "Brief REQ extraction: parse OBPI briefs to discover REQ entities"
 
-**Status:** Accepted
+**Status:** Completed
 
 ## Objective
 
@@ -50,52 +50,75 @@ Build a parser that extracts REQ entities from OBPI brief markdown files. The pa
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
+- [x] Intent and scope recorded in this OBPI brief
 
 ### Gate 2: TDD
 
-- [ ] Unit tests validate extraction from sample brief markdown
-- [ ] Unit tests validate checkbox state parsing
-- [ ] Unit tests validate graceful handling of malformed REQ lines
-- [ ] Tests pass: `uv run gz test`
+- [x] Unit tests validate extraction from sample brief markdown
+- [x] Unit tests validate checkbox state parsing
+- [x] Unit tests validate graceful handling of malformed REQ lines
+- [x] Tests pass: `uv run gz test`
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.20.0-02-01: Given an OBPI brief with `- [ ] REQ-0.15.0-03-01: Some criterion`, when extracted, then returns a REQ entity with status=unchecked and description="Some criterion".
-- [ ] REQ-0.20.0-02-02: Given an OBPI brief with `- [x] REQ-0.15.0-03-01: Completed criterion`, when extracted, then returns a REQ entity with status=checked.
-- [ ] REQ-0.20.0-02-03: Given a directory of 3 OBPI briefs with 12 total REQs, when scanned, then returns all 12 REQs with correct source file paths.
-- [ ] REQ-0.20.0-02-04: Given a brief with a malformed line `- [ ] REQ-bad: text`, when extracted, then logs a warning and skips the line without failing.
+- [x] REQ-0.20.0-02-01: Given an OBPI brief with `- [ ] REQ-0.15.0-03-01: Some criterion`, when extracted, then returns a REQ entity with status=unchecked and description="Some criterion".
+- [x] REQ-0.20.0-02-02: Given an OBPI brief with `- [x] REQ-0.15.0-03-01: Completed criterion`, when extracted, then returns a REQ entity with status=checked.
+- [x] REQ-0.20.0-02-03: Given a directory of 3 OBPI briefs with 12 total REQs, when scanned, then returns all 12 REQs with correct source file paths.
+- [x] REQ-0.20.0-02-04: Given a brief with a malformed line `- [ ] REQ-bad: text`, when extracted, then logs a warning and skips the line without failing.
 
 ## Completion Checklist (Lite)
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Unit tests pass
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Coverage:** Coverage >= 40% maintained
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Unit tests pass
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Coverage:** Coverage >= 40% maintained
+- [x] **OBPI Completion:** Record evidence in brief
 
 ## Evidence
+
+### Implementation Summary
+
+- Files modified: `src/gzkit/triangle.py`, `tests/test_triangle.py`
+- Functions added: `extract_reqs_from_brief`, `scan_briefs`, `DiscoveredReq`, `_req_sort_key`, `_parse_frontmatter_id`, `_extract_obpi_short_id`
+- Tests added: 17 new tests (49 total in module) covering extraction, scanning, malformed lines, sorting
+- Date completed: 2026-03-27
+
+### Key Proof
+
+```text
+$ uv run -m unittest tests.test_triangle -v
+Ran 49 tests in 0.003s — OK
+```
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+Ran 49 tests in 0.003s — OK (tests/test_triangle.py)
+Full suite: 1680 tests pass
+```
+
+### Code Quality
+
+```text
+uv run gz lint — All checks passed
+uv run gz typecheck — All checks passed
 ```
 
 ## Human Attestation
 
-- Attestor: `n/a` (Lite lane)
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: Jeffry Babb
+- Attestation: completed
+- Date: 2026-03-27
 
 ---
 
-**Brief Status:** Accepted
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-27
 
 **Evidence Hash:** -
