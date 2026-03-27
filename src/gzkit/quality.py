@@ -238,6 +238,32 @@ def run_tests(project_root: Path) -> QualityResult:
     return run_command("uv run -m unittest discover tests", cwd=project_root)
 
 
+class DriftAdvisoryResult(BaseModel):
+    """Result of an advisory drift detection check."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    advisory: bool = True
+    has_drift: bool
+    unlinked_specs: list[str]
+    orphan_tests: list[str]
+    unjustified_code_changes: list[str]
+    total_drift_count: int
+    scan_timestamp: str
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert to dictionary for JSON serialization."""
+        return {
+            "advisory": self.advisory,
+            "has_drift": self.has_drift,
+            "unlinked_specs": self.unlinked_specs,
+            "orphan_tests": self.orphan_tests,
+            "unjustified_code_changes": self.unjustified_code_changes,
+            "total_drift_count": self.total_drift_count,
+            "scan_timestamp": self.scan_timestamp,
+        }
+
+
 class CheckResult(BaseModel):
     """Result of running all quality checks."""
 
@@ -251,10 +277,11 @@ class CheckResult(BaseModel):
     skill_audit: QualityResult
     parity_check: QualityResult
     readiness_audit: QualityResult
+    drift: DriftAdvisoryResult | None = None
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
-        return {
+        result: dict[str, Any] = {
             "success": self.success,
             "lint": self.lint.to_dict(),
             "format": self.format.to_dict(),
@@ -264,6 +291,40 @@ class CheckResult(BaseModel):
             "parity_check": self.parity_check.to_dict(),
             "readiness_audit": self.readiness_audit.to_dict(),
         }
+        if self.drift is not None:
+            result["drift"] = self.drift.to_dict()
+        return result
+
+
+def run_drift_advisory(project_root: Path) -> DriftAdvisoryResult:
+    """Run advisory drift detection using the triangle engine.
+
+    Reuses the same detection engine as ``gz drift``. Results are advisory —
+    drift findings do not affect the overall check pass/fail status.
+    """
+    from datetime import UTC, datetime
+
+    from gzkit.commands.drift import get_changed_files, scan_covers_references
+    from gzkit.triangle import detect_drift, scan_briefs
+
+    briefs_dir = project_root / "docs" / "design" / "adr"
+    tests_dir = project_root / "tests"
+
+    discovered = scan_briefs(briefs_dir)
+    reqs = [d.entity for d in discovered]
+    linkages = scan_covers_references(tests_dir)
+    changed_vertices = get_changed_files(project_root)
+    timestamp = datetime.now(UTC).isoformat()
+    report = detect_drift(reqs, linkages, changed_vertices, timestamp)
+
+    return DriftAdvisoryResult(
+        has_drift=report.summary.total_drift_count > 0,
+        unlinked_specs=report.unlinked_specs,
+        orphan_tests=report.orphan_tests,
+        unjustified_code_changes=report.unjustified_code_changes,
+        total_drift_count=report.summary.total_drift_count,
+        scan_timestamp=report.scan_timestamp,
+    )
 
 
 def run_all_checks(project_root: Path) -> CheckResult:
@@ -296,6 +357,8 @@ def run_all_checks(project_root: Path) -> CheckResult:
         ]
     )
 
+    drift = run_drift_advisory(project_root)
+
     return CheckResult(
         success=success,
         lint=lint,
@@ -305,6 +368,7 @@ def run_all_checks(project_root: Path) -> CheckResult:
         skill_audit=skill_audit,
         parity_check=parity_check,
         readiness_audit=readiness_audit,
+        drift=drift,
     )
 
 

@@ -281,6 +281,8 @@ uv run gz adr emit-receipt ADR-0.6.0-pool-promotion-protocol --event validated -
 - `uv run gz cli audit`
 - `uv run gz check-config-paths`
 - `uv run gz drift` (detect spec-test-code governance drift)
+- `uv run gz check` (all quality checks + advisory drift)
+- `uv run gz check --json` (machine-readable output with advisory drift section)
 - `uv run gz adr audit-check ADR-<X.Y.Z>`
 - `uv run gz adr covers-check ADR-<X.Y.Z>`
 - `uv run gz adr report`

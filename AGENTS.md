@@ -107,6 +107,9 @@ Skill behavior is standardized and synchronized by `gz agent sync control-surfac
 #### Cross-Repository
 `airlineops-parity-scan`
 
+#### Uncategorized
+`gz-design`
+
 For details on any skill, read its `SKILL.md` in `.gzkit/skills/<skill-name>/`.
 
 ## Gate Covenant

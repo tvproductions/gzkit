@@ -1278,16 +1278,19 @@ def _build_parser() -> argparse.ArgumentParser:
             ]
         ),
     ).set_defaults(func=lambda a: typecheck())
-    commands.add_parser(
+    p_check = commands.add_parser(
         "check",
         help="Run all quality checks",
-        description="Run lint, format, typecheck, and test in sequence.",
+        description="Run lint, format, typecheck, test, and advisory drift in sequence.",
         epilog=build_epilog(
             [
                 "gz check",
+                "gz check --json",
             ]
         ),
-    ).set_defaults(func=lambda a: check())
+    )
+    add_json_flag(p_check)
+    p_check.set_defaults(func=lambda a: check(as_json=a.as_json))
 
     p_drift = commands.add_parser(
         "drift",

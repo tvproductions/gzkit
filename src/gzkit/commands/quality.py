@@ -1,7 +1,13 @@
-"""Quality commands (lint, format, test, typecheck, check)."""
+"""Quality commands (lint, format, test, typecheck, check).
+
+@covers ADR-0.20.0-spec-triangle-sync
+@covers OBPI-0.20.0-05-advisory-gate-integration
+"""
+
+from __future__ import annotations
 
 from gzkit.commands.common import console, get_project_root
-from gzkit.quality import run_format, run_lint, run_tests, run_typecheck
+from gzkit.quality import DriftAdvisoryResult, run_format, run_lint, run_tests, run_typecheck
 
 
 def lint() -> None:
@@ -80,10 +86,14 @@ def typecheck() -> None:
         raise SystemExit(result.returncode)
 
 
-def check() -> None:
+def check(as_json: bool = False) -> None:
     """Run all quality checks (lint + format + typecheck + test + governance audits)."""
+    import json
+    import sys
+
     from gzkit.cli.formatters import OutputFormatter
     from gzkit.quality import (
+        run_drift_advisory,
         run_format_check,
         run_parity_check,
         run_readiness_audit,
@@ -110,6 +120,19 @@ def check() -> None:
             result = runner(project_root)
             results.append((name, result.success))
 
+    drift: DriftAdvisoryResult = run_drift_advisory(project_root)
+
+    if as_json:
+        payload: dict[str, object] = {
+            "success": all(s for _, s in results),
+            "checks": dict(results),
+            "drift": drift.to_dict(),
+        }
+        sys.stdout.write(json.dumps(payload, indent=2) + "\n")
+        if not all(s for _, s in results):
+            raise SystemExit(1)
+        return
+
     def _sym(ok: bool) -> str:
         return "[green]✓[/green]" if ok else "[red]❌[/red]"
 
@@ -121,4 +144,36 @@ def check() -> None:
         console.print("\n[green]✓ All checks passed.[/green]")
     else:
         console.print("\n[red]❌ Some checks failed.[/red]")
+
+    _render_drift_advisory(drift)
+
+    if not all_passed:
         raise SystemExit(1)
+
+
+def _render_drift_advisory(drift: DriftAdvisoryResult) -> None:
+    """Render advisory drift findings after blocking checks."""
+    if not drift.has_drift:
+        return
+
+    console.print("\n[yellow]⚠ Advisory: spec-test-code drift detected[/yellow]")
+
+    if drift.unlinked_specs:
+        console.print("  Unlinked specs (REQs with no test):")
+        for req_id in drift.unlinked_specs:
+            console.print(f"    [yellow]advisory[/yellow]  {req_id}")
+
+    if drift.orphan_tests:
+        console.print("  Orphan tests (covering absent REQs):")
+        for req_id in drift.orphan_tests:
+            console.print(f"    [yellow]advisory[/yellow]  {req_id}")
+
+    if drift.unjustified_code_changes:
+        console.print("  Unjustified code changes:")
+        for code_id in drift.unjustified_code_changes:
+            console.print(f"    [yellow]advisory[/yellow]  {code_id}")
+
+    console.print(
+        f"  Total: {drift.total_drift_count} finding(s) "
+        f"[dim](advisory — does not affect exit code)[/dim]"
+    )
