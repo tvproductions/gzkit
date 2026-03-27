@@ -1,4 +1,4 @@
-"""Cross-validation tests: Pydantic models ↔ JSON schemas never drift.
+"""Cross-validation tests: Pydantic models <-> JSON schemas never drift.
 
 @covers ADR-0.15.0  OBPI-0.15.0-04 schema-generation-unification
 @covers ADR-0.17.0  OBPI-0.17.0-04 json-schemas-and-validation
@@ -31,6 +31,7 @@ from gzkit.models.frontmatter import (
     PrdFrontmatter,
 )
 from gzkit.schemas import get_schema_path, load_schema
+from gzkit.traceability import covers
 
 # ---------------------------------------------------------------------------
 # Helper: extract Pydantic model's required field names (no defaults)
@@ -69,7 +70,7 @@ def _pydantic_literal_values(model: type[BaseModel], field: str) -> set[str] | N
 
 
 # ---------------------------------------------------------------------------
-# Frontmatter model ↔ schema cross-validation
+# Frontmatter model <-> schema cross-validation
 # ---------------------------------------------------------------------------
 
 
@@ -81,12 +82,12 @@ class TestFrontmatterSchemaAlignment(unittest.TestCase):
         model: type[BaseModel],
         schema_name: str,
     ) -> None:
-        """Required fields in schema ⊆ required fields in model."""
+        """Required fields in schema <= required fields in model."""
         schema = load_schema(schema_name)
         fm_schema = schema.get("properties", {}).get("frontmatter", {})
         schema_required = set(fm_schema.get("required", []))
         model_required = _pydantic_required_fields(model)
-        # schema_ → schema mapping: model uses 'schema_' for 'schema' key
+        # schema_ -> schema mapping: model uses 'schema_' for 'schema' key
         normalized_model = {f.rstrip("_") for f in model_required}
         missing = schema_required - normalized_model
         self.assertFalse(
@@ -171,10 +172,10 @@ class TestFrontmatterSchemaAlignment(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
-# Ledger event model ↔ ledger.json cross-validation
+# Ledger event model <-> ledger.json cross-validation
 # ---------------------------------------------------------------------------
 
-# Maps ledger.json event names → typed event model classes
+# Maps ledger.json event names -> typed event model classes
 _EVENT_MODELS: dict[str, type[BaseModel]] = {
     "project_init": ProjectInitEvent,
     "prd_created": PrdCreatedEvent,
@@ -192,7 +193,7 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     "lifecycle_transition": LifecycleTransitionEvent,
 }
 
-# Base fields present on _EventBase — not event-specific
+# Base fields present on _EventBase -- not event-specific
 _BASE_FIELDS = {"schema_", "event", "id", "ts", "parent"}
 
 
@@ -226,13 +227,13 @@ class TestLedgerSchemaAlignment(unittest.TestCase):
         )
 
     def test_required_fields_per_event(self) -> None:
-        """Schema-required fields for each event ⊆ model fields (required or base)."""
+        """Schema-required fields for each event <= model fields (required or base)."""
         for event_name, rules in self.event_rules.items():
             model_cls = _EVENT_MODELS.get(event_name)
             if model_cls is None:
                 continue
             schema_required = set(rules.get("required", []))
-            # All model fields (including base) — normalize schema_ → schema
+            # All model fields (including base) -- normalize schema_ -> schema
             all_fields = {f.rstrip("_") for f in model_cls.model_fields}
             missing = schema_required - all_fields
             with self.subTest(event=event_name):
@@ -248,7 +249,7 @@ class TestLedgerSchemaAlignment(unittest.TestCase):
             if model_cls is None:
                 continue
             schema_props = set(rules.get("properties", {}).keys())
-            # Include base fields — some events reuse 'parent' as event-specific
+            # Include base fields -- some events reuse 'parent' as event-specific
             all_model_fields = {f.rstrip("_") for f in model_cls.model_fields}
             missing = schema_props - all_model_fields
             with self.subTest(event=event_name):
@@ -262,7 +263,7 @@ class TestLedgerSchemaAlignment(unittest.TestCase):
         base_required = set(self.schema.get("required", []))
         for event_name, model_cls in _EVENT_MODELS.items():
             all_fields = set(model_cls.model_fields.keys())
-            # Normalize schema_ → schema
+            # Normalize schema_ -> schema
             normalized = {f.rstrip("_") for f in all_fields}
             missing = base_required - normalized
             with self.subTest(event=event_name):
@@ -303,7 +304,7 @@ class TestSchemaLoading(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
-# Control-surface model ↔ .gzkit/schemas/ cross-validation
+# Control-surface model <-> .gzkit/schemas/ cross-validation
 # ---------------------------------------------------------------------------
 
 
@@ -317,7 +318,7 @@ def _load_gzkit_schema(name: str) -> dict:
 
 
 def _model_alias_map(model: type[BaseModel]) -> dict[str, str]:
-    """Build schema-field-name → model-field-name map from aliases.
+    """Build schema-field-name -> model-field-name map from aliases.
 
     For fields without aliases, the mapping is identity.
     """
@@ -338,7 +339,11 @@ def _resolve_field(model: type[BaseModel], schema_field: str) -> str | None:
 
 
 class TestSkillSchemaAlignment(unittest.TestCase):
-    """Verify SkillFrontmatter model matches .gzkit/schemas/skill.schema.json."""
+    """Verify SkillFrontmatter model matches .gzkit/schemas/skill.schema.json.
+
+    @covers REQ-0.17.0-04-01
+    @covers REQ-0.17.0-04-05
+    """
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -348,6 +353,7 @@ class TestSkillSchemaAlignment(unittest.TestCase):
         cls.model = SkillFrontmatter
         cls.schema = _load_gzkit_schema("skill")
 
+    @covers("REQ-0.17.0-04-05")
     def test_required_fields_match(self) -> None:
         """Schema-required fields are required in the Pydantic model."""
         schema_required = set(self.schema.get("required", []))
@@ -367,6 +373,7 @@ class TestSkillSchemaAlignment(unittest.TestCase):
             f"SkillFrontmatter missing required fields: {missing}",
         )
 
+    @covers("REQ-0.17.0-04-05")
     def test_enum_values_match(self) -> None:
         """Enum constraints in schema match Literal values in model."""
         schema_props = self.schema.get("properties", {})
@@ -388,6 +395,7 @@ class TestSkillSchemaAlignment(unittest.TestCase):
                     f"from skill.schema.json '{schema_field}' enum",
                 )
 
+    @covers("REQ-0.17.0-04-05")
     def test_pattern_constraints_match(self) -> None:
         """Pattern constraints in schema match pattern metadata in model."""
         schema_props = self.schema.get("properties", {})
@@ -408,6 +416,7 @@ class TestSkillSchemaAlignment(unittest.TestCase):
                     f"from skill.schema.json '{schema_field}'",
                 )
 
+    @covers("REQ-0.17.0-04-01")
     def test_all_schema_properties_have_model_fields(self) -> None:
         """Every property in skill.schema.json has a corresponding model field."""
         schema_props = set(self.schema.get("properties", {}).keys())
@@ -420,7 +429,11 @@ class TestSkillSchemaAlignment(unittest.TestCase):
 
 
 class TestInstructionSchemaAlignment(unittest.TestCase):
-    """Verify InstructionFrontmatter model matches .gzkit/schemas/rule.schema.json."""
+    """Verify InstructionFrontmatter model matches .gzkit/schemas/rule.schema.json.
+
+    @covers REQ-0.17.0-04-02
+    @covers REQ-0.17.0-04-06
+    """
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -430,6 +443,7 @@ class TestInstructionSchemaAlignment(unittest.TestCase):
         cls.model = InstructionFrontmatter
         cls.schema = _load_gzkit_schema("rule")
 
+    @covers("REQ-0.17.0-04-06")
     def test_required_fields_match(self) -> None:
         """Schema-required fields are required in the Pydantic model."""
         schema_required = set(self.schema.get("required", []))
@@ -448,6 +462,7 @@ class TestInstructionSchemaAlignment(unittest.TestCase):
             f"InstructionFrontmatter missing required fields: {missing}",
         )
 
+    @covers("REQ-0.17.0-04-06")
     def test_enum_values_match(self) -> None:
         """Enum constraints in schema match Literal values in model."""
         schema_props = self.schema.get("properties", {})
@@ -469,6 +484,7 @@ class TestInstructionSchemaAlignment(unittest.TestCase):
                     f"from rule.schema.json '{schema_field}' enum",
                 )
 
+    @covers("REQ-0.17.0-04-02")
     def test_all_schema_properties_have_model_fields(self) -> None:
         """Every property in rule.schema.json has a corresponding model field."""
         schema_props = set(self.schema.get("properties", {}).keys())

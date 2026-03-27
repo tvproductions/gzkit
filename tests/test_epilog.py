@@ -16,11 +16,13 @@ import unittest
 
 from gzkit.cli.helpers.epilog import build_epilog
 from gzkit.cli.main import _build_parser
+from gzkit.traceability import covers
 
 
 class TestBuildEpilog(unittest.TestCase):
     """REQ-0.0.4-05-01: build_epilog() helper tests."""
 
+    @covers("REQ-0.0.4-05-01")
     def test_signature_matches_spec(self):
         """build_epilog has the expected signature."""
         sig = inspect.signature(build_epilog)
@@ -30,6 +32,7 @@ class TestBuildEpilog(unittest.TestCase):
         self.assertEqual(sig.parameters["exit_codes"].default, None)
         self.assertEqual(sig.parameters["exit_codes"].kind, inspect.Parameter.KEYWORD_ONLY)
 
+    @covers("REQ-0.0.4-05-01")
     def test_basic_output(self):
         """build_epilog produces Examples and Exit codes sections."""
         result = build_epilog(["gz status --table"])
@@ -94,6 +97,7 @@ class TestEpilogPresence(unittest.TestCase):
         cls.top_level = [(n, p) for n, p in cls.all_parsers if " " not in n]
         cls.subcommands = [(n, p) for n, p in cls.all_parsers if " " in n]
 
+    @covers("REQ-0.0.4-05-02")
     def test_top_level_commands_have_epilog(self):
         """REQ-0.0.4-05-02: All top-level commands have non-empty epilog."""
         missing = []
@@ -102,6 +106,7 @@ class TestEpilogPresence(unittest.TestCase):
                 missing.append(name)
         self.assertEqual(missing, [], f"Top-level commands missing epilog: {missing}")
 
+    @covers("REQ-0.0.4-05-03")
     def test_subcommands_have_epilog(self):
         """REQ-0.0.4-05-03: All subcommands have non-empty epilog."""
         missing = []
@@ -110,6 +115,7 @@ class TestEpilogPresence(unittest.TestCase):
                 missing.append(name)
         self.assertEqual(missing, [], f"Subcommands missing epilog: {missing}")
 
+    @covers("REQ-0.0.4-05-04")
     def test_epilogs_contain_examples_section(self):
         """REQ-0.0.4-05-04: Every epilog has an Examples section."""
         missing = []
@@ -118,6 +124,7 @@ class TestEpilogPresence(unittest.TestCase):
                 missing.append(name)
         self.assertEqual(missing, [], f"Epilogs missing Examples section: {missing}")
 
+    @covers("REQ-0.0.4-05-04")
     def test_epilogs_contain_exit_codes_section(self):
         """REQ-0.0.4-05-04: Every epilog has an Exit codes section."""
         missing = []
@@ -135,6 +142,7 @@ class TestEpilogExamples(unittest.TestCase):
         parser = _build_parser()
         cls.all_parsers = _collect_parsers(parser)
 
+    @covers("REQ-0.0.4-05-05")
     def test_examples_start_with_gz(self):
         """All indented example lines in epilogs start with 'gz '."""
         bad = []

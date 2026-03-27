@@ -8,11 +8,13 @@ from gzkit.core.validation_rules import (
     extract_headers,
     parse_frontmatter,
 )
+from gzkit.traceability import covers
 
 
 class TestCoreParseFrontmatter(unittest.TestCase):
     """Verify parse_frontmatter is importable and works from core."""
 
+    @covers("REQ-0.0.3-02-03")
     def test_parses_yaml_frontmatter(self) -> None:
         content = "---\nid: ADR-0.1.0\nstatus: Draft\n---\n# Title\nBody\n"
         fm, body = parse_frontmatter(content)
@@ -20,6 +22,7 @@ class TestCoreParseFrontmatter(unittest.TestCase):
         self.assertEqual(fm["status"], "Draft")
         self.assertIn("# Title", body)
 
+    @covers("REQ-0.0.3-02-03")
     def test_no_frontmatter(self) -> None:
         content = "# Just a title\nBody text\n"
         fm, body = parse_frontmatter(content)
@@ -30,6 +33,7 @@ class TestCoreParseFrontmatter(unittest.TestCase):
 class TestCoreExtractHeaders(unittest.TestCase):
     """Verify extract_headers works from core."""
 
+    @covers("REQ-0.0.3-02-03")
     def test_extracts_h2_headers(self) -> None:
         content = "## Intent\nfoo\n## Decision\nbar\n"
         headers = extract_headers(content)
