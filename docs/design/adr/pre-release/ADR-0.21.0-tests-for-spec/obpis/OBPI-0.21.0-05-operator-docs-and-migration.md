@@ -78,11 +78,11 @@ Produce operator-facing documentation with compliant `@covers` annotation exampl
 
 ## Acceptance Criteria
 
-- [x] REQ-0.21.0-05-01: Given the concept guide, then it includes 3+ compliant annotation examples.
-- [x] REQ-0.21.0-05-02: Given the migration guide, then it describes incremental adoption without breaking existing tests.
-- [x] REQ-0.21.0-05-03: Given `uv run mkdocs build --strict`, then docs build succeeds.
-- [x] REQ-0.21.0-05-04: Given the concept guide, then the language-agnostic proof metadata contract is presented as a first-class supported pattern.
-- [x] REQ-0.21.0-05-05: Given the operator docs, then they state that non-Python proof metadata is documentation-only until a future ADR adds runtime discovery.
+- [x] REQ-0.21.0-05-01: [doc] Given the concept guide, then it includes 3+ compliant annotation examples.
+- [x] REQ-0.21.0-05-02: [doc] Given the migration guide, then it describes incremental adoption without breaking existing tests.
+- [x] REQ-0.21.0-05-03: [doc] Given `uv run mkdocs build --strict`, then docs build succeeds.
+- [x] REQ-0.21.0-05-04: [doc] Given the concept guide, then the language-agnostic proof metadata contract is presented as a first-class supported pattern.
+- [x] REQ-0.21.0-05-05: [doc] Given the operator docs, then they state that non-Python proof metadata is documentation-only until a future ADR adds runtime discovery.
 
 ## Verification Commands (Concrete)
 
