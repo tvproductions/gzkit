@@ -15,6 +15,7 @@ from gzkit.hooks.core import (
     is_governance_artifact,
     write_hook_script,
 )
+from gzkit.traceability import covers
 
 
 class TestIsGovernanceArtifact(unittest.TestCase):
@@ -107,6 +108,7 @@ class TestWriteHookScript(unittest.TestCase):
 class TestGenerateClaudeSettings(unittest.TestCase):
     """Tests for Claude settings generation."""
 
+    @covers("REQ-0.12.0-06-01")
     def test_includes_active_pipeline_enforcement_registration(self) -> None:
         """Generated settings wire the active OBPI-06 enforcement chain."""
         config = GzkitConfig(project_name="gzkit-test")
@@ -200,6 +202,7 @@ class TestGenerateClaudeSettings(unittest.TestCase):
 class TestSetupClaudeHooks(unittest.TestCase):
     """Tests for Claude hook setup."""
 
+    @covers("REQ-0.12.0-06-03")
     def test_creates_full_hook_tranche_and_settings(self) -> None:
         """Setup writes the tranche files referenced by settings."""
         with tempfile.TemporaryDirectory() as tmpdir:
