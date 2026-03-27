@@ -14,6 +14,7 @@ from unittest.mock import patch
 
 from gzkit.cli import gates_cmd
 from gzkit.config import GzkitConfig
+from gzkit.traceability import covers
 
 
 def _scaffold_project(tmp: Path, *, lane: str = "lite") -> Path:
@@ -61,6 +62,7 @@ def _scaffold_project(tmp: Path, *, lane: str = "lite") -> Path:
 class TestGatesDeprecationWarning(unittest.TestCase):
     """REQ-0.19.0-08-01/02/03: gates_cmd emits deprecation warning."""
 
+    @covers("REQ-0.19.0-08-01")
     @patch("gzkit.cli.main.get_project_root")
     @patch("gzkit.cli.main.ensure_initialized")
     def test_deprecation_warning_emitted(
@@ -82,6 +84,7 @@ class TestGatesDeprecationWarning(unittest.TestCase):
             self.assertIn("deprecated", warning_text)
             self.assertIn("gz closeout", warning_text)
 
+    @covers("REQ-0.19.0-08-02")
     @patch("gzkit.cli.main.get_project_root")
     @patch("gzkit.cli.main.ensure_initialized")
     def test_gates_still_execute_after_warning(
@@ -113,6 +116,7 @@ class TestGatesDeprecationWarning(unittest.TestCase):
                     "Gates should execute after deprecation warning",
                 )
 
+    @covers("REQ-0.19.0-08-03")
     def test_gate_runners_importable_independently(self) -> None:
         """REQ-04: _run_gate_1 through _run_gate_5 remain importable."""
         from gzkit.cli import (

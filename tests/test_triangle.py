@@ -16,6 +16,7 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
+from gzkit.traceability import covers
 from gzkit.triangle import (
     DiscoveredReq,
     DriftReport,
@@ -38,6 +39,7 @@ class TestReqIdParsing(unittest.TestCase):
     @covers REQ-0.20.0-01-02
     """
 
+    @covers("REQ-0.20.0-01-01")
     def test_parse_valid_req_id(self) -> None:
         """REQ-0.20.0-01-01: Parse a valid REQ string into structured fields."""
         req = ReqId.parse("REQ-0.15.0-03-02")
@@ -73,6 +75,7 @@ class TestReqIdParsing(unittest.TestCase):
 class TestReqIdParsingInvalid(unittest.TestCase):
     """@covers REQ-0.20.0-01-02"""
 
+    @covers("REQ-0.20.0-01-02")
     def test_parse_invalid_prefix(self) -> None:
         """REQ-0.20.0-01-02: Invalid REQ string raises ValueError."""
         with self.assertRaises(ValueError, msg="Invalid REQ identifier"):
@@ -148,6 +151,7 @@ class TestVertexTypes(unittest.TestCase):
 class TestEdgeTypes(unittest.TestCase):
     """@covers REQ-0.20.0-01-04"""
 
+    @covers("REQ-0.20.0-01-04")
     def test_three_edge_types_exist(self) -> None:
         """REQ-0.20.0-01-04: Exactly covers, proves, justifies edges."""
         members = {m.value for m in EdgeType}
@@ -224,6 +228,7 @@ class TestLinkageRecord(unittest.TestCase):
         self.assertEqual(record.source.vertex_type, VertexType.TEST)
         self.assertEqual(record.target.vertex_type, VertexType.SPEC)
 
+    @covers("REQ-0.20.0-01-03")
     def test_json_serialization_roundtrip(self) -> None:
         """REQ-0.20.0-01-03: Serialize to JSON and back, preserving all fields."""
         original = self._make_linkage()
@@ -307,6 +312,7 @@ class TestExtractReqsFromBrief(unittest.TestCase):
     @covers REQ-0.20.0-02-03
     """
 
+    @covers("REQ-0.20.0-02-01")
     def test_extract_unchecked_req(self) -> None:
         """REQ-0.20.0-02-01: Unchecked checkbox produces status=unchecked."""
         reqs = extract_reqs_from_brief(SAMPLE_BRIEF, "OBPI-0.15.0-03")
@@ -318,6 +324,7 @@ class TestExtractReqsFromBrief(unittest.TestCase):
             "Given a valid input, returns correct output.",
         )
 
+    @covers("REQ-0.20.0-02-02")
     def test_extract_checked_req(self) -> None:
         """REQ-0.20.0-02-02: Checked checkbox produces status=checked."""
         reqs = extract_reqs_from_brief(SAMPLE_BRIEF, "OBPI-0.15.0-03")
@@ -387,6 +394,7 @@ class TestExtractReqsFromBrief(unittest.TestCase):
 class TestExtractMalformedLines(unittest.TestCase):
     """@covers REQ-0.20.0-02-04"""
 
+    @covers("REQ-0.20.0-02-04")
     def test_malformed_req_id_logged_and_skipped(self) -> None:
         """REQ-0.20.0-02-04: Malformed REQ line logs warning, skips."""
         content = """\
@@ -439,6 +447,7 @@ class TestScanBriefs(unittest.TestCase):
     @covers REQ-0.20.0-02-01
     """
 
+    @covers("REQ-0.20.0-02-03")
     def test_scan_three_briefs_twelve_reqs(self) -> None:
         """REQ-0.20.0-02-03: Scan 3 briefs with 12 total REQs."""
         with tempfile.TemporaryDirectory() as tmp:
@@ -620,6 +629,7 @@ def _make_code_vertex(identifier: str) -> VertexRef:
 class TestDriftDetectionNoDrift(unittest.TestCase):
     """@covers REQ-0.20.0-03-01"""
 
+    @covers("REQ-0.20.0-03-01")
     def test_all_reqs_covered_no_drift(self) -> None:
         """REQ-0.20.0-03-01: 5 REQs, 5 matching linkages, no drift."""
         reqs = [_make_req("0.15.0", "01", f"0{i}") for i in range(1, 6)]
@@ -638,6 +648,7 @@ class TestDriftDetectionUnlinkedSpecs(unittest.TestCase):
     @covers REQ-0.20.0-03-02
     """
 
+    @covers("REQ-0.20.0-03-02")
     def test_all_reqs_unlinked(self) -> None:
         """REQ-0.20.0-03-02: 5 REQs, 0 linkages, all 5 unlinked."""
         reqs = [_make_req("0.15.0", "01", f"0{i}") for i in range(1, 6)]
@@ -665,6 +676,7 @@ class TestDriftDetectionUnlinkedSpecs(unittest.TestCase):
 class TestDriftDetectionOrphanTests(unittest.TestCase):
     """@covers REQ-0.20.0-03-03"""
 
+    @covers("REQ-0.20.0-03-03")
     def test_orphan_tests_detected(self) -> None:
         """REQ-0.20.0-03-03: 3 REQs, 5 linkages (2 non-existent), 2 orphaned."""
         reqs = [_make_req("0.15.0", "01", f"0{i}") for i in range(1, 4)]
@@ -687,6 +699,7 @@ class TestDriftDetectionOrphanTests(unittest.TestCase):
 class TestDriftDetectionUnjustifiedCode(unittest.TestCase):
     """@covers REQ-0.20.0-03-04"""
 
+    @covers("REQ-0.20.0-03-04")
     def test_unjustified_code_changes(self) -> None:
         """REQ-0.20.0-03-04: 2 changed vertices, 1 justifies, 1 unjustified."""
         reqs = [_make_req("0.15.0", "01", "01")]
@@ -723,6 +736,7 @@ class TestDriftDetectionUnjustifiedCode(unittest.TestCase):
 class TestDriftDetectionDeterminism(unittest.TestCase):
     """@covers REQ-0.20.0-03-05"""
 
+    @covers("REQ-0.20.0-03-05")
     def test_identical_inputs_identical_outputs(self) -> None:
         """REQ-0.20.0-03-05: Same inputs produce equal DriftReports."""
         reqs = [_make_req("0.15.0", "01", f"0{i}") for i in range(1, 4)]
@@ -953,6 +967,7 @@ class TestFormatHuman(unittest.TestCase):
         output = _format_human(report)
         self.assertIn("No drift detected", output)
 
+    @covers("REQ-0.20.0-04-01")
     def test_drift_shows_categories(self) -> None:
         from gzkit.commands.drift import _format_human
 
@@ -972,6 +987,7 @@ class TestFormatHuman(unittest.TestCase):
         self.assertIn("Orphan Tests", output)
         self.assertIn("REQ-0.1.0-99-01", output)
 
+    @covers("REQ-0.20.0-04-05")
     def test_unjustified_shown(self) -> None:
         from gzkit.commands.drift import _format_human
 
@@ -1015,6 +1031,7 @@ class TestFormatJson(unittest.TestCase):
     @covers OBPI-0.20.0-04-gz-drift-cli-surface
     """
 
+    @covers("REQ-0.20.0-04-02")
     def test_json_output_valid(self) -> None:
         """REQ-0.20.0-04-05: JSON output is valid DriftReport JSON."""
         reqs = [_make_req("0.15.0", "01", "01")]
@@ -1040,6 +1057,7 @@ class TestDriftCmdExitCodes(unittest.TestCase):
     @covers OBPI-0.20.0-04-gz-drift-cli-surface
     """
 
+    @covers("REQ-0.20.0-04-03")
     def test_exit_0_no_drift(self) -> None:
         """REQ-0.20.0-04-03: Exit 0 when no drift detected."""
         from unittest.mock import patch as _patch
@@ -1060,6 +1078,7 @@ class TestDriftCmdExitCodes(unittest.TestCase):
                     test_dir=str(test_dir),
                 )
 
+    @covers("REQ-0.20.0-04-04")
     def test_exit_1_with_drift(self) -> None:
         """REQ-0.20.0-04-04: Exit 1 when drift detected."""
         from unittest.mock import patch as _patch
@@ -1099,6 +1118,7 @@ class TestDriftHelpText(unittest.TestCase):
     @covers OBPI-0.20.0-04-gz-drift-cli-surface
     """
 
+    @covers("REQ-0.20.0-04-06")
     def test_help_includes_description(self) -> None:
         """REQ-0.20.0-04-06: Help includes description, options, example."""
         import subprocess as sp
@@ -1141,6 +1161,7 @@ class TestDriftAdvisoryResult(unittest.TestCase):
     @covers REQ-0.20.0-05-05
     """
 
+    @covers("REQ-0.20.0-05-01")
     def test_advisory_result_with_drift(self) -> None:
         """REQ-0.20.0-05-01: Advisory result captures drift findings."""
         from gzkit.quality import DriftAdvisoryResult
@@ -1157,6 +1178,7 @@ class TestDriftAdvisoryResult(unittest.TestCase):
         self.assertTrue(result.has_drift)
         self.assertEqual(result.total_drift_count, 1)
 
+    @covers("REQ-0.20.0-05-02")
     def test_advisory_result_no_drift(self) -> None:
         """REQ-0.20.0-05-03: No drift section when no findings."""
         from gzkit.quality import DriftAdvisoryResult
@@ -1186,6 +1208,7 @@ class TestDriftAdvisoryResult(unittest.TestCase):
         )
         self.assertTrue(result.advisory)
 
+    @covers("REQ-0.20.0-05-04")
     def test_to_dict_includes_advisory_flag(self) -> None:
         """REQ-0.20.0-05-04: JSON output includes advisory: true."""
         from gzkit.quality import DriftAdvisoryResult
@@ -1232,6 +1255,7 @@ class TestDriftAdvisoryResult(unittest.TestCase):
         self.assertIn("drift", d)
         self.assertTrue(d["drift"]["advisory"])
 
+    @covers("REQ-0.20.0-05-03")
     def test_check_result_without_drift(self) -> None:
         """CheckResult to_dict works when drift is None (backward compat)."""
         from gzkit.quality import CheckResult, QualityResult
@@ -1250,6 +1274,7 @@ class TestDriftAdvisoryResult(unittest.TestCase):
         d = cr.to_dict()
         self.assertNotIn("drift", d)
 
+    @covers("REQ-0.20.0-05-05")
     def test_advisory_labels_unjustified_as_advisory(self) -> None:
         """REQ-0.20.0-05-05: Unjustified code changes are labeled advisory."""
         from gzkit.quality import DriftAdvisoryResult

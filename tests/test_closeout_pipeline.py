@@ -11,6 +11,7 @@ from unittest.mock import patch
 
 from gzkit.cli import main
 from gzkit.quality import QualityResult
+from gzkit.traceability import covers
 from tests.commands.common import CliRunner, _init_git_repo, _quick_init
 
 
@@ -28,6 +29,7 @@ def _make_qr(success: bool = True, command: str = "test", returncode: int = 0) -
 class TestCloseoutPipelineGates(unittest.TestCase):
     """Closeout executes verification steps inline via run_command (REQ-01)."""
 
+    @covers("REQ-0.19.0-01-01")
     @patch("gzkit.cli.main.run_command")
     @patch("builtins.input", return_value="1")
     def test_gates_run_inline_and_pass(self, _mock_input, mock_run):
@@ -44,6 +46,7 @@ class TestCloseoutPipelineGates(unittest.TestCase):
             self.assertIn("gate_checked", ledger_text)
             self.assertIn('"pass"', ledger_text)
 
+    @covers("REQ-0.19.0-01-02")
     @patch("gzkit.cli.main.run_command")
     def test_gate_failure_halts_pipeline(self, mock_run):
         """Pipeline halts on first gate failure with exit 1 (REQ-02)."""
@@ -87,6 +90,7 @@ class TestCloseoutPipelineGates(unittest.TestCase):
 class TestCloseoutPipelineAttestation(unittest.TestCase):
     """Closeout prompts for attestation after gates pass (REQ-03)."""
 
+    @covers("REQ-0.19.0-01-03")
     @patch("gzkit.cli.main.run_command")
     @patch("builtins.input", return_value="1")
     def test_attestation_recorded_in_ledger(self, _mock_input, mock_run):
@@ -119,6 +123,7 @@ class TestCloseoutPipelineAttestation(unittest.TestCase):
 class TestCloseoutPipelineVersionBump(unittest.TestCase):
     """Closeout bumps version when ADR semver exceeds project (REQ-04)."""
 
+    @covers("REQ-0.19.0-01-04")
     @patch("gzkit.cli.main.run_command")
     @patch("builtins.input", return_value="1")
     def test_version_bump_when_needed(self, _mock_input, mock_run):
@@ -141,6 +146,7 @@ class TestCloseoutPipelineVersionBump(unittest.TestCase):
 class TestCloseoutPipelineCompletion(unittest.TestCase):
     """Closeout marks ADR Completed after attestation (REQ-05)."""
 
+    @covers("REQ-0.19.0-01-05")
     @patch("gzkit.cli.main.run_command")
     @patch("builtins.input", return_value="1")
     def test_adr_marked_completed(self, _mock_input, mock_run):
@@ -160,6 +166,7 @@ class TestCloseoutPipelineCompletion(unittest.TestCase):
 class TestCloseoutDryRun(unittest.TestCase):
     """--dry-run shows pipeline plan without executing (REQ-06)."""
 
+    @covers("REQ-0.19.0-01-06")
     def test_dry_run_shows_plan_no_execution(self):
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -192,6 +199,7 @@ class TestCloseoutDryRun(unittest.TestCase):
 class TestCloseoutJsonOutput(unittest.TestCase):
     """--json emits structured JSON with all pipeline results (REQ-07)."""
 
+    @covers("REQ-0.19.0-01-07")
     @patch("gzkit.cli.main.run_command")
     @patch("builtins.input", return_value="1")
     def test_json_output_contains_all_stages(self, _mock_input, mock_run):

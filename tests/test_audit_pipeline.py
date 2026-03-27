@@ -28,6 +28,7 @@ from gzkit.ledger import (
 )
 from gzkit.quality import QualityResult
 from gzkit.templates import load_template
+from gzkit.traceability import covers
 from tests.commands.common import CliRunner, _init_git_repo, _quick_init
 
 
@@ -54,6 +55,7 @@ def _setup_attested_adr(runner: CliRunner) -> None:
 class TestAuditAttestationGuard(unittest.TestCase):
     """Audit blocks when ADR is not attested (REQ-01, REQ-09)."""
 
+    @covers("REQ-0.19.0-02-01")
     def test_audit_blocks_without_attestation(self):
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -68,6 +70,7 @@ class TestAuditAttestationGuard(unittest.TestCase):
 class TestAuditArtifacts(unittest.TestCase):
     """Audit creates artifacts and runs commands (REQ-02)."""
 
+    @covers("REQ-0.19.0-02-02")
     @patch("gzkit.cli.main.run_command")
     def test_audit_creates_artifacts(self, mock_run):
         mock_run.return_value = _make_qr()
@@ -87,6 +90,7 @@ class TestAuditArtifacts(unittest.TestCase):
 class TestAuditReceiptEmission(unittest.TestCase):
     """Audit emits a validation receipt to the ledger (REQ-03)."""
 
+    @covers("REQ-0.19.0-02-03")
     @patch("gzkit.cli.main.run_command")
     def test_validation_receipt_in_ledger(self, mock_run):
         mock_run.return_value = _make_qr()
@@ -103,6 +107,8 @@ class TestAuditReceiptEmission(unittest.TestCase):
 class TestAuditStatusTransition(unittest.TestCase):
     """Audit transitions ADR to Validated when all pass (REQ-04)."""
 
+    @covers("REQ-0.19.0-02-04")
+    @covers("REQ-0.19.0-07-01")
     @patch("gzkit.cli.main.run_command")
     def test_adr_transitions_to_validated(self, mock_run):
         mock_run.return_value = _make_qr()
@@ -119,6 +125,7 @@ class TestAuditStatusTransition(unittest.TestCase):
 class TestAuditFailureNoTransition(unittest.TestCase):
     """Audit does NOT transition ADR on failure (REQ-05, REQ-08)."""
 
+    @covers("REQ-0.19.0-02-05")
     @patch("gzkit.cli.main.run_command")
     def test_no_transition_on_failure(self, mock_run):
         mock_run.return_value = _make_qr(success=False, returncode=1)
@@ -133,6 +140,8 @@ class TestAuditFailureNoTransition(unittest.TestCase):
             # But no lifecycle transition
             self.assertNotIn("lifecycle_transition", ledger_text)
 
+    @covers("REQ-0.19.0-07-02")
+    @covers("REQ-0.19.0-07-05")
     @patch("gzkit.cli.main.run_command")
     def test_artifacts_still_written_on_failure(self, mock_run):
         mock_run.return_value = _make_qr(success=False, returncode=1)
@@ -147,6 +156,7 @@ class TestAuditFailureNoTransition(unittest.TestCase):
 class TestAuditDryRun(unittest.TestCase):
     """--dry-run shows full plan without executing (REQ-06)."""
 
+    @covers("REQ-0.19.0-02-06")
     def test_dry_run_shows_receipt_and_transition_plan(self):
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -159,6 +169,7 @@ class TestAuditDryRun(unittest.TestCase):
             ledger_text = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertNotIn("audit_receipt_emitted", ledger_text)
 
+    @covers("REQ-0.19.0-07-03")
     def test_dry_run_json_includes_receipt_and_transition(self):
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -173,6 +184,7 @@ class TestAuditDryRun(unittest.TestCase):
 class TestAuditJsonOutput(unittest.TestCase):
     """--json emits structured output with all stages (REQ-07)."""
 
+    @covers("REQ-0.19.0-02-07")
     @patch("gzkit.cli.main.run_command")
     def test_json_contains_all_fields(self, mock_run):
         mock_run.return_value = _make_qr()
@@ -258,6 +270,7 @@ def _call_write_audit_artifacts(
 class TestAuditMdAttestationRecord(unittest.TestCase):
     """REQ-01: AUDIT.md must contain an Attestation Record section."""
 
+    @covers("REQ-0.19.0-04-01")
     def test_attestation_section_rendered_with_event(self):
         with tempfile.TemporaryDirectory() as tmp_str:
             tmp = Path(tmp_str)
@@ -285,6 +298,7 @@ class TestAuditMdAttestationRecord(unittest.TestCase):
 class TestAuditMdGateResults(unittest.TestCase):
     """REQ-02: AUDIT.md must contain a Gate Results section."""
 
+    @covers("REQ-0.19.0-04-02")
     def test_gate_results_table_rendered(self):
         with tempfile.TemporaryDirectory() as tmp_str:
             tmp = Path(tmp_str)
@@ -298,6 +312,7 @@ class TestAuditMdGateResults(unittest.TestCase):
             self.assertIn("uv run gz test", content)
             self.assertIn("uv run gz lint", content)
 
+    @covers("REQ-0.19.0-04-05")
     def test_gate_results_note_when_no_events(self):
         with tempfile.TemporaryDirectory() as tmp_str:
             tmp = Path(tmp_str)
@@ -313,6 +328,7 @@ class TestAuditMdGateResults(unittest.TestCase):
 class TestAuditMdEvidenceLinks(unittest.TestCase):
     """REQ-03: AUDIT.md must contain an Evidence Links section."""
 
+    @covers("REQ-0.19.0-04-03")
     def test_obpi_files_listed(self):
         with tempfile.TemporaryDirectory() as tmp_str:
             tmp = Path(tmp_str)
@@ -382,6 +398,7 @@ class TestAuditEnrichmentJsonKeys(unittest.TestCase):
             self.assertIn("gate_results", data)
             self.assertIn("evidence_links", data)
 
+    @covers("REQ-0.19.0-04-04")
     @patch("gzkit.cli.main.run_command")
     def test_json_output_preserves_existing_keys(self, mock_run):
         mock_run.return_value = _make_qr()
@@ -436,6 +453,8 @@ class TestAuditEnrichmentJsonKeys(unittest.TestCase):
 class TestAuditGeneratedLedgerEvent(unittest.TestCase):
     """audit_cmd() appends audit_generated event to ledger (OBPI-0.19.0-05)."""
 
+    @covers("REQ-0.19.0-05-01")
+    @covers("REQ-0.19.0-05-02")
     @patch("gzkit.cli.main.run_command")
     def test_audit_generated_event_in_ledger(self, mock_run):
         """Successful audit appends audit_generated with correct fields."""
@@ -457,6 +476,7 @@ class TestAuditGeneratedLedgerEvent(unittest.TestCase):
             self.assertIn("AUDIT_PLAN.md", evt["audit_plan_file"])
             self.assertTrue(evt["passed"])
 
+    @covers("REQ-0.19.0-05-05")
     @patch("gzkit.cli.main.run_command")
     def test_audit_generated_passed_false_on_failure(self, mock_run):
         """Failed verification records passed=False in audit_generated event."""
@@ -471,6 +491,7 @@ class TestAuditGeneratedLedgerEvent(unittest.TestCase):
             self.assertEqual(len(audit_events), 1)
             self.assertFalse(audit_events[0]["passed"])
 
+    @covers("REQ-0.19.0-05-03")
     def test_dry_run_no_audit_generated_event(self):
         """--dry-run does NOT append audit_generated event."""
         runner = CliRunner()
@@ -481,6 +502,7 @@ class TestAuditGeneratedLedgerEvent(unittest.TestCase):
             ledger_text = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertNotIn("audit_generated", ledger_text)
 
+    @covers("REQ-0.19.0-05-04")
     def test_attestation_blocker_no_audit_generated_event(self):
         """Attestation blocker (exit 1) does NOT append audit_generated event."""
         runner = CliRunner()
@@ -503,6 +525,7 @@ class TestAuditGeneratedLedgerEvent(unittest.TestCase):
 class TestAuditTemplatesExist(unittest.TestCase):
     """REQ-0.19.0-06-01: audit.md and audit_plan.md templates exist with .format() placeholders."""
 
+    @covers("REQ-0.19.0-06-01")
     def test_audit_template_exists_and_has_placeholders(self):
         content = load_template("audit")
         for placeholder in (
@@ -564,6 +587,7 @@ class TestAggregateAuditEvidence(unittest.TestCase):
     and is deterministic.
     """
 
+    @covers("REQ-0.19.0-06-02")
     def test_returns_all_required_keys(self):
         with tempfile.TemporaryDirectory() as tmp_str:
             ledger_path = Path(tmp_str) / ".gzkit" / "ledger.jsonl"
@@ -576,6 +600,7 @@ class TestAggregateAuditEvidence(unittest.TestCase):
             self.assertIn("attestation", result)
             self.assertIn("closeout", result)
 
+    @covers("REQ-0.19.0-06-04")
     def test_obpi_completions_lists_all_children(self):
         """REQ-04: Three OBPIs, two completed."""
         with tempfile.TemporaryDirectory() as tmp_str:
@@ -633,6 +658,7 @@ class TestAggregateAuditEvidence(unittest.TestCase):
             self.assertEqual(co["by"], "agent")
             self.assertEqual(co["mode"], "standard")
 
+    @covers("REQ-0.19.0-06-05")
     def test_deterministic_ordering(self):
         """REQ-05: Same ledger state produces identical results."""
         with tempfile.TemporaryDirectory() as tmp_str:
@@ -660,6 +686,7 @@ class TestAggregateAuditEvidence(unittest.TestCase):
 class TestAuditMdRenderedFromTemplate(unittest.TestCase):
     """REQ-0.19.0-06-03: AUDIT.md is rendered from template, not inline assembly."""
 
+    @covers("REQ-0.19.0-06-03")
     def test_audit_md_contains_obpi_summary_section(self):
         """Rendered AUDIT.md includes the OBPI Completion Summary section."""
         with tempfile.TemporaryDirectory() as tmp_str:
