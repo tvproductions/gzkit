@@ -1,6 +1,7 @@
 """Tests for gzkit.rules — instruction classification, nested AGENTS.md, and canonical rules.
 
 @covers ADR-0.16.0  OBPI-0.16.0-02 rules-as-content
+@covers ADR-0.17.0  OBPI-0.17.0-02 rules-mirroring
 """
 
 import tempfile
@@ -14,6 +15,7 @@ from gzkit.rules import (
     sync_nested_agents_md,
     validate_rule_placement,
 )
+from gzkit.traceability import covers
 
 
 def _instruction_file(apply_to: str, body: str, *, audience: str | None = None) -> str:
@@ -304,8 +306,12 @@ description: Multi-path rule
 
 
 class TestRuleFrontmatter(unittest.TestCase):
-    """RuleFrontmatter Pydantic model constraints."""
+    """RuleFrontmatter Pydantic model constraints.
 
+    @covers REQ-0.17.0-02-01
+    """
+
+    @covers("REQ-0.17.0-02-01")
     def test_valid_frontmatter(self) -> None:
         from gzkit.rules import RuleFrontmatter
 
@@ -314,6 +320,7 @@ class TestRuleFrontmatter(unittest.TestCase):
         self.assertEqual(fm.paths, ["src/**"])
         self.assertEqual(fm.description, "A rule")
 
+    @covers("REQ-0.17.0-02-01")
     def test_frozen(self) -> None:
         from pydantic import ValidationError
 
@@ -323,6 +330,7 @@ class TestRuleFrontmatter(unittest.TestCase):
         with self.assertRaises(ValidationError):
             fm.id = "changed"
 
+    @covers("REQ-0.17.0-02-01")
     def test_extra_forbid(self) -> None:
         from pydantic import ValidationError
 
@@ -336,6 +344,7 @@ class TestRuleFrontmatter(unittest.TestCase):
                 bogus="y",  # type: ignore[call-arg]
             )
 
+    @covers("REQ-0.17.0-02-01")
     def test_paths_required_nonempty(self) -> None:
         from pydantic import ValidationError
 
@@ -344,6 +353,7 @@ class TestRuleFrontmatter(unittest.TestCase):
         with self.assertRaises(ValidationError):
             RuleFrontmatter(id="x", paths=[], description="d")
 
+    @covers("REQ-0.17.0-02-01")
     def test_missing_required_fields(self) -> None:
         from pydantic import ValidationError
 
@@ -354,8 +364,12 @@ class TestRuleFrontmatter(unittest.TestCase):
 
 
 class TestCanonicalRule(unittest.TestCase):
-    """CanonicalRule model."""
+    """CanonicalRule model.
 
+    @covers REQ-0.17.0-02-01
+    """
+
+    @covers("REQ-0.17.0-02-01")
     def test_valid_canonical_rule(self) -> None:
         from gzkit.rules import CanonicalRule, RuleFrontmatter
 
@@ -364,6 +378,7 @@ class TestCanonicalRule(unittest.TestCase):
         self.assertEqual(rule.frontmatter.id, "test")
         self.assertEqual(rule.body, "# Body")
 
+    @covers("REQ-0.17.0-02-01")
     def test_frozen(self) -> None:
         from pydantic import ValidationError
 
@@ -376,8 +391,12 @@ class TestCanonicalRule(unittest.TestCase):
 
 
 class TestLoadRule(unittest.TestCase):
-    """load_rule() file parsing and validation."""
+    """load_rule() file parsing and validation.
 
+    @covers REQ-0.17.0-02-01
+    """
+
+    @covers("REQ-0.17.0-02-01")
     def test_load_valid_rule(self) -> None:
         from gzkit.rules import load_rule
 
@@ -392,6 +411,7 @@ class TestLoadRule(unittest.TestCase):
             self.assertEqual(rule.frontmatter.description, "A test rule")
             self.assertIn("Body content here.", rule.body)
 
+    @covers("REQ-0.17.0-02-01")
     def test_load_multi_path_rule(self) -> None:
         from gzkit.rules import load_rule
 
@@ -472,6 +492,7 @@ class TestLoadRules(unittest.TestCase):
         with self.assertRaises(ValueError):
             load_rules(Path("/nonexistent/path/rules"))
 
+    @covers("REQ-0.17.0-02-05")
     def test_load_actual_canonical_rules(self) -> None:
         """Integration: load the real .gzkit/rules/ directory."""
         from gzkit.rules import load_rules

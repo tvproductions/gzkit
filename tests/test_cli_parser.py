@@ -13,31 +13,39 @@ from gzkit.cli.helpers.exit_codes import (
     STANDARD_EXIT_CODES_EPILOG,
 )
 from gzkit.cli.parser import StableArgumentParser, _NoHyphenBreaksFormatter
+from gzkit.traceability import covers
 
 
 class TestExitCodeConstants(unittest.TestCase):
     """REQ-0.0.4-02-07: Exit code constants match CLI Doctrine 4-code map."""
 
+    @covers("REQ-0.0.4-02-07")
     def test_exit_success_is_zero(self) -> None:
         self.assertEqual(EXIT_SUCCESS, 0)
 
+    @covers("REQ-0.0.4-02-07")
     def test_exit_user_error_is_one(self) -> None:
         self.assertEqual(EXIT_USER_ERROR, 1)
 
+    @covers("REQ-0.0.4-02-07")
     def test_exit_system_error_is_two(self) -> None:
         self.assertEqual(EXIT_SYSTEM_ERROR, 2)
 
+    @covers("REQ-0.0.4-02-07")
     def test_exit_policy_breach_is_three(self) -> None:
         self.assertEqual(EXIT_POLICY_BREACH, 3)
 
+    @covers("REQ-0.0.4-02-06")
     def test_standard_epilog_is_string(self) -> None:
         self.assertIsInstance(STANDARD_EXIT_CODES_EPILOG, str)
 
+    @covers("REQ-0.0.4-02-06")
     def test_standard_epilog_contains_all_codes(self) -> None:
         for code in ("0", "1", "2", "3"):
             with self.subTest(code=code):
                 self.assertIn(code, STANDARD_EXIT_CODES_EPILOG)
 
+    @covers("REQ-0.0.4-02-06")
     def test_standard_epilog_contains_labels(self) -> None:
         for label in ("Success", "User/config error", "System/IO error", "Policy breach"):
             with self.subTest(label=label):
@@ -47,6 +55,7 @@ class TestExitCodeConstants(unittest.TestCase):
 class TestStableArgumentParserError(unittest.TestCase):
     """REQ-0.0.4-02-02, REQ-0.0.4-02-03: Error format and exit code."""
 
+    @covers("REQ-0.0.4-02-02")
     def test_error_writes_blockers_prefix_to_stderr(self) -> None:
         parser = StableArgumentParser(prog="gz")
         captured = io.StringIO()
@@ -63,6 +72,7 @@ class TestStableArgumentParserError(unittest.TestCase):
         self.assertTrue(output.startswith("BLOCKERS: gz: error:"))
         self.assertIn("unrecognized arguments: --bad", output)
 
+    @covers("REQ-0.0.4-02-03")
     def test_parse_error_exits_with_code_2(self) -> None:
         parser = StableArgumentParser(prog="gz")
         parser.add_argument("--flag", required=True)
@@ -75,6 +85,7 @@ class TestStableArgumentParserError(unittest.TestCase):
         finally:
             sys.stderr = old_stderr
 
+    @covers("REQ-0.0.4-02-05")
     def test_parser_uses_no_hyphen_breaks_formatter_by_default(self) -> None:
         parser = StableArgumentParser(prog="gz")
         self.assertIs(parser.formatter_class, _NoHyphenBreaksFormatter)
@@ -90,6 +101,7 @@ class TestStableArgumentParserError(unittest.TestCase):
 class TestNoHyphenBreaksFormatter(unittest.TestCase):
     """REQ-0.0.4-02-04, REQ-0.0.4-02-05: Hyphen preservation."""
 
+    @covers("REQ-0.0.4-02-04")
     def test_split_lines_preserves_hyphenated_tokens(self) -> None:
         formatter = _NoHyphenBreaksFormatter("test")
         # A line with a hyphenated token at a break point
@@ -100,6 +112,7 @@ class TestNoHyphenBreaksFormatter(unittest.TestCase):
         self.assertIn("ADR-0.0.4", joined)
         self.assertIn("OBPI-0.0.4-01", joined)
 
+    @covers("REQ-0.0.4-02-04")
     def test_fill_text_preserves_hyphenated_tokens(self) -> None:
         formatter = _NoHyphenBreaksFormatter("test")
         text = "Check ADR-0.0.4 and YYYY-MM-DD tokens in this text"
@@ -107,6 +120,7 @@ class TestNoHyphenBreaksFormatter(unittest.TestCase):
         self.assertIn("ADR-0.0.4", result)
         self.assertIn("YYYY-MM-DD", result)
 
+    @covers("REQ-0.0.4-02-05")
     def test_split_lines_handles_dedent(self) -> None:
         formatter = _NoHyphenBreaksFormatter("test")
         text = "    indented text with ADR-0.0.4"
@@ -117,6 +131,7 @@ class TestNoHyphenBreaksFormatter(unittest.TestCase):
 class TestStableArgumentParserIntegration(unittest.TestCase):
     """REQ-0.0.4-02-01, REQ-0.0.4-02-08: Integration checks."""
 
+    @covers("REQ-0.0.4-02-01")
     def test_parser_is_used_in_main(self) -> None:
         """Verify StableArgumentParser is the top-level parser in cli/main.py."""
         from gzkit.cli.main import _build_parser
@@ -124,6 +139,7 @@ class TestStableArgumentParserIntegration(unittest.TestCase):
         parser = _build_parser()
         self.assertIsInstance(parser, StableArgumentParser)
 
+    @covers("REQ-0.0.4-02-08")
     def test_help_output_preserves_hyphens(self) -> None:
         parser = StableArgumentParser(
             prog="gz",

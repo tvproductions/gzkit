@@ -14,6 +14,7 @@ from pydantic import BaseModel, ConfigDict
 from rich.table import Table
 
 from gzkit.cli.formatters import VALID_MODES, OutputFormatter, OutputMode
+from gzkit.traceability import covers
 
 
 class TestOutputFormatterInit(unittest.TestCase):
@@ -43,6 +44,7 @@ class TestOutputFormatterInit(unittest.TestCase):
 class TestHumanMode(unittest.TestCase):
     """Test human mode — Rich tables, colors, progress."""
 
+    @covers("REQ-0.0.4-06-01")
     def test_print_outputs_to_console(self) -> None:
         fmt = OutputFormatter("human")
         # Capture console output
@@ -92,6 +94,7 @@ class TestHumanMode(unittest.TestCase):
 class TestJsonMode(unittest.TestCase):
     """Test json mode — data to stdout, logs to stderr."""
 
+    @covers("REQ-0.0.4-06-02")
     def test_data_outputs_valid_json_to_stdout(self) -> None:
         fmt = OutputFormatter("json")
         with patch("sys.stdout", new_callable=io.StringIO) as mock_out:
@@ -107,6 +110,7 @@ class TestJsonMode(unittest.TestCase):
             fmt.print("log message")
             self.assertIn("log message", mock_err.getvalue())
 
+    @covers("REQ-0.0.4-06-02")
     def test_data_and_logs_never_mix_on_stdout(self) -> None:
         """Verify that log/print output never appears on stdout in json mode."""
         fmt = OutputFormatter("json")
@@ -154,6 +158,7 @@ class TestJsonMode(unittest.TestCase):
 class TestQuietMode(unittest.TestCase):
     """Test quiet mode — errors only."""
 
+    @covers("REQ-0.0.4-06-04")
     def test_print_suppressed(self) -> None:
         fmt = OutputFormatter("quiet")
         buf = io.StringIO()
@@ -165,6 +170,7 @@ class TestQuietMode(unittest.TestCase):
         fmt.print("should not appear")
         self.assertEqual(buf.getvalue(), "")
 
+    @covers("REQ-0.0.4-06-04")
     def test_data_suppressed(self) -> None:
         fmt = OutputFormatter("quiet")
         with patch("sys.stdout", new_callable=io.StringIO) as mock_out:
@@ -184,6 +190,7 @@ class TestQuietMode(unittest.TestCase):
         fmt.table(t)
         self.assertEqual(buf.getvalue(), "")
 
+    @covers("REQ-0.0.4-06-05")
     def test_err_still_outputs(self) -> None:
         fmt = OutputFormatter("quiet")
         with patch("sys.stderr", new_callable=io.StringIO) as mock_err:
@@ -296,6 +303,7 @@ class TestDebugMode(unittest.TestCase):
 class TestNoColor(unittest.TestCase):
     """Test NO_COLOR environment variable support."""
 
+    @covers("REQ-0.0.4-06-01")
     def test_no_color_respected_in_human_mode(self) -> None:
         with patch.dict(os.environ, {"NO_COLOR": "1"}):
             fmt = OutputFormatter("human")
@@ -320,6 +328,7 @@ class TestNoColor(unittest.TestCase):
 class TestModeFromFlags(unittest.TestCase):
     """Test mode_from_flags static method — flag priority."""
 
+    @covers("REQ-0.0.4-06-01")
     def test_default_is_human(self) -> None:
         self.assertEqual(OutputFormatter.mode_from_flags(), "human")
 
@@ -387,10 +396,12 @@ class TestOutputModeEnum(unittest.TestCase):
     @covers ADR-0.0.4
     """
 
+    @covers("REQ-0.0.4-06-02")
     def test_has_exactly_five_members(self) -> None:
         members = list(OutputMode)
         self.assertEqual(len(members), 5)
 
+    @covers("REQ-0.0.4-06-02")
     def test_member_names(self) -> None:
         names = {m.name for m in OutputMode}
         self.assertEqual(names, {"HUMAN", "JSON", "QUIET", "VERBOSE", "DEBUG"})
@@ -430,10 +441,12 @@ class TestConsoleParameter(unittest.TestCase):
     @covers ADR-0.0.4
     """
 
+    @covers("REQ-0.0.4-06-01")
     def test_default_creates_internal_console(self) -> None:
         fmt = OutputFormatter()
         self.assertIsNotNone(fmt.console)
 
+    @covers("REQ-0.0.4-06-01")
     def test_provided_console_is_used(self) -> None:
         from rich.console import Console
 
@@ -471,6 +484,7 @@ class TestEmitMethod(unittest.TestCase):
     # String payloads
     # ------------------------------------------------------------------
 
+    @covers("REQ-0.0.4-06-01")
     def test_string_human_mode_outputs_to_console(self) -> None:
         fmt = OutputFormatter("human")
         buf = io.StringIO()
@@ -499,6 +513,7 @@ class TestEmitMethod(unittest.TestCase):
         fmt.emit({"status": "ok"})
         self.assertIn("status", buf.getvalue())
 
+    @covers("REQ-0.0.4-06-02")
     def test_dict_json_mode_outputs_valid_json_sorted(self) -> None:
         fmt = OutputFormatter("json")
         with patch("sys.stdout", new_callable=io.StringIO) as mock_out:
@@ -507,7 +522,7 @@ class TestEmitMethod(unittest.TestCase):
         parsed = json.loads(raw)
         self.assertEqual(parsed["z_key"], 1)
         self.assertEqual(parsed["a_key"], 2)
-        # Verify sort_keys — "a_key" appears before "z_key" in raw output
+        # Verify sort_keys -- "a_key" appears before "z_key" in raw output
         self.assertLess(raw.index("a_key"), raw.index("z_key"))
 
     # ------------------------------------------------------------------
@@ -526,6 +541,7 @@ class TestEmitMethod(unittest.TestCase):
     # Pydantic BaseModel payloads
     # ------------------------------------------------------------------
 
+    @covers("REQ-0.0.4-06-03")
     def test_pydantic_json_mode_outputs_model_dump_json(self) -> None:
         fmt = OutputFormatter("json")
         model = _TestModel(name="gzkit", count=7)
@@ -552,18 +568,21 @@ class TestEmitMethod(unittest.TestCase):
     # Quiet mode suppression
     # ------------------------------------------------------------------
 
+    @covers("REQ-0.0.4-06-04")
     def test_quiet_mode_suppresses_string(self) -> None:
         fmt = OutputFormatter("quiet")
         with patch("sys.stdout", new_callable=io.StringIO) as mock_out:
             fmt.emit("should not appear")
             self.assertEqual(mock_out.getvalue(), "")
 
+    @covers("REQ-0.0.4-06-04")
     def test_quiet_mode_suppresses_dict(self) -> None:
         fmt = OutputFormatter("quiet")
         with patch("sys.stdout", new_callable=io.StringIO) as mock_out:
             fmt.emit({"key": "value"})
             self.assertEqual(mock_out.getvalue(), "")
 
+    @covers("REQ-0.0.4-06-04")
     def test_quiet_mode_suppresses_pydantic_model(self) -> None:
         fmt = OutputFormatter("quiet")
         model = _TestModel(name="nope", count=0)
@@ -573,35 +592,40 @@ class TestEmitMethod(unittest.TestCase):
 
 
 class TestEmitError(unittest.TestCase):
-    """Test emit_error — always writes to stderr in every mode.
+    """Test emit_error -- always writes to stderr in every mode.
 
     @covers ADR-0.0.4
     """
 
+    @covers("REQ-0.0.4-06-05")
     def test_human_mode_writes_to_stderr(self) -> None:
         fmt = OutputFormatter("human")
         with patch("sys.stderr", new_callable=io.StringIO) as mock_err:
             fmt.emit_error("human error")
             self.assertIn("human error", mock_err.getvalue())
 
+    @covers("REQ-0.0.4-06-05")
     def test_json_mode_writes_to_stderr(self) -> None:
         fmt = OutputFormatter("json")
         with patch("sys.stderr", new_callable=io.StringIO) as mock_err:
             fmt.emit_error("json error")
             self.assertIn("json error", mock_err.getvalue())
 
+    @covers("REQ-0.0.4-06-05")
     def test_quiet_mode_writes_to_stderr_never_suppressed(self) -> None:
         fmt = OutputFormatter("quiet")
         with patch("sys.stderr", new_callable=io.StringIO) as mock_err:
             fmt.emit_error("quiet error")
             self.assertIn("quiet error", mock_err.getvalue())
 
+    @covers("REQ-0.0.4-06-05")
     def test_verbose_mode_writes_to_stderr(self) -> None:
         fmt = OutputFormatter("verbose")
         with patch("sys.stderr", new_callable=io.StringIO) as mock_err:
             fmt.emit_error("verbose error")
             self.assertIn("verbose error", mock_err.getvalue())
 
+    @covers("REQ-0.0.4-06-05")
     def test_debug_mode_writes_to_stderr(self) -> None:
         fmt = OutputFormatter("debug")
         with patch("sys.stderr", new_callable=io.StringIO) as mock_err:
@@ -610,7 +634,7 @@ class TestEmitError(unittest.TestCase):
 
 
 class TestEmitTable(unittest.TestCase):
-    """Test emit_table — human renders Rich table; json emits dict-list JSON.
+    """Test emit_table -- human renders Rich table; json emits dict-list JSON.
 
     @covers ADR-0.0.4
     """
@@ -623,6 +647,7 @@ class TestEmitTable(unittest.TestCase):
         t.add_row("bob", "20")
         return t
 
+    @covers("REQ-0.0.4-06-06")
     def test_human_mode_renders_table(self) -> None:
         fmt = OutputFormatter("human")
         buf = io.StringIO()
@@ -634,6 +659,7 @@ class TestEmitTable(unittest.TestCase):
         self.assertIn("Name", output)
         self.assertIn("alice", output)
 
+    @covers("REQ-0.0.4-06-06")
     def test_json_mode_outputs_valid_json_array(self) -> None:
         fmt = OutputFormatter("json")
         with patch("sys.stdout", new_callable=io.StringIO) as mock_out:
@@ -643,6 +669,7 @@ class TestEmitTable(unittest.TestCase):
         self.assertIsInstance(parsed, list)
         self.assertEqual(len(parsed), 2)
 
+    @covers("REQ-0.0.4-06-06")
     def test_json_mode_rows_have_column_keys(self) -> None:
         fmt = OutputFormatter("json")
         with patch("sys.stdout", new_callable=io.StringIO) as mock_out:
@@ -667,11 +694,12 @@ class TestEmitTable(unittest.TestCase):
 
 
 class TestEmitStatus(unittest.TestCase):
-    """Test emit_status — check/cross symbols in human; JSON object in json mode.
+    """Test emit_status -- check/cross symbols in human; JSON object in json mode.
 
     @covers ADR-0.0.4
     """
 
+    @covers("REQ-0.0.4-06-07")
     def test_human_mode_success_shows_checkmark(self) -> None:
         fmt = OutputFormatter("human")
         buf = io.StringIO()
@@ -681,6 +709,7 @@ class TestEmitStatus(unittest.TestCase):
         fmt.emit_status("Gate passed", success=True)
         self.assertIn("\u2713", buf.getvalue())
 
+    @covers("REQ-0.0.4-06-07")
     def test_human_mode_failure_shows_cross(self) -> None:
         fmt = OutputFormatter("human")
         buf = io.StringIO()
@@ -699,6 +728,7 @@ class TestEmitStatus(unittest.TestCase):
         fmt.emit_status("My Label", success=True)
         self.assertIn("My Label", buf.getvalue())
 
+    @covers("REQ-0.0.4-06-07")
     def test_json_mode_success_outputs_json(self) -> None:
         fmt = OutputFormatter("json")
         with patch("sys.stdout", new_callable=io.StringIO) as mock_out:
@@ -708,6 +738,7 @@ class TestEmitStatus(unittest.TestCase):
         self.assertEqual(parsed["label"], "build")
         self.assertTrue(parsed["success"])
 
+    @covers("REQ-0.0.4-06-07")
     def test_json_mode_failure_outputs_json(self) -> None:
         fmt = OutputFormatter("json")
         with patch("sys.stdout", new_callable=io.StringIO) as mock_out:
@@ -730,41 +761,47 @@ class TestEmitStatus(unittest.TestCase):
 
 
 class TestEmitBlocker(unittest.TestCase):
-    """Test emit_blocker — always writes BLOCKERS message to stderr.
+    """Test emit_blocker -- always writes BLOCKERS message to stderr.
 
     @covers ADR-0.0.4
     """
 
+    @covers("REQ-0.0.4-06-08")
     def test_human_mode_writes_blockers_to_stderr(self) -> None:
         fmt = OutputFormatter("human")
         with patch("sys.stderr", new_callable=io.StringIO) as mock_err:
             fmt.emit_blocker("missing config")
             self.assertIn("BLOCKERS: missing config", mock_err.getvalue())
 
+    @covers("REQ-0.0.4-06-08")
     def test_json_mode_writes_blockers_to_stderr(self) -> None:
         fmt = OutputFormatter("json")
         with patch("sys.stderr", new_callable=io.StringIO) as mock_err:
             fmt.emit_blocker("invalid schema")
             self.assertIn("BLOCKERS: invalid schema", mock_err.getvalue())
 
+    @covers("REQ-0.0.4-06-08")
     def test_quiet_mode_writes_blockers_to_stderr_never_suppressed(self) -> None:
         fmt = OutputFormatter("quiet")
         with patch("sys.stderr", new_callable=io.StringIO) as mock_err:
             fmt.emit_blocker("gate failure")
             self.assertIn("BLOCKERS: gate failure", mock_err.getvalue())
 
+    @covers("REQ-0.0.4-06-08")
     def test_verbose_mode_writes_blockers_to_stderr(self) -> None:
         fmt = OutputFormatter("verbose")
         with patch("sys.stderr", new_callable=io.StringIO) as mock_err:
             fmt.emit_blocker("verbose blocker")
             self.assertIn("BLOCKERS: verbose blocker", mock_err.getvalue())
 
+    @covers("REQ-0.0.4-06-08")
     def test_debug_mode_writes_blockers_to_stderr(self) -> None:
         fmt = OutputFormatter("debug")
         with patch("sys.stderr", new_callable=io.StringIO) as mock_err:
             fmt.emit_blocker("debug blocker")
             self.assertIn("BLOCKERS: debug blocker", mock_err.getvalue())
 
+    @covers("REQ-0.0.4-06-08")
     def test_blockers_prefix_always_present(self) -> None:
         """The 'BLOCKERS: ' prefix must always appear, in every mode."""
         for mode in ("human", "json", "quiet", "verbose", "debug"):

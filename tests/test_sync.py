@@ -1,4 +1,8 @@
-"""Tests for gzkit sync module."""
+"""Tests for gzkit sync module.
+
+@covers ADR-0.17.0  OBPI-0.17.0-03 slim-claudemd-template
+@covers ADR-0.17.0  OBPI-0.17.0-05 manifest-update-and-final-sync
+"""
 
 import tempfile
 import unittest

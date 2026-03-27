@@ -16,6 +16,8 @@ import argparse
 import re
 import unittest
 
+from gzkit.traceability import covers
+
 # Forbidden patterns in help text
 _FORBIDDEN_RE = re.compile(r"\bTODO\b|\bFIXME\b|\bXXX\b|print\(", re.IGNORECASE)
 
@@ -50,7 +52,7 @@ class TestHelpTextCompleteness(unittest.TestCase):
 
         cls.parser = _build_parser()
 
-    # @covers REQ-0.0.4-04-01
+    @covers("REQ-0.0.4-04-01")
     def test_all_arguments_have_help(self):
         """Every add_argument() call must have a non-empty help= string."""
         missing = []
@@ -65,7 +67,7 @@ class TestHelpTextCompleteness(unittest.TestCase):
             f"Arguments with missing help= ({len(missing)}):\n" + "\n".join(missing),
         )
 
-    # @covers REQ-0.0.4-04-02
+    @covers("REQ-0.0.4-04-02")
     def test_all_parsers_have_description(self):
         """Every parser and subparser must have a non-empty description= string."""
         missing = []
@@ -79,7 +81,7 @@ class TestHelpTextCompleteness(unittest.TestCase):
             f"Parsers with missing description= ({len(missing)}):\n" + "\n".join(missing),
         )
 
-    # @covers REQ-0.0.4-04-03
+    @covers("REQ-0.0.4-04-03")
     def test_no_forbidden_patterns_in_help(self):
         """No help text may contain TODO, FIXME, XXX, or print(."""
         violations = []
@@ -98,7 +100,7 @@ class TestHelpTextCompleteness(unittest.TestCase):
             f"Forbidden patterns in help text ({len(violations)}):\n" + "\n".join(violations),
         )
 
-    # @covers REQ-0.0.4-04-04
+    @covers("REQ-0.0.4-04-04")
     def test_help_text_under_80_chars(self):
         """All help text must be 80 characters or fewer."""
         violations = []

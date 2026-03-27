@@ -6,6 +6,7 @@ import io
 import unittest
 
 from gzkit.cli.helpers.common_flags import add_common_flags
+from gzkit.traceability import covers
 
 
 def _quiet_stderr() -> contextlib.redirect_stderr[io.StringIO]:
@@ -19,18 +20,21 @@ class TestAddCommonFlagsRegistration(unittest.TestCase):
     def _fresh(self) -> argparse.ArgumentParser:
         return argparse.ArgumentParser(prog="test")
 
+    @covers("REQ-0.0.4-03-01")
     def test_registers_quiet(self) -> None:
         parser = self._fresh()
         add_common_flags(parser)
         ns = parser.parse_args(["--quiet"])
         self.assertTrue(ns.quiet)
 
+    @covers("REQ-0.0.4-03-01")
     def test_registers_verbose(self) -> None:
         parser = self._fresh()
         add_common_flags(parser)
         ns = parser.parse_args(["--verbose"])
         self.assertTrue(ns.verbose)
 
+    @covers("REQ-0.0.4-03-02")
     def test_registers_debug(self) -> None:
         parser = self._fresh()
         add_common_flags(parser)
@@ -58,6 +62,7 @@ class TestDefaultValues(unittest.TestCase):
 class TestMutualExclusion(unittest.TestCase):
     """--quiet and --verbose must be mutually exclusive."""
 
+    @covers("REQ-0.0.4-03-03")
     def test_quiet_and_verbose_together_raises(self) -> None:
         parser = argparse.ArgumentParser(prog="test")
         add_common_flags(parser)
@@ -65,6 +70,7 @@ class TestMutualExclusion(unittest.TestCase):
             parser.parse_args(["--quiet", "--verbose"])
         self.assertEqual(ctx.exception.code, 2)
 
+    @covers("REQ-0.0.4-03-03")
     def test_verbose_and_quiet_together_raises(self) -> None:
         parser = argparse.ArgumentParser(prog="test")
         add_common_flags(parser)
@@ -104,6 +110,7 @@ class TestMutualExclusion(unittest.TestCase):
 class TestIdempotency(unittest.TestCase):
     """Calling add_common_flags twice on the same parser must not raise."""
 
+    @covers("REQ-0.0.4-03-06")
     def test_double_call_does_not_raise(self) -> None:
         parser = argparse.ArgumentParser(prog="test")
         add_common_flags(parser)
@@ -129,6 +136,7 @@ class TestHelpOverrides(unittest.TestCase):
         ("debug_help", "My debug help", "--debug"),
     ]
 
+    @covers("REQ-0.0.4-03-05")
     def test_help_overrides_appear(self) -> None:
         for kwarg, text, flag in self.CASES:
             with self.subTest(kwarg=kwarg):
@@ -137,6 +145,7 @@ class TestHelpOverrides(unittest.TestCase):
                 help_text = parser.format_help()
                 self.assertIn(text, help_text, msg=f"Expected '{text}' in help for {flag}")
 
+    @covers("REQ-0.0.4-03-05")
     def test_default_help_present_when_no_override(self) -> None:
         """Default help strings appear when no override is supplied."""
         expected = {
