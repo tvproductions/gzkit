@@ -179,7 +179,7 @@ class TestDiscoverCommands(unittest.TestCase):
         )
 
     def test_total_command_count(self) -> None:
-        self.assertEqual(len(self.commands), 52, f"Expected 52 commands, got {len(self.commands)}")
+        self.assertEqual(len(self.commands), 53, f"Expected 53 commands, got {len(self.commands)}")
 
 
 # ---------------------------------------------------------------------------
