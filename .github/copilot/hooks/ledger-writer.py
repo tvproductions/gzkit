@@ -58,7 +58,7 @@ def main() -> int:
 
     except ImportError:
         pass  # gzkit not installed, skip
-    except Exception as exc:  # noqa: BLE001 — hook entry point (CLI boundary)
+    except Exception as exc:
         print(f"\n[GOVERNANCE BLOCK] {exc}\n", file=sys.stderr)
         return 1
 
