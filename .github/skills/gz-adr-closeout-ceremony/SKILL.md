@@ -244,20 +244,20 @@ If any intervening changes occur (new commit, staged file, or regenerated artifa
 Display the ceremony completion table:
 
 ```text
-╔══════════════════════════════════════════════════════════════════╗
-║   ADR-X.Y.Z CLOSEOUT CEREMONY — COMPLETE                         ║
-╠══════════════════════════════════════════════════════════════════╣
-║   Step 1: Trigger recognized                              ✓      ║
-║   Step 2: Paths/commands summary presented                ✓      ║
-║   Step 3: Docs alignment verified                         ✓      ║
-║   Step 4: Runbook walkthrough presented                   ✓      ║
-║   Step 5: Commands executed (one at a time)               ✓      ║
-║   Step 6: Attestation requested                           ✓      ║
-║   Step 7: Attestation recorded                            ✓      ║
-║   Step 8: GitHub Issues reviewed                          ✓      ║
-║   Step 9: RELEASE_NOTES.md updated                        ✓      ║
-║   Step 10: GitHub Release vX.Y.Z created                  ✓      ║
-╚══════════════════════════════════════════════════════════════════╝
+╔════════════════════════════════════════════════════════════════╗
+║  ADR-X.Y.Z CLOSEOUT CEREMONY — COMPLETE                      ║
+╠════════════════════════════════════════════════════════════════╣
+║  Step 1:  Trigger recognized                            ✓    ║
+║  Step 2:  Paths/commands summary presented              ✓    ║
+║  Step 3:  Docs alignment verified                       ✓    ║
+║  Step 4:  Runbook walkthrough presented                 ✓    ║
+║  Step 5:  Commands executed (one at a time)             ✓    ║
+║  Step 6:  Attestation requested                         ✓    ║
+║  Step 7:  Attestation recorded                          ✓    ║
+║  Step 8:  GitHub Issues reviewed                        ✓    ║
+║  Step 9:  RELEASE_NOTES.md updated                      ✓    ║
+║  Step 10: GitHub Release vX.Y.Z created                 ✓    ║
+╚════════════════════════════════════════════════════════════════╝
 ```
 
 ---
