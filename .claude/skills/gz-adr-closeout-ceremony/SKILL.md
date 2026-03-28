@@ -160,13 +160,25 @@ When you are ready, provide your attestation:
 I await your attestation.
 ```
 
-### Step 7: Record Attestation
+### Step 7: Record Attestation via Closeout Pipeline
 
-After receiving attestation:
+After the human provides their attestation decision in Step 6, run the closeout command:
 
-1. Record the attestation verbatim with timestamp in the closeout form
-2. Update ADR status if "Completed"
-3. Commit the closeout form
+```bash
+uv run gz closeout ADR-X.Y.Z
+```
+
+This command handles the full closeout pipeline:
+
+1. Re-validates quality gates (fast final check)
+2. Prompts for formal attestation (enter the same decision from Step 6)
+3. **Bumps project version** in pyproject.toml, `__init__.py`, and README badge
+4. Writes the ADR closeout form with attestation details
+5. Transitions ADR status to Completed/Dropped
+
+**CRITICAL:** Do not skip `gz closeout` or manually record attestation — the closeout
+command is the only code path that syncs the project version. Skipping it causes version
+drift between pyproject.toml and the release tag, which breaks PyPI publishing.
 
 ### Step 8: Close Related GitHub Issues
 
@@ -253,7 +265,7 @@ Display the ceremony completion table:
 ║  Step 4:  Runbook walkthrough presented                 ✓    ║
 ║  Step 5:  Commands executed (one at a time)             ✓    ║
 ║  Step 6:  Attestation requested                         ✓    ║
-║  Step 7:  Attestation recorded                          ✓    ║
+║  Step 7:  Closeout pipeline (attest + version bump)      ✓    ║
 ║  Step 8:  GitHub Issues reviewed                        ✓    ║
 ║  Step 9:  RELEASE_NOTES.md updated                      ✓    ║
 ║  Step 10: GitHub Release vX.Y.Z created                 ✓    ║
@@ -270,7 +282,7 @@ Display the ceremony completion table:
 4. **MUST** run one command at a time, wait for acknowledgment
 5. **MUST** offer to run commands if human is in CLI mode
 6. **MUST** wait for explicit human attestation before closing
-7. **MUST** record attestation verbatim with timestamp
+7. **MUST** run `uv run gz closeout ADR-X.Y.Z` to record attestation and bump project version — never manually record attestation
 8. **MUST** review and close related GitHub Issues after attestation
 9. **MUST** update RELEASE_NOTES.md with release entry
 10. **MUST** run `uv run gz git-sync --apply --lint --test` immediately before any `gh release create` or release update command
