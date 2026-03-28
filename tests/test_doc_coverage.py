@@ -63,8 +63,11 @@ class TestDiscoverCommands(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        main_path = Path(__file__).resolve().parent.parent / "src" / "gzkit" / "cli" / "main.py"
-        cls.source = main_path.read_text(encoding="utf-8")
+        cli_dir = Path(__file__).resolve().parent.parent / "src" / "gzkit" / "cli"
+        parts = [(cli_dir / "main.py").read_text(encoding="utf-8")]
+        for parser_file in sorted(cli_dir.glob("parser_*.py")):
+            parts.append(parser_file.read_text(encoding="utf-8"))
+        cls.source = "\n".join(parts)
         cls.commands = discover_commands(cls.source)
         cls.command_names = {c.name for c in cls.commands}
 

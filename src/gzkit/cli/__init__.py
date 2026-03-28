@@ -22,6 +22,7 @@ from gzkit.commands.gates import (  # noqa: F401
     _run_gate_3,
     _run_gate_4,
     _run_gate_5,
+    gates_cmd,
 )
 
 __all__ = [

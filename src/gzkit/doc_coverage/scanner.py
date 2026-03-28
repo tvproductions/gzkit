@@ -55,11 +55,20 @@ def _extract_handler_name(set_defaults_call: ast.Call) -> str | None:
 
 
 def _find_build_parser_body(tree: ast.Module) -> list[ast.stmt] | None:
-    """Return the statement list of _build_parser() from a parsed AST module."""
+    """Return the combined statement list of parser registration functions.
+
+    Collects bodies from ``_build_parser()``, ``register_governance_parsers()``,
+    and ``register_maintenance_parsers()`` to support split parser modules.
+    """
+    combined: list[ast.stmt] = []
     for node in ast.walk(tree):
-        if isinstance(node, ast.FunctionDef) and node.name == "_build_parser":
-            return node.body
-    return None
+        if isinstance(node, ast.FunctionDef) and (
+            node.name == "_build_parser"
+            or node.name.startswith("register_")
+            or node.name.startswith("_register_")
+        ):
+            combined.extend(node.body)
+    return combined or None
 
 
 def _find_root_parser_name(body: list[ast.stmt]) -> str | None:
@@ -168,10 +177,10 @@ def _handle_chained_add_parser(stmt: ast.Expr, state: _ParserState) -> None:
 
 
 def discover_commands(source: str) -> list[DiscoveredCommand]:
-    """Discover all CLI leaf commands by AST-scanning _build_parser() source.
+    """Discover all CLI leaf commands by AST-scanning parser source.
 
-    Parses the argparse tree from cli/main.py without importing the module.
-    Returns a list of DiscoveredCommand named tuples, one per leaf subcommand.
+    Parses the argparse tree from cli/main.py and parser modules without
+    importing. Returns a list of DiscoveredCommand named tuples.
     """
     tree = ast.parse(source)
     body = _find_build_parser_body(tree)
@@ -179,6 +188,15 @@ def discover_commands(source: str) -> list[DiscoveredCommand]:
         return []
 
     state = _ParserState(_find_root_parser_name(body))
+
+    # Register function parameters as subparser variables so that
+    # register_*_parsers(commands) calls are tracked correctly.
+    for node in ast.walk(tree):
+        if isinstance(node, ast.FunctionDef) and (
+            node.name.startswith("register_") or node.name.startswith("_register_")
+        ):
+            for arg in node.args.args:
+                state.subparser_vars[arg.arg] = ""
 
     for stmt in body:
         if isinstance(stmt, ast.Assign):
@@ -398,15 +416,24 @@ def find_orphaned_docs(
     return orphans
 
 
+def _read_cli_sources(project_root: Path) -> str:
+    """Read cli/main.py and all parser modules, returning combined source."""
+    cli_dir = project_root / "src" / "gzkit" / "cli"
+    main_source = (cli_dir / "main.py").read_text(encoding="utf-8")
+    parts = [main_source]
+    for parser_file in sorted(cli_dir.glob("parser_*.py")):
+        parts.append(parser_file.read_text(encoding="utf-8"))
+    return "\n".join(parts)
+
+
 def scan_cli_commands(project_root: Path | None = None) -> list[DiscoveredCommand]:
-    """Discover all CLI commands by AST-scanning cli/main.py.
+    """Discover all CLI commands by AST-scanning cli/main.py and parser modules.
 
     Returns a list of DiscoveredCommand named tuples, one per leaf subcommand.
     """
     if project_root is None:
         project_root = get_project_root()
-    main_path = project_root / "src" / "gzkit" / "cli" / "main.py"
-    source = main_path.read_text(encoding="utf-8")
+    source = _read_cli_sources(project_root)
     return discover_commands(source)
 
 
@@ -418,8 +445,7 @@ def check_surfaces_report(project_root: Path | None = None) -> CoverageReport:
     """
     if project_root is None:
         project_root = get_project_root()
-    main_path = project_root / "src" / "gzkit" / "cli" / "main.py"
-    source = main_path.read_text(encoding="utf-8")
+    source = _read_cli_sources(project_root)
     commands = discover_commands(source)
     coverage_list = check_surfaces(project_root, commands, source)
     discovered_names = {c.name for c in commands}
