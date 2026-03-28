@@ -90,7 +90,7 @@ opsdev contains a mature task management CLI (`tasks.py`, 1,174 lines) with 7 su
 | 6 | OBPI-0.29.0-06 | Evaluate `tasks discover` subcommand --- task discovery and cataloging | Heavy | Pending |
 | 7 | OBPI-0.29.0-07 | Evaluate `tasks tidy` subcommand --- task cleanup and maintenance | Heavy | Pending |
 
-**Briefs location:** `briefs/OBPI-0.29.0-*.md`
+**Briefs location:** `obpis/OBPI-0.29.0-*.md`
 
 **WBS Completeness Rule:** Every row in this table has a corresponding brief file.
 
@@ -146,7 +146,7 @@ opsdev's `tasks.py` at 1,174 lines represents a substantial task management syst
 
 ### Docs
 
-- Decision rationale: per OBPI brief in `briefs/`
+- Decision rationale: per OBPI brief in `obpis/`
 - Governance: this ADR
 
 ---
@@ -157,7 +157,7 @@ opsdev's `tasks.py` at 1,174 lines represents a substantial task management syst
 |---------------|-------|-------------------|----------|-------|
 | `src/gzkit/commands/` | M | All absorbed commands integrated | Test output | |
 | `tests/` | M | All absorbed commands tested | `uv run gz test` | |
-| `briefs/` | P | All 7 OBPIs have decisions documented | Brief review | |
+| `obpis/` | P | All 7 OBPIs have decisions documented | Brief review | |
 
 ### SIGN-OFF --- Post-Ship Tidy
 

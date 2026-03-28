@@ -100,7 +100,7 @@ gzkit must own all reusable agent governance patterns. airlineops's `.github/ins
 | 12 | OBPI-0.36.0-12 | Evaluate `warehouse.instructions.md` for generic pattern extraction | Heavy | Pending |
 | 13 | OBPI-0.36.0-13 | Evaluate `calendars.instructions.md` for generic pattern extraction | Heavy | Pending |
 
-**Briefs location:** `briefs/OBPI-0.36.0-*.md`
+**Briefs location:** `obpis/OBPI-0.36.0-*.md`
 
 **WBS Completeness Rule:** Every row in this table has a corresponding brief file.
 
@@ -157,7 +157,7 @@ airlineops's `.github/instructions/` and gzkit's `.claude/rules/` serve the same
 
 ### Docs
 
-- Decision rationale: per OBPI brief in `briefs/`
+- Decision rationale: per OBPI brief in `obpis/`
 - Governance: this ADR
 
 ---
@@ -168,7 +168,7 @@ airlineops's `.github/instructions/` and gzkit's `.claude/rules/` serve the same
 |---------------|-------|-------------------|----------|-------|
 | `.claude/rules/` | M | All reconciled rules integrated | Rule content review | |
 | `tests/` | M | Rules structure validated | `uv run gz test` | |
-| `briefs/` | P | All 13 OBPIs have decisions documented | Brief review | |
+| `obpis/` | P | All 13 OBPIs have decisions documented | Brief review | |
 
 ### SIGN-OFF — Post-Ship Tidy
 

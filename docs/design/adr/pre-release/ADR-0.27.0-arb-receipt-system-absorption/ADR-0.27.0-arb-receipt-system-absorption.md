@@ -97,7 +97,7 @@ gzkit must decide whether to absorb opsdev's full ARB (Agent Self-Reporting) rec
 | 12 | OBPI-0.27.0-12 | Evaluate and absorb `arb_step_receipt.schema.json` — JSON schema for step receipt validation | Heavy | Pending |
 | 13 | OBPI-0.27.0-13 | Evaluate and absorb `commands/arb_tools.py` (282 lines) — CLI wiring for all ARB subcommands | Heavy | Pending |
 
-**Briefs location:** `briefs/OBPI-0.27.0-*.md`
+**Briefs location:** `obpis/OBPI-0.27.0-*.md`
 
 **WBS Completeness Rule:** Every row in this table has a corresponding brief file.
 
@@ -155,7 +155,7 @@ opsdev's `arb/` package represents ~1,630 lines of battle-tested QA middleware. 
 
 ### Docs
 
-- Decision rationale: per OBPI brief in `briefs/`
+- Decision rationale: per OBPI brief in `obpis/`
 - Governance: this ADR
 
 ---
@@ -166,7 +166,7 @@ opsdev's `arb/` package represents ~1,630 lines of battle-tested QA middleware. 
 |---------------|-------|-------------------|----------|-------|
 | `src/gzkit/arb/` | M | All absorbed modules integrated | Test output | |
 | `tests/` | M | All absorbed modules tested | `uv run gz test` | |
-| `briefs/` | P | All 13 OBPIs have decisions documented | Brief review | |
+| `obpis/` | P | All 13 OBPIs have decisions documented | Brief review | |
 
 ### SIGN-OFF — Post-Ship Tidy
 

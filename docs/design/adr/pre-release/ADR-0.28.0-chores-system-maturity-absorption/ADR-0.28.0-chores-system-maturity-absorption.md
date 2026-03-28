@@ -103,7 +103,7 @@ gzkit's chores system is a 667-line monolith handling CLI, planning, execution, 
 | 18 | OBPI-0.28.0-18 | Evaluate and absorb `chores_tools/models.py` (56 lines) — chores data models | Heavy | Pending |
 | 19 | OBPI-0.28.0-19 | Evaluate and absorb `config/opsdev/chores.json` (config) — chore definitions and lane configuration | Heavy | Pending |
 
-**Briefs location:** `briefs/OBPI-0.28.0-*.md`
+**Briefs location:** `obpis/OBPI-0.28.0-*.md`
 
 **WBS Completeness Rule:** Every row in this table has a corresponding brief file.
 
@@ -162,7 +162,7 @@ opsdev's chores system represents ~3,750 lines of battle-tested, properly decomp
 
 ### Docs
 
-- Decision rationale: per OBPI brief in `briefs/`
+- Decision rationale: per OBPI brief in `obpis/`
 - Governance: this ADR
 
 ---
@@ -173,7 +173,7 @@ opsdev's chores system represents ~3,750 lines of battle-tested, properly decomp
 |---------------|-------|-------------------|----------|-------|
 | `src/gzkit/chores_tools/` | M | All absorbed modules integrated | Test output | |
 | `tests/` | M | All absorbed modules tested | `uv run gz test` | |
-| `briefs/` | P | All 19 OBPIs have decisions documented | Brief review | |
+| `obpis/` | P | All 19 OBPIs have decisions documented | Brief review | |
 
 ### SIGN-OFF — Post-Ship Tidy
 

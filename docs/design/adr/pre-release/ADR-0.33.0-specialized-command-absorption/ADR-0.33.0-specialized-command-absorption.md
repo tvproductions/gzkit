@@ -96,7 +96,7 @@ opsdev contains 10 specialized governance commands that have no direct equivalen
 | 9 | OBPI-0.33.0-09 | Evaluate and absorb `governance report` (608 lines) -- governance status reporting | Heavy | Pending |
 | 10 | OBPI-0.33.0-10 | Evaluate and absorb `governance runners` (355 lines) -- governance task runners | Heavy | Pending |
 
-**Briefs location:** `briefs/OBPI-0.33.0-*.md`
+**Briefs location:** `obpis/OBPI-0.33.0-*.md`
 
 **WBS Completeness Rule:** Every row in this table has a corresponding brief file.
 
@@ -153,7 +153,7 @@ opsdev's specialized commands represent mature governance tooling that has evolv
 
 ### Docs
 
-- Decision rationale: per OBPI brief in `briefs/`
+- Decision rationale: per OBPI brief in `obpis/`
 - Governance: this ADR
 
 ---
@@ -164,7 +164,7 @@ opsdev's specialized commands represent mature governance tooling that has evolv
 |---------------|-------|-------------------|----------|-------|
 | `src/gzkit/` | M | All absorbed commands implemented | Test output | |
 | `tests/` | M | All absorbed commands tested | `uv run gz test` | |
-| `briefs/` | P | All 10 OBPIs have decisions documented | Brief review | |
+| `obpis/` | P | All 10 OBPIs have decisions documented | Brief review | |
 
 ### SIGN-OFF -- Post-Ship Tidy
 

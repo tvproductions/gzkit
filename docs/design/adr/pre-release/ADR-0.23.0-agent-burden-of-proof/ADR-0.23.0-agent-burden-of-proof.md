@@ -109,7 +109,7 @@ Establish that ADR closeout is a **defense**, not a declaration. The completing 
 | 3 | OBPI-0.23.0-03 | Reviewer agent role — fresh-eyes verification of delivered work against OBPI promises | Heavy | Pending |
 | 4 | OBPI-0.23.0-04 | Ceremony skill enforcement — closeout skill blocks on missing product proof and reviewer assessment | Heavy | Pending |
 
-**Briefs location:** `briefs/OBPI-0.23.0-*.md`
+**Briefs location:** `obpis/OBPI-0.23.0-*.md`
 
 **WBS Completeness Rule:** Every row in this table MUST have a corresponding brief file.
 

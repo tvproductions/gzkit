@@ -143,7 +143,7 @@ This ADR establishes the documentation taxonomy with rationale for each layer, d
 | 4 | OBPI-0.24.0-04 | Add skill invocation entries to operator and governance runbooks | Lite | Pending |
 | 5 | OBPI-0.24.0-05 | Write pilot batch of skill manpages to validate template | Lite | Pending |
 
-**Briefs location:** `briefs/OBPI-0.24.0-*.md` (each brief is a **Level 2 WBS** element)
+**Briefs location:** `obpis/OBPI-0.24.0-*.md` (each brief is a **Level 2 WBS** element)
 
 **WBS Completeness Rule:** Every row in this table MUST have a corresponding brief file.
 The brief elaborates the "how" while this table defines the "what."
