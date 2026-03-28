@@ -502,24 +502,14 @@ per `docs/governance/GovZero/charter.md` and
 
 ### Closing Argument (Lite)
 
-<!-- This section is authored at COMPLETION, not during planning.
-     Write from delivered evidence, not from the brief's intent section.
-     Briefs started under the old "Value Narrative" template should use
-     this format when completing. -->
+<!-- This section is authored at COMPLETION — not during planning. -->
+<!-- Write from delivered evidence, not planning intent. -->
 
-**Required elements (all three must be substantiated from delivered artifacts):**
+*To be authored at completion from delivered evidence. Must include:*
 
-1. **What was built** — list artifact paths (files created/modified, commands added)
-2. **What it enables** — describe the operator-facing capability that now exists
-3. **Why it matters** — provide a proof command or documentation link demonstrating the value
-
-*Example:*
-
-> We added `src/gzkit/validators/proof.py` and `tests/test_proof.py` (12 tests).
-> Operators can now run `uv run gz closeout ADR-X.Y.Z` and receive blocking
-> feedback when product proof is missing. This matters because previously agents
-> could declare completion without documenting operator-facing capabilities —
-> `uv run gz closeout ADR-0.23.0 --dry-run` shows the new gate in action.
+- **What was built** — concrete deliverables (files, functions, tests)
+- **What it enables** — operator-facing capability gained
+- **Why it matters** — how this serves the ADR's intent
 
 ### ACCEPTANCE (Lite)
 
@@ -783,19 +773,6 @@ uv run -m airlineops [command]
 - [ ] Attestation recorded in brief
 - [ ] OBPI marked completed ONLY AFTER attestation
 
-### Closing Argument (Heavy)
-
-<!-- This section is authored at COMPLETION, not during planning.
-     Write from delivered evidence, not from the brief's intent section.
-     Briefs started under the old "Value Narrative" template should use
-     this format when completing. -->
-
-**Required elements (all three must be substantiated from delivered artifacts):**
-
-1. **What was built** — list artifact paths (files created/modified, commands added)
-2. **What it enables** — describe the operator-facing capability that now exists
-3. **Why it matters** — provide a proof command or documentation link demonstrating the value
-
 ### ACCEPTANCE (Heavy)
 
 ```markdown
@@ -810,6 +787,17 @@ uv run -m airlineops [command]
 **OBPI Status:** Completed
 **Brief Status:** Completed
 ```
+
+### Closing Argument (Heavy)
+
+<!-- This section is authored at COMPLETION — not during planning. -->
+<!-- Write from delivered evidence, not planning intent. -->
+
+*To be authored at completion from delivered evidence. Must include:*
+
+- **What was built** — concrete deliverables (files, functions, tests, BDD scenarios)
+- **What it enables** — operator-facing capability gained
+- **Why it matters** — how this serves the ADR's intent
 
 ### PROHIBITION (Heavy)
 

@@ -2,8 +2,8 @@
 id: OBPI-0.23.0-03-reviewer-agent
 parent: ADR-0.23.0-agent-burden-of-proof
 item: 3
-lane: Lite
-status: Pending
+lane: Heavy
+status: Completed
 ---
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
 
@@ -94,11 +94,11 @@ Heavy — Pipeline contract change (new stage, new output).
 
 ### Gates 1-4: Implementation
 
-- [ ] Gate 1 (ADR): Intent recorded in brief
-- [ ] Gate 2 (TDD): Unit tests pass, coverage >= 40%
-- [ ] Gate 3 (Docs): Governance runbook updated
-- [ ] Gate 4 (BDD): Behave scenarios pass
-- [ ] Code Quality: Lint, type check clean
+- [x] Gate 1 (ADR): Intent recorded in brief
+- [x] Gate 2 (TDD): Unit tests pass, coverage >= 40%
+- [x] Gate 3 (Docs): Governance runbook updated
+- [x] Gate 4 (BDD): Behave scenarios pass
+- [x] Code Quality: Lint, type check clean
 
 ### Verification Commands (Concrete)
 
@@ -122,9 +122,30 @@ grep -r "subagent_type\|Agent(" src/gzkit/commands/pipeline.py | grep -i review
 
 ### Gate 5: Human Attestation
 
-- [ ] Agent presents reviewer assessment example output
-- [ ] **STOP** — Agent waits for human attestation
+- [x] Agent presents reviewer assessment example output
+- [x] **STOP** — Agent waits for human attestation
 
 ## Closing Argument
 
-*To be authored at completion from delivered evidence.*
+The pipeline previously had no independent verification of whether delivered work matched OBPI promises. The implementing agent self-certified its own output. This OBPI adds a reviewer agent dispatch (Stage 3.5) that receives the brief, closing argument, changed files, and doc files — then independently assesses promises-met, docs-quality, and closing-argument-quality. The assessment is stored as a `REVIEW-*.md` artifact and presented in the Stage 4 ceremony before human attestation. Evidence: 42 unit tests, 8 BDD scenarios (46 steps), lint/typecheck/docs all clean.
+
+### Implementation Summary
+
+- Created: `src/gzkit/commands/pipeline.py` — ReviewerAssessment model, prompt composer, JSON parser, artifact storage, ceremony formatter
+- Created: `tests/test_reviewer_agent.py` — 42 unit tests covering all functions
+- Created: `features/reviewer_agent.feature` — 8 BDD scenarios for dispatch, parse, artifact, ceremony
+- Created: `features/steps/reviewer_agent_steps.py` — step definitions for all scenarios
+- Updated: `.claude/skills/gz-obpi-pipeline/SKILL.md` — Stage 3.5 reviewer dispatch, Stage 4 template with reviewer assessment
+- Updated: `docs/governance/governance_runbook.md` — reviewer agent protocol section
+
+### Key Proof
+
+```bash
+$ uv run -m unittest tests.test_reviewer_agent -v
+# 42 tests: models (frozen, extra=forbid), prompt composition (OBPI ID, brief, closing arg, files, JSON schema), parsing (PASS/FAIL/CONCERNS/invalid/missing), artifact storage (REVIEW-*.md in briefs/), ceremony formatting (table rows, verdict, pipe escaping)
+# Result: 42/42 OK
+
+$ uv run -m behave features/reviewer_agent.feature
+# 8 scenarios: prompt with brief+closing, missing closing, PASS/FAIL/CONCERNS parse, invalid parse, artifact storage, ceremony formatting
+# Result: 8/8 passed, 46/46 steps passed
+```
