@@ -50,11 +50,14 @@ class TestGzkitConfig(unittest.TestCase):
 
     def test_load__valid_file__parses_correctly(self) -> None:
         """Loading from valid file parses configuration."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
-            f.write('{"mode":"heavy","paths":{"prd":"custom/prd","adrs":"custom/adr"}}')
-            f.flush()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            config_file = Path(tmpdir) / "config.json"
+            config_file.write_text(
+                '{"mode":"heavy","paths":{"prd":"custom/prd","adrs":"custom/adr"}}',
+                encoding="utf-8",
+            )
 
-            config = GzkitConfig.load(Path(f.name))
+            config = GzkitConfig.load(config_file)
             self.assertEqual(config.mode, "heavy")
             self.assertEqual(config.paths.prd, "custom/prd")
             self.assertEqual(config.paths.adrs, "custom/adr")
@@ -158,11 +161,11 @@ class TestGzkitConfigVendors(unittest.TestCase):
 
     def test_load__no_vendors__uses_defaults(self) -> None:
         """Loading config without vendors key uses defaults (backward compat)."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
-            f.write('{"mode":"lite","paths":{}}')
-            f.flush()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            config_file = Path(tmpdir) / "config.json"
+            config_file.write_text('{"mode":"lite","paths":{}}', encoding="utf-8")
 
-            config = GzkitConfig.load(Path(f.name))
+            config = GzkitConfig.load(config_file)
             self.assertTrue(config.vendors.claude.enabled)
             self.assertFalse(config.vendors.copilot.enabled)
 

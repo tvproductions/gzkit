@@ -64,6 +64,7 @@ def compose_adr_redteam_prompt(
 
     Returns:
         Complete prompt string ready for subagent dispatch.
+
     """
     obpi_section = ""
     for obpi_id, content in obpi_contents:

@@ -23,6 +23,7 @@ def build_epilog(
 
     Returns:
         A multi-line string suitable for ``argparse.ArgumentParser(epilog=...)``.
+
     """
     if not examples:
         msg = "build_epilog() requires at least one example"

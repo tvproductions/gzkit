@@ -95,6 +95,7 @@ def load_thresholds(config_path: Path | None = None) -> EvalThresholdConfig:
 
     Returns:
         Parsed threshold configuration.
+
     """
     path = config_path or _CONFIG_PATH
     if not path.exists():
@@ -112,6 +113,7 @@ def load_baseline(surface: str, baselines_dir: Path | None = None) -> SurfaceBas
 
     Returns:
         Parsed baseline or None if no baseline exists.
+
     """
     search_dir = baselines_dir or _BASELINES_DIR
     path = search_dir / f"{surface}.baseline.json"
@@ -130,6 +132,7 @@ def save_baseline(surface_score: SurfaceScore, baselines_dir: Path | None = None
 
     Returns:
         Path to the written baseline file.
+
     """
     target_dir = baselines_dir or _BASELINES_DIR
     target_dir.mkdir(parents=True, exist_ok=True)
@@ -165,6 +168,7 @@ def check_regressions(
 
     Returns:
         EvalDeltaResult with any detected regressions.
+
     """
     if config is None:
         config = load_thresholds()
@@ -211,6 +215,7 @@ def format_regression_output(result: EvalDeltaResult) -> str:
     Returns:
         Formatted string listing each regression with surface, dimension,
         baseline score, and current score.
+
     """
     if result.skipped:
         return f"Eval delta: SKIPPED ({result.skip_reason})"

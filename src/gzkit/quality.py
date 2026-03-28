@@ -413,6 +413,7 @@ def run_eval(project_root: Path) -> QualityResult:
 
     Returns:
         QualityResult with eval suite output.
+
     """
     from gzkit.eval.runner import run_eval_suite
 

@@ -93,6 +93,7 @@ class OutputFormatter:
         Args:
             message: Text to output.
             err: Force output to stderr (used for errors in all modes).
+
         """
         if self._mode == OutputMode.QUIET and not err:
             return
@@ -313,6 +314,7 @@ class OutputFormatter:
 
         Returns:
             A context manager whose ``advance(label)`` method ticks progress.
+
         """
         suppressed = self._mode in (OutputMode.QUIET, OutputMode.JSON)
         is_tty = sys.stderr.isatty() if not suppressed else False
@@ -380,6 +382,7 @@ class ProgressContext:
 
         Args:
             label: Optional label for this step (shown in non-TTY mode).
+
         """
         self._current += 1
         if self._suppressed:

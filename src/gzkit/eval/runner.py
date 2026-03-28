@@ -116,6 +116,7 @@ def run_eval_suite(surfaces: list[str] | None = None) -> EvalSuiteScore:
 
     Returns:
         EvalSuiteScore with per-surface and per-case results.
+
     """
     datasets = [load_dataset(s) for s in surfaces] if surfaces is not None else load_all_datasets()
 

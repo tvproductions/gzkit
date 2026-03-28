@@ -1,7 +1,7 @@
 ---
 name: gz-design
 description: Collaborative design dialogue that produces GovZero ADR artifacts. Use when exploring a new feature, capability, or architectural change before implementation — replaces superpowers brainstorming for this project. Triggers on "design X", "let's design", "brainstorm X", "I want to build X", "gz-design".
-category: design
+category: adr-lifecycle
 metadata:
   skill-version: "1.0.0"
   govzero-framework-version: "v6"

@@ -1,8 +1,6 @@
 import io
 import json
 import os
-import shutil
-import stat
 import subprocess
 import tempfile
 import unittest
@@ -17,19 +15,10 @@ from gzkit.ledger import Ledger, adr_created_event, project_init_event
 from gzkit.traceability import covers  # noqa: F401
 
 
-def _remove_readonly_tree(path: Path) -> None:
-    """Remove a temp tree reliably on Windows when git objects are read-only."""
-
-    def _onexc(func, target, _exc_info):
-        os.chmod(target, stat.S_IWRITE)
-        func(target)
-
-    shutil.rmtree(path, onexc=_onexc)
-
-
 class TestObpiValidator(unittest.TestCase):
     def setUp(self):
-        self.test_dir = Path(tempfile.mkdtemp())
+        self._tmp_ctx = tempfile.TemporaryDirectory()
+        self.test_dir = Path(self._tmp_ctx.name)
         self.project_root = self.test_dir
         self.gzkit_dir = self.project_root / ".gzkit"
         self.gzkit_dir.mkdir()
@@ -64,7 +53,7 @@ class TestObpiValidator(unittest.TestCase):
         self.validator = ObpiValidator(self.project_root)
 
     def tearDown(self):
-        _remove_readonly_tree(self.test_dir)
+        self._tmp_ctx.cleanup()
 
     def _git(self, *args: str) -> str:
         result = subprocess.run(
@@ -236,7 +225,9 @@ status: {status}
             summary="- Task: Finished implementation",
             proof="Works as expected",
         )
-        _remove_readonly_tree(self.project_root / ".git")
+        import shutil
+
+        shutil.rmtree(self.project_root / ".git")
 
         errors = self.validator.validate_file(path)
         self.assertIn("Not a git repository.", errors)

@@ -84,7 +84,7 @@ Skill behavior is standardized and synchronized by `gz agent sync control-surfac
 ### Available Skills
 
 #### ADR Lifecycle
-`gz-adr-create`, `gz-adr-eval`, `gz-adr-promote`, `gz-adr-status`, `gz-attest`, `gz-closeout`, `gz-plan`
+`gz-adr-create`, `gz-adr-eval`, `gz-adr-promote`, `gz-adr-status`, `gz-attest`, `gz-closeout`, `gz-design`, `gz-plan`
 
 #### ADR Operations
 `gz-adr-autolink`, `gz-adr-check`, `gz-adr-emit-receipt`, `gz-adr-manager`, `gz-adr-map`, `gz-adr-recon`, `gz-adr-sync`, `gz-adr-verification`
@@ -106,9 +106,6 @@ Skill behavior is standardized and synchronized by `gz agent sync control-surfac
 
 #### Cross-Repository
 `airlineops-parity-scan`
-
-#### Uncategorized
-`gz-design`
 
 For details on any skill, read its `SKILL.md` in `.gzkit/skills/<skill-name>/`.
 
