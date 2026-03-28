@@ -121,13 +121,13 @@ uv run -m unittest tests/eval/test_datasets.py -v
 
 ## Acceptance Criteria
 
-- [x] **REQ-0.0.5-01-01:** `data/eval/` contains at least one golden-path and
+- [x] **REQ-0.0.5-01-01:** [doc] `data/eval/` contains at least one golden-path and
   one edge-case fixture per AI-sensitive surface listed in the ADR.
-- [x] **REQ-0.0.5-01-02:** A JSON schema in `data/schemas/` validates the
+- [x] **REQ-0.0.5-01-02:** [doc] A JSON schema in `data/schemas/` validates the
   dataset structure, and a test loads every fixture and validates it.
 - [x] **REQ-0.0.5-01-03:** A dataset loader in `src/gzkit/eval/` loads fixtures
   by surface name and returns typed Pydantic models.
-- [x] **REQ-0.0.5-01-04:** All dataset validation tests pass within 10 seconds.
+- [x] **REQ-0.0.5-01-04:** [doc] All dataset validation tests pass within 10 seconds.
 
 ## Completion Checklist
 
