@@ -47,9 +47,25 @@ at least one form of operator-facing documentation proof:
 At least one proof type must exist per OBPI. If any OBPI has `MISSING` proof,
 closeout exits `1` with a table showing which OBPIs lack proof.
 
+### Defense Brief
+
+After product proof passes, `gz closeout` computes a **Defense Brief** section
+that is included in both the `--dry-run` preview and the final
+`ADR-CLOSEOUT-FORM.md`. The Defense Brief contains:
+
+| Section | Content |
+|---------|---------|
+| Closing Arguments | Per-OBPI closing argument text extracted from each brief |
+| Product Proof | Per-OBPI proof type and status table |
+| Reviewer Assessment | Per-OBPI reviewer verdict from `REVIEW-*.md` artifacts |
+
+The Defense Brief transforms the closeout form from a checklist into a defense
+presentation where the completing agent's evidence is laid out for human
+judgment.
+
 When closeout succeeds without `--dry-run`, `gz closeout` creates or refreshes
-`ADR-CLOSEOUT-FORM.md` beside the ADR file with the current evidence inventory
-and Gate 5 attestation command.
+`ADR-CLOSEOUT-FORM.md` beside the ADR file with the current evidence inventory,
+Defense Brief, and Gate 5 attestation command.
 
 `--json` adds:
 

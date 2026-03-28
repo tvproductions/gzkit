@@ -451,6 +451,168 @@ from gzkit.commands.version_sync import (  # noqa: E402
     sync_project_version as sync_project_version,
 )
 
+# ---------------------------------------------------------------------------
+# Ceremony enforcement helpers (ADR-0.23.0 / OBPI-0.23.0-04)
+# ---------------------------------------------------------------------------
+
+_CLOSING_ARG_HEADING_RE = re.compile(r"^## Closing Argument\s*$", re.MULTILINE)
+_NEXT_H2_RE = re.compile(r"^## ", re.MULTILINE)
+_EVIDENCE_SUB_RE = re.compile(r"^### (?:Implementation Summary|Key Proof)\b", re.MULTILINE)
+_CLOSING_ARG_PLACEHOLDER = "*To be authored at completion from delivered evidence.*"
+
+
+def extract_closing_argument(brief_text: str) -> str | None:
+    """Extract the Closing Argument section from an OBPI brief.
+
+    Returns the argument text (before evidence subsections), or None if
+    the section is missing, empty, or still a placeholder.
+    """
+    match = _CLOSING_ARG_HEADING_RE.search(brief_text)
+    if not match:
+        return None
+    rest = brief_text[match.end() :]
+    end = len(rest)
+    for pattern in (_NEXT_H2_RE, _EVIDENCE_SUB_RE):
+        m = pattern.search(rest)
+        if m:
+            end = min(end, m.start())
+    text = rest[:end].strip()
+    if not text or text == _CLOSING_ARG_PLACEHOLDER:
+        return None
+    return text
+
+
+def gather_reviewer_assessments(adr_package_dir: Path) -> dict[str, Path]:
+    """Find REVIEW-*.md reviewer artifacts in the ADR package.
+
+    Searches briefs/ and obpis/ subdirectories.
+    """
+    reviews: dict[str, Path] = {}
+    for subdir in ("briefs", "obpis"):
+        d = adr_package_dir / subdir
+        if not d.is_dir():
+            continue
+        for p in sorted(d.glob("REVIEW-*.md")):
+            reviews[p.stem.removeprefix("REVIEW-")] = p
+    return reviews
+
+
+def _extract_review_fields(review_path: Path) -> dict[str, str]:
+    """Extract structured fields from a REVIEW-*.md artifact.
+
+    Returns a dict with keys: verdict, docs_quality, closing_argument_quality,
+    promises_met (as "N/M" string).
+    """
+    content = review_path.read_text(encoding="utf-8")
+    fields: dict[str, str] = {
+        "verdict": "unknown",
+        "docs_quality": "",
+        "closing_argument_quality": "",
+    }
+
+    yes_count = 0
+    total_count = 0
+    for line in content.splitlines():
+        if line.startswith("**Verdict:**"):
+            fields["verdict"] = line.split("**Verdict:**", 1)[1].strip()
+        elif line.startswith("**Assessment:**"):
+            value = line.split("**Assessment:**", 1)[1].strip()
+            if not fields["docs_quality"]:
+                fields["docs_quality"] = value
+            elif not fields["closing_argument_quality"]:
+                fields["closing_argument_quality"] = value
+        elif "**[YES]**" in line:
+            yes_count += 1
+            total_count += 1
+        elif "**[NO]**" in line:
+            total_count += 1
+
+    fields["promises_met"] = f"{yes_count}/{total_count}" if total_count > 0 else "n/a"
+    return fields
+
+
+def _extract_review_verdict(review_path: Path) -> str:
+    """Extract the verdict from a REVIEW-*.md artifact."""
+    return _extract_review_fields(review_path)["verdict"]
+
+
+def render_defense_brief_section(
+    closing_args: dict[str, str],
+    proof_obpis: Any,
+    reviews: dict[str, Path],
+) -> str:
+    """Render the Defense Brief markdown section for ADR-CLOSEOUT-FORM.md.
+
+    Args:
+        closing_args: OBPI ID to closing argument text.
+        proof_obpis: ProductProofResult (or None). Accessed via duck typing.
+        reviews: OBPI ID to REVIEW-*.md path.
+    """
+    lines = ["## Defense Brief", ""]
+
+    lines.append("### Closing Arguments")
+    lines.append("")
+    if closing_args:
+        for obpi_id, arg in closing_args.items():
+            lines.append(f"#### {obpi_id}")
+            lines.append("")
+            lines.append(arg)
+            lines.append("")
+    else:
+        lines.append("*No closing arguments found.*")
+        lines.append("")
+
+    lines.append("### Product Proof")
+    lines.append("")
+    if proof_obpis is not None and hasattr(proof_obpis, "obpi_proofs"):
+        lines.append("| OBPI | Proof Type | Status |")
+        lines.append("|------|-----------|--------|")
+        for p in proof_obpis.obpi_proofs:
+            status = "FOUND" if p.has_proof else "MISSING"
+            lines.append(f"| {p.obpi_id} | {p.proof_type} | {status} |")
+        lines.append("")
+    else:
+        lines.append("*No product proof data available.*")
+        lines.append("")
+
+    lines.append("### Reviewer Assessment")
+    lines.append("")
+    if reviews:
+        lines.append("| OBPI | Verdict | Promises Met | Docs Quality | Closing Arg | Artifact |")
+        lines.append("|------|---------|-------------|-------------|-------------|----------|")
+        for obpi_id, path in sorted(reviews.items()):
+            fields = _extract_review_fields(path)
+            lines.append(
+                f"| {obpi_id} | {fields['verdict']} | {fields['promises_met']} "
+                f"| {fields['docs_quality']} | {fields['closing_argument_quality']} "
+                f"| `{path.name}` |"
+            )
+        lines.append("")
+    else:
+        lines.append("*No reviewer assessments found.*")
+        lines.append("")
+
+    return "\n".join(lines)
+
+
+def compute_defense_brief(
+    obpi_files: dict[str, Path],
+    adr_package_dir: Path,
+    proof_result: Any,
+) -> str:
+    """Compute the full Defense Brief section for an ADR closeout.
+
+    Reads closing arguments from OBPI briefs, gathers reviewer artifacts,
+    and combines with product proof data into a single markdown section.
+    """
+    closing_args: dict[str, str] = {}
+    for obpi_id, brief_path in sorted(obpi_files.items()):
+        arg = extract_closing_argument(brief_path.read_text(encoding="utf-8"))
+        if arg:
+            closing_args[obpi_id] = arg
+    reviews = gather_reviewer_assessments(adr_package_dir)
+    return render_defense_brief_section(closing_args, proof_result, reviews)
+
 
 def _cli_main():
     """Return the gzkit.cli.main module for test-mock compatibility.
