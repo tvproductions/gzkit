@@ -422,11 +422,6 @@ Evidence is full-fidelity. Human reviews at ADR closeout.
 
 After attestation (Normal) or self-close (Exception):
 
-**Two-sync pattern:** Stage 5 uses two git-sync cycles. The first commits all
-governance edits (attestation, brief, audit) so the tree is clean. The completion
-receipt is then emitted against that clean commit — capturing a deterministic
-per-OBPI anchor hash. The second sync commits the receipt and reconcile output.
-
 1. **Record attestation in ledger** — Append a dedicated attestation entry to the **ADR-level** audit ledger
    (`{adr-package}/logs/obpi-audit.jsonl`) BEFORE updating the brief. The `obpi-completion-validator.py` hook
    checks the ledger for `attestation_type: "human"` (Normal mode) or
@@ -447,25 +442,22 @@ per-OBPI anchor hash. The second sync commits the receipt and reconcile output.
    The hook checks `attestation_type == "human"` or `evidence.human_attestation == true`.
 
 2. Run `/gz-obpi-audit {OBPI-ID}` to record full evidence ledger entry
-3. Update brief: check all criteria boxes, add evidence section, set status to `Completed`
+3. Update brief: check all criteria boxes, add evidence sections, set status to `Completed`
+   - Add Implementation Summary, Key Proof, and Human Attestation sections FIRST
+   - THEN change frontmatter `status:` to `Completed` (hook validates evidence exists)
    - (Hooks `obpi-completion-validator.py` enforce evidence requirements)
 4. Release OBPI lock via `/gz-obpi-lock release {OBPI-ID}`
 5. Remove `.claude/plans/.pipeline-active-{OBPI-ID}.json` if it was created.
 6. Remove `.claude/plans/.pipeline-active.json` only when it still points at
    the same OBPI as the per-OBPI marker.
-7. **Git-sync #1** — `uv run gz git-sync --apply --lint --test`
-   Commits all governance edits from steps 1-6. Tree is now clean with a
-   deterministic commit hash anchoring this OBPI's work.
-8. **Emit completion receipt** — `uv run gz obpi emit-receipt {OBPI-ID} --event completed --attestor {attestor} --evidence-json '{...}'`
-   Captures the clean commit anchor from step 7. The receipt's `git_sync_state.dirty`
-   will be `false` and `anchor.commit` will point to the exact commit containing
-   this OBPI's final state.
-9. Run `uv run gz obpi reconcile {OBPI-ID}` to confirm receipt and brief agree.
-10. Run `uv run gz adr status {PARENT-ADR} --json` so the parent ADR view
+7. **Emit completion receipt** — `uv run gz obpi emit-receipt {OBPI-ID} --event completed --attestor {attestor} --evidence-json '{...}'`
+   The receipt anchors against the current HEAD commit at emission time.
+8. Run `uv run gz obpi reconcile {OBPI-ID}` to confirm receipt and brief agree.
+9. Run `uv run gz adr status {PARENT-ADR} --json` so the parent ADR view
     reflects the reconciled OBPI state.
-11. **Git-sync #2** — `uv run gz git-sync --apply --lint --test`
-    Commits the receipt (step 8) and reconcile output (step 9).
-12. Create a session handoff if more OBPIs remain or follow-up work is deferred.
+10. **Git-sync** — `uv run gz git-sync --apply --lint --test`
+    Commits all governance edits, receipt, and reconcile output in a single sync.
+11. Create a session handoff if more OBPIs remain or follow-up work is deferred.
 
 ---
 
@@ -497,7 +489,7 @@ Each stage records evidence to the OBPI audit ledger:
 | Stage 2 | Files changed, tests added |
 | Stage 3 | Verification outputs (pass/fail) |
 | Stage 4 | Attestation text + timestamp |
-| Stage 5 | Attestation ledger entry (Step 1), audit entry (Step 2), brief updated (Step 3), git-sync #1 (Step 7), completion receipt with clean anchor (Step 8), reconcile (Step 9), git-sync #2 (Step 11) |
+| Stage 5 | Attestation ledger entry (Step 1), audit entry (Step 2), brief updated (Step 3), completion receipt (Step 7), reconcile (Step 8), git-sync (Step 10) |
 
 ---
 
@@ -555,10 +547,9 @@ The pipeline is complete when — and ONLY when — all of these are true:
 2. `/gz-obpi-audit` ran (Stage 5, Step 2)
 3. Brief updated to `Completed` (Stage 5, Step 3)
 4. Lock released, markers cleaned (Stage 5, Steps 4-6)
-5. Git-sync #1 committed governance edits (Stage 5, Step 7)
-6. Completion receipt emitted with clean anchor (Stage 5, Step 8)
-7. Reconcile passed (Stage 5, Step 9)
-8. Git-sync #2 committed receipt and reconcile (Stage 5, Step 11)
+5. Completion receipt emitted (Stage 5, Step 7)
+6. Reconcile passed (Stage 5, Step 8)
+7. Git-sync committed all artifacts (Stage 5, Step 10)
 
 If any of these have not happened, the pipeline is not complete. Do not claim otherwise.
 
