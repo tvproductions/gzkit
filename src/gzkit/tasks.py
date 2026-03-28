@@ -1,8 +1,10 @@
 """TASK entity model for fourth-tier governance (ADR-0.22.0).
 
 Defines the TASK entity: identifier parsing, lifecycle states, valid
-transitions, and plan-derived creation.  Follows the ReqId/ReqEntity
-pattern in ``triangle.py``.
+transitions, plan-derived creation, and git commit linkage (trailer
+parsing, formatting, and four-tier chain resolution).
+
+Follows the ReqId/ReqEntity pattern in ``triangle.py``.
 """
 
 from __future__ import annotations
@@ -142,3 +144,65 @@ def create_task_from_plan_step(
         parent_req=parent_req,
         parent_obpi=parent_obpi,
     )
+
+
+# ---------------------------------------------------------------------------
+# Git commit linkage (OBPI-0.22.0-03)
+# ---------------------------------------------------------------------------
+
+_TRAILER_LINE_RE = re.compile(r"^Task:\s+(TASK-\d+\.\d+\.\d+-\d+-\d+-\d+)\s*$")
+
+
+def format_commit_trailer(task: TaskEntity | TaskId) -> str:
+    """Produce a git commit trailer line from a TASK entity or identifier.
+
+    Returns a string like ``Task: TASK-0.20.0-01-01-01``.
+    """
+    tid = task.id if isinstance(task, TaskEntity) else task
+    return f"Task: {tid}"
+
+
+def parse_task_trailers(commit_message: str) -> list[TaskId]:
+    """Extract TASK IDs from the trailer section of a commit message.
+
+    The trailer section is the final paragraph — a contiguous block of
+    ``Key: Value`` lines at the end of the message, separated from the
+    body by a blank line.  Only ``Task:`` trailers with valid TASK IDs
+    are returned; other trailers and body text are ignored.
+    """
+    lines = commit_message.rstrip("\n").split("\n")
+
+    # Walk backwards to find the trailer block: contiguous key-value
+    # lines at the end, preceded by a blank line.
+    trailer_start = len(lines)
+    for i in range(len(lines) - 1, -1, -1):
+        line = lines[i]
+        if not line.strip():
+            break
+        if re.match(r"^[\w-]+:\s", line):
+            trailer_start = i
+        else:
+            # Non-trailer, non-blank line — no trailer block here
+            trailer_start = len(lines)
+            break
+
+    results: list[TaskId] = []
+    for line in lines[trailer_start:]:
+        m = _TRAILER_LINE_RE.match(line)
+        if m:
+            results.append(TaskId.parse(m.group(1)))
+    return results
+
+
+def resolve_task_chain(task_id: TaskId) -> dict[str, str]:
+    """Resolve the four-tier traceability chain from a TASK identifier.
+
+    Returns a dict with keys ``task``, ``req``, ``obpi``, ``adr``
+    derived purely from the identifier components.
+    """
+    return {
+        "task": str(task_id),
+        "req": f"REQ-{task_id.semver}-{task_id.obpi_item}-{task_id.req_index}",
+        "obpi": f"OBPI-{task_id.semver}-{task_id.obpi_item}",
+        "adr": f"ADR-{task_id.semver}",
+    }
