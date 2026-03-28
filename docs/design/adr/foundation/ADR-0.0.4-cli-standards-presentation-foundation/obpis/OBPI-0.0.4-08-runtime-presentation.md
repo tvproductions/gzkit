@@ -145,7 +145,7 @@ uv run gz check --json            # Verify no symbols or color in JSON mode
 - [x] **REQ-0.0.4-08-04:** `gz validate` shows what was validated, not just "All validations passed."
 - [x] **REQ-0.0.4-08-05:** `gz gates` produces structured gate-by-gate output with pass/fail symbols
 - [x] **REQ-0.0.4-08-06:** All error output uses `BLOCKERS:` prefix via OutputFormatter
-- [x] **REQ-0.0.4-08-07:** Color conventions documented and applied consistently across all commands
+- [x] **REQ-0.0.4-08-07:** [doc] Color conventions documented and applied consistently across all commands
 - [x] **REQ-0.0.4-08-08:** `NO_COLOR=1 gz check` produces clean output without ANSI codes
 - [x] **REQ-0.0.4-08-09:** JSON mode (`--json`) produces no symbols or color codes in output
 

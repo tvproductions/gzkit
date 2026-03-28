@@ -142,9 +142,9 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [x] REQ-0.9.0-01-01: Given canonical `.claude/hooks` contains non-blocking governance hooks, when OBPI-01 completes, then gzkit contains imported `instruction-router.py` and `post-edit-ruff.py`.
-- [x] REQ-0.9.0-01-02: Given gzkit Claude settings, when hooks are wired, then `instruction-router.py`, `post-edit-ruff.py`, and `ledger-writer.py` are configured in `.claude/settings.json`.
-- [x] REQ-0.9.0-01-03: Given remaining canonical hooks are not imported, when intake evidence is reviewed, then each hook is classified with explicit defer/exclude rationale and follow-up.
+- [x] REQ-0.9.0-01-01: [doc] Given canonical `.claude/hooks` contains non-blocking governance hooks, when OBPI-01 completes, then gzkit contains imported `instruction-router.py` and `post-edit-ruff.py`.
+- [x] REQ-0.9.0-01-02: [doc] Given gzkit Claude settings, when hooks are wired, then `instruction-router.py`, `post-edit-ruff.py`, and `ledger-writer.py` are configured in `.claude/settings.json`.
+- [x] REQ-0.9.0-01-03: [doc] Given remaining canonical hooks are not imported, when intake evidence is reviewed, then each hook is classified with explicit defer/exclude rationale and follow-up.
 
 ## Completion Checklist
 

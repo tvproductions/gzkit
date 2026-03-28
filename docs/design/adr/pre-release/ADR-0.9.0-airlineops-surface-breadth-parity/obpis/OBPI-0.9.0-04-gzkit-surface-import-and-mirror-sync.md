@@ -163,17 +163,17 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [x] REQ-0.9.0-04-01: Given the approved OBPI-03 tranche, when OBPI-04 implementation completes,
+- [x] REQ-0.9.0-04-01: [doc] Given the approved OBPI-03 tranche, when OBPI-04 implementation completes,
       then `.gzkit/governance/ontology.schema.json`, `.gzkit/governance/ontology.json`,
       `.gzkit/lessons/.gitkeep`, and `.gzkit/README.md` exist and reflect the approved
       import/defer/exclude decisions.
-- [x] REQ-0.9.0-04-02: Given the imported ontology, when it is inspected, then it
+- [x] REQ-0.9.0-04-02: [doc] Given the imported ontology, when it is inspected, then it
       contains only process-plane doctrines and contains no `src/airlineops/` or
       other AirlineOps product-plane references.
-- [x] REQ-0.9.0-04-03: Given generated control surfaces depend on canonical
+- [x] REQ-0.9.0-04-03: [doc] Given generated control surfaces depend on canonical
       governance state, when sync is run after the import, then `gz agent sync
       control-surfaces` completes successfully and status remains coherent.
-- [x] REQ-0.9.0-04-04: Given the `.gzkit` structure changed, when documentation is
+- [x] REQ-0.9.0-04-04: [doc] Given the `.gzkit` structure changed, when documentation is
       reviewed, then `.gzkit/README.md` and `docs/governance/GovZero/gzkit-structure.md`
       both describe the actual local structure without placeholder drift.
 

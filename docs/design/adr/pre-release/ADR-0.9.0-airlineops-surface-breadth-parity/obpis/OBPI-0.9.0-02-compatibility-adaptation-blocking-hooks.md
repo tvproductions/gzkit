@@ -121,9 +121,9 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [x] REQ-0.9.0-02-01: Given canonical `.claude/hooks` candidates classified as `Import with Compatibility` or `Defer`, when OBPI-02 completes, then each candidate has a concrete compatibility decision and implementation status.
-- [x] REQ-0.9.0-02-02: Given imported compatibility-safe hooks, when `.claude/settings.json` is reviewed, then each imported hook is wired with the correct matcher and command.
-- [x] REQ-0.9.0-02-03: Given deferred or excluded hooks, when intake evidence is reviewed, then each has explicit rationale and follow-up ownership.
+- [x] REQ-0.9.0-02-01: [doc] Given canonical `.claude/hooks` candidates classified as `Import with Compatibility` or `Defer`, when OBPI-02 completes, then each candidate has a concrete compatibility decision and implementation status.
+- [x] REQ-0.9.0-02-02: [doc] Given imported compatibility-safe hooks, when `.claude/settings.json` is reviewed, then each imported hook is wired with the correct matcher and command.
+- [x] REQ-0.9.0-02-03: [doc] Given deferred or excluded hooks, when intake evidence is reviewed, then each has explicit rationale and follow-up ownership.
 
 ## Completion Checklist
 

@@ -144,8 +144,8 @@ uv run gz adr --help     # verify subcommand epilog renders
 - [x] **REQ-0.0.4-05-03:** All subcommands have non-empty `.epilog` values
 - [x] **REQ-0.0.4-05-04:** Every epilog contains "Examples" and "Exit codes" sections
 - [x] **REQ-0.0.4-05-05:** All example commands in epilogs are syntactically valid `gz` invocations
-- [x] **REQ-0.0.4-05-06:** `uv run gz lint` passes
-- [x] **REQ-0.0.4-05-07:** `uv run gz test` passes
+- [x] **REQ-0.0.4-05-06:** [doc] `uv run gz lint` passes
+- [x] **REQ-0.0.4-05-07:** [doc] `uv run gz test` passes
 
 ## Completion Checklist
 

@@ -14,6 +14,7 @@ from gzkit.ledger import (
     obpi_created_event,
     obpi_receipt_emitted_event,
 )
+from gzkit.traceability import covers  # noqa: F401
 from tests.commands.common import CliRunner, _init_git_repo, _quick_init, _write_obpi
 
 
@@ -414,6 +415,7 @@ class TestStatusCommand(unittest.TestCase):
             self.assertEqual(payload["runtime_state"], "completed")
             self.assertIn("brief reflection is not marked Completed", payload["reflection_issues"])
 
+    @covers("REQ-0.11.0-04-02")
     def test_obpi_reconcile_fails_closed_when_proof_missing(self) -> None:
         """obpi reconcile emits BLOCKERS and exits non-zero when proof is missing."""
         runner = CliRunner()
@@ -438,6 +440,7 @@ class TestStatusCommand(unittest.TestCase):
             self.assertIn("BLOCKERS:", result.output)
             self.assertIn("ledger proof of completion is missing", result.output)
 
+    @covers("REQ-0.11.0-04-03")
     def test_obpi_reconcile_reports_anchor_drift_for_scope_changes(self) -> None:
         """Anchor-aware reconcile fails when tracked files changed since completion."""
         runner = CliRunner()

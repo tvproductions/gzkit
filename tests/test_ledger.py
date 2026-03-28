@@ -657,6 +657,7 @@ class TestLedger(unittest.TestCase):
         self.assertTrue(semantics["completed"])
 
     @covers("REQ-0.10.0-03-01")
+    @covers("REQ-0.11.0-04-01")
     def test_derive_obpi_semantics_reports_superseded_anchor_when_scope_changes(self) -> None:
         """Scope changes after OBPI completion mark anchor as superseded, not stale."""
         semantics = derive_obpi_semantics(

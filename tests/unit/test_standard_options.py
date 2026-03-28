@@ -13,6 +13,7 @@ from gzkit.cli.helpers.standard_options import (
     add_json_flag,
     add_table_flag,
 )
+from gzkit.traceability import covers
 
 # ---------------------------------------------------------------------------
 # _option_exists
@@ -56,6 +57,7 @@ class TestFlagRegistration(unittest.TestCase):
         ("add_table_flag", add_table_flag, "--table", []),
     ]
 
+    @covers("REQ-0.0.4-03-04")
     def test_flag_registered(self) -> None:
         for name, factory, flag, _ in self.CASES:
             with self.subTest(factory=name):
