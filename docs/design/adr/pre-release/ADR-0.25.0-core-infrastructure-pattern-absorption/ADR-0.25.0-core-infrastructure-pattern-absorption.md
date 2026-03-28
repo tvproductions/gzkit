@@ -168,7 +168,7 @@ gzkit must own all reusable core infrastructure patterns. airlineops's `core/` a
 | 16 | OBPI-0.25.0-16 | Evaluate and absorb `common/config.py` (73 lines) — configuration loading helpers | Heavy | Pending |
 | 17 | OBPI-0.25.0-17 | Evaluate and absorb `common/console.py` (45 lines) — console I/O abstractions | Heavy | Pending |
 
-**Briefs location:** `briefs/OBPI-0.25.0-*.md`
+**Briefs location:** `obpis/OBPI-0.25.0-*.md`
 
 **WBS Completeness Rule:** Every row in this table has a corresponding brief file.
 
@@ -291,7 +291,7 @@ airlineops's `core/` and `common/` packages represent 1,700+ lines of battle-tes
 
 ### Docs
 
-- Decision rationale: per OBPI brief in `briefs/`
+- Decision rationale: per OBPI brief in `obpis/`
 - Governance: this ADR
 
 ---
@@ -302,7 +302,7 @@ airlineops's `core/` and `common/` packages represent 1,700+ lines of battle-tes
 |---------------|-------|-------------------|----------|-------|
 | `src/gzkit/` | M | All absorbed modules integrated | Test output | |
 | `tests/` | M | All absorbed modules tested | `uv run gz test` | |
-| `briefs/` | P | All 17 OBPIs have decisions documented | Brief review | |
+| `obpis/` | P | All 17 OBPIs have decisions documented | Brief review | |
 
 ### SIGN-OFF — Post-Ship Tidy
 

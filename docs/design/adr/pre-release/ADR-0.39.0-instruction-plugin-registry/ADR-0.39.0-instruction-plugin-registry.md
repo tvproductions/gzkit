@@ -96,7 +96,7 @@ gzkit ships canonical instruction files that govern agent behavior: cross-platfo
 | 5 | OBPI-0.39.0-05 | Contradiction detection — detect when local instructions contradict canonical rules | Heavy | Pending |
 | 6 | OBPI-0.39.0-06 | Migration tooling — migrate existing flat-file instruction setups to the registry | Heavy | Pending |
 
-**Briefs location:** `briefs/OBPI-0.39.0-*.md`
+**Briefs location:** `obpis/OBPI-0.39.0-*.md`
 
 **WBS Completeness Rule:** Every row in this table has a corresponding brief file.
 
@@ -170,7 +170,7 @@ Instruction files are the mechanism through which gzkit governs agent behavior a
 | `tests/` | M | All registry tests pass | `uv run gz test` | |
 | `data/schemas/` | M | Plugin manifest schema validates | Schema tests | |
 | `docs/user/` | P | Plugin guide, migration guide, command docs | Doc review | |
-| `briefs/` | P | All 6 OBPIs have designs documented | Brief review | |
+| `obpis/` | P | All 6 OBPIs have designs documented | Brief review | |
 
 ### SIGN-OFF — Post-Ship Tidy
 

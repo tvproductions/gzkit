@@ -81,8 +81,9 @@ Create GovZero-compliant ADR files with proper SemVer versioning, OBPI briefs, a
 **One Brief Per Item:** Each ADR checklist item maps to exactly one OBPI brief.
 
 - Format: `OBPI-{version}-{nn}-{slug}.md`
-- Briefs live in `briefs/` subfolder (ADR-contained layout preferred)
+- Briefs live in `obpis/` subfolder (canonical name; `briefs/` is legacy and MUST NOT be used)
 - Each OBPI must reference parent ADR and specific checklist item
+- OBPI frontmatter MUST use `parent:` (not `parent_adr:`) for the parent ADR field
 
 ### OBPI Co-Creation Rule (Mandatory)
 
@@ -91,7 +92,7 @@ Create GovZero-compliant ADR files with proper SemVer versioning, OBPI briefs, a
 When creating an ADR:
 
 1. Count the checklist items in the Feature Checklist
-2. Create exactly that many OBPI brief files in `briefs/`
+2. Create exactly that many OBPI brief files using `gz specify` (preferred) or manually in `obpis/`
 3. Verify 1:1 mapping before marking ADR as Proposed
 
 **Prohibited patterns:**
@@ -112,7 +113,7 @@ with execution units at decision time.
 docs/design/adr/adr-X.Y.x/ADR-X.Y.Z-{slug}/
   ADR-X.Y.Z-{slug}.md
   ADR-CLOSEOUT-FORM.md            # optional
-  briefs/
+  obpis/
     OBPI-X.Y.Z-01-*.md
     OBPI-X.Y.Z-02-*.md
   audit/
@@ -154,20 +155,19 @@ This skill maintains explicit alignment between skill version and GovZero versio
 ## Assets
 
 - **ADR Template:** `assets/ADR_TEMPLATE_SEMVER.md` (co-located with this skill)
-- **OBPI Brief Template:** `.github/skills/gz-obpi-brief/assets/OBPI_BRIEF-template.md`
+- **OBPI Brief Template:** `src/gzkit/templates/obpi.md` (canonical; `.github/skills/gz-obpi-brief/assets/OBPI_BRIEF-template.md` is the authoring guide)
 - **Closeout Form:** Use pattern from existing ADR closeout forms
 
 ## Outputs
 
 - ADR markdown file under `docs/design/adr/{series}/ADR-{id}-{slug}/`.
 - ADR closeout form: `ADR-CLOSEOUT-FORM.md` in the same folder.
-- Briefs folder: `docs/design/adr/{series}/ADR-{id}-{slug}/briefs/` (preferred) or
-  `docs/design/briefs/{series}/{adr-slug}/` (legacy).
+- OBPIs folder: `docs/design/adr/{series}/ADR-{id}-{slug}/obpis/` (canonical).
 - Updated registries:
   - `docs/design/adr/adr_index.md`
   - `docs/design/adr/adr_status.md`
   - `docs/governance/GovZero/adr-status.md` (governance copy)
-- OBPI briefs under the briefs folder (when requested).
+- OBPI briefs under the `obpis/` folder (when requested).
 
 ## Procedure
 
@@ -175,15 +175,17 @@ This skill maintains explicit alignment between skill version and GovZero versio
 2. **Verify GovZero compliance:** ADR ID follows 0.y.z format; status uses canonical lifecycle states.
 3. Create the ADR folder: `docs/design/adr/{series}/ADR-{id}-{slug}/`.
 4. Create the ADR markdown file using the template structure (all sections required).
-5. Create the briefs subfolder: `briefs/`.
+5. Create the OBPIs subfolder: `obpis/`.
 6. Create `ADR-CLOSEOUT-FORM.md` following existing closeout form patterns.
 7. Add the ADR entry to `docs/design/adr/adr_index.md`.
 8. Add/refresh the ADR row in `docs/design/adr/adr_status.md`.
 9. Add/refresh the ADR row in `docs/governance/GovZero/adr-status.md`.
 10. **OBPI Co-Creation (Mandatory):** Create one OBPI brief per checklist item.
     - Count checklist items in Feature Checklist
-    - Create exactly that many briefs in `briefs/` subfolder
-    - Verify: `ls briefs/ | wc -l` matches checklist item count
+    - **Preferred:** Run `uv run gz specify <slug> --parent ADR-X.Y.Z --item N` for each item
+    - **Alternative:** Create files manually in `obpis/` with YAML frontmatter (`id:`, `parent:`, `item:`, `lane:`, `status:`)
+    - **Then register:** Run `uv run gz register-adrs ADR-X.Y.Z --all` to ensure `obpi_created` ledger events
+    - Verify: `ls obpis/ | wc -l` matches checklist item count
     - This is NOT optional — briefs are co-created with the ADR, never deferred
 11. **Post-Authoring QC (Mandatory before proposal/defense):**
     Invoke `gz-adr-eval ADR-X.Y.Z` to run the ADR and its OBPIs through the

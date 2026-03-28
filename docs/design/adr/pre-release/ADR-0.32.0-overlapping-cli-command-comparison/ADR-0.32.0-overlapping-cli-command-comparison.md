@@ -114,7 +114,7 @@ This is the largest ADR by OBPI count in the absorption series. Every CLI comman
 | 24 | OBPI-0.32.0-24 | Evaluate `yaml-guard` -- opsdev yaml_guard_tools.py 75 lines, no gzkit equivalent | Heavy | Pending |
 | 25 | OBPI-0.32.0-25 | Compare `hooks subcommands` -- opsdev hooks_tools.py 81 lines vs gzkit hooks/ | Heavy | Pending |
 
-**Briefs location:** `briefs/OBPI-0.32.0-*.md`
+**Briefs location:** `obpis/OBPI-0.32.0-*.md`
 
 **WBS Completeness Rule:** Every row in this table has a corresponding brief file.
 
@@ -171,7 +171,7 @@ opsdev's tools directory contains 25 commands that overlap with gzkit's CLI surf
 
 ### Docs
 
-- Comparison rationale: per OBPI brief in `briefs/`
+- Comparison rationale: per OBPI brief in `obpis/`
 - Governance: this ADR
 
 ---
@@ -182,7 +182,7 @@ opsdev's tools directory contains 25 commands that overlap with gzkit's CLI surf
 |---------------|-------|-------------------|----------|-------|
 | `src/gzkit/` | M | All absorbed improvements integrated | Test output | |
 | `tests/` | M | All absorbed improvements tested | `uv run gz test` | |
-| `briefs/` | P | All 25 OBPIs have comparison decisions documented | Brief review | |
+| `obpis/` | P | All 25 OBPIs have comparison decisions documented | Brief review | |
 
 ### SIGN-OFF -- Post-Ship Tidy
 

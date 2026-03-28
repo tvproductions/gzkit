@@ -94,7 +94,7 @@ opsdev contains quality tooling commands that are genuinely governance-generic -
 | 9 | OBPI-0.31.0-09 | Port `sync-manpage-docstrings` (473 lines) --- docstring synchronization | Heavy | Pending |
 | 10 | OBPI-0.31.0-10 | Port `interrogate` (wrapper) --- docstring coverage integration | Heavy | Pending |
 
-**Briefs location:** `briefs/OBPI-0.31.0-*.md`
+**Briefs location:** `obpis/OBPI-0.31.0-*.md`
 
 **WBS Completeness Rule:** Every row in this table has a corresponding brief file.
 
@@ -153,7 +153,7 @@ opsdev's quality tooling represents approximately 3,100+ lines of governance-gen
 
 - Manpages: `docs/user/manpages/` (per ported command)
 - Governance: this ADR
-- Decision rationale: per OBPI brief in `briefs/`
+- Decision rationale: per OBPI brief in `obpis/`
 
 ---
 
@@ -164,7 +164,7 @@ opsdev's quality tooling represents approximately 3,100+ lines of governance-gen
 | `src/gzkit/commands/` | M | All 10 commands ported | Test output | |
 | `tests/` | M | All ported commands tested | `uv run gz test` | |
 | `docs/user/manpages/` | P | All ported commands documented | Manpage review | |
-| `briefs/` | P | All 10 OBPIs have evidence documented | Brief review | |
+| `obpis/` | P | All 10 OBPIs have evidence documented | Brief review | |
 
 ### SIGN-OFF --- Post-Ship Tidy
 

@@ -1,0 +1,130 @@
+---
+id: OBPI-0.23.0-03-reviewer-agent
+parent: ADR-0.23.0-agent-burden-of-proof
+item: 3
+lane: Lite
+status: Pending
+---
+<!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
+
+# OBPI-0.23.0-03 — Reviewer Agent Role
+
+## ADR ITEM — Level 1 WBS Reference
+
+- Source ADR: `docs/design/adr/pre-release/ADR-0.23.0-agent-burden-of-proof/ADR-0.23.0-agent-burden-of-proof.md`
+- OBPI Entry (Level 1 WBS): `OBPI-0.23.0-03 — "Reviewer agent role — fresh-eyes verification of delivered work against OBPI promises"`
+
+## ADR ALIGNMENT
+
+1. **Critical Constraint:**
+   > ADR states: "Implementations MUST ensure the burden of proof falls on the completing agent at the END of the run."
+   >
+   > In my own words: A separate agent — with no sunk-cost bias from doing the implementation work — must independently verify that what was delivered matches what the OBPI promised, and that operator documentation is substantive.
+
+2. **Integration Points:**
+   > This OBPI must integrate with: `src/gzkit/commands/pipeline.py` (subagent dispatch), `.claude/skills/gz-obpi-pipeline/SKILL.md` (pipeline stages), ADR-0.18.0 agent role taxonomy
+
+3. **Anti-Pattern:**
+   > A failed implementation would: have the same agent that implemented the OBPI also "review" it — that's self-certification, not independent review. The reviewer must be a distinct agent invocation with fresh context.
+
+4. **Alignment Check:**
+   > - [x] **YES** — Proceed. Reasoning: Independent review by a fresh agent directly supports the multi-agent approach and prevents self-certification of quality.
+
+## OBJECTIVE
+
+Add a "reviewer" agent role to the OBPI pipeline that is dispatched after implementation completion. The reviewer agent reads the OBPI brief's promises (objective, requirements, acceptance criteria) and the closing argument, then independently verifies: (a) the delivered code matches the promises, (b) operator documentation is substantive and accurate, (c) the closing argument is earned from evidence, not echoed from planning.
+
+## ROLE
+
+**Agent Identity:** Multi-agent pipeline architect
+
+**Success Behavior:** Design a reviewer dispatch that gives a fresh agent the brief, the closing argument, and the delivered artifacts — then asks it to render a verdict.
+
+**Failure Behavior:** Implementing review as a checkbox in the same agent's context, or making the review so shallow it always passes.
+
+## ASSUMPTIONS
+
+- ADR-0.18.0 subagent dispatch infrastructure is available
+- The reviewer agent is a Claude Code subagent (Agent tool) with read-only access
+- The reviewer produces a structured assessment that the ceremony skill can present to the human attestor
+
+## NON-GOALS
+
+- The reviewer does not fix problems — it identifies them
+- The reviewer does not replace human attestation — it informs it
+- No new CLI command for reviewer dispatch (it's internal to the pipeline)
+
+## CHANGE IMPACT DECLARATION
+
+- [x] **YES** — External contract changes: OBPI pipeline gains a new stage visible in pipeline output.
+
+## LANE
+
+Heavy — Pipeline contract change (new stage, new output).
+
+## EXTERNAL CONTRACT
+
+- Surface: OBPI pipeline stages, ceremony skill output
+- Impacted audience: agents running pipeline, human attestors
+
+## ALLOWED PATHS
+
+- `src/gzkit/commands/pipeline.py`
+- `.claude/skills/gz-obpi-pipeline/SKILL.md`
+- `tests/test_reviewer_agent.py`
+- `features/reviewer_agent.feature`
+- `features/steps/reviewer_agent_steps.py`
+- `docs/governance/governance_runbook.md`
+
+## REQUIREMENTS (FAIL-CLOSED)
+
+1. Define "reviewer" role in the agent role taxonomy (extends ADR-0.18.0)
+1. Reviewer agent receives: OBPI brief, closing argument, list of changed files, and relevant doc files
+1. Reviewer produces structured assessment: promises-met (yes/no per requirement), docs-quality (substantive/boilerplate/missing), closing-argument-quality (earned/echoed/missing)
+1. Assessment is stored as a reviewable artifact alongside the brief
+1. Ceremony skill presents reviewer assessment to human attestor before attestation prompt
+
+## EDGE CASES
+
+- Reviewer disagrees with implementer's closing argument: assessment flags the discrepancy, human decides
+- OBPI has no operator-facing surface: reviewer still checks that docstrings and internal docs are substantive
+- Reviewer agent fails or times out: closeout proceeds with warning, but human is informed no review was completed
+
+## QUALITY GATES
+
+### Gates 1-4: Implementation
+
+- [ ] Gate 1 (ADR): Intent recorded in brief
+- [ ] Gate 2 (TDD): Unit tests pass, coverage >= 40%
+- [ ] Gate 3 (Docs): Governance runbook updated
+- [ ] Gate 4 (BDD): Behave scenarios pass
+- [ ] Code Quality: Lint, type check clean
+
+### Verification Commands (Concrete)
+
+```bash
+# Prove reviewer role exists in taxonomy
+grep -r "reviewer" src/gzkit/commands/pipeline.py
+# Expected: reviewer dispatch function or role constant
+
+# Prove assessment artifact is written
+ls docs/design/adr/pre-release/ADR-0.23.0-agent-burden-of-proof/briefs/REVIEW-*.md
+# Expected: one review artifact per OBPI
+
+# Prove reviewer assessment has structured fields
+grep -c "promises-met\|docs-quality\|closing-argument-quality" <assessment_artifact>
+# Expected: >= 3 (one per field)
+
+# Prove reviewer is dispatched as a separate agent (not inline)
+grep -r "subagent_type\|Agent(" src/gzkit/commands/pipeline.py | grep -i review
+# Expected: match showing distinct agent invocation
+```
+
+### Gate 5: Human Attestation
+
+- [ ] Agent presents reviewer assessment example output
+- [ ] **STOP** — Agent waits for human attestation
+
+## Closing Argument
+
+*To be authored at completion from delivered evidence.*

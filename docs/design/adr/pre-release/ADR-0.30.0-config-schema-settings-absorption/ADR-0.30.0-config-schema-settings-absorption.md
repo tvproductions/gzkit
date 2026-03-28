@@ -92,7 +92,7 @@ opsdev contains a mature configuration infrastructure spanning 1,335 lines acros
 | 7 | OBPI-0.30.0-07 | Evaluate and absorb legacy adapter bridges --- backward-compatible config migration | Heavy | Pending |
 | 8 | OBPI-0.30.0-08 | Evaluate and absorb settings validation and env loading --- environment variable integration and validation | Heavy | Pending |
 
-**Briefs location:** `briefs/OBPI-0.30.0-*.md`
+**Briefs location:** `obpis/OBPI-0.30.0-*.md`
 
 **WBS Completeness Rule:** Every row in this table has a corresponding brief file.
 
@@ -149,7 +149,7 @@ The 171-line vs 1,335-line disparity between gzkit and opsdev's configuration la
 
 ### Docs
 
-- Decision rationale: per OBPI brief in `briefs/`
+- Decision rationale: per OBPI brief in `obpis/`
 - Governance: this ADR
 
 ---
@@ -160,7 +160,7 @@ The 171-line vs 1,335-line disparity between gzkit and opsdev's configuration la
 |---------------|-------|-------------------|----------|-------|
 | `src/gzkit/config.py` | M | Enhanced config layer integrated | Test output | |
 | `tests/` | M | All absorbed components tested | `uv run gz test` | |
-| `briefs/` | P | All 8 OBPIs have decisions documented | Brief review | |
+| `obpis/` | P | All 8 OBPIs have decisions documented | Brief review | |
 
 ### SIGN-OFF --- Post-Ship Tidy
 

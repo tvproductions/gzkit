@@ -100,7 +100,7 @@ airlineops has 13 Claude hook scripts in `.claude/hooks/` that have been develop
 | 12 | OBPI-0.34.0-12 | Compare `pipeline-completion-reminder.py` -- reminds about incomplete pipelines | Heavy | Pending |
 | 13 | OBPI-0.34.0-13 | Absorb `insight-reminder.py` -- reminds about pending insights | Heavy | Pending |
 
-**Briefs location:** `briefs/OBPI-0.34.0-*.md`
+**Briefs location:** `obpis/OBPI-0.34.0-*.md`
 
 **WBS Completeness Rule:** Every row in this table has a corresponding brief file.
 
@@ -158,7 +158,7 @@ Claude hooks are the enforcement mechanism for agent governance. They intercept 
 
 ### Docs
 
-- Comparison rationale: per OBPI brief in `briefs/`
+- Comparison rationale: per OBPI brief in `obpis/`
 - Governance: this ADR
 
 ---
@@ -169,7 +169,7 @@ Claude hooks are the enforcement mechanism for agent governance. They intercept 
 |---------------|-------|-------------------|----------|-------|
 | `src/gzkit/hooks/` | M | All absorbed hook behaviors integrated | Test output | |
 | `tests/` | M | All absorbed hook behaviors tested | `uv run gz test` | |
-| `briefs/` | P | All 13 OBPIs have comparison decisions documented | Brief review | |
+| `obpis/` | P | All 13 OBPIs have comparison decisions documented | Brief review | |
 
 ### SIGN-OFF -- Post-Ship Tidy
 

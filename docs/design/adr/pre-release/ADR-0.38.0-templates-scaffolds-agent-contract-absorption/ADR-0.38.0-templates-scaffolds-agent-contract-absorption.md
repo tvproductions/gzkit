@@ -97,7 +97,7 @@ Templates and scaffolds are the DNA of governance artifacts. Every ADR, OBPI, cl
 | 9 | OBPI-0.38.0-09 | Compare copilot-instructions.md generic sections — non-domain-specific guidance and rules | Heavy | Pending |
 | 10 | OBPI-0.38.0-10 | Compare guards.py / layout_verify.py — structural enforcement, validation rules, layout checks | Heavy | Pending |
 
-**Briefs location:** `briefs/OBPI-0.38.0-*.md`
+**Briefs location:** `obpis/OBPI-0.38.0-*.md`
 
 **WBS Completeness Rule:** Every row in this table has a corresponding brief file.
 
@@ -154,7 +154,7 @@ Templates are the most leveraged artifacts in a governance system. A single impr
 
 ### Docs
 
-- Decision rationale: per OBPI brief in `briefs/`
+- Decision rationale: per OBPI brief in `obpis/`
 - Governance: this ADR
 
 ---
@@ -165,7 +165,7 @@ Templates are the most leveraged artifacts in a governance system. A single impr
 |---------------|-------|-------------------|----------|-------|
 | `.gzkit/templates/` | M | All templates reflect best-of-both comparison | Brief review | |
 | `tests/` | M | Template validation tests pass | `uv run gz test` | |
-| `briefs/` | P | All 10 OBPIs have decisions documented | Brief review | |
+| `obpis/` | P | All 10 OBPIs have decisions documented | Brief review | |
 
 ### SIGN-OFF — Post-Ship Tidy
 
