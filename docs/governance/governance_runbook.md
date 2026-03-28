@@ -199,10 +199,32 @@ uv run gz lint
 
 Pipeline rules:
 
-- verify -> ceremony -> sync is mandatory
+- verify -> reviewer dispatch -> ceremony -> sync is mandatory
 - Heavy/Foundation work stays fail-closed on human attestation
 - if concurrent execution is needed before lock parity exists, stop with
   `BLOCKERS`
+
+### Reviewer agent protocol (ADR-0.23.0)
+
+After verification passes and before the ceremony, the pipeline dispatches an
+independent **reviewer agent** with fresh context to verify the OBPI delivery:
+
+1. The reviewer receives: OBPI brief, closing argument, changed files, doc files
+2. The reviewer produces a structured assessment:
+   - **promises-met** — yes/no per requirement, with evidence
+   - **docs-quality** — substantive / boilerplate / missing
+   - **closing-argument-quality** — earned / echoed / missing
+   - **verdict** — PASS / CONCERNS / FAIL
+3. The assessment is stored as `REVIEW-OBPI-X.Y.Z-NN.md` in the ADR's `briefs/` directory
+4. The Stage 4 ceremony presents the assessment to the human attestor
+
+The reviewer is read-only and does not fix problems — it identifies them.
+A FAIL verdict does not block the pipeline; the human attestor decides.
+
+```bash
+# Verify reviewer assessment artifact exists after pipeline
+ls docs/design/adr/**/briefs/REVIEW-OBPI-*.md
+```
 
 ---
 
