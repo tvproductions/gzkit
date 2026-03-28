@@ -752,5 +752,126 @@ class TestTaskEscalate(_TaskCliBase):
         self.assertEqual(data["reason"], "Complex")
 
 
+# ---------------------------------------------------------------------------
+# Status and state integration (OBPI-0.22.0-05)
+# ---------------------------------------------------------------------------
+
+
+class TestStatusTaskSummary(_TaskCliBase):
+    """@covers REQ-0.22.0-05-01, REQ-0.22.0-05-02, REQ-0.22.0-05-04, REQ-0.22.0-05-05."""
+
+    def test_status_shows_task_summary_when_tasks_exist(self) -> None:
+        """REQ-0.22.0-05-01: gz status shows task summary when tasks exist."""
+        _invoke(["task", "start", "TASK-0.1.0-01-01-01"])
+        code, out = _invoke(["status"])
+        self.assertEqual(code, 0, out)
+        self.assertIn("Tasks:", out)
+        self.assertIn("1 active", out)
+
+    def test_status_no_task_section_when_no_tasks(self) -> None:
+        """REQ-0.22.0-05-05: gz status shows no task section when no tasks exist."""
+        code, out = _invoke(["status"])
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("Tasks:", out)
+
+    def test_status_json_includes_task_summary(self) -> None:
+        """REQ-0.22.0-05-01: gz status --json includes task_summary when tasks exist."""
+        _invoke(["task", "start", "TASK-0.1.0-01-01-01"])
+        code, out = _invoke(["status", "--json"])
+        self.assertEqual(code, 0, out)
+        data = json.loads(out)
+        adr_data = data["adrs"].get("ADR-0.1.0", {})
+        self.assertIn("task_summary", adr_data)
+        ts = adr_data["task_summary"]
+        self.assertEqual(ts["total"], 1)
+        self.assertEqual(ts["in_progress"], 1)
+
+    def test_status_json_no_task_summary_when_no_tasks(self) -> None:
+        """REQ-0.22.0-05-05: gz status --json omits task_summary when no tasks."""
+        code, out = _invoke(["status", "--json"])
+        self.assertEqual(code, 0, out)
+        data = json.loads(out)
+        adr_data = data["adrs"].get("ADR-0.1.0", {})
+        self.assertNotIn("task_summary", adr_data)
+
+    def test_status_shows_escalated_count(self) -> None:
+        """REQ-0.22.0-05-04: Escalated count visible in task summary."""
+        _invoke(["task", "start", "TASK-0.1.0-01-01-01"])
+        _invoke(["task", "escalate", "TASK-0.1.0-01-01-01", "--reason", "Needs review"])
+        code, out = _invoke(["status"])
+        self.assertEqual(code, 0, out)
+        self.assertIn("Tasks:", out)
+        self.assertIn("1 escalated", out)
+
+    def test_status_shows_tracing_policy(self) -> None:
+        """REQ-0.22.0-05-05: Task tracing policy (advisory/required) is shown."""
+        _invoke(["task", "start", "TASK-0.1.0-01-01-01"])
+        code, out = _invoke(["status"])
+        self.assertEqual(code, 0, out)
+        self.assertIn("tracing:", out)
+
+    def test_status_json_includes_tracing_policy(self) -> None:
+        """REQ-0.22.0-05-05: JSON output includes tracing_policy field."""
+        _invoke(["task", "start", "TASK-0.1.0-01-01-01"])
+        code, out = _invoke(["status", "--json"])
+        self.assertEqual(code, 0, out)
+        data = json.loads(out)
+        adr_data = data["adrs"].get("ADR-0.1.0", {})
+        ts = adr_data["task_summary"]
+        self.assertIn("tracing_policy", ts)
+        self.assertIn(ts["tracing_policy"], ("advisory", "required"))
+
+
+class TestStateTaskIntegration(_TaskCliBase):
+    """@covers REQ-0.22.0-05-02, REQ-0.22.0-05-03, REQ-0.22.0-05-05."""
+
+    def test_state_json_includes_task_data(self) -> None:
+        """REQ-0.22.0-05-02: gz state --json includes task data per OBPI."""
+        _invoke(["task", "start", "TASK-0.1.0-01-01-01"])
+        code, out = _invoke(["state", "--json"])
+        self.assertEqual(code, 0, out)
+        data = json.loads(out)
+        obpi_data = data.get("OBPI-0.1.0-01", {})
+        self.assertIn("task_summary", obpi_data)
+        ts = obpi_data["task_summary"]
+        self.assertEqual(ts["total"], 1)
+        self.assertEqual(ts["in_progress"], 1)
+
+    def test_state_json_no_task_data_when_no_tasks(self) -> None:
+        """REQ-0.22.0-05-05: gz state --json omits task_summary when no tasks."""
+        code, out = _invoke(["state", "--json"])
+        self.assertEqual(code, 0, out)
+        data = json.loads(out)
+        obpi_data = data.get("OBPI-0.1.0-01", {})
+        self.assertNotIn("task_summary", obpi_data)
+
+    def test_state_json_task_summary_counts(self) -> None:
+        """REQ-0.22.0-05-03: Task summary shows correct counts by status."""
+        # Start two tasks, complete one, block another
+        _invoke(["task", "start", "TASK-0.1.0-01-01-01"])
+        _invoke(["task", "complete", "TASK-0.1.0-01-01-01"])
+        _invoke(["task", "start", "TASK-0.1.0-01-01-02"])
+        _invoke(["task", "block", "TASK-0.1.0-01-01-02", "--reason", "API"])
+        code, out = _invoke(["state", "--json"])
+        self.assertEqual(code, 0, out)
+        data = json.loads(out)
+        obpi_data = data.get("OBPI-0.1.0-01", {})
+        ts = obpi_data["task_summary"]
+        self.assertEqual(ts["total"], 2)
+        self.assertEqual(ts["completed"], 1)
+        self.assertEqual(ts["blocked"], 1)
+
+    def test_state_json_task_tracing_policy(self) -> None:
+        """REQ-0.22.0-05-05: Task tracing policy in state JSON."""
+        _invoke(["task", "start", "TASK-0.1.0-01-01-01"])
+        code, out = _invoke(["state", "--json"])
+        self.assertEqual(code, 0, out)
+        data = json.loads(out)
+        obpi_data = data.get("OBPI-0.1.0-01", {})
+        ts = obpi_data["task_summary"]
+        self.assertIn("tracing_policy", ts)
+        self.assertIn(ts["tracing_policy"], ("advisory", "required"))
+
+
 if __name__ == "__main__":
     unittest.main()

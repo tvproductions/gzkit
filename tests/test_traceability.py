@@ -484,10 +484,12 @@ class TestScanTestTree(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            records = scan_test_tree(root)
+            with self.assertLogs("gzkit.traceability", level="WARNING") as cm:
+                records = scan_test_tree(root)
 
         self.assertEqual(len(records), 1)
         self.assertEqual(records[0].target.identifier, "REQ-0.15.0-03-01")
+        self.assertTrue(any("Malformed REQ" in msg for msg in cm.output))
 
     def test_empty_directory(self):
         with tempfile.TemporaryDirectory() as tmp:
