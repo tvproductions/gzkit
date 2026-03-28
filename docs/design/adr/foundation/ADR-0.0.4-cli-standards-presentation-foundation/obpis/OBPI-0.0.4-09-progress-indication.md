@@ -126,10 +126,10 @@ uv run -m gzkit check --json 2>&1 | head   # no progress output in JSON mode
 - [x] **REQ-0.0.4-09-02:** Progress suppressed with `--quiet`
 - [x] **REQ-0.0.4-09-03:** Progress suppressed with `--json`
 - [x] **REQ-0.0.4-09-04:** Progress writes to stderr, not stdout
-- [x] **REQ-0.0.4-09-05:** `gz check 2>/dev/null` produces clean stdout with no progress leakage
-- [x] **REQ-0.0.4-09-06:** Non-interactive terminals get status lines instead of progress bars
-- [x] **REQ-0.0.4-09-07:** `uv run gz lint` passes
-- [x] **REQ-0.0.4-09-08:** `uv run gz test` passes
+- [x] **REQ-0.0.4-09-05:** [doc] `gz check 2>/dev/null` produces clean stdout with no progress leakage
+- [x] **REQ-0.0.4-09-06:** [doc] Non-interactive terminals get status lines instead of progress bars
+- [x] **REQ-0.0.4-09-07:** [doc] `uv run gz lint` passes
+- [x] **REQ-0.0.4-09-08:** [doc] `uv run gz test` passes
 
 ## Completion Checklist
 

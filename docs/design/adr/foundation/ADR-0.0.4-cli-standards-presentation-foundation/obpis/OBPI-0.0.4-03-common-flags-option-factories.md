@@ -136,8 +136,8 @@ uv run -m gzkit status --help    # verify --json from factory
 - [x] **REQ-0.0.4-03-04:** All `--json`, `--adr`, `--dry-run`, `--force`, `--table` use factory functions
 - [x] **REQ-0.0.4-03-05:** Help text from factories matches canonical wording
 - [x] **REQ-0.0.4-03-06:** No duplicate option errors when factories are called
-- [x] **REQ-0.0.4-03-07:** Unit tests exist for each factory function
-- [x] **REQ-0.0.4-03-08:** `uv run gz lint` and `uv run gz test` pass clean
+- [x] **REQ-0.0.4-03-07:** [doc] Unit tests exist for each factory function
+- [x] **REQ-0.0.4-03-08:** [doc] `uv run gz lint` and `uv run gz test` pass clean
 
 ## Completion Checklist
 

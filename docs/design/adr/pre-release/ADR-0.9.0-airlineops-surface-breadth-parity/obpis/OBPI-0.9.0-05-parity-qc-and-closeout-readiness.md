@@ -139,15 +139,15 @@ uv run gz obpi emit-receipt OBPI-0.9.0-05-parity-qc-and-closeout-readiness --eve
 
 ## Acceptance Criteria
 
-- [x] REQ-0.9.0-05-01: Given OBPI-0.9.0-01 through 04 are already complete,
+- [x] REQ-0.9.0-05-01: [doc] Given OBPI-0.9.0-01 through 04 are already complete,
       when OBPI-05 evidence is reconciled and its receipt is emitted, then
       `gz adr status ADR-0.9.0-airlineops-surface-breadth-parity --json`
       reports `obpi_summary.completed` as `5` with no `outstanding_ids`.
-- [x] REQ-0.9.0-05-02: Given ADR closeout guidance is part of the proof chain,
+- [x] REQ-0.9.0-05-02: [doc] Given ADR closeout guidance is part of the proof chain,
       when `gz closeout ADR-0.9.0-airlineops-surface-breadth-parity --dry-run`
       is reviewed, then it shows the ADR path, verification commands, and the
       canonical attestation choices for the next ADR-level step.
-- [x] REQ-0.9.0-05-03: Given parity evidence spans both `.claude/**` and `.gzkit/**`
+- [x] REQ-0.9.0-05-03: [doc] Given parity evidence spans both `.claude/**` and `.gzkit/**`
       tranches, when the parent ADR package is reviewed, then the parent checklist,
       evidence links, and this brief contain no placeholders or completion drift.
 

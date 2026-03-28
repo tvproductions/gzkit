@@ -8,10 +8,13 @@ import unittest
 
 from rich import box
 
+from gzkit.traceability import covers
+
 
 class TestStatusTables(unittest.TestCase):
     """REQ-0.0.4-08-01: Tables use Rich box-drawing, not ASCII pipes."""
 
+    @covers("REQ-0.0.4-08-01")
     def test_status_tables_use_rounded_box(self):
         """Verify status.py creates tables with ROUNDED box style."""
         import ast
@@ -40,14 +43,15 @@ class TestStatusTables(unittest.TestCase):
 
 
 class TestCheckSymbols(unittest.TestCase):
-    """REQ-0.0.4-08-02: gz check output uses ✓/❌ status symbols."""
+    """REQ-0.0.4-08-02: gz check output uses check/cross status symbols."""
 
+    @covers("REQ-0.0.4-08-02")
     def test_check_function_uses_symbols(self):
         from pathlib import Path
 
         source = Path("src/gzkit/commands/quality.py").read_text(encoding="utf-8")
-        self.assertIn("✓", source, "check() must use ✓ (U+2713) for success")
-        self.assertIn("❌", source, "check() must use ❌ (U+274C) for failure")
+        self.assertIn("\u2713", source, "check() must use U+2713 for success")
+        self.assertIn("\u274c", source, "check() must use U+274C for failure")
 
 
 class TestTidySymbols(unittest.TestCase):
@@ -57,9 +61,9 @@ class TestTidySymbols(unittest.TestCase):
         from pathlib import Path
 
         source = Path("src/gzkit/commands/tidy.py").read_text(encoding="utf-8")
-        self.assertIn("⚠", source, "tidy() must use ⚠ (U+26A0) for warnings")
-        self.assertIn("→", source, "tidy() must use → (U+2192) for flow indicators")
-        self.assertIn("✓", source, "tidy() must use ✓ (U+2713) for success")
+        self.assertIn("\u26a0", source, "tidy() must use U+26A0 for warnings")
+        self.assertIn("\u2192", source, "tidy() must use U+2192 for flow indicators")
+        self.assertIn("\u2713", source, "tidy() must use U+2713 for success")
 
 
 class TestValidateItemized(unittest.TestCase):
@@ -74,15 +78,38 @@ class TestValidateItemized(unittest.TestCase):
 
 
 class TestGatesSymbols(unittest.TestCase):
-    """REQ-0.0.4-08-05: gz gates uses ✓/❌/⚠ symbols."""
+    """REQ-0.0.4-08-05: gz gates uses check/cross/warning symbols."""
 
     def test_gates_uses_symbols(self):
         from pathlib import Path
 
         source = Path("src/gzkit/commands/gates.py").read_text(encoding="utf-8")
-        self.assertIn("✓", source, "gates must use ✓ for pass")
-        self.assertIn("❌", source, "gates must use ❌ for fail")
-        self.assertIn("⚠", source, "gates must use ⚠ for pending/warning")
+        self.assertIn("\u2713", source, "gates must use U+2713 for pass")
+        self.assertIn("\u274c", source, "gates must use U+274C for fail")
+        self.assertIn("\u26a0", source, "gates must use U+26A0 for pending/warning")
+
+
+class TestBlockersPrefix(unittest.TestCase):
+    """REQ-0.0.4-08-06: All error output uses BLOCKERS: prefix."""
+
+    @covers("REQ-0.0.4-08-06")
+    def test_parser_error_uses_blockers_prefix(self):
+        """StableArgumentParser.error() emits BLOCKERS: prefix."""
+        import io
+        import sys
+
+        from gzkit.cli.parser import StableArgumentParser
+
+        parser = StableArgumentParser(prog="gz")
+        captured = io.StringIO()
+        old_stderr = sys.stderr
+        try:
+            sys.stderr = captured
+            with self.assertRaises(SystemExit):
+                parser.error("test error")
+        finally:
+            sys.stderr = old_stderr
+        self.assertIn("BLOCKERS:", captured.getvalue())
 
 
 class TestColorConventions(unittest.TestCase):
@@ -117,6 +144,7 @@ class TestColorConventions(unittest.TestCase):
 class TestNoColorDegradation(unittest.TestCase):
     """REQ-0.0.4-08-08: NO_COLOR produces clean output."""
 
+    @covers("REQ-0.0.4-08-08")
     def test_output_formatter_respects_no_color(self):
         """OutputFormatter with NO_COLOR set produces no ANSI codes."""
         import os
@@ -139,8 +167,9 @@ class TestNoColorDegradation(unittest.TestCase):
 class TestJsonModeClean(unittest.TestCase):
     """REQ-0.0.4-08-09: JSON mode produces no symbols or color codes."""
 
+    @covers("REQ-0.0.4-08-09")
     def test_emit_status_json_no_symbols(self):
-        """emit_status in JSON mode must not include ✓/❌."""
+        """emit_status in JSON mode must not include check/cross symbols."""
         import io
         from unittest.mock import patch
 
@@ -150,8 +179,8 @@ class TestJsonModeClean(unittest.TestCase):
         with patch("sys.stdout", new_callable=io.StringIO) as mock_stdout:
             fmt.emit_status("Lint", True)
             output = mock_stdout.getvalue()
-            self.assertNotIn("✓", output)
-            self.assertNotIn("❌", output)
+            self.assertNotIn("\u2713", output)
+            self.assertNotIn("\u274c", output)
             self.assertIn('"success": true', output)
 
 

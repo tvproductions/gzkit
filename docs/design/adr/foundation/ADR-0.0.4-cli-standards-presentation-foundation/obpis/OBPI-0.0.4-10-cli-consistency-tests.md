@@ -130,13 +130,13 @@ The tests ARE the test plan -- they validate all prior OBPI deliverables. Manual
 
 ## Acceptance Criteria
 
-- [x] **REQ-0.0.4-10-01:** `tests/policy/test_cli_consistency.py` exists with recursive parser auditor that walks the full argparse tree
-- [x] **REQ-0.0.4-10-02:** No-underscore-flags test catches `--dry_run` style violations
-- [x] **REQ-0.0.4-10-03:** Description-required test fails when any parser lacks `.description`
-- [x] **REQ-0.0.4-10-04:** Help-text-required test fails when any argument/option has `None` or `SUPPRESS` help
-- [x] **REQ-0.0.4-10-05:** Epilog-required test fails when any parser lacks a non-empty `.epilog` containing "Examples" and "Exit codes"
-- [x] **REQ-0.0.4-10-06:** `tests/policy/test_import_boundaries.py` enforces command modules do not import from `core/` adapters and do not call `os.getenv()` outside allowlist
-- [x] **REQ-0.0.4-10-07:** All policy tests pass: `uv run gz test` and `uv run gz lint` clean
+- [x] **REQ-0.0.4-10-01:** [doc] `tests/policy/test_cli_consistency.py` exists with recursive parser auditor that walks the full argparse tree
+- [x] **REQ-0.0.4-10-02:** [doc] No-underscore-flags test catches `--dry_run` style violations
+- [x] **REQ-0.0.4-10-03:** [doc] Description-required test fails when any parser lacks `.description`
+- [x] **REQ-0.0.4-10-04:** [doc] Help-text-required test fails when any argument/option has `None` or `SUPPRESS` help
+- [x] **REQ-0.0.4-10-05:** [doc] Epilog-required test fails when any parser lacks a non-empty `.epilog` containing "Examples" and "Exit codes"
+- [x] **REQ-0.0.4-10-06:** [doc] `tests/policy/test_import_boundaries.py` enforces command modules do not import from `core/` adapters and do not call `os.getenv()` outside allowlist
+- [x] **REQ-0.0.4-10-07:** [doc] All policy tests pass: `uv run gz test` and `uv run gz lint` clean
 
 ## Completion Checklist
 

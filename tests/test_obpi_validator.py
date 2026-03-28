@@ -264,6 +264,7 @@ status: {status}
         )
 
     @covers("REQ-0.11.0-03-01")
+    @covers("REQ-0.11.0-03-02")
     def test_recorder_appends_receipt_to_ledger(self):
         final_rel_path = "docs/design/adr/pre-release/ADR-0.1.0/obpis/OBPI-ADR-0.1.0-01.md"
         final_path = self._create_obpi(
