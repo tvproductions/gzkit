@@ -87,6 +87,11 @@ COMMAND_DOCS: dict[str, str] = {
     "tidy": "docs/user/commands/tidy.md",
     "typecheck": "docs/user/commands/typecheck.md",
     "validate": "docs/user/commands/validate.md",
+    "task list": "docs/user/commands/task-list.md",
+    "task start": "docs/user/commands/task-start.md",
+    "task complete": "docs/user/commands/task-complete.md",
+    "task block": "docs/user/commands/task-block.md",
+    "task escalate": "docs/user/commands/task-escalate.md",
 }
 
 ADR_SEMVER_ID_RE = re.compile(r"^ADR-\d+\.\d+\.\d+(?:[.-][A-Za-z0-9][A-Za-z0-9.-]*)?$")

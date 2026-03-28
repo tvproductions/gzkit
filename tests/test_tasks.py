@@ -1,14 +1,19 @@
-"""Tests for TASK entity model and ledger events (OBPI-0.22.0-01, OBPI-0.22.0-02).
+"""Tests for TASK entity model, ledger events, and CLI (OBPI-0.22.0-01..04).
 
 Covers: identifier parsing, lifecycle states, transitions, plan-derived creation,
-and TASK ledger event serialization/parsing.
+TASK ledger event serialization/parsing, and gz task CLI smoke tests.
 """
 
 from __future__ import annotations
 
+import io
 import json
+import tempfile
 import unittest
+from contextlib import redirect_stderr, redirect_stdout
+from pathlib import Path
 
+from gzkit.cli import main as cli_main
 from gzkit.events import (
     TaskBlockedEvent,
     TaskCompletedEvent,
@@ -16,6 +21,7 @@ from gzkit.events import (
     TaskStartedEvent,
     parse_typed_event,
 )
+from gzkit.ledger import Ledger, LedgerEvent, obpi_created_event
 from gzkit.tasks import (
     TaskEntity,
     TaskId,
@@ -527,6 +533,223 @@ class TestResolveTaskChain(unittest.TestCase):
         tid = TaskId.parse("TASK-0.20.0-01-01-01")
         chain = resolve_task_chain(tid)
         self.assertEqual(set(chain.keys()), {"task", "req", "obpi", "adr"})
+
+
+# ---------------------------------------------------------------------------
+# CLI smoke tests (OBPI-0.22.0-04)
+# ---------------------------------------------------------------------------
+
+
+def _invoke(args: list[str]) -> tuple[int, str]:
+    """Invoke the gz CLI and capture exit code + output."""
+    output = io.StringIO()
+    with redirect_stdout(output), redirect_stderr(output):
+        try:
+            code = cli_main(args)
+        except SystemExit as exc:
+            raw = exc.code
+            code = raw if isinstance(raw, int) else 1
+    return 0 if code is None else int(code), output.getvalue()
+
+
+class _TaskCliBase(unittest.TestCase):
+    """Base class that sets up an isolated workspace with an OBPI in the ledger."""
+
+    def setUp(self) -> None:
+        self._tmpdir = tempfile.mkdtemp(prefix="gzkit-task-test-")
+        self._orig_cwd = Path.cwd()
+        import os
+
+        os.chdir(self._tmpdir)
+        # Initialize workspace
+        code, out = _invoke(["init"])
+        self.assertEqual(code, 0, out)
+        # Create ADR
+        code, out = _invoke(["plan", "0.1.0"])
+        self.assertEqual(code, 0, out)
+        # Seed OBPI in ledger
+        ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+        ledger.append(obpi_created_event("OBPI-0.1.0-01", "ADR-0.1.0"))
+
+    def tearDown(self) -> None:
+        import os
+        import shutil
+
+        os.chdir(self._orig_cwd)
+        shutil.rmtree(self._tmpdir, ignore_errors=True)
+
+    def _seed_task_started(self, task_id: str = "TASK-0.1.0-01-01-01") -> None:
+        """Emit a task_started event so the task is in_progress."""
+        ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+        evt = LedgerEvent(
+            event="task_started",
+            id=task_id,
+            extra={
+                "task_id": task_id,
+                "obpi_id": "OBPI-0.1.0-01",
+                "adr_id": "ADR-0.1.0",
+                "agent": "test",
+            },
+        )
+        ledger.append(evt)
+
+
+class TestTaskHelp(_TaskCliBase):
+    """@covers REQ-0.22.0-04-09."""
+
+    def test_task_help(self) -> None:
+        """REQ-0.22.0-04-09: gz task -h exits 0 with subcommand list."""
+        code, out = _invoke(["task", "--help"])
+        self.assertEqual(code, 0, out)
+        self.assertIn("list", out)
+        self.assertIn("start", out)
+        self.assertIn("complete", out)
+        self.assertIn("block", out)
+        self.assertIn("escalate", out)
+
+    def test_task_list_help(self) -> None:
+        code, out = _invoke(["task", "list", "--help"])
+        self.assertEqual(code, 0, out)
+
+    def test_task_start_help(self) -> None:
+        code, out = _invoke(["task", "start", "--help"])
+        self.assertEqual(code, 0, out)
+
+    def test_task_complete_help(self) -> None:
+        code, out = _invoke(["task", "complete", "--help"])
+        self.assertEqual(code, 0, out)
+
+    def test_task_block_help(self) -> None:
+        code, out = _invoke(["task", "block", "--help"])
+        self.assertEqual(code, 0, out)
+
+    def test_task_escalate_help(self) -> None:
+        code, out = _invoke(["task", "escalate", "--help"])
+        self.assertEqual(code, 0, out)
+
+
+class TestTaskList(_TaskCliBase):
+    """@covers REQ-0.22.0-04-01."""
+
+    def test_list_empty(self) -> None:
+        """REQ-0.22.0-04-01: gz task list shows empty when no tasks exist."""
+        code, out = _invoke(["task", "list", "OBPI-0.1.0-01"])
+        self.assertEqual(code, 0, out)
+        self.assertIn("No tasks found", out)
+
+    def test_list_shows_task_after_start(self) -> None:
+        """REQ-0.22.0-04-01: gz task list shows tasks with status after start."""
+        _invoke(["task", "start", "TASK-0.1.0-01-01-01"])
+        code, out = _invoke(["task", "list", "OBPI-0.1.0-01"])
+        self.assertEqual(code, 0, out)
+        self.assertIn("TASK-0.1.0-01-01-01", out)
+        self.assertIn("in_progress", out)
+
+    def test_list_json(self) -> None:
+        """REQ-0.22.0-04-07: gz task list --json returns valid JSON."""
+        _invoke(["task", "start", "TASK-0.1.0-01-01-01"])
+        code, out = _invoke(["task", "list", "OBPI-0.1.0-01", "--json"])
+        self.assertEqual(code, 0, out)
+        data = json.loads(out)
+        self.assertEqual(data["obpi"], "OBPI-0.1.0-01")
+        self.assertIsInstance(data["tasks"], list)
+        self.assertEqual(len(data["tasks"]), 1)
+        self.assertEqual(data["tasks"][0]["task_id"], "TASK-0.1.0-01-01-01")
+
+
+class TestTaskStart(_TaskCliBase):
+    """@covers REQ-0.22.0-04-02, REQ-0.22.0-04-03."""
+
+    def test_start_pending(self) -> None:
+        """REQ-0.22.0-04-02: gz task start transitions pending -> in_progress."""
+        code, out = _invoke(["task", "start", "TASK-0.1.0-01-01-01"])
+        self.assertEqual(code, 0, out)
+        self.assertIn("Started", out)
+
+    def test_start_json(self) -> None:
+        """REQ-0.22.0-04-07: gz task start --json returns structured output."""
+        code, out = _invoke(["task", "start", "TASK-0.1.0-01-01-01", "--json"])
+        self.assertEqual(code, 0, out)
+        data = json.loads(out)
+        self.assertEqual(data["event"], "task_started")
+        self.assertEqual(data["to_status"], "in_progress")
+
+    def test_start_resume_blocked(self) -> None:
+        """REQ-0.22.0-04-03: gz task start on blocked task resumes to in_progress."""
+        self._seed_task_started()
+        _invoke(["task", "block", "TASK-0.1.0-01-01-01", "--reason", "blocked"])
+        code, out = _invoke(["task", "start", "TASK-0.1.0-01-01-01"])
+        self.assertEqual(code, 0, out)
+        self.assertIn("Resumed", out)
+
+
+class TestTaskComplete(_TaskCliBase):
+    """@covers REQ-0.22.0-04-04, REQ-0.22.0-04-08."""
+
+    def test_complete_in_progress(self) -> None:
+        """REQ-0.22.0-04-04: gz task complete transitions in_progress -> completed."""
+        self._seed_task_started()
+        code, out = _invoke(["task", "complete", "TASK-0.1.0-01-01-01"])
+        self.assertEqual(code, 0, out)
+        self.assertIn("Completed", out)
+
+    def test_complete_pending_fails(self) -> None:
+        """REQ-0.22.0-04-08: gz task complete on pending task fails with exit 1."""
+        code, out = _invoke(["task", "complete", "TASK-0.1.0-01-01-01"])
+        self.assertNotEqual(code, 0)
+        self.assertIn("Invalid TASK transition", out)
+
+
+class TestTaskBlock(_TaskCliBase):
+    """@covers REQ-0.22.0-04-05."""
+
+    def test_block_in_progress(self) -> None:
+        """REQ-0.22.0-04-05: gz task block records reason in ledger."""
+        self._seed_task_started()
+        code, out = _invoke(["task", "block", "TASK-0.1.0-01-01-01", "--reason", "Missing API"])
+        self.assertEqual(code, 0, out)
+        self.assertIn("Blocked", out)
+
+    def test_block_pending_fails(self) -> None:
+        code, out = _invoke(["task", "block", "TASK-0.1.0-01-01-01", "--reason", "test"])
+        self.assertNotEqual(code, 0)
+        self.assertIn("Invalid TASK transition", out)
+
+    def test_block_json(self) -> None:
+        self._seed_task_started()
+        code, out = _invoke(["task", "block", "TASK-0.1.0-01-01-01", "--reason", "API", "--json"])
+        self.assertEqual(code, 0, out)
+        data = json.loads(out)
+        self.assertEqual(data["event"], "task_blocked")
+        self.assertEqual(data["reason"], "API")
+
+
+class TestTaskEscalate(_TaskCliBase):
+    """@covers REQ-0.22.0-04-06."""
+
+    def test_escalate_in_progress(self) -> None:
+        """REQ-0.22.0-04-06: gz task escalate records reason."""
+        self._seed_task_started()
+        code, out = _invoke(
+            ["task", "escalate", "TASK-0.1.0-01-01-01", "--reason", "Needs human decision"]
+        )
+        self.assertEqual(code, 0, out)
+        self.assertIn("Escalated", out)
+
+    def test_escalate_pending_fails(self) -> None:
+        code, out = _invoke(["task", "escalate", "TASK-0.1.0-01-01-01", "--reason", "test"])
+        self.assertNotEqual(code, 0)
+        self.assertIn("Invalid TASK transition", out)
+
+    def test_escalate_json(self) -> None:
+        self._seed_task_started()
+        code, out = _invoke(
+            ["task", "escalate", "TASK-0.1.0-01-01-01", "--reason", "Complex", "--json"]
+        )
+        self.assertEqual(code, 0, out)
+        data = json.loads(out)
+        self.assertEqual(data["event"], "task_escalated")
+        self.assertEqual(data["reason"], "Complex")
 
 
 if __name__ == "__main__":

@@ -244,6 +244,61 @@
       },
       "governance_relevant": false
     },
+    "task list": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "task start": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "task complete": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "task block": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
+    "task escalate": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": true
+    },
     "implement": {
       "surfaces": {
         "manpage": true,
