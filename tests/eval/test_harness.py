@@ -135,7 +135,7 @@ class TestQualityIntegration(unittest.TestCase):
     def test_run_eval_returns_quality_result(self) -> None:
         from pathlib import Path
 
-        result = run_eval(Path("."))
+        result = run_eval(Path())
         self.assertIsInstance(result, QualityResult)
         self.assertEqual(result.command, "eval harness")
         self.assertIn("surfaces scored", result.stdout)
@@ -143,7 +143,7 @@ class TestQualityIntegration(unittest.TestCase):
     def test_run_eval_has_surface_details(self) -> None:
         from pathlib import Path
 
-        result = run_eval(Path("."))
+        result = run_eval(Path())
         for surface in KNOWN_SURFACES:
             self.assertIn(surface, result.stdout)
 
