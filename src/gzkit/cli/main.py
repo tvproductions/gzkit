@@ -1698,7 +1698,6 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         handler(args)
-        return 0
     except GzkitError as exc:
         if getattr(args, "debug", False):
             import sys
@@ -1712,7 +1711,7 @@ def main(argv: list[str] | None = None) -> int:
     except KeyboardInterrupt:
         console.print("[yellow]Interrupted.[/yellow]")
         return 130
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 — CLI main entry point
         if getattr(args, "debug", False):
             import sys
             import traceback
@@ -1720,6 +1719,8 @@ def main(argv: list[str] | None = None) -> int:
             traceback.print_exc(file=sys.stderr)
         console.print(f"[red]Unexpected error: {exc}[/red]")
         return exit_code_for(exc)
+    else:
+        return 0
 
 
 if __name__ == "__main__":

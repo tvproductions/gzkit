@@ -34,6 +34,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz obpi validate`](obpi-validate.md) | Validate OBPI brief(s) for scaffold detection and completion readiness |
 | [`gz obpi reconcile`](obpi-reconcile.md) | Fail-closed reconciliation for one OBPI |
 | [`gz obpi emit-receipt`](obpi-emit-receipt.md) | Emit completed/validated receipt for one OBPI |
+| [`gz obpi withdraw`](obpi-withdraw.md) | Record an OBPI withdrawal event |
 | [`gz git-sync`](git-sync.md) | Run guarded sync ritual |
 | [`gz chores list`](chores-list.md) | List declared chores from the config registry |
 | [`gz chores plan`](chores-plan.md) | Show deterministic plan details for one chore |
@@ -70,6 +71,8 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz check-config-paths`](check-config-paths.md) | Validate configured + manifest path coherence |
 | [`gz cli audit`](cli-audit.md) | Validate CLI docs/manpage coverage |
 | [`gz agent sync control-surfaces`](agent-sync-control-surfaces.md) | Regenerate control surfaces |
+| [`gz covers`](covers.md) | Report requirement coverage from @covers annotations |
+| [`gz preflight`](preflight.md) | Detect and clean stale markers, orphan receipts, expired locks |
 | [`gz tidy`](tidy.md) | Run maintenance checks and cleanup |
 | [`gz interview`](interview.md) | Run interactive governance interviews |
 | [`gz chores advise`](chores-advise.md) | Dry-run acceptance criteria for one chore |

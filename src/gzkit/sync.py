@@ -1322,9 +1322,10 @@ def _has_manifest_vendors(project_root: Path) -> bool:
         return False
     try:
         data = json.loads(manifest_path.read_text(encoding="utf-8"))
-        return "vendors" in data
     except (json.JSONDecodeError, OSError):
         return False
+    else:
+        return "vendors" in data
 
 
 def sync_skill_mirrors(

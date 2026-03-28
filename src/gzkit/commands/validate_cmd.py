@@ -149,5 +149,4 @@ def validate(
                 console.print(f"    Field: {error.field}")
             console.print()
         raise SystemExit(1)
-    else:
-        console.print(f"[green]✓ All validations passed ({len(scopes)} scopes).[/green]")
+    console.print(f"[green]✓ All validations passed ({len(scopes)} scopes).[/green]")

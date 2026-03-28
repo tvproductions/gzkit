@@ -48,7 +48,7 @@ def main() -> None:
             pipeline_completion_reminder_message,
             pipeline_plans_dir,
         )
-    except Exception:
+    except ImportError:
         sys.exit(0)
 
     plans_dir = pipeline_plans_dir(project_root)

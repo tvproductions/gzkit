@@ -235,14 +235,14 @@
     },
     "obpi withdraw": {
       "surfaces": {
-        "manpage": false,
-        "index_entry": false,
-        "operator_runbook": false,
-        "governance_runbook": false,
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
         "docstring": true,
-        "command_docs_mapping": false
+        "command_docs_mapping": true
       },
-      "governance_relevant": false
+      "governance_relevant": true
     },
     "task list": {
       "surfaces": {
@@ -389,12 +389,12 @@
     },
     "preflight": {
       "surfaces": {
-        "manpage": false,
-        "index_entry": false,
-        "operator_runbook": false,
-        "governance_runbook": false,
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
         "docstring": true,
-        "command_docs_mapping": false
+        "command_docs_mapping": true
       },
       "governance_relevant": false
     },

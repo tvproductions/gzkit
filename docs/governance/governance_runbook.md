@@ -38,6 +38,7 @@ uv run gz plan                        # Create an ADR
 uv run gz specify                     # Create implementation brief (OBPI)
 uv run gz obpi pipeline OBPI-<X.Y.Z-NN>  # Execute OBPI pipeline
 uv run gz obpi reconcile OBPI-<X.Y.Z-NN> # Fail-closed reconciliation
+uv run gz obpi withdraw OBPI-<X.Y.Z-NN> --reason "..." # Withdraw OBPI from counts
 uv run gz obpi emit-receipt OBPI-<X.Y.Z-NN> --event completed --attestor "<name>" --evidence-json '{...}'
 uv run gz migrate-semver              # Record SemVer rename events
 uv run gz register-adrs               # Register existing ADR packages
@@ -61,6 +62,7 @@ Skill-based entry points:
 uv run gz cli audit
 uv run gz check-config-paths
 uv run gz validate --documents --surfaces
+uv run gz preflight                           # Detect stale artifacts
 uv run gz obpi validate --adr ADR-<X.Y.Z>
 uv run gz adr evaluate ADR-<X.Y.Z>
 uv run gz readiness evaluate
@@ -262,6 +264,48 @@ Rules:
 - Do not run `gz audit` before attestation.
 - Do not treat passing checks as implied attestation.
 - Record attestation terms explicitly (`Completed`, `Completed — Partial: <reason>`, `Dropped — <reason>`).
+
+---
+
+## Workflow: Task-Level Governance
+
+**When:** Managing TASK entities (fourth tier: ADR > OBPI > REQ > TASK).
+
+```bash
+uv run gz task list OBPI-<X.Y.Z-NN>              # List tasks for an OBPI
+uv run gz task start TASK-<id>                    # Start a pending task
+uv run gz task complete TASK-<id>                 # Complete an in-progress task
+uv run gz task block TASK-<id> --reason "..."     # Block with reason
+uv run gz task escalate TASK-<id> --reason "..."  # Escalate with reason
+```
+
+---
+
+## Workflow: Chores and Maintenance
+
+**When:** Running scheduled maintenance, code quality checks, or repository hygiene.
+
+```bash
+uv run gz chores list                      # List declared chores
+uv run gz chores show <slug>               # Display CHORE.md for one chore
+uv run gz chores advise <slug>             # Dry-run criteria and report status
+uv run gz chores plan <slug>               # Show plan details for one chore
+uv run gz chores run <slug>                # Execute and log one chore
+uv run gz chores audit --all               # Audit log presence for all chores
+```
+
+Maintenance gate commands:
+
+```bash
+uv run gz tidy                             # Run maintenance checks
+uv run gz format                           # Auto-format code
+uv run gz typecheck                        # Static type checks
+uv run gz drift                            # Detect spec-test-code drift
+uv run gz covers ADR-<X.Y.Z>              # Trace test-to-requirement coverage
+uv run gz skill new <name>                 # Create a new skill scaffold
+uv run gz skill list                       # List all discovered skills
+uv run gz interview                        # Run interactive governance interviews
+```
 
 ---
 

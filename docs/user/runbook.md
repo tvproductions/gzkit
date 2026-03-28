@@ -333,6 +333,8 @@ for full details and migration guidance.
 - `uv run gz cli audit`
 - `uv run gz check-config-paths`
 - `uv run gz drift` (detect spec-test-code governance drift)
+- `uv run gz preflight` (detect stale markers and orphan receipts)
+- `uv run gz preflight --apply` (clean up stale artifacts)
 - `uv run gz check` (all quality checks + advisory drift)
 - `uv run gz check --json` (machine-readable output with advisory drift section)
 - `uv run gz adr audit-check ADR-<X.Y.Z>`
@@ -346,6 +348,7 @@ for full details and migration guidance.
 - `uv run gz readiness evaluate`
 - `uv run gz parity check`
 - `uv run gz obpi status OBPI-<X.Y.Z-NN>`
+- `uv run gz obpi withdraw OBPI-<X.Y.Z-NN> --reason "..."` (withdraw an OBPI from counts)
 - `uv run gz agent sync control-surfaces`
 
 ---
@@ -375,6 +378,19 @@ uv run gz chores advise <slug>     # Dry-run criteria and report status
 uv run gz chores plan <slug>       # Show plan details for one chore
 uv run gz chores run <slug>        # Execute and log one chore
 uv run gz chores audit --all       # Audit log presence for all chores
+```
+
+---
+
+## Task Commands
+
+```bash
+uv run gz task list OBPI-<X.Y.Z-NN>       # List tasks for an OBPI
+uv run gz task list OBPI-<X.Y.Z-NN> --json # JSON output
+uv run gz task start TASK-<id>             # Start a pending task
+uv run gz task complete TASK-<id>          # Complete an in-progress task
+uv run gz task block TASK-<id> --reason "..." # Block with reason
+uv run gz task escalate TASK-<id> --reason "..." # Escalate with reason
 ```
 
 ---

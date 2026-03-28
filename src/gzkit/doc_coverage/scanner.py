@@ -223,11 +223,12 @@ def _resolve_handler_docstring(handler_name: str, main_source: str) -> str | Non
     try:
         mod = importlib.import_module(module_path)
         fn = getattr(mod, handler_name, None)
+    except (ImportError, AttributeError):
+        return None
+    else:
         if fn is None:
             return None
         return fn.__doc__
-    except (ImportError, AttributeError):
-        return None
 
 
 def _check_runbook(path: Path, command_name: str) -> tuple[bool, str]:
