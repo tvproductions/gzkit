@@ -95,7 +95,7 @@ Add a deprecation warning to `gates_cmd()` in `src/gzkit/cli.py` so that when op
 - [x] REQ-0.19.0-08-01: Given an operator invokes `gz gates`, when the command starts, then a deprecation warning containing "deprecated" and "gz closeout" is printed to stderr before gate execution begins.
 - [x] REQ-0.19.0-08-02: Given an operator invokes `gz gates --gate 2`, when the command completes, then Gate 2 executes normally and produces the same exit code and ledger events as before the deprecation.
 - [x] REQ-0.19.0-08-03: Given `closeout_cmd()` calls `_run_gate_1` through `_run_gate_5` internally, when closeout runs, then no deprecation warning is emitted (only `gates_cmd` entry point triggers the warning).
-- [x] REQ-0.19.0-08-04: Given `docs/user/commands/gates.md`, when an operator reads the documentation, then a deprecation notice is visible at the top stating the command is subsumed by `gz closeout`.
+- [x] REQ-0.19.0-08-04: [doc] Given `docs/user/commands/gates.md`, when an operator reads the documentation, then a deprecation notice is visible at the top stating the command is subsumed by `gz closeout`.
 
 ## Verification
 

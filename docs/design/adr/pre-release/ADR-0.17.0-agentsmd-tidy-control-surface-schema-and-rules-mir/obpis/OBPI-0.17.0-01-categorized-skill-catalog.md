@@ -120,11 +120,11 @@ print('PASS: All skills categorized')
 
 ## Acceptance Criteria
 
-- [x] REQ-0.17.0-01-01: AGENTS.md contains "### Available Skills" section with categorized subsections
-- [x] REQ-0.17.0-01-02: All 51 canonical skills in `.gzkit/skills/` appear in exactly one category
-- [x] REQ-0.17.0-01-03: Zero skills in catalog that don't exist on disk
-- [x] REQ-0.17.0-01-04: Categories use h4 headings under h3 "Available Skills"
-- [x] REQ-0.17.0-01-05: Skills Protocol section defines discovery workflow
+- [x] REQ-0.17.0-01-01: [doc] AGENTS.md contains "### Available Skills" section with categorized subsections
+- [x] REQ-0.17.0-01-02: [doc] All 51 canonical skills in `.gzkit/skills/` appear in exactly one category
+- [x] REQ-0.17.0-01-03: [doc] Zero skills in catalog that don't exist on disk
+- [x] REQ-0.17.0-01-04: [doc] Categories use h4 headings under h3 "Available Skills"
+- [x] REQ-0.17.0-01-05: [doc] Skills Protocol section defines discovery workflow
 
 ## Completion Checklist
 

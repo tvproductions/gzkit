@@ -157,7 +157,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - [x] REQ-0.14.0-02-01: Given a shared subtree rule, when gzkit generates control surfaces, then a nested `AGENTS.md` can be emitted for that subtree without duplicating unrelated root rules.
 - [x] REQ-0.14.0-02-02: Given a Claude-only path rule, when gzkit generates Claude surfaces, then the rule is emitted under `.claude/rules/` instead of being hidden behind generic hook routing.
 - [x] REQ-0.14.0-02-03: Given a repository with no path-specific rules, when surfaces are generated, then no empty or dead rule directories are created.
-- [x] REQ-0.14.0-02-04: Given legacy `.github/instructions` inputs, when migration guidance runs, then shared rules are directed toward nested `AGENTS.md` and Claude-only rules toward `.claude/rules/` without assuming they are equivalent.
+- [x] REQ-0.14.0-02-04: [doc] Given legacy `.github/instructions` inputs, when migration guidance runs, then shared rules are directed toward nested `AGENTS.md` and Claude-only rules toward `.claude/rules/` without assuming they are equivalent.
 
 ## Completion Checklist
 

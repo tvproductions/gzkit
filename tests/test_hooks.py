@@ -572,6 +572,7 @@ class TestPipelineRouterHook(unittest.TestCase):
         receipt_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
         return receipt_path
 
+    @covers("REQ-0.12.0-03-01")
     def test_allows_silently_when_receipt_is_missing(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
@@ -625,6 +626,7 @@ class TestPipelineRouterHook(unittest.TestCase):
             self.assertEqual(result.stdout, "")
             self.assertEqual(result.stderr, "")
 
+    @covers("REQ-0.12.0-03-02")
     def test_routes_when_receipt_verdict_is_pass(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
@@ -726,6 +728,7 @@ class TestPipelineGateHook(unittest.TestCase):
             self.assertEqual(result.stdout, "")
             self.assertEqual(result.stderr, "")
 
+    @covers("REQ-0.12.0-04-01")
     def test_blocks_when_pass_receipt_exists_without_marker(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
@@ -743,6 +746,7 @@ class TestPipelineGateHook(unittest.TestCase):
             self.assertIn("uv run gz obpi pipeline OBPI-0.12.0-04", result.stderr)
             self.assertIn("--from=verify", result.stderr)
 
+    @covers("REQ-0.12.0-04-02")
     def test_allows_when_per_obpi_marker_matches(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
@@ -989,6 +993,7 @@ class TestPipelineCompletionReminderHook(unittest.TestCase):
             self.assertIn("OBPI-0.12.0-05", result.stderr)
             self.assertIn("runtime-managed", result.stderr)
 
+    @covers("REQ-0.12.0-05-01")
     def test_emits_reminder_when_brief_is_incomplete(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
@@ -1009,6 +1014,7 @@ class TestPipelineCompletionReminderHook(unittest.TestCase):
             self.assertIn("uv run gz obpi pipeline OBPI-0.12.0-05 --from=verify", result.stderr)
             self.assertIn("Do not clear the pipeline marker by hand", result.stderr)
 
+    @covers("REQ-0.12.0-05-02")
     def test_emits_reminder_with_richer_marker_payload(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
