@@ -145,8 +145,8 @@ print('Core boundary clean')
 - [x] REQ-0.0.3-02-03: `src/gzkit/core/validation_rules.py` contains pure validation logic
 - [x] REQ-0.0.3-02-04: `src/gzkit/core/models.py` contains domain models
 - [x] REQ-0.0.3-02-05: Original modules are thin re-export shims
-- [x] REQ-0.0.3-02-06: All existing tests pass without modification
-- [x] REQ-0.0.3-02-07: `core/` has no forbidden imports (cli, commands, adapters, rich, argparse)
+- [x] REQ-0.0.3-02-06: [doc] All existing tests pass without modification
+- [x] REQ-0.0.3-02-07: [doc] `core/` has no forbidden imports (cli, commands, adapters, rich, argparse)
 - [x] REQ-0.0.3-02-08: New unit tests cover extracted core modules
 
 ## Completion Checklist

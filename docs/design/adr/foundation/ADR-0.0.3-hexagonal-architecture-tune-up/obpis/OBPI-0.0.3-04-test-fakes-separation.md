@@ -125,9 +125,9 @@ uv run -m unittest tests.test_fakes -v
 - [x] REQ-0.0.3-04-02: `tests/fakes/process.py` contains InMemoryProcessRunner satisfying ProcessRunner Protocol
 - [x] REQ-0.0.3-04-03: `tests/fakes/ledger.py` contains InMemoryLedgerStore satisfying LedgerStore Protocol
 - [x] REQ-0.0.3-04-04: `tests/fakes/config.py` contains InMemoryConfigStore satisfying ConfigStore Protocol
-- [x] REQ-0.0.3-04-05: `tests/unit/`, `tests/integration/`, `tests/policy/` directories exist with `__init__.py`
+- [x] REQ-0.0.3-04-05: [doc] `tests/unit/`, `tests/integration/`, `tests/policy/` directories exist with `__init__.py`
 - [x] REQ-0.0.3-04-06: Fakes import only from `gzkit.ports` and stdlib
-- [x] REQ-0.0.3-04-07: All existing tests pass unchanged
+- [x] REQ-0.0.3-04-07: [doc] All existing tests pass unchanged
 - [x] REQ-0.0.3-04-08: Protocol conformance tests verify each fake
 
 ## Completion Checklist
