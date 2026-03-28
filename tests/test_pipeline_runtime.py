@@ -17,9 +17,11 @@ from gzkit.pipeline_runtime import (
     pipeline_resume_command,
     pipeline_router_message,
 )
+from gzkit.traceability import covers
 
 
 class TestPipelineRuntime(unittest.TestCase):
+    @covers("REQ-0.13.0-01-01")
     def test_load_plan_audit_receipt_without_target_obpi_accepts_pass_receipt(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             plans_dir = Path(tmpdir)
@@ -41,6 +43,7 @@ class TestPipelineRuntime(unittest.TestCase):
             assert receipt is not None
             self.assertEqual(receipt["obpi_id"], "OBPI-0.13.0-05-runtime-engine-integration")
 
+    @covers("REQ-0.13.0-02-01")
     def test_find_active_pipeline_marker_prefers_per_obpi_marker(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             plans_dir = Path(tmpdir)
@@ -58,6 +61,7 @@ class TestPipelineRuntime(unittest.TestCase):
             assert marker is not None
             self.assertEqual(marker["obpi_id"], "OBPI-0.13.0-05")
 
+    @covers("REQ-0.13.0-02-03")
     def test_find_active_pipeline_marker_skips_corrupted_marker(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             plans_dir = Path(tmpdir)
@@ -96,6 +100,7 @@ class TestPipelineRuntime(unittest.TestCase):
             assert marker is not None
             self.assertEqual(marker["obpi_id"], "OBPI-0.13.0-04")
 
+    @covers("REQ-0.13.0-01-04")
     def test_extract_brief_status_reads_frontmatter_and_body_variants(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             brief_path = Path(tmpdir) / "OBPI-0.13.0-05.md"
@@ -115,6 +120,7 @@ class TestPipelineRuntime(unittest.TestCase):
 
             self.assertEqual(extract_brief_status(brief_path), "Draft")
 
+    @covers("REQ-0.13.0-03-01")
     def test_pipeline_resume_command_uses_resume_point_when_next_command_missing(self) -> None:
         marker = {
             "obpi_id": "OBPI-0.13.0-05-runtime-engine-integration",
@@ -128,6 +134,7 @@ class TestPipelineRuntime(unittest.TestCase):
             pipeline_command("OBPI-0.13.0-05-runtime-engine-integration", "verify"),
         )
 
+    @covers("REQ-0.13.0-05-02")
     def test_pipeline_completion_reminder_uses_runtime_managed_guidance(self) -> None:
         marker = {
             "obpi_id": "OBPI-0.13.0-05-runtime-engine-integration",
@@ -151,6 +158,7 @@ class TestPipelineRuntime(unittest.TestCase):
         )
         self.assertIn("Do not clear the pipeline marker by hand", message)
 
+    @covers("REQ-0.13.0-05-01")
     def test_pipeline_router_and_gate_messages_use_runtime_command(self) -> None:
         self.assertIn(
             "uv run gz obpi pipeline OBPI-0.13.0-05-runtime-engine-integration",
@@ -163,6 +171,7 @@ class TestPipelineRuntime(unittest.TestCase):
 
     # --- Issue #20: Per-OBPI receipts ---
 
+    @covers("REQ-0.13.0-02-02")
     def test_load_receipt_prefers_per_obpi_receipt_over_legacy(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             plans_dir = Path(tmpdir)
@@ -217,6 +226,7 @@ class TestPipelineRuntime(unittest.TestCase):
 
     # --- Issue #20: Stale marker detection ---
 
+    @covers("REQ-0.13.0-03-03")
     def test_find_stale_markers_detects_old_markers(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             plans_dir = Path(tmpdir)
@@ -249,6 +259,7 @@ class TestPipelineRuntime(unittest.TestCase):
 
             self.assertEqual(len(stale), 0)
 
+    @covers("REQ-0.13.0-01-02")
     def test_clear_stale_markers_removes_old_markers(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             plans_dir = Path(tmpdir)

@@ -34,6 +34,7 @@ from gzkit.roles import (
     ReviewResult,
     ReviewVerdict,
 )
+from gzkit.traceability import covers  # noqa: F401
 
 # ---------------------------------------------------------------------------
 # Helper factories
@@ -102,6 +103,7 @@ class TestShouldDispatchReview(unittest.TestCase):
         ("NEEDS_CONTEXT does not trigger review", HandoffStatus.NEEDS_CONTEXT, False),
     ]
 
+    @covers("REQ-0.14.0-04-01")
     def test_dispatch_review_routing(self):
         for label, status, expected in self.CASES:
             with self.subTest(label):

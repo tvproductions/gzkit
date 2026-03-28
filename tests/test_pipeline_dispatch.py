@@ -30,6 +30,7 @@ from gzkit.roles import (
     HandoffResult,
     HandoffStatus,
 )
+from gzkit.traceability import covers
 
 # ---------------------------------------------------------------------------
 # Task complexity classification
@@ -49,6 +50,7 @@ class TestClassifyTaskComplexity(unittest.TestCase):
         ("10 files", [f"f{i}.py" for i in range(10)], TaskComplexity.COMPLEX),
     ]
 
+    @covers("REQ-0.14.0-06-01")
     def test_complexity_levels(self):
         for label, paths, expected in self.CASES:
             with self.subTest(label):
@@ -70,6 +72,7 @@ class TestSelectDispatchModel(unittest.TestCase):
             self.assertIn(model, {"haiku", "sonnet", "opus"})
             self.assertEqual(model, DISPATCH_MODEL_MAP[complexity])
 
+    @covers("REQ-0.14.0-06-02")
     def test_simple_routes_to_haiku(self):
         self.assertEqual(select_dispatch_model(TaskComplexity.SIMPLE), "haiku")
 
@@ -88,6 +91,7 @@ class TestSelectDispatchModel(unittest.TestCase):
 class TestExtractPlanTasks(unittest.TestCase):
     """Test plan markdown parsing into task dicts."""
 
+    @covers("REQ-0.14.0-06-03")
     def test_heading_format(self):
         plan = "## Task 1: Add the model\n## Task 2: Write tests\n"
         tasks = extract_plan_tasks(plan)
@@ -137,6 +141,7 @@ class TestComposeImplementerPrompt(unittest.TestCase):
             model=overrides.get("model", "haiku"),  # type: ignore[arg-type]
         )
 
+    @covers("REQ-0.14.0-06-04")
     def test_contains_task_heading(self):
         task = self._make_task()
         prompt = compose_implementer_prompt(task, [])
