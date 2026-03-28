@@ -135,8 +135,8 @@ uv run -m unittest tests.test_help_text_completeness -v
 - [x] **REQ-0.0.4-04-02:** Recursive parser audit finds zero commands without `description=` on their parser
 - [x] **REQ-0.0.4-04-03:** No help text contains `TODO`, `FIXME`, `XXX`, or `print(`
 - [x] **REQ-0.0.4-04-04:** All help text lines are under 80 characters
-- [x] **REQ-0.0.4-04-05:** `uv run gz lint` passes clean
-- [x] **REQ-0.0.4-04-06:** `uv run gz test` passes clean
+- [x] **REQ-0.0.4-04-05:** [doc] `uv run gz lint` passes clean
+- [x] **REQ-0.0.4-04-06:** [doc] `uv run gz test` passes clean
 
 ## Completion Checklist
 

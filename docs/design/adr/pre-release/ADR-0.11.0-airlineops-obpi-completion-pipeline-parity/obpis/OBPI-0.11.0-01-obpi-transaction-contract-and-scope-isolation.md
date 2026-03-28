@@ -115,8 +115,8 @@ uv run -m behave features/
 ## Acceptance Criteria
 
 - [x] REQ-0.11.0-01-01: OBPI transaction scope is defined as an explicit allowlist contract.
-- [x] REQ-0.11.0-01-02: Changed-files audit and spine-touch serialization rules are documented as fail-closed requirements.
-- [x] REQ-0.11.0-01-03: Parallel OBPI execution doctrine is explicit about disjoint allowlists and blocker conditions.
+- [x] REQ-0.11.0-01-02: [doc] Changed-files audit and spine-touch serialization rules are documented as fail-closed requirements.
+- [x] REQ-0.11.0-01-03: [doc] Parallel OBPI execution doctrine is explicit about disjoint allowlists and blocker conditions.
 
 ## Completion Checklist
 

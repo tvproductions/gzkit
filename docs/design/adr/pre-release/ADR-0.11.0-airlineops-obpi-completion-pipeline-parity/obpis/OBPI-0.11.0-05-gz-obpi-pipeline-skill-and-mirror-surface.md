@@ -120,9 +120,9 @@ uv run -m behave features/
 
 ## Acceptance Criteria
 
-- [x] REQ-0.11.0-05-01: `.gzkit/skills/gz-obpi-pipeline/SKILL.md` exists and defines the staged OBPI execution flow.
-- [x] REQ-0.11.0-05-02: Mirror skill surfaces are synchronized and reference the same staged pipeline contract.
-- [x] REQ-0.11.0-05-03: The skill preserves evidence presentation, attestation, and sync stages as first-class steps.
+- [x] REQ-0.11.0-05-01: [doc] `.gzkit/skills/gz-obpi-pipeline/SKILL.md` exists and defines the staged OBPI execution flow.
+- [x] REQ-0.11.0-05-02: [doc] Mirror skill surfaces are synchronized and reference the same staged pipeline contract.
+- [x] REQ-0.11.0-05-03: [doc] The skill preserves evidence presentation, attestation, and sync stages as first-class steps.
 
 ## Completion Checklist
 

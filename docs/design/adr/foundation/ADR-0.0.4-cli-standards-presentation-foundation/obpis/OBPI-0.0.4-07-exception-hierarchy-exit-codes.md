@@ -131,11 +131,11 @@ uv run -m unittest tests.unit.test_exit_codes -v
 - [x] **REQ-0.0.4-07-02:** `exit_code_for()` mapping function exists in `src/gzkit/cli/helpers/exit_codes.py`
 - [x] **REQ-0.0.4-07-03:** All command handlers use the CLI boundary pattern (try/except GzkitError + except Exception at boundary only)
 - [x] **REQ-0.0.4-07-04:** `--debug` flag enables tracebacks on unexpected errors (stderr)
-- [x] **REQ-0.0.4-07-05:** No bare `except Exception:` outside CLI boundary
-- [x] **REQ-0.0.4-07-06:** Exit codes documented in all epilogs (via OBPI-05 integration)
+- [x] **REQ-0.0.4-07-05:** [doc] No bare `except Exception:` outside CLI boundary
+- [x] **REQ-0.0.4-07-06:** [doc] Exit codes documented in all epilogs (via OBPI-05 integration)
 - [x] **REQ-0.0.4-07-07:** Unit tests for exception hierarchy and exit code mapping pass
-- [x] **REQ-0.0.4-07-08:** `uv run gz lint` passes
-- [x] **REQ-0.0.4-07-09:** `uv run gz test` passes
+- [x] **REQ-0.0.4-07-08:** [doc] `uv run gz lint` passes
+- [x] **REQ-0.0.4-07-09:** [doc] `uv run gz test` passes
 
 ## Completion Checklist
 

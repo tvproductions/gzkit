@@ -119,9 +119,9 @@ uv run -m behave features/
 
 ## Acceptance Criteria
 
-- [x] REQ-0.11.0-06-01: Templates express the faithful transaction and evidence rules consistently with runtime surfaces.
-- [x] REQ-0.11.0-06-02: Operator docs describe one coherent OBPI completion and closeout flow.
-- [x] REQ-0.11.0-06-03: Migration notes eliminate contradictory guidance across 0.7.0, 0.10.0, and 0.11.0 surfaces.
+- [x] REQ-0.11.0-06-01: [doc] Templates express the faithful transaction and evidence rules consistently with runtime surfaces.
+- [x] REQ-0.11.0-06-02: [doc] Operator docs describe one coherent OBPI completion and closeout flow.
+- [x] REQ-0.11.0-06-03: [doc] Migration notes eliminate contradictory guidance across 0.7.0, 0.10.0, and 0.11.0 surfaces.
 
 ## Completion Checklist
 

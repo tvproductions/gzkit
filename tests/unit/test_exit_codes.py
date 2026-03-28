@@ -21,6 +21,7 @@ from gzkit.core.exceptions import (
     TransientError,
     ValidationError,
 )
+from gzkit.traceability import covers
 
 
 class TestExitCodeFor(unittest.TestCase):
@@ -122,6 +123,7 @@ class TestCliBoundaryPattern(unittest.TestCase):
             result = main([])
             self.assertEqual(result, 1)
 
+    @covers("REQ-0.0.4-07-04")
     def test_debug_flag_prints_traceback_to_stderr(self):
         """REQ-0.0.4-07-04 / REQ-0.0.4-07-08: --debug prints traceback to stderr."""
         import io

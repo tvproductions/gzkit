@@ -124,13 +124,13 @@ diff <(uv run gz --help) /tmp/gz_help_before.txt
 
 ## Acceptance Criteria
 
-- [x] **REQ-0.0.4-01-01:** `src/gzkit/cli/` package exists with `main.py`, `commands/`, `helpers/`
-- [x] **REQ-0.0.4-01-02:** No file in `cli/` exceeds 600 lines
-- [x] **REQ-0.0.4-01-03:** Old `cli.py` removed or reduced to import delegation
-- [x] **REQ-0.0.4-01-04:** `uv run gz --help` produces identical output
-- [x] **REQ-0.0.4-01-05:** `uv run gz lint` passes
-- [x] **REQ-0.0.4-01-06:** `uv run gz test` passes
-- [x] **REQ-0.0.4-01-07:** `uv run gz typecheck` passes
+- [x] **REQ-0.0.4-01-01:** [doc] `src/gzkit/cli/` package exists with `main.py`, `commands/`, `helpers/`
+- [x] **REQ-0.0.4-01-02:** [doc] No file in `cli/` exceeds 600 lines
+- [x] **REQ-0.0.4-01-03:** [doc] Old `cli.py` removed or reduced to import delegation
+- [x] **REQ-0.0.4-01-04:** [doc] `uv run gz --help` produces identical output
+- [x] **REQ-0.0.4-01-05:** [doc] `uv run gz lint` passes
+- [x] **REQ-0.0.4-01-06:** [doc] `uv run gz test` passes
+- [x] **REQ-0.0.4-01-07:** [doc] `uv run gz typecheck` passes
 
 ## Completion Checklist
 

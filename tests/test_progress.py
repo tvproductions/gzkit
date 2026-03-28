@@ -23,6 +23,7 @@ class TestProgressSpinner(unittest.TestCase):
             pass  # Body executes successfully
 
     @covers("REQ-0.0.3-08-03")
+    @covers("REQ-0.0.4-09-02")
     def test_spinner_suppressed_in_quiet_mode(self) -> None:
         """Spinner is suppressed (no output) in quiet mode."""
         formatter = OutputFormatter(mode="quiet")
@@ -33,6 +34,7 @@ class TestProgressSpinner(unittest.TestCase):
         self.assertEqual(stderr_capture.getvalue(), "")
 
     @covers("REQ-0.0.3-08-04")
+    @covers("REQ-0.0.4-09-03")
     def test_spinner_suppressed_in_json_mode(self) -> None:
         """Spinner is suppressed (no output) in json mode."""
         formatter = OutputFormatter(mode="json")
@@ -56,6 +58,7 @@ class TestProgressSpinner(unittest.TestCase):
 class TestProgressPhase(unittest.TestCase):
     """Tests for progress_phase context manager."""
 
+    @covers("REQ-0.0.4-09-01")
     def test_phase_runs_in_human_mode(self) -> None:
         """Phase executes without error in human mode."""
         formatter = OutputFormatter(mode="human")
@@ -141,6 +144,7 @@ class TestProgressBar(unittest.TestCase):
     """Tests for progress_bar context manager."""
 
     @covers("REQ-0.0.3-08-06")
+    @covers("REQ-0.0.4-09-04")
     def test_bar_runs_in_human_mode(self) -> None:
         """Progress bar executes without error in human mode."""
         formatter = OutputFormatter(mode="human")

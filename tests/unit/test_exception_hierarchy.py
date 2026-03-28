@@ -17,11 +17,13 @@ from gzkit.core.exceptions import (
     TransientError,
     ValidationError,
 )
+from gzkit.traceability import covers
 
 
 class TestExceptionHierarchy(unittest.TestCase):
     """REQ-0.0.4-07-01: Exception hierarchy with typed exit codes."""
 
+    @covers("REQ-0.0.4-07-01")
     def test_gzkit_error_is_base(self):
         """GzkitError is the canonical base for all domain errors."""
         self.assertTrue(issubclass(GzkitError, Exception))
@@ -31,6 +33,7 @@ class TestExceptionHierarchy(unittest.TestCase):
         """GzError is a backward-compatibility alias for GzkitError."""
         self.assertIs(GzError, GzkitError)
 
+    @covers("REQ-0.0.4-07-01")
     def test_validation_error(self):
         self.assertTrue(issubclass(ValidationError, GzkitError))
         self.assertEqual(ValidationError("bad input").exit_code, 1)
@@ -47,10 +50,12 @@ class TestExceptionHierarchy(unittest.TestCase):
         self.assertTrue(issubclass(OperatorError, GzkitError))
         self.assertEqual(OperatorError("config").exit_code, 1)
 
+    @covers("REQ-0.0.4-07-01")
     def test_transient_error(self):
         self.assertTrue(issubclass(TransientError, GzkitError))
         self.assertEqual(TransientError("timeout").exit_code, 2)
 
+    @covers("REQ-0.0.4-07-01")
     def test_policy_breach_error(self):
         self.assertTrue(issubclass(PolicyBreachError, GzkitError))
         self.assertEqual(PolicyBreachError("breach").exit_code, 3)
@@ -92,12 +97,14 @@ class TestExitCodeMap(unittest.TestCase):
 class TestGzCliErrorIntegration(unittest.TestCase):
     """REQ-0.0.4-07-07: GzCliError inherits from GzkitError for backward compat."""
 
+    @covers("REQ-0.0.4-07-07")
     def test_gz_cli_error_is_gzkit_error(self):
         from gzkit.commands.common import GzCliError
 
         self.assertTrue(issubclass(GzCliError, GzkitError))
         self.assertEqual(GzCliError("user error").exit_code, 1)
 
+    @covers("REQ-0.0.4-07-07")
     def test_caught_by_gzkit_error_handler(self):
         from gzkit.commands.common import GzCliError
 
