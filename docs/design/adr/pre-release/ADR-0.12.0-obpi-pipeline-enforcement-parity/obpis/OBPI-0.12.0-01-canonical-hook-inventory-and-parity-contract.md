@@ -182,7 +182,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - [x] REQ-0.12.0-01-02: Given the promoted ADR package, when the hidden
       `gz-plan-audit` dependency is identified, then the ADR is amended to add
       `OBPI-0.12.0-07` without breaking 1:1 checklist-to-brief synchronization.
-- [x] REQ-0.12.0-01-03: Given prior docs that generically deferred plan-audit
+- [x] REQ-0.12.0-01-03: [doc] Given prior docs that generically deferred plan-audit
       and pipeline parity, when the successor contract lands, then those docs
       point to `ADR-0.12.0` instead of leaving the follow-up unscoped.
 

@@ -176,7 +176,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - [x] REQ-0.12.0-04-02: The gate allows when the per-OBPI marker or the legacy
       marker matches the PASS receipt OBPI, and treats corrupt or mismatched
       markers as missing.
-- [x] REQ-0.12.0-04-03: Generated docs and settings remain truthful: the hook
+- [x] REQ-0.12.0-04-03: [doc] Generated docs and settings remain truthful: the hook
       is ported and documented, but still inactive in `.claude/settings.json`.
 
 ## Completion Checklist

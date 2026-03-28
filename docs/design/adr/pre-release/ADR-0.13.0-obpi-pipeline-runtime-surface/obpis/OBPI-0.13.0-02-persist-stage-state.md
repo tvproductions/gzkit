@@ -167,7 +167,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - [x] REQ-0.13.0-02-01: `gz obpi pipeline <OBPI-ID>` writes enriched per-OBPI and legacy marker files with `entry=full`, `current_stage=implement`, and the parent/lane/receipt metadata.
 - [x] REQ-0.13.0-02-02: `gz obpi pipeline <OBPI-ID> --from=verify` and `--from=ceremony` rewrite the active marker payload with the stage-specific `entry` and `current_stage` values before cleanup.
 - [x] REQ-0.13.0-02-03: Existing hook consumers continue to accept the richer marker payload without behavior regressions when they only depend on `obpi_id`.
-- [x] REQ-0.13.0-02-04: User and governance docs describe the richer marker payload as active pipeline state and explicitly defer structured outputs to `OBPI-0.13.0-03`.
+- [x] REQ-0.13.0-02-04: [doc] User and governance docs describe the richer marker payload as active pipeline state and explicitly defer structured outputs to `OBPI-0.13.0-03`.
 
 ## Completion Checklist
 

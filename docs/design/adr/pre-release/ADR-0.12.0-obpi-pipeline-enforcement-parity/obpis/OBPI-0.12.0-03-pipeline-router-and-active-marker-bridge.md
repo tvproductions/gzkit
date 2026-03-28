@@ -177,7 +177,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
       for PASS receipts that name an OBPI.
 - [x] REQ-0.12.0-03-02: Missing, corrupt, or non-PASS receipts leave the router
       silent and do not mutate `.claude/settings.json`.
-- [x] REQ-0.12.0-03-03: The canonical pipeline and plan-audit skill surfaces
+- [x] REQ-0.12.0-03-03: [doc] The canonical pipeline and plan-audit skill surfaces
       document the per-OBPI plus legacy compatibility marker contract
       truthfully, and generated mirrors/surfaces stay aligned.
 

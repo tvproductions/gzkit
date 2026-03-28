@@ -146,7 +146,7 @@ uv run -m behave features/
 - [x] REQ-0.13.0-03-02: Verify success writes marker payloads that expose the follow-up `--from=ceremony` command and `resume_point=ceremony` before cleanup.
 - [x] REQ-0.13.0-03-03: Verify failure leaves markers in place with structured blocker strings, `next_command=null`, and `resume_point=verify`.
 - [x] REQ-0.13.0-03-04: Ceremony launch writes marker payloads that expose the required human action and guarded-sync next command.
-- [x] REQ-0.13.0-03-05: Existing hook consumers remain compatible when markers include the new stage-output fields.
+- [x] REQ-0.13.0-03-05: [doc] Existing hook consumers remain compatible when markers include the new stage-output fields.
 
 ## Completion Checklist
 

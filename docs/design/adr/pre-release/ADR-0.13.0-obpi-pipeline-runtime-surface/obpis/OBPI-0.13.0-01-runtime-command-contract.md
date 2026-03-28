@@ -156,7 +156,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - [x] REQ-0.13.0-01-02: `gz obpi pipeline <OBPI-ID> --from=verify` executes the OBPI verification command block plus Heavy-lane docs/BDD checks and clears markers on success.
 - [x] REQ-0.13.0-01-03: `gz obpi pipeline <OBPI-ID> --from=ceremony` prints the ceremony/accounting next steps and clears markers on exit.
 - [x] REQ-0.13.0-01-04: The command emits `BLOCKERS:` and exits non-zero for completed briefs, matching `FAIL` receipts, conflicting active markers, and failing verification commands.
-- [x] REQ-0.13.0-01-05: Command docs, workflow docs, runbook, and wrapper skill all point to `uv run gz obpi pipeline` as the canonical runtime launch surface.
+- [x] REQ-0.13.0-01-05: [doc] Command docs, workflow docs, runbook, and wrapper skill all point to `uv run gz obpi pipeline` as the canonical runtime launch surface.
 
 ## Completion Checklist
 
