@@ -118,6 +118,7 @@ class TestInMemoryFileStore(unittest.TestCase):
 
     # --- round-trip ---
 
+    @covers("REQ-0.0.3-04-06")
     def test_write_then_read_round_trip(self) -> None:
         self.store.write_text(self.path, "hello world")
         result = self.store.read_text(self.path)
