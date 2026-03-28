@@ -3,12 +3,13 @@
 Provides unified interface to linting, formatting, testing, and type checking.
 """
 
+import ast
 import re
 import subprocess
 from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class QualityResult(BaseModel):
@@ -444,3 +445,173 @@ def run_eval(project_root: Path) -> QualityResult:
             stderr=str(exc),
             returncode=2,
         )
+
+
+# ---------------------------------------------------------------------------
+# Product proof gate
+# ---------------------------------------------------------------------------
+
+_ALLOWED_PATHS_RE = re.compile(r"^## ALLOWED PATHS\s*$", re.MULTILINE)
+_BRIEF_SECTION_RE = re.compile(r"^## ", re.MULTILINE)
+
+
+class ObpiProofStatus(BaseModel):
+    """Product proof status for a single OBPI."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    obpi_id: str = Field(..., description="OBPI identifier")
+    runbook_found: bool = Field(False, description="Runbook entry references this OBPI")
+    command_doc_found: bool = Field(False, description="Command doc exists with content")
+    docstring_found: bool = Field(False, description="Public interface has docstrings")
+
+    @property
+    def has_proof(self) -> bool:
+        return self.runbook_found or self.command_doc_found or self.docstring_found
+
+    @property
+    def proof_type(self) -> str:
+        if self.runbook_found:
+            return "runbook"
+        if self.command_doc_found:
+            return "command_doc"
+        if self.docstring_found:
+            return "docstring"
+        return "MISSING"
+
+
+class ProductProofResult(BaseModel):
+    """Result of product proof validation for an ADR."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    adr_id: str = Field(..., description="ADR identifier")
+    success: bool = Field(..., description="True if all OBPIs have proof")
+    obpi_proofs: list[ObpiProofStatus] = Field(..., description="Per-OBPI proof status")
+    missing_count: int = Field(..., description="Number of OBPIs without proof")
+
+
+def _extract_allowed_paths(brief_text: str) -> list[str]:
+    """Extract file paths from the ALLOWED PATHS section of an OBPI brief."""
+    match = _ALLOWED_PATHS_RE.search(brief_text)
+    if not match:
+        return []
+    rest = brief_text[match.end() :]
+    next_section = _BRIEF_SECTION_RE.search(rest)
+    section_text = rest[: next_section.start()] if next_section else rest
+    paths: list[str] = []
+    for line in section_text.splitlines():
+        line = line.strip()
+        if line.startswith("- "):
+            # Extract path from `- `path` — description` format
+            path_match = re.match(r"-\s+`([^`]+)`", line)
+            if path_match:
+                paths.append(path_match.group(1))
+    return paths
+
+
+def _extract_obpi_slug(obpi_id: str) -> str:
+    """Extract the slug portion after the version-item prefix."""
+    # OBPI-0.23.0-02-product-proof-gate → product-proof-gate
+    parts = obpi_id.split("-", 3)
+    return parts[3] if len(parts) > 3 else obpi_id
+
+
+def _check_runbook_proof(obpi_id: str, slug: str, runbook_text: str) -> bool:
+    """Check if the runbook references this OBPI by ID or slug keywords."""
+    if obpi_id in runbook_text:
+        return True
+    keywords = slug.replace("-", " ")
+    return keywords.lower() in runbook_text.lower()
+
+
+def _check_command_doc_proof(allowed_paths: list[str], project_root: Path) -> bool:
+    """Check if any command doc in allowed paths exists with substantive content."""
+    for path_str in allowed_paths:
+        if not path_str.startswith("docs/user/commands/"):
+            continue
+        doc_path = project_root / path_str
+        if not doc_path.exists():
+            continue
+        content = doc_path.read_text(encoding="utf-8").strip()
+        # Substantive = more than just a heading (>100 chars after stripping)
+        if len(content) > 100:
+            return True
+    return False
+
+
+def _check_docstring_proof(allowed_paths: list[str], project_root: Path) -> bool:
+    """Check if Python source files in allowed paths have public interface docstrings."""
+    for path_str in allowed_paths:
+        if not path_str.endswith(".py") or not path_str.startswith("src/"):
+            continue
+        src_path = project_root / path_str
+        if not src_path.exists():
+            continue
+        try:
+            tree = ast.parse(src_path.read_text(encoding="utf-8"), filename=path_str)
+        except SyntaxError:
+            continue
+        for node in ast.walk(tree):
+            if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                continue
+            if node.name.startswith("_"):
+                continue
+            docstring = ast.get_docstring(node)
+            if docstring and len(docstring.strip()) > 10:
+                return True
+    return False
+
+
+def check_product_proof(
+    adr_id: str,
+    obpi_files: dict[str, Path],
+    project_root: Path,
+) -> ProductProofResult:
+    """Validate that each OBPI in an ADR has operator-facing documentation.
+
+    Checks three proof types per OBPI (at least one must exist):
+    - runbook: keyword match in docs/user/runbook.md
+    - command_doc: file exists with substantive content in docs/user/commands/
+    - docstring: public interfaces in source files have docstrings
+
+    Args:
+        adr_id: ADR identifier.
+        obpi_files: Map of OBPI ID to brief file path.
+        project_root: Project root directory.
+
+    Returns:
+        ProductProofResult with per-OBPI proof status.
+
+    """
+    runbook_path = project_root / "docs" / "user" / "runbook.md"
+    runbook_text = ""
+    if runbook_path.exists():
+        runbook_text = runbook_path.read_text(encoding="utf-8")
+
+    proofs: list[ObpiProofStatus] = []
+    for obpi_id, brief_path in sorted(obpi_files.items()):
+        brief_text = brief_path.read_text(encoding="utf-8")
+        allowed_paths = _extract_allowed_paths(brief_text)
+        slug = _extract_obpi_slug(obpi_id)
+
+        runbook_found = _check_runbook_proof(obpi_id, slug, runbook_text)
+        command_doc_found = _check_command_doc_proof(allowed_paths, project_root)
+        docstring_found = _check_docstring_proof(allowed_paths, project_root)
+
+        proofs.append(
+            ObpiProofStatus(
+                obpi_id=obpi_id,
+                runbook_found=runbook_found,
+                command_doc_found=command_doc_found,
+                docstring_found=docstring_found,
+            )
+        )
+
+    missing = sum(1 for p in proofs if not p.has_proof)
+    return ProductProofResult(
+        adr_id=adr_id,
+        success=missing == 0,
+        obpi_proofs=proofs,
+        missing_count=missing,
+    )

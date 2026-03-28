@@ -21,6 +21,7 @@ Output includes:
 
 - Gate 1 ADR path
 - OBPI completion summary
+- Product proof status table (per-OBPI documentation proof)
 - Closeout blockers when any linked OBPI is not closeout-ready
 - Generated `ADR-CLOSEOUT-FORM.md` path inside the ADR package
 - Linked OBPI evidence paths
@@ -31,6 +32,20 @@ Output includes:
 If any linked OBPI still has missing proof, canonical drift, or missing
 required human-attestation evidence, `gz closeout` prints `BLOCKERS:` and exits
 `1` without writing `closeout_initiated`.
+
+### Product Proof Gate
+
+After OBPI completion checks pass, `gz closeout` validates that each OBPI has
+at least one form of operator-facing documentation proof:
+
+| Proof Type | Detection Method |
+|------------|-----------------|
+| `runbook` | OBPI ID or slug keywords found in `docs/user/runbook.md` |
+| `command_doc` | Command doc file from OBPI allowed paths exists with >100 chars |
+| `docstring` | Public function/class in source files from allowed paths has docstring |
+
+At least one proof type must exist per OBPI. If any OBPI has `MISSING` proof,
+closeout exits `1` with a table showing which OBPIs lack proof.
 
 When closeout succeeds without `--dry-run`, `gz closeout` creates or refreshes
 `ADR-CLOSEOUT-FORM.md` beside the ADR file with the current evidence inventory
