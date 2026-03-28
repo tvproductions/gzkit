@@ -384,6 +384,47 @@ class LifecycleTransitionEvent(_EventBase):
     to_state: str
 
 
+# ---------------------------------------------------------------------------
+# TASK ledger events (ADR-0.22.0 / OBPI-0.22.0-02)
+# ---------------------------------------------------------------------------
+
+
+class _TaskEventBase(_EventBase):
+    """Common fields shared by all TASK-level ledger events."""
+
+    task_id: str = Field(..., description="TASK identifier (e.g. TASK-0.22.0-01-01-01)")
+    obpi_id: str = Field(..., description="Parent OBPI identifier")
+    adr_id: str = Field(..., description="Parent ADR identifier")
+    agent: str = Field(..., description="Agent that emitted the event")
+
+
+class TaskStartedEvent(_TaskEventBase):
+    """task_started event — emitted for both initial start and resume from blocked."""
+
+    event: Literal["task_started"]
+
+
+class TaskCompletedEvent(_TaskEventBase):
+    """task_completed event."""
+
+    event: Literal["task_completed"]
+
+
+class TaskBlockedEvent(_TaskEventBase):
+    """task_blocked event — includes a reason for the block."""
+
+    event: Literal["task_blocked"]
+    reason: str = Field(..., description="Reason the task is blocked")
+
+
+class TaskEscalatedEvent(_TaskEventBase):
+    """task_escalated event — includes reason and optional escalation target."""
+
+    event: Literal["task_escalated"]
+    reason: str = Field(..., description="Reason the task is escalated")
+    escalated_to: str | None = Field(None, description="Escalation target (person/team)")
+
+
 TypedLedgerEvent = Annotated[
     ProjectInitEvent
     | PrdCreatedEvent
@@ -398,7 +439,11 @@ TypedLedgerEvent = Annotated[
     | ObpiReceiptEmittedEvent
     | ArtifactRenamedEvent
     | AdrAnnotatedEvent
-    | LifecycleTransitionEvent,
+    | LifecycleTransitionEvent
+    | TaskStartedEvent
+    | TaskCompletedEvent
+    | TaskBlockedEvent
+    | TaskEscalatedEvent,
     Field(discriminator="event"),
 ]
 

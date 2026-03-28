@@ -1,12 +1,21 @@
-"""Tests for TASK entity model (OBPI-0.22.0-01).
+"""Tests for TASK entity model and ledger events (OBPI-0.22.0-01, OBPI-0.22.0-02).
 
-Covers: identifier parsing, lifecycle states, transitions, and plan-derived creation.
+Covers: identifier parsing, lifecycle states, transitions, plan-derived creation,
+and TASK ledger event serialization/parsing.
 """
 
 from __future__ import annotations
 
+import json
 import unittest
 
+from gzkit.events import (
+    TaskBlockedEvent,
+    TaskCompletedEvent,
+    TaskEscalatedEvent,
+    TaskStartedEvent,
+    parse_typed_event,
+)
 from gzkit.tasks import TaskEntity, TaskId, TaskStatus, create_task_from_plan_step
 
 
@@ -196,6 +205,217 @@ class TestCreateTaskFromPlanStep(unittest.TestCase):
             seq=3,
         )
         self.assertEqual(str(task.id), "TASK-0.20.0-01-01-03")
+
+
+# ---------------------------------------------------------------------------
+# TASK ledger events (OBPI-0.22.0-02)
+# ---------------------------------------------------------------------------
+
+_TASK_FIELDS = {
+    "id": "TASK-0.22.0-02-01-01",
+    "task_id": "TASK-0.22.0-02-01-01",
+    "obpi_id": "OBPI-0.22.0-02",
+    "adr_id": "ADR-0.22.0",
+    "agent": "claude-code",
+}
+
+
+def _started(**extra: str) -> TaskStartedEvent:
+    return TaskStartedEvent(event="task_started", **_TASK_FIELDS, **extra)
+
+
+def _completed(**extra: str) -> TaskCompletedEvent:
+    return TaskCompletedEvent(event="task_completed", **_TASK_FIELDS, **extra)
+
+
+def _blocked(**extra: str) -> TaskBlockedEvent:
+    return TaskBlockedEvent(event="task_blocked", **_TASK_FIELDS, **extra)
+
+
+def _escalated(**extra: str | None) -> TaskEscalatedEvent:
+    return TaskEscalatedEvent(event="task_escalated", **_TASK_FIELDS, **extra)
+
+
+class TestTaskStartedEvent(unittest.TestCase):
+    """@covers REQ-0.22.0-02-01, REQ-0.22.0-02-03, REQ-0.22.0-02-04."""
+
+    def test_serialize_includes_required_fields(self) -> None:
+        """REQ-0.22.0-02-01: task_started serializes with required fields."""
+        evt = _started()
+        data = json.loads(evt.model_dump_json())
+        self.assertEqual(data["event"], "task_started")
+        self.assertIn("ts", data)
+        self.assertEqual(data["task_id"], "TASK-0.22.0-02-01-01")
+        self.assertEqual(data["obpi_id"], "OBPI-0.22.0-02")
+        self.assertEqual(data["adr_id"], "ADR-0.22.0")
+        self.assertEqual(data["agent"], "claude-code")
+
+    def test_discriminated_union_parses_task_started(self) -> None:
+        """REQ-0.22.0-02-03: parse_typed_event resolves task_started correctly."""
+        evt = _started()
+        data = json.loads(evt.model_dump_json())
+        parsed = parse_typed_event(data)
+        self.assertIsInstance(parsed, TaskStartedEvent)
+        self.assertEqual(parsed.task_id, "TASK-0.22.0-02-01-01")
+
+    def test_task_started_reused_for_resume(self) -> None:
+        """REQ-0.22.0-02-04: task_started is reused for blocked->in_progress resume."""
+        evt = _started()
+        data = json.loads(evt.model_dump_json())
+        self.assertEqual(data["event"], "task_started")
+        parsed = parse_typed_event(data)
+        self.assertIsInstance(parsed, TaskStartedEvent)
+
+    def test_jsonl_serializable(self) -> None:
+        """REQ-0.22.0-02-07: Event serializes to single-line JSON for JSONL."""
+        evt = _started()
+        line = evt.model_dump_json()
+        reparsed = json.loads(line)
+        self.assertEqual(reparsed["event"], "task_started")
+
+
+class TestTaskCompletedEvent(unittest.TestCase):
+    """@covers REQ-0.22.0-02-01, REQ-0.22.0-02-03."""
+
+    def test_serialize_includes_required_fields(self) -> None:
+        """REQ-0.22.0-02-01: task_completed serializes with all required fields."""
+        evt = _completed()
+        data = json.loads(evt.model_dump_json())
+        self.assertEqual(data["event"], "task_completed")
+        self.assertIn("ts", data)
+        self.assertEqual(data["task_id"], "TASK-0.22.0-02-01-01")
+        self.assertEqual(data["obpi_id"], "OBPI-0.22.0-02")
+        self.assertEqual(data["adr_id"], "ADR-0.22.0")
+        self.assertEqual(data["agent"], "claude-code")
+
+    def test_discriminated_union_parses_task_completed(self) -> None:
+        """REQ-0.22.0-02-03: parse_typed_event resolves task_completed."""
+        evt = _completed()
+        parsed = parse_typed_event(json.loads(evt.model_dump_json()))
+        self.assertIsInstance(parsed, TaskCompletedEvent)
+
+
+class TestTaskBlockedEvent(unittest.TestCase):
+    """@covers REQ-0.22.0-02-01, REQ-0.22.0-02-02, REQ-0.22.0-02-03."""
+
+    def test_serialize_includes_reason(self) -> None:
+        """REQ-0.22.0-02-02: task_blocked includes reason field."""
+        evt = _blocked(reason="Missing dependency")
+        data = json.loads(evt.model_dump_json())
+        self.assertEqual(data["event"], "task_blocked")
+        self.assertEqual(data["reason"], "Missing dependency")
+        self.assertEqual(data["task_id"], "TASK-0.22.0-02-01-01")
+        self.assertEqual(data["obpi_id"], "OBPI-0.22.0-02")
+        self.assertEqual(data["adr_id"], "ADR-0.22.0")
+        self.assertEqual(data["agent"], "claude-code")
+
+    def test_reason_required(self) -> None:
+        """REQ-0.22.0-02-04: task_blocked requires reason field."""
+        from pydantic import ValidationError
+
+        with self.assertRaises(ValidationError):
+            TaskBlockedEvent(event="task_blocked", **_TASK_FIELDS)  # type: ignore[arg-type]
+
+    def test_discriminated_union_parses_task_blocked(self) -> None:
+        """REQ-0.22.0-02-03: parse_typed_event resolves task_blocked."""
+        evt = _blocked(reason="Waiting on OBPI-01")
+        parsed = parse_typed_event(json.loads(evt.model_dump_json()))
+        self.assertIsInstance(parsed, TaskBlockedEvent)
+        self.assertEqual(parsed.reason, "Waiting on OBPI-01")
+
+
+class TestTaskEscalatedEvent(unittest.TestCase):
+    """@covers REQ-0.22.0-02-01, REQ-0.22.0-02-03, REQ-0.22.0-02-05."""
+
+    def test_serialize_includes_reason(self) -> None:
+        """REQ-0.22.0-02-05: task_escalated has reason and escalated_to."""
+        evt = _escalated(reason="Needs human decision", escalated_to="jeff")
+        data = json.loads(evt.model_dump_json())
+        self.assertEqual(data["event"], "task_escalated")
+        self.assertEqual(data["reason"], "Needs human decision")
+        self.assertEqual(data["escalated_to"], "jeff")
+
+    def test_escalated_to_optional(self) -> None:
+        """REQ-0.22.0-02-05: escalated_to is optional."""
+        evt = _escalated(reason="Complex issue")
+        data = json.loads(evt.model_dump_json())
+        self.assertEqual(data["event"], "task_escalated")
+        self.assertEqual(data["reason"], "Complex issue")
+        self.assertNotIn("escalated_to", data)
+
+    def test_reason_required(self) -> None:
+        from pydantic import ValidationError
+
+        with self.assertRaises(ValidationError):
+            TaskEscalatedEvent(event="task_escalated", **_TASK_FIELDS)  # type: ignore[arg-type]
+
+    def test_discriminated_union_parses_task_escalated(self) -> None:
+        """REQ-0.22.0-02-03: parse_typed_event resolves task_escalated."""
+        evt = _escalated(reason="Over complexity budget")
+        parsed = parse_typed_event(json.loads(evt.model_dump_json()))
+        self.assertIsInstance(parsed, TaskEscalatedEvent)
+        self.assertEqual(parsed.reason, "Over complexity budget")
+
+
+class TestAllFourEventTypes(unittest.TestCase):
+    """@covers REQ-0.22.0-02-01, REQ-0.22.0-02-03, REQ-0.22.0-02-06."""
+
+    def test_four_event_types_defined(self) -> None:
+        """REQ-0.22.0-02-01: Exactly four TASK event types exist."""
+        event_types = {
+            "task_started": TaskStartedEvent,
+            "task_completed": TaskCompletedEvent,
+            "task_blocked": TaskBlockedEvent,
+            "task_escalated": TaskEscalatedEvent,
+        }
+        self.assertEqual(len(event_types), 4)
+        for event_name, cls in event_types.items():
+            self.assertTrue(
+                hasattr(cls.model_fields["event"], "default"),
+                f"{event_name} must have literal event type",
+            )
+
+    def test_all_four_roundtrip_via_discriminated_union(self) -> None:
+        """REQ-0.22.0-02-03: All four roundtrip via discriminated union."""
+        events = [
+            _started(),
+            _completed(),
+            _blocked(reason="blocked"),
+            _escalated(reason="escalated"),
+        ]
+        expected_types = [
+            TaskStartedEvent,
+            TaskCompletedEvent,
+            TaskBlockedEvent,
+            TaskEscalatedEvent,
+        ]
+        for evt, expected_cls in zip(events, expected_types, strict=True):
+            data = json.loads(evt.model_dump_json())
+            parsed = parse_typed_event(data)
+            self.assertIsInstance(parsed, expected_cls, f"Failed for {expected_cls.__name__}")
+
+    def test_all_events_have_common_fields(self) -> None:
+        """REQ-0.22.0-02-06: All events follow existing event model patterns."""
+        events = [
+            _started(),
+            _completed(),
+            _blocked(reason="r"),
+            _escalated(reason="r"),
+        ]
+        required = (
+            "event",
+            "id",
+            "ts",
+            "schema",
+            "task_id",
+            "obpi_id",
+            "adr_id",
+            "agent",
+        )
+        for evt in events:
+            data = json.loads(evt.model_dump_json())
+            for field in required:
+                self.assertIn(field, data, f"Missing {field} in {data['event']}")
 
 
 if __name__ == "__main__":
