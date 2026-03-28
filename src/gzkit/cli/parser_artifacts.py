@@ -1,0 +1,534 @@
+"""Artifact-focused subparser registrations for gz CLI.
+
+Registers: adr subcommands, obpi subcommands, task subcommands.
+"""
+
+import argparse
+
+from gzkit.cli.helpers import (
+    add_dry_run_flag,
+    add_force_flag,
+    add_json_flag,
+    build_epilog,
+)
+from gzkit.commands.adr_audit import (
+    adr_audit_check,
+    adr_covers_check,
+    adr_emit_receipt_cmd,
+)
+from gzkit.commands.adr_promote import adr_eval_cmd, adr_promote_cmd
+from gzkit.commands.obpi_cmd import (
+    obpi_emit_receipt_cmd,
+    obpi_pipeline_cmd,
+    obpi_validate_cmd,
+    obpi_withdraw_cmd,
+)
+from gzkit.commands.status import (
+    adr_report_cmd,
+    adr_status_cmd,
+    obpi_reconcile_cmd,
+    obpi_status_cmd,
+)
+from gzkit.commands.task import (
+    task_block_cmd,
+    task_complete_cmd,
+    task_escalate_cmd,
+    task_list_cmd,
+    task_start_cmd,
+)
+
+
+def register_artifact_parsers(commands: argparse._SubParsersAction) -> None:
+    """Register adr, obpi, and task sub-command groups on *commands*."""
+    _register_adr_parsers(commands)
+    _register_obpi_parsers(commands)
+    _register_task_parsers(commands)
+
+
+def _register_adr_parsers(commands: argparse._SubParsersAction) -> None:
+    """Register ``gz adr`` sub-command group."""
+    p_adr = commands.add_parser(
+        "adr",
+        help="ADR-focused governance commands",
+        description="ADR lifecycle, evaluation, and evidence commands.",
+        epilog=build_epilog(
+            [
+                "gz adr status ADR-0.1.0",
+                "gz adr report",
+                "gz adr report ADR-0.1.0",
+            ]
+        ),
+    )
+    adr_commands = p_adr.add_subparsers(dest="adr_command")
+    adr_commands.required = True
+
+    p_adr_status = adr_commands.add_parser(
+        "status",
+        help="Show focused OBPI progress for one ADR",
+        description="Display detailed OBPI progress for a single ADR.",
+        epilog=build_epilog(
+            [
+                "gz adr status ADR-0.1.0",
+                "gz adr status ADR-0.1.0 --json",
+                "gz adr status ADR-0.1.0 --show-gates",
+            ]
+        ),
+    )
+    p_adr_status.add_argument("adr", help="ADR identifier (e.g. ADR-0.0.4)")
+    add_json_flag(p_adr_status)
+    p_adr_status.add_argument(
+        "--show-gates",
+        action="store_true",
+        help="Show detailed gate-level QC breakdown (internal diagnostics).",
+    )
+    p_adr_status.set_defaults(
+        func=lambda a: adr_status_cmd(adr=a.adr, as_json=a.as_json, show_gates=a.show_gates)
+    )
+
+    p_adr_report = adr_commands.add_parser(
+        "report",
+        help="Deterministic tabular report (summary or single ADR)",
+        description="Produce deterministic tabular report for all or one ADR.",
+        epilog=build_epilog(
+            [
+                "gz adr report",
+                "gz adr report ADR-0.1.0",
+            ]
+        ),
+    )
+    p_adr_report.add_argument(
+        "adr", nargs="?", default=None, help="ADR identifier (omit for summary)"
+    )
+    p_adr_report.set_defaults(func=lambda a: adr_report_cmd(adr=a.adr))
+
+    p_adr_promote = adr_commands.add_parser(
+        "promote",
+        help="Promote a pool ADR into canonical ADR package structure",
+        description="Move a backlog pool ADR into versioned ADR package.",
+        epilog=build_epilog(
+            [
+                "gz adr promote ADR-pool.my-feature --semver 0.2.0",
+                "gz adr promote ADR-pool.my-feature --semver 0.2.0 --lane heavy",
+                "gz adr promote ADR-pool.my-feature --semver 0.2.0 --dry-run",
+            ]
+        ),
+    )
+    p_adr_promote.add_argument("pool_adr", help="Pool ADR id (e.g., ADR-pool.gz-chores-system)")
+    p_adr_promote.add_argument(
+        "--semver",
+        required=True,
+        help="Target ADR semantic version (X.Y.Z)",
+    )
+    p_adr_promote.add_argument(
+        "--slug",
+        help="Target ADR slug (kebab-case). Defaults to slug derived from pool ADR id.",
+    )
+    p_adr_promote.add_argument("--title", help="Target ADR title override")
+    p_adr_promote.add_argument(
+        "--parent",
+        help="Target ADR parent override (defaults to pool ADR parent metadata)",
+    )
+    p_adr_promote.add_argument(
+        "--lane",
+        choices=["lite", "heavy"],
+        help="Target ADR lane override (defaults to pool ADR lane metadata)",
+    )
+    p_adr_promote.add_argument(
+        "--status",
+        dest="target_status",
+        choices=["draft", "proposed"],
+        default="proposed",
+        help="Initial promoted ADR status (default: proposed)",
+    )
+    add_json_flag(p_adr_promote)
+    add_dry_run_flag(p_adr_promote)
+    add_force_flag(
+        p_adr_promote,
+        help_override="Override scaffold quality gate (briefs contain only template defaults)",
+    )
+    p_adr_promote.set_defaults(
+        func=lambda a: adr_promote_cmd(
+            pool_adr=a.pool_adr,
+            semver=a.semver,
+            slug=a.slug,
+            title=a.title,
+            parent=a.parent,
+            lane=a.lane,
+            target_status=a.target_status,
+            as_json=a.as_json,
+            dry_run=a.dry_run,
+            force=a.force,
+        )
+    )
+
+    p_adr_eval = adr_commands.add_parser(
+        "evaluate",
+        help="Evaluate ADR/OBPI quality (deterministic scoring)",
+        description="Score ADR quality across weighted dimensions.",
+        epilog=build_epilog(
+            [
+                "gz adr evaluate ADR-0.1.0",
+                "gz adr evaluate ADR-0.1.0 --json",
+                "gz adr evaluate ADR-0.1.0 --no-scorecard",
+            ]
+        ),
+    )
+    p_adr_eval.add_argument("adr_id", help="ADR identifier (e.g., ADR-0.19.0)")
+    add_json_flag(p_adr_eval)
+    p_adr_eval.add_argument(
+        "--no-scorecard",
+        dest="write_scorecard",
+        action="store_false",
+        default=True,
+        help="Skip writing scorecard file to disk",
+    )
+    p_adr_eval.set_defaults(
+        func=lambda a: adr_eval_cmd(
+            adr_id=a.adr_id,
+            as_json=a.as_json,
+            write_scorecard=a.write_scorecard,
+        )
+    )
+
+    p_adr_audit_check = adr_commands.add_parser(
+        "audit-check",
+        help="Verify linked OBPIs are complete with evidence",
+        description="Check that all linked OBPIs have passing evidence.",
+        epilog=build_epilog(
+            [
+                "gz adr audit-check ADR-0.1.0",
+                "gz adr audit-check ADR-0.1.0 --json",
+            ]
+        ),
+    )
+    p_adr_audit_check.add_argument("adr", help="ADR identifier (e.g. ADR-0.0.4)")
+    add_json_flag(p_adr_audit_check)
+    p_adr_audit_check.set_defaults(func=lambda a: adr_audit_check(adr=a.adr, as_json=a.as_json))
+
+    p_adr_covers_check = adr_commands.add_parser(
+        "covers-check",
+        help="Verify @covers traceability for ADR, OBPIs, and REQ IDs",
+        description="Scan tests for @covers decorators and verify linkage.",
+        epilog=build_epilog(
+            [
+                "gz adr covers-check ADR-0.1.0",
+                "gz adr covers-check ADR-0.1.0 --json",
+            ]
+        ),
+    )
+    p_adr_covers_check.add_argument("adr", help="ADR identifier (e.g. ADR-0.0.4)")
+    add_json_flag(p_adr_covers_check)
+    p_adr_covers_check.set_defaults(func=lambda a: adr_covers_check(adr=a.adr, as_json=a.as_json))
+
+    p_adr_emit = adr_commands.add_parser(
+        "emit-receipt",
+        help="Emit completed/validated receipt event for an ADR",
+        description="Record a receipt event in the ledger for an ADR.",
+        epilog=build_epilog(
+            [
+                'gz adr emit-receipt ADR-0.1.0 --event completed --attestor "Jane Doe"',
+                'gz adr emit-receipt ADR-0.1.0 --event validated --attestor "Jane Doe" --dry-run',
+            ]
+        ),
+    )
+    p_adr_emit.add_argument("adr", help="ADR identifier (e.g. ADR-0.0.4)")
+    p_adr_emit.add_argument(
+        "--event",
+        dest="receipt_event",
+        required=True,
+        choices=["completed", "validated"],
+        help="Receipt event type (completed|validated)",
+    )
+    p_adr_emit.add_argument("--attestor", required=True, help="Identity of the attestor")
+    p_adr_emit.add_argument("--evidence-json", help="JSON evidence payload string")
+    add_dry_run_flag(p_adr_emit)
+    p_adr_emit.set_defaults(
+        func=lambda a: adr_emit_receipt_cmd(
+            adr=a.adr,
+            receipt_event=a.receipt_event,
+            attestor=a.attestor,
+            evidence_json=a.evidence_json,
+            dry_run=a.dry_run,
+        )
+    )
+
+
+def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
+    """Register ``gz obpi`` sub-command group."""
+    p_obpi = commands.add_parser(
+        "obpi",
+        help="OBPI-focused governance commands",
+        description="OBPI lifecycle, pipeline, and evidence commands.",
+        epilog=build_epilog(
+            [
+                "gz obpi status OBPI-0.1.0-01",
+                "gz obpi pipeline OBPI-0.1.0-01",
+                "gz obpi reconcile OBPI-0.1.0-01",
+            ]
+        ),
+    )
+    obpi_commands = p_obpi.add_subparsers(dest="obpi_command")
+    obpi_commands.required = True
+
+    p_obpi_emit = obpi_commands.add_parser(
+        "emit-receipt",
+        help="Emit completed/validated receipt event for an OBPI",
+        description="Record a receipt event in the ledger for an OBPI.",
+        epilog=build_epilog(
+            [
+                'gz obpi emit-receipt OBPI-0.1.0-01 --event completed --attestor "Jane Doe"',
+                'gz obpi emit-receipt OBPI-0.1.0-01 --event validated --attestor "Jane Doe"',
+            ]
+        ),
+    )
+    p_obpi_emit.add_argument("obpi", help="OBPI identifier (e.g. OBPI-0.0.4-01)")
+    p_obpi_emit.add_argument(
+        "--event",
+        dest="receipt_event",
+        required=True,
+        choices=["completed", "validated"],
+        help="Receipt event type (completed|validated)",
+    )
+    p_obpi_emit.add_argument("--attestor", required=True, help="Identity of the attestor")
+    p_obpi_emit.add_argument("--evidence-json", help="JSON evidence payload string")
+    add_dry_run_flag(p_obpi_emit)
+    p_obpi_emit.set_defaults(
+        func=lambda a: obpi_emit_receipt_cmd(
+            obpi=a.obpi,
+            receipt_event=a.receipt_event,
+            attestor=a.attestor,
+            evidence_json=a.evidence_json,
+            dry_run=a.dry_run,
+        )
+    )
+
+    p_obpi_status = obpi_commands.add_parser(
+        "status",
+        help="Show focused runtime status for one OBPI",
+        description="Display runtime status and evidence for a single OBPI.",
+        epilog=build_epilog(
+            [
+                "gz obpi status OBPI-0.1.0-01",
+                "gz obpi status OBPI-0.1.0-01 --json",
+            ]
+        ),
+    )
+    p_obpi_status.add_argument("obpi", help="OBPI identifier (e.g. OBPI-0.0.4-01)")
+    add_json_flag(p_obpi_status)
+    p_obpi_status.set_defaults(func=lambda a: obpi_status_cmd(obpi=a.obpi, as_json=a.as_json))
+
+    p_obpi_pipeline = obpi_commands.add_parser(
+        "pipeline",
+        help="Launch the OBPI pipeline runtime surface",
+        description="Run or query the OBPI pipeline lifecycle runtime.",
+        epilog=build_epilog(
+            [
+                "gz obpi pipeline OBPI-0.1.0-01",
+                "gz obpi pipeline OBPI-0.1.0-01 --from verify",
+                "gz obpi pipeline --clear-stale",
+            ]
+        ),
+    )
+    p_obpi_pipeline.add_argument(
+        "obpi", nargs="?", default="", help="OBPI identifier (e.g. OBPI-0.0.4-01)"
+    )
+    p_obpi_pipeline.add_argument(
+        "--from",
+        dest="start_from",
+        choices=["verify", "ceremony", "sync"],
+        help="Resume pipeline from a specific stage",
+    )
+    p_obpi_pipeline.add_argument(
+        "--attestor",
+        help="Attestor identity for Stage 5 (e.g. jeff or agent:<name>)",
+    )
+    p_obpi_pipeline.add_argument(
+        "--evidence-json",
+        dest="evidence_json",
+        help="JSON evidence payload for Stage 5 (value_narrative, key_proof, etc.)",
+    )
+    p_obpi_pipeline.add_argument(
+        "--clear-stale",
+        dest="clear_stale",
+        action="store_true",
+        help="Remove pipeline markers older than 4 hours",
+    )
+    p_obpi_pipeline.add_argument(
+        "--no-subagents",
+        dest="no_subagents",
+        action="store_true",
+        help="Disable subagent dispatch (single-session fallback)",
+    )
+    p_obpi_pipeline.set_defaults(
+        func=lambda a: obpi_pipeline_cmd(
+            obpi=a.obpi,
+            start_from=a.start_from,
+            clear_stale=a.clear_stale,
+            attestor=a.attestor,
+            evidence_json=a.evidence_json,
+        )
+    )
+
+    p_obpi_reconcile = obpi_commands.add_parser(
+        "reconcile",
+        help="Fail-closed runtime reconciliation for one OBPI",
+        description="Reconcile OBPI receipt and brief for consistency.",
+        epilog=build_epilog(
+            [
+                "gz obpi reconcile OBPI-0.1.0-01",
+                "gz obpi reconcile OBPI-0.1.0-01 --json",
+            ]
+        ),
+    )
+    p_obpi_reconcile.add_argument("obpi", help="OBPI identifier (e.g. OBPI-0.0.4-01)")
+    add_json_flag(p_obpi_reconcile)
+    p_obpi_reconcile.set_defaults(func=lambda a: obpi_reconcile_cmd(obpi=a.obpi, as_json=a.as_json))
+
+    p_obpi_validate = obpi_commands.add_parser(
+        "validate",
+        help="Validate OBPI brief(s) for completion readiness",
+        description="Check OBPI briefs against the canonical completion schema.",
+        epilog=build_epilog(
+            [
+                "gz obpi validate docs/design/adr/my-adr/obpis/OBPI-0.1.0-01-my-feature.md",
+                "gz obpi validate --adr ADR-0.1.0",
+            ]
+        ),
+    )
+    p_obpi_validate.add_argument(
+        "obpi_path", nargs="?", default=None, help="Path to a single OBPI brief file"
+    )
+    p_obpi_validate.add_argument(
+        "--adr",
+        dest="adr_id",
+        default=None,
+        help="Validate all OBPI briefs under an ADR (e.g., --adr ADR-0.0.3)",
+    )
+    p_obpi_validate.set_defaults(
+        func=lambda a: obpi_validate_cmd(obpi_path=a.obpi_path, adr_id=a.adr_id)
+    )
+
+    p_obpi_withdraw = obpi_commands.add_parser(
+        "withdraw",
+        help="Withdraw a phantom or erroneous OBPI from the ledger",
+        description=(
+            "Record an obpi_withdrawn event. The OBPI remains in the"
+            " ledger but is excluded from counts."
+        ),
+        epilog=build_epilog(
+            [
+                'gz obpi withdraw OBPI-0.21.0-01 --reason "phantom entry from promotion"',
+                'gz obpi withdraw OBPI-0.21.0-01 --reason "duplicate" --dry-run',
+            ]
+        ),
+    )
+    p_obpi_withdraw.add_argument("obpi", help="OBPI identifier (e.g. OBPI-0.21.0-01)")
+    p_obpi_withdraw.add_argument("--reason", required=True, help="Reason for withdrawal")
+    add_dry_run_flag(p_obpi_withdraw)
+    p_obpi_withdraw.set_defaults(
+        func=lambda a: obpi_withdraw_cmd(obpi=a.obpi, reason=a.reason, dry_run=a.dry_run)
+    )
+
+
+def _register_task_parsers(commands: argparse._SubParsersAction) -> None:
+    """Register ``gz task`` sub-command group."""
+    p_task = commands.add_parser(
+        "task",
+        help="TASK lifecycle management commands",
+        description=(
+            "Manage execution-level TASK entities: list, start, complete, block, escalate."
+        ),
+        epilog=build_epilog(
+            [
+                "gz task list OBPI-0.20.0-01",
+                "gz task start TASK-0.20.0-01-01-01",
+                "gz task complete TASK-0.20.0-01-01-01",
+                'gz task block TASK-0.20.0-01-01-01 --reason "Missing API"',
+                'gz task escalate TASK-0.20.0-01-01-01 --reason "Needs human decision"',
+            ]
+        ),
+    )
+    task_commands = p_task.add_subparsers(dest="task_command")
+    task_commands.required = True
+
+    p_task_list = task_commands.add_parser(
+        "list",
+        help="List tasks for an OBPI",
+        description="Show all tasks and their lifecycle status for an OBPI.",
+        epilog=build_epilog(
+            [
+                "gz task list OBPI-0.20.0-01",
+                "gz task list OBPI-0.20.0-01 --json",
+            ]
+        ),
+    )
+    p_task_list.add_argument("obpi", help="OBPI identifier (e.g. OBPI-0.20.0-01)")
+    add_json_flag(p_task_list)
+    p_task_list.set_defaults(func=lambda a: task_list_cmd(obpi=a.obpi, as_json=a.as_json))
+
+    p_task_start = task_commands.add_parser(
+        "start",
+        help="Start or resume a task",
+        description="Transition a task to in_progress (from pending or blocked).",
+        epilog=build_epilog(
+            [
+                "gz task start TASK-0.20.0-01-01-01",
+                "gz task start TASK-0.20.0-01-01-01 --json",
+            ]
+        ),
+    )
+    p_task_start.add_argument("task_id", help="TASK identifier (e.g. TASK-0.20.0-01-01-01)")
+    add_json_flag(p_task_start)
+    p_task_start.set_defaults(
+        func=lambda a: task_start_cmd(task_id_str=a.task_id, as_json=a.as_json)
+    )
+
+    p_task_complete = task_commands.add_parser(
+        "complete",
+        help="Complete a task",
+        description="Transition a task to completed (from in_progress only).",
+        epilog=build_epilog(
+            [
+                "gz task complete TASK-0.20.0-01-01-01",
+            ]
+        ),
+    )
+    p_task_complete.add_argument("task_id", help="TASK identifier (e.g. TASK-0.20.0-01-01-01)")
+    add_json_flag(p_task_complete)
+    p_task_complete.set_defaults(
+        func=lambda a: task_complete_cmd(task_id_str=a.task_id, as_json=a.as_json)
+    )
+
+    p_task_block = task_commands.add_parser(
+        "block",
+        help="Block a task with reason",
+        description="Transition a task to blocked (from in_progress only).",
+        epilog=build_epilog(
+            [
+                'gz task block TASK-0.20.0-01-01-01 --reason "Missing API"',
+            ]
+        ),
+    )
+    p_task_block.add_argument("task_id", help="TASK identifier (e.g. TASK-0.20.0-01-01-01)")
+    p_task_block.add_argument("--reason", required=True, help="Reason for blocking the task")
+    add_json_flag(p_task_block)
+    p_task_block.set_defaults(
+        func=lambda a: task_block_cmd(task_id_str=a.task_id, reason=a.reason, as_json=a.as_json)
+    )
+
+    p_task_escalate = task_commands.add_parser(
+        "escalate",
+        help="Escalate a task with reason",
+        description="Transition a task to escalated (from in_progress only).",
+        epilog=build_epilog(
+            [
+                'gz task escalate TASK-0.20.0-01-01-01 --reason "Needs human decision"',
+            ]
+        ),
+    )
+    p_task_escalate.add_argument("task_id", help="TASK identifier (e.g. TASK-0.20.0-01-01-01)")
+    p_task_escalate.add_argument("--reason", required=True, help="Reason for escalation")
+    add_json_flag(p_task_escalate)
+    p_task_escalate.set_defaults(
+        func=lambda a: task_escalate_cmd(task_id_str=a.task_id, reason=a.reason, as_json=a.as_json)
+    )
