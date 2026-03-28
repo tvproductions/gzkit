@@ -202,7 +202,7 @@ def cli_audit_cmd(as_json: bool) -> None:
 
     result = {"valid": not issues, "issues": issues, "cross_coverage": coverage_report.model_dump()}
     if as_json:
-        print(json.dumps(result, indent=2))
+        print(json.dumps(result, indent=2))  # noqa: T201
     else:
         if not issues:
             console.print("[green]CLI audit passed.[/green]")

@@ -11,6 +11,7 @@ class FileConfigStore:
     """File-based configuration store using .gzkit.json."""
 
     def __init__(self, path: Path | None = None) -> None:
+        """Initialize with an optional path to the configuration file."""
         self._path = path or Path(".gzkit.json")
 
     def load(self) -> dict:

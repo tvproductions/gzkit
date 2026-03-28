@@ -215,6 +215,7 @@ class TestCheckSurfaces(unittest.TestCase):
                 if s.surface == surface_name:
                     return s
         self.fail(f"Surface '{surface_name}' not found in coverage results")
+        return None  # type: ignore[return-value]
 
     @covers("REQ-0.0.6-01-03")
     def test_manpage_present(self) -> None:

@@ -50,6 +50,7 @@ class OutputFormatter:
     def __init__(
         self, mode: OutputMode | str = OutputMode.HUMAN, *, console: Console | None = None
     ) -> None:
+        """Initialize the formatter with the given output mode."""
         if isinstance(mode, str) and not isinstance(mode, OutputMode):
             try:
                 mode = OutputMode(mode)
@@ -99,12 +100,12 @@ class OutputFormatter:
             return
 
         if err:
-            print(message, file=sys.stderr)
+            print(message, file=sys.stderr)  # noqa: T201
             return
 
         if self._mode == OutputMode.JSON:
             # In json mode, non-data text goes to stderr
-            print(message, file=sys.stderr)
+            print(message, file=sys.stderr)  # noqa: T201
             return
 
         self._console.print(message)
@@ -122,7 +123,7 @@ class OutputFormatter:
 
         if self._mode == OutputMode.JSON:
             json_str = json.dumps(payload, indent=2, default=str)
-            print(json_str, file=sys.stdout)
+            print(json_str, file=sys.stdout)  # noqa: T201
             return
 
         if isinstance(payload, dict | list):
@@ -145,7 +146,7 @@ class OutputFormatter:
 
     def err(self, message: str) -> None:
         """Output an error message (always to stderr, all modes)."""
-        print(message, file=sys.stderr)
+        print(message, file=sys.stderr)  # noqa: T201
 
     def log(self, message: str) -> None:
         """Output a log/diagnostic message.
@@ -157,7 +158,7 @@ class OutputFormatter:
             return
 
         if self._mode == OutputMode.JSON:
-            print(message, file=sys.stderr)
+            print(message, file=sys.stderr)  # noqa: T201
             return
 
         self._console.print(message)
@@ -170,7 +171,7 @@ class OutputFormatter:
         if self._mode == OutputMode.DEBUG:
             self._console.print(f"[dim]DEBUG: {message}[/dim]")
         elif self._mode == OutputMode.JSON:
-            print(f"DEBUG: {message}", file=sys.stderr)
+            print(f"DEBUG: {message}", file=sys.stderr)  # noqa: T201
 
     def verbose(self, message: str) -> None:
         """Output verbose-level information.
@@ -221,7 +222,7 @@ class OutputFormatter:
         if hasattr(data, "model_dump_json"):
             # Pydantic BaseModel (duck-typed)
             if self._mode == OutputMode.JSON:
-                print(data.model_dump_json(), file=sys.stdout)
+                print(data.model_dump_json(), file=sys.stdout)  # noqa: T201
             else:
                 formatted = json.dumps(data.model_dump(), indent=2, sort_keys=True)
                 self._console.print(formatted)
@@ -229,7 +230,7 @@ class OutputFormatter:
 
         if isinstance(data, str):
             if self._mode == OutputMode.JSON:
-                print(data, file=sys.stdout)
+                print(data, file=sys.stdout)  # noqa: T201
             else:
                 self._console.print(data)
             return
@@ -237,14 +238,14 @@ class OutputFormatter:
         if isinstance(data, dict | list):
             json_str = json.dumps(data, indent=2, sort_keys=True)
             if self._mode == OutputMode.JSON:
-                print(json_str, file=sys.stdout)
+                print(json_str, file=sys.stdout)  # noqa: T201
             else:
                 self._console.print(json_str)
             return
 
         # Fallback for other types
         if self._mode == OutputMode.JSON:
-            print(json.dumps(data, default=str), file=sys.stdout)
+            print(json.dumps(data, default=str), file=sys.stdout)  # noqa: T201
         else:
             self._console.print(str(data))
 
@@ -253,7 +254,7 @@ class OutputFormatter:
 
         Errors are NEVER suppressed, even in quiet mode.
         """
-        print(message, file=sys.stderr)
+        print(message, file=sys.stderr)  # noqa: T201
 
     def emit_table(self, rich_table: Table) -> None:
         """Render a Rich table in HUMAN mode; emit dict-list JSON in JSON mode.
@@ -272,7 +273,7 @@ class OutputFormatter:
                     cell = rich_table.columns[col_index]._cells[row_index]
                     row_data[str(col_name)] = str(cell)
                 rows.append(row_data)
-            print(json.dumps(rows, indent=2, sort_keys=True), file=sys.stdout)
+            print(json.dumps(rows, indent=2, sort_keys=True), file=sys.stdout)  # noqa: T201
             return
 
         self._console.print(rich_table)
@@ -287,7 +288,7 @@ class OutputFormatter:
             return
 
         if self._mode == OutputMode.JSON:
-            print(json.dumps({"label": label, "success": success}, sort_keys=True), file=sys.stdout)
+            print(json.dumps({"label": label, "success": success}, sort_keys=True), file=sys.stdout)  # noqa: T201
             return
 
         symbol = "\u2713" if success else "\u2717"
@@ -299,7 +300,7 @@ class OutputFormatter:
 
         Always emitted; never suppressed.
         """
-        print(f"BLOCKERS: {message}", file=sys.stderr)
+        print(f"BLOCKERS: {message}", file=sys.stderr)  # noqa: T201
 
     def progress_context(self, total: int, description: str = "Working") -> ProgressContext:
         """Return a progress context manager for step-counted work.
@@ -340,6 +341,7 @@ class ProgressContext:
         suppressed: bool,
         is_tty: bool,
     ) -> None:
+        """Initialize progress context with step count and display settings."""
         self._total = total
         self._description = description
         self._suppressed = suppressed
@@ -349,6 +351,7 @@ class ProgressContext:
         self._task_id: Any = None
 
     def __enter__(self) -> ProgressContext:
+        """Enter the progress context and start the progress display."""
         if self._suppressed:
             return self
 
@@ -374,6 +377,7 @@ class ProgressContext:
         return self
 
     def __exit__(self, *exc: object) -> None:
+        """Exit the progress context and stop the progress display."""
         if self._progress is not None:
             self._progress.stop()
 
@@ -394,7 +398,7 @@ class ProgressContext:
         else:
             # Non-TTY: periodic status lines to stderr
             step_label = label if label else self._description
-            print(
+            print(  # noqa: T201
                 f"[{self._current}/{self._total}] {step_label}",
                 file=sys.stderr,
             )

@@ -165,7 +165,7 @@ class Ledger:
         if not self.path.exists():
             self.create()
 
-        with open(self.path, "a") as f:
+        with self.path.open("a") as f:
             json.dump(event.model_dump(), f, separators=(",", ":"))
             f.write("\n")
 
@@ -180,7 +180,7 @@ class Ledger:
             return []
 
         events = []
-        with open(self.path) as f:
+        with self.path.open() as f:
             for line in f:
                 line = line.strip()
                 if line:

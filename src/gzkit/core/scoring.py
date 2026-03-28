@@ -120,7 +120,8 @@ def compute_scorecard(
     }
     for label, value in dimensions.items():
         if value not in (0, 1, 2):
-            raise ValueError(f"{label} score must be 0, 1, or 2 (got {value}).")
+            msg = f"{label} score must be 0, 1, or 2 (got {value})."
+            raise ValueError(msg)
 
     splits = {
         "Single-Narrative": split_single_narrative,
@@ -130,16 +131,18 @@ def compute_scorecard(
     }
     for label, value in splits.items():
         if value not in (0, 1):
-            raise ValueError(f"{label} split flag must be 0 or 1 (got {value}).")
+            msg = f"{label} split flag must be 0 or 1 (got {value})."
+            raise ValueError(msg)
 
     dimension_total = sum(dimensions.values())
     baseline_min, baseline_max = baseline_range_for_total(dimension_total)
     selected = baseline_selected if baseline_selected is not None else baseline_min
     if not _is_in_range(selected, baseline_min, baseline_max):
-        raise ValueError(
+        msg = (
             "Baseline selected must be inside computed baseline range "
             f"{baseline_min if baseline_max is None else f'{baseline_min}-{baseline_max}'}."
         )
+        raise ValueError(msg)
 
     split_total = sum(splits.values())
     final_target = selected + split_total
@@ -165,7 +168,8 @@ def compute_scorecard(
 def build_checklist_seed(semver: str, target_count: int) -> str:
     """Build deterministic checklist stub from final OBPI target count."""
     if target_count <= 0:
-        raise ValueError("Final target OBPI count must be positive.")
+        msg = "Final target OBPI count must be positive."
+        raise ValueError(msg)
     lines = [
         f"- [ ] OBPI-{semver}-{index:02d}: Define scope, constraints, and acceptance criteria"
         for index in range(1, target_count + 1)

@@ -110,7 +110,7 @@ def validate(
             "valid": len(errors) == 0,
             "errors": [e.model_dump(exclude_none=True) for e in errors],
         }
-        print(json.dumps(result, indent=2))
+        print(json.dumps(result, indent=2))  # noqa: T201
         return
 
     # Show what was validated

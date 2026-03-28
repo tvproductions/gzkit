@@ -4,6 +4,8 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class SurfaceResult(BaseModel):
+    """Result of a single documentation surface check for a command."""
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     surface: str = Field(
@@ -18,6 +20,8 @@ class SurfaceResult(BaseModel):
 
 
 class CommandCoverage(BaseModel):
+    """Documentation coverage results for a single CLI command."""
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     command: str = Field(..., description="CLI command name as discovered (e.g. 'adr status')")
@@ -28,6 +32,8 @@ class CommandCoverage(BaseModel):
 
 
 class OrphanedDoc(BaseModel):
+    """A documentation reference that points to a removed command."""
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     surface: str = Field(..., description="Which surface has the orphan")
@@ -36,6 +42,8 @@ class OrphanedDoc(BaseModel):
 
 
 class CoverageReport(BaseModel):
+    """Aggregate documentation coverage report across all CLI commands."""
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     commands_discovered: int = Field(..., description="Total CLI commands found by AST scanning")

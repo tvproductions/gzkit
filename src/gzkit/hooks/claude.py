@@ -263,7 +263,7 @@ def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) ->
     settings_path = project_root / config.paths.claude_settings
     settings_path.parent.mkdir(parents=True, exist_ok=True)
 
-    with open(settings_path, "w") as f:
+    with settings_path.open("w") as f:
         json.dump(settings, f, indent=2)
         f.write("\n")
 

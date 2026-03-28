@@ -80,8 +80,7 @@ def _run_gate_2(
     if result.success:
         console.print("  [green]✓[/green] Gate 2 (TDD): [green]PASS[/green]")
         # REQ-1: include eval results when datasets exist
-        eval_ok = _run_eval_delta(project_root, ledger, adr_id)
-        return eval_ok
+        return _run_eval_delta(project_root, ledger, adr_id)
     console.print("  [red]❌[/red] Gate 2 (TDD): [red]FAIL[/red]")
     return False
 
@@ -238,7 +237,7 @@ def gates_cmd(gate_number: int | None, adr: str | None) -> None:
     _m = _cli_main()
     import sys
 
-    print(
+    print(  # noqa: T201
         "⚠ Deprecated: `gz gates` will be removed in a future release. Use `gz closeout` instead.",
         file=sys.stderr,
     )

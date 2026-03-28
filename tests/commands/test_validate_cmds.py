@@ -47,7 +47,7 @@ Rules here
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            with open(".gzkit/ledger.jsonl", "a") as ledger_file:
+            with Path(".gzkit/ledger.jsonl").open("a") as ledger_file:
                 ledger_file.write("{not-json}\n")
 
             result = runner.invoke(main, ["validate", "--ledger"])
@@ -59,7 +59,7 @@ Rules here
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            with open(".gzkit/ledger.jsonl", "a") as ledger_file:
+            with Path(".gzkit/ledger.jsonl").open("a") as ledger_file:
                 ledger_file.write("{not-json}\n")
 
             result = runner.invoke(main, ["validate"])

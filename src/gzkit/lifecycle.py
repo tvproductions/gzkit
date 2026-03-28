@@ -94,7 +94,8 @@ class LifecycleStateMachine:
 
         """
         if content_type not in TRANSITION_TABLES:
-            raise KeyError(f"No transition table for content type: {content_type}")
+            msg = f"No transition table for content type: {content_type}"
+            raise KeyError(msg)
 
         allowed = get_allowed_transitions(content_type, from_state)
         if to_state not in allowed:

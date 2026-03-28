@@ -429,11 +429,13 @@ def _parse_canonical_frontmatter(path: Path) -> tuple[dict[str, Any], str]:
     """
     text = path.read_text(encoding="utf-8")
     if not text.startswith("---"):
-        raise ValueError(f"Rule file missing frontmatter delimiter: {path}")
+        msg = f"Rule file missing frontmatter delimiter: {path}"
+        raise ValueError(msg)
 
     parts = text.split("---", 2)
     if len(parts) < 3:
-        raise ValueError(f"Rule file has unclosed frontmatter: {path}")
+        msg = f"Rule file has unclosed frontmatter: {path}"
+        raise ValueError(msg)
 
     fm_text = parts[1].strip()
     body = parts[2].strip()
@@ -465,7 +467,8 @@ def load_rules(rules_dir: Path) -> list[CanonicalRule]:
     Raises pydantic.ValidationError if any rule has invalid frontmatter.
     """
     if not rules_dir.is_dir():
-        raise ValueError(f"Rules directory does not exist: {rules_dir}")
+        msg = f"Rules directory does not exist: {rules_dir}"
+        raise ValueError(msg)
 
     rules: list[CanonicalRule] = []
     for md_file in sorted(rules_dir.glob("*.md")):

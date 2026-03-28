@@ -124,7 +124,7 @@ class GzkitConfig(BaseModel):
         if not config_path.exists():
             return cls()
 
-        with open(config_path) as f:
+        with config_path.open() as f:
             content = f.read().strip()
             data = json.loads(content) if content else {}
 
@@ -154,7 +154,7 @@ class GzkitConfig(BaseModel):
         if not self.project_name:
             data.pop("project_name", None)
 
-        with open(config_path, "w") as f:
+        with config_path.open("w") as f:
             json.dump(data, f, indent=2)
             f.write("\n")
 

@@ -59,9 +59,11 @@ def obpi_withdraw_cmd(obpi: str, reason: str, dry_run: bool) -> None:
     graph = ledger.get_artifact_graph()
     info = graph.get(canonical_id, {})
     if info.get("type") != "obpi":
-        raise GzCliError(f"OBPI not found in ledger: {canonical_id}")
+        msg = f"OBPI not found in ledger: {canonical_id}"
+        raise GzCliError(msg)  # noqa: TRY003
     if info.get("withdrawn"):
-        raise GzCliError(f"OBPI is already withdrawn: {canonical_id}")
+        msg = f"OBPI is already withdrawn: {canonical_id}"
+        raise GzCliError(msg)  # noqa: TRY003
 
     parent = info.get("parent", "")
     event = obpi_withdrawn_event(
@@ -99,22 +101,26 @@ def obpi_emit_receipt_cmd(
     graph = ledger.get_artifact_graph()
     obpi_info = graph.get(obpi_id, {})
     if obpi_info.get("type") != "obpi":
-        raise GzCliError(f"OBPI not found in ledger: {obpi_id}")
+        msg = f"OBPI not found in ledger: {obpi_id}"
+        raise GzCliError(msg)  # noqa: TRY003
     parent_adr = obpi_info.get("parent")
     if isinstance(parent_adr, str) and _is_pool_adr_id(parent_adr):
-        raise GzCliError(
+        msg = (
             "Pool-linked OBPIs cannot be issued receipts: "
             f"{obpi_id} (parent: {parent_adr}). Promote parent ADR first."
         )
+        raise GzCliError(msg)  # noqa: TRY003
 
     evidence: dict[str, Any] | None = None
     if evidence_json:
         try:
             parsed = json.loads(evidence_json)
         except json.JSONDecodeError as exc:
-            raise GzCliError(f"Invalid --evidence-json: {exc}") from exc
+            msg = f"Invalid --evidence-json: {exc}"
+            raise GzCliError(msg) from exc  # noqa: TRY003
         if not isinstance(parsed, dict):
-            raise GzCliError("--evidence-json must decode to a JSON object")
+            msg = "--evidence-json must decode to a JSON object"
+            raise GzCliError(msg)  # noqa: TRY003
         evidence = parsed
 
     parent_lane = config.mode
@@ -204,13 +210,16 @@ def obpi_pipeline_cmd(
     graph = ledger.get_artifact_graph()
     info = graph.get(obpi_id, {})
     if info.get("type") != "obpi":
-        raise GzCliError(f"OBPI not found in ledger: {obpi_id}")
+        msg = f"OBPI not found in ledger: {obpi_id}"
+        raise GzCliError(msg)  # noqa: TRY003
 
     parent_adr = cast(str | None, info.get("parent"))
     if not parent_adr:
-        raise GzCliError(f"OBPI is missing a parent ADR link in the ledger: {obpi_id}")
+        msg = f"OBPI is missing a parent ADR link in the ledger: {obpi_id}"
+        raise GzCliError(msg)  # noqa: TRY003
     if _is_pool_adr_id(parent_adr):
-        raise GzCliError(f"Pool-linked OBPI cannot enter the pipeline: {obpi_id}")
+        msg = f"Pool-linked OBPI cannot enter the pipeline: {obpi_id}"
+        raise GzCliError(msg)  # noqa: TRY003
 
     _adr_file, resolved_parent = resolve_adr_file(project_root, config, parent_adr)
     obpi_content = obpi_file.read_text(encoding="utf-8")
@@ -294,16 +303,18 @@ def obpi_pipeline_cmd(
 
     if start_from == "sync":
         if not attestor:
-            raise GzCliError(
+            msg = (
                 "--attestor is required for --from=sync. "
                 "Use --attestor <name> for attested OBPIs "
                 "or --attestor agent:<name> for agent-closed OBPIs."
             )
+            raise GzCliError(msg)  # noqa: TRY003
         if not evidence_json:
-            raise GzCliError(
+            msg = (
                 "--evidence-json is required for --from=sync. "
                 "Must include value_narrative and key_proof fields."
             )
+            raise GzCliError(msg)  # noqa: TRY003
         _run_pipeline_sync_stage(
             project_root=project_root,
             plans_dir=plans_dir,

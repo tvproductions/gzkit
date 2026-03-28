@@ -30,7 +30,8 @@ from gzkit.ledger import (
 def _check_non_empty_str(v: str) -> str:
     """Validate that a string is non-empty after stripping whitespace."""
     if not v.strip():
-        raise ValueError("must be a non-empty string")
+        msg = "must be a non-empty string"
+        raise ValueError(msg)
     return v
 
 
@@ -57,32 +58,38 @@ class ReqProofInput(BaseModel):
     @classmethod
     def _non_empty(cls, v: str, info: Any) -> str:
         if not v.strip():
-            raise ValueError(f"{info.field_name} must be a non-empty string")
+            msg = f"{info.field_name} must be a non-empty string"
+            raise ValueError(msg)
         return v
 
     @field_validator("kind")
     @classmethod
     def _valid_kind(cls, v: str) -> str:
         if not v.strip():
-            raise ValueError("kind must be a non-empty string")
+            msg = "kind must be a non-empty string"
+            raise ValueError(msg)
         if v not in REQ_PROOF_INPUT_KINDS:
-            raise ValueError("kind must be a supported proof-input kind")
+            msg = "kind must be a supported proof-input kind"
+            raise ValueError(msg)
         return v
 
     @field_validator("status")
     @classmethod
     def _valid_status(cls, v: str) -> str:
         if not v.strip():
-            raise ValueError("status must be a non-empty string")
+            msg = "status must be a non-empty string"
+            raise ValueError(msg)
         if v not in REQ_PROOF_INPUT_STATUSES:
-            raise ValueError("status must be present or missing")
+            msg = "status must be present or missing"
+            raise ValueError(msg)
         return v
 
     @field_validator("scope", "gap_reason")
     @classmethod
     def _optional_non_empty(cls, v: str | None, info: Any) -> str | None:
         if v is not None and (not isinstance(v, str) or not v.strip()):
-            raise ValueError(f"{info.field_name} must be a non-empty string when present")
+            msg = f"{info.field_name} must be a non-empty string when present"
+            raise ValueError(msg)
         return v
 
 
@@ -117,7 +124,8 @@ class GitSyncState(BaseModel):
     @classmethod
     def _optional_non_empty(cls, v: str | None, info: Any) -> str | None:
         if v is not None and (not isinstance(v, str) or not v.strip()):
-            raise ValueError(f"{info.field_name} must be a non-empty string when present")
+            msg = f"{info.field_name} must be a non-empty string when present"
+            raise ValueError(msg)
         return v
 
 
@@ -147,35 +155,40 @@ class ObpiReceiptEvidence(BaseModel):
         v: list[ReqProofInput] | None,
     ) -> list[ReqProofInput] | None:
         if v is not None and not v:
-            raise ValueError("req_proof_inputs must be a non-empty array when present")
+            msg = "req_proof_inputs must be a non-empty array when present"
+            raise ValueError(msg)
         return v
 
     @field_validator("attestation_requirement")
     @classmethod
     def _valid_attestation_req(cls, v: str | None) -> str | None:
         if v is not None and v not in OBPI_ATTESTATION_REQUIREMENTS:
-            raise ValueError("attestation_requirement must be required or optional")
+            msg = "attestation_requirement must be required or optional"
+            raise ValueError(msg)
         return v
 
     @field_validator("parent_lane")
     @classmethod
     def _valid_lane(cls, v: str | None) -> str | None:
         if v is not None and v not in {"lite", "heavy"}:
-            raise ValueError("parent_lane must be lite or heavy")
+            msg = "parent_lane must be lite or heavy"
+            raise ValueError(msg)
         return v
 
     @field_validator("attestation_date")
     @classmethod
     def _valid_date_format(cls, v: str | None) -> str | None:
         if v is not None and (not isinstance(v, str) or not re.match(r"^\d{4}-\d{2}-\d{2}$", v)):
-            raise ValueError("attestation_date must use YYYY-MM-DD when present")
+            msg = "attestation_date must use YYYY-MM-DD when present"
+            raise ValueError(msg)
         return v
 
     @field_validator("recorder_source")
     @classmethod
     def _non_empty_recorder(cls, v: str | None) -> str | None:
         if v is not None and (not isinstance(v, str) or not v.strip()):
-            raise ValueError("recorder_source must be a non-empty string when present")
+            msg = "recorder_source must be a non-empty string when present"
+            raise ValueError(msg)
         return v
 
     @field_validator("recorder_warnings")
@@ -183,10 +196,12 @@ class ObpiReceiptEvidence(BaseModel):
     def _valid_recorder_warnings(cls, v: list[str] | None) -> list[str] | None:
         if v is not None:
             if not isinstance(v, list):
-                raise ValueError("recorder_warnings must be an array of non-empty strings")
+                msg = "recorder_warnings must be an array of non-empty strings"
+                raise ValueError(msg)
             for i, item in enumerate(v):
                 if not isinstance(item, str) or not item.strip():
-                    raise ValueError(f"recorder_warnings[{i}] must be a non-empty string")
+                    msg = f"recorder_warnings[{i}] must be a non-empty string"
+                    raise ValueError(msg)
         return v
 
 

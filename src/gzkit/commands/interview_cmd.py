@@ -153,7 +153,8 @@ def interview(document_type: str) -> None:
     else:
         parent_input = answers.get("parent", "").strip()
         if not parent_input:
-            raise GzCliError("OBPI interview requires a parent ADR ID.")
+            msg = "OBPI interview requires a parent ADR ID."
+            raise GzCliError(msg)  # noqa: TRY003
         parent_adr = parent_input if parent_input.startswith("ADR-") else f"ADR-{parent_input}"
         canonical_parent = ledger.canonicalize_id(parent_adr)
         adr_file, resolved_parent = resolve_adr_file(project_root, config, canonical_parent)

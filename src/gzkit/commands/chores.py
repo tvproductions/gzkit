@@ -159,7 +159,8 @@ def _resolve_chore(slug: str) -> tuple[Path, ChoreDefinition]:
     registry_path, registry = _load_chores_registry()
     chore = registry.get(slug)
     if chore is None:
-        raise GzCliError(f"BLOCKERS:\n- Unknown chore slug: {slug}")
+        msg = f"BLOCKERS:\n- Unknown chore slug: {slug}"
+        raise GzCliError(msg)  # noqa: TRY003
     return registry_path, chore
 
 
@@ -222,7 +223,8 @@ def chores_show(slug: str) -> None:
     _registry_path, chore = _resolve_chore(slug)
     chore_md = project_root / chore.path / "CHORE.md"
     if not chore_md.exists():
-        raise GzCliError(f"BLOCKERS:\n- Missing CHORE.md: {chore.path}/CHORE.md")
+        msg = f"BLOCKERS:\n- Missing CHORE.md: {chore.path}/CHORE.md"
+        raise GzCliError(msg)  # noqa: TRY003
     console.print(chore_md.read_text(encoding="utf-8"))
 
 
@@ -285,7 +287,7 @@ def chores_run(slug: str) -> None:
                 "FAIL",
                 results,
             )
-            raise GzCliError(
+            msg = (
                 "Chore criterion failed:\n"
                 f"- chore: {chore.slug}\n"
                 f"- criterion: {result.criterion.command}\n"
@@ -293,6 +295,7 @@ def chores_run(slug: str) -> None:
                 f"- log: "
                 f"{log_path.relative_to(project_root).as_posix()}"
             )
+            raise GzCliError(msg)  # noqa: TRY003
 
     log_path = _write_chore_log(project_root, chore, "PASS", results)
     console.print(
@@ -309,10 +312,12 @@ def chores_audit(*, all_chores: bool, slug: str | None) -> None:
         chores = sorted(registry.values(), key=lambda item: item.slug)
     else:
         if not slug:
-            raise GzCliError("BLOCKERS:\n- Provide --all or --slug <slug>.")
+            msg = "BLOCKERS:\n- Provide --all or --slug <slug>."
+            raise GzCliError(msg)  # noqa: TRY003
         chore = registry.get(slug)
         if chore is None:
-            raise GzCliError(f"BLOCKERS:\n- Unknown chore slug: {slug}")
+            msg = f"BLOCKERS:\n- Unknown chore slug: {slug}"
+            raise GzCliError(msg)  # noqa: TRY003
         chores = [chore]
 
     table = Table(title="Chores Audit")

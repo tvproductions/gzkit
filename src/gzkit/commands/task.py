@@ -123,7 +123,8 @@ def task_start_cmd(task_id_str: str, *, as_json: bool = False) -> None:
     current = _current_task_status(ledger, str(task_id), obpi_id)
 
     if current not in (TaskStatus.PENDING, TaskStatus.BLOCKED):
-        raise GzCliError(f"Invalid TASK transition: {current.value} -> in_progress")
+        msg = f"Invalid TASK transition: {current.value} -> in_progress"
+        raise GzCliError(msg)  # noqa: TRY003
 
     event = TaskStartedEvent(
         event="task_started",
@@ -163,7 +164,8 @@ def task_complete_cmd(task_id_str: str, *, as_json: bool = False) -> None:
     current = _current_task_status(ledger, str(task_id), obpi_id)
 
     if current != TaskStatus.IN_PROGRESS:
-        raise GzCliError(f"Invalid TASK transition: {current.value} -> completed")
+        msg = f"Invalid TASK transition: {current.value} -> completed"
+        raise GzCliError(msg)  # noqa: TRY003
 
     event = TaskCompletedEvent(
         event="task_completed",
@@ -202,7 +204,8 @@ def task_block_cmd(task_id_str: str, reason: str, *, as_json: bool = False) -> N
     current = _current_task_status(ledger, str(task_id), obpi_id)
 
     if current != TaskStatus.IN_PROGRESS:
-        raise GzCliError(f"Invalid TASK transition: {current.value} -> blocked")
+        msg = f"Invalid TASK transition: {current.value} -> blocked"
+        raise GzCliError(msg)  # noqa: TRY003
 
     event = TaskBlockedEvent(
         event="task_blocked",
@@ -243,7 +246,8 @@ def task_escalate_cmd(task_id_str: str, reason: str, *, as_json: bool = False) -
     current = _current_task_status(ledger, str(task_id), obpi_id)
 
     if current != TaskStatus.IN_PROGRESS:
-        raise GzCliError(f"Invalid TASK transition: {current.value} -> escalated")
+        msg = f"Invalid TASK transition: {current.value} -> escalated"
+        raise GzCliError(msg)  # noqa: TRY003
 
     event = TaskEscalatedEvent(
         event="task_escalated",
