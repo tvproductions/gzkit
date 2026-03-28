@@ -144,7 +144,7 @@ uv run python -m unittest tests.test_pipeline_runtime tests.test_hooks tests.com
 
 - [x] REQ-0.13.0-05-01: Given the canonical pipeline runtime in `src/gzkit/pipeline_runtime.py`, when `uv run gz obpi pipeline` runs or generated Claude pipeline hooks execute, then both surfaces derive marker state and next-step guidance from that shared runtime instead of duplicated local helpers.
 - [x] REQ-0.13.0-05-02: Given an active OBPI pipeline marker, when the router, write gate, or completion reminder emits operator guidance, then it uses the canonical `uv run gz obpi pipeline ...` / guarded-sync flow and no longer points to stale `/gz-obpi-audit`, `/gz-obpi-sync`, or manual marker-release recovery steps.
-- [x] REQ-0.13.0-05-03: Given the wrapper skill, active hook docs, and dormant validator compatibility surface, when an operator reads or triggers them, then they describe the shared runtime as implemented and no longer misstate the stage engine as future or audit-first behavior.
+- [x] REQ-0.13.0-05-03: [doc] Given the wrapper skill, active hook docs, and dormant validator compatibility surface, when an operator reads or triggers them, then they describe the shared runtime as implemented and no longer misstate the stage engine as future or audit-first behavior.
 
 ## Completion Checklist
 

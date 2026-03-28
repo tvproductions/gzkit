@@ -143,7 +143,7 @@ uv run -m behave features/
       executed directly.
 - [x] REQ-0.12.0-02-02: The hook preserves AirlineOps parity for receipt
       freshness and the advisory prior-art warning.
-- [x] REQ-0.12.0-02-03: The repo documents the hook as ported but still
+- [x] REQ-0.12.0-02-03: [doc] The repo documents the hook as ported but still
       unregistered in `.claude/settings.json`.
 
 ## Completion Checklist

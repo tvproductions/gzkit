@@ -164,7 +164,7 @@ uv run -m behave features/
 - [x] REQ-0.12.0-06-01: Generated `.claude/settings.json` wires the active
       pipeline hook chain on `ExitPlanMode`, `Write|Edit`, and `Bash` with
       exact matcher and command ordering.
-- [x] REQ-0.12.0-06-02: Generated README and operator-facing `gz-plan-audit`
+- [x] REQ-0.12.0-06-02: [doc] Generated README and operator-facing `gz-plan-audit`
       guidance describe the hook chain as active and document the actual
       matcher order instead of pending registration.
 - [x] REQ-0.12.0-06-03: Tests lock the settings layout and order, and the

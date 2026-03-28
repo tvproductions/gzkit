@@ -142,12 +142,12 @@ uv run -m behave features/
 
 ## Acceptance Criteria
 
-- [x] REQ-0.12.0-07-01: `.gzkit/skills/gz-plan-audit/SKILL.md` exists and
+- [x] REQ-0.12.0-07-01: [doc] `.gzkit/skills/gz-plan-audit/SKILL.md` exists and
       defines the ADR <-> OBPI <-> Plan audit flow plus the
       `.claude/plans/.plan-audit-receipt.json` contract using gzkit paths.
-- [x] REQ-0.12.0-07-02: Mirror and generated control surfaces synchronize from
+- [x] REQ-0.12.0-07-02: [doc] Mirror and generated control surfaces synchronize from
       the canonical skill without leaving drift.
-- [x] REQ-0.12.0-07-03: Operator docs distinguish the now-ported skill and
+- [x] REQ-0.12.0-07-03: [doc] Operator docs distinguish the now-ported skill and
       receipt contract from the still-pending blocking hook/runtime
       enforcement.
 
