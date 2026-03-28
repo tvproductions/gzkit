@@ -16,7 +16,15 @@ from gzkit.events import (
     TaskStartedEvent,
     parse_typed_event,
 )
-from gzkit.tasks import TaskEntity, TaskId, TaskStatus, create_task_from_plan_step
+from gzkit.tasks import (
+    TaskEntity,
+    TaskId,
+    TaskStatus,
+    create_task_from_plan_step,
+    format_commit_trailer,
+    parse_task_trailers,
+    resolve_task_chain,
+)
 
 
 class TestTaskId(unittest.TestCase):
@@ -416,6 +424,109 @@ class TestAllFourEventTypes(unittest.TestCase):
             data = json.loads(evt.model_dump_json())
             for field in required:
                 self.assertIn(field, data, f"Missing {field} in {data['event']}")
+
+
+# ---------------------------------------------------------------------------
+# Git commit linkage (OBPI-0.22.0-03)
+# ---------------------------------------------------------------------------
+
+
+class TestFormatCommitTrailer(unittest.TestCase):
+    """@covers REQ-0.22.0-03-02."""
+
+    def test_format_trailer_from_task_entity(self) -> None:
+        """REQ-0.22.0-03-02: Formatter produces valid trailer line."""
+        task = TaskEntity(
+            id=TaskId.parse("TASK-0.20.0-01-01-01"),
+            description="Implement the REQ model",
+            status=TaskStatus.PENDING,
+            parent_req="REQ-0.20.0-01-01",
+            parent_obpi="OBPI-0.20.0-01",
+        )
+        result = format_commit_trailer(task)
+        self.assertEqual(result, "Task: TASK-0.20.0-01-01-01")
+
+    def test_format_trailer_from_task_id(self) -> None:
+        """Formatter also accepts a TaskId directly."""
+        tid = TaskId.parse("TASK-0.22.0-03-12-05")
+        result = format_commit_trailer(tid)
+        self.assertEqual(result, "Task: TASK-0.22.0-03-12-05")
+
+
+class TestParseTaskTrailers(unittest.TestCase):
+    """@covers REQ-0.22.0-03-01, REQ-0.22.0-03-03."""
+
+    def test_parse_single_trailer(self) -> None:
+        """REQ-0.22.0-03-01: Extract single TASK ID from commit message."""
+        msg = "Add REQ model implementation\n\nTask: TASK-0.20.0-01-01-01\n"
+        result = parse_task_trailers(msg)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(str(result[0]), "TASK-0.20.0-01-01-01")
+
+    def test_parse_multiple_trailers(self) -> None:
+        """REQ-0.22.0-03-03: Multiple Task trailers all extracted."""
+        msg = (
+            "Implement REQ model and factory\n"
+            "\n"
+            "Task: TASK-0.20.0-01-01-01\n"
+            "Task: TASK-0.20.0-01-01-02\n"
+        )
+        result = parse_task_trailers(msg)
+        self.assertEqual(len(result), 2)
+        self.assertEqual(str(result[0]), "TASK-0.20.0-01-01-01")
+        self.assertEqual(str(result[1]), "TASK-0.20.0-01-01-02")
+
+    def test_no_trailers_returns_empty(self) -> None:
+        msg = "Simple commit message\n\nNo trailers here.\n"
+        result = parse_task_trailers(msg)
+        self.assertEqual(result, [])
+
+    def test_ignores_non_task_trailers(self) -> None:
+        msg = (
+            "Fix bug\n\nCo-Authored-By: Someone\nTask: TASK-0.20.0-01-01-01\nSigned-off-by: Jeff\n"
+        )
+        result = parse_task_trailers(msg)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(str(result[0]), "TASK-0.20.0-01-01-01")
+
+    def test_ignores_task_keyword_in_body(self) -> None:
+        """Only trailer-section lines are parsed, not body text."""
+        msg = (
+            "Work on Task: TASK-0.20.0-01-01-99 in the body\n"
+            "\n"
+            "This mentions Task: TASK-0.20.0-01-01-98 mid-paragraph.\n"
+            "\n"
+            "Task: TASK-0.20.0-01-01-01\n"
+        )
+        result = parse_task_trailers(msg)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(str(result[0]), "TASK-0.20.0-01-01-01")
+
+
+class TestResolveTaskChain(unittest.TestCase):
+    """@covers REQ-0.22.0-03-04."""
+
+    def test_resolve_chain(self) -> None:
+        """REQ-0.22.0-03-04: Resolve TASK → REQ → OBPI → ADR chain."""
+        tid = TaskId.parse("TASK-0.20.0-01-01-01")
+        chain = resolve_task_chain(tid)
+        self.assertEqual(chain["task"], "TASK-0.20.0-01-01-01")
+        self.assertEqual(chain["req"], "REQ-0.20.0-01-01")
+        self.assertEqual(chain["obpi"], "OBPI-0.20.0-01")
+        self.assertEqual(chain["adr"], "ADR-0.20.0")
+
+    def test_resolve_chain_different_ids(self) -> None:
+        tid = TaskId.parse("TASK-0.22.0-03-12-05")
+        chain = resolve_task_chain(tid)
+        self.assertEqual(chain["task"], "TASK-0.22.0-03-12-05")
+        self.assertEqual(chain["req"], "REQ-0.22.0-03-12")
+        self.assertEqual(chain["obpi"], "OBPI-0.22.0-03")
+        self.assertEqual(chain["adr"], "ADR-0.22.0")
+
+    def test_resolve_chain_keys(self) -> None:
+        tid = TaskId.parse("TASK-0.20.0-01-01-01")
+        chain = resolve_task_chain(tid)
+        self.assertEqual(set(chain.keys()), {"task", "req", "obpi", "adr"})
 
 
 if __name__ == "__main__":
