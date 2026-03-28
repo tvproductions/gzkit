@@ -96,7 +96,7 @@ Make `audit_cmd()` automatically transition the ADR lifecycle status from Comple
 - [x] REQ-0.19.0-07-01: Given an ADR in Completed state with all audit verification commands passing, when `gz audit ADR-X.Y.Z` completes, then a `lifecycle_transition` event with `from_state="Completed"` and `to_state="Validated"` is appended to the ledger.
 - [x] REQ-0.19.0-07-02: Given an ADR in Completed state with one or more audit verification commands failing, when `gz audit ADR-X.Y.Z` completes, then no `lifecycle_transition` event is appended and the ADR remains in Completed state.
 - [x] REQ-0.19.0-07-03: Given `gz audit ADR-X.Y.Z --dry-run`, when the command completes, then no `lifecycle_transition` event is appended to the ledger regardless of verification outcomes.
-- [x] REQ-0.19.0-07-04: Given an ADR that is not in Completed state (e.g., Accepted or Validated), when `gz audit ADR-X.Y.Z` runs, then the lifecycle transition is skipped without error and a warning is printed.
+- [x] REQ-0.19.0-07-04: [doc] Given an ADR that is not in Completed state (e.g., Accepted or Validated), when `gz audit ADR-X.Y.Z` runs, then the lifecycle transition is skipped without error and a warning is printed.
 - [x] REQ-0.19.0-07-05: Given a successful audit run, when the `lifecycle_transition` event is written, then existing audit artifacts (AUDIT.md, AUDIT_PLAN.md, proofs/) are unmodified by the transition logic.
 
 ## Verification

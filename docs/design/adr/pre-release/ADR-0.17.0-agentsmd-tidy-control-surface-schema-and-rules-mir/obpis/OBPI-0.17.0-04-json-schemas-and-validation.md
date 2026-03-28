@@ -132,7 +132,7 @@ uv run gz validate --surfaces
 - [x] REQ-0.17.0-04-04: `_validate_instruction_frontmatter()` uses `InstructionFrontmatter` model
 - [x] REQ-0.17.0-04-05: Cross-validation tests for skill schema alignment pass in `test_schemas.py`
 - [x] REQ-0.17.0-04-06: Cross-validation tests for instruction/rule schema alignment pass in `test_schemas.py`
-- [x] REQ-0.17.0-04-07: `uv run gz validate --surfaces` produces equivalent results to before
+- [x] REQ-0.17.0-04-07: [doc] `uv run gz validate --surfaces` produces equivalent results to before
 
 ## Completion Checklist
 

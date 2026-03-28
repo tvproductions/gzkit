@@ -137,7 +137,7 @@ print('PASS: Skills not embedded in CLAUDE.md')
 
 ## Acceptance Criteria
 
-- [x] REQ-0.17.0-03-01: CLAUDE.md template is <=60 lines with 6 placeholder variables
+- [x] REQ-0.17.0-03-01: [doc] CLAUDE.md template is <=60 lines with 6 placeholder variables
 - [x] REQ-0.17.0-03-02: Generated CLAUDE.md delegates skills to `.claude/skills/` (not embedded)
 - [x] REQ-0.17.0-03-03: Generated CLAUDE.md delegates rules to `.claude/rules/` (not inlined)
 - [x] REQ-0.17.0-03-04: CLAUDE.md declares `AGENTS.md` as authoritative governance contract

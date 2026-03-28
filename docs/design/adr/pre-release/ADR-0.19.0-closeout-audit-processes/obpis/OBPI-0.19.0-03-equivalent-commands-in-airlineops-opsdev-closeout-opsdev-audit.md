@@ -117,12 +117,12 @@ uv run gz audit ADR-0.19.0 --dry-run --json
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.19.0-03-01: Given OBPI-0.19.0-01 defines the gzkit closeout pipeline stages, when the parity checklist is produced, then every closeout stage (OBPI check, gate execution, gate recording, attestation prompt, attestation recording, version bump, ADR status transition) has a corresponding row mapping to the `opsdev closeout` equivalent with a Parity Status of Identical, Permitted Divergence, or Gap.
-- [ ] REQ-0.19.0-03-02: Given OBPI-0.19.0-02 defines the gzkit audit pipeline stages, when the parity checklist is produced, then every audit stage (attestation guard, directory creation, verification execution, proof writing, plan generation, report generation, receipt emission, status transition) has a corresponding row mapping to the `opsdev audit` equivalent.
-- [ ] REQ-0.19.0-03-03: Given both closeout and audit checklists are complete, when the exit code rows are reviewed, then gzkit and airlineops use identical exit code semantics: 0 for full pipeline success, 1 for any blocker or failure, with the same conditions producing the same code.
-- [ ] REQ-0.19.0-03-04: Given the parity checklist is complete, when error message rows are reviewed, then common failure modes (unattested ADR, incomplete OBPIs, gate failure) produce textually identical messages modulo the tool name (`gz` vs `opsdev`).
-- [ ] REQ-0.19.0-03-05: Given the parity checklist is complete, when any row is marked "Gap", then that row includes a linked GHI number or OBPI reference identifying the remediation plan and timeline.
-- [ ] REQ-0.19.0-03-06: Given the `--dry-run --json` output of `gz closeout` and `opsdev closeout`, when the JSON schemas are compared, then the top-level keys and value types are structurally identical (same field names, same nesting, same array shapes).
+- [ ] REQ-0.19.0-03-01: [doc] Given OBPI-0.19.0-01 defines the gzkit closeout pipeline stages, when the parity checklist is produced, then every closeout stage (OBPI check, gate execution, gate recording, attestation prompt, attestation recording, version bump, ADR status transition) has a corresponding row mapping to the `opsdev closeout` equivalent with a Parity Status of Identical, Permitted Divergence, or Gap.
+- [ ] REQ-0.19.0-03-02: [doc] Given OBPI-0.19.0-02 defines the gzkit audit pipeline stages, when the parity checklist is produced, then every audit stage (attestation guard, directory creation, verification execution, proof writing, plan generation, report generation, receipt emission, status transition) has a corresponding row mapping to the `opsdev audit` equivalent.
+- [ ] REQ-0.19.0-03-03: [doc] Given both closeout and audit checklists are complete, when the exit code rows are reviewed, then gzkit and airlineops use identical exit code semantics: 0 for full pipeline success, 1 for any blocker or failure, with the same conditions producing the same code.
+- [ ] REQ-0.19.0-03-04: [doc] Given the parity checklist is complete, when error message rows are reviewed, then common failure modes (unattested ADR, incomplete OBPIs, gate failure) produce textually identical messages modulo the tool name (`gz` vs `opsdev`).
+- [ ] REQ-0.19.0-03-05: [doc] Given the parity checklist is complete, when any row is marked "Gap", then that row includes a linked GHI number or OBPI reference identifying the remediation plan and timeline.
+- [ ] REQ-0.19.0-03-06: [doc] Given the `--dry-run --json` output of `gz closeout` and `opsdev closeout`, when the JSON schemas are compared, then the top-level keys and value types are structurally identical (same field names, same nesting, same array shapes).
 
 ## Completion Checklist
 

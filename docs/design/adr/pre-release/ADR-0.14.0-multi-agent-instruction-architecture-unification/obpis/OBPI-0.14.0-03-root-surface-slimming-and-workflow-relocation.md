@@ -154,10 +154,10 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.14.0-03-01: Given generated root control surfaces, when the templates render, then recurring workflow prose is removed from always-loaded root files and replaced by concise references to skills/playbooks.
-- [ ] REQ-0.14.0-03-02: Given existing recurring workflows, when gzkit syncs surfaces, then the authoritative workflow content remains accessible through canonical skills or thin wrappers.
-- [ ] REQ-0.14.0-03-03: Given the new root surfaces, when they are audited for size and content, then they stay focused on durable repo rules rather than full catalogs and repetitive task guidance.
-- [ ] REQ-0.14.0-03-04: Given overlapping wrappers such as `.claude/commands/commit.md` and `.claude/agents/git-sync-repo.md`, when the relocation completes, then the canonical workflow remains the skill definition and wrappers do not become divergent contracts.
+- [ ] REQ-0.14.0-03-01: [doc] Given generated root control surfaces, when the templates render, then recurring workflow prose is removed from always-loaded root files and replaced by concise references to skills/playbooks.
+- [ ] REQ-0.14.0-03-02: [doc] Given existing recurring workflows, when gzkit syncs surfaces, then the authoritative workflow content remains accessible through canonical skills or thin wrappers.
+- [ ] REQ-0.14.0-03-03: [doc] Given the new root surfaces, when they are audited for size and content, then they stay focused on durable repo rules rather than full catalogs and repetitive task guidance.
+- [ ] REQ-0.14.0-03-04: [doc] Given overlapping wrappers such as `.claude/commands/commit.md` and `.claude/agents/git-sync-repo.md`, when the relocation completes, then the canonical workflow remains the skill definition and wrappers do not become divergent contracts.
 
 ## Completion Checklist
 

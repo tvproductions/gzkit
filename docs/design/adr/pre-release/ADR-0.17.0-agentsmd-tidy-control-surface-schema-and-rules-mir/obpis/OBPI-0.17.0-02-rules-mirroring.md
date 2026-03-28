@@ -149,7 +149,7 @@ print('PASS: Pydantic models validated')
 - [x] REQ-0.17.0-02-04: `render_rules_to_dir()` writes mirrors and cleans stale generated files
 - [x] REQ-0.17.0-02-05: All 11 canonical rules produce mirrors in both vendor directories
 - [x] REQ-0.17.0-02-06: `instruction_audit.py` detects drift (missing rules, orphans, content divergence)
-- [x] REQ-0.17.0-02-07: Tests cover load, render, sync, and drift detection paths
+- [x] REQ-0.17.0-02-07: [doc] Tests cover load, render, sync, and drift detection paths
 
 ## Completion Checklist
 

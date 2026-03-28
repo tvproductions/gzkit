@@ -7,6 +7,7 @@ from gzkit.cli import main
 from gzkit.config import GzkitConfig
 from gzkit.ledger import Ledger, adr_created_event, obpi_created_event
 from gzkit.quality import QualityResult
+from gzkit.traceability import covers  # noqa: F401
 from tests.commands.common import CliRunner, _quick_init
 
 
@@ -178,6 +179,7 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertFalse(legacy_path.exists())
 
     @patch("gzkit.cli.main.run_command")
+    @covers("REQ-0.13.0-03-02")
     def test_verify_runs_commands_and_preserves_markers(self, run_command_mock) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -298,6 +300,7 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertEqual(payload["resume_point"], "verify")
             self.assertEqual(payload, self._load_json(legacy_path))
 
+    @covers("REQ-0.13.0-01-03")
     def test_ceremony_prints_next_steps_and_preserves_markers(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -317,6 +320,7 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertTrue(marker_path.exists())
             self.assertTrue(legacy_path.exists())
 
+    @covers("REQ-0.13.0-03-04")
     def test_ceremony_rewrites_markers_with_ceremony_stage_state(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -349,6 +353,7 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertEqual(payload, self._load_json(legacy_path))
 
     @patch("gzkit.cli.main.run_command")
+    @covers("REQ-0.13.0-04-02")
     def test_ceremony_lite_parent_self_closes_and_chains_sync(self, run_command_mock) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -380,6 +385,8 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertFalse(marker_path.exists())
             self.assertFalse(legacy_path.exists())
 
+    @covers("REQ-0.13.0-04-01")
+    @covers("REQ-0.13.0-04-03")
     def test_ceremony_foundation_parent_requires_human_attestation(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
