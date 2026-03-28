@@ -142,7 +142,7 @@ uv run -m behave features/
 - [x] REQ-0.13.0-04-01: `gz obpi pipeline <OBPI> --from=ceremony` under a Heavy parent keeps the explicit attestation requirement in both CLI output and active marker payload.
 - [x] REQ-0.13.0-04-02: `gz obpi pipeline <OBPI> --from=ceremony` under a Lite parent leaves `required_human_action=null` and does not claim human attestation is mandatory.
 - [x] REQ-0.13.0-04-03: `gz obpi pipeline <OBPI> --from=ceremony` under a Foundation parent (`ADR-0.0.x`) still requires explicit human attestation even when the inherited lane is Lite.
-- [x] REQ-0.13.0-04-04: User docs, runtime contract docs, and the canonical/mirrored pipeline skill all describe the same Heavy/Foundation-only Stage 4 authority boundary.
+- [x] REQ-0.13.0-04-04: [doc] User docs, runtime contract docs, and the canonical/mirrored pipeline skill all describe the same Heavy/Foundation-only Stage 4 authority boundary.
 
 ## Completion Checklist
 

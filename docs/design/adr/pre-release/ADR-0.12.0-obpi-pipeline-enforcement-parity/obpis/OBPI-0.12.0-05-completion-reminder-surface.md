@@ -167,7 +167,7 @@ uv run -m behave features/
 - [x] REQ-0.12.0-05-02: The reminder emits stale-marker guidance when the brief
       is already `Completed`, and emits a non-blocking completion reminder when
       the brief is found but still incomplete.
-- [x] REQ-0.12.0-05-03: Generated docs and settings remain truthful: the hook
+- [x] REQ-0.12.0-05-03: [doc] Generated docs and settings remain truthful: the hook
       is ported and documented, but still inactive in `.claude/settings.json`.
 
 ## Completion Checklist
