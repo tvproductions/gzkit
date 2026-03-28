@@ -1,0 +1,552 @@
+"""Maintenance and utility subparser registrations for gz CLI.
+
+Registers: check, drift, covers, lint, format, test, typecheck, validate,
+skill subcommands, parity, readiness, check-config-paths, preflight, cli,
+agent, git-sync, tidy, chores, interview.
+"""
+
+import argparse
+
+from gzkit.cli.helpers import (
+    add_dry_run_flag,
+    add_json_flag,
+    build_epilog,
+)
+from gzkit.commands.chores import (
+    chores_advise,
+    chores_audit,
+    chores_list,
+    chores_plan,
+    chores_run,
+    chores_show,
+)
+from gzkit.commands.cli_audit import cli_audit_cmd
+from gzkit.commands.config_paths import check_config_paths_cmd
+from gzkit.commands.covers import covers_cmd
+from gzkit.commands.drift import drift_cmd
+from gzkit.commands.interview_cmd import interview
+from gzkit.commands.parity import parity_check_cmd
+from gzkit.commands.preflight import preflight_cmd
+from gzkit.commands.quality import check, format_cmd, lint, test, typecheck
+from gzkit.commands.readiness import readiness_audit_cmd, readiness_eval_cmd
+from gzkit.commands.skills_cmd import skill_audit_cmd, skill_list, skill_new
+from gzkit.commands.sync import git_sync
+from gzkit.commands.tidy import sync_control_surfaces, tidy
+from gzkit.commands.validate_cmd import validate
+from gzkit.skills import DEFAULT_MAX_REVIEW_AGE_DAYS
+
+
+def register_maintenance_parsers(commands: argparse._SubParsersAction) -> None:
+    """Register maintenance and utility subcommands on *commands*."""
+    _register_quality_parsers(commands)
+    _register_tooling_parsers(commands)
+    _register_chores_parsers(commands)
+    _register_skill_parsers(commands)
+    _register_agent_parsers(commands)
+
+
+def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
+    """Register quality and validation subcommands."""
+    commands.add_parser(
+        "lint",
+        help="Run lint checks",
+        description="Run Ruff linter on the codebase.",
+        epilog=build_epilog(["gz lint"]),
+    ).set_defaults(func=lambda a: lint())
+    commands.add_parser(
+        "format",
+        help="Run formatter",
+        description="Run Ruff formatter on the codebase.",
+        epilog=build_epilog(["gz format"]),
+    ).set_defaults(func=lambda a: format_cmd())
+    commands.add_parser(
+        "test",
+        help="Run tests",
+        description="Run the unittest test suite.",
+        epilog=build_epilog(["gz test"]),
+    ).set_defaults(func=lambda a: test())
+    commands.add_parser(
+        "typecheck",
+        help="Run type checks",
+        description="Run static type analysis with ty.",
+        epilog=build_epilog(["gz typecheck"]),
+    ).set_defaults(func=lambda a: typecheck())
+
+    p_check = commands.add_parser(
+        "check",
+        help="Run all quality checks",
+        description="Run lint, format, typecheck, test, and advisory drift in sequence.",
+        epilog=build_epilog(["gz check", "gz check --json"]),
+    )
+    add_json_flag(p_check)
+    p_check.set_defaults(func=lambda a: check(as_json=a.as_json))
+
+    p_drift = commands.add_parser(
+        "drift",
+        help="Detect spec-test-code drift",
+        description="Detect spec-test-code governance drift.",
+        epilog=build_epilog(
+            [
+                "gz drift",
+                "gz drift --json",
+                "gz drift --plain",
+                "gz drift --adr-dir path/to/adrs",
+            ]
+        ),
+    )
+    add_json_flag(p_drift)
+    p_drift.add_argument(
+        "--plain", action="store_true", default=False, help="One record per line (grep-friendly)"
+    )
+    p_drift.add_argument(
+        "--adr-dir", default=None, help="Override ADR directory to scan (default: docs/design/adr)"
+    )
+    p_drift.add_argument(
+        "--test-dir", default=None, help="Override test directory to scan (default: tests)"
+    )
+    p_drift.set_defaults(
+        func=lambda a: drift_cmd(
+            as_json=a.as_json, plain=a.plain, adr_dir=a.adr_dir, test_dir=a.test_dir
+        )
+    )
+
+    p_covers = commands.add_parser(
+        "covers",
+        help="Report requirement coverage from @covers annotations",
+        description="Report requirement coverage at ADR, OBPI, or REQ granularity.",
+        epilog=build_epilog(
+            [
+                "gz covers",
+                "gz covers ADR-0.20.0",
+                "gz covers OBPI-0.20.0-01",
+                "gz covers --json",
+                "gz covers ADR-0.20.0 --plain",
+            ]
+        ),
+    )
+    p_covers.add_argument(
+        "target", nargs="?", default=None, help="ADR-X.Y.Z or OBPI-X.Y.Z-NN to filter (all)"
+    )
+    add_json_flag(p_covers)
+    p_covers.add_argument(
+        "--plain", action="store_true", default=False, help="One record per line (grep-friendly)"
+    )
+    p_covers.add_argument(
+        "--adr-dir", default=None, help="Override ADR directory to scan (default: docs/design/adr)"
+    )
+    p_covers.add_argument(
+        "--test-dir", default=None, help="Override test directory to scan (default: tests)"
+    )
+    p_covers.set_defaults(
+        func=lambda a: covers_cmd(
+            target=a.target,
+            as_json=a.as_json,
+            plain=a.plain,
+            adr_dir=a.adr_dir,
+            test_dir=a.test_dir,
+        )
+    )
+
+    p_validate = commands.add_parser(
+        "validate",
+        help="Validate governance artifacts",
+        description="Check governance artifacts against schema rules.",
+        epilog=build_epilog(
+            [
+                "gz validate --manifest --ledger",
+                "gz validate --documents --surfaces",
+                "gz validate --briefs --json",
+            ]
+        ),
+    )
+    p_validate.add_argument(
+        "--manifest",
+        dest="check_manifest",
+        action="store_true",
+        help="Validate .gzkit/manifest.json",
+    )
+    p_validate.add_argument(
+        "--documents", dest="check_documents", action="store_true", help="Validate governance docs"
+    )
+    p_validate.add_argument(
+        "--surfaces", dest="check_surfaces", action="store_true", help="Validate control surfaces"
+    )
+    p_validate.add_argument(
+        "--ledger", dest="check_ledger", action="store_true", help="Validate ledger integrity"
+    )
+    p_validate.add_argument(
+        "--instructions",
+        dest="check_instructions",
+        action="store_true",
+        help="Validate agent instructions",
+    )
+    p_validate.add_argument(
+        "--briefs",
+        dest="check_briefs",
+        action="store_true",
+        help="Validate all OBPI briefs against the canonical OBPI schema",
+    )
+    add_json_flag(p_validate)
+    p_validate.set_defaults(
+        func=lambda a: validate(
+            check_manifest=a.check_manifest,
+            check_documents=a.check_documents,
+            check_surfaces=a.check_surfaces,
+            check_ledger=a.check_ledger,
+            check_instructions=a.check_instructions,
+            check_briefs=a.check_briefs,
+            as_json=a.as_json,
+        )
+    )
+
+    p_check_paths = commands.add_parser(
+        "check-config-paths",
+        help="Validate config/manifest paths are coherent",
+        description="Verify configured and manifest path coherence.",
+        epilog=build_epilog(["gz check-config-paths", "gz check-config-paths --json"]),
+    )
+    add_json_flag(p_check_paths)
+    p_check_paths.set_defaults(func=lambda a: check_config_paths_cmd(as_json=a.as_json))
+
+
+def _register_tooling_parsers(commands: argparse._SubParsersAction) -> None:
+    """Register tooling, sync, and audit subcommands."""
+    p_tidy = commands.add_parser(
+        "tidy",
+        help="Run maintenance checks and cleanup",
+        description="Run maintenance checks and apply cleanup routines.",
+        epilog=build_epilog(["gz tidy --check", "gz tidy --fix", "gz tidy --fix --dry-run"]),
+    )
+    p_tidy.add_argument(
+        "--check", dest="check_only", action="store_true", help="Report issues without fixing"
+    )
+    p_tidy.add_argument("--fix", action="store_true", help="Apply automatic fixes")
+    add_dry_run_flag(p_tidy)
+    p_tidy.set_defaults(func=lambda a: tidy(check_only=a.check_only, fix=a.fix, dry_run=a.dry_run))
+
+    p_preflight = commands.add_parser(
+        "preflight",
+        help="Scan for stale pipeline artifacts",
+        description="Detect and clean stale markers, orphan receipts, and expired locks.",
+        epilog=build_epilog(["gz preflight", "gz preflight --apply", "gz preflight --json"]),
+    )
+    p_preflight.add_argument(
+        "--apply", action="store_true", help="Remove stale artifacts (default: dry-run report only)"
+    )
+    add_json_flag(p_preflight)
+    p_preflight.set_defaults(func=lambda a: preflight_cmd(apply=a.apply, as_json=a.as_json))
+
+    p_cli = commands.add_parser(
+        "cli",
+        help="CLI governance commands",
+        description="CLI documentation and coverage audit commands.",
+        epilog=build_epilog(["gz cli audit", "gz cli audit --json"]),
+    )
+    cli_commands = p_cli.add_subparsers(dest="cli_command")
+    cli_commands.required = True
+    p_cli_audit = cli_commands.add_parser(
+        "audit",
+        help="Audit CLI docs/manpage coverage",
+        description="Check CLI command documentation and manpage parity.",
+        epilog=build_epilog(["gz cli audit", "gz cli audit --json"]),
+    )
+    add_json_flag(p_cli_audit)
+    p_cli_audit.set_defaults(func=lambda a: cli_audit_cmd(as_json=a.as_json))
+
+    p_parity = commands.add_parser(
+        "parity",
+        help="Parity governance commands",
+        description="Cross-repository parity regression commands.",
+        epilog=build_epilog(["gz parity check", "gz parity check --json"]),
+    )
+    parity_commands = p_parity.add_subparsers(dest="parity_command")
+    parity_commands.required = True
+    p_parity_check = parity_commands.add_parser(
+        "check",
+        help="Run deterministic parity regression checks",
+        description="Execute deterministic parity regression checks.",
+        epilog=build_epilog(["gz parity check", "gz parity check --json"]),
+    )
+    add_json_flag(p_parity_check)
+    p_parity_check.set_defaults(func=lambda a: parity_check_cmd(as_json=a.as_json))
+
+    p_readiness = commands.add_parser(
+        "readiness",
+        help="Agent readiness governance commands",
+        description="Agent readiness audit and evaluation commands.",
+        epilog=build_epilog(["gz readiness audit", "gz readiness evaluate"]),
+    )
+    readiness_commands = p_readiness.add_subparsers(dest="readiness_command")
+    readiness_commands.required = True
+    p_readiness_audit = readiness_commands.add_parser(
+        "audit",
+        help="Audit readiness across disciplines and primitives",
+        description="Audit agent readiness across all disciplines.",
+        epilog=build_epilog(["gz readiness audit", "gz readiness audit --json"]),
+    )
+    add_json_flag(p_readiness_audit)
+    p_readiness_audit.set_defaults(func=lambda a: readiness_audit_cmd(as_json=a.as_json))
+    p_readiness_eval = readiness_commands.add_parser(
+        "evaluate",
+        help="Run instruction eval suite with positive/negative controls",
+        description="Execute instruction evaluation with control cases.",
+        epilog=build_epilog(["gz readiness evaluate", "gz readiness evaluate --json"]),
+    )
+    add_json_flag(p_readiness_eval)
+    p_readiness_eval.set_defaults(func=lambda a: readiness_eval_cmd(as_json=a.as_json))
+
+    p_git_sync = commands.add_parser(
+        "git-sync",
+        help="Sync branch with guarded ritual",
+        description="Commit, lint-gate, test-gate, and push in one ritual.",
+        epilog=build_epilog(
+            [
+                "gz git-sync --apply --lint --test",
+                "gz git-sync --apply --no-push",
+                "gz git-sync --json",
+            ]
+        ),
+    )
+    _add_git_sync_options(p_git_sync)
+    p_git_sync.set_defaults(
+        func=lambda a: git_sync(
+            branch=a.branch,
+            remote=a.remote,
+            apply=a.apply,
+            run_lint_gate=a.run_lint_gate,
+            run_test_gate=a.run_test_gate,
+            auto_add=a.auto_add,
+            allow_push=a.allow_push,
+            as_json=a.as_json,
+            show_skill=a.skill,
+        )
+    )
+
+    p_interview = commands.add_parser(
+        "interview",
+        help="Interactive document interview",
+        description="Run an interactive interview to generate a document.",
+        epilog=build_epilog(["gz interview prd", "gz interview adr", "gz interview obpi"]),
+    )
+    p_interview.add_argument(
+        "document_type",
+        choices=["prd", "adr", "obpi"],
+        help="Document type to generate (prd|adr|obpi)",
+    )
+    p_interview.set_defaults(func=lambda a: interview(document_type=a.document_type))
+
+
+def _register_chores_parsers(commands: argparse._SubParsersAction) -> None:
+    """Register ``gz chores`` sub-command group."""
+    p_chores = commands.add_parser(
+        "chores",
+        help="Chore registry and execution commands",
+        description="Discover, plan, execute, and audit repository chores.",
+        epilog=build_epilog(
+            ["gz chores list", "gz chores show my-chore", "gz chores run my-chore"]
+        ),
+    )
+    chores_commands = p_chores.add_subparsers(dest="chores_command")
+    chores_commands.required = True
+
+    chores_commands.add_parser(
+        "list",
+        help="List chores from registry",
+        description="Display all registered chores and their status.",
+        epilog=build_epilog(["gz chores list"]),
+    ).set_defaults(func=lambda a: chores_list())
+
+    p_chores_show = chores_commands.add_parser(
+        "show",
+        help="Display CHORE.md for one chore",
+        description="Show the full chore definition for a given slug.",
+        epilog=build_epilog(["gz chores show my-chore"]),
+    )
+    p_chores_show.add_argument("slug", help="Chore slug identifier")
+    p_chores_show.set_defaults(func=lambda a: chores_show(slug=a.slug))
+
+    p_chores_plan = chores_commands.add_parser(
+        "plan",
+        help="Show plan details for one chore",
+        description="Display the execution plan for a given chore.",
+        epilog=build_epilog(["gz chores plan my-chore"]),
+    )
+    p_chores_plan.add_argument("slug", help="Chore slug identifier")
+    p_chores_plan.set_defaults(func=lambda a: chores_plan(slug=a.slug))
+
+    p_chores_advise = chores_commands.add_parser(
+        "advise",
+        help="Dry-run criteria and report status",
+        description="Evaluate chore criteria and advise on readiness.",
+        epilog=build_epilog(["gz chores advise my-chore"]),
+    )
+    p_chores_advise.add_argument("slug", help="Chore slug identifier")
+    p_chores_advise.set_defaults(func=lambda a: chores_advise(slug=a.slug))
+
+    p_chores_run = chores_commands.add_parser(
+        "run",
+        help="Execute one chore by slug",
+        description="Execute a single chore and record results.",
+        epilog=build_epilog(["gz chores run my-chore"]),
+    )
+    p_chores_run.add_argument("slug", help="Chore slug identifier")
+    p_chores_run.set_defaults(func=lambda a: chores_run(slug=a.slug))
+
+    p_chores_audit = chores_commands.add_parser(
+        "audit",
+        help="Audit chore log presence",
+        description="Verify chore execution logs are present.",
+        epilog=build_epilog(["gz chores audit --all", "gz chores audit --slug my-chore"]),
+    )
+    chores_audit_target = p_chores_audit.add_mutually_exclusive_group(required=True)
+    chores_audit_target.add_argument(
+        "--all", dest="all_chores", action="store_true", help="Audit all registered chores"
+    )
+    chores_audit_target.add_argument("--slug", help="Audit a single chore by slug")
+    p_chores_audit.set_defaults(func=lambda a: chores_audit(all_chores=a.all_chores, slug=a.slug))
+
+
+def _register_skill_parsers(commands: argparse._SubParsersAction) -> None:
+    """Register ``gz skill`` sub-command group."""
+    p_skill = commands.add_parser(
+        "skill",
+        help="Skill management commands",
+        description="Create, list, and audit gzkit skills.",
+        epilog=build_epilog(["gz skill list", "gz skill new my-skill", "gz skill audit"]),
+    )
+    skill_commands = p_skill.add_subparsers(dest="skill_command")
+    skill_commands.required = True
+
+    p_skill_new = skill_commands.add_parser(
+        "new",
+        help="Create a new skill",
+        description="Scaffold a new skill directory and SKILL.md.",
+        epilog=build_epilog(
+            [
+                "gz skill new my-skill",
+                'gz skill new my-skill --description "Does something useful"',
+            ]
+        ),
+    )
+    p_skill_new.add_argument("name", help="Skill name (kebab-case)")
+    p_skill_new.add_argument("--description", help="Short description of the skill")
+    p_skill_new.set_defaults(func=lambda a: skill_new(name=a.name, description=a.description))
+
+    skill_commands.add_parser(
+        "list",
+        help="List all skills",
+        description="Display all registered skills and their status.",
+        epilog=build_epilog(["gz skill list"]),
+    ).set_defaults(func=lambda a: skill_list())
+
+    p_skill_audit = skill_commands.add_parser(
+        "audit",
+        help="Audit skill lifecycle and mirror parity",
+        description="Check skill files, mirrors, and review freshness.",
+        epilog=build_epilog(["gz skill audit", "gz skill audit --strict", "gz skill audit --json"]),
+    )
+    add_json_flag(p_skill_audit)
+    p_skill_audit.add_argument(
+        "--strict", action="store_true", help="Treat warnings as blocking failures."
+    )
+    p_skill_audit.add_argument(
+        "--max-review-age-days",
+        type=int,
+        default=DEFAULT_MAX_REVIEW_AGE_DAYS,
+        help="Maximum age of last_reviewed before audit fails (default: 90).",
+    )
+    p_skill_audit.set_defaults(
+        func=lambda a: skill_audit_cmd(
+            as_json=a.as_json, strict=a.strict, max_review_age_days=a.max_review_age_days
+        )
+    )
+
+
+def _register_agent_parsers(commands: argparse._SubParsersAction) -> None:
+    """Register ``gz agent`` sub-command group."""
+    p_agent = commands.add_parser(
+        "agent",
+        help="Agent-specific operations",
+        description="Agent synchronization and management commands.",
+        epilog=build_epilog(["gz agent sync control-surfaces"]),
+    )
+    agent_commands = p_agent.add_subparsers(dest="agent_command")
+    agent_commands.required = True
+
+    p_agent_sync = agent_commands.add_parser(
+        "sync",
+        help="Agent synchronization commands",
+        description="Synchronize agent control surfaces and mirrors.",
+        epilog=build_epilog(
+            ["gz agent sync control-surfaces", "gz agent sync control-surfaces --dry-run"]
+        ),
+    )
+    agent_sync_commands = p_agent_sync.add_subparsers(dest="agent_sync_command")
+    agent_sync_commands.required = True
+
+    p_control_surfaces = agent_sync_commands.add_parser(
+        "control-surfaces",
+        help="Regenerate agent control surfaces from governance canon",
+        description="Rebuild CLAUDE.md and mirrors from governance source.",
+        epilog=build_epilog(
+            ["gz agent sync control-surfaces", "gz agent sync control-surfaces --dry-run"]
+        ),
+    )
+    add_dry_run_flag(p_control_surfaces)
+    p_control_surfaces.set_defaults(func=lambda a: sync_control_surfaces(dry_run=a.dry_run))
+
+
+def _add_git_sync_options(parser: argparse.ArgumentParser) -> None:
+    """Register common git-sync CLI flags."""
+    parser.add_argument(
+        "--skill", action="store_true", help="Print path to paired skill file and exit"
+    )
+    parser.add_argument("--branch", help="Branch to sync (default: current branch)")
+    parser.add_argument("--remote", default="origin", help="Remote name")
+    parser.add_argument(
+        "--apply", action="store_true", help="Execute sync actions (dry-run by default)"
+    )
+    parser.add_argument(
+        "--lint",
+        dest="run_lint_gate",
+        action="store_true",
+        default=True,
+        help="Run lint gate before sync (default)",
+    )
+    parser.add_argument(
+        "--no-lint", dest="run_lint_gate", action="store_false", help="Skip lint gate"
+    )
+    parser.add_argument(
+        "--test",
+        dest="run_test_gate",
+        action="store_true",
+        default=True,
+        help="Run test gate before sync (default)",
+    )
+    parser.add_argument(
+        "--no-test", dest="run_test_gate", action="store_false", help="Skip test gate"
+    )
+    parser.add_argument(
+        "--auto-add",
+        dest="auto_add",
+        action="store_true",
+        default=True,
+        help="Auto-add tracked files before commit (default)",
+    )
+    parser.add_argument(
+        "--no-auto-add",
+        dest="auto_add",
+        action="store_false",
+        help="Skip auto-add of tracked files",
+    )
+    parser.add_argument(
+        "--push",
+        dest="allow_push",
+        action="store_true",
+        default=True,
+        help="Push after commit (default)",
+    )
+    parser.add_argument(
+        "--no-push", dest="allow_push", action="store_false", help="Commit without pushing"
+    )
+    add_json_flag(parser, help_override="Output as JSON")
