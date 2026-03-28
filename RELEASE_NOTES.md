@@ -1,5 +1,23 @@
 # gzkit Release Notes
 
+## v0.23.0 (2026-03-28)
+
+**ADR:** ADR-0.23.0 - Agent Burden of Proof
+
+Shifted the burden of proof from human attestors to completing agents. Agents must now earn their closeout by presenting a defense brief with closing arguments authored from delivered evidence, passing an automated product proof gate that checks for operator-facing documentation (runbook, command docs, or docstrings), surviving independent reviewer agent verification, and presenting all evidence in a structured ceremony before human attestation.
+
+### Delivered
+
+- Closing Argument template sections (Lite + Heavy) replacing the mechanical Value Narrative
+- Product proof gate in `gz closeout` with three detection mechanisms (runbook, command_doc, docstring)
+- Reviewer agent dispatch (Stage 3.5) producing structured REVIEW-*.md assessments
+- Defense brief ceremony replacing checklist-based closeout with evidence presentation
+- 101 unit tests, 14 BDD scenarios across the four OBPIs
+
+### Gate Evidence
+
+All 5 GovZero gates satisfied.
+
 ## v0.22.0 (2026-03-28)
 
 **ADR:** ADR-0.22.0 - Task-Level Governance
