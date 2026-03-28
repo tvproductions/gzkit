@@ -500,6 +500,27 @@ Item-specific gates and commands (if any) are listed below.
 per `docs/governance/GovZero/charter.md` and
 `docs/governance/GovZero/audit-protocol.md`.
 
+### Closing Argument (Lite)
+
+<!-- This section is authored at COMPLETION, not during planning.
+     Write from delivered evidence, not from the brief's intent section.
+     Briefs started under the old "Value Narrative" template should use
+     this format when completing. -->
+
+**Required elements (all three must be substantiated from delivered artifacts):**
+
+1. **What was built** — list artifact paths (files created/modified, commands added)
+2. **What it enables** — describe the operator-facing capability that now exists
+3. **Why it matters** — provide a proof command or documentation link demonstrating the value
+
+*Example:*
+
+> We added `src/gzkit/validators/proof.py` and `tests/test_proof.py` (12 tests).
+> Operators can now run `uv run gz closeout ADR-X.Y.Z` and receive blocking
+> feedback when product proof is missing. This matters because previously agents
+> could declare completion without documenting operator-facing capabilities —
+> `uv run gz closeout ADR-0.23.0 --dry-run` shows the new gate in action.
+
 ### ACCEPTANCE (Lite)
 
 - Imports pass; smoke green; artifacts (if any) captured.
@@ -761,6 +782,19 @@ uv run -m airlineops [command]
 - [ ] Gate 5 attestation RECEIVED from human
 - [ ] Attestation recorded in brief
 - [ ] OBPI marked completed ONLY AFTER attestation
+
+### Closing Argument (Heavy)
+
+<!-- This section is authored at COMPLETION, not during planning.
+     Write from delivered evidence, not from the brief's intent section.
+     Briefs started under the old "Value Narrative" template should use
+     this format when completing. -->
+
+**Required elements (all three must be substantiated from delivered artifacts):**
+
+1. **What was built** — list artifact paths (files created/modified, commands added)
+2. **What it enables** — describe the operator-facing capability that now exists
+3. **Why it matters** — provide a proof command or documentation link demonstrating the value
 
 ### ACCEPTANCE (Heavy)
 
