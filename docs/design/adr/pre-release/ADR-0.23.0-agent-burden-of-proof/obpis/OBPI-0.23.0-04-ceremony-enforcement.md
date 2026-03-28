@@ -3,7 +3,7 @@ id: OBPI-0.23.0-04-ceremony-enforcement
 parent: ADR-0.23.0-agent-burden-of-proof
 item: 4
 lane: Lite
-status: Pending
+status: Completed
 ---
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
 
@@ -106,11 +106,11 @@ Heavy — Ceremony contract change (new presentation format, new blocking condit
 
 ### Gates 1-4: Implementation
 
-- [ ] Gate 1 (ADR): Intent recorded in brief
-- [ ] Gate 2 (TDD): Unit tests pass, coverage >= 40%
-- [ ] Gate 3 (Docs): Manpage and runbook updated, `mkdocs build --strict` passes
-- [ ] Gate 4 (BDD): Behave scenarios pass
-- [ ] Code Quality: Lint, type check clean
+- [x] Gate 1 (ADR): Intent recorded in brief
+- [x] Gate 2 (TDD): Unit tests pass, coverage >= 40%
+- [x] Gate 3 (Docs): Manpage and runbook updated, `mkdocs build --strict` passes
+- [x] Gate 4 (BDD): Behave scenarios pass
+- [x] Code Quality: Lint, type check clean
 
 ### Verification Commands (Concrete)
 
@@ -134,9 +134,54 @@ uv run gz closeout ADR-0.23.0 --dry-run
 
 ### Gate 5: Human Attestation
 
-- [ ] Agent presents the updated ceremony flow with a real ADR example
-- [ ] **STOP** — Agent waits for human attestation
+- [x] Agent presents the updated ceremony flow with a real ADR example
+- [x] **STOP** — Agent waits for human attestation
 
 ## Closing Argument
 
-*To be authored at completion from delivered evidence.*
+The closeout ceremony was a checklist — agents ticked boxes and declared completion without presenting the substance of what was delivered. The human attestor saw file lists and pass/fail statuses but never the agent's case for why the work matters. This OBPI transforms the ceremony into a defense presentation where the agent must present closing arguments (authored from delivered evidence per OBPI-01), product proof status (validated by the gate from OBPI-02), and an independent reviewer's assessment (dispatched by the pipeline from OBPI-03). If any evidence is missing, the ceremony blocks — the agent cannot proceed to attestation without making its case.
+
+### Implementation Summary
+
+- Files created: `tests/test_closeout_ceremony.py` (24 tests), `features/closeout_ceremony.feature` (3 BDD scenarios, 24 steps), `features/steps/closeout_ceremony_steps.py`, `docs/user/manpages/closeout.md`
+- Files modified: `src/gzkit/commands/common.py` (ceremony helpers), `src/gzkit/commands/closeout_form.py` (defense_brief parameter), `src/gzkit/commands/closeout.py` (defense brief pipeline integration), `.claude/skills/gz-adr-closeout-ceremony/SKILL.md` (defense brief ceremony), `docs/user/commands/closeout.md`
+- Validation commands run: `uv run gz lint`, `uv run gz typecheck`, `uv run gz test` (1986 pass), `uv run mkdocs build --strict`, `uv run -m behave features/closeout_ceremony.feature` (3/3 pass)
+- Date completed: 2026-03-28
+- Attestation status: Human attested
+
+### Key Proof
+
+```
+$ uv run -m unittest tests.test_closeout_ceremony -v
+test_form_includes_defense_brief ... ok
+test_form_without_defense_brief ... ok
+test_computes_from_briefs_and_reviews ... ok
+test_extracts_closing_argument ... ok
+test_returns_none_for_empty_section ... ok
+test_returns_none_for_placeholder ... ok
+test_returns_none_when_missing ... ok
+test_stops_at_key_proof ... ok
+test_stops_at_next_h2 ... ok
+test_extracts_all_fields ... ok
+test_handles_no_promises ... ok
+test_extracts_fail ... ok
+test_extracts_pass ... ok
+test_returns_unknown_when_missing ... ok
+test_finds_reviews_in_briefs_dir ... ok
+test_finds_reviews_in_obpis_dir ... ok
+test_returns_empty_when_dir_missing ... ok
+test_returns_empty_when_no_reviews ... ok
+test_renders_closing_arguments ... ok
+test_renders_missing_product_proof ... ok
+test_renders_no_closing_arguments ... ok
+test_renders_no_reviewer ... ok
+test_renders_product_proof_table ... ok
+test_renders_reviewer_table_with_structured_fields ... ok
+----------------------------------------------------------------------
+Ran 24 tests in 0.004s
+OK
+
+$ uv run -m behave features/closeout_ceremony.feature
+3 scenarios passed, 0 failed, 0 skipped
+24 steps passed, 0 failed, 0 skipped
+```
