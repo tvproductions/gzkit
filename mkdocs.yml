@@ -107,6 +107,11 @@ nav:
     - gz readiness audit: user/commands/readiness-audit.md
     - gz check-config-paths: user/commands/check-config-paths.md
     - gz cli audit: user/commands/cli-audit.md
+    - gz task list: user/commands/task-list.md
+    - gz task start: user/commands/task-start.md
+    - gz task complete: user/commands/task-complete.md
+    - gz task block: user/commands/task-block.md
+    - gz task escalate: user/commands/task-escalate.md
     - gz agent sync control-surfaces: user/commands/agent-sync-control-surfaces.md
   - Governance (Canonical):
     - Governance Runbook: governance/governance_runbook.md

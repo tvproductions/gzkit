@@ -87,6 +87,13 @@ from gzkit.commands.status import (
     status,
 )
 from gzkit.commands.sync import git_sync
+from gzkit.commands.task import (
+    task_block_cmd,
+    task_complete_cmd,
+    task_escalate_cmd,
+    task_list_cmd,
+    task_start_cmd,
+)
 from gzkit.commands.tidy import sync_control_surfaces, tidy
 from gzkit.commands.validate_cmd import validate
 from gzkit.core.exceptions import GzkitError
@@ -1127,6 +1134,106 @@ def _build_parser() -> argparse.ArgumentParser:
     p_roles.add_argument("--pipeline", help="Show dispatch history for an OBPI pipeline run")
     add_json_flag(p_roles)
     p_roles.set_defaults(func=lambda a: roles_cmd(pipeline=a.pipeline, as_json=a.as_json))
+
+    # --- gz task ---
+    p_task = commands.add_parser(
+        "task",
+        help="TASK lifecycle management commands",
+        description="Manage execution-level TASK entities: list, start, complete, block, escalate.",
+        epilog=build_epilog(
+            [
+                "gz task list OBPI-0.20.0-01",
+                "gz task start TASK-0.20.0-01-01-01",
+                "gz task complete TASK-0.20.0-01-01-01",
+                'gz task block TASK-0.20.0-01-01-01 --reason "Missing API"',
+                'gz task escalate TASK-0.20.0-01-01-01 --reason "Needs human decision"',
+            ]
+        ),
+    )
+    task_commands = p_task.add_subparsers(dest="task_command")
+    task_commands.required = True
+
+    p_task_list = task_commands.add_parser(
+        "list",
+        help="List tasks for an OBPI",
+        description="Show all tasks and their lifecycle status for an OBPI.",
+        epilog=build_epilog(
+            [
+                "gz task list OBPI-0.20.0-01",
+                "gz task list OBPI-0.20.0-01 --json",
+            ]
+        ),
+    )
+    p_task_list.add_argument("obpi", help="OBPI identifier (e.g. OBPI-0.20.0-01)")
+    add_json_flag(p_task_list)
+    p_task_list.set_defaults(func=lambda a: task_list_cmd(obpi=a.obpi, as_json=a.as_json))
+
+    p_task_start = task_commands.add_parser(
+        "start",
+        help="Start or resume a task",
+        description="Transition a task to in_progress (from pending or blocked).",
+        epilog=build_epilog(
+            [
+                "gz task start TASK-0.20.0-01-01-01",
+                "gz task start TASK-0.20.0-01-01-01 --json",
+            ]
+        ),
+    )
+    p_task_start.add_argument("task_id", help="TASK identifier (e.g. TASK-0.20.0-01-01-01)")
+    add_json_flag(p_task_start)
+    p_task_start.set_defaults(
+        func=lambda a: task_start_cmd(task_id_str=a.task_id, as_json=a.as_json)
+    )
+
+    p_task_complete = task_commands.add_parser(
+        "complete",
+        help="Complete a task",
+        description="Transition a task to completed (from in_progress only).",
+        epilog=build_epilog(
+            [
+                "gz task complete TASK-0.20.0-01-01-01",
+            ]
+        ),
+    )
+    p_task_complete.add_argument("task_id", help="TASK identifier (e.g. TASK-0.20.0-01-01-01)")
+    add_json_flag(p_task_complete)
+    p_task_complete.set_defaults(
+        func=lambda a: task_complete_cmd(task_id_str=a.task_id, as_json=a.as_json)
+    )
+
+    p_task_block = task_commands.add_parser(
+        "block",
+        help="Block a task with reason",
+        description="Transition a task to blocked (from in_progress only).",
+        epilog=build_epilog(
+            [
+                'gz task block TASK-0.20.0-01-01-01 --reason "Missing API"',
+            ]
+        ),
+    )
+    p_task_block.add_argument("task_id", help="TASK identifier (e.g. TASK-0.20.0-01-01-01)")
+    p_task_block.add_argument("--reason", required=True, help="Reason for blocking the task")
+    add_json_flag(p_task_block)
+    p_task_block.set_defaults(
+        func=lambda a: task_block_cmd(task_id_str=a.task_id, reason=a.reason, as_json=a.as_json)
+    )
+
+    p_task_escalate = task_commands.add_parser(
+        "escalate",
+        help="Escalate a task with reason",
+        description="Transition a task to escalated (from in_progress only).",
+        epilog=build_epilog(
+            [
+                'gz task escalate TASK-0.20.0-01-01-01 --reason "Needs human decision"',
+            ]
+        ),
+    )
+    p_task_escalate.add_argument("task_id", help="TASK identifier (e.g. TASK-0.20.0-01-01-01)")
+    p_task_escalate.add_argument("--reason", required=True, help="Reason for escalation")
+    add_json_flag(p_task_escalate)
+    p_task_escalate.set_defaults(
+        func=lambda a: task_escalate_cmd(task_id_str=a.task_id, reason=a.reason, as_json=a.as_json)
+    )
 
     p_implement = commands.add_parser(
         "implement",

@@ -42,6 +42,11 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz migrate-semver`](migrate-semver.md) | Record SemVer ID rename events |
 | [`gz register-adrs`](register-adrs.md) | Register existing ADR packages and linked OBPIs into ledger |
 | [`gz roles`](roles.md) | List pipeline agent roles and handoff contracts |
+| [`gz task list`](task-list.md) | List tasks for an OBPI with status |
+| [`gz task start`](task-start.md) | Start or resume a task |
+| [`gz task complete`](task-complete.md) | Complete a task |
+| [`gz task block`](task-block.md) | Block a task with reason |
+| [`gz task escalate`](task-escalate.md) | Escalate a task with reason |
 
 ---
 
