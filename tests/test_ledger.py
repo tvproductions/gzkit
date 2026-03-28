@@ -258,6 +258,7 @@ class TestLedger(unittest.TestCase):
             pending = ledger.get_pending_attestations()
             self.assertEqual(pending, ["ADR-0.2.0"])
 
+    @covers("REQ-0.0.5-03-04")
     def test_get_latest_gate_statuses_uses_latest_event(self) -> None:
         """Latest gate_checked event wins per gate."""
         with tempfile.TemporaryDirectory() as tmpdir:

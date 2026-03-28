@@ -114,7 +114,7 @@ uv run -m unittest tests.test_ledger tests.test_config tests.test_validate -v
 - [x] REQ-0.15.0-01-02: Given a GzkitConfig loaded from an existing manifest.json, when accessed via the same field paths, then all values match the dataclass version.
 - [x] REQ-0.15.0-01-03: Given a PathConfig with default values, when each field is read, then all 24 path defaults are identical to the dataclass defaults.
 - [x] REQ-0.15.0-01-04: Given a ValidationError and ValidationResult constructed with the same arguments, when serialized via model_dump(), then the output matches to_dict() exactly.
-- [x] REQ-0.15.0-01-05: Given the full gzkit test suite (532+ tests), when run after migration, then zero regressions — all tests pass.
+- [x] REQ-0.15.0-01-05: [doc] Given the full gzkit test suite (532+ tests), when run after migration, then zero regressions — all tests pass.
 
 ## Completion Checklist
 

@@ -126,7 +126,7 @@ uv run gz closeout <adr-id> --dry-run
 
 - [x] REQ-0.10.0-03-01: Lifecycle/closeout surfaces report OBPI proof state deterministically.
 - [x] REQ-0.10.0-03-02: REQ-proof gaps surface as explicit pending or drift state.
-- [x] REQ-0.10.0-03-03: Operator docs describe an OBPI-native verification -> attestation -> receipt flow.
+- [x] REQ-0.10.0-03-03: [doc] Operator docs describe an OBPI-native verification -> attestation -> receipt flow.
 
 ## Completion Checklist
 
