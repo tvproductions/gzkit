@@ -339,7 +339,7 @@ def validate_document(path: Path, schema_name: str) -> list[ValidationError]:
     # Load content
     try:
         content = path.read_text(encoding="utf-8")
-    except Exception as e:
+    except OSError as e:
         return [
             ValidationError(
                 type="schema",
@@ -754,7 +754,7 @@ def validate_surfaces(project_root: Path) -> list[ValidationError]:
                             field=required,
                         )
                     )
-        except Exception as e:
+        except (OSError, ValueError, KeyError) as e:
             errors.append(
                 ValidationError(
                     type="surface",

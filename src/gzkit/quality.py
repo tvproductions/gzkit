@@ -59,7 +59,7 @@ def run_command(command: str, cwd: Path | None = None) -> QualityResult:
             stderr=result.stderr,
             returncode=result.returncode,
         )
-    except Exception as e:
+    except (OSError, subprocess.SubprocessError) as e:
         return QualityResult(
             success=False,
             command=command,
@@ -436,7 +436,7 @@ def run_eval(project_root: Path) -> QualityResult:
             stderr="",
             returncode=0 if result.success else 1,
         )
-    except Exception as exc:
+    except (OSError, ValueError, KeyError) as exc:
         return QualityResult(
             success=False,
             command="eval harness",

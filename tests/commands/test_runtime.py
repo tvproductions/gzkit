@@ -438,7 +438,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
             runner.invoke(main, ["plan", "0.1.0"])
             runner.invoke(main, ["specify", "demo", "--parent", "ADR-0.1.0"])
 
-            obpi_file = next(Path(".").rglob("OBPI-0.1.0-01-demo.md"))
+            obpi_file = next(Path().rglob("OBPI-0.1.0-01-demo.md"))
             content = obpi_file.read_text(encoding="utf-8")
             content = content.replace(
                 "REQ-0.1.0-01-01: Given/When/Then behavior criterion 1",
@@ -713,7 +713,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         """Lite-lane OBPI under Heavy parent inherits parent attestation rigor."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            _init_git_repo(Path("."))
+            _init_git_repo(Path())
             _quick_init("heavy")
             runner.invoke(main, ["plan", "0.1.0", "--lane", "heavy"])
             config = GzkitConfig.load(Path(".gzkit.json"))

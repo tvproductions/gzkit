@@ -1,5 +1,6 @@
 """Gate and implement command implementations."""
 
+import json
 from pathlib import Path
 from typing import Any
 
@@ -47,11 +48,12 @@ def _run_gate_1(project_root: Path, config: GzkitConfig, ledger: Ledger, adr_id:
         evidence = str(adr_file.relative_to(project_root))
         _record_gate_result(ledger, adr_id, 1, "pass", "ADR exists", 0, evidence)
         console.print(f"  [green]✓[/green] Gate 1 (ADR): [green]PASS[/green] ({evidence})")
-        return True
     except GzCliError as exc:
         _record_gate_result(ledger, adr_id, 1, "fail", "ADR exists", 1, str(exc))
         console.print(f"  [red]❌[/red] Gate 1 (ADR): [red]FAIL[/red] ({exc})")
         return False
+    else:
+        return True
 
 
 def _run_gate_2(
@@ -174,7 +176,7 @@ def _run_eval_delta(
 
     try:
         current = run_eval_suite()
-    except Exception as exc:
+    except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
         console.print(f"  [red]❌[/red] Eval delta: ERROR ({exc})")
         _record_gate_result(ledger, adr_id, 2, "fail", "eval-delta", 1, str(exc))
         return False
