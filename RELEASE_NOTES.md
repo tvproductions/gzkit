@@ -1,5 +1,25 @@
 # gzkit Release Notes
 
+## v0.22.0 (2026-03-28)
+
+**ADR:** ADR-0.22.0 - Task-Level Governance
+
+Introduced TASK entities as the fourth tier of the ADR→OBPI→REQ→TASK governance hierarchy. Tasks are execution-level work units with a five-state lifecycle (pending, in_progress, completed, blocked, escalated) managed through the `gz task` CLI. State transitions are enforced and recorded in the ledger. Blocked and escalated tasks capture reasons for traceability. Task status integrates into `gz status` and `gz state --json` for operator visibility including escalated counts.
+
+### Delivered
+
+- TASK entity model with five-state lifecycle and enforced transitions
+- TASK ledger events: `task_started`, `task_completed`, `task_blocked`, `task_escalated`
+- Git commit linkage for task-to-commit traceability
+- `gz task` CLI with `list`, `start`, `complete`, `block`, `escalate` subcommands
+- `gz status` and `gz state --json` integration with task summary and escalated counts
+- Command docs: `task.md`, `task-list.md`, `task-start.md`, `task-complete.md`, `task-block.md`, `task-escalate.md`
+- BDD scenarios: `features/task_governance.feature` (12 scenarios, 90 steps)
+
+### Gate Evidence
+
+All 5 GovZero gates satisfied.
+
 ## v0.21.0 (2026-03-27)
 
 **ADR:** ADR-0.21.0 - Tests as Spec Verification Surface
