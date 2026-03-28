@@ -16,6 +16,7 @@ Exit codes:
 """
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -37,7 +38,7 @@ def main() -> None:
     except json.JSONDecodeError:
         sys.exit(0)
 
-    project_root = find_project_root(Path(input_data.get("cwd", str(Path.cwd()))).resolve())
+    project_root = find_project_root(Path(input_data.get("cwd", os.getcwd())).resolve())
     sys.path.insert(0, str(project_root / "src"))
 
     try:
@@ -46,7 +47,7 @@ def main() -> None:
             pipeline_plans_dir,
             pipeline_router_message,
         )
-    except ImportError:
+    except Exception:
         sys.exit(0)
 
     plans_dir = pipeline_plans_dir(project_root)

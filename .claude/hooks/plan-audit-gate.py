@@ -25,6 +25,7 @@ Exit codes:
 """
 
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -131,7 +132,7 @@ def main() -> None:
     except json.JSONDecodeError:
         sys.exit(0)
 
-    cwd = input_data.get("cwd", str(Path.cwd()))
+    cwd = input_data.get("cwd", os.getcwd())
 
     plans_dir = find_plans_dir(cwd)
     if not plans_dir:
