@@ -26,6 +26,7 @@ from gzkit.pipeline_runtime import (
     partition_independent_groups,
     should_fallback_to_sequential,
 )
+from gzkit.traceability import covers  # noqa: F401 — used by @covers decorators below
 
 # ---------------------------------------------------------------------------
 # Helper factories
@@ -72,6 +73,7 @@ def _make_result(
 class TestExtractVerificationScopes(unittest.TestCase):
     """Test parsing brief requirements into verification scopes."""
 
+    @covers("REQ-0.14.0-05-01")
     def test_extracts_numbered_requirements(self) -> None:
         brief = (
             "## Requirements\n"
@@ -143,6 +145,7 @@ class TestExtractVerificationScopes(unittest.TestCase):
 class TestComputePathOverlap(unittest.TestCase):
     """Test path overlap detection between verification scopes."""
 
+    @covers("REQ-0.14.0-05-02")
     def test_no_overlap(self) -> None:
         scopes = [
             _make_scope(req_index=1, test_paths=["tests/test_a.py"]),
@@ -151,6 +154,7 @@ class TestComputePathOverlap(unittest.TestCase):
         overlaps = compute_path_overlap(scopes)
         self.assertEqual(overlaps, {})
 
+    @covers("REQ-0.14.0-05-03")
     def test_full_overlap(self) -> None:
         scopes = [
             _make_scope(req_index=1, test_paths=["tests/test_a.py"]),
