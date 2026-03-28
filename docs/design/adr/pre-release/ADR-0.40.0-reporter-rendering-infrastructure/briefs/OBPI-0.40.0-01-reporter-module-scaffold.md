@@ -1,7 +1,7 @@
 ---
 id: OBPI-0.40.0-01-reporter-module-scaffold
 parent: ADR-0.40.0-reporter-rendering-infrastructure
-status: Accepted
+status: Completed
 lane: heavy
 semver: 0.40.0
 sequence: 1
@@ -54,3 +54,11 @@ Heavy — new module introduces rendering contract consumed by all CLI commands.
 - Gate 2 (TDD): Unit tests for all four presets
 - Gate 3 (Docs): `docs/user/concepts/reporter-architecture.md`
 - Gate 4 (BDD): Reporter rendering feature scenarios
+
+### Implementation Summary
+
+Created `src/gzkit/reporter/` module with four deterministic rendering presets (status_table, kv_table, list_table, ceremony_panel) backed by Pydantic ColumnDef model. All presets are stateless pure functions returning Rich renderables.
+
+### Key Proof
+
+20/20 unit tests pass, 6/6 BDD scenarios pass, all quality gates green. `uv run -m unittest tests/test_reporter.py -v`
