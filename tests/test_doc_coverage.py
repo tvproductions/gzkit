@@ -68,6 +68,7 @@ class TestDiscoverCommands(unittest.TestCase):
         cls.commands = discover_commands(cls.source)
         cls.command_names = {c.name for c in cls.commands}
 
+    @covers("REQ-0.0.6-01-01")
     def test_discovers_top_level_commands(self) -> None:
         expected = {
             "init",
@@ -181,6 +182,7 @@ class TestDiscoverCommands(unittest.TestCase):
             "Handler for 'cli audit' should be 'cli_audit_cmd'",
         )
 
+    @covers("REQ-0.0.6-01-02")
     def test_total_command_count(self) -> None:
         self.assertGreaterEqual(
             len(self.commands),
@@ -211,6 +213,7 @@ class TestCheckSurfaces(unittest.TestCase):
                     return s
         self.fail(f"Surface '{surface_name}' not found in coverage results")
 
+    @covers("REQ-0.0.6-01-03")
     def test_manpage_present(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -222,6 +225,7 @@ class TestCheckSurfaces(unittest.TestCase):
             surface = self._get_surface(coverages, "manpage")
             self.assertTrue(surface.passed, "Manpage surface should pass when file exists")
 
+    @covers("REQ-0.0.6-01-04")
     def test_manpage_missing(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -311,6 +315,7 @@ class TestCheckSurfaces(unittest.TestCase):
 class TestFindOrphanedDocs(unittest.TestCase):
     """Test orphaned documentation detection."""
 
+    @covers("REQ-0.0.6-01-03")
     def test_orphaned_manpage_detected(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -517,6 +522,7 @@ class TestManifestModels(unittest.TestCase):
             governance_relevant=governance_relevant,
         )
 
+    @covers("REQ-0.0.6-02-01")
     def test_surface_requirements_frozen(self) -> None:
         surfaces = self._make_surfaces()
         with self.assertRaises((TypeError, ValidationError)):
@@ -534,6 +540,7 @@ class TestManifestModels(unittest.TestCase):
                 extra_field=True,  # type: ignore[call-arg]
             )
 
+    @covers("REQ-0.0.6-02-02")
     def test_command_entry_frozen(self) -> None:
         entry = self._make_entry()
         with self.assertRaises((TypeError, ValidationError)):
@@ -565,6 +572,7 @@ class TestManifestModels(unittest.TestCase):
                 extra_field="forbidden",  # type: ignore[call-arg]
             )
 
+    @covers("REQ-0.0.6-02-04")
     def test_governance_relevant_entry(self) -> None:
         entry = self._make_entry(governance_relevant=True)
         self.assertTrue(entry.governance_relevant)
@@ -621,6 +629,7 @@ class TestLoadManifest(unittest.TestCase):
             },
         }
 
+    @covers("REQ-0.0.6-02-03")
     def test_load_valid_manifest(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -782,6 +791,7 @@ class TestManifestIntegration(unittest.TestCase):
 class TestGapReportModels(unittest.TestCase):
     """Test Pydantic models for the gap report."""
 
+    @covers("REQ-0.0.6-03-01")
     def test_gap_item_frozen(self) -> None:
         from gzkit.doc_coverage.models import GapItem
 
@@ -837,6 +847,7 @@ class TestGapReportModels(unittest.TestCase):
                 extra="forbidden",  # type: ignore[call-arg]
             )
 
+    @covers("REQ-0.0.6-03-02")
     def test_gap_report_serializes_to_json(self) -> None:
         from gzkit.doc_coverage.models import DocCoverageGapReport, GapItem
 
@@ -870,6 +881,7 @@ class TestBuildGapReport(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.project_root = Path(__file__).resolve().parent.parent
 
+    @covers("REQ-0.0.6-03-03")
     def test_build_gap_report_returns_valid_report(self) -> None:
         from gzkit.doc_coverage.runner import build_gap_report
 
@@ -921,6 +933,7 @@ class TestRunDocCoverage(unittest.TestCase):
         self.assertIsInstance(result, int)
         self.assertIn(result, (0, 1))
 
+    @covers("REQ-0.0.6-03-04")
     def test_run_json_mode_returns_int(self) -> None:
         from gzkit.doc_coverage.runner import run_doc_coverage
 

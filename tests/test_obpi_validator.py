@@ -14,6 +14,7 @@ from unittest.mock import patch
 from gzkit.hooks.core import record_artifact_edit
 from gzkit.hooks.obpi import ObpiValidator
 from gzkit.ledger import Ledger, adr_created_event, project_init_event
+from gzkit.traceability import covers  # noqa: F401
 
 
 def _remove_readonly_tree(path: Path) -> None:
@@ -134,6 +135,7 @@ status: {status}
         errors = self.validator.validate_file(path)
         self.assertEqual(errors, [])
 
+    @covers("REQ-0.11.0-02-01")
     def test_validate_completed_passes_with_allowlisted_changes(self):
         obpi_path = self._create_obpi(
             "ADR-0.1.0",
@@ -149,6 +151,7 @@ status: {status}
         errors = self.validator.validate_file(obpi_path)
         self.assertEqual(errors, [])
 
+    @covers("REQ-0.11.0-01-01")
     def test_validate_completed_blocks_out_of_scope_changes(self):
         obpi_path = self._create_obpi(
             "ADR-0.1.0",
@@ -167,6 +170,7 @@ status: {status}
             errors,
         )
 
+    @covers("REQ-0.11.0-02-02")
     def test_validate_completed_requires_allowed_paths(self):
         self._register_adr("ADR-0.1.0")
         obpi_path = self.project_root / "OBPI-ADR-0.1.0-01.md"
@@ -187,6 +191,7 @@ status: {status}
         errors = self.validator.validate_file(obpi_path)
         self.assertIn("Missing or empty 'Allowed Paths' allowlist.", errors)
 
+    @covers("REQ-0.11.0-02-03")
     def test_validate_heavy_completed_missing_attestation(self):
         path = self._create_obpi(
             "ADR-0.2.0",
@@ -258,6 +263,7 @@ status: {status}
             errors,
         )
 
+    @covers("REQ-0.11.0-03-01")
     def test_recorder_appends_receipt_to_ledger(self):
         final_rel_path = "docs/design/adr/pre-release/ADR-0.1.0/obpis/OBPI-ADR-0.1.0-01.md"
         final_path = self._create_obpi(
@@ -311,6 +317,7 @@ status: {status}
         self.assertNotEqual(anchor.get("commit"), "0000000")
         self.assertEqual(anchor.get("semver"), "0.1.0")
 
+    @covers("REQ-0.11.0-03-03")
     def test_recorder_warns_but_keeps_receipt_when_anchor_capture_degrades(self):
         final_rel_path = "docs/design/adr/pre-release/ADR-0.1.0/obpis/OBPI-ADR-0.1.0-01.md"
         final_path = self._create_obpi(
@@ -339,6 +346,7 @@ status: {status}
         )
         self.assertNotIn("anchor", receipt.extra)
 
+    @covers("REQ-0.11.0-03-02")
     def test_recorder_append_failure_is_warning_only(self):
         final_rel_path = "docs/design/adr/pre-release/ADR-0.1.0/obpis/OBPI-ADR-0.1.0-01.md"
         final_path = self._create_obpi(
