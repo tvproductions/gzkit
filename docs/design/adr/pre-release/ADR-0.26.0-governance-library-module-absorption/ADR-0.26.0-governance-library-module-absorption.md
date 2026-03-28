@@ -170,7 +170,7 @@ gzkit must own all reusable governance library primitives. opsdev's `lib/` packa
 | 11 | OBPI-0.26.0-11 | Evaluate and absorb `lib/artifacts.py` (232 lines) — artifact management and sync primitives | Heavy | Pending |
 | 12 | OBPI-0.26.0-12 | Evaluate and absorb `lib/docs.py` (218 lines) — documentation generation and validation | Heavy | Pending |
 
-**Briefs location:** `briefs/OBPI-0.26.0-*.md`
+**Briefs location:** `obpis/OBPI-0.26.0-*.md`
 
 **WBS Completeness Rule:** Every row in this table has a corresponding brief file.
 
@@ -311,7 +311,7 @@ opsdev's `lib/` package represents ~6,200 lines of domain-agnostic governance pr
 
 ### Docs
 
-- Decision rationale: per OBPI brief in `briefs/`
+- Decision rationale: per OBPI brief in `obpis/`
 - Governance: this ADR
 
 ---
@@ -322,7 +322,7 @@ opsdev's `lib/` package represents ~6,200 lines of domain-agnostic governance pr
 |---------------|-------|-------------------|----------|-------|
 | `src/gzkit/` | M | All absorbed modules integrated | Test output | |
 | `tests/` | M | All absorbed modules tested | `uv run gz test` | |
-| `briefs/` | P | All 12 OBPIs have decisions documented | Brief review | |
+| `obpis/` | P | All 12 OBPIs have decisions documented | Brief review | |
 
 ### SIGN-OFF — Post-Ship Tidy
 

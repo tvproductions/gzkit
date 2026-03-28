@@ -109,7 +109,7 @@ gzkit must own all reusable enforcement hooks. opsdev's `.pre-commit-config.yaml
 | 19 | OBPI-0.35.0-19 | Evaluate `sync-claude-skills` — Claude skills synchronization (not in gzkit) | Heavy | Pending |
 | 20 | OBPI-0.35.0-20 | Evaluate `adr-drift-check` — ADR drift detection (not in gzkit) | Heavy | Pending |
 
-**Briefs location:** `briefs/OBPI-0.35.0-*.md`
+**Briefs location:** `obpis/OBPI-0.35.0-*.md`
 
 **WBS Completeness Rule:** Every row in this table has a corresponding brief file.
 
@@ -166,7 +166,7 @@ opsdev's `.pre-commit-config.yaml` represents a mature enforcement layer with 20
 
 ### Docs
 
-- Decision rationale: per OBPI brief in `briefs/`
+- Decision rationale: per OBPI brief in `obpis/`
 - Governance: this ADR
 
 ---
@@ -178,7 +178,7 @@ opsdev's `.pre-commit-config.yaml` represents a mature enforcement layer with 20
 | `.pre-commit-config.yaml` | M | All absorbed pre-commit hooks integrated | Hook execution output | |
 | `.claude/hooks/` | M | All absorbed Claude hooks integrated | Agent session verification | |
 | `tests/` | M | All absorbed hooks tested | `uv run gz test` | |
-| `briefs/` | P | All 20 OBPIs have decisions documented | Brief review | |
+| `obpis/` | P | All 20 OBPIs have decisions documented | Brief review | |
 
 ### SIGN-OFF — Post-Ship Tidy
 

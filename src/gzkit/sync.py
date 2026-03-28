@@ -299,7 +299,9 @@ def _parse_frontmatter(lines: list[str], result: dict[str, str]) -> bool:
             has_frontmatter_id = True
             continue
 
-        if normalized_key == "parent" and normalized_value.startswith(ALLOWED_ID_PREFIXES):
+        if normalized_key in ("parent", "parent_adr") and normalized_value.startswith(
+            ALLOWED_ID_PREFIXES
+        ):
             result["parent"] = normalized_value
             continue
 
