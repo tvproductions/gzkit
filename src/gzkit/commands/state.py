@@ -1,6 +1,7 @@
 """State command implementation."""
 
 import json
+from typing import Any
 
 from rich.table import Table
 
@@ -10,7 +11,41 @@ from gzkit.commands.common import (
     ensure_initialized,
     get_project_root,
 )
-from gzkit.ledger import Ledger
+from gzkit.commands.task import _load_tasks_for_obpi
+from gzkit.ledger import Ledger, resolve_adr_lane
+
+
+def _enrich_obpi_with_tasks(
+    graph: dict[str, dict[str, Any]],
+    ledger: Ledger,
+    default_mode: str,
+) -> None:
+    """Add task_summary to OBPI entries that have tasks."""
+    for artifact_id, info in graph.items():
+        if info.get("type") != "obpi":
+            continue
+        tasks = _load_tasks_for_obpi(ledger, artifact_id)
+        if not tasks:
+            continue
+        counts: dict[str, int] = {
+            "total": 0,
+            "pending": 0,
+            "in_progress": 0,
+            "completed": 0,
+            "blocked": 0,
+            "escalated": 0,
+        }
+        for task_info in tasks.values():
+            counts["total"] += 1
+            status = task_info.get("status", "pending")
+            if status in counts:
+                counts[status] += 1
+
+        parent_adr = info.get("parent", "")
+        parent_info = graph.get(parent_adr, {})
+        lane = resolve_adr_lane(parent_info, default_mode)
+        counts["tracing_policy"] = "required" if lane == "heavy" else "advisory"  # type: ignore[assignment]
+        info["task_summary"] = counts
 
 
 def state(as_json: bool, blocked: bool, ready: bool) -> None:
@@ -39,6 +74,7 @@ def state(as_json: bool, blocked: bool, ready: bool) -> None:
         graph = {k: v for k, v in graph.items() if k in ready_ids}
 
     if as_json:
+        _enrich_obpi_with_tasks(graph, ledger, config.mode)
         print(json.dumps(graph, indent=2))
         return
 
