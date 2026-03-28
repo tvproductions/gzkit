@@ -382,7 +382,7 @@ def readiness_audit_cmd(as_json: bool) -> None:
     }
 
     if as_json:
-        print(json.dumps(result, indent=2))
+        print(json.dumps(result, indent=2))  # noqa: T201
     else:
         if success:
             console.print("[green]Readiness audit passed.[/green]")
@@ -450,7 +450,7 @@ def readiness_eval_cmd(as_json: bool) -> None:
     suite_result = run_eval_suite(project_root)
 
     if as_json:
-        print(json.dumps(suite_result.model_dump(), indent=2))
+        print(json.dumps(suite_result.model_dump(), indent=2))  # noqa: T201
     else:
         if suite_result.success:
             console.print("[green]Instruction eval suite passed.[/green]")

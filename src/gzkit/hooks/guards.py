@@ -104,12 +104,12 @@ def forbid_pytest() -> int:
             findings.append((f, v))
 
     if findings:
-        print("pytest usage detected; this repository enforces unittest-only.")
+        print("pytest usage detected; this repository enforces unittest-only.")  # noqa: T201
         for path, msgs in findings:
-            print(f"- {path}")
+            print(f"- {path}")  # noqa: T201
             for m in msgs:
-                print(f"    {m}")
-        print("\nPlease remove pytest references or dependencies.")
+                print(f"    {m}")  # noqa: T201
+        print("\nPlease remove pytest references or dependencies.")  # noqa: T201
         return 1
     return 0
 

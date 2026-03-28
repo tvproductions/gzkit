@@ -75,7 +75,7 @@ def state(as_json: bool, blocked: bool, ready: bool) -> None:
 
     if as_json:
         _enrich_obpi_with_tasks(graph, ledger, config.mode)
-        print(json.dumps(graph, indent=2))
+        print(json.dumps(graph, indent=2))  # noqa: T201
         return
 
     if not graph:

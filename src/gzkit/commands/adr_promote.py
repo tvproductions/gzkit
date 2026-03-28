@@ -58,14 +58,16 @@ def _build_adr_promotion_plan(
     target_slug = _resolve_promotion_slug(pool_adr_id, slug)
     target_adr_id = f"ADR-{semver}-{target_slug}"
     if target_adr_id in ledger.get_artifact_graph():
-        raise GzCliError(f"Target ADR already exists in ledger: {target_adr_id}")
+        msg = f"Target ADR already exists in ledger: {target_adr_id}"
+        raise GzCliError(msg)
 
     target_bucket = _adr_bucket_for_semver(semver)
     target_dir = project_root / config.paths.adrs / target_bucket / target_adr_id
     target_file = target_dir / f"{target_adr_id}.md"
     if target_file.exists():
         rel_path = target_file.relative_to(project_root)
-        raise GzCliError(f"Target ADR file already exists: {rel_path}")
+        msg = f"Target ADR file already exists: {rel_path}"
+        raise GzCliError(msg)
 
     promoted_parent = _resolve_promotion_parent(parent, pool_metadata)
     promoted_lane = _resolve_promotion_lane(lane, pool_metadata, config.mode)
@@ -87,9 +89,8 @@ def _build_adr_promotion_plan(
     )
     checklist_items = parse_checklist_items(promoted_content)
     if not checklist_items:
-        raise GzCliError(
-            f"Promotion did not produce executable checklist items for {target_adr_id}."
-        )
+        msg = f"Promotion did not produce executable checklist items for {target_adr_id}."
+        raise GzCliError(msg)
     obpi_plans = []
     for item_number, checklist_item_text in enumerate(checklist_items, start=1):
         core_text = re.sub(r"^OBPI-\d+\.\d+\.\d+-\d+:\s*", "", checklist_item_text).strip()
@@ -262,7 +263,7 @@ def adr_promote_cmd(
     result = _adr_promotion_result(project_root, promotion_plan, dry_run)
 
     if as_json:
-        print(json.dumps(result, indent=2))
+        print(json.dumps(result, indent=2))  # noqa: T201
         if dry_run:
             return
 
@@ -334,7 +335,7 @@ def adr_eval_cmd(adr_id: str, as_json: bool, write_scorecard: bool) -> None:
     )
 
     if as_json:
-        print(json.dumps(result.model_dump(), indent=2))
+        print(json.dumps(result.model_dump(), indent=2))  # noqa: T201
     else:
         console.print(f"ADR Eval: {adr_input} -- {result.verdict.replace('_', ' ')}")
         console.print(f"  Weighted total: {result.adr_weighted_total:.2f}/4.0")

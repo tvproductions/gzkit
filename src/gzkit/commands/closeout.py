@@ -187,10 +187,10 @@ def _prompt_closeout_attestation(*, quiet: bool = False) -> tuple[str, str | Non
     Returns ``(attest_status, reason)`` tuple.
     """
     if not quiet:
-        print("Attestation choices:")
-        print("  1. Completed")
-        print("  2. Completed - Partial (requires reason)")
-        print("  3. Dropped (requires reason)")
+        print("Attestation choices:")  # noqa: T201
+        print("  1. Completed")  # noqa: T201
+        print("  2. Completed - Partial (requires reason)")  # noqa: T201
+        print("  3. Dropped (requires reason)")  # noqa: T201
         selection = input("Select [1/2/3]: ").strip()
     else:
         selection = input().strip()
@@ -200,14 +200,17 @@ def _prompt_closeout_attestation(*, quiet: bool = False) -> tuple[str, str | Non
     if selection == "2":
         reason = input("" if quiet else "Reason: ").strip()
         if not reason:
-            raise GzCliError("Reason required for partial attestation")
+            msg = "Reason required for partial attestation"
+        raise GzCliError(msg)  # noqa: TRY003
         return "partial", reason
     if selection == "3":
         reason = input("" if quiet else "Reason: ").strip()
         if not reason:
-            raise GzCliError("Reason required for dropped attestation")
+            msg = "Reason required for dropped attestation"
+            raise GzCliError(msg)  # noqa: TRY003
         return "dropped", reason
-    raise GzCliError(f"Invalid selection: {selection}. Expected 1, 2, or 3.")
+    msg = f"Invalid selection: {selection}. Expected 1, 2, or 3."
+    raise GzCliError(msg)  # noqa: TRY003
 
 
 def _abort_closeout_with_blockers(
@@ -241,7 +244,7 @@ def _abort_closeout_with_blockers(
         next_steps=next_steps,
     )
     if as_json:
-        print(json.dumps(result, indent=2))
+        print(json.dumps(result, indent=2))  # noqa: T201
     else:
         _render_closeout_output(result, dry_run=dry_run)
     raise SystemExit(1)
@@ -283,7 +286,7 @@ def _render_closeout_dry_run(
             "target": adr_ver,
             "needs_bump": needs_bump,
         }
-        print(json.dumps(result, indent=2))
+        print(json.dumps(result, indent=2))  # noqa: T201
         return
     _render_closeout_output(result, dry_run=True)
     if needs_bump:
@@ -371,7 +374,7 @@ def _run_closeout_quality_gates(
             "halted": True,
         }
         if as_json:
-            print(json.dumps(fail_result, indent=2))
+            print(json.dumps(fail_result, indent=2))  # noqa: T201
         else:
             failed = gate_results[-1]
             console.print(
@@ -455,7 +458,7 @@ def _complete_closeout_pipeline(
                 "to": to_state,
             },
         }
-        print(json.dumps(output, indent=2))
+        print(json.dumps(output, indent=2))  # noqa: T201
         return
 
     console.print(f"\n[green]Closeout complete:[/green] {adr_id}")

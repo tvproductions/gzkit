@@ -138,34 +138,37 @@ def specify(
     parent_input = parent if parent.startswith("ADR-") else f"ADR-{parent}"
     canonical_parent = ledger.canonicalize_id(parent_input)
     if _is_pool_adr_id(canonical_parent):
-        raise GzCliError(f"Pool ADRs cannot receive OBPIs until promoted: {canonical_parent}.")
+        msg = f"Pool ADRs cannot receive OBPIs until promoted: {canonical_parent}."
+        raise GzCliError(msg)  # noqa: TRY003
     adr_file, resolved_parent = resolve_adr_file(project_root, config, canonical_parent)
     adr_content = adr_file.read_text(encoding="utf-8")
     checklist_items = parse_checklist_items(adr_content)
     if not checklist_items:
-        raise GzCliError(
+        msg = (
             f"Parent ADR has no checklist items to map: {resolved_parent}. "
             "Define checklist entries before creating OBPIs."
         )
+        raise GzCliError(msg)  # noqa: TRY003
     if item <= 0 or item > len(checklist_items):
-        raise GzCliError(
+        msg = (
             f"Checklist item #{item} is out of range for {resolved_parent} "
             f"(available: 1-{len(checklist_items)})."
         )
+        raise GzCliError(msg)  # noqa: TRY003
 
     scorecard, scorecard_errors = parse_scorecard(adr_content)
     if scorecard_errors:
         summary = "; ".join(scorecard_errors)
-        raise GzCliError(
-            f"Parent ADR decomposition scorecard is invalid for {resolved_parent}: {summary}"
-        )
+        msg = f"Parent ADR decomposition scorecard is invalid for {resolved_parent}: {summary}"
+        raise GzCliError(msg)  # noqa: TRY003
     assert scorecard is not None
     if len(checklist_items) != scorecard.final_target_obpi_count:
-        raise GzCliError(
+        msg = (
             "ADR checklist count does not match scorecard target for "
             f"{resolved_parent}: checklist={len(checklist_items)} "
             f"target={scorecard.final_target_obpi_count}."
         )
+        raise GzCliError(msg)  # noqa: TRY003
 
     obpi_plan = _build_obpi_plan(
         project_root=project_root,

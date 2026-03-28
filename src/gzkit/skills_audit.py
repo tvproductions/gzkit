@@ -547,7 +547,8 @@ def audit_skills(
     if config is None:
         config = GzkitConfig.load(project_root / ".gzkit.json")
     if max_review_age_days <= 0:
-        raise ValueError("max_review_age_days must be positive.")
+        msg = "max_review_age_days must be positive."
+        raise ValueError(msg)
 
     checked_roots = [
         config.paths.skills,

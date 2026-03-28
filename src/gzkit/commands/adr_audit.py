@@ -129,7 +129,7 @@ def adr_audit_check(adr: str, as_json: bool) -> None:
     }
 
     if as_json:
-        print(json.dumps(result, indent=2))
+        print(json.dumps(result, indent=2))  # noqa: T201
     else:
         console.print(f"[bold]ADR audit-check:[/bold] {adr_id}")
         if passed:
@@ -190,7 +190,7 @@ def adr_covers_check(adr: str, as_json: bool) -> None:
     }
 
     if as_json:
-        print(json.dumps(result, indent=2))
+        print(json.dumps(result, indent=2))  # noqa: T201
     else:
         _print_adr_covers_check_result(result)
 
@@ -226,42 +226,42 @@ def _validate_obpi_completed_required_fields(evidence: dict[str, Any]) -> None:
         if not isinstance(value, str) or not value.strip():
             missing.append(field)
     if missing:
-        raise GzCliError(
-            f"Missing required completed-evidence field(s): {', '.join(sorted(missing))}."
-        )
+        msg = f"Missing required completed-evidence field(s): {', '.join(sorted(missing))}."
+        raise GzCliError(msg)
 
 
 def _validate_obpi_human_attestation_fields(evidence: dict[str, Any], attestor: str) -> None:
     """Validate heavy/foundation human-attestation evidence contract."""
     placeholder_names = {"n/a", "tbd", "todo", "none", "-", "...", ""}
     if attestor.strip().lower() in placeholder_names:
-        raise GzCliError("Heavy/Foundation OBPI completion requires --attestor to be a real name.")
+        msg = "Heavy/Foundation OBPI completion requires --attestor to be a real name."
+        raise GzCliError(msg)
     if evidence.get("human_attestation") is not True:
-        raise GzCliError(
-            "Heavy/Foundation OBPI completion requires evidence.human_attestation=true."
-        )
+        msg = "Heavy/Foundation OBPI completion requires evidence.human_attestation=true."
+        raise GzCliError(msg)
 
     attestation_text = evidence.get("attestation_text")
     if not isinstance(attestation_text, str) or not attestation_text.strip():
-        raise GzCliError(
-            "Heavy/Foundation OBPI completion requires non-empty evidence.attestation_text."
-        )
+        msg = "Heavy/Foundation OBPI completion requires non-empty evidence.attestation_text."
+        raise GzCliError(msg)
 
     attestation_date = evidence.get("attestation_date")
     if not isinstance(attestation_date, str) or not re.match(
         r"^\d{4}-\d{2}-\d{2}$", attestation_date
     ):
-        raise GzCliError(
+        msg = (
             "Heavy/Foundation OBPI completion requires evidence.attestation_date "
             "formatted as YYYY-MM-DD."
         )
+        raise GzCliError(msg)
     try:
         date.fromisoformat(attestation_date)
     except ValueError as exc:
-        raise GzCliError(
+        msg = (
             "Heavy/Foundation OBPI completion requires evidence.attestation_date "
             "formatted as YYYY-MM-DD."
-        ) from exc
+        )
+        raise GzCliError(msg) from exc
 
 
 def _validate_explicit_req_proof_inputs(raw_inputs: Any) -> list[dict[str, str]]:
@@ -269,16 +269,16 @@ def _validate_explicit_req_proof_inputs(raw_inputs: Any) -> list[dict[str, str]]
     if raw_inputs is None:
         return []
     if not isinstance(raw_inputs, list) or not raw_inputs:
-        raise GzCliError(
-            "evidence.req_proof_inputs must be a non-empty list of proof input objects."
-        )
+        msg = "evidence.req_proof_inputs must be a non-empty list of proof input objects."
+        raise GzCliError(msg)
 
     normalized = normalize_req_proof_inputs(raw_inputs)
     if len(normalized) != len(raw_inputs):
-        raise GzCliError(
+        msg = (
             "Each evidence.req_proof_inputs item must include non-empty "
             "name/kind/source fields and status present|missing."
         )
+        raise GzCliError(msg)
     return normalized
 
 
@@ -293,9 +293,8 @@ def _validate_obpi_completion_evidence(
 ) -> tuple[dict[str, Any], str, dict[str, str] | None]:
     """Validate and normalize evidence for OBPI completed receipts."""
     if evidence is None:
-        raise GzCliError(
-            "OBPI completed receipts require --evidence-json with value_narrative and key_proof."
-        )
+        msg = "OBPI completed receipts require --evidence-json with value_narrative and key_proof."
+        raise GzCliError(msg)
 
     _validate_obpi_completed_required_fields(evidence)
     requires_human_attestation = _requires_human_obpi_attestation(parent_adr, parent_lane)
@@ -329,18 +328,20 @@ def _validate_obpi_completion_evidence(
     explicit_scope_audit = normalized.get("scope_audit")
     scope_audit = normalize_scope_audit(explicit_scope_audit)
     if explicit_scope_audit is not None and scope_audit is None:
-        raise GzCliError(
+        msg = (
             "evidence.scope_audit must be an object with allowlist, changed_files, "
             "and out_of_scope_files string arrays."
         )
+        raise GzCliError(msg)
 
     explicit_git_sync_state = normalized.get("git_sync_state")
     git_sync_state = normalize_git_sync_state(explicit_git_sync_state)
     if explicit_git_sync_state is not None and git_sync_state is None:
-        raise GzCliError(
+        msg = (
             "evidence.git_sync_state must include branch/remote/head/remote_head, "
             "dirty/diverged booleans, ahead/behind integers, and action/warning/blocker arrays."
         )
+        raise GzCliError(msg)
 
     enriched_evidence, anchor = enrich_completed_receipt_evidence(
         project_root=project_root,
@@ -377,9 +378,11 @@ def adr_emit_receipt_cmd(
         try:
             parsed = json.loads(evidence_json)
         except json.JSONDecodeError as exc:
-            raise GzCliError(f"Invalid --evidence-json: {exc}") from exc
+            msg = f"Invalid --evidence-json: {exc}"
+            raise GzCliError(msg) from exc
         if not isinstance(parsed, dict):
-            raise GzCliError("--evidence-json must decode to a JSON object")
+            msg = "--evidence-json must decode to a JSON object"
+            raise GzCliError(msg)
         evidence = parsed
 
     anchor = capture_validation_anchor(project_root, adr_id)

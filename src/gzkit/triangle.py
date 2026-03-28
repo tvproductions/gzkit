@@ -52,6 +52,7 @@ class ReqId(BaseModel):
         )
 
     def __str__(self) -> str:
+        """Return the canonical REQ identifier string."""
         return f"REQ-{self.semver}-{self.obpi_item}-{self.criterion_index}"
 
 

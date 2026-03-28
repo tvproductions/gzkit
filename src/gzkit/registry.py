@@ -60,7 +60,8 @@ class ContentTypeRegistry:
     def register(self, content_type: ContentType) -> None:
         """Register a content type. Raises ValueError on duplicate name."""
         if content_type.name in self._types:
-            raise ValueError(f"Content type already registered: {content_type.name}")
+            msg = f"Content type already registered: {content_type.name}"
+            raise ValueError(msg)
         self._types[content_type.name] = content_type
 
     def get(self, name: str) -> ContentType:
@@ -68,7 +69,8 @@ class ContentTypeRegistry:
         try:
             return self._types[name]
         except KeyError:
-            raise KeyError(f"Unknown content type: {name}") from None
+            msg = f"Unknown content type: {name}"
+            raise KeyError(msg) from None
 
     def list_all(self) -> list[ContentType]:
         """Return all registered content types in registration order."""
@@ -90,7 +92,8 @@ class ContentTypeRegistry:
         """
         ct = self.get(type_name)
         if ct.frontmatter_model is None:
-            raise TypeError(f"Content type '{type_name}' has no frontmatter model")
+            msg = f"Content type '{type_name}' has no frontmatter model"
+            raise TypeError(msg)
 
         try:
             ct.frontmatter_model(**frontmatter)

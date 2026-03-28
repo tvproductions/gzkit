@@ -46,8 +46,7 @@ def detect_project_name(project_root: Path) -> str:
             # Parse name = "project-name" or name = 'project-name'
             if line.strip().startswith("name") and "=" in line:
                 _, _, value = line.partition("=")
-                value = value.strip().strip("\"'")
-                return value
+                return value.strip().strip("\"'")
 
     return project_root.name
 
@@ -147,7 +146,7 @@ def write_manifest(project_root: Path, manifest: dict[str, Any]) -> None:
     manifest_path = project_root / ".gzkit" / "manifest.json"
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
 
-    with open(manifest_path, "w") as f:
+    with manifest_path.open("w") as f:
         json.dump(manifest, f, indent=2)
         f.write("\n")
 
@@ -366,7 +365,7 @@ def sync_claude_settings(project_root: Path, config: GzkitConfig) -> None:
     settings_path = project_root / config.paths.claude_settings
     settings_path.parent.mkdir(parents=True, exist_ok=True)
 
-    with open(settings_path, "w") as f:
+    with settings_path.open("w") as f:
         json.dump(settings, f, indent=2)
         f.write("\n")
 

@@ -76,7 +76,7 @@ def _emit_skill_audit_json(
     payload["max_review_age_days"] = max_review_age_days
     payload["success"] = success
     payload.update(counts)
-    print(json.dumps(payload, indent=2))
+    print(json.dumps(payload, indent=2))  # noqa: T201
     if not success:
         raise SystemExit(1)
 
@@ -124,7 +124,8 @@ def skill_audit_cmd(as_json: bool, strict: bool, max_review_age_days: int) -> No
     config = ensure_initialized()
     project_root = get_project_root()
     if max_review_age_days <= 0:
-        raise GzCliError("--max-review-age-days must be a positive integer.")
+        msg = "--max-review-age-days must be a positive integer."
+        raise GzCliError(msg)  # noqa: TRY003
     report = audit_skills(project_root, config, max_review_age_days=max_review_age_days)
     counts = _skill_audit_counts(report)
     success = _skill_audit_success(counts, strict)

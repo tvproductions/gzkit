@@ -10,7 +10,6 @@ Exit codes:
 """
 
 import json
-import os
 import sys
 from pathlib import Path
 
@@ -37,7 +36,7 @@ def main() -> None:
     if not any(git_cmd in command for git_cmd in ("git commit", "git push")):
         sys.exit(0)
 
-    project_root = find_project_root(Path(input_data.get("cwd", os.getcwd())).resolve())
+    project_root = find_project_root(Path(input_data.get("cwd", str(Path.cwd()))).resolve())
     sys.path.insert(0, str(project_root / "src"))
 
     try:

@@ -71,16 +71,17 @@ def validate_obpi_transition(project_root: Path, path: str) -> None:
     errors = validator.validate_file(obpi_path)
 
     if errors:
-        print(f"\nOBPI Validation Failed: {path}")
-        print("BLOCKERS:")
+        print(f"\nOBPI Validation Failed: {path}")  # noqa: T201
+        print("BLOCKERS:")  # noqa: T201
         for error in errors:
-            print(f"- {error}")
-        print("\nFix these blockers or revert status to 'Draft' to continue.\n")
+            print(f"- {error}")  # noqa: T201
+        print("\nFix these blockers or revert status to 'Draft' to continue.\n")  # noqa: T201
         # In a hook context, we want to exit non-zero to block the tool use
         # However, record_artifact_edit is called by the hook script which might
         # ignore the return value or exception.
         # The hook script itself needs to handle this.
-        raise RuntimeError("OBPI completion validation failed.")
+        msg = "OBPI completion validation failed."
+        raise RuntimeError(msg)
 
 
 def _section_body(content: str, heading: str) -> str | None:
@@ -278,7 +279,7 @@ def _record_obpi_completion_if_ready(
     try:
         ledger.append(event)
     except OSError as exc:
-        print(
+        print(  # noqa: T201
             f"Warning: Could not append OBPI completion receipt for {obpi_id}: {exc}",
             file=sys.stderr,
         )

@@ -340,7 +340,7 @@ def validate_ledger(ledger_path: Path) -> list[ValidationError]:
     expected_schema = schema.get("ledger_schema", "gzkit.ledger.v1")
     event_rules = schema.get("events", {})
 
-    with open(ledger_path, encoding="utf-8") as f:
+    with ledger_path.open(encoding="utf-8") as f:
         for line_no, raw in enumerate(f, start=1):
             line = raw.strip()
             if not line:

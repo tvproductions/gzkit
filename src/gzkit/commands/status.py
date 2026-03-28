@@ -245,7 +245,7 @@ def status(as_json: bool, show_gates: bool, as_table: bool) -> None:
             "adrs": adrs,
             "pending_attestations": pending,
         }
-        print(json.dumps(result, indent=2))
+        print(json.dumps(result, indent=2))  # noqa: T201
         return
 
     console.print(f"[bold]Lane: {config.mode}[/bold]\n")
@@ -271,7 +271,7 @@ def obpi_status_cmd(obpi: str, as_json: bool) -> None:
     obpi_id, _obpi_file = resolve_obpi(project_root, config, ledger, obpi)
     result = _build_obpi_status_entry(project_root, config, ledger, obpi_id)
     if as_json:
-        print(json.dumps(result, indent=2))
+        print(json.dumps(result, indent=2))  # noqa: T201
         return
     _render_obpi_status_details(result)
 
@@ -292,7 +292,7 @@ def obpi_reconcile_cmd(obpi: str, as_json: bool) -> None:
     }
 
     if as_json:
-        print(json.dumps(payload, indent=2))
+        print(json.dumps(payload, indent=2))  # noqa: T201
     else:
         console.print(f"[bold]OBPI reconcile:[/bold] {obpi_id}")
         if isinstance(result.get("parent_adr"), str) and result.get("parent_adr"):
@@ -334,7 +334,8 @@ def _build_adr_status_result(adr: str) -> dict[str, Any]:
     graph = ledger.get_artifact_graph()
     info = graph.get(adr_id)
     if not info or info.get("type") != "adr":
-        raise GzCliError(f"ADR not found in ledger: {adr_id}")
+        msg = f"ADR not found in ledger: {adr_id}"
+        raise GzCliError(msg)  # noqa: TRY003
 
     lane = resolve_adr_lane(info, config.mode)
     gate_statuses = ledger.get_latest_gate_statuses(adr_id)
@@ -379,7 +380,7 @@ def adr_status_cmd(adr: str, as_json: bool, show_gates: bool) -> None:
     lane = cast(str, result["lane"])
 
     if as_json:
-        print(json.dumps(result, indent=2))
+        print(json.dumps(result, indent=2))  # noqa: T201
         return
 
     console.print(f"[bold]{result['adr']}[/bold]")
