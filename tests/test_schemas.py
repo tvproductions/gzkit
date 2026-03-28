@@ -357,6 +357,7 @@ class TestSkillSchemaAlignment(unittest.TestCase):
         cls.model = SkillFrontmatter
         cls.schema = _load_gzkit_schema("skill")
 
+    @covers("REQ-0.17.0-04-03")
     @covers("REQ-0.17.0-04-05")
     def test_required_fields_match(self) -> None:
         """Schema-required fields are required in the Pydantic model."""
@@ -447,6 +448,7 @@ class TestInstructionSchemaAlignment(unittest.TestCase):
         cls.model = InstructionFrontmatter
         cls.schema = _load_gzkit_schema("rule")
 
+    @covers("REQ-0.17.0-04-04")
     @covers("REQ-0.17.0-04-06")
     def test_required_fields_match(self) -> None:
         """Schema-required fields are required in the Pydantic model."""
