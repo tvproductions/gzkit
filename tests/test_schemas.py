@@ -31,7 +31,7 @@ from gzkit.models.frontmatter import (
     PrdFrontmatter,
 )
 from gzkit.schemas import get_schema_path, load_schema
-from gzkit.traceability import covers
+from gzkit.traceability import covers  # noqa: F401
 
 # ---------------------------------------------------------------------------
 # Helper: extract Pydantic model's required field names (no defaults)
@@ -139,6 +139,7 @@ class TestFrontmatterSchemaAlignment(unittest.TestCase):
 
     # -- ADR --
 
+    @covers("REQ-0.15.0-01-02")
     def test_adr_required_fields_match(self) -> None:
         self._check_required_fields(AdrFrontmatter, "adr")
 
@@ -206,6 +207,7 @@ class TestLedgerSchemaAlignment(unittest.TestCase):
         cls.schema = load_schema("ledger")
         cls.event_rules = cls.schema.get("events", {})
 
+    @covers("REQ-0.15.0-01-04")
     def test_all_schema_events_have_models(self) -> None:
         """Every event type in ledger.json has a corresponding Pydantic model."""
         schema_events = set(self.event_rules.keys())
@@ -258,6 +260,7 @@ class TestLedgerSchemaAlignment(unittest.TestCase):
                     f"{model_cls.__name__} missing schema properties: {missing}",
                 )
 
+    @covers("REQ-0.15.0-01-01")
     def test_base_required_fields(self) -> None:
         """Top-level required fields (schema, event, id, ts) present on all models."""
         base_required = set(self.schema.get("required", []))
@@ -283,6 +286,7 @@ _ALL_SCHEMAS = ["manifest", "adr", "obpi", "prd", "ledger", "agents"]
 class TestSchemaLoading(unittest.TestCase):
     """Verify load_schema() and get_schema_path() work for all schemas."""
 
+    @covers("REQ-0.15.0-01-03")
     def test_load_schema_all(self) -> None:
         """load_schema() returns a dict for every registered schema."""
         for name in _ALL_SCHEMAS:

@@ -18,9 +18,11 @@ from gzkit.adr_eval import (
     score_adr_deterministic,
     score_obpis_deterministic,
 )
+from gzkit.traceability import covers
 
 
 class TestPassesToScore(unittest.TestCase):
+    @covers("REQ-0.0.5-02-03")
     def test_all_pass(self) -> None:
         self.assertEqual(_passes_to_score(4, 4), 4)
 
@@ -38,6 +40,7 @@ class TestPassesToScore(unittest.TestCase):
 
 
 class TestResolveAdrPackage(unittest.TestCase):
+    @covers("REQ-0.0.5-01-03")
     def test_finds_adr_and_obpis(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -233,6 +236,7 @@ class TestAdrDimensionScoring(unittest.TestCase):
         obpi_paths = [Path("OBPI-0.1.0-01.md"), Path("OBPI-0.1.0-02.md")]
         return score_adr_deterministic(_STRONG_ADR, 2, obpi_paths, [_STRONG_OBPI, _STRONG_OBPI])
 
+    @covers("REQ-0.0.5-02-01")
     def test_strong_adr_scores_above_threshold(self) -> None:
         dims = self._score_strong()
         total = sum(d.weighted for d in dims)
@@ -244,12 +248,14 @@ class TestAdrDimensionScoring(unittest.TestCase):
         total = sum(d.weighted for d in dims)
         self.assertLess(total, 2.5, f"Weak ADR should score < 2.5, got {total:.2f}")
 
+    @covers("REQ-0.0.5-02-02")
     def test_all_eight_dimensions_scored(self) -> None:
         dims = self._score_strong()
         self.assertEqual(len(dims), 8)
 
 
 class TestObpiDimensionScoring(unittest.TestCase):
+    @covers("REQ-0.0.5-02-04")
     def test_strong_obpi_scores_well(self) -> None:
         path = Path("OBPI-0.1.0-01-define-widget-processor.md")
         scores = score_obpis_deterministic([path], [_STRONG_OBPI])
@@ -283,6 +289,7 @@ class TestVerdictComputation(unittest.TestCase):
             average=avg,
         )
 
+    @covers("REQ-0.0.5-03-01")
     def test_go_verdict(self) -> None:
         verdict, items = compute_verdict(3.2, [self._make_obpi(3.5)])
         self.assertEqual(verdict, EvalVerdict.GO)
@@ -292,10 +299,12 @@ class TestVerdictComputation(unittest.TestCase):
         verdict, _ = compute_verdict(2.7, [self._make_obpi(3.5)])
         self.assertEqual(verdict, EvalVerdict.CONDITIONAL_GO)
 
+    @covers("REQ-0.0.5-03-02")
     def test_no_go_on_low_adr(self) -> None:
         verdict, _ = compute_verdict(2.0, [self._make_obpi(3.5)])
         self.assertEqual(verdict, EvalVerdict.NO_GO)
 
+    @covers("REQ-0.0.5-03-03")
     def test_no_go_on_obpi_dimension_1(self) -> None:
         verdict, items = compute_verdict(3.5, [self._make_obpi(2.0, min_dim=1)])
         self.assertEqual(verdict, EvalVerdict.NO_GO)
@@ -335,6 +344,7 @@ class TestVerdictComputation(unittest.TestCase):
 
 
 class TestScorecardRendering(unittest.TestCase):
+    @covers("REQ-0.0.5-04-04")
     def test_renders_markdown(self) -> None:
         result = AdrEvalResult(
             adr_id="ADR-0.1.0",
@@ -385,6 +395,7 @@ class TestEvaluateAdr(unittest.TestCase):
             (obpi_dir / f"OBPI-0.1.0-{i:02d}-item.md").write_text(content, encoding="utf-8")
         return root
 
+    @covers("REQ-0.0.5-04-02")
     def test_strong_adr_returns_go_or_conditional(self) -> None:
         root = self._make_project(_STRONG_ADR, [_STRONG_OBPI, _STRONG_OBPI])
         result = evaluate_adr(root, "ADR-0.1.0")
