@@ -556,7 +556,8 @@ class _TaskCliBase(unittest.TestCase):
     """Base class that sets up an isolated workspace with an OBPI in the ledger."""
 
     def setUp(self) -> None:
-        self._tmpdir = tempfile.mkdtemp(prefix="gzkit-task-test-")
+        self._tmp_ctx = tempfile.TemporaryDirectory(prefix="gzkit-task-test-")
+        self._tmpdir = self._tmp_ctx.name
         self._orig_cwd = Path.cwd()
         import os
 
@@ -573,10 +574,9 @@ class _TaskCliBase(unittest.TestCase):
 
     def tearDown(self) -> None:
         import os
-        import shutil
 
         os.chdir(self._orig_cwd)
-        shutil.rmtree(self._tmpdir, ignore_errors=True)
+        self._tmp_ctx.cleanup()
 
     def _seed_task_started(self, task_id: str = "TASK-0.1.0-01-01-01") -> None:
         """Emit a task_started event so the task is in_progress."""

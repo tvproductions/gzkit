@@ -36,6 +36,7 @@ def add_common_flags(
 
     Returns:
         The same *parser* for chaining.
+
     """
     # Only create the mutually exclusive group when neither flag is registered.
     # Partial pre-registration (one without the other) is unsupported — skip

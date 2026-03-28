@@ -58,6 +58,7 @@ def bind_correlation_id(correlation_id: str | None = None) -> str:
 
     Returns:
         The correlation ID that was bound.
+
     """
     global _correlation_id  # noqa: PLW0603
     _correlation_id = correlation_id or uuid.uuid4().hex[:12]
@@ -78,6 +79,7 @@ def configure_logging(
         log_file: Optional path for JSON file output. When set, all log
             events are written as JSON lines regardless of verbosity.
         console_stream: Override for console output stream (default stderr).
+
     """
     level = VERBOSITY_TO_LEVEL.get(verbosity, logging.INFO)
 

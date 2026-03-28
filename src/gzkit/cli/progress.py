@@ -42,6 +42,7 @@ def progress_spinner(
     Args:
         message: Description of the work being done.
         formatter: OutputFormatter instance to read mode from.
+
     """
     if not _should_show_progress(formatter):
         yield
@@ -72,6 +73,7 @@ def progress_phase(
         formatter: OutputFormatter instance to read mode from.
         step: Current step number (1-based).
         total: Total number of steps.
+
     """
     display_label = f"[{step}/{total}] {label}" if step is not None and total is not None else label
 
@@ -103,6 +105,7 @@ def progress_bar(
     Yields:
         Rich Progress instance (call ``advance(task_id)`` to update).
         In suppressed modes, yields a no-op Progress that is never rendered.
+
     """
     if not _should_show_progress(formatter):
         # Yield a Progress that never renders — callers can still call advance()

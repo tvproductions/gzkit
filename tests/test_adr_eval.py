@@ -385,8 +385,9 @@ class TestEvaluateAdr(unittest.TestCase):
     def _make_project(self, adr_content: str, obpi_contents: list[str]) -> Path:
         import tempfile
 
-        tmp = tempfile.mkdtemp()
-        root = Path(tmp)
+        tmp_ctx = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp_ctx.cleanup)
+        root = Path(tmp_ctx.name)
         adr_dir = root / "docs" / "design" / "adr" / "pre-release" / "ADR-0.1.0-test"
         obpi_dir = adr_dir / "obpis"
         obpi_dir.mkdir(parents=True)
