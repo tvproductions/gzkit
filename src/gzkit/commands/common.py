@@ -149,7 +149,8 @@ def _reject_pool_adr_for_lifecycle(adr_id: str, action: str) -> None:
     """Block closeout lifecycle operations for pool ADRs."""
     if not _is_pool_adr_id(adr_id):
         return
-    raise GzCliError(f"Pool ADRs cannot be {action}: {adr_id}. Promote this ADR from pool first.")
+    msg = f"Pool ADRs cannot be {action}: {adr_id}. Promote this ADR from pool first."
+    raise GzCliError(msg)  # noqa: TRY003
 
 
 def get_project_root() -> Path:
@@ -161,7 +162,8 @@ def ensure_initialized() -> GzkitConfig:
     """Ensure gzkit is initialized and return config."""
     config_path = get_project_root() / ".gzkit.json"
     if not config_path.exists():
-        raise GzCliError("gzkit not initialized. Run 'gz init' first.")
+        msg = "gzkit not initialized. Run 'gz init' first."
+        raise GzCliError(msg)  # noqa: TRY003
     return GzkitConfig.load(config_path)
 
 
@@ -169,7 +171,8 @@ def load_manifest(project_root: Path) -> dict[str, Any]:
     """Load the gzkit manifest."""
     manifest_path = project_root / ".gzkit" / "manifest.json"
     if not manifest_path.exists():
-        raise GzCliError("Missing .gzkit/manifest.json")
+        msg = "Missing .gzkit/manifest.json"
+        raise GzCliError(msg)  # noqa: TRY003
     return json.loads(manifest_path.read_text(encoding="utf-8"))
 
 
@@ -259,9 +262,11 @@ def resolve_adr_file(project_root: Path, config: GzkitConfig, adr: str) -> tuple
                 rels = ", ".join(
                     str(path.relative_to(project_root)) for path, _resolved in non_pool
                 )
-                raise GzCliError(f"Multiple ADR files found for {requested_id}: {rels}")
+                msg = f"Multiple ADR files found for {requested_id}: {rels}"
+                raise GzCliError(msg)  # noqa: TRY003
             rels = ", ".join(str(path.relative_to(project_root)) for path, _resolved in candidates)
-            raise GzCliError(f"Multiple ADR files found for {requested_id}: {rels}")
+            msg = f"Multiple ADR files found for {requested_id}: {rels}"
+            raise GzCliError(msg)  # noqa: TRY003
         return None
 
     adr_id = adr if adr.startswith("ADR-") else f"ADR-{adr}"
@@ -300,7 +305,8 @@ def resolve_adr_file(project_root: Path, config: GzkitConfig, adr: str) -> tuple
     if unique:
         return unique
 
-    raise GzCliError(f"ADR not found: {adr}")
+    msg = f"ADR not found: {adr}"
+    raise GzCliError(msg)  # noqa: TRY003
 
 
 def resolve_adr_ledger_id(
@@ -338,9 +344,11 @@ def resolve_target_adr(
         if len(pending) == 1:
             adr = pending[0]
         elif not pending:
-            raise GzCliError("No pending ADRs found. Use --adr to specify one.")
+            msg = "No pending ADRs found. Use --adr to specify one."
+            raise GzCliError(msg)  # noqa: TRY003
         else:
-            raise GzCliError("Multiple pending ADRs found. Use --adr to specify one.")
+            msg = "Multiple pending ADRs found. Use --adr to specify one."
+            raise GzCliError(msg)  # noqa: TRY003
 
     adr_id = adr if adr.startswith("ADR-") else f"ADR-{adr}"
     canonical_adr_id = ledger.canonicalize_id(adr_id)
@@ -361,7 +369,8 @@ def resolve_obpi(
     graph = ledger.get_artifact_graph()
     info = graph.get(canonical_obpi)
     if info and info.get("type") != "obpi":
-        raise GzCliError(f"OBPI not found in ledger: {canonical_obpi}")
+        msg = f"OBPI not found in ledger: {canonical_obpi}"
+        raise GzCliError(msg)  # noqa: TRY003
 
     artifacts = scan_existing_artifacts(project_root, config.paths.design_root)
     matches: list[Path] = []
@@ -373,13 +382,15 @@ def resolve_obpi(
 
     if len(matches) > 1:
         rels = ", ".join(str(path.relative_to(project_root)) for path in matches)
-        raise GzCliError(f"Multiple OBPI files found for {canonical_obpi}: {rels}")
+        msg = f"Multiple OBPI files found for {canonical_obpi}: {rels}"
+        raise GzCliError(msg)  # noqa: TRY003
 
     if info and info.get("type") == "obpi":
         return canonical_obpi, matches[0] if matches else None
     if matches:
         return canonical_obpi, matches[0]
-    raise GzCliError(f"OBPI not found in ledger or briefs: {canonical_obpi}")
+    msg = f"OBPI not found in ledger or briefs: {canonical_obpi}"
+    raise GzCliError(msg)  # noqa: TRY003
 
 
 def resolve_obpi_file(
@@ -391,7 +402,8 @@ def resolve_obpi_file(
     """Resolve an OBPI file path from an ID, supporting rename chains."""
     canonical_obpi, obpi_file = resolve_obpi(project_root, config, ledger, obpi)
     if obpi_file is None:
-        raise GzCliError(f"OBPI file not found for {canonical_obpi}")
+        msg = f"OBPI file not found for {canonical_obpi}"
+        raise GzCliError(msg)  # noqa: TRY003
     return obpi_file, canonical_obpi
 
 

@@ -93,9 +93,10 @@ def _enforce_git_sync_skip_policy() -> None:
     tokens = _skip_tokens(skip_raw)
     if not _skip_disables_xenon(tokens):
         return
-    raise GzCliError(
+    msg = (
         "Refusing git-sync with SKIP that can bypass xenon complexity checks. Unset SKIP and rerun."
     )
+    raise GzCliError(msg)  # noqa: TRY003
 
 
 def _run_sync_prechecks(
@@ -306,7 +307,7 @@ def git_sync(
 ) -> None:
     """Sync local branch with remote using a guarded git ritual."""
     if show_skill:
-        print(GIT_SYNC_SKILL_PATH)
+        print(GIT_SYNC_SKILL_PATH)  # noqa: T201
         return
 
     _enforce_git_sync_skip_policy()
@@ -373,7 +374,7 @@ def git_sync(
     }
 
     if as_json:
-        print(json.dumps(result, indent=2))
+        print(json.dumps(result, indent=2))  # noqa: T201
         if blockers:
             raise SystemExit(1)
         return

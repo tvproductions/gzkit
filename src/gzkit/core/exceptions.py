@@ -36,6 +36,7 @@ class ValidationError(GzkitError):
 
     @property
     def exit_code(self) -> int:
+        """Return exit code 1 for user/config errors."""
         return 1
 
 
@@ -44,6 +45,7 @@ class ResourceNotFoundError(GzkitError):
 
     @property
     def exit_code(self) -> int:
+        """Return exit code 1 for resource-not-found errors."""
         return 1
 
 
@@ -52,6 +54,7 @@ class PermanentError(GzkitError):
 
     @property
     def exit_code(self) -> int:
+        """Return exit code 1 for permanent errors."""
         return 1
 
 
@@ -60,6 +63,7 @@ class OperatorError(GzkitError):
 
     @property
     def exit_code(self) -> int:
+        """Return exit code 1 for operator errors."""
         return 1
 
 
@@ -71,6 +75,7 @@ class TransientError(GzkitError):
 
     @property
     def exit_code(self) -> int:
+        """Return exit code 2 for system/IO errors."""
         return 2
 
 
@@ -82,6 +87,7 @@ class PolicyBreachError(GzkitError):
 
     @property
     def exit_code(self) -> int:
+        """Return exit code 3 for policy breaches."""
         return 3
 
 

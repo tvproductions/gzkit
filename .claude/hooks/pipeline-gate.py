@@ -11,7 +11,6 @@ Exit codes:
 """
 
 import json
-import os
 import sys
 from pathlib import Path
 
@@ -52,13 +51,13 @@ def main() -> None:
 
     tool_input = input_data.get("tool_input", {})
     rel_path = resolve_repo_path(
-        input_data.get("cwd", os.getcwd()),
+        input_data.get("cwd", str(Path.cwd())),
         tool_input.get("file_path", ""),
     )
     if rel_path is None or not rel_path.startswith(("src/", "tests/")):
         sys.exit(0)
 
-    project_root = find_project_root(Path(input_data.get("cwd", os.getcwd())).resolve())
+    project_root = find_project_root(Path(input_data.get("cwd", str(Path.cwd()))).resolve())
     sys.path.insert(0, str(project_root / "src"))
 
     try:

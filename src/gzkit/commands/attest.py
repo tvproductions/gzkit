@@ -63,12 +63,13 @@ def _check_obpi_completion(
     incomplete = [r["id"] for r in obpi_check_rows if not r["completed"]]
     if incomplete and not force:
         blocker_list = "\n".join(f"- {oid}" for oid in incomplete)
-        raise GzCliError(
+        msg = (
             f"Cannot attest {adr_id} as completed — "
             f"{len(incomplete)} OBPI(s) are not completed:\n"
             f"{blocker_list}\n"
             "Complete all OBPIs first, or use --force with --reason."
         )
+        raise GzCliError(msg)  # noqa: TRY003
     if incomplete and force:
         console.print(
             f"[yellow]Warning:[/yellow] {len(incomplete)} OBPI(s) still incomplete, "
@@ -101,7 +102,8 @@ def attest(
     project_root = get_project_root()
 
     if attest_status in ("partial", "dropped") and not reason:
-        raise GzCliError(f"--reason required for {attest_status} status")
+        msg = f"--reason required for {attest_status} status"
+        raise GzCliError(msg)  # noqa: TRY003
 
     ledger = Ledger(project_root / config.paths.ledger)
     adr_input = adr if adr.startswith("ADR-") else f"ADR-{adr}"
@@ -111,24 +113,25 @@ def attest(
     adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
     adr_id = resolve_adr_ledger_id(adr_file, adr_id, ledger)
     if _is_pool_adr_id(adr_id):
-        raise GzCliError(
-            f"Pool ADRs cannot be attested: {adr_id}. Promote this ADR from pool first."
-        )
+        msg = f"Pool ADRs cannot be attested: {adr_id}. Promote this ADR from pool first."
+        raise GzCliError(msg)  # noqa: TRY003
 
     # Warn when closeout pipeline is active (OBPI-0.19.0-09)
     _warn_if_closeout_active(ledger, adr_id)
 
     snapshot = _attestation_gate_snapshot(project_root, config, ledger, adr_id)
     if force and not snapshot["ready"] and not reason:
-        raise GzCliError("--reason required when --force bypasses failing gate prerequisites")
+        msg = "--reason required when --force bypasses failing gate prerequisites"
+        raise GzCliError(msg)  # noqa: TRY003
 
     if not force and not snapshot["ready"]:
         blockers = "\\n".join(f"- {blocker}" for blocker in snapshot["blockers"])
-        raise GzCliError(
+        msg = (
             "Attestation blocked by prerequisite gates:\\n"
             f"{blockers}\\n"
             "Run required gate commands first, or use --force with --reason."
         )
+        raise GzCliError(msg)  # noqa: TRY003
 
     if not force:
         console.print("Checking prerequisite gates...")

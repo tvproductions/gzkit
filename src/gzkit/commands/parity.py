@@ -22,7 +22,7 @@ def parity_check_cmd(as_json: bool) -> None:
     if not enforced:
         result = {"valid": True, "enforced": False, "issues": []}
         if as_json:
-            print(json.dumps(result, indent=2))
+            print(json.dumps(result, indent=2))  # noqa: T201
         else:
             console.print("[green]Parity check skipped.[/green]")
             console.print("  No parity-report surfaces detected in this repository.")
@@ -110,7 +110,7 @@ def parity_check_cmd(as_json: bool) -> None:
         "issues": issues,
     }
     if as_json:
-        print(json.dumps(result, indent=2))
+        print(json.dumps(result, indent=2))  # noqa: T201
     elif not issues:
         console.print("[green]Parity check passed.[/green]")
         if latest_report is not None:

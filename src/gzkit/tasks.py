@@ -55,6 +55,7 @@ class TaskId(BaseModel):
         )
 
     def __str__(self) -> str:
+        """Return the canonical TASK identifier string."""
         return f"TASK-{self.semver}-{self.obpi_item}-{self.req_index}-{self.seq}"
 
 

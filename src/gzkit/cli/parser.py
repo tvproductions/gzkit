@@ -42,6 +42,7 @@ class StableArgumentParser(argparse.ArgumentParser):
     """
 
     def __init__(self, **kwargs: Any) -> None:
+        """Initialize with NoHyphenBreaksFormatter as the default formatter."""
         kwargs.setdefault("formatter_class", _NoHyphenBreaksFormatter)
         super().__init__(**kwargs)
 

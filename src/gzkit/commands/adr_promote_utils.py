@@ -61,10 +61,11 @@ def _derive_slug_from_pool_id(pool_id: str) -> str:
         raw_slug = pool_id.removeprefix("ADR-")
     candidate = raw_slug.replace(".", "-").lower()
     if not ADR_SLUG_RE.match(candidate):
-        raise GzCliError(
+        msg = (
             f"Could not derive kebab-case slug from pool ADR id: {pool_id}. "
             "Use --slug to provide one."
         )
+        raise GzCliError(msg)
     return candidate
 
 
@@ -76,7 +77,8 @@ def _derive_slug_from_pool_id(pool_id: str) -> str:
 def _parse_semver_triplet(semver: str) -> tuple[int, int, int]:
     """Parse strict X.Y.Z semantic version string into integer triplet."""
     if not SEMVER_ONLY_RE.match(semver):
-        raise GzCliError(f"Invalid --semver '{semver}'. Expected format X.Y.Z.")
+        msg = f"Invalid --semver '{semver}'. Expected format X.Y.Z."
+        raise GzCliError(msg)
     major_s, minor_s, patch_s = semver.split(".")
     return int(major_s), int(minor_s), int(patch_s)
 
@@ -129,9 +131,8 @@ def _required_pool_section(pool_content: str, section_title: str) -> str:
     """Read a required H2 section from a pool ADR and fail closed if missing."""
     section = extract_markdown_section(pool_content, section_title)
     if section is None or not section.strip():
-        raise GzCliError(
-            f"Pool ADR is not ready for promotion: missing required section '## {section_title}'."
-        )
+        msg = f"Pool ADR is not ready for promotion: missing required section '## {section_title}'."
+        raise GzCliError(msg)
     return section.strip()
 
 
@@ -177,7 +178,8 @@ def _parse_top_level_markdown_bullets(section_content: str) -> list[str]:
 def _promotion_scorecard(target_count: int) -> DecompositionScorecard:
     """Compute a valid scorecard for a concrete promoted checklist count."""
     if target_count <= 0:
-        raise GzCliError("Pool ADR promotion requires at least one executable checklist item.")
+        msg = "Pool ADR promotion requires at least one executable checklist item."
+        raise GzCliError(msg)
     if target_count <= 2:
         dimension_total = 0
     elif target_count == 3:
@@ -216,10 +218,11 @@ def _promoted_checklist_from_pool(
         if normalized:
             scope_items.append(normalized)
     if not scope_items:
-        raise GzCliError(
+        msg = (
             "Pool ADR is not ready for promotion: '## Target Scope' must contain top-level "
             "actionable bullet items."
         )
+        raise GzCliError(msg)
 
     checklist = "\n".join(
         f"- [ ] OBPI-{semver}-{index:02d}: {item}"
@@ -321,7 +324,8 @@ def _normalize_pool_adr_input(pool_adr: str) -> str:
     """Normalize user ADR argument into an explicit pool ADR identifier."""
     pool_input = pool_adr if pool_adr.startswith("ADR-") else f"ADR-{pool_adr}"
     if not _is_pool_adr_id(pool_input):
-        raise GzCliError(f"Source ADR is not a pool entry: {pool_input}")
+        msg = f"Source ADR is not a pool entry: {pool_input}"
+        raise GzCliError(msg)  # noqa: TRY003
     return pool_input
 
 
@@ -339,16 +343,17 @@ def _resolve_pool_adr_source(
     pool_metadata = parse_artifact_metadata(pool_file)
     pool_adr_id = pool_metadata.get("id", pool_file.stem)
     if not _is_pool_adr_id(pool_adr_id):
-        raise GzCliError(f"Resolved ADR is not a pool entry: {pool_adr_id}")
+        msg = f"Resolved ADR is not a pool entry: {pool_adr_id}"
+        raise GzCliError(msg)  # noqa: TRY003
     if ledger.canonicalize_id(pool_adr_id) != pool_adr_id:
-        raise GzCliError(f"Pool ADR already promoted or renamed in ledger state: {pool_adr_id}")
+        msg = f"Pool ADR already promoted or renamed in ledger state: {pool_adr_id}"
+        raise GzCliError(msg)  # noqa: TRY003
 
     pool_content = pool_file.read_text(encoding="utf-8")
     existing_promoted_to = parse_frontmatter_value(pool_content, "promoted_to")
     if existing_promoted_to:
-        raise GzCliError(
-            f"Pool ADR already records promotion target '{existing_promoted_to}': {pool_adr_id}"
-        )
+        msg = f"Pool ADR already records promotion target '{existing_promoted_to}': {pool_adr_id}"
+        raise GzCliError(msg)  # noqa: TRY003
     return pool_file, pool_adr_id, pool_metadata, pool_content
 
 
@@ -356,9 +361,8 @@ def _resolve_promotion_slug(pool_adr_id: str, slug: str | None) -> str:
     """Resolve and validate target ADR slug for pool promotion."""
     target_slug = slug or _derive_slug_from_pool_id(pool_adr_id)
     if not ADR_SLUG_RE.match(target_slug):
-        raise GzCliError(
-            f"Invalid --slug '{target_slug}'. Expected kebab-case like 'gz-chores-system'."
-        )
+        msg = f"Invalid --slug '{target_slug}'. Expected kebab-case like 'gz-chores-system'."
+        raise GzCliError(msg)  # noqa: TRY003
     return target_slug
 
 

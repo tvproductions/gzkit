@@ -20,12 +20,16 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class EvalVerdict(StrEnum):
+    """ADR evaluation verdict: GO, CONDITIONAL_GO, or NO_GO."""
+
     GO = "GO"
     CONDITIONAL_GO = "CONDITIONAL_GO"
     NO_GO = "NO_GO"
 
 
 class DimensionScore(BaseModel):
+    """Score for a single ADR evaluation dimension."""
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     dimension: str = Field(..., description="Dimension name")
@@ -36,6 +40,8 @@ class DimensionScore(BaseModel):
 
 
 class ObpiDimensionScores(BaseModel):
+    """Per-OBPI scores across the five quality dimensions."""
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     obpi_id: str
@@ -48,6 +54,8 @@ class ObpiDimensionScores(BaseModel):
 
 
 class RedTeamChallengeResult(BaseModel):
+    """Result of a single red-team challenge evaluation."""
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     challenge_number: int
@@ -57,6 +65,8 @@ class RedTeamChallengeResult(BaseModel):
 
 
 class AdrEvalResult(BaseModel):
+    """Complete ADR evaluation result with dimensions, OBPI scores, and verdict."""
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     adr_id: str

@@ -233,7 +233,8 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
     graph = ledger.get_artifact_graph()
     adr_info = graph.get(adr_id)
     if not adr_info or adr_info.get("type") != "adr":
-        raise GzCliError(f"ADR not found in ledger: {adr_id}")
+        msg = f"ADR not found in ledger: {adr_id}"
+        raise GzCliError(msg)  # noqa: TRY003
     if not adr_info.get("attested"):
         blocker = {
             "adr": adr_id,
@@ -246,7 +247,7 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
             "dry_run": dry_run,
         }
         if as_json:
-            print(json.dumps(blocker, indent=2))
+            print(json.dumps(blocker, indent=2))  # noqa: T201
         else:
             console.print("[red]Audit blocked:[/red] human attestation is required first.")
             console.print(f"  - Run: uv run gz closeout {adr_id}")
@@ -269,7 +270,7 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
             "status_transition": {"from": "Completed", "to": "Validated"},
         }
         if as_json:
-            print(json.dumps(dry_payload, indent=2))
+            print(json.dumps(dry_payload, indent=2))  # noqa: T201
             return
         console.print("[yellow]Dry run:[/yellow] no files will be written.")
         console.print(f"  Would create: {audit_dir.relative_to(project_root)}")
@@ -329,7 +330,7 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
         semantics = Ledger.derive_adr_semantics(adr_info)
         current_state = semantics["lifecycle_status"]
         if current_state != "Completed":
-            print(
+            print(  # noqa: T201
                 f"Warning: ADR {adr_id} is in '{current_state}' state, not 'Completed'. "
                 "Skipping lifecycle transition to Validated.",
                 file=sys.stderr,
@@ -340,7 +341,7 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
                 sm.transition(adr_id, "ADR", "Completed", "Validated")
                 status_transition = {"from": "Completed", "to": "Validated"}
             except InvalidTransitionError:
-                print(
+                print(  # noqa: T201
                     f"Warning: lifecycle transition Completed -> Validated failed for {adr_id}. "
                     "The ADR state may be inconsistent.",
                     file=sys.stderr,
@@ -363,7 +364,7 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
         "evidence_links": enrichment["evidence_links"],
     }
     if as_json:
-        print(json.dumps(output, indent=2))
+        print(json.dumps(output, indent=2))  # noqa: T201
     else:
         console.print(f"[bold]Audit results for {adr_id}[/bold]")
         for row in result_rows:

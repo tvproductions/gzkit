@@ -319,7 +319,8 @@ def get_interview_questions(document_type: str) -> list[Question]:
 
     """
     if document_type not in INTERVIEWS:
-        raise ValueError(f"Unknown document type: {document_type}")
+        msg = f"Unknown document type: {document_type}"
+        raise ValueError(msg)
     return INTERVIEWS[document_type]
 
 

@@ -50,7 +50,7 @@ def _show_role_registry(project_root: object, *, as_json: bool) -> None:
         )
 
     if as_json:
-        print(json.dumps(roles_data, indent=2))
+        print(json.dumps(roles_data, indent=2))  # noqa: T201
         return
 
     table = Table(title="Pipeline Agent Roles")
@@ -103,7 +103,7 @@ def _show_pipeline_dispatch(project_root: object, obpi_id: str, *, as_json: bool
         sys.exit(1)
 
     if as_json:
-        print(json.dumps(records_data, indent=2))
+        print(json.dumps(records_data, indent=2))  # noqa: T201
         return
 
     raw_records = records_data.get("records", [])

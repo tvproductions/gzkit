@@ -101,7 +101,8 @@ def init(mode: str, force: bool, dry_run: bool) -> None:
     gzkit_dir = project_root / ".gzkit"
 
     if gzkit_dir.exists() and not force:
-        raise GzCliError("Project already initialized. Use --force to reinitialize.")
+        msg = "Project already initialized. Use --force to reinitialize."
+        raise GzCliError(msg)  # noqa: TRY003
 
     # Detect project structure
     structure = detect_project_structure(project_root)
