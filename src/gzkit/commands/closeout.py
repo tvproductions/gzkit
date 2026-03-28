@@ -16,6 +16,7 @@ from gzkit.commands.common import (
     _update_adr_attestation_block,
     _write_adr_closeout_form,
     check_version_sync,
+    compute_defense_brief,
     console,
     ensure_initialized,
     get_git_user,
@@ -266,6 +267,7 @@ def _render_closeout_dry_run(
     needs_bump: bool,
     as_json: bool,
     proof_result: ProductProofResult | None = None,
+    defense_brief: str | None = None,
 ) -> None:
     result = _closeout_result_payload(
         adr_id=adr_id,
@@ -290,6 +292,8 @@ def _render_closeout_dry_run(
         }
         if proof_result is not None:
             result["product_proof"] = _product_proof_payload(proof_result)
+        if defense_brief is not None:
+            result["defense_brief"] = True
         print(json.dumps(result, indent=2))  # noqa: T201
         return
     _render_closeout_output(result, dry_run=True)
@@ -298,6 +302,10 @@ def _render_closeout_dry_run(
             f"  Version sync: would bump {current_ver} -> {adr_ver} "
             f"(pyproject.toml, __init__.py, README.md)"
         )
+    if defense_brief:
+        console.print("\n  [bold]Defense Brief[/bold] (preview)")
+        for line in defense_brief.splitlines():
+            console.print(f"  {line}", markup=False)
 
 
 def _record_closeout_initiation(
@@ -426,6 +434,7 @@ def _complete_closeout_pipeline(
     needs_bump: bool,
     gate_results: list[dict[str, Any]],
     as_json: bool,
+    defense_brief: str | None = None,
 ) -> None:
     if not as_json:
         console.print("\n  All quality gates passed.")
@@ -456,6 +465,7 @@ def _complete_closeout_pipeline(
         attestation_term=canonical_term,
         attester=attester,
         timestamp_utc=timestamp_utc,
+        defense_brief=defense_brief,
     )
     _update_adr_attestation_block(
         adr_file,
@@ -568,6 +578,9 @@ def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
                 console.print(f"  - {obpi_id}")
         raise SystemExit(1)
 
+    # --- Defense brief computation ---
+    defense_brief = compute_defense_brief(obpi_files, adr_file.parent, proof_result)
+
     # --- Version sync check (needed for dry-run display and active pipeline) ---
     current_ver, adr_ver, needs_bump = check_version_sync(project_root, adr_id)
 
@@ -589,6 +602,7 @@ def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
             needs_bump=needs_bump,
             as_json=as_json,
             proof_result=proof_result,
+            defense_brief=defense_brief,
         )
         return
 
@@ -634,4 +648,5 @@ def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
         needs_bump=needs_bump,
         gate_results=gate_results,
         as_json=as_json,
+        defense_brief=defense_brief,
     )

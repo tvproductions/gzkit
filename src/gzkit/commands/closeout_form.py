@@ -96,6 +96,7 @@ def _render_adr_closeout_form(
     attestation_term: str | None = None,
     attester: str | None = None,
     timestamp_utc: str | None = None,
+    defense_brief: str | None = None,
 ) -> str:
     """Render the canonical ADR closeout form markdown."""
     gate_1_path = adr_file.relative_to(project_root).as_posix()
@@ -175,6 +176,9 @@ def _render_adr_closeout_form(
             f"{'Completed' if row.get('completed') else 'Pending'} |"
         )
 
+    if defense_brief:
+        lines.extend(["", defense_brief])
+
     lines.extend(["", "## Human Attestation", ""])
     if attestation_text is None or attester is None or timestamp_utc is None:
         lines.append("Awaiting explicit human attestation.")
@@ -209,6 +213,7 @@ def _write_adr_closeout_form(
     attestation_term: str | None = None,
     attester: str | None = None,
     timestamp_utc: str | None = None,
+    defense_brief: str | None = None,
 ) -> Path:
     """Create or refresh the ADR closeout form."""
     closeout_form = _closeout_form_path(adr_file)
@@ -225,6 +230,7 @@ def _write_adr_closeout_form(
             attestation_term=attestation_term,
             attester=attester,
             timestamp_utc=timestamp_utc,
+            defense_brief=defense_brief,
         ),
         encoding="utf-8",
     )
