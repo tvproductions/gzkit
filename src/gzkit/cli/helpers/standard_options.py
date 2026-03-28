@@ -35,6 +35,7 @@ def add_json_flag(
 
     Returns:
         The same *parser* for chaining.
+
     """
     if not _option_exists(parser, "--json"):
         parser.add_argument(
@@ -61,6 +62,7 @@ def add_adr_option(
 
     Returns:
         The same *parser* for chaining.
+
     """
     if not _option_exists(parser, "--adr"):
         parser.add_argument(
@@ -84,6 +86,7 @@ def add_dry_run_flag(
 
     Returns:
         The same *parser* for chaining.
+
     """
     if not _option_exists(parser, "--dry-run"):
         parser.add_argument(
@@ -109,6 +112,7 @@ def add_force_flag(
 
     Returns:
         The same *parser* for chaining.
+
     """
     if not _option_exists(parser, "--force"):
         parser.add_argument(
@@ -132,6 +136,7 @@ def add_table_flag(
 
     Returns:
         The same *parser* for chaining.
+
     """
     if not _option_exists(parser, "--table"):
         parser.add_argument(

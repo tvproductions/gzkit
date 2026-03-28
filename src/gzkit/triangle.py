@@ -262,7 +262,6 @@ def scan_briefs(directory: pathlib.Path) -> list[DiscoveredReq]:
     Returns discovered REQs with their source file paths, sorted by REQ identifier
     (semantic version ordering).
     """
-
     discovered: list[DiscoveredReq] = []
 
     for md_file in sorted(pathlib.Path(directory).rglob("*.md")):

@@ -99,6 +99,7 @@ def covers(req_id_str: str) -> Callable[[_F], _F]:
     Raises:
         ValueError: If *req_id_str* has an invalid format or does not exist
             in the extracted brief-defined REQ set.
+
     """
     req_id = ReqId.parse(req_id_str)
 
