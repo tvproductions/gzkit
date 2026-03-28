@@ -2,7 +2,7 @@
 
 **GovZero Kit: A Development Covenant for Human-AI Collaboration**
 
-[![Version](https://img.shields.io/badge/version-0.20.0-blue.svg)](RELEASE_NOTES.md)
+[![Version](https://img.shields.io/badge/version-0.22.0-blue.svg)](RELEASE_NOTES.md)
 [![Python 3.13+](https://img.shields.io/badge/python-3.13+-3776ab.svg?logo=python&logoColor=white)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Docs CI](https://img.shields.io/github/actions/workflow/status/tvproductions/gzkit/docs.yml?branch=main&logo=github&label=Docs%20CI)](https://github.com/tvproductions/gzkit/actions/workflows/docs.yml)

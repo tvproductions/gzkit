@@ -103,8 +103,22 @@ jobs:
       - name: Set up Python
         run: uv python install 3.13
 
+      - name: Verify tag matches package version
+        shell: bash
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          PKG_VERSION="$(grep -m1 '^version' pyproject.toml | sed 's/version = "\(.*\)"/\1/')"
+          echo "Tag version: $TAG"
+          echo "Package version: $PKG_VERSION"
+          if [ "$TAG" != "$PKG_VERSION" ]; then
+            echo "::error::Version mismatch — tag v$TAG vs pyproject.toml $PKG_VERSION. Refusing to publish."
+            exit 1
+          fi
+
       - name: Build wheel
         run: uv build
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          verbose: true
