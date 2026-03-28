@@ -99,6 +99,10 @@ uv run gz lint
 
 # 4) Present the OBPI ceremony and only then update the brief
 #    (status Completed only after attestation when required)
+#    The brief's Closing Argument section is authored at completion time
+#    from delivered evidence — not copied from planning intent. It must
+#    include: what was built (paths), what it enables (operator capability),
+#    and why it matters (proof command or doc link).
 #    Use parser-safe inline bullets in "Implementation Summary":
 #      - Files created/modified: <paths>
 #      - Tests added: <files or (none)>
