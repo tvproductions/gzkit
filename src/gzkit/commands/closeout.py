@@ -39,6 +39,7 @@ from gzkit.ledger import (
     lifecycle_transition_event,
     resolve_adr_lane,
 )
+from gzkit.quality import ProductProofResult, check_product_proof
 
 
 def _manifest_verification_commands(
@@ -264,6 +265,7 @@ def _render_closeout_dry_run(
     adr_ver: str | None,
     needs_bump: bool,
     as_json: bool,
+    proof_result: ProductProofResult | None = None,
 ) -> None:
     result = _closeout_result_payload(
         adr_id=adr_id,
@@ -286,6 +288,8 @@ def _render_closeout_dry_run(
             "target": adr_ver,
             "needs_bump": needs_bump,
         }
+        if proof_result is not None:
+            result["product_proof"] = _product_proof_payload(proof_result)
         print(json.dumps(result, indent=2))  # noqa: T201
         return
     _render_closeout_output(result, dry_run=True)
@@ -383,6 +387,30 @@ def _run_closeout_quality_gates(
             )
         raise SystemExit(1)
     return gate_results
+
+
+def _product_proof_payload(proof_result: ProductProofResult) -> list[dict[str, Any]]:
+    """Build JSON-serializable product proof rows."""
+    return [
+        {
+            "obpi_id": p.obpi_id,
+            "proof_type": p.proof_type,
+            "runbook": p.runbook_found,
+            "command_doc": p.command_doc_found,
+            "docstring": p.docstring_found,
+        }
+        for p in proof_result.obpi_proofs
+    ]
+
+
+def _render_product_proof_human(proof_result: ProductProofResult) -> None:
+    """Render product proof status table for human output."""
+    console.print("\n  [bold]Product Proof Status[/bold]")
+    for p in proof_result.obpi_proofs:
+        if p.has_proof:
+            console.print(f"    {p.obpi_id}: [green]{p.proof_type}[/green]")
+        else:
+            console.print(f"    {p.obpi_id}: [red]MISSING[/red]")
 
 
 def _complete_closeout_pipeline(
@@ -519,11 +547,34 @@ def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
             as_json=as_json,
         )
 
+    # --- Product proof gate ---
+    proof_result = check_product_proof(adr_id, obpi_files, project_root)
+    if not proof_result.success:
+        proof_rows = _product_proof_payload(proof_result)
+        missing = [p.obpi_id for p in proof_result.obpi_proofs if not p.has_proof]
+        if as_json:
+            print(
+                json.dumps(
+                    {"product_proof": proof_rows, "success": False, "blockers": missing}, indent=2
+                )
+            )  # noqa: T201
+        else:
+            _render_product_proof_human(proof_result)
+            console.print(
+                f"\n[red]Closeout blocked:[/red] {proof_result.missing_count} "
+                f"OBPI(s) missing product proof"
+            )
+            for obpi_id in missing:
+                console.print(f"  - {obpi_id}")
+        raise SystemExit(1)
+
     # --- Version sync check (needed for dry-run display and active pipeline) ---
     current_ver, adr_ver, needs_bump = check_version_sync(project_root, adr_id)
 
     # --- Dry run: show full pipeline plan without executing ---
     if dry_run:
+        if not as_json:
+            _render_product_proof_human(proof_result)
         _render_closeout_dry_run(
             adr_id=adr_id,
             lane=lane,
@@ -537,6 +588,7 @@ def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
             adr_ver=adr_ver,
             needs_bump=needs_bump,
             as_json=as_json,
+            proof_result=proof_result,
         )
         return
 
@@ -560,6 +612,7 @@ def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
         console.print(f"[bold]Closeout pipeline: {adr_id}[/bold]")
         console.print(f"  Gate 1 (ADR): {gate_1_path}")
         console.print(f"  OBPI Completion: {obpi_completed}/{obpi_total} complete")
+        _render_product_proof_human(proof_result)
 
     # Stage: Run quality gates inline
     gate_results = _run_closeout_quality_gates(

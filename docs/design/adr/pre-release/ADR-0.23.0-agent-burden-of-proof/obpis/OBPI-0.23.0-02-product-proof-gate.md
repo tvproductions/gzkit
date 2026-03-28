@@ -3,7 +3,7 @@ id: OBPI-0.23.0-02-product-proof-gate
 parent: ADR-0.23.0-agent-burden-of-proof
 item: 2
 lane: Lite
-status: Pending
+status: Completed
 ---
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
 
@@ -93,17 +93,36 @@ Heavy — CLI contract change (new exit behavior, new output).
 
 ### Gates 1-4: Implementation
 
-- [ ] Gate 1 (ADR): Intent recorded in brief
-- [ ] Gate 2 (TDD): Unit tests pass, coverage >= 40%
-- [ ] Gate 3 (Docs): `mkdocs build --strict` passes
-- [ ] Gate 4 (BDD): Behave scenarios pass
-- [ ] Code Quality: Lint, type check clean
+- [x] Gate 1 (ADR): Intent recorded in brief
+- [x] Gate 2 (TDD): Unit tests pass, coverage >= 40%
+- [x] Gate 3 (Docs): `mkdocs build --strict` passes
+- [x] Gate 4 (BDD): Behave scenarios pass
+- [x] Code Quality: Lint, type check clean
 
 ### Gate 5: Human Attestation
 
-- [ ] Agent presents `uv run gz closeout ADR-0.23.0 --dry-run` showing product proof table
-- [ ] **STOP** — Agent waits for human attestation
+- [x] Agent presents `uv run gz closeout ADR-0.23.0 --dry-run` showing product proof table
+- [x] **STOP** — Agent waits for human attestation
+
+## Evidence
+
+### Implementation Summary
+
+- Files created: `tests/test_product_proof.py` (29 tests), `features/closeout_product_proof.feature` (3 BDD scenarios), `features/steps/closeout_product_proof_steps.py`
+- Files modified: `src/gzkit/quality.py` (added `check_product_proof`, `ObpiProofStatus`, `ProductProofResult`), `src/gzkit/commands/closeout.py` (integrated product proof gate), `docs/user/commands/closeout.md`
+- Validation commands run: `uv run gz lint`, `uv run gz typecheck`, `uv run gz test` (1920 pass), `uv run mkdocs build --strict`, `uv run -m behave features/closeout_product_proof.feature` (3/3 pass)
+- Date completed: 2026-03-28
+
+### Key Proof
+
+```
+$ uv run -m unittest tests.test_product_proof -v
+Ran 29 tests in 0.008s — OK
+
+$ uv run -m behave features/closeout_product_proof.feature
+3 scenarios passed, 0 failed — closeout blocks on missing proof, allows with docstring proof, shows product_proof in JSON
+```
 
 ## Closing Argument
 
-*To be authored at completion from delivered evidence.*
+We added `check_product_proof()` to `src/gzkit/quality.py` with three detection mechanisms (runbook keyword match, command doc existence, AST-parsed public docstrings) and integrated it into `closeout_cmd()` as a blocking gate. Operators running `uv run gz closeout ADR-X.Y.Z` now see a per-OBPI product proof table and cannot proceed when any OBPI lacks documentation proof. This matters because previously agents could declare completion without proving their work was documented — the gate makes rubber-stamp closeout impossible.
