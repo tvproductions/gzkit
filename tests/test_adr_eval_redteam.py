@@ -11,9 +11,11 @@ from gzkit.adr_eval_redteam import (
     load_framework_redteam_prompt,
     parse_redteam_result,
 )
+from gzkit.traceability import covers
 
 
 class TestComposeRedTeamPrompt(unittest.TestCase):
+    @covers("REQ-0.0.5-04-01")
     def test_includes_adr_content(self) -> None:
         prompt = compose_adr_redteam_prompt(
             adr_content="# My ADR",
@@ -47,6 +49,7 @@ class TestParseRedTeamResult(unittest.TestCase):
     def _make_output(self, challenges: list[dict]) -> str:
         return f"Here are the results:\n```json\n{json.dumps({'challenges': challenges})}\n```"
 
+    @covers("REQ-0.0.5-04-03")
     def test_parses_valid_10_challenges(self) -> None:
         challenges = [
             {
@@ -101,6 +104,7 @@ class TestLoadFrameworkPrompt(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp, self.assertRaises(FileNotFoundError):
             load_framework_redteam_prompt(Path(tmp))
 
+    @covers("REQ-0.0.5-04-05")
     def test_loads_from_real_assets(self) -> None:
         assets = Path(".claude/skills/gz-adr-eval/assets")
         if not assets.exists():

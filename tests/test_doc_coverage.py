@@ -33,12 +33,15 @@ from gzkit.doc_coverage.scanner import (
     find_orphaned_docs,
     scan_cli_commands,
 )
+from gzkit.traceability import covers as _req_covers
 
 _T = TypeVar("_T")
 
 
-def covers(target: str):  # noqa: D401 — traceability decorator, not a docstring
-    """Traceability decorator linking test classes/functions to ADR/OBPI/REQ targets."""
+def covers(target: str):  # noqa: D401 — identity decorator for ADR/OBPI-level tracing
+    """Link test to ADR/OBPI/REQ target. REQ-level targets use the real traceability decorator."""
+    if target.startswith("REQ-"):
+        return _req_covers(target)
 
     def _identity(obj: _T) -> _T:
         return obj

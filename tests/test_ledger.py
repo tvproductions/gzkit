@@ -24,6 +24,7 @@ from gzkit.ledger import (
     prd_created_event,
     project_init_event,
 )
+from gzkit.traceability import covers  # noqa: F401
 
 
 class TestLedgerEvent(unittest.TestCase):
@@ -446,6 +447,7 @@ class TestLedger(unittest.TestCase):
         self.assertEqual(inputs[0]["scope"], "OBPI-0.10.0-01")
         self.assertEqual(inputs[0]["gap_reason"], "receipt not recorded yet")
 
+    @covers("REQ-0.10.0-01-01")
     def test_derive_obpi_semantics_reports_pending_without_proof(self) -> None:
         """Absent proof and brief completion remain pending."""
         semantics = derive_obpi_semantics(
@@ -476,6 +478,7 @@ class TestLedger(unittest.TestCase):
         self.assertEqual(semantics["runtime_state"], "in_progress")
         self.assertEqual(semantics["proof_state"], "missing")
 
+    @covers("REQ-0.10.0-02-02")
     def test_derive_obpi_semantics_requires_receipt_proof_for_completion(self) -> None:
         """Brief-only proof no longer upgrades a completed receipt to canonical completion."""
         semantics = derive_obpi_semantics(
@@ -499,6 +502,7 @@ class TestLedger(unittest.TestCase):
         self.assertFalse(semantics["completed"])
         self.assertEqual(semantics["anchor_state"], "not_tracked")
 
+    @covers("REQ-0.10.0-02-01")
     def test_derive_obpi_semantics_requires_attestation_for_attested_completed(self) -> None:
         """Attested completion reports required attestation and records it when present."""
         semantics = derive_obpi_semantics(
@@ -530,6 +534,7 @@ class TestLedger(unittest.TestCase):
         self.assertEqual(semantics["attestation_requirement"], "required")
         self.assertEqual(semantics["attestation_state"], "recorded")
 
+    @covers("REQ-0.10.0-02-03")
     def test_derive_obpi_semantics_reports_validated_state(self) -> None:
         """Validated receipts promote proof state to validated on top of completed proof."""
         semantics = derive_obpi_semantics(
@@ -551,6 +556,7 @@ class TestLedger(unittest.TestCase):
         self.assertEqual(semantics["runtime_state"], "validated")
         self.assertEqual(semantics["proof_state"], "validated")
 
+    @covers("REQ-0.10.0-03-02")
     def test_derive_obpi_semantics_reports_reflection_drift_without_downgrading_completion(
         self,
     ) -> None:
@@ -650,6 +656,7 @@ class TestLedger(unittest.TestCase):
         self.assertEqual(semantics["issues"], [])
         self.assertTrue(semantics["completed"])
 
+    @covers("REQ-0.10.0-03-01")
     def test_derive_obpi_semantics_reports_superseded_anchor_when_scope_changes(self) -> None:
         """Scope changes after OBPI completion mark anchor as superseded, not stale."""
         semantics = derive_obpi_semantics(
