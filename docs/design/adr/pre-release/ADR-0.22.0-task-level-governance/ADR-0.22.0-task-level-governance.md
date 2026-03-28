@@ -287,4 +287,4 @@ Decision: Accept | Request Changes
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.22.0 | Pending | | | |
+| 0.22.0 | Completed | Jeff | 2026-03-28 | completed |
