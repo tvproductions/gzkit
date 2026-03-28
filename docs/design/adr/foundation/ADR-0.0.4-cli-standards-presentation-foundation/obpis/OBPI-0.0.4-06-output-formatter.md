@@ -148,8 +148,8 @@ uv run -m gzkit --quiet status
 - [x] REQ-0.0.4-06-06: Given `OutputFormatter` in HUMAN mode, when `emit_status("check", True)` is called, then a check symbol is rendered; when called with `False`, a cross symbol is rendered.
 - [x] REQ-0.0.4-06-07: Given `OutputFormatter` in JSON mode, when `emit_status("check", True)` is called, then a key-value JSON object is written to stdout.
 - [x] REQ-0.0.4-06-08: Given any mode, when `emit_blocker(message)` is called, then `BLOCKERS:` prefix is written to stderr.
-- [ ] REQ-0.0.4-06-09: Given a full grep scan of `src/gzkit/commands/`, then zero direct `console.print()` calls exist in command handler code.
-- [ ] REQ-0.0.4-06-10: Given a full grep scan of `src/gzkit/commands/`, then zero bare `print()` calls exist for user-facing output in command handler code.
+- [ ] REQ-0.0.4-06-09: [doc] Given a full grep scan of `src/gzkit/commands/`, then zero direct `console.print()` calls exist in command handler code.
+- [ ] REQ-0.0.4-06-10: [doc] Given a full grep scan of `src/gzkit/commands/`, then zero bare `print()` calls exist for user-facing output in command handler code.
 
 ## Completion Checklist
 

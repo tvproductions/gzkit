@@ -57,6 +57,7 @@ class TestCheckSymbols(unittest.TestCase):
 class TestTidySymbols(unittest.TestCase):
     """REQ-0.0.4-08-03: gz tidy output uses structured symbols."""
 
+    @covers("REQ-0.0.4-08-03")
     def test_tidy_uses_symbols(self):
         from pathlib import Path
 
@@ -69,6 +70,7 @@ class TestTidySymbols(unittest.TestCase):
 class TestValidateItemized(unittest.TestCase):
     """REQ-0.0.4-08-04: gz validate shows what was validated."""
 
+    @covers("REQ-0.0.4-08-04")
     def test_validate_shows_scopes(self):
         from pathlib import Path
 
@@ -80,6 +82,7 @@ class TestValidateItemized(unittest.TestCase):
 class TestGatesSymbols(unittest.TestCase):
     """REQ-0.0.4-08-05: gz gates uses check/cross/warning symbols."""
 
+    @covers("REQ-0.0.4-08-05")
     def test_gates_uses_symbols(self):
         from pathlib import Path
 

@@ -118,8 +118,8 @@ uv run gz status
 ## Acceptance Criteria
 
 - [x] REQ-0.10.0-01-01: OBPI runtime lifecycle states and evidence inputs are defined deterministically.
-- [x] REQ-0.10.0-01-02: Compatibility boundaries with existing ADR-first receipt/audit behavior are explicit.
-- [x] REQ-0.10.0-01-03: Required REQ-proof inputs for later OBPI runtime surfaces are documented.
+- [x] REQ-0.10.0-01-02: [doc] Compatibility boundaries with existing ADR-first receipt/audit behavior are explicit.
+- [x] REQ-0.10.0-01-03: [doc] Required REQ-proof inputs for later OBPI runtime surfaces are documented.
 
 ## Runtime Contract
 
