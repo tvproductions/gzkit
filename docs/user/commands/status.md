@@ -84,6 +84,27 @@ uv run gz status --show-gates
 uv run gz status --json
 ```
 
+When tasks exist for active OBPIs, a task summary row appears showing counts
+by status (done, active, pending, blocked, escalated) and whether task tracing
+is advisory (Lite lane) or required (Heavy lane). The task summary does not
+appear when no tasks exist (backward compatible).
+
+JSON output includes a `task_summary` object per ADR when tasks are present:
+
+```json
+{
+  "task_summary": {
+    "total": 5,
+    "pending": 1,
+    "in_progress": 2,
+    "completed": 1,
+    "blocked": 0,
+    "escalated": 1,
+    "tracing_policy": "required"
+  }
+}
+```
+
 Table output excerpt (captured 2026-03-08):
 
 ```text

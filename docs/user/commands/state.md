@@ -32,6 +32,33 @@ ADR entries include additive derived semantics (for example `lifecycle_status`, 
 
 ---
 
+## Task Data in JSON Output
+
+When tasks exist for an OBPI, `--json` output includes a `task_summary` object
+on that OBPI's entry with counts by status and the lane's tracing policy:
+
+```json
+{
+  "OBPI-0.20.0-01": {
+    "type": "obpi",
+    "parent": "ADR-0.20.0",
+    "task_summary": {
+      "total": 3,
+      "pending": 0,
+      "in_progress": 1,
+      "completed": 1,
+      "blocked": 0,
+      "escalated": 1,
+      "tracing_policy": "required"
+    }
+  }
+}
+```
+
+Task data does not appear when no tasks exist (backward compatible).
+
+---
+
 ## Example
 
 ```bash

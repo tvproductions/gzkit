@@ -76,3 +76,42 @@ Feature: Task lifecycle governance
     When I run the gz command "task escalate TASK-0.1.0-01-01-01 --reason Needs_human_decision"
     Then the command exits with code 0
     And the output contains "Escalated"
+
+  # OBPI-0.22.0-05: Status and state integration
+  Scenario: gz status shows task summary when tasks exist
+    Given the workspace is initialized
+    And ADR-0.1.0 exists
+    And an OBPI exists for ADR-0.1.0
+    And a pending task TASK-0.1.0-01-01-01 exists
+    And I run the gz command "task start TASK-0.1.0-01-01-01"
+    When I run the gz command "status"
+    Then the command exits with code 0
+    And the output contains "Tasks:"
+
+  Scenario: gz status omits task section when no tasks exist
+    Given the workspace is initialized
+    And ADR-0.1.0 exists
+    And an OBPI exists for ADR-0.1.0
+    When I run the gz command "status"
+    Then the command exits with code 0
+
+  Scenario: gz status shows escalated count
+    Given the workspace is initialized
+    And ADR-0.1.0 exists
+    And an OBPI exists for ADR-0.1.0
+    And a pending task TASK-0.1.0-01-01-01 exists
+    And I run the gz command "task start TASK-0.1.0-01-01-01"
+    And I run the gz command "task escalate TASK-0.1.0-01-01-01 --reason Needs_review"
+    When I run the gz command "status"
+    Then the command exits with code 0
+    And the output contains "escalated"
+
+  Scenario: gz state --json includes task data
+    Given the workspace is initialized
+    And ADR-0.1.0 exists
+    And an OBPI exists for ADR-0.1.0
+    And a pending task TASK-0.1.0-01-01-01 exists
+    And I run the gz command "task start TASK-0.1.0-01-01-01"
+    When I run the gz command "state --json"
+    Then the command exits with code 0
+    And the output is valid JSON

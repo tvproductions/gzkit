@@ -3,7 +3,7 @@ id: OBPI-0.22.0-05-status-and-state-integration
 parent: ADR-0.22.0-task-level-governance
 item: 5
 lane: Heavy
-status: Accepted
+status: Completed
 ---
 
 # OBPI-0.22.0-05: Status and State Integration
@@ -13,7 +13,7 @@ status: Accepted
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.22.0-task-level-governance/ADR-0.22.0-task-level-governance.md`
 - **Checklist Item:** #5 — "Status and state integration: TASK data in `gz status` and `gz state`"
 
-**Status:** Accepted
+**Status:** Completed
 
 ## Objective
 
@@ -56,43 +56,43 @@ human attestation.
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.22.0-05-01: Given active tasks for OBPI-0.20.0-01, when `gz status` is run, then task summary row appears.
-- [ ] REQ-0.22.0-05-02: Given no tasks exist, when `gz status` is run, then output is unchanged from current behavior.
-- [ ] REQ-0.22.0-05-03: Given `gz state --json`, then JSON includes task counts per OBPI.
-- [ ] REQ-0.22.0-05-04: Given escalated tasks exist, when `gz status` is run, then escalated count is visible in the task summary.
-- [ ] REQ-0.22.0-05-05: Given an active Lite or Heavy OBPI, when task data is shown, then the output indicates whether tracing is advisory or required for that lane.
+- [x] REQ-0.22.0-05-01: Given active tasks for OBPI-0.20.0-01, when `gz status` is run, then task summary row appears.
+- [x] REQ-0.22.0-05-02: Given no tasks exist, when `gz status` is run, then output is unchanged from current behavior.
+- [x] REQ-0.22.0-05-03: Given `gz state --json`, then JSON includes task counts per OBPI.
+- [x] REQ-0.22.0-05-04: Given escalated tasks exist, when `gz status` is run, then escalated count is visible in the task summary.
+- [x] REQ-0.22.0-05-05: Given an active Lite or Heavy OBPI, when task data is shown, then the output indicates whether tracing is advisory or required for that lane.
 
 ## Quality Gates (Heavy)
 
 ### Gate 1: ADR
 
-- [ ] Intent recorded in this brief
+- [x] Intent recorded in this brief
 
 ### Gate 2: TDD
 
-- [ ] Integration tests verify task summaries, escalated counts, and
+- [x] Integration tests verify task summaries, escalated counts, and
   lane-policy surfacing
-- [ ] Tests pass: `uv run -m unittest tests.test_tasks -v`
+- [x] Tests pass: `uv run -m unittest tests.test_tasks -v`
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 ### Gate 3: Docs
 
-- [ ] `docs/user/commands/status.md` updated with task summary examples
-- [ ] `docs/user/commands/state.md` updated with task JSON schema examples
-- [ ] `uv run mkdocs build --strict` passes
+- [x] `docs/user/commands/status.md` updated with task summary examples
+- [x] `docs/user/commands/state.md` updated with task JSON schema examples
+- [x] `uv run mkdocs build --strict` passes
 
 ### Gate 4: BDD
 
-- [ ] `features/task_governance.feature` covers task-aware reporting behavior
-- [ ] `uv run -m behave features/task_governance.feature` passes
+- [x] `features/task_governance.feature` covers task-aware reporting behavior
+- [x] `uv run -m behave features/task_governance.feature` passes
 
 ### Gate 5: Human
 
-- [ ] Human attestation recorded
+- [x] Human attestation recorded
 
 ## Verification Commands (Concrete)
 
@@ -119,17 +119,49 @@ uv run gz typecheck
 
 ## Completion Checklist (Heavy)
 
-- [ ] **Gate 1 (ADR):** Intent recorded
-- [ ] **Gate 2 (TDD):** Tests pass
-- [ ] **Gate 3 (Docs):** Docs updated, docs build passes
-- [ ] **Gate 4 (BDD):** Acceptance scenarios pass
-- [ ] **Gate 5 (Human):** Attestation recorded
-- [ ] **Code Quality:** Clean
+- [x] **Gate 1 (ADR):** Intent recorded
+- [x] **Gate 2 (TDD):** Tests pass
+- [x] **Gate 3 (Docs):** Docs updated, docs build passes
+- [x] **Gate 4 (BDD):** Acceptance scenarios pass
+- [x] **Gate 5 (Human):** Attestation recorded
+- [x] **Code Quality:** Clean
+
+### Implementation Summary
+
+- Files modified: `src/gzkit/commands/status.py`, `src/gzkit/commands/state.py`
+- Tests added: 11 integration tests in `tests/test_tasks.py` (TestStatusTaskSummary, TestStateTaskIntegration)
+- BDD scenarios added: 4 new scenarios in `features/task_governance.feature`
+- Docs updated: `docs/user/commands/status.md`, `docs/user/commands/state.md`
+- Validation commands run: `uv run gz lint`, `uv run gz typecheck`, `uv run gz test`, `uv run mkdocs build --strict`, `uv run -m behave features/task_governance.feature`
+
+### Key Proof
+
+```
+uv run -m unittest tests.test_tasks.TestStatusTaskSummary tests.test_tasks.TestStateTaskIntegration -v
+test_status_json_includes_task_summary ... ok
+test_status_json_includes_tracing_policy ... ok
+test_status_json_no_task_summary_when_no_tasks ... ok
+test_status_no_task_section_when_no_tasks ... ok
+test_status_shows_escalated_count ... ok
+test_status_shows_task_summary_when_tasks_exist ... ok
+test_status_shows_tracing_policy ... ok
+test_state_json_includes_task_data ... ok
+test_state_json_no_task_data_when_no_tasks ... ok
+test_state_json_task_summary_counts ... ok
+test_state_json_task_tracing_policy ... ok
+Ran 11 tests in 0.256s — OK
+```
+
+### Human Attestation
+
+- Attestor: `jeff`
+- Attestation: attest completed
+- Date: `2026-03-28`
 
 ---
 
-**Brief Status:** Accepted
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-28
 
 **Evidence Hash:** -

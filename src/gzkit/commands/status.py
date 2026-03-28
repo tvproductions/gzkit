@@ -20,6 +20,7 @@ from gzkit.commands.common import (
     resolve_adr_ledger_id,
     resolve_obpi,
 )
+from gzkit.commands.task import _load_tasks_for_obpi
 from gzkit.config import GzkitConfig
 from gzkit.ledger import (
     Ledger,
@@ -28,6 +29,51 @@ from gzkit.ledger import (
     resolve_adr_lane,
 )
 from gzkit.sync import parse_artifact_metadata, scan_existing_artifacts
+
+
+def _task_summary_for_adr(
+    ledger: Ledger,
+    obpi_ids: list[str],
+) -> dict[str, Any] | None:
+    """Aggregate TASK counts across OBPIs for an ADR.
+
+    Returns None when no tasks exist (backward compatible).
+    """
+    total = 0
+    pending = 0
+    in_progress = 0
+    completed = 0
+    blocked = 0
+    escalated = 0
+
+    for obpi_id in obpi_ids:
+        tasks = _load_tasks_for_obpi(ledger, obpi_id)
+        for info in tasks.values():
+            total += 1
+            status = info.get("status", "pending")
+            if status == "pending":
+                pending += 1
+            elif status == "in_progress":
+                in_progress += 1
+            elif status == "completed":
+                completed += 1
+            elif status == "blocked":
+                blocked += 1
+            elif status == "escalated":
+                escalated += 1
+
+    if total == 0:
+        return None
+
+    return {
+        "total": total,
+        "pending": pending,
+        "in_progress": in_progress,
+        "completed": completed,
+        "blocked": blocked,
+        "escalated": escalated,
+    }
+
 
 ADR_SEMVER_STATUS_ID_RE = re.compile(
     r"^ADR-(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)(?P<suffix>(?:[.-][A-Za-z0-9][A-Za-z0-9.-]*)?)$"
@@ -122,6 +168,14 @@ def _build_adr_status_entry(
     entry["closeout_ready"] = bool(closeout_readiness["ready"])
     entry["closeout_blockers"] = list(closeout_readiness["blockers"])
     _apply_obpi_lifecycle_overrides(adr_id, entry, obpi_summary)
+
+    # Task summary — only present when tasks exist (REQ-0.22.0-05-05)
+    obpi_ids = [cast(str, row.get("id", "")) for row in obpi_rows if row.get("id")]
+    task_summary = _task_summary_for_adr(ledger, obpi_ids)
+    if task_summary is not None:
+        task_summary["tracing_policy"] = "required" if lane == "heavy" else "advisory"
+        entry["task_summary"] = task_summary
+
     return entry
 
 
@@ -214,6 +268,33 @@ def _print_status_gate_section(
     console.print("  Gate 5 (Human): [yellow]PENDING[/yellow]")
 
 
+def _print_status_task_section(task_summary: dict[str, Any] | None) -> None:
+    """Render task summary for one ADR when tasks exist."""
+    if task_summary is None:
+        return
+
+    total = task_summary.get("total", 0)
+    completed = task_summary.get("completed", 0)
+    in_progress = task_summary.get("in_progress", 0)
+    pending = task_summary.get("pending", 0)
+    blocked = task_summary.get("blocked", 0)
+    escalated = task_summary.get("escalated", 0)
+    tracing_policy = task_summary.get("tracing_policy", "advisory")
+
+    parts = [f"{completed}/{total} done"]
+    if in_progress > 0:
+        parts.append(f"{in_progress} active")
+    if pending > 0:
+        parts.append(f"{pending} pending")
+    if blocked > 0:
+        parts.append(f"{blocked} blocked")
+    if escalated > 0:
+        parts.append(f"[red]{escalated} escalated[/red]")
+
+    policy_label = "[bold]required[/bold]" if tracing_policy == "required" else "advisory"
+    console.print(f"  Tasks:          {', '.join(parts)} (tracing: {policy_label})")
+
+
 def _render_status_row(
     adr_id: str, info: dict[str, Any], default_mode: str, show_gates: bool
 ) -> None:
@@ -228,6 +309,7 @@ def _render_status_row(
 
     console.print(f"[bold]{adr_id}[/bold] ({lifecycle_status})")
     _print_status_obpi_section(obpi_rows, obpi_summary)
+    _print_status_task_section(info.get("task_summary"))
 
     qc_readiness, qc_blockers = _qc_readiness(gates, lane, obpi_summary)
     console.print(f"  QC Readiness:   {_render_qc_readiness(qc_readiness, qc_blockers)}")
