@@ -123,12 +123,12 @@ uv run -m unittest discover -s tests/policy -v
 
 ## Acceptance Criteria
 
-- [x] REQ-0.0.3-09-01: `test_import_boundaries.py` exists and verifies core/ import rules via AST scanning
-- [x] REQ-0.0.3-09-02: `test_import_boundaries.py` verifies ports/ import rules via AST scanning
-- [x] REQ-0.0.3-09-03: `test_env_usage.py` exists and detects `os.getenv`/`os.environ` outside allowlist
-- [x] REQ-0.0.3-09-04: `test_naming_conventions.py` exists and verifies snake_case module naming
-- [x] REQ-0.0.3-09-05: All policy tests discoverable via `uv run gz test`
-- [x] REQ-0.0.3-09-06: Policy tests import zero modules from `src/gzkit/`
+- [x] REQ-0.0.3-09-01: [doc] `test_import_boundaries.py` exists and verifies core/ import rules via AST scanning
+- [x] REQ-0.0.3-09-02: [doc] `test_import_boundaries.py` verifies ports/ import rules via AST scanning
+- [x] REQ-0.0.3-09-03: [doc] `test_env_usage.py` exists and detects `os.getenv`/`os.environ` outside allowlist
+- [x] REQ-0.0.3-09-04: [doc] `test_naming_conventions.py` exists and verifies snake_case module naming
+- [x] REQ-0.0.3-09-05: [doc] All policy tests discoverable via `uv run gz test`
+- [x] REQ-0.0.3-09-06: [doc] Policy tests import zero modules from `src/gzkit/`
 
 ## Completion Checklist
 

@@ -140,6 +140,7 @@ class TestProgressPhase(unittest.TestCase):
 class TestProgressBar(unittest.TestCase):
     """Tests for progress_bar context manager."""
 
+    @covers("REQ-0.0.3-08-06")
     def test_bar_runs_in_human_mode(self) -> None:
         """Progress bar executes without error in human mode."""
         formatter = OutputFormatter(mode="human")

@@ -117,8 +117,8 @@ uv run -m unittest tests.test_config_precedence -v
 - [x] REQ-0.0.3-05-02: Config model uses `ConfigDict(frozen=True, extra="forbid")`
 - [x] REQ-0.0.3-05-03: Config adapter satisfies ConfigStore Protocol
 - [x] REQ-0.0.3-05-04: No `os.environ`/`os.getenv` outside config loader (except allowlist)
-- [x] REQ-0.0.3-05-05: Config model uses modern type hints (`str | None`)
-- [x] REQ-0.0.3-05-06: Existing config tests pass unchanged
+- [x] REQ-0.0.3-05-05: [doc] Config model uses modern type hints (`str | None`)
+- [x] REQ-0.0.3-05-06: [doc] Existing config tests pass unchanged
 - [x] REQ-0.0.3-05-07: Precedence chain tests cover all three layers
 
 ## Completion Checklist

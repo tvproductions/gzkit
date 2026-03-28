@@ -35,6 +35,7 @@ class TestConfigureLogging(unittest.TestCase):
         root.handlers.clear()
 
     @covers("REQ-0.0.3-07-03")
+    @covers("REQ-0.0.3-07-08")
     def test_configure_logging_accepts_all_verbosities(self) -> None:
         for verbosity in ("quiet", "normal", "verbose", "debug"):
             buf = io.StringIO()
@@ -283,6 +284,7 @@ class TestCorrelationId(unittest.TestCase):
 class TestCoreLayerBinding(unittest.TestCase):
     """Verify core layer can use structlog binding without CLI config imports."""
 
+    @covers("REQ-0.0.3-07-07")
     def test_structlog_get_logger_works_without_configure(self) -> None:
         """Core code can call get_logger() independently."""
         structlog.reset_defaults()

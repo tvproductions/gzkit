@@ -53,6 +53,7 @@ class TestCoreBaselineRange(unittest.TestCase):
 class TestCoreMarkdownParsing(unittest.TestCase):
     """Verify markdown helpers from core."""
 
+    @covers("REQ-0.0.3-02-08")
     def test_extract_section(self) -> None:
         content = "## Foo\nbar\n## Baz\nqux\n"
         result = extract_markdown_section(content, "Foo")

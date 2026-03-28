@@ -135,7 +135,7 @@ uv run -m unittest tests.test_ports -v
 - [x] REQ-0.0.3-01-06: `src/gzkit/core/__init__.py` exists (empty, structural)
 - [x] REQ-0.0.3-01-07: `src/gzkit/adapters/__init__.py` exists (empty, structural)
 - [x] REQ-0.0.3-01-08: `ports/` imports only `typing` and `pathlib` — no external dependencies
-- [x] REQ-0.0.3-01-09: All files pass lint and type check
+- [x] REQ-0.0.3-01-09: [doc] All files pass lint and type check
 - [x] REQ-0.0.3-01-10: Unit tests verify Protocol definitions are importable and structurally correct
 
 ## Completion Checklist

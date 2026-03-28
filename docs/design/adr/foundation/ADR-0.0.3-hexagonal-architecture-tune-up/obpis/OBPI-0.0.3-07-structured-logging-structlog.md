@@ -115,7 +115,7 @@ uv run -m unittest tests.test_logging -v
 ## Acceptance Criteria
 
 - [x] REQ-0.0.3-07-01: `src/gzkit/cli/logging.py` exists with `configure_logging()` entry point
-- [x] REQ-0.0.3-07-02: structlog added to `pyproject.toml` dependencies
+- [x] REQ-0.0.3-07-02: [doc] structlog added to `pyproject.toml` dependencies
 - [x] REQ-0.0.3-07-03: 4 verbosity levels configurable (quiet, normal, verbose, debug)
 - [x] REQ-0.0.3-07-04: JSON file output produces valid structured log events
 - [x] REQ-0.0.3-07-05: Console output is human-readable

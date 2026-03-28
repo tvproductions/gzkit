@@ -116,7 +116,7 @@ uv run -m unittest tests.test_formatters -v
 
 ## Acceptance Criteria
 
-- [x] REQ-0.0.3-06-01: `src/gzkit/cli/` package exists with `__init__.py`
+- [x] REQ-0.0.3-06-01: [doc] `src/gzkit/cli/` package exists with `__init__.py`
 - [x] REQ-0.0.3-06-02: `OutputFormatter` class supports `human` mode with Rich tables/colors
 - [x] REQ-0.0.3-06-03: `OutputFormatter` supports `json` mode (data→stdout, logs→stderr)
 - [x] REQ-0.0.3-06-04: `OutputFormatter` supports `quiet` mode (errors only)
