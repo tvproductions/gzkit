@@ -118,6 +118,7 @@ class TestForeignReferences(unittest.TestCase):
 
             self.assertEqual(errors, [])
 
+    @covers("REQ-0.14.0-04-02")
     def test_airlineops_detected_in_instruction(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -196,6 +197,7 @@ class TestDrift(unittest.TestCase):
 
             self.assertEqual(errors, [])
 
+    @covers("REQ-0.14.0-04-03")
     @covers("REQ-0.17.0-02-06")
     def test_missing_rule_file_errors(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -295,6 +297,7 @@ class TestDrift(unittest.TestCase):
 class TestCodeContract(unittest.TestCase):
     """Test audit_code_contract_mismatches()."""
 
+    @covers("REQ-0.14.0-04-04")
     def test_pydantic_only_codebase_passes(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

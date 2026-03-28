@@ -132,6 +132,7 @@ class TestAgentsTemplateSemantic(unittest.TestCase):
         self.assertIn("<!-- BEGIN agents.local.md -->", self.content)
         self.assertIn("<!-- END agents.local.md -->", self.content)
 
+    @covers("REQ-0.17.0-03-07")
     def test_pipeline_runtime_is_canonical(self) -> None:
         """Rendered AGENTS template names the CLI runtime as canonical."""
         self.assertIn("uv run gz obpi pipeline <OBPI-ID>", self.content)
@@ -147,12 +148,14 @@ class TestAdapterTemplatesReferenceCanon(unittest.TestCase):
     @covers REQ-0.17.0-03-04
     """
 
+    @covers("REQ-0.17.0-03-04")
     @covers("REQ-0.17.0-03-02")
     def test_claude_adapter_references_agents_for_skills(self) -> None:
         content = render_template("claude", skills_catalog="- `test-skill`: Desc")
         self.assertNotIn("`test-skill`", content)
         self.assertIn("AGENTS.md", content)
 
+    @covers("REQ-0.17.0-03-03")
     def test_copilot_adapter_references_agents_for_skills(self) -> None:
         content = render_template("copilot", skills_catalog="- `test-skill`: Desc")
         self.assertNotIn("`test-skill`", content)
