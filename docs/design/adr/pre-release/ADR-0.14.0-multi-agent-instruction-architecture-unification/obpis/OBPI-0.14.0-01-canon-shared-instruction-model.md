@@ -159,7 +159,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - [ ] REQ-0.14.0-01-01: Given canonical shared instruction content, when control surfaces are rendered, then `AGENTS.md` contains the shared rules and vendor files reference the same canon without duplicating long policy blocks.
 - [ ] REQ-0.14.0-01-02: Given unchanged canonical inputs, when sync runs repeatedly, then generated root control surfaces remain deterministic.
 - [ ] REQ-0.14.0-01-03: Given adapter-specific fields, when Claude or Copilot surfaces are generated, then tool-specific orientation is preserved without becoming an alternate source of truth.
-- [ ] REQ-0.14.0-01-04: Given the current root skill inventory, when the canonical model renders adapters, then shared durable rules are emitted once and skill discovery is referenced instead of inlined as a second policy body.
+- [ ] REQ-0.14.0-01-04: [doc] Given the current root skill inventory, when the canonical model renders adapters, then shared durable rules are emitted once and skill discovery is referenced instead of inlined as a second policy body.
 
 ## Completion Checklist
 

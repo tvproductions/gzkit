@@ -158,7 +158,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - [x] REQ-0.14.0-05-01: Given machine-local Claude permissions or settings, when gzkit initializes or syncs a repo, then local-only config is kept out of tracked shared policy surfaces.
 - [x] REQ-0.14.0-05-02: Given the checked-in Claude settings surface, when tests and generation run, then the generated output matches the tracked file exactly.
 - [x] REQ-0.14.0-05-03: Given unchanged canonical inputs, when surface sync runs repeatedly, then tracked adapter files and mirrors remain deterministic and drift is reported when not.
-- [x] REQ-0.14.0-05-04: Given a repository bootstrap or sync, when local config scaffolding is generated, then operators receive a safe local example pattern rather than a tracked `.local` policy file.
+- [x] REQ-0.14.0-05-04: [doc] Given a repository bootstrap or sync, when local config scaffolding is generated, then operators receive a safe local example pattern rather than a tracked `.local` policy file.
 
 ## Completion Checklist
 
