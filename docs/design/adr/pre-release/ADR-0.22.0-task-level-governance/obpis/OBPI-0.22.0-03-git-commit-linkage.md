@@ -3,7 +3,7 @@ id: OBPI-0.22.0-03-git-commit-linkage
 parent: ADR-0.22.0-task-level-governance
 item: 3
 lane: Lite
-status: Accepted
+status: Completed
 ---
 
 # OBPI-0.22.0-03: Git Commit Linkage
@@ -13,7 +13,7 @@ status: Accepted
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.22.0-task-level-governance/ADR-0.22.0-task-level-governance.md`
 - **Checklist Item:** #3 — "Git commit linkage: TASK ID in commit trailers, parsing for traceability"
 
-**Status:** Accepted
+**Status:** Completed
 
 ## Objective
 
@@ -47,10 +47,10 @@ Define the git commit linkage contract: TASK IDs appear in commit message traile
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.22.0-03-01: Given a commit message with `Task: TASK-0.20.0-01-01-01`, when parsed, then the TASK ID is extracted.
-- [ ] REQ-0.22.0-03-02: Given a TASK entity, when formatted as a trailer, then produces `Task: TASK-0.20.0-01-01-01`.
-- [ ] REQ-0.22.0-03-03: Given a commit with two Task trailers, when parsed, then both TASK IDs are returned.
-- [ ] REQ-0.22.0-03-04: Given TASK-0.20.0-01-01-01, when resolved, then chain is: TASK→REQ-0.20.0-01-01→OBPI-0.20.0-01→ADR-0.20.0.
+- [x] REQ-0.22.0-03-01: Given a commit message with `Task: TASK-0.20.0-01-01-01`, when parsed, then the TASK ID is extracted.
+- [x] REQ-0.22.0-03-02: Given a TASK entity, when formatted as a trailer, then produces `Task: TASK-0.20.0-01-01-01`.
+- [x] REQ-0.22.0-03-03: Given a commit with two Task trailers, when parsed, then both TASK IDs are returned.
+- [x] REQ-0.22.0-03-04: Given TASK-0.20.0-01-01-01, when resolved, then chain is: TASK→REQ-0.20.0-01-01→OBPI-0.20.0-01→ADR-0.20.0.
 
 ## Verification Commands (Concrete)
 
@@ -67,14 +67,39 @@ uv run gz typecheck
 
 ## Completion Checklist (Lite)
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Unit tests pass
-- [ ] **Code Quality:** Lint, format, type checks clean
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Unit tests pass
+- [x] **Code Quality:** Lint, format, type checks clean
+
+### Implementation Summary
+
+- Trailer format: `Task: TASK-<semver>-<obpi>-<req>-<seq>` defined via `_TRAILER_LINE_RE` regex
+- Parser: `parse_task_trailers()` extracts TASK IDs from the trailer section of commit messages
+- Multi-trailer: Parser returns all `Task:` trailers, ignoring body text and non-Task trailers
+- Chain resolver: `resolve_task_chain()` maps TASK → REQ → OBPI → ADR from identifier components
+- Formatter: `format_commit_trailer()` produces trailer lines from TaskEntity or TaskId
+
+### Key Proof
+
+```
+$ uv run -m unittest tests.test_tasks.TestParseTaskTrailers tests.test_tasks.TestResolveTaskChain tests.test_tasks.TestFormatCommitTrailer -v
+test_format_trailer_from_task_entity ... ok
+test_format_trailer_from_task_id ... ok
+test_ignores_non_task_trailers ... ok
+test_ignores_task_keyword_in_body ... ok
+test_no_trailers_returns_empty ... ok
+test_parse_multiple_trailers ... ok
+test_parse_single_trailer ... ok
+test_resolve_chain ... ok
+test_resolve_chain_different_ids ... ok
+test_resolve_chain_keys ... ok
+Ran 10 tests in 0.000s — OK
+```
 
 ---
 
-**Brief Status:** Accepted
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-28
 
 **Evidence Hash:** -
