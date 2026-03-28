@@ -95,7 +95,7 @@ This ADR completes the hierarchy by defining TASK as a first-class Pydantic enti
 
 ## Decision
 
-- Define TASK entity as a Pydantic BaseModel with identifier scheme `TASK-<semver>-<obpi>-<req>-<seq>` and lifecycle states {pending, in_progress, completed, blocked, escalated}.
+- Define TASK entity as a Pydantic BaseModel with identifier scheme `TASK-<semver>-<obpi>-<req>-<seq>` and lifecycle states {pending, in_progress, completed, blocked, escalated}. Follow the `ReqId`/`ReqEntity` pattern in `src/gzkit/triangle.py`: frozen `ConfigDict`, regex-based `parse()` classmethod, `__str__` round-trip, and `Field(...)` with descriptions.
 - Define TASK ledger events: `task_started`, `task_completed`,
   `task_blocked`, `task_escalated` — following the existing event model
   patterns in `events.py`. `task_started` is emitted both for initial

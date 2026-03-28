@@ -3,7 +3,7 @@ id: OBPI-0.22.0-01-task-entity-model
 parent: ADR-0.22.0-task-level-governance
 item: 1
 lane: Lite
-status: Accepted
+status: Completed
 ---
 
 # OBPI-0.22.0-01: TASK Entity Model
@@ -13,7 +13,7 @@ status: Accepted
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.22.0-task-level-governance/ADR-0.22.0-task-level-governance.md`
 - **Checklist Item:** #1 — "TASK entity model: Pydantic model, identifier scheme, lifecycle states"
 
-**Status:** Accepted
+**Status:** Completed
 
 ## Objective
 
@@ -52,12 +52,12 @@ Define the TASK entity as a Pydantic BaseModel with identifier scheme `TASK-<sem
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.22.0-01-01: Given a valid TASK string `TASK-0.20.0-01-01-01`, when parsed, then returns a TASK entity with correct semver, obpi_item, req_index, and seq components.
-- [ ] REQ-0.22.0-01-02: Given a TASK in `pending` state, when transitioned to `in_progress`, then status updates successfully.
-- [ ] REQ-0.22.0-01-03: Given a TASK in `pending` state, when transitioned directly to `completed`, then an error is raised.
-- [ ] REQ-0.22.0-01-04: Given plan text "Implement the REQ model" with parent context OBPI-0.20.0-01/REQ-0.20.0-01-01, when factory is called, then a TASK entity is created with auto-generated seq number.
-- [ ] REQ-0.22.0-01-05: Given all 5 lifecycle states, when enumerated, then exactly {pending, in_progress, completed, blocked, escalated} are present.
-- [ ] REQ-0.22.0-01-06: Given a TASK in `blocked` state, when transitioned to `in_progress`, then the model allows resume as a valid transition.
+- [x] REQ-0.22.0-01-01: Given a valid TASK string `TASK-0.20.0-01-01-01`, when parsed, then returns a TASK entity with correct semver, obpi_item, req_index, and seq components.
+- [x] REQ-0.22.0-01-02: Given a TASK in `pending` state, when transitioned to `in_progress`, then status updates successfully.
+- [x] REQ-0.22.0-01-03: Given a TASK in `pending` state, when transitioned directly to `completed`, then an error is raised.
+- [x] REQ-0.22.0-01-04: Given plan text "Implement the REQ model" with parent context OBPI-0.20.0-01/REQ-0.20.0-01-01, when factory is called, then a TASK entity is created with auto-generated seq number.
+- [x] REQ-0.22.0-01-05: Given all 5 lifecycle states, when enumerated, then exactly {pending, in_progress, completed, blocked, escalated} are present.
+- [x] REQ-0.22.0-01-06: Given a TASK in `blocked` state, when transitioned to `in_progress`, then the model allows resume as a valid transition.
 
 ## Verification Commands (Concrete)
 
@@ -72,17 +72,36 @@ uv run gz typecheck
 # Expected: task model types remain clean
 ```
 
+### Implementation Summary
+
+- Created: `src/gzkit/tasks.py` — TaskId, TaskStatus, TaskEntity, create_task_from_plan_step
+- Created: `tests/test_tasks.py` — 24 unit tests covering all 6 REQs
+- Pattern: follows ReqId/ReqEntity in triangle.py (frozen ConfigDict, regex parse, __str__ roundtrip)
+- Transitions: 5 valid transitions enforced via _VALID_TRANSITIONS dict, invalid raise ValueError
+- Factory: create_task_from_plan_step derives TASKs from plan text with zero-padded seq
+
+### Key Proof
+
+```
+$ uv run -m unittest tests.test_tasks -v
+Ran 24 tests in 0.001s — OK
+All 6 REQs verified: parsing, valid transitions, invalid rejection, plan derivation, 5 states, resume
+$ uv run gz lint — pass
+$ uv run gz typecheck — pass
+$ uv run gz test — 1808 pass
+```
+
 ## Completion Checklist (Lite)
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Unit tests pass
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Coverage:** Coverage >= 40% maintained
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Unit tests pass (24/24)
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Coverage:** Coverage >= 40% maintained
 
 ---
 
-**Brief Status:** Accepted
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-27
 
 **Evidence Hash:** -
