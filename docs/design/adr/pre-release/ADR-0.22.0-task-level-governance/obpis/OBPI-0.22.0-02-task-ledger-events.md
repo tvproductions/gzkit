@@ -3,7 +3,7 @@ id: OBPI-0.22.0-02-task-ledger-events
 parent: ADR-0.22.0-task-level-governance
 item: 2
 lane: Lite
-status: Accepted
+status: Completed
 ---
 
 # OBPI-0.22.0-02: TASK Ledger Events
@@ -13,7 +13,7 @@ status: Accepted
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.22.0-task-level-governance/ADR-0.22.0-task-level-governance.md`
 - **Checklist Item:** #2 — "TASK ledger events: started, completed, blocked, escalated"
 
-**Status:** Accepted
+**Status:** Completed
 
 ## Objective
 
@@ -54,10 +54,10 @@ traceability.
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.22.0-02-01: Given a `task_started` event, when serialized to JSON, then includes type, timestamp, task_id, obpi_id, adr_id, agent.
-- [ ] REQ-0.22.0-02-02: Given a `task_blocked` event with reason "Missing dependency", when serialized, then reason field is present.
-- [ ] REQ-0.22.0-02-03: Given all four event types, when parsed via the discriminated union, then each resolves to the correct event model.
-- [ ] REQ-0.22.0-02-04: Given a blocked TASK resuming to `in_progress`, when the event is emitted, then `task_started` is reused rather than a new resume event type.
+- [x] REQ-0.22.0-02-01: Given a `task_started` event, when serialized to JSON, then includes type, timestamp, task_id, obpi_id, adr_id, agent.
+- [x] REQ-0.22.0-02-02: Given a `task_blocked` event with reason "Missing dependency", when serialized, then reason field is present.
+- [x] REQ-0.22.0-02-03: Given all four event types, when parsed via the discriminated union, then each resolves to the correct event model.
+- [x] REQ-0.22.0-02-04: Given a blocked TASK resuming to `in_progress`, when the event is emitted, then `task_started` is reused rather than a new resume event type.
 
 ## Verification Commands (Concrete)
 
@@ -74,14 +74,32 @@ uv run gz typecheck
 
 ## Completion Checklist (Lite)
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Unit tests pass
-- [ ] **Code Quality:** Lint, format, type checks clean
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Unit tests pass
+- [x] **Code Quality:** Lint, format, type checks clean
+
+### Implementation Summary
+
+- Events: Added `_TaskEventBase`, `TaskStartedEvent`, `TaskCompletedEvent`, `TaskBlockedEvent`, `TaskEscalatedEvent` to `src/gzkit/events.py`
+- Union: Extended `TypedLedgerEvent` discriminated union with all four TASK event types
+- Tests: 16 new event tests in `tests/test_tasks.py` covering serialization, reason fields, discriminated union parsing, and resume reuse
+- Coverage: 76% on `events.py` (threshold 40%)
+
+### Key Proof
+
+```
+$ uv run -m unittest tests.test_tasks -v
+Ran 40 tests in 0.001s — OK
+TestTaskStartedEvent: serialize, discriminated union, resume reuse, JSONL — all PASS
+TestTaskBlockedEvent: reason field required and serialized — PASS
+TestTaskEscalatedEvent: reason + optional escalated_to — PASS
+TestAllFourEventTypes: 4 types defined, all roundtrip, common fields — PASS
+```
 
 ---
 
-**Brief Status:** Accepted
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-28
 
 **Evidence Hash:** -
