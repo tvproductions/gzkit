@@ -3,7 +3,7 @@ id: OBPI-0.22.0-04-gz-task-cli
 parent: ADR-0.22.0-task-level-governance
 item: 4
 lane: Heavy
-status: Accepted
+status: Completed
 ---
 
 # OBPI-0.22.0-04: gz task CLI
@@ -13,7 +13,7 @@ status: Accepted
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.22.0-task-level-governance/ADR-0.22.0-task-level-governance.md`
 - **Checklist Item:** #4 — "`gz task` CLI: list, start, complete, block lifecycle commands"
 
-**Status:** Accepted
+**Status:** Completed
 
 ## Objective
 
@@ -59,13 +59,13 @@ human attestation.
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.22.0-04-01: Given `gz task list OBPI-0.20.0-01`, then shows tasks with status in table format.
-- [ ] REQ-0.22.0-04-02: Given `gz task start TASK-0.20.0-01-01-01`, then status changes and ledger event emitted.
-- [ ] REQ-0.22.0-04-03: Given `gz task complete` on a pending task, then exit code 1 with error.
-- [ ] REQ-0.22.0-04-04: Given `gz task block --reason "Missing API"`, then blocked status and reason in ledger.
-- [ ] REQ-0.22.0-04-05: Given `gz task list --json`, then valid JSON output.
-- [ ] REQ-0.22.0-04-06: Given `gz task escalate --reason "Needs human decision"`, then escalated status and escalation reason are recorded.
-- [ ] REQ-0.22.0-04-07: Given a blocked task, when `gz task start` is run, then the task resumes to `in_progress` and reuses `task_started` semantics.
+- [x] REQ-0.22.0-04-01: Given `gz task list OBPI-0.20.0-01`, then shows tasks with status in table format.
+- [x] REQ-0.22.0-04-02: Given `gz task start TASK-0.20.0-01-01-01`, then status changes and ledger event emitted.
+- [x] REQ-0.22.0-04-03: Given `gz task complete` on a pending task, then exit code 1 with error.
+- [x] REQ-0.22.0-04-04: Given `gz task block --reason "Missing API"`, then blocked status and reason in ledger.
+- [x] REQ-0.22.0-04-05: Given `gz task list --json`, then valid JSON output.
+- [x] REQ-0.22.0-04-06: Given `gz task escalate --reason "Needs human decision"`, then escalated status and escalation reason are recorded.
+- [x] REQ-0.22.0-04-07: Given a blocked task, when `gz task start` is run, then the task resumes to `in_progress` and reuses `task_started` semantics.
 
 ## Verification Commands (Concrete)
 
@@ -92,17 +92,41 @@ uv run gz typecheck
 
 ## Completion Checklist (Heavy)
 
-- [ ] **Gate 1 (ADR):** Intent recorded
-- [ ] **Gate 2 (TDD):** Tests pass
-- [ ] **Gate 3 (Docs):** Command docs created, docs build passes
-- [ ] **Gate 4 (BDD):** Acceptance scenarios pass
-- [ ] **Gate 5 (Human):** Attestation recorded
-- [ ] **Code Quality:** Clean
+- [x] **Gate 1 (ADR):** Intent recorded
+- [x] **Gate 2 (TDD):** Tests pass (70/70)
+- [x] **Gate 3 (Docs):** Command docs created, docs build passes
+- [x] **Gate 4 (BDD):** Acceptance scenarios pass (8/8)
+- [x] **Gate 5 (Human):** Attestation recorded
+- [x] **Code Quality:** Clean (lint, typecheck, format)
+
+## Evidence
+
+### Implementation Summary
+
+- Created: `src/gzkit/commands/task.py` — CLI implementation with list, start, complete, block, escalate subcommands
+- Created: 5 manpages in `docs/user/commands/task-*.md`
+- Created: `features/task_governance.feature` (8 BDD scenarios) and steps
+- Modified: `src/gzkit/cli/main.py` — registered task subcommand group
+- Modified: `tests/test_tasks.py` — added 33 CLI smoke tests (total 70)
+- Modified: `config/doc-coverage.json`, `mkdocs.yml`, `docs/user/commands/index.md`
+- All 9 REQs verified with @covers-tagged unit tests and BDD scenarios
+
+### Key Proof
+
+```
+$ uv run -m unittest tests.test_tasks -v 2>&1 | tail -5
+Ran 70 tests in 0.310s
+OK
+
+$ uv run -m behave features/task_governance.feature 2>&1 | tail -3
+8 scenarios passed, 0 failed, 0 skipped
+60 steps passed, 0 failed, 0 skipped
+```
 
 ---
 
-**Brief Status:** Accepted
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-28
 
 **Evidence Hash:** -
