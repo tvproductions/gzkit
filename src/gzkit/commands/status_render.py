@@ -173,8 +173,17 @@ def _is_foundation_adr(adr_id: str) -> bool:
     return m is not None and m.group(1) == "0" and m.group(2) == "0"
 
 
-def _render_status_table(adrs: dict[str, dict[str, Any]], default_mode: str) -> None:
-    """Render ADR status as three tables: Foundation, Features, and Pool."""
+def _render_status_table(
+    adrs: dict[str, dict[str, Any]],
+    default_mode: str,
+    *,
+    adr_type: str | None = None,
+) -> None:
+    """Render ADR status as three tables: Foundation, Features, and Pool.
+
+    When *adr_type* is given (``"foundation"``, ``"feature"``, or ``"pool"``),
+    only the matching table is rendered.
+    """
     from gzkit.commands.status import _adr_status_sort_key  # noqa: PLC0415
 
     foundation: list[tuple[str, dict[str, Any]]] = []
@@ -188,12 +197,18 @@ def _render_status_table(adrs: dict[str, dict[str, Any]], default_mode: str) -> 
         else:
             features.append((adr_id, info))
 
-    _render_adr_table(TABLE_TITLE_FOUNDATION, foundation, default_mode)
-    if features:
-        console.print()
+    printed = False
+    if adr_type in (None, "foundation"):
+        _render_adr_table(TABLE_TITLE_FOUNDATION, foundation, default_mode)
+        printed = True
+    if adr_type in (None, "feature") and features:
+        if printed:
+            console.print()
         _render_adr_table(TABLE_TITLE_FEATURE, features, default_mode)
-    if pool:
-        console.print()
+        printed = True
+    if adr_type in (None, "pool") and pool:
+        if printed:
+            console.print()
         _render_adr_table(TABLE_TITLE_POOL, pool, default_mode)
     console.print("Checks legend: O=OBPI completion, T=TDD, D=Docs, B=BDD, H=Human attestation")
 

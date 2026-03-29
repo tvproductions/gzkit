@@ -3,87 +3,78 @@ id: OBPI-0.0.7-01-manifest-v2-schema
 parent: ADR-0.0.7
 item: 1
 lane: Lite
-status: Draft
+status: Accepted
 ---
 
 # OBPI-0.0.7-01-manifest-v2-schema: Manifest v2 schema
 
 ## ADR Item
 
-- **Source ADR:** `docs\design\adr\foundation\ADR-0.0.7-config-first-resolution-discipline\ADR-0.0.7-config-first-resolution-discipline.md`
+- **Source ADR:** `docs/design/adr/foundation/ADR-0.0.7-config-first-resolution-discipline/ADR-0.0.7-config-first-resolution-discipline.md`
 - **Checklist Item:** #1 - "Manifest v2 schema — add `data`, `ops`, `thresholds` sections to `generate_manifest()` and schema validation; bump schema version"
 
-**Status:** Draft
+**Status:** Accepted
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-TBD
+Add `data`, `ops`, and `thresholds` top-level sections to `generate_manifest()`
+output and bump the manifest schema version from v1 to v2. After this OBPI,
+`.gzkit/manifest.json` contains keys for eval dataset paths, operational artifact
+paths, and configurable thresholds — ready for downstream consumers.
 
 ## Lane
 
-**Lite** - This OBPI remains internal to the promoted ADR implementation scope.
-
-> Heavy is reserved for command/API/schema/runtime-contract changes. Process,
-> documentation, and template-only work stays Lite unless it changes one of
-> those external surfaces.
+**Lite** - Internal schema extension; no CLI/API contract change.
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `src/gzkit/sync_surfaces.py` — `generate_manifest()` function
+- `src/gzkit/config.py` — `GzkitConfig`, `PathConfig` models if schema keys need additions
+- `data/schemas/` — manifest JSON schema (if one exists)
+- `.gzkit/manifest.json` — regenerated output
+- `tests/test_manifest_v2.py` — new test module for v2 schema validation
+- `tests/test_config.py` — existing config tests if model changes
 
 ## Denied Paths
-
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
 
 - Paths not listed in Allowed Paths
 - New dependencies
 - CI files, lockfiles
+- Any module that *consumes* manifest paths (that is OBPI-02+)
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: `generate_manifest()` output MUST include `data`, `ops`, and `thresholds` top-level keys
+2. REQUIREMENT: Schema version field MUST read `"2.0"` in generated manifests
+3. NEVER: Remove or rename existing v1 keys — v1 consumers must not break
+4. ALWAYS: New sections have sensible defaults so a bare `gz init` produces a valid v2 manifest
+5. REQUIREMENT: `gz validate` MUST accept v2 manifests without error
 
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if `generate_manifest()` signature or `GzkitConfig` model is unclear, halt and inspect.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first. -->
-
 **Governance (read once, cache):**
 
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
+- [ ] `AGENTS.md` or `CLAUDE.md` — agent operating contract
+- [ ] Parent ADR — understand full context and anti-pattern warning
 
 **Context:**
 
-- [ ] Parent ADR: `docs\design\adr\foundation\ADR-0.0.7-config-first-resolution-discipline\ADR-0.0.7-config-first-resolution-discipline.md`
-- [ ] Related OBPIs in same ADR
+- [ ] Parent ADR: `docs/design/adr/foundation/ADR-0.0.7-config-first-resolution-discipline/ADR-0.0.7-config-first-resolution-discipline.md`
+- [ ] Current manifest schema: `.gzkit/manifest.json`
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
+- [ ] `src/gzkit/sync_surfaces.py` exists and contains `generate_manifest()`
+- [ ] `src/gzkit/config.py` exists and contains `GzkitConfig`, `PathConfig`
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+- [ ] Current `generate_manifest()` output structure
+- [ ] Existing `tests/test_config.py` patterns
 
 ## Quality Gates
-
-<!-- Which gates apply and how to verify them. -->
 
 ### Gate 1: ADR
 
@@ -101,64 +92,32 @@ TBD
 - [ ] Lint clean: `uv run gz lint`
 - [ ] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
-### Gate 3: Docs (Heavy only)
-
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
-
-### Gate 4: BDD (Heavy only)
-
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
-
-### Gate 5: Human (Heavy only)
-
-- [ ] Human attestation recorded
-
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
-uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
-uv run gz test
-
-# Specific verification for this OBPI
-command --to --verify
+uv run -m unittest tests.test_manifest_v2 -v
+uv run gz validate
+python -c "import json; m = json.load(open('.gzkit/manifest.json')); assert 'data' in m and 'ops' in m and 'thresholds' in m"
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.0.7-01-01: Given/When/Then behavior criterion 1
-- [ ] REQ-0.0.7-01-02: Given/When/Then behavior criterion 2
-- [ ] REQ-0.0.7-01-03: Given/When/Then behavior criterion 3
+- [ ] REQ-0.0.7-01-01: Given a `gz init` or `gz agent sync`, when manifest is generated, then `.gzkit/manifest.json` contains `data`, `ops`, `thresholds` keys
+- [ ] REQ-0.0.7-01-02: Given an existing v1 manifest, when regenerated as v2, then all v1 keys are preserved unchanged
+- [ ] REQ-0.0.7-01-03: Given a v2 manifest, when `gz validate` runs, then exit code is 0
 
 ## Completion Checklist
-
-<!-- Verify all gates before marking OBPI accepted. -->
 
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
 - [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
 - [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
 - [ ] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
 ## Evidence
-
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
 
 ### Gate 1 (ADR)
 
@@ -176,56 +135,25 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 # Paste lint/format/type check output here
 ```
 
-### Gate 3 (Docs)
-
-```text
-# Paste docs-build output here when Gate 3 applies
-```
-
-### Gate 4 (BDD)
-
-```text
-# Paste behave output here when Gate 4 applies
-```
-
-### Gate 5 (Human)
-
-```text
-# Record attestation text here when required by parent lane
-```
-
-### Value Narrative
-
-<!-- What problem existed before this OBPI, and what capability exists now? -->
-
-### Key Proof
-
-<!-- One concrete usage example, command, or before/after behavior. -->
-
 ### Implementation Summary
 
 - Files created/modified:
 - Tests added:
 - Date completed:
-- Attestation status:
-- Defects noted:
 
 ## Tracked Defects
-
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
 
 _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `n/a` (Lite lane, Lite parent)
+- Attestation: `n/a`
+- Date: `n/a`
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Accepted
 
 **Date Completed:** -
 

@@ -3,171 +3,104 @@ id: OBPI-0.0.7-04-hooks-module-migration
 parent: ADR-0.0.7
 item: 4
 lane: Lite
-status: Draft
+status: Accepted
 ---
 
 # OBPI-0.0.7-04-hooks-module-migration: Hooks module migration
 
 ## ADR Item
 
-- **Source ADR:** `docs\design\adr\foundation\ADR-0.0.7-config-first-resolution-discipline\ADR-0.0.7-config-first-resolution-discipline.md`
+- **Source ADR:** `docs/design/adr/foundation/ADR-0.0.7-config-first-resolution-discipline/ADR-0.0.7-config-first-resolution-discipline.md`
 - **Checklist Item:** #4 - "Hooks module migration — remove `Path(__file__).parents[3]` from `hooks/guards.py`; thread manifest paths"
 
-**Status:** Draft
+**Status:** Accepted
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-TBD
+Remove the `root = Path(__file__).resolve().parents[3]` local variable from
+`hooks/guards.py:99` and replace with a manifest-threaded path parameter.
+Single-file migration targeting one violation site.
 
 ## Lane
 
-**Lite** - This OBPI remains internal to the promoted ADR implementation scope.
-
-> Heavy is reserved for command/API/schema/runtime-contract changes. Process,
-> documentation, and template-only work stays Lite unless it changes one of
-> those external surfaces.
+**Lite** - Internal refactoring; no CLI/API contract change.
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `src/gzkit/hooks/guards.py` — remove `Path(__file__).parents[3]`; thread manifest or project root
+- `tests/` — update or add tests covering the guards function
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
-- Paths not listed in Allowed Paths
+- `src/gzkit/eval/` — that is OBPI-03
+- Other hooks modules not containing the violation
 - New dependencies
-- CI files, lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: `grep -rn "Path(__file__)" src/gzkit/hooks/guards.py` MUST return zero matches after migration
+2. NEVER: Add a fallback that computes root from `__file__` when no parameter is provided
+3. ALWAYS: The function containing this pattern must accept project root or manifest as a parameter
+4. REQUIREMENT: All existing hooks tests MUST pass after migration
 
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if OBPI-02 is not yet implemented, halt.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first. -->
-
-**Governance (read once, cache):**
-
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
-
 **Context:**
 
-- [ ] Parent ADR: `docs\design\adr\foundation\ADR-0.0.7-config-first-resolution-discipline\ADR-0.0.7-config-first-resolution-discipline.md`
-- [ ] Related OBPIs in same ADR
+- [ ] Parent ADR — understand anti-pattern warning
+- [ ] OBPI-02 complete (`manifest_path()` helper available)
 
-**Prerequisites (check existence, STOP if missing):**
+**Existing Code:**
 
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
-
-**Existing Code (understand current state):**
-
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+- [ ] `src/gzkit/hooks/guards.py:99` — the violation site
+- [ ] Callers of the function containing the violation
 
 ## Quality Gates
-
-<!-- Which gates apply and how to verify them. -->
 
 ### Gate 1: ADR
 
 - [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] Tests written before/with implementation
 - [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
+- [ ] Zero `Path(__file__)` in guards: `grep -rn "Path(__file__)" src/gzkit/hooks/guards.py`
 
 ### Code Quality
 
 - [ ] Lint clean: `uv run gz lint`
 - [ ] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
-### Gate 3: Docs (Heavy only)
-
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
-
-### Gate 4: BDD (Heavy only)
-
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
-
-### Gate 5: Human (Heavy only)
-
-- [ ] Human attestation recorded
-
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
-uv run gz validate --documents
+grep -rn "Path(__file__)" src/gzkit/hooks/guards.py   # expect: no output
 uv run gz lint
 uv run gz typecheck
-uv run gz test
-
-# Specific verification for this OBPI
-command --to --verify
+uv run -m unittest -q
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.0.7-04-01: Given/When/Then behavior criterion 1
-- [ ] REQ-0.0.7-04-02: Given/When/Then behavior criterion 2
-- [ ] REQ-0.0.7-04-03: Given/When/Then behavior criterion 3
+- [ ] REQ-0.0.7-04-01: Given `hooks/guards.py`, when `grep -rn "Path(__file__)" src/gzkit/hooks/guards.py` runs, then zero matches are returned
+- [ ] REQ-0.0.7-04-02: Given the function that previously used `Path(__file__).parents[3]`, when called, then it receives project root as a parameter
+- [ ] REQ-0.0.7-04-03: Given existing hooks tests, when `uv run -m unittest -q` runs, then all tests pass
 
 ## Completion Checklist
 
-<!-- Verify all gates before marking OBPI accepted. -->
-
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [ ] **Gate 2 (TDD):** Tests pass, grep proof clean
 - [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
 - [ ] **OBPI Acceptance:** Evidence recorded below
 
-> For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
-
 ## Evidence
-
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
-
-### Gate 1 (ADR)
-
-- [ ] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+# Paste grep proof and test output here
 ```
 
 ### Code Quality
@@ -176,56 +109,19 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 # Paste lint/format/type check output here
 ```
 
-### Gate 3 (Docs)
-
-```text
-# Paste docs-build output here when Gate 3 applies
-```
-
-### Gate 4 (BDD)
-
-```text
-# Paste behave output here when Gate 4 applies
-```
-
-### Gate 5 (Human)
-
-```text
-# Record attestation text here when required by parent lane
-```
-
-### Value Narrative
-
-<!-- What problem existed before this OBPI, and what capability exists now? -->
-
-### Key Proof
-
-<!-- One concrete usage example, command, or before/after behavior. -->
-
-### Implementation Summary
-
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
-
 ## Tracked Defects
-
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
 
 _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `n/a` (Lite lane, Lite parent)
+- Attestation: `n/a`
+- Date: `n/a`
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Accepted
 
 **Date Completed:** -
 

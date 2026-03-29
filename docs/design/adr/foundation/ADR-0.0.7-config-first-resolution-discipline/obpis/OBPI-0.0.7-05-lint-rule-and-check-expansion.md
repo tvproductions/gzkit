@@ -3,171 +3,114 @@ id: OBPI-0.0.7-05-lint-rule-and-check-expansion
 parent: ADR-0.0.7
 item: 5
 lane: Lite
-status: Draft
+status: Accepted
 ---
 
-# OBPI-0.0.7-05-lint-rule-and-check-expansion: Lint rule and check expansion
+# OBPI-0.0.7-05-lint-rule-and-check-expansion: Enforcement and chore integration
 
 ## ADR Item
 
-- **Source ADR:** `docs\design\adr\foundation\ADR-0.0.7-config-first-resolution-discipline\ADR-0.0.7-config-first-resolution-discipline.md`
-- **Checklist Item:** #5 - "Lint rule and check expansion — add `Path(__file__).parents` detection to `gz lint`; expand `check-config-paths` to scan source for unmapped path literals"
+- **Source ADR:** `docs/design/adr/foundation/ADR-0.0.7-config-first-resolution-discipline/ADR-0.0.7-config-first-resolution-discipline.md`
+- **Checklist Item:** #5 - "Enforcement and chore integration — add `Path(__file__).parents` lint rule; expand `check-config-paths`; update `hardcoded-root-eradication` chore with manifest-aware criteria"
 
-**Status:** Draft
+**Status:** Accepted
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-TBD
+Close the enforcement loop with three layers: (1) add a lint rule that catches
+`Path(__file__).parents[` patterns at edit-time, (2) expand `gz check-config-paths`
+to scan source for unmapped path literals at gate-time, (3) update the
+`hardcoded-root-eradication` chore with manifest-aware acceptance criteria for
+periodic sweeps. After this OBPI, regressions are caught at every stage.
 
 ## Lane
 
-**Lite** - This OBPI remains internal to the promoted ADR implementation scope.
-
-> Heavy is reserved for command/API/schema/runtime-contract changes. Process,
-> documentation, and template-only work stays Lite unless it changes one of
-> those external surfaces.
+**Lite** - Internal enforcement tooling; no CLI/API contract change.
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `src/gzkit/commands/quality.py` — lint rule additions
+- `src/gzkit/commands/config_paths.py` — expand source-code path scanning
+- `config/gzkit.chores.json` — update `hardcoded-root-eradication` chore
+- `tests/test_config_paths.py` — expand tests for new scanning
+- `tests/test_lint_*.py` — tests for new lint rule
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
-- Paths not listed in Allowed Paths
+- `src/gzkit/eval/` — already migrated in OBPI-03
+- `src/gzkit/hooks/` — already migrated in OBPI-04
 - New dependencies
-- CI files, lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: `gz lint` MUST detect and fail on `Path(__file__).parents[` patterns in `src/gzkit/`
+2. REQUIREMENT: `gz check-config-paths` MUST scan source for path literals not mapped to manifest keys
+3. REQUIREMENT: `hardcoded-root-eradication` chore MUST include manifest-aware acceptance criteria
+4. NEVER: Allow the lint rule to trigger on test files using `Path(__file__).parent` for fixture location
+5. ALWAYS: Lint rule and check must exit non-zero when violations are found (fail-closed)
 
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if OBPIs 03 and 04 are not complete (violations still present), lint rule will produce false positives on known migration targets.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first. -->
-
-**Governance (read once, cache):**
-
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
-
 **Context:**
 
-- [ ] Parent ADR: `docs\design\adr\foundation\ADR-0.0.7-config-first-resolution-discipline\ADR-0.0.7-config-first-resolution-discipline.md`
-- [ ] Related OBPIs in same ADR
+- [ ] Parent ADR — understand three-layer enforcement model
+- [ ] OBPIs 03 and 04 complete (migration targets removed)
 
-**Prerequisites (check existence, STOP if missing):**
+**Existing Code:**
 
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
-
-**Existing Code (understand current state):**
-
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+- [ ] `src/gzkit/commands/quality.py` — current lint implementation
+- [ ] `src/gzkit/commands/config_paths.py` — current check-config-paths implementation
+- [ ] `config/gzkit.chores.json` — current chore definitions
 
 ## Quality Gates
-
-<!-- Which gates apply and how to verify them. -->
 
 ### Gate 1: ADR
 
 - [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] Tests written before/with implementation
 - [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
+- [ ] Lint rule catches synthetic violation in test
+- [ ] check-config-paths catches synthetic unmapped path in test
 
 ### Code Quality
 
 - [ ] Lint clean: `uv run gz lint`
 - [ ] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
-### Gate 3: Docs (Heavy only)
-
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
-
-### Gate 4: BDD (Heavy only)
-
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
-
-### Gate 5: Human (Heavy only)
-
-- [ ] Human attestation recorded
-
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
-uv run gz validate --documents
-uv run gz lint
+uv run gz lint                           # passes (no violations remain)
+uv run gz check-config-paths             # passes (all paths mapped)
 uv run gz typecheck
-uv run gz test
-
-# Specific verification for this OBPI
-command --to --verify
+uv run -m unittest -q
+grep -rn "Path(__file__).*parents" src/gzkit/   # expect: no output
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.0.7-05-01: Given/When/Then behavior criterion 1
-- [ ] REQ-0.0.7-05-02: Given/When/Then behavior criterion 2
-- [ ] REQ-0.0.7-05-03: Given/When/Then behavior criterion 3
+- [ ] REQ-0.0.7-05-01: Given a source file containing `Path(__file__).parents[`, when `gz lint` runs, then exit code is non-zero and violation is reported
+- [ ] REQ-0.0.7-05-02: Given a source file with a path literal not mapped to any manifest key, when `gz check-config-paths` runs, then it reports the unmapped literal
+- [ ] REQ-0.0.7-05-03: Given the `hardcoded-root-eradication` chore, when `gz chores show hardcoded-root-eradication` runs, then acceptance criteria reference manifest v2 keys
+- [ ] REQ-0.0.7-05-04: Given clean source (post-migration), when `gz lint` and `gz check-config-paths` run, then both exit 0
 
 ## Completion Checklist
 
-<!-- Verify all gates before marking OBPI accepted. -->
-
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [ ] **Gate 2 (TDD):** Tests pass, enforcement verified
 - [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
 - [ ] **OBPI Acceptance:** Evidence recorded below
 
-> For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
-
 ## Evidence
-
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
-
-### Gate 1 (ADR)
-
-- [ ] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+# Paste test output and enforcement proof here
 ```
 
 ### Code Quality
@@ -176,56 +119,19 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 # Paste lint/format/type check output here
 ```
 
-### Gate 3 (Docs)
-
-```text
-# Paste docs-build output here when Gate 3 applies
-```
-
-### Gate 4 (BDD)
-
-```text
-# Paste behave output here when Gate 4 applies
-```
-
-### Gate 5 (Human)
-
-```text
-# Record attestation text here when required by parent lane
-```
-
-### Value Narrative
-
-<!-- What problem existed before this OBPI, and what capability exists now? -->
-
-### Key Proof
-
-<!-- One concrete usage example, command, or before/after behavior. -->
-
-### Implementation Summary
-
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
-
 ## Tracked Defects
-
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
 
 _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `n/a` (Lite lane, Lite parent)
+- Attestation: `n/a`
+- Date: `n/a`
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Accepted
 
 **Date Completed:** -
 
