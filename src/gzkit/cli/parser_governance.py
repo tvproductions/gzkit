@@ -384,14 +384,14 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:
         "--pool-only",
         dest="pool_only",
         action="store_true",
-        default=True,
-        help="Register only pool ADRs (default)",
+        help="Register only pool ADRs",
     )
     p_register_adrs.add_argument(
         "--all",
         dest="pool_only",
         action="store_false",
-        help="Register all ADRs (pool + non-pool)",
+        default=False,
+        help="Register all ADRs — pool + versioned (default)",
     )
     add_dry_run_flag(p_register_adrs)
     p_register_adrs.set_defaults(

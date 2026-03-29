@@ -558,25 +558,33 @@ def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
         )
 
     # --- Product proof gate ---
+    proof_enforcement = config.gate("product_proof")
     proof_result = check_product_proof(adr_id, obpi_files, project_root)
-    if not proof_result.success:
+    if not proof_result.success and proof_enforcement != "disabled":
         proof_rows = _product_proof_payload(proof_result)
         missing = [p.obpi_id for p in proof_result.obpi_proofs if not p.has_proof]
-        if as_json:
-            print(
-                json.dumps(
-                    {"product_proof": proof_rows, "success": False, "blockers": missing}, indent=2
+        if proof_enforcement == "enforce":
+            if as_json:
+                print(
+                    json.dumps(
+                        {"product_proof": proof_rows, "success": False, "blockers": missing},
+                        indent=2,
+                    )
+                )  # noqa: T201
+            else:
+                _render_product_proof_human(proof_result)
+                console.print(
+                    f"\n[red]Closeout blocked:[/red] {proof_result.missing_count} "
+                    f"OBPI(s) missing product proof"
                 )
-            )  # noqa: T201
-        else:
-            _render_product_proof_human(proof_result)
+                for obpi_id in missing:
+                    console.print(f"  - {obpi_id}")
+            raise SystemExit(1)
+        if not as_json:
             console.print(
-                f"\n[red]Closeout blocked:[/red] {proof_result.missing_count} "
-                f"OBPI(s) missing product proof"
+                f"[yellow]Product proof advisory:[/yellow] {proof_result.missing_count} "
+                f"OBPI(s) missing proof (gates.product_proof=advisory)"
             )
-            for obpi_id in missing:
-                console.print(f"  - {obpi_id}")
-        raise SystemExit(1)
 
     # --- Defense brief computation ---
     defense_brief = compute_defense_brief(obpi_files, adr_file.parent, proof_result)

@@ -206,5 +206,67 @@ class TestGzkitConfigVendors(unittest.TestCase):
         self.assertIs(config.vendors.claude.enabled, True)
 
 
+class TestGates(unittest.TestCase):
+    """Tests for gate enforcement feature flags."""
+
+    def test_defaults__no_gates__all_enforce(self) -> None:
+        """Unlisted gates default to enforce."""
+        config = GzkitConfig()
+        self.assertEqual(config.gates, {})
+        self.assertEqual(config.gate("product_proof"), "enforce")
+        self.assertEqual(config.gate("some_future_gate"), "enforce")
+
+    def test_gate__advisory(self) -> None:
+        """Gate set to advisory returns advisory."""
+        config = GzkitConfig(gates={"product_proof": "advisory"})
+        self.assertEqual(config.gate("product_proof"), "advisory")
+
+    def test_gate__disabled(self) -> None:
+        """Gate set to disabled returns disabled."""
+        config = GzkitConfig(gates={"product_proof": "disabled"})
+        self.assertEqual(config.gate("product_proof"), "disabled")
+
+    def test_gate__unlisted_defaults_to_enforce(self) -> None:
+        """Gate not in config returns enforce."""
+        config = GzkitConfig(gates={"product_proof": "advisory"})
+        self.assertEqual(config.gate("other_gate"), "enforce")
+
+    def test_load__with_gates__parses(self) -> None:
+        """Loading config with gates key parses enforcement levels."""
+        import json
+
+        data = {"mode": "lite", "paths": {}, "gates": {"product_proof": "advisory"}}
+        with tempfile.TemporaryDirectory() as tmpdir:
+            config_file = Path(tmpdir) / "config.json"
+            config_file.write_text(json.dumps(data), encoding="utf-8")
+
+            config = GzkitConfig.load(config_file)
+            self.assertEqual(config.gate("product_proof"), "advisory")
+
+    def test_load__no_gates__backward_compat(self) -> None:
+        """Loading config without gates key uses defaults (backward compat)."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            config_file = Path(tmpdir) / "config.json"
+            config_file.write_text('{"mode":"lite","paths":{}}', encoding="utf-8")
+
+            config = GzkitConfig.load(config_file)
+            self.assertEqual(config.gates, {})
+            self.assertEqual(config.gate("product_proof"), "enforce")
+
+    def test_gate__rejects_invalid_level(self) -> None:
+        """Invalid enforcement level raises validation error."""
+        from pydantic import ValidationError
+
+        with self.assertRaises(ValidationError):
+            GzkitConfig(gates={"product_proof": "bogus"})
+
+    def test_gate__multiple_gates(self) -> None:
+        """Multiple gates can be configured independently."""
+        config = GzkitConfig(gates={"product_proof": "advisory", "bdd": "disabled"})
+        self.assertEqual(config.gate("product_proof"), "advisory")
+        self.assertEqual(config.gate("bdd"), "disabled")
+        self.assertEqual(config.gate("tdd"), "enforce")
+
+
 if __name__ == "__main__":
     unittest.main()
