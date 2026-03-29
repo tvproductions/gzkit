@@ -2,7 +2,7 @@
 id: OBPI-0.24.0-01-documentation-taxonomy
 parent: ADR-0.24.0-skill-documentation-contract
 item: 1
-status: Pending
+status: Completed
 lane: lite
 date: 2026-03-21
 ---
@@ -46,12 +46,39 @@ Define and document the three-layer documentation taxonomy for gzkit: what artif
 
 ## QUALITY GATES (Lite)
 
-- [ ] Gate 1 (ADR): Intent recorded in this brief
-- [ ] Gate 2 (TDD): `uv run mkdocs build --strict` passes with taxonomy document
-- [ ] Code Quality: `uv run gz lint` passes
+- [x] Gate 1 (ADR): Intent recorded in this brief
+- [x] Gate 2 (TDD): `uv run mkdocs build --strict` passes with taxonomy document
+- [x] Code Quality: `uv run gz lint` passes
 
 ## VERIFICATION COMMANDS
 
 - `uv run mkdocs build --strict`
 - `rg -n "Manpages|Runbook entries|Docstrings|Linkage model" docs/governance/documentation-taxonomy.md`
 - `rg -n "documentation-taxonomy\\.md" docs/design/adr/pre-release/ADR-0.24.0-skill-documentation-contract/ADR-0.24.0-skill-documentation-contract.md`
+
+## Closing Argument
+
+### Implementation Summary
+
+- Created: `docs/governance/documentation-taxonomy.md` — three-layer taxonomy defining manpage, runbook, and docstring requirements per artifact type
+- Added: mkdocs.yml navigation entry under Governance (Canonical) section
+- Documented: linkage model (docstrings -> manpages -> runbooks) with code and markdown examples
+- Documented: SKILL.md vs manpage audience split (agent vs operator)
+- Documented: enforcement gap with GHI tvproductions/gzkit#40 tracking automated skill audit
+
+### Key Proof
+
+```bash
+$ rg -n "Manpages|Runbook entries|Docstrings|Linkage model" docs/governance/documentation-taxonomy.md
+27:### Manpages
+55:### Runbook entries
+82:### Docstrings
+158:Docstrings ──reference──► Manpages ──reference──► Runbooks
+```
+
+```bash
+$ uv run mkdocs build --strict
+INFO - Documentation built in 0.93 seconds
+```
+
+All six FAIL-CLOSED requirements verified by independent spec reviewer (PASS, 6/6 MET).
