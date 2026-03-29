@@ -2,7 +2,7 @@
 id: OBPI-0.24.0-03-skills-surface-and-index
 parent: ADR-0.24.0-skill-documentation-contract
 item: 3
-status: Pending
+status: Completed
 lane: lite
 date: 2026-03-21
 ---
@@ -46,9 +46,9 @@ Create the `docs/user/skills/` directory with a categorized index page and integ
 
 ## QUALITY GATES (Lite)
 
-- [ ] Gate 1 (ADR): Intent recorded in this brief
-- [ ] Gate 2 (TDD): `uv run mkdocs build --strict` passes with index
-- [ ] Code Quality: `uv run gz lint` passes
+- [x] Gate 1 (ADR): Intent recorded in this brief
+- [x] Gate 2 (TDD): `uv run mkdocs build --strict` passes with index
+- [x] Code Quality: `uv run gz lint` passes
 
 ## VERIFICATION COMMANDS
 
@@ -56,3 +56,28 @@ Create the `docs/user/skills/` directory with a categorized index page and integ
 - `test -f docs/user/skills/index.md`
 - `rg -n "Skills:" mkdocs.yml`
 - `rg -n "adr-operations|validation|operations" docs/user/skills/index.md`
+
+## Closing Argument
+
+### Implementation Summary
+
+- Created: `docs/user/skills/index.md` — categorized skill index with 52 entries across 8 categories
+- Categories: ADR Lifecycle, ADR Operations, ADR Audit, OBPI Pipeline, Code Quality, Governance Infrastructure, Agent Operations, Cross-Repository
+- Each: skill entry has one-line description and relative link to manpage location
+- Modified: `mkdocs.yml` — added Skills nav entry between Concepts and Commands
+- Linked: index intro references Documentation Taxonomy for audience split context
+
+### Key Proof
+
+```bash
+$ grep -c "\.md)" docs/user/skills/index.md
+52
+
+$ grep "Skills:" mkdocs.yml
+  - Skills:
+
+$ uv run mkdocs build --strict
+INFO - Documentation built in 0.94 seconds
+```
+
+All 5 FAIL-CLOSED requirements verified by independent spec reviewer (PASS, 5/5 MET, docs quality 4/5).
