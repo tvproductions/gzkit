@@ -1,5 +1,23 @@
 # gzkit Release Notes
 
+## v0.24.0 (2026-03-29)
+
+**ADR:** ADR-0.24.0 - Skill Documentation Contract
+
+Established a three-layer documentation taxonomy (manpages, runbook entries, docstrings) and created the operator-facing skill documentation surface. Skills now have a standardized manpage template, a categorized index of all 52 skills, runbook integration at 41 workflow insertion points across both operator and governance runbooks, and a pilot batch of 6 validated manpages.
+
+### Delivered
+
+- Documentation taxonomy at `docs/governance/documentation-taxonomy.md`
+- Skill manpage template with 6 required sections at `docs/user/skills/_TEMPLATE.md`
+- Categorized skills index with 52 entries across 8 categories
+- 41 skill invocation links in operator (17) and governance (24) runbooks
+- 6 pilot skill manpages: gz-adr-map, gz-adr-create, gz-arb, gz-check, gz-session-handoff, gz-chore-runner
+
+### Gate Evidence
+
+All 5 GovZero gates satisfied.
+
 ## v0.23.0 (2026-03-28)
 
 **ADR:** ADR-0.23.0 - Agent Burden of Proof
