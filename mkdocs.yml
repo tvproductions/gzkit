@@ -70,6 +70,8 @@ nav:
     - Closeout Ceremony: user/concepts/closeout.md
     - Daily Workflow: user/concepts/workflow.md
     - Test Traceability: user/concepts/test-traceability.md
+  - Skills:
+    - Overview: user/skills/index.md
   - Commands:
     - Overview: user/commands/index.md
     - gz init: user/commands/init.md
