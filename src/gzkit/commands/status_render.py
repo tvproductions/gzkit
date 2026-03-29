@@ -14,6 +14,14 @@ from gzkit.commands.status_obpi import (
 )
 
 # ---------------------------------------------------------------------------
+# Table category labels (importable for test assertions)
+# ---------------------------------------------------------------------------
+
+TABLE_TITLE_FOUNDATION = "Foundation ADRs"
+TABLE_TITLE_FEATURE = "Feature ADRs"
+TABLE_TITLE_POOL = "Pool ADRs"
+
+# ---------------------------------------------------------------------------
 # Gate / QC rendering
 # ---------------------------------------------------------------------------
 
@@ -157,22 +165,36 @@ def _render_status_row(
     console.print()
 
 
+def _is_foundation_adr(adr_id: str) -> bool:
+    """Return True for foundation ADRs (ADR-0.0.x pattern)."""
+    import re  # noqa: PLC0415
+
+    m = re.match(r"^ADR-(\d+)\.(\d+)\.\d+", adr_id)
+    return m is not None and m.group(1) == "0" and m.group(2) == "0"
+
+
 def _render_status_table(adrs: dict[str, dict[str, Any]], default_mode: str) -> None:
-    """Render ADR status as a stable tabular summary with pool ADRs in a separate table."""
+    """Render ADR status as three tables: Foundation, Features, and Pool."""
     from gzkit.commands.status import _adr_status_sort_key  # noqa: PLC0415
 
-    versioned: list[tuple[str, dict[str, Any]]] = []
+    foundation: list[tuple[str, dict[str, Any]]] = []
+    features: list[tuple[str, dict[str, Any]]] = []
     pool: list[tuple[str, dict[str, Any]]] = []
     for adr_id, info in sorted(adrs.items(), key=lambda item: _adr_status_sort_key(item[0])):
         if _is_pool_adr_id(adr_id):
             pool.append((adr_id, info))
+        elif _is_foundation_adr(adr_id):
+            foundation.append((adr_id, info))
         else:
-            versioned.append((adr_id, info))
+            features.append((adr_id, info))
 
-    _render_adr_table("ADR Status", versioned, default_mode)
+    _render_adr_table(TABLE_TITLE_FOUNDATION, foundation, default_mode)
+    if features:
+        console.print()
+        _render_adr_table(TABLE_TITLE_FEATURE, features, default_mode)
     if pool:
         console.print()
-        _render_adr_table("Pool ADRs", pool, default_mode)
+        _render_adr_table(TABLE_TITLE_POOL, pool, default_mode)
     console.print("Checks legend: O=OBPI completion, T=TDD, D=Docs, B=BDD, H=Human attestation")
 
 

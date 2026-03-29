@@ -252,7 +252,7 @@ def compare_scores(
 
 def build_receipt(report: RegressionReport) -> RegressionReceiptPayload:
     """Build an ARB-compatible receipt from a regression report."""
-    details = [
+    details: list[dict[str, object]] = [
         {
             "surface": r.surface,
             "dimension": r.dimension,

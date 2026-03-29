@@ -168,6 +168,7 @@ class Ledger:
         with self.path.open("a") as f:
             json.dump(event.model_dump(), f, separators=(",", ":"))
             f.write("\n")
+            f.flush()
 
     def read_all(self) -> list[LedgerEvent]:
         """Read all events from the ledger.

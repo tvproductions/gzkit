@@ -207,7 +207,15 @@ def _adr_obpi_status_rows(
 
 
 def _obpi_row_complete(row: dict[str, Any]) -> bool:
-    """Return True when an OBPI row is complete with implementation evidence."""
+    """Return True when an OBPI row is complete.
+
+    Ledger receipts are authoritative: if the ledger records a completion receipt
+    the OBPI counts as complete even when the brief file is absent.  Falls back to
+    the composite ``completed`` flag (ledger + evidence + attestation) when the
+    brief file is present.
+    """
+    if row.get("ledger_completed"):
+        return True
     return bool(row.get("found_file")) and bool(row.get("completed"))
 
 

@@ -73,10 +73,30 @@ def plan_cmd(
         console.print(f"  Would append ledger event: adr_created ({adr_id})")
         return
 
+    import sys  # noqa: PLC0415
+
     adr_dir.mkdir(parents=True, exist_ok=True)
     adr_file.write_text(content, encoding="utf-8")
 
     ledger = Ledger(project_root / config.paths.ledger)
-    ledger.append(adr_created_event(adr_id, parent_obpi or "", lane))
+    try:
+        ledger.append(adr_created_event(adr_id, parent_obpi or "", lane))
+    except OSError as exc:
+        console.print(
+            f"[red]ERROR:[/red] ADR file created at {adr_file} but ledger write failed: {exc}"
+        )
+        console.print("Run [bold]gz register-adrs --all[/bold] to recover.")
+        sys.exit(2)
+
+    # Verify registration — catch silent ledger corruption
+    graph = ledger.get_artifact_graph()
+    if adr_id not in graph:
+        canonical = ledger.canonicalize_id(adr_id)
+        if canonical not in graph:
+            console.print(
+                f"[yellow]WARNING:[/yellow] ADR file written but {adr_id} not found in ledger."
+            )
+            console.print("Run [bold]gz register-adrs --all[/bold] to recover.")
+            sys.exit(2)
 
     console.print(f"Created ADR: {adr_file}")

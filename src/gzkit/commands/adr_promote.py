@@ -210,19 +210,29 @@ def _print_adr_promotion_applied(project_root: Path, promotion_plan: dict[str, A
     console.print(f"  Updated: {pool_file.relative_to(project_root)}")
 
 
-def _check_scaffold_obpis(project_root: Path, promotion_plan: dict[str, Any]) -> int:
-    """Count promoted OBPIs that contain only template scaffold content."""
+def _check_scaffold_obpis(
+    project_root: Path, promotion_plan: dict[str, Any]
+) -> tuple[int, list[str]]:
+    """Check promoted OBPIs for scaffold content and structural errors.
+
+    Returns (scaffold_count, structure_errors).
+    """
+    from gzkit.commands.obpi_cmd import _validate_brief_structure  # noqa: PLC0415
     from gzkit.hooks.obpi import ObpiValidator  # noqa: PLC0415
 
     validator = ObpiValidator(project_root)
     obpi_plans = cast(list[dict[str, Any]], promotion_plan["obpi_plans"])
     scaffold_count = 0
+    structure_errors: list[str] = []
     for plan in obpi_plans:
         obpi_path = cast(Path, plan["obpi_file"])
         warnings = validator.validate_file(obpi_path)
         if warnings:
             scaffold_count += 1
-    return scaffold_count
+        errors = _validate_brief_structure(project_root, obpi_path)
+        for err in errors:
+            structure_errors.append(f"{obpi_path.name}: {err}")
+    return scaffold_count, structure_errors
 
 
 def adr_promote_cmd(
@@ -275,13 +285,21 @@ def adr_promote_cmd(
     _print_adr_promotion_applied(project_root, promotion_plan)
 
     obpi_plans = cast(list[dict[str, Any]], promotion_plan["obpi_plans"])
-    scaffold_count = _check_scaffold_obpis(project_root, promotion_plan)
+    scaffold_count, structure_errors = _check_scaffold_obpis(project_root, promotion_plan)
+    if structure_errors and not force:
+        console.print(
+            f"\n[red]Promotion blocked:[/red] {len(structure_errors)} structural error(s):"
+        )
+        for err in structure_errors:
+            console.print(f"  - {err}")
+        console.print("  Pass --force to override.")
+        raise SystemExit(1)
     if scaffold_count and not force:
         console.print(
             f"\n[red]Promotion blocked:[/red] {scaffold_count}/{len(obpi_plans)} OBPI briefs "
             f"contain template scaffold -- author briefs before implementation."
         )
-        console.print("  Pass --force to override. (GHI #27)")
+        console.print("  Pass --force to override.")
         raise SystemExit(1)
 
     # Quality gate: deterministic ADR/OBPI evaluation

@@ -429,12 +429,38 @@ def adr_status_cmd(adr: str, as_json: bool, show_gates: bool) -> None:
             )
 
 
+def _warn_orphaned_adrs(project_root: Path, config: GzkitConfig, ledger: Ledger) -> None:
+    """Warn about ADR files on disk that are not registered in the ledger."""
+    from gzkit.sync import scan_existing_artifacts  # noqa: PLC0415
+
+    artifacts = scan_existing_artifacts(project_root, config.paths.design_root)
+    graph = ledger.get_artifact_graph()
+    known = {aid for aid, info in graph.items() if info.get("type") == "adr"}
+
+    orphans: list[str] = []
+    for adr_file in artifacts.get("adrs", []):
+        stem_id = adr_file.stem
+        canonical = ledger.canonicalize_id(stem_id)
+        if stem_id not in known and canonical not in known:
+            orphans.append(stem_id)
+
+    if orphans:
+        console.print(
+            f"[yellow]WARNING:[/yellow] {len(orphans)} ADR(s) exist on disk but are not "
+            "registered in ledger:"
+        )
+        for oid in sorted(orphans):
+            console.print(f"  - {oid}")
+        console.print("Run [bold]gz register-adrs --all[/bold] to fix.\n")
+
+
 def adr_report_cmd(adr: str | None) -> None:
     """Render deterministic tabular report -- summary when no ADR given, detail for one ADR."""
     if adr is None:
         config = ensure_initialized()
         project_root = get_project_root()
         ledger = Ledger(project_root / config.paths.ledger)
+        _warn_orphaned_adrs(project_root, config, ledger)
         graph = ledger.get_artifact_graph()
         adrs = _collect_adr_statuses(project_root, config, ledger, graph)
         _render_status_table(adrs, config.mode)
