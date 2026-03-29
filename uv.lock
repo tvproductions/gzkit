@@ -492,7 +492,7 @@ wheels = [
 
 [[package]]
 name = "py-gzkit"
-version = "0.23.0"
+version = "0.24.0"
 source = { editable = "." }
 dependencies = [
     { name = "pydantic" },
