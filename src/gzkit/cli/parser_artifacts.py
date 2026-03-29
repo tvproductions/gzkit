@@ -85,21 +85,43 @@ def _register_adr_parsers(commands: argparse._SubParsersAction) -> None:
         func=lambda a: adr_status_cmd(adr=a.adr, as_json=a.as_json, show_gates=a.show_gates)
     )
 
+    _adr_type_names = {"foundation", "feature", "pool"}
+
+    def _dispatch_adr_report(a: argparse.Namespace) -> None:
+        target = a.adr
+        if target and target.lower() in _adr_type_names:
+            adr_report_cmd(adr=None, adr_type=target.lower())
+        else:
+            adr_report_cmd(adr=target, adr_type=a.type)
+
     p_adr_report = adr_commands.add_parser(
         "report",
         help="Deterministic tabular report (summary or single ADR)",
-        description="Produce deterministic tabular report for all or one ADR.",
+        description="Produce deterministic tabular report for all or one ADR, "
+        "or filter by type (foundation, feature, pool).",
         epilog=build_epilog(
             [
                 "gz adr report",
                 "gz adr report ADR-0.1.0",
+                "gz adr report pool",
+                "gz adr report feature",
+                "gz adr report --type foundation",
             ]
         ),
     )
     p_adr_report.add_argument(
-        "adr", nargs="?", default=None, help="ADR identifier (omit for summary)"
+        "adr",
+        nargs="?",
+        default=None,
+        help="ADR identifier, or type name (foundation, feature, pool)",
     )
-    p_adr_report.set_defaults(func=lambda a: adr_report_cmd(adr=a.adr))
+    p_adr_report.add_argument(
+        "--type",
+        choices=["foundation", "feature", "pool"],
+        default=None,
+        help="Filter summary to one ADR type (foundation, feature, pool)",
+    )
+    p_adr_report.set_defaults(func=_dispatch_adr_report)
 
     p_adr_promote = adr_commands.add_parser(
         "promote",

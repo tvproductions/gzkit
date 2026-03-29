@@ -454,7 +454,7 @@ def _warn_orphaned_adrs(project_root: Path, config: GzkitConfig, ledger: Ledger)
         console.print("Run [bold]gz register-adrs --all[/bold] to fix.\n")
 
 
-def adr_report_cmd(adr: str | None) -> None:
+def adr_report_cmd(adr: str | None, adr_type: str | None = None) -> None:
     """Render deterministic tabular report -- summary when no ADR given, detail for one ADR."""
     if adr is None:
         config = ensure_initialized()
@@ -463,7 +463,7 @@ def adr_report_cmd(adr: str | None) -> None:
         _warn_orphaned_adrs(project_root, config, ledger)
         graph = ledger.get_artifact_graph()
         adrs = _collect_adr_statuses(project_root, config, ledger, graph)
-        _render_status_table(adrs, config.mode)
+        _render_status_table(adrs, config.mode, adr_type=adr_type)
         return
     result = _build_adr_status_result(adr)
     _render_adr_report(result)
