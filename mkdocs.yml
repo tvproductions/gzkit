@@ -72,6 +72,12 @@ nav:
     - Test Traceability: user/concepts/test-traceability.md
   - Skills:
     - Overview: user/skills/index.md
+    - /gz-adr-map: user/skills/gz-adr-map.md
+    - /gz-adr-create: user/skills/gz-adr-create.md
+    - /gz-arb: user/skills/gz-arb.md
+    - /gz-check: user/skills/gz-check.md
+    - /gz-session-handoff: user/skills/gz-session-handoff.md
+    - /gz-chore-runner: user/skills/gz-chore-runner.md
   - Commands:
     - Overview: user/commands/index.md
     - gz init: user/commands/init.md

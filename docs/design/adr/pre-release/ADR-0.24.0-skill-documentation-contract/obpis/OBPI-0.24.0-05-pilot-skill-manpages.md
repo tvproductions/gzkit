@@ -2,7 +2,7 @@
 id: OBPI-0.24.0-05-pilot-skill-manpages
 parent: ADR-0.24.0-skill-documentation-contract
 item: 5
-status: Pending
+status: Completed
 lane: lite
 date: 2026-03-21
 ---
@@ -57,12 +57,37 @@ Required pilot skills spanning categories:
 
 ## QUALITY GATES (Lite)
 
-- [ ] Gate 1 (ADR): Intent recorded in this brief
-- [ ] Gate 2 (TDD): `uv run mkdocs build --strict` passes with all pilot manpages
-- [ ] Code Quality: `uv run gz lint` passes
+- [x] Gate 1 (ADR): Intent recorded in this brief
+- [x] Gate 2 (TDD): `uv run mkdocs build --strict` passes with all pilot manpages
+- [x] Code Quality: `uv run gz lint` passes
 
 ## VERIFICATION COMMANDS
 
 - `uv run mkdocs build --strict`
 - `test -f docs/user/skills/gz-adr-map.md docs/user/skills/gz-adr-create.md docs/user/skills/gz-arb.md docs/user/skills/gz-check.md docs/user/skills/gz-session-handoff.md docs/user/skills/gz-chore-runner.md`
 - `rg -n "^## When to Use$" docs/user/skills/gz-adr-map.md docs/user/skills/gz-adr-create.md docs/user/skills/gz-arb.md docs/user/skills/gz-check.md docs/user/skills/gz-session-handoff.md docs/user/skills/gz-chore-runner.md`
+
+## Closing Argument
+
+### Implementation Summary
+
+- Created: 6 pilot skill manpages in `docs/user/skills/` spanning 3 categories
+- Categories: ADR Operations (gz-adr-map, gz-adr-create), Code Quality (gz-arb, gz-check, gz-chore-runner), Agent Operations (gz-session-handoff)
+- Template: All 6 manpages follow OBPI-02 template with 6 required sections each
+- Supporting files: Documented in gz-adr-create (ADR template asset), gz-check (openai.yaml), gz-session-handoff (2 assets), gz-chore-runner (chore registry + proofs)
+- Navigation: 6 entries added to mkdocs.yml under Skills section
+- Validation: `uv run mkdocs build --strict` passes with all pilot manpages
+
+### Key Proof
+
+```bash
+$ rg -c "^## (Purpose|When to Use|What to Expect|Invocation|Supporting Files|Related Skills and Commands)$" docs/user/skills/gz-*.md
+docs/user/skills/gz-adr-create.md:6
+docs/user/skills/gz-adr-map.md:6
+docs/user/skills/gz-arb.md:6
+docs/user/skills/gz-check.md:6
+docs/user/skills/gz-chore-runner.md:6
+docs/user/skills/gz-session-handoff.md:6
+```
+
+All 6 manpages contain all 6 required template sections (36 total). `uv run mkdocs build --strict` built in 1.02 seconds with zero errors.
