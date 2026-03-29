@@ -226,8 +226,13 @@ status: {status}
             proof="Works as expected",
         )
         import shutil
+        import stat
 
-        shutil.rmtree(self.project_root / ".git")
+        def _force_remove_readonly(func, path, exc_info):  # noqa: ARG001
+            os.chmod(path, stat.S_IWRITE)
+            func(path)
+
+        shutil.rmtree(self.project_root / ".git", onexc=_force_remove_readonly)
 
         errors = self.validator.validate_file(path)
         self.assertIn("Not a git repository.", errors)

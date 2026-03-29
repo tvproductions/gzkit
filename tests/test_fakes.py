@@ -182,7 +182,7 @@ class TestInMemoryFileStore(unittest.TestCase):
         self.store.write_text(Path("root/sub/x.txt"), "x")
         self.store.write_text(Path("root/sub/y.txt"), "y")
         result = self.store.iterdir(Path("root"))
-        sub_paths = [p for p in result if str(p) == "root/sub"]
+        sub_paths = [p for p in result if p == Path("root/sub")]
         self.assertEqual(len(sub_paths), 1)
 
     def test_iterdir_does_not_cross_directory_boundaries(self) -> None:
@@ -190,7 +190,7 @@ class TestInMemoryFileStore(unittest.TestCase):
         self.store.write_text(Path("b/file.txt"), "in b")
         result = self.store.iterdir(Path("a"))
         for p in result:
-            self.assertTrue(str(p).startswith("a/"))
+            self.assertTrue(p.as_posix().startswith("a/"))
 
     # --- initial data ---
 

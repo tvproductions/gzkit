@@ -7,6 +7,7 @@ dimension scores → return typed results compatible with QualityResult.
 from __future__ import annotations
 
 import statistics
+from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -105,7 +106,11 @@ def _evaluate_surface(dataset: EvalDataset) -> SurfaceScore:
 # ---------------------------------------------------------------------------
 
 
-def run_eval_suite(surfaces: list[str] | None = None) -> EvalSuiteScore:
+def run_eval_suite(
+    surfaces: list[str] | None = None,
+    *,
+    data_dir: Path | None = None,
+) -> EvalSuiteScore:
     """Run the full eval suite across all (or specified) surfaces.
 
     Loads datasets, scores each case, aggregates results. No network calls,
@@ -113,12 +118,17 @@ def run_eval_suite(surfaces: list[str] | None = None) -> EvalSuiteScore:
 
     Args:
         surfaces: Surface names to evaluate. Defaults to all available datasets.
+        data_dir: Directory containing eval datasets. Defaults to project data/eval/.
 
     Returns:
         EvalSuiteScore with per-surface and per-case results.
 
     """
-    datasets = [load_dataset(s) for s in surfaces] if surfaces is not None else load_all_datasets()
+    datasets = (
+        [load_dataset(s, data_dir=data_dir) for s in surfaces]
+        if surfaces is not None
+        else load_all_datasets(data_dir=data_dir)
+    )
 
     surface_scores: list[SurfaceScore] = []
     for ds in datasets:

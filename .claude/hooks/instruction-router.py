@@ -190,7 +190,9 @@ def main():
         output_parts.append("")
         state[inst_file.name] = now
 
-    has_content = any(line.startswith("--- ") and line.endswith(" ---") for line in output_parts)
+    has_content = any(
+        line.startswith("--- ") and line.endswith(" ---") for line in output_parts
+    )
     if not has_content:
         sys.exit(0)
 
@@ -201,3 +203,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

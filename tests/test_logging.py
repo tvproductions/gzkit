@@ -139,9 +139,12 @@ class TestJsonFileOutput(unittest.TestCase):
             log = structlog.get_logger()
             log.info("test event", key="value")
 
-            # Flush handlers
-            for handler in logging.getLogger().handlers:
+            # Close handlers before temp dir cleanup (Windows file lock)
+            root = logging.getLogger()
+            for handler in root.handlers:
                 handler.flush()
+                handler.close()
+            root.handlers.clear()
 
             content = log_path.read_text(encoding="utf-8").strip()
             self.assertTrue(content, "Log file should not be empty")
@@ -159,8 +162,11 @@ class TestJsonFileOutput(unittest.TestCase):
             log.info("first event")
             log.warning("second event")
 
-            for handler in logging.getLogger().handlers:
+            root = logging.getLogger()
+            for handler in root.handlers:
                 handler.flush()
+                handler.close()
+            root.handlers.clear()
 
             lines = log_path.read_text(encoding="utf-8").strip().split("\n")
             for line in lines:
@@ -176,8 +182,11 @@ class TestJsonFileOutput(unittest.TestCase):
             log = structlog.get_logger()
             log.debug("debug event for file")
 
-            for handler in logging.getLogger().handlers:
+            root = logging.getLogger()
+            for handler in root.handlers:
                 handler.flush()
+                handler.close()
+            root.handlers.clear()
 
             content = log_path.read_text(encoding="utf-8").strip()
             self.assertTrue(content, "Debug events should reach the file")
@@ -254,8 +263,11 @@ class TestCorrelationId(unittest.TestCase):
             log = structlog.get_logger()
             log.info("test with correlation")
 
-            for handler in logging.getLogger().handlers:
+            root = logging.getLogger()
+            for handler in root.handlers:
                 handler.flush()
+                handler.close()
+            root.handlers.clear()
 
             content = log_path.read_text(encoding="utf-8").strip()
             parsed = json.loads(content)
@@ -272,8 +284,11 @@ class TestCorrelationId(unittest.TestCase):
             log.info("first call")
             log.info("second call")
 
-            for handler in logging.getLogger().handlers:
+            root = logging.getLogger()
+            for handler in root.handlers:
                 handler.flush()
+                handler.close()
+            root.handlers.clear()
 
             lines = log_path.read_text(encoding="utf-8").strip().split("\n")
             for line in lines:
