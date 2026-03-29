@@ -22,10 +22,17 @@ uv run gz status
 uv run gz status --table
 uv run gz adr status ADR-<X.Y.Z> --json
 
+#    Skill shortcut — focused ADR drilldown without raw JSON:
+#    /gz-adr-status ADR-<X.Y.Z>
+#    See: docs/user/skills/gz-adr-status.md
+
 # 1b) Validate OBPI briefs before pipeline (catches template stubs)
 uv run gz obpi validate --adr ADR-<X.Y.Z>
 
 # 1c) Evaluate ADR quality (NO GO verdict blocks pipeline)
+#    Skill shortcut — structured quality scoring and red-team challenges:
+#    /gz-adr-eval ADR-<X.Y.Z>
+#    See: docs/user/skills/gz-adr-eval.md
 uv run gz adr evaluate ADR-<X.Y.Z>
 
 # 2) Execute the OBPI through the staged pipeline
@@ -77,6 +84,10 @@ uv run gz roles --pipeline OBPI-<X.Y.Z-NN>
 #    implementer records for the Stage 4 ceremony.
 
 # 3) Verify this increment
+#    Skill shortcuts — run all quality checks in one pass or with receipt artifacts:
+#    /gz-check                  (all checks: lint, typecheck, test, docs)
+#    /gz-arb                    (same checks with structured JSON receipts)
+#    See: docs/user/skills/gz-check.md, docs/user/skills/gz-arb.md
 uv run gz implement --adr ADR-<X.Y.Z>
 uv run gz gates --gate 3 --adr ADR-<X.Y.Z>   # when docs changed
 uv run gz lint
@@ -125,6 +136,12 @@ uv run gz adr status ADR-<X.Y.Z> --json
 Until ledger-derived brief sync is automated, treat OBPI brief status/date fields as drift-prone and
 always recompute truth from `gz` status surfaces before closeout:
 
+Skill shortcuts for drift detection and reconciliation:
+
+- [`/gz-adr-check`](skills/gz-adr-check.md) — run blocking ADR evidence checks for a target ADR
+- [`/gz-adr-recon`](skills/gz-adr-recon.md) — reconcile ADR/OBPI evidence state from ledger outputs
+- [`/gz-adr-status`](skills/gz-adr-status.md) — focused ADR drilldown with lifecycle and OBPI detail
+
 ```bash
 # 1) Ledger-first recompute view
 uv run gz adr status ADR-<X.Y.Z> --json
@@ -147,6 +164,14 @@ Tracked automation defect: `https://github.com/tvproductions/gzkit/issues/3`.
 ## Loop B: ADR Closeout (After OBPI Batch Completion)
 
 Run this only when linked OBPIs are complete and evidenced.
+
+Skill shortcuts for the closeout ceremony:
+
+- [`/gz-closeout`](skills/gz-closeout.md) — initiate ADR closeout with evidence context (dry-run first)
+- [`/gz-attest`](skills/gz-attest.md) — record human attestation with prerequisite enforcement
+- [`/gz-audit`](skills/gz-audit.md) — run strict post-attestation reconciliation audits
+- [`/gz-adr-closeout-ceremony`](skills/gz-adr-closeout-ceremony.md) — execute the full closeout ceremony protocol
+- [`/gz-adr-emit-receipt`](skills/gz-adr-emit-receipt.md) — emit ADR receipt events with scoped evidence payloads
 
 ```bash
 # 1) Reconcile ADR <-> OBPI completeness
@@ -326,6 +351,8 @@ for full details and migration guidance.
 
 ## Verification Checklist (OBPI + ADR)
 
+Use [`/gz-check`](skills/gz-check.md) to run all quality checks in one pass, or [`/gz-arb`](skills/gz-arb.md) for the same checks with structured JSON receipt artifacts.
+
 - `uv run gz test`
 - `uv run -m behave features/` (heavy lane)
 - `uv run gz lint`
@@ -359,6 +386,15 @@ for full details and migration guidance.
 
 ## Governance Planning Commands
 
+Skill shortcuts for governance planning — these provide guided workflows beyond the raw CLI:
+
+- [`/gz-design`](skills/gz-design.md) — collaborative design dialogue that produces GovZero ADR artifacts
+- [`/gz-adr-create`](skills/gz-adr-create.md) — create and book a GovZero ADR with its OBPI briefs
+- [`/gz-plan`](skills/gz-plan.md) — create ADR artifacts for planned change
+- [`/gz-specify`](skills/gz-specify.md) — create OBPI briefs linked to parent ADR items
+- [`/gz-adr-promote`](skills/gz-adr-promote.md) — promote a pool ADR into canonical ADR package structure
+- [`/gz-interview`](skills/gz-interview.md) — run interactive governance interviews for structured input
+
 ```bash
 # Create governance artifacts
 uv run gz init                     # Initialize gzkit in a repository
@@ -374,6 +410,8 @@ uv run gz register-adrs            # Register existing ADR packages into ledger
 ---
 
 ## Chores Commands
+
+Use [`/gz-chore-runner`](skills/gz-chore-runner.md) to run a chore end-to-end (show, plan, advise, execute, validate) through a guided workflow.
 
 ```bash
 uv run gz chores list              # List declared chores
@@ -410,6 +448,8 @@ uv run gz skill audit              # Audit skill lifecycle metadata
 ---
 
 ## AirlineOps Parity Scan Canonical-Root Rules
+
+Use [`/airlineops-parity-scan`](skills/airlineops-parity-scan.md) to run the full repeatable governance parity scan between airlineops and gzkit.
 
 When running parity scans, canonical root resolution is deterministic and fail-closed:
 
