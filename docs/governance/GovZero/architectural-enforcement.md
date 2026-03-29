@@ -134,7 +134,7 @@ class TestAdapterArchitecturalCompliance(unittest.TestCase):
 
 ### Layer 3: Architectural Compliance Check (Skill)
 
-**What:** A runnable chore that audits the codebase against `config/architecture.json`.
+**What:** A runnable chore that audits the codebase against `.gzkit/manifest.json`.
 
 **Location:** `docs/governance/GovZero/` policy + `gz` quality/validation commands
 
@@ -143,7 +143,7 @@ class TestAdapterArchitecturalCompliance(unittest.TestCase):
 ```json
 {
   "architectural-compliance-audit": {
-    "description": "Audit code against architecture.json invariants",
+    "description": "Audit code against manifest.json invariants",
     "command": "uv run gz check",
     "checks": [
       "adapter_delegation_rule",
@@ -180,7 +180,7 @@ class TestAdapterArchitecturalCompliance(unittest.TestCase):
 
 ### Before Implementation
 
-1. Agent reads `docs/design/architecture/system-manifest.md`
+1. Agent reads `docs/design/lodestar/architectural-identity.md`
 2. Agent completes **Architectural Checkpoint** in brief
 3. Human reviews checkpoint before approving implementation
 
@@ -233,6 +233,6 @@ class TestAdapterArchitecturalCompliance(unittest.TestCase):
 
 ## See Also
 
-- [System Manifest](../architecture/system-manifest.md) — Bounded contexts and invariants
+- [Architectural Identity](../../design/lodestar/architectural-identity.md) — Bounded contexts and invariants
 - [ADR-0.1.16](../../design/adr/adr-0.1.x/ADR-0.1.16-unified-adapter-architecture/ADR-0.1.16-unified-adapter-architecture.md) — Adapter delegation rule
 - [OBPI Template](../../../.github/skills/gz-obpi-brief/assets/OBPI_BRIEF-template.md) — Brief format

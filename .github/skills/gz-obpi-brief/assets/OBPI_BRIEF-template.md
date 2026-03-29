@@ -275,7 +275,7 @@ context blocks.
 **Bounded Context:** [Discovery | Planning | Acquisition | Ingestion | Validation | Reporting]
 
 **I am working in the ______ context, which:**
-- OWNS: [list what this context owns, from system-manifest.md]
+- OWNS: [list what this context owns, from .gzkit/manifest.json]
 - DOES NOT OWN: [list what this context does NOT own]
 
 **Invariants that apply to this work:**
@@ -502,12 +502,13 @@ per `docs/governance/GovZero/charter.md` and
 
 ### Closing Argument (Lite)
 
-<!-- This section is authored at COMPLETION — not during planning. -->
-<!-- Fill in only after all gates pass and evidence is captured. -->
+<!-- This section is authored at COMPLETION, not during planning. -->
 
-- **What was built:** {describe the concrete deliverable}
-- **What it enables:** {describe what becomes possible or easier}
-- **Why it matters:** {connect to the parent ADR's intent}
+Summarize the OBPI's delivery in three parts:
+
+- **What was built:** {concrete deliverable — files, commands, tests added/changed}
+- **What it enables:** {capability or workflow this unlocks for the operator or system}
+- **Why it matters:** {connection to parent ADR intent or project goal}
 
 ### ACCEPTANCE (Lite)
 
@@ -590,7 +591,7 @@ statuses require full ADR folder structure in `adr-X.Y.x/`.
 **Bounded Context:** [Discovery | Planning | Acquisition | Ingestion | Validation | Reporting]
 
 **I am working in the ______ context, which:**
-- OWNS: [list what this context owns, from system-manifest.md]
+- OWNS: [list what this context owns, from .gzkit/manifest.json]
 - DOES NOT OWN: [list what this context does NOT own]
 
 **Invariants that apply to this work:**
@@ -773,12 +774,13 @@ uv run -m airlineops [command]
 
 ### Closing Argument (Heavy)
 
-<!-- This section is authored at COMPLETION — not during planning. -->
-<!-- Fill in only after all gates pass and attestation is received. -->
+<!-- This section is authored at COMPLETION, not during planning. -->
 
-- **What was built:** {describe the concrete deliverable}
-- **What it enables:** {describe what becomes possible or easier}
-- **Why it matters:** {connect to the parent ADR's intent}
+Summarize the OBPI's delivery in three parts:
+
+- **What was built:** {concrete deliverable — files, commands, tests added/changed}
+- **What it enables:** {capability or workflow this unlocks for the operator or system}
+- **Why it matters:** {connection to parent ADR intent or project goal}
 
 ### ACCEPTANCE (Heavy)
 
