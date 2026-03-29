@@ -275,7 +275,7 @@ context blocks.
 **Bounded Context:** [Discovery | Planning | Acquisition | Ingestion | Validation | Reporting]
 
 **I am working in the ______ context, which:**
-- OWNS: [list what this context owns, from system-manifest.md]
+- OWNS: [list what this context owns, from .gzkit/manifest.json]
 - DOES NOT OWN: [list what this context does NOT own]
 
 **Invariants that apply to this work:**
@@ -500,6 +500,16 @@ Item-specific gates and commands (if any) are listed below.
 per `docs/governance/GovZero/charter.md` and
 `docs/governance/GovZero/audit-protocol.md`.
 
+### Closing Argument (Lite)
+
+<!-- This section is authored at COMPLETION, not during planning. -->
+
+Summarize the OBPI's delivery in three parts:
+
+- **What was built:** {concrete deliverable — files, commands, tests added/changed}
+- **What it enables:** {capability or workflow this unlocks for the operator or system}
+- **Why it matters:** {connection to parent ADR intent or project goal}
+
 ### ACCEPTANCE (Lite)
 
 - Imports pass; smoke green; artifacts (if any) captured.
@@ -581,7 +591,7 @@ statuses require full ADR folder structure in `adr-X.Y.x/`.
 **Bounded Context:** [Discovery | Planning | Acquisition | Ingestion | Validation | Reporting]
 
 **I am working in the ______ context, which:**
-- OWNS: [list what this context owns, from system-manifest.md]
+- OWNS: [list what this context owns, from .gzkit/manifest.json]
 - DOES NOT OWN: [list what this context does NOT own]
 
 **Invariants that apply to this work:**
@@ -761,6 +771,16 @@ uv run -m airlineops [command]
 - [ ] Gate 5 attestation RECEIVED from human
 - [ ] Attestation recorded in brief
 - [ ] OBPI marked completed ONLY AFTER attestation
+
+### Closing Argument (Heavy)
+
+<!-- This section is authored at COMPLETION, not during planning. -->
+
+Summarize the OBPI's delivery in three parts:
+
+- **What was built:** {concrete deliverable — files, commands, tests added/changed}
+- **What it enables:** {capability or workflow this unlocks for the operator or system}
+- **Why it matters:** {connection to parent ADR intent or project goal}
 
 ### ACCEPTANCE (Heavy)
 
