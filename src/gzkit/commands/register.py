@@ -243,7 +243,7 @@ def _collect_obpis_to_register(
 
 def register_adrs(
     lane: str | None,
-    pool_only: bool = True,
+    pool_only: bool = False,
     dry_run: bool = False,
     targets: list[str] | None = None,
 ) -> None:

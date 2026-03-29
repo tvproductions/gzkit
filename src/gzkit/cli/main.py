@@ -91,8 +91,19 @@ def _apply_debug_mode() -> None:
     logging.basicConfig(level=logging.DEBUG, format="%(levelname)s: %(name)s: %(message)s")
 
 
+def _ensure_utf8_console() -> None:
+    """Reconfigure stdout/stderr to UTF-8 on Windows to avoid cp1252 crashes from Rich."""
+    import sys  # noqa: PLC0415
+
+    for stream_name in ("stdout", "stderr"):
+        stream = getattr(sys, stream_name, None)
+        if stream is not None and hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8")
+
+
 def main(argv: list[str] | None = None) -> int:
     """argparse-based gz entrypoint."""
+    _ensure_utf8_console()
     parser = _get_parser()
     try:
         args = parser.parse_args(argv)

@@ -4,6 +4,7 @@ import unittest
 from pathlib import Path
 
 from gzkit.cli import main
+from gzkit.commands.status_render import TABLE_TITLE_FEATURE  # noqa: F401
 from gzkit.config import GzkitConfig
 from gzkit.ledger import (
     Ledger,
@@ -90,7 +91,7 @@ class TestStatusCommand(unittest.TestCase):
 
             result = runner.invoke(main, ["status", "--table"])
             self.assertEqual(result.exit_code, 0)
-            self.assertIn("ADR Status", result.output)
+            self.assertIn(TABLE_TITLE_FEATURE, result.output)
             self.assertIn("Life", result.output)
             self.assertIn("Lane", result.output)
             self.assertIn("Unit", result.output)
@@ -901,7 +902,7 @@ class TestStatusCommand(unittest.TestCase):
             self.assertEqual(payload["req_proof_state"], "missing")
 
     def test_status_json_accepts_legacy_gate_evidence_section_as_file_reflection(self) -> None:
-        """Gate Evidence still parses as file proof without redefining ledger completion."""
+        """Gate Evidence parses as file proof; ledger receipt is authoritative for completion."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
@@ -956,9 +957,9 @@ class TestStatusCommand(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)
             adr_payload = payload["adrs"]["ADR-0.1.0"]
-            self.assertEqual(adr_payload["obpi_summary"]["completed"], 0)
-            self.assertEqual(adr_payload["obpi_summary"]["unit_status"], "pending")
-            self.assertEqual(adr_payload["lifecycle_status"], "Pending")
+            self.assertEqual(adr_payload["obpi_summary"]["completed"], 1)
+            self.assertEqual(adr_payload["obpi_summary"]["unit_status"], "completed")
+            self.assertEqual(adr_payload["lifecycle_status"], "Completed")
             self.assertTrue(adr_payload["obpis"][0]["key_proof_ok"])
 
     def test_obpi_status_accepts_verification_heading_prefix_as_file_reflection(self) -> None:
@@ -1668,7 +1669,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
 
             result = runner.invoke(main, ["adr", "report"])
             self.assertEqual(result.exit_code, 0)
-            self.assertIn("ADR Status", result.output)
+            self.assertIn(TABLE_TITLE_FEATURE, result.output)
             self.assertIn("ADR-0.1.0", result.output)
             self.assertIn("Checks legend", result.output)
 

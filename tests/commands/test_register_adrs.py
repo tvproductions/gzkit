@@ -142,3 +142,41 @@ class TestRegisterAdrsCommand(unittest.TestCase):
             self.assertIn('"event":"obpi_created","id":"OBPI-0.1.0-01-demo"', ledger_content)
             self.assertNotIn('"event":"adr_created","id":"ADR-0.2.0"', ledger_content)
             self.assertNotIn('"event":"obpi_created","id":"OBPI-0.2.0-01-demo"', ledger_content)
+
+    def test_register_adrs_default_includes_versioned(self) -> None:
+        """register-adrs without flags registers versioned (non-pool) ADRs."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+
+            adr_dir = Path(config.paths.adrs) / "pre-release" / "ADR-0.5.0-sample"
+            adr_dir.mkdir(parents=True, exist_ok=True)
+            (adr_dir / "ADR-0.5.0-sample.md").write_text(
+                "---\nid: ADR-0.5.0-sample\nparent: PRD-GZKIT-1.0.0\nlane: lite\n---\n\n"
+                "# ADR-0.5.0: Sample\n",
+                encoding="utf-8",
+            )
+
+            result = runner.invoke(main, ["register-adrs"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("Registered ADR: ADR-0.5.0-sample", result.output)
+
+    def test_register_adrs_pool_only_skips_versioned(self) -> None:
+        """register-adrs --pool-only skips versioned ADRs."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+
+            adr_dir = Path(config.paths.adrs) / "pre-release" / "ADR-0.6.0-sample"
+            adr_dir.mkdir(parents=True, exist_ok=True)
+            (adr_dir / "ADR-0.6.0-sample.md").write_text(
+                "---\nid: ADR-0.6.0-sample\nparent: PRD-GZKIT-1.0.0\nlane: lite\n---\n\n"
+                "# ADR-0.6.0: Sample\n",
+                encoding="utf-8",
+            )
+
+            result = runner.invoke(main, ["register-adrs", "--pool-only"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("No unregistered ADRs or OBPIs found.", result.output)
