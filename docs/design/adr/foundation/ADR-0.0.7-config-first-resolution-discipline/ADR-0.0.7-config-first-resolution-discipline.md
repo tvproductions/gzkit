@@ -78,8 +78,7 @@ key is dead config that nobody reads.
 - [ ] Resolution helpers — create `manifest_path()` helper; establish parameter-threading pattern from CLI entry point to consumers
 - [ ] Eval module migration — remove `_PROJECT_ROOT` from `eval/datasets.py`, `eval/delta.py`, `eval/regression.py`; thread manifest paths
 - [ ] Hooks module migration — remove `Path(__file__).parents[3]` from `hooks/guards.py`; thread manifest paths
-- [ ] Lint rule and check expansion — add `Path(__file__).parents` detection to `gz lint`; expand `check-config-paths` to scan source for unmapped path literals
-- [ ] Chore integration — update `hardcoded-root-eradication` chore with manifest-aware acceptance criteria; wire into `gz check`
+- [ ] Enforcement and chore integration — add `Path(__file__).parents` lint rule; expand `check-config-paths`; update `hardcoded-root-eradication` chore with manifest-aware criteria
 
 ## Decomposition Scorecard
 
@@ -96,7 +95,26 @@ key is dead config that nobody reads.
 - Split State Anchor: 1
 - Split Testability Ceiling: 0
 - Split Total: 3
-- Final Target OBPI Count: 6
+- Final Target OBPI Count: 5
+
+## Before State (Quantified)
+
+| Metric | Current |
+|--------|---------|
+| `Path(__file__).parents` instances | 4 (across `eval/datasets.py:18`, `eval/delta.py:21`, `eval/regression.py:26`, `hooks/guards.py:99`) |
+| Module-level `_PROJECT_ROOT` constants | 3 (each spawning 1-2 dependent constants = 7 total hardcoded paths) |
+| Config-based `config.get_path()` / `config.paths.*` usages | 166 |
+| Compliance rate | 97% (132/136 modules use config) |
+
+## After State (Target)
+
+| Metric | Target |
+|--------|--------|
+| `Path(__file__).parents` instances | **0** |
+| Module-level `_PROJECT_ROOT` constants | **0** |
+| Config-based path usages | **≥196** (+30 from migrated modules) |
+| Compliance rate | **100%** |
+| Enforcement layers | 3 (lint edit-time + check gate-time + chore periodic) |
 
 ## Intent
 
@@ -108,6 +126,17 @@ separate from code), implemented via config files (not environment variables),
 and exists to counter the recurring problem of agents hardcoding constants that
 bypass the config system.
 
+## Non-Goals
+
+- **Not migrating test fixtures** — test files may use `Path(__file__).parent`
+  to locate co-located fixtures; this is local test infrastructure, not config
+- **Not replacing `get_project_root()`** — the `.gzkit/` anchor discovery
+  function is an architectural invariant, not a configurable path
+- **Not externalizing thresholds to separate files** — thresholds live inline
+  in the manifest as single-source-of-truth config, not in dedicated config files
+- **Not adding environment variable support** — config-file-first philosophy;
+  env vars add a resolution layer that is harder to version-control and audit
+
 ## Decision
 
 - Extend `manifest.json` schema from v1 to v2 with three new top-level sections:
@@ -118,9 +147,18 @@ bypass the config system.
 - Code resolves paths and thresholds from the manifest at the call site via
   explicit parameters; module-level `_PROJECT_ROOT` constants are prohibited
 - Enforcement is layered: lint rule (edit-time) + expanded `check-config-paths`
-  (gate-time) + recurring chore (periodic sweep)
+  (gate-time) + chore sweep (periodic)
 - Architectural invariants remain fixed and are not configurable: `.gzkit/` root,
   `.gzkit.json`, `.gzkit/manifest.json`, `.gzkit/ledger.jsonl`, `get_project_root()`
+
+## Alternatives Considered
+
+| Alternative | Why Rejected |
+|-------------|-------------|
+| Environment variables (12-factor literal) | Harder to version-control, audit, and diff; config-file-first is the AirlineOps precedent |
+| Separate threshold files (`config/thresholds.json`) | Fragments the config surface; one manifest = one source of truth |
+| Decorator-based path injection | Over-engineered for 4 violation sites; explicit parameter threading is simpler and grep-friendly |
+| Ignore and suppress lint warnings | Defeats the purpose; fallback constants become the real source of truth (the exact anti-pattern) |
 
 ## Interfaces
 
@@ -133,14 +171,16 @@ bypass the config system.
 
 ## OBPI Decomposition — Work Breakdown Structure (Level 1)
 
-| # | OBPI | Specification Summary | Lane | Status |
-|---|------|----------------------|------|--------|
-| 1 | OBPI-0.0.7-01 | Manifest v2 schema — add `data`, `ops`, `thresholds` sections to `generate_manifest()` and schema validation; bump schema version | Lite | Pending |
-| 2 | OBPI-0.0.7-02 | Resolution helpers — create `manifest_path(manifest, section, key)` helper; establish parameter-threading pattern | Lite | Pending |
-| 3 | OBPI-0.0.7-03 | Eval module migration — remove `_PROJECT_ROOT` from `eval/datasets.py`, `eval/delta.py`, `eval/regression.py`; thread manifest paths | Lite | Pending |
-| 4 | OBPI-0.0.7-04 | Hooks module migration — remove `Path(__file__).parents[3]` from `hooks/guards.py`; thread manifest paths | Lite | Pending |
-| 5 | OBPI-0.0.7-05 | Lint rule and check expansion — add `Path(__file__).parents` detection to `gz lint`; expand `check-config-paths` to scan source for unmapped path literals | Lite | Pending |
-| 6 | OBPI-0.0.7-06 | Chore integration — update `hardcoded-root-eradication` chore with manifest-aware acceptance criteria; wire into `gz check` | Lite | Pending |
+| # | OBPI | Specification Summary | Lane | Depends On | Status |
+|---|------|----------------------|------|------------|--------|
+| 1 | OBPI-0.0.7-01 | Manifest v2 schema — add `data`, `ops`, `thresholds` sections to `generate_manifest()` and schema validation; bump schema version | Lite | — | Pending |
+| 2 | OBPI-0.0.7-02 | Resolution helpers — create `manifest_path(manifest, section, key)` helper; establish parameter-threading pattern | Lite | 01 | Pending |
+| 3 | OBPI-0.0.7-03 | Eval module migration — remove `_PROJECT_ROOT` from `eval/datasets.py`, `eval/delta.py`, `eval/regression.py`; thread manifest paths | Lite | 01, 02 | Pending |
+| 4 | OBPI-0.0.7-04 | Hooks module migration — remove `Path(__file__).parents[3]` from `hooks/guards.py`; thread manifest paths | Lite | 01, 02 | Pending |
+| 5 | OBPI-0.0.7-05 | Enforcement and chore integration — add `Path(__file__).parents` lint rule; expand `check-config-paths` for unmapped path literals; update `hardcoded-root-eradication` chore with manifest-aware criteria | Lite | 03, 04 | Pending |
+
+**Dependency graph:** `01 → 02 → {03, 04} → 05`
+**Parallelizable:** OBPIs 03 and 04 can run concurrently after 02 completes.
 
 **Briefs location:** `obpis/OBPI-0.0.7-*.md` (each brief is a **Level 2 WBS** element)
 

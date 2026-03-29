@@ -3,171 +3,112 @@ id: OBPI-0.0.7-03-eval-module-migration
 parent: ADR-0.0.7
 item: 3
 lane: Lite
-status: Draft
+status: Accepted
 ---
 
 # OBPI-0.0.7-03-eval-module-migration: Eval module migration
 
 ## ADR Item
 
-- **Source ADR:** `docs\design\adr\foundation\ADR-0.0.7-config-first-resolution-discipline\ADR-0.0.7-config-first-resolution-discipline.md`
+- **Source ADR:** `docs/design/adr/foundation/ADR-0.0.7-config-first-resolution-discipline/ADR-0.0.7-config-first-resolution-discipline.md`
 - **Checklist Item:** #3 - "Eval module migration — remove `_PROJECT_ROOT` from `eval/datasets.py`, `eval/delta.py`, `eval/regression.py`; thread manifest paths"
 
-**Status:** Draft
+**Status:** Accepted
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-TBD
+Remove all 3 `_PROJECT_ROOT = Path(__file__).resolve().parents[3]` constants and
+their 5 dependent path constants from `eval/datasets.py`, `eval/delta.py`, and
+`eval/regression.py`. Replace with manifest-threaded parameters using the
+`manifest_path()` helper from OBPI-02.
 
 ## Lane
 
-**Lite** - This OBPI remains internal to the promoted ADR implementation scope.
-
-> Heavy is reserved for command/API/schema/runtime-contract changes. Process,
-> documentation, and template-only work stays Lite unless it changes one of
-> those external surfaces.
+**Lite** - Internal refactoring; no CLI/API contract change.
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `src/gzkit/eval/datasets.py` — remove `_PROJECT_ROOT`, `_DATA_DIR`, `_SCHEMA_PATH`; thread manifest
+- `src/gzkit/eval/delta.py` — remove `_PROJECT_ROOT`, `_CONFIG_PATH`, `_BASELINES_DIR`; thread manifest
+- `src/gzkit/eval/regression.py` — remove `_PROJECT_ROOT`, `_BASELINES_DIR`; thread manifest
+- `tests/test_eval_*.py` — update tests to pass manifest parameter
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
-- Paths not listed in Allowed Paths
+- `src/gzkit/hooks/` — that is OBPI-04
+- `src/gzkit/commands/common.py` — helper already exists from OBPI-02
 - New dependencies
-- CI files, lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: `grep -rn "_PROJECT_ROOT" src/gzkit/eval/` MUST return zero matches after migration
+2. REQUIREMENT: `grep -rn "Path(__file__)" src/gzkit/eval/` MUST return zero matches after migration
+3. NEVER: Add a fallback that reads from the old constant when no manifest is provided
+4. ALWAYS: Every function that previously used `_PROJECT_ROOT` must accept the path as a parameter
+5. REQUIREMENT: All existing eval tests MUST pass after migration
 
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if OBPI-01 or OBPI-02 are not yet implemented, halt.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first. -->
-
-**Governance (read once, cache):**
-
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
-
 **Context:**
 
-- [ ] Parent ADR: `docs\design\adr\foundation\ADR-0.0.7-config-first-resolution-discipline\ADR-0.0.7-config-first-resolution-discipline.md`
-- [ ] Related OBPIs in same ADR
-
-**Prerequisites (check existence, STOP if missing):**
-
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
+- [ ] Parent ADR — understand anti-pattern warning about "fallback" constants
+- [ ] OBPI-01 complete (v2 manifest with `data` section)
+- [ ] OBPI-02 complete (`manifest_path()` helper available)
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+- [ ] `src/gzkit/eval/datasets.py:18` — `_PROJECT_ROOT` and dependents
+- [ ] `src/gzkit/eval/delta.py:21` — `_PROJECT_ROOT` and dependents
+- [ ] `src/gzkit/eval/regression.py:26` — `_PROJECT_ROOT` and dependents
+- [ ] Callers of functions in these modules (to update parameter passing)
 
 ## Quality Gates
-
-<!-- Which gates apply and how to verify them. -->
 
 ### Gate 1: ADR
 
 - [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] Tests written before/with implementation
 - [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
+- [ ] Zero `_PROJECT_ROOT` in eval modules: `grep -rn "_PROJECT_ROOT" src/gzkit/eval/`
 
 ### Code Quality
 
 - [ ] Lint clean: `uv run gz lint`
 - [ ] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
-### Gate 3: Docs (Heavy only)
-
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
-
-### Gate 4: BDD (Heavy only)
-
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
-
-### Gate 5: Human (Heavy only)
-
-- [ ] Human attestation recorded
-
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
-uv run gz validate --documents
+grep -rn "_PROJECT_ROOT" src/gzkit/eval/     # expect: no output
+grep -rn "Path(__file__)" src/gzkit/eval/    # expect: no output
 uv run gz lint
 uv run gz typecheck
-uv run gz test
-
-# Specific verification for this OBPI
-command --to --verify
+uv run -m unittest -q
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.0.7-03-01: Given/When/Then behavior criterion 1
-- [ ] REQ-0.0.7-03-02: Given/When/Then behavior criterion 2
-- [ ] REQ-0.0.7-03-03: Given/When/Then behavior criterion 3
+- [ ] REQ-0.0.7-03-01: Given the eval modules, when `grep -rn "_PROJECT_ROOT" src/gzkit/eval/` runs, then zero matches are returned
+- [ ] REQ-0.0.7-03-02: Given `eval/datasets.py`, when a caller invokes dataset functions, then paths resolve from manifest parameter, not module constants
+- [ ] REQ-0.0.7-03-03: Given existing eval tests, when `uv run -m unittest -q` runs, then all tests pass with zero failures
 
 ## Completion Checklist
 
-<!-- Verify all gates before marking OBPI accepted. -->
-
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [ ] **Gate 2 (TDD):** Tests pass, grep proof clean
 - [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
 - [ ] **OBPI Acceptance:** Evidence recorded below
 
-> For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
-
 ## Evidence
-
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
-
-### Gate 1 (ADR)
-
-- [ ] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+# Paste grep proof and test output here
 ```
 
 ### Code Quality
@@ -176,56 +117,19 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 # Paste lint/format/type check output here
 ```
 
-### Gate 3 (Docs)
-
-```text
-# Paste docs-build output here when Gate 3 applies
-```
-
-### Gate 4 (BDD)
-
-```text
-# Paste behave output here when Gate 4 applies
-```
-
-### Gate 5 (Human)
-
-```text
-# Record attestation text here when required by parent lane
-```
-
-### Value Narrative
-
-<!-- What problem existed before this OBPI, and what capability exists now? -->
-
-### Key Proof
-
-<!-- One concrete usage example, command, or before/after behavior. -->
-
-### Implementation Summary
-
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
-
 ## Tracked Defects
-
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
 
 _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `n/a` (Lite lane, Lite parent)
+- Attestation: `n/a`
+- Date: `n/a`
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Accepted
 
 **Date Completed:** -
 

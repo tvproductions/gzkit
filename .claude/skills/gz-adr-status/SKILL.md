@@ -32,6 +32,7 @@ When this skill is invoked, **immediately run the appropriate command** — do n
 
 - **No arguments** or `--summary`: run `uv run gz adr report` and present the output.
 - **With an ADR ID** (e.g., `ADR-0.3.0`): run `uv run gz adr report ADR-0.3.0`. This single command produces the full focused view (overview table, OBPI table, and issues). Do NOT also run `--json` — the report command output is sufficient and already visible.
+- **With a type name** (`foundation`, `feature`, `pool`): run `uv run gz adr report <type>` to filter the summary to one ADR category.
 
 ## Invocation
 
@@ -39,6 +40,9 @@ When this skill is invoked, **immediately run the appropriate command** — do n
 /gz-adr-status              ← summary (all ADRs)
 /gz-adr-status --summary    ← summary (explicit)
 /gz-adr-status ADR-0.3.0    ← focused drilldown
+/gz-adr-status pool          ← pool ADRs only
+/gz-adr-status feature       ← feature ADRs only
+/gz-adr-status foundation    ← foundation ADRs only
 ```
 
 ## Commands
@@ -49,6 +53,11 @@ uv run gz adr report
 
 # Focused ADR drilldown
 uv run gz adr report ADR-0.3.0
+
+# Filter by type
+uv run gz adr report pool
+uv run gz adr report feature
+uv run gz adr report foundation
 ```
 
 ## Output Contract

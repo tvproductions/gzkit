@@ -3,166 +3,101 @@ id: OBPI-0.0.7-02-resolution-helpers
 parent: ADR-0.0.7
 item: 2
 lane: Lite
-status: Draft
+status: Accepted
 ---
 
 # OBPI-0.0.7-02-resolution-helpers: Resolution helpers
 
 ## ADR Item
 
-- **Source ADR:** `docs\design\adr\foundation\ADR-0.0.7-config-first-resolution-discipline\ADR-0.0.7-config-first-resolution-discipline.md`
-- **Checklist Item:** #2 - "Resolution helpers — create `manifest_path()` helper; establish parameter-threading pattern from CLI entry point to consumers"
+- **Source ADR:** `docs/design/adr/foundation/ADR-0.0.7-config-first-resolution-discipline/ADR-0.0.7-config-first-resolution-discipline.md`
+- **Checklist Item:** #2 - "Resolution helpers — create `manifest_path(manifest, section, key)` helper; establish parameter-threading pattern"
 
-**Status:** Draft
+**Status:** Accepted
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-TBD
+Create a `manifest_path()` helper that resolves a path from a manifest section
+and key, returning a `Path` relative to project root. Establish the
+parameter-threading pattern where the CLI entry point loads the manifest once
+and passes it to consumers — no module-level constants.
 
 ## Lane
 
-**Lite** - This OBPI remains internal to the promoted ADR implementation scope.
-
-> Heavy is reserved for command/API/schema/runtime-contract changes. Process,
-> documentation, and template-only work stays Lite unless it changes one of
-> those external surfaces.
+**Lite** - Internal helper; no CLI/API contract change.
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `src/gzkit/commands/common.py` — add `manifest_path()` helper near `load_manifest()`
+- `tests/test_manifest_resolution.py` — new test module for resolution helper
+- `tests/test_config.py` — if threading pattern changes config loading
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
 - Paths not listed in Allowed Paths
+- Modules that will be *migrated* to use the helper (that is OBPI-03, OBPI-04)
 - New dependencies
-- CI files, lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: `manifest_path(manifest, section, key)` MUST return a `Path` resolved relative to project root
+2. REQUIREMENT: Helper MUST raise `KeyError` with a clear message when section or key is missing
+3. NEVER: Import the helper at module level with a default manifest — callers must pass the manifest explicitly
+4. ALWAYS: Helper must work with both v1 and v2 manifest structures (v1 sections return existing paths)
 
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if `load_manifest()` location or signature is unclear, inspect `src/gzkit/commands/common.py`.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first. -->
-
-**Governance (read once, cache):**
-
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
-
 **Context:**
 
-- [ ] Parent ADR: `docs\design\adr\foundation\ADR-0.0.7-config-first-resolution-discipline\ADR-0.0.7-config-first-resolution-discipline.md`
-- [ ] Related OBPIs in same ADR
+- [ ] Parent ADR — understand threading pattern and anti-pattern warning
+- [ ] `src/gzkit/commands/common.py` — current `load_manifest()` implementation
+- [ ] OBPI-01 — manifest v2 schema (dependency)
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
-
-**Existing Code (understand current state):**
-
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+- [ ] OBPI-01 is implemented (v2 manifest sections exist)
+- [ ] `src/gzkit/commands/common.py` contains `load_manifest()`
 
 ## Quality Gates
-
-<!-- Which gates apply and how to verify them. -->
 
 ### Gate 1: ADR
 
 - [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
 - [ ] Tests written before/with implementation
 - [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
 
 ### Code Quality
 
 - [ ] Lint clean: `uv run gz lint`
 - [ ] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
-### Gate 3: Docs (Heavy only)
-
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
-
-### Gate 4: BDD (Heavy only)
-
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
-
-### Gate 5: Human (Heavy only)
-
-- [ ] Human attestation recorded
-
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
-uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
-uv run gz test
-
-# Specific verification for this OBPI
-command --to --verify
+uv run -m unittest tests.test_manifest_resolution -v
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.0.7-02-01: Given/When/Then behavior criterion 1
-- [ ] REQ-0.0.7-02-02: Given/When/Then behavior criterion 2
-- [ ] REQ-0.0.7-02-03: Given/When/Then behavior criterion 3
+- [ ] REQ-0.0.7-02-01: Given a v2 manifest with `data.eval_datasets` key, when `manifest_path(m, "data", "eval_datasets")` is called, then it returns a `Path` relative to project root
+- [ ] REQ-0.0.7-02-02: Given a manifest missing a requested key, when `manifest_path()` is called, then `KeyError` is raised with section and key names in the message
+- [ ] REQ-0.0.7-02-03: Given a v1 manifest (no `data`/`ops`/`thresholds` sections), when `manifest_path()` is called for an existing v1 key, then it resolves correctly
 
 ## Completion Checklist
-
-<!-- Verify all gates before marking OBPI accepted. -->
 
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
 - [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
 - [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
 - [ ] **OBPI Acceptance:** Evidence recorded below
 
-> For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
-
 ## Evidence
-
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
-
-### Gate 1 (ADR)
-
-- [ ] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
@@ -176,56 +111,19 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 # Paste lint/format/type check output here
 ```
 
-### Gate 3 (Docs)
-
-```text
-# Paste docs-build output here when Gate 3 applies
-```
-
-### Gate 4 (BDD)
-
-```text
-# Paste behave output here when Gate 4 applies
-```
-
-### Gate 5 (Human)
-
-```text
-# Record attestation text here when required by parent lane
-```
-
-### Value Narrative
-
-<!-- What problem existed before this OBPI, and what capability exists now? -->
-
-### Key Proof
-
-<!-- One concrete usage example, command, or before/after behavior. -->
-
-### Implementation Summary
-
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
-
 ## Tracked Defects
-
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
 
 _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `n/a` (Lite lane, Lite parent)
+- Attestation: `n/a`
+- Date: `n/a`
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Accepted
 
 **Date Completed:** -
 
