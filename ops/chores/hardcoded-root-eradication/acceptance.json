@@ -1,0 +1,31 @@
+{
+  "criteria": [
+    {
+      "type": "outputNotContains",
+      "command": "grep -rn \"Path(__file__).*parents\" src/gzkit/eval/",
+      "notContains": "parents",
+      "description": "No hardcoded root derivations in eval modules"
+    },
+    {
+      "type": "outputNotContains",
+      "command": "grep -rn \"Path(__file__).*parents\" src/gzkit/hooks/",
+      "notContains": "parents",
+      "description": "No hardcoded root derivations in hooks modules"
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run -m unittest -q",
+      "expected": 0
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run ruff check .",
+      "expected": 0
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run gz check-config-paths",
+      "expected": 0
+    }
+  ]
+}

@@ -288,21 +288,22 @@ class TestGateIntegration(unittest.TestCase):
 
     def test_eval_delta_skips_without_datasets(self) -> None:
         """REQ-2: _run_eval_delta returns True when no datasets exist."""
-        from unittest.mock import MagicMock
+        from unittest.mock import MagicMock, patch
 
         from gzkit.commands.gates import _run_eval_delta
 
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
             ledger = MagicMock()
-            result = _run_eval_delta(project_root, ledger, "ADR-0.0.5")
+            with patch("gzkit.commands.gates.console"):
+                result = _run_eval_delta(project_root, ledger, "ADR-0.0.5")
             self.assertTrue(result)
             # REQ-6: gate result recorded
             ledger.append.assert_called_once()
 
     def test_eval_delta_skips_without_baselines(self) -> None:
         """REQ-2: _run_eval_delta returns True when datasets exist but no baselines."""
-        from unittest.mock import MagicMock
+        from unittest.mock import MagicMock, patch
 
         from gzkit.commands.gates import _run_eval_delta
 
@@ -337,13 +338,14 @@ class TestGateIntegration(unittest.TestCase):
                 encoding="utf-8",
             )
             ledger = MagicMock()
-            result = _run_eval_delta(project_root, ledger, "ADR-0.0.5")
+            with patch("gzkit.commands.gates.console"):
+                result = _run_eval_delta(project_root, ledger, "ADR-0.0.5")
             self.assertTrue(result)
             ledger.append.assert_called_once()
 
     def test_eval_delta_detects_regression(self) -> None:
         """REQ-1: Gate 2 includes eval results and detects regression."""
-        from unittest.mock import MagicMock
+        from unittest.mock import MagicMock, patch
 
         from gzkit.commands.gates import _run_eval_delta
 
@@ -406,7 +408,8 @@ class TestGateIntegration(unittest.TestCase):
                 encoding="utf-8",
             )
             ledger = MagicMock()
-            result = _run_eval_delta(project_root, ledger, "ADR-0.0.5")
+            with patch("gzkit.commands.gates.console"):
+                result = _run_eval_delta(project_root, ledger, "ADR-0.0.5")
             self.assertFalse(result)
             # REQ-6: gate result recorded as fail
             ledger.append.assert_called_once()

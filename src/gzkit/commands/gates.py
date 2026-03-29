@@ -174,7 +174,7 @@ def _run_eval_delta(
         return True
 
     try:
-        current = run_eval_suite()
+        current = run_eval_suite(data_dir=data_dir)
     except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
         console.print(f"  [red]❌[/red] Eval delta: ERROR ({exc})")
         _record_gate_result(ledger, adr_id, 2, "fail", "eval-delta", 1, str(exc))
@@ -190,7 +190,7 @@ def _run_eval_delta(
         _record_gate_result(ledger, adr_id, 2, "pass", "eval-delta", 0, "skipped: no baselines")
         return True
 
-    config = load_thresholds()
+    config = load_thresholds(project_root / "config" / "eval_thresholds.json")
     result = check_regressions(current, config=config, baselines_dir=baselines_dir)
     output = format_regression_output(result)
 

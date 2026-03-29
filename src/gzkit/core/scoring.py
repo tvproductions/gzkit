@@ -178,9 +178,14 @@ def build_checklist_seed(semver: str, target_count: int) -> str:
 
 
 def extract_markdown_section(content: str, section_title: str) -> str | None:
-    """Extract a markdown section body for a given H2 title."""
+    """Extract a markdown section body for a given H2 title.
+
+    Matches headings that START with the given title, so
+    ``extract_markdown_section(content, "Feature Checklist")`` matches
+    ``## Feature Checklist — Appraisal of Completeness``.
+    """
     pattern = re.compile(
-        rf"(?ms)^## {re.escape(section_title)}\n(.*?)(?=^## |\Z)",
+        rf"(?ms)^## {re.escape(section_title)}[^\n]*\n(.*?)(?=^## |\Z)",
     )
     match = pattern.search(content)
     if not match:
@@ -190,7 +195,9 @@ def extract_markdown_section(content: str, section_title: str) -> str | None:
 
 def parse_checklist_items(content: str) -> list[str]:
     """Parse checklist checkbox items from ADR markdown."""
-    section = extract_markdown_section(content, "Checklist")
+    section = extract_markdown_section(content, "Feature Checklist")
+    if section is None:
+        section = extract_markdown_section(content, "Checklist")
     if section is None:
         return []
 
