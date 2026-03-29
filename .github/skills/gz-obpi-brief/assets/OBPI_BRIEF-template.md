@@ -500,21 +500,20 @@ Item-specific gates and commands (if any) are listed below.
 per `docs/governance/GovZero/charter.md` and
 `docs/governance/GovZero/audit-protocol.md`.
 
+### Closing Argument (Lite)
+
+<!-- This section is authored at COMPLETION — not during planning. -->
+<!-- Fill in only after all gates pass and evidence is captured. -->
+
+- **What was built:** {describe the concrete deliverable}
+- **What it enables:** {describe what becomes possible or easier}
+- **Why it matters:** {connect to the parent ADR's intent}
+
 ### ACCEPTANCE (Lite)
 
 - Imports pass; smoke green; artifacts (if any) captured.
 - No edits outside allowed paths; governance instructions respected.
 - Tracking issue / ADR link noted if applicable.
-
-### Closing Argument (Lite)
-
-<!-- This section is authored at COMPLETION — not during planning. -->
-
-Summarize the OBPI outcome in three parts:
-
-- **What was built** — concrete deliverable(s) produced
-- **What it enables** — operator or system capability unlocked
-- **Why it matters** — value to the project beyond the code change
 
 ---
 
@@ -772,6 +771,15 @@ uv run -m airlineops [command]
 - [ ] Attestation recorded in brief
 - [ ] OBPI marked completed ONLY AFTER attestation
 
+### Closing Argument (Heavy)
+
+<!-- This section is authored at COMPLETION — not during planning. -->
+<!-- Fill in only after all gates pass and attestation is received. -->
+
+- **What was built:** {describe the concrete deliverable}
+- **What it enables:** {describe what becomes possible or easier}
+- **Why it matters:** {connect to the parent ADR's intent}
+
 ### ACCEPTANCE (Heavy)
 
 ```markdown
@@ -786,16 +794,6 @@ uv run -m airlineops [command]
 **OBPI Status:** Completed
 **Brief Status:** Completed
 ```
-
-### Closing Argument (Heavy)
-
-<!-- This section is authored at COMPLETION — not during planning. -->
-
-Summarize the OBPI outcome in three parts:
-
-- **What was built** — concrete deliverable(s) produced
-- **What it enables** — operator or system capability unlocked
-- **Why it matters** — value to the project beyond the code change
 
 ### PROHIBITION (Heavy)
 

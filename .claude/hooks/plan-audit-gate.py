@@ -89,14 +89,16 @@ def check_audit_receipt(
     if receipt_obpi not in obpi_ids:
         return (
             False,
-            f"Audit receipt is for {receipt_obpi}, but plan references {', '.join(obpi_ids)}",
+            f"Audit receipt is for {receipt_obpi}, but plan references "
+            f"{', '.join(obpi_ids)}",
         )
 
     receipt_mtime = receipt_path.stat().st_mtime
     if receipt_mtime < plan_mtime:
         return (
             False,
-            "Audit receipt is older than plan file (plan was modified after audit)",
+            "Audit receipt is older than plan file "
+            "(plan was modified after audit)",
         )
 
     if receipt_verdict not in ("PASS", "FAIL"):
@@ -150,7 +152,9 @@ def main() -> None:
     if not obpi_ids:
         sys.exit(0)
 
-    is_valid, reason = check_audit_receipt(plans_dir, obpi_ids, plan_file.stat().st_mtime)
+    is_valid, reason = check_audit_receipt(
+        plans_dir, obpi_ids, plan_file.stat().st_mtime
+    )
     if is_valid:
         sys.exit(0)
 
@@ -172,3 +176,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

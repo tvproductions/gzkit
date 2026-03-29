@@ -20,6 +20,7 @@ applyTo: "src/**/*.py, tests/**/*.py"
 | Subprocess   | List form, `uv run`             | `shell=True`, bare `python`   |
 | Cleanup      | Context managers, `gc.collect()` | `ignore_errors=True`          |
 | Line endings | `newline=""` for CSV            | Hard-coded `\r\n`             |
+| Console out  | `PYTHONUTF8=1` or explicit enc  | Bare Unicode glyphs via Rich  |
 
 ---
 
@@ -60,6 +61,20 @@ subprocess.run(["uv", "run", "-m", "unittest"], check=True)
 
 ---
 
+## Console Output (Rich / Unicode)
+
+Rich uses Unicode glyphs (checkmarks, arrows, warning signs) that fail on Windows legacy console (cp1252).
+
+**Runtime guard:** Set `PYTHONUTF8=1` before any `uv run gz` invocation, or call `sys.stdout.reconfigure(encoding="utf-8")` early in the CLI entrypoint.
+
+**Agent guard:** Always prefix shell commands with `PYTHONUTF8=1`:
+
+```bash
+PYTHONUTF8=1 uv run gz gates --adr ADR-0.1.0
+```
+
+---
+
 ## Code Review Checklist
 
 - [ ] All file operations use `pathlib.Path`
@@ -67,3 +82,4 @@ subprocess.run(["uv", "run", "-m", "unittest"], check=True)
 - [ ] Temp files use context managers
 - [ ] No `shell=True` in subprocess
 - [ ] No hard-coded path separators
+- [ ] Console output uses ASCII fallbacks or `PYTHONUTF8=1` is set

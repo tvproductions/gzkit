@@ -11,6 +11,7 @@ from gzkit.commands.common import (
     ensure_initialized,
     get_project_root,
     resolve_adr_file,
+    resolve_adr_ledger_id,
 )
 from gzkit.decomposition import parse_checklist_items, parse_scorecard
 from gzkit.ledger import Ledger, obpi_created_event
@@ -195,7 +196,8 @@ def specify(
     obpi_dir.mkdir(parents=True, exist_ok=True)
     obpi_file.write_text(content, encoding="utf-8")
 
-    ledger.append(obpi_created_event(obpi_id, resolved_parent))
+    ledger_parent = resolve_adr_ledger_id(adr_file, resolved_parent, ledger)
+    ledger.append(obpi_created_event(obpi_id, ledger_parent))
 
     console.print(f"Created OBPI: {obpi_file}")
     console.print(

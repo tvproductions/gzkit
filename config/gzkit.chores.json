@@ -179,6 +179,13 @@
             "path": "ops/chores/doc-coverage",
             "lane": "heavy",
             "frequency": "per-release"
+        },
+        {
+            "slug": "hardcoded-root-eradication",
+            "title": "Config-First Enforcement (Anti-Vibe-Code)",
+            "version": "1.0.0",
+            "path": "ops/chores/hardcoded-root-eradication",
+            "lane": "lite"
         }
     ]
 }
