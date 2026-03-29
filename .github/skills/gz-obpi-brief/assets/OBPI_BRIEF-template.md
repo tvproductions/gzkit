@@ -506,6 +506,16 @@ per `docs/governance/GovZero/charter.md` and
 - No edits outside allowed paths; governance instructions respected.
 - Tracking issue / ADR link noted if applicable.
 
+### Closing Argument (Lite)
+
+<!-- This section is authored at COMPLETION — not during planning. -->
+
+Summarize the OBPI outcome in three parts:
+
+- **What was built** — concrete deliverable(s) produced
+- **What it enables** — operator or system capability unlocked
+- **Why it matters** — value to the project beyond the code change
+
 ---
 
 ## Permitted Status Values (Canonical)
@@ -776,6 +786,16 @@ uv run -m airlineops [command]
 **OBPI Status:** Completed
 **Brief Status:** Completed
 ```
+
+### Closing Argument (Heavy)
+
+<!-- This section is authored at COMPLETION — not during planning. -->
+
+Summarize the OBPI outcome in three parts:
+
+- **What was built** — concrete deliverable(s) produced
+- **What it enables** — operator or system capability unlocked
+- **Why it matters** — value to the project beyond the code change
 
 ### PROHIBITION (Heavy)
 

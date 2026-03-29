@@ -445,6 +445,15 @@ uv run gz skill list               # List all discovered skills
 uv run gz skill audit              # Audit skill lifecycle metadata
 ```
 
+### Skill Documentation Resources
+
+The [documentation taxonomy](../governance/documentation-taxonomy.md) defines which
+artifact types require manpages, runbook skill entries, and docstrings. The
+[skill manpage template](skills/_TEMPLATE.md) prescribes 6 required sections for
+operator-facing skill manpages. The [skills surface and index](skills/index.md) provides
+a categorized catalog of all 52+ skills. Pilot skill manpages validate the template
+across 3 categories — see the skills index for the full list.
+
 ---
 
 ## AirlineOps Parity Scan Canonical-Root Rules
