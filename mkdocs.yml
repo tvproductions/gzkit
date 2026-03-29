@@ -115,6 +115,7 @@ nav:
     - gz agent sync control-surfaces: user/commands/agent-sync-control-surfaces.md
   - Governance (Canonical):
     - Governance Runbook: governance/governance_runbook.md
+    - Documentation Taxonomy: governance/documentation-taxonomy.md
     - Parity Intake Rubric: governance/parity-intake-rubric.md
     - Charter: governance/GovZero/charter.md
     - ADR Lifecycle: governance/GovZero/adr-lifecycle.md
