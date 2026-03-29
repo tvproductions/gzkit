@@ -348,43 +348,7 @@ No subagent dispatch, no worktree isolation, no parallel execution.
 
 **Abort if:** Any verification fails. Attempt fix, re-verify once. If still failing, create handoff, release lock, and stop.
 
-**MANDATORY TRANSITION → Reviewer Dispatch → Stage 4.** Do not summarize. Do not report. Proceed.
-
-### Stage 3.5: Reviewer Agent Dispatch (ADR-0.23.0)
-
-After Stage 3 verification passes, dispatch an **independent reviewer agent** to verify
-the delivered work against the OBPI brief's promises. The reviewer has fresh context —
-it did NOT implement the work and has no sunk-cost bias.
-
-1. **Compose reviewer prompt** using `compose_reviewer_prompt()` from `gzkit.commands.pipeline`:
-   - OBPI brief content (full text)
-   - Closing argument (from the brief's Closing Argument section, or empty if not yet authored)
-   - List of changed files (from Stage 2 dispatch records or git diff)
-   - List of documentation files (runbook entries, manpages, docstrings)
-
-2. **Dispatch reviewer subagent** as a read-only agent:
-   ```
-   Agent tool call:
-     subagent_type: "spec-reviewer"
-     model: "sonnet"
-     prompt: <reviewer prompt from step 1>
-     description: "OBPI reviewer: OBPI-X.Y.Z-NN"
-   ```
-
-3. **Parse assessment** using `parse_reviewer_assessment()` — extracts structured
-   `ReviewerAssessment` with promises-met, docs-quality, closing-argument-quality.
-
-4. **Store assessment artifact** using `store_reviewer_assessment()` — writes
-   `REVIEW-OBPI-X.Y.Z-NN.md` in the ADR package's `briefs/` directory.
-
-5. **Format for ceremony** using `format_reviewer_for_ceremony()` — produces the
-   markdown table included in Stage 4 output.
-
-**If reviewer dispatch fails or times out:** Proceed to Stage 4 with a warning
-that no reviewer assessment was completed. The human attestor is informed.
-
-**If reviewer verdict is FAIL:** Present the full assessment in Stage 4 anyway.
-The human decides whether to reject or accept despite the reviewer's finding.
+**MANDATORY TRANSITION → Stage 4.** Do not summarize. Do not report. Proceed.
 
 ### Stage 4: Present Evidence
 
@@ -431,13 +395,7 @@ Include the exact command and its output or expected output.>
 - REQ-X.Y.Z-NN-02: ...
 - ...
 
-**5. Reviewer Assessment** (from Stage 3.5 dispatch)
-
-<Output of format_reviewer_for_ceremony() — includes verdict, per-requirement
-promise table, docs-quality, and closing-argument-quality. If reviewer dispatch
-failed, show: "⚠ Reviewer agent did not complete. No independent assessment available.">
-
-**6. Awaiting attestation.** Do NOT proceed to Stage 5 until human responds.
+**4. Awaiting attestation.** Do NOT proceed to Stage 5 until human responds.
 ```
 
 **Every field above MUST be populated.** Do not skip the evidence table. Do not skip REQ verification. Do not skip files created/modified. The human needs all of this to make an attestation decision.

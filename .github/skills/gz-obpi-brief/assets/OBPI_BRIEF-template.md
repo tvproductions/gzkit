@@ -500,17 +500,6 @@ Item-specific gates and commands (if any) are listed below.
 per `docs/governance/GovZero/charter.md` and
 `docs/governance/GovZero/audit-protocol.md`.
 
-### Closing Argument (Lite)
-
-<!-- This section is authored at COMPLETION — not during planning. -->
-<!-- Write from delivered evidence, not planning intent. -->
-
-*To be authored at completion from delivered evidence. Must include:*
-
-- **What was built** — concrete deliverables (files, functions, tests)
-- **What it enables** — operator-facing capability gained
-- **Why it matters** — how this serves the ADR's intent
-
 ### ACCEPTANCE (Lite)
 
 - Imports pass; smoke green; artifacts (if any) captured.
@@ -787,17 +776,6 @@ uv run -m airlineops [command]
 **OBPI Status:** Completed
 **Brief Status:** Completed
 ```
-
-### Closing Argument (Heavy)
-
-<!-- This section is authored at COMPLETION — not during planning. -->
-<!-- Write from delivered evidence, not planning intent. -->
-
-*To be authored at completion from delivered evidence. Must include:*
-
-- **What was built** — concrete deliverables (files, functions, tests, BDD scenarios)
-- **What it enables** — operator-facing capability gained
-- **Why it matters** — how this serves the ADR's intent
 
 ### PROHIBITION (Heavy)
 
