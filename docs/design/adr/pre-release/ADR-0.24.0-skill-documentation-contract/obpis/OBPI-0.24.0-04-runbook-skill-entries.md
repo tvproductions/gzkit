@@ -2,9 +2,10 @@
 id: OBPI-0.24.0-04-runbook-skill-entries
 parent: ADR-0.24.0-skill-documentation-contract
 item: 4
-status: Pending
+status: Completed
 lane: lite
 date: 2026-03-21
+completed: 2026-03-29
 ---
 
 # OBPI-0.24.0-04: Runbook Skill Invocation Entries
@@ -46,12 +47,30 @@ Add skill invocation entries to `docs/user/runbook.md` and `docs/governance/gove
 
 ## QUALITY GATES (Lite)
 
-- [ ] Gate 1 (ADR): Intent recorded in this brief
-- [ ] Gate 2 (TDD): `uv run mkdocs build --strict` passes
-- [ ] Code Quality: `uv run gz lint` passes
+- [x] Gate 1 (ADR): Intent recorded in this brief
+- [x] Gate 2 (TDD): `uv run mkdocs build --strict` passes
+- [x] Code Quality: `uv run gz lint` passes
 
 ## VERIFICATION COMMANDS
 
 - `uv run mkdocs build --strict`
 - `rg -n "\\]\\(.*skills/.*\\.md\\)" docs/user/runbook.md docs/governance/governance_runbook.md`
 - `rg -n "what the skill does|why it's invoked|workflow" docs/user/runbook.md docs/governance/governance_runbook.md`
+
+## Closing Argument
+
+### Implementation Summary
+
+- Files modified: `docs/user/runbook.md`, `docs/governance/governance_runbook.md`
+- Tests added: (none — documentation-only OBPI)
+- Date completed: 2026-03-29
+
+### Key Proof
+
+```bash
+$ rg -c '\]\(.*skills/.*\.md\)' docs/user/runbook.md docs/governance/governance_runbook.md
+docs/user/runbook.md:17
+docs/governance/governance_runbook.md:24
+```
+
+41 skill-to-manpage links added across both runbooks at natural workflow insertion points. `uv run mkdocs build --strict` passes with all links resolving correctly.
