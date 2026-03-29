@@ -113,6 +113,13 @@ When creating or promoting an ADR, pick the next available version in the correc
 
 **When:** New governance work must be planned.
 
+Skill shortcuts for ADR creation and planning:
+
+- [`/gz-design`](../user/skills/gz-design.md) — collaborative design dialogue that produces ADR artifacts (use before formal creation)
+- [`/gz-adr-create`](../user/skills/gz-adr-create.md) — create and book a GovZero ADR with OBPI briefs
+- [`/gz-adr-promote`](../user/skills/gz-adr-promote.md) — promote a pool ADR into canonical package structure
+- [`/gz-adr-eval`](../user/skills/gz-adr-eval.md) — score ADR quality and run red-team challenges before proceeding
+
 1. Inspect active and pending ADR state.
 
 ```bash
@@ -157,6 +164,14 @@ uv run gz check-config-paths
 ## Workflow: OBPI Increment
 
 **When:** Implementing one checklist item.
+
+Skill shortcuts for OBPI execution:
+
+- [`/gz-obpi-pipeline`](../user/skills/gz-obpi-pipeline.md) — post-plan execution pipeline (implement, verify, present, sync)
+- [`/gz-obpi-brief`](../user/skills/gz-obpi-brief.md) — generate a new OBPI brief with correct headers and evidence stubs
+- [`/gz-obpi-lock`](../user/skills/gz-obpi-lock.md) — claim or release OBPI work locks for multi-agent coordination
+- [`/gz-plan-audit`](../user/skills/gz-plan-audit.md) — pre-flight audit to verify plan aligns with OBPI brief scope
+- [`/gz-specify`](../user/skills/gz-specify.md) — create OBPI briefs linked to parent ADR items
 
 1. Orient on current state and the parent ADR.
 
@@ -232,6 +247,13 @@ ls docs/design/adr/**/briefs/REVIEW-OBPI-*.md
 
 **When:** Before closeout, after multi-session work, or when status drift is suspected.
 
+Skill shortcuts for reconciliation (run in trust order — Layer 2 before Layer 3):
+
+- [`/gz-obpi-reconcile`](../user/skills/gz-obpi-reconcile.md) — audit briefs against evidence, fix stale metadata, write ledger proof (Layer 2)
+- [`/gz-adr-recon`](../user/skills/gz-adr-recon.md) — reconcile ADR/OBPI evidence state from ledger outputs (Layer 2)
+- [`/gz-adr-sync`](../user/skills/gz-adr-sync.md) — reconcile ADR files with ledger registration and status views (Layer 3)
+- [`/gz-obpi-sync`](../user/skills/gz-obpi-sync.md) — sync OBPI status in ADR table from brief source files (Layer 3)
+
 Run in trust order:
 
 ```text
@@ -254,6 +276,14 @@ If `audit-check` fails, fix the referenced OBPI brief evidence and rerun until P
 ## Workflow: ADR Closeout and Audit
 
 **When:** All linked OBPIs are completed and evidenced.
+
+Skill shortcuts for the closeout and audit ceremony:
+
+- [`/gz-adr-closeout-ceremony`](../user/skills/gz-adr-closeout-ceremony.md) — execute the full closeout ceremony protocol for human attestation
+- [`/gz-closeout`](../user/skills/gz-closeout.md) — initiate ADR closeout with evidence context
+- [`/gz-attest`](../user/skills/gz-attest.md) — record human attestation with prerequisite enforcement
+- [`/gz-audit`](../user/skills/gz-audit.md) — run strict post-attestation reconciliation audits (only after attestation)
+- [`/gz-adr-audit`](../user/skills/gz-adr-audit.md) — Gate-5 audit templates and procedure for ADR verification
 
 1. Pre-closeout blocking check.
 
@@ -307,6 +337,13 @@ uv run gz task escalate TASK-<id> --reason "..."  # Escalate with reason
 
 **When:** Running scheduled maintenance, code quality checks, or repository hygiene.
 
+Skill shortcuts for maintenance workflows:
+
+- [`/gz-chore-runner`](../user/skills/gz-chore-runner.md) — run a chore end-to-end (show, plan, advise, execute, validate)
+- [`/gz-check`](../user/skills/gz-check.md) — run full quality checks in one pass (lint, typecheck, test, docs)
+- [`/gz-arb`](../user/skills/gz-arb.md) — quality evidence workflow with structured JSON receipts
+- [`/gz-tidy`](../user/skills/gz-tidy.md) — run maintenance checks and cleanup routines
+
 ```bash
 uv run gz chores list                      # List declared chores
 uv run gz chores show <slug>               # Display CHORE.md for one chore
@@ -338,6 +375,8 @@ uv run gz interview                        # Run interactive governance intervie
 - Session ending with incomplete OBPI work
 - Scope switch between ADRs
 - Explicit human request
+
+See [`/gz-session-handoff`](../user/skills/gz-session-handoff.md) for full details on creating and resuming session handoffs with staleness classification.
 
 **Procedure:**
 
@@ -395,6 +434,11 @@ Compatibility note:
 
 **When:** Weekly hygiene cadence, before ADR closeout touching skills, or when deprecating/retiring any skill.
 
+Skill shortcuts for agent and skill infrastructure:
+
+- [`/gz-agent-sync`](../user/skills/gz-agent-sync.md) — synchronize generated control surfaces and skill mirrors after updates
+- [`/gz-cli-audit`](../user/skills/gz-cli-audit.md) — audit CLI documentation coverage and headings
+
 1. Run lifecycle audit with explicit cadence threshold.
 
 ```bash
@@ -432,6 +476,8 @@ Rules:
 
 ## Workflow: Git Sync Ritual
 
+Use [`/git-sync`](../user/skills/git-sync.md) for the guarded repository sync ritual with lint/test gates.
+
 ```bash
 uv run gz git-sync
 uv run gz git-sync --apply --lint --test
@@ -446,6 +492,8 @@ Rules:
 ---
 
 ## Workflow: Readiness-Driven Design
+
+Use [`/gz-state`](../user/skills/gz-state.md) to query artifact relationships and readiness state, or [`/gz-validate`](../user/skills/gz-validate.md) to validate governance artifacts against schema rules.
 
 ```bash
 uv run gz readiness audit
