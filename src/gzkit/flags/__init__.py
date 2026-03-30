@@ -13,11 +13,13 @@ from gzkit.flags.models import (
     UnknownFlagError,
 )
 from gzkit.flags.registry import load_registry
+from gzkit.flags.service import FlagService
 
 __all__ = [
     "FlagCategory",
     "FlagError",
     "FlagEvaluation",
+    "FlagService",
     "FlagSpec",
     "InvalidFlagValueError",
     "UnknownFlagError",
