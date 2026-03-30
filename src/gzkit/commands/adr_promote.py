@@ -98,6 +98,7 @@ def _build_adr_promotion_plan(
             _build_obpi_plan(
                 project_root=project_root,
                 adr_file=target_file,
+                adr_content=promoted_content,
                 parent_adr_id=target_adr_id,
                 item=item_number,
                 checklist_item_text=checklist_item_text,
@@ -105,6 +106,7 @@ def _build_adr_promotion_plan(
                 name=_slugify_obpi_name(core_text),
                 title=core_text,
                 objective=_normalized_objective_from_checklist_item(checklist_item_text),
+                wbs_spec_summary="",
             )
         )
     updated_pool_content = _mark_pool_adr_promoted(pool_content, target_adr_id, promote_date)
