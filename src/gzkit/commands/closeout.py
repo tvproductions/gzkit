@@ -32,6 +32,7 @@ from gzkit.commands.status import (
     _collect_obpi_files_for_adr,
     _summarize_obpi_rows,
 )
+from gzkit.flags import FlagError, get_decisions
 from gzkit.ledger import (
     Ledger,
     attested_event,
@@ -557,13 +558,18 @@ def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
             as_json=as_json,
         )
 
-    # --- Product proof gate ---
-    proof_enforcement = config.gate("product_proof")
+    # --- Product proof gate (migrated to FeatureDecisions per OBPI-0.0.8-06) ---
+    try:
+        decisions = get_decisions()
+        enforce_proof = decisions.product_proof_enforced()
+    except FlagError:
+        # REQ-03 transition: flag service unavailable, fall back to config.gates
+        enforce_proof = config.gate("product_proof") == "enforce"
     proof_result = check_product_proof(adr_id, obpi_files, project_root)
-    if not proof_result.success and proof_enforcement != "disabled":
+    if not proof_result.success:
         proof_rows = _product_proof_payload(proof_result)
         missing = [p.obpi_id for p in proof_result.obpi_proofs if not p.has_proof]
-        if proof_enforcement == "enforce":
+        if enforce_proof:
             if as_json:
                 print(
                     json.dumps(
@@ -583,7 +589,7 @@ def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
         if not as_json:
             console.print(
                 f"[yellow]Product proof advisory:[/yellow] {proof_result.missing_count} "
-                f"OBPI(s) missing proof (gates.product_proof=advisory)"
+                f"OBPI(s) missing proof (ops.product_proof=false)"
             )
 
     # --- Defense brief computation ---
