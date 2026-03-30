@@ -103,7 +103,10 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:
     p_specify.add_argument("--parent", required=True, help="Parent ADR identifier (e.g. ADR-0.0.4)")
     p_specify.add_argument("--item", type=int, default=1, help="OBPI item number within parent ADR")
     p_specify.add_argument(
-        "--lane", choices=["lite", "heavy"], default="lite", help="Governance lane (lite|heavy)"
+        "--lane",
+        choices=["lite", "heavy"],
+        default=None,
+        help="Governance lane override (default: read from ADR WBS table)",
     )
     p_specify.add_argument("--title", help="OBPI title override")
     add_dry_run_flag(p_specify)

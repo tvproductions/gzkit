@@ -6,6 +6,7 @@ all public symbols for backward compatibility.
 
 from gzkit.core.scoring import (
     DecompositionScorecard,
+    WbsRow,
     baseline_range_for_total,
     build_checklist_seed,
     compute_scorecard,
@@ -13,10 +14,12 @@ from gzkit.core.scoring import (
     extract_markdown_section,
     parse_checklist_items,
     parse_scorecard,
+    parse_wbs_table,
 )
 
 __all__ = [
     "DecompositionScorecard",
+    "WbsRow",
     "baseline_range_for_total",
     "build_checklist_seed",
     "compute_scorecard",
@@ -24,4 +27,5 @@ __all__ = [
     "extract_markdown_section",
     "parse_checklist_items",
     "parse_scorecard",
+    "parse_wbs_table",
 ]

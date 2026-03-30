@@ -1,4 +1,7 @@
-"""Specify command implementation (OBPI creation)."""
+"""Specify command implementation (OBPI creation).
+
+@covers ADR-pool.per-command-persona-context
+"""
 
 import re
 from pathlib import Path
@@ -13,7 +16,7 @@ from gzkit.commands.common import (
     resolve_adr_file,
     resolve_adr_ledger_id,
 )
-from gzkit.decomposition import parse_checklist_items, parse_scorecard
+from gzkit.decomposition import WbsRow, parse_checklist_items, parse_scorecard, parse_wbs_table
 from gzkit.ledger import Ledger, obpi_created_event
 from gzkit.templates import render_template
 
@@ -55,6 +58,31 @@ def _render_obpi_acceptance_seed(version: str, item: int) -> str:
             f"- [ ] {req_prefix}-03: Given/When/Then behavior criterion 3",
         ]
     )
+
+
+def _resolve_lane_from_wbs(wbs_rows: list[WbsRow], item: int, cli_lane: str | None) -> str:
+    """Resolve OBPI lane from WBS table, with CLI override.
+
+    Priority: explicit CLI --lane > WBS table row > fallback 'lite'.
+    """
+    if cli_lane is not None:
+        return cli_lane
+    for row in wbs_rows:
+        if row.item == item:
+            return row.lane
+    return "lite"
+
+
+def _resolve_objective_from_wbs(wbs_rows: list[WbsRow], item: int, fallback: str) -> str:
+    """Extract objective from WBS spec summary if available."""
+    for row in wbs_rows:
+        if row.item == item:
+            summary = row.spec_summary.strip()
+            if summary and summary.lower() not in ("tbd", "pending", ""):
+                if not summary.endswith((".", "!", "?")):
+                    return f"{summary}."
+                return summary
+    return fallback
 
 
 def _build_obpi_plan(
@@ -128,7 +156,7 @@ def specify(
     name: str,
     parent: str,
     item: int,
-    lane: str,
+    lane: str | None,
     title: str | None,
     dry_run: bool,
 ) -> None:
@@ -171,16 +199,31 @@ def specify(
         )
         raise GzCliError(msg)  # noqa: TRY003
 
+    # Parse WBS table for lane and objective enrichment
+    wbs_rows = parse_wbs_table(adr_content)
+    resolved_lane = _resolve_lane_from_wbs(wbs_rows, item, lane)
+    checklist_text = checklist_items[item - 1]
+    objective = _resolve_objective_from_wbs(
+        wbs_rows, item, _normalized_objective_from_checklist_item(checklist_text)
+    )
+
+    if wbs_rows and lane is None:
+        wbs_match = next((r for r in wbs_rows if r.item == item), None)
+        if wbs_match:
+            console.print(
+                f"  [dim]WBS lane: {wbs_match.lane} | spec: {wbs_match.spec_summary[:60]}[/dim]"
+            )
+
     obpi_plan = _build_obpi_plan(
         project_root=project_root,
         adr_file=adr_file,
         parent_adr_id=resolved_parent,
         item=item,
-        checklist_item_text=checklist_items[item - 1],
-        lane=lane,
+        checklist_item_text=checklist_text,
+        lane=resolved_lane,
         name=name,
         title=title or name.replace("-", " ").title(),
-        objective="TBD",
+        objective=objective,
     )
     obpi_id = cast(str, obpi_plan["obpi_id"])
     obpi_file = cast(Path, obpi_plan["obpi_file"])
@@ -190,6 +233,10 @@ def specify(
     if dry_run:
         console.print("[yellow]Dry run:[/yellow] no files will be written.")
         console.print(f"  Would create OBPI: {obpi_file}")
+        console.print(
+            f"  Lane: {resolved_lane} (source: {'CLI override' if lane else 'WBS table'})"
+        )
+        console.print(f"  Objective: {objective}")
         console.print(f"  Would append ledger event: obpi_created ({obpi_id})")
         return
 
@@ -200,6 +247,9 @@ def specify(
     ledger.append(obpi_created_event(obpi_id, ledger_parent))
 
     console.print(f"Created OBPI: {obpi_file}")
+    lane_source = "CLI override" if lane else "WBS table" if wbs_rows else "default"
+    console.print(f"  Lane: {resolved_lane} (source: {lane_source})")
+    console.print(f"  Objective: {objective}")
     console.print(
         "[yellow]Warning:[/yellow] Brief contains template defaults and needs authoring "
         "before pipeline execution."
