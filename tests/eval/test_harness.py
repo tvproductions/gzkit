@@ -3,17 +3,21 @@
 Verifies that:
 - Scorers produce numeric 0-4 dimension scores
 - Golden-path fixtures score high (>= 3.0 average)
-- Edge-case fixtures score low (< 3.0 average)
+- Edge-case fixtures score lower than golden paths
 - The runner aggregates scores correctly
 - run_eval() returns a QualityResult
 """
 
 import unittest
+from pathlib import Path
 
 from gzkit.eval.datasets import KNOWN_SURFACES, load_dataset
 from gzkit.eval.runner import EvalSuiteScore, SurfaceScore, run_eval_suite
 from gzkit.eval.scorer import CaseScore, DimensionResult, score_case
 from gzkit.quality import QualityResult, run_eval
+
+_PROJECT_ROOT = Path(__file__).resolve().parents[2]
+_DATA_DIR = _PROJECT_ROOT / "data" / "eval"
 
 
 class TestDimensionScoring(unittest.TestCase):
@@ -22,14 +26,14 @@ class TestDimensionScoring(unittest.TestCase):
     def test_all_surfaces_have_scorers(self) -> None:
         for surface in KNOWN_SURFACES:
             with self.subTest(surface=surface):
-                ds = load_dataset(surface)
+                ds = load_dataset(surface, data_dir=_DATA_DIR)
                 case = ds.cases[0]
                 results = score_case(surface, dict(case.input))
                 self.assertGreater(len(results), 0)
 
     def test_scores_are_0_to_4(self) -> None:
         for surface in KNOWN_SURFACES:
-            ds = load_dataset(surface)
+            ds = load_dataset(surface, data_dir=_DATA_DIR)
             for case in ds.cases:
                 with self.subTest(case=case.id):
                     results = score_case(surface, dict(case.input))
@@ -48,7 +52,7 @@ class TestGoldenPathScoring(unittest.TestCase):
 
     def test_golden_paths_score_above_threshold(self) -> None:
         for surface in KNOWN_SURFACES:
-            ds = load_dataset(surface)
+            ds = load_dataset(surface, data_dir=_DATA_DIR)
             golden_cases = [c for c in ds.cases if c.type == "golden_path"]
             for case in golden_cases:
                 with self.subTest(case=case.id):
@@ -67,7 +71,7 @@ class TestEdgeCaseScoring(unittest.TestCase):
 
     def test_edge_cases_score_below_golden(self) -> None:
         for surface in KNOWN_SURFACES:
-            ds = load_dataset(surface)
+            ds = load_dataset(surface, data_dir=_DATA_DIR)
             golden_cases = [c for c in ds.cases if c.type == "golden_path"]
             edge_cases = [c for c in ds.cases if c.type == "edge_case"]
             if not golden_cases or not edge_cases:
@@ -96,17 +100,17 @@ class TestEvalRunner(unittest.TestCase):
     """Verify the eval suite runner."""
 
     def test_run_all_surfaces(self) -> None:
-        result = run_eval_suite()
+        result = run_eval_suite(data_dir=_DATA_DIR)
         self.assertIsInstance(result, EvalSuiteScore)
         self.assertEqual(result.surfaces_scored, len(KNOWN_SURFACES))
 
     def test_run_single_surface(self) -> None:
-        result = run_eval_suite(surfaces=["instruction_eval"])
+        result = run_eval_suite(surfaces=["instruction_eval"], data_dir=_DATA_DIR)
         self.assertEqual(result.surfaces_scored, 1)
         self.assertEqual(result.surface_scores[0].surface, "instruction_eval")
 
     def test_surface_score_structure(self) -> None:
-        result = run_eval_suite()
+        result = run_eval_suite(data_dir=_DATA_DIR)
         for ss in result.surface_scores:
             self.assertIsInstance(ss, SurfaceScore)
             self.assertGreater(ss.cases_total, 0)
@@ -117,14 +121,14 @@ class TestEvalRunner(unittest.TestCase):
                 self.assertLessEqual(avg, 4.0)
 
     def test_case_scores_typed(self) -> None:
-        result = run_eval_suite(surfaces=["adr_eval"])
+        result = run_eval_suite(surfaces=["adr_eval"], data_dir=_DATA_DIR)
         for ss in result.surface_scores:
             for cs in ss.case_scores:
                 self.assertIsInstance(cs, CaseScore)
                 self.assertIn(cs.surface, KNOWN_SURFACES)
 
     def test_overall_score_in_range(self) -> None:
-        result = run_eval_suite()
+        result = run_eval_suite(data_dir=_DATA_DIR)
         self.assertGreaterEqual(result.overall_score, 0.0)
         self.assertLessEqual(result.overall_score, 4.0)
 
@@ -133,17 +137,13 @@ class TestQualityIntegration(unittest.TestCase):
     """Verify run_eval() returns QualityResult."""
 
     def test_run_eval_returns_quality_result(self) -> None:
-        from pathlib import Path
-
-        result = run_eval(Path())
+        result = run_eval(_PROJECT_ROOT)
         self.assertIsInstance(result, QualityResult)
         self.assertEqual(result.command, "eval harness")
         self.assertIn("surfaces scored", result.stdout)
 
     def test_run_eval_has_surface_details(self) -> None:
-        from pathlib import Path
-
-        result = run_eval(Path())
+        result = run_eval(_PROJECT_ROOT)
         for surface in KNOWN_SURFACES:
             self.assertIn(surface, result.stdout)
 
@@ -152,8 +152,8 @@ class TestDeterminism(unittest.TestCase):
     """Verify eval results are deterministic across runs."""
 
     def test_same_results_twice(self) -> None:
-        result1 = run_eval_suite()
-        result2 = run_eval_suite()
+        result1 = run_eval_suite(data_dir=_DATA_DIR)
+        result2 = run_eval_suite(data_dir=_DATA_DIR)
         self.assertEqual(result1.overall_score, result2.overall_score)
         self.assertEqual(result1.success, result2.success)
         for s1, s2 in zip(result1.surface_scores, result2.surface_scores, strict=True):

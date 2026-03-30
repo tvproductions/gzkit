@@ -77,7 +77,7 @@ class TestSurfaceCoverage(unittest.TestCase):
     """Verify every AI-sensitive surface has golden-path and edge-case datasets."""
 
     def setUp(self) -> None:
-        self.datasets = load_all_datasets()
+        self.datasets = load_all_datasets(data_dir=_DATA_DIR)
         self.surfaces = {ds.surface for ds in self.datasets}
 
     def test_all_known_surfaces_covered(self) -> None:
@@ -106,12 +106,12 @@ class TestPydanticLoader(unittest.TestCase):
     def test_load_by_surface_name(self) -> None:
         for surface in KNOWN_SURFACES:
             with self.subTest(surface=surface):
-                ds = load_dataset(surface)
+                ds = load_dataset(surface, data_dir=_DATA_DIR)
                 self.assertIsInstance(ds, EvalDataset)
                 self.assertEqual(ds.surface, surface)
 
     def test_cases_are_typed(self) -> None:
-        ds = load_dataset("instruction_eval")
+        ds = load_dataset("instruction_eval", data_dir=_DATA_DIR)
         for case in ds.cases:
             self.assertIsInstance(case, EvalDatasetCase)
             self.assertIn(case.type, ("golden_path", "edge_case"))
@@ -120,16 +120,16 @@ class TestPydanticLoader(unittest.TestCase):
 
     def test_load_nonexistent_surface_raises(self) -> None:
         with self.assertRaises(FileNotFoundError):
-            load_dataset("nonexistent_surface")
+            load_dataset("nonexistent_surface", data_dir=_DATA_DIR)
 
     def test_load_all_returns_list(self) -> None:
-        datasets = load_all_datasets()
+        datasets = load_all_datasets(data_dir=_DATA_DIR)
         self.assertGreaterEqual(len(datasets), 5)
         for ds in datasets:
             self.assertIsInstance(ds, EvalDataset)
 
     def test_list_surfaces(self) -> None:
-        surfaces = list_surfaces()
+        surfaces = list_surfaces(data_dir=_DATA_DIR)
         self.assertGreaterEqual(len(surfaces), 5)
         for s in KNOWN_SURFACES:
             self.assertIn(s, surfaces)

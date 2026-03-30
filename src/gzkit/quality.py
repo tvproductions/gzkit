@@ -409,8 +409,7 @@ def run_eval(project_root: Path) -> QualityResult:
     network calls or LLM invocations.
 
     Args:
-        project_root: Project root directory (unused — datasets are loaded
-            from the package-relative data/eval/ directory).
+        project_root: Project root directory for resolving data paths.
 
     Returns:
         QualityResult with eval suite output.
@@ -419,7 +418,7 @@ def run_eval(project_root: Path) -> QualityResult:
     from gzkit.eval.runner import run_eval_suite
 
     try:
-        result = run_eval_suite()
+        result = run_eval_suite(data_dir=project_root / "data" / "eval")
         lines = [
             f"Eval suite: {result.surfaces_scored} surfaces scored",
             f"Overall score: {result.overall_score}/4.0",

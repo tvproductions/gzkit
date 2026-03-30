@@ -109,7 +109,7 @@ def _evaluate_surface(dataset: EvalDataset) -> SurfaceScore:
 def run_eval_suite(
     surfaces: list[str] | None = None,
     *,
-    data_dir: Path | None = None,
+    data_dir: Path,
 ) -> EvalSuiteScore:
     """Run the full eval suite across all (or specified) surfaces.
 
@@ -118,7 +118,7 @@ def run_eval_suite(
 
     Args:
         surfaces: Surface names to evaluate. Defaults to all available datasets.
-        data_dir: Directory containing eval datasets. Defaults to project data/eval/.
+        data_dir: Directory containing eval dataset JSON files.
 
     Returns:
         EvalSuiteScore with per-surface and per-case results.

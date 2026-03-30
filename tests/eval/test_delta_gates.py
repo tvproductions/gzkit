@@ -71,7 +71,8 @@ class TestThresholdConfig(unittest.TestCase):
 
     def test_real_config_loads(self) -> None:
         """The actual config/eval_thresholds.json loads successfully."""
-        config = load_thresholds()
+        project_root = Path(__file__).resolve().parents[2]
+        config = load_thresholds(project_root / "config" / "eval_thresholds.json")
         self.assertIsInstance(config, EvalThresholdConfig)
         self.assertGreater(config.default_threshold, 0.0)
 

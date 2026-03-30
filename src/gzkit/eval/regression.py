@@ -20,14 +20,6 @@ from pydantic import BaseModel, ConfigDict, Field
 from gzkit.eval.runner import EvalSuiteScore, SurfaceScore
 
 # ---------------------------------------------------------------------------
-# Constants
-# ---------------------------------------------------------------------------
-
-_PROJECT_ROOT = Path(__file__).resolve().parents[3]
-_BASELINES_DIR = _PROJECT_ROOT / "artifacts" / "baselines"
-
-
-# ---------------------------------------------------------------------------
 # Baseline model (REQ-01, REQ-02)
 # ---------------------------------------------------------------------------
 
@@ -138,13 +130,12 @@ def _get_commit_hash() -> str:
         return "unknown"
 
 
-def load_baseline(surface: str, baselines_dir: Path | None = None) -> EvalBaseline | None:
+def load_baseline(surface: str, baselines_dir: Path) -> EvalBaseline | None:
     """Load stored baseline for a surface.
 
     Returns None if no baseline exists (REQ-05: not a failure).
     """
-    search_dir = baselines_dir or _BASELINES_DIR
-    path = search_dir / f"{surface}.baseline.json"
+    path = baselines_dir / f"{surface}.baseline.json"
     if not path.exists():
         return None
     raw = json.loads(path.read_text(encoding="utf-8"))
@@ -155,7 +146,7 @@ def save_baseline(
     surface_score: SurfaceScore,
     dataset_version: str,
     *,
-    baselines_dir: Path | None = None,
+    baselines_dir: Path,
     commit_hash: str | None = None,
 ) -> Path:
     """Save current surface scores as a new baseline (REQ-06: explicit only).
@@ -163,8 +154,7 @@ def save_baseline(
     This function is the sole mechanism for creating/updating baselines.
     It must be called explicitly — never automatically during comparison.
     """
-    target_dir = baselines_dir or _BASELINES_DIR
-    target_dir.mkdir(parents=True, exist_ok=True)
+    baselines_dir.mkdir(parents=True, exist_ok=True)
 
     baseline = EvalBaseline(
         surface=surface_score.surface,
@@ -173,7 +163,7 @@ def save_baseline(
         dimension_scores=surface_score.dimension_averages,
         dataset_version=dataset_version,
     )
-    path = target_dir / f"{surface_score.surface}.baseline.json"
+    path = baselines_dir / f"{surface_score.surface}.baseline.json"
     path.write_text(json.dumps(baseline.model_dump(), indent=2) + "\n", encoding="utf-8")
     return path
 
@@ -187,7 +177,7 @@ def compare_scores(
     current: EvalSuiteScore,
     *,
     threshold: float = 0.5,
-    baselines_dir: Path | None = None,
+    baselines_dir: Path,
 ) -> RegressionReport:
     """Compare current eval scores against stored baselines.
 
@@ -281,7 +271,7 @@ def create_initial_baselines(
     current: EvalSuiteScore,
     dataset_version: str,
     *,
-    baselines_dir: Path | None = None,
+    baselines_dir: Path,
     commit_hash: str | None = None,
 ) -> list[Path]:
     """Create baselines for all surfaces that lack them (explicit first-run).
