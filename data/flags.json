@@ -14,8 +14,8 @@
     {
       "key": "migration.config_gates_to_flags",
       "category": "migration",
-      "default": false,
-      "description": "When enabled, the flag service replaces config.gates as the authority for gate enforcement levels. When disabled, config.gates is still consulted.",
+      "default": true,
+      "description": "Migration complete. The config.gates prototype has been removed; the flag service is the sole authority for gate enforcement levels.",
       "owner": "governance",
       "introduced_on": "2026-03-29",
       "remove_by": "2026-05-01",

@@ -563,8 +563,7 @@ def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
         decisions = get_decisions()
         enforce_proof = decisions.product_proof_enforced()
     except FlagError:
-        # REQ-03 transition: flag service unavailable, fall back to config.gates
-        enforce_proof = config.gate("product_proof") == "enforce"
+        enforce_proof = True
     proof_result = check_product_proof(adr_id, obpi_files, project_root)
     if not proof_result.success:
         proof_rows = _product_proof_payload(proof_result)
