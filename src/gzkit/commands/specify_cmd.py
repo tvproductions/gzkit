@@ -1,7 +1,4 @@
-"""Specify command implementation (OBPI creation).
-
-@covers ADR-pool.per-command-persona-context
-"""
+"""Specify command implementation (OBPI creation)."""
 
 import re
 from pathlib import Path
@@ -16,7 +13,13 @@ from gzkit.commands.common import (
     resolve_adr_file,
     resolve_adr_ledger_id,
 )
-from gzkit.decomposition import WbsRow, parse_checklist_items, parse_scorecard, parse_wbs_table
+from gzkit.decomposition import (
+    WbsRow,
+    extract_markdown_section,
+    parse_checklist_items,
+    parse_scorecard,
+    parse_wbs_table,
+)
 from gzkit.ledger import Ledger, obpi_created_event
 from gzkit.templates import render_template
 
@@ -48,9 +51,18 @@ def _slugify_obpi_name(value: str) -> str:
     return slug or "scope-item"
 
 
-def _render_obpi_acceptance_seed(version: str, item: int) -> str:
-    """Create placeholder acceptance criteria seed for an OBPI."""
+def _render_obpi_acceptance_seed(version: str, item: int, spec_summary: str) -> str:
+    """Create acceptance criteria seed from WBS spec summary."""
     req_prefix = f"REQ-{version}-{item:02d}"
+    if spec_summary and spec_summary.lower() not in ("tbd", "pending", ""):
+        return "\n".join(
+            [
+                f"- [ ] {req_prefix}-01: Given {spec_summary.rstrip('.')}, "
+                "when verification runs, then the expected behavior is observed",
+                f"- [ ] {req_prefix}-02: Given/When/Then behavior criterion 2",
+                f"- [ ] {req_prefix}-03: Given/When/Then behavior criterion 3",
+            ]
+        )
     return "\n".join(
         [
             f"- [ ] {req_prefix}-01: Given/When/Then behavior criterion 1",
@@ -85,10 +97,116 @@ def _resolve_objective_from_wbs(wbs_rows: list[WbsRow], item: int, fallback: str
     return fallback
 
 
+def _extract_integration_points(adr_content: str) -> str:
+    """Extract Integration Points from ADR Agent Context Frame as allowed paths.
+
+    Parses the bullet list under **Integration Points:** and converts each
+    path reference into an allowed-path entry.
+    """
+    # Look for Integration Points in the Agent Context Frame
+    match = re.search(
+        r"\*\*Integration Points:\*\*\s*\n((?:\s*-\s+.+\n?)+)",
+        adr_content,
+    )
+    if not match:
+        return "- `src/module/` — scope TBD\n- `tests/test_module.py` — scope TBD"
+
+    lines: list[str] = []
+    for raw in match.group(1).strip().splitlines():
+        line = raw.strip()
+        if not line.startswith("- "):
+            continue
+        # Extract path from backtick references
+        path_match = re.search(r"`([^`]+)`", line)
+        if path_match:
+            path = path_match.group(1)
+            # Extract description after the path (often " — description" or " — comment")
+            desc = re.sub(r"^-\s+`[^`]+`\s*[-—–]?\s*", "", line).strip()
+            if desc:
+                lines.append(f"- `{path}` — {desc}")
+            else:
+                lines.append(f"- `{path}`")
+        else:
+            lines.append(line)
+
+    return (
+        "\n".join(lines)
+        if lines
+        else ("- `src/module/` — scope TBD\n- `tests/test_module.py` — scope TBD")
+    )
+
+
+def _extract_decision_as_requirements(adr_content: str) -> str:
+    """Extract Decision bullets from ADR as OBPI requirement seeds.
+
+    Converts ADR Decision section bullets into numbered REQUIREMENT lines.
+    """
+    section = extract_markdown_section(adr_content, "Decision")
+    if not section:
+        return (
+            "1. REQUIREMENT: First constraint\n"
+            "1. REQUIREMENT: Second constraint\n"
+            "1. NEVER: What must not happen\n"
+            "1. ALWAYS: What must always be true"
+        )
+
+    bullet_re = re.compile(r"^\s*-\s+(.+)$")
+    reqs: list[str] = []
+    for line in section.splitlines():
+        m = bullet_re.match(line)
+        if not m:
+            continue
+        text = m.group(1).strip()
+        if not text or text.startswith("{"):
+            continue
+        reqs.append(f"1. REQUIREMENT: {text}")
+
+    if not reqs:
+        return (
+            "1. REQUIREMENT: First constraint\n"
+            "1. REQUIREMENT: Second constraint\n"
+            "1. NEVER: What must not happen\n"
+            "1. ALWAYS: What must always be true"
+        )
+
+    # Add critical constraint if present
+    constraint_match = re.search(
+        r"\*\*Critical Constraint:\*\*\s*(.+?)(?:\n\n|\n\*\*)",
+        adr_content,
+        re.DOTALL,
+    )
+    if constraint_match:
+        constraint = constraint_match.group(1).strip().replace("\n", " ")
+        reqs.append(f"1. ALWAYS: {constraint}")
+
+    return "\n".join(reqs)
+
+
+def _extract_denied_paths(adr_content: str) -> str:
+    """Extract Non-Goals from ADR as denied path seeds."""
+    section = extract_markdown_section(adr_content, "Non-Goals")
+    if not section:
+        return "- Paths not listed in Allowed Paths\n- New dependencies\n- CI files, lockfiles"
+
+    lines: list[str] = []
+    for raw in section.splitlines():
+        line = raw.strip()
+        if line.startswith("- **"):
+            # Extract the bold label as a denied scope
+            label_match = re.match(r"-\s+\*\*([^*]+)\*\*\s*[-—–]?\s*(.*)", line)
+            if label_match:
+                lines.append(f"- {label_match.group(1).strip()} — {label_match.group(2).strip()}")
+    if not lines:
+        return "- Paths not listed in Allowed Paths\n- New dependencies\n- CI files, lockfiles"
+    lines.append("- Paths not listed in Allowed Paths")
+    return "\n".join(lines)
+
+
 def _build_obpi_plan(
     *,
     project_root: Path,
     adr_file: Path,
+    adr_content: str,
     parent_adr_id: str,
     item: int,
     checklist_item_text: str,
@@ -96,6 +214,7 @@ def _build_obpi_plan(
     name: str,
     title: str,
     objective: str,
+    wbs_spec_summary: str,
 ) -> dict[str, Any]:
     """Build deterministic OBPI artifact plan."""
     version = _extract_semver(parent_adr_id) or parent_adr_id.replace("ADR-", "").split("-")[0]
@@ -111,19 +230,10 @@ def _build_obpi_plan(
         if lane == "heavy"
         else "This OBPI remains internal to the promoted ADR implementation scope."
     )
-    acceptance_criteria_seed = _render_obpi_acceptance_seed(version, item)
-    allowed_paths_md = (
-        "- `src/module/` - Reason this is in scope\n- `tests/test_module.py` - Reason"
-    )
-    denied_paths_md = (
-        "- Paths not listed in Allowed Paths\n- New dependencies\n- CI files, lockfiles"
-    )
-    requirements_md = (
-        "1. REQUIREMENT: First constraint\n"
-        "1. REQUIREMENT: Second constraint\n"
-        "1. NEVER: What must not happen\n"
-        "1. ALWAYS: What must always be true"
-    )
+    acceptance_criteria_seed = _render_obpi_acceptance_seed(version, item, wbs_spec_summary)
+    allowed_paths_md = _extract_integration_points(adr_content)
+    denied_paths_md = _extract_denied_paths(adr_content)
+    requirements_md = _extract_decision_as_requirements(adr_content)
 
     content = render_template(
         "obpi",
@@ -152,25 +262,12 @@ def _build_obpi_plan(
     }
 
 
-def specify(
-    name: str,
-    parent: str,
+def _validate_parent_adr(
+    adr_content: str,
+    resolved_parent: str,
     item: int,
-    lane: str | None,
-    title: str | None,
-    dry_run: bool,
-) -> None:
-    """Create a new OBPI (One Brief Per Item)."""
-    config = ensure_initialized()
-    project_root = get_project_root()
-    ledger = Ledger(project_root / config.paths.ledger)
-    parent_input = parent if parent.startswith("ADR-") else f"ADR-{parent}"
-    canonical_parent = ledger.canonicalize_id(parent_input)
-    if _is_pool_adr_id(canonical_parent):
-        msg = f"Pool ADRs cannot receive OBPIs until promoted: {canonical_parent}."
-        raise GzCliError(msg)  # noqa: TRY003
-    adr_file, resolved_parent = resolve_adr_file(project_root, config, canonical_parent)
-    adr_content = adr_file.read_text(encoding="utf-8")
+) -> list[str]:
+    """Validate parent ADR checklist, scorecard, and item range. Returns checklist items."""
     checklist_items = parse_checklist_items(adr_content)
     if not checklist_items:
         msg = (
@@ -198,14 +295,42 @@ def specify(
             f"target={scorecard.final_target_obpi_count}."
         )
         raise GzCliError(msg)  # noqa: TRY003
+    return checklist_items
 
-    # Parse WBS table for lane and objective enrichment
+
+def specify(
+    name: str,
+    parent: str,
+    item: int,
+    lane: str | None,
+    title: str | None,
+    dry_run: bool,
+) -> None:
+    """Create a new OBPI (One Brief Per Item)."""
+    config = ensure_initialized()
+    project_root = get_project_root()
+    ledger = Ledger(project_root / config.paths.ledger)
+    parent_input = parent if parent.startswith("ADR-") else f"ADR-{parent}"
+    canonical_parent = ledger.canonicalize_id(parent_input)
+    if _is_pool_adr_id(canonical_parent):
+        msg = f"Pool ADRs cannot receive OBPIs until promoted: {canonical_parent}."
+        raise GzCliError(msg)  # noqa: TRY003
+    adr_file, resolved_parent = resolve_adr_file(project_root, config, canonical_parent)
+    adr_content = adr_file.read_text(encoding="utf-8")
+    checklist_items = _validate_parent_adr(adr_content, resolved_parent, item)
+
+    # Parse WBS table for lane, objective, and content enrichment
     wbs_rows = parse_wbs_table(adr_content)
     resolved_lane = _resolve_lane_from_wbs(wbs_rows, item, lane)
     checklist_text = checklist_items[item - 1]
     objective = _resolve_objective_from_wbs(
         wbs_rows, item, _normalized_objective_from_checklist_item(checklist_text)
     )
+    wbs_spec = ""
+    for row in wbs_rows:
+        if row.item == item:
+            wbs_spec = row.spec_summary
+            break
 
     if wbs_rows and lane is None:
         wbs_match = next((r for r in wbs_rows if r.item == item), None)
@@ -217,6 +342,7 @@ def specify(
     obpi_plan = _build_obpi_plan(
         project_root=project_root,
         adr_file=adr_file,
+        adr_content=adr_content,
         parent_adr_id=resolved_parent,
         item=item,
         checklist_item_text=checklist_text,
@@ -224,6 +350,7 @@ def specify(
         name=name,
         title=title or name.replace("-", " ").title(),
         objective=objective,
+        wbs_spec_summary=wbs_spec,
     )
     obpi_id = cast(str, obpi_plan["obpi_id"])
     obpi_file = cast(Path, obpi_plan["obpi_file"])
@@ -251,8 +378,7 @@ def specify(
     console.print(f"  Lane: {resolved_lane} (source: {lane_source})")
     console.print(f"  Objective: {objective}")
     console.print(
-        "[yellow]Warning:[/yellow] Brief contains template defaults and needs authoring "
-        "before pipeline execution."
+        "[yellow]Note:[/yellow] Brief populated from ADR content. "
+        "Review allowed paths, requirements, and acceptance criteria for OBPI-specific scoping."
     )
-    console.print(f"  Next step: author {obpi_file} with real scope, requirements, and criteria.")
     console.print("  Validate with: uv run gz obpi validate " + str(obpi_file))
