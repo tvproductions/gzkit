@@ -1,0 +1,35 @@
+{
+  "flags": [
+    {
+      "key": "ops.product_proof",
+      "category": "ops",
+      "default": true,
+      "description": "When enabled, the product proof check blocks closeout for OBPIs without operator-facing documentation. When disabled, the check warns but does not block.",
+      "owner": "governance",
+      "introduced_on": "2026-03-29",
+      "review_by": "2026-06-29",
+      "linked_adr": "ADR-0.23.0",
+      "linked_issue": "GHI-49"
+    },
+    {
+      "key": "migration.config_gates_to_flags",
+      "category": "migration",
+      "default": false,
+      "description": "When enabled, the flag service replaces config.gates as the authority for gate enforcement levels. When disabled, config.gates is still consulted.",
+      "owner": "governance",
+      "introduced_on": "2026-03-29",
+      "remove_by": "2026-05-01",
+      "linked_adr": "ADR-0.0.8"
+    },
+    {
+      "key": "release.drift_command",
+      "category": "release",
+      "default": false,
+      "description": "When enabled, the gz drift command is available in the CLI. When disabled, the command is hidden.",
+      "owner": "cli",
+      "introduced_on": "2026-03-29",
+      "remove_by": "2026-04-30",
+      "linked_adr": "ADR-0.20.0"
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gzkit.flags.v1",
+  "title": "gzkit Feature Flag Registry",
+  "description": "Source-controlled flag registry per ADR-0.0.8.",
+  "type": "object",
+  "required": ["flags"],
+  "additionalProperties": false,
+  "properties": {
+    "flags": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/FlagSpec"
+      }
+    }
+  },
+  "$defs": {
+    "FlagSpec": {
+      "type": "object",
+      "required": ["key", "category", "default", "description", "owner", "introduced_on"],
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "type": "string",
+          "pattern": "^[a-z]+\\.[a-z_]+$",
+          "description": "Dotted identifier: {category}.{name}"
+        },
+        "category": {
+          "type": "string",
+          "enum": ["release", "ops", "migration", "development"],
+          "description": "Flag category"
+        },
+        "default": {
+          "type": "boolean",
+          "description": "Explicit default value"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable purpose sentence"
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Responsible party"
+        },
+        "introduced_on": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+          "description": "ISO 8601 date when the flag was added"
+        },
+        "review_by": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+          "description": "Required for ops flags"
+        },
+        "remove_by": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+          "description": "Required for release, migration, and development flags"
+        },
+        "linked_adr": {
+          "type": "string",
+          "description": "ADR that introduced this flag"
+        },
+        "linked_issue": {
+          "type": "string",
+          "description": "GitHub issue tracking this flag"
+        }
+      }
+    }
+  }
+}
