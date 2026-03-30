@@ -398,6 +398,28 @@
       },
       "governance_relevant": false
     },
+    "flags": {
+      "surfaces": {
+        "manpage": false,
+        "index_entry": false,
+        "operator_runbook": false,
+        "governance_runbook": false,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": false
+    },
+    "flag explain": {
+      "surfaces": {
+        "manpage": false,
+        "index_entry": false,
+        "operator_runbook": false,
+        "governance_runbook": false,
+        "docstring": true,
+        "command_docs_mapping": true
+      },
+      "governance_relevant": false
+    },
     "cli audit": {
       "surfaces": {
         "manpage": true,

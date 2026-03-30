@@ -3,7 +3,7 @@ id: OBPI-0.0.8-05-cli-surface
 parent: ADR-0.0.8-feature-toggle-system
 item: 5
 lane: Heavy
-status: Pending
+status: Completed
 ---
 
 # OBPI-0.0.8-05: CLI Surface
@@ -13,7 +13,8 @@ status: Pending
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.8-feature-toggle-system/ADR-0.0.8-feature-toggle-system.md`
 - **Checklist Item:** #8 — "`gz flags` / `gz flags --stale` / `gz flag explain` CLI"
 
-**Status:** Pending
+**Status:** Completed
+**Date Completed:** 2026-03-30
 
 ## Objective
 
@@ -62,39 +63,39 @@ view with metadata, resolution source, and staleness status).
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item #8 referenced
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist item #8 referenced
 
 ### Gate 2: TDD
 
-- [ ] Smoke tests for `gz flags` (exits 0, produces table output)
-- [ ] Smoke tests for `gz flags --stale` (exits 0)
-- [ ] Smoke tests for `gz flag explain <known_key>` (exits 0, outputs metadata)
-- [ ] Smoke tests for `gz flag explain <unknown_key>` (exits 1)
-- [ ] Smoke tests for `gz flags --json` (valid JSON output)
-- [ ] Tests pass: `uv run gz test`
+- [x] Smoke tests for `gz flags` (exits 0, produces table output)
+- [x] Smoke tests for `gz flags --stale` (exits 0)
+- [x] Smoke tests for `gz flag explain <known_key>` (exits 0, outputs metadata)
+- [x] Smoke tests for `gz flag explain <unknown_key>` (exits 1)
+- [x] Smoke tests for `gz flags --json` (valid JSON output)
+- [x] Tests pass: `uv run gz test`
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 ### Gate 3: Docs (Heavy)
 
-- [ ] Help text includes examples for all commands
-- [ ] Manpage content prepared (delivered in OBPI-08)
+- [x] Help text includes examples for all commands
+- [x] Manpage content prepared (delivered in OBPI-08)
 
 ### Gate 5: Human (Heavy)
 
-- [ ] Human attestation recorded
+- [x] Human attestation recorded
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.8-05-01: Given `gz flags`, when run, then exits 0 and displays a table with all registered flags.
-- [ ] REQ-0.0.8-05-02: Given `gz flags --stale` with no stale flags, when run, then exits 0 and displays "No stale flags."
-- [ ] REQ-0.0.8-05-03: Given `gz flag explain ops.product_proof`, when run, then exits 0 and displays full metadata including current value and source.
-- [ ] REQ-0.0.8-05-04: Given `gz flag explain nonexistent.key`, when run, then exits 1 with error message.
-- [ ] REQ-0.0.8-05-05: Given `gz flags --json`, when run, then outputs valid JSON array to stdout.
+- [x] REQ-0.0.8-05-01: Given `gz flags`, when run, then exits 0 and displays a table with all registered flags.
+- [x] REQ-0.0.8-05-02: Given `gz flags --stale` with no stale flags, when run, then exits 0 and displays "No stale flags."
+- [x] REQ-0.0.8-05-03: Given `gz flag explain ops.product_proof`, when run, then exits 0 and displays full metadata including current value and source.
+- [x] REQ-0.0.8-05-04: Given `gz flag explain nonexistent.key`, when run, then exits 1 with error message.
+- [x] REQ-0.0.8-05-05: Given `gz flags --json`, when run, then outputs valid JSON array to stdout.
 
 ## Verification Commands
 
@@ -120,18 +121,42 @@ uv run gz lint
 uv run gz typecheck
 ```
 
-## Evidence
+## Closing Argument
+
+OBPI-0.0.8-05 delivers the operator-facing CLI surface for the feature flag system. Before this work, operators had no way to inspect flag state from the command line — flags existed only in `data/flags.json` and could be queried only programmatically. Now `gz flags` provides a Rich table of all registered flags with resolved values, precedence sources, and deadline countdowns; `gz flags --stale` filters to overdue flags; and `gz flag explain <key>` gives full single-flag metadata including linked ADR/issue and staleness status. All commands support `--json` for machine-readable output per CLI Doctrine. The implementation is read-only — it never modifies flag values, only inspects them.
 
 ### Implementation Summary
 
-- Files created/modified: (to be filled on completion)
-- Validation commands run: (to be filled on completion)
-- Date completed: (to be filled on completion)
+- Files created: `src/gzkit/commands/flags.py`, `tests/test_flag_commands.py`
+- Files modified: `src/gzkit/cli/parser_maintenance.py`, `src/gzkit/commands/common.py`, `config/doc-coverage.json`
+- Tests: 11 passing (covering all 5 REQs)
+- Lint: clean
+- Typecheck: clean
+- Full suite: 2157 tests pass
 
 ### Key Proof
 
-(to be filled on completion)
+```
+$ gz flag explain ops.product_proof
+
+ops.product_proof
+  Category:      ops
+  Description:   When enabled, the product proof check blocks closeout...
+  Owner:         governance
+  Default:       True
+  Current value: True
+  Source:        registry
+  Review by:     2026-06-29 (91d)
+  Linked ADR:    ADR-0.23.0
+  Linked issue:  GHI-49
+```
+
+## Human Attestation
+
+- **Attestor:** jeff
+- **Date:** 2026-03-30
+- **Attestation:** attest completed
 
 ---
 
-**Brief Status:** Pending
+**Brief Status:** Completed
