@@ -38,6 +38,8 @@ Last reviewed: 2026-02-09
 | ADR-0.0.27 | Agent Session Guardrails | ADR | Proposed | 2026-02-09 |  |  | No | [ADR-0.0.27](../../design/adr/adr-0.0.x/ADR-0.0.27-agent-session-guardrails/ADR-0.0.27-agent-session-guardrails.md) |
 | ADR-0.0.28 | Skill Quality Alignment (Anthropic Guide Compliance) | ADR | Proposed | 2026-02-10 |  |  | No | [ADR-0.0.28](../../design/adr/adr-0.0.x/ADR-0.0.28-skill-quality-alignment/ADR-0.0.28-skill-quality-alignment.md) |
 | ADR-0.0.29 | OBPI Completion Anchoring | ADR | Proposed | 2026-02-11 |  |  | No | [ADR-0.0.29](../../design/adr/adr-0.0.x/ADR-0.0.29-obpi-completion-anchoring/ADR-0.0.29-obpi-completion-anchoring.md) |
+| ADR-0.0.9 | State Doctrine and Source-of-Truth Hierarchy | ADR | Proposed | 2026-03-29 |  |  | No | [ADR-0.0.9](../../design/adr/foundation/ADR-0.0.9-state-doctrine-source-of-truth/ADR-0.0.9-state-doctrine-source-of-truth.md) |
+| ADR-0.0.10 | Storage Tiers and Simplicity Profile | ADR | Proposed | 2026-03-29 |  |  | No | [ADR-0.0.10](../../design/adr/foundation/ADR-0.0.10-storage-tiers-simplicity-profile/ADR-0.0.10-storage-tiers-simplicity-profile.md) |
 | ADR-0.1.0 | doctrine-separation | ADR | Validated | 2025-09-29 | 2025-09-29 | 2025-09-29 | Yes (2026-01-30) | [ADR-0.1.0](../../design/adr/adr-0.1.x/ADR-0.1.0-doctrine-separation.md) |
 | ADR-0.1.1 | Pivot to 0.1.x & Lineage Discipline | ADR | Validated | 2025-09-30 | 2025-09-30 | 2025-09-30 | Yes (2026-01-30) | [ADR-0.1.1](../../design/adr/adr-0.1.x/ADR-0.1.1-pivot-to-0.1.x-and-provenance.md) |
 | ADR-0.1.2 | INGEST-CORE: DB28 cadence, receipts, T-100/ASQP, fail-closed planning | ADR | Superseded | 2025-09-30 | 2025-10-03 |  | No | [ADR-0.1.2](../../design/adr/adr-0.1.x/ADR-0.1.2-ingest-core.md) |
