@@ -166,6 +166,13 @@
             "lane": "lite"
         },
         {
+            "slug": "skill-trigger-testing",
+            "title": "Skill Trigger & Output Testing",
+            "version": "1.0.0",
+            "path": "ops/chores/skill-trigger-testing",
+            "lane": "lite"
+        },
+        {
             "slug": "skill-command-doc-parity",
             "title": "Skill & Command Documentation Parity",
             "version": "1.0.0",
