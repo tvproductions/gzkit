@@ -2,7 +2,7 @@
 id: OBPI-0.0.12-07-agents-md-persona-reference
 parent: ADR-0.0.12
 item: 7
-lane: Lite
+lane: Heavy
 status: Draft
 ---
 

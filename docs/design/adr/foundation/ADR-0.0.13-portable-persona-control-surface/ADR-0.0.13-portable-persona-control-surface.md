@@ -78,10 +78,10 @@ and composed, not **what** they say.
 
 - [ ] Portable persona schema specification (project-agnostic)
 - [ ] `gz init` persona scaffolding (default persona set)
-- [ ] Manifest schema update (`control_surfaces.personas`)
-- [ ] `gz agent sync` persona mirroring to vendor surfaces
+- [ ] Manifest schema and `gz agent sync` persona mirroring to vendor surfaces
 - [ ] Vendor-neutral persona loading (Claude, Codex, Copilot adapters)
 - [ ] Persona drift monitoring surface (observability)
+- [ ] Cross-project validation (apply to airlineops)
 
 ## Decomposition Scorecard
 
@@ -121,6 +121,20 @@ mirrors and skills sync from `.gzkit/skills/`, personas sync from
 - A monitoring surface (`gz personas drift`) reports when agent behavior
   diverges from the designed persona profile, using the PSM/Assistant Axis
   research as the theoretical basis for what drift means
+
+## Non-Goals
+
+- **Persona content authoring** — the specific text of persona frames is
+  ADR-0.0.12's scope; this ADR makes the container portable, not the contents
+- **Schema backward compatibility** — the persona schema is new (no existing
+  consumers); versioning is deferred until post-1.0 when breaking changes matter
+- **Activation-space drift detection** — the drift monitoring surface uses
+  behavioral proxies (output pattern matching), not model-internal measurements
+- **Composition conflict resolution** — when two persona traits conflict, the
+  current model is "last-writer-wins" at the prompt level; formal conflict
+  resolution is out of scope
+- **Vendor-specific persona tuning** — adapters translate format, not content;
+  we do not maintain vendor-specific persona variants
 
 ## Interfaces
 

@@ -80,11 +80,11 @@ rules (those belong in `.claude/rules/`) or vague aspirations.
 
 - [ ] Main session persona frame (the "Python craftsperson" identity)
 - [ ] Implementer agent persona (plan-then-write, whole-file, PEP 8 as nature)
-- [ ] Spec-reviewer agent persona (independent skeptic, evidence-based)
-- [ ] Quality-reviewer agent persona (architectural rigor, SOLID, maintainability)
+- [ ] Reviewer agent personas (spec-reviewer: independent skeptic; quality-reviewer: architectural rigor)
 - [ ] Narrator agent persona (clarity, operator-value, precision)
 - [ ] Pipeline orchestrator persona (ceremony completion, stage discipline)
 - [ ] Dispatch integration (pipeline_runtime.py loads persona at dispatch)
+- [ ] AGENTS.md and CLAUDE.md persona reference integration
 
 ## Decomposition Scorecard
 
@@ -123,6 +123,20 @@ Assistant persona that causes quality failures.
 - Main session persona is loaded via AGENTS.md/CLAUDE.md integration
 - Persona frames are **tested** — schema validation ensures they conform to
   the control surface contract
+
+## Non-Goals
+
+- **Persona effectiveness measurement** — this ADR writes persona frames and
+  integrates dispatch loading; it does not establish A/B testing or behavioral
+  comparison mechanisms to prove the frames work
+- **Persona versioning** — persona files are treated as living documents,
+  not versioned artifacts with migration paths; schema versioning is ADR-0.0.13
+- **Cross-project portability** — persona frames written here are gzkit-specific;
+  making them portable is ADR-0.0.13's scope
+- **Drift detection** — monitoring whether agents stay in-persona during long
+  sessions is ADR-0.0.13 OBPI-05; this ADR writes the frames, not the monitors
+- **Modifying behavioral rules** — existing `.claude/rules/*.md` files are not
+  touched; persona frames complement rules, they don't replace them
 
 ## Interfaces
 

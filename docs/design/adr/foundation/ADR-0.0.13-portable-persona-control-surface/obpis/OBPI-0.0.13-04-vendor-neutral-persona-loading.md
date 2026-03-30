@@ -11,7 +11,7 @@ status: Draft
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.13-portable-persona-control-surface/ADR-0.0.13-portable-persona-control-surface.md`
-- **Checklist Item:** #4 - "`gz agent sync` persona mirroring to vendor surfaces"
+- **Checklist Item:** #4 - "Vendor-neutral persona loading (Claude, Codex, Copilot adapters)"
 
 **Status:** Draft
 
