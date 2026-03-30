@@ -271,7 +271,7 @@ class TestValidateManifest(unittest.TestCase):
         import json
 
         manifest = {
-            "schema": "gzkit.manifest.v1",
+            "schema": "gzkit.manifest.v2",
             "structure": {
                 "source_root": "src",
                 "tests_root": "tests",
@@ -283,6 +283,24 @@ class TestValidateManifest(unittest.TestCase):
                 "constitution": {"path": "design/constitutions", "schema": "gzkit.constitution.v1"},
                 "obpi": {"path": "design/adr", "schema": "gzkit.obpi.v1"},
                 "adr": {"path": "design/adr", "schema": "gzkit.adr.v1"},
+            },
+            "data": {
+                "eval_datasets": "data/eval",
+                "eval_schema": "data/schemas/eval_dataset.schema.json",
+                "baselines": "artifacts/baselines",
+                "schemas": "data/schemas",
+            },
+            "ops": {
+                "chores": "config/chores",
+                "receipts": "artifacts/receipts",
+                "proofs": "artifacts/proofs",
+            },
+            "thresholds": {
+                "coverage_floor": 40.0,
+                "eval_regression_delta": 0.05,
+                "function_lines": 50,
+                "module_lines": 600,
+                "class_lines": 300,
             },
             "control_surfaces": {
                 "agents_md": "AGENTS.md",

@@ -27,7 +27,7 @@ class TestObpiValidator(unittest.TestCase):
         manifest_path.write_text(
             json.dumps(
                 {
-                    "schema": "gzkit.manifest.v1",
+                    "schema": "gzkit.manifest.v2",
                     "structure": {"design_root": "docs/design"},
                     "gates": {"lite": [1, 2], "heavy": [1, 2, 3, 4, 5]},
                 }

@@ -187,7 +187,7 @@ class TestSyncAllVendorAware(unittest.TestCase):
             gzkit_dir = project_root / ".gzkit"
             gzkit_dir.mkdir(parents=True)
             manifest = {
-                "schema": "gzkit.manifest.v1",
+                "schema": "gzkit.manifest.v2",
                 "vendors": {
                     "claude": {
                         "enabled": True,

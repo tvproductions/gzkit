@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "gzkit.manifest.v1",
+  "$id": "gzkit.manifest.v2",
   "title": "gzkit Governance Manifest",
   "description": "Machine-readable contract for governance structure and verification commands.",
   "type": "object",
@@ -8,7 +8,7 @@
   "properties": {
     "schema": {
       "type": "string",
-      "const": "gzkit.manifest.v1",
+      "enum": ["gzkit.manifest.v1", "gzkit.manifest.v2"],
       "description": "Schema version identifier"
     },
     "structure": {
@@ -51,6 +51,75 @@
         },
         "adr": {
           "$ref": "#/$defs/artifactConfig"
+        }
+      },
+      "additionalProperties": false
+    },
+    "data": {
+      "type": "object",
+      "description": "Eval dataset, baseline, and schema resource paths",
+      "properties": {
+        "eval_datasets": {
+          "type": "string",
+          "description": "Directory for evaluation datasets"
+        },
+        "eval_schema": {
+          "type": "string",
+          "description": "Path to evaluation dataset JSON schema"
+        },
+        "baselines": {
+          "type": "string",
+          "description": "Directory for baseline artifacts"
+        },
+        "schemas": {
+          "type": "string",
+          "description": "Directory for data schemas"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ops": {
+      "type": "object",
+      "description": "Operational artifact paths for chores, receipts, and proofs",
+      "properties": {
+        "chores": {
+          "type": "string",
+          "description": "Directory for chore configuration"
+        },
+        "receipts": {
+          "type": "string",
+          "description": "Directory for QA receipt artifacts"
+        },
+        "proofs": {
+          "type": "string",
+          "description": "Directory for proof artifacts"
+        }
+      },
+      "additionalProperties": false
+    },
+    "thresholds": {
+      "type": "object",
+      "description": "Configurable quality and size thresholds",
+      "properties": {
+        "coverage_floor": {
+          "type": "number",
+          "description": "Minimum line coverage percentage"
+        },
+        "eval_regression_delta": {
+          "type": "number",
+          "description": "Maximum allowed eval regression delta"
+        },
+        "function_lines": {
+          "type": "integer",
+          "description": "Maximum lines per function"
+        },
+        "module_lines": {
+          "type": "integer",
+          "description": "Maximum lines per module"
+        },
+        "class_lines": {
+          "type": "integer",
+          "description": "Maximum lines per class"
         }
       },
       "additionalProperties": false

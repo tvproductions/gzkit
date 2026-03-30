@@ -169,7 +169,7 @@ def _quick_init(mode: str = "lite") -> None:
     config.save(project_root / ".gzkit.json")
 
     manifest = {
-        "schema": "gzkit.manifest.v1",
+        "schema": "gzkit.manifest.v2",
         "structure": {
             "source_root": config.paths.source_root,
             "tests_root": config.paths.tests_root,
@@ -181,6 +181,24 @@ def _quick_init(mode: str = "lite") -> None:
             "constitution": {"path": config.paths.constitutions, "schema": "gzkit.constitution.v1"},
             "obpi": {"path": config.paths.adrs, "schema": "gzkit.obpi.v1"},
             "adr": {"path": config.paths.adrs, "schema": "gzkit.adr.v1"},
+        },
+        "data": {
+            "eval_datasets": "data/eval",
+            "eval_schema": "data/schemas/eval_dataset.schema.json",
+            "baselines": "artifacts/baselines",
+            "schemas": "data/schemas",
+        },
+        "ops": {
+            "chores": "config/chores",
+            "receipts": "artifacts/receipts",
+            "proofs": "artifacts/proofs",
+        },
+        "thresholds": {
+            "coverage_floor": 40.0,
+            "eval_regression_delta": 0.05,
+            "function_lines": 50,
+            "module_lines": 600,
+            "class_lines": 300,
         },
         "control_surfaces": {
             "agents_md": "AGENTS.md",

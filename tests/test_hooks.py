@@ -1120,7 +1120,7 @@ class TestObpiCompletionValidatorHook(unittest.TestCase):
         gzkit_dir = project_root / ".gzkit"
         gzkit_dir.mkdir(exist_ok=True)
         (gzkit_dir / "manifest.json").write_text(
-            '{"schema":"gzkit.manifest.v1","structure":{"design_root":"docs/design"},'
+            '{"schema":"gzkit.manifest.v2","structure":{"design_root":"docs/design"},'
             '"gates":{"lite":[1,2],"heavy":[1,2,3,4,5]}}',
             encoding="utf-8",
         )

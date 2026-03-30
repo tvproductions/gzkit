@@ -65,8 +65,8 @@ def validate_manifest(manifest_path: Path) -> list[ValidationError]:
                 )
             )
 
-    # Check schema version
-    if manifest.get("schema") != "gzkit.manifest.v1":
+    # Check schema version (accept v1 and v2)
+    if manifest.get("schema") not in ("gzkit.manifest.v1", "gzkit.manifest.v2"):
         errors.append(
             ValidationError(
                 type="manifest",

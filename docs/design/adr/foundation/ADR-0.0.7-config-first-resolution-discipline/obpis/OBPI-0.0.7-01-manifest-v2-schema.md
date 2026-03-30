@@ -3,7 +3,7 @@ id: OBPI-0.0.7-01-manifest-v2-schema
 parent: ADR-0.0.7
 item: 1
 lane: Lite
-status: Accepted
+status: Completed
 ---
 
 # OBPI-0.0.7-01-manifest-v2-schema: Manifest v2 schema
@@ -13,7 +13,7 @@ status: Accepted
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.7-config-first-resolution-discipline/ADR-0.0.7-config-first-resolution-discipline.md`
 - **Checklist Item:** #1 - "Manifest v2 schema — add `data`, `ops`, `thresholds` sections to `generate_manifest()` and schema validation; bump schema version"
 
-**Status:** Accepted
+**Status:** Completed
 
 ## Objective
 
@@ -104,42 +104,67 @@ python -c "import json; m = json.load(open('.gzkit/manifest.json')); assert 'dat
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.7-01-01: Given a `gz init` or `gz agent sync`, when manifest is generated, then `.gzkit/manifest.json` contains `data`, `ops`, `thresholds` keys
-- [ ] REQ-0.0.7-01-02: Given an existing v1 manifest, when regenerated as v2, then all v1 keys are preserved unchanged
-- [ ] REQ-0.0.7-01-03: Given a v2 manifest, when `gz validate` runs, then exit code is 0
+- [x] REQ-0.0.7-01-01: Given a `gz init` or `gz agent sync`, when manifest is generated, then `.gzkit/manifest.json` contains `data`, `ops`, `thresholds` keys
+- [x] REQ-0.0.7-01-02: Given an existing v1 manifest, when regenerated as v2, then all v1 keys are preserved unchanged
+- [x] REQ-0.0.7-01-03: Given a v2 manifest, when `gz validate` runs, then exit code is 0
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
 ## Evidence
 
+### Key Proof
+
+```bash
+$ uv run -m unittest tests.test_manifest_v2 -v
+test_data_section_present ... ok
+test_ops_section_present ... ok
+test_schema_version_is_v2 ... ok
+test_thresholds_section_present ... ok
+test_thresholds_have_sensible_defaults ... ok
+test_v1_keys_preserved ... ok
+test_v2_manifest_passes_validation ... ok
+test_v1_manifest_still_passes ... ok
+test_invalid_schema_version_rejected ... ok
+Ran 11 tests in 0.026s — OK
+
+$ python -c "import json; m = json.load(open('.gzkit/manifest.json')); print(m['schema'], sorted(m.keys()))"
+gzkit.manifest.v2 ['artifacts', 'control_surfaces', 'data', 'gates', 'ops', 'schema', 'structure', 'thresholds', 'verification']
+```
+
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+$ uv run gz test
+Ran 2008 tests in 34.626s — OK
+$ uv run -m unittest tests.test_manifest_v2 -v
+Ran 11 tests in 0.026s — OK
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+$ uv run gz lint
+All checks passed!
+$ uv run gz typecheck
+All checks passed!
 ```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
+- Files created: `tests/test_manifest_v2.py` (11 tests for v2 schema validation)
+- Files modified: `src/gzkit/sync_surfaces.py`, `src/gzkit/validate_pkg/manifest.py`, `src/gzkit/schemas/manifest.json`, 6 test fixtures
+- Date completed: 2026-03-29
 
 ## Tracked Defects
 
@@ -153,8 +178,8 @@ _No defects tracked._
 
 ---
 
-**Brief Status:** Accepted
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-29
 
 **Evidence Hash:** -
