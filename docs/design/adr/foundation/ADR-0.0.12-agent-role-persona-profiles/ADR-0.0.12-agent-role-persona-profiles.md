@@ -86,6 +86,23 @@ rules (those belong in `.claude/rules/`) or vague aspirations.
 - [ ] Pipeline orchestrator persona (ceremony completion, stage discipline)
 - [ ] Dispatch integration (pipeline_runtime.py loads persona at dispatch)
 
+## Decomposition Scorecard
+
+- Data/State: 1
+- Logic/Engine: 1
+- Interface: 2
+- Observability: 1
+- Lineage: 1
+- Dimension Total: 6
+- Baseline Range: 3-3
+- Baseline Selected: 3
+- Split Single-Narrative: 1
+- Split Surface Boundary: 1
+- Split State Anchor: 1
+- Split Testability Ceiling: 1
+- Split Total: 4
+- Final Target OBPI Count: 7
+
 ## Intent
 
 Write concrete, research-grounded persona frames for every agent role in
