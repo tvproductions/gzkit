@@ -169,11 +169,39 @@ def ensure_initialized() -> GzkitConfig:
 
 def load_manifest(project_root: Path) -> dict[str, Any]:
     """Load the gzkit manifest."""
-    manifest_path = project_root / ".gzkit" / "manifest.json"
-    if not manifest_path.exists():
+    manifest_file = project_root / ".gzkit" / "manifest.json"
+    if not manifest_file.exists():
         msg = "Missing .gzkit/manifest.json"
         raise GzCliError(msg)  # noqa: TRY003
-    return json.loads(manifest_path.read_text(encoding="utf-8"))
+    return json.loads(manifest_file.read_text(encoding="utf-8"))
+
+
+def manifest_path(manifest: dict[str, Any], section: str, key: str) -> Path:
+    """Resolve a path from a manifest section and key.
+
+    Returns a ``Path`` relative to project root.  Works with both v2
+    (sectioned) and v1 (flat) manifest structures.
+
+    Raises ``KeyError`` with a descriptive message when the section or
+    key cannot be found.
+    """
+    # v2: section is a dict containing the key
+    if section in manifest and isinstance(manifest[section], dict):
+        if key not in manifest[section]:
+            msg = f"Key {key!r} not found in manifest section {section!r}"
+            raise KeyError(msg)
+        return Path(str(manifest[section][key]))
+
+    # v1 fallback: key at top level
+    if key in manifest:
+        return Path(str(manifest[key]))
+
+    # Neither path resolved
+    if section not in manifest:
+        msg = f"Section {section!r} not found in manifest and key {key!r} not at top level"
+        raise KeyError(msg)
+    msg = f"Key {key!r} not found in manifest section {section!r} (section is not a dict)"
+    raise KeyError(msg)
 
 
 def get_git_user() -> str:
