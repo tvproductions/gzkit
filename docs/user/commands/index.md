@@ -25,6 +25,8 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz adr evaluate`](adr-evaluate.md) | Evaluate ADR/OBPI quality (deterministic scoring with verdict) |
 | [`gz adr audit-check`](adr-audit-check.md) | Verify OBPI completeness/evidence for one ADR |
 | [`gz adr covers-check`](adr-covers-check.md) | Verify ADR/OBPI @covers traceability in tests |
+| [`gz flags`](flags.md) | Display all registered feature flags with current values |
+| [`gz flag explain`](flag-explain.md) | Inspect one flag: metadata, resolved value, staleness, linked ADR |
 | [`gz closeout`](closeout.md) | Present closeout paths/commands and record closeout initiation |
 | [`gz attest`](attest.md) | Record human attestation with prerequisite enforcement |
 | [`gz audit`](audit.md) | Run strict post-attestation audit reconciliation |
