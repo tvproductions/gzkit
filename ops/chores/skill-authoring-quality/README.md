@@ -1,6 +1,6 @@
 # Skill Authoring Quality
 
-Audit SKILL.md files against Anthropic best practices for frontmatter, descriptions, and structure.
+Audit SKILL.md files against agent-first best practices: descriptions as routing contracts, domain reasoning over procedures, stub detection, and size thresholds calibrated for the agent-callable ecosystem.
 
 ## Quick Start
 

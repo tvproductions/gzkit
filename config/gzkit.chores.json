@@ -146,8 +146,8 @@
         },
         {
             "slug": "skill-authoring-quality",
-            "title": "Skill Authoring Quality (Anthropic Best Practices)",
-            "version": "1.0.0",
+            "title": "Skill Authoring Quality (Agent-First Best Practices)",
+            "version": "2.0.0",
             "path": "ops/chores/skill-authoring-quality",
             "lane": "lite"
         },
