@@ -3,7 +3,7 @@ id: OBPI-0.0.8-03-feature-decisions
 parent: ADR-0.0.8-feature-toggle-system
 item: 3
 lane: Heavy
-status: Pending
+status: Completed
 ---
 
 # OBPI-0.0.8-03: Feature Decisions
@@ -13,7 +13,7 @@ status: Pending
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.8-feature-toggle-system/ADR-0.0.8-feature-toggle-system.md`
 - **Checklist Item:** #5 — "Named decision methods (FeatureDecisions)"
 
-**Status:** Pending
+**Status:** Completed
 
 ## Objective
 
@@ -64,36 +64,36 @@ contract is the boundary between toggle infrastructure and business logic.
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item #5 referenced
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist item #5 referenced
 
 ### Gate 2: TDD
 
-- [ ] Unit tests validate `product_proof_enforced()` returns True when flag ON
-- [ ] Unit tests validate `product_proof_enforced()` returns False when flag OFF
-- [ ] Unit tests validate each decision method with flag ON and OFF
-- [ ] Unit tests validate `get_decisions()` returns same instance (singleton)
-- [ ] Tests pass: `uv run gz test`
+- [x] Unit tests validate `product_proof_enforced()` returns True when flag ON
+- [x] Unit tests validate `product_proof_enforced()` returns False when flag OFF
+- [x] Unit tests validate each decision method with flag ON and OFF
+- [x] Unit tests validate `get_decisions()` returns same instance (singleton)
+- [x] Tests pass: `uv run gz test`
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 ### Gate 3: Docs (Heavy)
 
-- [ ] Module docstring and method docstrings in decisions.py
+- [x] Module docstring and method docstrings in decisions.py
 
 ### Gate 5: Human (Heavy)
 
-- [ ] Human attestation recorded
+- [x] Human attestation recorded
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.8-03-01: Given `ops.product_proof` is enabled, when `decisions.product_proof_enforced()` is called, then returns `True`.
-- [ ] REQ-0.0.8-03-02: Given `ops.product_proof` is disabled via test override, when `decisions.product_proof_enforced()` is called, then returns `False`.
-- [ ] REQ-0.0.8-03-03: Given a grep for flag key strings outside `flags/decisions.py` and `data/flags.json`, when run, then no matches found.
-- [ ] REQ-0.0.8-03-04: Given two calls to `get_decisions()`, when compared, then they return the same object.
+- [x] REQ-0.0.8-03-01: Given `ops.product_proof` is enabled, when `decisions.product_proof_enforced()` is called, then returns `True`.
+- [x] REQ-0.0.8-03-02: Given `ops.product_proof` is disabled via test override, when `decisions.product_proof_enforced()` is called, then returns `False`.
+- [x] REQ-0.0.8-03-03: Given a grep for flag key strings outside `flags/decisions.py` and `data/flags.json`, when run, then no matches found.
+- [x] REQ-0.0.8-03-04: Given two calls to `get_decisions()`, when compared, then they return the same object.
 
 ## Verification Commands
 
@@ -117,14 +117,39 @@ uv run gz typecheck
 
 ### Implementation Summary
 
-- Files created/modified: (to be filled on completion)
-- Validation commands run: (to be filled on completion)
-- Date completed: (to be filled on completion)
+- Files created: `src/gzkit/flags/decisions.py`, `tests/test_feature_decisions.py`
+- Files modified: `src/gzkit/flags/__init__.py` (added FeatureDecisions, get_decisions exports)
+- Tests: 8 pass, 94% coverage on decisions.py
+- Lint: clean, Typecheck: clean, Docs: validated, mkdocs: builds strict
+- Date completed: 2026-03-30
 
 ### Key Proof
 
-(to be filled on completion)
+```bash
+$ uv run -m unittest tests.test_feature_decisions -v
+test_decision_delegates_to_service ... ok
+test_accepts_explicit_service ... ok
+test_reset_clears_singleton ... ok
+test_returns_same_instance ... ok
+test_has_docstring ... ok
+test_returns_false_when_default_false ... ok
+test_returns_false_when_flag_disabled ... ok
+test_returns_true_when_flag_enabled ... ok
+Ran 8 tests in 0.000s  OK
+```
+
+```bash
+$ grep -rn "ops.product_proof" src/gzkit/ --include="*.py" | grep -v "flags/decisions.py"
+# (no output — flag key contained to decisions.py only)
+```
+
+## Human Attestation
+
+- **Attestor:** jeff
+- **Date:** 2026-03-30
+- **Attestation:** attest completed
 
 ---
 
-**Brief Status:** Pending
+**Brief Status:** Completed
+**Date Completed:** 2026-03-30
