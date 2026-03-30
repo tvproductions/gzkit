@@ -56,18 +56,25 @@ PRD ─────────────── product intent (Major-bound)
               │
               └─ TASK ── execution atom (fulfills the REQ)
                    │
-                   └─ Evidence ── proof artifact (test, doc, receipt)
+                   └─ Evidence ── proof artifact (booked to TASK, not REQ)
 ```
 
 Key relationships:
 - OBPI is the **scope container** and the unit of human review.
 - REQ is the **obligation boundary** — what must be proven.
 - TASK is the **execution boundary** — how the obligation is fulfilled.
-- Evidence is the **proof artifact** — the output of TASK execution that satisfies REQ.
+- Evidence is a **first-class proof entity** — **booked to TASK only**, tightly bound hierarchically upward. Evidence never attaches directly to REQ, OBPI, or ADR.
+
+Two-party proof chain:
+- Implementer agent executes TASK, produces Evidence (booked to that TASK).
+- Reviewer agent examines Evidence at the TASK level, records verdict.
+- REQ satisfaction is **derived upward**: all TASKs under REQ have reviewer-confirmed Evidence.
+- OBPI completeness is derived upward: all REQs satisfied.
+- Human attests at OBPI/ADR level after observing proof summaries.
 
 Readiness flows upward:
 - TASK is ready when its blockers are clear.
-- REQ is satisfied when its TASKs produce sufficient evidence.
+- REQ is satisfied when all its TASKs have reviewer-confirmed Evidence.
 - OBPI is complete when all its REQs are satisfied.
 - ADR is closeable when all its OBPIs are complete.
 
@@ -83,21 +90,39 @@ REQ and TASK currently lack Pydantic models and ledger events. ADR-0.22.0
 (TASK) is Proposed. REQ is referenced in ADR-0.20.0/0.21.0 but has no
 formal entity definition.
 
-### Open Questions
+### Open Questions (Resolved)
 
-- Should REQ IDs be authored in OBPI briefs or auto-derived from acceptance criteria headings?
-- Should TASK entities be created explicitly or derived from plan files (ADR-0.22.0 flags this tension)?
-- Is Evidence a first-class entity with its own ID, or is it an attribute of a ledger receipt event?
+1. **REQ ID authoring:** Ratified as canonical. REQ IDs are authored in OBPI brief
+   acceptance criteria sections (`REQ-X.Y.Z-NN-CC` format). Brief-backed validated
+   at test import time via `@covers`. Already implemented in `triangle.py`.
+
+2. **TASK creation:** Locked as plan-derived. TASKs are conceived at execution time
+   via `create_task_from_plan_step()`. Structural ID encoding
+   (`TASK-X.Y.Z-NN-CC-SS`) embeds parent REQ. Five-state lifecycle
+   (pending, in_progress, completed, blocked, escalated). Git trailer linkage.
+   Already implemented in `tasks.py`.
+
+3. **Evidence status:** Locked as **full first-class entity, booked to TASK only**.
+   Evidence gets an ID scheme, Pydantic model, ledger events, and artifact
+   presence. Evidence is tightly bound hierarchically upward through TASK — it
+   never attaches directly to REQ, OBPI, or ADR. REQ satisfaction is derived
+   by walking: REQ → TASKs → Evidence per TASK → reviewer verdict.
+   Architectural rationale: an independent reviewer agent must observe,
+   reference, and attest to specific evidence artifacts. This creates a
+   two-party proof chain (implementer produces evidence at TASK level,
+   reviewer validates evidence at TASK level) that is structurally auditable.
+   Current `ObpiReceiptEvidence` payload model in `events.py` is a stepping
+   stone, not the end state.
 
 ### Decision Record
 
 | Field | Value |
 |-------|-------|
-| Decision | — |
-| Date | — |
-| Rationale | — |
-| Deviations from recommendation | — |
-| ADR to author | — |
+| Decision | Four-tier entity hierarchy ratified with Evidence as full first-class entity |
+| Date | 2026-03-29 |
+| Rationale | REQ and TASK implementations already match the hierarchy. Evidence promotion enables two-party proof chain: implementer produces, independent reviewer validates. This is required by ADR-0.23.0 (burden of proof) and ADR-0.18.0 (reviewer subagent). |
+| Deviations from recommendation | Evidence promoted from "attribute of receipt event" to full first-class entity booked to TASK only. Original recommendation treated Evidence as a ledger payload attribute. Human decision: independent agent review requires a referenceable entity. Evidence is hierarchically bound upward through TASK — never booked directly to REQ/OBPI/ADR. |
+| ADR to author | Foundation ADR to lock the five-entity model (ADR, OBPI, REQ, TASK, Evidence) with ID schemes, Pydantic models, ledger events, and the two-party proof chain contract. |
 
 ---
 
@@ -145,21 +170,29 @@ Author a foundation ADR (proposed ADR-0.0.9) that locks:
 This ADR has **zero dependencies** and should have been written before the
 runtime track started. It is the single most important missing foundation.
 
-### Open Questions
+### Open Questions (Resolved)
 
-- Should frontmatter status updates be automated (post-reconciliation) or manual?
-- Should `gz state --repair` exist as a command that forces L1 to match L2?
-- Are pipeline markers acceptable as Layer 3, or do they need ledger events for stage transitions?
+1. **Frontmatter auto-fix:** Auto-fix at lifecycle moments. `gz closeout`,
+   `gz attest`, and `gz obpi reconcile` auto-update frontmatter to match
+   ledger-derived state. No manual step required at lifecycle checkpoints.
+
+2. **`gz state --repair`:** Yes. An explicit force-reconcile command exists for
+   cases outside lifecycle moments — recovery, onboarding, diagnosing drift.
+
+3. **Pipeline markers:** Acceptable as Layer 3 for now. Stage transition events
+   will move to the ledger when the pipeline lifecycle ADR is authored. Markers
+   become a pure rebuildable cache at that point. Known architectural debt with
+   a clear migration path.
 
 ### Decision Record
 
 | Field | Value |
 |-------|-------|
-| Decision | — |
-| Date | — |
-| Rationale | — |
-| Deviations from recommendation | — |
-| ADR to author | — |
+| Decision | Three-layer state doctrine locked with five rules. Ledger always wins. Frontmatter is lazy mirror (auto-fixed at lifecycle moments). L3 always rebuildable. Reconciliation is core. L3 cannot block gates (absolute, with pragmatic marker migration timeline). |
+| Date | 2026-03-29 |
+| Rationale | Ledger is already authoritative for all other state. Pipeline markers are the one inconsistency — resolved by recording migration intent. Lazy mirror (not strict) avoids churn during active work. Auto-fix at lifecycle moments keeps frontmatter useful for git diffs without manual toil. `gz state --repair` provides escape hatch for recovery. |
+| Deviations from recommendation | Lock 2 refined from "convenience mirror" to "lazy mirror" — frontmatter allowed to lag during active execution, auto-fixed at lifecycle moments only. Lock 5 accepted as absolute target with pragmatic timing — marker-to-ledger migration deferred to pipeline lifecycle ADR. |
+| ADR to author | Foundation ADR-0.0.9: State Doctrine and Source-of-Truth Hierarchy. Locks three-layer model, five rules, auto-fix behavior, repair command, and marker migration intent. |
 
 ---
 
@@ -183,27 +216,41 @@ This pool ADR is well-written and ready for promotion with minimal revision.
 Promote `storage-simplicity-profile` to a foundation ADR (proposed ADR-0.0.10).
 Add the following locks beyond what the pool ADR already contains:
 
-1. **TASK-* identity** added to the preserved identity surface list.
-2. **Tier escalation requires an ADR.** Moving any data from Tier A/B to Tier C is a Heavy-lane decision.
-3. **MCP posture: optional integration, never a hard dependency.** Agents that use MCP get enhanced capabilities; agents without MCP still function.
-4. **No SQLite cache for MVP.** The PRD Q&A noted this as uncertain — lock it as "not yet."
-5. **Replay and recovery:** All Tier A + B state must survive a `git clone` from scratch. If you lose `.gzkit/` but keep the git history and markdown artifacts, you can rebuild.
+1. **Five identity surfaces preserved across all tiers:** ADR-\*, OBPI-\*, REQ-\*,
+   TASK-\*, EV-\* (Evidence format TBD). IDs portable — no tier-specific translation.
+2. **Tier escalation requires an ADR.** Moving any data from Tier A/B to Tier C
+   is a Heavy-lane decision.
+3. **No external protocol dependency for core governance.** CLI + hooks + ledger
+   is the universal baseline. MCP, LSP, or any future protocol enhances but never
+   becomes a prerequisite.
+4. **JSONL for 1.0.0.** No SQLite cache for MVP. SQLite is a known future option
+   post-1.0, governed by tier escalation. BEADS' JSONL→SQLite progression is
+   acknowledged as a likely path.
+5. **Replay and recovery:** All Tier A + B state must survive a `git clone` from
+   scratch. Ledger committed to git. Tier B rebuilds on demand.
 
-### Open Questions
+### Open Questions (Resolved)
 
-- When (if ever) does the ledger need a query index? At what scale does linear JSONL scan become a problem?
-- Should Tier B caches have a manifest that lists what exists and how to rebuild each one?
-- Is there a Tier B item that already exists and isn't documented as such?
+1. **Ledger query index:** Principle recorded: introduce Tier B index when
+   `gz state` latency is user-perceptible. Post-1.0 concern. Current scale
+   (~2K events) is well within linear scan performance.
+
+2. **Tier B manifest:** Deferred until 3+ Tier B items exist. Concept recorded.
+   Graph engine (when built) will be Tier B item #2, triggering manifest design.
+
+3. **Undocumented Tier B items:** Pipeline markers (`.gzkit/markers/`) are the
+   known undocumented Tier B item. Will be listed in the foundation ADR.
+   Migration to Tier A (ledger events) deferred per Section 2 decisions.
 
 ### Decision Record
 
 | Field | Value |
 |-------|-------|
-| Decision | — |
-| Date | — |
-| Rationale | — |
-| Deviations from recommendation | — |
-| ADR to author | — |
+| Decision | Storage tier model locked with five rules. Three tiers (A: canonical, B: derived/rebuildable, C: external/requires ADR). Five identity surfaces. No external protocol dependency for core governance. JSONL for 1.0.0 with SQLite as post-1.0 option. Full state recoverable from git clone. |
+| Date | 2026-03-29 |
+| Rationale | Pool ADR `storage-simplicity-profile` already well-defined. Locks ratify and extend it with Evidence identity slot (from Section 1), protocol independence (reframed from MCP-specific), and explicit post-1.0 SQLite path (acknowledging BEADS progression). |
+| Deviations from recommendation | Lock 3 reframed: "MCP optional" generalized to "no external protocol dependency for core governance." Lock 4 refined: SQLite acknowledged as known future path (BEADS precedent), not just "not yet." |
+| ADR to author | Foundation ADR-0.0.10: Storage Tiers and Simplicity Profile. Promotes pool ADR with five locks, Tier B manifest deferred, pipeline markers documented. |
 
 ---
 
@@ -236,36 +283,51 @@ largest and most architecturally significant ADR in the upcoming track.
 
 Lock the following edge types:
 
-| Edge | From | To | Semantics |
-|------|------|----|-----------|
-| `contains` | ADR | OBPI | scope containment |
-| `contains` | OBPI | REQ | obligation containment |
-| `fulfills` | TASK | REQ | execution satisfies obligation |
-| `produces` | TASK | Evidence | work generates proof |
-| `satisfies` | Evidence | REQ | proof meets obligation |
-| `blocks` | any | any | dependency (cross-entity) |
-| `discovered-from` | any | any | emergent work lineage |
+| Edge | From | To | Semantics | Source |
+|------|------|----|-----------|--------|
+| `contains` | ADR | OBPI | scope containment | Structural (ID encoding) |
+| `contains` | OBPI | REQ | obligation containment | Authored in OBPI brief |
+| `fulfills` | TASK | REQ | execution satisfies obligation | Structural (TASK ID encodes parent REQ) |
+| `produces` | TASK | Evidence | work generates proof artifact | Ledger event (evidence booked to TASK) |
+| `reviewed-by` | Evidence | ReviewVerdict | reviewer agent's assessment | Ledger event (review_completed) |
+| `blocks` | any | any | dependency (cross-entity, cross-ADR) | Authored or discovered (distinguished by source attribute) |
+| `discovered-from` | any | any | emergent work lineage | Ledger event |
+
+**REQ satisfaction is derived, not an edge:** REQ is satisfied when all TASKs
+under REQ have status=COMPLETED, each TASK has Evidence (via `produces`), and
+that Evidence has a ReviewVerdict=sufficient (via `reviewed-by`). This is a
+graph traversal computed by the engine.
 
 The graph engine should be a pure-domain module (no I/O) that takes
 Layer 1 + Layer 2 inputs and computes the graph. `gz state` becomes a
 projection of the graph. `gz status` becomes a filtered view.
 
-### Open Questions
+### Open Questions (Resolved)
 
-- Should the graph be computed on every `gz state` call or cached as Tier B?
-- How large can the graph get? Is O(ADRs * OBPIs * REQs * TASKs) tractable for linear ledger scan?
-- Should `blocks` edges be authored (in briefs) or discovered (from ledger events)?
-- Does the graph engine need to understand cross-ADR dependencies?
+1. **Graph caching:** Compute on every `gz state` call for 1.0.0. No Tier B
+   cache. Add caching as optimization when latency becomes perceptible.
+
+2. **Graph scale:** Tractable at any realistic project size for 1.0.0. A project
+   with 200 ADRs / 1000 OBPIs / 4000 REQs / 12K TASKs produces ~17K nodes —
+   trivially fast for in-memory computation.
+
+3. **Blocks edge sources:** Both authored (from briefs/ADRs, known at planning
+   time) and discovered (from runtime events, emergent). Distinguished by
+   `source` attribute on the edge.
+
+4. **Cross-ADR dependencies:** Yes. The graph engine resolves the full project
+   graph including cross-ADR blocking edges. `gz state --blocked` shows
+   project-wide blockers, not just single-ADR blockers.
 
 ### Decision Record
 
 | Field | Value |
 |-------|-------|
-| Decision | — |
-| Date | — |
-| Rationale | — |
-| Deviations from recommendation | — |
-| ADR to author | — |
+| Decision | Graph engine scoped, edged, and computed as described. Seven edge types. REQ satisfaction derived via graph traversal. Compute-every-time for 1.0.0. Cross-ADR resolution. Blocks from both authored and discovered sources. |
+| Date | 2026-03-29 |
+| Rationale | Graph engine is the architectural center. Must resolve the full entity hierarchy (ADR → OBPI → REQ → TASK → Evidence) with two-party proof chain (reviewed-by edge). Cross-ADR resolution required for project-wide blocker visibility. Compute-every-time is sufficient at 1.0.0 scale. |
+| Deviations from recommendation | Removed `satisfies` edge (Evidence → REQ). Evidence doesn't satisfy REQ directly — it's booked to TASK. REQ satisfaction is derived upward via graph traversal. Added `reviewed-by` edge for two-party proof chain. Added `source` attribute to `blocks` edges. |
+| ADR to author | Pre-release ADR (Heavy): Graph Engine. Promotes `execution-memory-graph` pool ADR with locked edge types, derived satisfaction, compute model, and cross-ADR scope. Subsumes `prime-context-hooks` as OBPI (context projection of the graph). |
 
 ---
 
