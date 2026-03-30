@@ -24,6 +24,7 @@ from gzkit.commands.cli_audit import cli_audit_cmd
 from gzkit.commands.config_paths import check_config_paths_cmd
 from gzkit.commands.covers import covers_cmd
 from gzkit.commands.drift import drift_cmd
+from gzkit.commands.flags import flag_explain_cmd, flags_list_cmd
 from gzkit.commands.interview_cmd import interview
 from gzkit.commands.parity import parity_check_cmd
 from gzkit.commands.preflight import preflight_cmd
@@ -43,6 +44,7 @@ def register_maintenance_parsers(commands: argparse._SubParsersAction) -> None:
     _register_chores_parsers(commands)
     _register_skill_parsers(commands)
     _register_agent_parsers(commands)
+    _register_flag_parsers(commands)
 
 
 def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
@@ -550,3 +552,57 @@ def _add_git_sync_options(parser: argparse.ArgumentParser) -> None:
         "--no-push", dest="allow_push", action="store_false", help="Commit without pushing"
     )
     add_json_flag(parser, help_override="Output as JSON")
+
+
+def _register_flag_parsers(commands: argparse._SubParsersAction) -> None:
+    """Register ``gz flags`` and ``gz flag`` subcommands."""
+    # --- gz flags (list) ---------------------------------------------------
+    p_flags = commands.add_parser(
+        "flags",
+        help="List all feature flags with resolved values",
+        description="Display all registered feature flags with current values and sources.",
+        epilog=build_epilog(
+            [
+                "gz flags",
+                "gz flags --stale",
+                "gz flags --json",
+            ]
+        ),
+    )
+    p_flags.add_argument(
+        "--stale",
+        action="store_true",
+        help="Show only stale flags (past review_by or remove_by dates)",
+    )
+    add_json_flag(p_flags)
+    p_flags.set_defaults(func=lambda a: flags_list_cmd(stale=a.stale, as_json=a.as_json))
+
+    # --- gz flag (single-flag inspection) -----------------------------------
+    p_flag = commands.add_parser(
+        "flag",
+        help="Inspect a single feature flag",
+        description="Single-flag inspection commands (explain).",
+        epilog=build_epilog(
+            [
+                "gz flag explain ops.product_proof",
+                "gz flag explain ops.product_proof --json",
+            ]
+        ),
+    )
+    flag_commands = p_flag.add_subparsers(dest="flag_command")
+    flag_commands.required = True
+
+    p_explain = flag_commands.add_parser(
+        "explain",
+        help="Show full metadata and resolved state for one flag",
+        description="Display flag metadata, resolved value with source, staleness, and linked ADR.",
+        epilog=build_epilog(
+            [
+                "gz flag explain ops.product_proof",
+                "gz flag explain migration.config_gates_to_flags --json",
+            ]
+        ),
+    )
+    p_explain.add_argument("key", help="Dotted flag key (e.g. ops.product_proof)")
+    add_json_flag(p_explain)
+    p_explain.set_defaults(func=lambda a: flag_explain_cmd(key=a.key, as_json=a.as_json))

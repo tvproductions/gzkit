@@ -93,6 +93,8 @@ COMMAND_DOCS: dict[str, str] = {
     "task escalate": "docs/user/commands/task-escalate.md",
     "obpi withdraw": "docs/user/commands/obpi-withdraw.md",
     "preflight": "docs/user/commands/preflight.md",
+    "flags": "docs/user/commands/flags.md",
+    "flag explain": "docs/user/commands/flag-explain.md",
 }
 
 ADR_SEMVER_ID_RE = re.compile(r"^ADR-\d+\.\d+\.\d+(?:[.-][A-Za-z0-9][A-Za-z0-9.-]*)?$")
