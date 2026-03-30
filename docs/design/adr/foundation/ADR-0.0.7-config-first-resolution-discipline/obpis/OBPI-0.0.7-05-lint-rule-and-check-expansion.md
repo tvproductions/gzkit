@@ -3,7 +3,7 @@ id: OBPI-0.0.7-05-lint-rule-and-check-expansion
 parent: ADR-0.0.7
 item: 5
 lane: Lite
-status: Accepted
+status: Completed
 ---
 
 # OBPI-0.0.7-05-lint-rule-and-check-expansion: Enforcement and chore integration
@@ -13,7 +13,7 @@ status: Accepted
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.7-config-first-resolution-discipline/ADR-0.0.7-config-first-resolution-discipline.md`
 - **Checklist Item:** #5 - "Enforcement and chore integration — add `Path(__file__).parents` lint rule; expand `check-config-paths`; update `hardcoded-root-eradication` chore with manifest-aware criteria"
 
-**Status:** Accepted
+**Status:** Completed
 
 ## Objective
 
@@ -55,31 +55,31 @@ periodic sweeps. After this OBPI, regressions are caught at every stage.
 
 **Context:**
 
-- [ ] Parent ADR — understand three-layer enforcement model
-- [ ] OBPIs 03 and 04 complete (migration targets removed)
+- [x] Parent ADR — understand three-layer enforcement model
+- [x] OBPIs 03 and 04 complete (migration targets removed)
 
 **Existing Code:**
 
-- [ ] `src/gzkit/commands/quality.py` — current lint implementation
-- [ ] `src/gzkit/commands/config_paths.py` — current check-config-paths implementation
-- [ ] `config/gzkit.chores.json` — current chore definitions
+- [x] `src/gzkit/commands/quality.py` — current lint implementation
+- [x] `src/gzkit/commands/config_paths.py` — current check-config-paths implementation
+- [x] `config/gzkit.chores.json` — current chore definitions
 
 ## Quality Gates
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
+- [x] Intent and scope recorded in this OBPI brief
 
 ### Gate 2: TDD
 
-- [ ] Tests pass: `uv run gz test`
-- [ ] Lint rule catches synthetic violation in test
-- [ ] check-config-paths catches synthetic unmapped path in test
+- [x] Tests pass: `uv run gz test`
+- [x] Lint rule catches synthetic violation in test
+- [x] check-config-paths catches synthetic unmapped path in test
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 ## Verification
 
@@ -93,30 +93,38 @@ grep -rn "Path(__file__).*parents" src/gzkit/   # expect: no output
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.7-05-01: Given a source file containing `Path(__file__).parents[`, when `gz lint` runs, then exit code is non-zero and violation is reported
-- [ ] REQ-0.0.7-05-02: Given a source file with a path literal not mapped to any manifest key, when `gz check-config-paths` runs, then it reports the unmapped literal
-- [ ] REQ-0.0.7-05-03: Given the `hardcoded-root-eradication` chore, when `gz chores show hardcoded-root-eradication` runs, then acceptance criteria reference manifest v2 keys
-- [ ] REQ-0.0.7-05-04: Given clean source (post-migration), when `gz lint` and `gz check-config-paths` run, then both exit 0
+- [x] REQ-0.0.7-05-01: Given a source file containing `Path(__file__).parents[`, when `gz lint` runs, then exit code is non-zero and violation is reported
+- [x] REQ-0.0.7-05-02: Given a source file with a path literal not mapped to any manifest key, when `gz check-config-paths` runs, then it reports the unmapped literal
+- [x] REQ-0.0.7-05-03: Given the `hardcoded-root-eradication` chore, when `gz chores show hardcoded-root-eradication` runs, then acceptance criteria reference manifest v2 keys
+- [x] REQ-0.0.7-05-04: Given clean source (post-migration), when `gz lint` and `gz check-config-paths` run, then both exit 0
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, enforcement verified
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, enforcement verified
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 ## Evidence
 
-### Gate 2 (TDD)
+### Implementation Summary
 
-```text
-# Paste test output and enforcement proof here
-```
+- Added `_find_parents_subscript_lines()` and `run_parents_pattern_lint()` to `quality.py` — AST-based detection of `Path(__file__).parents[N]` subscript access in `src/gzkit/`
+- Added `_flatten_manifest_paths()`, `_is_path_covered_by_manifest()`, and `_collect_source_path_literal_issues()` to `config_paths.py` — AST-based source scanning for unmapped path literals with parent directory derivation
+- Updated `ops/chores/hardcoded-root-eradication/acceptance.json` and `CHORE.md` with manifest-aware criteria (`gz lint`, `gz check-config-paths`, source-wide parents scan)
+- Created `tests/test_lint_parents.py` (5 tests) and `tests/test_config_paths.py` (11 tests)
 
-### Code Quality
+### Key Proof
 
-```text
-# Paste lint/format/type check output here
+```bash
+$ uv run gz lint
+# Lint passed. (includes ruff + ADR path contract + parents-pattern lint)
+
+$ uv run gz check-config-paths
+# Config-path audit passed. (includes source path literal scan)
+
+$ uv run -m unittest tests.test_lint_parents tests.test_config_paths -v
+# Ran 16 tests in 0.005s — OK
 ```
 
 ## Tracked Defects
@@ -125,14 +133,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a` (Lite lane, Lite parent)
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: Jeff (human operator)
+- Attestation: attest completed
+- Date: 2026-03-30
 
 ---
 
-**Brief Status:** Accepted
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-30
 
 **Evidence Hash:** -

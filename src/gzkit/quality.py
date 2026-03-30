@@ -70,6 +70,89 @@ def run_command(command: str, cwd: Path | None = None) -> QualityResult:
         )
 
 
+def _find_parents_subscript_lines(source: str) -> list[int]:
+    """Find line numbers where Path(__file__).parents[N] appears in code.
+
+    Uses AST to detect actual subscript access on .parents attributes
+    chained from Path(__file__) calls. String literals and comments
+    containing the pattern text are not flagged.
+    """
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return []
+
+    violations: list[int] = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Subscript):
+            continue
+        if not isinstance(node.value, ast.Attribute) or node.value.attr != "parents":
+            continue
+        inner = node.value.value
+        while isinstance(inner, ast.Call) and isinstance(inner.func, ast.Attribute):
+            inner = inner.func.value
+        if not (isinstance(inner, ast.Call) and isinstance(inner.func, ast.Name)):
+            continue
+        if inner.func.id != "Path":
+            continue
+        if inner.args and isinstance(inner.args[0], ast.Name) and inner.args[0].id == "__file__":
+            violations.append(node.lineno)
+    return violations
+
+
+def run_parents_pattern_lint(project_root: Path) -> QualityResult:
+    """Detect Path(__file__).parents[N] usage in src/gzkit/ via AST.
+
+    Catches module-level root derivations that should use manifest-based
+    resolution instead. Only scans source code — test files are excluded
+    because they legitimately use Path(__file__).parent for fixture location.
+
+    @covers OBPI-0.0.7-05-lint-rule-and-check-expansion
+    """
+    src_dir = project_root / "src" / "gzkit"
+    if not src_dir.exists():
+        return QualityResult(
+            success=True,
+            command="parents-pattern lint",
+            stdout="src/gzkit/ not found; skipping.",
+            stderr="",
+            returncode=0,
+        )
+
+    violations: list[str] = []
+
+    for py_file in sorted(src_dir.rglob("*.py")):
+        try:
+            source = py_file.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        hit_lines = _find_parents_subscript_lines(source)
+        if not hit_lines:
+            continue
+        rel_path = py_file.relative_to(project_root).as_posix()
+        lines = source.splitlines()
+        for line_no in hit_lines:
+            text = lines[line_no - 1].strip() if line_no <= len(lines) else ""
+            violations.append(f"{rel_path}:{line_no}: {text}")
+
+    if violations:
+        return QualityResult(
+            success=False,
+            command="parents-pattern lint",
+            stdout=("Path(__file__).parents[N] violations found:\n" + "\n".join(violations)),
+            stderr="Use manifest-based path resolution instead.",
+            returncode=1,
+        )
+
+    return QualityResult(
+        success=True,
+        command="parents-pattern lint",
+        stdout="No Path(__file__).parents[N] violations found.",
+        stderr="",
+        returncode=0,
+    )
+
+
 def run_lint(project_root: Path) -> QualityResult:
     """Run linting (ruff check).
 
@@ -82,19 +165,17 @@ def run_lint(project_root: Path) -> QualityResult:
     """
     ruff_result = run_command("uvx ruff check src tests", cwd=project_root)
     path_contract_result = run_adr_path_contract_lint(project_root)
+    parents_result = run_parents_pattern_lint(project_root)
 
-    success = ruff_result.success and path_contract_result.success
-    returncode = 0 if success else (ruff_result.returncode or path_contract_result.returncode)
-    stdout = "\n".join(
-        output for output in [ruff_result.stdout, path_contract_result.stdout] if output.strip()
-    )
-    stderr = "\n".join(
-        output for output in [ruff_result.stderr, path_contract_result.stderr] if output.strip()
-    )
+    sub_results = [ruff_result, path_contract_result, parents_result]
+    success = all(r.success for r in sub_results)
+    returncode = 0 if success else next((r.returncode for r in sub_results if not r.success), 1)
+    stdout = "\n".join(output for output in [r.stdout for r in sub_results] if output.strip())
+    stderr = "\n".join(output for output in [r.stderr for r in sub_results] if output.strip())
 
     return QualityResult(
         success=success,
-        command="uvx ruff check src tests + ADR path contract lint",
+        command="uvx ruff check src tests + ADR path contract lint + parents-pattern lint",
         stdout=stdout,
         stderr=stderr,
         returncode=returncode,
