@@ -122,12 +122,25 @@ def check(as_json: bool = False) -> None:
 
     drift: DriftAdvisoryResult = run_drift_advisory(project_root)
 
+    # Flag health (advisory — warnings only, does not block)
+    from gzkit.flags.diagnostics import FlagHealthSummary, get_flag_health
+    from gzkit.flags.registry import load_registry
+
+    flag_health: FlagHealthSummary | None = None
+    try:
+        registry = load_registry()
+        flag_health = get_flag_health(registry)
+    except Exception:  # noqa: BLE001 — flag health is advisory
+        pass
+
     if as_json:
         payload: dict[str, object] = {
             "success": all(s for _, s in results),
             "checks": dict(results),
             "drift": drift.to_dict(),
         }
+        if flag_health is not None:
+            payload["flag_health"] = flag_health.model_dump()
         sys.stdout.write(json.dumps(payload, indent=2) + "\n")
         if not all(s for _, s in results):
             raise SystemExit(1)
@@ -146,6 +159,7 @@ def check(as_json: bool = False) -> None:
         console.print("\n[red]❌ Some checks failed.[/red]")
 
     _render_drift_advisory(drift)
+    _render_flag_health(flag_health)
 
     if not all_passed:
         raise SystemExit(1)
@@ -175,5 +189,33 @@ def _render_drift_advisory(drift: DriftAdvisoryResult) -> None:
 
     console.print(
         f"  Total: {drift.total_drift_count} finding(s) "
+        f"[dim](advisory — does not affect exit code)[/dim]"
+    )
+
+
+def _render_flag_health(health: object | None) -> None:
+    """Render flag health warnings after quality checks."""
+    from gzkit.flags.diagnostics import FlagHealthSummary
+
+    if not isinstance(health, FlagHealthSummary):
+        return
+    if health.stale_count == 0 and health.approaching_count == 0:
+        return
+
+    console.print("\n[yellow]⚠ Flag health warnings[/yellow]")
+
+    if health.stale_keys:
+        console.print("  Stale flags (past deadline):")
+        for key in health.stale_keys:
+            console.print(f"    [red]stale[/red]  {key}")
+
+    if health.approaching_keys:
+        console.print("  Approaching deadline (within 14 days):")
+        for key in health.approaching_keys:
+            console.print(f"    [yellow]warning[/yellow]  {key}")
+
+    console.print(
+        f"  Total: {health.stale_count} stale, "
+        f"{health.approaching_count} approaching "
         f"[dim](advisory — does not affect exit code)[/dim]"
     )
