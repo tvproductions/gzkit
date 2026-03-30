@@ -3,7 +3,7 @@ id: OBPI-0.0.8-08-operator-docs
 parent: ADR-0.0.8-feature-toggle-system
 item: 8
 lane: Heavy
-status: Pending
+status: Completed
 ---
 
 # OBPI-0.0.8-08: Operator Documentation
@@ -13,7 +13,7 @@ status: Pending
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.8-feature-toggle-system/ADR-0.0.8-feature-toggle-system.md`
 - **Checklist Item:** #11 — "Operator docs (runbook, manpage, system docs)"
 
-**Status:** Pending
+**Status:** Completed
 
 ## Objective
 
@@ -67,37 +67,37 @@ Covenant.
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item #11 referenced
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist item #11 referenced
 
 ### Gate 2: TDD
 
-- [ ] N/A — documentation OBPI; no code changes
+- [x] N/A — documentation OBPI; no code changes
 
 ### Code Quality
 
-- [ ] Docs lint: docs build cleanly
+- [x] Docs lint: docs build cleanly
 
 ### Gate 3: Docs (Heavy)
 
-- [ ] `mkdocs build --strict` passes
-- [ ] Runbook feature flags section present
-- [ ] Command manpages present for `gz flags` and `gz flag explain`
-- [ ] System docs page present
-- [ ] Migration note present
+- [x] `mkdocs build --strict` passes
+- [x] Runbook feature flags section present
+- [x] Command manpages present for `gz flags` and `gz flag explain`
+- [x] System docs page present
+- [x] Migration note present
 
 ### Gate 5: Human (Heavy)
 
-- [ ] Human attestation recorded
+- [x] Human attestation recorded
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.8-08-01: Given `mkdocs build --strict`, when run, then exits 0 with no warnings about missing pages.
-- [ ] REQ-0.0.8-08-02: Given `docs/user/runbook.md`, when searched for "Feature Flags", then a section exists with list/stale/override instructions.
-- [ ] REQ-0.0.8-08-03: Given `docs/user/commands/flags.md`, when read, then contains description, usage, options, examples, exit codes per CLI Doctrine.
-- [ ] REQ-0.0.8-08-04: Given `docs/user/commands/flag-explain.md`, when read, then contains description, usage, arguments, examples, exit codes.
-- [ ] REQ-0.0.8-08-05: Given `docs/governance/feature-flags.md`, when read, then explains categories, lifecycle rules, precedence, convention, and forbidden locations.
-- [ ] REQ-0.0.8-08-06: Given a grep for "config.gates" in docs, when found, then it appears only in the migration note context.
+- [x] REQ-0.0.8-08-01: Given `mkdocs build --strict`, when run, then exits 0 with no warnings about missing pages.
+- [x] REQ-0.0.8-08-02: Given `docs/user/runbook.md`, when searched for "Feature Flags", then a section exists with list/stale/override instructions.
+- [x] REQ-0.0.8-08-03: Given `docs/user/commands/flags.md`, when read, then contains description, usage, options, examples, exit codes per CLI Doctrine.
+- [x] REQ-0.0.8-08-04: Given `docs/user/commands/flag-explain.md`, when read, then contains description, usage, arguments, examples, exit codes.
+- [x] REQ-0.0.8-08-05: Given `docs/governance/feature-flags.md`, when read, then explains categories, lifecycle rules, precedence, convention, and forbidden locations.
+- [x] REQ-0.0.8-08-06: Given a grep for "config.gates" in docs, when found, then it appears only in the migration note context.
 
 ## Verification Commands
 
@@ -125,14 +125,28 @@ uv run gz validate --documents
 
 ### Implementation Summary
 
-- Files created/modified: (to be filled on completion)
-- Validation commands run: (to be filled on completion)
-- Date completed: (to be filled on completion)
+- Files created: docs/user/commands/flags.md, docs/user/commands/flag-explain.md, docs/governance/feature-flags.md
+- Files modified: docs/user/runbook.md, docs/user/commands/index.md, mkdocs.yml
+- Validation commands run: gz lint, gz typecheck, gz test (2163 pass), mkdocs build --strict, gz validate --documents
+- Date completed: 2026-03-30
 
 ### Key Proof
 
-(to be filled on completion)
+```bash
+uv run mkdocs build --strict
+# exit 0 — all three new pages build without errors
+
+grep -n "Feature Flags" docs/user/runbook.md
+# 473:## Feature Flags
+```
+
+## Human Attestation
+
+- **Attestor:** Jeff
+- **Attestation:** attest completed
+- **Date:** 2026-03-30
 
 ---
 
-**Brief Status:** Pending
+**Brief Status:** Completed
+**Date Completed:** 2026-03-30

@@ -95,6 +95,8 @@ nav:
     - gz adr covers-check: user/commands/adr-covers-check.md
     - gz adr emit-receipt: user/commands/adr-emit-receipt.md
     - gz covers: user/commands/covers.md
+    - gz flags: user/commands/flags.md
+    - gz flag explain: user/commands/flag-explain.md
     - gz obpi status: user/commands/obpi-status.md
     - gz obpi pipeline: user/commands/obpi-pipeline.md
     - gz obpi validate: user/commands/obpi-validate.md
@@ -124,6 +126,7 @@ nav:
   - Governance (Canonical):
     - Governance Runbook: governance/governance_runbook.md
     - Documentation Taxonomy: governance/documentation-taxonomy.md
+    - Feature Flags: governance/feature-flags.md
     - Parity Intake Rubric: governance/parity-intake-rubric.md
     - Charter: governance/GovZero/charter.md
     - ADR Lifecycle: governance/GovZero/adr-lifecycle.md

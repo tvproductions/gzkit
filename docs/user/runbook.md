@@ -470,6 +470,71 @@ If none resolve, stop and report blockers. Do not claim parity completion withou
 
 ---
 
+## Feature Flags
+
+Feature flags control behavior transitions --- phased rollout of new
+checks, kill switches for risky behavior, and migration paths between
+old and new internals.
+
+See [Feature Flag System](../governance/feature-flags.md) for the full
+architecture (categories, lifecycle, precedence, toggle point rules).
+
+### List all flags
+
+```bash
+uv run gz flags
+uv run gz flags --stale    # only flags past their deadline
+uv run gz flags --json     # machine-readable output
+```
+
+### Inspect a single flag
+
+```bash
+uv run gz flag explain ops.product_proof
+```
+
+Shows the resolved value, which precedence layer provided it,
+deadlines, and linked ADR/issue.
+
+### Check for stale flags
+
+Stale flags are past their `review_by` (ops) or `remove_by`
+(release/migration/development) deadline:
+
+```bash
+uv run gz flags --stale
+```
+
+A CI time-bomb test fails if any flag is overdue, so stale flags
+should be addressed promptly --- either extend the deadline after
+review or remove the flag and its code paths.
+
+### Override a flag via `.gzkit.json`
+
+Add a `flags` section to your project config:
+
+```json
+{
+  "mode": "lite",
+  "flags": {
+    "ops.product_proof": false
+  }
+}
+```
+
+### Override a flag via environment variable
+
+Replace dots with underscores, uppercase, prefix with `GZKIT_FLAG_`:
+
+```bash
+GZKIT_FLAG_OPS_PRODUCT_PROOF=false uv run gz closeout ADR-0.1.0
+```
+
+Valid values: `true`, `1`, `yes`, `false`, `0`, `no`
+(case-insensitive).
+
+---
+
 ## Notes
 
 - Do not run `gz audit` pre-attestation.
