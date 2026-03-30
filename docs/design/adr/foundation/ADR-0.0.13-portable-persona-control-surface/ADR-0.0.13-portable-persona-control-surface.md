@@ -83,6 +83,23 @@ and composed, not **what** they say.
 - [ ] Vendor-neutral persona loading (Claude, Codex, Copilot adapters)
 - [ ] Persona drift monitoring surface (observability)
 
+## Decomposition Scorecard
+
+- Data/State: 2
+- Logic/Engine: 2
+- Interface: 2
+- Observability: 2
+- Lineage: 1
+- Dimension Total: 9
+- Baseline Range: 5+
+- Baseline Selected: 5
+- Split Single-Narrative: 1
+- Split Surface Boundary: 0
+- Split State Anchor: 0
+- Split Testability Ceiling: 0
+- Split Total: 1
+- Final Target OBPI Count: 6
+
 ## Intent
 
 Make persona frames a first-class portable GovZero primitive, enabling any

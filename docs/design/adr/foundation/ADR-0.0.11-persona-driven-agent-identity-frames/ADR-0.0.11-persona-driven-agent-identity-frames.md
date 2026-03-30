@@ -102,6 +102,24 @@ activates the right trait cluster via personality inference (PSM).
 - [ ] Trait composition model (orthogonal combination rules)
 - [ ] AGENTS.md context frame template update (persona section)
 - [ ] Supersede `ADR-pool.per-command-persona-context`
+- [ ] Persona schema validation and test infrastructure
+
+## Decomposition Scorecard
+
+- Data/State: 1
+- Logic/Engine: 2
+- Interface: 2
+- Observability: 1
+- Lineage: 1
+- Dimension Total: 7
+- Baseline Range: 4-4
+- Baseline Selected: 4
+- Split Single-Narrative: 1
+- Split Surface Boundary: 1
+- Split State Anchor: 0
+- Split Testability Ceiling: 0
+- Split Total: 2
+- Final Target OBPI Count: 6
 
 ## Intent
 
@@ -151,6 +169,7 @@ measurably different behavioral outcomes.
 | 3 | OBPI-0.0.11-03 | Trait composition model (orthogonal combination, anti-traits) | Lite | Pending |
 | 4 | OBPI-0.0.11-04 | AGENTS.md context frame template update (persona section) | Heavy | Pending |
 | 5 | OBPI-0.0.11-05 | Supersede pool ADR and integrate existing cognitive stance patterns | Lite | Pending |
+| 6 | OBPI-0.0.11-06 | Persona schema validation and test infrastructure | Lite | Pending |
 
 **Briefs location:** `obpis/OBPI-0.0.11-*.md`
 
