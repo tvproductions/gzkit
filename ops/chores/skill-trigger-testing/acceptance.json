@@ -1,0 +1,9 @@
+{
+  "criteria": [
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run -m unittest -q",
+      "expected": 0
+    }
+  ]
+}
