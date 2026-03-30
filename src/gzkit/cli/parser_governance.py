@@ -257,15 +257,58 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:
                 "gz closeout ADR-0.1.0",
                 "gz closeout ADR-0.1.0 --dry-run",
                 "gz closeout ADR-0.1.0 --json",
+                "gz closeout ADR-0.1.0 --ceremony",
+                "gz closeout ADR-0.1.0 --ceremony --next",
+                'gz closeout ADR-0.1.0 --ceremony --attest "Completed"',
             ]
         ),
     )
     p_closeout.add_argument("adr", help="ADR identifier to close out (e.g. ADR-0.0.4)")
     add_json_flag(p_closeout)
     add_dry_run_flag(p_closeout)
-    p_closeout.set_defaults(
-        func=lambda a: closeout_cmd(adr=a.adr, as_json=a.as_json, dry_run=a.dry_run)
+    p_closeout.add_argument(
+        "--ceremony",
+        action="store_true",
+        default=False,
+        help="Run interactive ceremony with deterministic step sequencing",
     )
+    p_closeout.add_argument(
+        "--next",
+        dest="ceremony_next",
+        action="store_true",
+        default=False,
+        help="Advance ceremony to next step (requires --ceremony)",
+    )
+    p_closeout.add_argument(
+        "--ceremony-status",
+        dest="ceremony_status",
+        action="store_true",
+        default=False,
+        help="Show current ceremony step (requires --ceremony)",
+    )
+    p_closeout.add_argument(
+        "--attest",
+        dest="ceremony_attest",
+        default=None,
+        metavar="TEXT",
+        help='Record attestation at step 6 (e.g. --attest "Completed")',
+    )
+
+    def _closeout_dispatch(a: argparse.Namespace) -> None:
+        if a.ceremony or a.ceremony_next or a.ceremony_status or a.ceremony_attest:
+            from gzkit.commands.closeout_ceremony import ceremony_cmd
+
+            ceremony_cmd(
+                adr=a.adr,
+                as_json=a.as_json,
+                ceremony_next=a.ceremony_next,
+                ceremony_status=a.ceremony_status,
+                ceremony_attest=a.ceremony_attest,
+            )
+        else:
+            closeout_cmd(adr=a.adr, as_json=a.as_json, dry_run=a.dry_run)
+
+    p_closeout.set_defaults(func=_closeout_dispatch)
 
     p_audit = commands.add_parser(
         "audit",
