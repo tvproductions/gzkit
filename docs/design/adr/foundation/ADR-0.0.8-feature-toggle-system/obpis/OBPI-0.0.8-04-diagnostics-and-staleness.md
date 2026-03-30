@@ -3,7 +3,7 @@ id: OBPI-0.0.8-04-diagnostics-and-staleness
 parent: ADR-0.0.8-feature-toggle-system
 item: 4
 lane: Heavy
-status: Pending
+status: Completed
 ---
 
 # OBPI-0.0.8-04: Diagnostics and Staleness
@@ -13,7 +13,7 @@ status: Pending
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.8-feature-toggle-system/ADR-0.0.8-feature-toggle-system.md`
 - **Checklist Item:** #6 — "Stale flag detection and health reporting" and #7 — "Time-bomb CI test for expired flags"
 
-**Status:** Pending
+**Status:** Completed
 
 ## Objective
 
@@ -64,39 +64,39 @@ time-bomb test is a new CI enforcement mechanism.
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist items #6 and #7 referenced
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist items #6 and #7 referenced
 
 ### Gate 2: TDD
 
-- [ ] Unit tests validate stale detection with flags past remove_by
-- [ ] Unit tests validate stale detection with flags past review_by
-- [ ] Unit tests validate non-stale flags pass cleanly
-- [ ] Unit tests validate health summary counts
-- [ ] Unit tests validate explain output includes all expected fields
-- [ ] Unit tests validate time-bomb test catches expired flags
-- [ ] Tests pass: `uv run gz test`
+- [x] Unit tests validate stale detection with flags past remove_by
+- [x] Unit tests validate stale detection with flags past review_by
+- [x] Unit tests validate non-stale flags pass cleanly
+- [x] Unit tests validate health summary counts
+- [x] Unit tests validate explain output includes all expected fields
+- [x] Unit tests validate time-bomb test catches expired flags
+- [x] Tests pass: `uv run gz test`
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 ### Gate 3: Docs (Heavy)
 
-- [ ] Module docstring in diagnostics.py
+- [x] Module docstring in diagnostics.py
 
 ### Gate 5: Human (Heavy)
 
-- [ ] Human attestation recorded
+- [x] Human attestation recorded
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.8-04-01: Given a flag with `remove_by: 2026-03-01` and today is `2026-03-30`, when `get_stale_flags` runs, then the flag appears in the stale list.
-- [ ] REQ-0.0.8-04-02: Given no expired flags, when `test_no_expired_flags` runs, then the test passes.
-- [ ] REQ-0.0.8-04-03: Given an expired flag in the registry, when `test_no_expired_flags` runs, then the test fails with a message naming the expired flag.
-- [ ] REQ-0.0.8-04-04: Given `explain_flag("ops.product_proof", service)`, when called, then output includes: key, category, default, current value, source, review_by, days remaining.
-- [ ] REQ-0.0.8-04-05: Given `gz check` is run with stale flags present, when output is examined, then flag health warnings appear.
+- [x] REQ-0.0.8-04-01: Given a flag with `remove_by: 2026-03-01` and today is `2026-03-30`, when `get_stale_flags` runs, then the flag appears in the stale list.
+- [x] REQ-0.0.8-04-02: Given no expired flags, when `test_no_expired_flags` runs, then the test passes.
+- [x] REQ-0.0.8-04-03: Given an expired flag in the registry, when `test_no_expired_flags` runs, then the test fails with a message naming the expired flag.
+- [x] REQ-0.0.8-04-04: Given `explain_flag("ops.product_proof", service)`, when called, then output includes: key, category, default, current value, source, review_by, days remaining.
+- [x] REQ-0.0.8-04-05: Given `gz check` is run with stale flags present, when output is examined, then flag health warnings appear.
 
 ## Verification Commands
 
@@ -124,14 +124,25 @@ uv run gz typecheck
 
 ### Implementation Summary
 
-- Files created/modified: (to be filled on completion)
-- Validation commands run: (to be filled on completion)
-- Date completed: (to be filled on completion)
+- Files created: `src/gzkit/flags/diagnostics.py`, `tests/test_flag_diagnostics.py`, `tests/test_no_expired_flags.py`
+- Files modified: `src/gzkit/flags/__init__.py`, `src/gzkit/commands/quality.py`
+- Validation: 17 OBPI-specific tests pass, 2146 full suite tests pass, lint clean, typecheck clean, 99% coverage on diagnostics.py
+- Date completed: 2026-03-30
 
 ### Key Proof
 
-(to be filled on completion)
+```bash
+$ uv run -m unittest tests.test_flag_diagnostics tests.test_no_expired_flags -v
+# 17/17 pass — stale detection, health summary, explain, time-bomb all verified
+```
+
+## Human Attestation
+
+- **Attestor:** jeff
+- **Date:** 2026-03-30
+- **Attestation:** attest completed
 
 ---
 
-**Brief Status:** Pending
+**Brief Status:** Completed
+**Date Completed:** 2026-03-30
