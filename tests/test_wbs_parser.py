@@ -1,11 +1,17 @@
-"""Tests for WBS table parsing and lane resolution in gz specify.
+"""Tests for WBS table parsing and ADR content extraction in gz specify.
 
 @covers ADR-pool.per-command-persona-context
 """
 
 import unittest
 
-from gzkit.commands.specify_cmd import _resolve_lane_from_wbs, _resolve_objective_from_wbs
+from gzkit.commands.specify_cmd import (
+    _extract_decision_as_requirements,
+    _extract_denied_paths,
+    _extract_integration_points,
+    _resolve_lane_from_wbs,
+    _resolve_objective_from_wbs,
+)
 from gzkit.core.scoring import WbsRow, parse_wbs_table
 
 SAMPLE_ADR = """\
@@ -23,6 +29,47 @@ SAMPLE_ADR = """\
 ## Intent
 
 Some intent text.
+"""
+
+SAMPLE_ADR_WITH_CONTEXT = """\
+# ADR-0.0.11 — Test ADR
+
+## Agent Context Frame — MANDATORY
+
+**Role:** Governance architect
+
+**Purpose:** Establish persona control surface
+
+**Critical Constraint:** Implementations MUST use virtue-ethics framing, NEVER expertise claims.
+
+**Integration Points:**
+
+- `src/gzkit/config.py` — GzkitConfig, PathConfig models
+- `src/gzkit/commands/common.py` — load_manifest(), ensure_initialized()
+- `.gzkit/manifest.json` — the resolved config artifact
+
+## Decision
+
+- Persona is a **control surface**, stored in `.gzkit/personas/`
+- Persona frames use **virtue-ethics-based behavioral identity**
+- Traits **compose orthogonally** per the PERSONA/ICLR 2026 framework
+- The **operating system view** (PSM) is the adopted model
+
+## Non-Goals
+
+- **Runtime persona switching** — defines static frames, not dynamic changes
+- **Activation-space manipulation** — operates at prompt level, not model internals
+- **Persona effectiveness measurement** — deferred to ADR-0.0.13
+
+## OBPI Decomposition — Work Breakdown Structure (Level 1)
+
+| # | OBPI | Specification Summary | Lane | Status |
+|---|------|----------------------|------|--------|
+| 1 | OBPI-0.0.11-01 | Research synthesis | Lite | Pending |
+
+## Intent
+
+Some text.
 """
 
 
@@ -106,6 +153,72 @@ class TestResolveObjectiveFromWbs(unittest.TestCase):
         rows = [WbsRow(item=1, obpi_id="X", spec_summary="Already ends.", lane="lite", status="P")]
         obj = _resolve_objective_from_wbs(rows, 1, "fallback")
         self.assertEqual(obj, "Already ends.")
+
+
+class TestExtractIntegrationPoints(unittest.TestCase):
+    """Verify Integration Points extraction from ADR content."""
+
+    def test_extracts_paths(self):
+        result = _extract_integration_points(SAMPLE_ADR_WITH_CONTEXT)
+        self.assertIn("src/gzkit/config.py", result)
+        self.assertIn("src/gzkit/commands/common.py", result)
+        self.assertIn(".gzkit/manifest.json", result)
+
+    def test_preserves_descriptions(self):
+        result = _extract_integration_points(SAMPLE_ADR_WITH_CONTEXT)
+        self.assertIn("GzkitConfig", result)
+
+    def test_fallback_when_no_integration_points(self):
+        result = _extract_integration_points("# No integration points here")
+        self.assertIn("src/module/", result)
+
+    def test_returns_structured_lines(self):
+        result = _extract_integration_points(SAMPLE_ADR_WITH_CONTEXT)
+        lines = result.strip().splitlines()
+        self.assertEqual(len(lines), 3)
+        self.assertTrue(all(line.startswith("- `") for line in lines))
+
+
+class TestExtractDecisionAsRequirements(unittest.TestCase):
+    """Verify Decision bullets become OBPI requirements."""
+
+    def test_extracts_decision_bullets(self):
+        result = _extract_decision_as_requirements(SAMPLE_ADR_WITH_CONTEXT)
+        self.assertIn("REQUIREMENT:", result)
+        self.assertIn("control surface", result)
+        self.assertIn("virtue-ethics", result)
+
+    def test_includes_critical_constraint(self):
+        result = _extract_decision_as_requirements(SAMPLE_ADR_WITH_CONTEXT)
+        self.assertIn("ALWAYS:", result)
+        self.assertIn("virtue-ethics", result)
+
+    def test_fallback_when_no_decision(self):
+        result = _extract_decision_as_requirements("# No decision here")
+        self.assertIn("REQUIREMENT: First constraint", result)
+
+    def test_skips_template_placeholders(self):
+        adr = "## Decision\n\n- {Testable bullet 1}\n- Real requirement\n"
+        result = _extract_decision_as_requirements(adr)
+        self.assertNotIn("{Testable", result)
+        self.assertIn("Real requirement", result)
+
+
+class TestExtractDeniedPaths(unittest.TestCase):
+    """Verify Non-Goals extraction as denied paths."""
+
+    def test_extracts_non_goals(self):
+        result = _extract_denied_paths(SAMPLE_ADR_WITH_CONTEXT)
+        self.assertIn("Runtime persona switching", result)
+        self.assertIn("Activation-space manipulation", result)
+
+    def test_fallback_when_no_non_goals(self):
+        result = _extract_denied_paths("# No non-goals here")
+        self.assertIn("Paths not listed in Allowed Paths", result)
+
+    def test_always_includes_catch_all(self):
+        result = _extract_denied_paths(SAMPLE_ADR_WITH_CONTEXT)
+        self.assertIn("Paths not listed in Allowed Paths", result)
 
 
 if __name__ == "__main__":

@@ -58,5 +58,5 @@ class TestSpecifyCommand(unittest.TestCase):
                 main, ["specify", "core-feature", "--parent", "ADR-0.1.0", "--item", "1"]
             )
             self.assertEqual(result.exit_code, 0)
-            self.assertIn("template defaults", result.output)
-            self.assertIn("needs authoring", result.output)
+            self.assertIn("populated from ADR content", result.output)
+            self.assertIn("Review allowed paths", result.output)
