@@ -149,7 +149,7 @@ class TestGenerateManifest(unittest.TestCase):
 
             manifest = generate_manifest(project_root, config)
 
-            self.assertEqual(manifest["schema"], "gzkit.manifest.v1")
+            self.assertEqual(manifest["schema"], "gzkit.manifest.v2")
             self.assertIn("structure", manifest)
             self.assertIn("artifacts", manifest)
             self.assertIn("control_surfaces", manifest)
