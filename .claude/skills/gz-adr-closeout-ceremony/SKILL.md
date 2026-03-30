@@ -53,20 +53,24 @@ gz closeout ADR-X.Y.Z --ceremony --attest "Completed"  # Record attestation
 ### Flow
 
 1. Run `uv run gz closeout ADR-X.Y.Z --ceremony`.
-2. If the CLI output lists commands to run, run them.
-3. Run `uv run gz closeout ADR-X.Y.Z --ceremony --next`.
-4. Repeat steps 2-3 until one of these:
-   - **CLI says "I await your attestation"** → Stop. Wait for human decision.
-     Then run `--attest "<their decision>"` and continue the loop.
-   - **CLI says "COMPLETE"** → Ceremony is done.
-
-### Post-attestation
-
-After attestation, continue the loop. Run closeout commands, GH issue commands,
-release commands as the CLI instructs. Keep advancing with `--next` until COMPLETE.
+2. Run evidence commands (tests, lint, typecheck) listed in the summary.
+3. Keep advancing with `--next` through mechanical steps (docs checklist, etc.).
+4. **Walkthrough step:** When the CLI lists walkthrough commands, ask the human:
+   "Want me to run these, or will you run them yourself?" Then do what they say.
+5. Advance to attestation. **Stop. Wait for human decision.**
+   Then run `--attest "<their decision>"`.
+6. After attestation, continue advancing — run closeout, GH issues, etc. as
+   instructed until the CLI says "COMPLETE".
 
 For foundation (0.0.x) ADRs, release notes and GitHub release steps are
 automatically skipped.
+
+### Human gates (where the agent stops)
+
+- **Walkthrough offer** — "run these or you run them?"
+- **Attestation** — wait for human decision
+
+Everything else the agent just does.
 
 ---
 
