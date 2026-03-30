@@ -2,7 +2,7 @@
 id: OBPI-0.0.13-05-persona-drift-monitoring
 parent: ADR-0.0.13
 item: 5
-lane: Lite
+lane: Heavy
 status: Draft
 ---
 
@@ -11,7 +11,7 @@ status: Draft
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.13-portable-persona-control-surface/ADR-0.0.13-portable-persona-control-surface.md`
-- **Checklist Item:** #5 - "Vendor-neutral persona loading (Claude, Codex, Copilot adapters)"
+- **Checklist Item:** #5 - "Persona drift monitoring surface (observability)"
 
 **Status:** Draft
 

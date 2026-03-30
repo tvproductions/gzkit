@@ -2,7 +2,7 @@
 id: OBPI-0.0.13-03-manifest-schema-persona-sync
 parent: ADR-0.0.13
 item: 3
-lane: Lite
+lane: Heavy
 status: Draft
 ---
 

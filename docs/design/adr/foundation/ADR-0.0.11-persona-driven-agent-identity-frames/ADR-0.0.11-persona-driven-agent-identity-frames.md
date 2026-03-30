@@ -150,6 +150,19 @@ measurably different behavioral outcomes.
 - The `ADR-pool.per-command-persona-context` pool entry is **superseded** by this
   ADR — per-command cognitive stance is a subset of the persona control surface
 
+## Non-Goals
+
+- **Runtime persona switching** — this ADR defines static persona frames loaded
+  at session/dispatch start, not dynamic mid-conversation persona changes
+- **Activation-space manipulation** — we operate at the prompt level, not the
+  model internals level; activation capping and steering are research techniques,
+  not harness capabilities
+- **Persona effectiveness measurement** — quantifying whether persona frames
+  produce measurably better code is deferred; this ADR establishes the control
+  surface, ADR-0.0.13 may address drift monitoring
+- **Writing concrete persona frame content** — the specific text for each agent
+  role is ADR-0.0.12's scope; this ADR defines the architecture they live in
+
 ## Interfaces
 
 - **Control surface (new):** `.gzkit/personas/{role}.md` — persona frame files
