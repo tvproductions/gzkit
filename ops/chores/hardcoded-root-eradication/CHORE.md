@@ -135,9 +135,10 @@ uv run gz check-config-paths
 |------|---------|----------|
 | outputNotContains | `grep -rn "Path(__file__).*parents" src/gzkit/eval/` | `parents` |
 | outputNotContains | `grep -rn "Path(__file__).*parents" src/gzkit/hooks/` | `parents` |
+| outputNotContains | `grep -rn "Path(__file__).*parents\[" src/gzkit/` | `parents[` |
+| exitCodeEquals | `uv run gz lint` | 0 (includes parents-pattern lint) |
+| exitCodeEquals | `uv run gz check-config-paths` | 0 (includes source path literal scan) |
 | exitCodeEquals | `uv run -m unittest -q` | 0 |
-| exitCodeEquals | `uv run ruff check .` | 0 |
-| exitCodeEquals | `uv run gz check-config-paths` | 0 |
 
 ## Evidence Commands
 

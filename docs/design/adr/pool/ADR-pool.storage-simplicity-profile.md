@@ -1,6 +1,8 @@
 ---
 id: ADR-pool.storage-simplicity-profile
-status: Pool
+status: archived
+superseded_by: ADR-0.0.10
+archived_date: 2026-03-29
 parent: PRD-GZKIT-1.0.0
 lane: lite
 enabler: ADR-0.0.2
@@ -8,9 +10,12 @@ enabler: ADR-0.0.2
 
 # ADR-pool.storage-simplicity-profile: Storage Simplicity Profile for Agent Runtime
 
+> **Archived.** Promoted to [ADR-0.0.10 — Storage Tiers and Simplicity Profile](../foundation/ADR-0.0.10-storage-tiers-simplicity-profile/ADR-0.0.10-storage-tiers-simplicity-profile.md).
+> See Architecture Planning Memo Section 3.
+
 ## Status
 
-Proposed
+Archived (superseded by ADR-0.0.10)
 
 ## Date
 
