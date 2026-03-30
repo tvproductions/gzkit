@@ -1,7 +1,7 @@
 # GZKit Architecture Planning Memo
 
 **Purpose:** Drive Q&A sessions for foundation-level architectural decisions.
-**Status:** Active
+**Status:** All Decisions Recorded
 **Created:** 2026-03-29
 **Last Updated:** 2026-03-29
 
@@ -361,22 +361,33 @@ Lock the responsibility split above. Specifically:
 4. **TASK lifecycle is advisory for Lite lane, required for Heavy lane.** (ADR-0.22.0's constraint)
 5. **REQ does not have lifecycle states.** It is satisfied or unsatisfied — a boolean determined by evidence existence.
 
-### Open Questions
+### Open Questions (Resolved)
 
-- Can a single TASK fulfill multiple REQs? (Many-to-many or many-to-one?)
-- Can a REQ be fulfilled by evidence from TASKs in different OBPIs? (Cross-OBPI proof)
-- Should OBPI-level proof obligations (like "all tests pass") be modeled as a synthetic REQ?
-- Where does the OBPI brief template change to accommodate REQ authoring?
+1. **TASK→REQ cardinality:** Many-to-one only. Each TASK fulfills exactly one REQ
+   (structurally enforced by ID encoding: `TASK-X.Y.Z-NN-CC-SS` embeds parent REQ).
+   Multiple TASKs can converge on the same REQ. Already the natural behavior.
+
+2. **Cross-OBPI proof:** No. REQ satisfaction only counts TASKs under the same OBPI.
+   OBPI is a self-contained scope boundary. If cross-OBPI work emerges, model it as
+   a blocking dependency edge, not shared proof.
+
+3. **Synthetic REQs:** Yes. OBPI-level proof obligations (lint pass, tests pass, docs
+   updated) are modeled as synthetic REQs with a reserved prefix (e.g., `REQ-X.Y.Z-NN-00`).
+   Uniform proof resolution — everything resolves through the same REQ→Evidence chain.
+
+4. **REQ authoring location:** Acceptance criteria section of OBPI briefs. Each
+   criterion gets a REQ ID. Minimal template change — adds ID convention to what's
+   already there. Already aligned with `triangle.py` and `@covers` patterns.
 
 ### Decision Record
 
 | Field | Value |
 |-------|-------|
-| Decision | — |
-| Date | — |
-| Rationale | — |
-| Deviations from recommendation | — |
-| ADR to author | — |
+| Decision | Responsibility split locked. OBPI = scope container. REQ = proof obligation (boolean satisfied/unsatisfied). TASK = execution atom. TASK→REQ is many-to-one (ID-encoded). REQ scoped to parent OBPI — no cross-OBPI proof. Synthetic REQs for OBPI-level obligations. REQ authored in acceptance criteria section. |
+| Date | 2026-03-29 |
+| Rationale | Many-to-one preserves structural traceability via ID encoding. OBPI containment keeps scope boundaries clean — cross-cutting work uses blocking dependencies, not shared proof. Synthetic REQs unify the proof chain — no special-case logic for OBPI-level checks. Acceptance criteria authoring is already the convention per triangle.py and @covers. |
+| Deviations from recommendation | None. All four resolutions align with and refine the recommendation. Synthetic REQ prefix (REQ-X.Y.Z-NN-00) is a new detail not in the original recommendation. |
+| ADR to author | Covered by the entity hierarchy foundation ADR (Section 1) and the proof resolution ADR (Section 6). No separate ADR needed — responsibility split is a constraint expressed in both. |
 
 ---
 
@@ -416,22 +427,35 @@ Lock the proof resolution chain:
 5. **Proof gaps block Stage 3.** If a REQ has no `@covers` match, verification fails.
 6. **Human attestation is terminal.** No proof chain bypasses Gate 5 for Heavy lane.
 
-### Open Questions
+### Open Questions (Resolved)
 
-- Is `@covers` the only proof mechanism, or can non-test evidence (docs, receipts) satisfy REQs?
-- How are documentation REQs proven? (e.g., "runbook entry exists" — is that a test or a different kind of evidence?)
-- Should `gz adr covers-check` report at REQ granularity or OBPI granularity?
-- What happens when a TASK produces evidence for a REQ that belongs to a different OBPI?
+1. **Proof mechanisms:** `@covers` is the primary join mechanism for test-backed REQs.
+   Non-test REQs use typed evidence artifacts booked to TASKs. Four evidence types:
+   `test_pass` (@covers-backed test result), `doc_presence` (file/heading existence
+   check), `cli_output` (command produces expected output), `receipt` (structured
+   event payload). All evidence flows through the same TASK→Evidence chain.
+
+2. **Documentation REQs:** Proven via file-existence checks as typed evidence
+   (`doc_presence`). No test wrapper needed. TASK produces evidence artifact
+   ("file X exists at path Y with heading Z"), reviewer agent validates.
+
+3. **covers-check granularity:** REQ granularity. Per-REQ reporting showing which
+   REQs have evidence and which don't. OBPI-level summary derived from REQ results.
+
+4. **Cross-OBPI evidence:** Structurally impossible. TASK ID encodes parent REQ
+   which encodes parent OBPI (`TASK-X.Y.Z-NN-CC-SS`). A TASK cannot reference a
+   REQ outside its OBPI. Cross-OBPI work is modeled as blocking dependencies
+   (per Section 5 decision), never as shared evidence.
 
 ### Decision Record
 
 | Field | Value |
 |-------|-------|
-| Decision | — |
-| Date | — |
-| Rationale | — |
-| Deviations from recommendation | — |
-| ADR to author | — |
+| Decision | Proof resolution chain locked. @covers is primary for test-backed REQs. Four typed evidence types (test_pass, doc_presence, cli_output, receipt). All evidence booked to TASK. covers-check reports at REQ granularity. Cross-OBPI evidence structurally impossible via ID encoding. |
+| Date | 2026-03-29 |
+| Rationale | Multiple evidence types required because not all proof obligations are testable (doc existence, CLI output). Typed evidence enables reviewer agent to validate each type with appropriate logic. REQ granularity in covers-check matches "REQ is the proof anchor" principle. Cross-OBPI rejection is structural (ID-encoded), not policy — eliminates an entire class of reconciliation bugs. |
+| Deviations from recommendation | Evidence types expanded from implicit (recommendation assumed @covers-only) to four explicit types. This is a refinement, not a contradiction — the recommendation's chain (REQ → Evidence → @covers) generalizes to (REQ → Evidence → typed proof mechanism). |
+| ADR to author | Proof Resolution foundation ADR. May be folded into the entity hierarchy ADR or authored separately depending on scope. Defines evidence types, proof mechanisms, covers-check contract, and cross-OBPI rejection. |
 
 ---
 
@@ -463,21 +487,31 @@ Lock:
 5. **Envelope does not replace `BLOCKERS:` text.** Text rendering is the human-facing default. Envelope is the machine-facing contract.
 6. **Migration is incremental.** Start with 3 surfaces, expand over time.
 
-### Open Questions
+### Open Questions (Resolved)
 
-- Should blocker envelopes be ledger events? (Argument for: audit trail of what blocked and when. Argument against: transient state, noise in ledger.)
-- Should `retryable` have more granularity? (e.g., `retryable_by: agent | human | either`)
-- Which 3 surfaces should migrate first?
+1. **Ledger events:** No. Blockers are transient runtime state, not governance
+   lifecycle events. Ledger records lifecycle transitions (created, completed,
+   attested, audited). Blocker history lives in git (the commit that fixed it).
+   Different concerns, different storage.
+
+2. **Retryable granularity:** Boolean is sufficient. `retryable: true/false`.
+   `next_actions` list provides the dispatch detail (what commands to run).
+   No need for `retryable_by` — the `next_actions` content implicitly encodes
+   whether the action is agent-executable or requires human intervention.
+
+3. **First 3 surfaces:** `gz gates` (pipeline Stage 4, most frequent blocker
+   source), `gz closeout` (pipeline Stage 5, blocks human attestation),
+   `gz obpi validate` (pre-pipeline, catches drift before work starts).
 
 ### Decision Record
 
 | Field | Value |
 |-------|-------|
-| Decision | — |
-| Date | — |
-| Rationale | — |
-| Deviations from recommendation | — |
-| ADR to author | — |
+| Decision | Blocker protocol locked. Pydantic envelope model. Not ledger events (transient state). Boolean retryable with next_actions list. Text default, JSON with --json. First 3 surfaces: gates, closeout, obpi-validate. Incremental migration. |
+| Date | 2026-03-29 |
+| Rationale | Blockers are runtime state — ledger is for governance lifecycle. Boolean retryable is sufficient because next_actions already encodes the dispatch detail. Three surfaces chosen for highest agent interaction frequency and pipeline criticality. |
+| Deviations from recommendation | None. All resolutions align with and refine the recommendation. |
+| ADR to author | Pre-release ADR (Heavy): Blocker Protocol. Promotes `structured-blocker-envelopes` pool ADR with envelope schema, three initial surfaces, and migration plan. Independent of graph engine — can be authored in parallel. |
 
 ---
 
@@ -514,22 +548,34 @@ Lock:
 4. **Resume is fail-safe** — if staleness exceeds threshold, resume requires explicit human approval.
 5. **Channel-agnostic triggers** are a transport concern layered on top of the pause/resume contract.
 
-### Open Questions
+### Open Questions (Resolved)
 
-- What is the staleness threshold? Commits? Time? File delta?
-- Should handoff create a git tag or branch marker?
-- Can an OBPI have multiple active handoffs (e.g., paused at different stages)?
-- How does handoff interact with OBPI locks (`gz-obpi-lock`)?
+1. **Staleness threshold:** Commits + file delta, all git-derived. Stale if:
+   commit count exceeds threshold (e.g., 5), files in OBPI's `allowed_paths`
+   were modified, or branch diverged from handoff point. Any true = stale =
+   human approval required for resume. No time component.
+
+2. **Git marker:** Lightweight git tag (e.g., `handoff/OBPI-0.20.0-01/2026-03-29`).
+   Cheap, discoverable via `git tag --list`, enables deterministic staleness
+   computation via `git rev-list <tag>..HEAD`. Cleaned up on resume.
+
+3. **Multiple active handoffs:** No. One active handoff per OBPI. Resuming clears
+   the handoff. New pause overwrites previous handoff state. No ambiguity about
+   which handoff to resume.
+
+4. **Lock interaction:** Pause releases OBPI lock automatically. Paused OBPI is
+   available for another agent to claim. Resume re-acquires the lock (fails if
+   another agent holds it). Prevents deadlock from abandoned sessions.
 
 ### Decision Record
 
 | Field | Value |
 |-------|-------|
-| Decision | — |
-| Date | — |
-| Rationale | — |
-| Deviations from recommendation | — |
-| ADR to author | — |
+| Decision | Pipeline lifecycle locked. Handoff is a ledger event (pipeline_paused/resumed). Staleness is git-derived (commits + file delta, no time). Lightweight git tags for handoff points. One active handoff per OBPI. Pause releases OBPI lock; resume re-acquires. Channel-agnostic triggers subordinated as future OBPI. |
+| Date | 2026-03-29 |
+| Rationale | Git-derived staleness is deterministic and auditable — no heuristic decay. Lightweight tags are the cheapest git object that enables rev-list computation. Single handoff per OBPI prevents state ambiguity. Auto-release of locks on pause prevents deadlock from abandoned agent sessions while resume-acquires-lock preserves coordination guarantees. |
+| Deviations from recommendation | None. All resolutions align with the recommendation. Staleness threshold details (commit count, file delta, branch divergence) are new specifics not in the original recommendation. |
+| ADR to author | Pre-release ADR (Heavy): Pipeline Lifecycle. Promotes `pause-resume-handoff-runtime` pool ADR. Depends on graph engine (Section 4) for typed entity references in handoff schema. Subsumes `channel-agnostic-human-triggers` as future OBPI. |
 
 ---
 
@@ -566,21 +612,33 @@ Lock (when the time comes):
 2. **Risk scoring is deterministic** — no LLM-based assessment.
 3. **Standard tier still requires all OBPIs to pass self-close evidence requirements.** The spot-check is an additional human layer, not a replacement for automated proof.
 
-### Open Questions
+### Open Questions (Resolved)
 
-- Is the Normal/Exception binary acceptable for now, or is graduated oversight blocking real work?
-- Should `gz prime` exist independently of the graph engine, as a simpler "dump current work state" command?
-- Does ADR-0.18.0 need to be implemented before graduated oversight makes sense?
+1. **Normal/Exception binary:** Acceptable for now. Graduated oversight is a
+   refinement, not a blocker. Defer until the graph engine provides data for
+   deterministic risk scoring. Don't add oversight complexity without
+   infrastructure to support it.
+
+2. **gz prime independently:** Yes. Simple `gz prime` now (dumps current OBPI
+   brief summary, recent commits, open blockers, brief status). No graph
+   dependency. When the graph engine lands, prime becomes a projection of
+   the graph with cross-ADR blocker visibility and REQ satisfaction status.
+   Incremental value now, architectural upgrade later.
+
+3. **ADR-0.18.0 prerequisite:** Yes. Graduated oversight tiers determine how
+   much autonomy subagents get. Dependency chain: graph engine (entity
+   resolution) → ADR-0.18.0 (subagent dispatch) → graduated oversight
+   (autonomy tiers). Each layer needs the one below it.
 
 ### Decision Record
 
 | Field | Value |
 |-------|-------|
-| Decision | — |
-| Date | — |
-| Rationale | — |
-| Deviations from recommendation | — |
-| ADR to author | — |
+| Decision | Agent operating model: roles subsumed into ADR-0.18.0 (no separate ADR). Graduated oversight deferred until graph engine + ADR-0.18.0 are operational. Normal/Exception binary is sufficient for now. gz prime authorized as independent command (simple now, graph-backed later). Onboarding merged into prime/context projection. |
+| Date | 2026-03-29 |
+| Rationale | Binary oversight works — graduated needs graph data for risk scoring and subagent dispatch for enforcement. gz prime provides incremental value without graph dependency (brief summary, recent commits, blockers). Dependency chain is clear: graph → subagent dispatch → oversight tiers. |
+| Deviations from recommendation | gz prime authorized as a standalone command rather than only as an OBPI under graph ADR. Rationale: immediate value for agent onboarding and session context, independent of graph engine timeline. Will be upgraded to graph projection when available. |
+| ADR to author | No new ADR for this section. Graduated oversight will be a future pre-release ADR after graph engine and ADR-0.18.0. gz prime can be added as an OBPI under an existing ADR or a Lite-lane addition. |
 
 ---
 
@@ -649,20 +707,30 @@ real structure.
 | `evaluation-infrastructure` | Stale — ADR-0.0.5 covers this | Archive or update |
 | `controlled-agency-recovery` | Post-1.0 | Keep in pool |
 
-### Open Questions
+### Open Questions (Resolved)
 
-- Should the pool README be restructured to reflect these groupings?
-- Should merged/subordinated pool entries be archived or deleted?
-- Are there pool entries I've recommended deferring that are actually blocking current work?
+1. **Pool README restructure:** Yes. Replace the flat list with six groups
+   (A: Foundations, B: Graph & Runtime, C: Proof Chain, D: Agent Model,
+   E: Parity & Maintenance, F: Release Track). Makes dependencies and
+   promotion order visible in the README itself.
+
+2. **Merged/subordinated entries:** Archive with forwarding note. Add YAML
+   frontmatter fields (`status: archived`, `superseded_by: ADR-X.Y.Z`,
+   `archived_date`). File stays discoverable for history, clearly marked
+   as no longer active. No broken links.
+
+3. **Deferred items blocking work:** No. All deferrals are correct. Deferred
+   items are genuinely post-1.0 or blocked by foundations that haven't been
+   authored yet.
 
 ### Decision Record
 
 | Field | Value |
 |-------|-------|
-| Decision | — |
-| Date | — |
-| Rationale | — |
-| Deviations from recommendation | — |
+| Decision | Pool restructured into six groups (A-F). Pool README to be rewritten by group. Superseded entries archived in-place with forwarding frontmatter (status: archived, superseded_by, archived_date). All recommended deferrals confirmed as correct. |
+| Date | 2026-03-29 |
+| Rationale | Grouped README makes promotion order and dependencies visible without a separate triage document. Archive-in-place with forwarding note preserves discoverability and avoids broken references while clearly marking items as superseded. |
+| Deviations from recommendation | None. |
 
 ---
 
@@ -702,20 +770,29 @@ Phase N+3 (pre-1.0):
 - Audit needs proof resolution (REQ → Evidence chain) which is a graph operation.
 - Release Hardening is the 1.0 boundary. Everything must be done or deferred.
 
-### Open Questions
+### Open Questions (Resolved)
 
-- Is this sequence too sequential? Can more work run in parallel?
-- Are there existing ADRs (0.22.0 TASK, 0.18.0 subagent) that should be completed before or alongside this sequence?
-- Should the foundation ADRs be authored as a pair (one Q&A session) or separately?
+1. **Parallelism:** Sequence is correct. Foundations (0.0.9 + 0.0.10) in parallel,
+   then graph + blocker in parallel, then sequential for pipeline lifecycle and
+   oversight. Dependency chains are real — forced parallelism creates rework.
+
+2. **Existing ADRs:** ADR-0.22.0 (TASK) and ADR-0.18.0 (subagent) continue
+   alongside the foundation track. No blocking dependency between tracks.
+   Foundation ADRs lock the architectural model; existing ADRs implement
+   specific entities within it.
+
+3. **Foundation authoring:** Pair — author ADR-0.0.9 and ADR-0.0.10 in a single
+   session. Zero dependencies between them, thematic overlap (state management),
+   and paired authoring ensures consistent language and cross-references.
 
 ### Decision Record
 
 | Field | Value |
 |-------|-------|
-| Decision | — |
-| Date | — |
-| Rationale | — |
-| Deviations from recommendation | — |
+| Decision | Sequencing locked as proposed. Four phases with bounded parallelism. Existing ADRs (0.22.0, 0.18.0) continue alongside foundation track. Foundation pair (0.0.9 + 0.0.10) authored in one session. |
+| Date | 2026-03-29 |
+| Rationale | Dependency chains are real — graph engine needs foundations, pipeline lifecycle needs graph, audit needs proof resolution. Existing ADRs are entity implementations, not architectural decisions — they proceed independently. Paired foundation authoring is efficient and ensures consistency. |
+| Deviations from recommendation | None. Sequence accepted as proposed. |
 
 ---
 
@@ -764,20 +841,27 @@ foundation-locking phase.
 If any of these become the only place a fact is recorded, the state doctrine is
 violated. Every fact must trace to Layer 1 (canon) or Layer 2 (ledger).
 
-### Open Questions
+### Open Questions (Resolved)
 
-- Are any of these boundaries already being violated in current practice?
-- Is there a pool ADR I've recommended deferring that is actually urgent?
-- Should these boundaries be recorded in a foundation ADR or in AGENTS.md?
+1. **Active violations:** None. All six boundaries are respected in current
+   practice. Recording them makes implicit discipline explicit.
+
+2. **Urgent deferrals:** None. Confirmed in Section 10 — all deferrals are
+   correct and no deferred pool ADR is blocking current work.
+
+3. **Where to record:** Both. Foundation ADR for the formal, versioned,
+   governance-lifecycle record. AGENTS.md for operational enforcement
+   (loaded into every agent session). ADR is the authority; AGENTS.md
+   is the runtime mirror.
 
 ### Decision Record
 
 | Field | Value |
 |-------|-------|
-| Decision | — |
-| Date | — |
-| Rationale | — |
-| Deviations from recommendation | — |
+| Decision | Six architectural boundaries ratified. No active violations. All deferrals confirmed correct. Boundaries recorded in both a foundation ADR (formal authority) and AGENTS.md (operational enforcement). |
+| Date | 2026-03-29 |
+| Rationale | Dual recording ensures boundaries are both formally governed (ADR lifecycle, attestation, audit) and operationally enforced (loaded into every agent session via AGENTS.md). Neither alone is sufficient — ADR without AGENTS.md means agents don't see the rules; AGENTS.md without ADR means rules lack governance authority. |
+| Deviations from recommendation | Recommendation asked for one location. Decision: both. The dual-recording pattern is consistent with existing practice (e.g., invariants INV-001/INV-002 appear in both ADR-0.0.1 and AGENTS.md). |
 
 ---
 
