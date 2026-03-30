@@ -3,7 +3,7 @@ id: OBPI-0.0.7-04-hooks-module-migration
 parent: ADR-0.0.7
 item: 4
 lane: Lite
-status: Accepted
+status: Completed
 ---
 
 # OBPI-0.0.7-04-hooks-module-migration: Hooks module migration
@@ -13,7 +13,7 @@ status: Accepted
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.7-config-first-resolution-discipline/ADR-0.0.7-config-first-resolution-discipline.md`
 - **Checklist Item:** #4 - "Hooks module migration — remove `Path(__file__).parents[3]` from `hooks/guards.py`; thread manifest paths"
 
-**Status:** Accepted
+**Status:** Completed
 
 ## Objective
 
@@ -49,29 +49,29 @@ Single-file migration targeting one violation site.
 
 **Context:**
 
-- [ ] Parent ADR — understand anti-pattern warning
-- [ ] OBPI-02 complete (`manifest_path()` helper available)
+- [x] Parent ADR — understand anti-pattern warning
+- [x] OBPI-02 complete (`manifest_path()` helper available)
 
 **Existing Code:**
 
-- [ ] `src/gzkit/hooks/guards.py:99` — the violation site
-- [ ] Callers of the function containing the violation
+- [x] `src/gzkit/hooks/guards.py:99` — the violation site
+- [x] Callers of the function containing the violation
 
 ## Quality Gates
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
+- [x] Intent and scope recorded in this OBPI brief
 
 ### Gate 2: TDD
 
-- [ ] Tests pass: `uv run gz test`
-- [ ] Zero `Path(__file__)` in guards: `grep -rn "Path(__file__)" src/gzkit/hooks/guards.py`
+- [x] Tests pass: `uv run gz test`
+- [x] Zero `Path(__file__)` in guards: `grep -rn "Path(__file__)" src/gzkit/hooks/guards.py`
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 ## Verification
 
@@ -84,29 +84,53 @@ uv run -m unittest -q
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.7-04-01: Given `hooks/guards.py`, when `grep -rn "Path(__file__)" src/gzkit/hooks/guards.py` runs, then zero matches are returned
-- [ ] REQ-0.0.7-04-02: Given the function that previously used `Path(__file__).parents[3]`, when called, then it receives project root as a parameter
-- [ ] REQ-0.0.7-04-03: Given existing hooks tests, when `uv run -m unittest -q` runs, then all tests pass
+- [x] REQ-0.0.7-04-01: Given `hooks/guards.py`, when `grep -rn "Path(__file__)" src/gzkit/hooks/guards.py` runs, then zero matches are returned
+- [x] REQ-0.0.7-04-02: Given the function that previously used `Path(__file__).parents[3]`, when called, then it receives project root as a parameter
+- [x] REQ-0.0.7-04-03: Given existing hooks tests, when `uv run -m unittest -q` runs, then all tests pass
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, grep proof clean
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, grep proof clean
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 ## Evidence
+
+### Implementation Summary
+
+- Removed: `root = Path(__file__).resolve().parents[3]` from `forbid_pytest()`
+- Changed: `forbid_pytest()` signature to `forbid_pytest(root: Path)` — required parameter
+- Updated: `main()` to pass `Path.cwd()` as root
+
+### Key Proof
+
+```text
+$ grep -rn "Path(__file__)" src/gzkit/hooks/guards.py
+(no output — zero matches)
+
+$ uv run gz test
+Ran 2015 tests in 17.206s — OK
+
+$ uv run gz lint
+All checks passed!
+
+$ uv run gz typecheck
+All checks passed!
+```
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste grep proof and test output here
+grep -rn "Path(__file__)" src/gzkit/hooks/guards.py  →  zero matches
+2015/2015 full suite pass
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+uv run gz lint  →  All checks passed!
+uv run gz typecheck  →  All checks passed!
 ```
 
 ## Tracked Defects
@@ -115,14 +139,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a` (Lite lane, Lite parent)
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `jeff` (Foundation ADR — human attestation required)
+- Attestation: `attest completed`
+- Date: `2026-03-30`
 
 ---
 
-**Brief Status:** Accepted
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-30
 
 **Evidence Hash:** -

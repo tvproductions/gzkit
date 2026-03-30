@@ -88,15 +88,17 @@ def scan_file(path: Path) -> list[str]:
     return violations
 
 
-def forbid_pytest() -> int:
+def forbid_pytest(root: Path) -> int:
     """Scan repository for pytest usage and return exit code.
+
+    Args:
+        root: Project root directory to scan.
 
     Returns:
         0 if no pytest usage found
         1 if pytest usage detected
 
     """
-    root = Path(__file__).resolve().parents[3]
     findings: list[tuple[Path, list[str]]] = []
     for f in iter_files(root):
         v = scan_file(f)
@@ -116,7 +118,7 @@ def forbid_pytest() -> int:
 
 def main() -> int:
     """Entry point for command-line usage."""
-    return forbid_pytest()
+    return forbid_pytest(Path.cwd())
 
 
 if __name__ == "__main__":
