@@ -4,7 +4,7 @@ description: Execute the ADR closeout ceremony protocol for human attestation. G
 category: adr-audit
 compatibility: GovZero v6 framework; provides runbook walkthrough for human ADR attestation
 metadata:
-  skill-version: "7.0.0"
+  skill-version: "7.1.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -35,67 +35,49 @@ State is persisted in `.gzkit/ceremonies/ADR-X.Y.Z.ceremony.json`.
 
 ---
 
-## Procedure
+## Invocation
 
-### Step 1: Initialize the ceremony
+The skill receives an ADR semver as its argument (e.g. `0.0.8`). Normalize to
+`ADR-X.Y.Z` format and begin immediately. Do not ask clarifying questions.
 
-Run the CLI command to start the ceremony. Show the output to the human, then STOP.
+---
 
-```bash
-uv run gz closeout ADR-X.Y.Z --ceremony
-```
+## Agent Loop
 
-### Step 2: Advance one step at a time
+On skill invocation, the agent enters a **relay loop**. The loop is simple:
 
-After the human acknowledges, run:
+1. **First turn (skill invoked):** Run `uv run gz closeout ADR-X.Y.Z --ceremony`. Stop.
+2. **Every subsequent human message:** That message IS the acknowledgment. Run
+   `uv run gz closeout ADR-X.Y.Z --ceremony --next`. Stop.
+3. **Exception — attestation step:** When the CLI output contains "I await your
+   attestation", do NOT run `--next`. Wait for the human to provide their attestation
+   text, then run `uv run gz closeout ADR-X.Y.Z --ceremony --attest "<their decision>"`.
+4. **Exception — action steps:** When the CLI output instructs you to run a specific
+   command (e.g. `uv run gz closeout ADR-X.Y.Z`, `gh issue list`, `gh release create`),
+   execute that command, show the result, then stop. The human's next message advances
+   to the next ceremony step via `--next`.
+5. **Ceremony complete:** When the CLI output contains "COMPLETE", the ceremony is done.
 
-```bash
-uv run gz closeout ADR-X.Y.Z --ceremony --next
-```
+**One CLI call per turn. No exceptions. No commentary beyond the CLI output.**
 
-Show the output. STOP. Wait for human acknowledgment. Repeat.
-
-**Do NOT call `--next` twice in the same message.** The hook will block it.
-
-### Step 3: Record attestation
-
-When the CLI presents the attestation prompt (Step 6), wait for the human's decision,
-then record it:
-
-```bash
-uv run gz closeout ADR-X.Y.Z --ceremony --attest "Completed"
-```
-
-Valid attestations: `"Completed"`, `"Completed - Partial: [reason]"`, `"Dropped - [reason]"`
-
-### Step 4: Continue post-attestation steps
-
-After attestation, continue with `--next` for remaining steps (closeout pipeline,
-GitHub issues, release notes, GitHub release). Each step tells you what to do.
-
-For foundation (0.0.x) ADRs, release notes and GitHub release steps are automatically
-skipped.
-
-### Step 5: Check ceremony status (optional)
-
-```bash
-uv run gz closeout ADR-X.Y.Z --ceremony --ceremony-status
-```
+The hook enforces this mechanically — but the agent should not rely on the hook as a
+safety net. The agent's job is to be a dumb relay.
 
 ---
 
 ## MUST Rules
 
-1. **MUST** use `gz closeout --ceremony` commands — never render step content yourself
-2. **MUST** show CLI output to the human verbatim
-3. **MUST** wait for human acknowledgment between each `--next` call
-4. **MUST** run exactly one `--next` per conversation turn
-5. **MUST** use `--attest` only when the CLI presents the attestation step
-6. **MUST** run `uv run gz closeout ADR-X.Y.Z` when instructed by Step 7
+1. **MUST** run the CLI command immediately on invocation — no preamble, no questions
+2. **MUST** treat every human message as acknowledgment and run `--next`
+3. **MUST** run exactly one ceremony CLI call per turn
+4. **MUST** use `--attest` only when CLI output says "I await your attestation"
+5. **MUST** execute action-step commands (closeout, gh issue, gh release) when instructed
+6. **MUST** stop after showing CLI output — no "ready when you are", no offers, no asks
 
 ## MUST NOT Rules
 
 1. **MUST NOT** compose step content yourself — the CLI controls what is presented
 2. **MUST NOT** call `--next` twice in the same message
-3. **MUST NOT** infer attestation from silence or implicit approval
-4. **MUST NOT** skip steps or batch multiple steps together
+3. **MUST NOT** add commentary, interpretation, or offers around CLI output
+4. **MUST NOT** ask permission to proceed — the human's message is the permission
+5. **MUST NOT** skip steps or batch multiple steps together
