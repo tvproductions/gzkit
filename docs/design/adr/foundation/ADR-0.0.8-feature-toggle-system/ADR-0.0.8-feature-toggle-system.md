@@ -713,7 +713,54 @@ strategy:
 | 4 | OBPI-0.0.8-04-diagnostics-and-staleness | Stale detection, flag health, explain output, gz check integration, time-bomb test | Heavy | Pending |
 | 5 | OBPI-0.0.8-05-cli-surface | gz flags, gz flags --stale, gz flag explain commands | Heavy | Pending |
 | 6 | OBPI-0.0.8-06-closeout-migration | Migrate closeout product proof from config.gates to FeatureDecisions | Lite | Pending |
-| 7 | OBPI-0.0.8-07-config-gates-removal | Remove config.gates prototype, migrate .gzkit.json, clean up | Lite | Pending |
+| 7 | OBPI-0.0.8-07-config-gates-removal | Remove config.gates prototype, migrate .gzkit.json schema, clean up | Heavy | Pending |
 | 8 | OBPI-0.0.8-08-operator-docs | Runbook section, command manpage, flag system documentation | Heavy | Pending |
+
+### Dependency Graph and Parallelization
+
+```text
+Stage 1:  [OBPI-01] Flag Models & Registry
+              │
+Stage 2:  [OBPI-02] Flag Service
+              │
+         ┌────┴────┐
+Stage 3:  [OBPI-03] │ [OBPI-04]       ← parallel
+         Feature    │ Diagnostics
+         Decisions  │ & Staleness
+              │     │
+         ┌────┴─────┤
+Stage 4:  [OBPI-06] │ [OBPI-05]       ← parallel
+         Closeout   │ CLI Surface
+         Migration  │ (depends 01,02,04)
+              │     │
+Stage 5:  [OBPI-07] │                 ← sequential (depends 06)
+         Config     │
+         Gates      │
+         Removal    │
+              │     │
+         └────┬─────┘
+Stage 6:  [OBPI-08] Operator Docs     ← depends all
+```
+
+**Critical path:** 01 → 02 → 03 → 06 → 07 → 08 (6 stages).
+**Maximum parallelism:** Stage 3 (OBPI-03 ∥ OBPI-04), Stage 4 (OBPI-05 ∥ OBPI-06).
+
+### Feature Checklist (Capability Inventory)
+
+Every item below maps to a testable deliverable. If removed, the named capability is absent.
+
+| # | Capability | Lost if removed | Delivered by |
+|---|-----------|-----------------|-------------|
+| 1 | Typed flag models with category rules | No schema validation, no metadata enforcement | OBPI-01 |
+| 2 | Source-controlled registry with JSON Schema | Flags are ad-hoc magic strings | OBPI-01 |
+| 3 | Precedence resolution (registry → env → config → test → runtime) | No override mechanism; flags are hardcoded | OBPI-02 |
+| 4 | Unknown/malformed flag detection | Typos and bad values are silent | OBPI-02 |
+| 5 | Named decision methods (FeatureDecisions) | Flag keys scatter across codebase | OBPI-03 |
+| 6 | Stale flag detection and health reporting | Expired flags accumulate invisibly | OBPI-04 |
+| 7 | Time-bomb CI test for expired flags | No forcing function for cleanup | OBPI-04 |
+| 8 | `gz flags` / `gz flags --stale` / `gz flag explain` CLI | Operator cannot inspect flag state | OBPI-05 |
+| 9 | Closeout migration to FeatureDecisions | GHI #49 problem remains unsolved | OBPI-06 |
+| 10 | config.gates removal and .gzkit.json migration | Legacy prototype persists as tech debt | OBPI-07 |
+| 11 | Operator docs (runbook, manpage, system docs) | Feature ships without operator guidance | OBPI-08 |
 
 **Briefs location:** `obpis/OBPI-0.0.8-*.md`
