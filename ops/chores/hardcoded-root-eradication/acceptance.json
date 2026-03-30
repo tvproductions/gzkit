@@ -14,18 +14,26 @@
     },
     {
       "type": "exitCodeEquals",
-      "command": "uv run -m unittest -q",
-      "expected": 0
-    },
-    {
-      "type": "exitCodeEquals",
-      "command": "uv run ruff check .",
-      "expected": 0
+      "command": "uv run gz lint",
+      "expected": 0,
+      "description": "Lint passes including parents-pattern lint rule"
     },
     {
       "type": "exitCodeEquals",
       "command": "uv run gz check-config-paths",
+      "expected": 0,
+      "description": "Config-path audit passes including source path literal scan"
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run -m unittest -q",
       "expected": 0
+    },
+    {
+      "type": "outputNotContains",
+      "command": "grep -rn \"Path(__file__).*parents\\[\" src/gzkit/",
+      "notContains": "parents[",
+      "description": "No Path(__file__).parents[ patterns anywhere in src/gzkit/ (manifest v2 enforcement)"
     }
   ]
 }

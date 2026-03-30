@@ -186,6 +186,13 @@
             "version": "1.0.0",
             "path": "ops/chores/hardcoded-root-eradication",
             "lane": "lite"
+        },
+        {
+            "slug": "agents-md-architectural-boundaries",
+            "title": "Add Architectural Boundaries to AGENTS.md",
+            "version": "1.0.0",
+            "path": "ops/chores/agents-md-architectural-boundaries",
+            "lane": "lite"
         }
     ]
 }

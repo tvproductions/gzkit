@@ -1,0 +1,15 @@
+{
+    "criteria": [
+        {
+            "type": "outputContains",
+            "command": "grep -c 'Do not' AGENTS.md",
+            "contains": "6",
+            "description": "All six architectural boundaries present in AGENTS.md"
+        },
+        {
+            "type": "exitCodeEquals",
+            "command": "uv run gz lint",
+            "expected": 0
+        }
+    ]
+}

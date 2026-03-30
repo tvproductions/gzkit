@@ -1,7 +1,8 @@
 # GZKit Architecture Planning Memo
 
 **Purpose:** Drive Q&A sessions for foundation-level architectural decisions.
-**Status:** All Decisions Recorded
+**Status:** Closed
+**Closed:** 2026-03-30
 **Created:** 2026-03-29
 **Last Updated:** 2026-03-29
 
@@ -904,3 +905,30 @@ across the entire runtime track.
 | Pipeline Lifecycle | `docs/design/adr/pool/ADR-pool.pause-resume-handoff-runtime.md`, `src/gzkit/pipeline_runtime.py` |
 | Agent Model | ADR-0.18.0, `docs/design/adr/pool/ADR-pool.graduated-oversight-model.md` |
 | Pool Restructuring | `docs/design/adr/pool/README.md` |
+
+---
+
+## Appendix C: Closeout
+
+All 12 sections ratified across two Q&A sessions (2026-03-29 and 2026-03-30).
+Every decision has been wired into a governance artifact.
+
+### Outcome Table
+
+| Work Item | Status | Artifact |
+|-----------|--------|----------|
+| 12 Decision Records | All ratified | This document, Sections 1-12 |
+| ADR-0.0.9 State Doctrine | Authored, 6 OBPIs, GO verdict | `docs/design/adr/foundation/ADR-0.0.9-state-doctrine-source-of-truth/` |
+| ADR-0.0.10 Storage Tiers | Authored, 6 OBPIs, GO verdict | `docs/design/adr/foundation/ADR-0.0.10-storage-tiers-simplicity-profile/` |
+| Status table updated | Both ADRs registered | `docs/governance/GovZero/adr-status.md` |
+| Pool README restructured | Six groups (A-F) with sequencing | `docs/design/adr/pool/README.md` |
+| Pool ADR archived | `storage-simplicity-profile` forwarding note | `docs/design/adr/pool/ADR-pool.storage-simplicity-profile.md` |
+| AGENTS.md boundaries | Chore registered, ready to execute | `ops/chores/agents-md-architectural-boundaries/` |
+| Phase N+1-N+3 tracking | Pool README groups B/D/F | `docs/design/adr/pool/README.md` |
+
+### What Remains
+
+Nothing from this memo is untracked. Future phases are sequenced in the pool
+README. The AGENTS.md boundaries chore is registered and ready to execute.
+The two foundation ADRs (0.0.9 and 0.0.10) are Proposed and awaiting
+implementation of their OBPIs.

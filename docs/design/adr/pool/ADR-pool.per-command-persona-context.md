@@ -1,6 +1,7 @@
 ---
 id: ADR-pool.per-command-persona-context
-status: Pool
+status: Superseded
+superseded_by: ADR-0.0.11-persona-driven-agent-identity-frames
 parent: PRD-GZKIT-1.0.0
 lane: lite
 enabler: null
@@ -8,6 +9,10 @@ inspired_by: bmad
 ---
 
 # ADR-pool.per-command-persona-context: Per-Command Persona Context
+
+## Status
+
+Superseded — subsumed into [ADR-0.0.11-persona-driven-agent-identity-frames](../foundation/ADR-0.0.11-persona-driven-agent-identity-frames/ADR-0.0.11-persona-driven-agent-identity-frames.md) as part of a three-ADR series (0.0.11, 0.0.12, 0.0.13) establishing persona as a first-class control surface.
 
 ## Status
 
