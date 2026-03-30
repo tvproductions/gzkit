@@ -3,7 +3,7 @@ id: OBPI-0.0.8-02-flag-service
 parent: ADR-0.0.8-feature-toggle-system
 item: 2
 lane: Heavy
-status: Pending
+status: Completed
 ---
 
 # OBPI-0.0.8-02: Flag Service
@@ -13,7 +13,7 @@ status: Pending
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.8-feature-toggle-system/ADR-0.0.8-feature-toggle-system.md`
 - **Checklist Item:** #3 — "Precedence resolution" and #4 — "Unknown/malformed flag detection"
 
-**Status:** Pending
+**Status:** Completed
 
 ## Objective
 
@@ -67,45 +67,45 @@ OBPIs. Environment variable contract (`GZKIT_FLAG_<KEY>`) and `.gzkit.json`
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist items #3 and #4 referenced
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist items #3 and #4 referenced
 
 ### Gate 2: TDD
 
-- [ ] Unit tests validate precedence: registry default wins when no overrides
-- [ ] Unit tests validate precedence: env var overrides registry default
-- [ ] Unit tests validate precedence: project config overrides env var
-- [ ] Unit tests validate precedence: test override overrides project config
-- [ ] Unit tests validate precedence: runtime override overrides test override
-- [ ] Unit tests validate UnknownFlagError for undeclared keys
-- [ ] Unit tests validate InvalidFlagValueError for malformed env values
-- [ ] Unit tests validate env var naming convention
-- [ ] Unit tests validate test override set/clear cycle
-- [ ] Unit tests validate FlagEvaluation source attribution
-- [ ] Tests pass: `uv run gz test`
+- [x] Unit tests validate precedence: registry default wins when no overrides
+- [x] Unit tests validate precedence: env var overrides registry default
+- [x] Unit tests validate precedence: project config overrides env var
+- [x] Unit tests validate precedence: test override overrides project config
+- [x] Unit tests validate precedence: runtime override overrides test override
+- [x] Unit tests validate UnknownFlagError for undeclared keys
+- [x] Unit tests validate InvalidFlagValueError for malformed env values
+- [x] Unit tests validate env var naming convention
+- [x] Unit tests validate test override set/clear cycle
+- [x] Unit tests validate FlagEvaluation source attribution
+- [x] Tests pass: `uv run gz test`
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 ### Gate 3: Docs (Heavy)
 
-- [ ] Module docstring in service.py
+- [x] Module docstring in service.py
 
 ### Gate 5: Human (Heavy)
 
-- [ ] Human attestation recorded
+- [x] Human attestation recorded
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.8-02-01: Given a flag `ops.product_proof` with registry default `true` and no overrides, when `is_enabled("ops.product_proof")` is called, then it returns `True`.
-- [ ] REQ-0.0.8-02-02: Given env var `GZKIT_FLAG_OPS_PRODUCT_PROOF=false`, when `is_enabled("ops.product_proof")` is called, then it returns `False` (env overrides registry).
-- [ ] REQ-0.0.8-02-03: Given env var and project config both set, when `is_enabled` is called, then project config wins.
-- [ ] REQ-0.0.8-02-04: Given `set_test_override("ops.product_proof", False)`, when `is_enabled` is called, then test override wins. After `clear_test_overrides()`, the prior resolution applies.
-- [ ] REQ-0.0.8-02-05: Given `is_enabled("nonexistent.flag")`, when called, then UnknownFlagError is raised.
-- [ ] REQ-0.0.8-02-06: Given env var `GZKIT_FLAG_OPS_PRODUCT_PROOF=maybe`, when FlagService resolves, then InvalidFlagValueError is raised.
-- [ ] REQ-0.0.8-02-07: Given `evaluate("ops.product_proof")`, when called with env var set, then FlagEvaluation.source is `"env"`.
+- [x] REQ-0.0.8-02-01: Given a flag `ops.product_proof` with registry default `true` and no overrides, when `is_enabled("ops.product_proof")` is called, then it returns `True`.
+- [x] REQ-0.0.8-02-02: Given env var `GZKIT_FLAG_OPS_PRODUCT_PROOF=false`, when `is_enabled("ops.product_proof")` is called, then it returns `False` (env overrides registry).
+- [x] REQ-0.0.8-02-03: Given env var and project config both set, when `is_enabled` is called, then project config wins.
+- [x] REQ-0.0.8-02-04: Given `set_test_override("ops.product_proof", False)`, when `is_enabled` is called, then test override wins. After `clear_test_overrides()`, the prior resolution applies.
+- [x] REQ-0.0.8-02-05: Given `is_enabled("nonexistent.flag")`, when called, then UnknownFlagError is raised.
+- [x] REQ-0.0.8-02-06: Given env var `GZKIT_FLAG_OPS_PRODUCT_PROOF=maybe`, when FlagService resolves, then InvalidFlagValueError is raised.
+- [x] REQ-0.0.8-02-07: Given `evaluate("ops.product_proof")`, when called with env var set, then FlagEvaluation.source is `"env"`.
 
 ## Verification Commands
 
@@ -125,14 +125,32 @@ uv run gz typecheck
 
 ### Implementation Summary
 
-- Files created/modified: (to be filled on completion)
-- Validation commands run: (to be filled on completion)
-- Date completed: (to be filled on completion)
+- Files created: `src/gzkit/flags/service.py`, `tests/test_flag_service.py`
+- Files modified: `src/gzkit/flags/__init__.py`
+- Validation: lint clean, typecheck clean, 2121 tests pass, 26 OBPI tests pass, 100% service.py coverage
+- Date completed: 2026-03-30
 
 ### Key Proof
 
-(to be filled on completion)
+```bash
+$ uv run -m unittest tests.test_flag_service -v
+Ran 26 tests in 0.001s — OK
+```
+
+```bash
+$ uv run coverage report --include='src/gzkit/flags/service.py'
+Name                         Stmts   Miss  Cover
+------------------------------------------------
+src/gzkit/flags/service.py      62      0   100%
+```
+
+## Human Attestation
+
+- **Attestor:** jeff
+- **Date:** 2026-03-30
+- **Statement:** attest completed
 
 ---
 
-**Brief Status:** Pending
+**Brief Status:** Completed
+**Date Completed:** 2026-03-30
