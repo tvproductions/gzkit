@@ -3,7 +3,7 @@ id: OBPI-0.0.8-07-config-gates-removal
 parent: ADR-0.0.8-feature-toggle-system
 item: 7
 lane: Heavy
-status: Pending
+status: Completed
 ---
 
 # OBPI-0.0.8-07: Config Gates Removal
@@ -13,7 +13,7 @@ status: Pending
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.8-feature-toggle-system/ADR-0.0.8-feature-toggle-system.md`
 - **Checklist Item:** #10 — "config.gates removal and .gzkit.json migration"
 
-**Status:** Pending
+**Status:** Completed
 
 ## Objective
 
@@ -63,35 +63,35 @@ need migration. This is a breaking change to the config contract.
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item #10 referenced
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist item #10 referenced
 
 ### Gate 2: TDD
 
-- [ ] Unit tests validate config loads without gates field
-- [ ] Unit tests validate config with stale gates key produces warning/error
-- [ ] Unit tests validate no stale config.gate references in codebase
-- [ ] Tests pass: `uv run gz test`
+- [x] Unit tests validate config loads without gates field
+- [x] Unit tests validate config with stale gates key produces warning/error
+- [x] Unit tests validate no stale config.gate references in codebase
+- [x] Tests pass: `uv run gz test`
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 ### Gate 3: Docs (Heavy)
 
-- [ ] Migration note in operator docs (delivered with OBPI-08)
+- [x] Migration note in operator docs (delivered with OBPI-08)
 
 ### Gate 5: Human (Heavy)
 
-- [ ] Human attestation recorded
+- [x] Human attestation recorded
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.8-07-01: Given a clean `.gzkit.json` without `gates`, when config loads, then no errors or warnings related to gates.
-- [ ] REQ-0.0.8-07-02: Given a `.gzkit.json` with a `gates` key, when config loads, then a clear deprecation warning names the `flags` replacement.
-- [ ] REQ-0.0.8-07-03: Given a grep for `config\.gate` across `src/gzkit/`, when run, then zero matches found.
-- [ ] REQ-0.0.8-07-04: Given the full test suite, when run after removal, then all tests pass with no gate-related failures.
+- [x] REQ-0.0.8-07-01: Given a clean `.gzkit.json` without `gates`, when config loads, then no errors or warnings related to gates.
+- [x] REQ-0.0.8-07-02: Given a `.gzkit.json` with a `gates` key, when config loads, then a clear deprecation warning names the `flags` replacement.
+- [x] REQ-0.0.8-07-03: Given a grep for `config\.gate` across `src/gzkit/`, when run, then zero matches found.
+- [x] REQ-0.0.8-07-04: Given the full test suite, when run after removal, then all tests pass with no gate-related failures.
 
 ## Verification Commands
 
@@ -121,14 +121,34 @@ uv run gz typecheck
 
 ### Implementation Summary
 
-- Files created/modified: (to be filled on completion)
-- Validation commands run: (to be filled on completion)
-- Date completed: (to be filled on completion)
+- Created: `tests/test_config_gates_removal.py` (4 REQ-scoped tests)
+- Modified: `src/gzkit/config.py` (removed `gates` field, `gate()` method, `GATE_LEVELS`; added deprecation warning in `load()`)
+- Modified: `src/gzkit/commands/closeout.py` (removed `config.gate("product_proof")` fallback)
+- Modified: `.gzkit.json` (removed `gates` key)
+- Modified: `data/flags.json` (set `migration.config_gates_to_flags` default to `true`)
+- Modified: `tests/test_config.py` (replaced `TestGates` with `TestGatesRemoved`)
+- Modified: `tests/test_closeout_migration.py` (tightened `config.gate(` absent assertion)
+- Validation: lint clean, typecheck clean, 2163 tests pass, mkdocs build clean
+- Date completed: 2026-03-30
 
 ### Key Proof
 
-(to be filled on completion)
+```bash
+$ grep -rn "config\.gate" src/gzkit/ --include="*.py" | grep -v __pycache__
+# (zero output — no matches)
+
+$ uv run -m unittest tests.test_config_gates_removal -v
+# 4/4 pass
+```
+
+## Human Attestation
+
+- **Attestor:** Jeff
+- **Attestation:** attest completed
+- **Date:** 2026-03-30
 
 ---
 
-**Brief Status:** Pending
+**Brief Status:** Completed
+
+**Date Completed:** 2026-03-30
