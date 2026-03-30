@@ -3,7 +3,7 @@ id: OBPI-0.0.7-03-eval-module-migration
 parent: ADR-0.0.7
 item: 3
 lane: Lite
-status: Accepted
+status: Completed
 ---
 
 # OBPI-0.0.7-03-eval-module-migration: Eval module migration
@@ -13,7 +13,7 @@ status: Accepted
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.7-config-first-resolution-discipline/ADR-0.0.7-config-first-resolution-discipline.md`
 - **Checklist Item:** #3 - "Eval module migration — remove `_PROJECT_ROOT` from `eval/datasets.py`, `eval/delta.py`, `eval/regression.py`; thread manifest paths"
 
-**Status:** Accepted
+**Status:** Completed
 
 ## Objective
 
@@ -53,32 +53,32 @@ their 5 dependent path constants from `eval/datasets.py`, `eval/delta.py`, and
 
 **Context:**
 
-- [ ] Parent ADR — understand anti-pattern warning about "fallback" constants
-- [ ] OBPI-01 complete (v2 manifest with `data` section)
-- [ ] OBPI-02 complete (`manifest_path()` helper available)
+- [x] Parent ADR — understand anti-pattern warning about "fallback" constants
+- [x] OBPI-01 complete (v2 manifest with `data` section)
+- [x] OBPI-02 complete (`manifest_path()` helper available)
 
 **Existing Code (understand current state):**
 
-- [ ] `src/gzkit/eval/datasets.py:18` — `_PROJECT_ROOT` and dependents
-- [ ] `src/gzkit/eval/delta.py:21` — `_PROJECT_ROOT` and dependents
-- [ ] `src/gzkit/eval/regression.py:26` — `_PROJECT_ROOT` and dependents
-- [ ] Callers of functions in these modules (to update parameter passing)
+- [x] `src/gzkit/eval/datasets.py:18` — `_PROJECT_ROOT` and dependents
+- [x] `src/gzkit/eval/delta.py:21` — `_PROJECT_ROOT` and dependents
+- [x] `src/gzkit/eval/regression.py:26` — `_PROJECT_ROOT` and dependents
+- [x] Callers of functions in these modules (to update parameter passing)
 
 ## Quality Gates
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
+- [x] Intent and scope recorded in this OBPI brief
 
 ### Gate 2: TDD
 
-- [ ] Tests pass: `uv run gz test`
-- [ ] Zero `_PROJECT_ROOT` in eval modules: `grep -rn "_PROJECT_ROOT" src/gzkit/eval/`
+- [x] Tests pass: `uv run gz test`
+- [x] Zero `_PROJECT_ROOT` in eval modules: `grep -rn "_PROJECT_ROOT" src/gzkit/eval/`
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 ## Verification
 
@@ -92,29 +92,63 @@ uv run -m unittest -q
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.7-03-01: Given the eval modules, when `grep -rn "_PROJECT_ROOT" src/gzkit/eval/` runs, then zero matches are returned
-- [ ] REQ-0.0.7-03-02: Given `eval/datasets.py`, when a caller invokes dataset functions, then paths resolve from manifest parameter, not module constants
-- [ ] REQ-0.0.7-03-03: Given existing eval tests, when `uv run -m unittest -q` runs, then all tests pass with zero failures
+- [x] REQ-0.0.7-03-01: Given the eval modules, when `grep -rn "_PROJECT_ROOT" src/gzkit/eval/` runs, then zero matches are returned
+- [x] REQ-0.0.7-03-02: Given `eval/datasets.py`, when a caller invokes dataset functions, then paths resolve from manifest parameter, not module constants
+- [x] REQ-0.0.7-03-03: Given existing eval tests, when `uv run -m unittest -q` runs, then all tests pass with zero failures
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, grep proof clean
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, grep proof clean
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 ## Evidence
+
+### Implementation Summary
+
+- Removed: `_PROJECT_ROOT`, `_DATA_DIR`, `_SCHEMA_PATH` from `datasets.py`
+- Removed: `_PROJECT_ROOT`, `_CONFIG_PATH`, `_BASELINES_DIR` from `delta.py`
+- Removed: `_PROJECT_ROOT`, `_BASELINES_DIR` from `regression.py`
+- Changed: All path parameters from `Path | None = None` to required `Path`
+- Updated: `runner.py` and `quality.py` to thread `data_dir` from callers
+- Updated: 4 test files to pass explicit path parameters
+
+### Key Proof
+
+```text
+$ grep -rn "_PROJECT_ROOT" src/gzkit/eval/
+(no output — zero matches)
+
+$ grep -rn "Path(__file__)" src/gzkit/eval/
+(no output — zero matches)
+
+$ uv run -m unittest tests/eval/test_datasets.py tests/eval/test_delta_gates.py tests/eval/test_regression.py tests/eval/test_harness.py -v
+Ran 73 tests in 0.141s — OK
+
+$ uv run gz test
+Ran 2015 tests in 17.001s — OK
+
+$ uv run gz lint
+All checks passed!
+
+$ uv run gz typecheck
+All checks passed!
+```
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste grep proof and test output here
+grep -rn "_PROJECT_ROOT" src/gzkit/eval/  →  zero matches
+grep -rn "Path(__file__)" src/gzkit/eval/  →  zero matches
+73/73 eval tests pass; 2015/2015 full suite pass
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+uv run gz lint  →  All checks passed!
+uv run gz typecheck  →  All checks passed!
 ```
 
 ## Tracked Defects
@@ -123,14 +157,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a` (Lite lane, Lite parent)
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `jeff` (Foundation ADR — human attestation required)
+- Attestation: `attest completed`
+- Date: `2026-03-30`
 
 ---
 
-**Brief Status:** Accepted
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-30
 
 **Evidence Hash:** -

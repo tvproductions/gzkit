@@ -11,14 +11,6 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
-# ---------------------------------------------------------------------------
-# Constants
-# ---------------------------------------------------------------------------
-
-_PROJECT_ROOT = Path(__file__).resolve().parents[3]
-_DATA_DIR = _PROJECT_ROOT / "data" / "eval"
-_SCHEMA_PATH = _PROJECT_ROOT / "data" / "schemas" / "eval_dataset.schema.json"
-
 KNOWN_SURFACES: list[str] = [
     "instruction_eval",
     "adr_eval",
@@ -65,9 +57,9 @@ _SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+$")
 _VALID_CASE_TYPES = {"golden_path", "edge_case"}
 
 
-def _load_schema() -> dict[str, object]:
+def _load_schema(schema_path: Path) -> dict[str, object]:
     """Load the eval dataset JSON schema."""
-    result: dict[str, object] = json.loads(_SCHEMA_PATH.read_text(encoding="utf-8"))
+    result: dict[str, object] = json.loads(schema_path.read_text(encoding="utf-8"))
     return result
 
 
@@ -139,18 +131,21 @@ def validate_dataset_json(data: dict[str, object]) -> None:
 # ---------------------------------------------------------------------------
 
 
-def load_dataset(surface: str, *, data_dir: Path | None = None) -> EvalDataset:
+def load_dataset(surface: str, *, data_dir: Path) -> EvalDataset:
     """Load an eval dataset by surface name.
 
-    Searches ``data_dir`` (default ``data/eval/``) for JSON files whose
-    ``surface`` field matches the requested name. Validates against the
-    JSON schema before parsing into the Pydantic model.
+    Searches ``data_dir`` for JSON files whose ``surface`` field matches
+    the requested name. Validates against the JSON schema before parsing
+    into the Pydantic model.
+
+    Args:
+        surface: Surface name to load.
+        data_dir: Directory containing eval dataset JSON files.
 
     Raises ``FileNotFoundError`` if no dataset matches.
     Raises ``DatasetValidationError`` if the dataset is structurally invalid.
     """
-    search_dir = data_dir or _DATA_DIR
-    for path in sorted(search_dir.glob("*.json")):
+    for path in sorted(data_dir.glob("*.json")):
         raw = json.loads(path.read_text(encoding="utf-8"))
         if raw.get("surface") == surface:
             validate_dataset_json(raw)
@@ -160,17 +155,16 @@ def load_dataset(surface: str, *, data_dir: Path | None = None) -> EvalDataset:
     raise FileNotFoundError(msg)
 
 
-def load_all_datasets(*, data_dir: Path | None = None) -> list[EvalDataset]:
+def load_all_datasets(*, data_dir: Path) -> list[EvalDataset]:
     """Load and validate all eval datasets from ``data_dir``."""
-    search_dir = data_dir or _DATA_DIR
     datasets: list[EvalDataset] = []
-    for path in sorted(search_dir.glob("*.json")):
+    for path in sorted(data_dir.glob("*.json")):
         raw = json.loads(path.read_text(encoding="utf-8"))
         validate_dataset_json(raw)
         datasets.append(EvalDataset.model_validate(raw))
     return datasets
 
 
-def list_surfaces(*, data_dir: Path | None = None) -> list[str]:
+def list_surfaces(*, data_dir: Path) -> list[str]:
     """Return surface names for all available datasets."""
     return [ds.surface for ds in load_all_datasets(data_dir=data_dir)]

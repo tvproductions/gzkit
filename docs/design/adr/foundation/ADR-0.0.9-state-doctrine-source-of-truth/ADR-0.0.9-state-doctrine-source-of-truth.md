@@ -78,6 +78,20 @@ with explicit authority rules that prevent drift between governance canon (L1),
 event log (L2), and derived state (L3). This is the single most important
 missing foundation — it prevents divergence across the entire runtime track.
 
+## Non-Goals (Explicit Scope Boundaries)
+
+- **No SQLite or alternative storage backend.** This ADR locks the three-layer
+  model. Storage tier promotion (JSONL to SQLite) is governed by ADR-0.0.10
+  and deferred to post-1.0.
+- **No pipeline stage tracking in the ledger.** Pipeline markers remain Layer 3
+  for now. Migration to Layer 2 is documented as intent (OBPI-06) but not
+  implemented in this ADR.
+- **No graph engine integration.** The graph engine will consume the state
+  doctrine but is a separate ADR. This ADR does not define entity resolution
+  or cross-entity queries.
+- **No real-time sync or watch mode.** Frontmatter is auto-fixed at lifecycle
+  moments, not continuously. No file watcher or daemon.
+
 ## Decision
 
 - The ledger (`.gzkit/ledger.jsonl`) is authoritative for all runtime status.
