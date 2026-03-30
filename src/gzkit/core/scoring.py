@@ -177,6 +177,54 @@ def build_checklist_seed(semver: str, target_count: int) -> str:
     return "\n".join(lines)
 
 
+class WbsRow(BaseModel):
+    """One row from the OBPI Decomposition WBS table."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    item: int
+    obpi_id: str
+    spec_summary: str
+    lane: str
+    status: str
+
+
+def parse_wbs_table(content: str) -> list[WbsRow]:
+    """Parse the OBPI Decomposition WBS table from ADR markdown.
+
+    Expects a markdown table with columns: #, OBPI, Specification Summary, Lane, Status.
+    Returns one WbsRow per data row, in order.
+    """
+    section = extract_markdown_section(content, "OBPI Decomposition")
+    if section is None:
+        return []
+
+    row_re = re.compile(
+        r"^\|\s*(\d+)\s*\|"  # # column
+        r"\s*([^|]+?)\s*\|"  # OBPI column
+        r"\s*([^|]+?)\s*\|"  # Specification Summary
+        r"\s*(Lite|Heavy)\s*\|"  # Lane
+        r"\s*([^|]+?)\s*\|",  # Status
+        re.IGNORECASE,
+    )
+
+    rows: list[WbsRow] = []
+    for line in section.splitlines():
+        match = row_re.match(line.strip())
+        if not match:
+            continue
+        rows.append(
+            WbsRow(
+                item=int(match.group(1)),
+                obpi_id=match.group(2).strip(),
+                spec_summary=match.group(3).strip(),
+                lane=match.group(4).strip().lower(),
+                status=match.group(5).strip(),
+            )
+        )
+    return rows
+
+
 def extract_markdown_section(content: str, section_title: str) -> str | None:
     """Extract a markdown section body for a given H2 title.
 
