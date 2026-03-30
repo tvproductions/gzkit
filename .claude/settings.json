@@ -40,10 +40,6 @@
           {
             "type": "command",
             "command": "uv run python .claude/hooks/pipeline-completion-reminder.py"
-          },
-          {
-            "type": "command",
-            "command": "uv run python .claude/hooks/ceremony-step-gate.py"
           }
         ]
       }
