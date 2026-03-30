@@ -2,7 +2,7 @@
 id: OBPI-0.0.11-02-persona-control-surface-definition
 parent: ADR-0.0.11
 item: 2
-lane: Lite
+lane: Heavy
 status: Draft
 ---
 

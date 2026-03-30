@@ -2,7 +2,7 @@
 id: OBPI-0.0.12-01-main-session-persona
 parent: ADR-0.0.12
 item: 1
-lane: Lite
+lane: Heavy
 status: Draft
 ---
 

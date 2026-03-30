@@ -2,7 +2,7 @@
 id: OBPI-0.0.13-06-cross-project-validation
 parent: ADR-0.0.13
 item: 6
-lane: Lite
+lane: Heavy
 status: Draft
 ---
 
@@ -11,7 +11,7 @@ status: Draft
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.13-portable-persona-control-surface/ADR-0.0.13-portable-persona-control-surface.md`
-- **Checklist Item:** #6 - "Persona drift monitoring surface (observability)"
+- **Checklist Item:** #6 - "Cross-project validation (apply to airlineops)"
 
 **Status:** Draft
 
