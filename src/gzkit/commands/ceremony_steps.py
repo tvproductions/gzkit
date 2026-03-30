@@ -94,28 +94,17 @@ def render_step_4_walkthrough(adr_id: str, commands: list[str]) -> str:
     )
 
 
-def render_step_5_execute(adr_id: str, commands: list[str], index: int) -> str:
-    """Execute one walkthrough command."""
-    if index >= len(commands):
-        return "\n".join(
-            [
-                "All walkthrough commands have been presented.",
-                "",
-                f"Run `gz closeout {adr_id} --ceremony --next`",
-                "to proceed to attestation.",
-            ]
-        )
-    cmd = commands[index]
-    remaining = len(commands) - index - 1
-    suffix = f" ({remaining} remaining)" if remaining > 0 else " (last command)"
+def render_step_5_execute(adr_id: str, commands: list[str]) -> str:
+    """Run all walkthrough commands now."""
+    cmd_list = "\n".join(f"  {c}" for c in commands)
     return "\n".join(
         [
-            f"Walkthrough command {index + 1}/{len(commands)}{suffix}:",
+            "Run these walkthrough commands now:",
             "",
-            f"  {cmd}",
+            cmd_list,
             "",
-            "Run this command now. After observing the output,",
-            f"run `gz closeout {adr_id} --ceremony --next` to continue.",
+            "After observing the output,",
+            f"run `gz closeout {adr_id} --ceremony --next` to proceed to attestation.",
         ]
     )
 

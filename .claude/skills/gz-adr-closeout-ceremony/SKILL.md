@@ -48,20 +48,16 @@ On skill invocation, the agent enters a **relay loop**. The loop is simple:
 
 1. **First turn (skill invoked):** Run `uv run gz closeout ADR-X.Y.Z --ceremony`. Stop.
 2. **Every subsequent human message:** That message IS the acknowledgment. Run
-   `uv run gz closeout ADR-X.Y.Z --ceremony --next`. Stop.
-3. **Exception — attestation step:** When the CLI output contains "I await your
-   attestation", do NOT run `--next`. Wait for the human to provide their attestation
-   text, then run `uv run gz closeout ADR-X.Y.Z --ceremony --attest "<their decision>"`.
-4. **Exception — action steps:** When the CLI output instructs you to run a specific
-   command (e.g. `uv run gz closeout ADR-X.Y.Z`, `gh issue list`, `gh release create`),
-   execute that command, show the result, then stop. The human's next message advances
-   to the next ceremony step via `--next`.
-5. **Ceremony complete:** When the CLI output contains "COMPLETE", the ceremony is done.
+   `uv run gz closeout ADR-X.Y.Z --ceremony --next`. If the CLI output lists commands
+   to run (walkthrough commands, closeout pipeline, gh issue commands), run them
+   immediately in the same turn, then stop.
+3. **Attestation step:** When the CLI output contains "I await your attestation",
+   stop and wait. The human's next message is their attestation decision. Run
+   `uv run gz closeout ADR-X.Y.Z --ceremony --attest "<their decision>"`.
+4. **Ceremony complete:** When the CLI output contains "COMPLETE", the ceremony is done.
 
-**One CLI call per turn. No exceptions. No commentary beyond the CLI output.**
-
-The hook enforces this mechanically — but the agent should not rely on the hook as a
-safety net. The agent's job is to be a dumb relay.
+**The agent is a relay that executes what the CLI tells it to. One `--next` per turn,
+but run any commands the step requires in the same turn.**
 
 ---
 

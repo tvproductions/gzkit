@@ -214,7 +214,7 @@ def _present_step(
     if step == CeremonyStep.WALKTHROUGH:
         return render_step_4_walkthrough(adr_id, state.walkthrough_commands)
     if step == CeremonyStep.EXECUTE:
-        return render_step_5_execute(adr_id, state.walkthrough_commands, state.walkthrough_index)
+        return render_step_5_execute(adr_id, state.walkthrough_commands)
     if step == CeremonyStep.ATTESTATION:
         return render_step_6_attestation(adr_id)
     if step == CeremonyStep.CLOSEOUT:
@@ -302,30 +302,6 @@ def _advance_ceremony(
     history = list(state.step_history)
     if history and history[-1].acknowledged_at is None:
         history[-1] = history[-1].model_copy(update={"acknowledged_at": now})
-
-    # Step 5 sub-stepping: advance walkthrough_index before moving to next step
-    wt_index = state.walkthrough_index
-    if (
-        state.current_step == CeremonyStep.EXECUTE
-        and wt_index < len(state.walkthrough_commands) - 1
-    ):
-        wt_index += 1
-        new_state = state.model_copy(
-            update={
-                "step_history": history,
-                "walkthrough_index": wt_index,
-                "updated_at": now,
-            }
-        )
-        # Record the sub-step presentation
-        history = list(new_state.step_history)
-        history.append(CeremonyStepRecord(step=CeremonyStep.EXECUTE, presented_at=now))
-        new_state = new_state.model_copy(update={"step_history": history})
-        save_ceremony_state(project_root, new_state)
-        output = _present_step(new_state, project_root, adr_file, lane, manifest, obpi_files)
-        _write_turn_lock(project_root, adr_id, CeremonyStep.EXECUTE)
-        _output(as_json, new_state, output)
-        return
 
     next_s = _next_step(state.current_step, state.is_foundation)
     if next_s == -1:
