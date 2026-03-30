@@ -447,8 +447,19 @@ per-OBPI anchor hash. The second sync commits the receipt and reconcile output.
    The hook checks `attestation_type == "human"` or `evidence.human_attestation == true`.
 
 2. Run `/gz-obpi-audit {OBPI-ID}` to record full evidence ledger entry
-3. Update brief: check all criteria boxes, add evidence section, set status to `Completed`
-   - (Hooks `obpi-completion-validator.py` enforce evidence requirements)
+3. Update brief using a **single Write operation** (full file rewrite):
+   - Read the current brief content
+   - Compose the complete final content: check all criteria boxes `[x]`,
+     add `### Implementation Summary` (bullet format: `- Key: value`),
+     add `### Key Proof` (command output in code blocks),
+     update Human Attestation section, update `**Brief Status:**` to `Completed`,
+     update `**Date Completed:**`, AND change frontmatter `status: Completed`
+   - Write the entire file at once
+   - **Why atomic:** The `obpi-completion-validator.py` hook fires on
+     any edit introducing `Status: Completed` and checks the would-be file
+     content for evidence sections. Incremental Edit calls that change status
+     before evidence exists will always be blocked. A single Write with
+     everything included passes on the first attempt.
 4. Release OBPI lock via `/gz-obpi-lock release {OBPI-ID}`
 5. Remove `.claude/plans/.pipeline-active-{OBPI-ID}.json` if it was created.
 6. Remove `.claude/plans/.pipeline-active.json` only when it still points at

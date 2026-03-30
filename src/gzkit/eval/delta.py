@@ -15,15 +15,6 @@ from pydantic import BaseModel, ConfigDict, Field
 from gzkit.eval.runner import EvalSuiteScore, SurfaceScore
 
 # ---------------------------------------------------------------------------
-# Constants
-# ---------------------------------------------------------------------------
-
-_PROJECT_ROOT = Path(__file__).resolve().parents[3]
-_CONFIG_PATH = _PROJECT_ROOT / "config" / "eval_thresholds.json"
-_BASELINES_DIR = _PROJECT_ROOT / "data" / "eval" / "baselines"
-
-
-# ---------------------------------------------------------------------------
 # Models
 # ---------------------------------------------------------------------------
 
@@ -86,25 +77,23 @@ class EvalDeltaResult(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-def load_thresholds(config_path: Path | None = None) -> EvalThresholdConfig:
+def load_thresholds(config_path: Path) -> EvalThresholdConfig:
     """Load eval threshold configuration.
 
     Args:
-        config_path: Path to threshold config JSON. Defaults to
-            ``config/eval_thresholds.json``.
+        config_path: Path to threshold config JSON.
 
     Returns:
-        Parsed threshold configuration.
+        Parsed threshold configuration. Returns defaults if file does not exist.
 
     """
-    path = config_path or _CONFIG_PATH
-    if not path.exists():
+    if not config_path.exists():
         return EvalThresholdConfig()
-    raw = json.loads(path.read_text(encoding="utf-8"))
+    raw = json.loads(config_path.read_text(encoding="utf-8"))
     return EvalThresholdConfig.model_validate(raw)
 
 
-def load_baseline(surface: str, baselines_dir: Path | None = None) -> SurfaceBaseline | None:
+def load_baseline(surface: str, baselines_dir: Path) -> SurfaceBaseline | None:
     """Load stored baseline scores for a surface.
 
     Args:
@@ -115,15 +104,14 @@ def load_baseline(surface: str, baselines_dir: Path | None = None) -> SurfaceBas
         Parsed baseline or None if no baseline exists.
 
     """
-    search_dir = baselines_dir or _BASELINES_DIR
-    path = search_dir / f"{surface}.baseline.json"
+    path = baselines_dir / f"{surface}.baseline.json"
     if not path.exists():
         return None
     raw = json.loads(path.read_text(encoding="utf-8"))
     return SurfaceBaseline.model_validate(raw)
 
 
-def save_baseline(surface_score: SurfaceScore, baselines_dir: Path | None = None) -> Path:
+def save_baseline(surface_score: SurfaceScore, baselines_dir: Path) -> Path:
     """Save current surface scores as baseline.
 
     Args:
@@ -134,13 +122,12 @@ def save_baseline(surface_score: SurfaceScore, baselines_dir: Path | None = None
         Path to the written baseline file.
 
     """
-    target_dir = baselines_dir or _BASELINES_DIR
-    target_dir.mkdir(parents=True, exist_ok=True)
+    baselines_dir.mkdir(parents=True, exist_ok=True)
     baseline = SurfaceBaseline(
         surface=surface_score.surface,
         dimension_scores=surface_score.dimension_averages,
     )
-    path = target_dir / f"{surface_score.surface}.baseline.json"
+    path = baselines_dir / f"{surface_score.surface}.baseline.json"
     path.write_text(json.dumps(baseline.model_dump(), indent=2) + "\n", encoding="utf-8")
     return path
 
@@ -154,7 +141,7 @@ def check_regressions(
     current: EvalSuiteScore,
     *,
     config: EvalThresholdConfig | None = None,
-    baselines_dir: Path | None = None,
+    baselines_dir: Path,
 ) -> EvalDeltaResult:
     """Compare current eval scores against stored baselines.
 
@@ -163,7 +150,7 @@ def check_regressions(
 
     Args:
         current: Current eval suite scores.
-        config: Threshold configuration (loaded from config/ if None).
+        config: Threshold configuration (defaults to 0.5 threshold if None).
         baselines_dir: Directory containing baseline files.
 
     Returns:
@@ -171,7 +158,7 @@ def check_regressions(
 
     """
     if config is None:
-        config = load_thresholds()
+        config = EvalThresholdConfig()
 
     regressions: list[DimensionRegression] = []
     surfaces_checked = 0

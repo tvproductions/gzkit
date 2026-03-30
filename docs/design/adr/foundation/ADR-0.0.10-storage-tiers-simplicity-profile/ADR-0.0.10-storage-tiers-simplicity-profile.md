@@ -72,6 +72,18 @@ optimization but is an unaudited tier escalation.
 - OBPI mapping
   - Each numbered checklist item maps to one brief
 
+## Non-Goals (Explicit Scope Boundaries)
+
+- **No SQLite implementation.** SQLite is acknowledged as a post-1.0 path but
+  this ADR does not implement, prototype, or benchmark it.
+- **No Tier B manifest.** Deferred until 3+ Tier B items exist. The graph engine
+  (when built) will be Tier B item #2, triggering manifest design.
+- **No Tier C introduction.** This ADR locks the rules for Tier C escalation but
+  does not introduce any Tier C dependency.
+- **No identity model implementation.** This ADR documents the five identity
+  surfaces (ADR-\*, OBPI-\*, REQ-\*, TASK-\*, EV-\*) but Pydantic model work
+  for REQ, TASK, and EV is governed by the Entity Hierarchy ADR (separate).
+
 ## Intent
 
 Formalize the three-tier storage model that ensures gzkit remains
