@@ -4,6 +4,7 @@ Handles .gzkit.json parsing and project configuration.
 """
 
 import json
+import warnings
 from pathlib import Path
 from typing import Literal
 
@@ -98,9 +99,6 @@ class PathConfig(BaseModel):
     skills: str = ".gzkit/skills"
 
 
-GATE_LEVELS = ("enforce", "advisory", "disabled")
-
-
 class GzkitConfig(BaseModel):
     """Root configuration for a gzkit-enabled project."""
 
@@ -109,15 +107,7 @@ class GzkitConfig(BaseModel):
     mode: Literal["lite", "heavy"] = "lite"
     paths: PathConfig = Field(default_factory=PathConfig)
     vendors: VendorsConfig = Field(default_factory=VendorsConfig)
-    gates: dict[str, Literal["enforce", "advisory", "disabled"]] = Field(
-        default_factory=dict,
-        description="Per-gate enforcement overrides. Default for unlisted gates is 'enforce'.",
-    )
     project_name: str = ""
-
-    def gate(self, name: str) -> Literal["enforce", "advisory", "disabled"]:
-        """Look up enforcement level for a gate. Unlisted gates default to enforce."""
-        return self.gates.get(name, "enforce")
 
     @classmethod
     def load(cls, path: Path | None = None) -> "GzkitConfig":
@@ -139,16 +129,24 @@ class GzkitConfig(BaseModel):
             content = f.read().strip()
             data = json.loads(content) if content else {}
 
+        if "gates" in data:
+            warnings.warn(
+                "The 'gates' key in .gzkit.json is removed. "
+                "Use the 'flags' key and the flag service instead "
+                "(see ADR-0.0.8). Remove the 'gates' key from your config.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            del data["gates"]
+
         paths_data = data.get("paths", {})
         vendors_data = data.get("vendors", {})
-        gates_data = data.get("gates", {})
 
         return cls.model_validate(
             {
                 "mode": data.get("mode", "lite"),
                 "paths": paths_data,
                 "vendors": vendors_data,
-                "gates": gates_data,
                 "project_name": data.get("project_name", ""),
             }
         )

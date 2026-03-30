@@ -1,8 +1,5 @@
 {
   "mode": "lite",
-  "gates": {
-    "product_proof": "advisory"
-  },
   "paths": {
     "prd": "docs/design/prd",
     "constitutions": "docs/design/constitutions",

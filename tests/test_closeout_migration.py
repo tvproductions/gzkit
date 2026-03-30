@@ -152,19 +152,18 @@ class TestCloseoutMigrationProofPresent(unittest.TestCase):
 
 
 class TestCloseoutMigrationReferenceRemoved(unittest.TestCase):
-    """config.gate('product_proof') reference removed from closeout.py."""
+    """config.gate('product_proof') fully removed from closeout.py (OBPI-0.0.8-07)."""
 
     @covers("REQ-0.0.8-06-04")
     def test_primary_path_uses_decisions_not_config_gate(self):
-        """Primary decision path uses product_proof_enforced(); config.gate is fallback only."""
+        """Decision path uses product_proof_enforced(); config.gate is fully removed."""
         import gzkit.commands.closeout
 
         source = Path(gzkit.commands.closeout.__file__).read_text(encoding="utf-8")
         self.assertIn("product_proof_enforced", source)
-        # config.gate may appear in the REQ-03 transition fallback, but the
-        # primary decision must come from FeatureDecisions
         self.assertIn("get_decisions()", source)
         self.assertIn("decisions.product_proof_enforced()", source)
+        self.assertNotIn("config.gate(", source)
 
 
 if __name__ == "__main__":
