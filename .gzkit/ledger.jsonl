@@ -2163,3 +2163,4 @@
 {"schema":"gzkit.ledger.v1","event":"gate_checked","id":"ADR-0.0.7-config-first-resolution-discipline","ts":"2026-03-30T16:55:33.666430+00:00","gate":2,"status":"pass","command":"uv run gz typecheck","returncode":0}
 {"schema":"gzkit.ledger.v1","event":"attested","id":"ADR-0.0.7-config-first-resolution-discipline","ts":"2026-03-30T16:55:33.677885+00:00","status":"completed","by":"Jeff"}
 {"schema":"gzkit.ledger.v1","event":"lifecycle_transition","id":"ADR-0.0.7-config-first-resolution-discipline","ts":"2026-03-30T16:55:33.678133+00:00","content_type":"adr","from_state":"Proposed","to_state":"Completed"}
+{"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/foundation/ADR-0.0.8-feature-toggle-system/EVALUATION_SCORECARD.md","ts":"2026-03-30T17:14:41.624786+00:00","path":"docs/design/adr/foundation/ADR-0.0.8-feature-toggle-system/EVALUATION_SCORECARD.md"}
