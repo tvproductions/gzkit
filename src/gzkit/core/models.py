@@ -104,6 +104,123 @@ class InstructionFrontmatter(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Identity surface models (ADR-0.0.10, OBPI-0.0.10-02)
+# ---------------------------------------------------------------------------
+
+
+class AdrId(BaseModel):
+    """Portable ADR identity surface.
+
+    Pattern: ``ADR-X.Y.Z``  Example: ``ADR-0.0.10``
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    raw: str = Field(..., description="Canonical ADR identifier", pattern=r"^ADR-\d+\.\d+\.\d+$")
+
+    @classmethod
+    def parse(cls, value: str) -> AdrId:
+        """Parse and validate an ADR identifier string."""
+        return cls(raw=value.strip())
+
+    def __str__(self) -> str:
+        return self.raw
+
+
+class ObpiId(BaseModel):
+    """Portable OBPI identity surface.
+
+    Pattern: ``OBPI-X.Y.Z-NN``  Example: ``OBPI-0.0.10-01``
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    raw: str = Field(
+        ..., description="Canonical OBPI identifier", pattern=r"^OBPI-\d+\.\d+\.\d+-\d+$"
+    )
+
+    @classmethod
+    def parse(cls, value: str) -> ObpiId:
+        """Parse and validate an OBPI identifier string."""
+        return cls(raw=value.strip())
+
+    def __str__(self) -> str:
+        return self.raw
+
+
+class ReqId(BaseModel):
+    """Portable REQ identity surface.
+
+    Pattern: ``REQ-X.Y.Z-NN-MM``  Example: ``REQ-0.0.10-01-01``
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    raw: str = Field(
+        ..., description="Canonical REQ identifier", pattern=r"^REQ-\d+\.\d+\.\d+-\d+-\d+$"
+    )
+
+    @classmethod
+    def parse(cls, value: str) -> ReqId:
+        """Parse and validate a REQ identifier string."""
+        return cls(raw=value.strip())
+
+    def __str__(self) -> str:
+        return self.raw
+
+
+class TaskId(BaseModel):
+    """Portable TASK identity surface.
+
+    Pattern: ``TASK-X.Y.Z-NN-MM-SS``  Example: ``TASK-0.20.0-01-01-01``
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    raw: str = Field(
+        ..., description="Canonical TASK identifier", pattern=r"^TASK-\d+\.\d+\.\d+-\d+-\d+-\d+$"
+    )
+
+    @classmethod
+    def parse(cls, value: str) -> TaskId:
+        """Parse and validate a TASK identifier string."""
+        return cls(raw=value.strip())
+
+    def __str__(self) -> str:
+        return self.raw
+
+
+class EvidenceId(BaseModel):
+    """Portable Evidence identity surface.
+
+    Pattern: ``EV-X.Y.Z-NN-SSS``  Example: ``EV-0.0.10-01-001``
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    raw: str = Field(
+        ..., description="Canonical Evidence identifier", pattern=r"^EV-\d+\.\d+\.\d+-\d+-\d+$"
+    )
+
+    @classmethod
+    def parse(cls, value: str) -> EvidenceId:
+        """Parse and validate an Evidence identifier string."""
+        return cls(raw=value.strip())
+
+    def __str__(self) -> str:
+        return self.raw
+
+
+IDENTITY_MODELS: dict[str, type[BaseModel]] = {
+    "ADR": AdrId,
+    "OBPI": ObpiId,
+    "REQ": ReqId,
+    "TASK": TaskId,
+    "EV": EvidenceId,
+}
+
+
+# ---------------------------------------------------------------------------
 # Schema-ID → model mapping
 # ---------------------------------------------------------------------------
 

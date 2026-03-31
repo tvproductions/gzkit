@@ -3,7 +3,7 @@ id: OBPI-0.0.10-02-identity-surfaces
 parent: ADR-0.0.10-storage-tiers-simplicity-profile
 item: 2
 lane: lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.10-02: Identity Surfaces
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.10-storage-tiers-simplicity-profile/ADR-0.0.10-storage-tiers-simplicity-profile.md`
 - **Checklist Item:** #2 - "Define five identity surfaces with ID schemes and portability rules"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -54,41 +54,41 @@ schemes and portability rules. Pydantic models exist for all five surfaces in
 
 **Governance (read once, cache):**
 
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
+- [x] `AGENTS.md` or `CLAUDE.md` - agent operating contract
+- [x] Parent ADR - understand full context
 
 **Context:**
 
-- [ ] Parent ADR: `ADR-0.0.10-storage-tiers-simplicity-profile.md`
-- [ ] Related: OBPI-0.0.10-01 (tier definitions inform surface boundaries)
+- [x] Parent ADR: `ADR-0.0.10-storage-tiers-simplicity-profile.md`
+- [x] Related: OBPI-0.0.10-01 (tier definitions inform surface boundaries)
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] `src/gzkit/core/models.py` exists
-- [ ] Existing identity patterns in models.py
+- [x] `src/gzkit/core/models.py` exists
+- [x] Existing identity patterns in models.py
 
 **Existing Code (understand current state):**
 
-- [ ] Current models in `src/gzkit/core/models.py`
-- [ ] Test patterns: `tests/` for existing model tests
+- [x] Current models in `src/gzkit/core/models.py`
+- [x] Test patterns: `tests/` for existing model tests
 
 ## Quality Gates
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] Tests written before/with implementation
-- [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
+- [x] Tests written before/with implementation
+- [x] Tests pass: `uv run gz test`
+- [x] Validation commands recorded in evidence with real outputs
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 ## Verification
 
@@ -103,18 +103,18 @@ uv run -m unittest tests.test_identity_surfaces -v
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.10-02-01: Five identity surface ID formats are documented
-- [ ] REQ-0.0.10-02-02: Pydantic models exist in `core/models.py` for all five surfaces
-- [ ] REQ-0.0.10-02-03: Test verifies ID portability (same ID format across all tiers)
+- [x] REQ-0.0.10-02-01: Five identity surface ID formats are documented
+- [x] REQ-0.0.10-02-02: Pydantic models exist in `core/models.py` for all five surfaces
+- [x] REQ-0.0.10-02-03: Test verifies ID portability (same ID format across all tiers)
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -122,31 +122,51 @@ uv run -m unittest tests.test_identity_surfaces -v
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+uv run -m unittest tests.test_identity_surfaces -v
+Ran 37 tests in 0.001s
+OK
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+uv run gz lint    → All checks passed
+uv run gz typecheck → All checks passed
+uv run gz test    → 2254 tests pass (18s)
 ```
 
 ### Value Narrative
 
+Before this OBPI, gzkit's five identity surfaces existed only as informal conventions — mentioned in docs but without validated Pydantic models or a formal portability guarantee. Now, all five have frozen, extra-forbid identity models in `core/models.py` with documented regex patterns and a lossless parse/str round-trip contract.
+
 ### Key Proof
+
+```bash
+uv run -m unittest tests.test_identity_surfaces.TestTierPortability -v
+```
+```text
+test_adr_portable ... ok
+test_all_surfaces_roundtrip — Every surface ID round-trips through parse -> str. ... ok
+test_ev_portable ... ok
+test_obpi_portable ... ok
+test_req_portable ... ok
+test_task_portable ... ok
+Ran 6 tests in 0.001s — OK
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created: `tests/test_identity_surfaces.py` (37 tests)
+- Files modified: `src/gzkit/core/models.py` (AdrId, ObpiId, ReqId, TaskId, EvidenceId + IDENTITY_MODELS), `docs/governance/storage-tiers.md` (ID format specs, model contract, portability guarantee)
+- Tests added: 37 (parse, roundtrip, whitespace, frozen, extra-forbid, portability, mapping, config)
+- Date completed: 2026-03-31
+- Attestation status: Human attested
+- Defects noted: None
 
 ## Tracked Defects
 
@@ -154,14 +174,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a`
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `jeff`
+- Attestation: `attest completed`
+- Date: `2026-03-31`
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-31
 
 **Evidence Hash:** -
