@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.9-06-marker-migration-path
-parent: ADR-0.0.9
+parent: ADR-0.0.9-state-doctrine-source-of-truth
 item: 6
 lane: lite
 status: Draft

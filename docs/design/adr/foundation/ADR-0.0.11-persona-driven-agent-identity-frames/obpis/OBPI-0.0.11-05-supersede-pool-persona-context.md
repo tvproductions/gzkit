@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.11-05-supersede-pool-persona-context
-parent: ADR-0.0.11
+parent: ADR-0.0.11-persona-driven-agent-identity-frames
 item: 5
 lane: Lite
 status: Draft

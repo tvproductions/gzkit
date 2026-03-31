@@ -4,7 +4,7 @@ description: Execute the ADR closeout ceremony protocol for human attestation. G
 category: adr-audit
 compatibility: GovZero v6 framework; provides runbook walkthrough for human ADR attestation
 metadata:
-  skill-version: "8.0.0"
+  skill-version: "6.0.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -12,79 +12,355 @@ metadata:
   govzero_layer: "Layer 2 - Ledger Consumption"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-03-30
+last_reviewed: 2026-02-18
 ---
 
 # gz-adr-closeout-ceremony
 
-Execute the ADR closeout ceremony via CLI-driven step sequencing.
+Execute the ADR closeout ceremony, guiding the human through a runbook walkthrough to demonstrate ADR value.
 
 **Authority:** `docs/governance/GovZero/audit-protocol.md`
 
 ---
 
-## Architecture
+## Trust Model
 
-The CLI is the step driver. Each `--next` call returns exactly one step's content.
-The agent cannot skip or reorder steps because it never sees future steps.
+**Layer 2 — Ledger Consumption:** This tool orchestrates human attestation using ledger proof.
 
-State is persisted in `.gzkit/ceremonies/ADR-X.Y.Z.ceremony.json`.
-
----
-
-## Invocation
-
-The skill receives an ADR semver as its argument (e.g. `0.0.8`). Normalize to
-`ADR-X.Y.Z` format and begin immediately. Do not ask clarifying questions.
+- **Reads:** Ledger entries, audit reports, ADR/OBPI files
+- **Writes:** Attestation records, status updates
+- **Does NOT re-verify:** Evidence (trusts Layer 1 proof)
+- **Requires:** Human attestation before finalizing
 
 ---
 
-## Agent Loop
+## When to Use
 
-The agent keeps advancing through ceremony steps, running commands as instructed,
-and only stops at **attestation** (the one real human gate).
+- Human invokes "ADR closeout ceremony" (or equivalent: "begin closeout", "closeout ADR-X.Y.Z")
+- Human is ready to witness and attest to ADR completion
+- All OBPIs are believed to be complete
 
+---
+
+## Quality Control Context
+
+Pre-commit enforcement exists, but closeout **requires direct human observation** of evidence.
+Do not claim results; present paths and commands only.
+
+---
+
+## Procedure
+
+### Step 1: Recognize Trigger
+
+When the human says "ADR closeout ceremony" (or equivalent), begin the ceremony protocol.
+
+### Step 2: Present Paths/Commands-Only Summary
+
+Lead with a summary derived **only** from the paths and commands you present. Do not interpret or
+claim outcomes. Use the fixed script from `docs/governance/GovZero/audit-protocol.md`:
+
+```text
+ADR CLOSEOUT CEREMONY — MODE TRANSITION
+
+I am now in PASSIVE PRESENTER mode. I will not interpret evidence.
+
+Summary (paths/commands only; no outcomes):
+- ADR under review: [ADR path]
+- Related briefs: [OBPI paths]
+- Runbook/manpage paths (for walkthrough commands): [paths]
+- Evidence commands listed below
+
+Artifacts for your direct observation:
+- Tests: Run `uv run -m unittest -v`
+- Coverage: Run `uv run coverage report` or view `artifacts/reports/coverage.html`
+- Docs build: Run `uv run mkdocs build -q`
+- BDD (if Heavy): Run `uv run behave features/{feature}.feature`
+- Runbook walkthrough (product commands from runbook/manpages): [commands]
+
+Docs alignment check (human-confirmed):
+- [ ] Manpage exists and reflects current CLI behavior
+- [ ] Runbook includes relevant commands
+- [ ] Dataset documentation updated if applicable
+- [ ] CLI --help matches manpage SYNOPSIS
+
+When you have observed the artifacts, provide your attestation:
+- "Completed"
+- "Completed — Partial: [reason]"
+- "Dropped — [reason]"
+
+I await your attestation.
 ```
-gz closeout ADR-X.Y.Z --ceremony           # Initialize, get step 2
-gz closeout ADR-X.Y.Z --ceremony --next     # Advance to next step
-gz closeout ADR-X.Y.Z --ceremony --attest "Completed"  # Record attestation
+
+### Step 3: Confirm Docs Alignment (Human-Driven)
+
+Use the checklist in the fixed script. Do not assert outcomes.
+
+### Step 4: Runbook Walkthrough
+
+The ceremony is a **runbook walkthrough** demonstrating the ADR's achieved value. Outside of
+foundation/0.0.x ADRs, observable behavior is required.
+
+**Rules:**
+
+- Run ONLY airlineops CLI commands from the runbook/manpage
+- NO ad-hoc Python, NO raw SQL, NO heredoc scripts
+- One command at a time
+- Wait for human acknowledgment before proceeding to next command
+
+**If human is in CLI mode (e.g., Claude Code):**
+
+- Offer to run the commands and show output
+- Run ONE command, show output, STOP and WAIT for acknowledgment
+- Only proceed to next command after acknowledgment
+
+**If human is in IDE (e.g., VS Code with Copilot):**
+
+- Present the commands for human to run themselves
+- Wait for human to report results
+
+Present the walkthrough:
+
+```text
+Runbook Walkthrough — Demonstrating ADR Value
+
+The following commands from the runbook demonstrate the ADR's achieved value.
+These are product surface commands (airlineops CLI), not ad-hoc scripts.
+
+Commands to execute:
+1. [command 1 from runbook]
+2. [command 2 from runbook]
+...
+
+Would you like me to run these one at a time, or will you run them yourself?
 ```
 
-### Flow
+### Step 5: Execute Walkthrough (One at a Time)
 
-1. Run `uv run gz closeout ADR-X.Y.Z --ceremony`.
-2. Run evidence commands (tests, lint, typecheck) listed in the summary.
-3. Keep advancing with `--next` through mechanical steps (docs checklist, etc.).
-4. **Walkthrough step:** When the CLI lists walkthrough commands, ask the human:
-   "Want me to run these, or will you run them yourself?" Then do what they say.
-5. Advance to attestation. **Stop. Wait for human decision.**
-   Then run `--attest "<their decision>"`.
-6. After attestation, continue advancing — run closeout, GH issues, etc. as
-   instructed until the CLI says "COMPLETE".
+For each command:
 
-For foundation (0.0.x) ADRs, release notes and GitHub release steps are
-automatically skipped.
+1. Show the command
+2. Run it (if human requested) or wait for human to run it
+3. Show output
+4. STOP and WAIT for acknowledgment
+5. Only then proceed to next command
 
-### Human gates (where the agent stops)
+### Step 6: Request Attestation
 
-- **Walkthrough offer** — "run these or you run them?"
-- **Attestation** — wait for human decision
+After all commands have been executed and witnessed:
 
-Everything else the agent just does.
+```text
+Runbook walkthrough complete.
+
+When you are ready, provide your attestation:
+- "Completed" — ADR work is finished; all claims verified; ready to finalize
+- "Completed — Partial: [reason]" — Subset accepted, remainder deferred
+- "Dropped — [reason]" — ADR rejected; does not advance
+
+I await your attestation.
+```
+
+### Step 7: Record Attestation via Closeout Pipeline
+
+After the human provides their attestation decision in Step 6, run the closeout command:
+
+```bash
+uv run gz closeout ADR-X.Y.Z
+```
+
+This command handles the full closeout pipeline:
+
+1. Re-validates quality gates (fast final check)
+2. Prompts for formal attestation (enter the same decision from Step 6)
+3. **Bumps project version** in pyproject.toml, `__init__.py`, and README badge
+4. Writes the ADR closeout form with attestation details
+5. Transitions ADR status to Completed/Dropped
+
+**CRITICAL:** Do not skip `gz closeout` or manually record attestation — the closeout
+command is the only code path that syncs the project version. Skipping it causes version
+drift between pyproject.toml and the release tag, which breaks PyPI publishing.
+
+### Step 8: Close Related GitHub Issues
+
+After attestation is recorded:
+
+1. Search for GitHub Issues related to the ADR (use `gh issue list`)
+2. Review each related issue to confirm it is addressed by the ADR work
+3. Close issues that are resolved, with a comment linking to the ADR closeout
+
+```bash
+# Search for related issues
+gh issue list --search "ADR-X.Y.Z" --state open
+gh issue list --search "mirror" --state open  # or relevant keywords
+
+# Close resolved issues
+gh issue close <issue-number> --comment "Resolved by ADR-X.Y.Z closeout."
+```
+
+### Step 9: Update RELEASE_NOTES.md
+
+Append the release entry to `RELEASE_NOTES.md`:
+
+```markdown
+## vX.Y.Z (YYYY-MM-DD)
+
+**ADR:** ADR-X.Y.Z - [Title]
+
+[Brief description of capability added]
+
+### Delivered
+- [Key deliverables]
+
+### Gate Evidence
+All 5 GovZero gates satisfied.
+```
+
+### Step 10: Create GitHub Release
+
+Create a GitHub release for the ADR version:
+
+```bash
+# MANDATORY: run full git sync immediately before release creation
+uv run gz git-sync --apply --lint --test
+
+# Create release (title = semver only)
+gh release create vX.Y.Z --title "vX.Y.Z" --notes "$(cat <<'EOF'
+## What's New
+
+[Brief description of capability added]
+
+## ADR Reference
+
+- **ADR:** ADR-X.Y.Z - [Title]
+- **Status:** Completed
+- **Attestation:** [Date]
+
+## Delivered
+
+- [List key deliverables]
+
+## Gate Evidence
+
+All 5 GovZero gates satisfied. See ADR closeout form for details.
+EOF
+)"
+```
+
+**Policy constraint:** `uv run gz git-sync --apply --lint --test` MUST be the command immediately preceding `gh release create`.
+If any intervening changes occur (new commit, staged file, or regenerated artifact), rerun full git sync before creating/updating the release.
+
+**Why this matters:** The release tags the commit as a governance milestone. The human attestation (Gate 5) is the authority that allows this release to exist.
+
+### Step 11: Present Ceremony Summary
+
+Display the ceremony completion table:
+
+```text
+╔════════════════════════════════════════════════════════════════╗
+║  ADR-X.Y.Z CLOSEOUT CEREMONY — COMPLETE                      ║
+╠════════════════════════════════════════════════════════════════╣
+║  Step 1:  Trigger recognized                            ✓    ║
+║  Step 2:  Paths/commands summary presented              ✓    ║
+║  Step 3:  Docs alignment verified                       ✓    ║
+║  Step 4:  Runbook walkthrough presented                 ✓    ║
+║  Step 5:  Commands executed (one at a time)             ✓    ║
+║  Step 6:  Attestation requested                         ✓    ║
+║  Step 7:  Closeout pipeline (attest + version bump)      ✓    ║
+║  Step 8:  GitHub Issues reviewed                        ✓    ║
+║  Step 9:  RELEASE_NOTES.md updated                      ✓    ║
+║  Step 10: GitHub Release vX.Y.Z created                 ✓    ║
+╚════════════════════════════════════════════════════════════════╝
+```
 
 ---
 
 ## MUST Rules
 
-1. **MUST** run the CLI command immediately on invocation — no preamble
-2. **MUST** keep advancing through steps until attestation or completion
-3. **MUST** run commands the CLI instructs (evidence, walkthrough, closeout, gh)
-4. **MUST** stop only at attestation — the one human gate
-5. **MUST** use `--attest` only when CLI output says "I await your attestation"
+1. **MUST** use the fixed script from `docs/governance/GovZero/audit-protocol.md`
+2. **MUST** lead with a paths/commands-only summary (no outcomes or conclusions)
+3. **MUST** use only runbook/manpage-documented airlineops commands for the walkthrough
+4. **MUST** run one command at a time, wait for acknowledgment
+5. **MUST** offer to run commands if human is in CLI mode
+6. **MUST** wait for explicit human attestation before closing
+7. **MUST** run `uv run gz closeout ADR-X.Y.Z` to record attestation and bump project version — never manually record attestation
+8. **MUST** review and close related GitHub Issues after attestation
+9. **MUST** update RELEASE_NOTES.md with release entry
+10. **MUST** run `uv run gz git-sync --apply --lint --test` immediately before any `gh release create` or release update command
+11. **MUST** create GitHub release with title = semver only (vX.Y.Z)
+12. **MUST** display ceremony completion summary table
+
+---
 
 ## MUST NOT Rules
 
-1. **MUST NOT** compose step content yourself — the CLI controls what is presented
-2. **MUST NOT** stop between mechanical steps to ask the human "next"
-3. **MUST NOT** add commentary or offers — just relay CLI output and run commands
-4. **MUST NOT** skip the attestation gate
+1. **MUST NOT** claim outcomes or interpret evidence
+2. **MUST NOT** use ad-hoc Python scripts, raw SQL, or heredoc code
+3. **MUST NOT** flood multiple commands without waiting for acknowledgment
+4. **MUST NOT** infer attestation from silence or implicit approval
+5. **MUST NOT** auto-close an ADR based on passing checks
+6. **MUST NOT** skip the evidence commands or docs alignment checklist
+
+---
+
+## ADR Folder Structure (Canonical)
+
+New ADRs should use the ADR-contained layout:
+
+```text
+docs/design/adr/adr-X.Y.x/ADR-X.Y.Z-{slug}/
+  ADR-X.Y.Z-{slug}.md             # Intent document
+  ADR-CLOSEOUT-FORM.md            # Closeout ceremony workspace
+  briefs/
+    OBPI-X.Y.Z-01-*.md            # Atomic implementation units
+    OBPI-X.Y.Z-02-*.md
+  audit/
+    AUDIT-ADR-X.Y.Z-COMPLETED.md  # Post-attestation reconciliation
+  logs/
+    design-outcomes.jsonl         # Optional agent-facing working memory
+```
+
+---
+
+## Example: ADR-0.1.13 Closeout
+
+```text
+ADR CLOSEOUT CEREMONY — MODE TRANSITION
+
+I am now in PASSIVE PRESENTER mode. I will not interpret evidence.
+
+Summary (paths/commands only; no outcomes):
+- ADR under review: docs/design/adr/adr-0.1.x/ADR-0.1.13-mirror-parquet-lake-analytical-reads/ADR-0.1.13-mirror-parquet-lake-analytical-reads.md
+- Related briefs: docs/design/adr/adr-0.1.x/ADR-0.1.13-mirror-parquet-lake-analytical-reads/briefs/OBPI-0.1.13-*.md
+- Runbook/manpage paths (for walkthrough commands): docs/user/manpages/warehouse-mirror.md
+- Evidence commands listed below
+
+Artifacts for your direct observation:
+- Tests: Run `uv run -m unittest -v`
+- Coverage: Run `uv run coverage report` or view `artifacts/reports/coverage.html`
+- Docs build: Run `uv run mkdocs build -q`
+- BDD (if Heavy): Run `uv run behave features/mirror.feature`
+- Runbook walkthrough (product commands from runbook/manpages): `uv run -m airlineops warehouse mirror sync --all`, `uv run -m airlineops warehouse mirror status`
+
+Docs alignment check (human-confirmed):
+- [ ] Manpage exists and reflects current CLI behavior
+- [ ] Runbook includes relevant commands
+- [ ] Dataset documentation updated if applicable
+- [ ] CLI --help matches manpage SYNOPSIS
+
+When you have observed the artifacts, provide your attestation:
+- "Completed"
+- "Completed — Partial: [reason]"
+- "Dropped — [reason]"
+
+I await your attestation.
+```
+
+---
+
+## References
+
+- Audit protocol: `docs/governance/GovZero/audit-protocol.md`
+- Gate definitions: `docs/governance/GovZero/charter.md`
+- Artifact linkage: `docs/governance/GovZero/adr-obpi-ghi-audit-linkage.md`
+- Runbook: `docs/user/operator_runbook.md`
+- Manpage directory: `docs/user/manpages/`

@@ -1,9 +1,9 @@
 ---
 id: OBPI-0.0.9-01-three-layer-model-documentation
-parent: ADR-0.0.9
+parent: ADR-0.0.9-state-doctrine-source-of-truth
 item: 1
 lane: lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.9-01: Three-Layer Model and Authority Rules Documentation
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.9-state-doctrine-source-of-truth/ADR-0.0.9-state-doctrine-source-of-truth.md`
 - **Checklist Item:** #1 - "Document three-layer model and five authority rules"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -48,34 +48,34 @@ authority rules. All `gz` commands can reference this as the canonical state doc
 
 **Governance (read once, cache):**
 
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
+- [x] `AGENTS.md` or `CLAUDE.md` - agent operating contract
+- [x] Parent ADR - understand full context
 
 **Context:**
 
-- [ ] Parent ADR: `ADR-0.0.9-state-doctrine-source-of-truth.md`
-- [ ] Architecture Planning Memo Section 2
+- [x] Parent ADR: `ADR-0.0.9-state-doctrine-source-of-truth.md`
+- [x] Architecture Planning Memo Section 2
 
 **Existing Code (understand current state):**
 
-- [ ] `src/gzkit/ledger_semantics.py` — current ledger-first patterns
-- [ ] `src/gzkit/sync.py` — current frontmatter sync patterns
+- [x] `src/gzkit/ledger_semantics.py` — current ledger-first patterns
+- [x] `src/gzkit/sync.py` — current frontmatter sync patterns
 
 ## Quality Gates
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] N/A — documentation-only OBPI
-- [ ] Validation: `uv run mkdocs build --strict`
+- [x] N/A — documentation-only OBPI
+- [x] Validation: `uv run mkdocs build --strict`
 
 ### Code Quality
 
-- [ ] N/A — no code changes
+- [x] N/A — no code changes
 
 ## Verification
 
@@ -86,42 +86,52 @@ uv run mkdocs build --strict
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.9-01-01: `docs/governance/state-doctrine.md` exists with three-layer definitions
-- [ ] REQ-0.0.9-01-02: Five authority rules are stated with rationale
-- [ ] REQ-0.0.9-01-03: Governance runbook links to state doctrine reference
+- [x] REQ-0.0.9-01-01: `docs/governance/state-doctrine.md` exists with three-layer definitions
+- [x] REQ-0.0.9-01-02: Five authority rules are stated with rationale
+- [x] REQ-0.0.9-01-03: Governance runbook links to state doctrine reference
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** mkdocs build passes
-- [ ] **Code Quality:** N/A
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** mkdocs build passes
+- [x] **Code Quality:** N/A
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 ## Evidence
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste mkdocs build output here
+INFO - Documentation built in 1.03 seconds (mkdocs build --strict, zero warnings)
 ```
 
 ### Value Narrative
 
+Before this OBPI, the three-layer model and authority rules existed only in the ADR-0.0.9 Decision section. Operators and agents had no single canonical reference document to consult when diagnosing state conflicts. Now `docs/governance/state-doctrine.md` provides the definitive reference with gzkit-specific examples, verbatim rules, and a conflict decision table.
+
 ### Key Proof
+
+```bash
+uv run mkdocs build --strict
+# INFO - Documentation built in 1.03 seconds
+# state-doctrine.md renders at governance/state-doctrine/
+# governance_runbook.md cross-links at lines 91 and 544
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created: `docs/governance/state-doctrine.md`
+- Files modified: `docs/governance/governance_runbook.md`, `mkdocs.yml`
+- Tests added: N/A (documentation-only)
+- Date completed: 2026-03-31
+- Attestation status: Human-attested
+- Defects noted: None
 
 ## Tracked Defects
 
@@ -129,14 +139,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a`
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `jeff`
+- Attestation: `attset completed`
+- Date: `2026-03-31`
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-31
 
 **Evidence Hash:** -

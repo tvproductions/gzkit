@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.10-06-archive-pool-adr
-parent: ADR-0.0.10
+parent: ADR-0.0.10-storage-tiers-simplicity-profile
 item: 6
 lane: lite
 status: Draft

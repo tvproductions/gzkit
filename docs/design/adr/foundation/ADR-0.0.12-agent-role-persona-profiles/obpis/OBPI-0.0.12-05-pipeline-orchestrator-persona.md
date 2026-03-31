@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.12-05-pipeline-orchestrator-persona
-parent: ADR-0.0.12
+parent: ADR-0.0.12-agent-role-persona-profiles
 item: 5
 lane: Lite
 status: Draft

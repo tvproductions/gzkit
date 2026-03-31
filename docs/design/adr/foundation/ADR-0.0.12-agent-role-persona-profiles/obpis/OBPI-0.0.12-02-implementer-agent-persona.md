@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.12-02-implementer-agent-persona
-parent: ADR-0.0.12
+parent: ADR-0.0.12-agent-role-persona-profiles
 item: 2
 lane: Lite
 status: Draft

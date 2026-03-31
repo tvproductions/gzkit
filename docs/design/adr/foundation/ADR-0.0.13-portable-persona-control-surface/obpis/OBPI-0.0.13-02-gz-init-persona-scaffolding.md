@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.13-02-gz-init-persona-scaffolding
-parent: ADR-0.0.13
+parent: ADR-0.0.13-portable-persona-control-surface
 item: 2
 lane: Lite
 status: Draft

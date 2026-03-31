@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.11-03-trait-composition-model
-parent: ADR-0.0.11
+parent: ADR-0.0.11-persona-driven-agent-identity-frames
 item: 3
 lane: Lite
 status: Draft

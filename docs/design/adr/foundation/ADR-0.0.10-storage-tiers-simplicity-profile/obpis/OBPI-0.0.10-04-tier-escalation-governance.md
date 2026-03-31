@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.10-04-tier-escalation-governance
-parent: ADR-0.0.10
+parent: ADR-0.0.10-storage-tiers-simplicity-profile
 item: 4
 lane: lite
 status: Draft
