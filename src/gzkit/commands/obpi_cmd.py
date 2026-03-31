@@ -224,9 +224,9 @@ def obpi_pipeline_cmd(
     _adr_file, resolved_parent = resolve_adr_file(project_root, config, parent_adr)
     obpi_content = obpi_file.read_text(encoding="utf-8")
     inspection = _inspect_obpi_brief(project_root, obpi_file, obpi_id, graph)
-    if bool(inspection.get("file_completed")):
+    if bool(inspection.get("ledger_completed")):
         _print_pipeline_blockers(
-            obpi_id, ["OBPI brief is already completed; pipeline launch is not allowed"]
+            obpi_id, ["OBPI is already completed in the ledger; pipeline launch is not allowed"]
         )
         raise SystemExit(1)
 

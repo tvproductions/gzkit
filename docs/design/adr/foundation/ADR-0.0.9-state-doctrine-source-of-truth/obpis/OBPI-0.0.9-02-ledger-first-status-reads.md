@@ -3,7 +3,7 @@ id: OBPI-0.0.9-02-ledger-first-status-reads
 parent: ADR-0.0.9-state-doctrine-source-of-truth
 item: 2
 lane: lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.9-02: Ledger-First Status Reads
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.9-state-doctrine-source-of-truth/ADR-0.0.9-state-doctrine-source-of-truth.md`
 - **Checklist Item:** #2 - "All gz commands that read entity status use ledger-derived state"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -48,36 +48,36 @@ the ledger event log (L2) is authoritative for all status reads.
 
 **Governance (read once, cache):**
 
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
+- [x] `AGENTS.md` or `CLAUDE.md` - agent operating contract
+- [x] Parent ADR - understand full context
 
 **Context:**
 
-- [ ] Parent ADR: `ADR-0.0.9-state-doctrine-source-of-truth.md`
-- [ ] OBPI-0.0.9-01 (three-layer model) for layer definitions
+- [x] Parent ADR: `ADR-0.0.9-state-doctrine-source-of-truth.md`
+- [x] OBPI-0.0.9-01 (three-layer model) for layer definitions
 
 **Existing Code (understand current state):**
 
-- [ ] `src/gzkit/ledger_semantics.py` -- current ledger-first patterns
-- [ ] `src/gzkit/commands/` -- all status-reading commands
-- [ ] `src/gzkit/sync.py` -- current frontmatter sync patterns
+- [x] `src/gzkit/ledger_semantics.py` -- current ledger-first patterns
+- [x] `src/gzkit/commands/` -- all status-reading commands
+- [x] `src/gzkit/sync.py` -- current frontmatter sync patterns
 
 ## Quality Gates
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] Test exists proving ledger wins over frontmatter
-- [ ] `uv run -m unittest -q` passes
+- [x] Test exists proving ledger wins over frontmatter
+- [x] `uv run -m unittest -q` passes
 
 ### Code Quality
 
-- [ ] `uv run ruff check . --fix && uv run ruff format .`
-- [ ] `uvx ty check . --exclude 'features/**'`
+- [x] `uv run ruff check . --fix && uv run ruff format .`
+- [x] `uvx ty check . --exclude 'features/**'`
 
 ## Verification
 
@@ -89,42 +89,51 @@ uv run -m unittest -q
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.9-02-01: All status-reading commands derive state from ledger events
-- [ ] REQ-0.0.9-02-02: Test exists proving ledger wins when frontmatter disagrees
-- [ ] REQ-0.0.9-02-03: No command reads frontmatter `status:` field as authoritative
+- [x] REQ-0.0.9-02-01: All status-reading commands derive state from ledger events
+- [x] REQ-0.0.9-02-02: Test exists proving ledger wins when frontmatter disagrees
+- [x] REQ-0.0.9-02-03: No command reads frontmatter `status:` field as authoritative
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, ledger-wins test exists
-- [ ] **Code Quality:** Ruff and ty pass
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, ledger-wins test exists
+- [x] **Code Quality:** Ruff and ty pass
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 ## Evidence
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+test_derive_obpi_semantics_ledger_wins_when_frontmatter_says_completed ... ok
+test_derive_obpi_semantics_ledger_wins_when_frontmatter_says_draft ... ok
+test_blocks_when_obpi_is_ledger_completed ... ok
+Ran 3 tests in 0.020s — OK
 ```
 
 ### Value Narrative
 
+Before this OBPI, the pipeline launch command checked frontmatter `status: Completed` to decide whether an OBPI was already done. A Layer 3 convenience cache was acting as authoritative source-of-truth, allowing manual frontmatter edits to bypass or block governance. Now the pipeline gates on `ledger_completed` — the ledger event log is the sole authority for completion status in all commands.
+
 ### Key Proof
+
+```bash
+uv run -m unittest tests.test_ledger.TestLedger.test_derive_obpi_semantics_ledger_wins_when_frontmatter_says_completed tests.test_ledger.TestLedger.test_derive_obpi_semantics_ledger_wins_when_frontmatter_says_draft tests.commands.test_obpi_pipeline.TestObpiPipelineCommand.test_blocks_when_obpi_is_ledger_completed -v
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files modified: src/gzkit/commands/obpi_cmd.py (changed file_completed gate to ledger_completed)
+- Tests added: 2 ledger-wins tests in tests/test_ledger.py, 1 updated pipeline test in tests/commands/test_obpi_pipeline.py
+- Date completed: 2026-03-31
+- Attestation status: Human attested
+- Defects noted: None
 
 ## Tracked Defects
 
@@ -132,14 +141,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a`
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `jeff`
+- Attestation: `attset completed`
+- Date: `2026-03-31`
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-31
 
 **Evidence Hash:** -
