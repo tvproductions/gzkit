@@ -126,6 +126,7 @@ nav:
   - Governance (Canonical):
     - Governance Runbook: governance/governance_runbook.md
     - State Doctrine: governance/state-doctrine.md
+    - Storage Tiers Reference: governance/storage-tiers.md
     - Pipeline Marker Migration Path: governance/pipeline-marker-migration-path.md
     - Documentation Taxonomy: governance/documentation-taxonomy.md
     - Feature Flags: governance/feature-flags.md

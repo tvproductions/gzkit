@@ -1,17 +1,17 @@
 ---
-id: OBPI-0.0.10-03-storage-location-catalog
+id: OBPI-0.0.10-03-storage-catalog-and-escalation-governance
 parent: ADR-0.0.10-storage-tiers-simplicity-profile
 item: 3
 lane: lite
 status: Draft
 ---
 
-# OBPI-0.0.10-03: Storage Location Catalog
+# OBPI-0.0.10-03: Storage Catalog and Tier Escalation Governance
 
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.10-storage-tiers-simplicity-profile/ADR-0.0.10-storage-tiers-simplicity-profile.md`
-- **Checklist Item:** #3 - "Catalog and classify all on-disk storage locations"
+- **Checklist Items:** #3 - "Catalog storage locations and enforce tier escalation governance"
 
 **Status:** Draft
 
@@ -21,9 +21,13 @@ All on-disk storage locations are cataloged and classified as Tier A, B, or C.
 Pipeline markers and other undocumented Tier B items are explicitly listed. No
 storage location remains unclassified.
 
+Tier escalation (A/B to C) requires Heavy-lane ADR authorization, enforced by
+documentation and review convention. The governance runbook, AGENTS.md, and ADR
+review process all include explicit tier escalation checks.
+
 ## Lane
 
-**Lite** - Documentation and catalog only. No CLI or external contract changes.
+**Lite** - Documentation, catalog, and governance constraint only. No CLI or external contract changes.
 
 > Heavy is reserved for command/API/schema/runtime-contract changes. Process,
 > documentation, and template-only work stays Lite unless it changes one of
@@ -33,6 +37,7 @@ storage location remains unclassified.
 
 - `docs/governance/`
 - `.gzkit/`
+- `AGENTS.md`
 
 ## Denied Paths
 
@@ -46,6 +51,10 @@ storage location remains unclassified.
 3. Undocumented Tier B items (pipeline markers in `.gzkit/markers/`) MUST be explicitly listed
 4. Catalog MUST include the rebuild/recovery path for each Tier B item
 5. No unclassified storage locations MUST remain after this OBPI
+6. Governance runbook MUST state the tier escalation rule: moving data from Tier A/B to Tier C requires a Heavy-lane ADR
+7. `AGENTS.md` MUST include tier escalation as a governance constraint agents must respect
+8. ADR template or review checklist MUST flag tier escalation as a Heavy-lane trigger
+9. The anti-pattern (silent Tier B to Tier C drift) MUST be documented as a known risk
 
 > STOP-on-BLOCKERS: if OBPI-0.0.10-01 tier definitions are not yet available, halt.
 
@@ -53,8 +62,8 @@ storage location remains unclassified.
 
 **Governance (read once, cache):**
 
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
+- [ ] `AGENTS.md` - current agent operating contract
+- [ ] Parent ADR - understand full context, especially anti-pattern warning
 
 **Context:**
 
@@ -65,6 +74,8 @@ storage location remains unclassified.
 
 - [ ] Tier definitions from OBPI-0.0.10-01 (or ADR Decision section)
 - [ ] `.gzkit/` directory exists with known contents
+- [ ] `AGENTS.md` exists
+- [ ] `docs/governance/governance_runbook.md` exists
 
 **Existing Code (understand current state):**
 
@@ -72,6 +83,8 @@ storage location remains unclassified.
 - [ ] `config/` directory contents
 - [ ] `docs/` directory structure
 - [ ] `src/gzkit/` directory structure
+- [ ] Current `AGENTS.md` governance constraints
+- [ ] Current ADR template lane triggers
 
 ## Quality Gates
 
@@ -82,8 +95,8 @@ storage location remains unclassified.
 
 ### Gate 2: TDD
 
-- [ ] N/A -- documentation/catalog OBPI
-- [ ] Validation: catalog completeness verified by manual inspection
+- [ ] N/A -- documentation/catalog/governance OBPI
+- [ ] Validation: `uv run mkdocs build --strict`
 
 ### Code Quality
 
@@ -95,6 +108,8 @@ storage location remains unclassified.
 uv run mkdocs build --strict
 # Verify storage catalog renders correctly
 # Verify all known storage locations are classified
+# Verify governance runbook includes tier escalation rule
+# Verify AGENTS.md includes tier escalation constraint
 ```
 
 ## Acceptance Criteria
@@ -102,11 +117,14 @@ uv run mkdocs build --strict
 - [ ] REQ-0.0.10-03-01: Storage catalog document exists with all locations classified
 - [ ] REQ-0.0.10-03-02: Pipeline markers (`.gzkit/markers/`) listed as Tier B
 - [ ] REQ-0.0.10-03-03: No unclassified storage locations remain
+- [ ] REQ-0.0.10-03-04: Tier escalation rule documented in governance runbook
+- [ ] REQ-0.0.10-03-05: `AGENTS.md` includes tier escalation as governance constraint
+- [ ] REQ-0.0.10-03-06: ADR review checklist includes tier escalation check
 
 ## Completion Checklist
 
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Catalog completeness verified
+- [ ] **Gate 2 (TDD):** Catalog completeness and governance constraints verified
 - [ ] **Code Quality:** N/A
 - [ ] **Value Narrative:** Problem-before vs capability-now is documented
 - [ ] **Key Proof:** One concrete usage example is included
@@ -123,7 +141,7 @@ uv run mkdocs build --strict
 ### Gate 2 (TDD)
 
 ```text
-# Paste catalog verification output here
+# Paste catalog and governance verification output here
 ```
 
 ### Value Narrative

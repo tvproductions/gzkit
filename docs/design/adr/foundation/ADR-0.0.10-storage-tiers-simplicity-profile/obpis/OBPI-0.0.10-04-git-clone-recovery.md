@@ -1,17 +1,17 @@
 ---
-id: OBPI-0.0.10-05-git-clone-recovery
+id: OBPI-0.0.10-04-git-clone-recovery
 parent: ADR-0.0.10-storage-tiers-simplicity-profile
-item: 5
+item: 4
 lane: lite
 status: Draft
 ---
 
-# OBPI-0.0.10-05: Git Clone Recovery
+# OBPI-0.0.10-04: Git Clone Recovery
 
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.10-storage-tiers-simplicity-profile/ADR-0.0.10-storage-tiers-simplicity-profile.md`
-- **Checklist Item:** #5 - "Validate git-clone recovery (all Tier A + B state survives)"
+- **Checklist Item:** #4 - "Validate git-clone recovery (all Tier A + B state survives)"
 
 **Status:** Draft
 
@@ -103,9 +103,9 @@ uv run -m unittest tests.adr.test_storage_tiers -v
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.10-05-01: Test performs fresh clone and verifies `gz state` succeeds
-- [ ] REQ-0.0.10-05-02: All Tier A artifacts present after clone
-- [ ] REQ-0.0.10-05-03: Tier B artifacts rebuild from Tier A sources
+- [ ] REQ-0.0.10-04-01: Test performs fresh clone and verifies `gz state` succeeds
+- [ ] REQ-0.0.10-04-02: All Tier A artifacts present after clone
+- [ ] REQ-0.0.10-04-03: Tier B artifacts rebuild from Tier A sources
 
 ## Completion Checklist
 
