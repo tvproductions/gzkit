@@ -3,7 +3,7 @@ id: OBPI-0.19.0-06-audit-templates-and-evidence-aggregation-from-ledger
 parent: ADR-0.19.0-closeout-audit-processes
 item: 6
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.19.0-06: Audit Templates and Evidence Aggregation from Ledger
