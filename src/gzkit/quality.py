@@ -531,7 +531,7 @@ def run_eval(project_root: Path) -> QualityResult:
 # Product proof gate
 # ---------------------------------------------------------------------------
 
-_ALLOWED_PATHS_RE = re.compile(r"^## ALLOWED PATHS\s*$", re.MULTILINE)
+_ALLOWED_PATHS_RE = re.compile(r"^## ALLOWED PATHS\s*$", re.MULTILINE | re.IGNORECASE)
 _BRIEF_SECTION_RE = re.compile(r"^## ", re.MULTILINE)
 
 
