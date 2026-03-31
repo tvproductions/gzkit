@@ -26,17 +26,37 @@ Tier A is the source of truth. All governance state originates here.
 
 **Authority:** Human authors and governed agent workflows create and modify Tier A artifacts. All changes are committed to git.
 
-**Examples from gzkit:**
+**Storage Catalog (exhaustive):**
 
 | Location | Content |
 |----------|---------|
 | `.gzkit/ledger.jsonl` | Append-only governance event ledger |
+| `.gzkit/manifest.json` | Governance manifest (skill/rule registry) |
+| `.gzkit/governance/` | Ontology schemas (`ontology.json`, `ontology.schema.json`) |
+| `.gzkit/ceremonies/` | Ceremony records (JSON) |
+| `.gzkit/insights/agent-insights.jsonl` | Agent insight journal |
+| `.gzkit/lessons/` | Lessons learned |
+| `.gzkit/schemas/` | Rule and skill validation schemas |
+| `.gzkit/prompts/` | Alignment prompts |
+| `.gzkit/gzkit-companion-adr-prompt.md` | ADR companion prompt |
+| `.gzkit/README.md` | Governance directory README |
 | `docs/design/adr/**/ADR-*.md` | Architecture Decision Records |
 | `docs/design/adr/**/obpis/OBPI-*.md` | OBPI implementation briefs |
+| `docs/design/adr/pool/` | Pool (backlog) ADRs awaiting promotion |
 | `docs/governance/**/*.md` | Governance policy and runbook documents |
+| `docs/user/**` | User-facing documentation and runbooks |
 | `src/gzkit/**/*.py` | Source code |
 | `tests/**/*.py` | Test code |
-| `config/*.json` | Configuration schemas and doctrine |
+| `features/**/*.feature` | BDD feature specifications |
+| `data/schemas/*.json` | Data validation schemas |
+| `config/*.json` | Configuration schemas, doctrine, and chore definitions |
+| `config/AGENTS.md` | Config-level agent contract |
+| `ops/` | Operational scripts |
+| `pyproject.toml` | Project metadata and dependency declarations |
+| `uv.lock` | Dependency lock file |
+| `mkdocs.yml` | Documentation site configuration |
+| `.github/workflows/` | CI/CD workflow definitions |
+| `.github/instructions/` | Agent instruction canon (source for rule mirrors) |
 | `AGENTS.md`, `CLAUDE.md` | Agent operating contracts |
 
 **Rules:**
@@ -45,6 +65,7 @@ Tier A is the source of truth. All governance state originates here.
 - All Tier A state is committed to git and survives `git clone`.
 - No external dependency is required to read or write Tier A data.
 - Modifications follow lane-appropriate governance (Lite or Heavy).
+- **Every on-disk location MUST appear in this catalog.** Unclassified locations are a governance defect.
 
 ---
 
@@ -54,15 +75,28 @@ Tier B artifacts are computed from Tier A sources. They improve performance or c
 
 **Authority:** Automated tooling creates and updates Tier B artifacts. Any agent or operator may delete them; they rebuild on demand.
 
-**Examples from gzkit:**
+**Storage Catalog (exhaustive):**
 
 | Location | Content | Rebuild Command |
 |----------|---------|-----------------|
 | `.gzkit/markers/` | Pipeline markers and state flags | Recreated by pipeline execution |
+| `.gzkit/locks/` | OBPI work locks (local coordination) | `/gz-obpi-lock claim` |
 | `.claude/rules/` | Mirrored governance rules | `uv run gz agent sync control-surfaces` |
 | `.claude/skills/` | Mirrored skill definitions | `uv run gz agent sync control-surfaces` |
-| `site/` | Built documentation | `uv run mkdocs build` |
+| `.claude/plans/` | Plan files, pipeline markers, receipts | Pipeline execution / plan mode |
+| `.agents/skills/` | Codex skill mirror | `uv run gz agent sync control-surfaces` |
+| `.github/skills/` | Copilot skill mirror | `uv run gz agent sync control-surfaces` |
+| `site/` | Built documentation (gitignored) | `uv run mkdocs build` |
 | `artifacts/receipts/` | ARB receipt artifacts | `uv run -m gzkit arb <tool>` |
+
+**Ephemeral / gitignored (not tracked in git):**
+
+| Location | Content |
+|----------|---------|
+| `.venv/` | Python virtual environment |
+| `.ruff_cache/` | Ruff linter cache |
+| `build/`, `dist/` | Python build artifacts |
+| `__pycache__/` | Python bytecode cache |
 
 **Rules:**
 
@@ -70,6 +104,7 @@ Tier B artifacts are computed from Tier A sources. They improve performance or c
 - Losing all Tier B data is an inconvenience, not a data loss event.
 - `git clone` + `uv sync` + rebuild commands must recover all Tier B state.
 - No unique governance state may accumulate in Tier B. If it does, that is an unaudited tier escalation (see Anti-Patterns below).
+- Gitignored ephemeral artifacts are excluded from governance classification but listed above for completeness.
 
 ---
 
