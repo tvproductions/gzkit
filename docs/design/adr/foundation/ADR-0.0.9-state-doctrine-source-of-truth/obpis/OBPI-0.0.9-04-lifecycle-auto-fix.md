@@ -3,7 +3,7 @@ id: OBPI-0.0.9-04-lifecycle-auto-fix
 parent: ADR-0.0.9-state-doctrine-source-of-truth
 item: 4
 lane: lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.9-04: Lifecycle Auto-Fix
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.9-state-doctrine-source-of-truth/ADR-0.0.9-state-doctrine-source-of-truth.md`
 - **Checklist Item:** #4 - "gz closeout, gz attest, and gz obpi reconcile auto-update frontmatter to match ledger-derived state at lifecycle moments"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -30,7 +30,8 @@ side-effect of each command.
 
 - `src/gzkit/commands/closeout.py`
 - `src/gzkit/commands/attest.py`
-- `src/gzkit/commands/obpi.py`
+- `src/gzkit/commands/status.py`
+- `src/gzkit/commands/closeout_form.py`
 - `tests/`
 
 ## Denied Paths
@@ -52,86 +53,102 @@ side-effect of each command.
 
 **Governance (read once, cache):**
 
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
+- [x] `AGENTS.md` or `CLAUDE.md` - agent operating contract
+- [x] Parent ADR - understand full context
 
 **Context:**
 
-- [ ] Parent ADR: `ADR-0.0.9-state-doctrine-source-of-truth.md`
-- [ ] OBPI-0.0.9-02 (ledger-first status reads) for status derivation patterns
+- [x] Parent ADR: `ADR-0.0.9-state-doctrine-source-of-truth.md`
+- [x] OBPI-0.0.9-02 (ledger-first status reads) for status derivation patterns
 
 **Existing Code (understand current state):**
 
-- [ ] `src/gzkit/commands/closeout.py` -- current closeout command
-- [ ] `src/gzkit/commands/attest.py` -- current attest command
-- [ ] `src/gzkit/commands/obpi.py` -- current obpi command
-- [ ] `src/gzkit/ledger_semantics.py` -- ledger-first patterns
-- [ ] `src/gzkit/sync.py` -- current frontmatter sync patterns
+- [x] `src/gzkit/commands/closeout.py` -- current closeout command
+- [x] `src/gzkit/commands/attest.py` -- current attest command
+- [x] `src/gzkit/commands/status.py` -- obpi reconcile command
+- [x] `src/gzkit/ledger_semantics.py` -- ledger-first patterns
+- [x] `src/gzkit/commands/closeout_form.py` -- frontmatter upsert helper
 
 ## Quality Gates
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] Tests exist for auto-fix in each lifecycle command
-- [ ] `uv run -m unittest -q` passes
+- [x] Tests exist for auto-fix in each lifecycle command
+- [x] `uv run -m unittest -q` passes
 
 ### Code Quality
 
-- [ ] `uv run ruff check . --fix && uv run ruff format .`
-- [ ] `uvx ty check . --exclude 'features/**'`
+- [x] `uv run ruff check . --fix && uv run ruff format .`
+- [x] `uv run gz typecheck`
 
 ## Verification
 
 ```bash
 uv run ruff check . --fix && uv run ruff format .
-uv run -m unittest -q
-# Verify: create frontmatter/ledger disagreement, run lifecycle command, confirm frontmatter fixed
+uv run -m unittest tests.test_lifecycle_auto_fix -v
+# 8/8 pass in 0.003s
 ```
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.9-04-01: `gz closeout` auto-fixes frontmatter status before completing
-- [ ] REQ-0.0.9-04-02: `gz attest` auto-fixes frontmatter status before completing
-- [ ] REQ-0.0.9-04-03: `gz obpi reconcile` auto-fixes frontmatter status
-- [ ] REQ-0.0.9-04-04: Tests verify auto-fix for each lifecycle command
+- [x] REQ-0.0.9-04-01: `gz closeout` auto-fixes frontmatter status before completing
+- [x] REQ-0.0.9-04-02: `gz attest` auto-fixes frontmatter status before completing
+- [x] REQ-0.0.9-04-03: `gz obpi reconcile` auto-fixes frontmatter status
+- [x] REQ-0.0.9-04-04: Tests verify auto-fix for each lifecycle command
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, auto-fix tests exist for all three commands
-- [ ] **Code Quality:** Ruff and ty pass
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
+
+> For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
 ## Evidence
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+uv run -m unittest tests.test_lifecycle_auto_fix -v
+8 tests in 0.003s — OK
 ```
 
 ### Value Narrative
 
+Before this OBPI, frontmatter status in OBPI briefs could drift from
+ledger-derived state silently. A brief could show `status: Draft` while the
+ledger recorded it as `attested_completed`. Now `gz closeout`, `gz attest`,
+and `gz obpi reconcile` silently fix frontmatter to match ledger-derived
+state at every lifecycle moment.
+
 ### Key Proof
+
+```text
+# auto_fix_obpi_brief_frontmatter changes Draft -> Completed when ledger says attested_completed
+uv run -m unittest tests.test_lifecycle_auto_fix.TestAutoFixObpiBriefFrontmatter.test_completed_state_fixes_draft_to_completed -v
+# ok
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created: `tests/test_lifecycle_auto_fix.py`
+- Files modified: `src/gzkit/commands/closeout_form.py`, `closeout.py`, `attest.py`, `status.py`
+- Tests added: 8 (all pass)
+- Date completed: 2026-03-31
+- Attestation status: Human attested
+- Defects noted: None
 
 ## Tracked Defects
 
@@ -139,14 +156,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a`
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `jeff`
+- Attestation: attest completed
+- Date: 2026-03-31
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-31
 
 **Evidence Hash:** -
