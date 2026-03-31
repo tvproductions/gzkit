@@ -7,7 +7,7 @@ Query ledger artifact relationships and derived ADR semantics.
 ## Usage
 
 ```bash
-gz state [--json] [--blocked] [--ready]
+gz state [--json] [--blocked] [--ready] [--repair]
 ```
 
 ---
@@ -23,6 +23,48 @@ gz state [--json] [--blocked] [--ready]
 - prerequisite gates required by lane are satisfied.
 
 It is not just "pending attestation".
+
+---
+
+## Repair Mode
+
+`--repair` force-reconciles all OBPI frontmatter status fields from
+ledger-derived state. This is the operator recovery tool for restoring
+consistency after drift between frontmatter (L3 cache) and the ledger
+(L2 authority).
+
+**Behavior:**
+
+- Scans all OBPI brief files under the design root.
+- Compares each brief's frontmatter `status` to ledger-derived state.
+- Updates frontmatter where it disagrees with the ledger:
+    - Ledger says completed -> frontmatter set to `Completed`.
+    - Ledger says withdrawn -> frontmatter set to `Abandoned`.
+    - No definitive ledger state -> frontmatter left unchanged.
+- Reports what changed (human-readable table by default, JSON with `--json`).
+- Idempotent: running twice produces no changes on the second run.
+- Works after `git clone` with no dependency on L3 caches or markers.
+
+**JSON output format:**
+
+```json
+{
+  "changes": [
+    {
+      "obpi_id": "OBPI-0.1.0-01",
+      "file": "docs/design/adr/ADR-0.1.0/obpis/OBPI-0.1.0-01-feature.md",
+      "old_status": "Draft",
+      "new_status": "Completed"
+    }
+  ],
+  "total": 1
+}
+```
+
+**Exit codes:**
+
+- `0`: Success (repairs applied or already aligned).
+- `1`: Configuration or initialization error.
 
 ---
 
@@ -64,4 +106,6 @@ Task data does not appear when no tasks exist (backward compatible).
 ```bash
 uv run gz state --ready
 uv run gz state --ready --json
+uv run gz state --repair
+uv run gz state --repair --json
 ```

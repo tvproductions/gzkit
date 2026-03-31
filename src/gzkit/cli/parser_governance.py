@@ -213,6 +213,8 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:
                 "gz state --json",
                 "gz state --blocked",
                 "gz state --ready",
+                "gz state --repair",
+                "gz state --repair --json",
             ]
         ),
     )
@@ -221,7 +223,21 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:
     p_state.add_argument(
         "--ready", action="store_true", help="Show only ready-to-proceed artifacts"
     )
-    p_state.set_defaults(func=lambda a: state(as_json=a.as_json, blocked=a.blocked, ready=a.ready))
+    p_state.add_argument(
+        "--repair",
+        action="store_true",
+        help="Force-reconcile all frontmatter status from ledger-derived state",
+    )
+
+    def _state_handler(a: argparse.Namespace) -> None:
+        if a.repair:
+            from gzkit.commands.state import state_repair
+
+            state_repair(as_json=a.as_json)
+        else:
+            state(as_json=a.as_json, blocked=a.blocked, ready=a.ready)
+
+    p_state.set_defaults(func=_state_handler)
 
     p_status = commands.add_parser(
         "status",
