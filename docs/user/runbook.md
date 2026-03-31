@@ -131,6 +131,21 @@ uv run gz adr status ADR-<X.Y.Z> --json
 
 ---
 
+## State Repair (Recovery Tool)
+
+When frontmatter (L3 cache) drifts from ledger-derived state (L2 authority),
+use `gz state --repair` to force-reconcile all OBPI brief frontmatter:
+
+```bash
+uv run gz state --repair           # Human-readable diff report
+uv run gz state --repair --json    # Machine-readable JSON output
+```
+
+The repair command is idempotent (running twice produces no changes on second
+run) and works after `git clone` with no dependency on L3 caches or markers.
+
+---
+
 ## Drift Control (Required Before Closeout)
 
 Until ledger-derived brief sync is automated, treat OBPI brief status/date fields as drift-prone and
