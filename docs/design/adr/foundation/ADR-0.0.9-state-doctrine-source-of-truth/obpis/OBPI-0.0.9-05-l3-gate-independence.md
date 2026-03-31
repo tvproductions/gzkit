@@ -3,7 +3,7 @@ id: OBPI-0.0.9-05-l3-gate-independence
 parent: ADR-0.0.9-state-doctrine-source-of-truth
 item: 5
 lane: lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.9-05: L3 Gate Independence
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.9-state-doctrine-source-of-truth/ADR-0.0.9-state-doctrine-source-of-truth.md`
 - **Checklist Item:** #5 - "No Layer 3 artifact (pipeline markers, caches, derived indexes) can fail-close a gate check"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -51,36 +51,36 @@ must never be the sole reason a gate fails. Gates must depend only on L1
 
 **Governance (read once, cache):**
 
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
+- [x] `AGENTS.md` or `CLAUDE.md` - agent operating contract
+- [x] Parent ADR - understand full context
 
 **Context:**
 
-- [ ] Parent ADR: `ADR-0.0.9-state-doctrine-source-of-truth.md`
-- [ ] OBPI-0.0.9-01 (three-layer model) for layer definitions
+- [x] Parent ADR: `ADR-0.0.9-state-doctrine-source-of-truth.md`
+- [x] OBPI-0.0.9-01 (three-layer model) for layer definitions
 
 **Existing Code (understand current state):**
 
-- [ ] `src/gzkit/commands/gates.py` -- current gate check logic
-- [ ] `src/gzkit/pipeline_markers.py` -- pipeline marker management
-- [ ] `.gzkit/markers/` -- current marker files (if any)
+- [x] `src/gzkit/commands/gates.py` -- current gate check logic
+- [x] `src/gzkit/pipeline_markers.py` -- pipeline marker management
+- [x] `.gzkit/markers/` -- current marker files (if any)
 
 ## Quality Gates
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] Test exists proving gates pass with L3 artifacts deleted
-- [ ] `uv run -m unittest -q` passes
+- [x] Test exists proving gates pass with L3 artifacts deleted
+- [x] `uv run -m unittest -q` passes
 
 ### Code Quality
 
-- [ ] `uv run ruff check . --fix && uv run ruff format .`
-- [ ] `uvx ty check . --exclude 'features/**'`
+- [x] `uv run ruff check . --fix && uv run ruff format .`
+- [x] `uvx ty check . --exclude 'features/**'`
 
 ## Verification
 
@@ -92,42 +92,55 @@ uv run -m unittest -q
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.9-05-01: No gate check reads pipeline markers as sole evidence
-- [ ] REQ-0.0.9-05-02: Test proves gates pass after deleting all `.gzkit/markers/`
-- [ ] REQ-0.0.9-05-03: L3 artifacts produce warnings only, never gate failures
+- [x] REQ-0.0.9-05-01: No gate check reads pipeline markers as sole evidence
+- [x] REQ-0.0.9-05-02: Test proves gates pass after deleting all `.gzkit/markers/`
+- [x] REQ-0.0.9-05-03: L3 artifacts produce warnings only, never gate failures
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, L3-independence test exists
-- [ ] **Code Quality:** Ruff and ty pass
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, L3-independence test exists
+- [x] **Code Quality:** Ruff and ty pass
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 ## Evidence
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+test_gate1_passes_after_markers_deleted ... ok
+test_gate1_passes_with_markers_directory_present ... ok
+test_gate1_passes_without_markers_directory ... ok
+test_gate_imports_exclude_pipeline_markers ... ok
+test_gates_independent_of_pipeline_active_markers ... ok
+
+Ran 5 tests in 0.016s
+OK
 ```
 
 ### Value Narrative
 
+Before this OBPI, there was no test or documented audit proving that gate checks are independent of Layer 3 artifacts. If a future change introduced an L3 dependency in gate logic, it would silently violate the state doctrine's authority rules. Now, 5 tests prove empirically that gates depend only on L1 (governance canon) and L2 (ledger events), and a static AST guard prevents gates.py from importing pipeline_markers in the future.
+
 ### Key Proof
+
+```bash
+uv run -m unittest tests.commands.test_l3_gate_independence -v
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created/modified: tests/commands/test_l3_gate_independence.py (created)
+- Tests added: 5 tests (gate1 without markers, with markers, after deletion, pipeline marker independence, AST import guard)
+- Date completed: 2026-03-31
+- Attestation status: Human attested
+- Defects noted: None — gates.py was already L3-independent; no refactoring needed
 
 ## Tracked Defects
 
@@ -135,14 +148,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a`
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: jeff
+- Attestation: attest completed
+- Date: 2026-03-31
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-03-31
 
 **Evidence Hash:** -
