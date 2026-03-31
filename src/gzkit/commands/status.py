@@ -282,8 +282,16 @@ def obpi_reconcile_cmd(obpi: str, as_json: bool) -> None:
     project_root = get_project_root()
     ledger = Ledger(project_root / config.paths.ledger)
 
-    obpi_id, _obpi_file = resolve_obpi(project_root, config, ledger, obpi)
+    obpi_id, obpi_file = resolve_obpi(project_root, config, ledger, obpi)
     result = _build_obpi_status_entry(project_root, config, ledger, obpi_id)
+
+    # Auto-fix OBPI brief frontmatter to match ledger-derived state (ADR-0.0.9-04)
+    runtime_state = result.get("runtime_state", "pending")
+    if obpi_file and obpi_file.exists():
+        from gzkit.commands.closeout_form import auto_fix_obpi_brief_frontmatter
+
+        auto_fix_obpi_brief_frontmatter(obpi_file, runtime_state)
+
     blockers = cast(list[str], result.get("issues", []))
     payload = {
         "passed": not blockers,

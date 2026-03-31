@@ -191,6 +191,11 @@ def attest(
         attestation_reason=attestation_text,
     )
 
+    # Auto-fix OBPI brief frontmatter to match ledger-derived state (ADR-0.0.9-04)
+    from gzkit.commands.closeout_form import auto_fix_obpi_rows
+
+    auto_fix_obpi_rows(project_root, obpi_rows)
+
     console.print("\\n[green]Attestation recorded:[/green]")
     console.print(f"  ADR: {adr_id}")
     console.print(f"  Term: {canonical_term}")
