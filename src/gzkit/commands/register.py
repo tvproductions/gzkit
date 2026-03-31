@@ -265,6 +265,42 @@ def _collect_obpis_to_register(
     return to_register_obpis
 
 
+def _detect_orphan_obpis(
+    ledger: Ledger,
+    existing_graph: dict[str, dict[str, Any]],
+    artifacts: dict[str, list[Path]],
+    eligible_parent_ids: set[str],
+) -> list[str]:
+    """Detect ledger OBPIs with no on-disk brief file.
+
+    Returns a list of orphaned OBPI IDs (non-withdrawn, under eligible parents,
+    with no matching file on disk).  GHI #67.
+    """
+    on_disk_ids: set[str] = set()
+    for obpi_file in artifacts.get("obpis", []):
+        metadata = parse_artifact_metadata(obpi_file)
+        stem_id = obpi_file.stem
+        parsed_id = metadata.get("id", stem_id)
+        on_disk_ids.add(ledger.canonicalize_id(parsed_id))
+        on_disk_ids.add(ledger.canonicalize_id(stem_id))
+
+    orphans: list[str] = []
+    for artifact_id, info in existing_graph.items():
+        if info.get("type") != "obpi":
+            continue
+        if info.get("withdrawn"):
+            continue
+        parent = info.get("parent", "")
+        canonical_parent = ledger.canonicalize_id(parent) if parent else ""
+        if canonical_parent not in eligible_parent_ids:
+            continue
+        if artifact_id not in on_disk_ids:
+            orphans.append(artifact_id)
+
+    orphans.sort()
+    return orphans
+
+
 def register_adrs(
     lane: str | None,
     pool_only: bool = False,
@@ -302,8 +338,19 @@ def register_adrs(
         eligible_parent_ids=eligible_parent_ids,
     )
 
+    # GHI #67: Detect ledger OBPIs whose brief files no longer exist on disk.
+    orphans = _detect_orphan_obpis(ledger, existing_graph, artifacts, eligible_parent_ids)
+    if orphans:
+        console.print(
+            f"[yellow]Warning:[/yellow] {len(orphans)} ledger OBPI(s) have no "
+            f"file on disk (withdraw or rename to fix):"
+        )
+        for orphan_id in orphans:
+            console.print(f"  [yellow]orphan:[/yellow] {orphan_id}")
+
     if not to_register and not to_register_obpis:
-        console.print("No unregistered ADRs or OBPIs found.")
+        if not orphans:
+            console.print("No unregistered ADRs or OBPIs found.")
         return
 
     if dry_run:
