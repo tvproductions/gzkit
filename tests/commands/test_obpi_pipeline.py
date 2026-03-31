@@ -5,7 +5,12 @@ from unittest.mock import patch
 
 from gzkit.cli import main
 from gzkit.config import GzkitConfig
-from gzkit.ledger import Ledger, adr_created_event, obpi_created_event
+from gzkit.ledger import (
+    Ledger,
+    adr_created_event,
+    obpi_created_event,
+    obpi_receipt_emitted_event,
+)
 from gzkit.quality import QualityResult
 from gzkit.traceability import covers  # noqa: F401
 from tests.commands.common import CliRunner, _quick_init
@@ -300,7 +305,7 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertEqual(payload["resume_point"], "verify")
             self.assertEqual(payload, self._load_json(legacy_path))
 
-    @covers("REQ-0.13.0-01-03")
+    @covers("REQ-0.13.0-03-02")
     def test_ceremony_prints_next_steps_and_preserves_markers(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -474,21 +479,33 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertTrue(any("reconcile" in cmd for cmd in executed))
             self.assertTrue(any("git-sync" in cmd for cmd in executed))
 
-    def test_blocks_when_brief_is_already_completed(self) -> None:
+    @covers("REQ-0.0.9-02-01")
+    def test_blocks_when_obpi_is_ledger_completed(self) -> None:
+        """Pipeline blocks when ledger has completion proof, regardless of frontmatter."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init("heavy")
             config = GzkitConfig.load(Path(".gzkit.json"))
             parent_adr = "ADR-0.13.0-obpi-pipeline-runtime-surface"
+            obpi_id = "OBPI-0.13.0-01-runtime-command-contract"
             self._seed_parent_adr(config, parent_adr)
             self._seed_obpi(config, parent_adr, completed=True)
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(adr_created_event(parent_adr, "PRD-GZKIT-1.0.0", "heavy"))
-            ledger.append(obpi_created_event("OBPI-0.13.0-01-runtime-command-contract", parent_adr))
+            ledger.append(obpi_created_event(obpi_id, parent_adr))
+            ledger.append(
+                obpi_receipt_emitted_event(
+                    obpi_id,
+                    receipt_event="completed",
+                    attestor="test",
+                    obpi_completion="completed",
+                    parent_adr=parent_adr,
+                )
+            )
 
             result = runner.invoke(
                 main,
-                ["obpi", "pipeline", "OBPI-0.13.0-01-runtime-command-contract"],
+                ["obpi", "pipeline", obpi_id],
             )
 
             self.assertEqual(result.exit_code, 1)
