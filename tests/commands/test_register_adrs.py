@@ -220,6 +220,84 @@ class TestRegisterAdrsCommand(unittest.TestCase):
             self.assertIn('"event":"obpi_created","id":"OBPI-0.7.0-01-first-item"', ledger_content)
             self.assertIn('"parent":"ADR-0.7.0-my-feature"', ledger_content)
 
+    def test_register_adrs_warns_on_orphan_obpis(self) -> None:
+        """register-adrs warns when ledger OBPIs have no file on disk (GHI #67)."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+
+            # Create ADR with one OBPI on disk
+            adr_dir = Path(config.paths.adrs) / "pre-release" / "ADR-0.1.0-sample"
+            obpi_dir = adr_dir / "obpis"
+            obpi_dir.mkdir(parents=True, exist_ok=True)
+            (adr_dir / "ADR-0.1.0-sample.md").write_text(
+                "---\nid: ADR-0.1.0-sample\nparent: PRD-GZKIT-1.0.0\nlane: lite\n---\n\n"
+                "# ADR-0.1.0: Sample\n",
+                encoding="utf-8",
+            )
+            (obpi_dir / "OBPI-0.1.0-01-real.md").write_text(
+                "---\n"
+                "id: OBPI-0.1.0-01-real\n"
+                "parent: ADR-0.1.0-sample\n"
+                "item: 1\n"
+                "lane: lite\n"
+                "status: Draft\n"
+                "---\n\n"
+                "# OBPI-0.1.0-01: Real\n",
+                encoding="utf-8",
+            )
+
+            # Register the ADR and its OBPI
+            result = runner.invoke(main, ["register-adrs"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("Registered OBPI: OBPI-0.1.0-01-real", result.output)
+
+            # Manually inject a phantom OBPI into the ledger (simulates rename
+            # without artifact_renamed event)
+            from gzkit.ledger import Ledger, obpi_created_event
+
+            ledger = Ledger(Path(config.paths.ledger))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-old-slug", "ADR-0.1.0-sample"))
+
+            # Re-run register — should warn about orphan
+            result2 = runner.invoke(main, ["register-adrs"])
+            self.assertEqual(result2.exit_code, 0)
+            self.assertIn("orphan", result2.output)
+            self.assertIn("OBPI-0.1.0-01-old-slug", result2.output)
+
+    def test_register_adrs_no_orphan_warning_for_withdrawn(self) -> None:
+        """register-adrs does not warn about withdrawn OBPIs with no file (GHI #67)."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+
+            adr_dir = Path(config.paths.adrs) / "pre-release" / "ADR-0.2.0-sample"
+            obpi_dir = adr_dir / "obpis"
+            obpi_dir.mkdir(parents=True, exist_ok=True)
+            (adr_dir / "ADR-0.2.0-sample.md").write_text(
+                "---\nid: ADR-0.2.0-sample\nparent: PRD-GZKIT-1.0.0\nlane: lite\n---\n\n"
+                "# ADR-0.2.0: Sample\n",
+                encoding="utf-8",
+            )
+
+            # Register ADR, then inject and withdraw a phantom OBPI
+            runner.invoke(main, ["register-adrs"])
+
+            from gzkit.ledger import Ledger, obpi_created_event
+            from gzkit.ledger_events import obpi_withdrawn_event
+
+            ledger = Ledger(Path(config.paths.ledger))
+            ledger.append(obpi_created_event("OBPI-0.2.0-01-phantom", "ADR-0.2.0-sample"))
+            ledger.append(
+                obpi_withdrawn_event("OBPI-0.2.0-01-phantom", "ADR-0.2.0-sample", "superseded")
+            )
+
+            result = runner.invoke(main, ["register-adrs"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertNotIn("orphan", result.output)
+
     def test_register_adrs_warns_on_unresolvable_parent(self) -> None:
         """register-adrs warns when OBPI parent cannot be resolved."""
         runner = CliRunner()
