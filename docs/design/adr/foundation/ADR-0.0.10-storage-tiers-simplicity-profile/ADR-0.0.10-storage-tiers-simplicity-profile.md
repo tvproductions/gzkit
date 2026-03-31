@@ -80,9 +80,10 @@ optimization but is an unaudited tier escalation.
   (when built) will be Tier B item #2, triggering manifest design.
 - **No Tier C introduction.** This ADR locks the rules for Tier C escalation but
   does not introduce any Tier C dependency.
-- **No identity model implementation.** This ADR documents the five identity
-  surfaces (ADR-\*, OBPI-\*, REQ-\*, TASK-\*, EV-\*) but Pydantic model work
-  for REQ, TASK, and EV is governed by the Entity Hierarchy ADR (separate).
+- **No identity model behavior.** This ADR creates Pydantic models for all five
+  identity surfaces (ADR-\*, OBPI-\*, REQ-\*, TASK-\*, EV-\*) with ID schemes
+  and portability rules. It does not add CLI commands, resolvers, or runtime
+  behavior that consumes these models — that belongs to downstream ADRs.
 
 ## Intent
 
@@ -125,12 +126,10 @@ for identity surfaces, tier escalation governance, and post-1.0 SQLite path.
 
 | # | OBPI | Specification Summary | Lane | Status |
 |---|------|----------------------|------|--------|
-| 1 | OBPI-0.0.10-01 | Document three-tier model with authority boundaries | Lite | Pending |
-| 2 | OBPI-0.0.10-02 | Define five identity surfaces with ID schemes and portability rules | Lite | Pending |
-| 3 | OBPI-0.0.10-03 | Catalog and classify all on-disk storage locations | Lite | Pending |
-| 4 | OBPI-0.0.10-04 | Enforce tier escalation governance (ADR-required for Tier C) | Lite | Pending |
-| 5 | OBPI-0.0.10-05 | Validate git-clone recovery (all Tier A + B state survives) | Lite | Pending |
-| 6 | OBPI-0.0.10-06 | Archive pool ADR with forwarding note | Lite | Pending |
+| 1 | OBPI-0.0.10-01 | Document three-tier model and archive pool ADR | Lite | Pending |
+| 2 | OBPI-0.0.10-02 | Define five identity surfaces with ID schemes and Pydantic models | Lite | Pending |
+| 3 | OBPI-0.0.10-03 | Catalog storage locations and enforce tier escalation governance | Lite | Pending |
+| 4 | OBPI-0.0.10-04 | Validate git-clone recovery (all Tier A + B state survives) | Lite | Pending |
 
 **Briefs location:** `obpis/OBPI-0.0.10-*.md`
 

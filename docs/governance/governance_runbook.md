@@ -542,6 +542,7 @@ Use readiness as a design input, not a one-time score:
 ## Reference Links
 
 - [State Doctrine — Three-Layer Model and Authority Rules](state-doctrine.md)
+- [Storage Tiers Reference — Three-Tier Storage Model](storage-tiers.md)
 - [GovZero Charter](GovZero/charter.md)
 - [ADR Lifecycle](GovZero/adr-lifecycle.md)
 - [Audit Protocol](GovZero/audit-protocol.md)
