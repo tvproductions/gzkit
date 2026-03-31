@@ -205,6 +205,18 @@ def _collect_adrs_to_register(
     return to_register, eligible_parent_ids
 
 
+def _resolve_short_form_parent(
+    parent_id: str,
+    eligible_parent_ids: set[str],
+) -> str | None:
+    """Resolve a short-form parent ID (e.g. ADR-0.0.9) to full slug via prefix match."""
+    prefix = f"{parent_id}-"
+    matches = [eid for eid in eligible_parent_ids if eid.startswith(prefix)]
+    if len(matches) == 1:
+        return matches[0]
+    return None
+
+
 def _collect_obpis_to_register(
     *,
     ledger: Ledger,
@@ -231,7 +243,19 @@ def _collect_obpis_to_register(
         parent_id = parent if parent.startswith("ADR-") else f"ADR-{parent}"
         canonical_parent = ledger.canonicalize_id(parent_id)
         if canonical_parent not in eligible_parent_ids:
-            continue
+            resolved = _resolve_short_form_parent(canonical_parent, eligible_parent_ids)
+            if resolved:
+                console.print(
+                    f"[yellow]Warning:[/yellow] {obpi_file.name} uses short-form "
+                    f"parent '{parent}', resolved to '{resolved}'"
+                )
+                canonical_parent = resolved
+            else:
+                console.print(
+                    f"[yellow]Warning:[/yellow] Skipping {obpi_file.name} — "
+                    f"parent '{parent}' does not match any eligible ADR"
+                )
+                continue
 
         obpi_id = parsed_id
         if parsed_id != stem_id and stem_id.startswith(f"{parsed_id}-"):

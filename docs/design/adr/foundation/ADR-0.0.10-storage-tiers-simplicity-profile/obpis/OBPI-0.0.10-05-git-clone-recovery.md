@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.10-05-git-clone-recovery
-parent: ADR-0.0.10
+parent: ADR-0.0.10-storage-tiers-simplicity-profile
 item: 5
 lane: lite
 status: Draft

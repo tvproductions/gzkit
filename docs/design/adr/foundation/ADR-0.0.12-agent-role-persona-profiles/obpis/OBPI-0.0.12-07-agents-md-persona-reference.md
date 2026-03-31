@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.12-07-agents-md-persona-reference
-parent: ADR-0.0.12
+parent: ADR-0.0.12-agent-role-persona-profiles
 item: 7
 lane: Heavy
 status: Draft

@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.13-05-persona-drift-monitoring
-parent: ADR-0.0.13
+parent: ADR-0.0.13-portable-persona-control-surface
 item: 5
 lane: Heavy
 status: Draft

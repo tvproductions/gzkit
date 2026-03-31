@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.11-02-persona-control-surface-definition
-parent: ADR-0.0.11
+parent: ADR-0.0.11-persona-driven-agent-identity-frames
 item: 2
 lane: Heavy
 status: Draft

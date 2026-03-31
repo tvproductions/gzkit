@@ -128,14 +128,14 @@ class TestRegisterAdrsCommand(unittest.TestCase):
             self.assertEqual(dry_run.exit_code, 0)
             self.assertIn("Would append adr_created: ADR-0.1.0", dry_run.output)
             self.assertIn("Would append obpi_created: OBPI-0.1.0-01-demo", dry_run.output)
-            self.assertNotIn("ADR-0.2.0", dry_run.output)
-            self.assertNotIn("OBPI-0.2.0-01-demo", dry_run.output)
+            self.assertNotIn("Would append adr_created: ADR-0.2.0", dry_run.output)
+            self.assertNotIn("Would append obpi_created: OBPI-0.2.0-01-demo", dry_run.output)
 
             result = runner.invoke(main, ["register-adrs", "ADR-0.1.0", "--all"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("Registered ADR: ADR-0.1.0", result.output)
             self.assertIn("Registered OBPI: OBPI-0.1.0-01-demo", result.output)
-            self.assertNotIn("OBPI-0.2.0-01-demo", result.output)
+            self.assertNotIn("Registered OBPI: OBPI-0.2.0-01-demo", result.output)
 
             ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertIn('"event":"adr_created","id":"ADR-0.1.0"', ledger_content)
@@ -180,3 +180,77 @@ class TestRegisterAdrsCommand(unittest.TestCase):
             result = runner.invoke(main, ["register-adrs", "--pool-only"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("No unregistered ADRs or OBPIs found.", result.output)
+
+    def test_register_adrs_resolves_short_form_obpi_parent(self) -> None:
+        """register-adrs resolves short-form parent (ADR-0.7.0) to full slug."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+
+            # Create ADR with full slug
+            adr_dir = Path(config.paths.adrs) / "pre-release" / "ADR-0.7.0-my-feature"
+            obpi_dir = adr_dir / "obpis"
+            obpi_dir.mkdir(parents=True, exist_ok=True)
+            (adr_dir / "ADR-0.7.0-my-feature.md").write_text(
+                "---\nid: ADR-0.7.0-my-feature\nparent: PRD-GZKIT-1.0.0\nlane: lite\n---\n\n"
+                "# ADR-0.7.0: My Feature\n",
+                encoding="utf-8",
+            )
+            # OBPI with short-form parent (the bug scenario)
+            (obpi_dir / "OBPI-0.7.0-01-first-item.md").write_text(
+                "---\n"
+                "id: OBPI-0.7.0-01-first-item\n"
+                "parent: ADR-0.7.0\n"
+                "item: 1\n"
+                "lane: lite\n"
+                "status: Draft\n"
+                "---\n\n"
+                "# OBPI-0.7.0-01: First Item\n",
+                encoding="utf-8",
+            )
+
+            result = runner.invoke(main, ["register-adrs"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("Registered ADR: ADR-0.7.0-my-feature", result.output)
+            self.assertIn("Registered OBPI: OBPI-0.7.0-01-first-item", result.output)
+            self.assertIn("short-form parent", result.output)
+
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
+            self.assertIn('"event":"obpi_created","id":"OBPI-0.7.0-01-first-item"', ledger_content)
+            self.assertIn('"parent":"ADR-0.7.0-my-feature"', ledger_content)
+
+    def test_register_adrs_warns_on_unresolvable_parent(self) -> None:
+        """register-adrs warns when OBPI parent cannot be resolved."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+
+            # Create ADR dir with an orphaned OBPI (no matching ADR)
+            adr_dir = Path(config.paths.adrs) / "pre-release" / "ADR-0.8.0-orphan"
+            obpi_dir = adr_dir / "obpis"
+            obpi_dir.mkdir(parents=True, exist_ok=True)
+            (adr_dir / "ADR-0.8.0-orphan.md").write_text(
+                "---\nid: ADR-0.8.0-orphan\nparent: PRD-GZKIT-1.0.0\nlane: lite\n---\n\n"
+                "# ADR-0.8.0: Orphan\n",
+                encoding="utf-8",
+            )
+            # OBPI pointing to a non-existent parent
+            (obpi_dir / "OBPI-0.9.0-01-wrong-parent.md").write_text(
+                "---\n"
+                "id: OBPI-0.9.0-01-wrong-parent\n"
+                "parent: ADR-0.9.0\n"
+                "item: 1\n"
+                "lane: lite\n"
+                "status: Draft\n"
+                "---\n\n"
+                "# OBPI-0.9.0-01: Wrong Parent\n",
+                encoding="utf-8",
+            )
+
+            result = runner.invoke(main, ["register-adrs"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("Registered ADR: ADR-0.8.0-orphan", result.output)
+            self.assertIn("Skipping OBPI-0.9.0-01-wrong-parent.md", result.output)
+            self.assertNotIn("Registered OBPI: OBPI-0.9.0-01-wrong-parent", result.output)

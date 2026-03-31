@@ -1,0 +1,62 @@
+{
+  "adr_id": "ADR-0.0.8-feature-toggle-system",
+  "current_step": 11,
+  "is_foundation": true,
+  "started_at": "2026-03-30T23:41:30Z",
+  "updated_at": "2026-03-31T00:06:13Z",
+  "step_history": [
+    {
+      "step": 1,
+      "presented_at": "2026-03-30T23:41:30Z",
+      "acknowledged_at": "2026-03-30T23:41:30Z"
+    },
+    {
+      "step": 2,
+      "presented_at": "2026-03-30T23:41:30Z",
+      "acknowledged_at": "2026-03-30T23:42:03Z"
+    },
+    {
+      "step": 3,
+      "presented_at": "2026-03-30T23:42:03Z",
+      "acknowledged_at": "2026-03-30T23:42:14Z"
+    },
+    {
+      "step": 4,
+      "presented_at": "2026-03-30T23:42:14Z",
+      "acknowledged_at": "2026-03-30T23:42:24Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-03-30T23:42:24Z",
+      "acknowledged_at": "2026-03-30T23:42:37Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-03-30T23:42:37Z",
+      "acknowledged_at": "2026-03-30T23:48:50Z"
+    },
+    {
+      "step": 7,
+      "presented_at": "2026-03-30T23:48:50Z",
+      "acknowledged_at": "2026-03-31T00:05:58Z"
+    },
+    {
+      "step": 8,
+      "presented_at": "2026-03-31T00:05:58Z",
+      "acknowledged_at": "2026-03-31T00:06:13Z"
+    },
+    {
+      "step": 11,
+      "presented_at": "2026-03-31T00:06:13Z",
+      "acknowledged_at": null
+    }
+  ],
+  "walkthrough_commands": [
+    "uv run gz flags --help",
+    "uv run gz flag explain --help",
+    "uv run Commands --help"
+  ],
+  "walkthrough_index": 0,
+  "attestation": "Completed",
+  "completed_at": "2026-03-31T00:06:13Z"
+}

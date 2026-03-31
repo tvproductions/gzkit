@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.13-01-portable-persona-schema
-parent: ADR-0.0.13
+parent: ADR-0.0.13-portable-persona-control-surface
 item: 1
 lane: Lite
 status: Draft

@@ -764,3 +764,9 @@ Every item below maps to a testable deliverable. If removed, the named capabilit
 | 11 | Operator docs (runbook, manpage, system docs) | Feature ships without operator guidance | OBPI-08 |
 
 **Briefs location:** `obpis/OBPI-0.0.8-*.md`
+
+## Attestation Block
+
+| Term | Status | Attested By | Date | Reason |
+|------|--------|-------------|------|--------|
+| 0.0.8 | Completed | Jeff | 2026-03-30 | completed |

@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.10-03-storage-location-catalog
-parent: ADR-0.0.10
+parent: ADR-0.0.10-storage-tiers-simplicity-profile
 item: 3
 lane: lite
 status: Draft

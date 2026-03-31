@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.9-05-l3-gate-independence
-parent: ADR-0.0.9
+parent: ADR-0.0.9-state-doctrine-source-of-truth
 item: 5
 lane: lite
 status: Draft
