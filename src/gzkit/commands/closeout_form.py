@@ -4,6 +4,45 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, cast
 
+from gzkit.ledger import parse_frontmatter_value
+
+_COMPLETED_RUNTIME_STATES = {"completed", "attested_completed", "validated"}
+
+
+def auto_fix_obpi_brief_frontmatter(obpi_file: Path, runtime_state: str) -> bool:
+    """Sync OBPI brief frontmatter status to match ledger-derived runtime state.
+
+    Silently fixes frontmatter drift at lifecycle moments (closeout, attest,
+    reconcile). Returns True if a change was written.
+    """
+    content = obpi_file.read_text(encoding="utf-8")
+    current = (parse_frontmatter_value(content, "status") or "").strip().lower()
+
+    if runtime_state in _COMPLETED_RUNTIME_STATES:
+        target = "Completed"
+    elif runtime_state == "withdrawn":
+        target = "Withdrawn"
+    else:
+        return False  # only fix toward terminal states
+
+    if current == target.lower():
+        return False
+
+    updated = _upsert_frontmatter_value(content, "status", target)
+    obpi_file.write_text(updated, encoding="utf-8")
+    return True
+
+
+def auto_fix_obpi_rows(project_root: Path, obpi_rows: list[dict[str, Any]]) -> None:
+    """Auto-fix frontmatter for all OBPI rows from an ADR status query."""
+    for row in obpi_rows:
+        rel_path = row.get("file")
+        runtime_state = row.get("runtime_state", "pending")
+        if rel_path and isinstance(rel_path, str):
+            obpi_path = project_root / rel_path
+            if obpi_path.exists():
+                auto_fix_obpi_brief_frontmatter(obpi_path, runtime_state)
+
 
 def _upsert_frontmatter_value(content: str, key: str, value: str) -> str:
     """Set or insert a top-level frontmatter key/value pair."""
