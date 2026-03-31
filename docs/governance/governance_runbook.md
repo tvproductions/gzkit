@@ -96,6 +96,20 @@ See [State Doctrine](state-doctrine.md) for the full three-layer model, five aut
 | 2 | Ledger-driven reconciliation | `/gz-obpi-reconcile`, `/gz-adr-recon`, `gz audit` |
 | 3 | File sync and indexing | `/gz-obpi-sync`, `/gz-adr-sync`, `gz agent sync control-surfaces` |
 
+### Storage tier escalation
+
+Moving data from Tier A/B to Tier C is a **tier escalation** — a Heavy-lane decision
+requiring its own ADR. See [Storage Tiers Reference](storage-tiers.md) for full
+definitions and the exhaustive storage catalog.
+
+**Rule:** No Tier C storage dependency (database, external server, protocol) may be
+introduced without an explicit Heavy-lane ADR authorizing the escalation.
+
+**Anti-pattern to watch for:** A Tier B cache (derived/rebuildable) that gradually
+accumulates state not derivable from Tier A sources — silently becoming Tier C without
+governance authorization. Periodic rebuild tests (delete Tier B, rebuild, verify no
+data loss) guard against this drift.
+
 ### OBPI discipline
 
 - OBPI is the atomic implementation unit.
@@ -522,6 +536,7 @@ Use readiness as a design input, not a one-time score:
 - [ ] `uv run gz adr status ADR-<X.Y.Z> --json`
 - [ ] Brief scope and acceptance criteria reviewed
 - [ ] Existing handoff reviewed if present
+- [ ] No Tier C dependency introduced without ADR authorization ([Storage Tiers](storage-tiers.md))
 
 ### Before requesting ADR closeout
 
@@ -529,6 +544,7 @@ Use readiness as a design input, not a one-time score:
 - [ ] `/gz-adr-recon ADR-<X.Y.Z>` complete
 - [ ] `uv run gz adr audit-check ADR-<X.Y.Z>` passes
 - [ ] `uv run gz closeout ADR-<X.Y.Z> --dry-run` reviewed
+- [ ] No unaudited tier escalation (Tier A/B to C requires Heavy-lane ADR)
 
 ### After closeout
 

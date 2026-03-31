@@ -47,6 +47,7 @@ Universal agent contract for gzkit.
 2. Modify the ledger directly (use gzkit commands)
 3. Create governance artifacts without proper linkage
 4. Make changes that violate declared invariants
+5. Introduce Tier C storage dependencies without a Heavy-lane ADR (see [Storage Tiers Reference](docs/governance/storage-tiers.md))
 
 ## Pattern Discovery
 
