@@ -589,6 +589,50 @@ class TestLedger(unittest.TestCase):
         )
         self.assertTrue(semantics["completed"])
 
+    @covers("REQ-0.0.9-02-02")
+    def test_derive_obpi_semantics_ledger_wins_when_frontmatter_says_completed(self) -> None:
+        """Frontmatter claiming Completed without ledger proof does NOT make the OBPI complete."""
+        semantics = derive_obpi_semantics(
+            {},
+            found_file=True,
+            file_completed=True,
+            implementation_evidence_ok=True,
+            key_proof_ok=True,
+        )
+        self.assertFalse(semantics["completed"])
+        self.assertFalse(semantics["ledger_completed"])
+        self.assertEqual(semantics["runtime_state"], "pending")
+        self.assertIn(
+            "brief reflection says Completed without ledger completion proof",
+            semantics["reflection_issues"],
+        )
+
+    @covers("REQ-0.0.9-02-02")
+    def test_derive_obpi_semantics_ledger_wins_when_frontmatter_says_draft(self) -> None:
+        """Frontmatter stuck on Draft cannot downgrade a ledger-proven completion."""
+        semantics = derive_obpi_semantics(
+            {
+                "latest_receipt_event": "completed",
+                "obpi_completion": "completed",
+                "ledger_completed": True,
+                "latest_evidence": {
+                    "value_narrative": "Ledger-first enforcement is active.",
+                    "key_proof": "uv run gz status --json confirms ledger authority",
+                },
+            },
+            found_file=True,
+            file_completed=False,
+            implementation_evidence_ok=False,
+            key_proof_ok=False,
+        )
+        self.assertTrue(semantics["completed"])
+        self.assertTrue(semantics["ledger_completed"])
+        self.assertEqual(semantics["runtime_state"], "completed")
+        self.assertIn(
+            "brief reflection is not marked Completed",
+            semantics["reflection_issues"],
+        )
+
     def test_derive_obpi_semantics_reports_scope_clean_when_head_advances_outside_scope(
         self,
     ) -> None:
