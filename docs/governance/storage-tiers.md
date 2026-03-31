@@ -117,15 +117,36 @@ Moving data from Tier A/B to Tier C is a **tier escalation** — a Heavy-lane de
 
 Five identity surfaces are portable across all tiers. IDs require no tier-specific translation:
 
-| Surface | Pattern | Example |
-|---------|---------|---------|
-| ADR | `ADR-X.Y.Z` | `ADR-0.0.10` |
-| OBPI | `OBPI-X.Y.Z-NN` | `OBPI-0.0.10-01` |
-| REQ | `REQ-X.Y.Z-NN-MM` | `REQ-0.0.10-01-01` |
-| TASK | `TASK-*` | `TASK-0.0.10-01-001` |
-| Evidence | `EV-*` | `EV-0.0.10-01-001` |
+| Surface | Pattern | Regex | Example |
+|---------|---------|-------|---------|
+| ADR | `ADR-X.Y.Z` | `^ADR-\d+\.\d+\.\d+$` | `ADR-0.0.10` |
+| OBPI | `OBPI-X.Y.Z-NN` | `^OBPI-\d+\.\d+\.\d+-\d+$` | `OBPI-0.0.10-01` |
+| REQ | `REQ-X.Y.Z-NN-MM` | `^REQ-\d+\.\d+\.\d+-\d+-\d+$` | `REQ-0.0.10-01-01` |
+| TASK | `TASK-X.Y.Z-NN-MM-SS` | `^TASK-\d+\.\d+\.\d+-\d+-\d+-\d+$` | `TASK-0.20.0-01-01-01` |
+| Evidence | `EV-X.Y.Z-NN-SSS` | `^EV-\d+\.\d+\.\d+-\d+-\d+$` | `EV-0.0.10-01-001` |
 
 These identifiers work identically whether stored in Tier A markdown, Tier B indexes, or a future Tier C database.
+
+### Identity Surface Models
+
+Each surface has a corresponding Pydantic model in `src/gzkit/core/models.py`:
+
+| Surface | Model | ConfigDict |
+|---------|-------|------------|
+| ADR | `AdrId` | `frozen=True, extra="forbid"` |
+| OBPI | `ObpiId` | `frozen=True, extra="forbid"` |
+| REQ | `ReqId` | `frozen=True, extra="forbid"` |
+| TASK | `TaskId` | `frozen=True, extra="forbid"` |
+| Evidence | `EvidenceId` | `frozen=True, extra="forbid"` |
+
+All models provide `parse(raw: str)` and `__str__()` for lossless round-trip. These are identity-only models. Entity decomposition (extracting semver components) belongs to domain-specific models in `triangle.py` and `tasks.py`.
+
+### Portability Guarantee
+
+1. **Same string, any tier.** An ID parsed in Tier A markdown produces the same model as the same ID parsed in a Tier B index or a future Tier C store.
+2. **No translation layer.** There is no mapping table, no tier-specific prefix, and no encoding transform. The raw string is the identity.
+3. **Pydantic enforcement.** Identity models validate format at parse time. Invalid IDs are rejected immediately.
+4. **Hierarchical containment.** Each surface ID contains its parent context: OBPI contains its ADR semver, REQ contains its OBPI item, TASK and EV contain their parent chain.
 
 ---
 

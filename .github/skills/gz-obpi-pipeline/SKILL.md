@@ -44,6 +44,14 @@ These thoughts mean STOP — you are about to break the pipeline:
 | "This is just a simple implementation" | Simple or complex, the pipeline owns the lifecycle. All 5 stages run. |
 | "I can do the closing steps later" | No. The pipeline runs to completion NOW. Later means never. |
 | "The user said 'implement the plan'" | The plan is for an OBPI. OBPI work = this pipeline. All stages. |
+| "No plan receipt exists, I'll derive tasks from the brief" | No. Enter plan mode, get the plan approved, THEN resume. The brief is not a plan. |
+| "The brief requirements are clear enough to skip planning" | Clarity is not the issue. The plan-audit handoff is a governance checkpoint. You do not get to skip it because you think you understand the work. |
+
+### The Plan-Mode Gate
+
+**No plan receipt → no implementation.** If Stage 1 finds no `.plan-audit-receipt.json` and the pipeline was invoked without `--from`, you MUST enter Claude Code's native plan mode before touching any source file. Read the OBPI brief, compose a plan, and wait for user approval. The plan-audit hook writes the receipt on exit. Only then does Stage 2 begin.
+
+This is not optional. This is not something you can "derive informally." The plan-audit handoff exists because agents consistently skip planning when allowed to. You are not the exception.
 
 ### Hard Boundaries
 
@@ -120,7 +128,8 @@ Exception mode: Stage 4 = SELF-CLOSE (record evidence, proceed)
 1. Read `.claude/plans/.plan-audit-receipt.json` to find the approved plan
    - If receipt exists and OBPI matches: load the plan file from `.claude/plans/`, extract implementation steps
    - If receipt verdict is `FAIL`: **abort** — plan did not pass audit
-   - If no receipt found: **warn** but proceed (user may have planned informally or implemented without formal plan)
+   - If no receipt found AND `--from` flag is NOT set: **STOP — enter plan mode.** Read the OBPI brief, compose a plan in Claude Code's native plan mode, and wait for user approval. Only resume the pipeline after the plan-audit-receipt is written. Do NOT "derive tasks informally" or "proceed without a plan." The plan-audit handoff is a governance checkpoint, not an optimization.
+   - If no receipt found AND `--from=verify` or `--from=ceremony`: proceed (the user is explicitly resuming a partially-completed pipeline where implementation already happened)
 2. Locate the OBPI brief under:
    - `docs/design/adr/**/obpis/OBPI-{id}-*.md`
    - `docs/design/adr/**/briefs/OBPI-{id}-*.md`
@@ -486,7 +495,8 @@ per-OBPI anchor hash. The second sync commits the receipt and reconcile output.
 |---------------|--------|
 | Brief not found | Report error, release lock, stop |
 | Receipt verdict FAIL | Report audit failure, release lock, stop |
-| No receipt found | Warn and proceed (informal planning is allowed) |
+| No receipt found (full run) | STOP — enter plan mode, get approval, then resume pipeline. Do not proceed without a plan. |
+| No receipt found (`--from` set) | Proceed — user is resuming a partial pipeline where implementation already happened |
 | Tests fail during implementation | Attempt fix (2 tries), then handoff + release lock |
 | Verification fails | Attempt fix (1 try), then handoff + release lock |
 | Human rejects attestation | Record feedback, return to Stage 2 with corrections |
