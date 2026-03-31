@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.12-04-narrator-agent-persona
-parent: ADR-0.0.12
+parent: ADR-0.0.12-agent-role-persona-profiles
 item: 4
 lane: Lite
 status: Draft

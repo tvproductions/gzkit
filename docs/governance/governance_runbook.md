@@ -88,6 +88,8 @@ Lane rule: `lite` requires Gates 1-2; `heavy` requires Gates 1-5.
 
 ### Layered trust
 
+See [State Doctrine](state-doctrine.md) for the full three-layer model, five authority rules, and conflict decision table.
+
 | Layer | Trust source | Typical tooling |
 |---|---|---|
 | 1 | Runtime evidence generation | `gz implement`, `gz gates`, `gz adr audit-check` |
@@ -539,6 +541,7 @@ Use readiness as a design input, not a one-time score:
 
 ## Reference Links
 
+- [State Doctrine — Three-Layer Model and Authority Rules](state-doctrine.md)
 - [GovZero Charter](GovZero/charter.md)
 - [ADR Lifecycle](GovZero/adr-lifecycle.md)
 - [Audit Protocol](GovZero/audit-protocol.md)

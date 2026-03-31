@@ -125,6 +125,7 @@ nav:
     - gz agent sync control-surfaces: user/commands/agent-sync-control-surfaces.md
   - Governance (Canonical):
     - Governance Runbook: governance/governance_runbook.md
+    - State Doctrine: governance/state-doctrine.md
     - Documentation Taxonomy: governance/documentation-taxonomy.md
     - Feature Flags: governance/feature-flags.md
     - Parity Intake Rubric: governance/parity-intake-rubric.md
