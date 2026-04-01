@@ -1,0 +1,28 @@
+ADR audit-check: ADR-0.0.10-storage-tiers-simplicity-profile
+PASS All linked OBPIs are completed with evidence.
+  - OBPI-0.0.10-01-three-tier-model-and-pool-archive
+  - OBPI-0.0.10-02-identity-surfaces
+  - OBPI-0.0.10-03-storage-catalog-and-escalation-governance
+  - OBPI-0.0.10-04-git-clone-recovery
+
+Coverage: 3/18 REQs covered (16.7%)
+  OBPI-0.0.10-01: 0/6 (0.0%)
+  OBPI-0.0.10-02: 3/3 (100.0%)
+  OBPI-0.0.10-03: 0/6 (0.0%)
+  OBPI-0.0.10-04: 0/3 (0.0%)
+Advisory: Uncovered REQs:
+  - REQ-0.0.10-01-01
+  - REQ-0.0.10-01-02
+  - REQ-0.0.10-01-03
+  - REQ-0.0.10-01-04
+  - REQ-0.0.10-01-05
+  - REQ-0.0.10-01-06
+  - REQ-0.0.10-03-01
+  - REQ-0.0.10-03-02
+  - REQ-0.0.10-03-03
+  - REQ-0.0.10-03-04
+  - REQ-0.0.10-03-05
+  - REQ-0.0.10-03-06
+  - REQ-0.0.10-04-01
+  - REQ-0.0.10-04-02
+  - REQ-0.0.10-04-03

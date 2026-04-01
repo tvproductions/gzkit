@@ -1,0 +1,28 @@
+usage: gz state [-h] [--json] [--blocked] [--ready] [--repair] [--quiet |
+                --verbose] [--debug]
+
+Query artifact graph, blockers, and readiness from ledger.
+
+options:
+  -h, --help     show this help message and exit
+  --json         Output as JSON
+  --blocked      Show only blocked artifacts
+  --ready        Show only ready-to-proceed artifacts
+  --repair       Force-reconcile all frontmatter status from ledger-derived
+                 state
+  --quiet, -q    Suppress non-error output
+  --verbose, -v  Enable verbose output
+  --debug        Enable debug mode with full tracebacks
+
+Examples
+    gz state --json
+    gz state --blocked
+    gz state --ready
+    gz state --repair
+    gz state --repair --json
+
+Exit codes
+    0   Success
+    1   User/config error
+    2   System/IO error
+    3   Policy breach

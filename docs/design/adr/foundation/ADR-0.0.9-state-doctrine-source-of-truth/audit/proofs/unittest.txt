@@ -1,0 +1,21 @@
+All frontmatter is aligned with ledger state. No changes.
+                              State Repair Results
+┏━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ OBPI          ┃ Old Status ┃ New Status ┃ File                               ┃
+┡━━━━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ OBPI-0.1.0-01 │ Draft      │ Completed  │ docs/design/adr/ADR-0.1.0/obpis/O… │
+└───────────────┴────────────┴────────────┴────────────────────────────────────┘
+
+Repaired 1 frontmatter status field(s).
+                              State Repair Results
+┏━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ OBPI          ┃ Old Status ┃ New Status ┃ File                               ┃
+┡━━━━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ OBPI-0.1.0-01 │ Draft      │ Abandoned  │ docs/design/adr/ADR-0.1.0/obpis/O… │
+└───────────────┴────────────┴────────────┴────────────────────────────────────┘
+
+Repaired 1 frontmatter status field(s).
+----------------------------------------------------------------------
+Ran 12 tests in 0.010s
+
+OK

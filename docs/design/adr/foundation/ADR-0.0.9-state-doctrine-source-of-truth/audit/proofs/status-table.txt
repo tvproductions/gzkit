@@ -1,0 +1,40 @@
+Lane: lite
+
+                                Foundation ADRs
+╭───────────────────────────────┬─────────┬─────┬─────┬─────────┬───────┬──────╮
+│ADR                            │Life     │Lane │ OBPI│Unit     │QC     │Checks│
+├───────────────────────────────┼─────────┼─────┼─────┼─────────┼───────┼──────┤
+│ADR-0.0.1-canonical-govzero-pa…│Pending  │LITE │  0/0│UNSCOPED │PENDING│T     │
+│ADR-0.0.2-stdlib-cli-and-agent…│Pending  │LITE │  0/0│UNSCOPED │PENDING│T     │
+│ADR-0.0.3-hexagonal-architectu…│Validated│HEAVY│  9/9│COMPLETED│READY  │-     │
+│ADR-0.0.4-cli-standards-presen…│Validated│HEAVY│10/10│COMPLETED│READY  │-     │
+│ADR-0.0.5-evaluation-infrastru…│Validated│LITE │  4/4│COMPLETED│READY  │-     │
+│ADR-0.0.6-documentation-cross-…│Validated│HEAVY│  3/3│COMPLETED│READY  │-     │
+│ADR-0.0.7-config-first-resolut…│Validated│LITE │  5/5│COMPLETED│READY  │-     │
+│ADR-0.0.8-feature-toggle-system│Validated│HEAVY│  8/8│COMPLETED│READY  │-     │
+│ADR-0.0.9-state-doctrine-sourc…│Validated│LITE │  6/6│COMPLETED│READY  │-     │
+│ADR-0.0.10-storage-tiers-simpl…│Validated│LITE │  4/4│COMPLETED│READY  │-     │
+│ADR-0.0.11-persona-driven-agen…│Pending  │LITE │  0/6│PENDING  │PENDING│O,T   │
+│ADR-0.0.12-agent-role-persona-…│Pending  │LITE │  0/7│PENDING  │PENDING│O,T   │
+│ADR-0.0.13-portable-persona-co…│Pending  │LITE │  0/6│PENDING  │PENDING│O,T   │
+│ADR-0.0.14-deterministic-obpi-…│Pending  │LITE │  0/3│PENDING  │PENDING│O,T   │
+│ADR-0.0.15-ghi-driven-patch-re…│Pending  │LITE │  0/6│PENDING  │PENDING│O,T   │
+╰───────────────────────────────┴─────────┴─────┴─────┴─────────┴───────┴──────╯
+
+                                  Feature ADRs
+╭──────────────────────────┬─────────┬─────┬─────┬───────────┬───────┬─────────╮
+│ADR                       │Life     │Lane │ OBPI│Unit       │QC     │Checks   │
+├──────────────────────────┼─────────┼─────┼─────┼───────────┼───────┼─────────┤
+│ADR-0.1.0-enforced-govern…│Validated│HEAVY│10/10│COMPLETED  │READY  │-        │
+│ADR-0.2.0-gate-verificati…│Validated│HEAVY│  3/3│COMPLETED  │READY  │-        │
+│ADR-0.3.0-airlineops-cano…│Validated│HEAVY│  5/5│COMPLETED  │READY  │-        │
+│ADR-0.4.0-skill-capabilit…│Validated│HEAVY│  4/4│COMPLETED  │READY  │-        │
+│ADR-0.5.0-skill-lifecycle…│Validated│HEAVY│  5/5│COMPLETED  │READY  │-        │
+│ADR-0.6.0-pool-promotion-…│Validated│HEAVY│  3/3│COMPLETED  │READY  │-        │
+│ADR-0.7.0-obpi-first-oper…│Validated│HEAVY│  4/4│COMPLETED  │READY  │-        │
+│ADR-0.8.0-gz-chores-system│Validated│HEAVY│  3/3│COMPLETED  │READY  │-        │
+│ADR-0.9.0-airlineops-surf…│Validated│LITE │  5/5│COMPLETED  │READY  │-        │
+│ADR-0.10.0-obpi-runtime-s…│Validated│HEAVY│  3/3│COMPLETED  │READY  │-        │
+│ADR-0.11.0-airlineops-obp…│Validated│HEAVY│  6/6│COMPLETED  │READY  │-        │
+│ADR-0.12.0-obpi-pipeline-…│Validated│HEAVY│  7/7│COMPLETED  │READY  │-        │
+│ADR-0.13.0-obpi-pipeline-…│Validated│HEAVY│  5/5│COMPLETED  │READY  │-        │
