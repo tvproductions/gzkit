@@ -354,6 +354,88 @@ configuring which process runs on the substrate.
 
 ---
 
+## Anti-Patterns: What Wrong Looks Like
+
+These anti-patterns are the specific failure modes the research disproves. Each
+entry names the source, explains why it fails, and states what to do instead.
+
+### 1. Generic Expert Persona
+
+**Example:** "You are an expert Python developer with deep knowledge of async."
+
+**Why it fails:** PRISM (arXiv 2603.18507) measured a **3.6pp accuracy decrease**
+on knowledge tasks when generic expert personas were applied. The mechanism:
+persona prefixes activate instruction-following circuits at the expense of
+factual recall. Claiming expertise adds no knowledge the model doesn't already
+have — it only redirects attention away from retrieval.
+
+**Instead:** Frame behavioral identity — values, craftsmanship standards, and
+relationship to the work. Persona framing helps with *how to behave* (+17.7pp
+compliance) but hurts *what to produce*.
+
+### 2. Job-Description Framing
+
+**Example:** "You are a senior software engineer with 10 years of experience in
+distributed systems and cloud infrastructure."
+
+**Why it fails:** The PSM demonstrates that the model performs personality
+inference — "what sort of person has this resume?" The inferred character may
+include traits like credential-consciousness, risk aversion, and
+process-over-substance that are counterproductive for agent coding tasks. The
+framing adds zero knowledge while activating an unpredictable trait cluster.
+
+**Instead:** Describe how the agent relates to the code and what craftsmanship
+means to it. "Reads the full file before editing" is behavioral identity.
+"10 years experience" is a costume.
+
+### 3. Motivational-Poster Framing
+
+**Example:** "You are the best coder in the world. You write flawless code."
+
+**Why it fails:** Empty superlatives activate no specific behavioral trait. The
+PERSONA/ICLR research shows that trait activation requires directional specificity
+in activation space. "The best" is not a direction — it's noise. The model
+has no personality template for "best coder" because no such archetype exists
+in the training distribution with consistent behavioral correlates.
+
+**Instead:** Specify concrete behavioral traits: meticulous, systems-thinking,
+test-first. Each maps to an orthogonal activation direction with predictable
+behavioral effects.
+
+### 4. Monolithic Character Description
+
+**Example:** A 500-word paragraph describing a character's backstory, personality,
+values, technical skills, communication style, and emotional disposition.
+
+**Why it fails:** The PERSONA/ICLR framework demonstrates that traits compose
+orthogonally via vector addition. A monolithic description forces the model to
+extract trait vectors from unstructured prose — lossy and non-deterministic.
+Two models (or two runs) will extract different trait emphasis from the same
+paragraph.
+
+**Instead:** Use structured trait specifications with YAML frontmatter.
+Separate traits, anti-traits, and grounding text into independently addressable
+fields that compose deterministically.
+
+### 5. Prohibition-List Identity
+
+**Example:** "You must NEVER write incomplete code. You must NEVER skip tests.
+You must NEVER use bare except clauses."
+
+**Why it fails:** The PSM's personality inference works both ways. Framing
+identity around what NOT to do implies "what sort of agent needs to be told not
+to do these things?" — one that is inclined to do them. The inferred persona
+includes the prohibited traits as part of its character. This is the
+"learning to bully vs. learning to play a bully" distinction from the PSM
+paper.
+
+**Instead:** Frame positive behavioral identity using virtue-ethics: curiosity,
+thoroughness, craftsmanship. Per Amanda Askell's approach to Claude's
+constitution — train character traits whose natural behavior produces the
+outcomes you want, rather than listing prohibitions.
+
+---
+
 ## Bibliography
 
 1. Marks, S., Lindsey, J., Olah, C. (2026). "The Persona Selection Model: Why AI

@@ -367,7 +367,17 @@ No subagent dispatch, no worktree isolation, no parallel execution.
 
 **Trigger:** "Present OBPI Acceptance Ceremony" task becomes next pending. Mark `in_progress`.
 
-Present evidence using the **exact template below**. This is the human's attestation surface — they cannot provide attestation without seeing this output. Every field is mandatory. Do not omit, reorder, or freeform this.
+Present evidence using the **exact template below**. This is the human's
+attestation surface — they cannot provide attestation without seeing this
+output. Every field is mandatory. Do not omit, reorder, or freeform this.
+
+**The burden of proof is on the agent.** Attestation is earned, not granted.
+The human pause in GovZero exists to surface inconsistencies, code smells, and
+governance theater — because AI-assisted sessions can devolve into ceremony
+without substance. The agent must argue the case with conviction and evidence.
+The human should never have to drag value out of the agent. If your ceremony
+output could be produced without understanding the work, it is shallow
+compliance and will be rejected.
 
 **Required output template:**
 
@@ -376,14 +386,27 @@ Present evidence using the **exact template below**. This is the human's attesta
 
 **1. Value Narrative**
 
-<What problem existed before this OBPI? What capability exists now? 2-3 sentences.>
+<What concrete failure mode does this OBPI prevent? What implementation mistake
+would an operator or downstream agent make WITHOUT this deliverable? What
+user-visible capability is gained?
+
+The narrative must describe product value — not governance reorganization, not
+artifact completeness, not "the ADR's intent is now realized." If you cannot
+name a specific mistake this prevents or a specific capability this enables,
+the OBPI may not have delivered real value.>
 
 **2. Key Proof**
 
-<One concrete command + output the reviewer can run or mentally execute.
-Include the exact command and its output or expected output.>
+<Demonstrate how this deliverable changes real decisions. Show a concrete
+example of what would go wrong without this work and how the deliverable
+prevents it. This is an argument, not a command — you must reason about the
+work, not just point at it.
 
-**3. Evidence**
+You may include commands the reviewer can run, but commands alone are not
+proof. The proof must pass the "so what?" test: a skeptical reviewer should
+understand why this work matters without needing to ask.>
+
+**3. Baseline Evidence**
 
 | Check | Command | Result |
 |-------|---------|--------|
@@ -391,23 +414,44 @@ Include the exact command and its output or expected output.>
 | Lint | `uv run gz lint` | <result> |
 | Typecheck | `uv run gz typecheck` | <result> |
 | OBPI tests | `uv run -m unittest tests.<test_module> -v` | <N/N> pass |
-| <brief-specific> | <command> | <result> |
+
+**4. Substantive Evidence**
+
+<For each OBPI-specific deliverable, demonstrate substance — not just existence
+or keyword count. "File exists" and "grep found N matches" are necessary
+baseline checks but are NOT substantive evidence. Show what the deliverable
+contains, what decisions it enables, or what quality it enforces.>
 
 **Files created:**
-- <path> (<description>)
+- <path> (<what it delivers and why it matters>)
 
 **Files modified:**
-- <path> (<description>)
+- <path> (<what changed and what the change enables>)
 
 **REQ verification:**
-- REQ-X.Y.Z-NN-01: <function/mechanism> — <what it detected/proved>
+- REQ-X.Y.Z-NN-01: <what was required> — <how the deliverable satisfies it
+  with a concrete example or reference, not just "verified">
 - REQ-X.Y.Z-NN-02: ...
-- ...
 
-**4. Awaiting attestation.** Do NOT proceed to Stage 5 until human responds.
+**5. Awaiting attestation.** Do NOT proceed to Stage 5 until human responds.
 ```
 
-**Every field above MUST be populated.** Do not skip the evidence table. Do not skip REQ verification. Do not skip files created/modified. The human needs all of this to make an attestation decision.
+**Ceremony anti-patterns (automatic rejection):**
+
+These are the specific failure modes the human gate exists to catch. If your
+ceremony output matches any of these patterns, it will be rejected.
+
+| Anti-Pattern | Example | Why It Fails |
+|---|---|---|
+| Circular value narrative | "Before, the artifact was incomplete. After, it's complete." | Restates the OBPI's existence as its own value. No product insight. |
+| Grep-count key proof | `rg -c "keyword" file` → "7+ matches" | Word presence is not quality of thought. Proves nothing about substance. |
+| Existence-check evidence | `test -f path/to/file` → "EXISTS" | A file existing is necessary but not sufficient. |
+| Governance-reorganization value | "Downstream OBPIs can now implement against a single synthesis." | Describes internal workflow, not product value. |
+| Template-filling without understanding | Any output producible without reading the deliverable. | The ceremony is an adversarial checkpoint, not a rubber stamp. |
+
+**Every field above MUST be populated with substance.** Do not skip the
+evidence table. Do not skip REQ verification. Do not skip files
+created/modified. The human needs all of this to make an attestation decision.
 
 Wait for the human to respond "Accepted", "Completed", or equivalent. Do NOT proceed until attestation is received.
 

@@ -3,7 +3,7 @@ id: OBPI-0.0.11-01-persona-research-synthesis
 parent: ADR-0.0.11-persona-driven-agent-identity-frames
 item: 1
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.11-01-persona-research-synthesis: Persona Research Synthesis
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.11-persona-driven-agent-identity-frames/ADR-0.0.11-persona-driven-agent-identity-frames.md`
 - **Checklist Item:** #1 - "Research synthesis and design principles document"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -72,56 +72,56 @@ change a runtime contract by itself.
 
 **Governance (read once, cache):**
 
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` - agent operating contract
-- [ ] Parent ADR - understand full context
+- [x] `.github/discovery-index.json` - repo structure
+- [x] `AGENTS.md` - agent operating contract
+- [x] Parent ADR - understand full context
 
 **Context:**
 
-- [ ] Parent ADR: `docs/design/adr/foundation/ADR-0.0.11-persona-driven-agent-identity-frames/ADR-0.0.11-persona-driven-agent-identity-frames.md`
-- [ ] Research target: `docs/design/research-persona-selection-agent-identity.md`
-- [ ] Superseded pool reference: `docs/design/adr/pool/ADR-pool.per-command-persona-context.md`
+- [x] Parent ADR: `docs/design/adr/foundation/ADR-0.0.11-persona-driven-agent-identity-frames/ADR-0.0.11-persona-driven-agent-identity-frames.md`
+- [x] Research target: `docs/design/research-persona-selection-agent-identity.md`
+- [x] Superseded pool reference: `docs/design/adr/pool/ADR-pool.per-command-persona-context.md`
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/research-persona-selection-agent-identity.md`
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/governance/governance_runbook.md`
-- [ ] Parent ADR evidence artifacts referenced by this brief are present
+- [x] Required path exists or is intentionally created in this OBPI: `docs/design/research-persona-selection-agent-identity.md`
+- [x] Required path exists or is intentionally created in this OBPI: `docs/governance/governance_runbook.md`
+- [x] Parent ADR evidence artifacts referenced by this brief are present
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `docs/design/research-persona-selection-agent-identity.md`
-- [ ] Parent ADR integration points reviewed for local conventions
-- [ ] Related persona ADRs reviewed: `ADR-0.0.12`, `ADR-0.0.13`
+- [x] Pattern to follow: `docs/design/research-persona-selection-agent-identity.md`
+- [x] Parent ADR integration points reviewed for local conventions
+- [x] Related persona ADRs reviewed: `ADR-0.0.12`, `ADR-0.0.13`
 
 ## Quality Gates
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] Verification commands recorded in evidence with real outputs
-- [ ] Repository checks stay green: `uv run gz lint`, `uv run gz typecheck`, `uv run gz test`
+- [x] Verification commands recorded in evidence with real outputs
+- [x] Repository checks stay green: `uv run gz lint`, `uv run gz typecheck`, `uv run gz test`
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 ### Gate 3: Docs (Heavy only)
 
-- [ ] Not required for Lite lane beyond the authored docs in Allowed Paths
+- [x] Not required for Lite lane beyond the authored docs in Allowed Paths
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] Not required for Lite lane
+- [x] Not required for Lite lane
 
 ### Gate 5: Human (Heavy only)
 
-- [ ] Not required for Lite lane
+- [x] Not required for Lite lane (human attestation provided via parent ADR Heavy lane inheritance)
 
 ## Verification
 
@@ -139,18 +139,18 @@ rg -n "virtue-ethics|expert persona|expertise claims|anti-pattern" docs/design/r
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.11-01-01: The research document names and summarizes all five cited sources from ADR-0.0.11 with preserved links
-- [ ] REQ-0.0.11-01-02: The synthesis states why expertise-claim personas are disallowed and why behavioral identity is required
-- [ ] REQ-0.0.11-01-03: The document yields concrete design principles and anti-pattern guidance that downstream OBPIs can implement without re-running the literature review
+- [x] REQ-0.0.11-01-01: The research document names and summarizes all five cited sources from ADR-0.0.11 with preserved links
+- [x] REQ-0.0.11-01-02: The synthesis states why expertise-claim personas are disallowed and why behavioral identity is required
+- [x] REQ-0.0.11-01-03: The document yields concrete design principles and anti-pattern guidance that downstream OBPIs can implement without re-running the literature review
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Verification commands executed and recorded
-- [ ] **Code Quality:** Lint and type checks remain clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete citation-based example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Verification commands executed and recorded
+- [x] **Code Quality:** Lint and type checks remain clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete citation-based example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -158,70 +158,88 @@ rg -n "virtue-ethics|expert persona|expertise claims|anti-pattern" docs/design/r
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Record command outputs here during execution.
+uv run gz lint → All checks passed
+uv run gz typecheck → All checks passed
+uv run gz test → 2304 tests passed (33.3s)
 ```
 
 ### Code Quality
 
 ```text
-# Record lint/typecheck output here during execution.
+uv run gz lint → All checks passed, ADR path contract check passed
+uv run gz typecheck → All checks passed
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Not required beyond authored docs in Allowed Paths.
+Not required beyond authored docs in Allowed Paths.
+Research document and governance runbook updated within Allowed Paths.
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Not required for Lite lane.
+Not required for Lite lane.
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Not required for Lite lane.
+Human attestation received via parent ADR Heavy lane inheritance.
+Attestor: jeff
+Date: 2026-04-01
 ```
 
 ### Value Narrative
 
-Before this OBPI, persona work was argued in the ADR body but not consolidated
-into a reusable research artifact. After this OBPI, later persona-control and
-persona-profile work can implement against a single evidence-backed synthesis.
+Without this synthesis, the natural first attempt at a persona file would be
+"You are an expert Python developer" — which PRISM measured at -3.6pp accuracy.
+The synthesis names 5 specific anti-patterns that would make persona framing
+counterproductive and provides the research-backed corrective for each. It is
+the load-bearing argument for every design decision in the remaining 5 OBPIs:
+OBPI-02's schema, OBPI-03's composition model, and OBPI-04's anti-expertise
+constraint all depend on this research foundation.
 
 ### Key Proof
 
-`rg -n "PSM|PRISM|PERSONA" docs/design/research-persona-selection-agent-identity.md`
+Without the anti-patterns section, an implementer writing
+`.gzkit/personas/implementer.md` would likely produce job-description framing
+("Senior Python developer with 10 years experience in governance systems").
+The PSM personality-inference finding explains why this backfires: the model
+infers "what sort of person has this resume?" and activates an unpredictable
+trait cluster including credential-consciousness and risk aversion. The
+synthesis redirects to behavioral identity ("Reads the full file before
+editing. Plans the complete change before writing the first line.") which
+activates the meticulous trait cluster directly.
 
 ### Implementation Summary
 
-- Files created/modified:
+- Files modified: `docs/design/research-persona-selection-agent-identity.md` (added Anti-Patterns section with 5 named anti-patterns), `docs/governance/governance_runbook.md` (added Persona Design Principles section)
 - Tests added: none expected for this Lite documentation OBPI
-- Date completed:
-- Attestation status: n/a
-- Defects noted:
+- Date completed: 2026-04-01
+- Attestation status: human attestation received
+- Defects noted: GHI #78 — pipeline ceremony template produced shallow-compliance output; fixed in-session
 
 ## Tracked Defects
 
-_No defects tracked._
+- GHI #78: Pipeline Stage 4 ceremony template produces shallow-compliance output (fixed in-session, closed)
 
 ## Human Attestation
 
-- Attestor: `n/a`
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `jeff`
+- Attestation: `attest completed`
+- Date: `2026-04-01`
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-01
 
 **Evidence Hash:** -

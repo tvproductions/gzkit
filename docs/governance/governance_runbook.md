@@ -562,6 +562,21 @@ Use readiness as a design input, not a one-time score:
 
 ---
 
+## Persona Design Principles
+
+Persona is a governed control surface stored in `.gzkit/personas/` (ADR-0.0.11). Agent identity framing mechanistically affects which behavioral clusters activate during inference — it is engineering, not decoration.
+
+**Three operator-relevant principles:**
+
+1. **Don't claim expertise — frame behavioral identity.** Generic expert personas ("You are an expert X developer") decrease accuracy by 3.6pp (PRISM study). Instead, describe values, craftsmanship standards, and relationship to the work.
+2. **Traits compose orthogonally.** Multiple behavioral traits combine without interference (PERSONA/ICLR 2026). Design persona frames as composable trait specifications with structured YAML frontmatter, not monolithic character descriptions.
+3. **Virtue-ethics framing over prohibition lists.** Frame positive behavioral identity (curiosity, thoroughness, craftsmanship) rather than listing what NOT to do. The model infers a complete persona from the identity frame — prohibitions imply inclination.
+
+**Full research synthesis:** [`docs/design/research-persona-selection-agent-identity.md`](../design/research-persona-selection-agent-identity.md)
+**Governing ADR:** ADR-0.0.11 — Persona-Driven Agent Identity Frames
+
+---
+
 ## Reference Links
 
 - [State Doctrine — Three-Layer Model and Authority Rules](state-doctrine.md)
