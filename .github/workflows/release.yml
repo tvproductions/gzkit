@@ -118,6 +118,9 @@ jobs:
       - name: Build wheel
         run: uv build
 
+      - name: Validate distributions
+        run: uv tool run twine check --strict dist/*
+
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
