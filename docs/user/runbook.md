@@ -131,6 +131,30 @@ uv run gz adr status ADR-<X.Y.Z> --json
 
 ---
 
+## Storage Tiers and Recovery
+
+The three tier model and pool archive governance is documented in
+[`docs/governance/storage-tiers.md`](../governance/storage-tiers.md).
+Every on-disk location is classified as Tier A (canonical), Tier B
+(derived/rebuildable), or Tier C (external/ADR-required).
+
+The storage catalog and escalation governance rules ensure no external
+runtime dependency is introduced without a Heavy-lane ADR. See
+`AGENTS.md` for the agent-facing constraint.
+
+Git clone recovery is guaranteed for all Tier A + B state:
+
+```bash
+git clone <repo-url>
+cd gzkit
+uv sync
+uv run gz agent sync control-surfaces   # Rebuild Tier B mirrors
+uv run gz lint                           # Verify tooling works
+uv run gz test                           # Verify tests pass
+```
+
+---
+
 ## State Repair (Recovery Tool)
 
 The three layer model documentation lives in `docs/governance/state-doctrine.md`. When frontmatter (L3 cache) drifts from

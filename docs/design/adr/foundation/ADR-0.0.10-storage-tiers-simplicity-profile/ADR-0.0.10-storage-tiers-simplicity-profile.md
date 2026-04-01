@@ -230,3 +230,9 @@ Human Approver: ___________________________
 Date: _________________________
 
 Decision: Accept | Request Changes
+
+## Attestation Block
+
+| Term | Status | Attested By | Date | Reason |
+|------|--------|-------------|------|--------|
+| 0.0.10 | Completed | Jeff | 2026-03-31 | completed |
