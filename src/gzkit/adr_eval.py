@@ -14,6 +14,8 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.config import GzkitConfig
+
 # ---------------------------------------------------------------------------
 # Pydantic models
 # ---------------------------------------------------------------------------
@@ -134,7 +136,16 @@ def resolve_adr_package(project_root: Path, adr_id: str) -> tuple[Path, str, lis
     Returns ``(adr_path, adr_content, obpi_paths)``.
     Raises ``FileNotFoundError`` when the ADR cannot be found.
     """
-    design_root = project_root / "docs" / "design" / "adr"
+    config_path = project_root / ".gzkit.json"
+    if config_path.exists():
+        config = GzkitConfig.load(config_path)
+        design_root = project_root / config.paths.adrs
+    else:
+        design_root = project_root / "docs" / "design" / "adr"
+
+    if not design_root.exists():
+        msg = f"ADR package root not found: {design_root}"
+        raise FileNotFoundError(msg)
     # Search all buckets for the ADR directory
     candidates: list[Path] = []
     for bucket in design_root.iterdir():

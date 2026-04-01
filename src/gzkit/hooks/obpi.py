@@ -33,6 +33,13 @@ TEMPLATE_SCAFFOLD_MARKERS: dict[str, list[str]] = {
     "Allowed Paths": ["src/module/"],
     "Requirements (FAIL-CLOSED)": ["First constraint", "Second constraint"],
     "Acceptance Criteria": ["Given/When/Then behavior criterion"],
+    "Discovery Checklist": [
+        "path/to/prerequisite",
+        "config/file.json",
+        "path/to/exemplar",
+        "tests/path/to/similar_tests.py",
+    ],
+    "Verification": ["command --to --verify"],
 }
 
 
@@ -202,29 +209,38 @@ class ObpiValidator:
         self.config = GzkitConfig.load(project_root / ".gzkit.json")
         self.ledger = Ledger(project_root / self.config.paths.ledger)
 
-    def validate_file(self, obpi_path: Path) -> list[str]:
+    def validate_file(self, obpi_path: Path, *, require_authored: bool = False) -> list[str]:
         """Validate an OBPI file for completion readiness.
 
         Returns a list of error messages (empty if valid).
         """
+        if not obpi_path.exists():
+            return [f"File not found: {obpi_path}"]
+
+        content = obpi_path.read_text(encoding="utf-8")
+        return self.validate_content(content, require_authored=require_authored)
+
+    def validate_content(self, content: str, *, require_authored: bool = False) -> list[str]:
+        """Validate OBPI markdown content without requiring a file on disk."""
         from gzkit.ledger import (
             parse_frontmatter_value,
             resolve_adr_lane,
         )
 
-        if not obpi_path.exists():
-            return [f"File not found: {obpi_path}"]
-
-        content = obpi_path.read_text(encoding="utf-8")
         status = (parse_frontmatter_value(content, "status") or "").strip().lower()
 
         # Check for template scaffold on any status — these indicate a brief
         # was auto-generated but never authored.  GHI #27.
         scaffold_warnings = self._detect_template_scaffold(content)
-        if status != "completed":
+        scaffold_warnings.extend(self._detect_lane_section_mismatch(content))
+        if status != "completed" and not require_authored:
             return scaffold_warnings
 
         errors = list(scaffold_warnings)
+        if require_authored:
+            errors.extend(self._validate_authored_readiness(content))
+            if status != "completed":
+                return errors
 
         # 1. Resolve Lane Inheritance
         parent_id = parse_frontmatter_value(content, "parent")
@@ -261,6 +277,64 @@ class ObpiValidator:
 
         return errors
 
+    def _validate_authored_readiness(self, content: str) -> list[str]:
+        """Validate that a brief is authored enough for execution planning."""
+        errors: list[str] = []
+
+        if not self._has_substantive_section(content, "Objective"):
+            errors.append("Missing or non-substantive 'Objective' for authored readiness.")
+
+        allowlist = extract_allowed_paths(content)
+        if not allowlist:
+            errors.append("Missing or empty 'Allowed Paths' for authored readiness.")
+
+        denied_paths = self._section_body(content, "Denied Paths")
+        if denied_paths is None or not self._has_bullet_items(denied_paths):
+            errors.append("Missing 'Denied Paths' exclusions for authored readiness.")
+
+        requirements = self._section_body(content, "Requirements (FAIL-CLOSED)")
+        if requirements is None or not re.search(r"^\d+\.\s+", requirements, flags=re.MULTILINE):
+            errors.append("Missing numbered 'Requirements (FAIL-CLOSED)' for authored readiness.")
+
+        discovery = self._section_body(content, "Discovery Checklist")
+        if discovery is None:
+            errors.append("Missing 'Discovery Checklist' for authored readiness.")
+        else:
+            if not self._has_substantive_checklist_block(
+                discovery,
+                start_label="**Prerequisites",
+                end_label="**Existing Code",
+            ):
+                errors.append(
+                    "Discovery Checklist is missing substantive 'Prerequisites' entries "
+                    "for authored readiness."
+                )
+            if not self._has_substantive_checklist_block(
+                discovery,
+                start_label="**Existing Code",
+                end_label=None,
+            ):
+                errors.append(
+                    "Discovery Checklist is missing substantive 'Existing Code' entries "
+                    "for authored readiness."
+                )
+
+        verification = self._section_body(content, "Verification")
+        if verification is None or not self._has_specific_verification_command(verification):
+            errors.append(
+                "Verification must include at least one OBPI-specific "
+                "command for authored readiness."
+            )
+
+        acceptance = self._section_body(content, "Acceptance Criteria")
+        if acceptance is None or "REQ-" not in acceptance:
+            errors.append(
+                "Acceptance Criteria must include at least one deterministic REQ ID "
+                "for authored readiness."
+            )
+
+        return errors
+
     def _detect_template_scaffold(self, content: str) -> list[str]:
         """Detect auto-generated template defaults that were never authored.
 
@@ -279,6 +353,29 @@ class ObpiValidator:
                         f"'{marker}' — brief was auto-generated but never authored."
                     )
                     break
+        return warnings
+
+    def _detect_lane_section_mismatch(self, content: str) -> list[str]:
+        """Detect body/frontmatter lane contradictions."""
+        from gzkit.ledger import parse_frontmatter_value
+
+        warnings: list[str] = []
+        frontmatter_lane = (parse_frontmatter_value(content, "lane") or "").strip().lower()
+        if not frontmatter_lane:
+            return warnings
+
+        lane_body = self._section_body(content, "Lane")
+        if lane_body is None:
+            return warnings
+
+        expected = "**Heavy**" if frontmatter_lane == "heavy" else "**Lite**"
+        opposite = "**Lite**" if frontmatter_lane == "heavy" else "**Heavy**"
+        lane_intro = lane_body.splitlines()[0].strip() if lane_body.splitlines() else ""
+        if opposite in lane_intro or expected not in lane_intro:
+            warnings.append(
+                "Lane section body does not match frontmatter lane: "
+                f"frontmatter='{frontmatter_lane}', lane_section='{lane_intro}'."
+            )
         return warnings
 
     def _validate_changed_files(self, changed_files: list[str], allowlist: list[str]) -> list[str]:
@@ -342,6 +439,72 @@ class ObpiValidator:
         if body is None:
             return False
         return not self._is_placeholder(body)
+
+    def _has_bullet_items(self, body: str) -> bool:
+        """Return True when a section body contains at least one bullet item."""
+        return bool(re.search(r"^\s*-\s+", body, flags=re.MULTILINE))
+
+    def _checklist_items(self, block: str) -> list[str]:
+        """Extract checklist bullet text from a discovery subsection."""
+        items: list[str] = []
+        for line in block.splitlines():
+            stripped = line.strip()
+            if not stripped.startswith("-"):
+                continue
+            item = re.sub(r"^-\s*(\[[ xX]\]\s*)?", "", stripped).strip()
+            if item:
+                items.append(item)
+        return items
+
+    def _discovery_block(
+        self,
+        body: str,
+        *,
+        start_label: str,
+        end_label: str | None,
+    ) -> str:
+        """Extract the lines between two bold discovery labels."""
+        start = body.find(start_label)
+        if start == -1:
+            return ""
+        remainder = body[start + len(start_label) :]
+        if end_label:
+            end = remainder.find(end_label)
+            if end != -1:
+                return remainder[:end]
+        return remainder
+
+    def _has_substantive_checklist_block(
+        self,
+        body: str,
+        *,
+        start_label: str,
+        end_label: str | None,
+    ) -> bool:
+        """Return True when a discovery subsection has at least one real item."""
+        block = self._discovery_block(body, start_label=start_label, end_label=end_label)
+        items = self._checklist_items(block)
+        if not items:
+            return False
+        return any(not self._is_placeholder(item) for item in items)
+
+    def _has_specific_verification_command(self, body: str) -> bool:
+        """Return True when verification includes an OBPI-specific command."""
+        baseline = {
+            "uv run gz validate --documents",
+            "uv run gz lint",
+            "uv run gz typecheck",
+            "uv run gz test",
+        }
+        commands: list[str] = []
+        for line in body.splitlines():
+            stripped = line.strip()
+            if not stripped or stripped.startswith("#") or stripped.startswith("```"):
+                continue
+            commands.append(stripped)
+        if not commands:
+            return False
+        return any(command not in baseline for command in commands)
 
     def _validate_human_attestation(self, content: str) -> list[str]:
         """Validate the existence and content of the human attestation block."""

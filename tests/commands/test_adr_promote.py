@@ -162,8 +162,8 @@ class TestAdrPromoteCommand(unittest.TestCase):
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("not a pool entry", result.output)
 
-    def test_adr_promote_blocks_on_scaffold_obpis(self) -> None:
-        """Promotion fails closed when generated OBPIs are template scaffold."""
+    def test_adr_promote_blocks_on_non_go_eval(self) -> None:
+        """Promotion fails closed when generated package does not reach GO."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
@@ -176,6 +176,6 @@ class TestAdrPromoteCommand(unittest.TestCase):
                 main,
                 ["adr", "promote", "ADR-pool.sample-work", "--semver", "0.6.0"],
             )
-            self.assertEqual(result.exit_code, 1)
+            self.assertEqual(result.exit_code, 3)
             self.assertIn("Promotion blocked", result.output)
-            self.assertIn("template scaffold", result.output)
+            self.assertIn("eval verdict CONDITIONAL GO", result.output)

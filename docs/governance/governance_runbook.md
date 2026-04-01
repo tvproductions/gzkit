@@ -63,7 +63,7 @@ uv run gz cli audit
 uv run gz check-config-paths
 uv run gz validate --documents --surfaces
 uv run gz preflight                           # Detect stale artifacts
-uv run gz obpi validate --adr ADR-<X.Y.Z>
+uv run gz obpi validate --adr ADR-<X.Y.Z> --authored
 uv run gz adr evaluate ADR-<X.Y.Z>
 uv run gz readiness evaluate
 uv run gz parity check
@@ -157,7 +157,7 @@ uv run gz adr promote ADR-pool.<slug> --semver X.Y.Z --status proposed
 4. Validate briefs are authored (not template stubs).
 
 ```bash
-uv run gz obpi validate --adr ADR-<X.Y.Z>
+uv run gz obpi validate --adr ADR-<X.Y.Z> --authored
 ```
 
 5. Evaluate ADR and OBPI quality before proceeding.
@@ -199,7 +199,7 @@ uv run gz status --table
 2. Validate the target brief is authored (not a template stub).
 
 ```bash
-uv run gz obpi validate <path-to-brief>
+uv run gz obpi validate <path-to-brief> --authored
 ```
 
 3. Plan the OBPI and exit plan mode with an approved plan.

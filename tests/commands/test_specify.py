@@ -49,7 +49,7 @@ class TestSpecifyCommand(unittest.TestCase):
             self.assertIn("out of range", result.output)
 
     def test_specify_warns_about_template_defaults(self) -> None:
-        """#31: specify warns that the brief needs authoring after creation."""
+        """specify reports ADR-derived seeding and avoids scaffold placeholders."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
@@ -60,3 +60,31 @@ class TestSpecifyCommand(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             self.assertIn("populated from ADR content", result.output)
             self.assertIn("Review allowed paths", result.output)
+            obpi_path = Path("design/adr/obpis/OBPI-0.1.0-01-core-feature.md")
+            content = obpi_path.read_text(encoding="utf-8")
+            self.assertNotIn("command --to --verify", content)
+            self.assertNotIn("path/to/prerequisite", content)
+            self.assertNotIn("Given/When/Then behavior criterion", content)
+
+    def test_specify_author_creates_authored_ready_brief(self) -> None:
+        """specify --author produces a brief that passes authored validation."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            runner.invoke(main, ["plan", "0.1.0"])
+            result = runner.invoke(
+                main,
+                ["specify", "core-feature", "--parent", "ADR-0.1.0", "--item", "1", "--author"],
+            )
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("validated for pipeline entry", result.output)
+
+            obpi_path = Path("design/adr/obpis/OBPI-0.1.0-01-core-feature.md")
+            content = obpi_path.read_text(encoding="utf-8")
+            self.assertNotIn("<!--", content)
+
+            validate_result = runner.invoke(
+                main,
+                ["obpi", "validate", str(obpi_path), "--authored"],
+            )
+            self.assertEqual(validate_result.exit_code, 0)

@@ -17,13 +17,14 @@ status: Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-TBD
+`ADR-pool.per-command-persona-context` is explicitly superseded, and any useful
+cognitive-stance ideas are carried forward into ADR-0.0.11 lineage documents so
+the repository no longer has competing active guidance.
 
 ## Lane
 
-**Lite** - This OBPI remains internal to the promoted ADR implementation scope.
+**Lite** - This OBPI is lineage cleanup and documentation reconciliation. It
+does not introduce a new runtime contract by itself.
 
 > Heavy is reserved for command/API/schema/runtime-contract changes. Process,
 > documentation, and template-only work stays Lite unless it changes one of
@@ -31,59 +32,61 @@ TBD
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `docs/design/adr/foundation/ADR-0.0.11-persona-driven-agent-identity-frames/ADR-0.0.11-persona-driven-agent-identity-frames.md` — superseding ADR
+- `docs/design/adr/pool/ADR-pool.per-command-persona-context.md` — pool ADR being superseded
+- `docs/design/research-persona-selection-agent-identity.md` — design-principle continuity surface
+- `docs/governance/governance_runbook.md` — durable operator-facing guidance after supersession
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
+- `src/gzkit/**` — implementation work belongs to other OBPIs
+- `AGENTS.md` — template integration belongs to OBPI-0.0.11-04
+- `.gzkit/personas/` — control-surface implementation belongs to OBPI-0.0.11-02
 - Paths not listed in Allowed Paths
-- New dependencies
-- CI files, lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: The pool ADR MUST be marked superseded by ADR-0.0.11 with an
+   unambiguous lineage statement
+1. REQUIREMENT: Reusable ideas from the pool ADR MUST be preserved in ADR-0.0.11
+   or linked governance docs rather than lost during supersession
+1. REQUIREMENT: Operator-facing docs MUST stop presenting the pool ADR as an
+   active design authority
+1. NEVER: Leave both the pool ADR and ADR-0.0.11 appearing authoritative for
+   persona-context guidance
+1. ALWAYS: Preserve a traceable path from the superseded pool idea to the new
+   canonical ADR
 
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if the pool ADR contains unresolved design material with no
+> destination in ADR-0.0.11, print a BLOCKERS list and halt.
 
 ## Discovery Checklist
-
-<!-- What to read before implementation. Complete this checklist first. -->
 
 **Governance (read once, cache):**
 
 - [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
+- [ ] `AGENTS.md` - agent operating contract
 - [ ] Parent ADR - understand full context
 
 **Context:**
 
 - [ ] Parent ADR: `docs/design/adr/foundation/ADR-0.0.11-persona-driven-agent-identity-frames/ADR-0.0.11-persona-driven-agent-identity-frames.md`
-- [ ] Related OBPIs in same ADR
+- [ ] Pool ADR: `docs/design/adr/pool/ADR-pool.per-command-persona-context.md`
+- [ ] Research handoff doc: `docs/design/research-persona-selection-agent-identity.md`
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
+- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/pool/ADR-pool.per-command-persona-context.md`
+- [ ] Required path exists or is intentionally created in this OBPI: `docs/governance/governance_runbook.md`
+- [ ] Parent ADR evidence artifacts referenced by this brief are present
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+- [ ] Pattern to follow: `docs/design/adr/pool/ADR-pool.per-command-persona-context.md`
+- [ ] Parent ADR integration points reviewed for local conventions
+- [ ] Existing references to the pool ADR are searched before closure
 
 ## Quality Gates
-
-<!-- Which gates apply and how to verify them. -->
 
 ### Gate 1: ADR
 
@@ -92,33 +95,27 @@ TBD
 
 ### Gate 2: TDD
 
-- [ ] Tests written before/with implementation
-- [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
+- [ ] Verification commands recorded in evidence with real outputs
+- [ ] Repository checks stay green: `uv run gz lint`, `uv run gz typecheck`, `uv run gz test`
 
 ### Code Quality
 
 - [ ] Lint clean: `uv run gz lint`
 - [ ] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
 ### Gate 3: Docs (Heavy only)
 
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
+- [ ] Not required for Lite lane
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
+- [ ] Not required for Lite lane
 
 ### Gate 5: Human (Heavy only)
 
-- [ ] Human attestation recorded
+- [ ] Not required for Lite lane
 
 ## Verification
-
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
 
 ```bash
 uv run gz validate --documents
@@ -127,28 +124,22 @@ uv run gz typecheck
 uv run gz test
 
 # Specific verification for this OBPI
-command --to --verify
+test -f docs/design/adr/pool/ADR-pool.per-command-persona-context.md
+rg -n "Superseded|supersede" docs/design/adr/pool/ADR-pool.per-command-persona-context.md docs/design/adr/foundation/ADR-0.0.11-persona-driven-agent-identity-frames/ADR-0.0.11-persona-driven-agent-identity-frames.md
+rg -n "per-command persona context|cognitive stance" docs/design/adr/foundation/ADR-0.0.11-persona-driven-agent-identity-frames/ADR-0.0.11-persona-driven-agent-identity-frames.md docs/governance/governance_runbook.md
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.0.11-05-01: Given/When/Then behavior criterion 1
-- [ ] REQ-0.0.11-05-02: Given/When/Then behavior criterion 2
-- [ ] REQ-0.0.11-05-03: Given/When/Then behavior criterion 3
+- [ ] REQ-0.0.11-05-01: The pool ADR is explicitly marked superseded by ADR-0.0.11
+- [ ] REQ-0.0.11-05-02: Any preserved cognitive-stance guidance is rehomed into ADR-0.0.11 lineage docs
+- [ ] REQ-0.0.11-05-03: Repository-facing guidance no longer presents the pool ADR as an active authority for persona framing
 
 ## Completion Checklist
 
-<!-- Verify all gates before marking OBPI accepted. -->
-
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
+- [ ] **Gate 2 (TDD):** Verification commands executed and recorded
+- [ ] **Code Quality:** Lint and type checks remain clean
 - [ ] **Value Narrative:** Problem-before vs capability-now is documented
 - [ ] **Key Proof:** One concrete usage example is included
 - [ ] **OBPI Acceptance:** Evidence recorded below
@@ -157,9 +148,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ## Evidence
 
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
-
 ### Gate 1 (ADR)
 
 - [ ] Intent and scope recorded
@@ -167,61 +155,60 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+# Record command outputs here during execution.
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+# Record lint/typecheck output here during execution.
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here when Gate 3 applies
+# Not required for Lite lane.
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here when Gate 4 applies
+# Not required for Lite lane.
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+# Not required for Lite lane.
 ```
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before this OBPI, the pool ADR and ADR-0.0.11 could compete for authority over
+persona-context guidance. After this OBPI, the canonical lineage is explicit and
+operators are not forced to reconcile two active sources.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+`rg -n "Superseded|supersede" docs/design/adr/pool/ADR-pool.per-command-persona-context.md`
 
 ### Implementation Summary
 
 - Files created/modified:
-- Tests added:
+- Tests added: none expected for this Lite lineage OBPI
 - Date completed:
-- Attestation status:
+- Attestation status: n/a
 - Defects noted:
 
 ## Tracked Defects
-
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
 
 _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `n/a`
+- Attestation: `n/a`
+- Date: `n/a`
 
 ---
 

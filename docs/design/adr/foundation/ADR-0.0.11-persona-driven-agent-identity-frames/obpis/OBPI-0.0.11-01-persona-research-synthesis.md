@@ -17,13 +17,14 @@ status: Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-TBD
+`docs/design/research-persona-selection-agent-identity.md` synthesizes the
+five cited persona studies into implementation-facing design principles,
+anti-pattern guidance, and bibliography evidence for ADR-0.0.11.
 
 ## Lane
 
-**Lite** - This OBPI remains internal to the promoted ADR implementation scope.
+**Lite** - This OBPI is documentation and evidence authoring. It does not
+change a runtime contract by itself.
 
 > Heavy is reserved for command/API/schema/runtime-contract changes. Process,
 > documentation, and template-only work stays Lite unless it changes one of
@@ -31,59 +32,63 @@ TBD
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `docs/design/adr/foundation/ADR-0.0.11-persona-driven-agent-identity-frames/ADR-0.0.11-persona-driven-agent-identity-frames.md` — parent ADR for intent and rationale
+- `docs/design/research-persona-selection-agent-identity.md` — primary research synthesis artifact
+- `docs/governance/governance_runbook.md` — design-principle handoff surface
+- `docs/design/adr/pool/ADR-pool.per-command-persona-context.md` — superseded design reference to mine for reusable ideas
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
+- `src/gzkit/**` — implementation belongs to downstream OBPIs
+- `tests/**` — validation infrastructure belongs to OBPI-0.0.11-06
+- `features/**` — BDD ownership belongs to Heavy contract work
+- `AGENTS.md` — template integration belongs to OBPI-0.0.11-04
 - Paths not listed in Allowed Paths
-- New dependencies
-- CI files, lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: The research document MUST summarize all five cited sources in
+   ADR-0.0.11 and state why each source matters to gzkit's persona surface
+1. REQUIREMENT: The synthesis MUST explain the PRISM result that generic
+   expertise claims degrade accuracy and connect that result to the ADR's
+   critical constraint
+1. REQUIREMENT: The synthesis MUST translate research findings into
+   implementation-facing design principles and explicit anti-patterns
+1. NEVER: Invent empirical claims or causal guarantees not supported by the
+   cited sources
+1. ALWAYS: Preserve stable citations and cross-reference ADR-0.0.11 from the
+   research document
 
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if cited research cannot be located or contradicts the ADR,
+> print a BLOCKERS list and halt.
 
 ## Discovery Checklist
-
-<!-- What to read before implementation. Complete this checklist first. -->
 
 **Governance (read once, cache):**
 
 - [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
+- [ ] `AGENTS.md` - agent operating contract
 - [ ] Parent ADR - understand full context
 
 **Context:**
 
 - [ ] Parent ADR: `docs/design/adr/foundation/ADR-0.0.11-persona-driven-agent-identity-frames/ADR-0.0.11-persona-driven-agent-identity-frames.md`
-- [ ] Related OBPIs in same ADR
+- [ ] Research target: `docs/design/research-persona-selection-agent-identity.md`
+- [ ] Superseded pool reference: `docs/design/adr/pool/ADR-pool.per-command-persona-context.md`
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
+- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/research-persona-selection-agent-identity.md`
+- [ ] Required path exists or is intentionally created in this OBPI: `docs/governance/governance_runbook.md`
+- [ ] Parent ADR evidence artifacts referenced by this brief are present
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+- [ ] Pattern to follow: `docs/design/research-persona-selection-agent-identity.md`
+- [ ] Parent ADR integration points reviewed for local conventions
+- [ ] Related persona ADRs reviewed: `ADR-0.0.12`, `ADR-0.0.13`
 
 ## Quality Gates
-
-<!-- Which gates apply and how to verify them. -->
 
 ### Gate 1: ADR
 
@@ -92,33 +97,27 @@ TBD
 
 ### Gate 2: TDD
 
-- [ ] Tests written before/with implementation
-- [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
+- [ ] Verification commands recorded in evidence with real outputs
+- [ ] Repository checks stay green: `uv run gz lint`, `uv run gz typecheck`, `uv run gz test`
 
 ### Code Quality
 
 - [ ] Lint clean: `uv run gz lint`
 - [ ] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
 ### Gate 3: Docs (Heavy only)
 
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
+- [ ] Not required for Lite lane beyond the authored docs in Allowed Paths
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
+- [ ] Not required for Lite lane
 
 ### Gate 5: Human (Heavy only)
 
-- [ ] Human attestation recorded
+- [ ] Not required for Lite lane
 
 ## Verification
-
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
 
 ```bash
 uv run gz validate --documents
@@ -127,38 +126,29 @@ uv run gz typecheck
 uv run gz test
 
 # Specific verification for this OBPI
-command --to --verify
+test -f docs/design/research-persona-selection-agent-identity.md
+rg -n "PSM|Assistant Axis|PRISM|PERSONA|Persona Vectors" docs/design/research-persona-selection-agent-identity.md
+rg -n "virtue-ethics|expert persona|expertise claims|anti-pattern" docs/design/research-persona-selection-agent-identity.md
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.0.11-01-01: Given/When/Then behavior criterion 1
-- [ ] REQ-0.0.11-01-02: Given/When/Then behavior criterion 2
-- [ ] REQ-0.0.11-01-03: Given/When/Then behavior criterion 3
+- [ ] REQ-0.0.11-01-01: The research document names and summarizes all five cited sources from ADR-0.0.11 with preserved links
+- [ ] REQ-0.0.11-01-02: The synthesis states why expertise-claim personas are disallowed and why behavioral identity is required
+- [ ] REQ-0.0.11-01-03: The document yields concrete design principles and anti-pattern guidance that downstream OBPIs can implement without re-running the literature review
 
 ## Completion Checklist
 
-<!-- Verify all gates before marking OBPI accepted. -->
-
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
+- [ ] **Gate 2 (TDD):** Verification commands executed and recorded
+- [ ] **Code Quality:** Lint and type checks remain clean
 - [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
+- [ ] **Key Proof:** One concrete citation-based example is included
 - [ ] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
 ## Evidence
-
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
 
 ### Gate 1 (ADR)
 
@@ -167,61 +157,60 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+# Record command outputs here during execution.
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+# Record lint/typecheck output here during execution.
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here when Gate 3 applies
+# Not required beyond authored docs in Allowed Paths.
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here when Gate 4 applies
+# Not required for Lite lane.
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+# Not required for Lite lane.
 ```
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before this OBPI, persona work was argued in the ADR body but not consolidated
+into a reusable research artifact. After this OBPI, later persona-control and
+persona-profile work can implement against a single evidence-backed synthesis.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+`rg -n "PSM|PRISM|PERSONA" docs/design/research-persona-selection-agent-identity.md`
 
 ### Implementation Summary
 
 - Files created/modified:
-- Tests added:
+- Tests added: none expected for this Lite documentation OBPI
 - Date completed:
-- Attestation status:
+- Attestation status: n/a
 - Defects noted:
 
 ## Tracked Defects
-
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
 
 _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `n/a`
+- Attestation: `n/a`
+- Date: `n/a`
 
 ---
 

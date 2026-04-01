@@ -60,10 +60,10 @@ Create a compliant OBPI markdown brief that maps to exactly one ADR checklist it
 1. **Scaffold from the canonical template first.** Run `gz specify` to generate the brief:
 
    ```bash
-   uv run gz specify --name <kebab-name> --parent <ADR-X.Y.Z> --item <N> --lane <lite|heavy> --title "<title>"
+   uv run gz specify <kebab-name> --parent <ADR-X.Y.Z> --item <N> --lane <lite|heavy> --title "<title>" --author
    ```
 
-   This creates the brief with all required sections from `src/gzkit/templates/obpi.md`. **NEVER hand-author a brief from scratch.** The scaffolded file is the starting point.
+   This creates the brief with all required sections from `src/gzkit/templates/obpi.md` and runs the authored pass. **NEVER hand-author a brief from scratch.** The generated file is the starting point and must already satisfy authored validation.
 
 2. **If lane is Heavy:** Read `assets/HEAVY_LANE_PLAN_TEMPLATE.md` BEFORE authoring. This is mandatory.
 3. **Author the scaffolded brief.** Replace all template placeholders with substantive content:
@@ -78,13 +78,18 @@ Create a compliant OBPI markdown brief that maps to exactly one ADR checklist it
    - Verification — concrete `uv run ...` commands
    - Acceptance Criteria — deterministic REQ IDs
 
+   The skill is responsible for this authoring pass. Do not treat a scaffolded
+   brief as done because every section is present. Read the parent ADR, use the
+   checklist item and WBS row as the source contract, and rewrite the seeded
+   content until the brief becomes a real execution boundary.
+
 4. **Validate structural conformance** after authoring:
 
    ```bash
-   uv run gz obpi validate <path-to-brief>
+   uv run gz obpi validate <path-to-brief> --authored
    ```
 
-   This checks required frontmatter fields, required section headings, and template scaffold markers. The brief MUST pass before implementation begins.
+   This checks required frontmatter fields, required section headings, scaffold markers, and authored-readiness content. The brief MUST pass before implementation begins.
 
 5. Ensure the brief is scoped to one checklist item.
 6. Ensure Verification uses repo-standard commands (prefer `uv run ...`).

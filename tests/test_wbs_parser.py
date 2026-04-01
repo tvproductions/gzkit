@@ -195,7 +195,7 @@ class TestExtractDecisionAsRequirements(unittest.TestCase):
 
     def test_fallback_when_no_decision(self):
         result = _extract_decision_as_requirements("# No decision here")
-        self.assertIn("REQUIREMENT: First constraint", result)
+        self.assertIn("Work MUST stay inside the Allowed Paths", result)
 
     def test_skips_template_placeholders(self):
         adr = "## Decision\n\n- {Testable bullet 1}\n- Real requirement\n"
