@@ -1,7 +1,7 @@
 site_name: gzkit
 site_url: https://gzkit.org
 site_description: "Keep humans in the loop when AI writes your code"
-site_author: Jeffry Babb
+site_author: Jeffry
 docs_dir: docs
 
 repo_url: https://github.com/tvproductions/gzkit

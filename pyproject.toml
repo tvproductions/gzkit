@@ -6,7 +6,7 @@ readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.13"
 authors = [
-    { name = "Jeffry Babb" }
+    { name = "Jeffry" }
 ]
 keywords = ["governance", "adr", "specification", "ai", "collaboration", "covenant"]
 classifiers = [
