@@ -1,6 +1,6 @@
 # gz obpi validate
 
-Validate OBPI brief(s) for completion readiness and scaffold detection.
+Validate OBPI brief(s) for authored readiness, scaffold detection, and completion readiness.
 
 ---
 
@@ -9,6 +9,8 @@ Validate OBPI brief(s) for completion readiness and scaffold detection.
 ```bash
 gz obpi validate <path-to-obpi-brief>
 gz obpi validate --adr ADR-X.Y.Z
+gz obpi validate <path-to-obpi-brief> --authored
+gz obpi validate --adr ADR-X.Y.Z --authored
 ```
 
 Single-file mode takes a filesystem path to one OBPI brief. Relative paths resolve from the current workspace root.
@@ -27,7 +29,22 @@ For any brief regardless of status, the validator detects template placeholders 
 - `First constraint` or `Second constraint` in Requirements
 - `Given/When/Then behavior criterion` in Acceptance Criteria
 
-Scaffold detection warns that the brief was auto-generated but never authored.
+Scaffold detection fails closed when the brief was auto-generated but never authored.
+
+### Authored Readiness (`--authored`)
+
+When `--authored` is passed, the validator additionally fails closed on briefs
+that are too thin to serve as execution contracts. This checks for substantive:
+
+- `Objective`
+- `Allowed Paths`
+- `Denied Paths`
+- numbered `Requirements (FAIL-CLOSED)`
+- `Discovery Checklist` entries under `Prerequisites` and `Existing Code`
+- at least one OBPI-specific verification command beyond the baseline repo checks
+- REQ-backed acceptance criteria
+
+Use this mode after `gz specify` and before `gz obpi pipeline`.
 
 ### Completion Readiness (status: Completed)
 
@@ -50,6 +67,7 @@ Text mode prints `BLOCKERS:` followed by one blocker per line and exits `1` when
 |--------|-------------|
 | `<path>` | Path to a single OBPI brief file |
 | `--adr ADR-X.Y.Z` | Validate all OBPI briefs under an ADR package |
+| `--authored` | Require authored-ready brief content before pipeline execution |
 
 ---
 
@@ -61,6 +79,9 @@ uv run gz obpi validate docs/design/adr/foundation/ADR-0.0.3-hexagonal-architect
 
 # All briefs under an ADR
 uv run gz obpi validate --adr ADR-0.0.3
+
+# All briefs under an ADR must be authored before pipeline entry
+uv run gz obpi validate --adr ADR-0.0.3 --authored
 ```
 
 ```text

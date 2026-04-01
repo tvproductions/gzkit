@@ -159,6 +159,78 @@ class TestObpiValidateCommand(unittest.TestCase):
             self.assertIn("PASS", result.output)
             self.assertIn("1/2 briefs failed", result.output)
 
+    def test_obpi_validate_authored_flag_blocks_thin_draft(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+
+            obpi_path = Path("OBPI-0.1.0-01-demo.md")
+            obpi_path.write_text(
+                "---\n"
+                "id: OBPI-0.1.0-01-demo\n"
+                "parent: ADR-0.1.0\n"
+                "item: 1\n"
+                "lane: Lite\n"
+                "status: Draft\n"
+                "---\n\n"
+                "# OBPI-0.1.0-01-demo\n\n"
+                "## Allowed Paths\n- `src/gzkit/ports/` - in scope\n\n"
+                "## Requirements (FAIL-CLOSED)\n1. REQUIREMENT: Use Protocols.\n\n"
+                "## Acceptance Criteria\n"
+                "- [ ] REQ-0.1.0-01-01: Ports are defined.\n",
+                encoding="utf-8",
+            )
+
+            result = runner.invoke(main, ["obpi", "validate", str(obpi_path), "--authored"])
+
+            self.assertEqual(result.exit_code, 1)
+            self.assertIn("Objective", result.output)
+            self.assertIn("Denied Paths", result.output)
+
+    def test_obpi_validate_authored_flag_passes_substantive_draft(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+
+            obpi_path = Path("OBPI-0.1.0-01-demo.md")
+            obpi_path.write_text(
+                "---\n"
+                "id: OBPI-0.1.0-01-demo\n"
+                "parent: ADR-0.1.0\n"
+                "item: 1\n"
+                "lane: Lite\n"
+                "status: Draft\n"
+                "---\n\n"
+                "# OBPI-0.1.0-01-demo\n\n"
+                "## ADR Item\n- **Source ADR:** ADR-0.1.0\n- **Checklist Item:** #1\n\n"
+                "## Objective\nDefine typed port interfaces.\n\n"
+                "## Lane\n**Lite** - Internal Python contract.\n\n"
+                "## Allowed Paths\n- `src/gzkit/ports/` - in scope\n\n"
+                "## Denied Paths\n- `docs/user/commands/` - docs stay unchanged\n\n"
+                "## Requirements (FAIL-CLOSED)\n1. REQUIREMENT: Use Protocols.\n\n"
+                "## Quality Gates\n### Gate 1: ADR\n- [ ] Intent recorded\n\n"
+                "## Discovery Checklist\n"
+                "**Prerequisites (check existence, STOP if missing):**\n"
+                "- [ ] `src/gzkit/runtime.py` - runtime entry point\n\n"
+                "**Existing Code (understand current state):**\n"
+                "- [ ] `src/gzkit/ports.py` - current patterns\n\n"
+                "## Verification\n```bash\n"
+                "uv run gz validate --documents\n"
+                "uv run gz lint\n"
+                "uv run gz typecheck\n"
+                "uv run gz test\n"
+                "uv run -m unittest tests.test_ports\n"
+                "```\n\n"
+                "## Acceptance Criteria\n"
+                "- [ ] REQ-0.1.0-01-01: Ports are defined.\n",
+                encoding="utf-8",
+            )
+
+            result = runner.invoke(main, ["obpi", "validate", str(obpi_path), "--authored"])
+
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("OBPI Validation Passed", result.output)
+
     def test_obpi_validate_no_args_shows_error(self) -> None:
         """Calling with neither path nor --adr shows an error."""
         runner = CliRunner()

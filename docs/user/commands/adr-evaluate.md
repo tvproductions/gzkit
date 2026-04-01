@@ -113,6 +113,6 @@ GO and CONDITIONAL GO verdicts do not block. Missing scorecards do not block (ev
 | Command | Relationship |
 |---------|--------------|
 | `gz adr audit-check` | Post-implementation evidence verification (downstream) |
-| `gz obpi validate` | Single-brief or batch completion readiness check |
+| `gz obpi validate` | Single-brief or batch authored/completion readiness check |
 | `gz obpi validate --adr` | Batch-validate all briefs under an ADR |
 | `gz adr report` | Status view without scoring |

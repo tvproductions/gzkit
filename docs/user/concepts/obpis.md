@@ -20,6 +20,11 @@ Each OBPI represents one ADR checklist value increment and should include:
 3. Human-usable documentation updates
 4. Narrative justification and evidence
 
+Before implementation begins, authored briefs should pass:
+
+- `uv run gz obpi validate <path-to-brief> --authored`
+- `uv run gz obpi validate --adr ADR-<X.Y.Z> --authored`
+
 This keeps parity with GovZero skill discipline: pre-orientation, tool use, post-accounting, validation, verification, and presentation.
 
 ADR lifecycle state should be treated as a roll-up of OBPI increments, not a substitute for OBPI-level execution evidence.
@@ -81,6 +86,7 @@ Reference: `AGENTS.md` section `OBPI Acceptance Protocol`.
 Every OBPI brief should be readable as an execution contract:
 
 - brief and ADR context are loaded before implementation begins
+- authored validation should pass before pipeline entry
 - `Allowed Paths` are the only paths that may be changed.
 - `Denied Paths` make non-goals explicit.
 - when a plan-audit receipt exists, it must be read as part of transaction

@@ -26,8 +26,8 @@ uv run gz adr status ADR-<X.Y.Z> --json
 #    /gz-adr-status ADR-<X.Y.Z>
 #    See: docs/user/skills/gz-adr-status.md
 
-# 1b) Validate OBPI briefs before pipeline (catches template stubs)
-uv run gz obpi validate --adr ADR-<X.Y.Z>
+# 1b) Validate OBPI briefs before pipeline (authored execution contracts only)
+uv run gz obpi validate --adr ADR-<X.Y.Z> --authored
 
 # 1c) Evaluate ADR quality (NO GO verdict blocks pipeline)
 #    Skill shortcut — structured quality scoring and red-team challenges:

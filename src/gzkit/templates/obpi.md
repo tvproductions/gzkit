@@ -67,13 +67,11 @@ status: Draft
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
+{prerequisites_md}
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+{existing_code_md}
 
 ## Quality Gates
 
@@ -121,7 +119,7 @@ uv run gz typecheck
 uv run gz test
 
 # Specific verification for this OBPI
-command --to --verify
+{verification_specific_md}
 ```
 
 ## Acceptance Criteria

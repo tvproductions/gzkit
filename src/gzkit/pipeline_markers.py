@@ -311,7 +311,7 @@ def find_obpi_brief(docs_root: Path, obpi_id: str) -> Path | None:
 
 
 def validate_brief_for_pipeline(project_root: Path, brief_path: Path) -> list[str]:
-    """Run scaffold detection on a brief before pipeline execution.
+    """Run authored-readiness validation on a brief before pipeline execution.
 
     Returns a list of blocking errors.  An empty list means the brief
     is safe to execute against.
@@ -319,7 +319,7 @@ def validate_brief_for_pipeline(project_root: Path, brief_path: Path) -> list[st
     from gzkit.hooks.obpi import ObpiValidator  # noqa: PLC0415
 
     validator = ObpiValidator(project_root)
-    return validator.validate_file(brief_path)
+    return validator.validate_file(brief_path, require_authored=True)
 
 
 def check_adr_evaluation_verdict(adr_dir: Path) -> list[str]:
