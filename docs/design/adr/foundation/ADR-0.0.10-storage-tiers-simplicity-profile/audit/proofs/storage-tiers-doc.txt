@@ -1,0 +1,29 @@
+<!-- markdownlint-configure-file { "MD013": { "line_length": 9999 } } -->
+
+# Storage Tiers Reference
+
+**Purpose:** Define the three-tier storage model for gzkit. Every storage location in the repository is classified into one of three tiers with explicit authority boundaries.
+
+**Authority:** [ADR-0.0.10 — Storage Tiers and Simplicity Profile](../design/adr/foundation/ADR-0.0.10-storage-tiers-simplicity-profile/ADR-0.0.10-storage-tiers-simplicity-profile.md)
+
+**Companion:** [State Doctrine](state-doctrine.md) — three-layer trust model and authority rules
+
+---
+
+## Three-Tier Model
+
+| Tier | Name | Definition | Authority Boundary |
+|------|------|------------|--------------------|
+| **A** | Canonical | Authored markdown with YAML frontmatter + append-only JSONL ledger. The default for all governance data. | Human and agent authors via governed workflows. Changes tracked in git. No external dependencies. |
+| **B** | Derived / Rebuildable | Deterministic derived indexes and caches rebuilt from Tier A sources. Permitted freely but must be rebuildable from scratch. | Automated tooling (CLI, hooks, sync commands). May be deleted and regenerated at any time without data loss. |
+| **C** | External / Stateful | External runtime backends (databases, servers, protocols). | Only by explicit Heavy-lane ADR authorization. Not present today. Introduction requires its own ADR. |
+
+---
+
+## Tier A — Canonical (Authored)
+
+Tier A is the source of truth. All governance state originates here.
+
+**Authority:** Human authors and governed agent workflows create and modify Tier A artifacts. All changes are committed to git.
+
+**Storage Catalog (exhaustive):**
