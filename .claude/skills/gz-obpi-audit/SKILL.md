@@ -47,27 +47,32 @@ Audit an OBPI brief to verify its status matches actual evidence (tests, coverag
 
 ---
 
-## Workflow: Sync → Audit → Sync
+## Workflow: CLI Evidence → Skill Judgment → Sync
 
-The correct workflow is **three-step**:
+The correct workflow is **four-step**:
 
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
 │  1. gz-obpi-sync ADR-X.Y.Z                                      │
 │     └── Sync ADR table from brief statuses (trust briefs)       │
 │                                                                 │
-│  2. gz-obpi-audit ADR-X.Y.Z                                     │
-│     └── Verify each brief against evidence                      │
-│     └── Fix briefs where work done but status stale             │
-│     └── Write audit receipt to ledger                           │
+│  2. uv run gz obpi audit OBPI-X.Y.Z-NN                          │
+│     └── CLI: deterministic evidence gathering                   │
+│     └── CLI: append structured entry to obpi-audit.jsonl        │
+│     └── CLI: report PASS/FAIL per criterion                     │
 │                                                                 │
-│  3. gz-obpi-sync ADR-X.Y.Z                                      │
+│  3. gz-obpi-audit OBPI-X.Y.Z-NN  (this skill, LLM layer)        │
+│     └── Verify evidence quality (does test actually prove req?)  │
+│     └── Fix briefs where work done but status stale             │
+│                                                                 │
+│  4. gz-obpi-sync ADR-X.Y.Z                                      │
 │     └── Re-sync ADR table with corrected brief statuses         │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**Why sync twice?** First sync catches manual updates. Audit verifies and fixes. Second sync
-propagates fixes to ADR table.
+**Step 2 is the CLI command.** It handles deterministic checks (test discovery,
+execution, coverage, @covers scanning) and writes the ledger entry. Step 3
+(this skill) adds LLM judgment on evidence quality and updates briefs.
 
 ---
 

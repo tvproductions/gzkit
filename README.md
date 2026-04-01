@@ -104,7 +104,7 @@ pip install gzkit
 gz init
 
 # Create a new ADR
-gz plan feature --title "Feature description"
+gz plan create feature --title "Feature description"
 
 # Check gate status
 gz status

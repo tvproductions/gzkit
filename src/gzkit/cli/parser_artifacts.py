@@ -17,11 +17,17 @@ from gzkit.commands.adr_audit import (
     adr_emit_receipt_cmd,
 )
 from gzkit.commands.adr_promote import adr_eval_cmd, adr_promote_cmd
+from gzkit.commands.obpi_audit_cmd import obpi_audit_cmd
 from gzkit.commands.obpi_cmd import (
     obpi_emit_receipt_cmd,
     obpi_pipeline_cmd,
     obpi_validate_cmd,
     obpi_withdraw_cmd,
+)
+from gzkit.commands.obpi_lock_cmd import (
+    obpi_lock_claim_cmd,
+    obpi_lock_release_cmd,
+    obpi_lock_status_cmd,
 )
 from gzkit.commands.status import (
     adr_report_cmd,
@@ -36,6 +42,17 @@ from gzkit.commands.task import (
     task_list_cmd,
     task_start_cmd,
 )
+
+_ADR_TYPE_NAMES = {"foundation", "feature", "pool"}
+
+
+def _dispatch_adr_report(a: argparse.Namespace) -> None:
+    """Route gz adr report to summary or detail mode."""
+    target = a.adr
+    if target and target.lower() in _ADR_TYPE_NAMES:
+        adr_report_cmd(adr=None, adr_type=target.lower())
+    else:
+        adr_report_cmd(adr=target, adr_type=a.type)
 
 
 def register_artifact_parsers(commands: argparse._SubParsersAction) -> None:
@@ -85,15 +102,6 @@ def _register_adr_parsers(commands: argparse._SubParsersAction) -> None:
         func=lambda a: adr_status_cmd(adr=a.adr, as_json=a.as_json, show_gates=a.show_gates)
     )
 
-    _adr_type_names = {"foundation", "feature", "pool"}
-
-    def _dispatch_adr_report(a: argparse.Namespace) -> None:
-        target = a.adr
-        if target and target.lower() in _adr_type_names:
-            adr_report_cmd(adr=None, adr_type=target.lower())
-        else:
-            adr_report_cmd(adr=target, adr_type=a.type)
-
     p_adr_report = adr_commands.add_parser(
         "report",
         help="Deterministic tabular report (summary or single ADR)",
@@ -121,7 +129,7 @@ def _register_adr_parsers(commands: argparse._SubParsersAction) -> None:
         default=None,
         help="Filter summary to one ADR type (foundation, feature, pool)",
     )
-    p_adr_report.set_defaults(func=_dispatch_adr_report)
+    p_adr_report.set_defaults(func=lambda a: _dispatch_adr_report(a))
 
     p_adr_promote = adr_commands.add_parser(
         "promote",
@@ -463,6 +471,93 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
     add_dry_run_flag(p_obpi_withdraw)
     p_obpi_withdraw.set_defaults(
         func=lambda a: obpi_withdraw_cmd(obpi=a.obpi, reason=a.reason, dry_run=a.dry_run)
+    )
+
+    p_obpi_audit = obpi_commands.add_parser(
+        "audit",
+        help="Gather evidence for OBPI brief and record in audit ledger",
+        description="Run deterministic evidence checks (tests, coverage, @covers) for an OBPI.",
+        epilog=build_epilog(
+            [
+                "gz obpi audit OBPI-0.1.0-01",
+                "gz obpi audit OBPI-0.1.0-01 --json",
+                "gz obpi audit --adr ADR-0.1.0",
+            ]
+        ),
+    )
+    p_obpi_audit.add_argument(
+        "obpi", nargs="?", default=None, help="OBPI identifier (e.g. OBPI-0.1.0-01)"
+    )
+    p_obpi_audit.add_argument(
+        "--adr", dest="adr_id", default=None, help="Audit all OBPIs under this ADR"
+    )
+    add_json_flag(p_obpi_audit)
+    p_obpi_audit.set_defaults(
+        func=lambda a: obpi_audit_cmd(obpi_id=a.obpi, adr_id=a.adr_id, as_json=a.as_json)
+    )
+
+    p_lock_claim = obpi_commands.add_parser(
+        "lock-claim",
+        help="Claim an OBPI work lock for multi-agent coordination",
+        description="Create a lock file preventing concurrent work on the same OBPI.",
+        epilog=build_epilog(
+            [
+                "gz obpi lock-claim OBPI-0.1.0-01",
+                "gz obpi lock-claim OBPI-0.1.0-01 --ttl 240",
+                "gz obpi lock-claim OBPI-0.1.0-01 --json",
+            ]
+        ),
+    )
+    p_lock_claim.add_argument("obpi", help="OBPI identifier (e.g. OBPI-0.1.0-01)")
+    p_lock_claim.add_argument(
+        "--ttl",
+        dest="ttl_minutes",
+        type=int,
+        default=120,
+        help="Lock TTL in minutes (default: 120)",
+    )
+    add_json_flag(p_lock_claim)
+    p_lock_claim.set_defaults(
+        func=lambda a: obpi_lock_claim_cmd(
+            obpi_id=a.obpi, ttl_minutes=a.ttl_minutes, as_json=a.as_json
+        )
+    )
+
+    p_lock_release = obpi_commands.add_parser(
+        "lock-release",
+        help="Release an OBPI work lock",
+        description="Remove a lock file, allowing other agents to claim the OBPI.",
+        epilog=build_epilog(
+            [
+                "gz obpi lock-release OBPI-0.1.0-01",
+                "gz obpi lock-release OBPI-0.1.0-01 --json",
+            ]
+        ),
+    )
+    p_lock_release.add_argument("obpi", help="OBPI identifier (e.g. OBPI-0.1.0-01)")
+    add_json_flag(p_lock_release)
+    p_lock_release.set_defaults(
+        func=lambda a: obpi_lock_release_cmd(obpi_id=a.obpi, as_json=a.as_json)
+    )
+
+    p_lock_status = obpi_commands.add_parser(
+        "lock-status",
+        help="List active OBPI work locks",
+        description="Show all active and expired OBPI work locks.",
+        epilog=build_epilog(
+            [
+                "gz obpi lock-status",
+                "gz obpi lock-status --adr ADR-0.1.0",
+                "gz obpi lock-status --json",
+            ]
+        ),
+    )
+    p_lock_status.add_argument(
+        "--adr", dest="adr_id", default=None, help="Filter locks by parent ADR"
+    )
+    add_json_flag(p_lock_status)
+    p_lock_status.set_defaults(
+        func=lambda a: obpi_lock_status_cmd(adr_id=a.adr_id, as_json=a.as_json)
     )
 
 

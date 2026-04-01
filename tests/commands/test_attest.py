@@ -18,7 +18,7 @@ class TestAttestSemantics(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             result = runner.invoke(main, ["attest", "ADR-0.1.0", "--status", "completed"])
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("Gate 2 must pass", result.output)
@@ -27,7 +27,7 @@ class TestAttestSemantics(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init("heavy")
-            runner.invoke(main, ["plan", "0.1.0", "--lane", "heavy"])
+            runner.invoke(main, ["plan", "create", "0.1.0", "--lane", "heavy"])
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
 
@@ -39,7 +39,7 @@ class TestAttestSemantics(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init("heavy")
-            runner.invoke(main, ["plan", "0.1.0", "--lane", "heavy"])
+            runner.invoke(main, ["plan", "create", "0.1.0", "--lane", "heavy"])
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
             ledger.append(gate_checked_event("ADR-0.1.0", 3, "pass", "docs", 0))
@@ -52,7 +52,7 @@ class TestAttestSemantics(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             result = runner.invoke(
                 main,
                 ["attest", "ADR-0.1.0", "--status", "completed", "--force"],
@@ -65,7 +65,7 @@ class TestAttestSemantics(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             result = runner.invoke(
                 main,
                 [
@@ -88,7 +88,7 @@ class TestAttestSemantics(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init("heavy")
-            runner.invoke(main, ["plan", "0.1.0", "--lane", "heavy"])
+            runner.invoke(main, ["plan", "create", "0.1.0", "--lane", "heavy"])
 
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
@@ -152,7 +152,7 @@ class TestAttestSemantics(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
 
             # Register an OBPI so the ADR has incomplete work
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
@@ -182,7 +182,7 @@ class TestAttestSemantics(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
 
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(obpi_created_event("OBPI-0.1.0-01-test", "ADR-0.1.0"))

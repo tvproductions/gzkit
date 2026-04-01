@@ -30,6 +30,12 @@ control surface but does not introduce a separate external contract.
 > documentation, and template-only work stays Lite unless it changes one of
 > those external surfaces.
 
+## Dependencies
+
+- **Depends on:** OBPI-0.0.11-02 (persona schema, directory, and at least one
+  exemplar file must exist before validation infrastructure can be built)
+- **Blocks:** None directly
+
 ## Allowed Paths
 
 - `docs/design/adr/foundation/ADR-0.0.11-persona-driven-agent-identity-frames/ADR-0.0.11-persona-driven-agent-identity-frames.md` — parent ADR for validation intent

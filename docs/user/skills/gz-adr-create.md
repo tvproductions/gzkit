@@ -43,7 +43,7 @@ The skill performs these operations:
 5. **Creates the closeout form** (`ADR-CLOSEOUT-FORM.md`).
 6. **Updates three registries**: `adr_index.md`, `adr_status.md`, and the
    governance copy at `docs/governance/GovZero/adr-status.md`.
-7. **Runs post-authoring QC** via `/gz-adr-eval` to score the ADR and OBPIs.
+7. **Runs post-authoring QC** via `/gz-adr-evaluate` to score the ADR and OBPIs.
 8. **Validates** with `uv run -m unittest -q` and `uv run mkdocs build --strict`.
 
 Typical runtime is 1-3 minutes depending on the number of checklist items.
@@ -86,7 +86,7 @@ validation errors.
 |---------|-------------|
 | [`/gz-design`](gz-design.md) | Typically precedes ADR creation — produces the design decision |
 | [`/gz-specify`](gz-specify.md) | Alternative for creating individual OBPI briefs after ADR exists |
-| [`/gz-adr-eval`](gz-adr-eval.md) | Post-authoring QC evaluation run during creation |
+| [`/gz-adr-evaluate`](gz-adr-evaluate.md) | Post-authoring QC evaluation run during creation |
 | [`/gz-obpi-pipeline`](gz-obpi-pipeline.md) | Executes the OBPIs created by this skill |
 | [`/gz-closeout`](gz-closeout.md) | Closes the ADR after all OBPIs complete |
 | [`gz register-adrs`](../commands/register-adrs.md) | Registers ADR ledger events after creation |

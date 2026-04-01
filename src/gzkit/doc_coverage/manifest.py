@@ -9,9 +9,21 @@ from gzkit.commands.common import get_project_root
 
 _MANIFEST_PATH = Path("config") / "doc-coverage.json"
 
+_MANPAGE_DIR = Path("docs") / "user" / "commands"
+
+
+def manpage_path_for(command_name: str) -> Path:
+    """Derive the manpage path for a command name by convention.
+
+    ``"plan create"`` -> ``docs/user/commands/plan-create.md``
+    ``"closeout"``    -> ``docs/user/commands/closeout.md``
+    """
+    slug = command_name.replace(" ", "-")
+    return _MANPAGE_DIR / f"{slug}.md"
+
 
 class SurfaceRequirements(BaseModel):
-    """Which of the six documentation surfaces are required for a command."""
+    """Which documentation surfaces are required for a command."""
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -22,7 +34,6 @@ class SurfaceRequirements(BaseModel):
         ..., description="Requires a reference in docs/governance/governance_runbook.md"
     )
     docstring: bool = Field(..., description="Requires a docstring on the handler function")
-    command_docs_mapping: bool = Field(..., description="Requires an entry in COMMAND_DOCS")
 
 
 class CommandEntry(BaseModel):

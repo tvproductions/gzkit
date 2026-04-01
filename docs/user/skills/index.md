@@ -14,7 +14,7 @@ audience split.
 | Skill | Description |
 |-------|-------------|
 | [`/gz-adr-create`](gz-adr-create.md) | Create and book a GovZero ADR with its OBPI briefs |
-| [`/gz-adr-eval`](gz-adr-eval.md) | Post-authoring quality evaluation for ADRs and OBPIs |
+| [`/gz-adr-evaluate`](gz-adr-evaluate.md) | Post-authoring quality evaluation for ADRs and OBPIs |
 | [`/gz-adr-promote`](gz-adr-promote.md) | Promote a pool ADR into canonical ADR package structure |
 | [`/gz-adr-status`](gz-adr-status.md) | Show ADR table or focused lifecycle and OBPI detail |
 | [`/gz-attest`](gz-attest.md) | Record human attestation with prerequisite enforcement |

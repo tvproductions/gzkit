@@ -34,12 +34,19 @@ uv run gz roles
 uv run gz init                        # Initialize governance scaffolding
 uv run gz prd                         # Create Product Requirements Document
 uv run gz constitute                  # Create constitution artifact
-uv run gz plan                        # Create an ADR
+uv run gz plan create <name> --semver X.Y.Z  # Create an ADR
+uv run gz plan audit OBPI-<X.Y.Z-NN> # Structural prereq check for plan alignment
 uv run gz specify                     # Create implementation brief (OBPI)
 uv run gz obpi pipeline OBPI-<X.Y.Z-NN>  # Execute OBPI pipeline
+uv run gz obpi audit OBPI-<X.Y.Z-NN> # Gather evidence and record in audit ledger
 uv run gz obpi reconcile OBPI-<X.Y.Z-NN> # Fail-closed reconciliation
 uv run gz obpi withdraw OBPI-<X.Y.Z-NN> --reason "..." # Withdraw OBPI from counts
+uv run gz obpi lock-claim OBPI-<X.Y.Z-NN>  # Claim OBPI work lock
+uv run gz obpi lock-release OBPI-<X.Y.Z-NN> # Release OBPI work lock
+uv run gz obpi lock-status            # List active OBPI work locks
 uv run gz obpi emit-receipt OBPI-<X.Y.Z-NN> --event completed --attestor "<name>" --evidence-json '{...}'
+uv run gz flags                       # Display feature flags
+uv run gz flag explain <flag>         # Inspect one flag
 uv run gz migrate-semver              # Record SemVer rename events
 uv run gz register-adrs               # Register existing ADR packages
 ```
@@ -134,7 +141,7 @@ Skill shortcuts for ADR creation and planning:
 - [`/gz-design`](../user/skills/gz-design.md) — collaborative design dialogue that produces ADR artifacts (use before formal creation)
 - [`/gz-adr-create`](../user/skills/gz-adr-create.md) — create and book a GovZero ADR with OBPI briefs
 - [`/gz-adr-promote`](../user/skills/gz-adr-promote.md) — promote a pool ADR into canonical package structure
-- [`/gz-adr-eval`](../user/skills/gz-adr-eval.md) — score ADR quality and run red-team challenges before proceeding
+- [`/gz-adr-evaluate`](../user/skills/gz-adr-evaluate.md) — score ADR quality and run red-team challenges before proceeding
 
 1. Inspect active and pending ADR state.
 

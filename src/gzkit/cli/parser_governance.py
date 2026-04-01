@@ -20,6 +20,7 @@ from gzkit.commands.closeout import closeout_cmd
 from gzkit.commands.gates import gates_cmd, implement_cmd
 from gzkit.commands.init_cmd import constitute, init, prd
 from gzkit.commands.plan import plan_cmd
+from gzkit.commands.plan_audit_cmd import plan_audit_cmd
 from gzkit.commands.register import migrate_semver, register_adrs
 from gzkit.commands.roles import roles_cmd
 from gzkit.commands.specify_cmd import specify
@@ -27,7 +28,33 @@ from gzkit.commands.state import state
 from gzkit.commands.status import status
 
 
-def register_governance_parsers(commands: argparse._SubParsersAction) -> None:
+def _state_handler(a: argparse.Namespace) -> None:
+    """Route gz state to repair or query mode."""
+    if a.repair:
+        from gzkit.commands.state import state_repair  # noqa: PLC0415
+
+        state_repair(as_json=a.as_json)
+    else:
+        state(as_json=a.as_json, blocked=a.blocked, ready=a.ready)
+
+
+def _closeout_dispatch(a: argparse.Namespace) -> None:
+    """Route gz closeout to ceremony or standard closeout."""
+    if a.ceremony or a.ceremony_next or a.ceremony_status or a.ceremony_attest:
+        from gzkit.commands.closeout_ceremony import ceremony_cmd  # noqa: PLC0415
+
+        ceremony_cmd(
+            adr=a.adr,
+            as_json=a.as_json,
+            ceremony_next=a.ceremony_next,
+            ceremony_status=a.ceremony_status,
+            ceremony_attest=a.ceremony_attest,
+        )
+    else:
+        closeout_cmd(adr=a.adr, as_json=a.as_json, dry_run=a.dry_run)
+
+
+def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  # noqa: PLR0915
     """Register governance lifecycle subcommands on *commands*."""
     p_init = commands.add_parser(
         "init",
@@ -130,67 +157,85 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:
 
     p_plan = commands.add_parser(
         "plan",
+        help="ADR planning commands",
+        description="Create ADRs and run plan-audit checks.",
+        epilog=build_epilog(
+            [
+                "gz plan create my-feature --semver 0.1.0 --lane lite",
+                "gz plan audit OBPI-0.1.0-01",
+            ]
+        ),
+    )
+    plan_commands = p_plan.add_subparsers(dest="plan_command")
+    plan_commands.required = True
+
+    p_plan_create = plan_commands.add_parser(
+        "create",
         help="Create a new ADR",
         description="Create a new Architecture Decision Record with scoring.",
         epilog=build_epilog(
             [
-                "gz plan my-feature --semver 0.1.0 --lane lite",
-                'gz plan my-feature --semver 0.2.0 --lane heavy --title "My Feature"',
-                "gz plan my-feature --semver 0.1.0 --dry-run",
+                "gz plan create my-feature --semver 0.1.0 --lane lite",
+                'gz plan create my-feature --semver 0.2.0 --lane heavy --title "My Feature"',
+                "gz plan create my-feature --semver 0.1.0 --dry-run",
             ]
         ),
     )
-    p_plan.add_argument("name", help="ADR slug name (kebab-case)")
-    p_plan.add_argument(
+    p_plan_create.add_argument("name", help="ADR slug name (kebab-case)")
+    p_plan_create.add_argument(
         "--obpi", dest="parent_obpi", help="Parent OBPI identifier for traceability"
     )
-    p_plan.add_argument("--semver", default="0.1.0", help="Semantic version for the ADR (X.Y.Z)")
-    p_plan.add_argument(
+    p_plan_create.add_argument(
+        "--semver", default="0.1.0", help="Semantic version for the ADR (X.Y.Z)"
+    )
+    p_plan_create.add_argument(
         "--lane", choices=["lite", "heavy"], default="lite", help="Governance lane (lite|heavy)"
     )
-    p_plan.add_argument("--title", help="ADR title override")
-    p_plan.add_argument(
+    p_plan_create.add_argument("--title", help="ADR title override")
+    p_plan_create.add_argument(
         "--score-data-state", type=int, choices=[0, 1, 2], help="Data-state dimension score (0-2)"
     )
-    p_plan.add_argument(
+    p_plan_create.add_argument(
         "--score-logic-engine",
         type=int,
         choices=[0, 1, 2],
         help="Logic-engine dimension score (0-2)",
     )
-    p_plan.add_argument(
+    p_plan_create.add_argument(
         "--score-interface", type=int, choices=[0, 1, 2], help="Interface dimension score (0-2)"
     )
-    p_plan.add_argument(
+    p_plan_create.add_argument(
         "--score-observability",
         type=int,
         choices=[0, 1, 2],
         help="Observability dimension score (0-2)",
     )
-    p_plan.add_argument(
+    p_plan_create.add_argument(
         "--score-lineage", type=int, choices=[0, 1, 2], help="Lineage dimension score (0-2)"
     )
-    p_plan.add_argument(
+    p_plan_create.add_argument(
         "--split-single-narrative",
         action="store_true",
         help="Apply single-narrative split heuristic",
     )
-    p_plan.add_argument(
+    p_plan_create.add_argument(
         "--split-surface-boundary",
         action="store_true",
         help="Apply surface-boundary split heuristic",
     )
-    p_plan.add_argument(
+    p_plan_create.add_argument(
         "--split-state-anchor", action="store_true", help="Apply state-anchor split heuristic"
     )
-    p_plan.add_argument(
+    p_plan_create.add_argument(
         "--split-testability-ceiling",
         action="store_true",
         help="Apply testability-ceiling split heuristic",
     )
-    p_plan.add_argument("--baseline-selected", type=int, help="Selected baseline index for scoring")
-    add_dry_run_flag(p_plan)
-    p_plan.set_defaults(
+    p_plan_create.add_argument(
+        "--baseline-selected", type=int, help="Selected baseline index for scoring"
+    )
+    add_dry_run_flag(p_plan_create)
+    p_plan_create.set_defaults(
         func=lambda a: plan_cmd(
             name=a.name,
             parent_obpi=a.parent_obpi,
@@ -210,6 +255,21 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:
             dry_run=a.dry_run,
         )
     )
+
+    p_plan_audit = plan_commands.add_parser(
+        "audit",
+        help="Structural prerequisite check for plan-OBPI alignment",
+        description="Run deterministic checks that ADR, brief, and plan files exist and align.",
+        epilog=build_epilog(
+            [
+                "gz plan audit OBPI-0.1.0-01",
+                "gz plan audit OBPI-0.1.0-01 --json",
+            ]
+        ),
+    )
+    p_plan_audit.add_argument("obpi_id", help="OBPI identifier (e.g. OBPI-0.1.0-01)")
+    add_json_flag(p_plan_audit)
+    p_plan_audit.set_defaults(func=lambda a: plan_audit_cmd(obpi_id=a.obpi_id, as_json=a.as_json))
 
     p_state = commands.add_parser(
         "state",
@@ -236,15 +296,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:
         help="Force-reconcile all frontmatter status from ledger-derived state",
     )
 
-    def _state_handler(a: argparse.Namespace) -> None:
-        if a.repair:
-            from gzkit.commands.state import state_repair
-
-            state_repair(as_json=a.as_json)
-        else:
-            state(as_json=a.as_json, blocked=a.blocked, ready=a.ready)
-
-    p_state.set_defaults(func=_state_handler)
+    p_state.set_defaults(func=lambda a: _state_handler(a))
 
     p_status = commands.add_parser(
         "status",
@@ -317,21 +369,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:
         help='Record attestation at step 6 (e.g. --attest "Completed")',
     )
 
-    def _closeout_dispatch(a: argparse.Namespace) -> None:
-        if a.ceremony or a.ceremony_next or a.ceremony_status or a.ceremony_attest:
-            from gzkit.commands.closeout_ceremony import ceremony_cmd
-
-            ceremony_cmd(
-                adr=a.adr,
-                as_json=a.as_json,
-                ceremony_next=a.ceremony_next,
-                ceremony_status=a.ceremony_status,
-                ceremony_attest=a.ceremony_attest,
-            )
-        else:
-            closeout_cmd(adr=a.adr, as_json=a.as_json, dry_run=a.dry_run)
-
-    p_closeout.set_defaults(func=_closeout_dispatch)
+    p_closeout.set_defaults(func=lambda a: _closeout_dispatch(a))
 
     p_audit = commands.add_parser(
         "audit",

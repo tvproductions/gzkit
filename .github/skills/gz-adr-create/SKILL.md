@@ -190,13 +190,13 @@ This skill maintains explicit alignment between skill version and GovZero versio
     - Validate authored readiness: `uv run gz obpi validate --adr ADR-X.Y.Z --authored`
     - This is NOT optional — briefs are co-created with the ADR, never deferred
 11. **Post-Authoring QC (Mandatory before proposal/defense):**
-    Invoke `gz-adr-eval ADR-X.Y.Z` to run the ADR and its OBPIs through the
+    Invoke `gz-adr-evaluate ADR-X.Y.Z` to run the ADR and its OBPIs through the
     evaluation framework.
     - Score the ADR on all 8 dimensions
     - Score each OBPI on all 5 dimensions
     - Any ADR dimension scoring 1 or any OBPI dimension scoring 1 must be revised
       before proceeding
-    - Optionally use `gz-adr-eval ADR-X.Y.Z --red-team` for adversarial review
+    - Optionally use `gz-adr-evaluate ADR-X.Y.Z --red-team` for adversarial review
     - Record the output as `EVALUATION_SCORECARD.md` in the ADR directory
 12. Validate:
 
@@ -239,7 +239,7 @@ The ADR template includes these sections that must be populated:
 
 ## Related Skills
 
-- `gz-adr-eval`: Post-authoring QC evaluation before proposal/defense
+- `gz-adr-evaluate`: Post-authoring QC evaluation before proposal/defense
 - `gz-obpi-brief`: Create individual OBPI briefs
 - `gz-adr-closeout-ceremony`: Execute closeout ceremony
 - `gz-adr-audit`: Verify ADR evidence
