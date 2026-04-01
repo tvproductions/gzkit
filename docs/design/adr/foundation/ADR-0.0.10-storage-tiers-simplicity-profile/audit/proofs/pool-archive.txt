@@ -1,0 +1,5 @@
+---
+id: ADR-pool.storage-simplicity-profile
+status: archived
+superseded_by: ADR-0.0.10
+archived_date: 2026-03-29

@@ -1,0 +1,35 @@
+ADR audit-check: ADR-0.0.9-state-doctrine-source-of-truth
+PASS All linked OBPIs are completed with evidence.
+  - OBPI-0.0.9-01-three-layer-model-documentation
+  - OBPI-0.0.9-02-ledger-first-status-reads
+  - OBPI-0.0.9-03-state-repair-command
+  - OBPI-0.0.9-04-lifecycle-auto-fix
+  - OBPI-0.0.9-05-l3-gate-independence
+  - OBPI-0.0.9-06-marker-migration-path
+
+Coverage: 2/20 REQs covered (10.0%)
+  OBPI-0.0.9-01: 0/3 (0.0%)
+  OBPI-0.0.9-02: 2/3 (66.7%)
+  OBPI-0.0.9-03: 0/4 (0.0%)
+  OBPI-0.0.9-04: 0/4 (0.0%)
+  OBPI-0.0.9-05: 0/3 (0.0%)
+  OBPI-0.0.9-06: 0/3 (0.0%)
+Advisory: Uncovered REQs:
+  - REQ-0.0.9-01-01
+  - REQ-0.0.9-01-02
+  - REQ-0.0.9-01-03
+  - REQ-0.0.9-02-03
+  - REQ-0.0.9-03-01
+  - REQ-0.0.9-03-02
+  - REQ-0.0.9-03-03
+  - REQ-0.0.9-03-04
+  - REQ-0.0.9-04-01
+  - REQ-0.0.9-04-02
+  - REQ-0.0.9-04-03
+  - REQ-0.0.9-04-04
+  - REQ-0.0.9-05-01
+  - REQ-0.0.9-05-02
+  - REQ-0.0.9-05-03
+  - REQ-0.0.9-06-01
+  - REQ-0.0.9-06-02
+  - REQ-0.0.9-06-03
