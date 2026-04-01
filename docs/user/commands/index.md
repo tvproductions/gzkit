@@ -33,7 +33,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz adr emit-receipt`](adr-emit-receipt.md) | Emit completed/validated receipt with optional evidence scope |
 | [`gz obpi status`](obpi-status.md) | Show focused runtime status for one OBPI |
 | [`gz obpi pipeline`](obpi-pipeline.md) | Launch the OBPI pipeline runtime surface |
-| [`gz obpi validate`](obpi-validate.md) | Validate OBPI brief(s) for scaffold detection and completion readiness |
+| [`gz obpi validate`](obpi-validate.md) | Validate OBPI brief(s) for authored, scaffold, and completion readiness |
 | [`gz obpi reconcile`](obpi-reconcile.md) | Fail-closed reconciliation for one OBPI |
 | [`gz obpi emit-receipt`](obpi-emit-receipt.md) | Emit completed/validated receipt for one OBPI |
 | [`gz obpi withdraw`](obpi-withdraw.md) | Record an OBPI withdrawal event |

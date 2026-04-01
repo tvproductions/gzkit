@@ -35,6 +35,9 @@ hardcoded defaults.
 # Create one OBPI brief (lane and objective from WBS table)
 uv run gz specify my-feature-slug --parent ADR-0.0.11 --item 3
 
+# Create and author one OBPI brief in one pass
+uv run gz specify my-feature-slug --parent ADR-0.0.11 --item 3 --author
+
 # Override lane explicitly
 uv run gz specify my-feature-slug --parent ADR-0.0.11 --item 3 --lane heavy
 
@@ -76,18 +79,45 @@ Lane: heavy (source: WBS table)
 
 ---
 
-## What the Brief Still Needs After Creation
+## Authored-Readiness Contract
 
-The command populates frontmatter (id, parent, item, lane, status) and objective
-from the WBS table. The following sections still contain template defaults and
-**must be authored** before pipeline execution:
+`gz specify` is the ADR-to-OBPI decomposition command, not a pseudo-authoring
+shortcut. It fills the brief with deterministic ADR-derived content, but the
+brief is only ready for pipeline execution when it passes authored validation:
 
-- **Allowed Paths** — specific files/directories in scope
-- **Denied Paths** — what's explicitly out of scope
-- **Requirements (FAIL-CLOSED)** — numbered constraints with NEVER/ALWAYS language
-- **Acceptance Criteria** — REQ-prefixed Given/When/Then criteria
-- **Verification commands** — real commands that prove the work is done
-- **Discovery Checklist** — prerequisite files to read
+```bash
+uv run gz obpi validate --adr ADR-0.0.11 --authored
+```
+
+That gate requires each brief to have substantive:
+
+- Objective
+- Allowed Paths
+- Denied Paths
+- Requirements (FAIL-CLOSED)
+- Discovery Checklist prerequisites and existing-code entries
+- OBPI-specific verification commands
+- REQ-backed acceptance criteria
+
+## Skill Responsibility
+
+The skill does not stop at `uv run gz specify`.
+
+The intended workflow is:
+
+1. Run `gz specify --author` to materialize the OBPI from the ADR/WBS contract and execute the authored pass.
+2. Read the parent ADR sections that govern the item: Feature Checklist, WBS row,
+   Intent, Decision, Interfaces, Evidence, and adjacent OBPIs when needed.
+3. Author the brief semantically:
+   - narrow Allowed Paths and Denied Paths to the real execution boundary
+   - rewrite Requirements into OBPI-specific fail-closed rules
+   - populate Discovery Checklist with real prerequisite and existing-code reads
+   - replace generic verification with commands that prove this item specifically
+   - ensure Acceptance Criteria are concrete and mapped to REQ IDs
+4. Run `uv run gz obpi validate --authored <path>` and keep authoring until it passes.
+
+The CLI owns deterministic decomposition. The skill owns the semantic authoring
+pass that turns the generated brief into an execution contract.
 
 ---
 
@@ -111,6 +141,9 @@ from the WBS table. The following sections still contain template defaults and
 After creating all briefs:
 
 ```bash
+# Fail closed if any brief is still thin or pseudo-authored
+uv run gz obpi validate --adr ADR-0.0.11 --authored
+
 # Verify count matches
 ls docs/design/adr/foundation/ADR-0.0.11-*/obpis/ | wc -l
 

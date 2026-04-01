@@ -81,7 +81,7 @@ The command exits non-zero and prints `BLOCKERS:` when:
 
 - the OBPI brief cannot be resolved
 - the OBPI brief is already completed
-- the OBPI brief contains template scaffold placeholders (detected by `validate_brief_for_pipeline`)
+- the OBPI brief fails authored-readiness validation (including scaffold placeholders) before execution
 - the parent ADR evaluation scorecard has a NO GO verdict (detected by `check_adr_evaluation_verdict`)
 - the matching plan-audit receipt verdict is `FAIL`
 - another OBPI is already active in the pipeline markers

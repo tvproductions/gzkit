@@ -94,6 +94,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:
         epilog=build_epilog(
             [
                 "gz specify my-feature --parent ADR-0.1.0",
+                "gz specify my-feature --parent ADR-0.1.0 --author",
                 "gz specify my-feature --parent ADR-0.1.0 --item 3 --lane heavy",
                 "gz specify my-feature --parent ADR-0.1.0 --dry-run",
             ]
@@ -108,6 +109,11 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:
         default=None,
         help="Governance lane override (default: read from ADR WBS table)",
     )
+    p_specify.add_argument(
+        "--author",
+        action="store_true",
+        help="Run the authored brief pass and fail unless --authored validation succeeds.",
+    )
     p_specify.add_argument("--title", help="OBPI title override")
     add_dry_run_flag(p_specify)
     p_specify.set_defaults(
@@ -117,6 +123,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:
             item=a.item,
             lane=a.lane,
             title=a.title,
+            author=a.author,
             dry_run=a.dry_run,
         )
     )

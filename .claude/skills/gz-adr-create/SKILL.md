@@ -182,10 +182,12 @@ This skill maintains explicit alignment between skill version and GovZero versio
 9. Add/refresh the ADR row in `docs/governance/GovZero/adr-status.md`.
 10. **OBPI Co-Creation (Mandatory):** Create one OBPI brief per checklist item.
     - Count checklist items in Feature Checklist
-    - **Preferred:** Run `uv run gz specify <slug> --parent ADR-X.Y.Z --item N` for each item
+    - **Preferred:** Run `uv run gz specify <slug> --parent ADR-X.Y.Z --item N --author` for each item
+    - After generation, author each brief semantically from the ADR before treating the package as ready
     - **Alternative:** Create files manually in `obpis/` with YAML frontmatter (`id:`, `parent:`, `item:`, `lane:`, `status:`)
     - **Then register:** Run `uv run gz register-adrs ADR-X.Y.Z --all` to ensure `obpi_created` ledger events
     - Verify: `ls obpis/ | wc -l` matches checklist item count
+    - Validate authored readiness: `uv run gz obpi validate --adr ADR-X.Y.Z --authored`
     - This is NOT optional — briefs are co-created with the ADR, never deferred
 11. **Post-Authoring QC (Mandatory before proposal/defense):**
     Invoke `gz-adr-eval ADR-X.Y.Z` to run the ADR and its OBPIs through the

@@ -408,12 +408,17 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
 
     p_obpi_validate = obpi_commands.add_parser(
         "validate",
-        help="Validate OBPI brief(s) for completion readiness",
-        description="Check OBPI briefs against the canonical completion schema.",
+        help="Validate OBPI brief(s) for authored or completion readiness",
+        description="Check OBPI briefs against the canonical authored/completion schema.",
         epilog=build_epilog(
             [
                 "gz obpi validate docs/design/adr/my-adr/obpis/OBPI-0.1.0-01-my-feature.md",
+                (
+                    "gz obpi validate "
+                    "docs/design/adr/my-adr/obpis/OBPI-0.1.0-01-my-feature.md --authored"
+                ),
                 "gz obpi validate --adr ADR-0.1.0",
+                "gz obpi validate --adr ADR-0.1.0 --authored",
             ]
         ),
     )
@@ -426,8 +431,17 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         default=None,
         help="Validate all OBPI briefs under an ADR (e.g., --adr ADR-0.0.3)",
     )
+    p_obpi_validate.add_argument(
+        "--authored",
+        action="store_true",
+        help="Require authored-ready brief content before pipeline execution.",
+    )
     p_obpi_validate.set_defaults(
-        func=lambda a: obpi_validate_cmd(obpi_path=a.obpi_path, adr_id=a.adr_id)
+        func=lambda a: obpi_validate_cmd(
+            obpi_path=a.obpi_path,
+            adr_id=a.adr_id,
+            authored=a.authored,
+        )
     )
 
     p_obpi_withdraw = obpi_commands.add_parser(

@@ -457,3 +457,94 @@ status: {status}
         errors = self.validator.validate_file(path)
         self.assertEqual(len(errors), 1)
         self.assertIn("First constraint", errors[0])
+
+    def test_detection_includes_verification_placeholder(self):
+        """Verification scaffold placeholder is rejected for draft briefs."""
+        self._register_adr("ADR-0.1.0")
+        obpi_id = "OBPI-ADR-0.1.0-01"
+        path = self.project_root / f"{obpi_id}.md"
+        path.write_text(
+            f"---\nid: {obpi_id}\nparent: ADR-0.1.0\nstatus: Draft\nlane: Lite\n---\n\n"
+            f"# {obpi_id}\n\n"
+            "## Allowed Paths\n- `docs/design/**` - real path\n\n"
+            "## Requirements (FAIL-CLOSED)\n1. REQUIREMENT: Real requirement\n\n"
+            "## Acceptance Criteria\n- [ ] REQ-0.1.0-01-01: Real criterion\n\n"
+            "## Verification\n```bash\ncommand --to --verify\n```\n",
+            encoding="utf-8",
+        )
+        errors = self.validator.validate_file(path)
+        self.assertEqual(len(errors), 1)
+        self.assertIn("command --to --verify", errors[0])
+
+    def test_detection_flags_lane_mismatch(self):
+        """Lane section prose must match frontmatter lane."""
+        self._register_adr("ADR-0.1.0")
+        obpi_id = "OBPI-ADR-0.1.0-01"
+        path = self.project_root / f"{obpi_id}.md"
+        path.write_text(
+            f"---\nid: {obpi_id}\nparent: ADR-0.1.0\nstatus: Draft\nlane: Heavy\n---\n\n"
+            f"# {obpi_id}\n\n"
+            "## Allowed Paths\n- `docs/design/**` - real path\n\n"
+            "## Requirements (FAIL-CLOSED)\n1. REQUIREMENT: Real requirement\n\n"
+            "## Acceptance Criteria\n- [ ] REQ-0.1.0-01-01: Real criterion\n\n"
+            "## Lane\n**Lite** - Incorrect lane prose.\n",
+            encoding="utf-8",
+        )
+        errors = self.validator.validate_file(path)
+        self.assertEqual(len(errors), 1)
+        self.assertIn("Lane section body does not match frontmatter lane", errors[0])
+
+    def test_authored_validation_blocks_thin_draft(self):
+        """Authored mode fails drafts that only satisfy scaffold-free structure."""
+        self._register_adr("ADR-0.1.0")
+        obpi_id = "OBPI-ADR-0.1.0-01"
+        path = self.project_root / f"{obpi_id}.md"
+        path.write_text(
+            f"---\nid: {obpi_id}\nparent: ADR-0.1.0\nstatus: Draft\nlane: Lite\n---\n\n"
+            f"# {obpi_id}\n\n"
+            "## Allowed Paths\n- `src/gzkit/ports/` - Port definitions\n\n"
+            "## Requirements (FAIL-CLOSED)\n1. REQUIREMENT: Use Protocols for ports.\n\n"
+            "## Acceptance Criteria\n- [ ] REQ-0.1.0-01-01: Ports are defined.\n",
+            encoding="utf-8",
+        )
+        errors = self.validator.validate_file(path, require_authored=True)
+        self.assertTrue(any("'Objective'" in error for error in errors))
+        self.assertTrue(any("'Denied Paths'" in error for error in errors))
+        self.assertTrue(any("'Discovery Checklist'" in error for error in errors))
+        self.assertTrue(any("Verification must include" in error for error in errors))
+
+    def test_authored_validation_passes_substantive_draft(self):
+        """Authored mode passes drafts that are ready for pipeline execution."""
+        self._register_adr("ADR-0.1.0")
+        obpi_id = "OBPI-ADR-0.1.0-01"
+        path = self.project_root / f"{obpi_id}.md"
+        path.write_text(
+            f"---\nid: {obpi_id}\nparent: ADR-0.1.0\nstatus: Draft\nlane: Lite\n---\n\n"
+            f"# {obpi_id}\n\n"
+            "## Objective\nDefine typed port interfaces for the runtime adapter boundary.\n\n"
+            "## Lane\n**Lite** - Internal Python contract only.\n\n"
+            "## Allowed Paths\n"
+            "- `src/gzkit/ports/` - Port definitions\n"
+            "- `tests/test_ports.py` - Verification\n\n"
+            "## Denied Paths\n- `docs/user/commands/` - No operator-surface changes\n\n"
+            "## Requirements (FAIL-CLOSED)\n"
+            "1. REQUIREMENT: Port protocols MUST be importable from one module.\n"
+            "2. NEVER: Concrete adapters must not import CLI modules.\n\n"
+            "## Discovery Checklist\n"
+            "**Prerequisites (check existence, STOP if missing):**\n"
+            "- [ ] `src/gzkit/runtime.py` - Current runtime entry point\n\n"
+            "**Existing Code (understand current state):**\n"
+            "- [ ] `src/gzkit/ports.py` - Current port patterns\n\n"
+            "## Verification\n```bash\n"
+            "uv run gz validate --documents\n"
+            "uv run gz lint\n"
+            "uv run gz typecheck\n"
+            "uv run gz test\n"
+            "uv run -m unittest tests.test_ports\n"
+            "```\n\n"
+            "## Acceptance Criteria\n"
+            "- [ ] REQ-0.1.0-01-01: Runtime ports are declared in one typed module.\n",
+            encoding="utf-8",
+        )
+        errors = self.validator.validate_file(path, require_authored=True)
+        self.assertEqual(errors, [])

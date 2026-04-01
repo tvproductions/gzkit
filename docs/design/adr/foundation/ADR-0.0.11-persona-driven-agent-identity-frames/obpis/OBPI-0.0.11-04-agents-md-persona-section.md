@@ -17,13 +17,14 @@ status: Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-TBD
+`AGENTS.md` and the template surfaces that generate future agent context frames
+include a mandatory `## Persona` section that references the persona control
+surface and forbids expertise-claim identity framing.
 
 ## Lane
 
-**Lite** - This OBPI remains internal to the promoted ADR implementation scope.
+**Heavy** - `AGENTS.md` is an external operator-facing governance contract, and
+template changes affect future generated instruction surfaces.
 
 > Heavy is reserved for command/API/schema/runtime-contract changes. Process,
 > documentation, and template-only work stays Lite unless it changes one of
@@ -31,59 +32,64 @@ TBD
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `docs/design/adr/foundation/ADR-0.0.11-persona-driven-agent-identity-frames/ADR-0.0.11-persona-driven-agent-identity-frames.md` — parent ADR for contract intent
+- `AGENTS.md` — primary operator-facing contract
+- `src/gzkit/templates/agents.md` — generated AGENTS template source
+- `src/gzkit/templates/adr.md` — ADR template source for future context frames
+- `src/gzkit/sync_surfaces.py` — regeneration surface for agent files
+- `docs/governance/governance_runbook.md` — operator documentation for the persona section
+- `tests/test_sync_surfaces.py` — regression surface for generated output if needed
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
+- `.gzkit/personas/` — control-surface implementation belongs to OBPI-0.0.11-02
+- `docs/design/adr/pool/ADR-pool.per-command-persona-context.md` — supersession belongs to OBPI-0.0.11-05
+- `tests/test_persona_schema.py` — schema validation belongs to OBPI-0.0.11-06
+- Persona profile content for specific roles belongs to ADR-0.0.12
 - Paths not listed in Allowed Paths
-- New dependencies
-- CI files, lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: `AGENTS.md` MUST gain a mandatory `## Persona` section in the
+   Agent Context Frame
+1. REQUIREMENT: Template sources that generate future context frames MUST stay
+   in sync with the `AGENTS.md` contract
+1. REQUIREMENT: The persona section MUST describe behavioral identity and
+   craftsmanship standards, not expertise claims
+1. NEVER: Make the persona section optional or frame it as motivational copy
+1. ALWAYS: Re-run the agent/control-surface sync after editing generated
+   templates or mirrors
 
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if the generated-vs-source template relationship is unclear,
+> print a BLOCKERS list and halt.
 
 ## Discovery Checklist
-
-<!-- What to read before implementation. Complete this checklist first. -->
 
 **Governance (read once, cache):**
 
 - [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
+- [ ] `AGENTS.md` - agent operating contract
 - [ ] Parent ADR - understand full context
 
 **Context:**
 
 - [ ] Parent ADR: `docs/design/adr/foundation/ADR-0.0.11-persona-driven-agent-identity-frames/ADR-0.0.11-persona-driven-agent-identity-frames.md`
-- [ ] Related OBPIs in same ADR
+- [ ] Existing contract: `AGENTS.md`
+- [ ] Template sources: `src/gzkit/templates/agents.md`, `src/gzkit/templates/adr.md`
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
+- [ ] Required path exists or is intentionally created in this OBPI: `AGENTS.md`
+- [ ] Required path exists or is intentionally created in this OBPI: `src/gzkit/templates/agents.md`
+- [ ] Parent ADR evidence artifacts referenced by this brief are present
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+- [ ] Pattern to follow: `AGENTS.md`
+- [ ] Pattern to follow: `src/gzkit/templates/agents.md`
+- [ ] Parent ADR integration points reviewed for local conventions
 
 ## Quality Gates
-
-<!-- Which gates apply and how to verify them. -->
 
 ### Gate 1: ADR
 
@@ -101,50 +107,41 @@ TBD
 - [ ] Lint clean: `uv run gz lint`
 - [ ] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
-### Gate 3: Docs (Heavy only)
+### Gate 3: Docs (Heavy)
 
 - [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
+- [ ] Runbook updates explain the mandatory persona section and its constraints
 
-### Gate 4: BDD (Heavy only)
+### Gate 4: BDD (Heavy)
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
+- [ ] Manual contract review or existing persona BDD surface demonstrates the persona section is rendered into generated instruction output
 
-### Gate 5: Human (Heavy only)
+### Gate 5: Human (Heavy)
 
 - [ ] Human attestation recorded
 
 ## Verification
-
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
 
 ```bash
 uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
 uv run gz test
+uv run mkdocs build --strict
 
 # Specific verification for this OBPI
-command --to --verify
+test -f AGENTS.md
+rg -n "^## Persona$" AGENTS.md src/gzkit/templates/agents.md src/gzkit/templates/adr.md
+uv run gz agent sync control-surfaces
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.0.11-04-01: Given/When/Then behavior criterion 1
-- [ ] REQ-0.0.11-04-02: Given/When/Then behavior criterion 2
-- [ ] REQ-0.0.11-04-03: Given/When/Then behavior criterion 3
+- [ ] REQ-0.0.11-04-01: `AGENTS.md` contains a mandatory `## Persona` section in the agent context frame
+- [ ] REQ-0.0.11-04-02: Template sources and regenerated surfaces stay synchronized with the new persona contract
+- [ ] REQ-0.0.11-04-03: The persona section frames behavioral identity and craftsmanship standards without expertise-claim language
 
 ## Completion Checklist
-
-<!-- Verify all gates before marking OBPI accepted. -->
 
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
 - [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
@@ -157,9 +154,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ## Evidence
 
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
-
 ### Gate 1 (ADR)
 
 - [ ] Intent and scope recorded
@@ -167,40 +161,42 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+# Record test output here during execution.
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+# Record lint/typecheck output here during execution.
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here when Gate 3 applies
+# Record mkdocs output and runbook evidence here during execution.
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here when Gate 4 applies
+# Record manual contract-review notes or generated-surface evidence here during execution.
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+# Record human attestation here before closure.
 ```
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before this OBPI, the new persona surface could exist without becoming part of
+the agent contract itself. After this OBPI, the core instruction surface
+explicitly requires persona framing in every context frame.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+`rg -n "^## Persona$" AGENTS.md src/gzkit/templates/agents.md src/gzkit/templates/adr.md`
 
 ### Implementation Summary
 
@@ -211,9 +207,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - Defects noted:
 
 ## Tracked Defects
-
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
 
 _No defects tracked._
 

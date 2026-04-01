@@ -17,13 +17,14 @@ status: Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-TBD
+Persona files are validated by deterministic schema and unit-test infrastructure
+so malformed or incomplete persona artifacts fail before agent loading consumes
+them.
 
 ## Lane
 
-**Lite** - This OBPI remains internal to the promoted ADR implementation scope.
+**Lite** - This OBPI adds internal validation and tests. It supports a Heavy
+control surface but does not introduce a separate external contract.
 
 > Heavy is reserved for command/API/schema/runtime-contract changes. Process,
 > documentation, and template-only work stays Lite unless it changes one of
@@ -31,59 +32,62 @@ TBD
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `docs/design/adr/foundation/ADR-0.0.11-persona-driven-agent-identity-frames/ADR-0.0.11-persona-driven-agent-identity-frames.md` — parent ADR for validation intent
+- `.gzkit/personas/` — persona fixtures and validation targets
+- `src/gzkit/schemas/` — persona schema definition
+- `src/gzkit/commands/validate_cmd.py` — integration point for document validation
+- `src/gzkit/personas.py` — loader/validator helper if needed
+- `tests/test_persona_schema.py` — primary unit-test surface for persona validation
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
+- `src/gzkit/cli/**` — CLI surface belongs to OBPI-0.0.11-02
+- `AGENTS.md` — template integration belongs to OBPI-0.0.11-04
+- `docs/design/adr/pool/ADR-pool.per-command-persona-context.md` — lineage cleanup belongs to OBPI-0.0.11-05
+- `features/persona.feature` — Heavy-lane BDD surface belongs to OBPI-0.0.11-02
 - Paths not listed in Allowed Paths
-- New dependencies
-- CI files, lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: Persona validation MUST enforce the required structural fields
+   named by ADR-0.0.11: `name`, `traits`, `anti-traits`, and `grounding`
+1. REQUIREMENT: Validation MUST include negative coverage for malformed or
+   incomplete persona files
+1. REQUIREMENT: The validation path MUST integrate with repo-standard checks so
+   persona drift is caught during normal quality verification
+1. NEVER: Treat an unvalidated persona file as loadable by default
+1. ALWAYS: Keep validation deterministic and runnable offline via `uv run ...`
 
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if the control-surface schema is not yet stable enough to
+> encode validation rules, print a BLOCKERS list and halt.
 
 ## Discovery Checklist
-
-<!-- What to read before implementation. Complete this checklist first. -->
 
 **Governance (read once, cache):**
 
 - [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
+- [ ] `AGENTS.md` - agent operating contract
 - [ ] Parent ADR - understand full context
 
 **Context:**
 
 - [ ] Parent ADR: `docs/design/adr/foundation/ADR-0.0.11-persona-driven-agent-identity-frames/ADR-0.0.11-persona-driven-agent-identity-frames.md`
-- [ ] Related OBPIs in same ADR
+- [ ] Control-surface brief: `docs/design/adr/foundation/ADR-0.0.11-persona-driven-agent-identity-frames/obpis/OBPI-0.0.11-02-persona-control-surface-definition.md`
+- [ ] Composition brief: `docs/design/adr/foundation/ADR-0.0.11-persona-driven-agent-identity-frames/obpis/OBPI-0.0.11-03-trait-composition-model.md`
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
+- [ ] Required path exists or is intentionally created in this OBPI: `src/gzkit/commands/validate_cmd.py`
+- [ ] Required path exists or is intentionally created in this OBPI: `.gzkit/personas/`
+- [ ] Parent ADR evidence artifacts referenced by this brief are present
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+- [ ] Pattern to follow: `src/gzkit/commands/validate_cmd.py`
+- [ ] Test patterns: `tests/test_persona_schema.py`
+- [ ] Parent ADR integration points reviewed for local conventions
 
 ## Quality Gates
-
-<!-- Which gates apply and how to verify them. -->
 
 ### Gate 1: ADR
 
@@ -101,24 +105,19 @@ TBD
 - [ ] Lint clean: `uv run gz lint`
 - [ ] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
 ### Gate 3: Docs (Heavy only)
 
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
+- [ ] Not required for Lite lane
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
+- [ ] Not required for Lite lane
 
 ### Gate 5: Human (Heavy only)
 
-- [ ] Human attestation recorded
+- [ ] Not required for Lite lane
 
 ## Verification
-
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
 
 ```bash
 uv run gz validate --documents
@@ -127,24 +126,18 @@ uv run gz typecheck
 uv run gz test
 
 # Specific verification for this OBPI
-command --to --verify
+test -d .gzkit/personas
+test -f src/gzkit/commands/validate_cmd.py
+uv run -m unittest tests/test_persona_schema.py -v
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.0.11-06-01: Given/When/Then behavior criterion 1
-- [ ] REQ-0.0.11-06-02: Given/When/Then behavior criterion 2
-- [ ] REQ-0.0.11-06-03: Given/When/Then behavior criterion 3
+- [ ] REQ-0.0.11-06-01: Persona validation enforces the required structural fields declared by ADR-0.0.11
+- [ ] REQ-0.0.11-06-02: Invalid persona files fail with deterministic negative-test coverage
+- [ ] REQ-0.0.11-06-03: Persona validation participates in normal repo verification so malformed personas are caught before loading
 
 ## Completion Checklist
-
-<!-- Verify all gates before marking OBPI accepted. -->
 
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
 - [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
@@ -157,9 +150,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ## Evidence
 
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
-
 ### Gate 1 (ADR)
 
 - [ ] Intent and scope recorded
@@ -167,61 +157,60 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+# Record test output here during execution.
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+# Record lint/typecheck output here during execution.
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here when Gate 3 applies
+# Not required for Lite lane.
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here when Gate 4 applies
+# Not required for Lite lane.
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+# Not required for Lite lane.
 ```
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before this OBPI, persona files could be introduced without a deterministic
+structural gate. After this OBPI, malformed persona artifacts fail in schema and
+unit-test infrastructure before runtime loading can consume them.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+`uv run -m unittest tests/test_persona_schema.py -v`
 
 ### Implementation Summary
 
 - Files created/modified:
 - Tests added:
 - Date completed:
-- Attestation status:
+- Attestation status: n/a
 - Defects noted:
 
 ## Tracked Defects
-
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
 
 _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `n/a`
+- Attestation: `n/a`
+- Date: `n/a`
 
 ---
 

@@ -27,6 +27,7 @@ gz specify <name> --parent <ADR-ID> --item <N> [OPTIONS]
 | `--parent` | string | required | Parent ADR ID |
 | `--item` | integer | `1` | Parent ADR checklist item number |
 | `--lane` | `lite` \| `heavy` | `lite` | Governance lane |
+| `--author` | flag | — | Run the authored pass and fail unless the brief passes `gz obpi validate --authored` |
 | `--title` | string | — | Brief title |
 | `--dry-run` | flag | — | Show actions without writing |
 
@@ -52,6 +53,9 @@ If the parent ADR scorecard is missing/invalid, or checklist count drifts from s
 # Basic usage
 gz specify add-login --parent ADR-0.4.0-skill-capability-mirroring --item 1
 
+# Generate and author in one pass
+gz specify add-login --parent ADR-0.4.0-skill-capability-mirroring --item 1 --author
+
 # With options
 gz specify add-login --parent ADR-0.4.0-skill-capability-mirroring --item 2 \
   --lane heavy --title "Add Login Button"
@@ -66,14 +70,22 @@ gz specify add-login --parent ADR-0.4.0-skill-capability-mirroring --item 2 --dr
 
 ```
 Created OBPI: docs/design/adr/pre-release/ADR-0.4.0-skill-capability-mirroring/obpis/OBPI-0.4.0-02-add-login.md
-Warning: Brief contains template defaults and needs authoring before pipeline execution.
-  Next step: author <path> with real scope, requirements, and criteria.
-  Validate with: uv run gz obpi validate <path>
+  Lane: heavy (source: WBS table)
+  Objective: Add Login Button.
+Note: Brief populated from ADR content. Brief must pass authored validation before pipeline entry.
+  Validate with: uv run gz obpi validate --authored <path>
 ```
 
-The created brief is a **template stub** with placeholder content (e.g., `"First constraint"`,
-`"src/module/"`). It must be authored with real scope, requirements, and acceptance criteria before
-the OBPI pipeline will accept it. Use `gz obpi validate` to verify the brief is properly authored.
+The created brief is an **ADR-derived draft**, not a finished implementation brief.
+`gz specify` seeds lane, objective, allowed paths, requirements, discovery hints,
+verification commands, and acceptance criteria from the parent ADR. The brief
+must still pass authored-readiness validation before the OBPI pipeline should
+execute it. Use `gz obpi validate --authored` to verify the brief is usable as
+an execution contract.
+
+When `--author` is passed, `gz specify` strips template guidance comments,
+runs the authored pass, and fails closed unless the generated brief already
+passes `gz obpi validate --authored`.
 
 ---
 
@@ -109,8 +121,7 @@ The created brief contains:
 
 1. (Optional) Create a PRD with `gz prd`
 2. Create an ADR with `gz plan`
-3. Create an OBPI stub with `gz specify --parent ADR-...`
-4. **Author the brief** with real scope, requirements, and acceptance criteria
-5. Validate the brief: `gz obpi validate <path>`
+3. Create and author an OBPI brief with `gz specify --parent ADR-... --author`
+4. Re-run authored validation if you edit the brief further: `gz obpi validate --authored <path>`
 6. Execute the OBPI through the pipeline: `gz obpi pipeline OBPI-...`
 7. Attest with `gz attest` (Heavy/Foundation lane)

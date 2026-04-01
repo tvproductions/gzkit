@@ -360,14 +360,63 @@ class TestValidateBriefForPipeline(unittest.TestCase):
             brief.write_text(
                 "---\nid: OBPI-0.1.0-01-demo\nparent: ADR-0.1.0\n"
                 "item: 1\nlane: Lite\nstatus: Draft\n---\n\n"
+                "## Objective\nDefine typed port interfaces.\n\n"
+                "## Lane\n**Lite** - Internal contract only.\n\n"
                 "## Allowed Paths\n- `src/gzkit/ports/` - Port definitions\n\n"
+                "## Denied Paths\n- `docs/user/commands/` - No operator docs drift\n\n"
                 "## Requirements (FAIL-CLOSED)\n"
-                "1. REQUIREMENT: Ports use typing.Protocol\n",
+                "1. REQUIREMENT: Ports use typing.Protocol\n\n"
+                "## Discovery Checklist\n"
+                "**Prerequisites (check existence, STOP if missing):**\n"
+                "- [ ] `src/gzkit/runtime.py` - Runtime entry point\n\n"
+                "**Existing Code (understand current state):**\n"
+                "- [ ] `src/gzkit/ports.py` - Existing port patterns\n\n"
+                "## Verification\n```bash\n"
+                "uv run gz validate --documents\n"
+                "uv run gz lint\n"
+                "uv run gz typecheck\n"
+                "uv run gz test\n"
+                "uv run -m unittest tests.test_ports\n"
+                "```\n\n"
+                "## Acceptance Criteria\n"
+                "- [ ] REQ-0.1.0-01-01: Port interfaces are defined in one module.\n",
                 encoding="utf-8",
             )
 
             errors = validate_brief_for_pipeline(root, brief)
             self.assertEqual(errors, [])
+
+    def test_thin_non_scaffold_brief_still_returns_authored_errors(self) -> None:
+        from gzkit.pipeline_runtime import validate_brief_for_pipeline
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            (root / ".gzkit.json").write_text(
+                json.dumps(
+                    {
+                        "version": "1.0",
+                        "paths": {"ledger": ".gzkit/ledger.jsonl", "design_root": "docs/design"},
+                    }
+                ),
+                encoding="utf-8",
+            )
+            (root / ".gzkit").mkdir(exist_ok=True)
+            (root / ".gzkit" / "ledger.jsonl").write_text("", encoding="utf-8")
+
+            brief = root / "brief.md"
+            brief.write_text(
+                "---\nid: OBPI-0.1.0-01-demo\nparent: ADR-0.1.0\n"
+                "item: 1\nlane: Lite\nstatus: Draft\n---\n\n"
+                "## Allowed Paths\n- `src/gzkit/ports/` - Port definitions\n\n"
+                "## Requirements (FAIL-CLOSED)\n"
+                "1. REQUIREMENT: Ports use typing.Protocol\n\n"
+                "## Acceptance Criteria\n"
+                "- [ ] REQ-0.1.0-01-01: Port interfaces are defined.\n",
+                encoding="utf-8",
+            )
+
+            errors = validate_brief_for_pipeline(root, brief)
+            self.assertTrue(any("'Objective'" in error for error in errors))
 
 
 class TestCheckAdrEvaluationVerdict(unittest.TestCase):

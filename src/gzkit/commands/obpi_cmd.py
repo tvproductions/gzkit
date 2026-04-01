@@ -341,14 +341,14 @@ def _validate_brief_structure(project_root: Path, brief_path: Path) -> list[str]
     ]
 
 
-def obpi_validate_cmd(obpi_path: str | None, adr_id: str | None) -> None:
-    """Validate OBPI brief(s) for structural conformance and completion readiness."""
+def obpi_validate_cmd(obpi_path: str | None, adr_id: str | None, authored: bool) -> None:
+    """Validate OBPI brief(s) for structural conformance and content readiness."""
     config = ensure_initialized()
     project_root = get_project_root()
     validator = ObpiValidator(project_root)
 
     if adr_id and not obpi_path:
-        _obpi_validate_batch(project_root, config, validator, adr_id)
+        _obpi_validate_batch(project_root, config, validator, adr_id, authored=authored)
         return
 
     if not obpi_path:
@@ -362,8 +362,8 @@ def obpi_validate_cmd(obpi_path: str | None, adr_id: str | None) -> None:
     # Structural conformance check (always runs, regardless of status)
     structure_errors = _validate_brief_structure(project_root, path)
 
-    # Completion readiness check (ObpiValidator)
-    completion_errors = validator.validate_file(path)
+    # Content readiness check (ObpiValidator)
+    completion_errors = validator.validate_file(path, require_authored=authored)
 
     all_errors = structure_errors + completion_errors
     if all_errors:
@@ -381,6 +381,8 @@ def _obpi_validate_batch(
     config: Any,
     validator: ObpiValidator,
     adr_id: str,
+    *,
+    authored: bool,
 ) -> None:
     """Validate all OBPI briefs under an ADR package."""
     from gzkit.ledger import Ledger  # noqa: PLC0415
@@ -403,7 +405,7 @@ def _obpi_validate_batch(
     total_errors = 0
     for brief_path in briefs:
         structure_errors = _validate_brief_structure(project_root, brief_path)
-        completion_errors = validator.validate_file(brief_path)
+        completion_errors = validator.validate_file(brief_path, require_authored=authored)
         all_errors = structure_errors + completion_errors
         if all_errors:
             total_errors += 1
