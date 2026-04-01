@@ -30,6 +30,12 @@ does not introduce a new external contract by itself.
 > documentation, and template-only work stays Lite unless it changes one of
 > those external surfaces.
 
+## Dependencies
+
+- **Depends on:** OBPI-0.0.11-02 (persona directory, file format, and schema
+  must exist before composition rules can be documented or exemplars created)
+- **Blocks:** None directly (ADR-0.0.12 consumes composition rules)
+
 ## Allowed Paths
 
 - `docs/design/adr/foundation/ADR-0.0.11-persona-driven-agent-identity-frames/ADR-0.0.11-persona-driven-agent-identity-frames.md` — parent ADR for composition intent
@@ -46,14 +52,64 @@ does not introduce a new external contract by itself.
 - `tests/test_persona_schema.py` — structural validation belongs to OBPI-0.0.11-06
 - Paths not listed in Allowed Paths
 
+## Concrete Composition Example
+
+Given a persona file with these frontmatter fields:
+
+```yaml
+name: implementer
+traits:
+  - meticulous: "Reads the full file before editing. Plans the complete change
+    before writing the first line. Treats every edit as a coherent unit —
+    imports, usage, and tests land together."
+  - systems-thinker: "Sees the file as part of a larger system. Checks callers,
+    tests, and docs before modifying a function signature. Traces consequences
+    before acting."
+anti-traits:
+  - token-minimizer: "Never optimizes for fewer tokens at the cost of
+    correctness. Does not split edits to reduce diff size. Does not skip
+    context-reading to save time."
+grounding: |
+  You write code the way a careful craftsperson builds furniture — measure
+  twice, cut once. Every change is complete before you move on. You would
+  rather take longer and be right than be fast and leave breakage behind.
+```
+
+**Composition operation:** Each trait's prose is concatenated into the persona
+frame's behavioral identity section, separated by paragraph breaks. Anti-traits
+are concatenated into a "What this persona does NOT do" section. The grounding
+text is emitted verbatim as the opening behavioral anchor.
+
+**Resulting persona frame (deterministic output):**
+
+```text
+[grounding text verbatim]
+
+You are meticulous: [meticulous trait text]
+
+You are a systems-thinker: [systems-thinker trait text]
+
+What this persona does NOT do:
+- token-minimizer: [token-minimizer anti-trait text]
+```
+
+**Orthogonality rule:** Traits compose by concatenation because the PERSONA/ICLR
+research shows personality traits are approximately orthogonal directions in
+activation space. Adding a trait does not interfere with existing traits — each
+activates an independent behavioral dimension. If two traits conflict (e.g.,
+"move-fast" vs "meticulous"), the anti-trait mechanism rejects the conflicting
+trait at validation time rather than attempting runtime resolution.
+
 ## Requirements (FAIL-CLOSED)
 
 1. REQUIREMENT: Trait composition MUST be documented as orthogonal combination,
-   not ad-hoc prompt concatenation
+   not ad-hoc prompt concatenation — the concrete example above defines the
+   canonical composition operation
 1. REQUIREMENT: Anti-traits MUST define what conflicting behavior is suppressed
    or rejected during persona assembly
 1. REQUIREMENT: Composition rules MUST remain deterministic enough that two
-   implementers would derive the same resulting persona frame
+   implementers would derive the same resulting persona frame — the template
+   above is the reference format
 1. NEVER: Reintroduce expertise-claim language as a substitute for trait
    composition
 1. ALWAYS: Keep composition guidance aligned with the PERSONA/ICLR framing cited

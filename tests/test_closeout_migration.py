@@ -72,7 +72,7 @@ class TestCloseoutMigrationEnforce(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             _scaffold_closeout_adr()
             result = runner.invoke(main, ["closeout", "ADR-0.1.0"])
             self.assertEqual(result.exit_code, 1)
@@ -99,7 +99,7 @@ class TestCloseoutMigrationAdvisory(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             _scaffold_closeout_adr()
             result = runner.invoke(main, ["closeout", "ADR-0.1.0"])
             self.assertEqual(result.exit_code, 0, result.output)
@@ -124,7 +124,7 @@ class TestCloseoutMigrationProofPresent(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             _scaffold_closeout_adr()
             result = runner.invoke(main, ["closeout", "ADR-0.1.0"])
             self.assertEqual(result.exit_code, 0, result.output)
@@ -145,7 +145,7 @@ class TestCloseoutMigrationProofPresent(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             _scaffold_closeout_adr()
             result = runner.invoke(main, ["closeout", "ADR-0.1.0"])
             self.assertEqual(result.exit_code, 0, result.output)

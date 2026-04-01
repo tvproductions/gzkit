@@ -150,6 +150,34 @@ measurably different behavioral outcomes.
 - The `ADR-pool.per-command-persona-context` pool entry is **superseded** by this
   ADR — per-command cognitive stance is a subset of the persona control surface
 
+## Alternatives Considered
+
+1. **Inline persona in AGENTS.md instead of separate files** — Rejected because
+   AGENTS.md is already large and coupling persona definitions to the agent
+   contract prevents independent evolution. Persona files change as research
+   advances; AGENTS.md changes when governance contracts change. Separate
+   lifecycle boundaries require separate files.
+
+2. **Structured JSON/YAML config instead of markdown with YAML frontmatter** —
+   Rejected because persona frames include prose-form behavioral identity text
+   (grounding, craftsmanship descriptions) that is awkward in pure JSON/YAML.
+   Markdown with YAML frontmatter matches the existing `.gzkit/` artifact
+   convention (rules, schemas, manifests use the same pattern) and is
+   human-readable for operator review.
+
+3. **Embed persona sections in existing `.claude/agents/*.md` profiles** —
+   Rejected because agent profiles are vendor-specific mirrors (Claude Code
+   agent definitions), while persona is a portable governance concept that
+   ADR-0.0.13 will make cross-vendor. Coupling persona to a single vendor's
+   agent format prevents portability. The persona control surface is referenced
+   from agent profiles, not embedded in them.
+
+4. **Skip architecture, just write persona files ad-hoc** — Rejected because
+   the PSM research demonstrates that persona design is engineering, not
+   decoration. Without a schema, composition rules, and validation, persona
+   files would degrade into the generic expert claims that PRISM proved
+   counterproductive. The control surface ensures quality at write time.
+
 ## Non-Goals
 
 - **Runtime persona switching** — this ADR defines static persona frames loaded

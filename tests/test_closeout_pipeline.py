@@ -38,7 +38,7 @@ class TestCloseoutPipelineGates(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             result = runner.invoke(main, ["closeout", "ADR-0.1.0"])
             self.assertEqual(result.exit_code, 0, result.output)
             self.assertTrue(mock_run.called, "run_command must be called for gate execution")
@@ -55,7 +55,7 @@ class TestCloseoutPipelineGates(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             result = runner.invoke(main, ["closeout", "ADR-0.1.0"])
             self.assertEqual(result.exit_code, 1)
             ledger_text = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
@@ -79,7 +79,7 @@ class TestCloseoutPipelineGates(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             result = runner.invoke(main, ["closeout", "ADR-0.1.0"])
             self.assertEqual(result.exit_code, 1)
             ledger_text = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
@@ -99,7 +99,7 @@ class TestCloseoutPipelineAttestation(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             result = runner.invoke(main, ["closeout", "ADR-0.1.0"])
             self.assertEqual(result.exit_code, 0, result.output)
             ledger_text = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
@@ -115,7 +115,7 @@ class TestCloseoutPipelineAttestation(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             runner.invoke(main, ["closeout", "ADR-0.1.0"])
             mock_input.assert_called_once()
 
@@ -136,7 +136,7 @@ class TestCloseoutPipelineVersionBump(unittest.TestCase):
             Path("pyproject.toml").write_text(
                 '[project]\nname = "test"\nversion = "0.0.1"\n', encoding="utf-8"
             )
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             result = runner.invoke(main, ["closeout", "ADR-0.1.0"])
             self.assertEqual(result.exit_code, 0, result.output)
             content = Path("pyproject.toml").read_text(encoding="utf-8")
@@ -155,7 +155,7 @@ class TestCloseoutPipelineCompletion(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             result = runner.invoke(main, ["closeout", "ADR-0.1.0"])
             self.assertEqual(result.exit_code, 0, result.output)
             ledger_text = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
@@ -172,7 +172,7 @@ class TestCloseoutDryRun(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             result = runner.invoke(main, ["closeout", "ADR-0.1.0", "--dry-run"])
             self.assertEqual(result.exit_code, 0, result.output)
             self.assertIn("Dry run", result.output)
@@ -188,7 +188,7 @@ class TestCloseoutDryRun(unittest.TestCase):
             Path("pyproject.toml").write_text(
                 '[project]\nname = "test"\nversion = "0.0.1"\n', encoding="utf-8"
             )
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             result = runner.invoke(main, ["closeout", "ADR-0.1.0", "--dry-run", "--json"])
             self.assertEqual(result.exit_code, 0, result.output)
             data = json.loads(result.output)
@@ -208,7 +208,7 @@ class TestCloseoutJsonOutput(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             result = runner.invoke(main, ["closeout", "ADR-0.1.0", "--json"])
             self.assertEqual(result.exit_code, 0, result.output)
             data = json.loads(result.output)
@@ -224,7 +224,7 @@ class TestCloseoutJsonOutput(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             result = runner.invoke(main, ["closeout", "ADR-0.1.0", "--json"])
             self.assertEqual(result.exit_code, 1)
             data = json.loads(result.output)
@@ -243,7 +243,7 @@ class TestCloseoutExitCodes(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             result = runner.invoke(main, ["closeout", "ADR-0.1.0"])
             self.assertEqual(result.exit_code, 0)
 
@@ -254,6 +254,6 @@ class TestCloseoutExitCodes(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             result = runner.invoke(main, ["closeout", "ADR-0.1.0"])
             self.assertEqual(result.exit_code, 1)

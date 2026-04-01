@@ -14,7 +14,6 @@ from gzkit.cli.parser_governance import register_governance_parsers
 from gzkit.cli.parser_maintenance import register_maintenance_parsers
 from gzkit.commands.audit_cmd import _write_audit_artifacts  # noqa: F401 -- test-mock compat
 from gzkit.commands.common import (
-    COMMAND_DOCS,  # noqa: F401 -- backward-compat re-export
     GzCliError,  # noqa: F401 -- backward-compat re-export
     console,
     ensure_initialized,  # noqa: F401 -- test-mock compat

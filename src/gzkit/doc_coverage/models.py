@@ -11,8 +11,7 @@ class SurfaceResult(BaseModel):
     surface: str = Field(
         ...,
         description=(
-            "Surface name (manpage, index_entry, operator_runbook, "
-            "governance_runbook, docstring, command_docs_mapping)"
+            "Surface name (manpage, index_entry, operator_runbook, governance_runbook, docstring)"
         ),
     )
     passed: bool = Field(..., description="Whether the surface check passed")
@@ -26,7 +25,7 @@ class CommandCoverage(BaseModel):
 
     command: str = Field(..., description="CLI command name as discovered (e.g. 'adr status')")
     surfaces: list[SurfaceResult] = Field(
-        ..., description="Results for all six documentation surfaces"
+        ..., description="Results for all five documentation surfaces"
     )
     all_passed: bool = Field(..., description="True when all surfaces pass")
 
@@ -47,7 +46,7 @@ class CoverageReport(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     commands_discovered: int = Field(..., description="Total CLI commands found by AST scanning")
-    commands_fully_covered: int = Field(..., description="Commands with all six surfaces passing")
+    commands_fully_covered: int = Field(..., description="Commands with all five surfaces passing")
     commands_with_gaps: int = Field(..., description="Commands missing at least one surface")
     coverage: list[CommandCoverage] = Field(..., description="Per-command coverage results")
     orphaned: list[OrphanedDoc] = Field(

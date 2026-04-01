@@ -566,7 +566,7 @@ class _TaskCliBase(unittest.TestCase):
         code, out = _invoke(["init"])
         self.assertEqual(code, 0, out)
         # Create ADR
-        code, out = _invoke(["plan", "0.1.0"])
+        code, out = _invoke(["plan", "create", "0.1.0"])
         self.assertEqual(code, 0, out)
         # Seed OBPI in ledger
         ledger = Ledger(Path(".gzkit/ledger.jsonl"))

@@ -5,7 +5,7 @@ import importlib
 from pathlib import Path
 from typing import NamedTuple
 
-from gzkit.commands.common import COMMAND_DOCS, get_project_root
+from gzkit.commands.common import get_project_root
 from gzkit.doc_coverage.models import CommandCoverage, CoverageReport, OrphanedDoc, SurfaceResult
 
 _SURFACE_NAMES = (
@@ -14,7 +14,6 @@ _SURFACE_NAMES = (
     "operator_runbook",
     "governance_runbook",
     "docstring",
-    "command_docs_mapping",
 )
 
 
@@ -228,12 +227,26 @@ def _build_import_map(source: str) -> dict[str, str]:
     return import_map
 
 
+def _extract_local_docstrings(source: str) -> dict[str, str]:
+    """Extract docstrings from module-level function definitions in source."""
+    tree = ast.parse(source)
+    result: dict[str, str] = {}
+    for node in ast.iter_child_nodes(tree):
+        if isinstance(node, ast.FunctionDef) and ast.get_docstring(node):
+            result[node.name] = ast.get_docstring(node) or ""
+    return result
+
+
 def _resolve_handler_docstring(handler_name: str, main_source: str) -> str | None:
     """Resolve the docstring for a handler function by importing its module.
 
-    Parses the import statements from main_source to locate the module, then
-    imports it and retrieves the function's __doc__.
+    First checks locally-defined functions in the parser source, then falls
+    back to import-based resolution for handlers defined in command modules.
     """
+    local_docs = _extract_local_docstrings(main_source)
+    if handler_name in local_docs:
+        return local_docs[handler_name]
+
     import_map = _build_import_map(main_source)
     module_path = import_map.get(handler_name)
     if module_path is None:
@@ -265,7 +278,7 @@ def check_surfaces(
     commands: list[DiscoveredCommand],
     main_source: str,
 ) -> list[CommandCoverage]:
-    """Check all six documentation surfaces for each discovered command.
+    """Check all five documentation surfaces for each discovered command.
 
     Returns a list of CommandCoverage objects, one per command.
     """
@@ -344,24 +357,6 @@ def check_surfaces(
                 SurfaceResult(surface="docstring", passed=False, detail="No handler name resolved")
             )
 
-        # 6. COMMAND_DOCS mapping
-        if cmd.name in COMMAND_DOCS:
-            surfaces.append(
-                SurfaceResult(
-                    surface="command_docs_mapping",
-                    passed=True,
-                    detail=f"'{cmd.name}' in COMMAND_DOCS",
-                )
-            )
-        else:
-            surfaces.append(
-                SurfaceResult(
-                    surface="command_docs_mapping",
-                    passed=False,
-                    detail=f"'{cmd.name}' not in COMMAND_DOCS",
-                )
-            )
-
         results.append(
             CommandCoverage(
                 command=cmd.name,
@@ -379,20 +374,9 @@ def find_orphaned_docs(
 ) -> list[OrphanedDoc]:
     """Find documentation referencing commands that no longer exist.
 
-    Checks COMMAND_DOCS keys and manpage files in docs/user/commands/.
+    Checks manpage files in docs/user/commands/ against discovered commands.
     """
     orphans: list[OrphanedDoc] = []
-
-    # Check COMMAND_DOCS keys not in discovered commands
-    for key in COMMAND_DOCS:
-        if key not in discovered_names:
-            orphans.append(
-                OrphanedDoc(
-                    surface="command_docs_mapping",
-                    reference=key,
-                    detail=f"COMMAND_DOCS key '{key}' has no matching discovered command",
-                )
-            )
 
     # Check manpage files whose slug doesn't map to a discovered command.
     # Build a slug set from discovered names so hyphenated commands like

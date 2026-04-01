@@ -5,7 +5,7 @@ Deterministic structural scoring against the 8-dimension ADR rubric and
 machine-readable verdicts (GO / CONDITIONAL_GO / NO_GO) and markdown
 scorecards.
 
-See: .claude/skills/gz-adr-eval/assets/ADR_EVALUATION_FRAMEWORK.md
+See: .claude/skills/gz-adr-evaluate/assets/ADR_EVALUATION_FRAMEWORK.md
 """
 
 from datetime import UTC, datetime

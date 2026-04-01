@@ -1,4 +1,4 @@
-# gz plan
+# gz plan create
 
 Create a new ADR scaffold with a deterministic decomposition scorecard.
 

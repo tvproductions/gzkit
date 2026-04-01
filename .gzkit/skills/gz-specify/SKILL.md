@@ -163,4 +163,4 @@ uv run gz register-adrs ADR-0.0.11 --all
 | `gz-adr-create` | Creates the parent ADR that specify decomposes |
 | `gz-obpi-brief` | Alternative manual brief creation |
 | `gz-obpi-pipeline` | Executes briefs created by specify |
-| `gz-adr-eval` | Evaluates ADR+OBPI quality (run after specify) |
+| `gz-adr-evaluate` | Evaluates ADR+OBPI quality (run after specify) |

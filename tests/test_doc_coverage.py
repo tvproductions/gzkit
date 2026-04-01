@@ -76,7 +76,6 @@ class TestDiscoverCommands(unittest.TestCase):
         expected = {
             "init",
             "prd",
-            "plan",
             "status",
             "closeout",
             "audit",
@@ -122,6 +121,8 @@ class TestDiscoverCommands(unittest.TestCase):
             "skill new",
             "skill list",
             "skill audit",
+            "plan create",
+            "plan audit",
         }
         for cmd in expected:
             self.assertIn(cmd, self.command_names, f"Expected two-level command '{cmd}' not found")
@@ -287,28 +288,6 @@ class TestCheckSurfaces(unittest.TestCase):
                 surface.passed, "Governance runbook surface should pass when command is referenced"
             )
 
-    def test_command_docs_mapping_present(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            # "init" is in COMMAND_DOCS
-            coverages = check_surfaces(root, [self._make_command("init")], "")
-            surface = self._get_surface(coverages, "command_docs_mapping")
-            self.assertTrue(
-                surface.passed,
-                "Command docs mapping surface should pass when command is in COMMAND_DOCS",
-            )
-
-    def test_command_docs_mapping_missing(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            # "nonexistent" is not in COMMAND_DOCS
-            coverages = check_surfaces(root, [self._make_command("nonexistent")], "")
-            surface = self._get_surface(coverages, "command_docs_mapping")
-            self.assertFalse(
-                surface.passed,
-                "Command docs mapping surface should fail when command is absent from COMMAND_DOCS",
-            )
-
 
 # ---------------------------------------------------------------------------
 # 3. Orphan Detection Tests
@@ -345,10 +324,7 @@ class TestFindOrphanedDocs(unittest.TestCase):
                 "# gz init\n", encoding="utf-8"
             )
             # All manpage files correspond to discovered commands
-            # Also provide all COMMAND_DOCS keys in discovered_names to avoid COMMAND_DOCS orphans
-            from gzkit.commands.common import COMMAND_DOCS
-
-            all_names = set(COMMAND_DOCS.keys()) | {"init"}
+            all_names = {"init"}
             orphans = find_orphaned_docs(root, discovered_names=all_names)
             manpage_orphans = [o for o in orphans if o.surface == "manpage"]
             self.assertEqual(
@@ -515,7 +491,6 @@ class TestManifestModels(unittest.TestCase):
             "operator_runbook": True,
             "governance_runbook": False,
             "docstring": True,
-            "command_docs_mapping": True,
         }
         defaults.update(overrides)
         return SurfaceRequirements(**defaults)
@@ -540,7 +515,6 @@ class TestManifestModels(unittest.TestCase):
                 operator_runbook=True,
                 governance_runbook=False,
                 docstring=True,
-                command_docs_mapping=True,
                 extra_field=True,  # type: ignore[call-arg]
             )
 
@@ -615,7 +589,6 @@ class TestLoadManifest(unittest.TestCase):
                         "operator_runbook": True,
                         "governance_runbook": True,
                         "docstring": True,
-                        "command_docs_mapping": True,
                     },
                     "governance_relevant": True,
                 },
@@ -626,7 +599,6 @@ class TestLoadManifest(unittest.TestCase):
                         "operator_runbook": True,
                         "governance_runbook": False,
                         "docstring": True,
-                        "command_docs_mapping": True,
                     },
                     "governance_relevant": False,
                 },
@@ -707,7 +679,6 @@ class TestFindUndeclaredCommands(unittest.TestCase):
                     operator_runbook=True,
                     governance_runbook=False,
                     docstring=True,
-                    command_docs_mapping=True,
                 ),
                 governance_relevant=False,
             )

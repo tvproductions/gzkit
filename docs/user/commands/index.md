@@ -14,7 +14,8 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz prd`](prd.md) | Create a Product Requirements Document |
 | [`gz constitute`](constitute.md) | Create a constitution artifact |
 | [`gz specify`](specify.md) | Create an implementation brief (including OBPIs) |
-| [`gz plan`](plan.md) | Create an ADR |
+| [`gz plan create`](plan-create.md) | Create an ADR |
+| [`gz plan audit`](plan-audit.md) | Structural prerequisite check for plan-OBPI alignment |
 | [`gz implement`](implement.md) | Run Gate 2 and record results |
 | [`gz gates`](gates.md) | Run lane-required gates |
 | [`gz status`](status.md) | Show multi-ADR OBPI progress and lifecycle status |
@@ -37,6 +38,10 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz obpi reconcile`](obpi-reconcile.md) | Fail-closed reconciliation for one OBPI |
 | [`gz obpi emit-receipt`](obpi-emit-receipt.md) | Emit completed/validated receipt for one OBPI |
 | [`gz obpi withdraw`](obpi-withdraw.md) | Record an OBPI withdrawal event |
+| [`gz obpi lock-claim`](obpi-lock-claim.md) | Claim an OBPI work lock |
+| [`gz obpi lock-release`](obpi-lock-release.md) | Release an OBPI work lock |
+| [`gz obpi lock-status`](obpi-lock-status.md) | List active OBPI work locks |
+| [`gz obpi audit`](obpi-audit.md) | Gather evidence for OBPI brief and record in audit ledger |
 | [`gz git-sync`](git-sync.md) | Run guarded sync ritual |
 | [`gz chores list`](chores-list.md) | List declared chores from the config registry |
 | [`gz chores plan`](chores-plan.md) | Show deterministic plan details for one chore |

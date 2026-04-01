@@ -86,7 +86,19 @@ Layer 1 - Evidence Gathering. See
 
 ## Procedure
 
-### Step 1: Read the parent ADR
+### Step 1: Run CLI structural checks
+
+```bash
+uv run gz plan audit OBPI-X.Y.Z-NN
+```
+
+This runs deterministic prerequisite checks (ADR exists, brief exists, plan
+file found, path overlap validation) and writes the receipt to
+`.claude/plans/.plan-audit-receipt-{OBPI-ID}.json`. If PASS and no semantic
+review is needed, the skill is done. If FAIL, review the gaps and continue
+with manual alignment checks below.
+
+### Step 2: Read the parent ADR
 
 Locate and read the parent ADR under `docs/design/adr/`. Extract:
 
@@ -97,7 +109,7 @@ Locate and read the parent ADR under `docs/design/adr/`. Extract:
 - Lane: Lite or Heavy
 - Integration points: other OBPIs, shared modules, config entries
 
-### Step 2: Read the OBPI brief
+### Step 3: Read the OBPI brief
 
 Locate and read the brief from either of these layouts:
 
@@ -112,7 +124,7 @@ Extract:
 - Acceptance criteria
 - Verification commands
 
-### Step 3: Audit ADR <-> OBPI alignment
+### Step 4: Audit ADR <-> OBPI alignment
 
 Compare the brief against its parent ADR checklist item:
 
@@ -128,7 +140,7 @@ Compare the brief against its parent ADR checklist item:
 
 Record each check as Aligned, Drifted, or Missing.
 
-### Step 4: Find and read the plan file
+### Step 5: Find and read the plan file
 
 Auto-discover the plan file from `.claude/plans/`:
 
@@ -145,7 +157,7 @@ Extract:
 - Verification
 - Notes
 
-### Step 5: Audit Plan <-> OBPI alignment
+### Step 6: Audit Plan <-> OBPI alignment
 
 Compare the plan against the brief:
 
@@ -159,7 +171,7 @@ Compare the plan against the brief:
 | No gold-plating | Does the plan avoid extra work not required by the brief? |
 | Feasibility | Based on current codebase state, are the plan steps achievable? |
 
-### Step 6: Present the alignment report
+### Step 7: Present the alignment report
 
 Use this structure:
 

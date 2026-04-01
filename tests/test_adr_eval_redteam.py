@@ -106,7 +106,7 @@ class TestLoadFrameworkPrompt(unittest.TestCase):
 
     @covers("REQ-0.0.5-04-05")
     def test_loads_from_real_assets(self) -> None:
-        assets = Path(".claude/skills/gz-adr-eval/assets")
+        assets = Path(".claude/skills/gz-adr-evaluate/assets")
         if not assets.exists():
             self.skipTest("Skill assets not available")
         prompt = load_framework_redteam_prompt(assets)
