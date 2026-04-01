@@ -32,5 +32,5 @@ for OBPI context, include explicit scope fields:
 ## Example
 
 ```bash
-uv run gz adr emit-receipt ADR-0.3.0 --event validated --attestor "Jeffry Babb" --evidence-json '{"scope":"OBPI-0.3.0-04","adr_completion":"not_completed","obpi_completion":"attested_completed"}'
+uv run gz adr emit-receipt ADR-0.3.0 --event validated --attestor "Jeffry" --evidence-json '{"scope":"OBPI-0.3.0-04","adr_completion":"not_completed","obpi_completion":"attested_completed"}'
 ```
