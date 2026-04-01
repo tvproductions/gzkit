@@ -30,6 +30,12 @@ template changes affect future generated instruction surfaces.
 > documentation, and template-only work stays Lite unless it changes one of
 > those external surfaces.
 
+## Dependencies
+
+- **Depends on:** OBPI-0.0.11-02 (persona control surface must exist before
+  AGENTS.md can reference it in the mandatory persona section)
+- **Blocks:** None directly
+
 ## Allowed Paths
 
 - `docs/design/adr/foundation/ADR-0.0.11-persona-driven-agent-identity-frames/ADR-0.0.11-persona-driven-agent-identity-frames.md` — parent ADR for contract intent

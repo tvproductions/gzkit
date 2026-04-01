@@ -8,7 +8,7 @@ import shlex
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from gzkit.commands.common import COMMAND_DOCS, console, get_project_root
+from gzkit.commands.common import console, get_project_root
 
 if TYPE_CHECKING:
     from gzkit.doc_coverage.models import CoverageReport
@@ -178,18 +178,22 @@ def cli_audit_cmd(as_json: bool) -> None:
     if not index_path.exists():
         issues.append({"path": "docs/user/commands/index.md", "issue": "commands index missing"})
 
-    for command_name, doc_rel in COMMAND_DOCS.items():
+    from gzkit.doc_coverage.manifest import load_manifest, manpage_path_for  # noqa: PLC0415
+
+    manifest = load_manifest(project_root)
+    for command_name in manifest.commands:
+        doc_rel = manpage_path_for(command_name)
         doc_path = project_root / doc_rel
         if not doc_path.exists():
-            issues.append({"path": doc_rel, "issue": f"missing doc for `{command_name}`"})
+            issues.append({"path": str(doc_rel), "issue": f"missing doc for `{command_name}`"})
             continue
 
         content = doc_path.read_text(encoding="utf-8")
         expected_heading = f"# gz {command_name}"
         if not content.lstrip().startswith(expected_heading):
-            issues.append({"path": doc_rel, "issue": f"expected heading `{expected_heading}`"})
+            issues.append({"path": str(doc_rel), "issue": f"expected heading `{expected_heading}`"})
 
-        basename = Path(doc_rel).name
+        basename = doc_rel.name
         if index_content and basename not in index_content:
             issues.append(
                 {"path": "docs/user/commands/index.md", "issue": f"missing link to {basename}"}

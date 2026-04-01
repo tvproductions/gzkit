@@ -25,7 +25,7 @@ class TestObpiValidateCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
 
             self._git("init")
             self._git("config", "user.email", "test@example.com")
@@ -65,7 +65,7 @@ class TestObpiValidateCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
 
             self._git("init")
             self._git("config", "user.email", "test@example.com")
@@ -121,7 +121,7 @@ class TestObpiValidateCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
 
             adr_dir = Path("design/adr")
             obpi_dir = adr_dir / "obpis"

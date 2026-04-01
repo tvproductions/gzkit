@@ -30,6 +30,12 @@ change a runtime contract by itself.
 > documentation, and template-only work stays Lite unless it changes one of
 > those external surfaces.
 
+## Dependencies
+
+- **Depends on:** None (fully independent; first in the critical path)
+- **Blocks:** OBPI-0.0.11-02 (design principles inform control surface),
+  OBPI-0.0.11-05 (pool ADR review feeds supersession)
+
 ## Allowed Paths
 
 - `docs/design/adr/foundation/ADR-0.0.11-persona-driven-agent-identity-frames/ADR-0.0.11-persona-driven-agent-identity-frames.md` — parent ADR for intent and rationale

@@ -196,7 +196,7 @@ To maximize granularity and ensure incremental delivery, the ADR Feature Checkli
 
 **Rationale:** The Feature Checklist is the governance contract for the ADR. OBPIs are the execution units for that contract. High-granularity decomposition prevents "god-object" briefs and oversized verification batches. Drift between the checklist and the briefs creates un-auditable scope and violates the principle of layered trust.
 
-**Enforcement:** The `gz-adr-create`, `gz-plan`, and `gz-adr-eval` skills enforce this 1:1 synchronization, quality review, and the two-step protocol during the spec/decomposition phase. Automated verification (e.g., `gz validate`) that fails the checklist-to-brief count check is a blocking governance failure.
+**Enforcement:** The `gz-adr-create`, `gz-plan`, and `gz-adr-evaluate` skills enforce this 1:1 synchronization, quality review, and the two-step protocol during the spec/decomposition phase. Automated verification (e.g., `gz validate`) that fails the checklist-to-brief count check is a blocking governance failure.
 
 **Anti-pattern:** ADR tables listing OBPIs as "Pending" with no actual brief files. This is a governance violation. All briefs must exist as files before the ADR is Accepted.
 

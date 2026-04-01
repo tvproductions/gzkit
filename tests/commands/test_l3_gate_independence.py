@@ -17,7 +17,7 @@ from tests.commands.common import CliRunner, _quick_init
 
 def _plan_adr(runner: CliRunner) -> None:
     """Invoke gz plan to register an ADR so gate 1 has an L1 artifact to find."""
-    runner.invoke(main, ["plan", "0.1.0"])
+    runner.invoke(main, ["plan", "create", "0.1.0"])
 
 
 class TestGate1WithoutMarkersDirectory(unittest.TestCase):

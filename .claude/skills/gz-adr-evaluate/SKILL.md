@@ -1,5 +1,5 @@
 ---
-name: gz-adr-eval
+name: gz-adr-evaluate
 description: Post-authoring quality evaluation for ADRs and OBPIs. Scores ADRs on 8 weighted dimensions, OBPIs on 5 dimensions, and can run 10 structured red-team challenges before proposal/defense.
 category: adr-lifecycle
 compatibility: GovZero v6 framework; adapted from AirlineOps for gzkit ADR package layouts
@@ -14,7 +14,7 @@ owner: gzkit-governance
 last_reviewed: 2026-03-13
 ---
 
-# gz-adr-eval (v6.0.0)
+# gz-adr-evaluate (v6.0.0)
 
 ## Purpose
 
@@ -41,8 +41,8 @@ evaluation scorecards. It does not modify ADR or brief content.
 ## Invocation
 
 ```text
-/gz-adr-eval ADR-X.Y.Z             # evaluate a specific ADR
-/gz-adr-eval ADR-X.Y.Z --red-team  # include the 10-challenge red-team protocol
+/gz-adr-evaluate ADR-X.Y.Z             # evaluate a specific ADR
+/gz-adr-evaluate ADR-X.Y.Z --red-team  # include the 10-challenge red-team protocol
 ```
 
 **Arguments:**
@@ -65,13 +65,24 @@ evaluation scorecards. It does not modify ADR or brief content.
 
 ## Procedure
 
-### Step 1: Locate the ADR and its OBPIs
+### Step 1: Run CLI deterministic scoring
+
+```bash
+uv run gz adr evaluate ADR-X.Y.Z
+```
+
+This produces the structural quality scores (8 ADR dimensions, OBPI scores) and
+writes `EVALUATION_SCORECARD.md`. If the CLI verdict is GO, skip to Step 4
+(red-team) or finish. If CONDITIONAL GO or NO GO, review the scorecard and
+continue with manual assessment below.
+
+### Step 2: Locate the ADR and its OBPIs
 
 1. Resolve the ADR document under `docs/design/adr/**/ADR-X.Y.Z-*/ADR-X.Y.Z-*.md`
 2. List all OBPI briefs in `obpis/` (preferred) or `briefs/` (legacy)
 3. Read the evaluation framework from `assets/ADR_EVALUATION_FRAMEWORK.md`
 
-### Step 2: Score ADR Quality (Part 1 - 8 Dimensions)
+### Step 3: Score ADR Quality (Part 1 - 8 Dimensions)
 
 Read Part 1 of the framework and score the ADR on each dimension (1-4 scale):
 
@@ -89,7 +100,7 @@ Read Part 1 of the framework and score the ADR on each dimension (1-4 scale):
 For each dimension, work through the checklist items in the framework and score
 based on how many checklist items pass with path-level evidence.
 
-### Step 3: Score OBPI Quality (Part 2 - 5 Dimensions)
+### Step 4: Score OBPI Quality (Part 2 - 5 Dimensions)
 
 For each OBPI, score on 5 dimensions (1-4 scale):
 
@@ -101,7 +112,7 @@ For each OBPI, score on 5 dimensions (1-4 scale):
 | Size | Is this a 1-3 day work unit? |
 | Clarity | Could a different agent implement this without ambiguity? |
 
-### Step 4: Run Red-Team Challenges (Optional - Part 3)
+### Step 5: Run Red-Team Challenges (Optional - Part 3)
 
 If `--red-team` is specified, or if the evaluator wants stronger adversarial
 review, work through all 10 structured challenges from the framework.
@@ -203,4 +214,4 @@ For adversarial review by a separate model:
 - Evaluation framework: `assets/ADR_EVALUATION_FRAMEWORK.md`
 - ADR lifecycle: `docs/governance/GovZero/adr-lifecycle.md`
 - GovZero charter: `docs/governance/GovZero/charter.md`
-- Parity origin: `../airlineops/.github/skills/gz-adr-eval/SKILL.md`
+- Parity origin: `../airlineops/.github/skills/gz-adr-evaluate/SKILL.md`

@@ -67,35 +67,27 @@ Path: `.gzkit/locks/obpi/{OBPI-ID}.lock.json`
 
 ### Claim
 
-1. Check `.gzkit/locks/obpi/{OBPI-ID}.lock.json`
-2. If exists and not expired → report holder and fail
-3. If lock exists for a DIFFERENT OBPI in the same ADR:
-   - Read parent ADR for `## Execution Mode` section
-   - If Exception mode: allow concurrent claim (different OBPI, same ADR)
-   - If Normal mode: report conflict — only one OBPI per ADR at a time
-4. If exists and expired → warn about stale lock, auto-release, then claim
-5. Create lock file with agent identity and timestamp
-5. Report: "Claimed OBPI-0.0.25-03 (TTL: 120 min)"
+```bash
+uv run gz obpi lock-claim OBPI-X.Y.Z-NN
+uv run gz obpi lock-claim OBPI-X.Y.Z-NN --ttl 240
+uv run gz obpi lock-claim OBPI-X.Y.Z-NN --json
+```
+
+Exit code 0 = claimed, 1 = conflict (another agent holds it).
 
 ### Release
 
-1. Check lock file exists
-2. Verify current agent is the holder (or lock is expired)
-3. Delete lock file
-4. Report: "Released OBPI-0.0.25-03"
+```bash
+uv run gz obpi lock-release OBPI-X.Y.Z-NN
+uv run gz obpi lock-release OBPI-X.Y.Z-NN --json
+```
 
 ### Status
 
-1. Glob `.gzkit/locks/obpi/*.lock.json`
-2. Parse each lock file
-3. Display table:
-
-```text
-OBPI WORK LOCKS
-═══════════════
-
-OBPI-0.0.25-03   claude-code   claimed 2h ago   expires in 0h   ⚠️ EXPIRED
-OBPI-0.0.25-04   codex         claimed 30m ago  expires in 90m  ✓ active
+```bash
+uv run gz obpi lock-status
+uv run gz obpi lock-status --adr ADR-X.Y.Z
+uv run gz obpi lock-status --json
 ```
 
 ---

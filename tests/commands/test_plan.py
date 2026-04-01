@@ -14,7 +14,7 @@ class TestPlanCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            result = runner.invoke(main, ["plan", "0.1.0"])
+            result = runner.invoke(main, ["plan", "create", "0.1.0"])
             self.assertEqual(result.exit_code, 0)
             adr_path = Path("design/adr/ADR-0.1.0.md")
             self.assertTrue(adr_path.exists())
@@ -28,7 +28,7 @@ class TestPlanCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            result = runner.invoke(main, ["plan", "my-feature", "--semver", "0.2.0"])
+            result = runner.invoke(main, ["plan", "create", "my-feature", "--semver", "0.2.0"])
             self.assertEqual(result.exit_code, 0)
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             graph = ledger.get_artifact_graph()

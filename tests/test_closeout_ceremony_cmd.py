@@ -170,7 +170,7 @@ class TestCeremonyInit(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             result = runner.invoke(main, ["closeout", "ADR-0.1.0", "--ceremony"])
             self.assertEqual(result.exit_code, 0, result.output)
             self.assertIn("PASSIVE PRESENTER", result.output)
@@ -185,7 +185,7 @@ class TestCeremonyInit(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             result = runner.invoke(main, ["closeout", "ADR-0.1.0", "--ceremony", "--json"])
             self.assertEqual(result.exit_code, 0, result.output)
             data = json.loads(result.output)
@@ -199,7 +199,7 @@ class TestCeremonyInit(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             result = runner.invoke(main, ["closeout", "ADR-0.1.0", "--ceremony"])
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("Cannot start ceremony", result.output)
@@ -215,7 +215,7 @@ class TestCeremonyAdvance(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             runner.invoke(main, ["closeout", "ADR-0.1.0", "--ceremony"])
             result = runner.invoke(main, ["closeout", "ADR-0.1.0", "--ceremony", "--next"])
             self.assertEqual(result.exit_code, 0, result.output)
@@ -231,7 +231,7 @@ class TestCeremonyAdvance(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             # Init at step 2
             runner.invoke(main, ["closeout", "ADR-0.1.0", "--ceremony"])
             # Step 2→3
@@ -265,7 +265,7 @@ class TestCeremonyAdvance(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             result = runner.invoke(main, ["closeout", "ADR-0.1.0", "--ceremony", "--next"])
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("No ceremony in progress", result.output)
@@ -282,7 +282,7 @@ class TestCeremonyAttestation(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             runner.invoke(main, ["closeout", "ADR-0.1.0", "--ceremony"])
             # At step 2, attest should fail
             result = runner.invoke(
@@ -302,7 +302,7 @@ class TestCeremonyStatus(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             runner.invoke(main, ["closeout", "ADR-0.1.0", "--ceremony"])
             result = runner.invoke(
                 main, ["closeout", "ADR-0.1.0", "--ceremony", "--ceremony-status"]
@@ -315,7 +315,7 @@ class TestCeremonyStatus(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             result = runner.invoke(
                 main, ["closeout", "ADR-0.1.0", "--ceremony", "--ceremony-status"]
             )
@@ -333,7 +333,7 @@ class TestCeremonyResume(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             runner.invoke(main, ["closeout", "ADR-0.1.0", "--ceremony"])
             runner.invoke(main, ["closeout", "ADR-0.1.0", "--ceremony", "--next"])
             state = load_ceremony_state(Path.cwd(), "ADR-0.1.0")
@@ -354,7 +354,7 @@ class TestCeremonyCompleted(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             # Create a completed state directly
             state = CeremonyState(
                 adr_id="ADR-0.1.0",
@@ -385,7 +385,7 @@ class TestNonCeremonyUnchanged(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             result = runner.invoke(main, ["closeout", "ADR-0.1.0"])
             self.assertEqual(result.exit_code, 0, result.output)
 
@@ -398,7 +398,7 @@ class TestFlagValidation(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             result = runner.invoke(
                 main,
                 ["closeout", "ADR-0.1.0", "--ceremony", "--next", "--attest", "Completed"],

@@ -30,6 +30,12 @@ does not introduce a new runtime contract by itself.
 > documentation, and template-only work stays Lite unless it changes one of
 > those external surfaces.
 
+## Dependencies
+
+- **Depends on:** OBPI-0.0.11-01 (research synthesis reviews the pool ADR for
+  reusable ideas; supersession is the formal conclusion of that review)
+- **Blocks:** None
+
 ## Allowed Paths
 
 - `docs/design/adr/foundation/ADR-0.0.11-persona-driven-agent-identity-frames/ADR-0.0.11-persona-driven-agent-identity-frames.md` — superseding ADR

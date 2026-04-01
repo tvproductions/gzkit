@@ -330,7 +330,7 @@ Capabilities that span the agent lifecycle.
 - Standard skill template section: `## Invalid Excuses` with common rationalizations for that skill's domain
 - Required in every skill that involves completion claims or quality assertions
 - Template with domain-specific examples provided for skill authors
-- `gz-adr-eval` checks for presence of anti-rationalization section in skills it scores
+- `gz-adr-evaluate` checks for presence of anti-rationalization section in skills it scores
 **GovZero fit:** Discipline infrastructure. No governance artifact changes.
 **Priority:** P2 — low effort, high leverage across all skills.
 

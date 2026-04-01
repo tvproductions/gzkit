@@ -53,8 +53,7 @@
               "index_entry",
               "operator_runbook",
               "governance_runbook",
-              "docstring",
-              "command_docs_mapping"
+              "docstring"
             ]
           },
           "detail": {

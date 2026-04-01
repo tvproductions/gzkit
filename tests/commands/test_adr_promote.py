@@ -154,7 +154,7 @@ class TestAdrPromoteCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "0.6.0"])
+            runner.invoke(main, ["plan", "create", "0.6.0"])
             result = runner.invoke(
                 main,
                 ["adr", "promote", "ADR-0.6.0", "--semver", "0.6.1"],

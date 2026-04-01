@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Documentation Coverage Manifest",
-  "description": "Per-command documentation obligation manifest. Declares which of the six documentation surfaces are required for each CLI command and whether the command is governance-relevant.",
+  "description": "Per-command documentation obligation manifest. Declares which of the five documentation surfaces are required for each CLI command and whether the command is governance-relevant.",
   "type": "object",
   "required": ["version", "description", "commands"],
   "properties": {
@@ -46,8 +46,7 @@
         "index_entry",
         "operator_runbook",
         "governance_runbook",
-        "docstring",
-        "command_docs_mapping"
+        "docstring"
       ],
       "properties": {
         "manpage": {
@@ -69,10 +68,6 @@
         "docstring": {
           "type": "boolean",
           "description": "Requires a docstring on the command handler function"
-        },
-        "command_docs_mapping": {
-          "type": "boolean",
-          "description": "Requires an entry in COMMAND_DOCS (common.py)"
         }
       },
       "additionalProperties": false

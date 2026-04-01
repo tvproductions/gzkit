@@ -8,8 +8,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -19,8 +18,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -30,8 +28,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -41,19 +38,17 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
-    "plan": {
+    "plan create": {
       "surfaces": {
         "manpage": true,
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -63,8 +58,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -74,8 +68,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -85,8 +78,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -96,8 +88,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -107,8 +98,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -118,8 +108,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -129,8 +118,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -140,8 +128,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -151,8 +138,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -162,8 +148,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -173,8 +158,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -184,8 +168,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -195,8 +178,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -206,8 +188,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -217,8 +198,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -228,8 +208,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -239,8 +218,57 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "obpi lock-claim": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "obpi lock-release": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "obpi lock-status": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "obpi audit": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "plan audit": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -250,8 +278,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -261,8 +288,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -272,8 +298,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -283,8 +308,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -294,8 +318,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -305,8 +328,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -316,8 +338,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -327,8 +348,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -338,8 +358,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -349,8 +368,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -360,8 +378,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -371,8 +388,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -382,8 +398,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -393,8 +408,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": false
     },
@@ -404,8 +418,7 @@
         "index_entry": false,
         "operator_runbook": false,
         "governance_runbook": false,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": false
     },
@@ -415,8 +428,7 @@
         "index_entry": false,
         "operator_runbook": false,
         "governance_runbook": false,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": false
     },
@@ -426,8 +438,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -437,8 +448,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -448,8 +458,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -459,8 +468,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": true,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -470,8 +478,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": false,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": false
     },
@@ -481,8 +488,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": false,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": false
     },
@@ -492,8 +498,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": false,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": false
     },
@@ -503,8 +508,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": false,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": false
     },
@@ -514,8 +518,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": false,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": false
     },
@@ -525,8 +528,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": false,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": false
     },
@@ -536,8 +538,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": false,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": false
     },
@@ -547,8 +548,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": false,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": false
     },
@@ -558,8 +558,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": false,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": false
     },
@@ -569,8 +568,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": false,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": false
     },
@@ -580,8 +578,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": false,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": false
     },
@@ -591,8 +588,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": false,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": false
     },
@@ -602,8 +598,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": false,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": false
     },
@@ -613,8 +608,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": false,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": false
     },
@@ -624,8 +618,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": false,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": false
     },
@@ -635,8 +628,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": false,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": false
     },
@@ -646,8 +638,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": false,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": false
     },
@@ -657,8 +648,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": false,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": false
     },
@@ -668,8 +658,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": false,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": false
     },
@@ -679,8 +668,7 @@
         "index_entry": true,
         "operator_runbook": true,
         "governance_runbook": false,
-        "docstring": true,
-        "command_docs_mapping": true
+        "docstring": true
       },
       "governance_relevant": false
     }

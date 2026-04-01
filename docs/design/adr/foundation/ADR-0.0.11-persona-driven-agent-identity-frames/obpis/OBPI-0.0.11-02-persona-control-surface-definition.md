@@ -30,6 +30,12 @@ contract, and changes dispatch/session loading behavior.
 > documentation, and template-only work stays Lite unless it changes one of
 > those external surfaces.
 
+## Dependencies
+
+- **Depends on:** OBPI-0.0.11-01 (research synthesis informs design principles)
+- **Blocks:** OBPI-0.0.11-03, OBPI-0.0.11-04, OBPI-0.0.11-06 (all require the
+  persona directory, file format, and schema defined here)
+
 ## Allowed Paths
 
 - `docs/design/adr/foundation/ADR-0.0.11-persona-driven-agent-identity-frames/ADR-0.0.11-persona-driven-agent-identity-frames.md` — parent ADR for contract intent
@@ -60,6 +66,9 @@ contract, and changes dispatch/session loading behavior.
    material from the control surface at startup/dispatch boundaries
 1. REQUIREMENT: This OBPI MUST own the BDD surface for persona loading and the
    read-only CLI listing contract
+1. REQUIREMENT: This OBPI MUST deliver at least one exemplar persona file
+   (`.gzkit/personas/implementer.md`) as proof-of-concept that the control
+   surface works end-to-end — architecture without a payload is incomplete
 1. NEVER: Introduce persona mutation commands or dynamic mid-conversation
    persona switching in this OBPI
 1. ALWAYS: Keep the control surface grounded in behavioral identity rather than
@@ -137,6 +146,7 @@ uv run -m behave features/persona.feature
 
 # Specific verification for this OBPI
 test -d .gzkit/personas
+test -f .gzkit/personas/implementer.md
 uv run gz personas list
 test -f src/gzkit/pipeline_runtime.py
 test -f src/gzkit/cli/parser_governance.py
@@ -147,7 +157,8 @@ test -f src/gzkit/cli/parser_governance.py
 - [ ] REQ-0.0.11-02-01: Persona files live under `.gzkit/personas/` with a documented, governed contract
 - [ ] REQ-0.0.11-02-02: `uv run gz personas list` enumerates persona artifacts without mutating them
 - [ ] REQ-0.0.11-02-03: Session or dispatch loading consumes persona material from the control surface at the documented lifecycle boundaries
-- [ ] REQ-0.0.11-02-04: Heavy-lane evidence includes docs, BDD output, and human attestation before closure
+- [ ] REQ-0.0.11-02-04: At least one exemplar persona file (`.gzkit/personas/implementer.md`) exists, passes schema validation, and is returned by `gz personas list`
+- [ ] REQ-0.0.11-02-05: Heavy-lane evidence includes docs, BDD output, and human attestation before closure
 
 ## Completion Checklist
 

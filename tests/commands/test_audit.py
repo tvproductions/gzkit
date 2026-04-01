@@ -1,9 +1,13 @@
 import json
+import shutil
 import unittest
 from pathlib import Path
 
-from gzkit.cli import COMMAND_DOCS, main
+from gzkit.cli import main
+from gzkit.doc_coverage.manifest import manpage_path_for
 from tests.commands.common import CliRunner
+
+_REAL_PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
 class TestConfigAndCliAuditCommands(unittest.TestCase):
@@ -11,10 +15,20 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
 
     @staticmethod
     def _prepare_docs_surface() -> None:
+        # Copy the real manifest so load_manifest() works in the isolated fs.
+        src = _REAL_PROJECT_ROOT / "config" / "doc-coverage.json"
+        dst = Path("config") / "doc-coverage.json"
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src, dst)
+
+        from gzkit.doc_coverage.manifest import load_manifest
+
         index_path = Path("docs/user/commands/index.md")
         index_path.parent.mkdir(parents=True, exist_ok=True)
+        manifest = load_manifest(Path("."))
         links: list[str] = []
-        for command_name, doc_rel in COMMAND_DOCS.items():
+        for command_name in manifest.commands:
+            doc_rel = manpage_path_for(command_name)
             doc_path = Path(doc_rel)
             doc_path.parent.mkdir(parents=True, exist_ok=True)
             doc_path.write_text(f"# gz {command_name}\n\nStub\n")
@@ -29,7 +43,7 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
                     "",
                     "```bash",
                     "gz init",
-                    'gz plan feature --title "Feature description"',
+                    'gz plan create feature --title "Feature description"',
                     "gz status",
                     "gz check",
                     "```",
@@ -246,7 +260,7 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
             runner.invoke(main, ["init"])
             self._prepare_docs_surface()
             # Corrupt one heading to trigger mismatch.
-            doc_rel = COMMAND_DOCS["closeout"]
+            doc_rel = manpage_path_for("closeout")
             Path(doc_rel).write_text("# wrong heading\n")
             result = runner.invoke(main, ["cli", "audit"])
             self.assertNotEqual(result.exit_code, 0)

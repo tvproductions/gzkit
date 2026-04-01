@@ -31,7 +31,6 @@ surfaces per command:
 | Operator runbook | Referenced in `docs/user/runbook.md` |
 | Governance runbook | Referenced in `docs/governance/governance_runbook.md` |
 | Docstring | Handler function has non-empty docstring |
-| COMMAND_DOCS mapping | Registered in `COMMAND_DOCS` dict |
 
 Also detects orphaned documentation referencing removed commands.
 

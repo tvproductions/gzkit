@@ -73,6 +73,8 @@ COMMAND_ENV_EXCEPTIONS: dict[str, frozenset[str]] = {
     # guard used in git_sync; this is a deliberate policy-enforcement read,
     # not a configuration lookup that should move to core.
     "sync.py": frozenset({"SKIP"}),
+    # obpi_lock_cmd.py reads agent identity env vars for lock ownership.
+    "obpi_lock_cmd.py": frozenset({"CLAUDE_CODE", "CODEX_SANDBOX", "CLAUDE_SESSION_ID"}),
 }
 
 

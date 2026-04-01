@@ -30,7 +30,7 @@ Collaborative design dialogue that exits into GovZero artifacts — not superpow
 
 ```
 Explore context → Clarify (one question at a time) → Propose approaches →
-Present design → User approves → Book artifact → gz-adr-eval → Hand off
+Present design → User approves → Book artifact → gz-adr-evaluate → Hand off
 ```
 
 ### Step 1: Explore Context
@@ -96,10 +96,10 @@ After design approval, ask:
 
 ### Step 6: Quality Check
 
-After the ADR is written, invoke `gz-adr-eval` on it:
+After the ADR is written, invoke `gz-adr-evaluate` on it:
 
 ```
-/gz-adr-eval ADR-X.Y.Z
+/gz-adr-evaluate ADR-X.Y.Z
 ```
 
 Any dimension scoring 1 must be revised before proceeding.
@@ -154,5 +154,5 @@ If overlap is found, surface it explicitly:
 - **Design lives in the ADR** — not in separate spec files
 - **OBPI co-creation is mandatory** for canonical ADRs — never deferred
 - **Pool entries are stubs** — design detail goes in canonical ADRs, not pool files
-- **gz-adr-eval is not optional** — it catches weak intent before implementation begins
+- **gz-adr-evaluate is not optional** — it catches weak intent before implementation begins
 - **YAGNI** — remove scope that isn't needed for the current decision

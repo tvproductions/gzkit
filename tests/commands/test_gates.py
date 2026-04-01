@@ -13,7 +13,7 @@ class TestGateCommands(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             result = runner.invoke(main, ["gates", "--gate", "1"])
             self.assertEqual(result.exit_code, 0)
             ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")

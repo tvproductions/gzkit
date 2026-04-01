@@ -17,7 +17,7 @@ from tests.commands.common import CliRunner, _init_git_repo, _quick_init
 
 def _setup_adr_with_closeout(runner: CliRunner, project_root: Path) -> Ledger:
     """Create ADR-0.1.0 via plan and append a closeout_initiated event."""
-    runner.invoke(main, ["plan", "0.1.0"])
+    runner.invoke(main, ["plan", "create", "0.1.0"])
     ledger = Ledger(project_root / ".gzkit" / "ledger.jsonl")
     ledger.append(
         closeout_initiated_event(
@@ -57,7 +57,7 @@ class TestAttestDeprecationWarning(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
 
             result = runner.invoke(
                 main,

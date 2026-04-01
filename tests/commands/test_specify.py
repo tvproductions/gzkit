@@ -13,7 +13,7 @@ class TestSpecifyCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             result = runner.invoke(
                 main, ["specify", "core-feature", "--parent", "ADR-0.1.0", "--item", "1"]
             )
@@ -41,7 +41,7 @@ class TestSpecifyCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             result = runner.invoke(
                 main, ["specify", "core-feature", "--parent", "ADR-0.1.0", "--item", "2"]
             )
@@ -53,7 +53,7 @@ class TestSpecifyCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             result = runner.invoke(
                 main, ["specify", "core-feature", "--parent", "ADR-0.1.0", "--item", "1"]
             )
@@ -71,7 +71,7 @@ class TestSpecifyCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             result = runner.invoke(
                 main,
                 ["specify", "core-feature", "--parent", "ADR-0.1.0", "--item", "1", "--author"],

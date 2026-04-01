@@ -36,7 +36,7 @@ class TestDryRunCommands(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
             result = runner.invoke(

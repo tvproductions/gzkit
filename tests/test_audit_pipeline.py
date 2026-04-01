@@ -46,7 +46,7 @@ def _setup_attested_adr(runner: CliRunner) -> None:
     """Create an ADR that has been attested (ready for audit)."""
     _init_git_repo(Path.cwd())
     _quick_init()
-    runner.invoke(main, ["plan", "0.1.0"])
+    runner.invoke(main, ["plan", "create", "0.1.0"])
     ledger = Ledger(Path(".gzkit/ledger.jsonl"))
     ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
     ledger.append(attested_event("ADR-0.1.0", "completed", "Test User"))
@@ -61,7 +61,7 @@ class TestAuditAttestationGuard(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             result = runner.invoke(main, ["audit", "ADR-0.1.0"])
             self.assertEqual(result.exit_code, 1)
             self.assertIn("attestation", result.output.lower())
@@ -509,7 +509,7 @@ class TestAuditGeneratedLedgerEvent(unittest.TestCase):
         with runner.isolated_filesystem():
             _init_git_repo(Path.cwd())
             _quick_init()
-            runner.invoke(main, ["plan", "0.1.0"])
+            runner.invoke(main, ["plan", "create", "0.1.0"])
             # No attestation — should block
             result = runner.invoke(main, ["audit", "ADR-0.1.0"])
             self.assertEqual(result.exit_code, 1)
