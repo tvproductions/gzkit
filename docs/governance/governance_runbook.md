@@ -590,6 +590,44 @@ Persona is a governed control surface stored in `.gzkit/personas/` (ADR-0.0.11).
 2. **Traits compose orthogonally.** Multiple behavioral traits combine without interference (PERSONA/ICLR 2026). Design persona frames as composable trait specifications with structured YAML frontmatter, not monolithic character descriptions.
 3. **Virtue-ethics framing over prohibition lists.** Frame positive behavioral identity (curiosity, thoroughness, craftsmanship) rather than listing what NOT to do. The model infers a complete persona from the identity frame — prohibitions imply inclination.
 
+### Trait Composition Rules
+
+Traits compose by orthogonal concatenation — each trait activates an independent
+behavioral dimension without interfering with existing traits.  The canonical
+composition operation is implemented in `src/gzkit/personas.py` and follows this
+deterministic template:
+
+```text
+[grounding text verbatim]
+
+You are {trait-1}: {description from Behavioral Anchors}
+
+You are {trait-2}: {description from Behavioral Anchors}
+
+What this persona does NOT do:
+- {anti-trait-1}: {description from Anti-patterns}
+```
+
+**Composition rules:**
+
+1. **Grounding first.** The `grounding` field is emitted verbatim as the opening
+   behavioral anchor — it sets the persona's relationship to the work.
+2. **Traits in declaration order.** Each trait from the `traits` list is emitted
+   as `You are {name}: {description}` when a `## Behavioral Anchors` section
+   provides a description, or `You are {name}.` otherwise.
+3. **Anti-trait suppression.** Anti-traits are collected under `What this persona
+   does NOT do:` with descriptions from the `## Anti-patterns` section when
+   available.  Anti-traits define behavior that is actively suppressed — not
+   merely absent.
+4. **Conflict rejection.** If two traits conflict (e.g., "move-fast" vs
+   "meticulous"), the anti-trait mechanism rejects the conflicting trait at
+   validation time rather than attempting runtime resolution.
+5. **Determinism.** Two implementers given the same persona file MUST derive the
+   same resulting persona frame.  No randomness, no ordering heuristics.
+
+**Exemplar:** `.gzkit/personas/implementer.md` exercises all composition rules
+with four traits and three anti-traits.
+
 **Full research synthesis:** [`docs/design/research-persona-selection-agent-identity.md`](../design/research-persona-selection-agent-identity.md)
 **Governing ADR:** ADR-0.0.11 — Persona-Driven Agent Identity Frames
 
