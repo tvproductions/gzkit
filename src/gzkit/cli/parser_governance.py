@@ -19,6 +19,7 @@ from gzkit.commands.audit_cmd import audit_cmd
 from gzkit.commands.closeout import closeout_cmd
 from gzkit.commands.gates import gates_cmd, implement_cmd
 from gzkit.commands.init_cmd import constitute, init, prd
+from gzkit.commands.personas import personas_list_cmd
 from gzkit.commands.plan import plan_cmd
 from gzkit.commands.plan_audit_cmd import plan_audit_cmd
 from gzkit.commands.register import migrate_semver, register_adrs
@@ -525,3 +526,31 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
     p_roles.add_argument("--pipeline", help="Show dispatch history for an OBPI pipeline run")
     add_json_flag(p_roles)
     p_roles.set_defaults(func=lambda a: roles_cmd(pipeline=a.pipeline, as_json=a.as_json))
+
+    p_personas = commands.add_parser(
+        "personas",
+        help="Persona identity frame commands",
+        description="Inspect agent persona definitions (read-only).",
+        epilog=build_epilog(
+            [
+                "gz personas list",
+                "gz personas list --json",
+            ]
+        ),
+    )
+    personas_commands = p_personas.add_subparsers(dest="personas_command")
+    personas_commands.required = True
+
+    p_personas_list = personas_commands.add_parser(
+        "list",
+        help="List agent personas",
+        description="Enumerate persona files from .gzkit/personas/ (read-only).",
+        epilog=build_epilog(
+            [
+                "gz personas list",
+                "gz personas list --json",
+            ]
+        ),
+    )
+    add_json_flag(p_personas_list)
+    p_personas_list.set_defaults(func=lambda a: personas_list_cmd(as_json=a.as_json))

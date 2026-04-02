@@ -372,6 +372,16 @@
       },
       "governance_relevant": true
     },
+    "personas list": {
+      "surfaces": {
+        "manpage": false,
+        "index_entry": false,
+        "operator_runbook": false,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
     "register-adrs": {
       "surfaces": {
         "manpage": true,

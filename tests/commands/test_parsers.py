@@ -35,6 +35,7 @@ class TestNewCommandParsers(unittest.TestCase):
             ["chores", "plan", "--help"],
             ["chores", "run", "--help"],
             ["chores", "audit", "--help"],
+            ["personas", "list", "--help"],
         ]
         for args in commands:
             result = runner.invoke(main, args)

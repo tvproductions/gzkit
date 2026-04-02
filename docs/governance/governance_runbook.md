@@ -26,6 +26,8 @@ uv run gz adr covers-check ADR-<X.Y.Z>
 uv run gz gates --adr ADR-<X.Y.Z>
 uv run gz obpi status OBPI-<X.Y.Z-NN>
 uv run gz roles
+uv run gz personas list               # List agent personas
+uv run gz personas list --json         # List personas as JSON
 ```
 
 ### Lifecycle execution
@@ -116,6 +118,22 @@ introduced without an explicit Heavy-lane ADR authorizing the escalation.
 accumulates state not derivable from Tier A sources — silently becoming Tier C without
 governance authorization. Periodic rebuild tests (delete Tier B, rebuild, verify no
 data loss) guard against this drift.
+
+### Persona control surface
+
+Personas define behavioral identity for pipeline agents. Files live in
+`.gzkit/personas/` as markdown with YAML frontmatter.
+
+**Schema:** `name`, `traits` (list), `anti-traits` (list), `grounding` (text).
+
+**Read-only contract:** `gz personas list` enumerates personas without mutation.
+No commands exist to create, edit, or switch personas at runtime.
+
+**Pipeline integration:** The pipeline dispatch layer reads
+`.gzkit/personas/{role}.md` at dispatch boundaries and passes the persona
+body as `extra_context` to the subagent prompt.
+
+**Exemplar:** `.gzkit/personas/implementer.md` ships with the repository.
 
 ### OBPI discipline
 
