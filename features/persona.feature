@@ -1,0 +1,23 @@
+Feature: Persona control surface
+  Agent personas define behavioral identity frames stored in
+  .gzkit/personas/ and loaded at dispatch boundaries (ADR-0.0.11).
+
+  Scenario: List personas in initialized workspace with no files
+    Given the workspace is initialized
+    When I run the gz command "personas list"
+    Then the command exits with code 0
+
+  Scenario: List personas shows implementer when file exists
+    Given the workspace is initialized
+    And a persona file "implementer" exists
+    When I run the gz command "personas list --json"
+    Then the command exits with code 0
+    And the output contains "implementer"
+    And the output contains "methodical"
+
+  Scenario: Personas list is read-only
+    Given the workspace is initialized
+    And a persona file "implementer" exists
+    When I run the gz command "personas list"
+    Then the command exits with code 0
+    And the output contains "implementer"

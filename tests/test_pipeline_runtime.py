@@ -467,5 +467,47 @@ class TestCheckAdrEvaluationVerdict(unittest.TestCase):
             self.assertIn("NO GO", errors[0])
 
 
+class TestPersonaPipelineIntegration(unittest.TestCase):
+    """Verify persona material flows through compose_implementer_prompt."""
+
+    @covers("REQ-0.0.11-02-03")
+    def test_compose_implementer_prompt_with_persona_context(self) -> None:
+        from gzkit.pipeline_dispatch import DispatchTask, compose_implementer_prompt
+
+        task = DispatchTask(
+            task_id=1,
+            description="Implement persona loading",
+            allowed_paths=["src/gzkit/models/persona.py"],
+            test_expectations=[],
+            complexity="simple",
+            model="haiku",
+        )
+        persona_body = (
+            "# Implementer Persona\n\n## Behavioral Anchors\n\n- **Methodical**: Follow the plan."
+        )
+        prompt = compose_implementer_prompt(task, brief_requirements=[], extra_context=persona_body)
+        self.assertIn("### Additional Context", prompt)
+        self.assertIn("Implementer Persona", prompt)
+        self.assertIn("Methodical", prompt)
+
+    @covers("REQ-0.0.11-02-03")
+    def test_load_persona_integrates_with_dispatch(self) -> None:
+        from gzkit.models.persona import load_persona
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            pdir = root / ".gzkit" / "personas"
+            pdir.mkdir(parents=True)
+            (pdir / "implementer.md").write_text(
+                "---\nname: implementer\ntraits:\n  - methodical\n"
+                "anti-traits:\n  - shortcuts\ngrounding: Craft.\n---\n\n"
+                "# Implementer Persona\n\nBody text.\n",
+                encoding="utf-8",
+            )
+            body = load_persona(root, "implementer")
+            self.assertIsNotNone(body)
+            self.assertIn("Implementer Persona", body)
+
+
 if __name__ == "__main__":
     unittest.main()
