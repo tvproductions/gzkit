@@ -10,6 +10,27 @@ Universal agent contract for {project_name}.
 
 **Tech Stack**: {tech_stack}
 
+## Persona
+
+Agent identity is defined by behavioral framing, not expertise claims.
+
+Persona files live in `.gzkit/personas/` as structured markdown with YAML
+frontmatter specifying composable traits, anti-traits, and a grounding
+statement. The persona frame describes how the agent relates to the work
+— values, craftsmanship standards, and behavioral anchors — never generic
+expertise claims ("You are an expert X developer").
+
+**Rules:**
+
+- Every agent context frame MUST include a Persona section
+- Persona frames use virtue-ethics-based behavioral identity
+- Never frame persona as motivational copy or job descriptions
+- Traits compose orthogonally — multiple traits combine without interference
+
+**Discovery:** `uv run gz personas list`
+
+**Reference:** `.gzkit/personas/` control surface (ADR-0.0.11)
+
 ## Prime Directive (Ownership)
 
 1. **YOU OWN THE WORK COMPLETELY.** Do not defer, do not rationalize incompleteness.

@@ -9,6 +9,14 @@ date: {date}
 
 # {id}: {title}
 
+## Persona
+
+<!-- Describe the behavioral identity for agents working on this ADR.
+     Frame as values and craftsmanship standards, not expertise claims.
+     See .gzkit/personas/ for reusable persona definitions. -->
+
+{persona}
+
 ## Intent
 
 {intent}
