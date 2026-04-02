@@ -22,6 +22,7 @@ from gzkit.core.validation_rules import (
     extract_headers,
     parse_frontmatter,
 )
+from gzkit.models.persona import discover_persona_files, validate_persona_structure
 from gzkit.validate_pkg.document import (
     validate_document,
     validate_frontmatter,
@@ -43,8 +44,30 @@ __all__ = [
     "validate_headers",
     "validate_ledger",
     "validate_manifest",
+    "validate_personas",
     "validate_surfaces",
 ]
+
+
+def validate_personas(project_root: Path) -> list[ValidationError]:
+    """Validate all persona files under ``.gzkit/personas/``.
+
+    Discovers persona files and runs structural validation on each.
+    Returns a list of ``ValidationError`` instances (empty if all valid).
+    """
+    personas_dir = project_root / ".gzkit" / "personas"
+    persona_files = discover_persona_files(personas_dir)
+    errors: list[ValidationError] = []
+    for pf in persona_files:
+        for msg in validate_persona_structure(pf):
+            errors.append(
+                ValidationError(
+                    type="persona",
+                    artifact=str(pf),
+                    message=msg,
+                )
+            )
+    return errors
 
 
 def validate_all(project_root: Path) -> ValidationResult:
@@ -88,6 +111,9 @@ def validate_all(project_root: Path) -> ValidationResult:
     from gzkit.instruction_audit import audit_instructions  # noqa: PLC0415
 
     errors.extend(audit_instructions(project_root))
+
+    # Validate persona files
+    errors.extend(validate_personas(project_root))
 
     return ValidationResult(
         valid=len(errors) == 0,
