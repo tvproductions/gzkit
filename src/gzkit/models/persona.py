@@ -62,6 +62,35 @@ def discover_persona_files(personas_dir: Path) -> list[Path]:
     return sorted(personas_dir.glob("*.md"))
 
 
+def validate_persona_structure(path: Path) -> list[str]:
+    """Validate a persona file for structural correctness beyond Pydantic.
+
+    Checks:
+    - Frontmatter parses successfully (delegates to ``parse_persona_file``)
+    - At least one trait defined
+    - At least one anti-trait defined
+    - Grounding text is non-empty
+    - ``name`` matches the filename stem
+
+    Returns a list of error messages (empty means valid).
+    """
+    errors: list[str] = []
+    try:
+        fm, _body = parse_persona_file(path)
+    except (ValueError, yaml.YAMLError) as exc:
+        return [f"{path.name}: {exc}"]
+
+    if not fm.traits:
+        errors.append(f"{path.name}: traits list must not be empty")
+    if not fm.anti_traits:
+        errors.append(f"{path.name}: anti-traits list must not be empty")
+    if not fm.grounding.strip():
+        errors.append(f"{path.name}: grounding text must not be empty")
+    if fm.name != path.stem:
+        errors.append(f"{path.name}: name '{fm.name}' does not match filename stem '{path.stem}'")
+    return errors
+
+
 def load_persona(project_root: Path, role_name: str) -> str | None:
     """Load persona body text for a pipeline role.
 
