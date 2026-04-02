@@ -188,6 +188,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         action="store_true",
         help="Validate all OBPI briefs against the canonical OBPI schema",
     )
+    p_validate.add_argument(
+        "--personas",
+        dest="check_personas",
+        action="store_true",
+        help="Validate persona files in .gzkit/personas/",
+    )
     add_json_flag(p_validate)
     p_validate.set_defaults(
         func=lambda a: validate(
@@ -197,6 +203,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_ledger=a.check_ledger,
             check_instructions=a.check_instructions,
             check_briefs=a.check_briefs,
+            check_personas=a.check_personas,
             as_json=a.as_json,
         )
     )
