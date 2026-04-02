@@ -49,7 +49,7 @@ def _git_init() -> str:
 
 @given("a heavy ADR exists with an OBPI brief")
 def step_heavy_adr_with_obpi(context) -> None:  # type: ignore[no-untyped-def]
-    code, output = _invoke(["plan", "0.1.0", "--lane", "heavy"])
+    code, output = _invoke(["plan", "create", "0.1.0", "--lane", "heavy"])
     assert code == 0, output
 
     # Create OBPI brief with allowed paths
