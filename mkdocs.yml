@@ -84,7 +84,8 @@ nav:
     - gz prd: user/commands/prd.md
     - gz constitute: user/commands/constitute.md
     - gz specify: user/commands/specify.md
-    - gz plan: user/commands/plan.md
+    - gz plan create: user/commands/plan-create.md
+    - gz plan audit: user/commands/plan-audit.md
     - gz implement: user/commands/implement.md
     - gz gates: user/commands/gates.md
     - gz status: user/commands/status.md
