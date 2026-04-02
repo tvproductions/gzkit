@@ -486,6 +486,23 @@ uv run gz task escalate TASK-<id> --reason "..." # Escalate with reason
 
 ---
 
+## Persona Commands
+
+Agent persona definitions live in `.gzkit/personas/` as the canonical control
+surface (ADR-0.0.11). The persona research synthesis
+(`docs/design/research-persona-selection-agent-identity.md`) distills five
+mechanistic studies into design principles that ground trait composition.
+The earlier `ADR-pool.per-command-persona-context` has been superseded;
+operators should supersede pool persona context references with the
+ADR-0.0.11 lineage.
+
+```bash
+uv run gz personas list              # List loaded persona definitions
+uv run gz personas list --json       # Machine-readable persona output
+```
+
+---
+
 ## Skill Commands
 
 ```bash

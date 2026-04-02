@@ -41,13 +41,13 @@ def step_init_default(_context) -> None:  # type: ignore[no-untyped-def]
 
 @given("a heavy ADR exists")
 def step_plan_heavy_adr(_context) -> None:  # type: ignore[no-untyped-def]
-    code, output = _invoke(["plan", "0.1.0", "--lane", "heavy"])
+    code, output = _invoke(["plan", "create", "0.1.0", "--lane", "heavy"])
     assert code == 0, output
 
 
 @given("ADR-0.1.0 exists")
 def step_plan_default_adr(_context) -> None:  # type: ignore[no-untyped-def]
-    code, output = _invoke(["plan", "0.1.0"])
+    code, output = _invoke(["plan", "create", "0.1.0"])
     assert code == 0, output
 
 
