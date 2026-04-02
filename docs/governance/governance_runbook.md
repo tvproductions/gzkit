@@ -105,6 +105,35 @@ See [State Doctrine](state-doctrine.md) for the full three-layer model, five aut
 | 2 | Ledger-driven reconciliation | `/gz-obpi-reconcile`, `/gz-adr-recon`, `gz audit` |
 | 3 | File sync and indexing | `/gz-obpi-sync`, `/gz-adr-sync`, `gz agent sync control-surfaces` |
 
+### Persona framing
+
+Every agent context frame includes a mandatory `## Persona` section (ADR-0.0.11).
+Persona files live in `.gzkit/personas/` as structured markdown with YAML frontmatter
+defining composable traits, anti-traits, and a behavioral grounding statement.
+
+**Key constraints:**
+
+- Persona frames describe behavioral identity — values, craftsmanship standards,
+  and relationship to the work
+- Never use generic expertise claims ("You are an expert X developer") — the PRISM
+  study shows these degrade accuracy while adding no knowledge
+- Traits compose orthogonally per the PERSONA/ICLR 2026 framework
+
+**Commands:**
+
+```bash
+uv run gz personas list               # Enumerate defined personas
+uv run gz personas list --json         # Machine-readable output
+```
+
+**Where persona appears:**
+
+| Surface | Location |
+|---------|----------|
+| Agent contract | `AGENTS.md` § Persona |
+| ADR context frames | `## Persona` section in each ADR |
+| Persona files | `.gzkit/personas/*.md` |
+
 ### Storage tier escalation
 
 Moving data from Tier A/B to Tier C is a **tier escalation** — a Heavy-lane decision
