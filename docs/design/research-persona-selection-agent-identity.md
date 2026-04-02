@@ -301,6 +301,12 @@ measurably influence code generation patterns.
 
 ## Synthesis: Design Principles for Agent Identity Framing
 
+The per-command cognitive stance concept originated in
+[ADR-pool.per-command-persona-context](adr/pool/ADR-pool.per-command-persona-context.md)
+(BMAD-inspired, 2026-03-08) and is now formalized under ADR-0.0.11's persona
+control surface. That pool ADR is superseded; this research document and the
+ADR-0.0.11 lineage are the canonical homes for its design ideas.
+
 Based on the research above, these principles should guide the ADR series:
 
 ### 1. Persona is geometric, not cosmetic
