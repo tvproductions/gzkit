@@ -311,6 +311,10 @@ gates are green.
 
 - **Research document:** `docs/design/research-persona-selection-agent-identity.md`
 - **Supersedes:** `ADR-pool.per-command-persona-context`
+- **Carried forward from pool ADR:** per-command cognitive stance concept (→ Decision),
+  `.gzkit/personas/` storage (→ Interfaces), cognitive-stance vs workflow distinction
+  (→ Intent + Research doc), one-agent-multiple-hats BMAD lesson (→ Non-Goals),
+  automatic context loading (→ Interfaces: loaded at dispatch time)
 
 ### Source & Contracts
 
