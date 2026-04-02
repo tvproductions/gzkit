@@ -14,9 +14,18 @@ inspired_by: bmad
 
 Superseded — subsumed into [ADR-0.0.11-persona-driven-agent-identity-frames](../foundation/ADR-0.0.11-persona-driven-agent-identity-frames/ADR-0.0.11-persona-driven-agent-identity-frames.md) as part of a three-ADR series (0.0.11, 0.0.12, 0.0.13) establishing persona as a first-class control surface.
 
-## Status
+## Lineage (Carried-Forward Ideas)
 
-Pool
+All design material from this pool ADR has been absorbed into [ADR-0.0.11](../foundation/ADR-0.0.11-persona-driven-agent-identity-frames/ADR-0.0.11-persona-driven-agent-identity-frames.md) and its lineage documents:
+
+| Pool ADR Idea | Canonical Destination |
+|---|---|
+| Per-command persona context loading | ADR-0.0.11 Decision: "per-command cognitive stance is a subset of the persona control surface" |
+| `.gzkit/personas/` storage location | ADR-0.0.11 Decision + Interfaces |
+| Cognitive stance vs workflow distinction | [Research doc](../../research-persona-selection-agent-identity.md) §Synthesis Principle 2; ADR-0.0.11 Intent |
+| One agent, multiple hats (BMAD lesson) | ADR-0.0.11 Non-Goals (no multiple concurrent agents) |
+| BMAD inspiration | [Research doc](../../research-persona-selection-agent-identity.md) §7 Production Agent Patterns |
+| Automatic context loading per command | ADR-0.0.11 Interfaces: loaded at dispatch time |
 
 ## Date
 
