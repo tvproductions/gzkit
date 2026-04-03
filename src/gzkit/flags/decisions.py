@@ -23,6 +23,7 @@ class FeatureDecisions:
     """
 
     def __init__(self, svc: FlagService) -> None:
+        """Initialize with a FlagService instance."""
         self._svc = svc
 
     def product_proof_enforced(self) -> bool:

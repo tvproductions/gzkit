@@ -513,6 +513,7 @@ def render_defense_brief_section(
         closing_args: OBPI ID to closing argument text.
         proof_obpis: ProductProofResult (or None). Accessed via duck typing.
         reviews: OBPI ID to REVIEW-*.md path.
+
     """
     lines = ["## Defense Brief", ""]
 

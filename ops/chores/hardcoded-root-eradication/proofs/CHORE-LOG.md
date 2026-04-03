@@ -1,37 +1,29 @@
-# CHORE-LOG: exceptions-and-logging-rationalization
+# CHORE-LOG: hardcoded-root-eradication
 
-## 2026-03-21T14:32:44-05:00
+## 2026-04-02T18:42:11-05:00
 - Status: PASS
-- Chore: exceptions-and-logging-rationalization
-- Title: Exceptions & Logging Rationalization
+- Chore: hardcoded-root-eradication
+- Title: Config-First Enforcement (Anti-Vibe-Code)
 - Lane: lite
 - Version: 1.0.0
 - Criteria Results:
-  - [PASS] `uv run -m unittest -q` => rc=0 (21.81s) — exit 0 == 0
-  - [PASS] `uvx ruff check src/gzkit --select E722` => rc=0 (0.08s) — exit 0 == 0
+  - [PASS] `grep -rn "Path(__file__).*parents" src/gzkit/eval/` => rc=1 (0.00s) -- output clean of 'parents'
+  - [PASS] `grep -rn "Path(__file__).*parents" src/gzkit/hooks/` => rc=1 (0.00s) -- output clean of 'parents'
+  - [PASS] `uv run gz lint` => rc=0 (0.39s) -- exit 0 == 0
+  - [PASS] `uv run gz check-config-paths` => rc=0 (0.29s) -- exit 0 == 0
+  - [PASS] `uv run -m unittest -q` => rc=0 (34.01s) -- exit 0 == 0
+  - [PASS] `grep -rn "Path(__file__).*parents\[" src/gzkit/ --include=*.py --exclude=quality.py` => rc=1 (0.01s) -- output clean of 'parents['
 
 ```text
-[uv run -m unittest -q] stdout:
-No dispatch data found for OBPI-NONEXISTENT
-[uv run -m unittest -q] stderr:
-----------------------------------------------------------------------
-Ran 961 tests in 21.409s
-
-OK
-[uvx ruff check src/gzkit --select E722] stdout:
+[uv run gz lint] stdout:
+Running linters...
 All checks passed!
-```
-## 2026-04-02T18:39:59-05:00
-- Status: PASS
-- Chore: exceptions-and-logging-rationalization
-- Title: Exceptions & Logging Rationalization
-- Lane: lite
-- Version: 1.0.0
-- Criteria Results:
-  - [PASS] `uv run -m unittest -q` => rc=0 (34.11s) -- exit 0 == 0
-  - [PASS] `uvx ruff check src/gzkit --select E722` => rc=0 (0.03s) -- exit 0 == 0
 
-```text
+ADR path contract check passed.
+No Path(__file__).parents[N] violations found.
+Lint passed.
+[uv run gz check-config-paths] stdout:
+Config-path audit passed.
 [uv run -m unittest -q] stdout:
 All frontmatter is aligned with ledger state. No changes.
                               State Repair Results
@@ -146,9 +138,9 @@ No stale flags.
 │ ops.stale_fl… │ ops      │ True    │ True  │ registry │ test  │ review:      │
 │               │          │         │       │          │       │ -456d        │
 └───────────────┴──────────┴─────────┴───────┴──────────┴───────┴──────────────┘
-Claimed: OBPI-0.1.0-01 (agent=unknown-73092, ttl=120m)
-Claimed: OBPI-0.1.0-01 (agent=unknown-73092, ttl=120m)
-Claimed: OBPI-0.1.0-01 (agent=unknown-73092, ttl=240m)
+Claimed: OBPI-0.1.0-01 (agent=unknown-77055, ttl=120m)
+Claimed: OBPI-0.1.0-01 (agent=unknown-77055, ttl=120m)
+Claimed: OBPI-0.1.0-01 (agent=unknown-77055, ttl=240m)
 No lock found: OBPI-0.1.0-01
 Released: OBPI-0.1.0-01
 No active locks.
@@ -162,7 +154,7 @@ No active locks.
     "unjustified_code_change_count": 0,
     "total_drift_count": 0
   },
-  "scan_timestamp": "2026-04-02T23:39:58.600865+00:00"
+  "scan_timestamp": "2026-04-02T23:42:11.264709+00:00"
 }
 {
   "unlinked_specs": [
@@ -176,13 +168,11 @@ No active locks.
     "unjustified_code_change_count": 0,
     "total_drift_count": 1
   },
-  "scan_timestamp": "2026-04-02T23:39:58.601499+00:00"
+  "scan_timestamp": "2026-04-02T23:42:11.265199+00:00"
 }
 [uv run -m unittest -q] stderr:
 ----------------------------------------------------------------------
-Ran 2359 tests in 33.847s
+Ran 2359 tests in 33.765s
 
 OK
-[uvx ruff check src/gzkit --select E722] stdout:
-All checks passed!
 ```
