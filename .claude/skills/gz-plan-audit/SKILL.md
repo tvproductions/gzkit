@@ -280,6 +280,6 @@ Future gate logic to preserve:
 ## Related
 
 - `.gzkit/skills/gz-obpi-pipeline/SKILL.md`
-- `.gzkit/skills/gz-obpi-audit/SKILL.md`
+- `.gzkit/skills/gz-obpi-reconcile/SKILL.md`
 - `.gzkit/skills/gz-session-handoff/SKILL.md`
 - `docs/design/adr/pre-release/ADR-0.12.0-obpi-pipeline-enforcement-parity/claude-pipeline-hooks-parity-matrix.md`

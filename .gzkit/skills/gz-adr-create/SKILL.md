@@ -155,7 +155,7 @@ This skill maintains explicit alignment between skill version and GovZero versio
 ## Assets
 
 - **ADR Template:** `assets/ADR_TEMPLATE_SEMVER.md` (co-located with this skill)
-- **OBPI Brief Template:** `src/gzkit/templates/obpi.md` (canonical; `.github/skills/gz-obpi-brief/assets/OBPI_BRIEF-template.md` is the authoring guide)
+- **OBPI Brief Template:** `src/gzkit/templates/obpi.md` (canonical; `.gzkit/skills/gz-obpi-specify/assets/OBPI_BRIEF-template.md` is the authoring guide)
 - **Closeout Form:** Use pattern from existing ADR closeout forms
 
 ## Outputs
@@ -275,7 +275,7 @@ The ADR template includes these sections that must be populated:
 ## Related Skills
 
 - `gz-adr-evaluate`: Post-authoring QC evaluation before proposal/defense
-- `gz-obpi-brief`: Create individual OBPI briefs
+- `gz-obpi-specify`: Create and author OBPI briefs from ADR decomposition
 - `gz-adr-closeout-ceremony`: Execute closeout ceremony
 - `gz-adr-audit`: Verify ADR evidence (includes evidence checks and coverage discovery)
 - `gz-adr-sync`: Sync ADR index/status from ADR files (includes registration)

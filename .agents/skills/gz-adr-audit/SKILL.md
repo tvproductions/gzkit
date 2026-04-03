@@ -32,7 +32,7 @@ This is a **Layer 2** tool — it consumes proof from the ledger rather than re-
 
 **Trust Chain:**
 
-1. **Layer 1 tools** (`gz-obpi-audit`, `gz adr audit-check`) run tests, check coverage, validate evidence
+1. **Layer 1 tools** (`gz-obpi-reconcile`, `gz adr audit-check`) run tests, check coverage, validate evidence
 2. **Layer 1 writes proof** to `logs/obpi-audit.jsonl` with status entries
 3. **This tool reads proof** — if all briefs show PASS/Completed, skip re-verification
 4. **Gate 5 attests** to the presence of proof, not re-execution
