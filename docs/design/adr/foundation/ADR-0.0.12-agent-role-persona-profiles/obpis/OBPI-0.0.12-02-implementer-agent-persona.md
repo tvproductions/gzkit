@@ -17,13 +17,11 @@ status: Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-TBD
+Enrich the existing `.gzkit/personas/implementer.md` with ADR-0.0.12 research-grounded behavioral anchors — adding plan-then-write, whole-file thinking, and PEP 8 as identity (not checklist) to the trait cluster while preserving the working traits from ADR-0.0.11.
 
 ## Lane
 
-**Lite** - This OBPI remains internal to the promoted ADR implementation scope.
+**Lite** - This OBPI enriches an existing internal persona file without changing any external command, API, or schema surface.
 
 > Heavy is reserved for command/API/schema/runtime-contract changes. Process,
 > documentation, and template-only work stays Lite unless it changes one of
@@ -31,59 +29,55 @@ TBD
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `.gzkit/personas/implementer.md` — primary deliverable (enrich existing persona)
+- `tests/test_persona_model.py` — schema validation tests
+- `tests/test_persona_schema.py` — structural validation tests
+- `docs/design/adr/foundation/ADR-0.0.12-agent-role-persona-profiles/` — parent ADR package
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
-- Paths not listed in Allowed Paths
+- `.gzkit/personas/main-session.md` — owned by OBPI-01
+- `.gzkit/personas/spec-reviewer.md` — owned by OBPI-03
+- `.gzkit/personas/quality-reviewer.md` — owned by OBPI-03
+- `src/gzkit/pipeline_runtime.py` — owned by OBPI-06
+- `AGENTS.md` — owned by OBPI-07
 - New dependencies
 - CI files, lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: Updated persona MUST continue to validate against PersonaFrontmatter schema
+1. REQUIREMENT: Traits MUST include plan-then-write, whole-file thinking, and PEP-8-as-identity behavioral anchors
+1. REQUIREMENT: Existing working traits (methodical, test-first, atomic-edits, complete-units) MUST be preserved or refined, never removed
+1. NEVER: Use expertise claims ("You are a senior Python developer with deep expertise in PEP 8")
+1. ALWAYS: Anti-traits explicitly suppress observed failure modes (partial edits, import splitting, shallow PEP 8 compliance, token-efficiency shortcuts)
 
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if `.gzkit/personas/implementer.md` does not exist from ADR-0.0.11, print a BLOCKERS list and halt.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first. -->
-
 **Governance (read once, cache):**
 
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
+- [ ] `AGENTS.md` - agent operating contract and persona section
+- [ ] Parent ADR - understand research grounding and PRISM constraint
 
 **Context:**
 
 - [ ] Parent ADR: `docs/design/adr/foundation/ADR-0.0.12-agent-role-persona-profiles/ADR-0.0.12-agent-role-persona-profiles.md`
+- [ ] ADR-0.0.12 Rationale section — "Evidence from Production Failures" subsection
 - [ ] Related OBPIs in same ADR
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
+- [ ] Existing persona file: `.gzkit/personas/implementer.md` (from ADR-0.0.11)
+- [ ] Persona model: `src/gzkit/models/persona.py` (PersonaFrontmatter)
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+- [ ] Current implementer persona: `.gzkit/personas/implementer.md` — read current traits, anti-traits, grounding, and body
+- [ ] Test patterns: `tests/test_persona_model.py`, `tests/test_persona_schema.py`
 
 ## Quality Gates
-
-<!-- Which gates apply and how to verify them. -->
 
 ### Gate 1: ADR
 
@@ -101,50 +95,26 @@ TBD
 - [ ] Lint clean: `uv run gz lint`
 - [ ] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
-### Gate 3: Docs (Heavy only)
-
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
-
-### Gate 4: BDD (Heavy only)
-
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
-
-### Gate 5: Human (Heavy only)
-
-- [ ] Human attestation recorded
-
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
-uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
 uv run gz test
 
 # Specific verification for this OBPI
-command --to --verify
+uv run gz personas list
+uv run -m unittest tests/test_persona_schema.py -v
+test -f .gzkit/personas/implementer.md
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.0.12-02-01: Given/When/Then behavior criterion 1
-- [ ] REQ-0.0.12-02-02: Given/When/Then behavior criterion 2
-- [ ] REQ-0.0.12-02-03: Given/When/Then behavior criterion 3
+- [ ] REQ-0.0.12-02-01: Given the existing implementer.md, when enriched with ADR-0.0.12 traits, then schema validation passes and grounding addresses the "plan-first, whole-file, deeply-compliant" trait cluster from the ADR rationale
+- [ ] REQ-0.0.12-02-02: Given the PRISM constraint, when the updated persona is reviewed, then behavioral identity framing is used throughout — no expertise claims
+- [ ] REQ-0.0.12-02-03: Given `uv run gz personas list`, when implementer persona is listed, then enriched traits (including plan-then-write and whole-file) appear in output
 
 ## Completion Checklist
-
-<!-- Verify all gates before marking OBPI accepted. -->
 
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
 - [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
@@ -156,9 +126,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
 ## Evidence
-
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
 
 ### Gate 1 (ADR)
 
@@ -174,24 +141,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ```text
 # Paste lint/format/type check output here
-```
-
-### Gate 3 (Docs)
-
-```text
-# Paste docs-build output here when Gate 3 applies
-```
-
-### Gate 4 (BDD)
-
-```text
-# Paste behave output here when Gate 4 applies
-```
-
-### Gate 5 (Human)
-
-```text
-# Record attestation text here when required by parent lane
 ```
 
 ### Value Narrative
@@ -211,9 +160,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - Defects noted:
 
 ## Tracked Defects
-
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
 
 _No defects tracked._
 

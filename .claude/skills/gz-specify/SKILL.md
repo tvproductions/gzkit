@@ -1,17 +1,46 @@
 ---
 name: gz-specify
-description: Create OBPI briefs linked to parent ADR items. Use when decomposing implementation into OBPI increments.
+description: Create and semantically author OBPI briefs linked to parent ADR items. Use when decomposing implementation into OBPI increments.
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-03-30
+last_reviewed: 2026-04-03
 ---
 
-# gz specify
+# gz-specify
 
-Decompose an ADR's Feature Checklist into implementable OBPI briefs. Each brief
-inherits lane, objective, and scope from the parent ADR's WBS table — not from
-hardcoded defaults.
+Decompose an ADR's Feature Checklist into implementable OBPI briefs. The CLI
+scaffolds the file (frontmatter, lane, ledger event). The model authors the
+content (reading the ADR deeply and composing each load-bearing section with
+semantic substance). The CLI validates the result.
+
+---
+
+## The Iron Law
+
+```
+THE BRIEF IS NOT DONE UNTIL VALIDATION PASSES AND THE USER REVIEWS IT.
+```
+
+A scaffolded brief is not an authored brief. Regex extraction is not
+interpretation. Structural completeness is not semantic substance. The OBPI
+brief is the most critical artifact in the governance pipeline — it carries
+domain requirements, architectural fitness functions, and execution scope that
+the pipeline grounds against during implementation, verification, and ceremony.
+
+If the brief is thin, the pipeline produces thin work.
+
+### Rationalization Prevention
+
+| Thought | Reality |
+|---------|---------|
+| "The scaffolded brief has all sections filled" | Filled is not authored. Regex output needs semantic rewriting. |
+| "I extracted requirements from the ADR" | Extraction is mechanical. Requirements must be OBPI-specific, not ADR-wide. |
+| "Allowed Paths match the Integration Points" | Integration Points are ADR-wide. Narrow to THIS checklist item's scope. |
+| "The acceptance criteria have REQ IDs" | Having IDs is structural. The criteria must be specific to THIS deliverable. |
+| "Validation passes so the brief is ready" | Validation checks structure. Quality requires semantic substance. |
+| "I can batch all 7 briefs for efficiency" | Batching encourages pattern-matching across items. Author one brief at a time with depth. |
+| "The ADR Decision bullets are good requirements" | ADR decisions are architectural rationale. OBPI requirements are executable constraints an implementer can verify compliance against. |
 
 ---
 
@@ -20,6 +49,8 @@ hardcoded defaults.
 - After an ADR is authored and its Decomposition Scorecard is valid
 - When the Feature Checklist and WBS table are aligned (same count, same ordering)
 - To create one OBPI brief per checklist item
+- When the user says "specify OBPI for ADR-X.Y.Z item N"
+- When the user says "author the brief for OBPI-X.Y.Z-NN"
 
 ## When NOT to Use
 
@@ -31,93 +62,336 @@ hardcoded defaults.
 
 ## Invocation
 
+```text
+/gz-specify ADR-0.0.12 --item 3
+/gz-specify ADR-0.0.12 --item 3 --lane heavy
+/gz-specify ADR-0.0.12 --all          # author all briefs sequentially
+```
+
+**One brief at a time.** Each brief requires deep reasoning about a specific
+checklist item's scope. Depth over throughput. The `--all` variant processes
+items sequentially, presenting each to the user before continuing.
+
+---
+
+## Pipeline Contract: What the Brief Must Carry
+
+The OBPI pipeline parses and enforces these sections. They are the authoring
+targets — everything else is ceremony or documentation.
+
+| Brief Section | Pipeline Stage | What the Pipeline Does With It |
+|---|---|---|
+| Frontmatter (`id`, `parent`, `lane`, `status`) | Stage 1 | Schema validation, ADR lookup, lane resolution |
+| **Objective** | Stage 4 | Value narrative in acceptance ceremony |
+| **Allowed Paths** | Stage 2 + hooks | Scope enforcement — blocks out-of-scope file changes |
+| **Denied Paths** | Authored readiness gate | Scope boundary definition |
+| **Requirements (FAIL-CLOSED)** | Stage 3 | Each numbered item becomes a verification scope dispatched to subagents |
+| **Discovery Checklist** | Authored readiness gate | Prerequisites and existing-code context for implementers |
+| **Verification** | Stage 3 | Commands executed sequentially; outputs become ceremony evidence |
+| **Acceptance Criteria** | Stage 4 | REQ-ID-backed checkboxes mapped to requirements in ceremony |
+
+If any load-bearing section is thin, the corresponding pipeline stage
+produces thin work. The brief is the execution contract.
+
+---
+
+## Procedure
+
+### Phase 1: Load ADR Context
+
+Read the parent ADR **thoroughly** — not just the checklist item. The model
+must understand the full architectural intent to scope the brief correctly.
+
+**Read these ADR sections and extract:**
+
+| ADR Section | What to Extract | Brief Section It Feeds |
+|---|---|---|
+| Intent | Before/after state, problem definition, target outcome | Objective |
+| Decision | Numbered decisions with per-item rationale | Requirements |
+| Non-Goals | Explicit exclusions with handoff references | Denied Paths |
+| Interfaces | New/modified artifacts with paths | Allowed Paths |
+| Integration Points | Connected systems with paths | Discovery Prerequisites |
+| Feature Checklist | The specific item text for this OBPI | Objective, scope boundary |
+| WBS Table | Specification summary, lane, status | Objective, Lane |
+| Alternatives Considered | Rejected approaches and why | Requirements (what NOT to do) |
+| Consequences | Positive/negative outcomes | Verification targets |
+| Agent Context Frame | Critical Constraint, Anti-Pattern Warning | Requirements |
+| Rationale | Research grounding, evidence citations | Acceptance Criteria framing |
+
+**Also read:**
+
+- **Adjacent OBPIs** — if other briefs exist for the same ADR, read their
+  Allowed Paths to understand scope boundaries between items
+- **Actual source files** — read the files referenced in Integration Points
+  and Interfaces to understand current codebase state. This informs Discovery
+  Checklist prerequisites and existing-code entries with real paths, not
+  inferred ones.
+
+### Phase 2: CLI Scaffold
+
+Run the CLI to create the brief file with correct frontmatter, lane, and
+ledger event:
+
 ```bash
-# Create one OBPI brief (lane and objective from WBS table)
-uv run gz specify my-feature-slug --parent ADR-0.0.11 --item 3
-
-# Create and author one OBPI brief in one pass
-uv run gz specify my-feature-slug --parent ADR-0.0.11 --item 3 --author
-
-# Override lane explicitly
-uv run gz specify my-feature-slug --parent ADR-0.0.11 --item 3 --lane heavy
-
-# Dry run (show what would be created)
-uv run gz specify my-feature-slug --parent ADR-0.0.11 --item 3 --dry-run
-
-# Create all OBPIs for an ADR (run once per checklist item)
-for i in $(seq 1 6); do
-  uv run gz specify slug-$i --parent ADR-0.0.11 --item $i
-done
+uv run gz specify <slug> --parent ADR-X.Y.Z --item N
 ```
+
+Read the generated file. The CLI produces a structural scaffold with
+regex-extracted content. Some sections will have substantive content; others
+will have fallback defaults. The model's job is to replace ALL mechanical
+content with semantically authored content.
+
+### Phase 3: Semantic Authoring
+
+For each load-bearing section, compose content using the ADR context loaded
+in Phase 1. The protocol below specifies what to read, what the pipeline
+expects, and what quality looks like for each section.
+
+**Write the complete brief as a single atomic Write operation** — the
+`obpi-completion-validator.py` hook fires on edits and checks structural
+coherence. Incremental edits risk hook rejection.
 
 ---
 
-## What the Command Does
+#### 3a. Objective
 
-1. **Reads the parent ADR** — resolves file, parses Feature Checklist and Decomposition Scorecard
-2. **Validates alignment** — checklist item count must match scorecard target
-3. **Parses the WBS table** — extracts lane, specification summary, and status per row
-4. **Resolves lane** — priority: explicit `--lane` CLI arg > WBS table row > fallback `lite`
-5. **Resolves objective** — from WBS specification summary column (not "TBD")
-6. **Creates the brief** — renders the OBPI template with populated frontmatter
-7. **Records the ledger event** — appends `obpi_created` to the project ledger
+**Read:** WBS specification summary + Feature Checklist item text + ADR Intent
 
----
+**Pipeline expects:** One sentence that answers "what does done look like?"
+Used as the value narrative in Stage 4 ceremony — the human reads this to
+decide whether to attest.
 
-## Lane Resolution
+**Thin (anti-pattern):**
+> TBD
 
-| Source | When Used |
-|--------|-----------|
-| `--lane heavy` (CLI) | Always wins when explicitly passed |
-| WBS table row | Used when `--lane` is not passed and WBS table has a row for this item |
-| Fallback `lite` | Used when neither CLI nor WBS provides a lane |
+> Implement the feature described in the ADR.
 
-The command prints the lane source so the operator can verify:
-```
-Lane: heavy (source: WBS table)
-```
+> Main session persona frame (Python craftsperson identity).
+
+**Rich (quality target):**
+> Create `.gzkit/personas/main-session.md` containing the "Python craftsperson"
+> behavioral identity frame for the main Claude Code session, following the
+> PersonaFrontmatter schema established by ADR-0.0.11.
+
+The objective must name the concrete artifact or behavior change, not restate
+the process.
 
 ---
 
-## Authored-Readiness Contract
+#### 3b. Allowed Paths
 
-`gz specify` is the ADR-to-OBPI decomposition command, not a pseudo-authoring
-shortcut. It fills the brief with deterministic ADR-derived content, but the
-brief is only ready for pipeline execution when it passes authored validation:
+**Read:** ADR Interfaces section + Integration Points + actual filesystem
+
+**Pipeline expects:** Markdown bullet list of paths. Each path becomes a glob
+pattern in the scope enforcement hook. Out-of-allowlist changes are BLOCKED.
+
+**Compose by:**
+1. Start with the ADR Interfaces for THIS checklist item (not the whole ADR)
+2. Add test files adjacent to the implementation paths
+3. Add the parent ADR package directory
+4. Verify each path exists (or note it will be created)
+5. Annotate each path with WHY it is in scope for this specific item
+
+**Thin:**
+> - `src/module/` — scope TBD
+> - `tests/test_module.py` — scope TBD
+
+**Rich:**
+> - `.gzkit/personas/main-session.md` — primary deliverable (new persona file)
+> - `tests/test_persona_schema.py` — structural validation tests for the new persona
+> - `docs/design/adr/foundation/ADR-0.0.12-*/` — parent ADR package
+
+---
+
+#### 3c. Denied Paths
+
+**Read:** ADR Non-Goals + other OBPIs' Allowed Paths
+
+**Pipeline expects:** Bullet list of exclusions. Validates presence and
+substantiveness for authored readiness.
+
+**Compose by:**
+1. Convert Non-Goals to path exclusions (e.g., "Persona versioning" → the
+   versioning infrastructure paths)
+2. List paths that belong to OTHER OBPIs in the same ADR (scope isolation)
+3. Add standard exclusions (CI, lockfiles, dependencies)
+
+**Thin:**
+> - Paths not listed in Allowed Paths
+
+**Rich:**
+> - `.gzkit/personas/implementer.md` — owned by OBPI-02
+> - `src/gzkit/pipeline_runtime.py` — owned by OBPI-06 (dispatch integration)
+> - `AGENTS.md` — owned by OBPI-07 (contract surface change)
+> - New dependencies, CI files, lockfiles
+
+---
+
+#### 3d. Requirements (FAIL-CLOSED)
+
+**Read:** ADR Decision + Critical Constraint + Anti-Pattern Warning +
+Alternatives Considered (rejected approaches become NEVER rules)
+
+**Pipeline expects:** Numbered list with `REQUIREMENT:`, `NEVER:`, or
+`ALWAYS:` prefix. Each numbered requirement becomes a **verification scope**
+in Stage 3 — the pipeline dispatches a verification subagent per requirement.
+
+**Compose by:**
+1. Start with the ADR's Critical Constraint — this is the highest-priority
+   requirement
+2. Derive OBPI-specific rules from the Decision items that apply to THIS
+   checklist item (not all decisions)
+3. Convert rejected Alternatives into NEVER rules (what the implementer must
+   not do)
+4. Add scope discipline rules (stay inside Allowed Paths, STOP on blockers)
+
+**Thin (copying ADR Decision bullets verbatim):**
+> 1. REQUIREMENT: Each agent role gets a dedicated persona file
+> 2. REQUIREMENT: Persona frames follow the ADR-0.0.11 schema
+
+**Rich (OBPI-specific, actionable, verifiable):**
+> 1. REQUIREMENT: Persona file MUST validate against PersonaFrontmatter schema
+>    (name, traits, anti-traits, grounding fields)
+> 2. REQUIREMENT: Persona MUST use virtue-ethics behavioral identity framing,
+>    NOT expertise claims (PRISM constraint)
+> 3. NEVER: Frame persona as "You are an expert X developer" or any
+>    expertise-claim variant
+> 4. ALWAYS: Grounding statement describes relationship to work, values, and
+>    craftsmanship standards — behavioral identity, not job description
+
+---
+
+#### 3e. Discovery Checklist
+
+**Read:** ADR Integration Points + actual codebase (read the files)
+
+**Pipeline expects:** Two subsections under `## Discovery Checklist`:
+- `**Prerequisites (check existence, STOP if missing):**` — real paths that
+  must exist before implementation starts
+- `**Existing Code (understand current state):**` — actual modules and test
+  files the implementer should read first
+
+**Compose by:**
+1. For Prerequisites: check whether each Integration Point path actually
+   exists. If it does, list it. If it does not, note that it will be created.
+2. For Existing Code: read the files adjacent to Allowed Paths. Identify the
+   patterns the implementer should follow (exemplars, test conventions).
+
+**Thin:**
+> - [ ] Required file/module exists: `path/to/prerequisite`
+
+**Rich:**
+> - [ ] Persona control surface exists: `.gzkit/personas/`
+> - [ ] Persona model exists: `src/gzkit/models/persona.py` (PersonaFrontmatter)
+> - [ ] Exemplar persona exists: `.gzkit/personas/implementer.md`
+
+---
+
+#### 3f. Verification
+
+**Read:** The artifacts this OBPI creates or modifies
+
+**Pipeline expects:** Bash code block with commands executed in Stage 3.
+Baseline commands (`gz lint`, `gz typecheck`, `gz test`) always run.
+OBPI-specific commands must prove THIS item specifically.
+
+**Compose by:**
+1. What file(s) does this OBPI create? → `test -f <path>`
+2. What test module covers this OBPI? → `uv run -m unittest <module> -v`
+3. What CLI command exercises this OBPI? → `uv run gz <command>`
+4. For Heavy lane: docs build + BDD feature commands
+
+**Thin:**
+> ```bash
+> command --to --verify
+> ```
+
+**Rich:**
+> ```bash
+> uv run gz personas list
+> uv run -m unittest tests/test_persona_schema.py -v
+> test -f .gzkit/personas/main-session.md
+> ```
+
+---
+
+#### 3g. Acceptance Criteria
+
+**Read:** ADR Decision + Rationale + the specific deliverable
+
+**Pipeline expects:** Checkbox list with `REQ-X.Y.Z-NN-##` IDs in
+Given/When/Then format. Mapped to Requirements in Stage 4 ceremony.
+
+**Compose by:**
+1. Each criterion must map to a specific Requirement from section 3d
+2. Each criterion must be deterministically verifiable (not subjective)
+3. Each criterion must name the specific artifact or behavior being tested
+4. Use Given/When/Then structure grounded in the domain
+
+**Thin:**
+> - [ ] REQ-0.0.12-01-01: Given/When/Then behavior criterion 1
+
+**Rich:**
+> - [ ] REQ-0.0.12-01-01: Given the PersonaFrontmatter schema, when
+>   `.gzkit/personas/main-session.md` is parsed, then validation passes with
+>   name matching filename stem and non-empty traits, anti-traits, and grounding
+> - [ ] REQ-0.0.12-01-02: Given the PRISM constraint, when the persona
+>   grounding and body are reviewed, then NO expertise claims appear — only
+>   behavioral identity framing
+
+---
+
+### Phase 4: Validation Loop
+
+Run the authored-readiness validation:
 
 ```bash
-uv run gz obpi validate --adr ADR-0.0.11 --authored
+uv run gz obpi validate --authored <path-to-brief>
 ```
 
-That gate requires each brief to have substantive:
+If validation fails:
+1. Read the specific error messages
+2. Fix the failing sections
+3. Re-run validation
+4. Iterate until PASS
 
-- Objective
-- Allowed Paths
-- Denied Paths
-- Requirements (FAIL-CLOSED)
-- Discovery Checklist prerequisites and existing-code entries
-- OBPI-specific verification commands
-- REQ-backed acceptance criteria
+Present the validation output to the user.
 
-## Skill Responsibility
+### Phase 5: Self-Evaluation
 
-The skill does not stop at `uv run gz specify`.
+Score the authored brief against 5 quality dimensions (1-4 scale):
 
-The intended workflow is:
+| Dimension | Question |
+|-----------|----------|
+| Independence | Can this OBPI be completed without waiting for others except declared dependencies? |
+| Testability | Can completion be verified with the stated Verification commands? |
+| Value | What concrete capability would be lost if this OBPI were removed? |
+| Size | Is this a 1-3 day work unit? |
+| Clarity | Could a different agent implement this without ambiguity? |
 
-1. Run `gz specify --author` to materialize the OBPI from the ADR/WBS contract and execute the authored pass.
-2. Read the parent ADR sections that govern the item: Feature Checklist, WBS row,
-   Intent, Decision, Interfaces, Evidence, and adjacent OBPIs when needed.
-3. Author the brief semantically:
-   - narrow Allowed Paths and Denied Paths to the real execution boundary
-   - rewrite Requirements into OBPI-specific fail-closed rules
-   - populate Discovery Checklist with real prerequisite and existing-code reads
-   - replace generic verification with commands that prove this item specifically
-   - ensure Acceptance Criteria are concrete and mapped to REQ IDs
-4. Run `uv run gz obpi validate --authored <path>` and keep authoring until it passes.
+**Threshold:** All dimensions >= 3. Any dimension scoring 1 requires revision
+before presenting.
 
-The CLI owns deterministic decomposition. The skill owns the semantic authoring
-pass that turns the generated brief into an execution contract.
+Present the authored brief with dimension scores. The user reviews the brief
+itself — the model's job is to produce a brief worth reviewing.
+
+---
+
+## Validation Commands
+
+```bash
+# Validate one brief
+uv run gz obpi validate --authored <path-to-brief>
+
+# Validate all briefs for an ADR
+uv run gz obpi validate --adr ADR-X.Y.Z --authored
+
+# Verify lane assignments match WBS
+grep "^lane:" docs/design/adr/**/ADR-X.Y.Z-*/obpis/*.md
+
+# Run evaluation to check OBPI scores
+uv run gz adr evaluate ADR-X.Y.Z
+```
 
 ---
 
@@ -126,33 +400,15 @@ pass that turns the generated brief into an execution contract.
 - Parent ADR must have a valid Decomposition Scorecard
 - Feature Checklist item count must match scorecard `Final Target OBPI Count`
 - Parent ADR must not be a pool ADR
+- Parent ADR evaluation should be CONDITIONAL GO or GO (warn if NO GO)
 
 ## Post-Conditions
 
-- OBPI brief file created at `{adr-dir}/obpis/OBPI-{version}-{NN}-{slug}.md`
-- Lane matches WBS table (or CLI override)
-- Objective derived from WBS specification summary
-- `obpi_created` ledger event recorded
-
----
-
-## Validation
-
-After creating all briefs:
-
-```bash
-# Fail closed if any brief is still thin or pseudo-authored
-uv run gz obpi validate --adr ADR-0.0.11 --authored
-
-# Verify count matches
-ls docs/design/adr/foundation/ADR-0.0.11-*/obpis/ | wc -l
-
-# Verify lanes match WBS
-grep "^lane:" docs/design/adr/foundation/ADR-0.0.11-*/obpis/*.md
-
-# Register any unregistered OBPIs
-uv run gz register-adrs ADR-0.0.11 --all
-```
+- OBPI brief file created with correct frontmatter, lane, and ledger event
+- All load-bearing sections authored with semantic substance (not regex output)
+- `uv run gz obpi validate --authored` passes
+- All 5 quality dimensions score >= 3
+- User has reviewed and accepted the brief
 
 ---
 
@@ -161,6 +417,7 @@ uv run gz register-adrs ADR-0.0.11 --all
 | Skill | Relationship |
 |-------|--------------|
 | `gz-adr-create` | Creates the parent ADR that specify decomposes |
-| `gz-obpi-brief` | Alternative manual brief creation |
-| `gz-obpi-pipeline` | Executes briefs created by specify |
-| `gz-adr-evaluate` | Evaluates ADR+OBPI quality (run after specify) |
+| `gz-design` | Design dialogue that produces the ADR intent specify interprets |
+| `gz-obpi-pipeline` | Executes briefs created by specify — the downstream consumer |
+| `gz-adr-evaluate` | Evaluates ADR+OBPI quality (run after specify to verify scores) |
+| `gz-plan-audit` | Pre-flight alignment audit between plan and brief (downstream) |

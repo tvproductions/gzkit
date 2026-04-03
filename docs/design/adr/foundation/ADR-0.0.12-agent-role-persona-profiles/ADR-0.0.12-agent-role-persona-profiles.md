@@ -105,24 +105,54 @@ rules (those belong in `.claude/rules/`) or vague aspirations.
 
 ## Intent
 
-Write concrete, research-grounded persona frames for every agent role in
-gzkit's architecture, applying the design principles and control surface
-established by ADR-0.0.11. Each persona frame activates the specific
-behavioral trait cluster that role requires, replacing the default generic
-Assistant persona that causes quality failures.
+ADR-0.0.11 established the persona control surface — schema, storage,
+composition, validation, CLI — and delivered one exemplar (`implementer.md`).
+The remaining five agent roles (main session, spec-reviewer, quality-reviewer,
+narrator, pipeline orchestrator) still operate with the default generic
+Assistant persona. In the current state, dispatch prompts contain task
+instructions and behavioral rules but no identity framing, which causes
+models to default to the Assistant persona's correlated trait cluster:
+token-efficient, incremental, shallow-compliant. This trait cluster is the
+direct cause of observed production failures — import splitting, partial edits,
+rubber-stamp reviews, and premature pipeline summarization.
+
+After this ADR, every agent role has a research-grounded persona frame loaded
+at dispatch time (subagents) or session start (main session). Each frame
+activates the specific behavioral trait cluster that role requires, using the
+virtue-ethics framing established by ADR-0.0.11's design principles. The
+existing implementer persona is enriched with ADR-specific research findings,
+and pipeline dispatch is wired to load persona frames automatically.
 
 ## Decision
 
-- Each agent role gets a dedicated persona file in `.gzkit/personas/`
-- Persona frames follow the ADR-0.0.11 schema (traits, anti-traits, grounding)
-- The **implementer persona** is the highest-priority frame — it directly
-  addresses the observed failure modes (partial edits, import splitting,
-  shallow PEP 8 compliance)
-- Pipeline dispatch (`pipeline_runtime.py`) loads the relevant persona frame
-  and prepends it to the subagent prompt
-- Main session persona is loaded via AGENTS.md/CLAUDE.md integration
-- Persona frames are **tested** — schema validation ensures they conform to
-  the control surface contract
+1. Each agent role gets a **dedicated persona file** in `.gzkit/personas/`,
+   one file per role. This follows the existing control surface pattern from
+   ADR-0.0.11 and allows independent evolution of each persona without
+   coupling to the agent profile or skill files that reference them.
+
+2. Persona frames follow the **ADR-0.0.11 schema** (traits, anti-traits,
+   grounding). No new schema is introduced — this ADR writes content into the
+   existing structure, not new structure.
+
+3. The **implementer persona is highest priority** — it directly addresses the
+   observed production failures (partial edits, import splitting, shallow PEP 8
+   compliance). The existing `implementer.md` from ADR-0.0.11 is enriched
+   rather than replaced, preserving working traits.
+
+4. Pipeline dispatch (`pipeline_runtime.py`) **loads the relevant persona
+   frame and prepends it** to the subagent prompt. The `load_persona()`
+   function from ADR-0.0.11 already supports this; OBPI-06 wires it into
+   the prompt composition functions.
+
+5. Main session persona is loaded via **AGENTS.md integration**, not dispatch.
+   The main session operates in the conversation context, not via subagent
+   dispatch, so persona content is referenced in the operator contract rather
+   than injected at runtime.
+
+6. Persona frames are **tested via schema validation** — the existing
+   `validate_personas()` function from ADR-0.0.11 ensures every persona file
+   conforms to the PersonaFrontmatter contract. Content quality is a human
+   judgment exercised at OBPI acceptance, not an automated gate.
 
 ## Non-Goals
 
@@ -154,7 +184,7 @@ Assistant persona that causes quality failures.
 
 | # | OBPI | Specification Summary | Lane | Status |
 |---|------|----------------------|------|--------|
-| 1 | OBPI-0.0.12-01 | Main session persona frame (Python craftsperson identity) | Heavy | Pending |
+| 1 | OBPI-0.0.12-01 | Main session persona frame (Python craftsperson identity) | Lite | Pending |
 | 2 | OBPI-0.0.12-02 | Implementer agent persona (plan-then-write, whole-file thinking) | Lite | Pending |
 | 3 | OBPI-0.0.12-03 | Reviewer agent personas (spec-reviewer + quality-reviewer) | Lite | Pending |
 | 4 | OBPI-0.0.12-04 | Narrator agent persona (clarity, operator-value framing) | Lite | Pending |
@@ -202,6 +232,34 @@ default Assistant persona's trait cluster: "token-efficient, incremental,
 shallow-compliant." The implementer persona must activate the opposing
 cluster: "plan-first, whole-file, deeply-compliant."
 
+## Alternatives Considered
+
+1. **Treat persona authoring as an operational chore, not an ADR** — Rejected
+   because the work includes code changes to `pipeline_runtime.py` (dispatch
+   integration) and AGENTS.md (operator contract). The persona files themselves
+   are content, but the dispatch wiring and contract integration are
+   architecture. A chore cannot govern Heavy-lane contract changes.
+
+2. **Write only the two highest-impact personas (implementer + reviewer) and
+   defer the rest** — Rejected because the dispatch integration (OBPI-06)
+   needs to handle all roles, and deferring persona authoring for narrator
+   and orchestrator means dispatch code ships with untested fallback paths.
+   Completing all six personas in one ADR ensures the dispatch integration
+   is fully exercised.
+
+3. **Embed persona content directly in `.claude/agents/*.md` profiles** —
+   Rejected for the same reason ADR-0.0.11 rejected it: agent profiles are
+   vendor-specific (Claude Code agent definitions), while persona is a
+   portable governance concept. ADR-0.0.13 will make persona files
+   cross-vendor. Coupling content to a single vendor's format prevents this.
+
+4. **Derive persona traits algorithmically from recorded failure modes** —
+   Rejected because the research (PSM, PERSONA) shows that trait clusters
+   must be designed as coherent identities, not assembled from failure
+   inversions. Inverting "splits imports" to "does not split imports" produces
+   a prescriptive rule, not a behavioral identity. The virtue-ethics framing
+   requires human authorship.
+
 ## Consequences
 
 - Every subagent dispatch includes a persona preamble
@@ -226,6 +284,12 @@ cluster: "plan-first, whole-file, deeply-compliant."
 | `.gzkit/personas/*.md` | P | All 6 persona files exist and validate | ls + schema check | |
 | `pipeline_runtime.py` | M | Dispatch loads persona frame | Test output | |
 | `AGENTS.md` | M | Main session persona referenced | Diff link | |
+
+## Attestation Block
+
+| Term | Status | Attested By | Date | Reason |
+|------|--------|-------------|------|--------|
+| 0.0.12 | Pending | | | |
 
 ### SIGN-OFF — Post-Ship Tidy
 
