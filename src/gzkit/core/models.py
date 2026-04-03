@@ -124,6 +124,7 @@ class AdrId(BaseModel):
         return cls(raw=value.strip())
 
     def __str__(self) -> str:
+        """Return the raw identifier string."""
         return self.raw
 
 
@@ -145,6 +146,7 @@ class ObpiId(BaseModel):
         return cls(raw=value.strip())
 
     def __str__(self) -> str:
+        """Return the raw identifier string."""
         return self.raw
 
 
@@ -166,6 +168,7 @@ class ReqId(BaseModel):
         return cls(raw=value.strip())
 
     def __str__(self) -> str:
+        """Return the raw identifier string."""
         return self.raw
 
 
@@ -187,6 +190,7 @@ class TaskId(BaseModel):
         return cls(raw=value.strip())
 
     def __str__(self) -> str:
+        """Return the raw identifier string."""
         return self.raw
 
 
@@ -208,6 +212,7 @@ class EvidenceId(BaseModel):
         return cls(raw=value.strip())
 
     def __str__(self) -> str:
+        """Return the raw identifier string."""
         return self.raw
 
 

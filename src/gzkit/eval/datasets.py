@@ -144,6 +144,7 @@ def load_dataset(surface: str, *, data_dir: Path) -> EvalDataset:
 
     Raises ``FileNotFoundError`` if no dataset matches.
     Raises ``DatasetValidationError`` if the dataset is structurally invalid.
+
     """
     for path in sorted(data_dir.glob("*.json")):
         raw = json.loads(path.read_text(encoding="utf-8"))

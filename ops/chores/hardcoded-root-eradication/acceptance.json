@@ -31,9 +31,9 @@
     },
     {
       "type": "outputNotContains",
-      "command": "grep -rn \"Path(__file__).*parents\\[\" src/gzkit/",
+      "command": "grep -rn \"Path(__file__).*parents\\[\" src/gzkit/ --include=*.py --exclude=quality.py",
       "notContains": "parents[",
-      "description": "No Path(__file__).parents[ patterns anywhere in src/gzkit/ (manifest v2 enforcement)"
+      "description": "No Path(__file__).parents[ patterns anywhere in src/gzkit/ excluding the detector (manifest v2 enforcement)"
     }
   ]
 }
