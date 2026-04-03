@@ -43,6 +43,7 @@ class FlagService:
         registry: dict[str, FlagSpec],
         config_flags: dict[str, bool] | None = None,
     ) -> None:
+        """Initialize with flag registry and optional config overrides."""
         self._registry = registry
         self._config_flags: dict[str, bool] = dict(config_flags) if config_flags else {}
         self._test_overrides: dict[str, bool] = {}
@@ -119,6 +120,7 @@ class FlagService:
         Raises:
             UnknownFlagError: If *key* is not in the registry.
             InvalidFlagValueError: If the env var has a non-boolean value.
+
         """
         value, _ = self._resolve(key)
         return value
@@ -129,6 +131,7 @@ class FlagService:
         Raises:
             UnknownFlagError: If *key* is not in the registry.
             InvalidFlagValueError: If the env var has a non-boolean value.
+
         """
         value, source = self._resolve(key)
         return FlagEvaluation(key=key, value=value, source=source)

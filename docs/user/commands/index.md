@@ -49,6 +49,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz chores audit`](chores-audit.md) | Audit chore log presence for one/all chores |
 | [`gz migrate-semver`](migrate-semver.md) | Record SemVer ID rename events |
 | [`gz register-adrs`](register-adrs.md) | Register existing ADR packages and linked OBPIs into ledger |
+| [`gz personas list`](personas-list.md) | Enumerate persona files from `.gzkit/personas/` |
 | [`gz roles`](roles.md) | List pipeline agent roles and handoff contracts |
 | [`gz task list`](task-list.md) | List tasks for an OBPI with status |
 | [`gz task start`](task-start.md) | Start or resume a task |

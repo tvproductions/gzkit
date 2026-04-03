@@ -547,10 +547,12 @@ class ObpiProofStatus(BaseModel):
 
     @property
     def has_proof(self) -> bool:
+        """Return True if any documentation proof source was found."""
         return self.runbook_found or self.command_doc_found or self.docstring_found
 
     @property
     def proof_type(self) -> str:
+        """Return the type of documentation proof found."""
         if self.runbook_found:
             return "runbook"
         if self.command_doc_found:

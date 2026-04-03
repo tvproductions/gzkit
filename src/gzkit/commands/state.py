@@ -137,6 +137,7 @@ def _scan_obpi_briefs(
     Returns:
         Dict mapping OBPI short IDs (e.g. ``OBPI-0.1.0-01``) to dicts
         containing ``path`` and ``frontmatter_status``.
+
     """
     artifacts = scan_existing_artifacts(project_root, design_root)
     result: dict[str, dict[str, Any]] = {}

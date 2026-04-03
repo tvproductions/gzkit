@@ -374,8 +374,8 @@
     },
     "personas list": {
       "surfaces": {
-        "manpage": false,
-        "index_entry": false,
+        "manpage": true,
+        "index_entry": true,
         "operator_runbook": false,
         "governance_runbook": true,
         "docstring": true

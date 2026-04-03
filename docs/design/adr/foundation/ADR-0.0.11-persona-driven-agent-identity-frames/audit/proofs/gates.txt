@@ -1,0 +1,1503 @@
+  ✓ Gate 1 (ADR): PASS
+(docs/design/adr/foundation/ADR-0.0.11-persona-driven-agent-identity-frames/ADR-
+0.0.11-persona-driven-agent-identity-frames.md)
+Gate 2 (TDD): uv run gz test
+Running tests...
+All frontmatter is aligned with ledger state. No changes.
+                              State Repair Results
+┏━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ OBPI          ┃ Old Status ┃ New Status ┃ File                               ┃
+┡━━━━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ OBPI-0.1.0-01 │ Draft      │ Completed  │ docs/design/adr/ADR-0.1.0/obpis/O… │
+└───────────────┴────────────┴────────────┴────────────────────────────────────┘
+
+Repaired 1 frontmatter status field(s).
+                              State Repair Results
+┏━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ OBPI          ┃ Old Status ┃ New Status ┃ File                               ┃
+┡━━━━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ OBPI-0.1.0-01 │ Draft      │ Abandoned  │ docs/design/adr/ADR-0.1.0/obpis/O… │
+└───────────────┴────────────┴────────────┴────────────────────────────────────┘
+
+Repaired 1 frontmatter status field(s).
+{
+  "passed": true,
+  "commands_discovered": 68,
+  "commands_checked": 68,
+  "commands_with_gaps": 0,
+  "gaps": [],
+  "undeclared_commands": [],
+  "orphaned_docs": []
+}
+Documentation Coverage Gap Report
+========================================
+
+PASSED: 68 commands discovered, 68 checked, all required surfaces present.
+usage: gz flag [-h] [--quiet | --verbose] [--debug] {explain} ...
+
+Single-flag inspection commands (explain).
+
+positional arguments:
+  {explain}
+    explain      Show full metadata and resolved state for one flag
+
+options:
+  -h, --help     show this help message and exit
+  --quiet, -q    Suppress non-error output
+  --verbose, -v  Enable verbose output
+  --debug        Enable debug mode with full tracebacks
+
+Examples
+    gz flag explain ops.product_proof
+    gz flag explain ops.product_proof --json
+
+Exit codes
+    0   Success
+    1   User/config error
+    2   System/IO error
+    3   Policy breach
+usage: gz flags [-h] [--stale] [--json] [--quiet | --verbose] [--debug]
+
+Display all registered feature flags with current values and sources.
+
+options:
+  -h, --help     show this help message and exit
+  --stale        Show only stale flags (past review_by or remove_by dates)
+  --json         Output as JSON
+  --quiet, -q    Suppress non-error output
+  --verbose, -v  Enable verbose output
+  --debug        Enable debug mode with full tracebacks
+
+Examples
+    gz flags
+    gz flags --stale
+    gz flags --json
+
+Exit codes
+    0   Success
+    1   User/config error
+    2   System/IO error
+    3   Policy breach
+                                 Feature Flags
+┏━━━━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━━━━━┓
+┃ Key          ┃ Category  ┃ Default ┃ Value ┃ Source   ┃ Owner ┃ Review/Remo… ┃
+┡━━━━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━━━━┩
+│ migration.c… │ migration │ False   │ False │ registry │ test  │ remove: 29d  │
+│ ops.product… │ ops       │ True    │ True  │ registry │ test  │ review: 88d  │
+│ release.dri… │ release   │ False   │ False │ registry │ test  │ remove: 28d  │
+└──────────────┴───────────┴─────────┴───────┴──────────┴───────┴──────────────┘
+Unknown flag: 'bogus.key'
+
+ops.product_proof
+  Category:      ops
+  Description:   Test flag.
+  Owner:         test
+  Default:       True
+  Current value: True
+  Source:        registry
+  Review by:     2026-06-29 (88d)
+  Linked ADR:    ADR-0.23.0
+  Linked issue:  GHI-49
+
+Unknown flag: 'nonexistent.key'
+                                 Feature Flags
+┏━━━━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━━━━━┓
+┃ Key          ┃ Category  ┃ Default ┃ Value ┃ Source   ┃ Owner ┃ Review/Remo… ┃
+┡━━━━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━━━━┩
+│ migration.c… │ migration │ False   │ False │ registry │ test  │ remove: 29d  │
+│ ops.product… │ ops       │ True    │ True  │ registry │ test  │ review: 88d  │
+│ release.dri… │ release   │ False   │ False │ registry │ test  │ remove: 28d  │
+└──────────────┴───────────┴─────────┴───────┴──────────┴───────┴──────────────┘
+No stale flags.
+                           Feature Flags (stale only)
+┏━━━━━━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━━━━━┓
+┃ Key           ┃ Category ┃ Default ┃ Value ┃ Source   ┃ Owner ┃ Review/Remo… ┃
+┡━━━━━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━━━━┩
+│ ops.stale_fl… │ ops      │ True    │ True  │ registry │ test  │ review:      │
+│               │          │         │       │          │       │ -456d        │
+└───────────────┴──────────┴─────────┴───────┴──────────┴───────┴──────────────┘
+Claimed: OBPI-0.1.0-01 (agent=unknown-19302, ttl=120m)
+Claimed: OBPI-0.1.0-01 (agent=unknown-19302, ttl=120m)
+Claimed: OBPI-0.1.0-01 (agent=unknown-19302, ttl=240m)
+No lock found: OBPI-0.1.0-01
+Released: OBPI-0.1.0-01
+No active locks.
+{
+  "unlinked_specs": [],
+  "orphan_tests": [],
+  "unjustified_code_changes": [],
+  "summary": {
+    "unlinked_spec_count": 0,
+    "orphan_test_count": 0,
+    "unjustified_code_change_count": 0,
+    "total_drift_count": 0
+  },
+  "scan_timestamp": "2026-04-02T11:51:19.563088+00:00"
+}
+{
+  "unlinked_specs": [
+    "REQ-0.1.0-01-01"
+  ],
+  "orphan_tests": [],
+  "unjustified_code_changes": [],
+  "summary": {
+    "unlinked_spec_count": 1,
+    "orphan_test_count": 0,
+    "unjustified_code_change_count": 0,
+    "total_drift_count": 1
+  },
+  "scan_timestamp": "2026-04-02T11:51:19.563674+00:00"
+}
+
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+.......................................
+----------------------------------------------------------------------
+Ran 2359 tests in 32.645s
+
+OK
+
+Tests passed.
+
+  ✓ Gate 2 (TDD): PASS
+  ↳ Eval delta: skipped (no baselines) — 5 surfaces scored, overall 2.7/4.0
+  → Gate 3 (Docs): uv run mkdocs build --strict
+INFO    -  Cleaning site directory
+INFO    -  Building documentation to directory:
+/Users/jeff/Documents/Code/gzkit/site
+INFO    -  The following pages exist in the docs directory, but are not included
+in the "nav" configuration:
+  - AGENTS.md
+  - drafts/sprint-and-drift-harness-governance.md
+  - examples/presentations/index.md
+  - examples/presentations/complete-series-script.md
+  - examples/presentations/part1-script.md
+  - examples/presentations/part2-script.md
+  - examples/presentations/part3-script.md
+  - examples/presentations/part4-script.md
+  - examples/presentations/part5-script.md
+  - examples/presentations/part6-script.md
+  - examples/templates/req-template.md
+  - governance/GovZero/obpi-pipeline-runbook.md
+  - superpowers/plans/2026-03-26-pipeline-reliability-improvements.md
+  - superpowers/specs/2026-03-26-pipeline-reliability-improvements-design.md
+  - user/commands/adr-evaluate.md
+  - user/commands/adr-report.md
+  - user/commands/check.md
+  - user/commands/chores-advise.md
+  - user/commands/chores-show.md
+  - user/commands/drift.md
+  - user/commands/format.md
+  - user/commands/interview.md
+  - user/commands/lint.md
+  - user/commands/obpi-audit.md
+  - user/commands/obpi-lock-claim.md
+  - user/commands/obpi-lock-release.md
+  - user/commands/obpi-lock-status.md
+  - user/commands/obpi-withdraw.md
+  - user/commands/preflight.md
+  - user/commands/readiness-evaluate.md
+  - user/commands/roles.md
+  - user/commands/skill-list.md
+  - user/commands/skill-new.md
+  - user/commands/test.md
+  - user/commands/tidy.md
+  - user/commands/typecheck.md
+  - user/commands/validate.md
+  - user/concepts/reporter-architecture.md
+  - user/concepts/subagent-pipeline.md
+  - user/concepts/task-overview.md
+  - user/manpages/closeout.md
+  - user/skills/_TEMPLATE.md
+INFO    -  Documentation built in 1.10 seconds
+
+  ✓ Gate 3 (Docs): PASS
+  → Gate 4 (BDD): uv run -m behave features/
+USING RUNNER: behave.runner:Runner
+Feature: Advisory drift detection in gz check #
+features/check_drift_advisory.feature:1
+  The gz check command includes drift detection as an advisory (non-blocking)
+  check that runs after all blocking quality checks complete.
+  Scenario: Check help shows json flag       #
+features/check_drift_advisory.feature:5
+    When I run the gz command "check --help" # features/steps/gz_steps.py:167
+    Then the command exits with code 0       # features/steps/gz_steps.py:178
+    And the output contains "--json"         # features/steps/gz_steps.py:183
+    And the output contains "advisory drift" # features/steps/gz_steps.py:183
+
+Feature: Closeout ceremony enforcement # features/closeout_ceremony.feature:1
+  The closeout ceremony presents a Defense Brief with closing arguments,
+  product proof, and reviewer assessment. It blocks when evidence is missing.
+  Scenario: Closeout dry-run shows Defense Brief section     #
+features/closeout_ceremony.feature:5
+    Given the workspace is initialized in heavy mode         #
+features/steps/gz_steps.py:30
+    And a heavy ADR exists with an OBPI brief                #
+features/steps/closeout_product_proof_steps.py:50
+    And the OBPI source file has public docstrings           #
+features/steps/closeout_product_proof_steps.py:138
+    And the OBPI brief has a closing argument                #
+features/steps/closeout_ceremony_steps.py:12
+    When I run the gz command "closeout ADR-0.1.0 --dry-run" #
+features/steps/gz_steps.py:167
+    Then the command exits with code 0                       #
+features/steps/gz_steps.py:178
+    And the output contains "Defense Brief"                  #
+features/steps/gz_steps.py:183
+    And the output contains "Closing Arguments"              #
+features/steps/gz_steps.py:183
+
+  Scenario: Closeout form includes Defense Brief when rendered  #
+features/closeout_ceremony.feature:15
+    Given the workspace is initialized in heavy mode            #
+features/steps/gz_steps.py:30
+    And a heavy ADR exists with an OBPI brief                   #
+features/steps/closeout_product_proof_steps.py:50
+    And the OBPI source file has public docstrings              #
+features/steps/closeout_product_proof_steps.py:138
+    And the OBPI brief has a closing argument                   #
+features/steps/closeout_ceremony_steps.py:12
+    When I run the gz command "closeout ADR-0.1.0 --dry-run"    #
+features/steps/gz_steps.py:167
+    Then the command exits with code 0                          #
+features/steps/gz_steps.py:178
+    And the output contains "Product Proof"                     #
+features/steps/gz_steps.py:183
+
+  Scenario: Defense Brief shows reviewer assessment when present  #
+features/closeout_ceremony.feature:24
+    Given the workspace is initialized in heavy mode              #
+features/steps/gz_steps.py:30
+    And a heavy ADR exists with an OBPI brief                     #
+features/steps/closeout_product_proof_steps.py:50
+    And the OBPI source file has public docstrings                #
+features/steps/closeout_product_proof_steps.py:138
+    And the OBPI brief has a closing argument                     #
+features/steps/closeout_ceremony_steps.py:12
+    And a reviewer assessment exists for the OBPI                 #
+features/steps/closeout_ceremony_steps.py:35
+    When I run the gz command "closeout ADR-0.1.0 --dry-run"      #
+features/steps/gz_steps.py:167
+    Then the command exits with code 0                            #
+features/steps/gz_steps.py:178
+    And the output contains "Reviewer Assessment"                 #
+features/steps/gz_steps.py:183
+    And the output contains "PASS"                                #
+features/steps/gz_steps.py:183
+
+Feature: Closeout product proof gate # features/closeout_product_proof.feature:1
+  The closeout command validates that each OBPI has operator-facing
+  documentation proof before allowing ADR closeout to proceed.
+  Scenario: Closeout blocked when OBPI has no product proof  #
+features/closeout_product_proof.feature:5
+    Given the workspace is initialized in heavy mode         #
+features/steps/gz_steps.py:30
+    And a heavy ADR exists with an OBPI brief                #
+features/steps/closeout_product_proof_steps.py:50
+    When I run the gz command "closeout ADR-0.1.0 --dry-run" #
+features/steps/gz_steps.py:167
+    Then the command exits non-zero                          #
+features/steps/gz_steps.py:173
+    And the output contains "MISSING"                        #
+features/steps/gz_steps.py:183
+    And the output contains "missing product proof"          #
+features/steps/gz_steps.py:183
+
+  Scenario: Closeout allowed when OBPI has docstring proof   #
+features/closeout_product_proof.feature:13
+    Given the workspace is initialized in heavy mode         #
+features/steps/gz_steps.py:30
+    And a heavy ADR exists with an OBPI brief                #
+features/steps/closeout_product_proof_steps.py:50
+    And the OBPI source file has public docstrings           #
+features/steps/closeout_product_proof_steps.py:138
+    When I run the gz command "closeout ADR-0.1.0 --dry-run" #
+features/steps/gz_steps.py:167
+    Then the command exits with code 0                       #
+features/steps/gz_steps.py:178
+    And the output contains "docstring"                      #
+features/steps/gz_steps.py:183
+
+  Scenario: Closeout product proof shown in JSON mode               #
+features/closeout_product_proof.feature:21
+    Given the workspace is initialized in heavy mode                #
+features/steps/gz_steps.py:30
+    And a heavy ADR exists with an OBPI brief                       #
+features/steps/closeout_product_proof_steps.py:50
+    And the OBPI source file has public docstrings                  #
+features/steps/closeout_product_proof_steps.py:138
+    When I run the gz command "closeout ADR-0.1.0 --dry-run --json" #
+features/steps/gz_steps.py:167
+    Then the command exits with code 0                              #
+features/steps/gz_steps.py:178
+    And the output contains "product_proof"                         #
+features/steps/gz_steps.py:183
+
+Feature: Heavy lane Gate 4 governance # features/heavy_lane_gate4.feature:1
+  Heavy-lane ADR workflows must enforce Gate 4 BDD checks.
+  Scenario: Attestation is blocked until Gate 4 passes              #
+features/heavy_lane_gate4.feature:4
+    Given the workspace is initialized in heavy mode                #
+features/steps/gz_steps.py:30
+    And a heavy ADR exists                                          #
+features/steps/gz_steps.py:42
+    And gate 2 and gate 3 are marked pass for ADR-0.1.0             #
+features/steps/gz_steps.py:54
+    When I run the gz command "attest ADR-0.1.0 --status completed" #
+features/steps/gz_steps.py:167
+    Then the command exits non-zero                                 #
+features/steps/gz_steps.py:173
+    And the output contains "Gate 4 must pass"                      #
+features/steps/gz_steps.py:183
+
+  Scenario: Closeout guidance includes Gate 4 BDD command              #
+features/heavy_lane_gate4.feature:12
+    Given the workspace is initialized in heavy mode                   #
+features/steps/gz_steps.py:30
+    And a heavy ADR exists                                             #
+features/steps/gz_steps.py:42
+    When I run the gz command "closeout ADR-0.1.0 --dry-run"           #
+features/steps/gz_steps.py:167
+    Then the command exits with code 0                                 #
+features/steps/gz_steps.py:178
+    And the output contains "Gate 4 (BDD): uv run -m behave features/" #
+features/steps/gz_steps.py:183
+
+  Scenario: Heavy ADR status reports Gate 4 as pending when not checked  #
+features/heavy_lane_gate4.feature:19
+    Given the workspace is initialized in heavy mode                     #
+features/steps/gz_steps.py:30
+    And a heavy ADR exists                                               #
+features/steps/gz_steps.py:42
+    When I run the gz command "adr status ADR-0.1.0 --json"              #
+features/steps/gz_steps.py:167
+    Then the command exits with code 0                                   #
+features/steps/gz_steps.py:178
+    And JSON path "gates.4" equals "pending"                             #
+features/steps/gz_steps.py:194
+
+  Scenario: Pipeline guidance requires guarded git sync before completion
+accounting  # features/heavy_lane_gate4.feature:26
+    Given the workspace is initialized in heavy mode
+# features/steps/gz_steps.py:30
+    Then the file "AGENTS.md" contains "guarded git sync -> completion"
+# features/steps/gz_steps.py:188
+    And the file "AGENTS.md" contains "uv run gz git-sync --apply --lint --test"
+# features/steps/gz_steps.py:188
+
+  Scenario: Canonical lane doctrine narrows Heavy to runtime-contract changes
+# features/heavy_lane_gate4.feature:31
+    Given the workspace is initialized in heavy mode
+# features/steps/gz_steps.py:30
+    Then the file "AGENTS.md" contains "Documentation/process/template-only
+changes stay" # features/steps/gz_steps.py:188
+    And the file "AGENTS.md" contains "command/API/schema/runtime-contract
+changes"       # features/steps/gz_steps.py:188
+    And the file "AGENTS.md" contains "uv run gz check"
+# features/steps/gz_steps.py:188
+
+Feature: OBPI anchor drift reconciliation # features/obpi_anchor_drift.feature:1
+  Completed OBPIs should preserve lifecycle state while reporting superseded
+anchors
+  when later siblings or ADR closeout commit on top of the anchor.
+  Scenario: Reconcile preserves completion state while reporting superseded
+anchor  # features/obpi_anchor_drift.feature:5
+    Given the workspace is initialized
+# features/steps/gz_steps.py:36
+    And ADR-0.1.0 exists
+# features/steps/gz_steps.py:48
+    And a completed OBPI with anchor-tracked receipt exists for
+OBPI-0.1.0-01-demo  # features/steps/gz_steps.py:61
+    And the tracked module changes after the completion anchor
+# features/steps/gz_steps.py:153
+    When I run the gz command "obpi reconcile OBPI-0.1.0-01-demo --json"
+# features/steps/gz_steps.py:167
+    Then the command exits with code 0
+# features/steps/gz_steps.py:178
+    And JSON path "runtime_state" equals "completed"
+# features/steps/gz_steps.py:194
+    And JSON path "anchor_state" equals "superseded"
+# features/steps/gz_steps.py:194
+
+Feature: Persona control surface # features/persona.feature:1
+  Agent personas define behavioral identity frames stored in
+  .gzkit/personas/ and loaded at dispatch boundaries (ADR-0.0.11).
+  Scenario: List personas in initialized workspace with no files  #
+features/persona.feature:5
+    Given the workspace is initialized                            #
+features/steps/gz_steps.py:36
+    When I run the gz command "personas list"                     #
+features/steps/gz_steps.py:167
+    Then the command exits with code 0                            #
+features/steps/gz_steps.py:178
+
+  Scenario: List personas shows implementer when file exists  #
+features/persona.feature:10
+    Given the workspace is initialized                        #
+features/steps/gz_steps.py:36
+    And a persona file "implementer" exists                   #
+features/steps/persona_steps.py:10
+    When I run the gz command "personas list --json"          #
+features/steps/gz_steps.py:167
+    Then the command exits with code 0                        #
+features/steps/gz_steps.py:178
+    And the output contains "implementer"                     #
+features/steps/gz_steps.py:183
+    And the output contains "methodical"                      #
+features/steps/gz_steps.py:183
+
+  Scenario: Personas list is read-only        # features/persona.feature:18
+    Given the workspace is initialized        # features/steps/gz_steps.py:36
+    And a persona file "implementer" exists   #
+features/steps/persona_steps.py:10
+    When I run the gz command "personas list" # features/steps/gz_steps.py:167
+    Then the command exits with code 0        # features/steps/gz_steps.py:178
+    And the output contains "implementer"     # features/steps/gz_steps.py:183
+
+Feature: Reporter rendering presets # features/reporter_rendering.feature:1
+  The reporter module provides consistent Rich rendering for CLI tables and
+panels.
+  Scenario: status_table renders governance table
+# features/reporter_rendering.feature:4
+    Given a status_table with title "ADR Status" and columns "ADR,Lane,Status"
+and 2 rows # features/steps/reporter_steps.py:13
+    When the table is rendered to text
+# features/steps/reporter_steps.py:66
+    Then the rendered output contains "ADR Status"
+# features/steps/reporter_steps.py:75
+    And the rendered output contains "ADR-0.1.0"
+# features/steps/reporter_steps.py:75
+
+  Scenario: status_table renders empty state                                  #
+features/reporter_rendering.feature:10
+    Given a status_table with title "ADR Status" and columns "ADR" and 0 rows #
+features/steps/reporter_steps.py:13
+    When the table is rendered to text                                        #
+features/steps/reporter_steps.py:66
+    Then the rendered output contains "No data."                              #
+features/steps/reporter_steps.py:75
+
+  Scenario: kv_table renders key-value pairs           #
+features/reporter_rendering.feature:15
+    Given a kv_table with title "Overview" and 3 pairs #
+features/steps/reporter_steps.py:32
+    When the table is rendered to text                 #
+features/steps/reporter_steps.py:66
+    Then the rendered output contains "Overview"       #
+features/steps/reporter_steps.py:75
+    And the rendered output contains "Lane"            #
+features/steps/reporter_steps.py:75
+    And the rendered output contains "heavy"           #
+features/steps/reporter_steps.py:75
+
+  Scenario: ceremony_panel renders with double border        #
+features/reporter_rendering.feature:22
+    Given a ceremony_panel with title "Closeout" and 2 items #
+features/steps/reporter_steps.py:38
+    When the panel is rendered to text                       #
+features/steps/reporter_steps.py:66
+    Then the rendered output contains "Closeout"             #
+features/steps/reporter_steps.py:75
+    And the rendered output contains "Step 1"                #
+features/steps/reporter_steps.py:75
+
+  Scenario: list_table renders simple catalog                                  #
+features/reporter_rendering.feature:28
+    Given a list_table with title "Chores" and columns "Slug,Title" and 2 rows #
+features/steps/reporter_steps.py:47
+    When the table is rendered to text                                         #
+features/steps/reporter_steps.py:66
+    Then the rendered output contains "Chores"                                 #
+features/steps/reporter_steps.py:75
+    And the rendered output contains "chore-a"                                 #
+features/steps/reporter_steps.py:75
+
+  Scenario: list_table renders empty state                               #
+features/reporter_rendering.feature:34
+    Given a list_table with title "Skills" and columns "Name" and 0 rows #
+features/steps/reporter_steps.py:47
+    When the table is rendered to text                                   #
+features/steps/reporter_steps.py:66
+    Then the rendered output contains "No items found."                  #
+features/steps/reporter_steps.py:75
+
+Feature: OBPI reviewer agent dispatch  # OBPI-0.23.0-03 #
+features/reviewer_agent.feature:1
+  An independent reviewer agent verifies delivered work against OBPI
+  promises with fresh-eyes assessment of promises-met, docs-quality,
+  and closing-argument-quality.
+  @review @dispatch
+  Scenario: Reviewer prompt contains brief and closing argument           #
+features/reviewer_agent.feature:7
+    Given an OBPI brief with 2 requirements                               #
+features/steps/reviewer_agent_steps.py:28
+    And a closing argument "This work earned its closure by delivering X" #
+features/steps/reviewer_agent_steps.py:35
+    And 2 changed files and 1 doc file                                    #
+features/steps/reviewer_agent_steps.py:45
+    When I compose the reviewer prompt                                    #
+features/steps/reviewer_agent_steps.py:52
+    Then the prompt contains the OBPI identifier                          #
+features/steps/reviewer_agent_steps.py:63
+    And the prompt contains the brief content                             #
+features/steps/reviewer_agent_steps.py:68
+    And the prompt contains the closing argument                          #
+features/steps/reviewer_agent_steps.py:73
+    And the prompt contains all changed files                             #
+features/steps/reviewer_agent_steps.py:78
+    And the prompt contains the doc file                                  #
+features/steps/reviewer_agent_steps.py:84
+    And the prompt contains the assessment JSON schema                    #
+features/steps/reviewer_agent_steps.py:90
+
+  @review @dispatch
+  Scenario: Reviewer prompt handles missing closing argument         #
+features/reviewer_agent.feature:20
+    Given an OBPI brief with 1 requirements                          #
+features/steps/reviewer_agent_steps.py:28
+    And no closing argument                                          #
+features/steps/reviewer_agent_steps.py:40
+    And 1 changed files and 0 doc file                               #
+features/steps/reviewer_agent_steps.py:45
+    When I compose the reviewer prompt                               #
+features/steps/reviewer_agent_steps.py:52
+    Then the reviewer prompt contains "No closing argument provided" #
+features/steps/reviewer_agent_steps.py:99
+
+  @review @parse
+  Scenario: Valid PASS assessment is parsed from agent output          #
+features/reviewer_agent.feature:28
+    Given agent output with a valid PASS assessment for 2 requirements #
+features/steps/reviewer_agent_steps.py:113
+    When I parse the reviewer assessment                               #
+features/steps/reviewer_agent_steps.py:170
+    Then the assessment verdict is "PASS"                              #
+features/steps/reviewer_agent_steps.py:175
+    And 2 promise assessments are returned                             #
+features/steps/reviewer_agent_steps.py:183
+    And docs quality is "substantive"                                  #
+features/steps/reviewer_agent_steps.py:191
+    And closing argument quality is "earned"                           #
+features/steps/reviewer_agent_steps.py:199
+
+  @review @parse
+  Scenario: Valid FAIL assessment is parsed from agent output  #
+features/reviewer_agent.feature:37
+    Given agent output with a valid FAIL assessment            #
+features/steps/reviewer_agent_steps.py:133
+    When I parse the reviewer assessment                       #
+features/steps/reviewer_agent_steps.py:170
+    Then the assessment verdict is "FAIL"                      #
+features/steps/reviewer_agent_steps.py:175
+    And docs quality is "missing"                              #
+features/steps/reviewer_agent_steps.py:191
+    And closing argument quality is "missing"                  #
+features/steps/reviewer_agent_steps.py:199
+
+  @review @parse
+  Scenario: CONCERNS assessment with mixed promises                  #
+features/reviewer_agent.feature:45
+    Given agent output with a CONCERNS assessment and mixed promises #
+features/steps/reviewer_agent_steps.py:147
+    When I parse the reviewer assessment                             #
+features/steps/reviewer_agent_steps.py:170
+    Then the assessment verdict is "CONCERNS"                        #
+features/steps/reviewer_agent_steps.py:175
+    And promise 1 is met                                             #
+features/steps/reviewer_agent_steps.py:207
+    And promise 2 is not met                                         #
+features/steps/reviewer_agent_steps.py:214
+
+  @review @parse
+  Scenario: Invalid agent output returns no assessment  #
+features/reviewer_agent.feature:53
+    Given agent output with no JSON block               #
+features/steps/reviewer_agent_steps.py:164
+    When I parse the reviewer assessment                #
+features/steps/reviewer_agent_steps.py:170
+    Then no assessment is returned                      #
+features/steps/reviewer_agent_steps.py:221
+
+  @review @artifact
+  Scenario: Assessment artifact is stored alongside the brief  #
+features/reviewer_agent.feature:59
+    Given a parsed PASS reviewer assessment                    #
+features/steps/reviewer_agent_steps.py:231
+    And a temporary ADR package directory                      #
+features/steps/reviewer_agent_steps.py:247
+    When I store the reviewer assessment                       #
+features/steps/reviewer_agent_steps.py:253
+    Then a REVIEW artifact file exists in the briefs directory #
+features/steps/reviewer_agent_steps.py:258
+    And the artifact contains the verdict                      #
+features/steps/reviewer_agent_steps.py:265
+    And the artifact contains promise assessments              #
+features/steps/reviewer_agent_steps.py:271
+
+  @review @ceremony
+  Scenario: Assessment is formatted for ceremony display        #
+features/reviewer_agent.feature:68
+    Given a parsed CONCERNS reviewer assessment with 3 promises #
+features/steps/reviewer_agent_steps.py:282
+    When I format the assessment for ceremony                   #
+features/steps/reviewer_agent_steps.py:298
+    Then the output contains a promise table with 3 rows        #
+features/steps/reviewer_agent_steps.py:303
+    And the output contains the docs quality                    #
+features/steps/reviewer_agent_steps.py:314
+    And the output contains the closing argument quality        #
+features/steps/reviewer_agent_steps.py:319
+    And the output contains the verdict                         #
+features/steps/reviewer_agent_steps.py:324
+
+Feature: State repair force-reconciliation # features/state_repair.feature:1
+  The gz state --repair command force-reconciles all OBPI frontmatter
+  status from ledger-derived state (ADR-0.0.9, OBPI-03).
+  Scenario: Repair updates drifted frontmatter to match ledger  #
+features/state_repair.feature:5
+    Given the workspace is initialized                          #
+features/steps/gz_steps.py:36
+    And ADR-0.1.0 exists                                        #
+features/steps/gz_steps.py:48
+    And an OBPI brief exists with frontmatter status "Draft"    #
+features/steps/state_repair_steps.py:14
+    And the ledger marks OBPI-0.1.0-01 as completed             #
+features/steps/state_repair_steps.py:29
+    When I run the gz command "state --repair"                  #
+features/steps/gz_steps.py:167
+    Then the command exits with code 0                          #
+features/steps/gz_steps.py:178
+    And the OBPI brief frontmatter status is "Completed"        #
+features/steps/state_repair_steps.py:48
+
+  Scenario: Repair is idempotent                                 #
+features/state_repair.feature:14
+    Given the workspace is initialized                           #
+features/steps/gz_steps.py:36
+    And ADR-0.1.0 exists                                         #
+features/steps/gz_steps.py:48
+    And an OBPI brief exists with frontmatter status "Completed" #
+features/steps/state_repair_steps.py:14
+    And the ledger marks OBPI-0.1.0-01 as completed              #
+features/steps/state_repair_steps.py:29
+    When I run the gz command "state --repair"                   #
+features/steps/gz_steps.py:167
+    And I run the gz command "state --repair --json"             #
+features/steps/gz_steps.py:167
+    Then the command exits with code 0                           #
+features/steps/gz_steps.py:178
+    And the JSON output field "total" equals 0                   #
+features/steps/state_repair_steps.py:56
+
+  Scenario: Repair reports changes in JSON mode              #
+features/state_repair.feature:24
+    Given the workspace is initialized                       #
+features/steps/gz_steps.py:36
+    And ADR-0.1.0 exists                                     #
+features/steps/gz_steps.py:48
+    And an OBPI brief exists with frontmatter status "Draft" #
+features/steps/state_repair_steps.py:14
+    And the ledger marks OBPI-0.1.0-01 as completed          #
+features/steps/state_repair_steps.py:29
+    When I run the gz command "state --repair --json"        #
+features/steps/gz_steps.py:167
+    Then the command exits with code 0                       #
+features/steps/gz_steps.py:178
+    And the JSON output field "total" equals 1               #
+features/steps/state_repair_steps.py:56
+
+Feature: Subagent pipeline dispatch lifecycle #
+features/subagent_pipeline.feature:1
+  Stage 2 controller dispatches implementer subagents per plan task
+  with model-aware routing and structured result handling.
+  @dispatch
+  Scenario: Tasks are extracted from a heading-format plan  #
+features/subagent_pipeline.feature:6
+    Given a plan with heading-format tasks                  #
+features/steps/subagent_pipeline_steps.py:36
+    When I extract plan tasks                               #
+features/steps/subagent_pipeline_steps.py:53
+    Then 3 tasks are found                                  #
+features/steps/subagent_pipeline_steps.py:58
+    And task 1 description is "Add the model"               #
+features/steps/subagent_pipeline_steps.py:65
+
+  @dispatch
+  Scenario: Tasks are extracted from a numbered-list plan  #
+features/subagent_pipeline.feature:13
+    Given a plan with numbered-list tasks                  #
+features/steps/subagent_pipeline_steps.py:43
+    When I extract plan tasks                              #
+features/steps/subagent_pipeline_steps.py:53
+    Then 2 tasks are found                                 #
+features/steps/subagent_pipeline_steps.py:58
+
+  @dispatch
+  Scenario: Empty plan yields zero tasks  #
+features/subagent_pipeline.feature:19
+    Given an empty plan                   #
+features/steps/subagent_pipeline_steps.py:48
+    When I extract plan tasks             #
+features/steps/subagent_pipeline_steps.py:53
+    Then 0 tasks are found                #
+features/steps/subagent_pipeline_steps.py:58
+
+  @dispatch
+  Scenario: Simple task routes to haiku model              #
+features/subagent_pipeline.feature:25
+    Given a dispatch state with 1 task and 2 allowed paths #
+features/steps/subagent_pipeline_steps.py:76
+    Then task 1 model is "haiku"                           #
+features/steps/subagent_pipeline_steps.py:99
+    And task 1 complexity is "simple"                      #
+features/steps/subagent_pipeline_steps.py:105
+
+  @dispatch
+  Scenario: Standard task routes to sonnet model           #
+features/subagent_pipeline.feature:31
+    Given a dispatch state with 1 task and 4 allowed paths #
+features/steps/subagent_pipeline_steps.py:76
+    Then task 1 model is "sonnet"                          #
+features/steps/subagent_pipeline_steps.py:99
+    And task 1 complexity is "standard"                    #
+features/steps/subagent_pipeline_steps.py:105
+
+  @dispatch
+  Scenario: Complex task routes to opus model              #
+features/subagent_pipeline.feature:37
+    Given a dispatch state with 1 task and 7 allowed paths #
+features/steps/subagent_pipeline_steps.py:76
+    Then task 1 model is "opus"                            #
+features/steps/subagent_pipeline_steps.py:99
+    And task 1 complexity is "complex"                     #
+features/steps/subagent_pipeline_steps.py:105
+
+  @dispatch
+  Scenario: DONE result advances to next task               #
+features/subagent_pipeline.feature:43
+    Given a dispatch state with 2 tasks and 1 allowed paths #
+features/steps/subagent_pipeline_steps.py:76
+    And task 1 is dispatched                                #
+features/steps/subagent_pipeline_steps.py:84
+    When task 1 returns DONE                                #
+features/steps/subagent_pipeline_steps.py:118
+    Then the dispatch action is "advance"                   #
+features/steps/subagent_pipeline_steps.py:142
+    And task 1 status is "done"                             #
+features/steps/subagent_pipeline_steps.py:149
+
+  @dispatch
+  Scenario: DONE on last task completes dispatch           #
+features/subagent_pipeline.feature:51
+    Given a dispatch state with 1 task and 1 allowed paths #
+features/steps/subagent_pipeline_steps.py:76
+    And task 1 is dispatched                               #
+features/steps/subagent_pipeline_steps.py:84
+    When task 1 returns DONE                               #
+features/steps/subagent_pipeline_steps.py:118
+    Then the dispatch action is "complete"                 #
+features/steps/subagent_pipeline_steps.py:142
+
+  @dispatch
+  Scenario: DONE_WITH_CONCERNS logs concerns and advances               #
+features/subagent_pipeline.feature:58
+    Given a dispatch state with 2 tasks and 1 allowed paths             #
+features/steps/subagent_pipeline_steps.py:76
+    And task 1 is dispatched                                            #
+features/steps/subagent_pipeline_steps.py:84
+    When task 1 returns DONE_WITH_CONCERNS with concern "might break X" #
+features/steps/subagent_pipeline_steps.py:136
+    Then the dispatch action is "advance"                               #
+features/steps/subagent_pipeline_steps.py:142
+    And all concerns include "might break X"                            #
+features/steps/subagent_pipeline_steps.py:155
+
+  @dispatch
+  Scenario: NEEDS_CONTEXT triggers redispatch              #
+features/subagent_pipeline.feature:66
+    Given a dispatch state with 1 task and 1 allowed paths #
+features/steps/subagent_pipeline_steps.py:76
+    And task 1 is dispatched                               #
+features/steps/subagent_pipeline_steps.py:84
+    When task 1 returns NEEDS_CONTEXT                      #
+features/steps/subagent_pipeline_steps.py:124
+    Then the dispatch action is "redispatch"               #
+features/steps/subagent_pipeline_steps.py:142
+
+  @dispatch
+  Scenario: NEEDS_CONTEXT circuit breaker after max retries  #
+features/subagent_pipeline.feature:73
+    Given a dispatch state with 1 task and 1 allowed paths   #
+features/steps/subagent_pipeline_steps.py:76
+    And task 1 has been dispatched 2 times                   #
+features/steps/subagent_pipeline_steps.py:90
+    When task 1 returns NEEDS_CONTEXT                        #
+features/steps/subagent_pipeline_steps.py:124
+    Then the dispatch action is "handoff"                    #
+features/steps/subagent_pipeline_steps.py:142
+    And task 1 status is "blocked"                           #
+features/steps/subagent_pipeline_steps.py:149
+
+  @dispatch
+  Scenario: BLOCKED triggers fix attempt                   #
+features/subagent_pipeline.feature:81
+    Given a dispatch state with 1 task and 1 allowed paths #
+features/steps/subagent_pipeline_steps.py:76
+    And task 1 is dispatched                               #
+features/steps/subagent_pipeline_steps.py:84
+    When task 1 returns BLOCKED                            #
+features/steps/subagent_pipeline_steps.py:130
+    Then the dispatch action is "fix"                      #
+features/steps/subagent_pipeline_steps.py:142
+
+  @dispatch
+  Scenario: BLOCKED after max fix attempts triggers handoff  #
+features/subagent_pipeline.feature:88
+    Given a dispatch state with 1 task and 1 allowed paths   #
+features/steps/subagent_pipeline_steps.py:76
+    And task 1 has been dispatched 2 times                   #
+features/steps/subagent_pipeline_steps.py:90
+    When task 1 returns BLOCKED                              #
+features/steps/subagent_pipeline_steps.py:130
+    Then the dispatch action is "handoff"                    #
+features/steps/subagent_pipeline_steps.py:142
+    And task 1 status is "blocked"                           #
+features/steps/subagent_pipeline_steps.py:149
+
+  @dispatch
+  Scenario: Prompt includes allowed files and rules                           #
+features/subagent_pipeline.feature:96
+    Given a dispatch task for "Add validation" with paths "src/a.py,src/b.py" #
+features/steps/subagent_pipeline_steps.py:167
+    When I compose the implementer prompt                                     #
+features/steps/subagent_pipeline_steps.py:179
+    Then the prompt contains "src/a.py"                                       #
+features/steps/subagent_pipeline_steps.py:184
+    And the prompt contains "### Rules"                                       #
+features/steps/subagent_pipeline_steps.py:184
+
+  @dispatch
+  Scenario: Result JSON is parsed from agent output  #
+features/subagent_pipeline.feature:103
+    Given agent output with a DONE result JSON block #
+features/steps/subagent_pipeline_steps.py:194
+    When I parse the handoff result                  #
+features/steps/subagent_pipeline_steps.py:205
+    Then the parsed status is "DONE"                 #
+features/steps/subagent_pipeline_steps.py:210
+    And the parsed files changed include "src/x.py"  #
+features/steps/subagent_pipeline_steps.py:218
+
+  @dispatch
+  Scenario: Dispatch record tracks subagent lifecycle
+# features/subagent_pipeline.feature:110
+    Given a subagent dispatch record for task 1 as "Implementer" with model
+"sonnet" # features/steps/subagent_pipeline_steps.py:230
+    When the dispatch record is completed with status "done"
+# features/steps/subagent_pipeline_steps.py:235
+    Then the completed record has a completion timestamp
+# features/steps/subagent_pipeline_steps.py:240
+    And the completed record status is "done"
+# features/steps/subagent_pipeline_steps.py:245
+
+  @dispatch
+  Scenario: Dispatch aggregation computes correct totals
+# features/subagent_pipeline.feature:117
+    Given 3 completed dispatch records with statuses
+"done,blocked,done_with_concerns" #
+features/steps/subagent_pipeline_steps.py:250
+    When I aggregate dispatch results
+# features/steps/subagent_pipeline_steps.py:260
+    Then aggregation shows 2 completed and 1 blocked
+# features/steps/subagent_pipeline_steps.py:265
+
+  @dispatch
+  Scenario: Model routing loads defaults     #
+features/subagent_pipeline.feature:123
+    Given no pipeline config file            #
+features/steps/subagent_pipeline_steps.py:275
+    When I load model routing config         #
+features/steps/subagent_pipeline_steps.py:281
+    Then implementer simple model is "haiku" #
+features/steps/subagent_pipeline_steps.py:286
+    And reviewer complex model is "opus"     #
+features/steps/subagent_pipeline_steps.py:291
+
+  @dispatch
+  Scenario: Agent file validation detects missing files  #
+features/subagent_pipeline.feature:130
+    Given a project directory with no agent files        #
+features/steps/subagent_pipeline_steps.py:296
+    When I validate agent files                          #
+features/steps/subagent_pipeline_steps.py:302
+    Then validation finds 4 errors                       #
+features/steps/subagent_pipeline_steps.py:307
+
+  @dispatch @stage2
+  Scenario: Stage 2 dispatch loop executes tasks sequentially
+# features/subagent_pipeline.feature:136
+    Given a plan with 3 tasks
+# features/steps/subagent_pipeline_steps.py:319
+    And allowed paths ["src/a.py", "src/b.py"]
+# features/steps/subagent_pipeline_steps.py:324
+    And brief requirements ["Config MUST parse TOML", "Validation MUST reject
+nulls"]  # features/steps/subagent_pipeline_steps.py:329
+    When the controller creates dispatch state for "OBPI-0.18.0-06" under
+"ADR-0.18.0" # features/steps/subagent_pipeline_steps.py:334
+    And dispatches each task sequentially with DONE results
+# features/steps/subagent_pipeline_steps.py:341
+    Then all 3 tasks are completed
+# features/steps/subagent_pipeline_steps.py:356
+    And dispatch state is finished
+# features/steps/subagent_pipeline_steps.py:363
+    And each task prompt includes brief requirements
+# features/steps/subagent_pipeline_steps.py:368
+
+  @dispatch @stage2
+  Scenario: Stage 2 halts on BLOCKED task after fix attempts              #
+features/subagent_pipeline.feature:147
+    Given a plan with 2 tasks                                             #
+features/steps/subagent_pipeline_steps.py:319
+    And allowed paths ["src/a.py"]                                        #
+features/steps/subagent_pipeline_steps.py:324
+    When the controller creates dispatch state for "OBPI-X" under "ADR-X" #
+features/steps/subagent_pipeline_steps.py:334
+    And task 1 is dispatched                                              #
+features/steps/subagent_pipeline_steps.py:84
+    And task 1 returns BLOCKED                                            #
+features/steps/subagent_pipeline_steps.py:130
+    Then the dispatch action is "fix"                                     #
+features/steps/subagent_pipeline_steps.py:142
+    When task 1 is dispatched                                             #
+features/steps/subagent_pipeline_steps.py:84
+    And task 1 returns BLOCKED                                            #
+features/steps/subagent_pipeline_steps.py:130
+    Then the dispatch action is "handoff"                                 #
+features/steps/subagent_pipeline_steps.py:142
+    And task 2 remains pending                                            #
+features/steps/subagent_pipeline_steps.py:376
+    And dispatch state has 1 blocked task                                 #
+features/steps/subagent_pipeline_steps.py:386
+
+  @dispatch @review
+  Scenario: Review dispatched after DONE task with both passing  #
+features/subagent_pipeline.feature:161
+    Given a dispatch state with 2 tasks and 2 allowed paths      #
+features/steps/subagent_pipeline_steps.py:76
+    And task 1 is dispatched                                     #
+features/steps/subagent_pipeline_steps.py:84
+    When task 1 returns DONE                                     #
+features/steps/subagent_pipeline_steps.py:118
+    Then review should be dispatched for task 1                  #
+features/steps/subagent_pipeline_steps.py:398
+    When both reviews pass for task 1                            #
+features/steps/subagent_pipeline_steps.py:420
+    Then the review action is "advance"                          #
+features/steps/subagent_pipeline_steps.py:432
+
+  @dispatch @review
+  Scenario: Review not dispatched for BLOCKED task         #
+features/subagent_pipeline.feature:170
+    Given a dispatch state with 1 task and 1 allowed paths #
+features/steps/subagent_pipeline_steps.py:76
+    And task 1 is dispatched                               #
+features/steps/subagent_pipeline_steps.py:84
+    When task 1 returns BLOCKED                            #
+features/steps/subagent_pipeline_steps.py:130
+    Then review should not be dispatched for task 1        #
+features/steps/subagent_pipeline_steps.py:409
+
+  @dispatch @review
+  Scenario: Critical spec finding triggers fix cycle       #
+features/subagent_pipeline.feature:177
+    Given a dispatch state with 1 task and 2 allowed paths #
+features/steps/subagent_pipeline_steps.py:76
+    And task 1 is dispatched                               #
+features/steps/subagent_pipeline_steps.py:84
+    When task 1 returns DONE                               #
+features/steps/subagent_pipeline_steps.py:118
+    And spec review finds critical issue for task 1        #
+features/steps/subagent_pipeline_steps.py:439
+    Then the review action is "fix"                        #
+features/steps/subagent_pipeline_steps.py:432
+    And task 1 review fix count is 1                       #
+features/steps/subagent_pipeline_steps.py:458
+
+  @dispatch @review
+  Scenario: Review blocked after max fix cycles            #
+features/subagent_pipeline.feature:186
+    Given a dispatch state with 1 task and 2 allowed paths #
+features/steps/subagent_pipeline_steps.py:76
+    And task 1 is dispatched                               #
+features/steps/subagent_pipeline_steps.py:84
+    When task 1 returns DONE                               #
+features/steps/subagent_pipeline_steps.py:118
+    And spec review finds critical issue for task 1        #
+features/steps/subagent_pipeline_steps.py:439
+    Then the review action is "fix"                        #
+features/steps/subagent_pipeline_steps.py:432
+    When spec review finds critical issue for task 1       #
+features/steps/subagent_pipeline_steps.py:439
+    Then the review action is "fix"                        #
+features/steps/subagent_pipeline_steps.py:432
+    When spec review finds critical issue for task 1       #
+features/steps/subagent_pipeline_steps.py:439
+    Then the review action is "blocked"                    #
+features/steps/subagent_pipeline_steps.py:432
+
+  @dispatch @stage3
+  Scenario: Stage 3 builds verification plan from brief requirements  #
+features/subagent_pipeline.feature:198
+    Given a brief with 2 requirements and distinct test paths         #
+features/steps/subagent_pipeline_steps.py:471
+    When I prepare Stage 3 verification                               #
+features/steps/subagent_pipeline_steps.py:498
+    Then the verification plan has 2 scopes                           #
+features/steps/subagent_pipeline_steps.py:509
+    And the verification strategy is "parallel"                       #
+features/steps/subagent_pipeline_steps.py:516
+
+  @dispatch @stage3
+  Scenario: Stage 3 falls back to sequential with no test paths  #
+features/subagent_pipeline.feature:205
+    Given a brief with 2 requirements and no test paths          #
+features/steps/subagent_pipeline_steps.py:488
+    When I prepare Stage 3 verification                          #
+features/steps/subagent_pipeline_steps.py:498
+    Then the verification strategy is "sequential"               #
+features/steps/subagent_pipeline_steps.py:516
+
+  @dispatch @stage3
+  Scenario: Stage 3 records timing metrics
+# features/subagent_pipeline.feature:211
+    Given a verification run of 5 seconds with strategy "parallel" and 3 groups
+# features/steps/subagent_pipeline_steps.py:523
+    When I compute verification timing
+# features/steps/subagent_pipeline_steps.py:531
+    Then elapsed seconds is 5.0
+# features/steps/subagent_pipeline_steps.py:543
+    And time saved is greater than 0
+# features/steps/subagent_pipeline_steps.py:550
+
+  @dispatch @stage3
+  Scenario: Stage 3 creates dispatch records from verification results  #
+features/subagent_pipeline.feature:218
+    Given a verification plan with 2 scopes and PASS results            #
+features/steps/subagent_pipeline_steps.py:557
+    When I create verification dispatch records                         #
+features/steps/subagent_pipeline_steps.py:589
+    Then 2 dispatch records are created                                 #
+features/steps/subagent_pipeline_steps.py:598
+    And all dispatch records have role "Verifier"                       #
+features/steps/subagent_pipeline_steps.py:605
+    And all dispatch records have stage 3                               #
+features/steps/subagent_pipeline_steps.py:611
+
+Feature: Task lifecycle governance # features/task_governance.feature:1
+  TASK entities have lifecycle commands via gz task CLI.
+  Scenario: gz task --help shows subcommands  #
+features/task_governance.feature:4
+    Given the workspace is initialized        # features/steps/gz_steps.py:36
+    When I run the gz command "task --help"   # features/steps/gz_steps.py:167
+    Then the command exits with code 0        # features/steps/gz_steps.py:178
+    And the output contains "list"            # features/steps/gz_steps.py:183
+    And the output contains "start"           # features/steps/gz_steps.py:183
+    And the output contains "complete"        # features/steps/gz_steps.py:183
+    And the output contains "block"           # features/steps/gz_steps.py:183
+    And the output contains "escalate"        # features/steps/gz_steps.py:183
+
+  Scenario: gz task list shows no tasks when none exist  #
+features/task_governance.feature:14
+    Given the workspace is initialized                   #
+features/steps/gz_steps.py:36
+    And ADR-0.1.0 exists                                 #
+features/steps/gz_steps.py:48
+    And an OBPI exists for ADR-0.1.0                     #
+features/steps/task_governance_steps.py:28
+    When I run the gz command "task list OBPI-0.1.0-01"  #
+features/steps/gz_steps.py:167
+    Then the command exits with code 0                   #
+features/steps/gz_steps.py:178
+    And the output contains "No tasks found"             #
+features/steps/gz_steps.py:183
+
+  Scenario: gz task start transitions pending to in_progress   #
+features/task_governance.feature:22
+    Given the workspace is initialized                         #
+features/steps/gz_steps.py:36
+    And ADR-0.1.0 exists                                       #
+features/steps/gz_steps.py:48
+    And an OBPI exists for ADR-0.1.0                           #
+features/steps/task_governance_steps.py:28
+    And a pending task TASK-0.1.0-01-01-01 exists              #
+features/steps/task_governance_steps.py:40
+    When I run the gz command "task start TASK-0.1.0-01-01-01" #
+features/steps/gz_steps.py:167
+    Then the command exits with code 0                         #
+features/steps/gz_steps.py:178
+    And the output contains "Started"                          #
+features/steps/gz_steps.py:183
+
+  Scenario: gz task complete on pending task fails                #
+features/task_governance.feature:31
+    Given the workspace is initialized                            #
+features/steps/gz_steps.py:36
+    And ADR-0.1.0 exists                                          #
+features/steps/gz_steps.py:48
+    And an OBPI exists for ADR-0.1.0                              #
+features/steps/task_governance_steps.py:28
+    When I run the gz command "task complete TASK-0.1.0-01-01-01" #
+features/steps/gz_steps.py:167
+    Then the command exits non-zero                               #
+features/steps/gz_steps.py:173
+    And the output contains "Invalid TASK transition"             #
+features/steps/gz_steps.py:183
+
+  Scenario: gz task block records reason
+# features/task_governance.feature:39
+    Given the workspace is initialized
+# features/steps/gz_steps.py:36
+    And ADR-0.1.0 exists
+# features/steps/gz_steps.py:48
+    And an OBPI exists for ADR-0.1.0
+# features/steps/task_governance_steps.py:28
+    And a pending task TASK-0.1.0-01-01-01 exists
+# features/steps/task_governance_steps.py:40
+    And I run the gz command "task start TASK-0.1.0-01-01-01"
+# features/steps/task_governance_steps.py:34
+    When I run the gz command "task block TASK-0.1.0-01-01-01 --reason
+Missing_API" # features/steps/gz_steps.py:167
+    Then the command exits with code 0
+# features/steps/gz_steps.py:178
+    And the output contains "Blocked"
+# features/steps/gz_steps.py:183
+
+  Scenario: gz task start resumes a blocked task                               #
+features/task_governance.feature:49
+    Given the workspace is initialized                                         #
+features/steps/gz_steps.py:36
+    And ADR-0.1.0 exists                                                       #
+features/steps/gz_steps.py:48
+    And an OBPI exists for ADR-0.1.0                                           #
+features/steps/task_governance_steps.py:28
+    And a pending task TASK-0.1.0-01-01-01 exists                              #
+features/steps/task_governance_steps.py:40
+    And I run the gz command "task start TASK-0.1.0-01-01-01"                  #
+features/steps/task_governance_steps.py:34
+    And I run the gz command "task block TASK-0.1.0-01-01-01 --reason blocked" #
+features/steps/task_governance_steps.py:34
+    When I run the gz command "task start TASK-0.1.0-01-01-01"                 #
+features/steps/gz_steps.py:167
+    Then the command exits with code 0                                         #
+features/steps/gz_steps.py:178
+    And the output contains "Resumed"                                          #
+features/steps/gz_steps.py:183
+
+  Scenario: gz task list --json returns valid JSON             #
+features/task_governance.feature:60
+    Given the workspace is initialized                         #
+features/steps/gz_steps.py:36
+    And ADR-0.1.0 exists                                       #
+features/steps/gz_steps.py:48
+    And an OBPI exists for ADR-0.1.0                           #
+features/steps/task_governance_steps.py:28
+    And a pending task TASK-0.1.0-01-01-01 exists              #
+features/steps/task_governance_steps.py:40
+    And I run the gz command "task start TASK-0.1.0-01-01-01"  #
+features/steps/task_governance_steps.py:34
+    When I run the gz command "task list OBPI-0.1.0-01 --json" #
+features/steps/gz_steps.py:167
+    Then the command exits with code 0                         #
+features/steps/gz_steps.py:178
+    And the output is valid JSON                               #
+features/steps/task_governance_steps.py:45
+
+  Scenario: gz task escalate records reason
+# features/task_governance.feature:70
+    Given the workspace is initialized
+# features/steps/gz_steps.py:36
+    And ADR-0.1.0 exists
+# features/steps/gz_steps.py:48
+    And an OBPI exists for ADR-0.1.0
+# features/steps/task_governance_steps.py:28
+    And a pending task TASK-0.1.0-01-01-01 exists
+# features/steps/task_governance_steps.py:40
+    And I run the gz command "task start TASK-0.1.0-01-01-01"
+# features/steps/task_governance_steps.py:34
+    When I run the gz command "task escalate TASK-0.1.0-01-01-01 --reason
+Needs_human_decision" # features/steps/gz_steps.py:167
+    Then the command exits with code 0
+# features/steps/gz_steps.py:178
+    And the output contains "Escalated"
+# features/steps/gz_steps.py:183
+
+  Scenario: gz status shows task summary when tasks exist     #
+features/task_governance.feature:81
+    Given the workspace is initialized                        #
+features/steps/gz_steps.py:36
+    And ADR-0.1.0 exists                                      #
+features/steps/gz_steps.py:48
+    And an OBPI exists for ADR-0.1.0                          #
+features/steps/task_governance_steps.py:28
+    And a pending task TASK-0.1.0-01-01-01 exists             #
+features/steps/task_governance_steps.py:40
+    And I run the gz command "task start TASK-0.1.0-01-01-01" #
+features/steps/task_governance_steps.py:34
+    When I run the gz command "status"                        #
+features/steps/gz_steps.py:167
+    Then the command exits with code 0                        #
+features/steps/gz_steps.py:178
+    And the output contains "Tasks:"                          #
+features/steps/gz_steps.py:183
+
+  Scenario: gz status omits task section when no tasks exist  #
+features/task_governance.feature:91
+    Given the workspace is initialized                        #
+features/steps/gz_steps.py:36
+    And ADR-0.1.0 exists                                      #
+features/steps/gz_steps.py:48
+    And an OBPI exists for ADR-0.1.0                          #
+features/steps/task_governance_steps.py:28
+    When I run the gz command "status"                        #
+features/steps/gz_steps.py:167
+    Then the command exits with code 0                        #
+features/steps/gz_steps.py:178
+
+  Scenario: gz status shows escalated count
+# features/task_governance.feature:98
+    Given the workspace is initialized
+# features/steps/gz_steps.py:36
+    And ADR-0.1.0 exists
+# features/steps/gz_steps.py:48
+    And an OBPI exists for ADR-0.1.0
+# features/steps/task_governance_steps.py:28
+    And a pending task TASK-0.1.0-01-01-01 exists
+# features/steps/task_governance_steps.py:40
+    And I run the gz command "task start TASK-0.1.0-01-01-01"
+# features/steps/task_governance_steps.py:34
+    And I run the gz command "task escalate TASK-0.1.0-01-01-01 --reason
+Needs_review" # features/steps/task_governance_steps.py:34
+    When I run the gz command "status"
+# features/steps/gz_steps.py:167
+    Then the command exits with code 0
+# features/steps/gz_steps.py:178
+    And the output contains "escalated"
+# features/steps/gz_steps.py:183
+
+  Scenario: gz state --json includes task data                #
+features/task_governance.feature:109
+    Given the workspace is initialized                        #
+features/steps/gz_steps.py:36
+    And ADR-0.1.0 exists                                      #
+features/steps/gz_steps.py:48
+    And an OBPI exists for ADR-0.1.0                          #
+features/steps/task_governance_steps.py:28
+    And a pending task TASK-0.1.0-01-01-01 exists             #
+features/steps/task_governance_steps.py:40
+    And I run the gz command "task start TASK-0.1.0-01-01-01" #
+features/steps/task_governance_steps.py:34
+    When I run the gz command "state --json"                  #
+features/steps/gz_steps.py:167
+    Then the command exits with code 0                        #
+features/steps/gz_steps.py:178
+    And the output is valid JSON                              #
+features/steps/task_governance_steps.py:45
+
+Feature: Requirement coverage reporting CLI #
+features/test_traceability.feature:1
+  The gz covers command reports requirement coverage from @covers
+  annotations at ADR, OBPI, and REQ granularity.
+  Scenario: All-REQ coverage summary exits with code 0
+# features/test_traceability.feature:5
+    Given the workspace is initialized
+# features/steps/gz_steps.py:36
+    And ADR-0.1.0 exists
+# features/steps/gz_steps.py:48
+    And an OBPI brief with one REQ and a decorator-covered test exists
+# features/steps/test_traceability_steps.py:13
+    When I run the gz command "covers --json --adr-dir design/adr --test-dir
+tests" # features/steps/gz_steps.py:167
+    Then the command exits with code 0
+# features/steps/gz_steps.py:178
+    And JSON path "summary.total_reqs" equals "1"
+# features/steps/gz_steps.py:194
+    And JSON path "summary.covered_reqs" equals "1"
+# features/steps/gz_steps.py:194
+
+  Scenario: Filter by ADR shows only matching REQs
+# features/test_traceability.feature:14
+    Given the workspace is initialized
+# features/steps/gz_steps.py:36
+    And ADR-0.1.0 exists
+# features/steps/gz_steps.py:48
+    And an OBPI brief with one REQ and a decorator-covered test exists
+# features/steps/test_traceability_steps.py:13
+    When I run the gz command "covers ADR-0.1.0 --json --adr-dir design/adr
+--test-dir tests" # features/steps/gz_steps.py:167
+    Then the command exits with code 0
+# features/steps/gz_steps.py:178
+    And JSON path "summary.total_reqs" equals "1"
+# features/steps/gz_steps.py:194
+
+  Scenario: Plain output is one-per-line
+# features/test_traceability.feature:22
+    Given the workspace is initialized
+# features/steps/gz_steps.py:36
+    And ADR-0.1.0 exists
+# features/steps/gz_steps.py:48
+    And an OBPI brief with one REQ and a decorator-covered test exists
+# features/steps/test_traceability_steps.py:13
+    When I run the gz command "covers --plain --adr-dir design/adr --test-dir
+tests" # features/steps/gz_steps.py:167
+    Then the command exits with code 0
+# features/steps/gz_steps.py:178
+    And the output contains "covered"
+# features/steps/gz_steps.py:183
+
+  Scenario: Help text shows description and options  #
+features/test_traceability.feature:30
+    When I run the gz command "covers --help"        #
+features/steps/gz_steps.py:167
+    Then the command exits with code 0               #
+features/steps/gz_steps.py:178
+    And the output contains "--json"                 #
+features/steps/gz_steps.py:183
+    And the output contains "--plain"                #
+features/steps/gz_steps.py:183
+
+  Scenario: No REQs found returns empty summary
+# features/test_traceability.feature:36
+    Given the workspace is initialized
+# features/steps/gz_steps.py:36
+    And ADR-0.1.0 exists
+# features/steps/gz_steps.py:48
+    When I run the gz command "covers --json --adr-dir design/adr --test-dir
+tests" # features/steps/gz_steps.py:167
+    Then the command exits with code 0
+# features/steps/gz_steps.py:178
+    And JSON path "summary.total_reqs" equals "0"
+# features/steps/gz_steps.py:194
+
+  Scenario: Audit-check includes coverage section in JSON output  #
+features/test_traceability.feature:43
+    Given the workspace is initialized                            #
+features/steps/gz_steps.py:36
+    And ADR-0.1.0 exists                                          #
+features/steps/gz_steps.py:48
+    And an OBPI brief with covered and uncovered REQs exists      #
+features/steps/test_traceability_steps.py:50
+    When I run the gz command "adr audit-check ADR-0.1.0 --json"  #
+features/steps/gz_steps.py:167
+    Then JSON path "coverage.total_reqs" equals "2"               #
+features/steps/gz_steps.py:194
+    And JSON path "coverage.covered_reqs" equals "1"              #
+features/steps/gz_steps.py:194
+    And JSON path "coverage.uncovered_reqs" equals "1"            #
+features/steps/gz_steps.py:194
+
+  Scenario: Audit-check shows uncovered REQs as advisory findings  #
+features/test_traceability.feature:52
+    Given the workspace is initialized                             #
+features/steps/gz_steps.py:36
+    And ADR-0.1.0 exists                                           #
+features/steps/gz_steps.py:48
+    And an OBPI brief with covered and uncovered REQs exists       #
+features/steps/test_traceability_steps.py:50
+    When I run the gz command "adr audit-check ADR-0.1.0 --json"   #
+features/steps/gz_steps.py:167
+    Then JSON path "advisory_findings" is not empty                #
+features/steps/test_traceability_steps.py:88
+
+Feature: Spec-test-code drift detection CLI # features/triangle_drift.feature:1
+  The gz drift command detects governance drift by scanning OBPI briefs,
+  test @covers references, and the active code change set.
+  Scenario: No drift detected exits with code 0
+# features/triangle_drift.feature:5
+    Given the workspace is initialized
+# features/steps/gz_steps.py:36
+    And ADR-0.1.0 exists
+# features/steps/gz_steps.py:48
+    And an OBPI brief with one REQ and a matching test exists
+# features/steps/triangle_drift_steps.py:12
+    When I run the gz command "drift --json --adr-dir design/adr --test-dir
+tests" # features/steps/gz_steps.py:167
+    Then the command exits with code 0
+# features/steps/gz_steps.py:178
+    And JSON path "summary.total_drift_count" equals "0"
+# features/steps/gz_steps.py:194
+
+  Scenario: Unlinked spec exits with code 1
+# features/triangle_drift.feature:13
+    Given the workspace is initialized
+# features/steps/gz_steps.py:36
+    And ADR-0.1.0 exists
+# features/steps/gz_steps.py:48
+    And an OBPI brief with one REQ and no matching test exists
+# features/steps/triangle_drift_steps.py:47
+    When I run the gz command "drift --json --adr-dir design/adr --test-dir
+tests" # features/steps/gz_steps.py:167
+    Then the command exits with code 1
+# features/steps/gz_steps.py:178
+    And JSON path "summary.unlinked_spec_count" equals "1"
+# features/steps/gz_steps.py:194
+
+  Scenario: Plain output is one-per-line
+# features/triangle_drift.feature:21
+    Given the workspace is initialized
+# features/steps/gz_steps.py:36
+    And ADR-0.1.0 exists
+# features/steps/gz_steps.py:48
+    And an OBPI brief with one REQ and no matching test exists
+# features/steps/triangle_drift_steps.py:47
+    When I run the gz command "drift --plain --adr-dir design/adr --test-dir
+tests" # features/steps/gz_steps.py:167
+    Then the command exits with code 1
+# features/steps/gz_steps.py:178
+    And the output contains "unlinked"
+# features/steps/gz_steps.py:183
+
+  Scenario: Help text shows description and options  #
+features/triangle_drift.feature:29
+    When I run the gz command "drift --help"         #
+features/steps/gz_steps.py:167
+    Then the command exits with code 0               #
+features/steps/gz_steps.py:178
+    And the output contains "--json"                 #
+features/steps/gz_steps.py:183
+    And the output contains "--plain"                #
+features/steps/gz_steps.py:183
+
+13 features passed, 0 failed, 0 skipped
+85 scenarios passed, 0 failed, 0 skipped
+467 steps passed, 0 failed, 0 skipped
+Took 0min 1.567s
+
+  ✓ Gate 4 (BDD): PASS
+  ⚠ Gate 5 (Human): PENDING (manual)

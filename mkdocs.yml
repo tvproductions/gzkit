@@ -123,6 +123,7 @@ nav:
     - gz task complete: user/commands/task-complete.md
     - gz task block: user/commands/task-block.md
     - gz task escalate: user/commands/task-escalate.md
+    - gz personas list: user/commands/personas-list.md
     - gz agent sync control-surfaces: user/commands/agent-sync-control-surfaces.md
   - Governance (Canonical):
     - Governance Runbook: governance/governance_runbook.md

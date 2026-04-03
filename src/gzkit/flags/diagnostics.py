@@ -77,6 +77,7 @@ def get_stale_flags(
 
     Returns:
         List of stale FlagSpec instances, sorted by key.
+
     """
     ref = as_of or date.today()
     stale: list[FlagSpec] = []
@@ -109,6 +110,7 @@ def get_flag_health(
 
     Returns:
         FlagHealthSummary with counts and key lists.
+
     """
     ref = as_of or date.today()
 
@@ -174,6 +176,7 @@ def explain_flag(key: str, service: FlagService) -> FlagExplanation:
 
     Raises:
         UnknownFlagError: If *key* is not in the registry.
+
     """
     evaluation = service.evaluate(key)
     spec = service._registry[key]

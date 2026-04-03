@@ -420,7 +420,7 @@ help: Remove the unused suppression comment
 272 |         with self.assertRaises(ValidationError):
     -             result.status = HandoffStatus.BLOCKED  # type: ignore[misc]
 273 +             result.status = HandoffStatus.BLOCKED
-274 | 
+274 |
 275 |     def test_review_result_is_frozen(self) -> None:
 276 |         result = ReviewResult(verdict=ReviewVerdict.PASS)
 
@@ -438,8 +438,8 @@ help: Remove the unused suppression comment
 277 |         with self.assertRaises(ValidationError):
     -             result.verdict = ReviewVerdict.FAIL  # type: ignore[misc]
 278 +             result.verdict = ReviewVerdict.FAIL
-279 | 
-280 | 
+279 |
+280 |
 281 | if __name__ == "__main__":
 
 warning[unused-type-ignore-comment]: Unused blanket `type: ignore` directive
@@ -453,12 +453,12 @@ warning[unused-type-ignore-comment]: Unused blanket `type: ignore` directive
 552 |     def test_scope_forbids_extra(self) -> None:
     |
 help: Remove the unused suppression comment
-547 | 
+547 |
 548 |         scope = _make_scope(req_index=1)
 549 |         with self.assertRaises(ValidationError):
     -             scope.req_index = 2  # type: ignore[misc]
 550 +             scope.req_index = 2
-551 | 
+551 |
 552 |     def test_scope_forbids_extra(self) -> None:
 553 |         from pydantic import ValidationError
 
@@ -473,12 +473,12 @@ warning[unused-type-ignore-comment]: Unused blanket `type: ignore` directive
 569 |     def test_plan_is_frozen(self) -> None:
     |
 help: Remove the unused suppression comment
-564 | 
+564 |
 565 |         result = _make_result(req_index=1)
 566 |         with self.assertRaises(ValidationError):
     -             result.outcome = VerificationOutcome.FAIL  # type: ignore[misc]
 567 +             result.outcome = VerificationOutcome.FAIL
-568 | 
+568 |
 569 |     def test_plan_is_frozen(self) -> None:
 570 |         from pydantic import ValidationError
 
@@ -493,12 +493,12 @@ warning[unused-type-ignore-comment]: Unused blanket `type: ignore` directive
 576 |     def test_verification_outcome_values(self) -> None:
     |
 help: Remove the unused suppression comment
-571 | 
+571 |
 572 |         plan = VerificationPlan()
 573 |         with self.assertRaises(ValidationError):
     -             plan.strategy = "parallel"  # type: ignore[misc]
 574 +             plan.strategy = "parallel"
-575 | 
+575 |
 576 |     def test_verification_outcome_values(self) -> None:
 577 |         self.assertEqual(VerificationOutcome.PASS, "PASS")
 
@@ -525,6 +525,174 @@ No dispatch data found for OBPI-NONEXISTENT
 [uv run -m unittest -q] stderr:
 ----------------------------------------------------------------------
 Ran 961 tests in 21.402s
+
+OK
+```
+## 2026-04-02T19:37:27-05:00
+- Status: PASS
+- Chore: pythonic-refactoring
+- Title: Pythonic Refactoring (ruff + ty)
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uvx ruff check .` => rc=0 (0.04s) -- exit 0 == 0
+  - [PASS] `uvx ty check . --exclude features` => rc=0 (0.19s) -- exit 0 == 0
+  - [PASS] `uv run -m unittest -q` => rc=0 (33.95s) -- exit 0 == 0
+
+```text
+[uvx ruff check .] stdout:
+All checks passed!
+[uvx ty check . --exclude features] stdout:
+All checks passed!
+[uv run -m unittest -q] stdout:
+All frontmatter is aligned with ledger state. No changes.
+                              State Repair Results
+┏━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ OBPI          ┃ Old Status ┃ New Status ┃ File                               ┃
+┡━━━━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ OBPI-0.1.0-01 │ Draft      │ Completed  │ docs/design/adr/ADR-0.1.0/obpis/O… │
+└───────────────┴────────────┴────────────┴────────────────────────────────────┘
+
+Repaired 1 frontmatter status field(s).
+                              State Repair Results
+┏━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ OBPI          ┃ Old Status ┃ New Status ┃ File                               ┃
+┡━━━━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ OBPI-0.1.0-01 │ Draft      │ Abandoned  │ docs/design/adr/ADR-0.1.0/obpis/O… │
+└───────────────┴────────────┴────────────┴────────────────────────────────────┘
+
+Repaired 1 frontmatter status field(s).
+{
+  "passed": true,
+  "commands_discovered": 68,
+  "commands_checked": 68,
+  "commands_with_gaps": 0,
+  "gaps": [],
+  "undeclared_commands": [],
+  "orphaned_docs": []
+}
+Documentation Coverage Gap Report
+========================================
+
+PASSED: 68 commands discovered, 68 checked, all required surfaces present.
+usage: gz flag [-h] [--quiet | --verbose] [--debug] {explain} ...
+
+Single-flag inspection commands (explain).
+
+positional arguments:
+  {explain}
+    explain      Show full metadata and resolved state for one flag
+
+options:
+  -h, --help     show this help message and exit
+  --quiet, -q    Suppress non-error output
+  --verbose, -v  Enable verbose output
+  --debug        Enable debug mode with full tracebacks
+
+Examples
+    gz flag explain ops.product_proof
+    gz flag explain ops.product_proof --json
+
+Exit codes
+    0   Success
+    1   User/config error
+    2   System/IO error
+    3   Policy breach
+usage: gz flags [-h] [--stale] [--json] [--quiet | --verbose] [--debug]
+
+Display all registered feature flags with current values and sources.
+
+options:
+  -h, --help     show this help message and exit
+  --stale        Show only stale flags (past review_by or remove_by dates)
+  --json         Output as JSON
+  --quiet, -q    Suppress non-error output
+  --verbose, -v  Enable verbose output
+  --debug        Enable debug mode with full tracebacks
+
+Examples
+    gz flags
+    gz flags --stale
+    gz flags --json
+
+Exit codes
+    0   Success
+    1   User/config error
+    2   System/IO error
+    3   Policy breach
+                                 Feature Flags
+┏━━━━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━━━━━┓
+┃ Key          ┃ Category  ┃ Default ┃ Value ┃ Source   ┃ Owner ┃ Review/Remo… ┃
+┡━━━━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━━━━┩
+│ migration.c… │ migration │ False   │ False │ registry │ test  │ remove: 29d  │
+│ ops.product… │ ops       │ True    │ True  │ registry │ test  │ review: 88d  │
+│ release.dri… │ release   │ False   │ False │ registry │ test  │ remove: 28d  │
+└──────────────┴───────────┴─────────┴───────┴──────────┴───────┴──────────────┘
+Unknown flag: 'bogus.key'
+
+ops.product_proof
+  Category:      ops
+  Description:   Test flag.
+  Owner:         test
+  Default:       True
+  Current value: True
+  Source:        registry
+  Review by:     2026-06-29 (88d)
+  Linked ADR:    ADR-0.23.0
+  Linked issue:  GHI-49
+
+Unknown flag: 'nonexistent.key'
+                                 Feature Flags
+┏━━━━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━━━━━┓
+┃ Key          ┃ Category  ┃ Default ┃ Value ┃ Source   ┃ Owner ┃ Review/Remo… ┃
+┡━━━━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━━━━┩
+│ migration.c… │ migration │ False   │ False │ registry │ test  │ remove: 29d  │
+│ ops.product… │ ops       │ True    │ True  │ registry │ test  │ review: 88d  │
+│ release.dri… │ release   │ False   │ False │ registry │ test  │ remove: 28d  │
+└──────────────┴───────────┴─────────┴───────┴──────────┴───────┴──────────────┘
+No stale flags.
+                           Feature Flags (stale only)
+┏━━━━━━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━━━━━┓
+┃ Key           ┃ Category ┃ Default ┃ Value ┃ Source   ┃ Owner ┃ Review/Remo… ┃
+┡━━━━━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━━━━┩
+│ ops.stale_fl… │ ops      │ True    │ True  │ registry │ test  │ review:      │
+│               │          │         │       │          │       │ -456d        │
+└───────────────┴──────────┴─────────┴───────┴──────────┴───────┴──────────────┘
+Claimed: OBPI-0.1.0-01 (agent=unknown-93077, ttl=120m)
+Claimed: OBPI-0.1.0-01 (agent=unknown-93077, ttl=120m)
+Claimed: OBPI-0.1.0-01 (agent=unknown-93077, ttl=240m)
+No lock found: OBPI-0.1.0-01
+Released: OBPI-0.1.0-01
+No active locks.
+{
+  "unlinked_specs": [],
+  "orphan_tests": [],
+  "unjustified_code_changes": [],
+  "summary": {
+    "unlinked_spec_count": 0,
+    "orphan_test_count": 0,
+    "unjustified_code_change_count": 0,
+    "total_drift_count": 0
+  },
+  "scan_timestamp": "2026-04-03T00:37:27.604821+00:00"
+}
+{
+  "unlinked_specs": [
+    "REQ-0.1.0-01-01"
+  ],
+  "orphan_tests": [],
+  "unjustified_code_changes": [],
+  "summary": {
+    "unlinked_spec_count": 1,
+    "orphan_test_count": 0,
+    "unjustified_code_change_count": 0,
+    "total_drift_count": 1
+  },
+  "scan_timestamp": "2026-04-03T00:37:27.605318+00:00"
+}
+[uv run -m unittest -q] stderr:
+----------------------------------------------------------------------
+Ran 2359 tests in 33.707s
 
 OK
 ```
