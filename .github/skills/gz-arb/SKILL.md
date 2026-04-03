@@ -1,27 +1,22 @@
 ---
 name: gz-arb
-description: Quality evidence workflow using native gz lint/typecheck/test/check commands.
-category: code-quality
-compatibility: GovZero v6 framework; uses gz CLI quality surfaces
-metadata:
-  skill-version: "1.1.0"
-  govzero-framework-version: "v6"
-  govzero-author: "GovZero governance team"
-  govzero_layer: "Layer 1 - Evidence Gathering"
-  status: ACTIVE
-  effective-date: "2026-02-18"
-gz_command: check
-invocation: uv run gz check
-lifecycle_state: active
+description: "ARCHIVED: Consolidated into gz-check. Use /gz-check for quality evidence workflows."
+lifecycle_state: retired
+archived_into: gz-check
+deprecation_replaced_by: gz-check
+deprecation_migration: "Use /gz-check directly."
+deprecation_communication: "Consolidated during skill consolidation 2026-04-03."
+deprecation_announced_on: "2026-04-03"
+retired_on: "2026-04-03"
 owner: gzkit-governance
-last_reviewed: 2026-02-18
+last_reviewed: 2026-04-03
 ---
 
-# gz-arb
+# gz-arb (ARCHIVED)
 
-Run deterministic quality checks using built-in `gz` command surfaces.
+This skill has been consolidated into **gz-check**.
 
-## Procedure
+The canonical quality evidence sequence is now documented in `gz-check` § Full Quality Evidence Sequence:
 
 ```bash
 uv run gz lint
@@ -30,18 +25,4 @@ uv run gz test
 uv run gz check
 ```
 
-## When to Use
-
-- Before `gz git-sync --apply --lint --test`
-- Before Gate 2 / Gate 3 verification
-- Before closeout and attestation workflows
-
-## Notes
-
-- This repository does not expose `gz arb` subcommands.
-- Use the commands above as the canonical quality evidence workflow.
-
-## References
-
-- Command implementation: `src/gzkit/cli.py`
-- User docs: `docs/user/commands/index.md`
+Use `/gz-check` for all pre-merge, pre-attestation, and Gate 2/3 quality verification.
