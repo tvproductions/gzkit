@@ -1,0 +1,4 @@
+interface:
+  display_name: "gz obpi specify"
+  short_description: "Operate the gz specify workflow for OBPI brief decomposition"
+  default_prompt: "Use $gz-obpi-specify to decompose an ADR into OBPI briefs."

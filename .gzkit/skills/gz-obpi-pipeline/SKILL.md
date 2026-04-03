@@ -455,7 +455,7 @@ per-OBPI anchor hash. The second sync commits the receipt and reconcile output.
    **Critical vocabulary:** Use `"human"` exactly (not `"human-attested"`, not `"attested"`).
    The hook checks `attestation_type == "human"` or `evidence.human_attestation == true`.
 
-2. Run `/gz-obpi-audit {OBPI-ID}` to record full evidence ledger entry
+2. Run `/gz-obpi-reconcile {PARENT-ADR} --brief {OBPI-ID}` to record evidence ledger entry and verify brief
 3. Update brief using a **single Write operation** (full file rewrite):
    - Read the current brief content
    - Compose the complete final content: check all criteria boxes `[x]`,
@@ -518,7 +518,7 @@ Each stage records evidence to the OBPI audit ledger:
 | Stage 2 | Files changed, tests added |
 | Stage 3 | Verification outputs (pass/fail) |
 | Stage 4 | Attestation text + timestamp |
-| Stage 5 | Attestation ledger entry (Step 1), audit entry (Step 2), brief updated (Step 3), git-sync #1 (Step 7), completion receipt with clean anchor (Step 8), reconcile (Step 9), git-sync #2 (Step 11) |
+| Stage 5 | Attestation ledger entry (Step 1), reconcile with evidence (Step 2), brief updated (Step 3), git-sync #1 (Step 7), completion receipt with clean anchor (Step 8), reconcile confirm (Step 9), git-sync #2 (Step 11) |
 
 ---
 
@@ -562,8 +562,7 @@ In Normal mode, OBPIs run sequentially with per-OBPI human attestation.
 |-------|-----------------|
 | `/gz-obpi-lock` | Stage 1 claim, Stage 5 release, abort release |
 | `/gz-plan-audit` | Pre-pipeline — runs in plan mode, produces receipt |
-| `/gz-obpi-audit` | Stage 5 ledger recording |
-| `/gz-obpi-sync` | Stage 5 ADR table sync |
+| `/gz-obpi-reconcile` | Stage 5 evidence + ledger + table sync |
 | `/gz-session-handoff` | Error recovery — preserves context on abort |
 
 ---
@@ -573,7 +572,7 @@ In Normal mode, OBPIs run sequentially with per-OBPI human attestation.
 The pipeline is complete when — and ONLY when — all of these are true:
 
 1. Attestation recorded in ADR-level audit ledger (Stage 5, Step 1)
-2. `/gz-obpi-audit` ran (Stage 5, Step 2)
+2. `/gz-obpi-reconcile` ran (Stage 5, Step 2)
 3. Brief updated to `Completed` (Stage 5, Step 3)
 4. Lock released, markers cleaned (Stage 5, Steps 4-6)
 5. Git-sync #1 committed governance edits (Stage 5, Step 7)

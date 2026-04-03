@@ -157,8 +157,8 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
                 ]
             )
         )
-        Path(".gzkit/skills/gz-obpi-brief/assets").mkdir(parents=True, exist_ok=True)
-        Path(".gzkit/skills/gz-obpi-brief/assets/OBPI_BRIEF-template.md").write_text(
+        Path(".gzkit/skills/gz-obpi-specify/assets").mkdir(parents=True, exist_ok=True)
+        Path(".gzkit/skills/gz-obpi-specify/assets/OBPI_BRIEF-template.md").write_text(
             "\n".join(
                 [
                     "## BLOCKERS",
