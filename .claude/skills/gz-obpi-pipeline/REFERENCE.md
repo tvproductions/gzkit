@@ -11,7 +11,8 @@ Referenced by SKILL.md as needed. Not required for normal stage execution.
 |---------------|--------|
 | Brief not found | Report error, release lock, stop |
 | Receipt verdict FAIL | Report audit failure, release lock, stop |
-| No receipt found | Warn and proceed (informal planning is allowed) |
+| No receipt found (full run) | STOP — enter plan mode, get approval, then resume pipeline |
+| No receipt found (`--from` set) | Proceed — user is resuming a partial pipeline |
 | Tests fail during implementation | Attempt fix (2 tries), then handoff + release lock |
 | Verification fails | Attempt fix (1 try), then handoff + release lock |
 | Human rejects attestation | Record feedback, return to Stage 2 with corrections |
