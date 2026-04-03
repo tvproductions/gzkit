@@ -323,17 +323,40 @@ def resolve_target_adr(
     return resolve_adr_ledger_id(adr_file, resolved_adr_id, ledger)
 
 
+def _prefix_match_obpi(graph: dict[str, dict], canonical_obpi: str) -> str | None:
+    """Find a unique OBPI in the graph whose ID starts with *canonical_obpi*.
+
+    Returns the full ID if exactly one match, ``None`` otherwise.
+    """
+    prefix = canonical_obpi + "-"
+    hits = [k for k, v in graph.items() if v.get("type") == "obpi" and k.startswith(prefix)]
+    return hits[0] if len(hits) == 1 else None
+
+
 def resolve_obpi(
     project_root: Path,
     config: GzkitConfig,
     ledger: Ledger,
     obpi: str,
 ) -> tuple[str, Path | None]:
-    """Resolve an OBPI id and optional file path from ledger or matching brief."""
+    """Resolve an OBPI id and optional file path from ledger or matching brief.
+
+    Accepts both full slugs (``OBPI-0.0.12-02-implementer-agent-persona``) and
+    short-form IDs (``OBPI-0.0.12-02``).  When the exact ID is not found, a
+    unique prefix match against the ledger graph is attempted.
+    """
     obpi_input = obpi if obpi.startswith("OBPI-") else f"OBPI-{obpi}"
     canonical_obpi = ledger.canonicalize_id(obpi_input)
     graph = ledger.get_artifact_graph()
     info = graph.get(canonical_obpi)
+
+    # Prefix match: OBPI-0.0.12-02 → OBPI-0.0.12-02-implementer-agent-persona
+    if info is None:
+        expanded = _prefix_match_obpi(graph, canonical_obpi)
+        if expanded:
+            canonical_obpi = expanded
+            info = graph.get(canonical_obpi)
+
     if info and info.get("type") != "obpi":
         msg = f"OBPI not found in ledger: {canonical_obpi}"
         raise GzCliError(msg)  # noqa: TRY003
