@@ -48,8 +48,10 @@ Modify `src/gzkit/pipeline_runtime.py` to load the appropriate persona frame fro
 1. REQUIREMENT: Dispatch MUST use `load_persona()` from `src/gzkit/models/persona.py` to load persona body text — no inline persona content in pipeline_runtime.py
 1. REQUIREMENT: Each dispatched role MUST receive its corresponding persona frame prepended to the prompt when the persona file exists
 1. REQUIREMENT: Missing persona files MUST NOT cause dispatch failure — graceful fallback to no-persona dispatch
+1. REQUIREMENT: Persona files with parse errors (malformed YAML frontmatter) MUST raise `ValueError` at dispatch time — parse errors are defects, not graceful-degradation cases
 1. NEVER: Hard-code persona content in pipeline_runtime.py — all persona content lives in `.gzkit/personas/`
 1. ALWAYS: Persona loading MUST be deterministic — same persona file always produces same prompt prefix
+1. ALWAYS: Dispatch MUST log or record which persona was loaded per role — enabling future observability and effectiveness measurement (ADR-0.0.13 scope)
 
 > STOP-on-BLOCKERS: if OBPIs 01-05 persona files do not exist yet, dispatch integration can still be tested with the existing `implementer.md` file. Full integration requires all persona files.
 
@@ -113,6 +115,7 @@ uv run gz personas list
 - [ ] REQ-0.0.12-06-01: Given a pipeline dispatch for the implementer role, when the dispatch prompt is composed, then the implementer persona body text is prepended to the prompt
 - [ ] REQ-0.0.12-06-02: Given a pipeline dispatch for a role whose persona file does not exist, when the dispatch prompt is composed, then dispatch succeeds without error (graceful fallback)
 - [ ] REQ-0.0.12-06-03: Given `uv run -m unittest tests/test_pipeline_runtime.py -v`, when persona dispatch tests run, then persona material flows through compose_*_prompt functions
+- [ ] REQ-0.0.12-06-04: Given a pipeline dispatch for a role whose persona file has malformed YAML, when the dispatch prompt is composed, then a ValueError is raised (parse errors are defects, not graceful degradation)
 
 ## Completion Checklist
 
