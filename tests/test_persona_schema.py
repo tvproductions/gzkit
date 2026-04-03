@@ -8,7 +8,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from gzkit.models.persona import validate_persona_structure
+from gzkit.models.persona import parse_persona_file, validate_persona_structure
 from gzkit.traceability import covers
 
 _VALID_PERSONA = """\
@@ -247,7 +247,6 @@ class TestMainSessionValidation(unittest.TestCase):
 
     @covers("REQ-0.0.12-01-02")
     def test_main_session_no_expertise_claims(self) -> None:
-        from gzkit.models.persona import parse_persona_file
 
         path = Path(".gzkit/personas/main-session.md")
         if not path.is_file():
@@ -270,7 +269,6 @@ class TestMainSessionValidation(unittest.TestCase):
 
     @covers("REQ-0.0.12-01-03")
     def test_main_session_composition(self) -> None:
-        from gzkit.models.persona import parse_persona_file
         from gzkit.personas import compose_persona_frame
 
         path = Path(".gzkit/personas/main-session.md")
@@ -296,7 +294,6 @@ class TestImplementerEnrichment(unittest.TestCase):
             self.skipTest("implementer persona not yet created")
         errors = validate_persona_structure(path)
         self.assertEqual(errors, [], f"Schema validation failed: {errors}")
-        from gzkit.models.persona import parse_persona_file
 
         fm, _body = parse_persona_file(path)
         grounding_lower = fm.grounding.lower()
@@ -306,7 +303,6 @@ class TestImplementerEnrichment(unittest.TestCase):
     @covers("REQ-0.0.12-02-02")
     def test_implementer_no_expertise_claims(self) -> None:
         """PRISM: no expertise claims in grounding or body."""
-        from gzkit.models.persona import parse_persona_file
 
         path = Path(".gzkit/personas/implementer.md")
         if not path.is_file():
@@ -330,7 +326,6 @@ class TestImplementerEnrichment(unittest.TestCase):
     @covers("REQ-0.0.12-02-03")
     def test_implementer_enriched_traits(self) -> None:
         """Enriched traits include plan-then-write and whole-file-thinking."""
-        from gzkit.models.persona import parse_persona_file
 
         path = Path(".gzkit/personas/implementer.md")
         if not path.is_file():
