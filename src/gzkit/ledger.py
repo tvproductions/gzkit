@@ -145,6 +145,8 @@ class Ledger:
 
         """
         self.path = path
+        self._cached_events: list[LedgerEvent] | None = None
+        self._cached_graph: dict[str, dict[str, Any]] | None = None
 
     def exists(self) -> bool:
         """Check if the ledger file exists."""
@@ -154,6 +156,11 @@ class Ledger:
         """Create an empty ledger file."""
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.path.touch()
+
+    def _invalidate_cache(self) -> None:
+        """Invalidate all in-memory caches after a mutation."""
+        self._cached_events = None
+        self._cached_graph = None
 
     def append(self, event: LedgerEvent) -> None:
         """Append an event to the ledger.
@@ -170,24 +177,31 @@ class Ledger:
             f.write("\n")
             f.flush()
 
+        self._invalidate_cache()
+
     def read_all(self) -> list[LedgerEvent]:
         """Read all events from the ledger.
 
         Returns:
             List of all events in chronological order.
+            Results are cached for the lifetime of this Ledger instance.
 
         """
+        if self._cached_events is not None:
+            return self._cached_events
+
         if not self.path.exists():
             return []
 
         events = []
-        with self.path.open() as f:
+        with self.path.open(encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
                 if line:
                     data = json.loads(line)
                     events.append(LedgerEvent.model_validate(data))
 
+        self._cached_events = events
         return events
 
     def query(
@@ -474,8 +488,12 @@ class Ledger:
 
         Returns:
             Dictionary mapping artifact IDs to their info and relationships.
+            Results are cached for the lifetime of this Ledger instance.
 
         """
+        if self._cached_graph is not None:
+            return self._cached_graph
+
         graph: dict[str, dict[str, Any]] = {}
         events = self.read_all()
         rename_map = self._build_rename_map(events)
@@ -490,6 +508,7 @@ class Ledger:
             self._record_parent_child_relationship(graph, canonical_parent, canonical_id)
             self._apply_graph_event_metadata(graph, canonical_id, event)
 
+        self._cached_graph = graph
         return graph
 
     def get_pending_attestations(self) -> list[str]:
