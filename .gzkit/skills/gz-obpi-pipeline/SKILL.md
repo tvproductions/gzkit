@@ -133,24 +133,29 @@ Exception mode: Stage 4 = SELF-CLOSE (record evidence, proceed)
 2. Locate the OBPI brief under:
    - `docs/design/adr/**/obpis/OBPI-{id}-*.md`
    - `docs/design/adr/**/briefs/OBPI-{id}-*.md`
-3. Extract: objective, requirements, allowed/denied paths, acceptance criteria, lane, verification commands
-4. Identify the parent ADR and inherit its lane and execution constraints.
-5. Determine execution mode from the parent ADR:
+3. **Resolve the full OBPI slug** from the brief's frontmatter `id` field (e.g.
+   `OBPI-0.0.12-02-implementer-agent-persona`). Use this full slug for ALL
+   subsequent `gz obpi` commands (`reconcile`, `emit-receipt`, `lock-claim`,
+   `lock-release`). The short form (e.g. `OBPI-0.0.12-02`) may fail ledger
+   lookup. Set a variable like `obpi_slug` at this step and reuse it throughout.
+5. Extract: objective, requirements, allowed/denied paths, acceptance criteria, lane, verification commands
+6. Identify the parent ADR and inherit its lane and execution constraints.
+7. Determine execution mode from the parent ADR:
    - `Exception (SVFR)` → set mode=exception
    - anything else → set mode=normal
-6. Check for existing handoffs and resume context when present:
+8. Check for existing handoffs and resume context when present:
    - `docs/design/adr/**/handoffs/*.md`
-7. Claim OBPI lock via `/gz-obpi-lock claim {OBPI-ID}`
-8. Create pipeline markers:
-   - `.claude/plans/.pipeline-active-{OBPI-ID}.json`
-   - `.claude/plans/.pipeline-active.json` as a legacy compatibility marker
-     for the same OBPI
-   - Marker payload should include `obpi_id`, `parent_adr`, `lane`, `entry`,
-     `execution_mode`, `current_stage`, `started_at`, `updated_at`,
-     `receipt_state`, `blockers`, `required_human_action`, `next_command`, and
-     `resume_point`
-   - This unblocks the pipeline-gate PreToolUse hook for src/ and tests/ writes.
-9. Apply the brief allowlist as the working scope contract before any edits.
+9. Claim OBPI lock via `/gz-obpi-lock claim {OBPI-SLUG}` (use the full slug from step 3)
+10. Create pipeline markers:
+    - `.claude/plans/.pipeline-active-{OBPI-ID}.json`
+    - `.claude/plans/.pipeline-active.json` as a legacy compatibility marker
+      for the same OBPI
+    - Marker payload should include `obpi_id`, `parent_adr`, `lane`, `entry`,
+      `execution_mode`, `current_stage`, `started_at`, `updated_at`,
+      `receipt_state`, `blockers`, `required_human_action`, `next_command`, and
+      `resume_point`
+    - This unblocks the pipeline-gate PreToolUse hook for src/ and tests/ writes.
+11. Apply the brief allowlist as the working scope contract before any edits.
 
 **Abort if:** brief not found, brief already `Completed`, or plan receipt verdict is `FAIL`.
 
