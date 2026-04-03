@@ -53,6 +53,8 @@ Integrate the main session persona frame into AGENTS.md by expanding the Persona
 1. NEVER: Inline full persona content in AGENTS.md — reference the `.gzkit/personas/` control surface
 1. ALWAYS: Persona reference MUST survive `gz agent sync control-surfaces` regeneration
 1. ALWAYS: When main-session persona exists (OBPI-01), include its grounding in the Persona section; when absent, reference the control surface without inline grounding
+1. NEVER: Modify sync_surfaces.py beyond what is needed to render the persona role-mapping table — template engine changes are out of scope for this OBPI
+1. NEVER: Add dynamic persona content loading to the sync command — AGENTS.md persona references are static text updated by this OBPI, not dynamically generated at sync time
 
 > STOP-on-BLOCKERS: if AGENTS.md Persona section does not exist (from ADR-0.0.11), print a BLOCKERS list and halt. Note: OBPI-01 (main-session persona) is NOT a blocker — this OBPI can proceed with existing persona files and add main-session references later.
 

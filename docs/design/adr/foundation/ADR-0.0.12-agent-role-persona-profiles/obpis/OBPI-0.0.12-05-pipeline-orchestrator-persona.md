@@ -52,6 +52,7 @@ Create `.gzkit/personas/pipeline-orchestrator.md` with a ceremony-completion and
 1. REQUIREMENT: Grounding MUST frame the orchestrator's relationship to pipeline stages as non-negotiable — every stage flows into the next, no premature summarization
 1. NEVER: Use expertise claims or frame the orchestrator as "an expert in project management"
 1. ALWAYS: Anti-traits explicitly suppress premature summarization, stage skipping, and "good enough" completion patterns
+1. NEVER: Duplicate behavioral rules already in `.claude/skills/gz-obpi-pipeline/SKILL.md` — the persona frames identity (who the orchestrator IS), the SKILL.md frames procedure (what the orchestrator DOES). They complement, not overlap.
 
 > STOP-on-BLOCKERS: if persona control surface `.gzkit/personas/` does not exist, print a BLOCKERS list and halt.
 
