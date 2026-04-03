@@ -1,51 +1,19 @@
 ---
 name: lint
-description: Run code linting with Ruff and PyMarkdown.
-category: code-quality
-lifecycle_state: active
+description: "ARCHIVED: Consolidated into gz-check. Use /gz-check for linting."
+lifecycle_state: retired
+archived_into: gz-check
+deprecation_replaced_by: gz-check
+deprecation_migration: "Use /gz-check directly."
+deprecation_communication: "Consolidated during skill consolidation 2026-04-03."
+deprecation_announced_on: "2026-04-03"
+retired_on: "2026-04-03"
 owner: gzkit-governance
-last_reviewed: 2026-02-18
-model: haiku
+last_reviewed: 2026-04-03
 ---
 
-# SKILL.md
+# lint (ARCHIVED)
 
-## Lint
+This skill has been consolidated into **gz-check**.
 
-Run code linting with Ruff and PyMarkdown.
-
-## Trigger
-
-After making code changes.
-
-## Behavior
-
-Run `gz lint` and report issues.
-
-## Prerequisites
-
-None
-
-## Steps
-
-1. Step 1
-2. Step 2
-3. Step 3
-
-## Examples
-
-### Example 1
-
-**Input**: Example input
-
-**Output**: Example output
-
-## Constraints
-
-- Constraint 1
-- Constraint 2
-
-## Related Skills
-
-- Skill 1
-- Skill 2
+Run `uv run gz lint` directly, or use `/gz-check` for the full quality suite.

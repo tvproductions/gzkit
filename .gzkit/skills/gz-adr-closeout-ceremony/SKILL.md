@@ -357,6 +357,22 @@ I await your attestation.
 
 ---
 
+## Underlying Commands
+
+The ceremony orchestrates these individual CLI commands. Use them directly
+only when running outside the ceremony protocol:
+
+| Command | Purpose |
+|---------|---------|
+| `uv run gz closeout ADR-X.Y.Z` | Full closeout pipeline (gates + attest + version bump) |
+| `uv run gz attest ADR-X.Y.Z --status completed` | Record attestation only |
+| `uv run gz audit ADR-X.Y.Z` | Post-attestation reconciliation audit |
+
+**Within the ceremony**, Step 7 runs `gz closeout` which handles attestation internally.
+Do not run `gz attest` or `gz audit` separately during a ceremony.
+
+---
+
 ## References
 
 - Audit protocol: `docs/governance/GovZero/audit-protocol.md`

@@ -32,7 +32,7 @@ This is a **Layer 2** tool — it consumes proof from the ledger rather than re-
 
 **Trust Chain:**
 
-1. **Layer 1 tools** (`gz-obpi-audit`, `gz-adr-verification`) run tests, check coverage, validate evidence
+1. **Layer 1 tools** (`gz-obpi-audit`, `gz adr audit-check`) run tests, check coverage, validate evidence
 2. **Layer 1 writes proof** to `logs/obpi-audit.jsonl` with status entries
 3. **This tool reads proof** — if all briefs show PASS/Completed, skip re-verification
 4. **Gate 5 attests** to the presence of proof, not re-execution
@@ -214,17 +214,25 @@ uv run gz adr emit-receipt <adr-id> --event completed \
 | Type | Command | Layer |
 |------|---------|-------|
 | **Ledger check** | `uv run gz adr audit-check <adr-id>` | L2 |
+| **Ledger check (JSON)** | `uv run gz adr audit-check <adr-id> --json` | L2 |
+| ADR lifecycle summary | `uv run gz adr status <adr-id> --json` | L1 |
 | Unit tests | `uv run -m unittest -q` | L1 |
 | Docs build | `uv run mkdocs build -q` | L1 |
 | Governance | `uv run gz cli audit` | L1 |
-| ADR status | `uv run gz adr status <adr-id>` | L1 |
 | Config paths | `uv run gz check-config-paths` | L1 |
 | Heavy gates | `uv run gz gates --adr <adr-id>` | L1 |
-| CLI audit | `uv run gz cli audit` | L1 |
 | OBPI reconcile | `uv run gz audit <adr-id>` | L1+L2 |
+| Coverage discovery | `rg -n '@covers("ADR-' tests` | L1 |
 | **Emit receipt** | `uv run gz adr emit-receipt <adr-id> --event validated` | L2 |
 
 **Layer key:** L1 = runs verification, L2 = reads ledger proof
+
+**When to run evidence checks:**
+
+- Before marking an ADR Completed/Validated
+- During CI checks for a target ADR
+- Before `gz closeout`, `gz attest`, or `gz audit`
+- Before the closeout ceremony (`/gz-adr-closeout-ceremony`)
 
 ---
 

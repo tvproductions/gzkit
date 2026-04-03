@@ -1,29 +1,20 @@
 ---
 name: gz-register-adrs
-description: Register existing ADR files missing from ledger state. Use when reconciling on-disk ADRs with governance state.
-category: agent-operations
-lifecycle_state: active
+description: "ARCHIVED: Consolidated into gz-adr-sync. Use /gz-adr-sync for ADR registration."
+lifecycle_state: retired
+archived_into: gz-adr-sync
+deprecation_replaced_by: gz-adr-sync
+deprecation_migration: "Use /gz-adr-sync directly."
+deprecation_communication: "Consolidated during skill consolidation 2026-04-03."
+deprecation_announced_on: "2026-04-03"
+retired_on: "2026-04-03"
 owner: gzkit-governance
-last_reviewed: 2026-02-18
+last_reviewed: 2026-04-03
 ---
 
-# gz register-adrs
+# gz-register-adrs (ARCHIVED)
 
-## Overview
+This skill has been consolidated into **gz-adr-sync**.
 
-Operate the gz register-adrs command surface as a reusable governance workflow.
-
-## Workflow
-
-1. Confirm target context, IDs, and lane assumptions.
-2. Run uv run gz register-adrs with the required options.
-3. Summarize results, including evidence and any follow-up gates.
-
-## Validation
-
-- Verify command output reflects the requested scope.
-- If governance state changed, confirm with uv run gz status or uv run gz state.
-
-## Example
-
-Use $gz-register-adrs to register pool or full ADR sets..
+Run `uv run gz register-adrs` directly for the CLI command, or use
+`/gz-adr-sync` for the full registration + status refresh workflow.

@@ -171,6 +171,41 @@ This skill maintains explicit alignment between skill version and GovZero versio
 
 ## Procedure
 
+### Step 0: Interview (MANDATORY — NON-NEGOTIABLE)
+
+**No ADR may be authored without first completing a structured interview.**
+
+Run the governance interview before any template work, file creation, or registry updates:
+
+```bash
+uv run gz interview adr
+```
+
+This command runs a structured Q&A session that captures:
+
+- Problem statement and motivation
+- Decision drivers and constraints
+- Considered alternatives
+- Consequences and trade-offs
+- Scope and lane determination
+
+**The interview output is the primary input for populating the ADR template.** Do not
+skip this step. Do not substitute freeform conversation for the interview. Do not
+create ADR files before the interview is complete.
+
+**Why this is non-negotiable:** Uninterviewed ADRs produce vague intent documents
+that drift during implementation. The interview forces structured articulation of
+the decision before any artifacts exist, preventing scope ambiguity at the source.
+
+**Prohibited patterns:**
+
+- Creating ADR files first, then "backfilling" interview answers
+- Substituting chat conversation for the structured interview
+- Skipping the interview because "the intent is already clear"
+- Running the interview after OBPI co-creation
+
+---
+
 1. **Read the canonical template** at `assets/ADR_TEMPLATE_SEMVER.md` (co-located with this skill).
 2. **Verify GovZero compliance:** ADR ID follows 0.y.z format; status uses canonical lifecycle states.
 3. Create the ADR folder: `docs/design/adr/{series}/ADR-{id}-{slug}/`.
@@ -242,6 +277,5 @@ The ADR template includes these sections that must be populated:
 - `gz-adr-evaluate`: Post-authoring QC evaluation before proposal/defense
 - `gz-obpi-brief`: Create individual OBPI briefs
 - `gz-adr-closeout-ceremony`: Execute closeout ceremony
-- `gz-adr-audit`: Verify ADR evidence
-- `gz-adr-verification`: Verify ADR→tests coverage
-- `gz-adr-sync`: Sync ADR index/status from ADR files
+- `gz-adr-audit`: Verify ADR evidence (includes evidence checks and coverage discovery)
+- `gz-adr-sync`: Sync ADR index/status from ADR files (includes registration)

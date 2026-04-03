@@ -231,5 +231,56 @@ class TestExemplarValidation(unittest.TestCase):
         self.assertEqual(errors, [], f"Exemplar failed validation: {errors}")
 
 
+class TestMainSessionValidation(unittest.TestCase):
+    """Verify main-session persona passes structural and PRISM validation.
+
+    Covers OBPI-0.0.12-01 (ADR-0.0.12).
+    """
+
+    @covers("REQ-0.0.12-01-01")
+    def test_main_session_validates(self) -> None:
+        path = Path(".gzkit/personas/main-session.md")
+        if not path.is_file():
+            self.skipTest("main-session persona not yet created")
+        errors = validate_persona_structure(path)
+        self.assertEqual(errors, [], f"main-session failed: {errors}")
+
+    @covers("REQ-0.0.12-01-02")
+    def test_main_session_no_expertise_claims(self) -> None:
+        from gzkit.models.persona import parse_persona_file
+
+        path = Path(".gzkit/personas/main-session.md")
+        if not path.is_file():
+            self.skipTest("main-session persona not yet created")
+        fm, body = parse_persona_file(path)
+        full_text = (fm.grounding + " " + body).lower()
+        expertise_phrases = [
+            "expert",
+            "senior",
+            "years of experience",
+            "professional",
+            "skilled developer",
+        ]
+        for phrase in expertise_phrases:
+            self.assertNotIn(
+                phrase,
+                full_text,
+                f"PRISM violation: expertise claim '{phrase}' found",
+            )
+
+    @covers("REQ-0.0.12-01-03")
+    def test_main_session_composition(self) -> None:
+        from gzkit.models.persona import parse_persona_file
+        from gzkit.personas import compose_persona_frame
+
+        path = Path(".gzkit/personas/main-session.md")
+        if not path.is_file():
+            self.skipTest("main-session persona not yet created")
+        fm, body = parse_persona_file(path)
+        frame = compose_persona_frame(fm, body)
+        self.assertIn("craftsperson", frame.lower())
+        self.assertIn("does NOT do", frame)
+
+
 if __name__ == "__main__":
     unittest.main()

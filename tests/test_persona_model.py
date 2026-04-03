@@ -176,3 +176,15 @@ class TestExemplarFile(unittest.TestCase):
         self.assertGreater(len(fm.traits), 0)
         self.assertGreater(len(fm.anti_traits), 0)
         self.assertGreater(len(body), 0)
+
+    @covers("REQ-0.0.12-01-01")
+    def test_main_session_parses(self) -> None:
+        """OBPI-0.0.12-01: main-session persona parses correctly."""
+        path = Path(".gzkit/personas/main-session.md")
+        if not path.is_file():
+            self.skipTest("main-session persona not yet created")
+        fm, body = parse_persona_file(path)
+        self.assertEqual(fm.name, "main-session")
+        self.assertGreater(len(fm.traits), 0)
+        self.assertGreater(len(fm.anti_traits), 0)
+        self.assertGreater(len(body), 0)

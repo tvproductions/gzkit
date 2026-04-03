@@ -1,29 +1,23 @@
 ---
 name: gz-audit
-description: Run strict post-attestation reconciliation audits. Use after attestation to produce and verify audit artifacts.
-category: adr-audit
-lifecycle_state: active
+description: "ARCHIVED: Consolidated into gz-adr-closeout-ceremony. Use /gz-adr-closeout-ceremony for audits."
+lifecycle_state: retired
+archived_into: gz-adr-closeout-ceremony
+deprecation_replaced_by: gz-adr-closeout-ceremony
+deprecation_migration: "Use /gz-adr-closeout-ceremony directly."
+deprecation_communication: "Consolidated during skill consolidation 2026-04-03."
+deprecation_announced_on: "2026-04-03"
+retired_on: "2026-04-03"
 owner: gzkit-governance
-last_reviewed: 2026-02-18
+last_reviewed: 2026-04-03
 ---
 
-# gz audit
+# gz-audit (ARCHIVED)
 
-## Overview
+This skill has been consolidated into **gz-adr-closeout-ceremony**.
 
-Operate the gz audit command surface as a reusable governance workflow.
+Run `uv run gz audit ADR-X.Y.Z` directly for the CLI command, or use
+`/gz-adr-closeout-ceremony` for the full human-witnessed closeout protocol.
 
-## Workflow
-
-1. Confirm target context, IDs, and lane assumptions.
-2. Run uv run gz audit with the required options.
-3. Summarize results, including evidence and any follow-up gates.
-
-## Validation
-
-- Verify command output reflects the requested scope.
-- If governance state changed, confirm with uv run gz status or uv run gz state.
-
-## Example
-
-Use $gz-audit to run audit for the target ADR..
+For the comprehensive audit procedure with templates and value demonstration,
+see `/gz-adr-audit`.
