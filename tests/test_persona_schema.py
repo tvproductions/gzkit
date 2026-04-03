@@ -282,5 +282,69 @@ class TestMainSessionValidation(unittest.TestCase):
         self.assertIn("does NOT do", frame)
 
 
+class TestImplementerEnrichment(unittest.TestCase):
+    """Verify implementer persona enrichment from ADR-0.0.12.
+
+    Covers OBPI-0.0.12-02: plan-then-write, whole-file thinking, PEP-8-as-identity.
+    """
+
+    @covers("REQ-0.0.12-02-01")
+    def test_implementer_schema_and_grounding(self) -> None:
+        """Enriched implementer validates and grounding addresses trait cluster."""
+        path = Path(".gzkit/personas/implementer.md")
+        if not path.is_file():
+            self.skipTest("implementer persona not yet created")
+        errors = validate_persona_structure(path)
+        self.assertEqual(errors, [], f"Schema validation failed: {errors}")
+        from gzkit.models.persona import parse_persona_file
+
+        fm, _body = parse_persona_file(path)
+        grounding_lower = fm.grounding.lower()
+        self.assertIn("plan", grounding_lower, "Grounding must address plan-first")
+        self.assertIn("whole", grounding_lower, "Grounding must address whole-file")
+
+    @covers("REQ-0.0.12-02-02")
+    def test_implementer_no_expertise_claims(self) -> None:
+        """PRISM: no expertise claims in grounding or body."""
+        from gzkit.models.persona import parse_persona_file
+
+        path = Path(".gzkit/personas/implementer.md")
+        if not path.is_file():
+            self.skipTest("implementer persona not yet created")
+        fm, body = parse_persona_file(path)
+        full_text = (fm.grounding + " " + body).lower()
+        expertise_phrases = [
+            "expert",
+            "senior",
+            "years of experience",
+            "professional",
+            "skilled developer",
+        ]
+        for phrase in expertise_phrases:
+            self.assertNotIn(
+                phrase,
+                full_text,
+                f"PRISM violation: expertise claim '{phrase}' found",
+            )
+
+    @covers("REQ-0.0.12-02-03")
+    def test_implementer_enriched_traits(self) -> None:
+        """Enriched traits include plan-then-write and whole-file-thinking."""
+        from gzkit.models.persona import parse_persona_file
+
+        path = Path(".gzkit/personas/implementer.md")
+        if not path.is_file():
+            self.skipTest("implementer persona not yet created")
+        fm, _body = parse_persona_file(path)
+        self.assertIn("plan-then-write", fm.traits)
+        self.assertIn("whole-file-thinking", fm.traits)
+        self.assertIn("pep8-as-identity", fm.traits)
+        # Existing traits preserved
+        self.assertIn("methodical", fm.traits)
+        self.assertIn("test-first", fm.traits)
+        self.assertIn("atomic-edits", fm.traits)
+        self.assertIn("complete-units", fm.traits)
+
+
 if __name__ == "__main__":
     unittest.main()
