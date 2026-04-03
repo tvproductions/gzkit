@@ -11,19 +11,17 @@ status: Draft
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.12-agent-role-persona-profiles/ADR-0.0.12-agent-role-persona-profiles.md`
-- **Checklist Item:** #6 - "Pipeline orchestrator persona (ceremony completion, stage discipline)"
+- **Checklist Item:** #6 - "Dispatch integration (pipeline_runtime.py loads persona at dispatch)"
 
 **Status:** Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-TBD
+Modify `src/gzkit/pipeline_runtime.py` to load the appropriate persona frame from `.gzkit/personas/` and prepend it to the subagent dispatch prompt for each role (implementer, spec-reviewer, quality-reviewer, narrator), using the `load_persona` function from ADR-0.0.11.
 
 ## Lane
 
-**Lite** - This OBPI remains internal to the promoted ADR implementation scope.
+**Lite** - This OBPI wires existing internal infrastructure (persona loading from ADR-0.0.11) into existing dispatch paths. The pipeline_runtime.py dispatch mechanism is an internal implementation detail, not an external operator-facing contract.
 
 > Heavy is reserved for command/API/schema/runtime-contract changes. Process,
 > documentation, and template-only work stays Lite unless it changes one of
@@ -31,59 +29,56 @@ TBD
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `src/gzkit/pipeline_runtime.py` — primary deliverable (persona loading in dispatch)
+- `tests/test_pipeline_runtime.py` — dispatch integration tests
+- `docs/design/adr/foundation/ADR-0.0.12-agent-role-persona-profiles/` — parent ADR package
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
-- Paths not listed in Allowed Paths
+- `.gzkit/personas/*.md` — persona files owned by OBPIs 01-05
+- `AGENTS.md` — owned by OBPI-07
+- `.claude/agents/` — agent profiles are not modified here
+- `src/gzkit/models/persona.py` — persona model is read-only for this OBPI
+- `src/gzkit/personas.py` — composition model is read-only for this OBPI
 - New dependencies
 - CI files, lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: Dispatch MUST use `load_persona()` from `src/gzkit/models/persona.py` to load persona body text — no inline persona content in pipeline_runtime.py
+1. REQUIREMENT: Each dispatched role MUST receive its corresponding persona frame prepended to the prompt when the persona file exists
+1. REQUIREMENT: Missing persona files MUST NOT cause dispatch failure — graceful fallback to no-persona dispatch
+1. NEVER: Hard-code persona content in pipeline_runtime.py — all persona content lives in `.gzkit/personas/`
+1. ALWAYS: Persona loading MUST be deterministic — same persona file always produces same prompt prefix
 
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if OBPIs 01-05 persona files do not exist yet, dispatch integration can still be tested with the existing `implementer.md` file. Full integration requires all persona files.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first. -->
-
 **Governance (read once, cache):**
 
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
+- [ ] `AGENTS.md` - agent operating contract
+- [ ] Parent ADR - dispatch integration goals
 
 **Context:**
 
 - [ ] Parent ADR: `docs/design/adr/foundation/ADR-0.0.12-agent-role-persona-profiles/ADR-0.0.12-agent-role-persona-profiles.md`
-- [ ] Related OBPIs in same ADR
+- [ ] ADR-0.0.11 OBPIs — what persona loading infrastructure exists
+- [ ] Depends on OBPIs 01-05 for persona file content (but can proceed with existing implementer.md)
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
+- [ ] `load_persona` function exists: `src/gzkit/models/persona.py`
+- [ ] `compose_implementer_prompt` exists: `src/gzkit/pipeline_runtime.py`
+- [ ] At least one persona file exists: `.gzkit/personas/implementer.md`
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+- [ ] Pipeline dispatch: `src/gzkit/pipeline_runtime.py` — AGENT_FILE_MAP, compose_implementer_prompt
+- [ ] Persona loading: `src/gzkit/models/persona.py` — load_persona function
+- [ ] Test patterns: `tests/test_pipeline_runtime.py` — existing dispatch tests
 
 ## Quality Gates
-
-<!-- Which gates apply and how to verify them. -->
 
 ### Gate 1: ADR
 
@@ -101,50 +96,25 @@ TBD
 - [ ] Lint clean: `uv run gz lint`
 - [ ] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
-### Gate 3: Docs (Heavy only)
-
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
-
-### Gate 4: BDD (Heavy only)
-
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
-
-### Gate 5: Human (Heavy only)
-
-- [ ] Human attestation recorded
-
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
-uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
 uv run gz test
 
 # Specific verification for this OBPI
-command --to --verify
+uv run -m unittest tests/test_pipeline_runtime.py -v
+uv run gz personas list
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.0.12-06-01: Given/When/Then behavior criterion 1
-- [ ] REQ-0.0.12-06-02: Given/When/Then behavior criterion 2
-- [ ] REQ-0.0.12-06-03: Given/When/Then behavior criterion 3
+- [ ] REQ-0.0.12-06-01: Given a pipeline dispatch for the implementer role, when the dispatch prompt is composed, then the implementer persona body text is prepended to the prompt
+- [ ] REQ-0.0.12-06-02: Given a pipeline dispatch for a role whose persona file does not exist, when the dispatch prompt is composed, then dispatch succeeds without error (graceful fallback)
+- [ ] REQ-0.0.12-06-03: Given `uv run -m unittest tests/test_pipeline_runtime.py -v`, when persona dispatch tests run, then persona material flows through compose_*_prompt functions
 
 ## Completion Checklist
-
-<!-- Verify all gates before marking OBPI accepted. -->
 
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
 - [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
@@ -156,9 +126,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
 ## Evidence
-
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
 
 ### Gate 1 (ADR)
 
@@ -174,24 +141,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ```text
 # Paste lint/format/type check output here
-```
-
-### Gate 3 (Docs)
-
-```text
-# Paste docs-build output here when Gate 3 applies
-```
-
-### Gate 4 (BDD)
-
-```text
-# Paste behave output here when Gate 4 applies
-```
-
-### Gate 5 (Human)
-
-```text
-# Record attestation text here when required by parent lane
 ```
 
 ### Value Narrative
@@ -211,9 +160,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - Defects noted:
 
 ## Tracked Defects
-
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
 
 _No defects tracked._
 
