@@ -20,7 +20,7 @@
 | Subprocess   | List form, `uv run`             | `shell=True`, bare `python`   |
 | Cleanup      | Context managers, `gc.collect()` | `ignore_errors=True`          |
 | Line endings | `newline=""` for CSV            | Hard-coded `\r\n`             |
-| Console out  | `PYTHONUTF8=1` or explicit enc  | Bare Unicode glyphs via Rich  |
+| Console out  | Runtime UTF-8 config in entrypoint | Bare Unicode glyphs via Rich  |
 
 ---
 
@@ -65,12 +65,12 @@ subprocess.run(["uv", "run", "-m", "unittest"], check=True)
 
 Rich uses Unicode glyphs (checkmarks, arrows, warning signs) that fail on Windows legacy console (cp1252).
 
-**Runtime guard:** Set `PYTHONUTF8=1` before any `uv run gz` invocation, or call `sys.stdout.reconfigure(encoding="utf-8")` early in the CLI entrypoint.
+**Runtime guard:** The CLI entrypoint handles UTF-8 configuration at startup (`sys.stdout.reconfigure(encoding="utf-8")`). No env-var prefix is needed.
 
-**Agent guard:** Always prefix shell commands with `PYTHONUTF8=1`:
+**Agent guard:** Do NOT prefix shell commands with `PYTHONUTF8=1`. The runtime handles encoding.
 
 ```bash
-PYTHONUTF8=1 uv run gz gates --adr ADR-0.1.0
+uv run gz gates --adr ADR-0.1.0
 ```
 
 ---
@@ -82,7 +82,7 @@ PYTHONUTF8=1 uv run gz gates --adr ADR-0.1.0
 - [ ] Temp files use context managers
 - [ ] No `shell=True` in subprocess
 - [ ] No hard-coded path separators
-- [ ] Console output uses ASCII fallbacks or `PYTHONUTF8=1` is set
+- [ ] Console output uses ASCII fallbacks or runtime UTF-8 config
 
 # Data Model Policy (canonical)
 
