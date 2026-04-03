@@ -115,9 +115,9 @@ Ask the user to review the booked ADR file before proceeding:
 Once the user approves:
 
 - **Pool ADR**: done. No further action. Pool entries are promoted via `gz-adr-promote` later.
-- **Canonical ADR**: invoke `gz-specify` to scope OBPIs, then `gz-plan` for the first OBPI.
+- **Canonical ADR**: invoke `gz-obpi-specify` to scope OBPIs, then `gz-plan` for the first OBPI.
 
-Do NOT invoke any implementation skill. `gz-specify` and `gz-plan` are the terminal state.
+Do NOT invoke any implementation skill. `gz-obpi-specify` and `gz-plan` are the terminal state.
 
 ---
 

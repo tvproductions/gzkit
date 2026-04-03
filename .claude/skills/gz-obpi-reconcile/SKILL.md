@@ -1,46 +1,47 @@
 ---
 name: gz-obpi-reconcile
-description: OBPI brief reconciliation — Audit briefs against evidence, fix stale metadata, write ledger proof.
+description: OBPI brief reconciliation — Audit briefs against evidence, fix stale metadata, sync ADR table, write ledger proof. Absorbs gz-obpi-audit and gz-obpi-sync.
 category: obpi-pipeline
 compatibility: GovZero v6 framework with OBPI briefs
 metadata:
-  skill-version: "2.0.0"
+  skill-version: "3.0.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   skill-type: "orchestrator"
-  govzero_layer: "Layer 2 - Ledger Consumption"
-  orchestrates: ["gz-obpi-audit"]
+  govzero_layer: "Layer 1 - Evidence Gathering"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-02-18
+last_reviewed: 2026-04-03
 ---
 
 # gz-obpi-reconcile (v2.0.0)
 
 ## Purpose
 
-**Single-command OBPI brief reconciliation** that audits briefs against evidence and fixes stale metadata.
+**Single-command OBPI reconciliation** — audit briefs against actual evidence, fix stale metadata, sync the ADR table, and write ledger proof.
+
+This skill is the unified OBPI verification surface. It absorbs the former
+`gz-obpi-audit` (Layer 1 evidence gathering) and `gz-obpi-sync` (Layer 3 table sync).
 
 This skill ensures:
 
 1. Each brief is verified against actual evidence (tests, coverage, @covers tags)
 2. Stale briefs are fixed when evidence shows completion
 3. Ledger entries record proof of each audit decision
+4. ADR OBPI table is synced from corrected brief statuses
 
-**Does NOT modify ADR OBPI table** — that is `gz-adr-recon`'s responsibility (Layer 3).
-
-**Use when:** Before closeout ceremony, after completing work, or periodic housekeeping.
+**Use when:** Before closeout ceremony, after completing work, periodic housekeeping,
+or any time brief status might have drifted from reality.
 
 ---
 
 ## Trust Model
 
-**Layer 2 — Ledger Consumption:** This tool trusts ledger entries written by Layer 1.
+**Layer 1+2+3 — Full Stack:** This tool verifies evidence (L1), consumes/writes ledger (L2), and syncs derived state (L3).
 
-- **Reads:** Ledger (`logs/obpi-audit.jsonl`), brief files
-- **Writes:** Brief files (Status, checkboxes), ledger summary entries
-- **Does NOT modify:** ADR OBPI tables (that's `gz-adr-recon`'s job)
-- **Does NOT re-verify:** If the ledger says criteria passed, it passed
+- **Reads:** Code, tests, coverage reports, brief files, ledger
+- **Writes:** Ledger entries (`logs/obpi-audit.jsonl`), brief files (Status, checkboxes), ADR OBPI table
+- **Verifies:** Tests pass, coverage meets threshold, @covers tags present
 
 ---
 
@@ -57,16 +58,17 @@ This skill ensures:
 
 ```text
 ╔══════════════════════════════════════════════════════════════════════╗
-║  PHASE 1: AUDIT                                                      ║
+║  PHASE 1: AUDIT (Layer 1 — Evidence Gathering)                       ║
 ║  ────────────                                                        ║
 ║  For each brief:                                                     ║
 ║    1. Parse acceptance criteria                                      ║
 ║    2. Search for evidence (tests, coverage, @covers tags)            ║
-║    3. Evaluate criteria against evidence                             ║
-║    4. Write ledger entry (proof)                                     ║
+║    3. Run tests, measure coverage                                    ║
+║    4. Evaluate criteria against evidence                             ║
+║    5. Write ledger entry (proof)                                     ║
 ║  Purpose: Verify truth, record proof                                 ║
 ╠══════════════════════════════════════════════════════════════════════╣
-║  PHASE 2: FIX BRIEFS                                                 ║
+║  PHASE 2: FIX BRIEFS (Layer 2 — Ledger Consumption)                 ║
 ║  ───────────────────                                                 ║
 ║  For briefs where all criteria PASS but Status is "Accepted":        ║
 ║    - Check all criteria boxes                                        ║
@@ -74,10 +76,16 @@ This skill ensures:
 ║    - Update Status to "Completed"                                    ║
 ║  Purpose: Correct stale brief metadata                               ║
 ╠══════════════════════════════════════════════════════════════════════╣
-║  PHASE 3: REPORT                                                     ║
+║  PHASE 3: SYNC ADR TABLE (Layer 3 — File Sync)                      ║
+║  ──────────────────────                                              ║
+║  Read Status: from each brief, update ADR OBPI table to match.      ║
+║  Flag: drift (table ≠ brief), orphans (brief without row),          ║
+║        missing (row without brief).                                  ║
+║  Purpose: Derived state matches source of truth                      ║
+╠══════════════════════════════════════════════════════════════════════╣
+║  PHASE 4: REPORT                                                     ║
 ║  ──────────────                                                      ║
-║  Summary: briefs audited, briefs fixed, ledger location              ║
-║  Note: ADR table NOT updated (use /gz-adr-recon for that)            ║
+║  Summary: briefs audited, briefs fixed, table synced, ledger loc     ║
 ║  Purpose: Human-readable outcome                                     ║
 ╚══════════════════════════════════════════════════════════════════════╝
 ```
@@ -138,7 +146,27 @@ Agent action:
 
 **Output:** Stale briefs corrected to reflect actual completion.
 
-### Phase 3: Report
+### Phase 3: Sync ADR Table
+
+**Goal:** Propagate corrected brief statuses to the ADR's OBPI table.
+
+For each brief:
+
+1. Read the `Status:` field from the brief file
+2. Compare with the ADR OBPI table row
+3. If drift detected: update the ADR table to match the brief
+4. Flag orphans (brief exists, no table row) and missing (row exists, no brief)
+
+```text
+Agent action:
+1. READ ADR file, locate OBPI Decomposition table
+2. For each brief file, extract Status:
+3. COMPARE table row vs brief status
+4. UPDATE table rows where drift detected
+5. REPORT: drift fixed, orphans, missing
+```
+
+### Phase 4: Report
 
 **Goal:** Provide human-readable summary.
 
@@ -162,6 +190,12 @@ Agent action:
 |-------|--------|-------|--------|
 | OBPI-03 | Accepted | Completed | Fixed (evidence found) |
 
+### Table Sync
+
+| Brief | Table Status | Brief Status | Action |
+|-------|-------------|-------------|--------|
+| OBPI-03 | Accepted | Completed | FIXED |
+
 ### Ledger
 
 Location: `docs/design/adr/adr-0.0.x/ADR-0.0.19-.../logs/obpi-audit.jsonl`
@@ -177,9 +211,9 @@ When this skill is invoked, the agent MUST:
 1. **Execute phases sequentially** — no skipping
 2. **Write ledger before fixing briefs** — proof precedes action
 3. **Run tests before claiming PASS** — no assumptions
-4. **Report all findings** — even if no changes made
-5. **Stop on blocking errors** — don't proceed if tests fail
-6. **Do NOT modify ADR OBPI table** — delegate to `/gz-adr-recon`
+4. **Sync ADR table after fixing briefs** — derived state must match source
+5. **Report all findings** — even if no changes made
+6. **Stop on blocking errors** — don't proceed if tests fail
 
 ### Error Handling
 
@@ -263,7 +297,12 @@ Ledger: ✓ written (status drift detected)
 - ✓ Updated Status: Accepted → Completed
 - ✓ Added completion date
 
-## Phase 3: Report
+## Phase 3: Sync ADR Table
+
+OBPI-03: Table status Accepted → Completed (synced from brief)
+All other rows already match.
+
+## Phase 4: Report
 
 ### ADR-0.0.19 Reconciliation Complete
 
@@ -274,10 +313,9 @@ Ledger: ✓ written (status drift detected)
 
 **Progress:** 56% (5/9)
 **Briefs fixed:** 1 (OBPI-03)
+**Table rows synced:** 1
 **Ledger entries:** 9
 **Location:** docs/design/adr/adr-0.0.x/ADR-0.0.19-.../logs/obpi-audit.jsonl
-
-**Note:** ADR OBPI table NOT updated. Run `/gz-adr-recon ADR-0.0.19` to sync table from briefs.
 ```
 
 ---
@@ -296,10 +334,47 @@ Ledger: ✓ written (status drift detected)
 
 | Skill | Role in Workflow |
 |-------|------------------|
-| `gz-obpi-audit` | Phase 1 — individual brief audit |
-| `gz-adr-verification` | Evidence source — @covers mapping |
-| `gz-adr-recon` | ADR table sync (separate tool, Layer 3) |
-| `gz-adr-audit` | Gate 5 closeout (orchestrates reconcile) |
+| `gz-obpi-specify` | Creates the briefs this skill audits |
+| `gz-obpi-pipeline` | Calls this skill at Stage 5 |
+| `gz-obpi-lock` | Coordinates multi-agent access to briefs |
+| `gz-adr-audit` | Gate 5 closeout (uses reconcile for evidence) |
+| `gz-adr-recon` | ADR-level reconciliation (Layer 2, ledger-driven) |
+
+---
+
+## Ledger Schema (v1)
+
+**Location:** `docs/design/adr/adr-{series}/ADR-{id}-{slug}/logs/obpi-audit.jsonl`
+
+Each audit appends a JSON line per brief:
+
+```json
+{
+  "type": "obpi-audit",
+  "timestamp": "ISO-8601",
+  "obpi_id": "OBPI-X.Y.Z-NN",
+  "adr_id": "ADR-X.Y.Z",
+  "brief_status_before": "Accepted|Completed",
+  "brief_status_after": "Accepted|Completed",
+  "lane": "Lite|Heavy",
+  "evidence": {
+    "tests_found": ["path/to/test.py"],
+    "tests_passed": true,
+    "test_count": 10,
+    "coverage_module": "path/to/module.py",
+    "coverage_percent": 46.05,
+    "coverage_threshold": 40,
+    "covers_tags": ["@covers ADR-X.Y.Z"]
+  },
+  "criteria_evaluated": [
+    {"criterion": "text", "result": "PASS|FAIL", "evidence": "location"}
+  ],
+  "action_taken": "none|brief_updated|flagged_for_review",
+  "agent": "agent-name"
+}
+```
+
+**Ledger guarantees:** Append-only, one line per audit, machine-readable.
 
 ---
 
@@ -312,3 +387,4 @@ Ledger: ✓ written (status drift detected)
 | After multi-agent session | Catch paperwork drift |
 | Weekly housekeeping | Periodic hygiene |
 | CI pre-merge | Governance gate (optional) |
+| Pipeline Stage 5 | Post-implementation verification |

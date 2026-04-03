@@ -132,7 +132,7 @@ def readiness_audit_cmd(as_json: bool) -> None:
             {
                 "id": "obpi_brief_output_shapes",
                 "kind": "markers",
-                "path": ".gzkit/skills/gz-obpi-brief/assets/OBPI_BRIEF-template.md",
+                "path": ".gzkit/skills/gz-obpi-specify/assets/OBPI_BRIEF-template.md",
                 "markers": (
                     "## BLOCKERS",
                     "## Implementation Plan (Lite)",
@@ -316,7 +316,7 @@ def readiness_audit_cmd(as_json: bool) -> None:
         "decomposition": [
             {
                 "kind": "markers",
-                "path": ".gzkit/skills/gz-obpi-brief/assets/OBPI_BRIEF-template.md",
+                "path": ".gzkit/skills/gz-obpi-specify/assets/OBPI_BRIEF-template.md",
                 "markers": (
                     "## Work Breakdown Structure Context",
                     "Each brief targets exactly one OBPI entry",

@@ -114,7 +114,7 @@ Skill behavior is standardized and synchronized by `gz agent sync control-surfac
 `gz-adr-audit`, `gz-adr-closeout-ceremony`
 
 #### OBPI Pipeline
-`gz-obpi-audit`, `gz-obpi-brief`, `gz-obpi-lock`, `gz-obpi-pipeline`, `gz-obpi-reconcile`, `gz-obpi-sync`, `gz-plan-audit`, `gz-specify`
+`gz-obpi-lock`, `gz-obpi-pipeline`, `gz-obpi-reconcile`, `gz-obpi-simplify`, `gz-obpi-specify`, `gz-plan-audit`
 
 #### Governance Infrastructure
 `gz-constitute`, `gz-gates`, `gz-implement`, `gz-init`, `gz-prd`, `gz-state`, `gz-status`, `gz-validate`
@@ -129,7 +129,7 @@ Skill behavior is standardized and synchronized by `gz agent sync control-surfac
 `airlineops-parity-scan`
 
 #### Uncategorized
-`format`, `gz-adr-check`, `gz-adr-manager`, `gz-adr-verification`, `gz-arb`, `gz-attest`, `gz-audit`, `gz-closeout`, `gz-interview`, `gz-register-adrs`, `gz-typecheck`, `lint`, `test`
+`format`, `gz-adr-check`, `gz-adr-manager`, `gz-adr-verification`, `gz-arb`, `gz-attest`, `gz-audit`, `gz-closeout`, `gz-interview`, `gz-obpi-audit`, `gz-obpi-brief`, `gz-obpi-sync`, `gz-register-adrs`, `gz-specify`, `gz-typecheck`, `lint`, `test`
 
 For details on any skill, read its `SKILL.md` in `.gzkit/skills/<skill-name>/`.
 

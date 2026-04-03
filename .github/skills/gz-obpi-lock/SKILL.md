@@ -153,7 +153,7 @@ git diff --name-only origin/main..HEAD | grep -E '(adr_status|obpi-audit\.jsonl|
 
 If shared files appear in the diff, the agent should:
 1. Pull and rebase
-2. Regenerate computed files (`/gz-adr-sync`, `/gz-obpi-sync`)
+2. Regenerate computed files (`/gz-adr-sync`, `/gz-obpi-reconcile`)
 3. Re-push
 
 ---
