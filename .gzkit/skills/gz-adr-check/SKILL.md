@@ -1,44 +1,24 @@
 ---
 name: gz-adr-check
-description: Run blocking ADR evidence checks for a target ADR.
-category: adr-operations
-compatibility: GovZero v6 framework; CI-capable evidence gate
-metadata:
-  skill-version: "1.1.0"
-  govzero-framework-version: "v6"
-  govzero-author: "GovZero governance team"
-  govzero_layer: "Layer 1 - Evidence Gathering"
-gz_command: adr audit-check
-invocation: uv run gz adr audit-check <ADR-ID>
-lifecycle_state: active
+description: "ARCHIVED: Consolidated into gz-adr-audit. Use /gz-adr-audit for ADR evidence checks."
+lifecycle_state: retired
+archived_into: gz-adr-audit
+deprecation_replaced_by: gz-adr-audit
+deprecation_migration: "Use /gz-adr-audit directly."
+deprecation_communication: "Consolidated during skill consolidation 2026-04-03."
+deprecation_announced_on: "2026-04-03"
+retired_on: "2026-04-03"
 owner: gzkit-governance
-last_reviewed: 2026-02-18
+last_reviewed: 2026-04-03
 ---
 
-# gz-adr-check
+# gz-adr-check (ARCHIVED)
 
-Run the ADR evidence gate using `gz adr audit-check`.
+This skill has been consolidated into **gz-adr-audit**.
 
-## When to Use
+Use `/gz-adr-audit` for all ADR evidence verification, including:
 
-- Before marking an ADR Completed/Validated
-- During CI checks for a target ADR
-- Before `gz closeout`, `gz attest`, or `gz audit`
+- `uv run gz adr audit-check <adr-id>` (blocking evidence gate)
+- `uv run gz adr audit-check <adr-id> --json` (machine-readable output)
 
-## Invocation
-
-```bash
-uv run gz adr audit-check ADR-0.3.0
-uv run gz adr audit-check ADR-0.3.0 --json
-```
-
-## Behavior
-
-- Verifies linked OBPI briefs are complete and evidence-ready
-- Returns non-zero on missing evidence or incomplete briefs
-- Produces JSON output for automation when `--json` is used
-
-## References
-
-- Command implementation: `src/gzkit/cli.py`
-- User docs: `docs/user/commands/adr-audit-check.md`
+See `gz-adr-audit` § Validation Commands for the full reference.

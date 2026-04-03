@@ -1,30 +1,19 @@
 ---
 name: gz-typecheck
-description: Run static type checks. Use when verifying type safety before merge or attestation.
-category: code-quality
-lifecycle_state: active
+description: "ARCHIVED: Consolidated into gz-check. Use /gz-check for type checking."
+lifecycle_state: retired
+archived_into: gz-check
+deprecation_replaced_by: gz-check
+deprecation_migration: "Use /gz-check directly."
+deprecation_communication: "Consolidated during skill consolidation 2026-04-03."
+deprecation_announced_on: "2026-04-03"
+retired_on: "2026-04-03"
 owner: gzkit-governance
-last_reviewed: 2026-02-18
-model: haiku
+last_reviewed: 2026-04-03
 ---
 
-# gz typecheck
+# gz-typecheck (ARCHIVED)
 
-## Overview
+This skill has been consolidated into **gz-check**.
 
-Operate the gz typecheck command surface as a reusable governance workflow.
-
-## Workflow
-
-1. Confirm target context, IDs, and lane assumptions.
-2. Run uv run gz typecheck with the required options.
-3. Summarize results, including evidence and any follow-up gates.
-
-## Validation
-
-- Verify command output reflects the requested scope.
-- If governance state changed, confirm with uv run gz status or uv run gz state.
-
-## Example
-
-Use $gz-typecheck to run type checks and report failures..
+Run `uv run gz typecheck` directly, or use `/gz-check` for the full quality suite.

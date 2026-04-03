@@ -1,29 +1,29 @@
 ---
 name: gz-interview
-description: Run interactive governance interviews. Use when gathering structured inputs for governance artifacts.
-category: governance-infrastructure
-lifecycle_state: active
+description: "ARCHIVED: Consolidated into gz-adr-create as mandatory Step 0. Interview is now a non-negotiable prerequisite for ADR authoring."
+lifecycle_state: retired
+archived_into: gz-adr-create
+deprecation_replaced_by: gz-adr-create
+deprecation_migration: "Use /gz-adr-create directly."
+deprecation_communication: "Consolidated during skill consolidation 2026-04-03."
+deprecation_announced_on: "2026-04-03"
+retired_on: "2026-04-03"
 owner: gzkit-governance
-last_reviewed: 2026-02-18
+last_reviewed: 2026-04-03
 ---
 
-# gz interview
+# gz-interview (ARCHIVED)
 
-## Overview
+This skill has been consolidated into **gz-adr-create** as mandatory Step 0.
 
-Operate the gz interview command surface as a reusable governance workflow.
+The `gz interview adr` command is now a non-negotiable prerequisite for ADR authoring.
+No ADR may be created without first completing the structured interview.
 
-## Workflow
+Run `uv run gz interview adr` — this is enforced as the first step in `/gz-adr-create`.
 
-1. Confirm target context, IDs, and lane assumptions.
-2. Run uv run gz interview with the required options.
-3. Summarize results, including evidence and any follow-up gates.
+For OBPI and PRD interviews, use the CLI directly:
 
-## Validation
-
-- Verify command output reflects the requested scope.
-- If governance state changed, confirm with uv run gz status or uv run gz state.
-
-## Example
-
-Use $gz-interview to run an interview flow for artifact capture..
+```bash
+uv run gz interview obpi
+uv run gz interview prd
+```

@@ -1,29 +1,20 @@
 ---
 name: gz-attest
-description: Record human attestation with prerequisite enforcement. Use when formally attesting ADR completion state.
-category: adr-lifecycle
-lifecycle_state: active
+description: "ARCHIVED: Consolidated into gz-adr-closeout-ceremony. Use /gz-adr-closeout-ceremony for attestation."
+lifecycle_state: retired
+archived_into: gz-adr-closeout-ceremony
+deprecation_replaced_by: gz-adr-closeout-ceremony
+deprecation_migration: "Use /gz-adr-closeout-ceremony directly."
+deprecation_communication: "Consolidated during skill consolidation 2026-04-03."
+deprecation_announced_on: "2026-04-03"
+retired_on: "2026-04-03"
 owner: gzkit-governance
-last_reviewed: 2026-02-18
+last_reviewed: 2026-04-03
 ---
 
-# gz attest
+# gz-attest (ARCHIVED)
 
-## Overview
+This skill has been consolidated into **gz-adr-closeout-ceremony**.
 
-Operate the gz attest command surface as a reusable governance workflow.
-
-## Workflow
-
-1. Confirm target context, IDs, and lane assumptions.
-2. Run uv run gz attest with the required options.
-3. Summarize results, including evidence and any follow-up gates.
-
-## Validation
-
-- Verify command output reflects the requested scope.
-- If governance state changed, confirm with uv run gz status or uv run gz state.
-
-## Example
-
-Use $gz-attest to record attestation for an ADR..
+Run `uv run gz attest ADR-X.Y.Z --status completed` directly for the CLI command, or use
+`/gz-adr-closeout-ceremony` for the full human-witnessed closeout protocol.

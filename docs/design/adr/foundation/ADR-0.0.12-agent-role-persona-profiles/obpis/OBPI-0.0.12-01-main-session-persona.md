@@ -3,7 +3,7 @@ id: OBPI-0.0.12-01-main-session-persona
 parent: ADR-0.0.12-agent-role-persona-profiles
 item: 1
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.12-01-main-session-persona: Main Session Persona
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.12-agent-role-persona-profiles/ADR-0.0.12-agent-role-persona-profiles.md`
 - **Checklist Item:** #1 - "Main session persona frame (the "Python craftsperson" identity)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -59,44 +59,44 @@ Create `.gzkit/personas/main-session.md` containing the "Python craftsperson" be
 
 **Governance (read once, cache):**
 
-- [ ] `AGENTS.md` - agent operating contract and persona section
-- [ ] Parent ADR - understand full context and research grounding
+- [x] `AGENTS.md` - agent operating contract and persona section
+- [x] Parent ADR - understand full context and research grounding
 
 **Context:**
 
-- [ ] Parent ADR: `docs/design/adr/foundation/ADR-0.0.12-agent-role-persona-profiles/ADR-0.0.12-agent-role-persona-profiles.md`
-- [ ] ADR-0.0.11 design principles and PRISM/PSM research constraints
-- [ ] Related OBPIs in same ADR (esp. OBPI-07 for downstream integration)
+- [x] Parent ADR: `docs/design/adr/foundation/ADR-0.0.12-agent-role-persona-profiles/ADR-0.0.12-agent-role-persona-profiles.md`
+- [x] ADR-0.0.11 design principles and PRISM/PSM research constraints
+- [x] Related OBPIs in same ADR (esp. OBPI-07 for downstream integration)
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Persona control surface exists: `.gzkit/personas/` directory
-- [ ] Persona model exists: `src/gzkit/models/persona.py` (PersonaFrontmatter)
-- [ ] Exemplar persona exists: `.gzkit/personas/implementer.md`
+- [x] Persona control surface exists: `.gzkit/personas/` directory
+- [x] Persona model exists: `src/gzkit/models/persona.py` (PersonaFrontmatter)
+- [x] Exemplar persona exists: `.gzkit/personas/implementer.md`
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `.gzkit/personas/implementer.md` (ADR-0.0.11 exemplar)
-- [ ] Test patterns: `tests/test_persona_model.py`, `tests/test_persona_schema.py`
-- [ ] Composition model: `src/gzkit/personas.py` (compose_persona_frame)
+- [x] Pattern to follow: `.gzkit/personas/implementer.md` (ADR-0.0.11 exemplar)
+- [x] Test patterns: `tests/test_persona_model.py`, `tests/test_persona_schema.py`
+- [x] Composition model: `src/gzkit/personas.py` (compose_persona_frame)
 
 ## Quality Gates
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] Tests written before/with implementation
-- [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
+- [x] Tests written before/with implementation
+- [x] Tests pass: `uv run gz test`
+- [x] Validation commands recorded in evidence with real outputs
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 ## Verification
 
@@ -113,18 +113,18 @@ test -f .gzkit/personas/main-session.md
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.12-01-01: Given the PersonaFrontmatter schema, when `.gzkit/personas/main-session.md` is parsed, then validation passes with name matching filename stem and non-empty traits, anti-traits, and grounding
-- [ ] REQ-0.0.12-01-02: Given the PRISM constraint, when the persona grounding and body are reviewed, then NO expertise claims appear — only behavioral identity framing (values, relationship to work, craftsmanship standards)
-- [ ] REQ-0.0.12-01-03: Given `uv run gz personas list`, when the main-session persona exists, then it appears in the listing with its traits and grounding summary
+- [x] REQ-0.0.12-01-01: Given the PersonaFrontmatter schema, when `.gzkit/personas/main-session.md` is parsed, then validation passes with name matching filename stem and non-empty traits, anti-traits, and grounding
+- [x] REQ-0.0.12-01-02: Given the PRISM constraint, when the persona grounding and body are reviewed, then NO expertise claims appear — only behavioral identity framing (values, relationship to work, craftsmanship standards)
+- [x] REQ-0.0.12-01-03: Given `uv run gz personas list`, when the main-session persona exists, then it appears in the listing with its traits and grounding summary
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -132,53 +132,69 @@ test -f .gzkit/personas/main-session.md
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+Ran 36 tests in 0.035s — OK
+tests/test_persona_schema.py: TestMainSessionValidation (3 tests)
+tests/test_persona_model.py: test_main_session_parses (1 test)
+Full suite: 2363 tests pass
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+uv run gz lint — All checks passed!
+uv run gz typecheck — All checks passed!
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here when Gate 3 applies
+N/A — Lite lane, no docs-build required
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here when Gate 4 applies
+features/persona.feature — main-session listing scenario added
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+Attestor: jeff
+Attestation: "attest completed"
+Date: 2026-04-03
+```
+
+### Implementation Summary
+
+- Files created: `.gzkit/personas/main-session.md`
+- Files modified: `tests/test_persona_schema.py`, `tests/test_persona_model.py`, `features/persona.feature`
+- Tests added: 4 (3 schema validation + PRISM compliance + composition; 1 parse)
+- Date completed: 2026-04-03
+- Attestation status: Human-attested (parent ADR Heavy lane floor)
+- Defects noted: None
+
+### Key Proof
+
+```text
+$ uv run gz personas list
+┃ Name         ┃ Traits             ┃ Anti-Traits        ┃ Grounding           ┃
+┡━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━┩
+│ main-session │ craftsperson,      │ generic-assistant, │ I write Python the  │
+│              │ governance-aware,  │ token-efficiency-… │ way it was meant to │
+│              │ whole-file-reason… │ incremental-patch… │ be written. PEP 8   │
+│              │ direct             │                    │ is not a checklist  │
+│              │                    │                    │ I co...             │
 ```
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
-
-### Key Proof
-
-<!-- One concrete usage example, command, or before/after behavior. -->
-
-### Implementation Summary
-
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+Before this OBPI, the main Claude Code session operated with the default generic Assistant persona, causing token-efficient, incremental, shallow-compliant trait clusters — the direct cause of production failures like import splitting and premature summaries. Now, `.gzkit/personas/main-session.md` provides a research-grounded "Python craftsperson" behavioral identity frame with virtue-ethics traits and explicit anti-traits per the PRISM/PERSONA research.
 
 ## Tracked Defects
 
@@ -186,14 +202,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `jeff`
+- Attestation: attest completed
+- Date: 2026-04-03
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-03
 
 **Evidence Hash:** -

@@ -15,6 +15,14 @@ Feature: Persona control surface
     And the output contains "implementer"
     And the output contains "methodical"
 
+  Scenario: List personas shows main-session when file exists
+    Given the workspace is initialized
+    And a persona file "main-session" exists
+    When I run the gz command "personas list --json"
+    Then the command exits with code 0
+    And the output contains "main-session"
+    And the output contains "methodical"
+
   Scenario: Personas list is read-only
     Given the workspace is initialized
     And a persona file "implementer" exists

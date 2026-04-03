@@ -4,7 +4,7 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-04-02
+last_reviewed: 2026-03-16
 ---
 
 # gz-obpi-pipeline
@@ -158,18 +158,102 @@ Exception mode: Stage 4 = SELF-CLOSE (record evidence, proceed)
 
 ### Stage 2: Implement (skipped by `--from=verify` or `--from=ceremony`)
 
-**Check the `--no-subagents` flag first.** If set, skip to the Inline Fallback below.
+**Check the `--no-subagents` flag first.** If set, skip to the [Inline Fallback](#inline-fallback-no-subagents) below.
 
 #### Subagent Dispatch Mode (default)
 
-Read `DISPATCH.md` for the full protocol. Summary:
+1. **Extract plan tasks** from the approved plan file using `extract_plan_tasks()` patterns (headings or numbered items).
+2. **Create task list:**
+   - Normal mode: Last task MUST be "Present OBPI Acceptance Ceremony"
+   - Exception mode: Last task MUST be "Record OBPI Evidence and Self-Close"
+3. **Read brief requirements** — extract the `## Requirements (FAIL-CLOSED)` section from the OBPI brief. These are passed to each implementer as scoped context.
+4. **For each plan task** (sequential — one implementer at a time, never parallel):
 
-1. Extract plan tasks from the approved plan file
-2. Create task list (last task = ceremony or self-close depending on mode)
-3. Read brief requirements (`## Requirements (FAIL-CLOSED)`) as scoped context
-4. For each task sequentially: classify complexity → select model tier → dispatch implementer → two-stage review (spec + quality)
-5. Handle results: DONE → review → advance; BLOCKED → halt and escalate
-6. Persist dispatch state after each task
+   a. **Classify complexity** based on allowed file count:
+      - 1-2 files → `simple`
+      - 3-5 files → `standard`
+      - 6+ files → `complex`
+
+   b. **Select model tier:**
+      - `simple` → `haiku` (fast, economical)
+      - `standard` → `sonnet` (balanced)
+      - `complex` → `opus` (most capable)
+
+   c. **Compose implementer prompt** with scoped context:
+      - Task description from the plan
+      - Allowed files from the brief allowlist
+      - Test expectations from the brief
+      - Brief requirements (the FAIL-CLOSED list)
+      - Implementer rules from `.claude/agents/implementer.md`
+
+   d. **Dispatch via Agent tool:**
+      ```
+      Agent tool call:
+        subagent_type: "implementer"
+        model: <selected tier from step b>
+        prompt: <composed prompt from step c>
+        description: "Implement task N: <short description>"
+      ```
+
+   e. **Parse HandoffResult** from the subagent output — look for a JSON code block with `status`, `files_changed`, `tests_added`, `concerns` fields.
+
+   f. **Record dispatch** — create a `SubagentDispatchRecord` with task_id, role="Implementer", model, timestamps, and result. Persist to the pipeline active marker.
+
+   g. **Handle result status:**
+      - `DONE` or `DONE_WITH_CONCERNS` → proceed to **two-stage review** (step h)
+      - `NEEDS_CONTEXT` → provide additional context from the brief and redispatch **once**. A second `NEEDS_CONTEXT` is treated as `BLOCKED`.
+      - `BLOCKED` → halt Stage 2, record blocker reason, present to user. **Do not continue to the next task.**
+
+   h. **Two-stage review dispatch** (only when implementer returned `DONE` or `DONE_WITH_CONCERNS`):
+
+      Use `should_dispatch_review(status)` to gate this step. Skip review entirely for
+      `BLOCKED` or `NEEDS_CONTEXT` results — those tasks did not produce code to review.
+
+      i. **Select review model** via `select_review_model(complexity)`:
+         - `simple`/`standard` → `sonnet` (reviews always require judgment — never haiku)
+         - `complex` → `opus`
+
+      ii. **Compose spec reviewer prompt** via `compose_spec_review_prompt(task, brief_requirements, files_changed)`:
+         - Includes the task description, brief requirements, and the diff produced
+         - Instructs the reviewer: "The implementer may be optimistic. Verify everything independently."
+
+      iii. **Compose quality reviewer prompt** via `compose_quality_review_prompt(files_changed, test_files)`:
+         - Includes changed files, test files, and quality criteria (SOLID, size limits, coverage, etc.)
+
+      iv. **Dispatch both reviewers concurrently:**
+         ```
+         Agent tool call 1 (background):
+           subagent_type: "spec-reviewer"
+           model: <review model from step i>
+           prompt: <spec review prompt from step ii>
+           run_in_background: true
+           description: "Spec review task N"
+
+         Agent tool call 2 (foreground):
+           subagent_type: "quality-reviewer"
+           model: <review model from step i>
+           prompt: <quality review prompt from step iii>
+           description: "Quality review task N"
+         ```
+         Wait for both to complete. Parse `ReviewResult` from each using `parse_review_result()`.
+
+      v. **Record review dispatches** — create `SubagentDispatchRecord` entries for each
+         reviewer (role="Spec Reviewer" / role="Quality Reviewer") with model, timestamps, and result.
+
+      vi. **Handle review results** via `handle_review_cycle(state, task_index, spec_result, quality_result)`:
+         - Both reviewers pass → **advance** to next task (or complete if last task)
+         - Critical finding from either reviewer → **fix** — redispatch the implementer with
+           the finding as additional context, then re-review after the fix
+         - Fix cycles are bounded: maximum 2 fix cycles per task (`MAX_REVIEW_FIX_CYCLES`).
+           After exhausting fix cycles → **blocked** — halt Stage 2 and escalate to user.
+         - When both reviewers find critical issues, combine findings into a single fix dispatch.
+
+      vii. **Log review concerns** — if `DONE_WITH_CONCERNS` from implementer, pass concerns
+         as additional context to reviewers. Accumulate review findings in dispatch state for
+         the Stage 4 ceremony.
+
+5. **Persist dispatch state** after each task completes (success or failure), including review results.
+6. **After all tasks complete:** persist dispatch summary for `gz roles --pipeline` queries.
 
 **Abort if:** Any task returns `BLOCKED` after retry or after exhausting review fix cycles. Create handoff, release lock, and stop.
 
@@ -212,16 +296,66 @@ If any baseline check fails, attempt fix and re-verify once. If still failing, c
 
 #### Phase 2: REQ-Level Verification Dispatch
 
-Read `VERIFICATION.md` for the full protocol. Summary:
+**Check the `--no-subagents` flag first.** If set, skip to the [Inline Verification Fallback](#inline-verification-fallback) below.
 
-1. Extract verification scopes from brief requirements
-2. Partition into independent groups by path overlap (non-overlapping → parallel, overlapping → same group)
-3. Dispatch verification subagents per group (worktree-isolated, concurrent)
-4. Aggregate results: all pass → Stage 4; any fail → fix once, then handoff
+After baseline checks pass, dispatch parallel verification subagents for the brief's requirements:
 
-**Inline fallback:** When `--no-subagents` is set or strategy is `sequential`, run verification commands sequentially inline.
+1. **Extract verification scopes** from the brief using `prepare_stage3_verification(brief_content, test_paths)`. Each numbered `REQUIREMENT:` line becomes one `VerificationScope`.
 
-**Abort if:** Any verification fails after one fix attempt. Create handoff, release lock, and stop.
+2. **Analyze path overlap** — the `VerificationPlan` partitions requirements into independent groups:
+   - Requirements with **non-overlapping test paths** are placed in **separate groups** (can run in parallel).
+   - Requirements with **overlapping test paths** are merged into the **same group** (must run sequentially within a single subagent).
+   - **NEVER dispatch parallel verification for overlapping file paths** — data corruption risk.
+
+3. **Dispatch strategy selection:**
+   - `parallel` — all groups are singletons (fully parallel dispatch)
+   - `mixed` — some groups have multiple REQs (parallel between groups, sequential within)
+   - `sequential` — single group or no test paths (fall back to inline)
+
+4. **For each independent group** (concurrent dispatch using `run_in_background: true`):
+
+   a. **Compose verification prompt** via `compose_verification_prompt(group_scopes, group_label=...)`. Each subagent receives:
+      - Requirement text for each REQ in the group
+      - Test file paths to run
+      - Expected pass criteria
+      - Current branch state (included in prompt context)
+
+   b. **Dispatch verification subagent:**
+      ```
+      Agent tool call:
+        subagent_type: "general-purpose"
+        isolation: "worktree"
+        run_in_background: true
+        prompt: <verification prompt from step a>
+        description: "Verify REQ group N"
+      ```
+
+   c. Worktree cleanup is **automatic** — the Agent tool cleans up the worktree when the subagent completes or fails. No orphaned worktrees.
+
+5. **Wait for all verification subagents to complete.** All subagents MUST finish before Stage 3 advances.
+
+6. **Parse and aggregate results:**
+   - Parse each subagent output via `parse_verification_results(agent_output)`.
+   - Aggregate via `aggregate_verification_results(results, expected_req_indices)`.
+   - Create dispatch records via `create_verification_dispatch_records(plan, results)` and persist in the pipeline marker.
+
+7. **Record timing metrics** via `compute_verification_timing(start_ns, end_ns, strategy, group_count)`. Always record wall-clock time savings from parallel vs sequential execution.
+
+8. **Handle aggregate results:**
+   - All REQs pass → advance to Stage 4.
+   - Any REQ fails → attempt fix and re-verify once. If still failing, create handoff, release lock, and stop.
+
+#### Inline Verification Fallback
+
+When `--no-subagents` is set, or when the verification plan strategy is `sequential`:
+
+1. Run each brief-specific verification command sequentially inline.
+2. Run any commands from the brief's Verification section.
+3. Record all outputs as evidence.
+
+No subagent dispatch, no worktree isolation, no parallel execution.
+
+**Abort if:** Any verification fails. Attempt fix, re-verify once. If still failing, create handoff, release lock, and stop.
 
 **MANDATORY TRANSITION → Stage 4.** Do not summarize. Do not report. Proceed.
 
@@ -355,6 +489,85 @@ per-OBPI anchor hash. The second sync commits the receipt and reconcile output.
 
 ---
 
+## Error Recovery
+
+| Failure Point | Action |
+|---------------|--------|
+| Brief not found | Report error, release lock, stop |
+| Receipt verdict FAIL | Report audit failure, release lock, stop |
+| No receipt found (full run) | STOP — enter plan mode, get approval, then resume pipeline. Do not proceed without a plan. |
+| No receipt found (`--from` set) | Proceed — user is resuming a partial pipeline where implementation already happened |
+| Tests fail during implementation | Attempt fix (2 tries), then handoff + release lock |
+| Verification fails | Attempt fix (1 try), then handoff + release lock |
+| Human rejects attestation | Record feedback, return to Stage 2 with corrections |
+| `git sync` fails or repo remains unsynced | Stop before completion accounting and repair blockers |
+
+**Lock bracket:** Lock is claimed at Stage 1 and released at Stage 5 AND on any abort/handoff. No orphaned locks.
+
+**Handoff creation:** On any abort, run `/gz-session-handoff` to preserve context for the next session.
+
+---
+
+## Evidence Capture
+
+Each stage records evidence to the OBPI audit ledger:
+
+| Stage | Evidence Written |
+|-------|-----------------|
+| Stage 1 | Brief parsed, plan file loaded, lock claimed |
+| Stage 2 | Files changed, tests added |
+| Stage 3 | Verification outputs (pass/fail) |
+| Stage 4 | Attestation text + timestamp |
+| Stage 5 | Attestation ledger entry (Step 1), audit entry (Step 2), brief updated (Step 3), git-sync #1 (Step 7), completion receipt with clean anchor (Step 8), reconcile (Step 9), git-sync #2 (Step 11) |
+
+---
+
+## Plan-Audit-Receipt Contract
+
+The plan-audit-receipt (`.claude/plans/.plan-audit-receipt.json`) is the handoff artifact linking plan mode to this pipeline:
+
+```json
+{
+  "obpi_id": "OBPI-0.14.0-05",
+  "timestamp": "2026-03-16T12:00:00Z",
+  "verdict": "PASS",
+  "plan_file": "my-plan-name.md",
+  "gaps_found": 0
+}
+```
+
+- Written by the `plan-audit-gate.py` hook when exiting plan mode
+- Read by Stage 1 to locate the approved plan
+- **verdict = PASS**: plan is aligned with OBPI brief — proceed
+- **verdict = FAIL**: plan has alignment gaps — abort and resolve
+
+---
+
+## Parallel Execution (Exception Mode)
+
+Multiple independent OBPIs within the same ADR can run this pipeline concurrently in separate agent sessions when Exception mode is granted. Requirements:
+
+1. ADR has `## Execution Mode: Exception (SVFR)` section (granted at ADR Defense)
+2. OBPIs have non-overlapping allowed paths
+3. Each session claims its OBPI via `/gz-obpi-lock`
+4. Sync operations (Stage 5) are atomic per-brief
+
+In Normal mode, OBPIs run sequentially with per-OBPI human attestation.
+
+---
+
+## Relationship to Existing Skills
+
+| Skill | Role in Pipeline |
+|-------|-----------------|
+| `/gz-obpi-lock` | Stage 1 claim, Stage 5 release, abort release |
+| `/gz-plan-audit` | Pre-pipeline — runs in plan mode, produces receipt |
+| `/gz-obpi-audit` | Stage 5 ledger recording |
+| `/gz-obpi-sync` | Stage 5 ADR table sync |
+| `/gz-session-handoff` | Error recovery — preserves context on abort |
+
+---
+
 ## Completion Contract
 
 The pipeline is complete when — and ONLY when — all of these are true:
@@ -384,7 +597,28 @@ If a pipeline hook blocks a write, that means the pipeline is not active or evid
 
 ---
 
-## Reference Material
+## Design Notes
 
-Error recovery, evidence capture, plan-audit-receipt contract, parallel execution,
-design notes, and related skill mapping are in `REFERENCE.md`.
+- AirlineOps is the behavioral reference implementation for this pipeline.
+- gzkit adapts the control surface to its native command vocabulary
+  (`uv run gz lint`, `uv run gz test`, etc.) and repository structure.
+- **Hooks do the hard enforcement.** This pipeline is orchestration narrative, not a security boundary. The real gates are:
+  - `plan-audit-gate.py` — enforces plan ↔ OBPI alignment at plan-mode exit
+  - `obpi-completion-validator.py` — enforces evidence requirements when marking briefs Completed
+  - `pipeline-gate.py` — blocks src/tests writes until pipeline is active
+- The pipeline's value is **sequencing and governance memory** — ensuring the ceremony and sync stages happen, which is exactly what gets lost in freeform execution.
+- `src/gzkit/pipeline_runtime.py` is the canonical shared runtime used
+  by the CLI and generated pipeline hooks.
+- In gzkit, `uv run gz git-sync --apply --lint --test` is the canonical Stage 5
+  sync ritual. Do not substitute ad-hoc git commands.
+
+---
+
+## Related
+
+- OBPI Acceptance Protocol: `AGENTS.md` § OBPI Acceptance Protocol
+- Plan audit: `.claude/skills/gz-plan-audit/SKILL.md`
+- Session handoff: `.gzkit/skills/gz-session-handoff/SKILL.md`
+- Governance workflow: `docs/user/concepts/workflow.md`
+- Runbook: `docs/user/runbook.md`
+- Transaction contract: `docs/governance/GovZero/obpi-transaction-contract.md`
