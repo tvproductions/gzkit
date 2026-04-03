@@ -6,24 +6,22 @@ lane: Heavy
 status: Draft
 ---
 
-# OBPI-0.0.12-07-agents-md-persona-reference: Agents Md Persona Reference
+# OBPI-0.0.12-07-agents-md-persona-reference: AGENTS.md Persona Reference Integration
 
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.12-agent-role-persona-profiles/ADR-0.0.12-agent-role-persona-profiles.md`
-- **Checklist Item:** #7 - "Dispatch integration (pipeline_runtime.py loads persona at dispatch)"
+- **Checklist Item:** #7 - "AGENTS.md and CLAUDE.md persona reference integration"
 
 **Status:** Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-TBD
+Integrate the main session persona frame into AGENTS.md by expanding the Persona section (established by ADR-0.0.11) with the main-session persona's grounding and trait summary, and ensure the AGENTS.md template in `src/gzkit/templates/agents.md` renders persona references for `gz agent sync control-surfaces`.
 
 ## Lane
 
-**Lite** - This OBPI remains internal to the promoted ADR implementation scope.
+**Heavy** - This OBPI modifies AGENTS.md, an external operator-facing governance contract surface, and the AGENTS template used by the sync command.
 
 > Heavy is reserved for command/API/schema/runtime-contract changes. Process,
 > documentation, and template-only work stays Lite unless it changes one of
@@ -31,59 +29,59 @@ TBD
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `AGENTS.md` — primary deliverable (persona reference integration)
+- `src/gzkit/templates/agents.md` — AGENTS template for sync surface
+- `src/gzkit/sync_surfaces.py` — sync command if persona reference needs dynamic loading
+- `tests/test_sync_surfaces.py` — sync integration tests
+- `features/persona.feature` — BDD persona integration scenarios
+- `docs/design/adr/foundation/ADR-0.0.12-agent-role-persona-profiles/` — parent ADR package
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
-- Paths not listed in Allowed Paths
+- `.gzkit/personas/*.md` — persona files owned by OBPIs 01-05
+- `src/gzkit/pipeline_runtime.py` — owned by OBPI-06
+- `.claude/agents/` — agent profiles are not modified in this OBPI
+- `src/gzkit/models/persona.py` — persona model is read-only
 - New dependencies
 - CI files, lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: AGENTS.md Persona section MUST reference the main-session persona's grounding text and trait summary
+1. REQUIREMENT: AGENTS.md template MUST render persona references so `gz agent sync control-surfaces` produces consistent output
+1. REQUIREMENT: Persona section MUST list all available persona files with their role mapping
+1. NEVER: Inline full persona content in AGENTS.md — reference the `.gzkit/personas/` control surface
+1. ALWAYS: Persona reference MUST survive `gz agent sync control-surfaces` regeneration
+1. ALWAYS: When main-session persona exists (OBPI-01), include its grounding in the Persona section; when absent, reference the control surface without inline grounding
 
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if AGENTS.md Persona section does not exist (from ADR-0.0.11), print a BLOCKERS list and halt. Note: OBPI-01 (main-session persona) is NOT a blocker — this OBPI can proceed with existing persona files and add main-session references later.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first. -->
-
 **Governance (read once, cache):**
 
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
+- [ ] `AGENTS.md` - current Persona section (from ADR-0.0.11)
+- [ ] Parent ADR - integration goals
 
 **Context:**
 
 - [ ] Parent ADR: `docs/design/adr/foundation/ADR-0.0.12-agent-role-persona-profiles/ADR-0.0.12-agent-role-persona-profiles.md`
-- [ ] Related OBPIs in same ADR
+- [ ] ADR-0.0.11 OBPI-04 — how AGENTS.md persona section was established
+- [ ] Depends on OBPI-01 (main-session persona file)
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
+- [ ] AGENTS.md Persona section exists (from ADR-0.0.11)
+- [ ] AGENTS template exists: `src/gzkit/templates/agents.md`
+- [ ] Sync surface: `src/gzkit/sync_surfaces.py`
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+- [ ] Current AGENTS.md Persona section — what's already there
+- [ ] Template rendering: `src/gzkit/templates/agents.md`
+- [ ] Sync tests: `tests/test_sync_surfaces.py`
 
 ## Quality Gates
-
-<!-- Which gates apply and how to verify them. -->
 
 ### Gate 1: ADR
 
@@ -101,7 +99,6 @@ TBD
 - [ ] Lint clean: `uv run gz lint`
 - [ ] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
 ### Gate 3: Docs (Heavy only)
 
 - [ ] Docs build: `uv run mkdocs build --strict`
@@ -117,38 +114,33 @@ TBD
 
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
 uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
 uv run gz test
+uv run mkdocs build --strict
 
 # Specific verification for this OBPI
-command --to --verify
+rg -n "^## Persona$" AGENTS.md
+uv run gz agent sync control-surfaces --dry-run
+uv run -m behave features/persona.feature
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.0.12-07-01: Given/When/Then behavior criterion 1
-- [ ] REQ-0.0.12-07-02: Given/When/Then behavior criterion 2
-- [ ] REQ-0.0.12-07-03: Given/When/Then behavior criterion 3
+- [ ] REQ-0.0.12-07-01: Given AGENTS.md, when the Persona section is read, then it references the main-session persona grounding and lists all available persona files with role mappings
+- [ ] REQ-0.0.12-07-02: Given `gz agent sync control-surfaces`, when AGENTS.md is regenerated, then the Persona section survives regeneration with persona references intact
+- [ ] REQ-0.0.12-07-03: Given `uv run -m behave features/persona.feature`, when persona integration scenarios run, then all pass
 
 ## Completion Checklist
-
-<!-- Verify all gates before marking OBPI accepted. -->
 
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
 - [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
 - [ ] **Code Quality:** Lint, format, type checks clean
+- [ ] **Gate 3 (Docs):** Docs build clean
+- [ ] **Gate 4 (BDD):** Persona integration scenarios pass
+- [ ] **Gate 5 (Human):** Human attestation recorded
 - [ ] **Value Narrative:** Problem-before vs capability-now is documented
 - [ ] **Key Proof:** One concrete usage example is included
 - [ ] **OBPI Acceptance:** Evidence recorded below
@@ -156,9 +148,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
 ## Evidence
-
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
 
 ### Gate 1 (ADR)
 
@@ -211,9 +200,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - Defects noted:
 
 ## Tracked Defects
-
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
 
 _No defects tracked._
 

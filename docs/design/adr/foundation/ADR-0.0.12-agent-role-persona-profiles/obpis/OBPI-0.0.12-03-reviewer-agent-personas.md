@@ -11,19 +11,17 @@ status: Draft
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.12-agent-role-persona-profiles/ADR-0.0.12-agent-role-persona-profiles.md`
-- **Checklist Item:** #3 - "Spec-reviewer agent persona (independent skeptic, evidence-based)"
+- **Checklist Item:** #3 - "Reviewer agent personas (spec-reviewer: independent skeptic; quality-reviewer: architectural rigor)"
 
 **Status:** Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-TBD
+Create `.gzkit/personas/spec-reviewer.md` and `.gzkit/personas/quality-reviewer.md` with orthogonal trait clusters — independent skepticism and evidence-based assessment for spec-reviewer, architectural rigor and maintainability assessment for quality-reviewer.
 
 ## Lane
 
-**Lite** - This OBPI remains internal to the promoted ADR implementation scope.
+**Lite** - This OBPI creates internal persona files without changing any external command, API, or schema surface.
 
 > Heavy is reserved for command/API/schema/runtime-contract changes. Process,
 > documentation, and template-only work stays Lite unless it changes one of
@@ -31,59 +29,57 @@ TBD
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `.gzkit/personas/spec-reviewer.md` — new persona file (spec-reviewer)
+- `.gzkit/personas/quality-reviewer.md` — new persona file (quality-reviewer)
+- `tests/test_persona_model.py` — schema validation tests
+- `tests/test_persona_schema.py` — structural validation tests
+- `docs/design/adr/foundation/ADR-0.0.12-agent-role-persona-profiles/` — parent ADR package
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
-- Paths not listed in Allowed Paths
+- `.gzkit/personas/implementer.md` — owned by OBPI-02
+- `.gzkit/personas/main-session.md` — owned by OBPI-01
+- `src/gzkit/pipeline_runtime.py` — owned by OBPI-06
+- `AGENTS.md` — owned by OBPI-07
 - New dependencies
 - CI files, lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: Both persona files MUST validate against PersonaFrontmatter schema (name, traits, anti-traits, grounding)
+1. REQUIREMENT: Spec-reviewer MUST activate independent judgment, skepticism, and evidence-based assessment traits
+1. REQUIREMENT: Quality-reviewer MUST activate architectural rigor, SOLID principles, and maintainability assessment traits
+1. NEVER: Let both reviewer personas share the same trait cluster — they address orthogonal review concerns
+1. NEVER: Use expertise claims in either persona grounding or body
+1. ALWAYS: Anti-traits suppress rubber-stamping, optimistic bias, and surface-level review patterns
 
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if persona control surface `.gzkit/personas/` does not exist, print a BLOCKERS list and halt.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first. -->
-
 **Governance (read once, cache):**
 
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
+- [ ] `AGENTS.md` - agent operating contract and persona section
+- [ ] Parent ADR - research grounding on reviewer trait clusters
 
 **Context:**
 
 - [ ] Parent ADR: `docs/design/adr/foundation/ADR-0.0.12-agent-role-persona-profiles/ADR-0.0.12-agent-role-persona-profiles.md`
+- [ ] ADR-0.0.12 Agent Context Frame — reviewer goals
 - [ ] Related OBPIs in same ADR
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
+- [ ] Persona control surface exists: `.gzkit/personas/`
+- [ ] Persona model: `src/gzkit/models/persona.py`
+- [ ] Exemplar: `.gzkit/personas/implementer.md`
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+- [ ] Agent profiles: `.claude/agents/spec-reviewer.md`, `.claude/agents/quality-reviewer.md`
+- [ ] Test patterns: `tests/test_persona_model.py`, `tests/test_persona_schema.py`
 
 ## Quality Gates
-
-<!-- Which gates apply and how to verify them. -->
 
 ### Gate 1: ADR
 
@@ -101,50 +97,27 @@ TBD
 - [ ] Lint clean: `uv run gz lint`
 - [ ] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
-### Gate 3: Docs (Heavy only)
-
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
-
-### Gate 4: BDD (Heavy only)
-
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
-
-### Gate 5: Human (Heavy only)
-
-- [ ] Human attestation recorded
-
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
-uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
 uv run gz test
 
 # Specific verification for this OBPI
-command --to --verify
+uv run gz personas list
+uv run -m unittest tests/test_persona_schema.py -v
+test -f .gzkit/personas/spec-reviewer.md
+test -f .gzkit/personas/quality-reviewer.md
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.0.12-03-01: Given/When/Then behavior criterion 1
-- [ ] REQ-0.0.12-03-02: Given/When/Then behavior criterion 2
-- [ ] REQ-0.0.12-03-03: Given/When/Then behavior criterion 3
+- [ ] REQ-0.0.12-03-01: Given the PersonaFrontmatter schema, when both reviewer persona files are parsed, then validation passes for each with name matching filename stem
+- [ ] REQ-0.0.12-03-02: Given the spec-reviewer persona, when traits are examined, then independent judgment and skepticism traits are present with anti-traits suppressing rubber-stamping
+- [ ] REQ-0.0.12-03-03: Given the quality-reviewer persona, when traits are examined, then architectural rigor and SOLID assessment traits are present with anti-traits suppressing surface-level review
 
 ## Completion Checklist
-
-<!-- Verify all gates before marking OBPI accepted. -->
 
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
 - [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
@@ -156,9 +129,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
 ## Evidence
-
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
 
 ### Gate 1 (ADR)
 
@@ -174,24 +144,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ```text
 # Paste lint/format/type check output here
-```
-
-### Gate 3 (Docs)
-
-```text
-# Paste docs-build output here when Gate 3 applies
-```
-
-### Gate 4 (BDD)
-
-```text
-# Paste behave output here when Gate 4 applies
-```
-
-### Gate 5 (Human)
-
-```text
-# Record attestation text here when required by parent lane
 ```
 
 ### Value Narrative
@@ -211,9 +163,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - Defects noted:
 
 ## Tracked Defects
-
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
 
 _No defects tracked._
 

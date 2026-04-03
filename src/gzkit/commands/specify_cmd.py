@@ -127,8 +127,9 @@ def _extract_integration_points(adr_content: str) -> str:
     path reference into an allowed-path entry.
     """
     # Look for Integration Points in the Agent Context Frame
+    # Use \n+ to consume optional blank line(s) between heading and bullets
     match = re.search(
-        r"\*\*Integration Points:\*\*\s*\n((?:\s*-\s+.+\n?)+)",
+        r"\*\*Integration Points:\*\*\s*\n+((?:\s*-\s+.+\n?)+)",
         adr_content,
     )
     if not match:
@@ -334,7 +335,7 @@ def _extract_decision_as_requirements(adr_content: str) -> str:
             "1. ALWAYS: Reconcile the brief with the parent ADR before implementation begins"
         )
 
-    bullet_re = re.compile(r"^\s*-\s+(.+)$")
+    bullet_re = re.compile(r"^\s*(?:-|\d+\.)\s+(.+)$")
     reqs: list[str] = []
     for line in section.splitlines():
         m = bullet_re.match(line)
@@ -552,6 +553,26 @@ def _build_obpi_plan(
     }
 
 
+_PLACEHOLDER_SENTINELS: tuple[str, ...] = (
+    "src/module/",
+    "tests/test_module.py",
+    "path/to/prerequisite",
+    "path/to/exemplar",
+    "command --to --verify",
+    "Given/When/Then behavior criterion",
+    "First constraint",
+    "Second constraint",
+    "What must not happen",
+    "What must always be true",
+    "Reason this is in scope",
+)
+
+
+def _detect_placeholder_remnants(content: str) -> list[str]:
+    """Detect known placeholder strings that survived template rendering."""
+    return [sentinel for sentinel in _PLACEHOLDER_SENTINELS if sentinel in content]
+
+
 def _strip_guidance_comments(content: str) -> str:
     """Remove template guidance comments from authored brief content."""
     stripped = re.sub(r"\n?<!--[\s\S]*?-->\n?", "\n", content)
@@ -672,6 +693,9 @@ def _authored_validation_errors(
     authored_content = _strip_guidance_comments(content)
     validator = ObpiValidator(project_root)
     errors = validator.validate_content(authored_content, require_authored=True)
+    placeholders = _detect_placeholder_remnants(authored_content)
+    for placeholder in placeholders:
+        errors.append(f"Placeholder text survived rendering: {placeholder!r}")
     return authored_content, errors
 
 
@@ -720,6 +744,7 @@ def _write_specify_outputs(
 def _print_specify_success(
     *,
     obpi_file: Path,
+    content: str,
     resolved_lane: str,
     lane: str | None,
     wbs_rows: list[WbsRow],
@@ -731,6 +756,14 @@ def _print_specify_success(
     lane_source = "CLI override" if lane else "WBS table" if wbs_rows else "default"
     console.print(f"  Lane: {resolved_lane} (source: {lane_source})")
     console.print(f"  Objective: {objective}")
+    placeholders = _detect_placeholder_remnants(content)
+    if placeholders:
+        console.print(
+            f"  [red]Warning:[/red] {len(placeholders)} placeholder(s) survived ADR extraction:"
+        )
+        for placeholder in placeholders:
+            console.print(f"    - {placeholder!r}")
+        console.print("  Brief needs manual authoring before pipeline entry.")
     if author:
         console.print(
             "[green]Note:[/green] Brief authored from ADR content and validated for pipeline entry."
@@ -809,6 +842,7 @@ def specify(
     )
     _print_specify_success(
         obpi_file=obpi_file,
+        content=content,
         resolved_lane=resolved_lane,
         lane=lane,
         wbs_rows=wbs_rows,
