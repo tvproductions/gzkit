@@ -1,6 +1,7 @@
 ---
 id: ADR-pool.pool-health-management
-status: Pool
+status: Superseded
+superseded_by: ADR-pool.pool-management
 lane: lite
 parent: ADR-0.6.0-pool-promotion-protocol
 ---
@@ -9,7 +10,7 @@ parent: ADR-0.6.0-pool-promotion-protocol
 
 ## Status
 
-Pool
+Superseded by [ADR-pool.pool-management](ADR-pool.pool-management.md) (2026-04-04, GHI #98)
 
 ## Date
 
