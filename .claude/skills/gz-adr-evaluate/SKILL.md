@@ -4,17 +4,17 @@ description: Post-authoring quality evaluation for ADRs and OBPIs. Scores ADRs o
 category: adr-lifecycle
 compatibility: GovZero v6 framework; adapted from AirlineOps for gzkit ADR package layouts
 metadata:
-  skill-version: "6.0.0"
+  skill-version: "6.1.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "lifecycle (pre-proposal QC), quality rubric, OBPI decomposition"
   govzero_layer: "Layer 1 - Evidence Gathering"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-03-13
+last_reviewed: 2026-04-04
 ---
 
-# gz-adr-evaluate (v6.0.0)
+# gz-adr-evaluate (v6.1.0)
 
 ## Purpose
 
@@ -65,91 +65,170 @@ evaluation scorecards. It does not modify ADR or brief content.
 
 ## Procedure
 
-### Step 1: Run CLI deterministic scoring
+The CLI and the agent have different jobs. The CLI is a deterministic tool —
+it applies structural checks and does not drift. The agent reasons — it reads
+the ADR as a whole, connects evidence across documents, catches what a parser
+cannot, and produces prose analysis that a downstream agent can act on.
+
+The CLI provides the scores. The agent provides the understanding.
+
+### Step 1: CLI Deterministic Scoring
 
 ```bash
 uv run gz adr evaluate ADR-X.Y.Z
 ```
 
-This produces the structural quality scores (8 ADR dimensions, OBPI scores) and
-writes `EVALUATION_SCORECARD.md`. If the CLI verdict is GO, skip to Step 4
-(red-team) or finish. If CONDITIONAL GO or NO GO, review the scorecard and
-continue with manual assessment below.
+This scores all 8 ADR dimensions and all OBPI dimensions, writes
+`EVALUATION_SCORECARD.md`, and emits a verdict (GO / CONDITIONAL GO / NO GO).
 
-### Step 2: Locate the ADR and its OBPIs
+### Step 2: Read the ADR Package and Annotate Every Dimension
 
-1. Resolve the ADR document under `docs/design/adr/**/ADR-X.Y.Z-*/ADR-X.Y.Z-*.md`
-2. List all OBPI briefs in `obpis/` (preferred) or `briefs/` (legacy)
-3. Read the evaluation framework from `assets/ADR_EVALUATION_FRAMEWORK.md`
+Read the full ADR, all OBPI briefs, and the evaluation framework. Then
+annotate every CLI dimension score — not to re-score, but to provide the
+prose analysis and evidence references that a structural parser cannot.
 
-### Step 3: Score ADR Quality (Part 1 - 8 Dimensions)
+For each dimension, the agent writes:
 
-Read Part 1 of the framework and score the ADR on each dimension (1-4 scale):
+- **Analytical reasoning**: Why this score is correct (or why it should be
+  overridden). This is the primary value — the agent's prose analysis of how
+  the ADR's content earns or fails to earn the score. Connect evidence across
+  the ADR, briefs, and codebase. Name what is strong, what is weak, and why.
+- **Evidence references**: File paths, line numbers, and section headings that
+  support the analysis. These are receipts — they let a downstream agent
+  locate the source material. They serve the analysis, not the other way
+  around.
+- **Overrides**: When the agent's reasoning contradicts the CLI score, record
+  the override with the analytical justification and the evidence the CLI's
+  parser missed.
 
-| # | Dimension | Weight |
-|---|-----------|--------|
-| 1 | Problem Clarity | 15% |
-| 2 | Decision Justification | 15% |
-| 3 | Feature Checklist Completeness | 15% |
-| 4 | OBPI Decomposition Quality | 15% |
-| 5 | Lane Assignment Correctness | 10% |
-| 6 | Scope Discipline | 10% |
-| 7 | Evidence Requirements | 10% |
-| 8 | Architectural Alignment | 10% |
+The CLI will not drift — trust its structural checks. The agent can reason —
+use that to catch what structure alone misses. If annotation reveals that a
+CLI score is wrong, override it. If annotation confirms the CLI, say why
+the score holds and what specifically in the ADR earns it.
 
-For each dimension, work through the checklist items in the framework and score
-based on how many checklist items pass with path-level evidence.
+**On CONDITIONAL GO / NO GO**: The same annotation process applies, but the
+agent pays special attention to the flagged dimensions. On NO GO, fall back
+to the full scoring rubric (Parts 1 and 2 of the framework) for a complete
+manual assessment.
 
-### Step 4: Score OBPI Quality (Part 2 - 5 Dimensions)
+### Step 3: Exemplar Comparison (Mandatory)
 
-For each OBPI, score on 5 dimensions (1-4 scale):
+Select the strongest validated ADR in the same track (foundation or feature).
+Prefer an ADR in the same domain lineage when one exists.
 
-| Dimension | Question |
-|-----------|----------|
-| Independence | Can this OBPI be completed without waiting for others? |
-| Testability | Can completion be verified with commands? |
-| Value | What concrete capability would be lost if this OBPI were removed? |
-| Size | Is this a 1-3 day work unit? |
-| Clarity | Could a different agent implement this without ambiguity? |
+Read the exemplar ADR. Produce a structural comparison:
 
-### Step 5: Run Red-Team Challenges (Optional - Part 3)
+1. **What the exemplar has that the target lacks** — name specific structural
+   elements (evidence ledger, failure narrative, supersession tracking, etc.),
+   not subjective quality differences.
+2. **What the target improves over the exemplar** — name specific structural
+   elements.
+3. **Structural verdict** — one sentence: does the target meet, exceed, or fall
+   short of the exemplar's template discipline?
 
-If `--red-team` is specified, or if the evaluator wants stronger adversarial
-review, work through all 10 structured challenges from the framework.
+This comparison must reference concrete sections, not hand-wave. If you cannot
+name specific elements, you have not read the exemplar.
+
+### Step 4: Red-Team Challenges (When Requested)
+
+Run all 10 structured challenges from Part 3 of the framework.
 
 Every challenge must be engaged. `N/A` is not acceptable.
 
-### Step 5: Determine Verdict
+### Step 5: Record Scorecard
 
-Apply the framework thresholds:
+Write `EVALUATION_SCORECARD.md` in the ADR directory.
 
-| ADR Weighted Total | Verdict |
-|--------------------|---------|
-| >= 3.0 | **GO** - Ready for proposal/defense review |
-| 2.5 - 3.0 | **CONDITIONAL GO** - Address weaknesses, then re-evaluate |
-| < 2.5 | **NO GO** - Structural revision required |
+**Richness mandate:** The scorecard is a knowledge artifact for downstream
+agents. The evaluating agent has full context loaded — ADR, OBPIs, exemplar,
+codebase, framework — and MUST capture that context exhaustively so no
+downstream agent needs to re-read the source material.
 
-**OBPI threshold:** Average >= 3.0 per OBPI. Any OBPI scoring 1 on any
-dimension must be revised.
+Richness lives in two layers:
 
-**Red-team threshold:** <= 2 failures = GO, 3-4 = CONDITIONAL GO, >= 5 = NO GO.
+1. **Prose analysis** — the agent's reasoning about what the ADR does well,
+   where it is weak, how its pieces connect, and why scores are earned. This
+   is the primary value. A downstream agent reads the analysis to understand
+   the ADR's quality and make decisions. The prose should be substantive —
+   it explains, connects, and concludes.
 
-### Step 6: Record Scorecard
+2. **Evidence references** — file paths, line numbers, section headings,
+   cross-references between documents. These are receipts. They let a
+   downstream agent verify claims and locate source material. They support
+   the prose analysis; they do not replace it.
 
-Write `EVALUATION_SCORECARD.md` in the ADR directory using the summary template
-from the framework. Include:
+Both layers must be present for every dimension, every OBPI, every
+comparison, and every advisory item. Prose without references is
+unverifiable. References without prose is a database dump. The scorecard
+needs both.
 
-- All ADR dimension scores with weighted totals
-- All OBPI dimension scores with averages
-- Red-team challenge results when run
-- Overall verdict (GO / CONDITIONAL GO / NO GO)
-- Action items for any deficiencies
+A downstream agent reading only the scorecard should be able to:
 
-### Step 7: Gate Decision
+- Understand every score through the evaluator's analytical reasoning
+- Locate every claim in source material by file path and line number
+- Understand the dependency graph between OBPIs with file-path evidence
+- Know which codebase paths each OBPI will touch and whether they exist
+- Understand how the ADR compares to the exemplar at the section level
+- Act on advisory items without further investigation
 
-- **GO:** proceed to human proposal/defense review
-- **CONDITIONAL GO:** revise the ADR or OBPIs, then re-run evaluation
-- **NO GO:** return to authoring; do not proceed to proposal/defense
+The scorecard has 4 sections regardless of CLI verdict:
+
+**Section 1 — Header & CLI Scores with Analytical Annotation**
+
+Record the CLI verdict, weighted total, and per-dimension scores. For EVERY
+dimension, provide both layers:
+
+- **Prose analysis** (primary): Why this score is earned. What in the ADR
+  is strong, what connects across documents, what a downstream agent needs
+  to understand about this dimension's quality. For overrides: the
+  analytical reasoning for why the CLI was wrong — what it missed and why
+  the agent's reading reaches a different conclusion.
+- **Evidence references** (receipt): ADR section headings + line ranges,
+  OBPI brief cross-references with file paths, codebase files that confirm
+  architectural claims. These let a downstream agent verify the analysis.
+
+**Section 2 — OBPI Evidence Map**
+
+For EVERY OBPI, record exhaustively:
+
+- Brief file path
+- Lane and justification (from brief, with line reference)
+- Declared dependencies (with OBPI file paths and the STOP-on-BLOCKERS
+  line reference for each dep)
+- Parent ADR checklist item (exact text + line number)
+- All acceptance criteria (REQ IDs, brief line range)
+- All verification commands (from brief, with line range)
+- All allowed paths (from brief, with line range) with confirmation that
+  those paths exist in the codebase or are expected-new
+- All denied paths (from brief, with line range)
+- Key requirements (MUST/NEVER/ALWAYS rules with brief line references)
+- Pattern-to-follow references (from brief Discovery Checklist)
+- Heavy lane gate obligations (Gate 3/4/5 sections with line refs)
+- Cross-references to ADR Rationale sections that inform the OBPI's
+  design (ADR heading + line range)
+- Cross-references to related OBPIs (file paths)
+
+**Section 3 — Exemplar Comparison**
+
+From Step 3. Every structural element named must include file path and
+section heading from both the exemplar and target ADR. Name specific line
+ranges, not just section names. Explain WHY each difference matters for
+a downstream agent or reviewer.
+
+**Section 4 — Verdict & Advisory Items**
+
+Final verdict with adjusted weighted total if overrides exist. Advisory
+items with specific file:line references, recommended actions, and which
+downstream agent or workflow the advisory applies to (implementer,
+reviewer, closeout ceremony, etc.).
+
+### Step 6: Gate Decision
+
+| Verdict | Action |
+|---------|--------|
+| **GO** | Proceed to human proposal/defense review |
+| **CONDITIONAL GO** | Revise flagged items, then re-run evaluation |
+| **NO GO** | Return to authoring; do not proceed to proposal/defense |
 
 ---
 
@@ -189,10 +268,12 @@ For adversarial review by a separate model:
 
 ## Acceptance Rules
 
-- All 8 ADR dimensions are scored with evidence-based rationale
-- All OBPIs are scored on all 5 dimensions
+- CLI deterministic scoring runs first and is authoritative unless overridden
+- Manual assessment is scoped to CLI-flagged dimensions, not a full re-score
+- Exemplar comparison names concrete structural elements from the exemplar ADR
 - `EVALUATION_SCORECARD.md` is written to the ADR directory
-- Verdict follows the threshold rules with no manual override
+- Scorecard is exhaustive regardless of CLI verdict (richness mandate)
+- Verdict follows threshold rules; manual overrides require one-line justification
 - `NO GO` blocks progression to human proposal/defense
 
 ---
