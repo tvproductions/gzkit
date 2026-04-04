@@ -212,3 +212,15 @@ class TestExemplarFile(unittest.TestCase):
         self.assertGreater(len(fm.traits), 0)
         self.assertGreater(len(fm.anti_traits), 0)
         self.assertGreater(len(body), 0)
+
+    @covers("REQ-0.0.12-04-01")
+    def test_narrator_parses(self) -> None:
+        """OBPI-0.0.12-04: narrator persona parses correctly."""
+        path = Path(".gzkit/personas/narrator.md")
+        if not path.is_file():
+            self.skipTest("narrator persona not yet created")
+        fm, body = parse_persona_file(path)
+        self.assertEqual(fm.name, "narrator")
+        self.assertGreater(len(fm.traits), 0)
+        self.assertGreater(len(fm.anti_traits), 0)
+        self.assertGreater(len(body), 0)

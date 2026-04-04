@@ -452,6 +452,73 @@ class TestQualityReviewerValidation(unittest.TestCase):
         self.assertIn("surface-level-review", fm.anti_traits)
 
 
+class TestNarratorValidation(unittest.TestCase):
+    """Verify narrator persona passes structural and PRISM validation.
+
+    Covers OBPI-0.0.12-04 (ADR-0.0.12).
+    """
+
+    @covers("REQ-0.0.12-04-01")
+    def test_narrator_validates(self) -> None:
+        path = Path(".gzkit/personas/narrator.md")
+        if not path.is_file():
+            self.skipTest("narrator persona not yet created")
+        errors = validate_persona_structure(path)
+        self.assertEqual(errors, [], f"narrator failed: {errors}")
+
+    @covers("REQ-0.0.12-04-02")
+    def test_narrator_no_expertise_claims(self) -> None:
+        path = Path(".gzkit/personas/narrator.md")
+        if not path.is_file():
+            self.skipTest("narrator persona not yet created")
+        fm, body = parse_persona_file(path)
+        full_text = (fm.grounding + " " + body).lower()
+        expertise_phrases = [
+            "expert",
+            "senior",
+            "years of experience",
+            "professional",
+            "skilled developer",
+        ]
+        for phrase in expertise_phrases:
+            self.assertNotIn(
+                phrase,
+                full_text,
+                f"PRISM violation: expertise claim '{phrase}' found",
+            )
+
+    @covers("REQ-0.0.12-04-02")
+    def test_narrator_traits(self) -> None:
+        path = Path(".gzkit/personas/narrator.md")
+        if not path.is_file():
+            self.skipTest("narrator persona not yet created")
+        fm, _body = parse_persona_file(path)
+        self.assertIn("clarity", fm.traits)
+        self.assertIn("precision", fm.traits)
+        self.assertIn("operator-value-framing", fm.traits)
+
+    @covers("REQ-0.0.12-04-02")
+    def test_narrator_anti_traits(self) -> None:
+        path = Path(".gzkit/personas/narrator.md")
+        if not path.is_file():
+            self.skipTest("narrator persona not yet created")
+        fm, _body = parse_persona_file(path)
+        self.assertIn("verbosity", fm.anti_traits)
+        self.assertIn("jargon-accumulation", fm.anti_traits)
+
+    @covers("REQ-0.0.12-04-03")
+    def test_narrator_composition(self) -> None:
+        from gzkit.personas import compose_persona_frame
+
+        path = Path(".gzkit/personas/narrator.md")
+        if not path.is_file():
+            self.skipTest("narrator persona not yet created")
+        fm, body = parse_persona_file(path)
+        frame = compose_persona_frame(fm, body)
+        self.assertIn("evidence", frame.lower())
+        self.assertIn("does NOT do", frame)
+
+
 class TestReviewerOrthogonality(unittest.TestCase):
     """Verify reviewer trait clusters are orthogonal.
 
