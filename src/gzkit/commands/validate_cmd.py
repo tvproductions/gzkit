@@ -23,6 +23,44 @@ def _find_obpi_briefs(project_root: Path) -> list[Path]:
     return sorted(adr_root.rglob("OBPI-*.md"))
 
 
+def _validate_interviews(project_root: Path) -> list[ValidationError]:
+    """Check that ADRs with OBPIs have an interview transcript artifact."""
+    import re
+
+    adr_root = project_root / "docs" / "design" / "adr"
+    transcript_dir = project_root / ".gzkit" / "transcripts"
+    if not adr_root.is_dir():
+        return []
+
+    errors: list[ValidationError] = []
+    # Find ADR directories that contain an obpis/ subdirectory
+    for obpis_dir in sorted(adr_root.rglob("obpis")):
+        if not obpis_dir.is_dir():
+            continue
+        obpi_files = list(obpis_dir.glob("OBPI-*.md"))
+        if not obpi_files:
+            continue
+        adr_dir = obpis_dir.parent
+        # Extract ADR ID from directory name (e.g. ADR-0.0.1-canonical-govzero-parity → ADR-0.0.1)
+        match = re.match(r"(ADR-[\d.]+)", adr_dir.name)
+        if not match:
+            continue
+        adr_id = match.group(1)
+        transcript_path = transcript_dir / f"{adr_id}-interview.md"
+        if not transcript_path.exists():
+            errors.append(
+                ValidationError(
+                    type="interview",
+                    artifact=str(adr_dir.relative_to(project_root)),
+                    message=(
+                        f"No interview transcript found for {adr_id}"
+                        f" (expected {transcript_path.relative_to(project_root)})"
+                    ),
+                )
+            )
+    return errors
+
+
 def _validate_personas(project_root: Path) -> list[ValidationError]:
     """Validate all persona files under ``.gzkit/personas/``."""
     personas_dir = project_root / ".gzkit" / "personas"
@@ -51,6 +89,7 @@ def _collect_errors(
     check_instructions: bool,
     check_briefs: bool,
     check_personas: bool = False,
+    check_interviews: bool = False,
 ) -> list[ValidationError]:
     """Collect validation errors across all requested check types."""
     run_all = not any(
@@ -62,6 +101,7 @@ def _collect_errors(
             check_instructions,
             check_briefs,
             check_personas,
+            check_interviews,
         ]
     )
     errors: list[ValidationError] = []
@@ -87,6 +127,9 @@ def _collect_errors(
 
     if run_all or check_personas:
         errors.extend(_validate_personas(project_root))
+
+    if check_interviews:
+        errors.extend(_validate_interviews(project_root))
 
     return errors
 
@@ -117,6 +160,7 @@ def validate(
     check_instructions: bool,
     check_briefs: bool,
     check_personas: bool = False,
+    check_interviews: bool = False,
     as_json: bool = False,
 ) -> None:
     """Validate governance artifacts against schemas."""
@@ -130,6 +174,7 @@ def validate(
         check_instructions,
         check_briefs,
         check_personas,
+        check_interviews,
     )
 
     if as_json:
@@ -151,6 +196,7 @@ def validate(
             check_instructions,
             check_briefs,
             check_personas,
+            check_interviews,
         ]
     )
     if run_all or check_manifest:
@@ -167,6 +213,8 @@ def validate(
         scopes.append("documents")
     if run_all or check_personas:
         scopes.append("personas")
+    if check_interviews:
+        scopes.append("interviews")
 
     console.print(f"[bold]Validated:[/bold] {', '.join(scopes)}\n")
 

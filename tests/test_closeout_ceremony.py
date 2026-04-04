@@ -127,7 +127,6 @@ class TestExtractReviewFields(unittest.TestCase):
     """Tests for _extract_review_fields() structured extraction."""
 
     def _write_review(self, tmp: str) -> Path:
-
         path = Path(tmp) / "REVIEW.md"
         path.write_text(
             "\n".join(

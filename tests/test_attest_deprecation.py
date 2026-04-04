@@ -44,7 +44,15 @@ class TestAttestDeprecationWarning(unittest.TestCase):
 
             result = runner.invoke(
                 main,
-                ["attest", "ADR-0.1.0", "--status", "completed", "--force", "--reason", "test"],
+                [
+                    "attest",
+                    "ADR-0.1.0",
+                    "--status",
+                    "completed",
+                    "--force",
+                    "--reason",
+                    "forced override for test validation",
+                ],
             )
             self.assertIn("Deprecated", result.output)
             self.assertIn("closeout", result.output.lower())
@@ -61,7 +69,15 @@ class TestAttestDeprecationWarning(unittest.TestCase):
 
             result = runner.invoke(
                 main,
-                ["attest", "ADR-0.1.0", "--status", "completed", "--force", "--reason", "test"],
+                [
+                    "attest",
+                    "ADR-0.1.0",
+                    "--status",
+                    "completed",
+                    "--force",
+                    "--reason",
+                    "forced override for test validation",
+                ],
             )
             self.assertNotIn("Deprecated", result.output)
 
@@ -81,7 +97,15 @@ class TestAttestDeprecationContinuesNormally(unittest.TestCase):
 
             result = runner.invoke(
                 main,
-                ["attest", "ADR-0.1.0", "--status", "completed", "--force", "--reason", "test"],
+                [
+                    "attest",
+                    "ADR-0.1.0",
+                    "--status",
+                    "completed",
+                    "--force",
+                    "--reason",
+                    "forced override for test validation",
+                ],
             )
             # Warning should be present
             self.assertIn("Deprecated", result.output)
@@ -121,7 +145,7 @@ class TestAttestDeprecationDryRun(unittest.TestCase):
                     "--dry-run",
                     "--force",
                     "--reason",
-                    "test",
+                    "forced override for test validation",
                 ],
             )
             # Warning still shows in dry-run

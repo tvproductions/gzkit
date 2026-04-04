@@ -43,6 +43,16 @@ PRIOR_ART_PATTERNS = re.compile(
 )
 
 
+def find_project_root(start: Path) -> Path:
+    """Find the project root by looking for .gzkit or src/gzkit."""
+    current = start
+    while current != current.parent:
+        if (current / ".gzkit").is_dir() or (current / "src" / "gzkit").is_dir():
+            return current
+        current = current.parent
+    return start
+
+
 def find_plans_dir(cwd: str) -> Path | None:
     """Find .claude/plans/ directory."""
     plans_dir = Path(cwd) / ".claude" / "plans"
@@ -152,6 +162,32 @@ def main() -> None:
 
     is_valid, reason = check_audit_receipt(plans_dir, obpi_ids, plan_file.stat().st_mtime)
     if is_valid:
+        # Check for NO-GO evaluation verdict on the parent ADR
+        project_root = find_project_root(Path(cwd).resolve())
+        sys.path.insert(0, str(project_root / "src"))
+        try:
+            from gzkit.pipeline_runtime import check_adr_evaluation_verdict
+
+            adr_root = project_root / "docs" / "design" / "adr"
+            for obpi_id in obpi_ids:
+                # OBPI-X.Y.Z-NN → ADR-X.Y.Z
+                version = obpi_id.replace("OBPI-", "").rsplit("-", 1)[0]
+                adr_prefix = f"ADR-{version}"
+                adr_dirs = [d for d in adr_root.rglob(f"{adr_prefix}*") if d.is_dir()]
+                for adr_dir in adr_dirs:
+                    errors = check_adr_evaluation_verdict(adr_dir)
+                    if errors:
+                        print(
+                            f"BLOCKED: ADR evaluation verdict is NO GO.\n"
+                            f"\n"
+                            f"{errors[0]}\n"
+                            f"\n"
+                            f"Revise the ADR or re-evaluate before exiting plan mode.\n",
+                            file=sys.stderr,
+                        )
+                        sys.exit(2)
+        except Exception:
+            pass  # evaluation check is advisory if import fails
         sys.exit(0)
 
     print(

@@ -124,6 +124,17 @@ def attest(
         msg = "--reason required when --force bypasses failing gate prerequisites"
         raise GzCliError(msg)  # noqa: TRY003
 
+    if force and reason:
+        stripped = reason.strip()
+        if len(stripped) < 20:
+            msg = f"--force reason must be at least 20 characters (got {len(stripped)})"
+            raise GzCliError(msg)  # noqa: TRY003
+        if " " not in stripped:
+            msg = (
+                "--force reason must contain multiple words (single-word reasons are not accepted)"
+            )
+            raise GzCliError(msg)  # noqa: TRY003
+
     if not force and not snapshot["ready"]:
         blockers = "\\n".join(f"- {blocker}" for blocker in snapshot["blockers"])
         msg = (
