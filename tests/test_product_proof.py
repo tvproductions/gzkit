@@ -9,6 +9,7 @@ from gzkit.quality import (
     ObpiProofStatus,
     _check_command_doc_proof,
     _check_docstring_proof,
+    _check_governance_artifact_proof,
     _check_runbook_proof,
     _extract_allowed_paths,
     _extract_obpi_slug,
@@ -204,6 +205,49 @@ class TestCheckDocstringProof(unittest.TestCase):
             self.assertTrue(_check_docstring_proof(allowed, root))
 
 
+class TestCheckGovernanceArtifactProof(unittest.TestCase):
+    """Tests for _check_governance_artifact_proof."""
+
+    def test_existing_artifact_with_content(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            gzkit_dir = root / ".gzkit" / "personas"
+            gzkit_dir.mkdir(parents=True)
+            artifact = gzkit_dir / "main-session.md"
+            artifact.write_text("---\nname: main-session\n---\n" + "x" * 200, encoding="utf-8")
+
+            allowed = [".gzkit/personas/main-session.md"]
+            self.assertTrue(_check_governance_artifact_proof(allowed, root))
+
+    def test_missing_artifact_file(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            allowed = [".gzkit/personas/main-session.md"]
+            self.assertFalse(_check_governance_artifact_proof(allowed, root))
+
+    def test_empty_artifact(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            gzkit_dir = root / ".gzkit" / "personas"
+            gzkit_dir.mkdir(parents=True)
+            artifact = gzkit_dir / "empty.md"
+            artifact.write_text("# Title\n", encoding="utf-8")
+
+            allowed = [".gzkit/personas/empty.md"]
+            self.assertFalse(_check_governance_artifact_proof(allowed, root))
+
+    def test_non_gzkit_paths_ignored(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            allowed = ["src/gzkit/quality.py", "docs/user/runbook.md"]
+            self.assertFalse(_check_governance_artifact_proof(allowed, root))
+
+    def test_no_allowed_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.assertFalse(_check_governance_artifact_proof([], root))
+
+
 class TestObpiProofStatus(unittest.TestCase):
     """Tests for ObpiProofStatus model."""
 
@@ -222,20 +266,30 @@ class TestObpiProofStatus(unittest.TestCase):
         self.assertTrue(status.has_proof)
         self.assertEqual(status.proof_type, "docstring")
 
+    def test_has_proof_governance_artifact(self) -> None:
+        status = ObpiProofStatus(obpi_id="OBPI-0.1.0-01", governance_artifact_found=True)
+        self.assertTrue(status.has_proof)
+        self.assertEqual(status.proof_type, "governance_artifact")
+
     def test_missing(self) -> None:
         status = ObpiProofStatus(obpi_id="OBPI-0.1.0-01")
         self.assertFalse(status.has_proof)
         self.assertEqual(status.proof_type, "MISSING")
 
     def test_priority_order(self) -> None:
-        """Runbook takes priority over command_doc over docstring."""
+        """Runbook takes priority over command_doc over docstring over governance_artifact."""
         status = ObpiProofStatus(
             obpi_id="OBPI-0.1.0-01",
             runbook_found=True,
             command_doc_found=True,
             docstring_found=True,
+            governance_artifact_found=True,
         )
         self.assertEqual(status.proof_type, "runbook")
+
+    def test_governance_artifact_lowest_priority(self) -> None:
+        status = ObpiProofStatus(obpi_id="OBPI-0.1.0-01", governance_artifact_found=True)
+        self.assertEqual(status.proof_type, "governance_artifact")
 
 
 class TestCheckProductProof(unittest.TestCase):
@@ -351,6 +405,26 @@ class TestCheckProductProof(unittest.TestCase):
             obpi_files = {"OBPI-0.1.0-01-checker": brief}
             result = check_product_proof("ADR-0.1.0", obpi_files, root)
             self.assertTrue(result.success)
+
+    def test_governance_artifact_proof(self) -> None:
+        """OBPIs with .gzkit/ allowed paths pass via governance artifact proof."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._make_project(tmp)
+            (root / "docs" / "user" / "runbook.md").write_text("Empty.\n", encoding="utf-8")
+            # Create governance artifact
+            personas_dir = root / ".gzkit" / "personas"
+            personas_dir.mkdir(parents=True)
+            persona = personas_dir / "main-session.md"
+            persona.write_text("---\nname: main-session\n---\n" + "x" * 200, encoding="utf-8")
+            brief = self._make_brief(
+                root,
+                "OBPI-0.0.12-01-main-session-persona",
+                [".gzkit/personas/main-session.md"],
+            )
+            obpi_files = {"OBPI-0.0.12-01-main-session-persona": brief}
+            result = check_product_proof("ADR-0.0.12", obpi_files, root)
+            self.assertTrue(result.success)
+            self.assertEqual(result.obpi_proofs[0].proof_type, "governance_artifact")
 
 
 if __name__ == "__main__":

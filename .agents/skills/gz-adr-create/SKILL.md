@@ -175,23 +175,114 @@ This skill maintains explicit alignment between skill version and GovZero versio
 
 **No ADR may be authored without first completing a structured interview.**
 
-Run the governance interview before any template work, file creation, or registry updates:
+The interview captures problem, decision, alternatives, consequences, and scope
+before any template work, file creation, or registry updates.
+
+#### Agent-Driven Interview (preferred)
+
+The agent conducts the Q&A conversationally, then records answers deterministically:
+
+1. **Skip deducible fields.** ID, title, lane, semver — if already known from
+   context, state them and move on. Don't waste the human's time on mechanical
+   fields the agent can fill.
+
+2. **For each substantive question, draft first, then ask.** By the time an ADR
+   is being created, there's usually conversation context — a design discussion,
+   a defect, a discovered need. The agent reads the question, drafts an answer
+   from what's already known, and presents it for the human's input, correction,
+   or acceptance. This is collaborative authoring, not interrogation.
+
+3. **One question at a time.** Never batch questions. The human's response to
+   one question often reshapes the next answer. Each exchange is a design
+   conversation, not a form fill.
+
+4. **Capture the human's additions.** The best interview content comes from what
+   the human adds that the agent couldn't have generated — broader patterns,
+   risk instincts, connections to other work. These additions are the interview's
+   primary value.
+
+5. **Record via `--from`.** After the conversation, write answers to a JSON file
+   and record deterministically:
+
+```bash
+uv run gz interview adr --from <answers-file>.json
+```
+
+6. **Keep the answers file with the ADR.** The JSON file is a permanent artifact
+   — store it alongside the ADR document (in the ADR directory for promoted ADRs,
+   in the pool directory for pool ADRs).
+
+#### Human-Interactive Interview (terminal)
+
+For humans working without an agent, the interactive mode still works:
 
 ```bash
 uv run gz interview adr
 ```
 
-This command runs a structured Q&A session that captures:
+#### Question Protocol
 
-- Problem statement and motivation
-- Decision drivers and constraints
-- Considered alternatives
-- Consequences and trade-offs
-- Scope and lane determination
+The deducible fields (id, title, semver, lane, parent) are mechanical — skip
+them or confirm from context. The interview's value comes from two tiers:
 
-**The interview output is the primary input for populating the ADR template.** Do not
-skip this step. Do not substitute freeform conversation for the interview. Do not
-create ADR files before the interview is complete.
+**Tier 1 — ADR Pro-Forma (required, populate the template):**
+
+- **What problem are we solving?** — forces concrete articulation of the need
+- **What did we decide?** — forces specificity beyond "we'll add a field"
+- **What alternatives were considered?** — forces decision justification
+- **What are the positive consequences?** — forces articulation of value
+- **What are the negative consequences?** — forces honest risk assessment
+- **What are the checklist items?** — forces decomposition into deliverables
+
+**Tier 2 — Design Forcing Functions (required, stress-test the decision):**
+
+These questions turn the interview from "document what you decided" into
+"stress-test the decision before committing." Each one works with the
+draft-first pattern — the agent proposes an answer, the human corrects.
+
+1. **Pre-Mortem** (Gary Klein): "It is 18 months from now. This decision
+   has failed spectacularly. Why?" — bypasses optimism bias. The agent
+   drafts failure scenarios, the human adds the ones the agent can't see.
+
+2. **What Would Have to Be True** (Roger Martin): "What would have to be
+   true for this to be the right decision?" then "What would have to be
+   true for Alternative B to have been better?" — the agent lists conditions,
+   the human flags which are shaky. The shakiest condition is the biggest risk.
+
+3. **Constraint Archaeology**: "Is this constraint real, inherited, or
+   assumed? When was it last tested?" — forces examination of whether
+   constraints are still load-bearing or just inherited convention nobody
+   re-examined.
+
+4. **Assumption Surfacing**: "Which assumptions here are implicit and
+   undocumented? What if the opposite of your core assumption were true?"
+   — different from constraints. Constraints are things we know are fixed.
+   Assumptions are things we don't realize we're relying on.
+
+5. **The 2am Operator Question**: "You are on-call at 2am and this is
+   broken. What do you need that the design doesn't provide?" — forces the
+   operational perspective that architecture documents chronically miss.
+   Especially strong for Heavy lane ADRs.
+
+6. **Reversibility Assessment**: "Is this a one-way door or a two-way door?
+   If we need to reverse this in 12 months, what does that cost?" — affects
+   lane assignment, ceremony level, and how much evidence is warranted.
+
+7. **Scope Minimization**: "What's the smallest version of this that delivers
+   value? If you had half the time, what would you cut?" — different from
+   non-goals. Non-goals say what's out. Minimization says what's essential.
+   The second question forces prioritization under pressure.
+
+**Closing question (always ask last):**
+
+> "What subsequent decisions does this force? What ADRs will we need to
+> write because of this one?"
+
+Forward-looking — surfaces downstream commitments the decision creates.
+
+**Sources:** Klein (pre-mortem), Martin (WWHTBT), Amazon (one-way/two-way
+doors), Kubernetes Production Readiness Review (operator perspective),
+SAST (assumption surfacing), Fairbanks (risk-driven architecture).
 
 **Why this is non-negotiable:** Uninterviewed ADRs produce vague intent documents
 that drift during implementation. The interview forces structured articulation of
@@ -200,7 +291,7 @@ the decision before any artifacts exist, preventing scope ambiguity at the sourc
 **Prohibited patterns:**
 
 - Creating ADR files first, then "backfilling" interview answers
-- Substituting chat conversation for the structured interview
+- Agent fabricating answers without asking the human
 - Skipping the interview because "the intent is already clear"
 - Running the interview after OBPI co-creation
 

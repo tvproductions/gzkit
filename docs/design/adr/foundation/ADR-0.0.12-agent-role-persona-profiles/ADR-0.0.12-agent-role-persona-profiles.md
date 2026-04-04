@@ -22,7 +22,7 @@ STOP / BLOCKERS:
 
 **Date Added:** 2026-03-30
 **Date Closed:**
-**Status:** Draft
+**Status:** Validated
 **SemVer:** 0.0.12
 **Area:** Governance Foundation — Agent Identity Profiles
 **Lane:** Heavy
@@ -289,7 +289,7 @@ cluster: "plan-first, whole-file, deeply-compliant."
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.12 | Pending | | | |
+| 0.0.12 | Completed | Jeffry | 2026-04-04 | completed |
 
 ### SIGN-OFF — Post-Ship Tidy
 

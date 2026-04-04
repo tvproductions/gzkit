@@ -17,73 +17,74 @@ status: Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-TBD
+Extend `gz init` to create `.gzkit/personas/` with a minimal default persona set
+so that any newly initialized GovZero repository has persona scaffolding from
+day one.
 
 ## Lane
 
-**Lite** - This OBPI remains internal to the promoted ADR implementation scope.
+**Lite** - Adds an internal scaffolding step to `gz init` that creates a new
+directory with default files. Does not change existing CLI output format, exit
+codes, or flags. The init command already creates multiple directories; this
+adds one more following the same pattern.
 
-> Heavy is reserved for command/API/schema/runtime-contract changes. Process,
-> documentation, and template-only work stays Lite unless it changes one of
-> those external surfaces.
+> Note: Borderline case. `gz init` output will mention the new directory, but
+> the command contract (flags, exit codes, error format) is unchanged. If the
+> default persona set becomes an external contract (e.g., other tools depend on
+> specific default persona names), this should be re-evaluated as Heavy.
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `src/gzkit/commands/init_cmd.py` - Add persona directory scaffolding to init flow
+- `src/gzkit/templates/personas/` - Default persona templates (if template-based)
+- `.gzkit/personas/` - Read existing files to understand default set
+- `tests/commands/test_init_cmd.py` - Init command tests
+- `tests/test_persona_scaffolding.py` - New scaffolding-specific tests
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
-- Paths not listed in Allowed Paths
-- New dependencies
-- CI files, lockfiles
+- `src/gzkit/sync_surfaces.py` - Sync is OBPI-03
+- `src/gzkit/schemas/` - Schema is OBPI-01
+- `src/gzkit/commands/personas.py` - Persona commands are separate
+- `.gzkit/manifest.json` - Manifest changes are OBPI-03
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: `gz init` MUST create `.gzkit/personas/` directory if it does not exist.
+2. REQUIREMENT: Default persona set MUST contain at least one persona file that validates against the portable schema (OBPI-01).
+3. NEVER: Default personas MUST NOT contain project-specific content — they are starter templates that projects customize.
+4. ALWAYS: If `.gzkit/personas/` already exists with files, `gz init` MUST NOT overwrite or delete existing persona files.
+5. ALWAYS: Persona scaffolding MUST follow the same idempotent pattern as existing `gz init` directory creation.
+6. NEVER: Do not add new CLI flags to `gz init` for persona scaffolding — it should be automatic.
 
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if OBPI-0.0.13-01 (portable schema) is not complete, print a BLOCKERS list and halt. Default personas must validate against the schema.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first. -->
-
 **Governance (read once, cache):**
 
-- [ ] `.github/discovery-index.json` - repo structure
 - [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
+- [ ] Parent ADR - understand full portability context
 
 **Context:**
 
 - [ ] Parent ADR: `docs/design/adr/foundation/ADR-0.0.13-portable-persona-control-surface/ADR-0.0.13-portable-persona-control-surface.md`
-- [ ] Related OBPIs in same ADR
+- [ ] OBPI-0.0.13-01 - schema must be finalized before defaults can be validated
+- [ ] Related OBPIs: OBPI-03 (manifest), OBPI-04 (loading)
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
+- [ ] `src/gzkit/commands/init_cmd.py` exists
+- [ ] `src/gzkit/schemas/persona.json` exists (from OBPI-01)
+- [ ] `.gzkit/personas/` directory exists with current persona files (study as exemplar)
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+- [ ] Pattern to follow: `src/gzkit/commands/init_cmd.py` - existing scaffolding for skills, rules, schemas
+- [ ] Pattern to follow: `scaffold_core_skills()` - how default skills are bootstrapped
+- [ ] Test patterns: `tests/commands/test_init_cmd.py` - existing init tests
 
 ## Quality Gates
-
-<!-- Which gates apply and how to verify them. -->
 
 ### Gate 1: ADR
 
@@ -101,50 +102,28 @@ TBD
 - [ ] Lint clean: `uv run gz lint`
 - [ ] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
-### Gate 3: Docs (Heavy only)
-
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
-
-### Gate 4: BDD (Heavy only)
-
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
-
-### Gate 5: Human (Heavy only)
-
-- [ ] Human attestation recorded
-
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
-uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
 uv run gz test
 
 # Specific verification for this OBPI
-command --to --verify
+# In a temp directory, verify init creates personas
+cd $(mktemp -d) && uv run gz init && ls .gzkit/personas/
+# Verify idempotency — running init again doesn't overwrite
+uv run gz init && ls .gzkit/personas/
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.0.13-02-01: Given/When/Then behavior criterion 1
-- [ ] REQ-0.0.13-02-02: Given/When/Then behavior criterion 2
-- [ ] REQ-0.0.13-02-03: Given/When/Then behavior criterion 3
+- [ ] REQ-0.0.13-02-01: Given a fresh directory with no `.gzkit/`, when `gz init` runs, then `.gzkit/personas/` is created with at least one default persona file.
+- [ ] REQ-0.0.13-02-02: Given `.gzkit/personas/` already exists with custom files, when `gz init` runs, then existing files are preserved and not overwritten.
+- [ ] REQ-0.0.13-02-03: Given the default persona files created by `gz init`, when validated against `src/gzkit/schemas/persona.json`, then all pass.
+- [ ] REQ-0.0.13-02-04: Given the default persona files, when inspected for project-specific content (gzkit references, specific skill names, pipeline stages), then none is found.
 
 ## Completion Checklist
-
-<!-- Verify all gates before marking OBPI accepted. -->
 
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
 - [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
@@ -156,9 +135,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
 ## Evidence
-
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
 
 ### Gate 1 (ADR)
 
@@ -174,24 +150,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ```text
 # Paste lint/format/type check output here
-```
-
-### Gate 3 (Docs)
-
-```text
-# Paste docs-build output here when Gate 3 applies
-```
-
-### Gate 4 (BDD)
-
-```text
-# Paste behave output here when Gate 4 applies
-```
-
-### Gate 5 (Human)
-
-```text
-# Record attestation text here when required by parent lane
 ```
 
 ### Value Narrative
