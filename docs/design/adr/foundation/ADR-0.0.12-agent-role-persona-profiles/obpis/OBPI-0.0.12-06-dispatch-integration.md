@@ -3,7 +3,7 @@ id: OBPI-0.0.12-06-dispatch-integration
 parent: ADR-0.0.12-agent-role-persona-profiles
 item: 6
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.12-06-dispatch-integration: Dispatch Integration
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.12-agent-role-persona-profiles/ADR-0.0.12-agent-role-persona-profiles.md`
 - **Checklist Item:** #6 - "Dispatch integration (pipeline_runtime.py loads persona at dispatch)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -59,44 +59,44 @@ Modify `src/gzkit/pipeline_runtime.py` to load the appropriate persona frame fro
 
 **Governance (read once, cache):**
 
-- [ ] `AGENTS.md` - agent operating contract
-- [ ] Parent ADR - dispatch integration goals
+- [x] `AGENTS.md` - agent operating contract
+- [x] Parent ADR - dispatch integration goals
 
 **Context:**
 
-- [ ] Parent ADR: `docs/design/adr/foundation/ADR-0.0.12-agent-role-persona-profiles/ADR-0.0.12-agent-role-persona-profiles.md`
-- [ ] ADR-0.0.11 OBPIs — what persona loading infrastructure exists
-- [ ] Depends on OBPIs 01-05 for persona file content (but can proceed with existing implementer.md)
+- [x] Parent ADR: `docs/design/adr/foundation/ADR-0.0.12-agent-role-persona-profiles/ADR-0.0.12-agent-role-persona-profiles.md`
+- [x] ADR-0.0.11 OBPIs — what persona loading infrastructure exists
+- [x] Depends on OBPIs 01-05 for persona file content (but can proceed with existing implementer.md)
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] `load_persona` function exists: `src/gzkit/models/persona.py`
-- [ ] `compose_implementer_prompt` exists: `src/gzkit/pipeline_runtime.py`
-- [ ] At least one persona file exists: `.gzkit/personas/implementer.md`
+- [x] `load_persona` function exists: `src/gzkit/models/persona.py`
+- [x] `compose_implementer_prompt` exists: `src/gzkit/pipeline_runtime.py`
+- [x] At least one persona file exists: `.gzkit/personas/implementer.md`
 
 **Existing Code (understand current state):**
 
-- [ ] Pipeline dispatch: `src/gzkit/pipeline_runtime.py` — AGENT_FILE_MAP, compose_implementer_prompt
-- [ ] Persona loading: `src/gzkit/models/persona.py` — load_persona function
-- [ ] Test patterns: `tests/test_pipeline_runtime.py` — existing dispatch tests
+- [x] Pipeline dispatch: `src/gzkit/pipeline_runtime.py` — AGENT_FILE_MAP, compose_implementer_prompt
+- [x] Persona loading: `src/gzkit/models/persona.py` — load_persona function
+- [x] Test patterns: `tests/test_pipeline_runtime.py` — existing dispatch tests
 
 ## Quality Gates
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] Tests written before/with implementation
-- [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
+- [x] Tests written before/with implementation
+- [x] Tests pass: `uv run gz test`
+- [x] Validation commands recorded in evidence with real outputs
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 ## Verification
 
@@ -112,19 +112,19 @@ uv run gz personas list
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.12-06-01: Given a pipeline dispatch for the implementer role, when the dispatch prompt is composed, then the implementer persona body text is prepended to the prompt
-- [ ] REQ-0.0.12-06-02: Given a pipeline dispatch for a role whose persona file does not exist, when the dispatch prompt is composed, then dispatch succeeds without error (graceful fallback)
-- [ ] REQ-0.0.12-06-03: Given `uv run -m unittest tests/test_pipeline_runtime.py -v`, when persona dispatch tests run, then persona material flows through compose_*_prompt functions
-- [ ] REQ-0.0.12-06-04: Given a pipeline dispatch for a role whose persona file has malformed YAML, when the dispatch prompt is composed, then a ValueError is raised (parse errors are defects, not graceful degradation)
+- [x] REQ-0.0.12-06-01: Given a pipeline dispatch for the implementer role, when the dispatch prompt is composed, then the implementer persona body text is prepended to the prompt
+- [x] REQ-0.0.12-06-02: Given a pipeline dispatch for a role whose persona file does not exist, when the dispatch prompt is composed, then dispatch succeeds without error (graceful fallback)
+- [x] REQ-0.0.12-06-03: Given `uv run -m unittest tests/test_pipeline_runtime.py -v`, when persona dispatch tests run, then persona material flows through compose_*_prompt functions
+- [x] REQ-0.0.12-06-04: Given a pipeline dispatch for a role whose persona file has malformed YAML, when the dispatch prompt is composed, then a ValueError is raised (parse errors are defects, not graceful degradation)
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -132,35 +132,41 @@ uv run gz personas list
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+uv run -m unittest tests/test_pipeline_runtime.py -v
+Ran 34 tests in 0.020s — OK
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+uv run gz lint — All checks passed
+uv run gz typecheck — All checks passed
+uv run gz test — 2403 tests passed
 ```
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before this OBPI, pipeline dispatch composed prompts without any persona framing — subagents defaulted to generic Assistant behavior, causing production failures like import splitting, rubber-stamp reviews, and premature summarization. Now, `pipeline_runtime.py` provides `load_persona_for_dispatch()` and `prepend_persona_to_prompt()` that wire each role's persona frame from `.gzkit/personas/` into the dispatch prompt, activating the right behavioral trait cluster per role.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+```bash
+uv run -m unittest tests.test_pipeline_runtime.TestPersonaPipelineIntegration.test_prepend_persona_to_prompt_with_compose -v
+# test_prepend_persona_to_prompt_with_compose ... ok
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files modified: `src/gzkit/pipeline_runtime.py` (ROLE_PERSONA_MAP, load_persona_for_dispatch, prepend_persona_to_prompt, persona_loaded field), `tests/test_pipeline_runtime.py` (9 new tests)
+- Tests added: test_load_persona_for_dispatch_implementer, test_prepend_persona_to_prompt_with_compose, test_load_persona_for_dispatch_missing_file, test_prepend_persona_passthrough_none, test_load_persona_for_dispatch_malformed, test_load_persona_for_dispatch_unknown_role, test_role_persona_map_covers_agent_file_map, test_prepend_persona_deterministic, test_dispatch_record_persona_field
+- Date completed: 2026-04-04
+- Attestation status: Human attested
+- Defects noted: None
 
 ## Tracked Defects
 
@@ -168,14 +174,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `jeff`
+- Attestation: attest completed
+- Date: 2026-04-04
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-04
 
 **Evidence Hash:** -

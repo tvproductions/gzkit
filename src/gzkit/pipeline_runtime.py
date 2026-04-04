@@ -14,6 +14,8 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.models.persona import load_persona
+
 # ---------------------------------------------------------------------------
 # Re-exports: pipeline_dispatch (task models, classification, review)
 # ---------------------------------------------------------------------------
@@ -119,6 +121,13 @@ AGENT_FILE_MAP: dict[str, str] = {
     "Planner": "",
 }
 
+ROLE_PERSONA_MAP: dict[str, str] = {
+    "Implementer": "implementer",
+    "Reviewer": "spec-reviewer",
+    "QualityReviewer": "quality-reviewer",
+    "Narrator": "narrator",
+}
+
 PIPELINE_CONFIG_FILE = ".gzkit/pipeline-config.json"
 DISPATCH_SUMMARY_PREFIX = ".pipeline-dispatch-"
 
@@ -138,6 +147,7 @@ class SubagentDispatchRecord(BaseModel):
     completed_at: str | None = Field(None, description="ISO-8601 completion timestamp")
     status: str = Field("pending", description="Dispatch status")
     result: dict[str, Any] | None = Field(None, description="Serialized result payload")
+    persona_loaded: str | None = Field(None, description="Persona file stem loaded for dispatch")
 
 
 class DispatchAggregation(BaseModel):
@@ -189,6 +199,37 @@ def get_agent_file_for_role(role_name: str) -> str:
     return AGENT_FILE_MAP.get(role_name, "")
 
 
+def load_persona_for_dispatch(project_root: Path, role: str) -> str | None:
+    """Load persona body text for a dispatch role.
+
+    Maps the dispatch role name (e.g. ``"Implementer"``) to the persona file
+    stem (e.g. ``"implementer"``) via :data:`ROLE_PERSONA_MAP` and delegates
+    to :func:`gzkit.models.persona.load_persona`.
+
+    Returns ``None`` when the role has no persona mapping or the persona file
+    does not exist.  Raises ``ValueError`` when the persona file exists but
+    has malformed YAML frontmatter — parse errors are defects, not graceful
+    degradation cases.
+    """
+    persona_name = ROLE_PERSONA_MAP.get(role)
+    if persona_name is None:
+        return None
+    return load_persona(project_root, persona_name)
+
+
+def prepend_persona_to_prompt(persona_text: str | None, prompt: str) -> str:
+    """Prepend a persona frame to a dispatch prompt.
+
+    Returns *prompt* unchanged when *persona_text* is ``None`` or empty.
+    When persona text is provided, it is placed before the task prompt with
+    a horizontal-rule separator so the model receives the identity frame
+    before the task instructions.
+    """
+    if not persona_text:
+        return prompt
+    return f"{persona_text}\n\n---\n\n{prompt}"
+
+
 def create_subagent_dispatch_record(
     task_id: int,
     role: str,
@@ -196,6 +237,7 @@ def create_subagent_dispatch_record(
     *,
     isolation: str = "inline",
     background: bool = False,
+    persona_loaded: str | None = None,
 ) -> SubagentDispatchRecord:
     """Create a new dispatch record with the current UTC timestamp."""
     return SubagentDispatchRecord(
@@ -207,6 +249,7 @@ def create_subagent_dispatch_record(
         background=background,
         dispatched_at=datetime.now(UTC).isoformat(),
         status="in_progress",
+        persona_loaded=persona_loaded,
     )
 
 
@@ -444,6 +487,7 @@ __all__ = [
     "DispatchAggregation",
     "ModelRoutingConfig",
     "PIPELINE_CONFIG_FILE",
+    "ROLE_PERSONA_MAP",
     "SubagentDispatchRecord",
     "aggregate_dispatch_results",
     "complete_subagent_dispatch_record",
@@ -452,7 +496,9 @@ __all__ = [
     "load_dispatch_state",
     "load_dispatch_summary",
     "load_model_routing_config",
+    "load_persona_for_dispatch",
     "persist_dispatch_state",
     "persist_dispatch_summary",
+    "prepend_persona_to_prompt",
     "validate_agent_files",
 ]
