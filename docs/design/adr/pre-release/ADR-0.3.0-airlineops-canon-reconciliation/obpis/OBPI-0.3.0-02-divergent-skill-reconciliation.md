@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.3.0-02-divergent-skill-reconciliation
-parent: ADR-0.3.0
+parent: ADR-0.3.0-airlineops-canon-reconciliation
 item: 2
 lane: Heavy
 status: Completed

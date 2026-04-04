@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.7-04-hooks-module-migration
-parent: ADR-0.0.7
+parent: ADR-0.0.7-config-first-resolution-discipline
 item: 4
 lane: Lite
 status: Completed

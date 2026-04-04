@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.2.0-02-dry-run-options
-parent: ADR-0.2.0
+parent: ADR-0.2.0-gate-verification
 item: 2
 lane: Heavy
 status: Completed

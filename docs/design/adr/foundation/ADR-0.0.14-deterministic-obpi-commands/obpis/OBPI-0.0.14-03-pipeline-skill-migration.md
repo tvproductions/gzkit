@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.14-03
-parent: ADR-0.0.14
+parent: ADR-0.0.14-deterministic-obpi-commands
 item: 3
 lane: Heavy
 status: Draft
