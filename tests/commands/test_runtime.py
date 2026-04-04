@@ -444,7 +444,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                 "REQ-0.1.0-01-01: Given/When/Then behavior criterion 1",
                 "Given/When/Then behavior criterion 1",
             )
-            obpi_file.write_text(content)
+            obpi_file.write_text(content, encoding="utf-8")
 
             tests_dir = Path("tests")
             tests_dir.mkdir(parents=True, exist_ok=True)
