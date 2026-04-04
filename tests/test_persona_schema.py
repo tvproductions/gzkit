@@ -247,7 +247,6 @@ class TestMainSessionValidation(unittest.TestCase):
 
     @covers("REQ-0.0.12-01-02")
     def test_main_session_no_expertise_claims(self) -> None:
-
         path = Path(".gzkit/personas/main-session.md")
         if not path.is_file():
             self.skipTest("main-session persona not yet created")
@@ -339,6 +338,136 @@ class TestImplementerEnrichment(unittest.TestCase):
         self.assertIn("test-first", fm.traits)
         self.assertIn("atomic-edits", fm.traits)
         self.assertIn("complete-units", fm.traits)
+
+
+class TestSpecReviewerValidation(unittest.TestCase):
+    """Verify spec-reviewer persona passes structural and PRISM validation.
+
+    Covers OBPI-0.0.12-03 (ADR-0.0.12).
+    """
+
+    @covers("REQ-0.0.12-03-01")
+    def test_spec_reviewer_validates(self) -> None:
+        path = Path(".gzkit/personas/spec-reviewer.md")
+        if not path.is_file():
+            self.skipTest("spec-reviewer persona not yet created")
+        errors = validate_persona_structure(path)
+        self.assertEqual(errors, [], f"spec-reviewer failed: {errors}")
+
+    @covers("REQ-0.0.12-03-02")
+    def test_spec_reviewer_no_expertise_claims(self) -> None:
+        path = Path(".gzkit/personas/spec-reviewer.md")
+        if not path.is_file():
+            self.skipTest("spec-reviewer persona not yet created")
+        fm, body = parse_persona_file(path)
+        full_text = (fm.grounding + " " + body).lower()
+        expertise_phrases = [
+            "expert",
+            "senior",
+            "years of experience",
+            "professional",
+            "skilled developer",
+        ]
+        for phrase in expertise_phrases:
+            self.assertNotIn(
+                phrase,
+                full_text,
+                f"PRISM violation: expertise claim '{phrase}' found",
+            )
+
+    @covers("REQ-0.0.12-03-02")
+    def test_spec_reviewer_traits(self) -> None:
+        path = Path(".gzkit/personas/spec-reviewer.md")
+        if not path.is_file():
+            self.skipTest("spec-reviewer persona not yet created")
+        fm, _body = parse_persona_file(path)
+        self.assertIn("independent-judgment", fm.traits)
+        self.assertIn("skepticism", fm.traits)
+        self.assertIn("evidence-based-assessment", fm.traits)
+        self.assertIn("requirement-tracing", fm.traits)
+
+    @covers("REQ-0.0.12-03-02")
+    def test_spec_reviewer_anti_traits(self) -> None:
+        path = Path(".gzkit/personas/spec-reviewer.md")
+        if not path.is_file():
+            self.skipTest("spec-reviewer persona not yet created")
+        fm, _body = parse_persona_file(path)
+        self.assertIn("rubber-stamping", fm.anti_traits)
+        self.assertIn("optimistic-bias", fm.anti_traits)
+
+
+class TestQualityReviewerValidation(unittest.TestCase):
+    """Verify quality-reviewer persona passes structural and PRISM validation.
+
+    Covers OBPI-0.0.12-03 (ADR-0.0.12).
+    """
+
+    @covers("REQ-0.0.12-03-01")
+    def test_quality_reviewer_validates(self) -> None:
+        path = Path(".gzkit/personas/quality-reviewer.md")
+        if not path.is_file():
+            self.skipTest("quality-reviewer persona not yet created")
+        errors = validate_persona_structure(path)
+        self.assertEqual(errors, [], f"quality-reviewer failed: {errors}")
+
+    @covers("REQ-0.0.12-03-03")
+    def test_quality_reviewer_no_expertise_claims(self) -> None:
+        path = Path(".gzkit/personas/quality-reviewer.md")
+        if not path.is_file():
+            self.skipTest("quality-reviewer persona not yet created")
+        fm, body = parse_persona_file(path)
+        full_text = (fm.grounding + " " + body).lower()
+        expertise_phrases = [
+            "expert",
+            "senior",
+            "years of experience",
+            "professional",
+            "skilled developer",
+        ]
+        for phrase in expertise_phrases:
+            self.assertNotIn(
+                phrase,
+                full_text,
+                f"PRISM violation: expertise claim '{phrase}' found",
+            )
+
+    @covers("REQ-0.0.12-03-03")
+    def test_quality_reviewer_traits(self) -> None:
+        path = Path(".gzkit/personas/quality-reviewer.md")
+        if not path.is_file():
+            self.skipTest("quality-reviewer persona not yet created")
+        fm, _body = parse_persona_file(path)
+        self.assertIn("architectural-rigor", fm.traits)
+        self.assertIn("solid-principles", fm.traits)
+        self.assertIn("maintainability-assessment", fm.traits)
+        self.assertIn("size-discipline", fm.traits)
+
+    @covers("REQ-0.0.12-03-03")
+    def test_quality_reviewer_anti_traits(self) -> None:
+        path = Path(".gzkit/personas/quality-reviewer.md")
+        if not path.is_file():
+            self.skipTest("quality-reviewer persona not yet created")
+        fm, _body = parse_persona_file(path)
+        self.assertIn("rubber-stamping", fm.anti_traits)
+        self.assertIn("surface-level-review", fm.anti_traits)
+
+
+class TestReviewerOrthogonality(unittest.TestCase):
+    """Verify reviewer trait clusters are orthogonal.
+
+    Covers OBPI-0.0.12-03 (ADR-0.0.12).
+    """
+
+    @covers("REQ-0.0.12-03-01")
+    def test_trait_clusters_are_orthogonal(self) -> None:
+        spec_path = Path(".gzkit/personas/spec-reviewer.md")
+        quality_path = Path(".gzkit/personas/quality-reviewer.md")
+        if not spec_path.is_file() or not quality_path.is_file():
+            self.skipTest("reviewer personas not yet created")
+        spec_fm, _ = parse_persona_file(spec_path)
+        quality_fm, _ = parse_persona_file(quality_path)
+        shared = set(spec_fm.traits) & set(quality_fm.traits)
+        self.assertEqual(shared, set(), f"Trait clusters overlap: {shared}")
 
 
 if __name__ == "__main__":

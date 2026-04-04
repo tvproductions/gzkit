@@ -188,3 +188,27 @@ class TestExemplarFile(unittest.TestCase):
         self.assertGreater(len(fm.traits), 0)
         self.assertGreater(len(fm.anti_traits), 0)
         self.assertGreater(len(body), 0)
+
+    @covers("REQ-0.0.12-03-01")
+    def test_spec_reviewer_parses(self) -> None:
+        """OBPI-0.0.12-03: spec-reviewer persona parses correctly."""
+        path = Path(".gzkit/personas/spec-reviewer.md")
+        if not path.is_file():
+            self.skipTest("spec-reviewer persona not yet created")
+        fm, body = parse_persona_file(path)
+        self.assertEqual(fm.name, "spec-reviewer")
+        self.assertGreater(len(fm.traits), 0)
+        self.assertGreater(len(fm.anti_traits), 0)
+        self.assertGreater(len(body), 0)
+
+    @covers("REQ-0.0.12-03-01")
+    def test_quality_reviewer_parses(self) -> None:
+        """OBPI-0.0.12-03: quality-reviewer persona parses correctly."""
+        path = Path(".gzkit/personas/quality-reviewer.md")
+        if not path.is_file():
+            self.skipTest("quality-reviewer persona not yet created")
+        fm, body = parse_persona_file(path)
+        self.assertEqual(fm.name, "quality-reviewer")
+        self.assertGreater(len(fm.traits), 0)
+        self.assertGreater(len(fm.anti_traits), 0)
+        self.assertGreater(len(body), 0)
