@@ -23,6 +23,20 @@ Feature: Persona control surface
     And the output contains "main-session"
     And the output contains "methodical"
 
+  Scenario: AGENTS.md persona section references main-session grounding
+    Given the workspace is initialized
+    Then the file "AGENTS.md" contains "main-session"
+    And the file "AGENTS.md" contains "craftsperson"
+    And the file "AGENTS.md" contains "governance not as overhead"
+
+  Scenario: AGENTS.md persona section lists available personas with roles
+    Given the workspace is initialized
+    Then the file "AGENTS.md" contains "implementer"
+    And the file "AGENTS.md" contains "narrator"
+    And the file "AGENTS.md" contains "pipeline-orchestrator"
+    And the file "AGENTS.md" contains "quality-reviewer"
+    And the file "AGENTS.md" contains "spec-reviewer"
+
   Scenario: Personas list is read-only
     Given the workspace is initialized
     And a persona file "implementer" exists
