@@ -467,8 +467,15 @@ class TestCheckAdrEvaluationVerdict(unittest.TestCase):
             self.assertIn("NO GO", errors[0])
 
 
+_VALID_PERSONA = (
+    "---\nname: implementer\ntraits:\n  - methodical\n"
+    "anti-traits:\n  - shortcuts\ngrounding: Craft.\n---\n\n"
+    "# Implementer Persona\n\nBody text.\n"
+)
+
+
 class TestPersonaPipelineIntegration(unittest.TestCase):
-    """Verify persona material flows through compose_implementer_prompt."""
+    """Verify persona material flows through dispatch prompt composition."""
 
     @covers("REQ-0.0.11-02-03")
     def test_compose_implementer_prompt_with_persona_context(self) -> None:
@@ -498,15 +505,125 @@ class TestPersonaPipelineIntegration(unittest.TestCase):
             root = Path(tmpdir)
             pdir = root / ".gzkit" / "personas"
             pdir.mkdir(parents=True)
-            (pdir / "implementer.md").write_text(
-                "---\nname: implementer\ntraits:\n  - methodical\n"
-                "anti-traits:\n  - shortcuts\ngrounding: Craft.\n---\n\n"
-                "# Implementer Persona\n\nBody text.\n",
-                encoding="utf-8",
-            )
+            (pdir / "implementer.md").write_text(_VALID_PERSONA, encoding="utf-8")
             body = load_persona(root, "implementer")
             self.assertIsNotNone(body)
             self.assertIn("Implementer Persona", body)
+
+    # --- OBPI-0.0.12-06: dispatch integration tests ---
+
+    @covers("REQ-0.0.12-06-01")
+    def test_load_persona_for_dispatch_implementer(self) -> None:
+        from gzkit.pipeline_runtime import load_persona_for_dispatch
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            pdir = root / ".gzkit" / "personas"
+            pdir.mkdir(parents=True)
+            (pdir / "implementer.md").write_text(_VALID_PERSONA, encoding="utf-8")
+
+            body = load_persona_for_dispatch(root, "Implementer")
+
+            self.assertIsNotNone(body)
+            self.assertIn("Implementer Persona", body)
+
+    @covers("REQ-0.0.12-06-01")
+    def test_prepend_persona_to_prompt_with_compose(self) -> None:
+        from gzkit.pipeline_dispatch import DispatchTask, compose_implementer_prompt
+        from gzkit.pipeline_runtime import prepend_persona_to_prompt
+
+        task = DispatchTask(
+            task_id=1,
+            description="Add feature",
+            allowed_paths=["src/gzkit/example.py"],
+            test_expectations=[],
+            complexity="simple",
+            model="haiku",
+        )
+        persona_body = "# Implementer Persona\n\nI plan before I write."
+        prompt = compose_implementer_prompt(task, brief_requirements=[])
+        final = prepend_persona_to_prompt(persona_body, prompt)
+
+        self.assertTrue(final.startswith("# Implementer Persona"))
+        self.assertIn("---", final)
+        self.assertIn("## Task 1: Add feature", final)
+        idx_persona = final.index("Implementer Persona")
+        idx_task = final.index("## Task 1")
+        self.assertLess(idx_persona, idx_task)
+
+    @covers("REQ-0.0.12-06-02")
+    def test_load_persona_for_dispatch_missing_file(self) -> None:
+        from gzkit.pipeline_runtime import load_persona_for_dispatch
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            (root / ".gzkit" / "personas").mkdir(parents=True)
+
+            body = load_persona_for_dispatch(root, "Implementer")
+
+            self.assertIsNone(body)
+
+    @covers("REQ-0.0.12-06-02")
+    def test_prepend_persona_passthrough_none(self) -> None:
+        from gzkit.pipeline_runtime import prepend_persona_to_prompt
+
+        prompt = "## Task 1: Do something"
+        self.assertEqual(prepend_persona_to_prompt(None, prompt), prompt)
+        self.assertEqual(prepend_persona_to_prompt("", prompt), prompt)
+
+    @covers("REQ-0.0.12-06-02")
+    def test_load_persona_for_dispatch_unknown_role(self) -> None:
+        from gzkit.pipeline_runtime import load_persona_for_dispatch
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            body = load_persona_for_dispatch(Path(tmpdir), "Planner")
+            self.assertIsNone(body)
+
+    @covers("REQ-0.0.12-06-03")
+    def test_prepend_persona_deterministic(self) -> None:
+        from gzkit.pipeline_runtime import prepend_persona_to_prompt
+
+        persona = "# Persona\n\nTraits here."
+        prompt = "## Task 1: Implement"
+        result1 = prepend_persona_to_prompt(persona, prompt)
+        result2 = prepend_persona_to_prompt(persona, prompt)
+        self.assertEqual(result1, result2)
+
+    @covers("REQ-0.0.12-06-03")
+    def test_dispatch_record_persona_field(self) -> None:
+        from gzkit.pipeline_runtime import create_subagent_dispatch_record
+
+        record = create_subagent_dispatch_record(
+            task_id=1, role="Implementer", model="sonnet", persona_loaded="implementer"
+        )
+        self.assertEqual(record.persona_loaded, "implementer")
+
+        record_none = create_subagent_dispatch_record(task_id=2, role="Planner", model="opus")
+        self.assertIsNone(record_none.persona_loaded)
+
+    @covers("REQ-0.0.12-06-04")
+    def test_load_persona_for_dispatch_malformed(self) -> None:
+        from gzkit.pipeline_runtime import load_persona_for_dispatch
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            pdir = root / ".gzkit" / "personas"
+            pdir.mkdir(parents=True)
+            (pdir / "implementer.md").write_text("no frontmatter here", encoding="utf-8")
+
+            with self.assertRaises(ValueError):
+                load_persona_for_dispatch(root, "Implementer")
+
+    def test_role_persona_map_covers_agent_file_map(self) -> None:
+        from gzkit.pipeline_runtime import AGENT_FILE_MAP, ROLE_PERSONA_MAP
+
+        for role, agent_file in AGENT_FILE_MAP.items():
+            if agent_file:
+                self.assertIn(
+                    role,
+                    ROLE_PERSONA_MAP,
+                    f"Role {role!r} has an agent file but no persona mapping",
+                )
 
 
 if __name__ == "__main__":
