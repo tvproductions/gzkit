@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.1.0-04
-parent: ADR-0.1.0
+parent: ADR-0.1.0-enforced-governance-foundation
 item: 4
 lane: Heavy
 status: Completed

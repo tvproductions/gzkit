@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.15-06
-parent: ADR-0.0.15
+parent: ADR-0.0.15-ghi-driven-patch-release-ceremony
 item: 6
 lane: Heavy
 status: Draft
