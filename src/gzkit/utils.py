@@ -16,6 +16,8 @@ def run_exec(cmd: list[str], cwd: Path, timeout: int | None = None) -> tuple[int
             cwd=cwd,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             timeout=timeout,
         )
         return result.returncode, result.stdout.strip(), result.stderr.strip()
