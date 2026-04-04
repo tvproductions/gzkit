@@ -25,6 +25,15 @@ def obpi_audit_cmd(obpi_id: str | None, adr_id: str | None, as_json: bool) -> No
         console.print("[red]ERROR:[/red] Provide OBPI identifier or --adr flag")
         sys.exit(1)
 
+    if not as_json:
+        derived_adr = _derive_adr_id(obpi_id)
+        if derived_adr:
+            adr_dir = _find_adr_dir(project_root, derived_adr)
+            if adr_dir:
+                prior = _read_prior_audits(adr_dir)
+                if obpi_id in prior:
+                    _print_prior_state({obpi_id: prior[obpi_id]}, project_root)
+
     result = _audit_single(project_root, obpi_id)
 
     if as_json:
@@ -47,6 +56,10 @@ def _audit_all_for_adr(project_root: Path, adr_id: str, as_json: bool) -> None:
     if not obpis_dir.exists():
         console.print(f"[yellow]No OBPIs found for {adr_id}[/yellow]")
         return
+
+    if not as_json:
+        prior = _read_prior_audits(adr_dir)
+        _print_prior_state(prior, project_root)
 
     results = []
     for brief in sorted(obpis_dir.glob("OBPI-*.md")):
@@ -331,3 +344,80 @@ def _append_ledger(adr_dir: Path, entry: dict) -> None:
     ledger_file = logs_dir / "obpi-audit.jsonl"
     with ledger_file.open("a", encoding="utf-8") as f:
         f.write(json.dumps(entry, separators=(",", ":")) + "\n")
+
+
+def _read_prior_audits(adr_dir: Path) -> dict[str, dict]:
+    """Read the last audit entry per OBPI from the ADR-local JSONL ledger."""
+    ledger_file = adr_dir / "logs" / "obpi-audit.jsonl"
+    if not ledger_file.exists():
+        return {}
+    latest: dict[str, dict] = {}
+    for line in ledger_file.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            entry = json.loads(line)
+            if entry.get("type") == "obpi-audit":
+                obpi_id = entry.get("obpi_id", "")
+                if obpi_id:
+                    latest[obpi_id] = entry
+        except json.JSONDecodeError:
+            continue
+    return latest
+
+
+def _is_stale(project_root: Path, timestamp: str) -> bool:
+    """Check if commits exist after the audit timestamp on src/ and tests/."""
+    try:
+        result = subprocess.run(
+            ["git", "log", "--oneline", f"--since={timestamp}", "--", "src/", "tests/"],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            cwd=str(project_root),
+            timeout=10,
+        )
+        return bool(result.stdout.strip())
+    except (subprocess.SubprocessError, FileNotFoundError):
+        return True
+
+
+def _print_prior_state(prior_audits: dict[str, dict], project_root: Path) -> None:
+    """Print prior audit state table before fresh analysis."""
+    if not prior_audits:
+        console.print("[dim]No prior audit entries found.[/dim]\n")
+        return
+
+    from rich.table import Table
+
+    table = Table(title="Prior Audit State")
+    table.add_column("OBPI", style="cyan")
+    table.add_column("Last Audit", style="dim")
+    table.add_column("Result", justify="center")
+    table.add_column("Coverage", justify="right")
+    table.add_column("Stale?", justify="center")
+
+    for obpi_id in sorted(prior_audits.keys()):
+        entry = prior_audits[obpi_id]
+        ts = entry.get("timestamp", "unknown")
+        date_str = ts[:10] if len(ts) >= 10 else ts
+
+        criteria = entry.get("criteria_evaluated", [])
+        if criteria:
+            all_pass = all(c.get("result") == "PASS" for c in criteria)
+            result_str = "[green]PASS[/green]" if all_pass else "[red]FAIL[/red]"
+        else:
+            result_str = "[dim]N/A[/dim]"
+
+        evidence = entry.get("evidence", {})
+        cov = evidence.get("coverage_percent")
+        cov_str = f"{cov:.1f}%" if cov is not None else "N/A"
+
+        stale = _is_stale(project_root, ts)
+        stale_str = "[yellow]yes[/yellow]" if stale else "[green]no[/green]"
+
+        table.add_row(obpi_id, date_str, result_str, cov_str, stale_str)
+
+    console.print(table)
+    console.print("")
