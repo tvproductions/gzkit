@@ -194,6 +194,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         action="store_true",
         help="Validate persona files in .gzkit/personas/",
     )
+    p_validate.add_argument(
+        "--interviews",
+        dest="check_interviews",
+        action="store_true",
+        help="Verify ADRs with OBPIs have interview transcript artifacts",
+    )
     add_json_flag(p_validate)
     p_validate.set_defaults(
         func=lambda a: validate(
@@ -204,6 +210,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_instructions=a.check_instructions,
             check_briefs=a.check_briefs,
             check_personas=a.check_personas,
+            check_interviews=a.check_interviews,
             as_json=a.as_json,
         )
     )

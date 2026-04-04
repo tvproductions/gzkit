@@ -207,7 +207,7 @@ class TestAttestSemantics(unittest.TestCase):
                     "completed",
                     "--force",
                     "--reason",
-                    "retroactive booking",
+                    "retroactive booking override for test",
                 ],
             )
             self.assertEqual(result.exit_code, 0)
