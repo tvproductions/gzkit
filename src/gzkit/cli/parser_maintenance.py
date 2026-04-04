@@ -342,7 +342,15 @@ def _register_tooling_parsers(commands: argparse._SubParsersAction) -> None:
         choices=["prd", "adr", "obpi"],
         help="Document type to generate (prd|adr|obpi)",
     )
-    p_interview.set_defaults(func=lambda a: interview(document_type=a.document_type))
+    p_interview.add_argument(
+        "--from",
+        dest="from_file",
+        metavar="FILE",
+        help="Load answers from a JSON file instead of interactive prompts",
+    )
+    p_interview.set_defaults(
+        func=lambda a: interview(document_type=a.document_type, from_file=a.from_file),
+    )
 
 
 def _register_chores_parsers(commands: argparse._SubParsersAction) -> None:

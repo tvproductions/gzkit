@@ -102,6 +102,18 @@ and composed, not **what** they say.
 
 ## Intent
 
+**Before (current state):** Persona frames exist only in gzkit's `.gzkit/personas/`
+with a Pydantic model (`PersonaFrontmatter`) but no formal schema, no manifest
+registration, no vendor-mirror syncing, and no `gz init` scaffolding. Other
+GovZero repositories (airlineops, future projects) cannot use persona-driven
+identity framing without manually replicating gzkit's internal structure.
+
+**After (target state):** Any GovZero-compliant repository can bootstrap persona
+frames via `gz init`, validate them against a portable JSON schema, sync them to
+vendor surfaces via `gz agent sync control-surfaces`, and monitor adherence via
+`gz personas drift` — regardless of whether the project is gzkit, airlineops, or
+a new repository. Persona is as portable as rules and skills.
+
 Make persona frames a first-class portable GovZero primitive, enabling any
 governed repository to use persona-driven agent identity framing through
 standard `gz` tooling. Just as rules sync from `.gzkit/rules/` to vendor
@@ -110,17 +122,58 @@ mirrors and skills sync from `.gzkit/skills/`, personas sync from
 
 ## Decision
 
-- `.gzkit/personas/` is added to the manifest as a control surface
-- `gz init` creates the directory with a default persona set (overridable)
-- `gz agent sync control-surfaces` mirrors personas to vendor-specific
-  locations (`.claude/personas/`, `.github/personas/`, `.agents/personas/`)
-- The persona schema is **project-agnostic** — it defines structure (traits,
-  anti-traits, grounding, composition rules) without prescribing content
-- Vendor adapters translate persona frames into vendor-specific formats
-  (system prompt fragments for Claude, instruction blocks for Codex, etc.)
-- A monitoring surface (`gz personas drift`) reports when agent behavior
-  diverges from the designed persona profile, using the PSM/Assistant Axis
-  research as the theoretical basis for what drift means
+1. **Manifest registration:** `.gzkit/personas/` is added to the manifest as a
+   control surface entry (`control_surfaces.personas`), following the same
+   pattern as rules and skills.
+2. **Init scaffolding:** `gz init` creates the personas directory with a default
+   persona set that projects can override with project-specific content.
+3. **Vendor-mirror syncing:** `gz agent sync control-surfaces` mirrors personas
+   to vendor-specific locations (`.claude/personas/`, `.github/personas/`,
+   `.agents/personas/`), respecting vendor enablement configuration.
+4. **Project-agnostic schema:** The persona schema defines structure (traits,
+   anti-traits, grounding, composition rules) without prescribing content. A
+   JSON schema document enables validation in any GovZero repository.
+5. **Vendor adapters:** Vendor adapter functions translate persona frames into
+   vendor-specific formats (system prompt fragments for Claude, instruction
+   blocks for Codex, etc.) without modifying persona content.
+6. **Drift monitoring:** A monitoring surface (`gz personas drift`) reports when
+   agent behavior diverges from the designed persona profile, using the
+   PSM/Assistant Axis research as the theoretical basis for what drift means.
+
+## Alternatives Considered
+
+### Alternative 1: Embed persona metadata in AGENTS.md
+
+Instead of a separate `.gzkit/personas/` surface, persona traits and grounding
+could be embedded directly in each repository's `AGENTS.md` as a dedicated
+section. This was rejected because:
+
+- AGENTS.md is already large and serves a different purpose (operating contract)
+- Persona frames need structured validation (JSON schema) that markdown sections
+  cannot provide
+- Vendor sync requires per-file granularity — syncing a section from a monolithic
+  file is fragile compared to syncing individual files
+
+### Alternative 2: Store personas in manifest.json directly
+
+Persona definitions could live as JSON objects inside `.gzkit/manifest.json`
+under a `personas` key. This was rejected because:
+
+- Persona frames include free-text markdown bodies (grounding, behavioral
+  anchors) that are awkward to embed in JSON
+- The manifest is a machine-readable registry, not a content store — persona
+  content is authored and read by humans
+- File-per-persona matches the existing pattern for rules and skills
+
+### Alternative 3: Defer portability — keep personas gzkit-only
+
+The persona surface could remain a gzkit-internal feature without the portable
+schema and cross-project sync. This was rejected because:
+
+- The PSM research applies to all LLM-driven agent work, not just gzkit
+- ADR-0.0.11/12 investment would be locked to one repository
+- The existing control surface pattern (rules, skills) already proved that
+  portability has low marginal cost when the canon/mirror architecture exists
 
 ## Non-Goals
 

@@ -17,73 +17,74 @@ status: Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-TBD
+Validate persona portability by applying the full persona stack (schema, init
+scaffolding, manifest registration, vendor sync, and loading) to the airlineops
+repository, proving that the portable persona surface works outside of gzkit.
 
 ## Lane
 
-**Lite** - This OBPI remains internal to the promoted ADR implementation scope.
-
-> Heavy is reserved for command/API/schema/runtime-contract changes. Process,
-> documentation, and template-only work stays Lite unless it changes one of
-> those external surfaces.
+**Heavy** - Cross-project validation affects the airlineops repository's
+governance surfaces and contracts. Requires human attestation to confirm the
+portability claim holds in a real external consumer.
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
+**In gzkit (this repository):**
 
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `tests/test_persona_portability.py` - Portability integration tests
+- `features/persona_sync.feature` - Cross-project BDD scenarios
+- `docs/governance/governance_runbook.md` - Document cross-project persona workflow
+
+**In airlineops (external repository, requires coordination):**
+
+- `../airlineops/.gzkit/personas/` - Persona files bootstrapped by `gz init`
+- `../airlineops/.gzkit/manifest.json` - Manifest with personas entry
+- `../airlineops/.claude/personas/` - Vendor mirror (Claude)
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
-- Paths not listed in Allowed Paths
-- New dependencies
-- CI files, lockfiles
+- `src/gzkit/` - No gzkit source changes in this OBPI
+- `.gzkit/personas/` - gzkit's own persona files are not the subject
+- Any airlineops source code changes beyond governance surface scaffolding
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: `gz init` in airlineops MUST create `.gzkit/personas/` with default persona set.
+2. REQUIREMENT: `gz agent sync control-surfaces` in airlineops MUST mirror personas to vendor surfaces.
+3. REQUIREMENT: Persona files created in airlineops MUST validate against the portable schema (OBPI-01).
+4. ALWAYS: airlineops persona content MUST be project-specific — not copies of gzkit personas.
+5. NEVER: gzkit-specific persona content (pipeline-orchestrator references, gzkit skill names) MUST NOT appear in airlineops persona files.
+6. ALWAYS: The validation MUST be reproducible — documented as a sequence of commands that anyone can run.
+7. NEVER: Do not modify gzkit source to accommodate airlineops-specific needs. If the portable surface doesn't work, the surface is broken, not airlineops.
 
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if OBPIs 01-04 are not complete, print a BLOCKERS list and halt. Cross-project validation requires the full portability stack.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first. -->
-
 **Governance (read once, cache):**
 
-- [ ] `.github/discovery-index.json` - repo structure
 - [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
+- [ ] Parent ADR - understand portability constraint and anti-pattern warning
 
 **Context:**
 
 - [ ] Parent ADR: `docs/design/adr/foundation/ADR-0.0.13-portable-persona-control-surface/ADR-0.0.13-portable-persona-control-surface.md`
-- [ ] Related OBPIs in same ADR
+- [ ] OBPIs 01-04 - all must be complete before this starts
+- [ ] airlineops AGENTS.md - understand airlineops governance state
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
+- [ ] `../airlineops/` directory exists and is a gzkit-governed repository
+- [ ] gzkit persona portability stack is complete (OBPIs 01-04)
+- [ ] airlineops has gzkit installed or available via `uv`
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+- [ ] airlineops `.gzkit/` directory - current governance surfaces
+- [ ] airlineops AGENTS.md - persona-like language (catalog per ADR Tidy First plan)
+- [ ] gzkit test patterns for cross-project: check if parity scan patterns exist
 
 ## Quality Gates
-
-<!-- Which gates apply and how to verify them. -->
 
 ### Gate 1: ADR
 
@@ -101,54 +102,53 @@ TBD
 - [ ] Lint clean: `uv run gz lint`
 - [ ] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
 ### Gate 3: Docs (Heavy only)
 
 - [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
+- [ ] Governance runbook updated with cross-project persona workflow
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
+- [ ] Acceptance scenarios pass: `uv run -m behave features/persona_sync.feature`
 
 ### Gate 5: Human (Heavy only)
 
-- [ ] Human attestation recorded
+- [ ] Human attestation recorded — portability claim validated in airlineops
 
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
-uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
 uv run gz test
+uv run mkdocs build --strict
 
-# Specific verification for this OBPI
-command --to --verify
+# Specific verification for this OBPI (run in airlineops)
+cd ../airlineops
+uv run gz init
+ls .gzkit/personas/
+uv run gz personas validate
+uv run gz agent sync control-surfaces
+ls .claude/personas/
+uv run gz validate --surfaces
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.0.13-06-01: Given/When/Then behavior criterion 1
-- [ ] REQ-0.0.13-06-02: Given/When/Then behavior criterion 2
-- [ ] REQ-0.0.13-06-03: Given/When/Then behavior criterion 3
+- [ ] REQ-0.0.13-06-01: Given airlineops with no `.gzkit/personas/`, when `gz init` runs, then `.gzkit/personas/` is created with default persona files.
+- [ ] REQ-0.0.13-06-02: Given airlineops persona files, when `gz personas validate` runs, then all pass schema validation.
+- [ ] REQ-0.0.13-06-03: Given airlineops with personas, when `gz agent sync control-surfaces` runs, then vendor mirrors are created (`.claude/personas/`).
+- [ ] REQ-0.0.13-06-04: Given airlineops persona files, when inspected for gzkit-specific content, then none is found.
+- [ ] REQ-0.0.13-06-05: Given the cross-project validation sequence, when documented as a runnable command list, then a human can reproduce the validation from scratch.
 
 ## Completion Checklist
-
-<!-- Verify all gates before marking OBPI accepted. -->
 
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
 - [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
 - [ ] **Code Quality:** Lint, format, type checks clean
+- [ ] **Gate 3 (Docs):** Governance runbook updated
+- [ ] **Gate 4 (BDD):** Cross-project scenarios pass
+- [ ] **Gate 5 (Human):** Human attests portability claim holds
 - [ ] **Value Narrative:** Problem-before vs capability-now is documented
 - [ ] **Key Proof:** One concrete usage example is included
 - [ ] **OBPI Acceptance:** Evidence recorded below
@@ -156,9 +156,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
 ## Evidence
-
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
 
 ### Gate 1 (ADR)
 
@@ -179,19 +176,19 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here when Gate 3 applies
+# Paste docs-build output here
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here when Gate 4 applies
+# Paste behave output here
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+# Record attestation text here — must confirm portability claim
 ```
 
 ### Value Narrative

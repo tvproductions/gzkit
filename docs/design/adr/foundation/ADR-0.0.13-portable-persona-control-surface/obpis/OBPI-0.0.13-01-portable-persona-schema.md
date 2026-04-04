@@ -17,13 +17,14 @@ status: Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-TBD
+Formalize the persona file format as a versioned JSON schema that any
+GovZero-compliant repository can validate against, ensuring persona files are
+structurally portable without coupling to gzkit-specific content.
 
 ## Lane
 
-**Lite** - This OBPI remains internal to the promoted ADR implementation scope.
+**Lite** - Defines an internal schema document and updates the existing Pydantic
+model. Does not change CLI commands, external APIs, or operator-facing contracts.
 
 > Heavy is reserved for command/API/schema/runtime-contract changes. Process,
 > documentation, and template-only work stays Lite unless it changes one of
@@ -31,59 +32,54 @@ TBD
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `src/gzkit/schemas/persona.json` - New JSON schema for persona file validation
+- `src/gzkit/models/persona.py` - Update PersonaFrontmatter to align with portable schema
+- `tests/test_persona_schema.py` - Schema validation tests
+- `.gzkit/personas/` - Existing persona files (read-only, validate against schema)
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
-- Paths not listed in Allowed Paths
+- `src/gzkit/commands/` - CLI changes are separate OBPIs
+- `src/gzkit/sync_surfaces.py` - Sync is OBPI-03
+- `.gzkit/manifest.json` - Manifest changes are OBPI-03
 - New dependencies
-- CI files, lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: JSON schema MUST be project-agnostic — no references to gzkit pipeline stages, skill names, or internal module paths.
+2. REQUIREMENT: Schema MUST define required fields (`name`, `traits`, `anti_traits`, `grounding`) and their types matching current `PersonaFrontmatter`.
+3. ALWAYS: Schema version field MUST be present (e.g., `"schema": "gzkit.persona.v1"`).
+4. NEVER: Schema MUST NOT prescribe trait content — it validates structure, not semantics.
+5. ALWAYS: All 6 existing persona files in `.gzkit/personas/` MUST validate against the new schema without modification.
+6. NEVER: Do not add optional fields that have no current consumer.
 
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if ADR-0.0.11 (persona schema definition) or ADR-0.0.12 (persona profiles) are not complete, print a BLOCKERS list and halt.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first. -->
-
 **Governance (read once, cache):**
 
-- [ ] `.github/discovery-index.json` - repo structure
 - [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
+- [ ] Parent ADR - understand full context and portability constraint
 
 **Context:**
 
 - [ ] Parent ADR: `docs/design/adr/foundation/ADR-0.0.13-portable-persona-control-surface/ADR-0.0.13-portable-persona-control-surface.md`
-- [ ] Related OBPIs in same ADR
+- [ ] ADR-0.0.11 (persona schema) and ADR-0.0.12 (persona profiles) - upstream dependencies
+- [ ] Related OBPIs in same ADR (especially OBPI-03 manifest integration)
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
+- [ ] `.gzkit/personas/` directory exists with persona files
+- [ ] `src/gzkit/models/persona.py` exists with `PersonaFrontmatter` model
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+- [ ] Pattern to follow: `src/gzkit/schemas/manifest.json` - existing JSON schema exemplar
+- [ ] Pydantic model: `src/gzkit/models/persona.py` - current field definitions
+- [ ] Test patterns: `tests/commands/test_personas_cmd.py` - existing persona tests
 
 ## Quality Gates
-
-<!-- Which gates apply and how to verify them. -->
 
 ### Gate 1: ADR
 
@@ -101,50 +97,27 @@ TBD
 - [ ] Lint clean: `uv run gz lint`
 - [ ] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
-### Gate 3: Docs (Heavy only)
-
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
-
-### Gate 4: BDD (Heavy only)
-
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
-
-### Gate 5: Human (Heavy only)
-
-- [ ] Human attestation recorded
-
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
-uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
 uv run gz test
 
 # Specific verification for this OBPI
-command --to --verify
+python -c "import json; s = json.load(open('src/gzkit/schemas/persona.json')); print(s.get('title', 'MISSING'))"
+uv run gz personas validate
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.0.13-01-01: Given/When/Then behavior criterion 1
-- [ ] REQ-0.0.13-01-02: Given/When/Then behavior criterion 2
-- [ ] REQ-0.0.13-01-03: Given/When/Then behavior criterion 3
+- [ ] REQ-0.0.13-01-01: Given `src/gzkit/schemas/persona.json` exists, when loaded as JSON, then it is a valid JSON Schema document with `$schema`, `title`, and `properties` keys.
+- [ ] REQ-0.0.13-01-02: Given the schema defines `name`, `traits`, `anti_traits`, and `grounding` as required properties, when any field is omitted from a persona file, then validation fails.
+- [ ] REQ-0.0.13-01-03: Given all 6 existing persona files in `.gzkit/personas/`, when validated against the schema, then all pass without modification.
+- [ ] REQ-0.0.13-01-04: Given the schema, when inspected for gzkit-specific references (pipeline stages, skill names, module paths), then none are found.
+- [ ] REQ-0.0.13-01-05: Given `PersonaFrontmatter` in `src/gzkit/models/persona.py`, when compared to the JSON schema required fields, then they match exactly.
 
 ## Completion Checklist
-
-<!-- Verify all gates before marking OBPI accepted. -->
 
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
 - [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
@@ -156,9 +129,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
 ## Evidence
-
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
 
 ### Gate 1 (ADR)
 
@@ -174,24 +144,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ```text
 # Paste lint/format/type check output here
-```
-
-### Gate 3 (Docs)
-
-```text
-# Paste docs-build output here when Gate 3 applies
-```
-
-### Gate 4 (BDD)
-
-```text
-# Paste behave output here when Gate 4 applies
-```
-
-### Gate 5 (Human)
-
-```text
-# Record attestation text here when required by parent lane
 ```
 
 ### Value Narrative

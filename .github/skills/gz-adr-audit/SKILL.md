@@ -172,7 +172,7 @@ Implement fixes, re-validate, update `AUDIT.md`.
 
 When all shortfalls resolved:
 
-- Sign attestation: human name + date
+- Sign attestation in `AUDIT.md`: agent signs (human already attested at OBPI completion)
 - Update ADR: `Status: Validated`
 
 ### 8. Emit Validation Receipt
@@ -182,7 +182,7 @@ After a successful audit, emit a validation receipt to the ADR ledger for tempor
 ```bash
 # Emit "validated" receipt (after Gate 5 attestation)
 uv run gz adr emit-receipt <adr-id> --event validated \
-  --attestor "human:<name>" \
+  --attestor "agent:<model-id>" \
   --evidence '{"gate": 5, "tests_passed": true, "coverage_pct": 48.5}'
 
 # Emit "completed" receipt (when marking ADR as Completed, pre-validation)
@@ -196,6 +196,19 @@ uv run gz adr emit-receipt <adr-id> --event completed \
 - **Audit fails → no receipt.** Only emit after all shortfalls are resolved.
 - **Idempotent:** Running twice produces two ledger entries (audit trail preserved).
 - **Git unavailable:** Command warns but returns exit code 0 (doesn't fail the audit).
+
+### 9. Verify Lifecycle Update
+
+**MANDATORY.** After emitting the receipt, confirm the lifecycle change took
+effect before declaring success:
+
+```bash
+uv run gz adr report <adr-id>
+```
+
+The Lifecycle column MUST show `Validated`. If it still shows `Completed`,
+the audit is not done — investigate why the state did not propagate. Do not
+report success to the operator until the report command confirms the change.
 
 **Recommended evidence fields:**
 
@@ -254,7 +267,8 @@ uv run gz adr emit-receipt <adr-id> --event completed \
 - [ ] Code matches documentation
 - [ ] Examples are executable
 - [ ] Validation receipt emitted to ledger
-- [ ] Attestation signed
+- [ ] Attestation signed (agent signs audit; human attested at OBPI completion)
+- [ ] **Lifecycle verified** — `uv run gz adr report <adr-id>` shows Validated
 
 ---
 

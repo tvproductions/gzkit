@@ -544,11 +544,19 @@ class ObpiProofStatus(BaseModel):
     runbook_found: bool = Field(False, description="Runbook entry references this OBPI")
     command_doc_found: bool = Field(False, description="Command doc exists with content")
     docstring_found: bool = Field(False, description="Public interface has docstrings")
+    governance_artifact_found: bool = Field(
+        False, description="Governance artifact exists in .gzkit/ with content"
+    )
 
     @property
     def has_proof(self) -> bool:
         """Return True if any documentation proof source was found."""
-        return self.runbook_found or self.command_doc_found or self.docstring_found
+        return (
+            self.runbook_found
+            or self.command_doc_found
+            or self.docstring_found
+            or self.governance_artifact_found
+        )
 
     @property
     def proof_type(self) -> str:
@@ -559,6 +567,8 @@ class ObpiProofStatus(BaseModel):
             return "command_doc"
         if self.docstring_found:
             return "docstring"
+        if self.governance_artifact_found:
+            return "governance_artifact"
         return "MISSING"
 
 
@@ -645,17 +655,32 @@ def _check_docstring_proof(allowed_paths: list[str], project_root: Path) -> bool
     return False
 
 
+def _check_governance_artifact_proof(allowed_paths: list[str], project_root: Path) -> bool:
+    """Check if governance artifacts in .gzkit/ exist with substantive content."""
+    for path_str in allowed_paths:
+        if not path_str.startswith(".gzkit/"):
+            continue
+        artifact_path = project_root / path_str
+        if not artifact_path.exists():
+            continue
+        content = artifact_path.read_text(encoding="utf-8").strip()
+        if len(content) > 100:
+            return True
+    return False
+
+
 def check_product_proof(
     adr_id: str,
     obpi_files: dict[str, Path],
     project_root: Path,
 ) -> ProductProofResult:
-    """Validate that each OBPI in an ADR has operator-facing documentation.
+    """Validate that each OBPI in an ADR has product proof.
 
-    Checks three proof types per OBPI (at least one must exist):
+    Checks four proof types per OBPI (at least one must exist):
     - runbook: keyword match in docs/user/runbook.md
     - command_doc: file exists with substantive content in docs/user/commands/
     - docstring: public interfaces in source files have docstrings
+    - governance_artifact: .gzkit/ file exists with substantive content
 
     Args:
         adr_id: ADR identifier.
@@ -680,6 +705,7 @@ def check_product_proof(
         runbook_found = _check_runbook_proof(obpi_id, slug, runbook_text)
         command_doc_found = _check_command_doc_proof(allowed_paths, project_root)
         docstring_found = _check_docstring_proof(allowed_paths, project_root)
+        governance_artifact_found = _check_governance_artifact_proof(allowed_paths, project_root)
 
         proofs.append(
             ObpiProofStatus(
@@ -687,6 +713,7 @@ def check_product_proof(
                 runbook_found=runbook_found,
                 command_doc_found=command_doc_found,
                 docstring_found=docstring_found,
+                governance_artifact_found=governance_artifact_found,
             )
         )
 

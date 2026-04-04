@@ -17,73 +17,71 @@ status: Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-TBD
+Create vendor adapter functions that translate canonical persona frames into
+vendor-specific formats (system prompt fragments for Claude, instruction blocks
+for Codex, instruction file entries for Copilot), so persona identity is
+consumed correctly regardless of which agent runtime loads it.
 
 ## Lane
 
-**Lite** - This OBPI remains internal to the promoted ADR implementation scope.
-
-> Heavy is reserved for command/API/schema/runtime-contract changes. Process,
-> documentation, and template-only work stays Lite unless it changes one of
-> those external surfaces.
+**Lite** - Creates internal adapter functions consumed by the sync pipeline
+(OBPI-03). Does not add CLI commands, change APIs, or modify operator-facing
+contracts. Vendor mirror files are an implementation detail of sync, not a
+user-facing surface.
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `src/gzkit/personas.py` - Add vendor adapter functions alongside existing `compose_persona_frame()`
+- `src/gzkit/sync_surfaces.py` - Wire adapters into persona sync (if not already done in OBPI-03)
+- `tests/test_persona_loading.py` - Adapter unit tests
+- `tests/test_personas.py` - Existing persona tests (extend if needed)
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
-- Paths not listed in Allowed Paths
-- New dependencies
-- CI files, lockfiles
+- `src/gzkit/commands/` - No CLI changes
+- `src/gzkit/schemas/` - Schema is OBPI-01
+- `.gzkit/personas/` - Canon files are read-only
+- `.claude/`, `.agents/`, `.github/` - Vendor mirrors written by sync, not by adapters directly
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: Each vendor adapter MUST accept a `PersonaFrontmatter` + body markdown and return a formatted string in the vendor's native format.
+2. REQUIREMENT: Claude adapter MUST produce a system prompt fragment that includes traits, grounding, and anti-traits as behavioral constraints.
+3. REQUIREMENT: Codex adapter MUST produce an AGENTS.md-compatible instruction block.
+4. REQUIREMENT: Copilot adapter MUST produce a `.github/copilot-instructions.md`-compatible fragment.
+5. ALWAYS: Adapters MUST be pure functions — no file I/O, no side effects, no vendor API calls.
+6. NEVER: Adapters MUST NOT modify or interpret persona content — they translate format, not meaning.
+7. ALWAYS: If a vendor has no adapter, sync MUST fall back to copying the raw canonical markdown file.
+8. NEVER: Do not add vendor-specific persona variants — one canonical source, multiple format translations.
 
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if OBPI-0.0.13-01 (schema) is not complete, print a BLOCKERS list and halt. Adapters depend on the PersonaFrontmatter model being stable.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first. -->
-
 **Governance (read once, cache):**
 
-- [ ] `.github/discovery-index.json` - repo structure
 - [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
+- [ ] Parent ADR - understand vendor neutrality constraint
 
 **Context:**
 
 - [ ] Parent ADR: `docs/design/adr/foundation/ADR-0.0.13-portable-persona-control-surface/ADR-0.0.13-portable-persona-control-surface.md`
-- [ ] Related OBPIs in same ADR
+- [ ] OBPI-0.0.13-01 - schema and PersonaFrontmatter model
+- [ ] OBPI-0.0.13-03 - sync pipeline that will call these adapters
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
+- [ ] `src/gzkit/models/persona.py` exists with stable `PersonaFrontmatter`
+- [ ] `src/gzkit/personas.py` exists with `compose_persona_frame()`
+- [ ] `.gzkit/personas/` has persona files to test against
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+- [ ] Pattern to follow: `compose_persona_frame()` in `src/gzkit/personas.py` - existing composition logic
+- [ ] Pattern to follow: vendor-specific rendering in `sync_surfaces.py` - how rules/skills are formatted per vendor
+- [ ] Test patterns: `tests/test_personas.py` or `tests/commands/test_personas_cmd.py`
 
 ## Quality Gates
-
-<!-- Which gates apply and how to verify them. -->
 
 ### Gate 1: ADR
 
@@ -101,50 +99,27 @@ TBD
 - [ ] Lint clean: `uv run gz lint`
 - [ ] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
-### Gate 3: Docs (Heavy only)
-
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
-
-### Gate 4: BDD (Heavy only)
-
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
-
-### Gate 5: Human (Heavy only)
-
-- [ ] Human attestation recorded
-
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
-uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
 uv run gz test
 
 # Specific verification for this OBPI
-command --to --verify
+python -c "from gzkit.personas import render_persona_claude, render_persona_codex, render_persona_copilot; print('All adapters importable')"
+uv run -m unittest tests.test_persona_loading -v
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.0.13-04-01: Given/When/Then behavior criterion 1
-- [ ] REQ-0.0.13-04-02: Given/When/Then behavior criterion 2
-- [ ] REQ-0.0.13-04-03: Given/When/Then behavior criterion 3
+- [ ] REQ-0.0.13-04-01: Given a `PersonaFrontmatter` with traits `[methodical, test-first]` and body markdown, when the Claude adapter runs, then the output contains traits as behavioral instructions and anti-traits as constraints.
+- [ ] REQ-0.0.13-04-02: Given the same persona, when the Codex adapter runs, then the output is a valid AGENTS.md instruction block.
+- [ ] REQ-0.0.13-04-03: Given the same persona, when the Copilot adapter runs, then the output is compatible with `.github/copilot-instructions.md` format.
+- [ ] REQ-0.0.13-04-04: Given a vendor with no adapter registered, when sync attempts to render a persona for that vendor, then the raw canonical markdown is copied as fallback.
+- [ ] REQ-0.0.13-04-05: Given any adapter function, when called with the same input twice, then the output is identical (pure function, deterministic).
 
 ## Completion Checklist
-
-<!-- Verify all gates before marking OBPI accepted. -->
 
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
 - [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
@@ -156,9 +131,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
 ## Evidence
-
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
 
 ### Gate 1 (ADR)
 
@@ -174,24 +146,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ```text
 # Paste lint/format/type check output here
-```
-
-### Gate 3 (Docs)
-
-```text
-# Paste docs-build output here when Gate 3 applies
-```
-
-### Gate 4 (BDD)
-
-```text
-# Paste behave output here when Gate 4 applies
-```
-
-### Gate 5 (Human)
-
-```text
-# Record attestation text here when required by parent lane
 ```
 
 ### Value Narrative
