@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.2.0-01-gate-verification
-parent: ADR-0.2.0
+parent: ADR-0.2.0-gate-verification
 item: 1
 lane: Heavy
 status: Completed

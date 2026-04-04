@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.7-01-manifest-v2-schema
-parent: ADR-0.0.7
+parent: ADR-0.0.7-config-first-resolution-discipline
 item: 1
 lane: Lite
 status: Completed

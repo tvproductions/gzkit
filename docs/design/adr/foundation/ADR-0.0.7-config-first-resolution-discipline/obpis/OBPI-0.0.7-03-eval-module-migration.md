@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.7-03-eval-module-migration
-parent: ADR-0.0.7
+parent: ADR-0.0.7-config-first-resolution-discipline
 item: 3
 lane: Lite
 status: Completed
