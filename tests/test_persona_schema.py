@@ -519,6 +519,76 @@ class TestNarratorValidation(unittest.TestCase):
         self.assertIn("does NOT do", frame)
 
 
+class TestPipelineOrchestratorValidation(unittest.TestCase):
+    """Verify pipeline-orchestrator persona passes structural and PRISM validation.
+
+    Covers OBPI-0.0.12-05 (ADR-0.0.12).
+    """
+
+    @covers("REQ-0.0.12-05-01")
+    def test_pipeline_orchestrator_validates(self) -> None:
+        path = Path(".gzkit/personas/pipeline-orchestrator.md")
+        if not path.is_file():
+            self.skipTest("pipeline-orchestrator persona not yet created")
+        errors = validate_persona_structure(path)
+        self.assertEqual(errors, [], f"pipeline-orchestrator failed: {errors}")
+
+    @covers("REQ-0.0.12-05-02")
+    def test_pipeline_orchestrator_no_expertise_claims(self) -> None:
+        path = Path(".gzkit/personas/pipeline-orchestrator.md")
+        if not path.is_file():
+            self.skipTest("pipeline-orchestrator persona not yet created")
+        fm, body = parse_persona_file(path)
+        full_text = (fm.grounding + " " + body).lower()
+        expertise_phrases = [
+            "expert",
+            "senior",
+            "years of experience",
+            "professional",
+            "skilled developer",
+        ]
+        for phrase in expertise_phrases:
+            self.assertNotIn(
+                phrase,
+                full_text,
+                f"PRISM violation: expertise claim '{phrase}' found",
+            )
+
+    @covers("REQ-0.0.12-05-02")
+    def test_pipeline_orchestrator_traits(self) -> None:
+        path = Path(".gzkit/personas/pipeline-orchestrator.md")
+        if not path.is_file():
+            self.skipTest("pipeline-orchestrator persona not yet created")
+        fm, _body = parse_persona_file(path)
+        self.assertIn("ceremony-completion", fm.traits)
+        self.assertIn("stage-discipline", fm.traits)
+        self.assertIn("governance-fidelity", fm.traits)
+        self.assertIn("sequential-flow", fm.traits)
+        self.assertIn("evidence-anchoring", fm.traits)
+
+    @covers("REQ-0.0.12-05-02")
+    def test_pipeline_orchestrator_anti_traits(self) -> None:
+        path = Path(".gzkit/personas/pipeline-orchestrator.md")
+        if not path.is_file():
+            self.skipTest("pipeline-orchestrator persona not yet created")
+        fm, _body = parse_persona_file(path)
+        self.assertIn("premature-summarization", fm.anti_traits)
+        self.assertIn("stage-skipping", fm.anti_traits)
+        self.assertIn("good-enough-completion", fm.anti_traits)
+
+    @covers("REQ-0.0.12-05-03")
+    def test_pipeline_orchestrator_composition(self) -> None:
+        from gzkit.personas import compose_persona_frame
+
+        path = Path(".gzkit/personas/pipeline-orchestrator.md")
+        if not path.is_file():
+            self.skipTest("pipeline-orchestrator persona not yet created")
+        fm, body = parse_persona_file(path)
+        frame = compose_persona_frame(fm, body)
+        self.assertIn("ceremony", frame.lower())
+        self.assertIn("does NOT do", frame)
+
+
 class TestReviewerOrthogonality(unittest.TestCase):
     """Verify reviewer trait clusters are orthogonal.
 
