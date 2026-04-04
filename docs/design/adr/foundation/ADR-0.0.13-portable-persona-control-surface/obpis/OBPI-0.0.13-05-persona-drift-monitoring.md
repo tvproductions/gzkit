@@ -17,73 +17,77 @@ status: Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-TBD
+Create the `gz personas drift` CLI command that reports persona adherence
+metrics using behavioral proxies (output pattern matching against trait
+specifications), closing the feedback loop between persona design and observed
+agent behavior.
 
 ## Lane
 
-**Lite** - This OBPI remains internal to the promoted ADR implementation scope.
-
-> Heavy is reserved for command/API/schema/runtime-contract changes. Process,
-> documentation, and template-only work stays Lite unless it changes one of
-> those external surfaces.
+**Heavy** - Adds a new CLI subcommand (`gz personas drift`) with defined output
+format, exit codes, and operator-facing behavior. New subcommands are Heavy per
+CLI doctrine.
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `src/module/` - Reason this is in scope
-- `tests/test_module.py` - Reason
+- `src/gzkit/commands/personas.py` - Add `drift` subcommand alongside existing `list`
+- `src/gzkit/personas.py` - Add drift detection logic (behavioral proxy matching)
+- `src/gzkit/models/persona.py` - Add drift result model if needed
+- `src/gzkit/cli/parser_governance.py` - Wire `personas drift` into CLI parser
+- `tests/test_persona_drift.py` - Drift detection unit tests
+- `tests/commands/test_personas_cmd.py` - CLI integration tests
+- `features/persona.feature` - BDD scenarios for drift command
+- `docs/user/commands/personas.md` - Command documentation
+- `docs/user/manpages/gz-personas.md` - Manpage for personas commands
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
-- Paths not listed in Allowed Paths
-- New dependencies
-- CI files, lockfiles
+- `src/gzkit/sync_surfaces.py` - Sync is OBPI-03
+- `src/gzkit/schemas/` - Schema is OBPI-01
+- `.gzkit/personas/` - Canon files are read-only
+- `src/gzkit/commands/init_cmd.py` - Init is OBPI-02
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: `gz personas drift` MUST accept an optional `--persona <name>` flag to check a single persona, defaulting to all personas.
+2. REQUIREMENT: Command MUST support `--json` for machine-readable output and default human-readable table output.
+3. REQUIREMENT: Drift detection MUST use behavioral proxies only — output pattern matching against trait specifications, not model-internal measurements.
+4. ALWAYS: Exit code 0 when all checked personas show no drift; exit code 3 (policy breach) when drift is detected.
+5. ALWAYS: Human-readable output MUST include persona name, each trait checked, and pass/fail per trait.
+6. NEVER: Drift detection MUST NOT require network access or external API calls — it operates on local log/output artifacts.
+7. NEVER: Do not claim activation-space measurement — the ADR explicitly excludes this as a non-goal.
+8. ALWAYS: Help text MUST include at least one usage example and document exit codes per CLI doctrine.
 
-1. REQUIREMENT: First constraint
-1. REQUIREMENT: Second constraint
-1. NEVER: What must not happen
-1. ALWAYS: What must always be true
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if OBPI-0.0.13-04 (vendor loading) is not complete, print a BLOCKERS list and halt. Drift detection needs loaded persona definitions to compare against.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first. -->
-
 **Governance (read once, cache):**
 
-- [ ] `.github/discovery-index.json` - repo structure
 - [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
+- [ ] Parent ADR - understand drift monitoring scope and non-goals
+- [ ] CLI doctrine: `.claude/rules/cli.md` - new subcommand requirements
 
 **Context:**
 
 - [ ] Parent ADR: `docs/design/adr/foundation/ADR-0.0.13-portable-persona-control-surface/ADR-0.0.13-portable-persona-control-surface.md`
-- [ ] Related OBPIs in same ADR
+- [ ] ADR Rationale > Drift Monitoring section - PSM/Assistant Axis theoretical basis
+- [ ] OBPI-0.0.13-04 - persona loading must be complete
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required file/module exists: `path/to/prerequisite`
-- [ ] Required config exists: `config/file.json`
+- [ ] `src/gzkit/commands/personas.py` exists with `list` command
+- [ ] `src/gzkit/personas.py` exists with `compose_persona_frame()` and vendor adapters
+- [ ] `.gzkit/personas/` has persona files with traits defined
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `path/to/exemplar`
-- [ ] Test patterns: `tests/path/to/similar_tests.py`
+- [ ] Pattern to follow: `src/gzkit/commands/personas.py` - existing personas CLI structure
+- [ ] Pattern to follow: `gz validate` command pattern - similar "check and report" output style
+- [ ] Test patterns: `tests/commands/test_personas_cmd.py` - existing persona CLI tests
+- [ ] BDD: `features/persona.feature` - existing persona scenarios
 
 ## Quality Gates
-
-<!-- Which gates apply and how to verify them. -->
 
 ### Gate 1: ADR
 
@@ -101,15 +105,15 @@ TBD
 - [ ] Lint clean: `uv run gz lint`
 - [ ] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
 ### Gate 3: Docs (Heavy only)
 
 - [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
+- [ ] Command docs written: `docs/user/commands/personas.md`
+- [ ] Manpage written: `docs/user/manpages/gz-personas.md`
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
+- [ ] Acceptance scenarios pass: `uv run -m behave features/persona.feature`
 
 ### Gate 5: Human (Heavy only)
 
@@ -117,38 +121,37 @@ TBD
 
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
-uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
 uv run gz test
+uv run mkdocs build --strict
 
 # Specific verification for this OBPI
-command --to --verify
+uv run gz personas drift --help
+uv run gz personas drift
+uv run gz personas drift --persona implementer
+uv run gz personas drift --json
+echo $?
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.0.13-05-01: Given/When/Then behavior criterion 1
-- [ ] REQ-0.0.13-05-02: Given/When/Then behavior criterion 2
-- [ ] REQ-0.0.13-05-03: Given/When/Then behavior criterion 3
+- [ ] REQ-0.0.13-05-01: Given `gz personas drift` is invoked with no flags, when personas exist in `.gzkit/personas/`, then a human-readable table of all personas with trait adherence is printed to stdout.
+- [ ] REQ-0.0.13-05-02: Given `gz personas drift --json` is invoked, when personas exist, then valid JSON is printed to stdout with persona names, trait checks, and pass/fail per trait.
+- [ ] REQ-0.0.13-05-03: Given `gz personas drift --persona implementer` is invoked, when the implementer persona exists, then only that persona's drift report is shown.
+- [ ] REQ-0.0.13-05-04: Given no drift is detected, when the command completes, then exit code is 0.
+- [ ] REQ-0.0.13-05-05: Given drift is detected for at least one trait, when the command completes, then exit code is 3 (policy breach).
+- [ ] REQ-0.0.13-05-06: Given `gz personas drift --help` is invoked, then help text includes description, usage, all options, and at least one example.
 
 ## Completion Checklist
-
-<!-- Verify all gates before marking OBPI accepted. -->
 
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
 - [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
 - [ ] **Code Quality:** Lint, format, type checks clean
+- [ ] **Gate 3 (Docs):** Docs build, command docs and manpage written
+- [ ] **Gate 4 (BDD):** Persona drift scenarios pass
+- [ ] **Gate 5 (Human):** Human attestation recorded
 - [ ] **Value Narrative:** Problem-before vs capability-now is documented
 - [ ] **Key Proof:** One concrete usage example is included
 - [ ] **OBPI Acceptance:** Evidence recorded below
@@ -156,9 +159,6 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
 ## Evidence
-
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
 
 ### Gate 1 (ADR)
 
@@ -179,19 +179,19 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here when Gate 3 applies
+# Paste docs-build output here
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here when Gate 4 applies
+# Paste behave output here
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+# Record attestation text here
 ```
 
 ### Value Narrative

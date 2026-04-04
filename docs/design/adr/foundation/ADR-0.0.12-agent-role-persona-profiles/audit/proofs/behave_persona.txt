@@ -1,0 +1,50 @@
+USING RUNNER: behave.runner:Runner
+Feature: Persona control surface # features/persona.feature:1
+  Agent personas define behavioral identity frames stored in
+  .gzkit/personas/ and loaded at dispatch boundaries (ADR-0.0.11).
+  Scenario: List personas in initialized workspace with no files  # features/persona.feature:5
+    Given the workspace is initialized                            # features/steps/gz_steps.py:36
+    When I run the gz command "personas list"                     # features/steps/gz_steps.py:167
+    Then the command exits with code 0                            # features/steps/gz_steps.py:178
+
+  Scenario: List personas shows implementer when file exists  # features/persona.feature:10
+    Given the workspace is initialized                        # features/steps/gz_steps.py:36
+    And a persona file "implementer" exists                   # features/steps/persona_steps.py:10
+    When I run the gz command "personas list --json"          # features/steps/gz_steps.py:167
+    Then the command exits with code 0                        # features/steps/gz_steps.py:178
+    And the output contains "implementer"                     # features/steps/gz_steps.py:183
+    And the output contains "methodical"                      # features/steps/gz_steps.py:183
+
+  Scenario: List personas shows main-session when file exists  # features/persona.feature:18
+    Given the workspace is initialized                         # features/steps/gz_steps.py:36
+    And a persona file "main-session" exists                   # features/steps/persona_steps.py:10
+    When I run the gz command "personas list --json"           # features/steps/gz_steps.py:167
+    Then the command exits with code 0                         # features/steps/gz_steps.py:178
+    And the output contains "main-session"                     # features/steps/gz_steps.py:183
+    And the output contains "methodical"                       # features/steps/gz_steps.py:183
+
+  Scenario: AGENTS.md persona section references main-session grounding  # features/persona.feature:26
+    Given the workspace is initialized                                   # features/steps/gz_steps.py:36
+    Then the file "AGENTS.md" contains "main-session"                    # features/steps/gz_steps.py:188
+    And the file "AGENTS.md" contains "craftsperson"                     # features/steps/gz_steps.py:188
+    And the file "AGENTS.md" contains "governance not as overhead"       # features/steps/gz_steps.py:188
+
+  Scenario: AGENTS.md persona section lists available personas with roles  # features/persona.feature:32
+    Given the workspace is initialized                                     # features/steps/gz_steps.py:36
+    Then the file "AGENTS.md" contains "implementer"                       # features/steps/gz_steps.py:188
+    And the file "AGENTS.md" contains "narrator"                           # features/steps/gz_steps.py:188
+    And the file "AGENTS.md" contains "pipeline-orchestrator"              # features/steps/gz_steps.py:188
+    And the file "AGENTS.md" contains "quality-reviewer"                   # features/steps/gz_steps.py:188
+    And the file "AGENTS.md" contains "spec-reviewer"                      # features/steps/gz_steps.py:188
+
+  Scenario: Personas list is read-only        # features/persona.feature:40
+    Given the workspace is initialized        # features/steps/gz_steps.py:36
+    And a persona file "implementer" exists   # features/steps/persona_steps.py:10
+    When I run the gz command "personas list" # features/steps/gz_steps.py:167
+    Then the command exits with code 0        # features/steps/gz_steps.py:178
+    And the output contains "implementer"     # features/steps/gz_steps.py:183
+
+1 feature passed, 0 failed, 0 skipped
+6 scenarios passed, 0 failed, 0 skipped
+30 steps passed, 0 failed, 0 skipped
+Took 0min 0.077s

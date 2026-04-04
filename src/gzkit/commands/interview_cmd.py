@@ -1,5 +1,6 @@
 """Interview command implementation."""
 
+import json
 from datetime import date
 from pathlib import Path
 
@@ -98,34 +99,92 @@ def save_transcript(
     return transcript_file
 
 
-def interview(document_type: str) -> None:
-    """Interactive Q&A mode for document creation."""
+def _load_answers_from_file(from_file: str, document_type: str) -> dict[str, str]:
+    """Load and validate interview answers from a JSON file.
+
+    Args:
+        from_file: Path to the JSON answers file.
+        document_type: Type of document (prd, adr, obpi).
+
+    Returns:
+        Dictionary of question_id -> answer.
+
+    Raises:
+        GzCliError: If file is missing, invalid JSON, or contains unknown keys.
+
+    """
+    path = Path(from_file)
+    if not path.exists():
+        msg = f"BLOCKERS:\n- Answers file not found: {from_file}"
+        raise GzCliError(msg)  # noqa: TRY003
+
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        msg = f"BLOCKERS:\n- Invalid JSON in {from_file}: {exc.msg}"
+        raise GzCliError(msg) from exc  # noqa: TRY003
+
+    if not isinstance(raw, dict):
+        msg = f"BLOCKERS:\n- Answers file must be a JSON object, got {type(raw).__name__}"
+        raise GzCliError(msg)  # noqa: TRY003
+
+    questions = get_interview_questions(document_type)
+    valid_ids = {q.id for q in questions}
+    unknown = set(raw.keys()) - valid_ids
+    if unknown:
+        msg = f"BLOCKERS:\n- Unknown answer keys for {document_type}: {', '.join(sorted(unknown))}"
+        raise GzCliError(msg)  # noqa: TRY003
+
+    # Validate typed answers
+    answers: dict[str, str] = {}
+    for q in questions:
+        value = raw.get(q.id, "")
+        if not isinstance(value, str):
+            value = str(value)
+        if q.validator and value and not q.validator(value):
+            msg = f"BLOCKERS:\n- Invalid answer for '{q.id}': failed validation"
+            raise GzCliError(msg)  # noqa: TRY003
+        answers[q.id] = value
+
+    return answers
+
+
+def interview(document_type: str, from_file: str | None = None) -> None:
+    """Q&A mode for document creation.
+
+    When *from_file* is provided, answers are loaded from a JSON file
+    (agent-driven mode). Otherwise, an interactive stdin session runs.
+    """
     config = ensure_initialized()
     project_root = get_project_root()
 
-    console.print(f"\n[bold]Creating {document_type.upper()} via interview[/bold]\n")
-    console.print("Answer each question. Press Enter for empty, Ctrl+C to cancel.\n")
+    if from_file:
+        console.print(f"\n[bold]Creating {document_type.upper()} from {from_file}[/bold]\n")
+        answers = _load_answers_from_file(from_file, document_type)
+    else:
+        console.print(f"\n[bold]Creating {document_type.upper()} via interview[/bold]\n")
+        console.print("Answer each question. Press Enter for empty, Ctrl+C to cancel.\n")
 
-    questions = get_interview_questions(document_type)
-    answers: dict[str, str] = {}
+        questions = get_interview_questions(document_type)
+        answers = {}
 
-    try:
-        for q in questions:
-            if q.example:
-                console.print(f"[dim]Example: {q.example}[/dim]")
+        try:
+            for q in questions:
+                if q.example:
+                    console.print(f"[dim]Example: {q.example}[/dim]")
 
-            while True:
-                answer = _prompt_text(q.prompt, default="")
-                if q.validator and answer and not q.validator(answer):
-                    console.print("[red]Invalid answer. Please try again.[/red]")
-                    continue
-                break
+                while True:
+                    answer = _prompt_text(q.prompt, default="")
+                    if q.validator and answer and not q.validator(answer):
+                        console.print("[red]Invalid answer. Please try again.[/red]")
+                        continue
+                    break
 
-            answers[q.id] = answer
+                answers[q.id] = answer
 
-    except KeyboardInterrupt:
-        console.print("\n[yellow]Interview cancelled.[/yellow]")
-        return
+        except KeyboardInterrupt:
+            console.print("\n[yellow]Interview cancelled.[/yellow]")
+            return
 
     # Check completion
     result = check_interview_complete(document_type, answers)
