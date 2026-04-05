@@ -1,26 +1,5 @@
 # gzkit Release Notes
 
-## v0.24.1 (2026-04-05)
-
-**ADR:** ADR-0.0.13 - Portable Persona Control Surface
-
-Made persona frames a portable GovZero primitive that works across all governed repositories. Any gzkit-compliant project can now bootstrap personas via `gz init`, sync them to vendor surfaces via `gz agent sync control-surfaces`, load them at agent dispatch time, and monitor trait adherence via `gz personas drift`.
-
-### Delivered
-
-- Portable persona YAML schema with traits, anti-traits, and grounding statements
-- `gz init` scaffolds `.gzkit/personas/` with default persona set
-- `gz agent sync control-surfaces` mirrors personas to vendor surfaces (Claude, Codex, Copilot)
-- Manifest schema includes `control_surfaces.personas` entry
-- Vendor-neutral persona loading across Claude, Codex, Copilot, and OpenCode
-- `gz personas drift` command for trait adherence monitoring via behavioral proxies
-- Cross-project validation proving portability in external repositories
-- Product proof gate expanded with test_evidence and bdd_evidence proof types
-
-### Gate Evidence
-
-All 5 GovZero gates satisfied.
-
 ## v0.24.0 (2026-03-29)
 
 **ADR:** ADR-0.24.0 - Skill Documentation Contract
