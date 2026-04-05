@@ -1,5 +1,97 @@
 # gzkit Release Notes
 
+## v0.24.2 (2026-04-05)
+
+Patch release closing 50 GHIs across 69 commits. Covers defect fixes, hook
+hardening, skill consolidation, test infrastructure improvements, and OBPI
+identity normalization.
+
+### Windows / Cross-Platform
+
+- **#103** — Fixed 17 `.exists()` vs `.is_file()` PermissionError bugs across commands/ on Windows
+
+### Closeout Ceremony Overhaul (#99-104)
+
+- **#99** — Step 2 template no longer subsumes Steps 3-6 with premature attestation
+- **#100** — Added missing value justification step
+- **#101** — Removed phantom Step 4 (unused docs alignment checklist)
+- **#102** — Added Foundation ADR (0.0.x) release skip gate
+- **#104** — Ceremony now driven by CLI state machine, not prose steps
+
+### OBPI ID Normalization (#60, #61, #79, #108)
+
+- **#60** — `register-adrs` no longer silently skips OBPIs with short-form parent IDs
+- **#61** — `gz-design` emits slugified parent IDs in OBPI brief frontmatter
+- **#79** — Resolved short/long ID mismatch between obpi-completion-validator and `gz obpi audit`
+- **#108** — Added validation guard: OBPI frontmatter `id` must match slugified filename stem
+
+### Hook and Gate Hardening (A-series #92-96)
+
+- **#92** — `pipeline-gate.py` path scope expanded beyond `src/` and `tests/`
+- **#93** — Added NO-GO verdict check to `plan-audit-gate.py`
+- **#94** — Added `--force` reason quality bar to `gz attest`
+- **#95** — `pipeline-completion-reminder.py` now blocking for incomplete pipelines
+- **#96** — Added interview artifact existence check to `gz validate`
+
+### Pipeline Fixes (#17, #20, #23, #36)
+
+- **#17** — CLI is now a proper pipeline, not just a stage launcher
+- **#20** — Fixed single-file receipt conflicts and added marker expiry
+- **#23** — Fixed dirty worktree cascade from `gz obpi emit-receipt` on multi-OBPI ADRs
+- **#36** — Receipt emission now occurs after git-sync captures worktree anchor
+
+### CLI and Command Fixes
+
+- **#62** — `cli audit` resolves `adr report` and `closeout` handler docstrings
+- **#63** — `flags` and `flag explain` added to governance runbook
+- **#64** — Removed orphan test with `@covers REQ-0.22.0-04-09` referencing absent requirement
+- **#66** — `gz obpi validate` no longer fails changed-files audit on clean tree for completed OBPIs
+- **#80** — `gz obpi emit-receipt --help` documents required evidence-json fields
+- **#88** — Ledger read cache and typed events on read path
+- **#89** — Product proof gate recognizes governance artifact proof type
+- **#91** — `gz interview adr` no longer blocked by interactive-only design
+
+### Skill Consolidation and Quality (#55-58, #86, #87)
+
+- **#86** — Retired 13 thin wrapper/duplicate skills
+- **#87** — Folded `gz-obpi-audit` and `gz-obpi-sync` into `gz-obpi-reconcile`
+- **#55** — Skill description scored as routing contract, not label
+- **#56** — Added quantitative skill trigger/output testing chore
+- **#57** — Replaced lint skill stub with working implementation
+- **#58** — Decomposed `gz-obpi-pipeline` skill (was 614 lines)
+
+### Test Infrastructure (#105-107)
+
+- **#105** — Addressed test suite 2x slower than airlineops
+- **#106** — `state_repair` in tests no longer mutates real OBPI-0.1.0-01 frontmatter
+- **#107** — Reduced subprocess-per-test overhead in hook and CLI runner tests
+
+### Enhancements (Tracked/Planned)
+
+- **#81-85** — Ceremony CLI augmentation, ADR Evaluate authority, Specify/Promote readiness gates, pipeline markers CLI, ADR Create OBPI count validation — scoped into ADR-0.25.0+ work
+- **#97** — `gz-obpi-reconcile` surfaces prior audit state before fresh analysis
+- **#98** — Extended `ADR-pool.pool-health-management` into pool-management with priority ranking
+- **#65** — Closeout ceremony applies OBPI pipeline structural patterns
+
+### Other
+
+- **#9** — Agentic Maturity Ladder documentation with gzkit readiness mapping
+- **#35** — SPEC-agent-capability-uplift: resolved 3 pre-1.0 gaps
+- **#40** — Added `gz skill audit` command for skill manpage coverage enforcement
+- **#78** — Fixed Stage 4 ceremony template shallow-compliance output
+- **#90** — Memory hygiene chore: audited auto-memory for process drift
+
+### ADR-0.0.14 Evaluation
+
+- Evaluated ADR-0.0.14 (Deterministic OBPI Commands): added Problem Quantification, Alternatives Considered, Non-Goals sections; rewrote OBPI-03 with prose-vs-code boundary clarity; corrected ledger lane (lite→heavy); CLI deterministic score rose from 2.45→3.50 (GO)
+
+### Stats
+
+- 50 GHIs closed (#9, #17, #20, #23, #35, #36, #40, #55-66, #78-108)
+- 0 GHIs remaining open
+- 69 commits since v0.24.1
+- 2527 tests passing
+
 ## v0.24.0 (2026-03-29)
 
 **ADR:** ADR-0.24.0 - Skill Documentation Contract

@@ -259,6 +259,11 @@ def _collect_obpis_to_register(
 
         obpi_id = parsed_id
         if parsed_id != stem_id and stem_id.startswith(f"{parsed_id}-"):
+            console.print(
+                f"[yellow]Warning:[/yellow] {obpi_file.name} frontmatter id "
+                f"'{parsed_id}' does not match filename stem '{stem_id}'. "
+                f"Using slugified stem as canonical id."
+            )
             obpi_id = stem_id
         to_register_obpis.append((obpi_id, canonical_parent))
     to_register_obpis.sort(key=lambda item: item[0])
