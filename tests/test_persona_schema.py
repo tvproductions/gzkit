@@ -8,7 +8,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from gzkit.models.persona import parse_persona_file, validate_persona_structure
+from gzkit.models.persona import PersonaFrontmatter, parse_persona_file, validate_persona_structure
 from gzkit.traceability import covers
 
 _VALID_PERSONA = """\
@@ -605,6 +605,164 @@ class TestReviewerOrthogonality(unittest.TestCase):
         quality_fm, _ = parse_persona_file(quality_path)
         shared = set(spec_fm.traits) & set(quality_fm.traits)
         self.assertEqual(shared, set(), f"Trait clusters overlap: {shared}")
+
+
+# ---------------------------------------------------------------------------
+# OBPI-0.0.13-01: Portable Persona Schema (REQ-0.0.13-01-*)
+# ---------------------------------------------------------------------------
+
+
+class TestPortableSchemaStructure(unittest.TestCase):
+    """REQ-0.0.13-01-01: Schema is a valid JSON Schema document."""
+
+    @covers("REQ-0.0.13-01-01")
+    def test_schema_loads_and_has_required_keys(self) -> None:
+        from gzkit.schemas import load_schema
+
+        schema = load_schema("persona")
+        self.assertEqual(schema["$schema"], "https://json-schema.org/draft/2020-12/schema")
+        self.assertIn("title", schema)
+        self.assertIn("properties", schema)
+        self.assertIn("frontmatter", schema["properties"])
+
+    @covers("REQ-0.0.13-01-01")
+    def test_schema_has_version_id(self) -> None:
+        from gzkit.schemas import load_schema
+
+        schema = load_schema("persona")
+        self.assertTrue(schema["$id"].startswith("gzkit.persona.v"))
+
+
+class TestSchemaRequiredFields(unittest.TestCase):
+    """REQ-0.0.13-01-02: Schema declares the four required persona fields."""
+
+    @covers("REQ-0.0.13-01-02")
+    def test_schema_declares_required_fields(self) -> None:
+        from gzkit.schemas import load_schema
+
+        schema = load_schema("persona")
+        fm_schema = schema["properties"]["frontmatter"]
+        required = set(fm_schema["required"])
+        self.assertEqual(required, {"name", "traits", "anti-traits", "grounding"})
+
+    @covers("REQ-0.0.13-01-02")
+    def test_schema_rejects_additional_properties(self) -> None:
+        from gzkit.schemas import load_schema
+
+        schema = load_schema("persona")
+        fm_schema = schema["properties"]["frontmatter"]
+        self.assertFalse(fm_schema.get("additionalProperties", True))
+
+    @covers("REQ-0.0.13-01-02")
+    def test_pydantic_rejects_missing_field(self) -> None:
+        """Pydantic enforces the same required fields at runtime."""
+        from pydantic import ValidationError as PydanticValidationError
+
+        for field in ("name", "traits", "anti-traits", "grounding"):
+            with self.subTest(missing=field):
+                complete = {
+                    "name": "test",
+                    "traits": ["a"],
+                    "anti-traits": ["b"],
+                    "grounding": "anchor text",
+                }
+                del complete[field]
+                with self.assertRaises(PydanticValidationError):
+                    PersonaFrontmatter(**complete)
+
+
+class TestExistingPersonasValidate(unittest.TestCase):
+    """REQ-0.0.13-01-03: All 6 shipped persona files validate against schema."""
+
+    _PERSONA_DIR = Path(".gzkit/personas")
+    _EXPECTED_COUNT = 6
+
+    @covers("REQ-0.0.13-01-03")
+    def test_all_shipped_personas_pass_schema(self) -> None:
+        from gzkit.models.persona import discover_persona_files
+        from gzkit.schemas import load_schema
+
+        schema = load_schema("persona")
+        fm_schema = schema["properties"]["frontmatter"]
+        required_fields = set(fm_schema["required"])
+
+        files = discover_persona_files(self._PERSONA_DIR)
+        self.assertEqual(
+            len(files),
+            self._EXPECTED_COUNT,
+            f"Expected {self._EXPECTED_COUNT} personas, found {len(files)}",
+        )
+        for persona_path in files:
+            with self.subTest(persona=persona_path.name):
+                fm, _body = parse_persona_file(persona_path)
+                fm_dict = {
+                    "name": fm.name,
+                    "traits": fm.traits,
+                    "anti-traits": fm.anti_traits,
+                    "grounding": fm.grounding,
+                }
+                self.assertTrue(
+                    required_fields.issubset(fm_dict.keys()),
+                    f"{persona_path.name}: missing fields {required_fields - fm_dict.keys()}",
+                )
+
+
+class TestSchemaPortability(unittest.TestCase):
+    """REQ-0.0.13-01-04: Schema contains no gzkit-specific references."""
+
+    _GZKIT_TERMS = [
+        "pipeline",
+        "skill",
+        "src/gzkit",
+        "gzkit.commands",
+        "gzkit.models",
+        "obpi",
+        "adr",
+        "gz init",
+        "gz agent",
+    ]
+
+    @covers("REQ-0.0.13-01-04")
+    def test_no_gzkit_specific_references(self) -> None:
+        from gzkit.schemas import get_schema_path
+
+        schema_text = get_schema_path("persona").read_text(encoding="utf-8")
+        for term in self._GZKIT_TERMS:
+            self.assertNotIn(
+                term.lower(),
+                schema_text.lower(),
+                f"Schema contains gzkit-specific reference: '{term}'",
+            )
+
+
+class TestSchemaModelAlignment(unittest.TestCase):
+    """REQ-0.0.13-01-05: Schema required fields match PersonaFrontmatter."""
+
+    @covers("REQ-0.0.13-01-05")
+    def test_schema_fields_match_model(self) -> None:
+        from gzkit.models.persona import PersonaFrontmatter
+        from gzkit.schemas import load_schema
+
+        schema = load_schema("persona")
+        fm_schema = schema["properties"]["frontmatter"]
+        schema_required = set(fm_schema["required"])
+        schema_props = set(fm_schema["properties"].keys())
+
+        model_fields = set()
+        for field_name, field_info in PersonaFrontmatter.model_fields.items():
+            alias = field_info.alias
+            model_fields.add(alias if alias else field_name)
+
+        self.assertEqual(
+            schema_required,
+            model_fields,
+            f"Schema required {schema_required} != model fields {model_fields}",
+        )
+        self.assertEqual(
+            schema_props,
+            model_fields,
+            f"Schema properties {schema_props} != model fields {model_fields}",
+        )
 
 
 if __name__ == "__main__":

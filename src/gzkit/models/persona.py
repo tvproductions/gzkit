@@ -11,6 +11,9 @@ from pathlib import Path
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
+SCHEMA_NAME = "persona"
+"""Schema name for ``load_schema()`` lookup — maps to ``schemas/persona.json``."""
+
 
 class PersonaFrontmatter(BaseModel):
     """Frozen model for persona file YAML frontmatter."""
