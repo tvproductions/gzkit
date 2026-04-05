@@ -372,6 +372,16 @@
       },
       "governance_relevant": true
     },
+    "personas drift": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": false,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
     "personas list": {
       "surfaces": {
         "manpage": true,

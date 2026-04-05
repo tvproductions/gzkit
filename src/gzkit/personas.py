@@ -15,10 +15,14 @@ from __future__ import annotations
 import re
 from collections.abc import Callable
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import yaml
 
 from gzkit.models.persona import PersonaFrontmatter
+
+if TYPE_CHECKING:
+    from gzkit.models.persona import PersonaDriftReport, TraitCheckResult
 
 # Project-agnostic starter personas scaffolded by ``gz init``.
 # Content MUST NOT reference any specific project, language, or tool.
@@ -249,6 +253,280 @@ VENDOR_ADAPTERS: dict[str, Callable[[PersonaFrontmatter, str], str]] = {
     "copilot": render_persona_copilot,
 }
 """Registry mapping vendor name to persona adapter function."""
+
+
+# ---------------------------------------------------------------------------
+# Drift detection engine (OBPI-0.0.13-05)
+# ---------------------------------------------------------------------------
+
+TraitProxyFn = Callable[
+    [Path, list[dict[str, object]], list[dict[str, object]]],
+    tuple[str, str],
+]
+"""Signature: (project_root, ledger_events, audit_records) -> (status, detail)."""
+
+
+def _scan_ledger_events(project_root: Path) -> list[dict[str, object]]:
+    """Read ledger events as raw dicts for proxy evaluation.
+
+    Returns an empty list if the ledger does not exist.
+    """
+    import json  # noqa: PLC0415
+
+    ledger_path = project_root / ".gzkit" / "ledger.jsonl"
+    if not ledger_path.is_file():
+        return []
+    events: list[dict[str, object]] = []
+    for line in ledger_path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            events.append(json.loads(line))
+        except json.JSONDecodeError:
+            continue
+    return events
+
+
+def _scan_obpi_audit_logs(project_root: Path) -> list[dict[str, object]]:
+    """Collect OBPI audit records from all ADR log directories.
+
+    Scans ``docs/design/adr/**/logs/obpi-audit.jsonl`` for structured
+    evidence records.
+    """
+    import json  # noqa: PLC0415
+
+    adr_root = project_root / "docs" / "design" / "adr"
+    if not adr_root.is_dir():
+        return []
+    records: list[dict[str, object]] = []
+    for log_path in adr_root.rglob("obpi-audit.jsonl"):
+        for line in log_path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                records.append(json.loads(line))
+            except json.JSONDecodeError:
+                continue
+    return records
+
+
+# -- Proxy functions --------------------------------------------------------
+
+
+def _governance_activity_proxy(
+    _root: Path,
+    events: list[dict[str, object]],
+    _audits: list[dict[str, object]],
+) -> tuple[str, str]:
+    """Check for governance lifecycle events in the ledger."""
+    governance_types = {"gate_checked", "attested", "audit_receipt_emitted", "obpi_receipt_emitted"}
+    count = sum(1 for e in events if e.get("event") in governance_types)
+    if count > 0:
+        return "pass", f"{count} governance events found in ledger"
+    return "fail", "No governance activity events in ledger"
+
+
+def _test_evidence_proxy(
+    _root: Path,
+    _events: list[dict[str, object]],
+    audits: list[dict[str, object]],
+) -> tuple[str, str]:
+    """Check OBPI audit logs for test evidence."""
+    for rec in audits:
+        raw_ev = rec.get("evidence")
+        if not isinstance(raw_ev, dict):
+            continue
+        test_count = raw_ev.get("test_count")  # type: ignore[union-attr]
+        tests_passed = raw_ev.get("tests_passed")  # type: ignore[union-attr]
+        if isinstance(test_count, int) and test_count > 0 and tests_passed is True:
+            return "pass", f"Audit shows {test_count} tests passing"
+    if not audits:
+        return "fail", "No OBPI audit records found"
+    return "fail", "No passing test evidence in audit records"
+
+
+def _evidence_quality_proxy(
+    _root: Path,
+    _events: list[dict[str, object]],
+    audits: list[dict[str, object]],
+) -> tuple[str, str]:
+    """Check for substantive criteria evaluations in audit records."""
+    for rec in audits:
+        raw_ev = rec.get("evidence")
+        if not isinstance(raw_ev, dict):
+            continue
+        criteria = raw_ev.get("criteria_evaluated")  # type: ignore[union-attr]
+        if isinstance(criteria, list):
+            passing = [
+                c
+                for c in criteria
+                if isinstance(c, dict) and c.get("result") == "PASS"  # type: ignore[union-attr]
+            ]
+            if passing:
+                return "pass", f"{len(passing)} criteria evaluated with PASS"
+    if not audits:
+        return "fail", "No OBPI audit records found"
+    return "fail", "No substantive criteria evaluations found"
+
+
+def _completion_quality_proxy(
+    _root: Path,
+    _events: list[dict[str, object]],
+    audits: list[dict[str, object]],
+) -> tuple[str, str]:
+    """Check for completed OBPI brief transitions in audit records."""
+    for rec in audits:
+        if rec.get("brief_status_after") == "Completed":
+            return "pass", "OBPI brief completed in audit trail"
+    for rec in audits:
+        if rec.get("action_taken") == "attestation_recorded":
+            return "pass", "Attestation recorded in audit trail"
+    if not audits:
+        return "fail", "No OBPI audit records found"
+    return "fail", "No completion transitions found in audit records"
+
+
+def _plan_discipline_proxy(
+    _root: Path,
+    events: list[dict[str, object]],
+    _audits: list[dict[str, object]],
+) -> tuple[str, str]:
+    """Check that ADR creation events precede gate checks."""
+    adr_created_ts: list[str] = []
+    gate_checked_ts: list[str] = []
+    for e in events:
+        ts = e.get("ts", "")
+        if not isinstance(ts, str):
+            continue
+        if e.get("event") == "adr_created":
+            adr_created_ts.append(ts)
+        elif e.get("event") == "gate_checked":
+            gate_checked_ts.append(ts)
+    if not adr_created_ts:
+        return "fail", "No ADR creation events found in ledger"
+    if not gate_checked_ts:
+        return "pass", "ADR created; no gate checks yet (plan-first discipline)"
+    earliest_adr = min(adr_created_ts)
+    earliest_gate = min(gate_checked_ts)
+    if earliest_adr <= earliest_gate:
+        return "pass", "ADR creation precedes first gate check"
+    return "fail", "Gate checks occurred before ADR was created"
+
+
+# -- Trait proxy registry ---------------------------------------------------
+
+TRAIT_PROXY_REGISTRY: dict[str, tuple[str, TraitProxyFn]] = {
+    "governance-aware": ("governance_activity", _governance_activity_proxy),
+    "governance-fidelity": ("governance_activity", _governance_activity_proxy),
+    "evidence-anchoring": ("governance_activity", _governance_activity_proxy),
+    "test-first": ("test_evidence", _test_evidence_proxy),
+    "thorough": ("test_evidence", _test_evidence_proxy),
+    "architectural-rigor": ("test_evidence", _test_evidence_proxy),
+    "evidence-driven": ("evidence_quality", _evidence_quality_proxy),
+    "evidence-based-assessment": ("evidence_quality", _evidence_quality_proxy),
+    "evidence-to-decision": ("evidence_quality", _evidence_quality_proxy),
+    "precision": ("evidence_quality", _evidence_quality_proxy),
+    "complete-units": ("completion_quality", _completion_quality_proxy),
+    "atomic-edits": ("completion_quality", _completion_quality_proxy),
+    "ceremony-completion": ("completion_quality", _completion_quality_proxy),
+    "methodical": ("plan_discipline", _plan_discipline_proxy),
+    "plan-then-write": ("plan_discipline", _plan_discipline_proxy),
+    "stage-discipline": ("plan_discipline", _plan_discipline_proxy),
+    "sequential-flow": ("plan_discipline", _plan_discipline_proxy),
+}
+"""Maps trait keywords to (proxy_name, proxy_function) pairs."""
+
+
+def _check_trait(
+    trait: str,
+    project_root: Path,
+    events: list[dict[str, object]],
+    audits: list[dict[str, object]],
+    *,
+    is_anti_trait: bool = False,
+) -> TraitCheckResult:
+    """Evaluate a single trait against the proxy registry."""
+    from gzkit.models.persona import TraitCheckResult  # noqa: PLC0415
+
+    entry = TRAIT_PROXY_REGISTRY.get(trait)
+    if entry is None:
+        return TraitCheckResult(
+            trait=trait,
+            status="no_evidence",
+            proxy="unmapped",
+            detail=f"No behavioral proxy registered for '{trait}'",
+            is_anti_trait=is_anti_trait,
+        )
+    proxy_name, proxy_fn = entry
+    status, detail = proxy_fn(project_root, events, audits)
+    if is_anti_trait and status == "pass":
+        status = "pass"
+        detail = f"(inverse) {detail}"
+    elif is_anti_trait and status == "fail":
+        status = "pass"
+        detail = f"(inverse: anti-trait not evidenced) {detail}"
+    return TraitCheckResult(
+        trait=trait,
+        status=status,
+        proxy=proxy_name,
+        detail=detail,
+        is_anti_trait=is_anti_trait,
+    )
+
+
+def evaluate_persona_drift(
+    project_root: Path,
+    persona_name: str | None = None,
+) -> PersonaDriftReport:
+    """Evaluate trait adherence for one or all personas.
+
+    Loads personas from ``.gzkit/personas/``, pre-scans ledger and audit
+    artifacts once, then evaluates each persona's traits against the
+    proxy registry.
+    """
+    import datetime  # noqa: PLC0415
+
+    from gzkit.models.persona import (  # noqa: PLC0415
+        PersonaDriftReport,
+        PersonaDriftResult,
+        discover_persona_files,
+        parse_persona_file,
+    )
+
+    personas_dir = project_root / ".gzkit" / "personas"
+    files = discover_persona_files(personas_dir)
+    events = _scan_ledger_events(project_root)
+    audits = _scan_obpi_audit_logs(project_root)
+
+    results: list[PersonaDriftResult] = []
+    for f in files:
+        try:
+            fm, _body = parse_persona_file(f)
+        except ValueError:
+            continue
+        if persona_name is not None and fm.name != persona_name:
+            continue
+        checks: list[TraitCheckResult] = []
+        for trait in fm.traits:
+            checks.append(_check_trait(trait, project_root, events, audits))
+        for anti_trait in fm.anti_traits:
+            checks.append(
+                _check_trait(anti_trait, project_root, events, audits, is_anti_trait=True)
+            )
+        has_drift = any(c.status == "fail" for c in checks)
+        results.append(PersonaDriftResult(persona=fm.name, checks=checks, has_drift=has_drift))
+
+    total_checks = sum(len(r.checks) for r in results)
+    drift_count = sum(1 for r in results for c in r.checks if c.status == "fail")
+    return PersonaDriftReport(
+        personas=results,
+        total_personas=len(results),
+        total_checks=total_checks,
+        drift_count=drift_count,
+        scan_timestamp=datetime.datetime.now(datetime.UTC).isoformat(),
+    )
 
 
 def render_persona_for_vendor(vendor: str, fm: PersonaFrontmatter, body: str = "") -> str:
