@@ -407,6 +407,8 @@ def _product_proof_payload(proof_result: ProductProofResult) -> list[dict[str, A
             "runbook": p.runbook_found,
             "command_doc": p.command_doc_found,
             "docstring": p.docstring_found,
+            "test_evidence": p.test_evidence_found,
+            "bdd_evidence": p.bdd_evidence_found,
         }
         for p in proof_result.obpi_proofs
     ]
