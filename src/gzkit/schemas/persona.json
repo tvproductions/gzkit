@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gzkit.persona.v1",
+  "title": "GovZero Portable Persona Schema",
+  "description": "Schema for persona identity frame files. Validates frontmatter structure without prescribing trait content. Project-agnostic by design.",
+  "type": "object",
+  "required": ["frontmatter"],
+  "properties": {
+    "frontmatter": {
+      "type": "object",
+      "description": "Required YAML frontmatter fields for persona files",
+      "required": ["name", "traits", "anti-traits", "grounding"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Persona identifier, must match the filename stem"
+        },
+        "traits": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "description": "Behavioral identity traits"
+        },
+        "anti-traits": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "description": "Behaviors this persona avoids"
+        },
+        "grounding": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Behavioral anchor text"
+        }
+      },
+      "additionalProperties": false
+    },
+    "headers": {
+      "type": "array",
+      "description": "Optional markdown section headers",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
