@@ -21,12 +21,9 @@ from gzkit.sync_skills import (
     bootstrap_canonical_skills,
     collect_skills_catalog,
     render_skills_catalog,
-    sync_skill_mirror,
     sync_skill_mirrors,
 )
 from gzkit.templates import render_template
-
-# sync_skill_mirror is used in sync_persona_mirrors() below
 
 # ---------------------------------------------------------------------------
 # Helpers shared with sync.py
@@ -507,6 +504,10 @@ def sync_persona_mirrors(
 ) -> list[str]:
     """Mirror canonical personas into enabled vendor persona directories.
 
+    Uses vendor adapter functions to translate each persona into the vendor's
+    native format.  Falls back to raw canonical markdown for vendors without
+    a registered adapter.
+
     Args:
         project_root: Project root directory.
         config: Project configuration.
@@ -516,8 +517,15 @@ def sync_persona_mirrors(
         List of mirrored files written.
 
     """
+    from gzkit.models.persona import discover_persona_files, parse_persona_file
+    from gzkit.personas import render_persona_for_vendor
+
     personas_root = project_root / config.paths.personas
     if not personas_root.exists():
+        return []
+
+    persona_files = discover_persona_files(personas_root)
+    if not persona_files:
         return []
 
     vendor_persona_map = {
@@ -527,12 +535,25 @@ def sync_persona_mirrors(
     }
 
     updated: list[str] = []
-    for vendor_name, target in vendor_persona_map.items():
+    for vendor_name, target_dir_rel in vendor_persona_map.items():
         if vendor_aware:
             vendor_cfg = getattr(config.vendors, vendor_name, None)
             if vendor_cfg is not None and not vendor_cfg.enabled:
                 continue
-        updated.extend(sync_skill_mirror(project_root, config.paths.personas, target))
+
+        target_dir = project_root / target_dir_rel
+        target_dir.mkdir(parents=True, exist_ok=True)
+
+        for persona_path in persona_files:
+            try:
+                fm, body = parse_persona_file(persona_path)
+            except ValueError:
+                continue
+            rendered = render_persona_for_vendor(vendor_name, fm, body)
+            out_path = target_dir / persona_path.name
+            out_path.write_text(rendered, encoding="utf-8")
+            updated.append(str(Path(target_dir_rel) / persona_path.name))
+
     return updated
 
 
