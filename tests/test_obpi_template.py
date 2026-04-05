@@ -8,7 +8,7 @@ TEMPLATE_PATH = (
     Path(__file__).resolve().parents[1]
     / ".github"
     / "skills"
-    / "gz-obpi-brief"
+    / "gz-obpi-specify"
     / "assets"
     / "OBPI_BRIEF-template.md"
 )
