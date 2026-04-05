@@ -11,7 +11,13 @@ from unittest.mock import patch
 
 from gzkit.hooks.core import record_artifact_edit
 from gzkit.hooks.obpi import ObpiValidator
-from gzkit.ledger import Ledger, adr_created_event, project_init_event
+from gzkit.ledger import (
+    Ledger,
+    adr_created_event,
+    obpi_created_event,
+    obpi_receipt_emitted_event,
+    project_init_event,
+)
 from gzkit.traceability import covers  # noqa: F401
 
 
@@ -548,3 +554,69 @@ status: {status}
         )
         errors = self.validator.validate_file(path, require_authored=True)
         self.assertEqual(errors, [])
+
+    # ------------------------------------------------------------------
+    # GHI #66: Validate on clean tree with ledger completion evidence
+    # ------------------------------------------------------------------
+
+    def test_validate_clean_tree_passes_with_ledger_completion_evidence(self):
+        """Completed OBPI with sealed scope_audit in ledger passes on clean tree."""
+        adr_id = "ADR-0.1.0"
+        obpi_id = "OBPI-ADR-0.1.0-01"
+        rel_path = f"{obpi_id}.md"
+
+        obpi_path = self._create_obpi(
+            adr_id,
+            status="Completed",
+            summary="- Task: Finished implementation",
+            proof="Works as expected",
+            allowed_paths=[rel_path],
+        )
+
+        # Register OBPI and emit completion receipt with scope_audit evidence
+        self.ledger.append(obpi_created_event(obpi_id, adr_id))
+        self.ledger.append(
+            obpi_receipt_emitted_event(
+                obpi_id,
+                receipt_event="completed",
+                attestor="agent:test",
+                parent_adr=adr_id,
+                obpi_completion="completed",
+                evidence={
+                    "scope_audit": {
+                        "allowlist": [rel_path],
+                        "changed_files": [rel_path],
+                        "out_of_scope_files": [],
+                    },
+                    "key_proof": "Works as expected",
+                    "value_narrative": "Test value",
+                },
+            )
+        )
+
+        # Commit everything so tree is clean
+        self._commit_all("chore: complete OBPI work")
+
+        # Recreate validator to pick up new ledger state
+        self.validator = ObpiValidator(self.project_root)
+        errors = self.validator.validate_file(obpi_path)
+        self.assertEqual(errors, [])
+
+    def test_validate_clean_tree_fails_without_ledger_completion(self):
+        """Non-completed OBPI still fails on clean tree (no fallback)."""
+        obpi_path = self._create_obpi(
+            "ADR-0.1.0",
+            status="Completed",
+            summary="- Task: Finished implementation",
+            proof="Works as expected",
+        )
+
+        # Commit everything so tree is clean — but no completion receipt in ledger
+        self._commit_all("chore: commit work")
+
+        self.validator = ObpiValidator(self.project_root)
+        errors = self.validator.validate_file(obpi_path)
+        self.assertIn(
+            "Changed-files audit found no modified paths. Completion requires live scope evidence.",
+            errors,
+        )
