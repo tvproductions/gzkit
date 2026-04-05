@@ -200,6 +200,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         action="store_true",
         help="Verify ADRs with OBPIs have interview transcript artifacts",
     )
+    p_validate.add_argument(
+        "--decomposition",
+        dest="check_decomposition",
+        action="store_true",
+        help="Validate ADR decomposition scorecards and checklist-to-brief alignment",
+    )
     add_json_flag(p_validate)
     p_validate.set_defaults(
         func=lambda a: validate(
@@ -211,6 +217,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_briefs=a.check_briefs,
             check_personas=a.check_personas,
             check_interviews=a.check_interviews,
+            check_decomposition=a.check_decomposition,
             as_json=a.as_json,
         )
     )

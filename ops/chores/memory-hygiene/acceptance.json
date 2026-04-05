@@ -1,0 +1,10 @@
+{
+  "criteria": [
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run -m unittest -q",
+      "expected": 0,
+      "description": "All tests pass after memory hygiene"
+    }
+  ]
+}

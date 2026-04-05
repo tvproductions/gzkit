@@ -90,6 +90,40 @@ def _warn_if_closeout_active(ledger: Ledger, adr_id: str) -> None:
         )
 
 
+def _validate_attest_inputs(
+    attest_status: str, reason: str | None, force: bool, snapshot: dict[str, object]
+) -> None:
+    """Validate attestation inputs and gate prerequisites. Raises GzCliError on failure."""
+    if attest_status in ("partial", "dropped") and not reason:
+        msg = f"--reason required for {attest_status} status"
+        raise GzCliError(msg)  # noqa: TRY003
+
+    if force and not snapshot["ready"] and not reason:
+        msg = "--reason required when --force bypasses failing gate prerequisites"
+        raise GzCliError(msg)  # noqa: TRY003
+
+    if force and reason:
+        stripped = reason.strip()
+        if len(stripped) < 20:
+            msg = f"--force reason must be at least 20 characters (got {len(stripped)})"
+            raise GzCliError(msg)  # noqa: TRY003
+        if " " not in stripped:
+            msg = (
+                "--force reason must contain multiple words (single-word reasons are not accepted)"
+            )
+            raise GzCliError(msg)  # noqa: TRY003
+
+    if not force and not snapshot["ready"]:
+        blocker_list = cast(list[str], snapshot["blockers"])
+        blockers = "\\n".join(f"- {blocker}" for blocker in blocker_list)
+        msg = (
+            "Attestation blocked by prerequisite gates:\\n"
+            f"{blockers}\\n"
+            "Run required gate commands first, or use --force with --reason."
+        )
+        raise GzCliError(msg)  # noqa: TRY003
+
+
 def attest(
     adr: str,
     attest_status: str,
@@ -120,29 +154,7 @@ def attest(
     _warn_if_closeout_active(ledger, adr_id)
 
     snapshot = _attestation_gate_snapshot(project_root, config, ledger, adr_id)
-    if force and not snapshot["ready"] and not reason:
-        msg = "--reason required when --force bypasses failing gate prerequisites"
-        raise GzCliError(msg)  # noqa: TRY003
-
-    if force and reason:
-        stripped = reason.strip()
-        if len(stripped) < 20:
-            msg = f"--force reason must be at least 20 characters (got {len(stripped)})"
-            raise GzCliError(msg)  # noqa: TRY003
-        if " " not in stripped:
-            msg = (
-                "--force reason must contain multiple words (single-word reasons are not accepted)"
-            )
-            raise GzCliError(msg)  # noqa: TRY003
-
-    if not force and not snapshot["ready"]:
-        blockers = "\\n".join(f"- {blocker}" for blocker in snapshot["blockers"])
-        msg = (
-            "Attestation blocked by prerequisite gates:\\n"
-            f"{blockers}\\n"
-            "Run required gate commands first, or use --force with --reason."
-        )
-        raise GzCliError(msg)  # noqa: TRY003
+    _validate_attest_inputs(attest_status, reason, force, snapshot)
 
     if not force:
         console.print("Checking prerequisite gates...")

@@ -12,6 +12,8 @@ from gzkit.skills import SkillAuditIssue, SkillAuditReport, _parse_frontmatter
 
 KEBAB_CASE_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 LIFECYCLE_STATES = {"draft", "active", "deprecated", "retired"}
+SKILL_MANPAGE_DIR = Path("docs/user/skills")
+SKILL_INDEX_PATH = SKILL_MANPAGE_DIR / "index.md"
 DEFAULT_MAX_REVIEW_AGE_DAYS = 90
 SKILL_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 SKILL_IDENTITY_FIELDS = ("name", "description")
@@ -490,6 +492,51 @@ def _validate_known_metadata_fields(
         )
 
 
+def _validate_skill_manpage(
+    project_root: Path,
+    issues: list[SkillAuditIssue],
+    skill_name: str,
+    index_content: str,
+) -> None:
+    """Check that an active skill has a manpage and index entry."""
+    manpage_rel = SKILL_MANPAGE_DIR / f"{skill_name}.md"
+    manpage_path = project_root / manpage_rel
+    if not manpage_path.exists():
+        _append_audit_issue(
+            issues,
+            project_root,
+            "SKA-MANPAGE-MISSING",
+            manpage_rel,
+            f"Missing manpage for active skill `{skill_name}`.",
+            blocking=False,
+        )
+        return
+
+    content = manpage_path.read_text(encoding="utf-8")
+    expected = f"# /{skill_name}"
+    alt = f"# {skill_name}"
+    if not (content.lstrip().startswith(expected) or content.lstrip().startswith(alt)):
+        _append_audit_issue(
+            issues,
+            project_root,
+            "SKA-MANPAGE-HEADING",
+            manpage_path,
+            f"Expected heading `{expected}`.",
+            blocking=False,
+        )
+
+    basename = manpage_rel.name
+    if index_content and basename not in index_content:
+        _append_audit_issue(
+            issues,
+            project_root,
+            "SKA-MANPAGE-INDEX-MISSING",
+            project_root / SKILL_INDEX_PATH,
+            f"Missing link to {basename} in skills index.",
+            blocking=False,
+        )
+
+
 def _validate_canonical_skill(
     project_root: Path,
     issues: list[SkillAuditIssue],
@@ -574,6 +621,18 @@ def audit_skills(
     checked_skills = len(canonical_dirs)
     for skill_name, skill_dir in sorted(canonical_dirs.items()):
         _validate_canonical_skill(project_root, issues, skill_name, skill_dir, max_review_age_days)
+
+    # Manpage coverage for active skills (only when skills index exists)
+    index_file = project_root / SKILL_INDEX_PATH
+    if index_file.exists():
+        index_content = index_file.read_text(encoding="utf-8")
+        for skill_name, skill_dir in sorted(canonical_dirs.items()):
+            skill_file = skill_dir / "SKILL.md"
+            if not skill_file.exists():
+                continue
+            fm = _read_frontmatter(skill_file)
+            if fm and fm.get("lifecycle_state") == "active":
+                _validate_skill_manpage(project_root, issues, skill_name, index_content)
 
     mirror_roots = (
         config.paths.codex_skills,
