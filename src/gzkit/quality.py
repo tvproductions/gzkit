@@ -549,6 +549,12 @@ class ObpiProofStatus(BaseModel):
     governance_artifact_found: bool = Field(
         False, description="Governance artifact exists in .gzkit/ with content"
     )
+    test_evidence_found: bool = Field(
+        False, description="Test file exists with substantive content"
+    )
+    bdd_evidence_found: bool = Field(
+        False, description="BDD feature file exists with substantive content"
+    )
 
     @property
     def has_proof(self) -> bool:
@@ -558,6 +564,8 @@ class ObpiProofStatus(BaseModel):
             or self.command_doc_found
             or self.docstring_found
             or self.governance_artifact_found
+            or self.test_evidence_found
+            or self.bdd_evidence_found
         )
 
     @property
@@ -571,6 +579,10 @@ class ObpiProofStatus(BaseModel):
             return "docstring"
         if self.governance_artifact_found:
             return "governance_artifact"
+        if self.test_evidence_found:
+            return "test_evidence"
+        if self.bdd_evidence_found:
+            return "bdd_evidence"
         return "MISSING"
 
 
@@ -625,7 +637,7 @@ def _check_command_doc_proof(allowed_paths: list[str], project_root: Path) -> bo
         if not path_str.startswith("docs/user/commands/"):
             continue
         doc_path = project_root / path_str
-        if not doc_path.exists():
+        if not doc_path.is_file():
             continue
         content = doc_path.read_text(encoding="utf-8").strip()
         # Substantive = more than just a heading (>100 chars after stripping)
@@ -640,7 +652,7 @@ def _check_docstring_proof(allowed_paths: list[str], project_root: Path) -> bool
         if not path_str.endswith(".py") or not path_str.startswith("src/"):
             continue
         src_path = project_root / path_str
-        if not src_path.exists():
+        if not src_path.is_file():
             continue
         try:
             tree = ast.parse(src_path.read_text(encoding="utf-8"), filename=path_str)
@@ -663,9 +675,37 @@ def _check_governance_artifact_proof(allowed_paths: list[str], project_root: Pat
         if not path_str.startswith(".gzkit/"):
             continue
         artifact_path = project_root / path_str
-        if not artifact_path.exists():
+        if not artifact_path.is_file():
             continue
         content = artifact_path.read_text(encoding="utf-8").strip()
+        if len(content) > 100:
+            return True
+    return False
+
+
+def _check_test_evidence_proof(allowed_paths: list[str], project_root: Path) -> bool:
+    """Check if any test file in allowed paths exists with substantive content."""
+    for path_str in allowed_paths:
+        if not path_str.startswith("tests/") or not path_str.endswith(".py"):
+            continue
+        test_path = project_root / path_str
+        if not test_path.is_file():
+            continue
+        content = test_path.read_text(encoding="utf-8").strip()
+        if len(content) > 100:
+            return True
+    return False
+
+
+def _check_bdd_evidence_proof(allowed_paths: list[str], project_root: Path) -> bool:
+    """Check if any BDD feature file in allowed paths exists with substantive content."""
+    for path_str in allowed_paths:
+        if not path_str.startswith("features/") or not path_str.endswith(".feature"):
+            continue
+        feature_path = project_root / path_str
+        if not feature_path.is_file():
+            continue
+        content = feature_path.read_text(encoding="utf-8").strip()
         if len(content) > 100:
             return True
     return False
@@ -708,6 +748,8 @@ def check_product_proof(
         command_doc_found = _check_command_doc_proof(allowed_paths, project_root)
         docstring_found = _check_docstring_proof(allowed_paths, project_root)
         governance_artifact_found = _check_governance_artifact_proof(allowed_paths, project_root)
+        test_evidence_found = _check_test_evidence_proof(allowed_paths, project_root)
+        bdd_evidence_found = _check_bdd_evidence_proof(allowed_paths, project_root)
 
         proofs.append(
             ObpiProofStatus(
@@ -716,6 +758,8 @@ def check_product_proof(
                 command_doc_found=command_doc_found,
                 docstring_found=docstring_found,
                 governance_artifact_found=governance_artifact_found,
+                test_evidence_found=test_evidence_found,
+                bdd_evidence_found=bdd_evidence_found,
             )
         )
 

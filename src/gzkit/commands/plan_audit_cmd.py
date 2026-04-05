@@ -62,7 +62,7 @@ def _emit_result(
     from gzkit.pipeline_markers import pipeline_receipt_path
 
     verdict = "PASS" if not gaps else "FAIL"
-    receipt = {
+    receipt: dict[str, str | None | int | list[str]] = {
         "obpi_id": obpi_id,
         "timestamp": datetime.now(UTC).isoformat(),
         "verdict": verdict,
