@@ -1,6 +1,6 @@
-# CHORE: Test Isolation Compliance (Temp DB + Temp Dir)
+# CHORE: Test Isolation & Health Compliance
 
-**Version:** 1.0.0
+**Version:** 2.0.0
 **Lane:** Lite
 **Slug:** `test-isolation-compliance`
 
@@ -8,34 +8,64 @@
 
 ## Overview
 
-Ensure all database/file-using tests are properly isolated using temporary directories and in-memory SQLite. No live or production databases in tests.
+Guard test suite isolation, performance, and output cleanliness. Catches:
+- Tests leaking to real files instead of temp dirs
+- Slow tests (>3s) and suite bloat (>60s)
+- Noisy stdout leaks (Rich console, CLI output)
 
 ## Policy and Guardrails
 
-- **Lane:** Lite — test infrastructure, no external contract changes
-- Unit tests MUST use `tempfile` temp dirs or in-memory SQLite
-- Never touch live/production databases from tests
-- Prefer shared in-memory SQLite DB for speed and isolation
+- **Lane:** Lite — analysis + targeted fixes, no external contract changes
+- Thresholds are hardcoded in the profiler; adjust as suite grows
+- Do not add `sleep` or `time.time()` hacks to mask slow tests — fix the root cause
+
+## Thresholds
+
+| Metric | Threshold | Rationale |
+|--------|-----------|-----------|
+| Suite wall clock | <60s | BVT policy (AGENTS.md) |
+| Slowest single test | <3s | Any test >3s has a design problem |
+| Stdout noise lines | 0 | Tests should produce dots only |
 
 ## Workflow
 
-### 1. Scan
+### 1. Profile
 
-Identify tests that create files or databases without proper isolation.
+Run the health profiler to check all thresholds at once:
 
-### 2. Plan
+```bash
+uv run python tests/tools/test_health_profiler.py
+```
 
-Batch violations by module for systematic remediation.
+This produces a JSON report at `ops/chores/test-isolation-compliance/proofs/health-report.json`.
 
-### 3. Implement
+### 2. Diagnose
 
-Replace direct file/DB access with:
-- `tempfile.TemporaryDirectory()` context managers
-- In-memory SQLite via `sqlite3.connect(":memory:")`
+For each violation, identify the root cause category:
+
+| Symptom | Typical cause | Fix pattern |
+|---------|---------------|-------------|
+| Single test >3s | git clone, `uv sync`, full repo scan | Mock/fixture/`setUpClass` |
+| Module >5s total | `setUp` runs expensive ops per test | Template + `copytree` or `setUpClass` |
+| Stdout noise | Rich `console.print` leaking | Patch console with `Console(file=StringIO())` |
+| Slow subprocess churn | `git init` + config per test | Shared template repo |
+| Repeated CLI invocation | Same command in N tests | Run once in `setUpClass`, share result |
+| Real file mutation | `get_project_root()` returns CWD | Mock project root to temp dir |
+| No temp dir isolation | Direct file writes | `tempfile.TemporaryDirectory()` context manager |
+
+### 3. Fix
+
+Apply the lightest fix that addresses the root cause. Prefer:
+1. `setUpClass` sharing over per-test setup
+2. Template + copy over regeneration
+3. Console patching over output capture hacks
+4. `commit=False` / skipping git where Draft-only validation doesn't need it
+5. Context managers for all temp resources (Windows-safe cleanup)
 
 ### 4. Validate
 
 ```bash
+uv run python tests/tools/test_health_profiler.py
 uv run -m unittest -q
 ```
 
@@ -44,20 +74,24 @@ uv run -m unittest -q
 - [ ] No tests use persistent file paths
 - [ ] No tests touch production databases
 - [ ] All temp resources cleaned via context managers
+- [ ] No single test >3s
+- [ ] Suite <60s wall clock
+- [ ] Zero stdout noise lines
 - [ ] Tests pass
 
 ## Acceptance Criteria
 
 | Type | Command | Expected |
 |------|---------|----------|
+| exitCodeEquals | `uv run python tests/tools/test_health_profiler.py` | 0 |
 | exitCodeEquals | `uv run -m unittest -q` | 0 |
 
 ## Evidence Commands
 
 ```bash
-uv run -m unittest -v > ops/chores/test-isolation-compliance/proofs/test-results.txt
+uv run python tests/tools/test_health_profiler.py
 ```
 
 ---
 
-**End of CHORE: Test Isolation Compliance**
+**End of CHORE: Test Isolation & Health Compliance**

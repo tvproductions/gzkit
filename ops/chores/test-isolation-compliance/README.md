@@ -1,11 +1,12 @@
-# Test Isolation Compliance
+# Test Isolation & Health Compliance
 
-Ensure all tests use temp dirs or in-memory SQLite; no live database access.
+Guards test suite isolation (temp dirs, no live DBs), performance (<60s suite, <3s per test),
+and output cleanliness (zero stdout noise).
 
 ## Quick Start
 
 ```bash
-uv run -m unittest -q
+uv run python tests/tools/test_health_profiler.py
 ```
 
 ## Lane
