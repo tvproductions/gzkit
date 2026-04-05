@@ -85,3 +85,7 @@ consumption and preventing context drift.
 - Could replace the current AGENTS.md monolith with composable context fragments.
 - Key metric: tokens consumed before agent starts productive work.
 - Consider: integrate with Claude Code's `/context` or CLAUDE.md conventions?
+
+## See Also
+
+- [SPEC-agent-capability-uplift](../../briefs/SPEC-agent-capability-uplift.md) — **Complements CAP-13** (session-start orientation protocol). Spec proposes orientation as the delivery moment; this ADR defines the composable context fragments that feed it.

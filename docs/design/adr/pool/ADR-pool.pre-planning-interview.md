@@ -86,3 +86,7 @@ specification.
 - For students: this is the Socratic method applied to software design.
 - Key question: should interview responses persist or be consumed by plan generation?
 - Consider: domain-specific question sets (web app vs. CLI vs. library) as a future extension.
+
+## See Also
+
+- [SPEC-agent-capability-uplift](../../briefs/SPEC-agent-capability-uplift.md) — **Subsumed by CAP-01** (structured design exploration in ADR creation). Spec integrates interview into a broader design exploration protocol with competitive analysis from superpowers and GSD patterns.

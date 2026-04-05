@@ -91,3 +91,7 @@ this ADR unifies them behind a single protocol.
 - Key metric: tokens consumed before first productive action.
 - Consider: should `gz onboard` be the default preamble for `gz plan` and `gz specify`?
 - Consider: integration with CLAUDE.md `@AGENTS.md` reference pattern for Claude Code.
+
+## See Also
+
+- [SPEC-agent-capability-uplift](../../briefs/SPEC-agent-capability-uplift.md) — **Subsumed by CAP-13** (session-start orientation protocol). Spec proposes `gz status --orientation` as the delivery mechanism; this pool ADR's `--vendor`/`--resume` flags remain valid extensions.

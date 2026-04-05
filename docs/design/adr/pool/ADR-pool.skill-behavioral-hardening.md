@@ -89,3 +89,7 @@ This pool ADR can be promoted when all are true:
 - gzkit's hooks already enforce governance mechanically (pipeline-gate blocks writes, plan-audit-gate blocks plan exit). This ADR adds rhetorical defense at the skill layer to catch drift BEFORE hooks need to block.
 - TDD is already Gate 2 in gzkit. The `test` skill rewrite makes RED-GREEN-REFACTOR enforcement stricter, not adding a new capability.
 - The three new skills (gz-debug, gz-verify, gz-review-response) have no superpowers equivalent that integrates with gzkit's governance model (ledger, pipeline, OBPI scope).
+
+## See Also
+
+- [SPEC-agent-capability-uplift](../../briefs/SPEC-agent-capability-uplift.md) — **Subsumed by CAP-15, CAP-16, CAP-17, CAP-19** (native TDD, debugging, code review, anti-rationalization). Spec adds competitive source attribution and design rationale from superpowers, spec-kit, GSD, and BMAD patterns.

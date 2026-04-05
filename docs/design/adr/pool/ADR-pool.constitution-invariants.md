@@ -86,3 +86,7 @@ is separate from the workflow.
 - Constitution should be bootstrapped during `gz init` with sensible defaults.
 - Key question: should constitutions be enforced (validation) or advisory (documentation)?
 - For students: constitution is the "coding standards" document they're already familiar with.
+
+## See Also
+
+- [SPEC-agent-capability-uplift](../../briefs/SPEC-agent-capability-uplift.md) — **Subsumed by CAP-12** (constitution as executable gate). Spec extends this by integrating constitution checks into the gz-plan-audit loop.

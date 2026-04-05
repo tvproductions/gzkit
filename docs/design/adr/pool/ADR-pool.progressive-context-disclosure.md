@@ -106,6 +106,10 @@ This is not a replication of OB1's household/CRM/job-hunt use cases. This is
 the appropriation of OB1's architectural principles for long-running engineering
 context continuity in governance-heavy agent work.
 
+## See Also
+
+- [SPEC-agent-capability-uplift](../../briefs/SPEC-agent-capability-uplift.md) — **Complements CAP-11, CAP-13** (context budget annotations, session-start orientation). Spec defines when context is needed; this ADR defines how context is progressively revealed.
+
 ---
 
 ## Design Options

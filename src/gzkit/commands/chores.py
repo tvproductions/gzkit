@@ -93,6 +93,31 @@ from gzkit.commands.chores_exec import (  # noqa: E402
 )
 
 
+def _detect_active_harness() -> str | None:
+    """Detect the active agent harness from project markers."""
+    project_root = get_project_root()
+    if (project_root / ".claude").is_dir():
+        return "claude"
+    return None
+
+
+def _chore_matches_harness(chore: ChoreDefinition, active_harness: str | None) -> bool:
+    """Return True if chore is applicable to the active harness."""
+    if chore.vendor is None:
+        return True
+    if active_harness is None:
+        return False
+    return chore.vendor == active_harness
+
+
+def _filter_registry(
+    registry: dict[str, ChoreDefinition],
+) -> dict[str, ChoreDefinition]:
+    """Filter registry to chores matching the active harness."""
+    harness = _detect_active_harness()
+    return {slug: c for slug, c in registry.items() if _chore_matches_harness(c, harness)}
+
+
 def _load_chores_registry() -> tuple[Path, dict[str, ChoreDefinition]]:
     """Load and validate the v2.0 chores registry."""
     project_root = get_project_root()
@@ -162,12 +187,20 @@ def _resolve_chore(slug: str) -> tuple[Path, ChoreDefinition]:
     if chore is None:
         msg = f"BLOCKERS:\n- Unknown chore slug: {slug}"
         raise GzCliError(msg)  # noqa: TRY003
+    harness = _detect_active_harness()
+    if not _chore_matches_harness(chore, harness):
+        msg = (
+            f"BLOCKERS:\n- Chore '{slug}' is vendor-scoped to '{chore.vendor}' "
+            f"but active harness is '{harness or 'none'}'"
+        )
+        raise GzCliError(msg)  # noqa: TRY003
     return registry_path, chore
 
 
 def chores_list() -> None:
     """List chore definitions from registry."""
     _registry_path, registry = _load_chores_registry()
+    registry = _filter_registry(registry)
     table = Table(title="Chores Registry")
     table.add_column("Slug", style="cyan")
     table.add_column("Lane", style="green")
@@ -310,6 +343,7 @@ def chores_audit(*, all_chores: bool, slug: str | None) -> None:
     """Audit chores for log presence."""
     project_root = get_project_root()
     _registry_path, registry = _load_chores_registry()
+    registry = _filter_registry(registry)
 
     if all_chores:
         chores = sorted(registry.values(), key=lambda item: item.slug)
