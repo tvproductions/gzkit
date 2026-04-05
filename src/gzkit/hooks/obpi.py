@@ -252,15 +252,26 @@ class ObpiValidator:
         parent_info = graph.get(self.ledger.canonicalize_id(parent_id), {})
         lane = resolve_adr_lane(parent_info, self.config.mode)
 
+        # GHI #66: Check if OBPI is ledger-completed to use sealed scope evidence
+        obpi_id = parse_frontmatter_value(content, "id")
+        obpi_info = graph.get(self.ledger.canonicalize_id(obpi_id), {}) if obpi_id else {}
+        ledger_completed = obpi_info.get("ledger_completed", False)
+
         allowlist = extract_allowed_paths(content)
         if not allowlist:
             errors.append("Missing or empty 'Allowed Paths' allowlist.")
         else:
-            changed_files = collect_changed_files(self.project_root)
+            if ledger_completed:
+                completion_evidence = obpi_info.get("latest_completion_evidence") or {}
+                scope_audit = normalize_scope_audit(completion_evidence.get("scope_audit"))
+                changed_files = scope_audit.get("changed_files", []) if scope_audit else []
+            else:
+                changed_files = collect_changed_files(self.project_root)
             errors.extend(self._validate_changed_files(changed_files, allowlist))
 
-        readiness = assess_git_sync_readiness(self.project_root)
-        errors.extend(cast(list[str], readiness["blockers"]))
+        if not ledger_completed:
+            readiness = assess_git_sync_readiness(self.project_root)
+            errors.extend(cast(list[str], readiness["blockers"]))
 
         # 2. Check for Substantive Implementation Summary
         if not self._has_substantive_summary(content):
