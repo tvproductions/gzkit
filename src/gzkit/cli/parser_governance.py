@@ -367,7 +367,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
         dest="ceremony_attest",
         default=None,
         metavar="TEXT",
-        help='Record attestation at step 6 (e.g. --attest "Completed")',
+        help='Record attestation at step 5 (e.g. --attest "Completed")',
     )
 
     p_closeout.set_defaults(func=lambda a: _closeout_dispatch(a))
