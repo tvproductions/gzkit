@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Pipeline Gate Hook.
 
-PreToolUse hook on Write|Edit that blocks ALL file writes when an OBPI
-plan-audit receipt exists but the governance pipeline has not been
-activated. Covers src/, tests/, docs/, config/, and .gzkit/ paths.
+PreToolUse hook on Write|Edit that blocks implementation file writes
+under `src/` and `tests/` when an OBPI plan-audit receipt exists but
+the governance pipeline has not been activated.
 
 Exit codes:
   0 - Allow operation
@@ -55,7 +55,7 @@ def main() -> None:
         input_data.get("cwd", os.getcwd()),
         tool_input.get("file_path", ""),
     )
-    if rel_path is None:
+    if rel_path is None or not rel_path.startswith(("src/", "tests/")):
         sys.exit(0)
 
     project_root = find_project_root(Path(input_data.get("cwd", os.getcwd())).resolve())

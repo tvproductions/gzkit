@@ -89,6 +89,7 @@ def _collect_control_surface_issues(
         "copilot_skills",
         "instructions",
         "claude_rules",
+        "personas",
     }
 
     for control_name, control_path in manifest.get("control_surfaces", {}).items():

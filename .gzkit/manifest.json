@@ -53,7 +53,8 @@
     "codex_skills": ".agents/skills",
     "copilot_skills": ".github/skills",
     "instructions": ".github/instructions",
-    "claude_rules": ".claude/rules"
+    "claude_rules": ".claude/rules",
+    "personas": ".gzkit/personas"
   },
   "verification": {
     "lint": "uv run gz lint",

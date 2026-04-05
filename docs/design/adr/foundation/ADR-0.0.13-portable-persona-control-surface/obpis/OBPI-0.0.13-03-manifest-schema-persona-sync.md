@@ -3,7 +3,7 @@ id: OBPI-0.0.13-03-manifest-schema-persona-sync
 parent: ADR-0.0.13-portable-persona-control-surface
 item: 3
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.13-03-manifest-schema-persona-sync: Manifest Schema Persona Sync
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.13-portable-persona-control-surface/ADR-0.0.13-portable-persona-control-surface.md`
 - **Checklist Item:** #3 - "Manifest schema and `gz agent sync` persona mirroring"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -63,58 +63,58 @@ false` means adding a new key is a breaking schema change), modifies
 
 **Governance (read once, cache):**
 
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full portability context
+- [x] `AGENTS.md` or `CLAUDE.md` - agent operating contract
+- [x] Parent ADR - understand full portability context
 
 **Context:**
 
-- [ ] Parent ADR: `docs/design/adr/foundation/ADR-0.0.13-portable-persona-control-surface/ADR-0.0.13-portable-persona-control-surface.md`
-- [ ] OBPI-0.0.13-01 - schema must be finalized
-- [ ] OBPI-0.0.13-04 - vendor loading depends on this OBPI's sync targets
+- [x] Parent ADR: `docs/design/adr/foundation/ADR-0.0.13-portable-persona-control-surface/ADR-0.0.13-portable-persona-control-surface.md`
+- [x] OBPI-0.0.13-01 - schema must be finalized
+- [x] OBPI-0.0.13-04 - vendor loading depends on this OBPI's sync targets
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] `src/gzkit/schemas/manifest.json` exists with current schema
-- [ ] `src/gzkit/sync_surfaces.py` exists with `sync_all()` orchestrator
-- [ ] `.gzkit/personas/` directory exists with persona files
+- [x] `src/gzkit/schemas/manifest.json` exists with current schema
+- [x] `src/gzkit/sync_surfaces.py` exists with `sync_all()` orchestrator
+- [x] `.gzkit/personas/` directory exists with persona files
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `sync_skill_mirrors()` in `sync_surfaces.py` - how skills are synced to vendor mirrors
-- [ ] Pattern to follow: `generate_manifest()` in `sync_surfaces.py` - how manifest is built from config
-- [ ] Schema: `src/gzkit/schemas/manifest.json` - current `control_surfaces` properties
-- [ ] Test patterns: `tests/test_sync_surfaces.py` - existing sync tests
+- [x] Pattern to follow: `sync_skill_mirrors()` in `sync_surfaces.py` - how skills are synced to vendor mirrors
+- [x] Pattern to follow: `generate_manifest()` in `sync_surfaces.py` - how manifest is built from config
+- [x] Schema: `src/gzkit/schemas/manifest.json` - current `control_surfaces` properties
+- [x] Test patterns: `tests/test_sync_surfaces.py` - existing sync tests
 
 ## Quality Gates
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] Tests written before/with implementation
-- [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
+- [x] Tests written before/with implementation
+- [x] Tests pass: `uv run gz test`
+- [x] Validation commands recorded in evidence with real outputs
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 ### Gate 3: Docs (Heavy only)
 
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
+- [x] Docs build: `uv run mkdocs build --strict`
+- [x] Relevant docs updated
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/persona_sync.feature`
+- [x] Acceptance scenarios pass: `uv run -m behave features/persona_sync.feature`
 
 ### Gate 5: Human (Heavy only)
 
-- [ ] Human attestation recorded
+- [x] Human attestation recorded
 
 ## Verification
 
@@ -135,24 +135,24 @@ python -c "import json; m = json.load(open('.gzkit/manifest.json')); print(m['co
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.13-03-01: Given `src/gzkit/schemas/manifest.json`, when the `control_surfaces` object is inspected, then a `personas` string property with description exists.
-- [ ] REQ-0.0.13-03-02: Given `gz agent sync control-surfaces` runs, when `.gzkit/personas/` contains persona files, then `.claude/personas/` is created with mirrored copies.
-- [ ] REQ-0.0.13-03-03: Given vendor configuration disables a vendor, when `gz agent sync` runs, then that vendor's persona mirror is not created.
-- [ ] REQ-0.0.13-03-04: Given `.gzkit/manifest.json` is regenerated, when inspected, then `control_surfaces.personas` equals `".gzkit/personas"`.
-- [ ] REQ-0.0.13-03-05: Given the schema change, when `uv run gz validate --surfaces` runs, then it passes without errors.
-- [ ] REQ-0.0.13-03-06: Given persona files in `.gzkit/personas/`, when sync runs and then a persona file is modified in `.gzkit/personas/`, then re-running sync updates the vendor mirror (not stale).
+- [x] REQ-0.0.13-03-01: Given `src/gzkit/schemas/manifest.json`, when the `control_surfaces` object is inspected, then a `personas` string property with description exists.
+- [x] REQ-0.0.13-03-02: Given `gz agent sync control-surfaces` runs, when `.gzkit/personas/` contains persona files, then `.claude/personas/` is created with mirrored copies.
+- [x] REQ-0.0.13-03-03: Given vendor configuration disables a vendor, when `gz agent sync` runs, then that vendor's persona mirror is not created.
+- [x] REQ-0.0.13-03-04: Given `.gzkit/manifest.json` is regenerated, when inspected, then `control_surfaces.personas` equals `".gzkit/personas"`.
+- [x] REQ-0.0.13-03-05: Given the schema change, when `uv run gz validate --surfaces` runs, then it passes without errors.
+- [x] REQ-0.0.13-03-06: Given persona files in `.gzkit/personas/`, when sync runs and then a persona file is modified in `.gzkit/personas/`, then re-running sync updates the vendor mirror (not stale).
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Gate 3 (Docs):** Docs build, command docs updated
-- [ ] **Gate 4 (BDD):** Persona sync scenarios pass
-- [ ] **Gate 5 (Human):** Human attestation recorded
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Gate 3 (Docs):** Docs build, command docs updated
+- [x] **Gate 4 (BDD):** Persona sync scenarios pass
+- [x] **Gate 5 (Human):** Human attestation recorded
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -160,71 +160,84 @@ python -c "import json; m = json.load(open('.gzkit/manifest.json')); print(m['co
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+Ran 2462 tests in 35.825s
+OK
+Tests passed.
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+All checks passed!
+Lint passed.
+Type check passed.
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here
+INFO - Documentation built in 1.15 seconds
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here
+14 features passed, 0 failed, 0 skipped
+90 scenarios passed, 0 failed, 0 skipped
+492 steps passed, 0 failed, 0 skipped
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here
+Attestor: jeff
+Attestation: attest completed
+Date: 2026-04-05
 ```
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before this OBPI, persona files in `.gzkit/personas/` existed in isolation — not registered in the governance manifest, not validated against the manifest schema, and not mirrored to vendor agent surfaces. Now, `gz agent sync control-surfaces` automatically mirrors all persona files to enabled vendor surfaces, and the manifest schema formally recognizes personas as a first-class control surface.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+```bash
+$ uv run gz agent sync control-surfaces && ls .claude/personas/
+implementer.md  main-session.md  narrator.md
+pipeline-orchestrator.md  quality-reviewer.md  spec-reviewer.md
+
+$ python3 -c "import json; m = json.load(open('.gzkit/manifest.json')); print(m['control_surfaces']['personas'])"
+.gzkit/personas
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created: `features/persona_sync.feature`
+- Files modified: `src/gzkit/config.py`, `src/gzkit/schemas/manifest.json`, `src/gzkit/sync_surfaces.py`, `src/gzkit/commands/config_paths.py`, `tests/test_manifest_v2.py`, `tests/test_sync_surfaces.py`, `tests/test_sync.py`, `tests/commands/test_audit.py`, `features/steps/gz_steps.py`, `docs/user/commands/agent-sync-control-surfaces.md`
+- Tests added: 7 (2 manifest, 5 sync)
+- Date completed: 2026-04-05
+- Attestation status: Human attested
+- Defects noted: None
 
 ## Tracked Defects
-
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
 
 _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `jeff`
+- Attestation: attest completed
+- Date: 2026-04-05
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-05
 
 **Evidence Hash:** -
