@@ -4,7 +4,7 @@ description: Execute the ADR closeout ceremony protocol for human attestation. G
 category: adr-audit
 compatibility: GovZero v6 framework; provides runbook walkthrough for human ADR attestation
 metadata:
-  skill-version: "6.0.0"
+  skill-version: "6.3.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -78,21 +78,10 @@ Artifacts for your direct observation:
 - BDD (if Heavy): Run `uv run behave features/{feature}.feature`
 - Runbook walkthrough (product commands from runbook/manpages): [commands]
 
-Docs alignment check (human-confirmed):
-- [ ] Manpage exists and reflects current CLI behavior
-- [ ] Runbook includes relevant commands
-- [ ] Dataset documentation updated if applicable
-- [ ] CLI --help matches manpage SYNOPSIS
-
-Proceeding to docs alignment confirmation and runbook walkthrough...
+Proceeding to runbook walkthrough...
 ```
 
-### Step 3: Confirm Docs Alignment (Human-Driven)
-
-Present the docs alignment checklist from Step 2 and ask the human to confirm each item.
-Do not assert outcomes.
-
-### Step 4: Runbook Walkthrough
+### Step 3: Runbook Walkthrough
 
 The ceremony is a **runbook walkthrough** demonstrating the ADR's achieved value. Outside of
 foundation/0.0.x ADRs, observable behavior is required.
@@ -131,7 +120,7 @@ Commands to execute:
 Would you like me to run these one at a time, or will you run them yourself?
 ```
 
-### Step 5: Execute Walkthrough (One at a Time)
+### Step 4: Execute Walkthrough (One at a Time)
 
 For each command:
 
@@ -141,7 +130,7 @@ For each command:
 4. STOP and WAIT for acknowledgment
 5. Only then proceed to next command
 
-### Step 6: Request Attestation
+### Step 5: Request Attestation
 
 After all commands have been executed and witnessed:
 
@@ -156,9 +145,9 @@ When you are ready, provide your attestation:
 I await your attestation.
 ```
 
-### Step 7: Record Attestation via Closeout Pipeline
+### Step 6: Record Attestation via Closeout Pipeline
 
-After the human provides their attestation decision in Step 6, run the closeout command:
+After the human provides their attestation decision in Step 5, run the closeout command:
 
 ```bash
 uv run gz closeout ADR-X.Y.Z
@@ -176,7 +165,7 @@ This command handles the full closeout pipeline:
 command is the only code path that syncs the project version. Skipping it causes version
 drift between pyproject.toml and the release tag, which breaks PyPI publishing.
 
-### Step 8: Close Related GitHub Issues
+### Step 7: Close Related GitHub Issues
 
 After attestation is recorded:
 
@@ -193,7 +182,7 @@ gh issue list --search "mirror" --state open  # or relevant keywords
 gh issue close <issue-number> --comment "Resolved by ADR-X.Y.Z closeout."
 ```
 
-### Step 9: Update RELEASE_NOTES.md
+### Step 8: Update RELEASE_NOTES.md
 
 Append the release entry to `RELEASE_NOTES.md`:
 
@@ -211,7 +200,7 @@ Append the release entry to `RELEASE_NOTES.md`:
 All 5 GovZero gates satisfied.
 ```
 
-### Step 10: Create GitHub Release
+### Step 9: Create GitHub Release
 
 Create a GitHub release for the ADR version:
 
@@ -247,25 +236,24 @@ If any intervening changes occur (new commit, staged file, or regenerated artifa
 
 **Why this matters:** The release tags the commit as a governance milestone. The human attestation (Gate 5) is the authority that allows this release to exist.
 
-### Step 11: Present Ceremony Summary
+### Step 10: Present Ceremony Summary
 
 Display the ceremony completion table:
 
 ```text
-╔════════════════════════════════════════════════════════════════╗
-║  ADR-X.Y.Z CLOSEOUT CEREMONY — COMPLETE                      ║
-╠════════════════════════════════════════════════════════════════╣
-║  Step 1:  Trigger recognized                            ✓    ║
-║  Step 2:  Paths/commands summary presented              ✓    ║
-║  Step 3:  Docs alignment verified                       ✓    ║
-║  Step 4:  Runbook walkthrough presented                 ✓    ║
-║  Step 5:  Commands executed (one at a time)             ✓    ║
-║  Step 6:  Attestation requested                         ✓    ║
-║  Step 7:  Closeout pipeline (attest + version bump)      ✓    ║
-║  Step 8:  GitHub Issues reviewed                        ✓    ║
-║  Step 9:  RELEASE_NOTES.md updated                      ✓    ║
-║  Step 10: GitHub Release vX.Y.Z created                 ✓    ║
-╚════════════════════════════════════════════════════════════════╝
+╔═══════════════════════════════════════════════════════════════╗
+║  ADR-X.Y.Z CLOSEOUT CEREMONY — COMPLETE                     ║
+╠═══════════════════════════════════════════════════════════════╣
+║  Step 1:  Trigger recognized                           ✓    ║
+║  Step 2:  Paths/commands summary presented             ✓    ║
+║  Step 3:  Runbook walkthrough presented                ✓    ║
+║  Step 4:  Commands executed (one at a time)            ✓    ║
+║  Step 5:  Attestation recorded                         ✓    ║
+║  Step 6:  Closeout pipeline (attest + version bump)    ✓    ║
+║  Step 7:  GitHub Issues reviewed                       ✓    ║
+║  Step 8:  RELEASE_NOTES.md updated                     ✓    ║
+║  Step 9:  GitHub Release vX.Y.Z created                ✓    ║
+╚═══════════════════════════════════════════════════════════════╝
 ```
 
 ---
@@ -274,7 +262,7 @@ Display the ceremony completion table:
 
 1. **MUST** use the fixed script from `docs/governance/GovZero/audit-protocol.md`
 2. **MUST** lead with a paths/commands-only summary (no outcomes or conclusions)
-3. **MUST** use only runbook/manpage-documented airlineops commands for the walkthrough
+3. **MUST** use only runbook/manpage-documented gzkit commands for the walkthrough
 4. **MUST** run one command at a time, wait for acknowledgment
 5. **MUST** offer to run commands if human is in CLI mode
 6. **MUST** wait for explicit human attestation before closing
@@ -294,7 +282,7 @@ Display the ceremony completion table:
 3. **MUST NOT** flood multiple commands without waiting for acknowledgment
 4. **MUST NOT** infer attestation from silence or implicit approval
 5. **MUST NOT** auto-close an ADR based on passing checks
-6. **MUST NOT** skip the evidence commands or docs alignment checklist
+6. **MUST NOT** skip the evidence commands
 
 ---
 
@@ -337,13 +325,7 @@ Artifacts for your direct observation:
 - BDD (if Heavy): Run `uv run behave features/mirror.feature`
 - Runbook walkthrough (product commands from runbook/manpages): `uv run -m airlineops warehouse mirror sync --all`, `uv run -m airlineops warehouse mirror status`
 
-Docs alignment check (human-confirmed):
-- [ ] Manpage exists and reflects current CLI behavior
-- [ ] Runbook includes relevant commands
-- [ ] Dataset documentation updated if applicable
-- [ ] CLI --help matches manpage SYNOPSIS
-
-Proceeding to docs alignment confirmation and runbook walkthrough...
+Proceeding to runbook walkthrough...
 ```
 
 ---
@@ -359,7 +341,7 @@ only when running outside the ceremony protocol:
 | `uv run gz attest ADR-X.Y.Z --status completed` | Record attestation only |
 | `uv run gz audit ADR-X.Y.Z` | Post-attestation reconciliation audit |
 
-**Within the ceremony**, Step 7 runs `gz closeout` which handles attestation internally.
+**Within the ceremony**, Step 6 runs `gz closeout` which handles attestation internally.
 Do not run `gz attest` or `gz audit` separately during a ceremony.
 
 ---
