@@ -1,13 +1,14 @@
-"""Persona listing command — enumerate persona identity frames (read-only)."""
+"""Persona commands — list and drift check for persona identity frames."""
 
 from __future__ import annotations
 
 import json
+import sys
 
 from rich.table import Table
 
 from gzkit.commands.common import console, get_project_root
-from gzkit.models.persona import discover_persona_files, parse_persona_file
+from gzkit.models.persona import PersonaDriftReport, discover_persona_files, parse_persona_file
 
 
 def personas_list_cmd(*, as_json: bool = False) -> None:
@@ -63,3 +64,67 @@ def personas_list_cmd(*, as_json: bool = False) -> None:
             grounding[:80] + "..." if len(grounding) > 80 else grounding,
         )
     console.print(table)
+
+
+def _format_drift_table(report: PersonaDriftReport) -> None:
+    """Render drift report as Rich tables to console."""
+    if report.drift_count == 0:
+        console.print("No persona drift detected.")
+        _print_drift_summary(report)
+        return
+
+    for persona_result in report.personas:
+        table = Table(title=f"Persona: {persona_result.persona}")
+        table.add_column("Trait", style="bold")
+        table.add_column("Type")
+        table.add_column("Proxy")
+        table.add_column("Status")
+        table.add_column("Detail")
+
+        for check in persona_result.checks:
+            trait_type = "anti-trait" if check.is_anti_trait else "trait"
+            style = (
+                "green" if check.status == "pass" else "red" if check.status == "fail" else "yellow"
+            )
+            detail = check.detail
+            if len(detail) > 60:
+                detail = detail[:57] + "..."
+            status_cell = f"[{style}]{check.status}[/{style}]"
+            table.add_row(check.trait, trait_type, check.proxy, status_cell, detail)
+        console.print(table)
+        console.print()
+
+    _print_drift_summary(report)
+
+
+def _print_drift_summary(report: PersonaDriftReport) -> None:
+    """Print aggregate drift summary line."""
+    console.print(
+        f"Summary: {report.total_personas} personas, "
+        f"{report.total_checks} checks, "
+        f"{report.drift_count} drift findings"
+    )
+
+
+def persona_drift_cmd(*, persona: str | None = None, as_json: bool = False) -> None:
+    """Report persona trait adherence from behavioral proxies.
+
+    Scans local governance artifacts (ledger, OBPI audit logs) for
+    evidence of trait-aligned behavior.  Reports per-trait pass/fail
+    for each persona.
+
+    Exit code 0 when no drift detected, exit code 3 on policy breach.
+    """
+    from gzkit.cli.helpers.exit_codes import EXIT_POLICY_BREACH  # noqa: PLC0415
+    from gzkit.personas import evaluate_persona_drift  # noqa: PLC0415
+
+    project_root = get_project_root()
+    report = evaluate_persona_drift(project_root, persona_name=persona)
+
+    if as_json:
+        sys.stdout.write(report.model_dump_json(indent=2) + "\n")
+    else:
+        _format_drift_table(report)
+
+    if report.drift_count > 0:
+        raise SystemExit(EXIT_POLICY_BREACH)

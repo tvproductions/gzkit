@@ -3,7 +3,7 @@ id: OBPI-0.0.13-05-persona-drift-monitoring
 parent: ADR-0.0.13-portable-persona-control-surface
 item: 5
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.13-05-persona-drift-monitoring: Persona Drift Monitoring
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.13-portable-persona-control-surface/ADR-0.0.13-portable-persona-control-surface.md`
 - **Checklist Item:** #5 - "Persona drift monitoring surface (observability)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -64,60 +64,60 @@ CLI doctrine.
 
 **Governance (read once, cache):**
 
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand drift monitoring scope and non-goals
-- [ ] CLI doctrine: `.claude/rules/cli.md` - new subcommand requirements
+- [x] `AGENTS.md` or `CLAUDE.md` - agent operating contract
+- [x] Parent ADR - understand drift monitoring scope and non-goals
+- [x] CLI doctrine: `.claude/rules/cli.md` - new subcommand requirements
 
 **Context:**
 
-- [ ] Parent ADR: `docs/design/adr/foundation/ADR-0.0.13-portable-persona-control-surface/ADR-0.0.13-portable-persona-control-surface.md`
-- [ ] ADR Rationale > Drift Monitoring section - PSM/Assistant Axis theoretical basis
-- [ ] OBPI-0.0.13-04 - persona loading must be complete
+- [x] Parent ADR: `docs/design/adr/foundation/ADR-0.0.13-portable-persona-control-surface/ADR-0.0.13-portable-persona-control-surface.md`
+- [x] ADR Rationale > Drift Monitoring section - PSM/Assistant Axis theoretical basis
+- [x] OBPI-0.0.13-04 - persona loading must be complete
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] `src/gzkit/commands/personas.py` exists with `list` command
-- [ ] `src/gzkit/personas.py` exists with `compose_persona_frame()` and vendor adapters
-- [ ] `.gzkit/personas/` has persona files with traits defined
+- [x] `src/gzkit/commands/personas.py` exists with `list` command
+- [x] `src/gzkit/personas.py` exists with `compose_persona_frame()` and vendor adapters
+- [x] `.gzkit/personas/` has persona files with traits defined
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `src/gzkit/commands/personas.py` - existing personas CLI structure
-- [ ] Pattern to follow: `gz validate` command pattern - similar "check and report" output style
-- [ ] Test patterns: `tests/commands/test_personas_cmd.py` - existing persona CLI tests
-- [ ] BDD: `features/persona.feature` - existing persona scenarios
+- [x] Pattern to follow: `src/gzkit/commands/personas.py` - existing personas CLI structure
+- [x] Pattern to follow: `gz validate` command pattern - similar "check and report" output style
+- [x] Test patterns: `tests/commands/test_personas_cmd.py` - existing persona CLI tests
+- [x] BDD: `features/persona.feature` - existing persona scenarios
 
 ## Quality Gates
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] Tests written before/with implementation
-- [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
+- [x] Tests written before/with implementation
+- [x] Tests pass: `uv run gz test`
+- [x] Validation commands recorded in evidence with real outputs
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 ### Gate 3: Docs (Heavy only)
 
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Command docs written: `docs/user/commands/personas.md`
-- [ ] Manpage written: `docs/user/manpages/gz-personas.md`
+- [x] Docs build: `uv run mkdocs build --strict`
+- [x] Command docs written: `docs/user/commands/personas-drift.md`
+- [x] Manpage written: `docs/user/manpages/gz-personas.md`
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/persona.feature`
+- [x] Acceptance scenarios pass: `uv run -m behave features/persona.feature`
 
 ### Gate 5: Human (Heavy only)
 
-- [ ] Human attestation recorded
+- [x] Human attestation recorded
 
 ## Verification
 
@@ -137,24 +137,24 @@ echo $?
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.13-05-01: Given `gz personas drift` is invoked with no flags, when personas exist in `.gzkit/personas/`, then a human-readable table of all personas with trait adherence is printed to stdout.
-- [ ] REQ-0.0.13-05-02: Given `gz personas drift --json` is invoked, when personas exist, then valid JSON is printed to stdout with persona names, trait checks, and pass/fail per trait.
-- [ ] REQ-0.0.13-05-03: Given `gz personas drift --persona implementer` is invoked, when the implementer persona exists, then only that persona's drift report is shown.
-- [ ] REQ-0.0.13-05-04: Given no drift is detected, when the command completes, then exit code is 0.
-- [ ] REQ-0.0.13-05-05: Given drift is detected for at least one trait, when the command completes, then exit code is 3 (policy breach).
-- [ ] REQ-0.0.13-05-06: Given `gz personas drift --help` is invoked, then help text includes description, usage, all options, and at least one example.
+- [x] REQ-0.0.13-05-01: Given `gz personas drift` is invoked with no flags, when personas exist in `.gzkit/personas/`, then a human-readable table of all personas with trait adherence is printed to stdout.
+- [x] REQ-0.0.13-05-02: Given `gz personas drift --json` is invoked, when personas exist, then valid JSON is printed to stdout with persona names, trait checks, and pass/fail per trait.
+- [x] REQ-0.0.13-05-03: Given `gz personas drift --persona implementer` is invoked, when the implementer persona exists, then only that persona's drift report is shown.
+- [x] REQ-0.0.13-05-04: Given no drift is detected, when the command completes, then exit code is 0.
+- [x] REQ-0.0.13-05-05: Given drift is detected for at least one trait, when the command completes, then exit code is 3 (policy breach).
+- [x] REQ-0.0.13-05-06: Given `gz personas drift --help` is invoked, then help text includes description, usage, all options, and at least one example.
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Gate 3 (Docs):** Docs build, command docs and manpage written
-- [ ] **Gate 4 (BDD):** Persona drift scenarios pass
-- [ ] **Gate 5 (Human):** Human attestation recorded
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Gate 3 (Docs):** Docs build, command docs and manpage written
+- [x] **Gate 4 (BDD):** Persona drift scenarios pass
+- [x] **Gate 5 (Human):** Human attestation recorded
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -162,71 +162,91 @@ echo $?
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+Ran 2513 tests in 36.425s
+OK
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+Lint passed.
+Type check passed.
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here
+INFO - Documentation built in 1.18 seconds
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here
+1 feature passed, 0 failed, 0 skipped
+9 scenarios passed, 0 failed, 0 skipped
+44 steps passed, 0 failed, 0 skipped
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here
+Attestor: Jeffry
+Attestation: attest completed
+Date: 2026-04-05
 ```
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before this OBPI, persona identity frames existed as static definitions with no way
+to verify whether agents actually behaved according to their trait specifications.
+The `gz personas drift` command closes this feedback loop by scanning local governance
+artifacts (ledger events, OBPI audit logs) for behavioral evidence and reporting
+per-trait adherence, detecting when observed behavior drifts from persona specifications.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+```bash
+$ uv run gz personas drift --persona implementer --json
+{
+  "personas": [{"persona": "implementer", "checks": [...], "has_drift": false}],
+  "total_personas": 1, "total_checks": 12, "drift_count": 0,
+  "scan_timestamp": "2026-04-05T15:53:11.946647+00:00"
+}
+# Exit code: 0 (no drift)
+
+$ uv run gz personas drift
+# 6 personas, 55 checks, 3 drift findings
+# Exit code: 3 (policy breach)
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created: tests/test_persona_drift.py, docs/user/commands/personas-drift.md, docs/user/manpages/gz-personas.md
+- Files modified: src/gzkit/models/persona.py, src/gzkit/personas.py, src/gzkit/commands/personas.py, src/gzkit/cli/parser_governance.py, tests/commands/test_personas_cmd.py, features/persona.feature, features/steps/persona_steps.py, config/doc-coverage.json, docs/user/commands/index.md
+- Tests added: 24 unit tests (test_persona_drift.py), 6 CLI tests (test_personas_cmd.py), 3 BDD scenarios
+- Date completed: 2026-04-05
+- Attestation status: Human attested completed
+- Defects noted: Pipeline improvement tracked in agent-insights.jsonl (Stage 4 should auto-detect new CLI surfaces for evidence)
 
 ## Tracked Defects
 
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
-
-_No defects tracked._
+- Pipeline improvement: Stage 4 ceremony should detect new CLI surfaces and include live execution in evidence table (tracked in `.gzkit/insights/agent-insights.jsonl`)
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: Jeffry
+- Attestation: attest completed
+- Date: 2026-04-05
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-05
 
 **Evidence Hash:** -
