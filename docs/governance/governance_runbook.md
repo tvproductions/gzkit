@@ -148,6 +148,33 @@ accumulates state not derivable from Tier A sources — silently becoming Tier C
 governance authorization. Periodic rebuild tests (delete Tier B, rebuild, verify no
 data loss) guard against this drift.
 
+### Feature flag system
+
+Feature flags are **transition controls** — mechanisms for routing between old and new
+behavior during migration, with the explicit expectation that the old path and the toggle
+will be removed. They are not A/B experiments or analytics features.
+See [Feature Flags Reference](feature-flags.md) for the full specification.
+
+**Categories:**
+
+| Category | Purpose | Deadline type |
+|----------|---------|---------------|
+| `release` | Transient feature gates | `remove_by` |
+| `ops` | Operational kill switches | `review_by` |
+| `migration` | Internal representation transitions | `remove_by` |
+| `development` | Incomplete work gating (default `false`) | `remove_by` |
+
+**Lifecycle:** Every flag has a deadline. A CI time-bomb test fails if any flag is past
+its deadline, enforcing cleanup discipline.
+
+**Commands:**
+
+```bash
+uv run gz flags                       # List all flags with resolved values and sources
+uv run gz flags --stale               # Show only overdue flags (past review/remove dates)
+uv run gz flag explain <key>          # Full metadata for one flag (category, owner, deadlines)
+```
+
 ### Persona control surface
 
 Personas define behavioral identity for pipeline agents. Files live in

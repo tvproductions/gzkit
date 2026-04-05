@@ -595,10 +595,10 @@ class _TaskCliBase(unittest.TestCase):
 
 
 class TestTaskHelp(_TaskCliBase):
-    """@covers REQ-0.22.0-04-09."""
+    """Verify gz task help output."""
 
     def test_task_help(self) -> None:
-        """REQ-0.22.0-04-09: gz task -h exits 0 with subcommand list."""
+        """gz task -h exits 0 with subcommand list."""
         code, out = _invoke(["task", "--help"])
         self.assertEqual(code, 0, out)
         self.assertIn("list", out)
