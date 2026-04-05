@@ -380,3 +380,84 @@ Do not run `gz attest` or `gz audit` separately during a ceremony.
 - Artifact linkage: `docs/governance/GovZero/adr-obpi-ghi-audit-linkage.md`
 - Runbook: `docs/user/operator_runbook.md`
 - Manpage directory: `docs/user/manpages/`
+
+---
+
+## The Iron Law
+
+```
+THE CEREMONY IS NOT COMPLETE UNTIL STEP 11 FINISHES.
+```
+
+**There is no "stop after attestation" step.** Attestation (Step 7) authorizes closeout — it does not complete it. Steps 8-11 remain. If you have not reached the end of Step 11, you are not done.
+
+### Rationalization Prevention
+
+These thoughts mean STOP — you are about to break the ceremony:
+
+| Thought | Reality |
+|---------|---------|
+| "Attestation is recorded, let me summarize" | Attestation is Step 7. Steps 8-11 remain. |
+| "The human attested, so the ADR is done" | Attestation authorizes closeout. Closeout hasn't happened yet. |
+| "I'll let the user handle the release" | The user invoked the ceremony so they would NOT have to. |
+| "This is a foundation ADR, so we're done after attestation" | Foundation skips Steps 9-10. Steps 8, 11 still run. |
+| "The GHIs can be closed later" | No. Step 8 runs NOW. Later means never. |
+
+---
+
+## Phase B: Post-Attestation Hard Boundaries
+
+Once attestation is received in Step 7, flow through Steps 8-11 without pauses, summaries, or permission-seeking.
+
+**Step 7 ends → Step 8 begins immediately.**
+**Step 8 ends → Step 9 begins immediately (or skip to Step 11 in Foundation mode).**
+**Step 10 ends → Step 11 begins immediately.**
+
+If you find yourself composing a message after Step 7 that starts with "Attestation recorded", "The ADR is now", or any variation — STOP. You are rationalizing. Proceed to Step 8.
+
+---
+
+## Foundation ADR Mode (0.0.x)
+
+Foundation ADRs (version 0.0.x) skip Steps 9 and 10 (RELEASE_NOTES and GitHub release). All other steps run normally. Foundation mode is auto-detected from the ADR version.
+
+| Step | Foundation (0.0.x) | Non-Foundation |
+|------|-------------------|----------------|
+| Steps 1-8 | Run normally | Run normally |
+| Step 9 (RELEASE_NOTES) | **Skip** | Run |
+| Step 10 (GitHub Release) | **Skip** | Run |
+| Step 11 (Summary) | Run normally | Run normally |
+
+---
+
+## Re-Entry via `--from`
+
+Support partial re-runs for interrupted ceremonies:
+
+| Flag | Steps Run | Use Case |
+|------|-----------|----------|
+| *(none)* | 1-11 | Full ceremony |
+| `--from=post-attestation` | 7-11 | Attestation done, release steps skipped |
+| `--from=release` | 9-11 | GHIs closed, need release artifacts |
+
+---
+
+## Error Recovery
+
+| Failure Point | Action |
+|---------------|--------|
+| `gz closeout` fails validation | Fix gate failures, re-run closeout |
+| `gh release create` fails (tag exists) | Check if release already created; update if needed |
+| git-sync fails between attestation and release | Resolve sync blockers before release |
+| Human rejects attestation | Record reason, stop ceremony |
+| Session dies mid-Phase B | Re-enter via `--from=post-attestation` or `--from=release` |
+
+---
+
+## Named Anti-Patterns
+
+**The Post-Attestation Abandon:** Stopping after Step 7, leaving release artifacts uncreated. This is the #1 failure mode this section exists to prevent.
+
+**The Manual Version Bump:** Editing pyproject.toml instead of running `gz closeout`. Causes version drift between pyproject.toml and the release tag, which breaks PyPI publishing.
+
+**The Phantom Release:** Creating a release without running `uv run gz git-sync --apply --lint --test` immediately before. Tags a dirty or stale commit as a governance milestone.

@@ -48,20 +48,20 @@ def _setup_demo_chore(
     chore_path: str = "ops/chores/demo-check",
     command: str | None = None,
     expected: int = 0,
+    vendor: str | None = None,
 ) -> None:
     """Create a complete v2.0 chore (registry pointer + acceptance.json)."""
     cmd = command or f'{_PYTHON} -c "print(42)"'
-    _write_v2_registry(
-        [
-            {
-                "slug": slug,
-                "title": title,
-                "version": "1.0.0",
-                "path": chore_path,
-                "lane": lane,
-            },
-        ]
-    )
+    pointer: dict[str, object] = {
+        "slug": slug,
+        "title": title,
+        "version": "1.0.0",
+        "path": chore_path,
+        "lane": lane,
+    }
+    if vendor is not None:
+        pointer["vendor"] = vendor
+    _write_v2_registry([pointer])
     _write_acceptance(
         chore_path,
         [
@@ -295,3 +295,20 @@ class TestChoresCommands(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             self.assertIn("medium-chore", result.output)
             self.assertIn("medium", result.output)
+
+    def test_chores_vendor_field_parsed_and_displayed(self) -> None:
+        """Vendor field is parsed from registry and shown in list output."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            _setup_demo_chore(
+                slug="vendor-chore",
+                chore_path="ops/chores/vendor-chore",
+                vendor="claude",
+                command=f'{_PYTHON} -c "print(42)"',
+            )
+
+            result = runner.invoke(main, ["chores", "list"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("vendor-chore", result.output)
+            self.assertIn("claude", result.output)

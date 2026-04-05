@@ -34,7 +34,7 @@ Each stage records evidence to the OBPI audit ledger:
 | Stage 2 | Files changed, tests added |
 | Stage 3 | Verification outputs (pass/fail) |
 | Stage 4 | Attestation text + timestamp |
-| Stage 5 | Attestation ledger entry (Step 1), audit entry (Step 2), brief updated (Step 3), git-sync #1 (Step 7), completion receipt with clean anchor (Step 8), reconcile (Step 9), git-sync #2 (Step 11) |
+| Stage 5 | Attestation ledger entry (Step 1), reconcile with evidence (Step 2), brief updated (Step 3), git-sync #1 (Step 7), completion receipt with clean anchor (Step 8), reconcile confirm (Step 9), git-sync #2 (Step 11) |
 
 ---
 
@@ -78,8 +78,7 @@ In Normal mode, OBPIs run sequentially with per-OBPI human attestation.
 |-------|-----------------|
 | `/gz-obpi-lock` | Stage 1 claim, Stage 5 release, abort release |
 | `/gz-plan-audit` | Pre-pipeline — runs in plan mode, produces receipt |
-| `/gz-obpi-audit` | Stage 5 ledger recording |
-| `/gz-obpi-sync` | Stage 5 ADR table sync |
+| `/gz-obpi-reconcile` | Stage 5 evidence + ledger + table sync |
 | `/gz-session-handoff` | Error recovery — preserves context on abort |
 
 ---

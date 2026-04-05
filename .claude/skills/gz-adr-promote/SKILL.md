@@ -39,8 +39,11 @@ Operate the gz adr promote command surface to transition pool (backlog) ADRs int
 
 ## Validation
 
+- Run `uv run gz validate --decomposition` to verify scorecard and checklist-to-brief alignment.
 - Run `uv run gz status` to see the new ADR in its versioned state.
 - Run `uv run gz validate` to ensure referential integrity.
+
+**Design principle:** Decomposition constraints (Rule of Three, Matrix of Four) are CLI-checkable via `gz validate --decomposition`. The CLI validates that scorecard targets match checklist counts and that OBPI briefs exist. The model does semantic decomposition work. The model does NOT decide when decomposition is "good enough" — the CLI does.
 
 ## Example
 
