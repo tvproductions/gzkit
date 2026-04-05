@@ -3,16 +3,20 @@
 Persona traits compose orthogonally — each activates an independent behavioral
 dimension without interfering with existing traits (PERSONA/ICLR 2026).  This
 module provides a deterministic composition function that produces a persona
-frame from frontmatter and optional body text.
+frame from frontmatter and optional body text, plus vendor adapter functions
+that translate canonical frames into vendor-specific formats.
 
 See ADR-0.0.11 for the research basis and OBPI-0.0.11-03 for the composition
-specification.
+specification.  See OBPI-0.0.13-04 for vendor adapter design.
 """
 
 from __future__ import annotations
 
 import re
+from collections.abc import Callable
 from pathlib import Path
+
+import yaml
 
 from gzkit.models.persona import PersonaFrontmatter
 
@@ -159,3 +163,101 @@ def compose_persona_frame(fm: PersonaFrontmatter, body: str = "") -> str:
         sections.append("What this persona does NOT do:\n" + "\n".join(anti_lines))
 
     return "\n\n".join(sections)
+
+
+# ---------------------------------------------------------------------------
+# Vendor adapter functions (OBPI-0.0.13-04)
+# ---------------------------------------------------------------------------
+
+
+def render_persona_claude(fm: PersonaFrontmatter, body: str = "") -> str:
+    """Render a persona frame in Claude's native system prompt format.
+
+    Delegates to ``compose_persona_frame`` which already produces the canonical
+    Claude format: grounding anchor, trait instructions, anti-trait constraints.
+    """
+    return compose_persona_frame(fm, body)
+
+
+def render_persona_codex(fm: PersonaFrontmatter, body: str = "") -> str:
+    """Render a persona frame as an AGENTS.md-compatible instruction block.
+
+    Produces a structured markdown block with heading, grounding, behavioral
+    traits list, and anti-patterns list suitable for Codex AGENTS.md files.
+    """
+    trait_descs = _parse_anchors(body, "Behavioral Anchors") if body else {}
+    anti_descs = _parse_anchors(body, "Anti-patterns") if body else {}
+
+    sections: list[str] = [f"# Persona: {fm.name}"]
+    sections.append(fm.grounding.strip())
+
+    trait_lines: list[str] = []
+    for trait in fm.traits:
+        desc = trait_descs.get(trait.lower())
+        if desc:
+            trait_lines.append(f"- {trait}: {desc}")
+        else:
+            trait_lines.append(f"- {trait}")
+    sections.append("## Behavioral Traits\n\n" + "\n".join(trait_lines))
+
+    if fm.anti_traits:
+        anti_lines: list[str] = []
+        for at in fm.anti_traits:
+            desc = anti_descs.get(at.lower())
+            if desc:
+                anti_lines.append(f"- {at}: {desc}")
+            else:
+                anti_lines.append(f"- {at}")
+        sections.append("## Anti-Patterns\n\n" + "\n".join(anti_lines))
+
+    return "\n\n".join(sections)
+
+
+def render_persona_copilot(fm: PersonaFrontmatter, body: str = "") -> str:
+    """Render a persona frame as a copilot-instructions.md-compatible fragment.
+
+    Produces a compact markdown section with heading, grounding, and inline
+    trait/anti-trait lists suitable for ``.github/copilot-instructions.md``.
+    """
+    sections: list[str] = [f"## Persona: {fm.name}"]
+    sections.append(fm.grounding.strip())
+    sections.append("Behavioral traits: " + ", ".join(fm.traits))
+    if fm.anti_traits:
+        sections.append("Behaviors to avoid: " + ", ".join(fm.anti_traits))
+    return "\n\n".join(sections)
+
+
+def _rebuild_raw_persona(fm: PersonaFrontmatter, body: str) -> str:
+    """Reconstruct canonical persona markdown from frontmatter and body.
+
+    Used as the fallback when no vendor adapter is registered — the raw
+    canonical format is copied verbatim.
+    """
+    fm_dict = {
+        "name": fm.name,
+        "traits": list(fm.traits),
+        "anti-traits": list(fm.anti_traits),
+        "grounding": fm.grounding,
+    }
+    fm_yaml = yaml.dump(fm_dict, default_flow_style=False, sort_keys=False, allow_unicode=True)
+    return f"---\n{fm_yaml}---\n\n{body}"
+
+
+VENDOR_ADAPTERS: dict[str, Callable[[PersonaFrontmatter, str], str]] = {
+    "claude": render_persona_claude,
+    "codex": render_persona_codex,
+    "copilot": render_persona_copilot,
+}
+"""Registry mapping vendor name to persona adapter function."""
+
+
+def render_persona_for_vendor(vendor: str, fm: PersonaFrontmatter, body: str = "") -> str:
+    """Render a persona frame for the given vendor.
+
+    Looks up the vendor in ``VENDOR_ADAPTERS``.  If no adapter is registered,
+    returns the raw canonical markdown as fallback (REQ-0.0.13-04-04).
+    """
+    adapter = VENDOR_ADAPTERS.get(vendor)
+    if adapter is not None:
+        return adapter(fm, body)
+    return _rebuild_raw_persona(fm, body)
