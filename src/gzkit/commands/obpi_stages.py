@@ -248,11 +248,14 @@ def _run_pipeline_sync_stage(
         f" --attestor {shlex.quote(attestor)}"
         f" --evidence-json {shlex.quote(evidence_json)}"
     )
+    # GHI #36: Sync first so the receipt captures a clean anchor (commit hash
+    # from synced implementation, dirty=false).  Accounting changes (ledger
+    # write, frontmatter reconcile) are committed in a lightweight follow-up.
     steps: list[tuple[str, str]] = [
+        (pipeline_git_sync_command(), "Guarded repository sync"),
         (emit_cmd, "Emit completion receipt"),
         (f"uv run gz obpi reconcile {obpi_id}", "Reconcile OBPI"),
         (f"uv run gz adr status {resolved_parent} --json", "Refresh parent ADR view"),
-        (pipeline_git_sync_command(), "Guarded repository sync"),
     ]
 
     for command, label in steps:
@@ -268,6 +271,24 @@ def _run_pipeline_sync_stage(
                     console.print(f"    {line}")
             console.print(f"Stage 5 failed at: {label}")
             raise SystemExit(1)
+
+    # Lightweight accounting commit — ledger + frontmatter only, no lint/test.
+    # Failure is non-fatal: the receipt is sealed and implementation is synced.
+    accounting_steps: list[tuple[str, str]] = [
+        ("git add -A", "Stage accounting changes"),
+        (
+            f'git commit -m "chore: record {obpi_id} completion receipt (gz pipeline)"',
+            "Commit accounting changes",
+        ),
+        ("git push", "Push accounting changes"),
+    ]
+    for command, label in accounting_steps:
+        result = _cli_main().run_command(command, cwd=project_root)
+        if result.success:
+            console.print(f"  [green]PASS[/green] {label}")
+        else:
+            detail = (result.stderr or result.stdout or "").strip()
+            console.print(f"  [yellow]WARN[/yellow] {label}: {detail[:200]}")
 
     remove_pipeline_markers(plans_dir, obpi_id)
     console.print("")
