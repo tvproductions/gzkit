@@ -674,7 +674,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                 ],
             )
             self.assertNotEqual(result.exit_code, 0)
-            self.assertIn("human_attestation=true", result.output)
+            self.assertIn("human_attestation must be true", result.output)
 
     def test_obpi_emit_receipt_completed_heavy_records_attested_completion(self) -> None:
         runner = CliRunner()

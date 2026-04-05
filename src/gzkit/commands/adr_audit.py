@@ -231,37 +231,36 @@ def _validate_obpi_completed_required_fields(evidence: dict[str, Any]) -> None:
 
 
 def _validate_obpi_human_attestation_fields(evidence: dict[str, Any], attestor: str) -> None:
-    """Validate heavy/foundation human-attestation evidence contract."""
+    """Validate heavy/foundation human-attestation evidence contract.
+
+    Reports all missing/invalid fields at once instead of one-at-a-time (GHI #80).
+    """
+    errors: list[str] = []
     placeholder_names = {"n/a", "tbd", "todo", "none", "-", "...", ""}
     if attestor.strip().lower() in placeholder_names:
-        msg = "Heavy/Foundation OBPI completion requires --attestor to be a real name."
-        raise GzCliError(msg)
+        errors.append("--attestor must be a real name, not a placeholder.")
     if evidence.get("human_attestation") is not True:
-        msg = "Heavy/Foundation OBPI completion requires evidence.human_attestation=true."
-        raise GzCliError(msg)
+        errors.append("evidence.human_attestation must be true.")
 
     attestation_text = evidence.get("attestation_text")
     if not isinstance(attestation_text, str) or not attestation_text.strip():
-        msg = "Heavy/Foundation OBPI completion requires non-empty evidence.attestation_text."
-        raise GzCliError(msg)
+        errors.append("evidence.attestation_text must be a non-empty string.")
 
     attestation_date = evidence.get("attestation_date")
     if not isinstance(attestation_date, str) or not re.match(
-        r"^\d{4}-\d{2}-\d{2}$", attestation_date
+        r"^\d{4}-\d{2}-\d{2}$", str(attestation_date)
     ):
-        msg = (
-            "Heavy/Foundation OBPI completion requires evidence.attestation_date "
-            "formatted as YYYY-MM-DD."
-        )
+        errors.append("evidence.attestation_date must be formatted as YYYY-MM-DD.")
+    elif attestation_date:
+        try:
+            date.fromisoformat(attestation_date)
+        except ValueError:
+            errors.append("evidence.attestation_date must be a valid YYYY-MM-DD date.")
+
+    if errors:
+        joined = " ".join(errors)
+        msg = f"Heavy/Foundation OBPI completion: {joined}"
         raise GzCliError(msg)
-    try:
-        date.fromisoformat(attestation_date)
-    except ValueError as exc:
-        msg = (
-            "Heavy/Foundation OBPI completion requires evidence.attestation_date "
-            "formatted as YYYY-MM-DD."
-        )
-        raise GzCliError(msg) from exc
 
 
 def _validate_explicit_req_proof_inputs(raw_inputs: Any) -> list[dict[str, str]]:

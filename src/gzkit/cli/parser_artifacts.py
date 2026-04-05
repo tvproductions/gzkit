@@ -253,7 +253,14 @@ def _register_adr_parsers(commands: argparse._SubParsersAction) -> None:
     p_adr_emit = adr_commands.add_parser(
         "emit-receipt",
         help="Emit completed/validated receipt event for an ADR",
-        description="Record a receipt event in the ledger for an ADR.",
+        description=(
+            "Record a receipt event in the ledger for an ADR. "
+            "Required --evidence-json fields for completed: "
+            "value_narrative, key_proof. "
+            "Heavy/Foundation also require: "
+            "human_attestation (true), attestation_text, "
+            "attestation_date (YYYY-MM-DD)."
+        ),
         epilog=build_epilog(
             [
                 'gz adr emit-receipt ADR-0.1.0 --event completed --attestor "Jane Doe"',
@@ -270,7 +277,10 @@ def _register_adr_parsers(commands: argparse._SubParsersAction) -> None:
         help="Receipt event type (completed|validated)",
     )
     p_adr_emit.add_argument("--attestor", required=True, help="Identity of the attestor")
-    p_adr_emit.add_argument("--evidence-json", help="JSON evidence payload string")
+    p_adr_emit.add_argument(
+        "--evidence-json",
+        help="JSON with value_narrative, key_proof; Heavy adds attestation fields",
+    )
     add_dry_run_flag(p_adr_emit)
     p_adr_emit.set_defaults(
         func=lambda a: adr_emit_receipt_cmd(
@@ -303,7 +313,14 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
     p_obpi_emit = obpi_commands.add_parser(
         "emit-receipt",
         help="Emit completed/validated receipt event for an OBPI",
-        description="Record a receipt event in the ledger for an OBPI.",
+        description=(
+            "Record a receipt event in the ledger for an OBPI. "
+            "Required --evidence-json fields for completed: "
+            "value_narrative, key_proof. "
+            "Heavy/Foundation also require: "
+            "human_attestation (true), attestation_text, "
+            "attestation_date (YYYY-MM-DD)."
+        ),
         epilog=build_epilog(
             [
                 'gz obpi emit-receipt OBPI-0.1.0-01 --event completed --attestor "Jane Doe"',
@@ -320,7 +337,10 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         help="Receipt event type (completed|validated)",
     )
     p_obpi_emit.add_argument("--attestor", required=True, help="Identity of the attestor")
-    p_obpi_emit.add_argument("--evidence-json", help="JSON evidence payload string")
+    p_obpi_emit.add_argument(
+        "--evidence-json",
+        help="JSON with value_narrative, key_proof; Heavy adds attestation fields",
+    )
     add_dry_run_flag(p_obpi_emit)
     p_obpi_emit.set_defaults(
         func=lambda a: obpi_emit_receipt_cmd(
