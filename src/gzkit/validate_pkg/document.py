@@ -123,6 +123,34 @@ def validate_headers(
     return errors
 
 
+def _validate_obpi_id_matches_stem(
+    frontmatter: dict[str, Any], path: Path
+) -> list[ValidationError]:
+    """Validate that OBPI frontmatter ``id`` matches the filename stem.
+
+    The slugified filename stem is the canonical OBPI identifier used in ledger
+    events. A short-form ``id`` (e.g. ``OBPI-0.0.14-01``) creates phantom
+    duplicates when the ledger registers the full stem
+    (``OBPI-0.0.14-01-obpi-lock-command``).
+    """
+    fm_id = frontmatter.get("id", "")
+    stem = path.stem
+    if fm_id and fm_id != stem:
+        return [
+            ValidationError(
+                type="frontmatter",
+                artifact=str(path),
+                message=(
+                    f"Frontmatter id '{fm_id}' does not match filename stem '{stem}'. "
+                    f"The slugified filename is the canonical identifier for ledger "
+                    f"registration. Update the frontmatter id to '{stem}'."
+                ),
+                field="id",
+            )
+        ]
+    return []
+
+
 def _validate_adr_decomposition(body: str, artifact_path: str) -> list[ValidationError]:
     """Validate deterministic ADR decomposition scorecard semantics."""
     errors: list[ValidationError] = []
@@ -226,6 +254,8 @@ def validate_document(path: Path, schema_name: str) -> list[ValidationError]:
 
     errors.extend(validate_frontmatter(frontmatter, schema, str(path)))
     errors.extend(validate_headers(headers, schema, str(path)))
+    if schema_name == "obpi":
+        errors.extend(_validate_obpi_id_matches_stem(frontmatter, path))
     if schema_name == "adr":
         errors.extend(_validate_adr_decomposition(body, str(path)))
 

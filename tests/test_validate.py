@@ -234,6 +234,44 @@ status: Draft
             # Should have errors for missing semver, lane, parent, date
             self.assertTrue(any(e.field == "semver" for e in errors))
 
+    def test_obpi_frontmatter_id_must_match_filename_stem(self) -> None:
+        """OBPI frontmatter id must match the slugified filename stem."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Mismatched: short-form id vs slugified filename
+            obpi_file = Path(temp_dir) / "OBPI-0.0.14-01-obpi-lock-command.md"
+            obpi_file.write_text(
+                "---\n"
+                "id: OBPI-0.0.14-01\n"
+                "parent: ADR-0.0.14-deterministic-obpi-commands\n"
+                "item: 1\n"
+                "lane: Heavy\n"
+                "status: Draft\n"
+                "---\n\n# OBPI-0.0.14-01: gz obpi lock command\n",
+                encoding="utf-8",
+            )
+            errors = validate_document(obpi_file, "obpi")
+            id_errors = [e for e in errors if e.field == "id" and "does not match" in e.message]
+            self.assertEqual(len(id_errors), 1)
+            self.assertIn("OBPI-0.0.14-01-obpi-lock-command", id_errors[0].message)
+
+    def test_obpi_frontmatter_id_matching_stem_passes(self) -> None:
+        """OBPI with matching slugified id passes stem check."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            obpi_file = Path(temp_dir) / "OBPI-0.0.14-01-obpi-lock-command.md"
+            obpi_file.write_text(
+                "---\n"
+                "id: OBPI-0.0.14-01-obpi-lock-command\n"
+                "parent: ADR-0.0.14-deterministic-obpi-commands\n"
+                "item: 1\n"
+                "lane: Heavy\n"
+                "status: Draft\n"
+                "---\n\n# OBPI-0.0.14-01: gz obpi lock command\n",
+                encoding="utf-8",
+            )
+            errors = validate_document(obpi_file, "obpi")
+            id_errors = [e for e in errors if e.field == "id" and "does not match" in e.message]
+            self.assertEqual(len(id_errors), 0)
+
     def test_missing_section(self) -> None:
         """Missing required section returns error."""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:

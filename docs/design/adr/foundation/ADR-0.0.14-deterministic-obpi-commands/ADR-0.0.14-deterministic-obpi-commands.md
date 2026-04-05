@@ -72,23 +72,59 @@ skill migration in OBPI-03 must be complete and total — no dual-path writes.
 
 ### Checklist
 
-- [ ] `gz obpi lock claim` command with TTL, agent identity, and ledger event
-- [ ] `gz obpi lock release` command with ownership validation and `--force`
-- [ ] `gz obpi lock check` command (exit 0 held, exit 1 free)
-- [ ] `gz obpi lock list` command with stale-lock reaping
-- [ ] `gz obpi complete` command with atomic transaction (validate, write evidence,
+- [ ] OBPI-01: `gz obpi lock claim` command with TTL, agent identity, and ledger event
+- [ ] OBPI-01: `gz obpi lock release` command with ownership validation and `--force`
+- [ ] OBPI-01: `gz obpi lock check` command (exit 0 held, exit 1 free)
+- [ ] OBPI-01: `gz obpi lock list` command with stale-lock reaping
+- [ ] OBPI-02: `gz obpi complete` command with atomic transaction (validate, write evidence,
       flip status, record attestation, emit receipt)
-- [ ] `gz obpi complete` rollback on any step failure (all-or-nothing)
-- [ ] Pipeline skill migration: zero direct file writes to governance artifacts
-- [ ] Lock skill migration: delegates entirely to `gz obpi lock` subcommands
+- [ ] OBPI-02: `gz obpi complete` rollback on any step failure (all-or-nothing)
+- [ ] OBPI-03: Pipeline skill migration: zero direct file writes to governance artifacts
+- [ ] OBPI-03: Lock skill migration: delegates entirely to `gz obpi lock` subcommands
+
+## Problem Quantification
+
+The OBPI pipeline and lock skills currently perform **12 direct mutation
+operations** against governance artifacts:
+
+| Skill | Direct Writes | JSONL/Ledger Appends | Lock File Ops | Total |
+|-------|--------------|---------------------|---------------|-------|
+| `gz-obpi-pipeline` | 2 (brief rewrite) | 1 (audit ledger) | 4 (markers) | 7 |
+| `gz-obpi-lock` | 0 | 2 (ledger refs) | 3 (lock CRUD) | 5 |
+| **Total** | **2** | **3** | **7** | **12** |
+
+**Before:** Skills invoke the `Write` tool to create lock files, append JSONL
+attestation entries, rewrite brief files, and manage pipeline markers. These
+writes bypass validation, emit no ledger events, and cannot be replayed or
+audited. A partial failure in Stage 5 (e.g., brief written but attestation
+not appended) leaves governance state inconsistent with no rollback.
+
+**After:** All 12 mutation operations route through `gz obpi lock` and
+`gz obpi complete` CLI commands. Every state transition is validated before
+write, emits a ledger event, and rolls back atomically on failure. Skills
+contain zero artifact writes — they are pure orchestration recipes.
 
 ## Intent
 
-Establish deterministic CLI commands as the sole write path for OBPI lifecycle
-artifacts (locks, attestation entries, brief completion). Skills become pure
-orchestrators that invoke `gz` commands, eliminating the governance-core
-violation of direct artifact writes and enabling deterministic testing,
-auditing, and replay of every governance state transition.
+The OBPI pipeline and lock skills currently perform 12 direct mutation
+operations against governance artifacts — writing lock files via the `Write`
+tool, appending attestation entries to JSONL files, and rewriting brief status
+fields. These direct writes bypass validation logic, emit no ledger events,
+produce no audit trail, and cannot be rolled back on partial failure. A failed
+Stage 5 completion (e.g., brief rewritten but attestation not appended) leaves
+governance state inconsistent with no recovery path.
+
+This ADR establishes deterministic CLI commands (`gz obpi lock` and
+`gz obpi complete`) as the sole write path for OBPI lifecycle artifacts.
+After implementation, every lock acquisition, lock release, brief completion,
+attestation recording, and receipt emission flows through a validated,
+atomic CLI command that emits ledger events and rolls back on failure.
+Skills become pure orchestrators — they call `gz` commands in sequence but
+perform zero direct writes to governance artifacts. This provides testability
+(each command has unit tests with deterministic inputs/outputs), auditability
+(every state transition emits a ledger event), atomicity (`gz obpi complete`
+is all-or-nothing), and separation of concerns (skills orchestrate, commands
+execute).
 
 ## Decision
 
@@ -106,6 +142,30 @@ auditing, and replay of every governance state transition.
 - The pipeline skill (`gz-obpi-pipeline`) and lock skill (`gz-obpi-lock`) are
   migrated to call these CLI commands exclusively. Zero direct writes to lock
   files, ledger entries, or brief status remain in skill definitions.
+
+## Alternatives Considered
+
+| Alternative | Why Rejected |
+|-------------|-------------|
+| **Python API (function calls instead of CLI)** | Skills invoke tools via shell commands, not Python imports. A Python API would require a second invocation path (`import` vs `uv run`) and split the testable surface. CLI commands are the natural integration point for skill orchestration. |
+| **Transaction manager pattern (wrap existing writes)** | A transaction wrapper around `Write` tool calls would add complexity without eliminating the root cause: skills knowing *how* to write governance artifacts. The goal is separation of concerns (skills orchestrate, commands execute), not just rollback capability. |
+| **Gradual migration with fallback paths** | Maintaining both direct-write and CLI-write paths during migration creates a dual-path system that is harder to test and audit than either path alone. The Anti-Pattern Warning in the Agent Context Frame explicitly rejects this: "no dual-path writes." The migration in OBPI-03 must be complete and total. |
+
+## Non-Goals
+
+1. **No standalone `gz obpi attest` command.** Attestation without completion (or
+   completion without attestation) are both invalid governance states. Attestation
+   is folded into `gz obpi complete` via `--attestor` and `--attestation-text` flags.
+2. **No config-driven TTL.** Lock TTL defaults to 120 minutes (hardcoded). Adding
+   config-driven TTL is a separate concern that can be addressed later without
+   changing the command interface.
+3. **No cross-repo lock coordination.** Locks are local to the repository. Multi-repo
+   coordination is a post-1.0 concern (see architectural boundary #1).
+4. **No lock-aware scheduling.** The lock system is a coordination primitive, not a
+   scheduler. Skills decide *when* to claim locks; the commands enforce *whether*
+   the claim succeeds.
+5. **No migration of pipeline marker files.** Pipeline markers (`.claude/plans/.pipeline-active-*.json`)
+   are internal pipeline state, not governance artifacts. They remain skill-managed.
 
 ## Interfaces
 
