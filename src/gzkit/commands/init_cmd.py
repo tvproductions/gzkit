@@ -21,6 +21,7 @@ from gzkit.ledger import (
     prd_created_event,
     project_init_event,
 )
+from gzkit.personas import scaffold_default_personas
 from gzkit.skills import scaffold_core_skills
 from gzkit.sync import (
     detect_project_name,
@@ -120,6 +121,7 @@ def init(mode: str, force: bool, dry_run: bool) -> None:
         console.print("  Would create governance directories (prd, constitutions, adr)")
         console.print("  Would generate control surfaces (AGENTS.md, CLAUDE.md, etc.)")
         console.print("  Would set up hooks and scaffold core skills")
+        console.print("  Would scaffold default personas")
         console.print("  Would append ledger event: project_init")
         console.print("  Would register existing artifacts (if any)")
         return
@@ -160,6 +162,10 @@ def init(mode: str, force: bool, dry_run: bool) -> None:
     # Scaffold core skills
     skills = scaffold_core_skills(project_root, config)
     console.print(f"  Scaffolded {len(skills)} core skills")
+
+    # Scaffold default personas
+    personas = scaffold_default_personas(project_root)
+    console.print(f"  Scaffolded {len(personas)} default personas")
 
     # Sync control surfaces (including skill mirrors)
     updated = sync_all(project_root, config)

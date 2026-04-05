@@ -31,17 +31,24 @@ class TestPersonasListCmd(unittest.TestCase):
 
     @covers("REQ-0.0.11-02-02")
     def test_personas_list_no_dir(self) -> None:
+        """With no custom personas, default-scaffolded personas are listed."""
         with self.runner.isolated_filesystem():
             _quick_init()
             result = self.runner.invoke(main, ["personas", "list"])
             self.assertEqual(result.exit_code, 0)
-            self.assertIn("No personas directory", result.output)
+            # _quick_init scaffolds default personas, so they appear in listing
+            self.assertIn("default-agent", result.output)
 
     @covers("REQ-0.0.11-02-02")
     def test_personas_list_empty_dir(self) -> None:
+        """With empty personas dir (defaults removed), reports no files."""
+        import shutil
+
         with self.runner.isolated_filesystem():
             _quick_init()
-            Path(".gzkit/personas").mkdir(parents=True)
+            pdir = Path(".gzkit/personas")
+            shutil.rmtree(pdir)
+            pdir.mkdir(parents=True)
             result = self.runner.invoke(main, ["personas", "list"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("No persona files", result.output)
@@ -51,7 +58,6 @@ class TestPersonasListCmd(unittest.TestCase):
         with self.runner.isolated_filesystem():
             _quick_init()
             pdir = Path(".gzkit/personas")
-            pdir.mkdir(parents=True)
             (pdir / "tester.md").write_text(_VALID_PERSONA, encoding="utf-8")
             result = self.runner.invoke(main, ["personas", "list"])
             self.assertEqual(result.exit_code, 0)
@@ -62,21 +68,21 @@ class TestPersonasListCmd(unittest.TestCase):
         with self.runner.isolated_filesystem():
             _quick_init()
             pdir = Path(".gzkit/personas")
-            pdir.mkdir(parents=True)
             (pdir / "tester.md").write_text(_VALID_PERSONA, encoding="utf-8")
             result = self.runner.invoke(main, ["personas", "list", "--json"])
             self.assertEqual(result.exit_code, 0)
             data = json.loads(result.output)
-            self.assertEqual(len(data), 1)
-            self.assertEqual(data[0]["name"], "tester")
-            self.assertEqual(data[0]["traits"], ["methodical", "thorough"])
+            # Includes default-agent, default-reviewer, and tester
+            names = [p["name"] for p in data]
+            self.assertIn("tester", names)
+            tester = next(p for p in data if p["name"] == "tester")
+            self.assertEqual(tester["traits"], ["methodical", "thorough"])
 
     @covers("REQ-0.0.11-02-02")
     def test_personas_list_malformed_warns(self) -> None:
         with self.runner.isolated_filesystem():
             _quick_init()
             pdir = Path(".gzkit/personas")
-            pdir.mkdir(parents=True)
             (pdir / "bad.md").write_text("no frontmatter here", encoding="utf-8")
             result = self.runner.invoke(main, ["personas", "list"])
             self.assertEqual(result.exit_code, 0)
@@ -84,9 +90,14 @@ class TestPersonasListCmd(unittest.TestCase):
 
     @covers("REQ-0.0.11-02-02")
     def test_personas_list_json_empty_dir(self) -> None:
+        """With empty personas dir (defaults removed), JSON returns empty list."""
+        import shutil
+
         with self.runner.isolated_filesystem():
             _quick_init()
-            Path(".gzkit/personas").mkdir(parents=True)
+            pdir = Path(".gzkit/personas")
+            shutil.rmtree(pdir)
+            pdir.mkdir(parents=True)
             result = self.runner.invoke(main, ["personas", "list", "--json"])
             self.assertEqual(result.exit_code, 0)
             data = json.loads(result.output)
