@@ -3,8 +3,11 @@
 import json
 import tempfile
 import unittest
+from io import StringIO
 from pathlib import Path
 from unittest.mock import patch
+
+from rich.console import Console
 
 from gzkit.commands.obpi_lock_cmd import (
     _current_branch,
@@ -57,6 +60,10 @@ class TestHelpers(unittest.TestCase):
         self.assertTrue(len(branch) > 0)
 
 
+_quiet_console = Console(file=StringIO())
+
+
+@patch("gzkit.commands.obpi_lock_cmd.console", _quiet_console)
 class TestLockClaim(unittest.TestCase):
     """Test obpi_lock_claim_cmd."""
 
@@ -112,6 +119,7 @@ class TestLockClaim(unittest.TestCase):
             self.assertEqual(data["ttl_minutes"], 240)
 
 
+@patch("gzkit.commands.obpi_lock_cmd.console", _quiet_console)
 class TestLockRelease(unittest.TestCase):
     """Test obpi_lock_release_cmd."""
 
@@ -177,6 +185,7 @@ class TestLockRelease(unittest.TestCase):
                 self.assertEqual(output["status"], "not_found")
 
 
+@patch("gzkit.commands.obpi_lock_cmd.console", _quiet_console)
 class TestLockStatus(unittest.TestCase):
     """Test obpi_lock_status_cmd."""
 

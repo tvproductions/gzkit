@@ -224,7 +224,7 @@ def _render_adr_table(
     table.add_column("Lifecycle", no_wrap=True)
     table.add_column("Lane", no_wrap=True)
     table.add_column("OBPI", justify="right", no_wrap=True)
-    table.add_column("Unit", no_wrap=True)
+    table.add_column("Status", no_wrap=True)
     table.add_column("QC", no_wrap=True)
     table.add_column("Checks", no_wrap=True)
     table.row_styles = ["none", "dim"]

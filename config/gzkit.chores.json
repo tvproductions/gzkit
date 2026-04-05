@@ -69,8 +69,8 @@
         },
         {
             "slug": "test-isolation-compliance",
-            "title": "Test Isolation Compliance (Temp DB + Temp Dir)",
-            "version": "1.0.0",
+            "title": "Test Isolation & Health Compliance",
+            "version": "2.0.0",
             "path": "ops/chores/test-isolation-compliance",
             "lane": "lite"
         },

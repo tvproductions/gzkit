@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+import contextlib
+import io
 import json
 import tempfile
 import unittest
@@ -1071,7 +1073,10 @@ class TestDriftCmdExitCodes(unittest.TestCase):
             test_dir = tmp_path / "tests"
             test_dir.mkdir()
 
-            with _patch("gzkit.commands.drift.get_changed_files", return_value=[]):
+            with (
+                _patch("gzkit.commands.drift.get_changed_files", return_value=[]),
+                contextlib.redirect_stdout(io.StringIO()),
+            ):
                 drift_cmd(
                     as_json=True,
                     adr_dir=str(adr_dir),
@@ -1103,6 +1108,7 @@ class TestDriftCmdExitCodes(unittest.TestCase):
 
             with (
                 _patch("gzkit.commands.drift.get_changed_files", return_value=[]),
+                contextlib.redirect_stdout(io.StringIO()),
                 self.assertRaises(SystemExit) as cm,
             ):
                 drift_cmd(

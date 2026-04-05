@@ -94,7 +94,7 @@ class TestStatusCommand(unittest.TestCase):
             self.assertIn(TABLE_TITLE_FEATURE, result.output)
             self.assertIn("Life", result.output)
             self.assertIn("Lane", result.output)
-            self.assertIn("Unit", result.output)
+            self.assertIn("Status", result.output)
             self.assertIn("Checks", result.output)
             self.assertIn("ADR-0.1.0", result.output)
             self.assertIn("0/0", result.output)

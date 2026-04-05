@@ -11,6 +11,8 @@ Smoke tests covering:
 @covers OBPI-0.0.8-05-cli-surface
 """
 
+import contextlib
+import io
 import json
 import unittest
 from datetime import date
@@ -78,12 +80,15 @@ _MOCK_REGISTRY_PATH = "gzkit.commands.flags.load_registry"
 
 
 class _RegistryMixin:
-    """Mixin that patches load_registry for all flag command tests."""
+    """Mixin that patches load_registry and suppresses stdout for all flag command tests."""
 
     def setUp(self) -> None:
         patcher = patch(_MOCK_REGISTRY_PATH, return_value=dict(_REGISTRY))
         self._mock_load = patcher.start()
         self.addCleanup(patcher.stop)
+        self._stdout_ctx = contextlib.redirect_stdout(io.StringIO())
+        self._stdout_ctx.__enter__()
+        self.addCleanup(self._stdout_ctx.__exit__, None, None, None)
 
 
 # ---------------------------------------------------------------------------

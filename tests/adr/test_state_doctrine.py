@@ -7,10 +7,15 @@ ledger-derived state, reports changes, and is idempotent.
 import json
 import tempfile
 import unittest
+from io import StringIO
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+from rich.console import Console
+
 from gzkit.commands.state import _derive_expected_status, _scan_obpi_briefs, state_repair
+
+_quiet_console = Console(file=StringIO())
 
 
 class TestDeriveExpectedStatus(unittest.TestCase):
@@ -61,6 +66,7 @@ class TestScanObpiBriefs(unittest.TestCase):
             self.assertEqual(result, {})
 
 
+@patch("gzkit.commands.state.console", _quiet_console)
 class TestStateRepairIdempotency(unittest.TestCase):
     """Verify repair is idempotent: second run produces no changes."""
 

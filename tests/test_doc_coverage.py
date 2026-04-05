@@ -855,33 +855,27 @@ class TestBuildGapReport(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.project_root = Path(__file__).resolve().parent.parent
+        from gzkit.doc_coverage.runner import build_gap_report
+
+        cls._report = build_gap_report(cls.project_root)
 
     @covers("REQ-0.0.6-03-03")
     def test_build_gap_report_returns_valid_report(self) -> None:
-        from gzkit.doc_coverage.runner import build_gap_report
-
-        report = build_gap_report(self.project_root)
         from gzkit.doc_coverage.models import DocCoverageGapReport
 
-        self.assertIsInstance(report, DocCoverageGapReport)
-        self.assertGreater(report.commands_discovered, 0)
-        self.assertGreater(report.commands_checked, 0)
+        self.assertIsInstance(self._report, DocCoverageGapReport)
+        self.assertGreater(self._report.commands_discovered, 0)
+        self.assertGreater(self._report.commands_checked, 0)
 
     def test_build_gap_report_no_undeclared_commands(self) -> None:
-        from gzkit.doc_coverage.runner import build_gap_report
-
-        report = build_gap_report(self.project_root)
         self.assertEqual(
-            report.undeclared_commands,
+            self._report.undeclared_commands,
             [],
-            f"Undeclared commands: {report.undeclared_commands}",
+            f"Undeclared commands: {self._report.undeclared_commands}",
         )
 
     def test_gap_report_json_conforms_to_schema(self) -> None:
-        from gzkit.doc_coverage.runner import build_gap_report
-
-        report = build_gap_report(self.project_root)
-        data = report.model_dump()
+        data = self._report.model_dump()
         schema_path = self.project_root / "data" / "schemas" / "doc-coverage-report.schema.json"
         self.assertTrue(schema_path.exists(), "Gap report schema must exist")
         schema = json.loads(schema_path.read_text(encoding="utf-8"))
@@ -899,22 +893,24 @@ class TestRunDocCoverage(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        cls.project_root = Path(__file__).resolve().parent.parent
+        import contextlib
+        import io
 
-    def test_run_returns_int(self) -> None:
         from gzkit.doc_coverage.runner import run_doc_coverage
 
-        result = run_doc_coverage(self.project_root, json_output=False)
-        self.assertIsInstance(result, int)
-        self.assertIn(result, (0, 1))
+        cls.project_root = Path(__file__).resolve().parent.parent
+        with contextlib.redirect_stdout(io.StringIO()):
+            cls._result_human = run_doc_coverage(cls.project_root, json_output=False)
+            cls._result_json = run_doc_coverage(cls.project_root, json_output=True)
+
+    def test_run_returns_int(self) -> None:
+        self.assertIsInstance(self._result_human, int)
+        self.assertIn(self._result_human, (0, 1))
 
     @covers("REQ-0.0.6-03-04")
     def test_run_json_mode_returns_int(self) -> None:
-        from gzkit.doc_coverage.runner import run_doc_coverage
-
-        result = run_doc_coverage(self.project_root, json_output=True)
-        self.assertIsInstance(result, int)
-        self.assertIn(result, (0, 1))
+        self.assertIsInstance(self._result_json, int)
+        self.assertIn(self._result_json, (0, 1))
 
 
 # ---------------------------------------------------------------------------
