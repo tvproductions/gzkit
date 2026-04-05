@@ -212,6 +212,9 @@ def _parse_chore_pointer(
 
     timeout = lane_timeouts.get(lane, LANE_TIMEOUTS.get(lane, 900))
 
+    vendor_raw = data.get("vendor")
+    vendor = vendor_raw.strip() if isinstance(vendor_raw, str) else None
+
     return ChoreDefinition(
         slug=slug,
         title=title,
@@ -220,6 +223,7 @@ def _parse_chore_pointer(
         path=chore_path,
         criteria=criteria,
         timeout_seconds=timeout,
+        vendor=vendor,
     )
 
 

@@ -114,7 +114,11 @@ The intended workflow is:
    - populate Discovery Checklist with real prerequisite and existing-code reads
    - replace generic verification with commands that prove this item specifically
    - ensure Acceptance Criteria are concrete and mapped to REQ IDs
-4. Run `uv run gz obpi validate --authored <path>` and keep authoring until it passes.
+4. Run `uv run gz obpi validate --authored <path>` — this is the **sole authority** for brief readiness.
+5. If validation fails, make targeted fixes addressing the specific errors reported, then re-validate.
+6. **Maximum 3 authoring cycles.** If still failing after 3 attempts, present the remaining validation errors and stop — do not keep looping.
+
+**Design principle:** The CLI does judgment work (is this ready?). The model does semantic work (writing content). The model does NOT override CLI validation or declare readiness independently.
 
 The CLI owns deterministic decomposition. The skill owns the semantic authoring
 pass that turns the generated brief into an execution contract.

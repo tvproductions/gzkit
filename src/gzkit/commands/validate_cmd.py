@@ -1,6 +1,7 @@
 """Validate command implementation."""
 
 import json
+import re
 from pathlib import Path
 
 from gzkit.commands.common import console, get_project_root
@@ -25,7 +26,6 @@ def _find_obpi_briefs(project_root: Path) -> list[Path]:
 
 def _validate_interviews(project_root: Path) -> list[ValidationError]:
     """Check that ADRs with OBPIs have an interview transcript artifact."""
-    import re
 
     adr_root = project_root / "docs" / "design" / "adr"
     transcript_dir = project_root / ".gzkit" / "transcripts"
@@ -80,6 +80,79 @@ def _validate_personas(project_root: Path) -> list[ValidationError]:
     return errors
 
 
+def _validate_decomposition(project_root: Path) -> list[ValidationError]:
+    """Validate ADR decomposition scorecards and checklist-to-brief alignment."""
+    from gzkit.core.scoring import parse_checklist_items, parse_scorecard  # noqa: PLC0415
+
+    adr_root = project_root / "docs" / "design" / "adr"
+    if not adr_root.is_dir():
+        return []
+
+    errors: list[ValidationError] = []
+    for adr_md in sorted(adr_root.rglob("ADR-*.md")):
+        if adr_md.name.startswith("ADR-CLOSEOUT") or adr_md.name.startswith("ADR-pool"):
+            continue
+        # Only check ADR intent documents (not briefs/audit files)
+        if "obpis" in adr_md.parts or "briefs" in adr_md.parts or "audit" in adr_md.parts:
+            continue
+
+        content = adr_md.read_text(encoding="utf-8")
+        scorecard, scorecard_errors = parse_scorecard(content)
+        checklist_items = parse_checklist_items(content)
+
+        if not checklist_items:
+            continue  # ADR has no checklist — skip
+
+        if scorecard_errors:
+            for err in scorecard_errors:
+                errors.append(
+                    ValidationError(
+                        type="decomposition",
+                        artifact=str(adr_md.relative_to(project_root)),
+                        message=err,
+                    )
+                )
+            continue
+
+        if scorecard is None:
+            continue
+
+        if len(checklist_items) != scorecard.final_target_obpi_count:
+            errors.append(
+                ValidationError(
+                    type="decomposition",
+                    artifact=str(adr_md.relative_to(project_root)),
+                    message=(
+                        f"Checklist count ({len(checklist_items)}) does not match "
+                        f"scorecard target ({scorecard.final_target_obpi_count})."
+                    ),
+                )
+            )
+
+        # Check that OBPI brief files exist for each checklist item
+        adr_dir = adr_md.parent
+        obpis_dir = adr_dir / "obpis"
+        briefs_dir = adr_dir / "briefs"
+        # Extract ADR version from filename
+        match = re.match(r"ADR-([\d.]+)", adr_md.stem)
+        if match:
+            version = match.group(1)
+            existing_briefs = list(obpis_dir.glob(f"OBPI-{version}-*.md"))
+            existing_briefs.extend(briefs_dir.glob(f"OBPI-{version}-*.md"))
+            if checklist_items and not existing_briefs:
+                errors.append(
+                    ValidationError(
+                        type="decomposition",
+                        artifact=str(adr_md.relative_to(project_root)),
+                        message=(
+                            f"Checklist has {len(checklist_items)} items but no OBPI briefs found."
+                        ),
+                    )
+                )
+
+    return errors
+
+
 def _collect_errors(
     project_root: Path,
     check_manifest: bool,
@@ -90,6 +163,7 @@ def _collect_errors(
     check_briefs: bool,
     check_personas: bool = False,
     check_interviews: bool = False,
+    check_decomposition: bool = False,
 ) -> list[ValidationError]:
     """Collect validation errors across all requested check types."""
     run_all = not any(
@@ -102,6 +176,7 @@ def _collect_errors(
             check_briefs,
             check_personas,
             check_interviews,
+            check_decomposition,
         ]
     )
     errors: list[ValidationError] = []
@@ -131,6 +206,9 @@ def _collect_errors(
     if check_interviews:
         errors.extend(_validate_interviews(project_root))
 
+    if check_decomposition:
+        errors.extend(_validate_decomposition(project_root))
+
     return errors
 
 
@@ -152,6 +230,47 @@ def _validate_manifest_documents(project_root: Path) -> list[ValidationError]:
     return errors
 
 
+def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
+    """Build the list of validated scope names from the check flags."""
+    # "run_all" scopes activate when no explicit flag is set
+    run_all_scopes = [
+        "manifest",
+        "surfaces",
+        "ledger",
+        "instructions",
+        "briefs",
+        "documents",
+        "personas",
+    ]
+    # "opt-in" scopes only activate when explicitly requested
+    opt_in_scopes = ["interviews", "decomposition"]
+
+    run_all = not any(checks.get(s, False) for s in run_all_scopes + opt_in_scopes)
+    scopes: list[str] = []
+    for scope in run_all_scopes:
+        if run_all or checks.get(scope, False):
+            scopes.append(scope)
+    for scope in opt_in_scopes:
+        if checks.get(scope, False):
+            scopes.append(scope)
+    return scopes
+
+
+def _print_validation_result(errors: list[ValidationError], scopes: list[str]) -> None:
+    """Print human-readable validation results and exit on failure."""
+    console.print(f"[bold]Validated:[/bold] {', '.join(scopes)}\n")
+    if errors:
+        console.print(f"[red]❌ Validation failed with {len(errors)} error(s):[/red]\n")
+        for error in errors:
+            console.print(f"   [red]→[/red] [{error.type}] {error.artifact}")
+            console.print(f"    {error.message}")
+            if error.field:
+                console.print(f"    Field: {error.field}")
+            console.print()
+        raise SystemExit(1)
+    console.print(f"[green]✓ All validations passed ({len(scopes)} scopes).[/green]")
+
+
 def validate(
     check_manifest: bool,
     check_documents: bool,
@@ -161,6 +280,7 @@ def validate(
     check_briefs: bool,
     check_personas: bool = False,
     check_interviews: bool = False,
+    check_decomposition: bool = False,
     as_json: bool = False,
 ) -> None:
     """Validate governance artifacts against schemas."""
@@ -175,6 +295,7 @@ def validate(
         check_briefs,
         check_personas,
         check_interviews,
+        check_decomposition,
     )
 
     if as_json:
@@ -185,46 +306,15 @@ def validate(
         print(json.dumps(result, indent=2))  # noqa: T201
         return
 
-    # Show what was validated
-    scopes: list[str] = []
-    run_all = not any(
-        [
-            check_manifest,
-            check_documents,
-            check_surfaces,
-            check_ledger,
-            check_instructions,
-            check_briefs,
-            check_personas,
-            check_interviews,
-        ]
-    )
-    if run_all or check_manifest:
-        scopes.append("manifest")
-    if run_all or check_surfaces:
-        scopes.append("surfaces")
-    if run_all or check_ledger:
-        scopes.append("ledger")
-    if run_all or check_instructions:
-        scopes.append("instructions")
-    if run_all or check_briefs:
-        scopes.append("briefs")
-    if run_all or check_documents:
-        scopes.append("documents")
-    if run_all or check_personas:
-        scopes.append("personas")
-    if check_interviews:
-        scopes.append("interviews")
-
-    console.print(f"[bold]Validated:[/bold] {', '.join(scopes)}\n")
-
-    if errors:
-        console.print(f"[red]❌ Validation failed with {len(errors)} error(s):[/red]\n")
-        for error in errors:
-            console.print(f"   [red]→[/red] [{error.type}] {error.artifact}")
-            console.print(f"    {error.message}")
-            if error.field:
-                console.print(f"    Field: {error.field}")
-            console.print()
-        raise SystemExit(1)
-    console.print(f"[green]✓ All validations passed ({len(scopes)} scopes).[/green]")
+    checks = {
+        "manifest": check_manifest,
+        "documents": check_documents,
+        "surfaces": check_surfaces,
+        "ledger": check_ledger,
+        "instructions": check_instructions,
+        "briefs": check_briefs,
+        "personas": check_personas,
+        "interviews": check_interviews,
+        "decomposition": check_decomposition,
+    }
+    _print_validation_result(errors, _resolve_scopes(checks))

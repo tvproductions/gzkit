@@ -164,6 +164,23 @@ class TestSkillCommands(unittest.TestCase):
             relaxed_result = runner.invoke(main, ["skill", "audit", "--max-review-age-days", "365"])
             self.assertEqual(relaxed_result.exit_code, 0)
 
+    def test_skill_audit_manpage_coverage_warns_when_index_exists(self) -> None:
+        """Manpage coverage warns for active skills without manpages when index exists."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            # Create the skills index to enable manpage checks
+            index_dir = Path("docs/user/skills")
+            index_dir.mkdir(parents=True, exist_ok=True)
+            (index_dir / "index.md").write_text("# Skills\n", encoding="utf-8")
+            result = runner.invoke(main, ["skill", "audit", "--json"])
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            manpage_issues = [i for i in payload["issues"] if i["code"] == "SKA-MANPAGE-MISSING"]
+            self.assertTrue(len(manpage_issues) > 0)
+            for issue in manpage_issues:
+                self.assertFalse(issue["blocking"])
+
     def test_check_command_passes_with_non_blocking_skill_audit_warning(self) -> None:
         """Aggregate check remains pass when skill audit warning is non-blocking."""
         runner = CliRunner()

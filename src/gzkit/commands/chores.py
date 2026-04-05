@@ -48,6 +48,7 @@ class ChoreDefinition(BaseModel):
     path: str
     criteria: tuple[AcceptanceCriterion, ...]
     timeout_seconds: int
+    vendor: str | None = None
 
 
 class CriterionResult(BaseModel):
@@ -171,6 +172,7 @@ def chores_list() -> None:
     table.add_column("Slug", style="cyan")
     table.add_column("Lane", style="green")
     table.add_column("Version")
+    table.add_column("Vendor")
     table.add_column("Criteria", justify="right")
     table.add_column("Title")
 
@@ -179,6 +181,7 @@ def chores_list() -> None:
             chore.slug,
             chore.lane,
             chore.version,
+            chore.vendor or "",
             str(len(chore.criteria)),
             chore.title,
         )

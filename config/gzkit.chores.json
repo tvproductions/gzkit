@@ -200,6 +200,14 @@
             "version": "1.0.0",
             "path": "ops/chores/agents-md-architectural-boundaries",
             "lane": "lite"
+        },
+        {
+            "slug": "memory-hygiene",
+            "title": "Audit auto-memory for process drift into governed artifacts",
+            "version": "1.0.0",
+            "path": "ops/chores/memory-hygiene",
+            "lane": "lite",
+            "vendor": "claude"
         }
     ]
 }
