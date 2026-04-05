@@ -150,15 +150,11 @@ Docs alignment check (human-confirmed):
 - [ ] Dataset documentation updated if applicable
 - [ ] CLI --help matches manpage SYNOPSIS
 
-When you have observed the artifacts, provide your attestation:
-- "Completed"
-- "Completed — Partial: [reason]"
-- "Dropped — [reason]"
-
-I await your attestation.
+Proceeding to docs alignment confirmation and runbook walkthrough...
 ```
 
 The agent MUST NOT deviate from this script or add interpretive commentary.
+Attestation is requested only after the runbook walkthrough is complete (Step 6).
 
 ---
 

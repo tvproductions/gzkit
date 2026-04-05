@@ -84,17 +84,13 @@ Docs alignment check (human-confirmed):
 - [ ] Dataset documentation updated if applicable
 - [ ] CLI --help matches manpage SYNOPSIS
 
-When you have observed the artifacts, provide your attestation:
-- "Completed"
-- "Completed — Partial: [reason]"
-- "Dropped — [reason]"
-
-I await your attestation.
+Proceeding to docs alignment confirmation and runbook walkthrough...
 ```
 
 ### Step 3: Confirm Docs Alignment (Human-Driven)
 
-Use the checklist in the fixed script. Do not assert outcomes.
+Present the docs alignment checklist from Step 2 and ask the human to confirm each item.
+Do not assert outcomes.
 
 ### Step 4: Runbook Walkthrough
 
@@ -347,12 +343,7 @@ Docs alignment check (human-confirmed):
 - [ ] Dataset documentation updated if applicable
 - [ ] CLI --help matches manpage SYNOPSIS
 
-When you have observed the artifacts, provide your attestation:
-- "Completed"
-- "Completed — Partial: [reason]"
-- "Dropped — [reason]"
-
-I await your attestation.
+Proceeding to docs alignment confirmation and runbook walkthrough...
 ```
 
 ---
