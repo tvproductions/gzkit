@@ -473,11 +473,60 @@ class TestObpiPipelineCommand(unittest.TestCase):
             marker_path, legacy_path = self._pipeline_paths(Path.cwd())
             self.assertFalse(marker_path.exists())
             self.assertFalse(legacy_path.exists())
-            # Verify sync commands were executed
+            # Verify sync commands were executed in correct order (GHI #36):
+            # git-sync BEFORE emit-receipt, accounting commit AFTER reconcile
             executed = [call.args[0] for call in run_command_mock.call_args_list]
             self.assertTrue(any("emit-receipt" in cmd for cmd in executed))
             self.assertTrue(any("reconcile" in cmd for cmd in executed))
             self.assertTrue(any("git-sync" in cmd for cmd in executed))
+            sync_idx = next(i for i, c in enumerate(executed) if "git-sync" in c)
+            emit_idx = next(i for i, c in enumerate(executed) if "emit-receipt" in c)
+            self.assertLess(sync_idx, emit_idx, "git-sync must run before emit-receipt")
+            # Accounting commit should appear after the core steps
+            self.assertTrue(any("git add" in cmd for cmd in executed))
+            self.assertTrue(any("git commit" in cmd for cmd in executed))
+            self.assertTrue(any("git push" in cmd for cmd in executed))
+
+    @patch("gzkit.cli.main.run_command")
+    def test_sync_stage_accounting_commit_failure_is_nonfatal(self, run_command_mock) -> None:
+        """Accounting commit failure should warn, not block pipeline completion."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            self._seed_runtime(runner)
+
+            def side_effect(command: str, **_kwargs: object) -> QualityResult:
+                if any(kw in command for kw in ("git add", "git commit", "git push")):
+                    return QualityResult(
+                        success=False,
+                        command=command,
+                        stdout="",
+                        stderr="nothing to commit",
+                        returncode=1,
+                    )
+                return QualityResult(
+                    success=True, command=command, stdout="ok", stderr="", returncode=0
+                )
+
+            run_command_mock.side_effect = side_effect
+            evidence = json.dumps({"value_narrative": "test", "key_proof": "proof"})
+
+            result = runner.invoke(
+                main,
+                [
+                    "obpi",
+                    "pipeline",
+                    "OBPI-0.13.0-01-runtime-command-contract",
+                    "--from=sync",
+                    "--attestor",
+                    "human:tester",
+                    "--evidence-json",
+                    evidence,
+                ],
+            )
+
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("Pipeline complete.", result.output)
+            self.assertIn("WARN", result.output)
 
     @covers("REQ-0.0.9-02-01")
     def test_blocks_when_obpi_is_ledger_completed(self) -> None:
