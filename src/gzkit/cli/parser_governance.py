@@ -19,7 +19,7 @@ from gzkit.commands.audit_cmd import audit_cmd
 from gzkit.commands.closeout import closeout_cmd
 from gzkit.commands.gates import gates_cmd, implement_cmd
 from gzkit.commands.init_cmd import constitute, init, prd
-from gzkit.commands.personas import personas_list_cmd
+from gzkit.commands.personas import persona_drift_cmd, personas_list_cmd
 from gzkit.commands.plan import plan_cmd
 from gzkit.commands.plan_audit_cmd import plan_audit_cmd
 from gzkit.commands.register import migrate_semver, register_adrs
@@ -554,3 +554,30 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
     )
     add_json_flag(p_personas_list)
     p_personas_list.set_defaults(func=lambda a: personas_list_cmd(as_json=a.as_json))
+
+    p_personas_drift = personas_commands.add_parser(
+        "drift",
+        help="Report persona trait adherence from behavioral proxies",
+        description=(
+            "Scan local governance artifacts for evidence of trait-aligned "
+            "behavior. Reports per-trait pass/fail for each persona using "
+            "behavioral proxies only — no activation-space measurement. "
+            "Exit code 0 when no drift detected, exit code 3 on policy breach."
+        ),
+        epilog=build_epilog(
+            [
+                "gz personas drift",
+                "gz personas drift --json",
+                "gz personas drift --persona implementer",
+            ]
+        ),
+    )
+    p_personas_drift.add_argument(
+        "--persona",
+        default=None,
+        help="Evaluate only the named persona (default: all)",
+    )
+    add_json_flag(p_personas_drift)
+    p_personas_drift.set_defaults(
+        func=lambda a: persona_drift_cmd(persona=a.persona, as_json=a.as_json)
+    )

@@ -65,6 +65,42 @@ def discover_persona_files(personas_dir: Path) -> list[Path]:
     return sorted(personas_dir.glob("*.md"))
 
 
+class TraitCheckResult(BaseModel):
+    """Result of evaluating a single trait proxy against local artifacts."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    trait: str = Field(..., description="Trait keyword from persona frontmatter")
+    status: str = Field(..., description="Proxy evaluation result: pass, fail, or no_evidence")
+    proxy: str = Field(..., description="Proxy name that evaluated this trait")
+    detail: str = Field(default="", description="Human-readable explanation")
+    is_anti_trait: bool = Field(
+        default=False, description="True when this check is for an anti-trait"
+    )
+
+
+class PersonaDriftResult(BaseModel):
+    """Drift report for a single persona."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    persona: str = Field(..., description="Persona name")
+    checks: list[TraitCheckResult] = Field(..., description="Per-trait check results")
+    has_drift: bool = Field(..., description="True if any trait check failed")
+
+
+class PersonaDriftReport(BaseModel):
+    """Aggregate drift report across all evaluated personas."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    personas: list[PersonaDriftResult] = Field(..., description="Per-persona drift results")
+    total_personas: int = Field(..., description="Number of personas evaluated")
+    total_checks: int = Field(..., description="Total trait checks run")
+    drift_count: int = Field(..., description="Number of failed trait checks")
+    scan_timestamp: str = Field(..., description="ISO-8601 scan timestamp")
+
+
 def validate_persona_structure(path: Path) -> list[str]:
     """Validate a persona file for structural correctness beyond Pydantic.
 

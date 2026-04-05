@@ -43,3 +43,23 @@ Feature: Persona control surface
     When I run the gz command "personas list"
     Then the command exits with code 0
     And the output contains "implementer"
+
+  Scenario: Persona drift reports with governance evidence
+    Given the workspace is initialized
+    And the ledger contains governance events
+    When I run the gz command "personas drift --persona default-agent --json"
+    Then the command exits with code 0
+    And the output is valid JSON
+
+  Scenario: Persona drift filters to single persona
+    Given the workspace is initialized
+    And the ledger contains governance events
+    When I run the gz command "personas drift --persona default-agent --json"
+    Then the command exits with code 0
+    And the output contains "default-agent"
+
+  Scenario: Persona drift help includes description
+    Given the workspace is initialized
+    When I run the gz command "personas drift --help"
+    Then the command exits with code 0
+    And the output contains "behavioral proxies"
