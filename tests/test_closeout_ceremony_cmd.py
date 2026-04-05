@@ -86,7 +86,7 @@ class TestNextStep(unittest.TestCase):
     """_next_step advances correctly for normal and foundation ADRs."""
 
     def test_normal_sequential(self):
-        """Normal ADR steps advance 2→3→4→...→11."""
+        """Normal ADR steps advance 2→3→4→...→10."""
         step = 2
         visited = [step]
         while True:
@@ -94,10 +94,10 @@ class TestNextStep(unittest.TestCase):
             if step == -1:
                 break
             visited.append(step)
-        self.assertEqual(visited, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
+        self.assertEqual(visited, [2, 3, 4, 5, 6, 7, 8, 9, 10])
 
-    def test_foundation_skips_9_10(self):
-        """Foundation ADR skips steps 9 (RELEASE_NOTES) and 10 (RELEASE)."""
+    def test_foundation_skips_8_9(self):
+        """Foundation ADR skips steps 8 (RELEASE_NOTES) and 9 (RELEASE)."""
         step = 2
         visited = [step]
         while True:
@@ -105,9 +105,9 @@ class TestNextStep(unittest.TestCase):
             if step == -1:
                 break
             visited.append(step)
-        self.assertEqual(visited, [2, 3, 4, 5, 6, 7, 8, 11])
+        self.assertEqual(visited, [2, 3, 4, 5, 6, 7, 10])
+        self.assertNotIn(8, visited)
         self.assertNotIn(9, visited)
-        self.assertNotIn(10, visited)
 
     def test_past_complete_returns_minus_one(self):
         self.assertEqual(_next_step(CeremonyStep.COMPLETE, is_foundation=False), -1)
@@ -219,9 +219,9 @@ class TestCeremonyAdvance(unittest.TestCase):
             runner.invoke(main, ["closeout", "ADR-0.1.0", "--ceremony"])
             result = runner.invoke(main, ["closeout", "ADR-0.1.0", "--ceremony", "--next"])
             self.assertEqual(result.exit_code, 0, result.output)
-            self.assertIn("Docs alignment", result.output)
+            self.assertIn("Walkthrough", result.output)
             state = load_ceremony_state(Path.cwd(), "ADR-0.1.0")
-            self.assertEqual(state.current_step, CeremonyStep.DOCS_CHECK)
+            self.assertEqual(state.current_step, CeremonyStep.WALKTHROUGH)
 
     @patch("gzkit.commands.closeout_ceremony._adr_closeout_readiness")
     def test_advance_through_all_steps(self, mock_readiness):
@@ -234,15 +234,12 @@ class TestCeremonyAdvance(unittest.TestCase):
             runner.invoke(main, ["plan", "create", "0.1.0"])
             # Init at step 2
             runner.invoke(main, ["closeout", "ADR-0.1.0", "--ceremony"])
-            # Step 2→3
+            # Step 2→3 (walkthrough)
             runner.invoke(main, ["closeout", "ADR-0.1.0", "--ceremony", "--next"])
-            # Step 3→4
-            runner.invoke(main, ["closeout", "ADR-0.1.0", "--ceremony", "--next"])
-            # Step 4→5 (walkthrough has at least 1 command)
+            # Step 3→4 (execute)
             runner.invoke(main, ["closeout", "ADR-0.1.0", "--ceremony", "--next"])
             state = load_ceremony_state(Path.cwd(), "ADR-0.1.0")
-            # May be at step 5 (if 1 cmd) or still 5 (multi cmd)
-            # Advance until we pass step 5
+            # Advance until we pass step 4 (EXECUTE)
             while state.current_step == CeremonyStep.EXECUTE:
                 runner.invoke(main, ["closeout", "ADR-0.1.0", "--ceremony", "--next"])
                 state = load_ceremony_state(Path.cwd(), "ADR-0.1.0")
@@ -252,7 +249,7 @@ class TestCeremonyAdvance(unittest.TestCase):
             state = load_ceremony_state(Path.cwd(), "ADR-0.1.0")
             self.assertEqual(state.current_step, CeremonyStep.CLOSEOUT)
             self.assertEqual(state.attestation, "Completed")
-            # Step 7→8→9→10→11
+            # Step 6→7→8→9→10
             for _ in range(4):
                 runner.invoke(main, ["closeout", "ADR-0.1.0", "--ceremony", "--next"])
             state = load_ceremony_state(Path.cwd(), "ADR-0.1.0")
@@ -276,7 +273,7 @@ class TestCeremonyAttestation(unittest.TestCase):
 
     @patch("gzkit.commands.closeout_ceremony._adr_closeout_readiness")
     def test_attest_at_wrong_step_exits_3(self, mock_readiness):
-        """Attestation at step != 6 is a policy breach (exit 3)."""
+        """Attestation at step != 5 is a policy breach (exit 3)."""
         mock_readiness.return_value = {"blockers": []}
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -289,7 +286,7 @@ class TestCeremonyAttestation(unittest.TestCase):
                 main, ["closeout", "ADR-0.1.0", "--ceremony", "--attest", "Completed"]
             )
             self.assertEqual(result.exit_code, 3, result.output)
-            self.assertIn("Attestation only valid at step 6", result.output)
+            self.assertIn("Attestation only valid at step 5", result.output)
 
 
 class TestCeremonyStatus(unittest.TestCase):
@@ -337,11 +334,11 @@ class TestCeremonyResume(unittest.TestCase):
             runner.invoke(main, ["closeout", "ADR-0.1.0", "--ceremony"])
             runner.invoke(main, ["closeout", "ADR-0.1.0", "--ceremony", "--next"])
             state = load_ceremony_state(Path.cwd(), "ADR-0.1.0")
-            self.assertEqual(state.current_step, CeremonyStep.DOCS_CHECK)
+            self.assertEqual(state.current_step, CeremonyStep.WALKTHROUGH)
             # Resume
             result = runner.invoke(main, ["closeout", "ADR-0.1.0", "--ceremony"])
             self.assertEqual(result.exit_code, 0, result.output)
-            self.assertIn("Docs alignment", result.output)
+            self.assertIn("Walkthrough", result.output)
 
 
 class TestCeremonyCompleted(unittest.TestCase):
@@ -358,7 +355,7 @@ class TestCeremonyCompleted(unittest.TestCase):
             # Create a completed state directly
             state = CeremonyState(
                 adr_id="ADR-0.1.0",
-                current_step=11,
+                current_step=10,
                 is_foundation=False,
                 started_at="2026-03-30T00:00:00Z",
                 updated_at="2026-03-30T00:00:00Z",

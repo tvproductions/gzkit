@@ -18,15 +18,14 @@ from pydantic import BaseModel, ConfigDict, Field
 from gzkit.commands.ceremony_steps import (
     discover_walkthrough_commands,
     render_step_2_summary,
-    render_step_3_docs_check,
-    render_step_4_walkthrough,
-    render_step_5_execute,
-    render_step_6_attestation,
-    render_step_7_closeout,
-    render_step_8_issues,
-    render_step_9_release_notes,
-    render_step_10_release,
-    render_step_11_complete,
+    render_step_3_walkthrough,
+    render_step_4_execute,
+    render_step_5_attestation,
+    render_step_6_closeout,
+    render_step_7_issues,
+    render_step_8_release_notes,
+    render_step_9_release,
+    render_step_10_complete,
 )
 from gzkit.commands.common import (
     GzCliError,
@@ -53,15 +52,14 @@ class CeremonyStep(IntEnum):
 
     INITIALIZE = 1
     SUMMARY = 2
-    DOCS_CHECK = 3
-    WALKTHROUGH = 4
-    EXECUTE = 5
-    ATTESTATION = 6
-    CLOSEOUT = 7
-    ISSUES = 8
-    RELEASE_NOTES = 9
-    RELEASE = 10
-    COMPLETE = 11
+    WALKTHROUGH = 3
+    EXECUTE = 4
+    ATTESTATION = 5
+    CLOSEOUT = 6
+    ISSUES = 7
+    RELEASE_NOTES = 8
+    RELEASE = 9
+    COMPLETE = 10
 
 
 FOUNDATION_SKIP_STEPS: frozenset[int] = frozenset(
@@ -209,24 +207,22 @@ def _present_step(
     adr_id = state.adr_id
     if step == CeremonyStep.SUMMARY:
         return render_step_2_summary(adr_id, adr_file, obpi_files, manifest, lane, project_root)
-    if step == CeremonyStep.DOCS_CHECK:
-        return render_step_3_docs_check(adr_id)
     if step == CeremonyStep.WALKTHROUGH:
-        return render_step_4_walkthrough(adr_id, state.walkthrough_commands)
+        return render_step_3_walkthrough(adr_id, state.walkthrough_commands)
     if step == CeremonyStep.EXECUTE:
-        return render_step_5_execute(adr_id, state.walkthrough_commands)
+        return render_step_4_execute(adr_id, state.walkthrough_commands)
     if step == CeremonyStep.ATTESTATION:
-        return render_step_6_attestation(adr_id)
+        return render_step_5_attestation(adr_id)
     if step == CeremonyStep.CLOSEOUT:
-        return render_step_7_closeout(adr_id)
+        return render_step_6_closeout(adr_id)
     if step == CeremonyStep.ISSUES:
-        return render_step_8_issues(adr_id)
+        return render_step_7_issues(adr_id)
     if step == CeremonyStep.RELEASE_NOTES:
-        return render_step_9_release_notes(adr_id)
+        return render_step_8_release_notes(adr_id)
     if step == CeremonyStep.RELEASE:
-        return render_step_10_release(adr_id)
+        return render_step_9_release(adr_id)
     if step == CeremonyStep.COMPLETE:
-        return render_step_11_complete(state)
+        return render_step_10_complete(state)
     msg = f"Unknown ceremony step: {step}"
     raise GzCliError(msg)
 
@@ -347,7 +343,7 @@ def _record_attestation(
     attestation: str,
     as_json: bool,
 ) -> None:
-    """Record attestation at step 6 and advance to step 7."""
+    """Record attestation at step 5 and advance to step 6."""
     state = load_ceremony_state(project_root, adr_id)
     if state is None:
         raise GzCliError(f"No ceremony in progress for {adr_id}.")

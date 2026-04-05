@@ -144,13 +144,7 @@ Artifacts for your direct observation:
 - BDD (if Heavy): Run `uv run behave features/{feature}.feature`
 - Runbook walkthrough (product commands from runbook/manpages): [commands]
 
-Docs alignment check (human-confirmed):
-- [ ] Manpage exists and reflects current CLI behavior
-- [ ] Runbook includes relevant commands
-- [ ] Dataset documentation updated if applicable
-- [ ] CLI --help matches manpage SYNOPSIS
-
-Proceeding to docs alignment confirmation and runbook walkthrough...
+Proceeding to runbook walkthrough...
 ```
 
 The agent MUST NOT deviate from this script or add interpretive commentary.

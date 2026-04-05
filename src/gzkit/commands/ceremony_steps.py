@@ -55,28 +55,11 @@ def render_step_2_summary(
         lines.append(f"- BDD (Heavy): Run `{bdd_cmd}`")
     lines.append("")
     lines.append(f"Step 2 complete. Run `gz closeout {adr_id} --ceremony --next`")
-    lines.append("to proceed to docs alignment check.")
+    lines.append("to proceed to runbook walkthrough.")
     return "\n".join(lines)
 
 
-def render_step_3_docs_check(adr_id: str) -> str:
-    """Docs alignment checklist."""
-    return "\n".join(
-        [
-            "Docs alignment check (human-confirmed):",
-            "",
-            "- [ ] Manpage exists and reflects current CLI behavior",
-            "- [ ] Runbook includes relevant commands",
-            "- [ ] Dataset documentation updated if applicable",
-            "- [ ] CLI --help matches manpage SYNOPSIS",
-            "",
-            f"Step 3 complete. Run `gz closeout {adr_id} --ceremony --next`",
-            "to proceed to runbook walkthrough.",
-        ]
-    )
-
-
-def render_step_4_walkthrough(adr_id: str, commands: list[str]) -> str:
+def render_step_3_walkthrough(adr_id: str, commands: list[str]) -> str:
     """Runbook walkthrough — command list."""
     cmd_list = "\n".join(f"  {i + 1}. `{c}`" for i, c in enumerate(commands))
     return "\n".join(
@@ -88,13 +71,13 @@ def render_step_4_walkthrough(adr_id: str, commands: list[str]) -> str:
             "",
             cmd_list,
             "",
-            f"Step 4 complete. Run `gz closeout {adr_id} --ceremony --next`",
+            f"Step 3 complete. Run `gz closeout {adr_id} --ceremony --next`",
             "to begin executing commands one at a time.",
         ]
     )
 
 
-def render_step_5_execute(adr_id: str, commands: list[str]) -> str:
+def render_step_4_execute(adr_id: str, commands: list[str]) -> str:
     """Run all walkthrough commands now."""
     cmd_list = "\n".join(f"  {c}" for c in commands)
     return "\n".join(
@@ -109,7 +92,7 @@ def render_step_5_execute(adr_id: str, commands: list[str]) -> str:
     )
 
 
-def render_step_6_attestation(adr_id: str) -> str:
+def render_step_5_attestation(adr_id: str) -> str:
     """Request attestation."""
     return "\n".join(
         [
@@ -126,7 +109,7 @@ def render_step_6_attestation(adr_id: str) -> str:
     )
 
 
-def render_step_7_closeout(adr_id: str) -> str:
+def render_step_6_closeout(adr_id: str) -> str:
     """Instruct the agent to run the closeout pipeline."""
     return "\n".join(
         [
@@ -142,7 +125,7 @@ def render_step_7_closeout(adr_id: str) -> str:
     )
 
 
-def render_step_8_issues(adr_id: str) -> str:
+def render_step_7_issues(adr_id: str) -> str:
     """Instruct the agent to close related GitHub issues."""
     return "\n".join(
         [
@@ -159,7 +142,7 @@ def render_step_8_issues(adr_id: str) -> str:
     )
 
 
-def render_step_9_release_notes(adr_id: str) -> str:
+def render_step_8_release_notes(adr_id: str) -> str:
     """Instruct the agent to update RELEASE_NOTES.md."""
     return "\n".join(
         [
@@ -179,7 +162,7 @@ def render_step_9_release_notes(adr_id: str) -> str:
     )
 
 
-def render_step_10_release(adr_id: str) -> str:
+def render_step_9_release(adr_id: str) -> str:
     """Instruct the agent to create a GitHub release."""
     return "\n".join(
         [
@@ -195,20 +178,19 @@ def render_step_10_release(adr_id: str) -> str:
     )
 
 
-def render_step_11_complete(state: CeremonyState) -> str:
+def render_step_10_complete(state: CeremonyState) -> str:
     """Ceremony completion summary."""
     step_names = {
         1: "Trigger recognized",
         2: "Paths/commands summary presented",
-        3: "Docs alignment verified",
-        4: "Runbook walkthrough presented",
-        5: "Commands executed (one at a time)",
-        6: "Attestation recorded",
-        7: "Closeout pipeline executed",
-        8: "GitHub Issues reviewed",
-        9: "RELEASE_NOTES.md updated",
-        10: "GitHub Release created",
-        11: "Ceremony complete",
+        3: "Runbook walkthrough presented",
+        4: "Commands executed (one at a time)",
+        5: "Attestation recorded",
+        6: "Closeout pipeline executed",
+        7: "GitHub Issues reviewed",
+        8: "RELEASE_NOTES.md updated",
+        9: "GitHub Release created",
+        10: "Ceremony complete",
     }
     lines = [f"ADR {state.adr_id} CLOSEOUT CEREMONY — COMPLETE", ""]
     for record in state.step_history:
