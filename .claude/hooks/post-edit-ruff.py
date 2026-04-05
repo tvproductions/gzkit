@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Post-Edit Ruff Hook.
 
-PostToolUse hook that runs ruff check --fix and ruff format on edited
+PostToolUse hook that runs ruff check (lint-only, no fix) on edited
 Python files immediately after each Write/Edit operation.
 
-Shifts lint enforcement left: from pre-commit (batch) to post-edit
-(immediate), eliminating the "fix lint at the end" friction pattern.
+Reports lint issues without modifying files — avoids the import-removal
+problem where --fix deletes an import before the next Edit adds usage.
+Actual fixing deferred to gz git-sync --lint.
 
 Exit codes:
   0 - Always (non-blocking; lint failures do not prevent edits)
@@ -49,14 +50,7 @@ def main():
 
     with suppress(FileNotFoundError, subprocess.TimeoutExpired, OSError):
         subprocess.run(
-            ["uv", "run", "ruff", "check", "--fix", "--quiet", posix_path],
-            capture_output=True,
-            timeout=TIMEOUT_SECONDS,
-        )
-
-    with suppress(FileNotFoundError, subprocess.TimeoutExpired, OSError):
-        subprocess.run(
-            ["uv", "run", "ruff", "format", "--quiet", posix_path],
+            ["uv", "run", "ruff", "check", "--quiet", posix_path],
             capture_output=True,
             timeout=TIMEOUT_SECONDS,
         )
