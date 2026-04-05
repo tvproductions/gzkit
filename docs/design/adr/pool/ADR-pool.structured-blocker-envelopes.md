@@ -73,6 +73,10 @@ This pool ADR can be promoted when all are true:
 3. Text and JSON rendering contracts are documented and tested.
 4. Retry/next-action semantics are defined clearly enough for agent reuse.
 
+## See Also
+
+- [SPEC-agent-capability-uplift](../../briefs/SPEC-agent-capability-uplift.md) — **Complements CAP-10** (analysis paralysis guard / stall detection). Spec proposes stall detection; this ADR defines the structured blocker format that stall detection would consume.
+
 ## Inspired By
 
 [12-factor-agents](https://github.com/humanlayer/12-factor-agents), especially:

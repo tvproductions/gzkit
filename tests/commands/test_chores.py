@@ -301,6 +301,7 @@ class TestChoresCommands(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
+            Path(".claude").mkdir()
             _setup_demo_chore(
                 slug="vendor-chore",
                 chore_path="ops/chores/vendor-chore",
@@ -312,3 +313,19 @@ class TestChoresCommands(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             self.assertIn("vendor-chore", result.output)
             self.assertIn("claude", result.output)
+
+    def test_chores_vendor_filtered_when_no_harness(self) -> None:
+        """Vendor-scoped chores are hidden when harness is not active."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            _setup_demo_chore(
+                slug="vendor-chore",
+                chore_path="ops/chores/vendor-chore",
+                vendor="claude",
+                command=f'{_PYTHON} -c "print(42)"',
+            )
+
+            result = runner.invoke(main, ["chores", "list"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertNotIn("vendor-chore", result.output)

@@ -48,3 +48,7 @@ Define explicit human-agent control boundaries and recovery policies so autonomy
 
 - This phase converts governance doctrine into runtime interaction policy.
 - Promotion criteria should include both eval quality and observed recovery behavior in production.
+
+## See Also
+
+- [SPEC-agent-capability-uplift](../../briefs/SPEC-agent-capability-uplift.md) — **Complements CAP-08** (graduated deviation rules). Spec defines the autonomy tiers; this ADR defines the recovery protocol when agents exceed their tier boundaries.

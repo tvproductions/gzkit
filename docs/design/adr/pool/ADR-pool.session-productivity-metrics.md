@@ -86,3 +86,7 @@ adds the quantitative layer.
 - Schema should be minimal and append-only to avoid measurement overhead becoming a productivity drag.
 - Key design tension: enough fields to be useful vs. few enough to emit reliably across all vendors.
 - Consider: should metrics auto-populate from git activity (commits, files changed) or require explicit agent emission?
+
+## See Also
+
+- [SPEC-agent-capability-uplift](../../briefs/SPEC-agent-capability-uplift.md) — **Complements CAP-14** (operator profile). Spec proposes operator profile persistence; this ADR defines the numeric productivity metrics that inform it.

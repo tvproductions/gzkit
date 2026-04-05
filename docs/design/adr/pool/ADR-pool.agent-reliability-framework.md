@@ -124,6 +124,10 @@ The GBOM is not a replacement for SBOM — it is a complementary transparency
 artifact. An SBOM says "these are the components in the software." A GBOM says
 "this is how, by whom, and under what governance this change was produced."
 
+## See Also
+
+- [SPEC-agent-capability-uplift](../../briefs/SPEC-agent-capability-uplift.md) — **Overarching governance framework** for all 22 capabilities (CAP-01 through CAP-22). This ADR defines the reliability measurement layer; the spec defines the capabilities being measured.
+
 ### SLSA Data Model Appropriation
 
 ARF appropriates SLSA's core data model, replacing build-system semantics with
