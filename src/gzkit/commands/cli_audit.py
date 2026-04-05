@@ -66,7 +66,7 @@ def _normalize_readme_command(command_line: str) -> list[str] | None:
 def _collect_readme_quickstart_issues(project_root: Path) -> list[dict[str, str]]:
     """Validate README Quick Start command examples against current parser."""
     readme_path = project_root / "README.md"
-    if not readme_path.exists():
+    if not readme_path.is_file():
         return [{"path": "README.md", "issue": "README missing"}]
 
     readme_content = readme_path.read_text(encoding="utf-8")
@@ -184,7 +184,7 @@ def cli_audit_cmd(as_json: bool) -> None:
     for command_name in manifest.commands:
         doc_rel = manpage_path_for(command_name)
         doc_path = project_root / doc_rel
-        if not doc_path.exists():
+        if not doc_path.is_file():
             issues.append({"path": str(doc_rel), "issue": f"missing doc for `{command_name}`"})
             continue
 

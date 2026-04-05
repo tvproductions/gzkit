@@ -54,7 +54,7 @@ def obpi_lock_claim_cmd(obpi_id: str, ttl_minutes: int, as_json: bool) -> None:
     project_root = get_project_root()
     lock_file = _lock_path(project_root, obpi_id)
 
-    if lock_file.exists():
+    if lock_file.is_file():
         existing = json.loads(lock_file.read_text(encoding="utf-8"))
         claimed_at = datetime.fromisoformat(existing["claimed_at"])
         ttl = existing.get("ttl_minutes", 120)

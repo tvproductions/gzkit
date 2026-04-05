@@ -215,7 +215,7 @@ def _collect_errors(
 def _validate_manifest_documents(project_root: Path) -> list[ValidationError]:
     """Validate documents declared in the manifest."""
     manifest_path = project_root / ".gzkit" / "manifest.json"
-    if not manifest_path.exists():
+    if not manifest_path.is_file():
         return []
 
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
