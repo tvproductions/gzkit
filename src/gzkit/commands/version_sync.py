@@ -23,7 +23,7 @@ def _parse_semver_tuple(version: str) -> tuple[int, ...]:
 def _read_current_project_version(project_root: Path) -> str | None:
     """Read version from ``pyproject.toml``."""
     pyproject = project_root / "pyproject.toml"
-    if not pyproject.exists():
+    if not pyproject.is_file():
         return None
     for line in pyproject.read_text(encoding="utf-8").splitlines():
         m = re.match(r'^version\s*=\s*"(\d+\.\d+\.\d+)"', line)
@@ -41,7 +41,7 @@ def sync_project_version(project_root: Path, new_version: str) -> list[str]:
 
     # pyproject.toml
     pyproject = project_root / "pyproject.toml"
-    if pyproject.exists():
+    if pyproject.is_file():
         old = pyproject.read_text(encoding="utf-8")
         new = re.sub(
             r'^(version\s*=\s*")\d+\.\d+\.\d+(")',
@@ -56,7 +56,7 @@ def sync_project_version(project_root: Path, new_version: str) -> list[str]:
 
     # src/gzkit/__init__.py
     init_py = project_root / "src" / "gzkit" / "__init__.py"
-    if init_py.exists():
+    if init_py.is_file():
         old = init_py.read_text(encoding="utf-8")
         new = re.sub(
             r'^(__version__\s*=\s*")\d+\.\d+\.\d+(")',
@@ -71,7 +71,7 @@ def sync_project_version(project_root: Path, new_version: str) -> list[str]:
 
     # README.md badge
     readme = project_root / "README.md"
-    if readme.exists():
+    if readme.is_file():
         old = readme.read_text(encoding="utf-8")
         new = _VERSION_BADGE_RE.sub(rf"\g<1>{new_version}\2", old)
         if new != old:

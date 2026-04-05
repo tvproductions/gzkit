@@ -131,7 +131,7 @@ def _hook_state_path(project_root: Path, adr_id: str) -> Path:
 def load_ceremony_state(project_root: Path, adr_id: str) -> CeremonyState | None:
     """Load ceremony state from disk, or None if not started."""
     path = ceremony_state_path(project_root, adr_id)
-    if not path.exists():
+    if not path.is_file():
         return None
     return CeremonyState.model_validate_json(path.read_text(encoding="utf-8"))
 

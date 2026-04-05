@@ -349,7 +349,7 @@ def _append_ledger(adr_dir: Path, entry: dict) -> None:
 def _read_prior_audits(adr_dir: Path) -> dict[str, dict]:
     """Read the last audit entry per OBPI from the ADR-local JSONL ledger."""
     ledger_file = adr_dir / "logs" / "obpi-audit.jsonl"
-    if not ledger_file.exists():
+    if not ledger_file.is_file():
         return {}
     latest: dict[str, dict] = {}
     for line in ledger_file.read_text(encoding="utf-8").splitlines():

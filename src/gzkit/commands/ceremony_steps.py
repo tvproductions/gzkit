@@ -219,7 +219,7 @@ def _commands_from_command_docs(project_root: Path, obpi_files: list[Path]) -> l
             if not m:
                 continue
             cmd_path = project_root / m.group(1)
-            if not cmd_path.exists():
+            if not cmd_path.is_file():
                 continue
             first_line = cmd_path.read_text(encoding="utf-8").split("\n", 1)[0]
             if first_line.startswith("# "):

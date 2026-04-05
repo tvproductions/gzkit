@@ -258,7 +258,7 @@ def chores_show(slug: str) -> None:
     project_root = get_project_root()
     _registry_path, chore = _resolve_chore(slug)
     chore_md = project_root / chore.path / "CHORE.md"
-    if not chore_md.exists():
+    if not chore_md.is_file():
         msg = f"BLOCKERS:\n- Missing CHORE.md: {chore.path}/CHORE.md"
         raise GzCliError(msg)  # noqa: TRY003
     console.print(chore_md.read_text(encoding="utf-8"))

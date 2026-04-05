@@ -111,7 +111,7 @@ def _extract_obpi_description(project_root: Path, row: dict[str, Any]) -> str:
         return cast(str, row.get("id", ""))
 
     obpi_path = project_root / file_value
-    if not obpi_path.exists():
+    if not obpi_path.is_file():
         return obpi_path.stem
 
     for line in obpi_path.read_text(encoding="utf-8").splitlines():
@@ -141,7 +141,7 @@ def _render_adr_closeout_form(
     gate_1_path = adr_file.relative_to(project_root).as_posix()
     closeout_form = _closeout_form_path(adr_file)
     preserved_tail = ""
-    if closeout_form.exists():
+    if closeout_form.is_file():
         existing = closeout_form.read_text(encoding="utf-8")
         marker = "## Post-Attestation (Phase 2)"
         marker_index = existing.find(marker)
