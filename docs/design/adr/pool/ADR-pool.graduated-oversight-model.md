@@ -93,3 +93,7 @@ routine but not trivial enough for full self-close.
 - Risk scoring should be deterministic and reproducible — no LLM-based assessment.
 - Consider: should the spot-check set be random or heuristic-selected (e.g., highest file-count OBPIs)?
 - Consider: does Standard tier require all OBPIs to pass self-close evidence requirements, with the spot-check being an additional human layer?
+
+## See Also
+
+- [SPEC-agent-capability-uplift](../../briefs/SPEC-agent-capability-uplift.md) — **Complements CAP-08** (graduated deviation rules). Spec proposes a 4-tier agent autonomy model that aligns with this ADR's oversight tiers.

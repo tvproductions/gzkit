@@ -80,3 +80,7 @@ markers and GIVEN/WHEN/THEN scenarios for testable specifications.
 - Low effort, high clarity improvement — template-only change.
 - Delta markers are most valuable for Heavy lane ADRs with external contract changes.
 - Consider: should delta markers be required or optional in the template?
+
+## See Also
+
+- [SPEC-agent-capability-uplift](../../briefs/SPEC-agent-capability-uplift.md) — **Complements CAP-02** (decision locking with formal IDs). Spec proposes formal D-ID scheme for locked decisions; delta markers track what changed between versions.

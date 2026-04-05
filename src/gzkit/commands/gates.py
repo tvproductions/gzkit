@@ -106,10 +106,44 @@ def _run_gate_3(project_root: Path, ledger: Ledger, adr_id: str, command: str) -
         result.returncode,
         "stdout/stderr captured",
     )
-    if result.success:
+    if not result.success:
+        console.print("  [red]❌[/red] Gate 3 (Docs): [red]FAIL[/red]")
+        return False
+
+    console.print("  [green]✓[/green] Docs build: [green]PASS[/green]")
+    skill_audit_ok = _run_gate_3_skill_audit(project_root, ledger, adr_id)
+    if skill_audit_ok:
         console.print("  [green]✓[/green] Gate 3 (Docs): [green]PASS[/green]")
         return True
     console.print("  [red]❌[/red] Gate 3 (Docs): [red]FAIL[/red]")
+    return False
+
+
+def _run_gate_3_skill_audit(project_root: Path, ledger: Ledger, adr_id: str) -> bool:
+    """Run skill audit as a Gate 3 sub-check."""
+    from gzkit.skills_audit import audit_skills
+
+    _m = _cli_main()
+    config = _m.ensure_initialized()
+    report = audit_skills(project_root, config)
+
+    blocking = sum(1 for i in report.issues if i.blocking)
+    warnings = sum(1 for i in report.issues if not i.blocking)
+
+    for issue in report.issues:
+        style = "red" if issue.blocking else "yellow"
+        console.print(
+            f"  [{style}]{issue.severity.upper()}[/{style}] [{issue.code}] {issue.message}"
+        )
+
+    evidence = f"skills={report.checked_skills} blocking={blocking} warnings={warnings}"
+    if blocking == 0:
+        console.print(f"  [green]✓[/green] Skill Audit: [green]PASS[/green] ({evidence})")
+        _record_gate_result(ledger, adr_id, 3, "pass", "skill-audit", 0, evidence)
+        return True
+
+    console.print(f"  [red]❌[/red] Skill Audit: [red]FAIL[/red] ({evidence})")
+    _record_gate_result(ledger, adr_id, 3, "fail", "skill-audit", 1, evidence)
     return False
 
 
