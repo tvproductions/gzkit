@@ -48,7 +48,7 @@ def parity_check_cmd(as_json: bool) -> None:
         "## Proof Surface Check",
         "## Next Actions",
     )
-    if template_path.exists():
+    if template_path.is_file():
         missing_markers = _required_markers_missing(
             template_path.read_text(encoding="utf-8"),
             template_markers,
@@ -68,7 +68,7 @@ def parity_check_cmd(as_json: bool) -> None:
         "uv run gz adr audit-check ADR-<target>",
         "uv run mkdocs build --strict",
     )
-    if skill_path.exists():
+    if skill_path.is_file():
         missing_commands = _required_markers_missing(
             skill_path.read_text(encoding="utf-8"), required_skill_commands
         )
