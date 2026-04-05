@@ -12,6 +12,13 @@ gz agent sync control-surfaces [--dry-run]
 
 For unchanged inputs, sync emits a deterministic updated-path list and stable operator output.
 
+## Persona Mirroring
+
+Sync mirrors persona files from `.gzkit/personas/` to vendor surfaces
+(`.claude/personas/`, `.agents/personas/`, `.github/personas/`), respecting
+vendor enablement configuration. Persona mirroring is automatic when the
+canonical persona directory exists — no additional flags are needed.
+
 ## Fail-Closed Canonical Preflight
 
 Before any mirror propagation, sync validates canonical `.gzkit/skills` integrity.
