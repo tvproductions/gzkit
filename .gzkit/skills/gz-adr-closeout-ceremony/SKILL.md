@@ -4,7 +4,7 @@ description: Execute the ADR closeout ceremony protocol for human attestation. G
 category: adr-audit
 compatibility: GovZero v6 framework; provides runbook walkthrough for human ADR attestation
 metadata:
-  skill-version: "6.3.0"
+  skill-version: "6.4.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -88,7 +88,7 @@ foundation/0.0.x ADRs, observable behavior is required.
 
 **Rules:**
 
-- Run ONLY airlineops CLI commands from the runbook/manpage
+- Run ONLY gzkit CLI commands from the runbook/manpage
 - NO ad-hoc Python, NO raw SQL, NO heredoc scripts
 - One command at a time
 - Wait for human acknowledgment before proceeding to next command
@@ -184,6 +184,9 @@ gh issue close <issue-number> --comment "Resolved by ADR-X.Y.Z closeout."
 
 ### Step 8: Update RELEASE_NOTES.md
 
+**Foundation ADRs (0.0.x): SKIP this step.** Foundation ADRs are infrastructure/governance
+work and do not produce GitHub releases or RELEASE_NOTES entries. Proceed directly to Step 10.
+
 Append the release entry to `RELEASE_NOTES.md`:
 
 ```markdown
@@ -201,6 +204,9 @@ All 5 GovZero gates satisfied.
 ```
 
 ### Step 9: Create GitHub Release
+
+**Foundation ADRs (0.0.x): SKIP this step.** Foundation ADRs do not get GitHub releases.
+Proceed directly to Step 10.
 
 Create a GitHub release for the ADR version:
 
@@ -251,9 +257,12 @@ Display the ceremony completion table:
 ║  Step 5:  Attestation recorded                         ✓    ║
 ║  Step 6:  Closeout pipeline (attest + version bump)    ✓    ║
 ║  Step 7:  GitHub Issues reviewed                       ✓    ║
-║  Step 8:  RELEASE_NOTES.md updated                     ✓    ║
-║  Step 9:  GitHub Release vX.Y.Z created                ✓    ║
+║  Step 8:  RELEASE_NOTES.md updated                     ✓/—  ║
+║  Step 9:  GitHub Release vX.Y.Z created                ✓/—  ║
 ╚═══════════════════════════════════════════════════════════════╝
+
+Steps 8-9 show — (dash) for Foundation ADRs (0.0.x), which do not
+produce GitHub releases or RELEASE_NOTES entries.
 ```
 
 ---
@@ -268,10 +277,11 @@ Display the ceremony completion table:
 6. **MUST** wait for explicit human attestation before closing
 7. **MUST** run `uv run gz closeout ADR-X.Y.Z` to record attestation and bump project version — never manually record attestation
 8. **MUST** review and close related GitHub Issues after attestation
-9. **MUST** update RELEASE_NOTES.md with release entry
-10. **MUST** run `uv run gz git-sync --apply --lint --test` immediately before any `gh release create` or release update command
-11. **MUST** create GitHub release with title = semver only (vX.Y.Z)
-12. **MUST** display ceremony completion summary table
+9. **MUST** skip Steps 8-9 (RELEASE_NOTES and GitHub release) for Foundation ADRs (0.0.x) — Foundation work does not produce releases
+10. **MUST** update RELEASE_NOTES.md with release entry (non-Foundation only)
+11. **MUST** run `uv run gz git-sync --apply --lint --test` immediately before any `gh release create` or release update command (non-Foundation only)
+12. **MUST** create GitHub release with title = semver only (vX.Y.Z) (non-Foundation only)
+13. **MUST** display ceremony completion summary table
 
 ---
 
