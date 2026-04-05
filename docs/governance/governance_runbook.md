@@ -191,6 +191,51 @@ body as `extra_context` to the subagent prompt.
 
 **Exemplar:** `.gzkit/personas/implementer.md` ships with the repository.
 
+### Cross-project persona workflow
+
+Validating persona portability in an external GovZero-governed repository
+(ADR-0.0.13 item 6):
+
+1. Initialize the target project (creates `.gzkit/personas/` with defaults):
+
+    ```bash
+    cd ../airlineops
+    uv run gz init
+    ```
+
+2. Verify persona files were scaffolded:
+
+    ```bash
+    ls .gzkit/personas/
+    # Expected: default-agent.md  default-reviewer.md
+    ```
+
+3. Validate personas against the portable schema:
+
+    ```bash
+    uv run gz validate --surfaces
+    ```
+
+4. Sync personas to vendor mirrors:
+
+    ```bash
+    uv run gz agent sync control-surfaces
+    ls .claude/personas/
+    ```
+
+5. Confirm no gzkit-specific content leaked:
+
+    ```bash
+    grep -ri "gzkit\|obpi\|pipeline" .gzkit/personas/
+    # Expected: no output (exit 1)
+    ```
+
+**Key constraint:** The target project's persona content must be
+project-specific. Default personas are starters that projects customize to
+reflect their workflow. If the portable surface requires gzkit source
+modifications to work in an external project, the surface is broken
+(REQ-0.0.13-06-07).
+
 ### OBPI discipline
 
 - OBPI is the atomic implementation unit.
