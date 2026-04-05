@@ -90,6 +90,30 @@ class TestManifestV2Schema(unittest.TestCase):
             self.assertIn("schema", artifacts[artifact_type])
 
 
+class TestManifestV2Personas(unittest.TestCase):
+    """Verify manifest v2 includes personas control surface (OBPI-0.0.13-03)."""
+
+    def _generate(self) -> dict:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            return generate_manifest(Path(tmpdir), GzkitConfig())
+
+    def test_personas_in_control_surfaces(self) -> None:
+        """REQ-0.0.13-03-04: control_surfaces includes personas path."""
+        manifest = self._generate()
+        surfaces = manifest["control_surfaces"]
+        self.assertIn("personas", surfaces)
+        self.assertEqual(surfaces["personas"], ".gzkit/personas")
+
+    def test_v2_manifest_with_personas_passes_validation(self) -> None:
+        """REQ-0.0.13-03-05: Manifest with personas passes schema validation."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            manifest = generate_manifest(Path(tmpdir), GzkitConfig())
+            manifest_path = Path(tmpdir) / "manifest.json"
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            errors = validate_manifest(manifest_path)
+            self.assertEqual(errors, [], f"Validation errors: {errors}")
+
+
 class TestManifestV2Validation(unittest.TestCase):
     """Verify validate_manifest accepts v2 manifests."""
 

@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 """Pipeline Completion Reminder Hook.
 
-PreToolUse hook on Bash that blocks `git commit` or `git push` when
-an OBPI pipeline is still active and the corresponding brief has not
-been completed. Stale markers (brief already Completed) are advisory.
+PreToolUse hook on Bash that emits a non-blocking reminder before
+`git commit` or `git push` when an OBPI pipeline is still active
+and the corresponding brief has not been completed.
 
 Exit codes:
-  0 - Allow operation (no active pipeline, or brief already completed)
-  2 - Block operation (pipeline incomplete, stages remain)
+  0 - Always (advisory only)
 """
 
 import json
@@ -68,20 +67,15 @@ def main() -> None:
     if brief_path is None:
         sys.exit(0)
 
-    brief_status = extract_brief_status(brief_path)
     message = pipeline_completion_reminder_message(
         marker,
-        brief_status=brief_status,
+        brief_status=extract_brief_status(brief_path),
     )
     if not message:
         sys.exit(0)
 
     print(message, file=sys.stderr)
-
-    # Stale markers (brief already Completed) are advisory; incomplete pipelines block
-    if brief_status == "Completed":
-        sys.exit(0)
-    sys.exit(2)
+    sys.exit(0)
 
 
 if __name__ == "__main__":

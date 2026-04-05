@@ -185,6 +185,11 @@ def step_output_contains(context, text: str) -> None:  # type: ignore[no-untyped
     assert text in context.output, context.output
 
 
+@then('the file "{path}" exists')
+def step_file_exists(_context, path: str) -> None:  # type: ignore[no-untyped-def]
+    assert Path(path).exists(), f"Expected {path} to exist"
+
+
 @then('the file "{path}" contains "{text}"')
 def step_file_contains(_context, path: str, text: str) -> None:  # type: ignore[no-untyped-def]
     content = Path(path).read_text(encoding="utf-8")

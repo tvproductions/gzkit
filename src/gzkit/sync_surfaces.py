@@ -21,9 +21,12 @@ from gzkit.sync_skills import (
     bootstrap_canonical_skills,
     collect_skills_catalog,
     render_skills_catalog,
+    sync_skill_mirror,
     sync_skill_mirrors,
 )
 from gzkit.templates import render_template
+
+# sync_skill_mirror is used in sync_persona_mirrors() below
 
 # ---------------------------------------------------------------------------
 # Helpers shared with sync.py
@@ -137,6 +140,7 @@ def generate_manifest(
             "copilot_skills": config.paths.copilot_skills,
             "instructions": ".github/instructions",
             "claude_rules": ".claude/rules",
+            "personas": config.paths.personas,
         },
         "verification": {
             "lint": "uv run gz lint",
@@ -494,6 +498,45 @@ def _has_manifest_vendors(project_root: Path) -> bool:
 
 
 # ---------------------------------------------------------------------------
+# Persona mirror sync
+# ---------------------------------------------------------------------------
+
+
+def sync_persona_mirrors(
+    project_root: Path, config: GzkitConfig, *, vendor_aware: bool = False
+) -> list[str]:
+    """Mirror canonical personas into enabled vendor persona directories.
+
+    Args:
+        project_root: Project root directory.
+        config: Project configuration.
+        vendor_aware: When True, skip disabled vendors. When False, sync all.
+
+    Returns:
+        List of mirrored files written.
+
+    """
+    personas_root = project_root / config.paths.personas
+    if not personas_root.exists():
+        return []
+
+    vendor_persona_map = {
+        "claude": config.vendors.claude.surface_root + "/personas",
+        "copilot": config.vendors.copilot.surface_root + "/personas",
+        "codex": config.vendors.codex.surface_root + "/personas",
+    }
+
+    updated: list[str] = []
+    for vendor_name, target in vendor_persona_map.items():
+        if vendor_aware:
+            vendor_cfg = getattr(config.vendors, vendor_name, None)
+            if vendor_cfg is not None and not vendor_cfg.enabled:
+                continue
+        updated.extend(sync_skill_mirror(project_root, config.paths.personas, target))
+    return updated
+
+
+# ---------------------------------------------------------------------------
 # Main orchestrator
 # ---------------------------------------------------------------------------
 
@@ -575,5 +618,9 @@ def sync_all(project_root: Path, config: GzkitConfig | None = None) -> list[str]
     # Vendor-aware skill mirrors
     mirrored = sync_skill_mirrors(project_root, config, vendor_aware=vendor_aware)
     updated.extend(mirrored)
+
+    # Vendor-aware persona mirrors
+    persona_mirrored = sync_persona_mirrors(project_root, config, vendor_aware=vendor_aware)
+    updated.extend(persona_mirrored)
 
     return sorted(set(updated))

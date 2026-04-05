@@ -97,6 +97,7 @@ class PathConfig(BaseModel):
     discovery_index: str = ".github/discovery-index.json"
     copilot_hooks: str = ".github/copilot/hooks"
     skills: str = ".gzkit/skills"
+    personas: str = ".gzkit/personas"
 
 
 class GzkitConfig(BaseModel):

@@ -73,17 +73,6 @@ def extract_obpi_id(file_path: str) -> str | None:
     return match.group(1) if match else None
 
 
-def _ids_match(entry_id: str, query_id: str) -> bool:
-    """Check if two IDs match, allowing short-form vs full-slug comparison.
-
-    Returns True if the IDs are equal, or if one is a prefix of the other
-    followed by '-' (e.g. OBPI-0.0.11-01 matches OBPI-0.0.11-01-persona-research).
-    """
-    if entry_id == query_id:
-        return True
-    return entry_id.startswith(f"{query_id}-") or query_id.startswith(f"{entry_id}-")
-
-
 def extract_adr_id(obpi_id: str) -> str | None:
     """Extract parent ADR ID from OBPI ID.
 
@@ -224,7 +213,7 @@ def has_audit_evidence(adr_dir: Path, obpi_id: str) -> bool:
                     entry = json.loads(line)
                     entry_type = entry.get("type", "")
                     entry_obpi = entry.get("obpi_id", "")
-                    if _ids_match(entry_obpi, obpi_id) and entry_type in (
+                    if entry_obpi == obpi_id and entry_type in (
                         "obpi-audit",
                         "obpi-completion",
                     ):
@@ -253,7 +242,7 @@ def has_human_attestation(adr_dir: Path, obpi_id: str) -> bool:
                 try:
                     entry = json.loads(line)
                     entry_obpi = entry.get("obpi_id", "")
-                    if _ids_match(entry_obpi, obpi_id):
+                    if entry_obpi == obpi_id:
                         evidence = entry.get("evidence", {})
                         if evidence.get("human_attestation"):
                             return True

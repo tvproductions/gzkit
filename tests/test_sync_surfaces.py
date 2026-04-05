@@ -2,9 +2,12 @@
 
 @covers ADR-0.0.11  OBPI-0.0.11-04 agents-md-persona-section
 @covers ADR-0.0.12  OBPI-0.0.12-07 agents-md-persona-reference
+@covers ADR-0.0.13  OBPI-0.0.13-03 manifest-schema-persona-sync
 """
 
+import tempfile
 import unittest
+from pathlib import Path
 
 from gzkit.templates import load_template, render_template
 from gzkit.traceability import covers
@@ -159,6 +162,105 @@ class TestAdrPersonaSection(unittest.TestCase):
         persona_pos = content.index("## Persona")
         intent_pos = content.index("## Intent")
         self.assertLess(persona_pos, intent_pos)
+
+
+class TestPersonaSyncMirrors(unittest.TestCase):
+    """Verify persona files are mirrored to vendor surfaces (OBPI-0.0.13-03).
+
+    @covers ADR-0.0.13  OBPI-0.0.13-03 manifest-schema-persona-sync
+    """
+
+    def test_persona_sync_mirrors_to_claude(self) -> None:
+        """REQ-0.0.13-03-02: Sync mirrors .gzkit/personas/ to .claude/personas/."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            personas_dir = root / ".gzkit" / "personas"
+            personas_dir.mkdir(parents=True)
+            (personas_dir / "implementer.md").write_text("# Implementer", encoding="utf-8")
+
+            from gzkit.config import GzkitConfig
+            from gzkit.sync_surfaces import sync_persona_mirrors
+
+            config = GzkitConfig()
+            updated = sync_persona_mirrors(root, config)
+
+            mirror = root / ".claude" / "personas" / "implementer.md"
+            self.assertTrue(mirror.exists(), f"Expected {mirror} to exist")
+            self.assertEqual(mirror.read_text(encoding="utf-8"), "# Implementer")
+            self.assertTrue(len(updated) > 0)
+
+    def test_persona_sync_respects_vendor_enablement(self) -> None:
+        """REQ-0.0.13-03-03: Disabled vendor gets no persona mirror."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            personas_dir = root / ".gzkit" / "personas"
+            personas_dir.mkdir(parents=True)
+            (personas_dir / "main-session.md").write_text("# Main", encoding="utf-8")
+
+            from gzkit.config import GzkitConfig
+            from gzkit.sync_surfaces import sync_persona_mirrors
+
+            config = GzkitConfig()
+            sync_persona_mirrors(root, config, vendor_aware=True)
+
+            # Copilot is disabled by default
+            copilot_mirror = root / ".github" / "personas" / "main-session.md"
+            self.assertFalse(copilot_mirror.exists(), "Disabled vendor should not get mirror")
+
+            # Claude is enabled by default
+            claude_mirror = root / ".claude" / "personas" / "main-session.md"
+            self.assertTrue(claude_mirror.exists(), "Enabled vendor should get mirror")
+
+    def test_persona_sync_skips_when_no_personas_dir(self) -> None:
+        """Sync returns empty list when .gzkit/personas/ does not exist."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+
+            from gzkit.config import GzkitConfig
+            from gzkit.sync_surfaces import sync_persona_mirrors
+
+            config = GzkitConfig()
+            updated = sync_persona_mirrors(root, config)
+            self.assertEqual(updated, [])
+
+    def test_persona_sync_updates_stale_mirror(self) -> None:
+        """REQ-0.0.13-03-06: Re-running sync updates changed persona files."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            personas_dir = root / ".gzkit" / "personas"
+            personas_dir.mkdir(parents=True)
+            (personas_dir / "implementer.md").write_text("# V1", encoding="utf-8")
+
+            from gzkit.config import GzkitConfig
+            from gzkit.sync_surfaces import sync_persona_mirrors
+
+            config = GzkitConfig()
+            sync_persona_mirrors(root, config)
+
+            # Update canonical file
+            (personas_dir / "implementer.md").write_text("# V2", encoding="utf-8")
+            updated = sync_persona_mirrors(root, config)
+
+            mirror = root / ".claude" / "personas" / "implementer.md"
+            self.assertEqual(mirror.read_text(encoding="utf-8"), "# V2")
+            self.assertTrue(len(updated) > 0)
+
+    def test_persona_sync_does_not_modify_canonical(self) -> None:
+        """REQ-0.0.13-03-06: Sync is one-directional — canonical files unchanged."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            personas_dir = root / ".gzkit" / "personas"
+            personas_dir.mkdir(parents=True)
+            canonical = personas_dir / "implementer.md"
+            canonical.write_text("# Original", encoding="utf-8")
+
+            from gzkit.config import GzkitConfig
+            from gzkit.sync_surfaces import sync_persona_mirrors
+
+            config = GzkitConfig()
+            sync_persona_mirrors(root, config)
+
+            self.assertEqual(canonical.read_text(encoding="utf-8"), "# Original")
 
 
 if __name__ == "__main__":

@@ -164,6 +164,10 @@
         "copilot_skills": {
           "type": "string",
           "description": "Directory for Copilot skill mirror"
+        },
+        "personas": {
+          "type": "string",
+          "description": "Directory for persona frame definitions"
         }
       },
       "additionalProperties": false

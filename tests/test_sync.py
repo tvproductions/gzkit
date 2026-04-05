@@ -219,6 +219,7 @@ class TestGenerateManifest(unittest.TestCase):
                 "copilot_skills",
                 "instructions",
                 "claude_rules",
+                "personas",
             }
             self.assertEqual(set(surfaces.keys()), expected_keys)
 
