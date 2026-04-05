@@ -2,6 +2,7 @@
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -16,6 +17,17 @@ from gzkit.hooks.core import (
     write_hook_script,
 )
 from gzkit.traceability import covers
+
+# Module-level hook template: generate once, copy per test.
+_HOOK_TEMPLATE_DIR = tempfile.mkdtemp(prefix="gzkit-hooks-tpl-")
+setup_claude_hooks(Path(_HOOK_TEMPLATE_DIR), GzkitConfig(project_name="gzkit-test"))
+_HOOK_TEMPLATE_HOOKS = Path(_HOOK_TEMPLATE_DIR) / ".claude" / "hooks"
+
+
+def _install_hooks(project_root: Path) -> None:
+    """Copy pre-generated hooks into a test project root."""
+    dest = project_root / ".claude" / "hooks"
+    shutil.copytree(_HOOK_TEMPLATE_HOOKS, dest, dirs_exist_ok=True)
 
 
 class TestIsGovernanceArtifact(unittest.TestCase):
@@ -370,8 +382,7 @@ class TestPlanAuditGateHook(unittest.TestCase):
     """Tests for the generated plan-audit gate script."""
 
     def _create_hook(self, project_root: Path) -> Path:
-        config = GzkitConfig(project_name="gzkit-test")
-        setup_claude_hooks(project_root, config)
+        _install_hooks(project_root)
         return project_root / ".claude" / "hooks" / "plan-audit-gate.py"
 
     def _run_hook(self, script_path: Path, cwd: Path) -> subprocess.CompletedProcess[str]:
@@ -542,8 +553,7 @@ class TestPipelineRouterHook(unittest.TestCase):
     """Tests for the generated pipeline router script."""
 
     def _create_hook(self, project_root: Path) -> Path:
-        config = GzkitConfig(project_name="gzkit-test")
-        setup_claude_hooks(project_root, config)
+        _install_hooks(project_root)
         return project_root / ".claude" / "hooks" / "pipeline-router.py"
 
     def _run_hook(self, script_path: Path, cwd: Path) -> subprocess.CompletedProcess[str]:
@@ -649,8 +659,7 @@ class TestPipelineGateHook(unittest.TestCase):
     """Tests for the generated pipeline gate script."""
 
     def _create_hook(self, project_root: Path) -> Path:
-        config = GzkitConfig(project_name="gzkit-test")
-        setup_claude_hooks(project_root, config)
+        _install_hooks(project_root)
         return project_root / ".claude" / "hooks" / "pipeline-gate.py"
 
     def _run_hook(
@@ -847,8 +856,7 @@ class TestPipelineCompletionReminderHook(unittest.TestCase):
     """Tests for the generated pipeline completion reminder script."""
 
     def _create_hook(self, project_root: Path) -> Path:
-        config = GzkitConfig(project_name="gzkit-test")
-        setup_claude_hooks(project_root, config)
+        _install_hooks(project_root)
         return project_root / ".claude" / "hooks" / "pipeline-completion-reminder.py"
 
     def _run_hook(

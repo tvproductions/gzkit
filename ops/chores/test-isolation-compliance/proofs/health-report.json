@@ -1,0 +1,105 @@
+{
+  "wall_clock_seconds": 47.9,
+  "test_count": 2525,
+  "failures": 0,
+  "errors": 0,
+  "top_10_slowest": [
+    [
+      1.085,
+      "test_check_surfaces_report_returns_valid_report (tests.test_doc_coverage.TestIntegration.test_check_surfaces_report_returns_valid_report)"
+    ],
+    [
+      1.023,
+      "test_chores_run_timeout_returns_nonzero (tests.commands.test_chores.TestChoresCommands.test_chores_run_timeout_returns_nonzero)"
+    ],
+    [
+      0.768,
+      "test_tier_b_rebuild_and_gz_state (tests.adr.test_storage_tiers.TestGitCloneRecovery.test_tier_b_rebuild_and_gz_state)"
+    ],
+    [
+      0.537,
+      "test_git_sync_dry_run_in_git_repo (tests.commands.test_sync_cmds.TestGitSyncCommand.test_git_sync_dry_run_in_git_repo)"
+    ],
+    [
+      0.503,
+      "test_validate_blocks_merge_head (tests.test_obpi_validator.TestObpiValidator.test_validate_blocks_merge_head)"
+    ],
+    [
+      0.435,
+      "test_help_includes_description (tests.test_triangle.TestDriftHelpText.test_help_includes_description)"
+    ],
+    [
+      0.433,
+      "test_help_renders_fast (tests.policy.test_cli_consistency.TestCLIConsistency.test_help_renders_fast)"
+    ],
+    [
+      0.413,
+      "test_help_lines_under_80_chars (tests.test_triangle.TestDriftHelpText.test_help_lines_under_80_chars)"
+    ],
+    [
+      0.384,
+      "test_obpi_reconcile_ignores_shared_file_changes_absorbed_by_later_sibling_completion (tests.commands.test_status.TestStatusCommand.test_obpi_reconcile_ignores_shared_file_changes_absorbed_by_later_sibling_completion)"
+    ],
+    [
+      0.347,
+      "test_closeout_records_event (tests.commands.test_runtime.TestAdrRuntimeCommands.test_closeout_records_event)"
+    ]
+  ],
+  "top_10_modules": [
+    {
+      "module": "tests.test_obpi_validator.TestObpiValidator",
+      "tests": 23,
+      "total_seconds": 4.16
+    },
+    {
+      "module": "tests.commands.test_runtime.TestAdrRuntimeCommands",
+      "tests": 33,
+      "total_seconds": 1.85
+    },
+    {
+      "module": "tests.commands.test_status.TestStatusCommand",
+      "tests": 25,
+      "total_seconds": 1.77
+    },
+    {
+      "module": "tests.test_hooks.TestPipelineGateHook",
+      "tests": 9,
+      "total_seconds": 1.59
+    },
+    {
+      "module": "tests.commands.test_obpi_pipeline.TestObpiPipelineCommand",
+      "tests": 13,
+      "total_seconds": 1.52
+    },
+    {
+      "module": "tests.commands.test_audit.TestConfigAndCliAuditCommands",
+      "tests": 11,
+      "total_seconds": 1.51
+    },
+    {
+      "module": "tests.test_hooks.TestPipelineCompletionReminderHook",
+      "tests": 8,
+      "total_seconds": 1.43
+    },
+    {
+      "module": "tests.commands.test_chores.TestChoresCommands",
+      "tests": 13,
+      "total_seconds": 1.26
+    },
+    {
+      "module": "tests.commands.test_skills.TestSkillCommands",
+      "tests": 11,
+      "total_seconds": 1.19
+    },
+    {
+      "module": "tests.test_doc_coverage.TestIntegration",
+      "tests": 2,
+      "total_seconds": 1.1
+    }
+  ],
+  "slow_tests_over_threshold": [],
+  "noise_line_count": 0,
+  "noise_sample": [],
+  "violations": [],
+  "passed": true
+}

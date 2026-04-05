@@ -22,15 +22,18 @@ from gzkit.traceability import covers  # noqa: F401
 
 
 class TestObpiValidator(unittest.TestCase):
-    def setUp(self):
-        self._tmp_ctx = tempfile.TemporaryDirectory()
-        self.test_dir = Path(self._tmp_ctx.name)
-        self.project_root = self.test_dir
-        self.gzkit_dir = self.project_root / ".gzkit"
-        self.gzkit_dir.mkdir()
+    _template_dir: tempfile.TemporaryDirectory
 
-        manifest_path = self.gzkit_dir / "manifest.json"
-        manifest_path.write_text(
+    @classmethod
+    def setUpClass(cls) -> None:
+        import shutil
+
+        cls._template_dir = tempfile.TemporaryDirectory()
+        root = Path(cls._template_dir.name)
+        gzkit_dir = root / ".gzkit"
+        gzkit_dir.mkdir()
+
+        (gzkit_dir / "manifest.json").write_text(
             json.dumps(
                 {
                     "schema": "gzkit.manifest.v2",
@@ -41,20 +44,43 @@ class TestObpiValidator(unittest.TestCase):
             encoding="utf-8",
         )
 
-        config_path = self.project_root / ".gzkit.json"
-        config_path.write_text(
+        (root / ".gzkit.json").write_text(
             json.dumps({"mode": "lite", "paths": {"ledger": ".gzkit/ledger.jsonl"}}),
             encoding="utf-8",
         )
 
+        ledger = Ledger(gzkit_dir / "ledger.jsonl")
+        ledger.append(project_init_event("test-project", "lite"))
+
+        subprocess.run(["git", "init", "-b", "main"], cwd=root, check=True, capture_output=True)
+        subprocess.run(
+            ["git", "config", "user.email", "test@example.com"],
+            cwd=root, check=True, capture_output=True,
+        )
+        subprocess.run(
+            ["git", "config", "user.name", "Test User"],
+            cwd=root, check=True, capture_output=True,
+        )
+        subprocess.run(["git", "add", "-A"], cwd=root, check=True, capture_output=True)
+        subprocess.run(
+            ["git", "commit", "-m", "chore: initial"],
+            cwd=root, check=True, capture_output=True,
+        )
+        cls._shutil = shutil
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        cls._template_dir.cleanup()
+
+    def setUp(self):
+        self._tmp_ctx = tempfile.TemporaryDirectory()
+        self.test_dir = Path(self._tmp_ctx.name)
+        self.project_root = self.test_dir / "repo"
+        self._shutil.copytree(self._template_dir.name, self.project_root)
+        self.gzkit_dir = self.project_root / ".gzkit"
+
         self.ledger_path = self.gzkit_dir / "ledger.jsonl"
         self.ledger = Ledger(self.ledger_path)
-        self.ledger.append(project_init_event("test-project", "lite"))
-
-        self._git("init", "-b", "main")
-        self._git("config", "user.email", "test@example.com")
-        self._git("config", "user.name", "Test User")
-        self._commit_all("chore: initial")
 
         self.validator = ObpiValidator(self.project_root)
 
@@ -73,13 +99,12 @@ class TestObpiValidator(unittest.TestCase):
 
     def _commit_all(self, message: str) -> None:
         self._git("add", "-A")
-        status = self._git("status", "--porcelain")
-        if status:
-            self._git("commit", "-m", message)
+        self._git("commit", "--allow-empty", "-m", message)
 
-    def _register_adr(self, adr_id: str, lane: str = "lite") -> None:
+    def _register_adr(self, adr_id: str, lane: str = "lite", *, commit: bool = True) -> None:
         self.ledger.append(adr_created_event(adr_id, "PRD-TEST", lane))
-        self._commit_all(f"chore: register {adr_id}")
+        if commit:
+            self._commit_all(f"chore: register {adr_id}")
 
     def _create_obpi(
         self,
@@ -92,8 +117,9 @@ class TestObpiValidator(unittest.TestCase):
         lane: str = "lite",
         relative_path: str | None = None,
         allowed_paths: list[str] | None = None,
+        commit: bool = True,
     ) -> Path:
-        self._register_adr(adr_id, lane)
+        self._register_adr(adr_id, lane, commit=commit)
 
         obpi_id = f"OBPI-{adr_id}-01"
         rel_path = relative_path or f"{obpi_id}.md"
@@ -126,7 +152,7 @@ status: {status}
         return path
 
     def test_validate_draft_is_always_valid(self):
-        path = self._create_obpi("ADR-0.1.0", status="Draft", summary="...")
+        path = self._create_obpi("ADR-0.1.0", status="Draft", summary="...", commit=False)
         errors = self.validator.validate_file(path)
         self.assertEqual(errors, [])
 
@@ -396,9 +422,11 @@ status: {status}
     # Template scaffold detection (GHI #27)
     # ------------------------------------------------------------------
 
-    def _create_scaffold_obpi(self, adr_id: str, *, status: str = "Draft") -> Path:
+    def _create_scaffold_obpi(
+        self, adr_id: str, *, status: str = "Draft", commit: bool = True
+    ) -> Path:
         """Create an OBPI with the exact template defaults from superbook."""
-        self._register_adr(adr_id)
+        self._register_adr(adr_id, commit=commit)
         obpi_id = f"OBPI-{adr_id}-01"
         path = self.project_root / f"{obpi_id}.md"
         path.write_text(
@@ -425,7 +453,7 @@ status: {status}
 
     def test_draft_scaffold_detected(self):
         """Draft OBPIs with template scaffold return warnings."""
-        path = self._create_scaffold_obpi("ADR-0.1.0", status="Draft")
+        path = self._create_scaffold_obpi("ADR-0.1.0", status="Draft", commit=False)
         errors = self.validator.validate_file(path)
         self.assertTrue(len(errors) >= 3, f"Expected >=3 scaffold warnings, got {errors}")
         self.assertTrue(any("src/module/" in e for e in errors))
@@ -440,13 +468,15 @@ status: {status}
 
     def test_draft_without_scaffold_passes(self):
         """Draft OBPIs with real content return no warnings."""
-        path = self._create_obpi("ADR-0.1.0", status="Draft", summary="- Done: Real work")
+        path = self._create_obpi(
+            "ADR-0.1.0", status="Draft", summary="- Done: Real work", commit=False
+        )
         errors = self.validator.validate_file(path)
         self.assertEqual(errors, [])
 
     def test_scaffold_partial_detection(self):
         """Brief with only some scaffold sections still catches those."""
-        self._register_adr("ADR-0.1.0")
+        self._register_adr("ADR-0.1.0", commit=False)
         obpi_id = "OBPI-ADR-0.1.0-01"
         path = self.project_root / f"{obpi_id}.md"
         path.write_text(
@@ -466,7 +496,7 @@ status: {status}
 
     def test_detection_includes_verification_placeholder(self):
         """Verification scaffold placeholder is rejected for draft briefs."""
-        self._register_adr("ADR-0.1.0")
+        self._register_adr("ADR-0.1.0", commit=False)
         obpi_id = "OBPI-ADR-0.1.0-01"
         path = self.project_root / f"{obpi_id}.md"
         path.write_text(
@@ -484,7 +514,7 @@ status: {status}
 
     def test_detection_flags_lane_mismatch(self):
         """Lane section prose must match frontmatter lane."""
-        self._register_adr("ADR-0.1.0")
+        self._register_adr("ADR-0.1.0", commit=False)
         obpi_id = "OBPI-ADR-0.1.0-01"
         path = self.project_root / f"{obpi_id}.md"
         path.write_text(
@@ -502,7 +532,7 @@ status: {status}
 
     def test_authored_validation_blocks_thin_draft(self):
         """Authored mode fails drafts that only satisfy scaffold-free structure."""
-        self._register_adr("ADR-0.1.0")
+        self._register_adr("ADR-0.1.0", commit=False)
         obpi_id = "OBPI-ADR-0.1.0-01"
         path = self.project_root / f"{obpi_id}.md"
         path.write_text(
@@ -521,7 +551,7 @@ status: {status}
 
     def test_authored_validation_passes_substantive_draft(self):
         """Authored mode passes drafts that are ready for pipeline execution."""
-        self._register_adr("ADR-0.1.0")
+        self._register_adr("ADR-0.1.0", commit=False)
         obpi_id = "OBPI-ADR-0.1.0-01"
         path = self.project_root / f"{obpi_id}.md"
         path.write_text(
