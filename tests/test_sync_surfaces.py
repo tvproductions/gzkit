@@ -170,13 +170,19 @@ class TestPersonaSyncMirrors(unittest.TestCase):
     @covers ADR-0.0.13  OBPI-0.0.13-03 manifest-schema-persona-sync
     """
 
+    _PERSONA_CONTENT = (
+        "---\nname: implementer\ntraits:\n  - methodical\n"
+        "anti-traits:\n  - scope-creep\ngrounding: I implement with care.\n---\n\n"
+        "# Implementer\n"
+    )
+
     def test_persona_sync_mirrors_to_claude(self) -> None:
         """REQ-0.0.13-03-02: Sync mirrors .gzkit/personas/ to .claude/personas/."""
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
             personas_dir = root / ".gzkit" / "personas"
             personas_dir.mkdir(parents=True)
-            (personas_dir / "implementer.md").write_text("# Implementer", encoding="utf-8")
+            (personas_dir / "implementer.md").write_text(self._PERSONA_CONTENT, encoding="utf-8")
 
             from gzkit.config import GzkitConfig
             from gzkit.sync_surfaces import sync_persona_mirrors
@@ -186,16 +192,22 @@ class TestPersonaSyncMirrors(unittest.TestCase):
 
             mirror = root / ".claude" / "personas" / "implementer.md"
             self.assertTrue(mirror.exists(), f"Expected {mirror} to exist")
-            self.assertEqual(mirror.read_text(encoding="utf-8"), "# Implementer")
+            content = mirror.read_text(encoding="utf-8")
+            self.assertIn("I implement with care", content)
             self.assertTrue(len(updated) > 0)
 
     def test_persona_sync_respects_vendor_enablement(self) -> None:
         """REQ-0.0.13-03-03: Disabled vendor gets no persona mirror."""
+        _persona = (
+            "---\nname: main-session\ntraits:\n  - methodical\n"
+            "anti-traits:\n  - scope-creep\ngrounding: I stay on task.\n---\n\n"
+            "# Main\n"
+        )
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
             personas_dir = root / ".gzkit" / "personas"
             personas_dir.mkdir(parents=True)
-            (personas_dir / "main-session.md").write_text("# Main", encoding="utf-8")
+            (personas_dir / "main-session.md").write_text(_persona, encoding="utf-8")
 
             from gzkit.config import GzkitConfig
             from gzkit.sync_surfaces import sync_persona_mirrors
@@ -225,11 +237,21 @@ class TestPersonaSyncMirrors(unittest.TestCase):
 
     def test_persona_sync_updates_stale_mirror(self) -> None:
         """REQ-0.0.13-03-06: Re-running sync updates changed persona files."""
+        _v1 = (
+            "---\nname: implementer\ntraits:\n  - methodical\n"
+            "anti-traits:\n  - scope-creep\ngrounding: Version one.\n---\n\n"
+            "# V1\n"
+        )
+        _v2 = (
+            "---\nname: implementer\ntraits:\n  - methodical\n"
+            "anti-traits:\n  - scope-creep\ngrounding: Version two.\n---\n\n"
+            "# V2\n"
+        )
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
             personas_dir = root / ".gzkit" / "personas"
             personas_dir.mkdir(parents=True)
-            (personas_dir / "implementer.md").write_text("# V1", encoding="utf-8")
+            (personas_dir / "implementer.md").write_text(_v1, encoding="utf-8")
 
             from gzkit.config import GzkitConfig
             from gzkit.sync_surfaces import sync_persona_mirrors
@@ -238,11 +260,12 @@ class TestPersonaSyncMirrors(unittest.TestCase):
             sync_persona_mirrors(root, config)
 
             # Update canonical file
-            (personas_dir / "implementer.md").write_text("# V2", encoding="utf-8")
+            (personas_dir / "implementer.md").write_text(_v2, encoding="utf-8")
             updated = sync_persona_mirrors(root, config)
 
             mirror = root / ".claude" / "personas" / "implementer.md"
-            self.assertEqual(mirror.read_text(encoding="utf-8"), "# V2")
+            content = mirror.read_text(encoding="utf-8")
+            self.assertIn("Version two", content)
             self.assertTrue(len(updated) > 0)
 
     def test_persona_sync_does_not_modify_canonical(self) -> None:
@@ -252,7 +275,7 @@ class TestPersonaSyncMirrors(unittest.TestCase):
             personas_dir = root / ".gzkit" / "personas"
             personas_dir.mkdir(parents=True)
             canonical = personas_dir / "implementer.md"
-            canonical.write_text("# Original", encoding="utf-8")
+            canonical.write_text(self._PERSONA_CONTENT, encoding="utf-8")
 
             from gzkit.config import GzkitConfig
             from gzkit.sync_surfaces import sync_persona_mirrors
@@ -260,7 +283,7 @@ class TestPersonaSyncMirrors(unittest.TestCase):
             config = GzkitConfig()
             sync_persona_mirrors(root, config)
 
-            self.assertEqual(canonical.read_text(encoding="utf-8"), "# Original")
+            self.assertEqual(canonical.read_text(encoding="utf-8"), self._PERSONA_CONTENT)
 
 
 if __name__ == "__main__":

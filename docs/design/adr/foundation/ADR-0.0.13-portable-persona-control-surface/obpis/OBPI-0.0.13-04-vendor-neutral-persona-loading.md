@@ -3,7 +3,7 @@ id: OBPI-0.0.13-04-vendor-neutral-persona-loading
 parent: ADR-0.0.13-portable-persona-control-surface
 item: 4
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.13-04-vendor-neutral-persona-loading: Vendor Neutral Persona Loading
@@ -13,7 +13,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.13-portable-persona-control-surface/ADR-0.0.13-portable-persona-control-surface.md`
 - **Checklist Item:** #4 - "Vendor-neutral persona loading (Claude, Codex, Copilot adapters)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -60,44 +60,44 @@ user-facing surface.
 
 **Governance (read once, cache):**
 
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand vendor neutrality constraint
+- [x] `AGENTS.md` or `CLAUDE.md` - agent operating contract
+- [x] Parent ADR - understand vendor neutrality constraint
 
 **Context:**
 
-- [ ] Parent ADR: `docs/design/adr/foundation/ADR-0.0.13-portable-persona-control-surface/ADR-0.0.13-portable-persona-control-surface.md`
-- [ ] OBPI-0.0.13-01 - schema and PersonaFrontmatter model
-- [ ] OBPI-0.0.13-03 - sync pipeline that will call these adapters
+- [x] Parent ADR: `docs/design/adr/foundation/ADR-0.0.13-portable-persona-control-surface/ADR-0.0.13-portable-persona-control-surface.md`
+- [x] OBPI-0.0.13-01 - schema and PersonaFrontmatter model
+- [x] OBPI-0.0.13-03 - sync pipeline that will call these adapters
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] `src/gzkit/models/persona.py` exists with stable `PersonaFrontmatter`
-- [ ] `src/gzkit/personas.py` exists with `compose_persona_frame()`
-- [ ] `.gzkit/personas/` has persona files to test against
+- [x] `src/gzkit/models/persona.py` exists with stable `PersonaFrontmatter`
+- [x] `src/gzkit/personas.py` exists with `compose_persona_frame()`
+- [x] `.gzkit/personas/` has persona files to test against
 
 **Existing Code (understand current state):**
 
-- [ ] Pattern to follow: `compose_persona_frame()` in `src/gzkit/personas.py` - existing composition logic
-- [ ] Pattern to follow: vendor-specific rendering in `sync_surfaces.py` - how rules/skills are formatted per vendor
-- [ ] Test patterns: `tests/test_personas.py` or `tests/commands/test_personas_cmd.py`
+- [x] Pattern to follow: `compose_persona_frame()` in `src/gzkit/personas.py` - existing composition logic
+- [x] Pattern to follow: vendor-specific rendering in `sync_surfaces.py` - how rules/skills are formatted per vendor
+- [x] Test patterns: `tests/test_personas.py` or `tests/commands/test_personas_cmd.py`
 
 ## Quality Gates
 
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
+- [x] Intent and scope recorded in this OBPI brief
+- [x] Parent ADR checklist item quoted
 
 ### Gate 2: TDD
 
-- [ ] Tests written before/with implementation
-- [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
+- [x] Tests written before/with implementation
+- [x] Tests pass: `uv run gz test`
+- [x] Validation commands recorded in evidence with real outputs
 
 ### Code Quality
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [x] Lint clean: `uv run gz lint`
+- [x] Type check clean: `uv run gz typecheck`
 
 ## Verification
 
@@ -113,20 +113,20 @@ uv run -m unittest tests.test_persona_loading -v
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.13-04-01: Given a `PersonaFrontmatter` with traits `[methodical, test-first]` and body markdown, when the Claude adapter runs, then the output contains traits as behavioral instructions and anti-traits as constraints.
-- [ ] REQ-0.0.13-04-02: Given the same persona, when the Codex adapter runs, then the output is a valid AGENTS.md instruction block.
-- [ ] REQ-0.0.13-04-03: Given the same persona, when the Copilot adapter runs, then the output is compatible with `.github/copilot-instructions.md` format.
-- [ ] REQ-0.0.13-04-04: Given a vendor with no adapter registered, when sync attempts to render a persona for that vendor, then the raw canonical markdown is copied as fallback.
-- [ ] REQ-0.0.13-04-05: Given any adapter function, when called with the same input twice, then the output is identical (pure function, deterministic).
+- [x] REQ-0.0.13-04-01: Given a `PersonaFrontmatter` with traits `[methodical, test-first]` and body markdown, when the Claude adapter runs, then the output contains traits as behavioral instructions and anti-traits as constraints.
+- [x] REQ-0.0.13-04-02: Given the same persona, when the Codex adapter runs, then the output is a valid AGENTS.md instruction block.
+- [x] REQ-0.0.13-04-03: Given the same persona, when the Copilot adapter runs, then the output is compatible with `.github/copilot-instructions.md` format.
+- [x] REQ-0.0.13-04-04: Given a vendor with no adapter registered, when sync attempts to render a persona for that vendor, then the raw canonical markdown is copied as fallback.
+- [x] REQ-0.0.13-04-05: Given any adapter function, when called with the same input twice, then the output is identical (pure function, deterministic).
 
 ## Completion Checklist
 
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
+- [x] **Gate 1 (ADR):** Intent recorded in brief
+- [x] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [x] **Code Quality:** Lint, format, type checks clean
+- [x] **Value Narrative:** Problem-before vs capability-now is documented
+- [x] **Key Proof:** One concrete usage example is included
+- [x] **OBPI Acceptance:** Evidence recorded below
 
 > For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
 
@@ -134,53 +134,61 @@ uv run -m unittest tests.test_persona_loading -v
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+Ran 21 tests in 0.001s — OK (tests/test_persona_loading.py)
+Ran 2483 tests in 35.006s — OK (full suite)
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+uv run gz lint — All checks passed
+uv run gz typecheck — All checks passed
 ```
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before this OBPI, persona sync copied raw canonical markdown to all vendor mirrors identically. Now, vendor adapter functions translate each canonical persona frame into the vendor's native format (Claude system prompt fragments, Codex AGENTS.md instruction blocks, Copilot inline fragments), with fallback to raw markdown for unknown vendors.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+```python
+from gzkit.models.persona import PersonaFrontmatter
+from gzkit.personas import render_persona_claude, render_persona_codex, render_persona_copilot
+
+fm = PersonaFrontmatter(name="tester", traits=["methodical"], anti_traits=["scope-creep"], grounding="I verify claims.")
+render_persona_claude(fm)   # "I verify claims.\n\nYou are methodical.\n\nWhat this persona does NOT do:\n- scope-creep"
+render_persona_codex(fm)    # "# Persona: tester\n\nI verify claims.\n\n## Behavioral Traits\n\n- methodical\n\n## Anti-Patterns\n\n- scope-creep"
+render_persona_copilot(fm)  # "## Persona: tester\n\nI verify claims.\n\nBehavioral traits: methodical\n\nBehaviors to avoid: scope-creep"
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created: `tests/test_persona_loading.py` (21 tests)
+- Files modified: `src/gzkit/personas.py` (adapters + registry + dispatcher), `src/gzkit/sync_surfaces.py` (adapter-aware sync), `tests/test_sync_surfaces.py` (updated fixtures)
+- Tests added: 21 new tests in `test_persona_loading.py`
+- Date completed: 2026-04-05
+- Attestation status: Human attested
+- Defects noted: None
 
 ## Tracked Defects
-
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
 
 _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `Jeff`
+- Attestation: keep as is, we haven't progressed to feature flags yet.
+- Date: 2026-04-05
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-05
 
 **Evidence Hash:** -
