@@ -232,3 +232,7 @@ def _quick_init(mode: str = "lite") -> None:
 
     for d in ["prd", "constitutions", "adr"]:
         (project_root / config.paths.design_root / d).mkdir(parents=True, exist_ok=True)
+
+    from gzkit.personas import scaffold_default_personas
+
+    scaffold_default_personas(project_root)

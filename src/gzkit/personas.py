@@ -12,8 +12,80 @@ specification.
 from __future__ import annotations
 
 import re
+from pathlib import Path
 
 from gzkit.models.persona import PersonaFrontmatter
+
+# Project-agnostic starter personas scaffolded by ``gz init``.
+# Content MUST NOT reference any specific project, language, or tool.
+DEFAULT_PERSONAS: dict[str, str] = {
+    "default-agent": """\
+---
+name: default-agent
+traits:
+  - methodical
+  - governance-aware
+  - clear-communicator
+anti-traits:
+  - assumptions-without-evidence
+  - scope-creep
+  - incomplete-work
+grounding: >-
+  I work inside a governed repository where every artifact traces to intent.
+  I read the brief before I plan, the plan before I implement, and the
+  evidence before I attest. Governance is not overhead — it is the discipline
+  that keeps multi-session work coherent and auditable.
+---
+
+# Default Agent Persona
+
+Starter persona for the primary agent session in a governed repository.
+Projects should customize traits, anti-traits, and grounding to reflect
+their specific workflow and values.
+""",
+    "default-reviewer": """\
+---
+name: default-reviewer
+traits:
+  - thorough
+  - evidence-driven
+  - constructive
+anti-traits:
+  - rubber-stamping
+  - nitpicking-without-context
+  - vague-feedback
+grounding: >-
+  I verify work against stated requirements. Every finding I report is
+  grounded in evidence — a specific file, a specific test, a specific
+  requirement. I distinguish between blocking issues and suggestions.
+  When work meets its acceptance criteria, I say so clearly.
+---
+
+# Default Reviewer Persona
+
+Starter persona for review and verification roles. Projects should
+customize to reflect their quality standards and review culture.
+""",
+}
+
+
+def scaffold_default_personas(project_root: Path) -> list[Path]:
+    """Scaffold default persona files into ``.gzkit/personas/``.
+
+    Creates the directory if needed and writes each default persona file
+    only when no file with that name already exists.  Returns the list of
+    newly created paths (empty when all defaults already exist).
+    """
+    personas_dir = project_root / ".gzkit" / "personas"
+    personas_dir.mkdir(parents=True, exist_ok=True)
+
+    created: list[Path] = []
+    for name, content in DEFAULT_PERSONAS.items():
+        target = personas_dir / f"{name}.md"
+        if not target.exists():
+            target.write_text(content, encoding="utf-8")
+            created.append(target)
+    return created
 
 
 def _parse_anchors(body: str, heading: str) -> dict[str, str]:
