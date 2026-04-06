@@ -222,7 +222,7 @@
       },
       "governance_relevant": true
     },
-    "obpi lock-claim": {
+    "obpi lock claim": {
       "surfaces": {
         "manpage": true,
         "index_entry": true,
@@ -231,26 +231,66 @@
         "docstring": true
       },
       "governance_relevant": true
+    },
+    "obpi lock release": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "obpi lock check": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "obpi lock list": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "obpi lock-claim": {
+      "surfaces": {
+        "manpage": false,
+        "index_entry": false,
+        "operator_runbook": false,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
     },
     "obpi lock-release": {
       "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
+        "manpage": false,
+        "index_entry": false,
+        "operator_runbook": false,
+        "governance_runbook": false,
         "docstring": true
       },
-      "governance_relevant": true
+      "governance_relevant": false
     },
     "obpi lock-status": {
       "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
+        "manpage": false,
+        "index_entry": false,
+        "operator_runbook": false,
+        "governance_runbook": false,
         "docstring": true
       },
-      "governance_relevant": true
+      "governance_relevant": false
     },
     "obpi audit": {
       "surfaces": {

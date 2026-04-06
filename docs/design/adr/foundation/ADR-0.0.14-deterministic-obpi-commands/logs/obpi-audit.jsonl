@@ -1,0 +1,1 @@
+{"type":"obpi-audit","timestamp":"2026-04-05T23:45:00Z","obpi_id":"OBPI-0.0.14-01","adr_id":"ADR-0.0.14-deterministic-obpi-commands","attestation_type":"human","evidence":{"human_attestation":true,"attestation_text":"attest completed","attestation_date":"2026-04-05"},"action_taken":"attestation_recorded","agent":"claude-code"}

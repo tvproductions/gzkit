@@ -421,6 +421,53 @@ def scan_cli_commands(project_root: Path | None = None) -> list[DiscoveredComman
     return discover_commands(source)
 
 
+def _apply_manifest_exemptions(
+    project_root: Path,
+    coverage_list: list[CommandCoverage],
+) -> list[CommandCoverage]:
+    """Override surface results with manifest exemptions.
+
+    When the doc-coverage manifest sets a surface to ``false`` for a command,
+    that surface is exempt from checks.  Replace failing results with a
+    synthetic pass so they do not block the audit.
+    """
+    from gzkit.doc_coverage.manifest import load_manifest  # noqa: PLC0415
+
+    try:
+        manifest = load_manifest(project_root)
+    except (FileNotFoundError, ValueError):
+        return coverage_list
+
+    patched: list[CommandCoverage] = []
+    for cmd_cov in coverage_list:
+        entry = manifest.commands.get(cmd_cov.command)
+        if entry is None:
+            patched.append(cmd_cov)
+            continue
+
+        required = entry.surfaces.model_dump()
+        new_surfaces: list[SurfaceResult] = []
+        for sr in cmd_cov.surfaces:
+            if not sr.passed and not required.get(sr.surface, True):
+                new_surfaces.append(
+                    SurfaceResult(
+                        surface=sr.surface,
+                        passed=True,
+                        detail=f"exempt (manifest {sr.surface}=false)",
+                    )
+                )
+            else:
+                new_surfaces.append(sr)
+        patched.append(
+            CommandCoverage(
+                command=cmd_cov.command,
+                surfaces=new_surfaces,
+                all_passed=all(s.passed for s in new_surfaces),
+            )
+        )
+    return patched
+
+
 def check_surfaces_report(project_root: Path | None = None) -> CoverageReport:
     """Run a full documentation coverage scan and return a CoverageReport.
 
@@ -432,6 +479,7 @@ def check_surfaces_report(project_root: Path | None = None) -> CoverageReport:
     source = _read_cli_sources(project_root)
     commands = discover_commands(source)
     coverage_list = check_surfaces(project_root, commands, source)
+    coverage_list = _apply_manifest_exemptions(project_root, coverage_list)
     discovered_names = {c.name for c in commands}
     orphaned = find_orphaned_docs(project_root, discovered_names)
 

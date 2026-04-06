@@ -424,9 +424,10 @@ Use [`/gz-check`](skills/gz-check.md) to run all quality checks in one pass, or 
 - `uv run gz obpi status OBPI-<X.Y.Z-NN>`
 - `uv run gz obpi withdraw OBPI-<X.Y.Z-NN> --reason "..."` (withdraw an OBPI from counts)
 - `uv run gz obpi audit OBPI-<X.Y.Z-NN>` (gather evidence and record in audit ledger)
-- `uv run gz obpi lock-claim OBPI-<X.Y.Z-NN>` (claim an OBPI work lock)
-- `uv run gz obpi lock-release OBPI-<X.Y.Z-NN>` (release an OBPI work lock)
-- `uv run gz obpi lock-status` (list active OBPI work locks)
+- `uv run gz obpi lock claim OBPI-<X.Y.Z-NN>` (claim an OBPI work lock)
+- `uv run gz obpi lock release OBPI-<X.Y.Z-NN>` (release an OBPI work lock)
+- `uv run gz obpi lock check OBPI-<X.Y.Z-NN>` (check if an OBPI is locked)
+- `uv run gz obpi lock list` (list active OBPI work locks)
 - `uv run gz plan create <name> --semver X.Y.Z` (create a new ADR)
 - `uv run gz plan audit OBPI-<X.Y.Z-NN>` (structural prerequisite check for plan-OBPI alignment)
 - `uv run gz agent sync control-surfaces`

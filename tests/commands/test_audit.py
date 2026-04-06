@@ -27,7 +27,9 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
         index_path.parent.mkdir(parents=True, exist_ok=True)
         manifest = load_manifest(Path("."))
         links: list[str] = []
-        for command_name in manifest.commands:
+        for command_name, entry in manifest.commands.items():
+            if not entry.surfaces.manpage:
+                continue
             doc_rel = manpage_path_for(command_name)
             doc_path = Path(doc_rel)
             doc_path.parent.mkdir(parents=True, exist_ok=True)

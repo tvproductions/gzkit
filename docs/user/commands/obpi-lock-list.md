@@ -1,6 +1,6 @@
 # gz obpi lock list
 
-List active OBPI work locks.
+List active OBPI work locks after reaping expired ones.
 
 ## Usage
 
@@ -18,8 +18,8 @@ gz obpi lock list [--adr ADR-X.Y.Z] [--json]
 ## Runtime Behavior
 
 - Automatically reaps expired locks before listing
-- Shows remaining TTL for each active lock
-- Emits `obpi_lock_reaped` event for each expired lock removed
+- Shows elapsed time and TTL for each active lock
+- Reports reaped locks in JSON output
 
 ## Exit Codes
 
@@ -40,20 +40,20 @@ gz obpi lock list --json
 
 ```json
 {
-  "active_locks": [
+  "locks": [
     {
       "obpi_id": "OBPI-0.1.0-01",
-      "agent": "agent-1",
+      "agent": "claude-code",
       "claimed_at": "2026-04-05T14:30:00Z",
-      "remaining_minutes": 95.5
+      "ttl_minutes": 120
     }
   ],
-  "reaped": 2,
-  "total_active": 1
+  "reaped": [],
+  "count": 1
 }
 ```
 
 ## Deprecated
 
-Use `gz obpi lock list` instead of the legacy `gz obpi lock-status`
-form.
+The legacy `gz obpi lock-status` command is a deprecated alias for
+this command. Use `gz obpi lock list` instead.
