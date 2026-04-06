@@ -182,6 +182,12 @@ def cli_audit_cmd(as_json: bool) -> None:
 
     manifest = load_manifest(project_root)
     for command_name in manifest.commands:
+        entry = manifest.commands[command_name]
+        # Skip manpage/heading/index checks for commands with manpage: false
+        # (deprecated aliases that share doc files with their canonical forms).
+        if not entry.surfaces.manpage:
+            continue
+
         doc_rel = manpage_path_for(command_name)
         doc_path = project_root / doc_rel
         if not doc_path.is_file():

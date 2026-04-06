@@ -1,0 +1,15 @@
+{
+  "obpi_id": "OBPI-0.0.14-01-obpi-lock-command",
+  "parent_adr": "ADR-0.0.14-deterministic-obpi-commands",
+  "lane": "heavy",
+  "entry": "full",
+  "execution_mode": "normal",
+  "current_stage": "implement",
+  "started_at": "2026-04-05T23:13:53Z",
+  "updated_at": "2026-04-05T23:13:53Z",
+  "receipt_state": "other_obpi",
+  "blockers": [],
+  "required_human_action": null,
+  "next_command": "uv run gz obpi pipeline OBPI-0.0.14-01-obpi-lock-command --from=verify",
+  "resume_point": "verify"
+}

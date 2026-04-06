@@ -177,10 +177,11 @@ def _collect_adrs_to_register(
     target_ids: set[str],
     pool_only: bool,
     default_lane: str,
-) -> tuple[list[tuple[str, str, str]], set[str]]:
-    """Collect missing ADR packages and eligible parent ids."""
+) -> tuple[list[tuple[str, str, str]], set[str], list[tuple[str, str]]]:
+    """Collect missing ADR packages, eligible parent ids, and stale pool warnings."""
     to_register: list[tuple[str, str, str]] = []
     eligible_parent_ids: set[str] = set()
+    stale_pool_files: list[tuple[str, str]] = []
     for adr_file in artifacts.get("adrs", []):
         metadata = parse_artifact_metadata(adr_file)
         resolved = _adr_register_identity(ledger, adr_file, metadata)
@@ -195,6 +196,8 @@ def _collect_adrs_to_register(
         canonical_adr_id = ledger.canonicalize_id(adr_id)
         eligible_parent_ids.add(canonical_adr_id)
         if known_adrs.intersection(canonical_candidates):
+            if is_pool_adr and canonical_adr_id != adr_id:
+                stale_pool_files.append((adr_id, canonical_adr_id))
             continue
 
         parent = metadata.get("parent", "")
@@ -202,7 +205,8 @@ def _collect_adrs_to_register(
         resolved_lane = raw_lane if raw_lane in {"lite", "heavy"} else default_lane
         to_register.append((adr_id, parent, resolved_lane))
     to_register.sort(key=lambda item: item[0])
-    return to_register, eligible_parent_ids
+    stale_pool_files.sort(key=lambda item: item[0])
+    return to_register, eligible_parent_ids, stale_pool_files
 
 
 def _resolve_short_form_parent(
@@ -328,7 +332,7 @@ def register_adrs(
 
     target_ids = _normalize_register_targets(ledger, targets)
     default_lane = lane or config.mode
-    to_register, eligible_parent_ids = _collect_adrs_to_register(
+    to_register, eligible_parent_ids, stale_pool_files = _collect_adrs_to_register(
         ledger=ledger,
         artifacts=artifacts,
         known_adrs=known_adrs,
@@ -336,6 +340,17 @@ def register_adrs(
         pool_only=pool_only,
         default_lane=default_lane,
     )
+
+    if stale_pool_files:
+        console.print(
+            f"[yellow]Warning:[/yellow] {len(stale_pool_files)} stale pool file(s) "
+            f"detected (promoted but not cleaned up):"
+        )
+        for pool_id, promoted_id in stale_pool_files:
+            console.print(
+                f"  [yellow]stale:[/yellow] {pool_id} → promoted to {promoted_id}"
+            )
+
     to_register_obpis = _collect_obpis_to_register(
         ledger=ledger,
         artifacts=artifacts,
