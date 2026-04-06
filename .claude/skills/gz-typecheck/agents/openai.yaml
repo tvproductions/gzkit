@@ -1,0 +1,4 @@
+interface:
+  display_name: "gz typecheck"
+  short_description: "Operate the gz typecheck workflow"
+  default_prompt: "Use $gz-typecheck to run gz typecheck for this task."

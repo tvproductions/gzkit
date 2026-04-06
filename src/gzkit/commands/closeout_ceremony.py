@@ -4,6 +4,8 @@ GHI #59: The agent batched ceremony steps into a single message twice.
 This module makes the CLI the step driver — each ``--next`` call returns
 exactly one step's content.  The agent cannot skip because it never sees
 future steps.
+
+GHI #110: Step-by-step redesign from walkthrough analysis.
 """
 
 import json
@@ -15,17 +17,19 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.commands.ceremony_data import discover_demo_commands
 from gzkit.commands.ceremony_steps import (
-    discover_walkthrough_commands,
+    render_step_1_readiness,
     render_step_2_summary,
-    render_step_3_walkthrough,
-    render_step_4_execute,
-    render_step_5_attestation,
-    render_step_6_closeout,
-    render_step_7_issues,
-    render_step_8_release_notes,
-    render_step_9_release,
-    render_step_10_complete,
+    render_step_3_docs_check,
+    render_step_4_walkthrough,
+    render_step_5_execute,
+    render_step_6_attestation,
+    render_step_7_closeout,
+    render_step_8_issues,
+    render_step_9_release_notes,
+    render_step_10_release,
+    render_step_11_complete,
 )
 from gzkit.commands.common import (
     GzCliError,
@@ -52,14 +56,15 @@ class CeremonyStep(IntEnum):
 
     INITIALIZE = 1
     SUMMARY = 2
-    WALKTHROUGH = 3
-    EXECUTE = 4
-    ATTESTATION = 5
-    CLOSEOUT = 6
-    ISSUES = 7
-    RELEASE_NOTES = 8
-    RELEASE = 9
-    COMPLETE = 10
+    DOCS_CHECK = 3
+    WALKTHROUGH = 4
+    EXECUTE = 5
+    ATTESTATION = 6
+    CLOSEOUT = 7
+    ISSUES = 8
+    RELEASE_NOTES = 9
+    RELEASE = 10
+    COMPLETE = 11
 
 
 FOUNDATION_SKIP_STEPS: frozenset[int] = frozenset(
@@ -100,6 +105,8 @@ class CeremonyState(BaseModel):
     walkthrough_index: int = Field(0, description="Current command index in Step 5")
     attestation: str | None = Field(None, description="Human attestation text")
     completed_at: str | None = Field(None, description="ISO-8601 when ceremony finished")
+    attempt: int = Field(1, description="R&R attempt number")
+    paused_at: str | None = Field(None, description="ISO-8601 when paused for revision")
 
 
 # ---------------------------------------------------------------------------
@@ -171,6 +178,25 @@ def _next_step(current: int, is_foundation: bool) -> int:
 
 
 # ---------------------------------------------------------------------------
+# Ceremony context (shared across renderers)
+# ---------------------------------------------------------------------------
+
+
+def _build_obpi_context(
+    project_root: Path,
+    config: Any,
+    ledger: Ledger,
+    adr_id: str,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Build OBPI rows and readiness for Step 1."""
+    from gzkit.commands.status import _adr_obpi_status_rows
+
+    obpi_rows = _adr_obpi_status_rows(project_root, config, ledger, adr_id)
+    readiness = _adr_closeout_readiness(obpi_rows)
+    return obpi_rows, readiness
+
+
+# ---------------------------------------------------------------------------
 # Ceremony orchestration
 # ---------------------------------------------------------------------------
 
@@ -201,28 +227,38 @@ def _present_step(
     lane: str,
     manifest: dict[str, Any],
     obpi_files: list[Path],
+    obpi_rows: list[dict[str, Any]] | None = None,
+    readiness: dict[str, Any] | None = None,
 ) -> str:
     """Route to the renderer for the current step."""
     step = state.current_step
     adr_id = state.adr_id
+    if step == CeremonyStep.INITIALIZE:
+        return render_step_1_readiness(
+            adr_id,
+            obpi_rows or [],
+            readiness or {"ready": True, "blockers": []},
+        )
     if step == CeremonyStep.SUMMARY:
         return render_step_2_summary(adr_id, adr_file, obpi_files, manifest, lane, project_root)
+    if step == CeremonyStep.DOCS_CHECK:
+        return render_step_3_docs_check(adr_id, project_root, obpi_files)
     if step == CeremonyStep.WALKTHROUGH:
-        return render_step_3_walkthrough(adr_id, state.walkthrough_commands)
+        return render_step_4_walkthrough(adr_id, state.walkthrough_commands, obpi_files)
     if step == CeremonyStep.EXECUTE:
-        return render_step_4_execute(adr_id, state.walkthrough_commands)
+        return render_step_5_execute(adr_id, state.walkthrough_commands)
     if step == CeremonyStep.ATTESTATION:
-        return render_step_5_attestation(adr_id)
+        return render_step_6_attestation(adr_id)
     if step == CeremonyStep.CLOSEOUT:
-        return render_step_6_closeout(adr_id)
+        return render_step_7_closeout(adr_id)
     if step == CeremonyStep.ISSUES:
-        return render_step_7_issues(adr_id)
+        return render_step_8_issues(adr_id)
     if step == CeremonyStep.RELEASE_NOTES:
-        return render_step_8_release_notes(adr_id)
+        return render_step_9_release_notes(adr_id, state.is_foundation)
     if step == CeremonyStep.RELEASE:
-        return render_step_9_release(adr_id)
+        return render_step_10_release(adr_id, state.is_foundation)
     if step == CeremonyStep.COMPLETE:
-        return render_step_10_complete(state)
+        return render_step_11_complete(state)
     msg = f"Unknown ceremony step: {step}"
     raise GzCliError(msg)
 
@@ -235,45 +271,65 @@ def _initialize_ceremony(
     manifest: dict[str, Any],
     obpi_files: list[Path],
     as_json: bool,
+    restart: bool,
 ) -> None:
     """Initialize or resume a ceremony."""
     existing = load_ceremony_state(project_root, adr_id)
-    if existing and existing.completed_at:
-        raise GzCliError(f"Ceremony for {adr_id} already completed at {existing.completed_at}")
-    if existing:
+
+    if existing and existing.completed_at and not restart:
+        # Offer restart vs resume
+        console.print(
+            f"Ceremony for {adr_id} completed at {existing.completed_at} "
+            f"(attempt {existing.attempt}).\n"
+            f"To restart: gz closeout {adr_id} --ceremony --restart\n"
+            f"To view:    gz closeout {adr_id} --ceremony --ceremony-status"
+        )
+        return
+
+    if existing and not existing.completed_at and not restart:
         # Resume from current step
         output = _present_step(existing, project_root, adr_file, lane, manifest, obpi_files)
         _write_turn_lock(project_root, adr_id, existing.current_step)
         _output(as_json, existing, output)
         return
 
-    from gzkit.commands.status import _adr_obpi_status_rows
+    # Compute attempt number
+    attempt = (existing.attempt + 1) if existing else 1
 
+    # Build readiness data for Step 1
     config = ensure_initialized()
     ledger = Ledger(get_project_root() / config.paths.ledger)
-    obpi_rows = _adr_obpi_status_rows(project_root, config, ledger, adr_id)
-    readiness = _adr_closeout_readiness(obpi_rows)
+    obpi_rows, readiness = _build_obpi_context(project_root, config, ledger, adr_id)
     blockers = readiness.get("blockers", [])
     if blockers:
         raise GzCliError(f"Cannot start ceremony: {'; '.join(blockers)}")
 
     now = _now_iso()
-    commands = discover_walkthrough_commands(project_root, adr_id, obpi_files)
+    commands = discover_demo_commands(project_root, adr_id, obpi_files)
     state = CeremonyState(
         adr_id=adr_id,
-        current_step=CeremonyStep.SUMMARY,
+        current_step=CeremonyStep.INITIALIZE,
         is_foundation=_is_foundation_adr(adr_id),
         started_at=now,
         updated_at=now,
         step_history=[
-            CeremonyStepRecord(step=CeremonyStep.INITIALIZE, presented_at=now, acknowledged_at=now),
-            CeremonyStepRecord(step=CeremonyStep.SUMMARY, presented_at=now),
+            CeremonyStepRecord(step=CeremonyStep.INITIALIZE, presented_at=now),
         ],
         walkthrough_commands=commands,
+        attempt=attempt,
     )
     save_ceremony_state(project_root, state)
-    output = _present_step(state, project_root, adr_file, lane, manifest, obpi_files)
-    _write_turn_lock(project_root, adr_id, CeremonyStep.SUMMARY)
+    output = _present_step(
+        state,
+        project_root,
+        adr_file,
+        lane,
+        manifest,
+        obpi_files,
+        obpi_rows=obpi_rows,
+        readiness=readiness,
+    )
+    _write_turn_lock(project_root, adr_id, CeremonyStep.INITIALIZE)
     _output(as_json, state, output)
 
 
@@ -343,7 +399,7 @@ def _record_attestation(
     attestation: str,
     as_json: bool,
 ) -> None:
-    """Record attestation at step 5 and advance to step 6."""
+    """Record attestation at step 6 and advance to step 7."""
     state = load_ceremony_state(project_root, adr_id)
     if state is None:
         raise GzCliError(f"No ceremony in progress for {adr_id}.")
@@ -377,6 +433,37 @@ def _record_attestation(
     _output(as_json, new_state, output)
 
 
+def _pause_ceremony(
+    project_root: Path,
+    adr_id: str,
+    as_json: bool,
+) -> None:
+    """Pause ceremony for revise-and-resubmit."""
+    state = load_ceremony_state(project_root, adr_id)
+    if state is None:
+        raise GzCliError(f"No ceremony in progress for {adr_id}.")
+    if state.completed_at:
+        raise GzCliError(f"Ceremony for {adr_id} already completed.")
+
+    now = _now_iso()
+    new_state = state.model_copy(update={"paused_at": now, "updated_at": now})
+    save_ceremony_state(project_root, new_state)
+    _cleanup_hook_files(project_root, adr_id)
+
+    output = "\n".join(
+        [
+            f"Ceremony for {adr_id} paused at Step {state.current_step} (attempt {state.attempt}).",
+            "",
+            "Fix the identified issues, then restart:",
+            f"  gz closeout {adr_id} --ceremony --restart",
+            "",
+            "Or resume from current step:",
+            f"  gz closeout {adr_id} --ceremony",
+        ]
+    )
+    _output(as_json, new_state, output)
+
+
 def _show_status(project_root: Path, adr_id: str, as_json: bool) -> None:
     """Show current ceremony step."""
     state = load_ceremony_state(project_root, adr_id)
@@ -388,7 +475,12 @@ def _show_status(project_root: Path, adr_id: str, as_json: bool) -> None:
     else:
         step_name = CeremonyStep(state.current_step).name
         status = "COMPLETED" if state.completed_at else "IN PROGRESS"
-        console.print(f"Ceremony {adr_id}: Step {state.current_step} ({step_name}) — {status}")
+        if state.paused_at:
+            status = "PAUSED"
+        console.print(
+            f"Ceremony {adr_id}: Step {state.current_step} ({step_name}) "
+            f"- {status} (attempt {state.attempt})"
+        )
         if state.attestation:
             console.print(f"  Attestation: {state.attestation}")
 
@@ -410,6 +502,7 @@ def _output(as_json: bool, state: CeremonyState, text: str) -> None:
                     "step": state.current_step,
                     "content": text,
                     "completed": state.completed_at is not None,
+                    "attempt": state.attempt,
                 },
                 indent=2,
             )
@@ -429,16 +522,23 @@ def ceremony_cmd(
     ceremony_next: bool,
     ceremony_status: bool,
     ceremony_attest: str | None,
+    ceremony_pause: bool = False,
+    ceremony_restart: bool = False,
 ) -> None:
     """Dispatch ceremony sub-commands."""
     # Validate flag combinations
-    if ceremony_next and ceremony_attest:
-        raise GzCliError("Cannot use --next and --attest together.")
+    flags = [ceremony_next, bool(ceremony_attest), ceremony_pause]
+    if sum(flags) > 1:
+        raise GzCliError("Cannot combine --next, --attest, and --pause.")
 
     project_root, adr_id, adr_file, lane, manifest, obpi_files = _resolve_adr_context(adr)
 
     if ceremony_status:
         _show_status(project_root, adr_id, as_json)
+        return
+
+    if ceremony_pause:
+        _pause_ceremony(project_root, adr_id, as_json)
         return
 
     if ceremony_attest:
@@ -475,4 +575,5 @@ def ceremony_cmd(
         manifest,
         obpi_files,
         as_json,
+        restart=ceremony_restart,
     )

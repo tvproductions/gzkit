@@ -92,17 +92,22 @@ The CLI outputs the content for the next step. Present it and wait for acknowled
 - Skipping Foundation-excluded steps (RELEASE_NOTES, RELEASE for 0.0.x)
 - What content to present at each step
 
-### Step 3: Walkthrough Execution
+### Step 3: Docs Alignment Check
 
-When the CLI presents walkthrough commands (Steps 3-4), run them one at a time:
+When the CLI presents the docs alignment checklist (CLI Step 3), the human confirms
+documentation parity. Advance via `--next` after acknowledgment.
+
+### Step 4: Walkthrough Execution
+
+When the CLI presents walkthrough commands (CLI Steps 4-5), run them one at a time:
 
 - Run ONE command, show output, STOP and WAIT for acknowledgment
 - Only proceed to next command after acknowledgment
 - After all walkthrough commands are done, advance via `--next`
 
-### Step 4: Attestation
+### Step 5: Attestation
 
-When the CLI presents the attestation prompt (Step 5), wait for the human's decision.
+When the CLI presents the attestation prompt (CLI Step 6), wait for the human's decision.
 Record it:
 
 ```bash
@@ -114,9 +119,9 @@ Valid attestations:
 - `"Completed - Partial: [reason]"` — Subset accepted, remainder deferred
 - `"Dropped - [reason]"` — ADR rejected; does not advance
 
-### Step 5: Closeout Pipeline
+### Step 6: Closeout Pipeline
 
-When the CLI presents Step 6, run the closeout pipeline:
+When the CLI presents CLI Step 7, run the closeout pipeline:
 
 ```bash
 uv run gz closeout ADR-X.Y.Z
@@ -129,9 +134,9 @@ After it completes, advance the ceremony:
 uv run gz closeout ADR-X.Y.Z --ceremony --next
 ```
 
-### Step 6: GitHub Issues
+### Step 7: GitHub Issues
 
-When the CLI presents Step 7, close related issues:
+When the CLI presents CLI Step 8, close related issues:
 
 ```bash
 gh issue list --search "ADR-X.Y.Z" --state open
@@ -140,27 +145,27 @@ gh issue close <number> --comment "Resolved by ADR-X.Y.Z closeout."
 
 Then advance via `--next`.
 
-### Step 7: Release Steps (CLI-Driven)
+### Step 8: Release Steps (CLI-Driven)
 
 The CLI automatically handles Foundation vs non-Foundation:
 
-- **Foundation (0.0.x):** Steps 8-9 are skipped automatically by `FOUNDATION_SKIP_STEPS`
+- **Foundation (0.0.x):** Steps 9-10 are skipped automatically by `FOUNDATION_SKIP_STEPS`
 - **Non-Foundation:** The CLI presents RELEASE_NOTES and GitHub Release steps
 
 For non-Foundation releases:
 
 ```bash
-# Step 8: Update RELEASE_NOTES.md (agent edits the file)
-# Step 9: Create GitHub release
+# Step 9: Update RELEASE_NOTES.md (agent edits the file)
+# Step 10: Create GitHub release
 uv run gz git-sync --apply --lint --test
 gh release create vX.Y.Z --title "vX.Y.Z" --notes "..."
 ```
 
 After each step, advance via `--next`.
 
-### Step 8: Completion
+### Step 9: Completion
 
-When the CLI outputs the ceremony completion summary, present it to the human.
+When the CLI outputs the ceremony completion summary (CLI Step 11), present it to the human.
 The ceremony is done.
 
 ---
@@ -171,9 +176,9 @@ The ceremony is done.
 |---------|---------|
 | `gz closeout ADR-X.Y.Z --ceremony` | Initialize or resume ceremony |
 | `gz closeout ADR-X.Y.Z --ceremony --next` | Advance to next step |
-| `gz closeout ADR-X.Y.Z --ceremony --attest "..."` | Record attestation at Step 5 |
+| `gz closeout ADR-X.Y.Z --ceremony --attest "..."` | Record attestation at Step 6 |
 | `gz closeout ADR-X.Y.Z --ceremony --ceremony-status` | Show current step |
-| `gz closeout ADR-X.Y.Z` | Run closeout pipeline (Step 6) |
+| `gz closeout ADR-X.Y.Z` | Run closeout pipeline (Step 7) |
 
 ---
 
