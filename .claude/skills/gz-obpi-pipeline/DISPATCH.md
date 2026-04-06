@@ -100,7 +100,7 @@ Referenced by SKILL.md Stage 2. Do not read unless Stage 2 is active.
 5. **Persist dispatch state** after each task completes (success or failure), including review results.
 6. **After all tasks complete:** persist dispatch summary for `gz roles --pipeline` queries.
 
-**Abort if:** Any task returns `BLOCKED` after retry or after exhausting review fix cycles. Create handoff, release lock, and stop.
+**Abort if:** Any task returns `BLOCKED` after retry or after exhausting review fix cycles. Release lock via `uv run gz obpi lock release {OBPI-SLUG} --force`, create handoff, and stop.
 
 ## Inline Fallback (`--no-subagents`)
 
@@ -113,4 +113,4 @@ When `--no-subagents` is set, Stage 2 runs entirely in the main session (no Agen
 5. Run `uv run ruff check . --fix && uv run ruff format .` after code changes
 6. Run `uv run -m unittest -q` after implementation
 
-**Abort if:** Tests fail after 2 fix attempts. Create handoff, release lock, and stop.
+**Abort if:** Tests fail after 2 fix attempts. Release lock via `uv run gz obpi lock release {OBPI-SLUG} --force`, create handoff, and stop.

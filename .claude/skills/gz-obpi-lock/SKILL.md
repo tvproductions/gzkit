@@ -68,9 +68,9 @@ Path: `.gzkit/locks/obpi/{OBPI-ID}.lock.json`
 ### Claim
 
 ```bash
-uv run gz obpi lock-claim OBPI-X.Y.Z-NN
-uv run gz obpi lock-claim OBPI-X.Y.Z-NN --ttl 240
-uv run gz obpi lock-claim OBPI-X.Y.Z-NN --json
+uv run gz obpi lock claim OBPI-X.Y.Z-NN
+uv run gz obpi lock claim OBPI-X.Y.Z-NN --ttl 240
+uv run gz obpi lock claim OBPI-X.Y.Z-NN --json
 ```
 
 Exit code 0 = claimed, 1 = conflict (another agent holds it).
@@ -78,16 +78,28 @@ Exit code 0 = claimed, 1 = conflict (another agent holds it).
 ### Release
 
 ```bash
-uv run gz obpi lock-release OBPI-X.Y.Z-NN
-uv run gz obpi lock-release OBPI-X.Y.Z-NN --json
+uv run gz obpi lock release OBPI-X.Y.Z-NN
+uv run gz obpi lock release OBPI-X.Y.Z-NN --json
+uv run gz obpi lock release OBPI-X.Y.Z-NN --force   # abort/handoff — bypass ownership check
 ```
 
-### Status
+Exit code 0 = released (or no lock found), 1 = ownership error (without `--force`).
+
+### Check (single OBPI)
 
 ```bash
-uv run gz obpi lock-status
-uv run gz obpi lock-status --adr ADR-X.Y.Z
-uv run gz obpi lock-status --json
+uv run gz obpi lock check OBPI-X.Y.Z-NN
+uv run gz obpi lock check OBPI-X.Y.Z-NN --json
+```
+
+Exit code 0 = held (prints holder info), 1 = free.
+
+### List (all locks)
+
+```bash
+uv run gz obpi lock list
+uv run gz obpi lock list --adr ADR-X.Y.Z
+uv run gz obpi lock list --json
 ```
 
 ---
@@ -107,7 +119,7 @@ Agents identify themselves by environment:
 
 ## Integration with Pipeline
 
-The `/gz-obpi-pipeline` skill calls `/gz-obpi-lock claim` at Stage 1 (Load Context) and `/gz-obpi-lock release` at Stage 5 (Sync). On any abort or handoff, the pipeline also releases the lock to prevent orphaned locks.
+The pipeline calls `uv run gz obpi lock claim` at Stage 1 (Load Context) and `uv run gz obpi lock release` at Stage 5 (Sync). On any abort or handoff, the pipeline releases the lock via `uv run gz obpi lock release {OBPI-SLUG} --force` to prevent orphaned locks.
 
 ---
 
@@ -189,6 +201,6 @@ git worktree remove ../gzkit-claude-code
 
 ## Related
 
-- Pipeline integration: `/gz-obpi-pipeline` (Stage 1 claim, Stage 5 release)
+- Pipeline integration: `gz obpi lock claim` (Stage 1), `gz obpi lock release` (Stage 5)
 - Session handoff: `/gz-session-handoff` (preserves lock context)
 - Agent profiles: `AGENTS.md` § Agent Profiles
