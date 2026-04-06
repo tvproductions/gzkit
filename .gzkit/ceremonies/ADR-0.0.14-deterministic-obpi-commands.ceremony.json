@@ -1,0 +1,63 @@
+{
+  "adr_id": "ADR-0.0.14-deterministic-obpi-commands",
+  "current_step": 11,
+  "is_foundation": true,
+  "started_at": "2026-04-06T12:46:53Z",
+  "updated_at": "2026-04-06T12:52:13Z",
+  "step_history": [
+    {
+      "step": 1,
+      "presented_at": "2026-04-06T12:46:53Z",
+      "acknowledged_at": "2026-04-06T12:46:54Z"
+    },
+    {
+      "step": 2,
+      "presented_at": "2026-04-06T12:46:54Z",
+      "acknowledged_at": "2026-04-06T12:46:54Z"
+    },
+    {
+      "step": 3,
+      "presented_at": "2026-04-06T12:46:54Z",
+      "acknowledged_at": "2026-04-06T12:46:54Z"
+    },
+    {
+      "step": 4,
+      "presented_at": "2026-04-06T12:46:54Z",
+      "acknowledged_at": "2026-04-06T12:47:16Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-04-06T12:47:16Z",
+      "acknowledged_at": "2026-04-06T12:48:13Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-04-06T12:48:13Z",
+      "acknowledged_at": "2026-04-06T12:48:35Z"
+    },
+    {
+      "step": 7,
+      "presented_at": "2026-04-06T12:48:35Z",
+      "acknowledged_at": "2026-04-06T12:51:26Z"
+    },
+    {
+      "step": 8,
+      "presented_at": "2026-04-06T12:51:26Z",
+      "acknowledged_at": "2026-04-06T12:52:13Z"
+    },
+    {
+      "step": 11,
+      "presented_at": "2026-04-06T12:52:13Z",
+      "acknowledged_at": null
+    }
+  ],
+  "walkthrough_commands": [
+    "uv run gz obpi lock --help",
+    "uv run gz obpi complete --help"
+  ],
+  "walkthrough_index": 0,
+  "attestation": "Completed",
+  "completed_at": "2026-04-06T12:52:13Z",
+  "attempt": 14,
+  "paused_at": null
+}

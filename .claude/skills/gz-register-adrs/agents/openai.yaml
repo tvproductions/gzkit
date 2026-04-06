@@ -1,0 +1,4 @@
+interface:
+  display_name: "gz register-adrs"
+  short_description: "Operate the gz register-adrs workflow"
+  default_prompt: "Use $gz-register-adrs to run gz register-adrs for this task."

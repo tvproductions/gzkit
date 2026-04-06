@@ -110,9 +110,7 @@ def _run_profiled() -> dict:
             }
             for mod, info in sorted_modules[:10]
         ],
-        "slow_tests_over_threshold": [
-            {"seconds": round(e, 2), "test": n} for e, n in slow_tests
-        ],
+        "slow_tests_over_threshold": [{"seconds": round(e, 2), "test": n} for e, n in slow_tests],
         "noise_line_count": len(noise_lines),
         "noise_sample": noise_lines[:10],
         "violations": violations,

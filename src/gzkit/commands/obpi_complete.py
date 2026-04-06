@@ -31,23 +31,18 @@ from gzkit.ledger_events import obpi_receipt_emitted_event
 from gzkit.utils import capture_validation_anchor
 
 
-def obpi_complete_cmd(
+def _resolve_and_validate(
+    project_root: Path,
+    config: Any,
+    ledger: Ledger,
     obpi: str,
-    attestor: str,
-    attestation_text: str,
-    implementation_summary: str | None,
-    key_proof: str | None,
     as_json: bool,
-    dry_run: bool,
-) -> None:
-    """Atomically complete an OBPI: validate, write evidence, flip status, emit receipt."""
-    config = ensure_initialized()
-    project_root = get_project_root()
-    ledger = Ledger(project_root / config.paths.ledger)
+) -> tuple[Path, str, str, str, str, bool]:
+    """Resolve OBPI file and validate preconditions.
 
-    # ------------------------------------------------------------------
-    # 1. Resolve & validate
-    # ------------------------------------------------------------------
+    Returns (obpi_file, obpi_id, original_content, resolved_parent, parent_lane,
+    requires_human).
+    """
     obpi_file, obpi_id = resolve_obpi_file(project_root, config, ledger, obpi)
     if not obpi_file.exists():
         _fail(f"Brief not found: {obpi_file}", exit_code=1, as_json=as_json, obpi_id=obpi_id)
@@ -60,9 +55,7 @@ def obpi_complete_cmd(
     graph = ledger.get_artifact_graph()
     obpi_info = graph.get(obpi_id, {})
     if obpi_info.get("type") != "obpi":
-        _fail(
-            f"OBPI not found in ledger: {obpi_id}", exit_code=1, as_json=as_json, obpi_id=obpi_id
-        )
+        _fail(f"OBPI not found in ledger: {obpi_id}", exit_code=1, as_json=as_json, obpi_id=obpi_id)
     if obpi_info.get("ledger_completed"):
         _fail(
             "OBPI is already completed in the ledger.",
@@ -91,10 +84,20 @@ def obpi_complete_cmd(
     _adr_file, resolved_parent = resolve_adr_file(project_root, config, parent_adr)
     parent_lane = resolve_adr_lane(graph.get(resolved_parent, {}), config.mode)
     requires_human = _requires_human_obpi_attestation(resolved_parent, parent_lane)
+    return obpi_file, obpi_id, original_content, resolved_parent, parent_lane, requires_human
 
-    # ------------------------------------------------------------------
-    # 2. Resolve evidence sections (from flags or existing brief content)
-    # ------------------------------------------------------------------
+
+def _resolve_evidence(
+    original_content: str,
+    implementation_summary: str | None,
+    key_proof: str | None,
+    obpi_id: str,
+    as_json: bool,
+) -> tuple[str, str]:
+    """Resolve evidence from flags or existing brief content.
+
+    Returns (effective_summary, effective_proof).
+    """
     effective_summary = implementation_summary or _read_existing_summary(original_content)
     effective_proof = key_proof or _read_existing_key_proof(original_content)
 
@@ -116,10 +119,38 @@ def obpi_complete_cmd(
             obpi_id=obpi_id,
         )
     assert effective_proof is not None  # narrowing: _fail raises SystemExit
+    return effective_summary, effective_proof
 
-    # ------------------------------------------------------------------
+
+def obpi_complete_cmd(
+    obpi: str,
+    attestor: str,
+    attestation_text: str,
+    implementation_summary: str | None,
+    key_proof: str | None,
+    as_json: bool,
+    dry_run: bool,
+) -> None:
+    """Atomically complete an OBPI: validate, write evidence, flip status, emit receipt."""
+    config = ensure_initialized()
+    project_root = get_project_root()
+    ledger = Ledger(project_root / config.paths.ledger)
+
+    # 1. Resolve & validate
+    obpi_file, obpi_id, original_content, resolved_parent, parent_lane, requires_human = (
+        _resolve_and_validate(project_root, config, ledger, obpi, as_json)
+    )
+
+    # 2. Resolve evidence
+    effective_summary, effective_proof = _resolve_evidence(
+        original_content,
+        implementation_summary,
+        key_proof,
+        obpi_id,
+        as_json,
+    )
+
     # 3. Build would-be brief content
-    # ------------------------------------------------------------------
     today = datetime.now(UTC).strftime("%Y-%m-%d")
     new_content = _build_completed_brief(
         content=original_content,
@@ -130,9 +161,7 @@ def obpi_complete_cmd(
         date_completed=today,
     )
 
-    # ------------------------------------------------------------------
-    # 4. Validate would-be content (same checks as obpi-completion-validator)
-    # ------------------------------------------------------------------
+    # 4. Validate would-be content
     validation_errors = _validate_would_be_content(new_content, requires_human)
     if validation_errors:
         errors_text = "; ".join(validation_errors)
@@ -143,9 +172,7 @@ def obpi_complete_cmd(
             obpi_id=obpi_id,
         )
 
-    # ------------------------------------------------------------------
-    # 5. Build audit ledger entry and receipt event (in memory)
-    # ------------------------------------------------------------------
+    # 5. Build audit ledger entry and receipt event
     adr_dir = obpi_file.parent.parent
     audit_entry = _build_attestation_audit_entry(
         obpi_id=obpi_id,
@@ -155,7 +182,6 @@ def obpi_complete_cmd(
         date=today,
         requires_human=requires_human,
     )
-
     completion_term = "attested_completed" if requires_human else "completed"
     anchor = capture_validation_anchor(project_root, resolved_parent)
     evidence: dict[str, Any] = {
@@ -181,35 +207,22 @@ def obpi_complete_cmd(
         anchor=anchor,
     )
 
-    # ------------------------------------------------------------------
-    # Dry run — show plan, don't execute
-    # ------------------------------------------------------------------
+    # Dry run
     if dry_run:
-        result = {
-            "status": "dry_run",
-            "obpi_id": obpi_id,
-            "parent_adr": resolved_parent,
-            "lane": parent_lane,
-            "requires_human_attestation": requires_human,
-            "completion_term": completion_term,
-            "attestor": attestor,
-            "audit_entry": audit_entry,
-            "receipt_event": receipt_event.model_dump(),
-        }
-        if as_json:
-            print(json.dumps(result))
-        else:
-            console.print("[yellow]Dry run:[/yellow] no files will be written.")
-            console.print(f"  OBPI: {obpi_id}")
-            console.print(f"  Parent ADR: {resolved_parent}")
-            console.print(f"  Lane: {parent_lane}")
-            console.print(f"  Attestor: {attestor}")
-            console.print(f"  Completion: {completion_term}")
+        _print_dry_run(
+            obpi_id,
+            resolved_parent,
+            parent_lane,
+            requires_human,
+            completion_term,
+            attestor,
+            audit_entry,
+            receipt_event,
+            as_json,
+        )
         return
 
-    # ------------------------------------------------------------------
     # 6-8. Execute atomic transaction
-    # ------------------------------------------------------------------
     try:
         _execute_transaction(
             obpi_file=obpi_file,
@@ -223,9 +236,56 @@ def obpi_complete_cmd(
     except OSError as exc:
         _fail(f"I/O error during completion: {exc}", exit_code=2, as_json=as_json, obpi_id=obpi_id)
 
-    # ------------------------------------------------------------------
     # Success output
-    # ------------------------------------------------------------------
+    _print_success(obpi_id, resolved_parent, parent_lane, completion_term, attestor, as_json)
+
+
+def _print_dry_run(
+    obpi_id: str,
+    resolved_parent: str,
+    parent_lane: str,
+    requires_human: bool,
+    completion_term: str,
+    attestor: str,
+    audit_entry: dict[str, Any],
+    receipt_event: Any,
+    as_json: bool,
+) -> None:
+    """Print dry-run plan."""
+    if as_json:
+        print(
+            json.dumps(
+                {
+                    "status": "dry_run",
+                    "obpi_id": obpi_id,
+                    "parent_adr": resolved_parent,
+                    "lane": parent_lane,
+                    "requires_human_attestation": requires_human,
+                    "completion_term": completion_term,
+                    "attestor": attestor,
+                    "audit_entry": audit_entry,
+                    "receipt_event": receipt_event.model_dump(),
+                }
+            )
+        )
+    else:
+        console.print("[yellow]Dry run:[/yellow] no files will be written.")
+        console.print(f"  OBPI: {obpi_id}")
+        console.print(f"  Parent ADR: {resolved_parent}")
+        console.print(f"  Lane: {parent_lane}")
+        console.print(f"  Attestor: {attestor}")
+        console.print(f"  Completion: {completion_term}")
+
+
+def _print_success(
+    obpi_id: str,
+    resolved_parent: str,
+    parent_lane: str,
+    completion_term: str,
+    attestor: str,
+    as_json: bool,
+) -> None:
+    """Print success output."""
     if as_json:
         print(
             json.dumps(
@@ -334,7 +394,13 @@ def _read_existing_key_proof(content: str) -> str | None:
 
 
 _PLACEHOLDERS = {
-    "tbd", "todo", "...", "none", "(none)", "-", "n/a",
+    "tbd",
+    "todo",
+    "...",
+    "none",
+    "(none)",
+    "-",
+    "n/a",
     "paste test output here",
     "paste lint/format/type check output here",
     "one-sentence concrete outcome",
@@ -420,9 +486,7 @@ def _replace_h3_section(content: str, heading: str, new_body: str) -> str:
     return content[: match.start()] + replacement + content[match.end() :]
 
 
-def _update_human_attestation(
-    content: str, attestor: str, attestation_text: str, date: str
-) -> str:
+def _update_human_attestation(content: str, attestor: str, attestation_text: str, date: str) -> str:
     """Update the Human Attestation section values."""
     result = re.sub(
         r"(^- Attestor:\s*).*$",

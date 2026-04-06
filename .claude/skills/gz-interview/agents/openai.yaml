@@ -1,0 +1,4 @@
+interface:
+  display_name: "gz interview"
+  short_description: "Operate the gz interview workflow"
+  default_prompt: "Use $gz-interview to run gz interview for this task."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "gz attest"
+  short_description: "Operate the gz attest workflow"
+  default_prompt: "Use $gz-attest to run gz attest for this task."

@@ -41,7 +41,15 @@ def _state_handler(a: argparse.Namespace) -> None:
 
 def _closeout_dispatch(a: argparse.Namespace) -> None:
     """Route gz closeout to ceremony or standard closeout."""
-    if a.ceremony or a.ceremony_next or a.ceremony_status or a.ceremony_attest:
+    ceremony_flags = (
+        a.ceremony
+        or a.ceremony_next
+        or a.ceremony_status
+        or a.ceremony_attest
+        or a.ceremony_pause
+        or a.ceremony_restart
+    )
+    if ceremony_flags:
         from gzkit.commands.closeout_ceremony import ceremony_cmd  # noqa: PLC0415
 
         ceremony_cmd(
@@ -50,6 +58,8 @@ def _closeout_dispatch(a: argparse.Namespace) -> None:
             ceremony_next=a.ceremony_next,
             ceremony_status=a.ceremony_status,
             ceremony_attest=a.ceremony_attest,
+            ceremony_pause=a.ceremony_pause,
+            ceremony_restart=a.ceremony_restart,
         )
     else:
         closeout_cmd(adr=a.adr, as_json=a.as_json, dry_run=a.dry_run)
@@ -367,7 +377,21 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
         dest="ceremony_attest",
         default=None,
         metavar="TEXT",
-        help='Record attestation at step 5 (e.g. --attest "Completed")',
+        help='Record attestation at step 6 (e.g. --attest "Completed")',
+    )
+    p_closeout.add_argument(
+        "--pause",
+        dest="ceremony_pause",
+        action="store_true",
+        default=False,
+        help="Pause ceremony for revise-and-resubmit",
+    )
+    p_closeout.add_argument(
+        "--restart",
+        dest="ceremony_restart",
+        action="store_true",
+        default=False,
+        help="Restart ceremony (new attempt, fresh from Step 1)",
     )
 
     p_closeout.set_defaults(func=lambda a: _closeout_dispatch(a))

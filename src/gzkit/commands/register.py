@@ -347,9 +347,7 @@ def register_adrs(
             f"detected (promoted but not cleaned up):"
         )
         for pool_id, promoted_id in stale_pool_files:
-            console.print(
-                f"  [yellow]stale:[/yellow] {pool_id} → promoted to {promoted_id}"
-            )
+            console.print(f"  [yellow]stale:[/yellow] {pool_id} → promoted to {promoted_id}")
 
     to_register_obpis = _collect_obpis_to_register(
         ledger=ledger,

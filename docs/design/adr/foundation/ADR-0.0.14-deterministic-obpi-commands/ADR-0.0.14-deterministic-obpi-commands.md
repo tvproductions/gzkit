@@ -321,3 +321,9 @@ If "Request Changes," required fixes:
 1. ...
 
 1. ...
+
+## Attestation Block
+
+| Term | Status | Attested By | Date | Reason |
+|------|--------|-------------|------|--------|
+| 0.0.14 | Completed | Jeffry | 2026-04-06 | completed |
