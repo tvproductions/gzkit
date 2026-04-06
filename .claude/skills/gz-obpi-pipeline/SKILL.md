@@ -135,8 +135,8 @@ Exception mode: Stage 4 = SELF-CLOSE (record evidence, proceed)
    - `docs/design/adr/**/briefs/OBPI-{id}-*.md`
 3. **Resolve the full OBPI slug** from the brief's frontmatter `id` field (e.g.
    `OBPI-0.0.12-02-implementer-agent-persona`). Use this full slug for ALL
-   subsequent `gz obpi` commands (`reconcile`, `emit-receipt`, `lock-claim`,
-   `lock-release`). The short form (e.g. `OBPI-0.0.12-02`) may fail ledger
+   subsequent `gz obpi` commands (`reconcile`, `complete`, `lock claim`,
+   `lock release`). The short form (e.g. `OBPI-0.0.12-02`) may fail ledger
    lookup. Set a variable like `obpi_slug` at this step and reuse it throughout.
 5. Extract: objective, requirements, allowed/denied paths, acceptance criteria, lane, verification commands
 6. Identify the parent ADR and inherit its lane and execution constraints.
@@ -145,7 +145,7 @@ Exception mode: Stage 4 = SELF-CLOSE (record evidence, proceed)
    - anything else → set mode=normal
 8. Check for existing handoffs and resume context when present:
    - `docs/design/adr/**/handoffs/*.md`
-9. Claim OBPI lock via `/gz-obpi-lock claim {OBPI-SLUG}` (use the full slug from step 3)
+9. Claim OBPI lock: `uv run gz obpi lock claim {OBPI-SLUG}` (use the full slug from step 3)
 10. Create pipeline markers:
     - `.claude/plans/.pipeline-active-{OBPI-ID}.json`
     - `.claude/plans/.pipeline-active.json` as a legacy compatibility marker
@@ -159,7 +159,7 @@ Exception mode: Stage 4 = SELF-CLOSE (record evidence, proceed)
 
 **Abort if:** brief not found, brief already `Completed`, or plan receipt verdict is `FAIL`.
 
-**On any abort:** Release lock if claimed, run `/gz-session-handoff` to preserve context.
+**On any abort:** Release lock via `uv run gz obpi lock release {OBPI-SLUG} --force`, then run `/gz-session-handoff` to preserve context.
 
 ### Stage 2: Implement (skipped by `--from=verify` or `--from=ceremony`)
 
@@ -260,7 +260,7 @@ Exception mode: Stage 4 = SELF-CLOSE (record evidence, proceed)
 5. **Persist dispatch state** after each task completes (success or failure), including review results.
 6. **After all tasks complete:** persist dispatch summary for `gz roles --pipeline` queries.
 
-**Abort if:** Any task returns `BLOCKED` after retry or after exhausting review fix cycles. Create handoff, release lock, and stop.
+**Abort if:** Any task returns `BLOCKED` after retry or after exhausting review fix cycles. Release lock via `uv run gz obpi lock release {OBPI-SLUG} --force`, create handoff, and stop.
 
 #### Inline Fallback (`--no-subagents`)
 
@@ -273,7 +273,7 @@ When `--no-subagents` is set, Stage 2 runs entirely in the main session (no Agen
 5. Run `uv run ruff check . --fix && uv run ruff format .` after code changes
 6. Run `uv run -m unittest -q` after implementation
 
-**Abort if:** Tests fail after 2 fix attempts. Create handoff, release lock, and stop.
+**Abort if:** Tests fail after 2 fix attempts. Release lock via `uv run gz obpi lock release {OBPI-SLUG} --force`, create handoff, and stop.
 
 **MANDATORY TRANSITION → Stage 3.** Do not summarize. Do not report. Proceed.
 
@@ -297,7 +297,7 @@ uv run mkdocs build --strict
 uv run -m behave features/
 ```
 
-If any baseline check fails, attempt fix and re-verify once. If still failing, create handoff, release lock, and stop.
+If any baseline check fails, attempt fix and re-verify once. If still failing, release lock via `uv run gz obpi lock release {OBPI-SLUG} --force`, create handoff, and stop.
 
 #### Phase 2: REQ-Level Verification Dispatch
 
@@ -348,7 +348,7 @@ After baseline checks pass, dispatch parallel verification subagents for the bri
 
 8. **Handle aggregate results:**
    - All REQs pass → advance to Stage 4.
-   - Any REQ fails → attempt fix and re-verify once. If still failing, create handoff, release lock, and stop.
+   - Any REQ fails → attempt fix and re-verify once. If still failing, release lock via `uv run gz obpi lock release {OBPI-SLUG} --force`, create handoff, and stop.
 
 #### Inline Verification Fallback
 
@@ -360,7 +360,7 @@ When `--no-subagents` is set, or when the verification plan strategy is `sequent
 
 No subagent dispatch, no worktree isolation, no parallel execution.
 
-**Abort if:** Any verification fails. Attempt fix, re-verify once. If still failing, create handoff, release lock, and stop.
+**Abort if:** Any verification fails. Attempt fix, re-verify once. If still failing, release lock via `uv run gz obpi lock release {OBPI-SLUG} --force`, create handoff, and stop.
 
 **MANDATORY TRANSITION → Stage 4.** Do not summarize. Do not report. Proceed.
 
@@ -436,61 +436,33 @@ Evidence is full-fidelity. Human reviews at ADR closeout.
 
 After attestation (Normal) or self-close (Exception):
 
-**Two-sync pattern:** Stage 5 uses two git-sync cycles. The first commits all
-governance edits (attestation, brief, audit) so the tree is clean. The completion
-receipt is then emitted against that clean commit — capturing a deterministic
-per-OBPI anchor hash. The second sync commits the receipt and reconcile output.
+**Two-sync pattern:** Stage 5 uses two git-sync cycles. The `gz obpi complete`
+command atomically writes the attestation to the ADR-level audit ledger, updates
+the brief to Completed, and emits the completion receipt. Git-sync #1 commits all
+these governance edits plus lock release and marker cleanup. Git-sync #2 commits
+the reconcile output and ADR status refresh.
 
-1. **Record attestation in ledger** — Append a dedicated attestation entry to the **ADR-level** audit ledger
-   (`{adr-package}/logs/obpi-audit.jsonl`) BEFORE updating the brief. The `obpi-completion-validator.py` hook
-   checks the ledger for `attestation_type: "human"` (Normal mode) or
-   `attestation_type: "self-close-exception"` (Exception mode) and will BLOCK the brief
-   status change if this entry is missing.
-
-   **Normal mode attestation entry format:**
-   ```json
-   {"type":"obpi-audit","timestamp":"<ISO-8601>","obpi_id":"<OBPI-ID>","adr_id":"<ADR-ID>","attestation_type":"human","evidence":{"human_attestation":true,"attestation_text":"<user's attestation text>","attestation_date":"<YYYY-MM-DD>"},"action_taken":"attestation_recorded","agent":"claude-code"}
-   ```
-
-   **Exception mode attestation entry format:**
-   ```json
-   {"type":"obpi-audit","timestamp":"<ISO-8601>","obpi_id":"<OBPI-ID>","adr_id":"<ADR-ID>","attestation_type":"self-close-exception","evidence":{"human_attestation":false},"action_taken":"attestation_recorded","agent":"claude-code"}
-   ```
-
-   **Critical vocabulary:** Use `"human"` exactly (not `"human-attested"`, not `"attested"`).
-   The hook checks `attestation_type == "human"` or `evidence.human_attestation == true`.
-
-2. Run `/gz-obpi-reconcile {PARENT-ADR} --brief {OBPI-ID}` to record evidence ledger entry and verify brief
-3. Update brief using a **single Write operation** (full file rewrite):
-   - Read the current brief content
-   - Compose the complete final content: check all criteria boxes `[x]`,
-     add `### Implementation Summary` (bullet format: `- Key: value`),
-     add `### Key Proof` (command output in code blocks),
-     update Human Attestation section, update `**Brief Status:**` to `Completed`,
-     update `**Date Completed:**`, AND change frontmatter `status: Completed`
-   - Write the entire file at once
-   - **Why atomic:** The `obpi-completion-validator.py` hook fires on
-     any edit introducing `Status: Completed` and checks the would-be file
-     content for evidence sections. Incremental Edit calls that change status
-     before evidence exists will always be blocked. A single Write with
-     everything included passes on the first attempt.
-4. Release OBPI lock via `/gz-obpi-lock release {OBPI-ID}`
-5. Remove `.claude/plans/.pipeline-active-{OBPI-ID}.json` if it was created.
-6. Remove `.claude/plans/.pipeline-active.json` only when it still points at
+1. **Complete OBPI atomically** — `uv run gz obpi complete {OBPI-SLUG} --attestor {attestor} --attestation-text "{text}" [--implementation-summary "{summary}"] [--key-proof "{proof}"]`
+   This single command atomically: validates brief state, writes attestation to the
+   ADR-level audit ledger, updates the brief (status, evidence sections, human
+   attestation), and emits the completion receipt to the main ledger. If any step
+   fails, all changes are rolled back — no partial writes.
+   - Normal mode: pass the human's attestation text via `--attestation-text`
+   - Exception mode: pass `--attestation-text "self-close-exception"`
+   - Use `--implementation-summary` and `--key-proof` to supply evidence sections
+     (if omitted, the command reads existing content from the brief)
+2. **Release OBPI lock** — `uv run gz obpi lock release {OBPI-SLUG}`
+3. Remove `.claude/plans/.pipeline-active-{OBPI-ID}.json` if it was created.
+4. Remove `.claude/plans/.pipeline-active.json` only when it still points at
    the same OBPI as the per-OBPI marker.
-7. **Git-sync #1** — `uv run gz git-sync --apply --lint --test`
-   Commits all governance edits from steps 1-6. Tree is now clean with a
-   deterministic commit hash anchoring this OBPI's work.
-8. **Emit completion receipt** — `uv run gz obpi emit-receipt {OBPI-ID} --event completed --attestor {attestor} --evidence-json '{...}'`
-   Captures the clean commit anchor from step 7. The receipt's `git_sync_state.dirty`
-   will be `false` and `anchor.commit` will point to the exact commit containing
-   this OBPI's final state.
-9. Run `uv run gz obpi reconcile {OBPI-ID}` to confirm receipt and brief agree.
-10. Run `uv run gz adr status {PARENT-ADR} --json` so the parent ADR view
-    reflects the reconciled OBPI state.
-11. **Git-sync #2** — `uv run gz git-sync --apply --lint --test`
-    Commits the receipt (step 8) and reconcile output (step 9).
-12. Create a session handoff if more OBPIs remain or follow-up work is deferred.
+5. **Git-sync #1** — `uv run gz git-sync --apply --lint --test`
+   Commits all governance edits from steps 1-4. Tree is now clean.
+6. Run `uv run gz obpi reconcile {OBPI-SLUG}` to confirm receipt and brief agree.
+7. Run `uv run gz adr status {PARENT-ADR} --json` so the parent ADR view
+   reflects the reconciled OBPI state.
+8. **Git-sync #2** — `uv run gz git-sync --apply --lint --test`
+   Commits the reconcile output (step 6) and ADR status refresh (step 7).
+9. Create a session handoff if more OBPIs remain or follow-up work is deferred.
 
 ---
 
@@ -498,18 +470,18 @@ per-OBPI anchor hash. The second sync commits the receipt and reconcile output.
 
 | Failure Point | Action |
 |---------------|--------|
-| Brief not found | Report error, release lock, stop |
-| Receipt verdict FAIL | Report audit failure, release lock, stop |
-| No receipt found (full run) | STOP — enter plan mode, get approval, then resume pipeline. Do not proceed without a plan. |
-| No receipt found (`--from` set) | Proceed — user is resuming a partial pipeline where implementation already happened |
-| Tests fail during implementation | Attempt fix (2 tries), then handoff + release lock |
-| Verification fails | Attempt fix (1 try), then handoff + release lock |
+| Brief not found | Report error, `gz obpi lock release --force`, stop |
+| Receipt verdict FAIL | Report audit failure, `gz obpi lock release --force`, stop |
+| No receipt found (full run) | STOP — enter plan mode, get approval, then resume pipeline |
+| No receipt found (`--from` set) | Proceed — user is resuming a partial pipeline |
+| Tests fail during implementation | Attempt fix (2 tries), then `gz obpi lock release --force` + handoff |
+| Verification fails | Attempt fix (1 try), then `gz obpi lock release --force` + handoff |
 | Human rejects attestation | Record feedback, return to Stage 2 with corrections |
-| `git sync` fails or repo remains unsynced | Stop before completion accounting and repair blockers |
+| `git sync` fails or repo remains unsynced | Stop before `gz obpi complete` and repair blockers |
 
 **Lock bracket:** Lock is claimed at Stage 1 and released at Stage 5 AND on any abort/handoff. No orphaned locks.
 
-**Handoff creation:** On any abort, run `/gz-session-handoff` to preserve context for the next session.
+**Handoff creation:** On any abort, release lock via `uv run gz obpi lock release {OBPI-SLUG} --force`, then run `/gz-session-handoff` to preserve context for the next session.
 
 ---
 
@@ -523,7 +495,7 @@ Each stage records evidence to the OBPI audit ledger:
 | Stage 2 | Files changed, tests added |
 | Stage 3 | Verification outputs (pass/fail) |
 | Stage 4 | Attestation text + timestamp |
-| Stage 5 | Attestation ledger entry (Step 1), reconcile with evidence (Step 2), brief updated (Step 3), git-sync #1 (Step 7), completion receipt with clean anchor (Step 8), reconcile confirm (Step 9), git-sync #2 (Step 11) |
+| Stage 5 | `gz obpi complete` (Step 1: attestation + brief + receipt), lock released (Step 2), markers cleaned (Steps 3-4), git-sync #1 (Step 5), reconcile (Step 6), git-sync #2 (Step 8) |
 
 ---
 
@@ -554,7 +526,7 @@ Multiple independent OBPIs within the same ADR can run this pipeline concurrentl
 
 1. ADR has `## Execution Mode: Exception (SVFR)` section (granted at ADR Defense)
 2. OBPIs have non-overlapping allowed paths
-3. Each session claims its OBPI via `/gz-obpi-lock`
+3. Each session claims its OBPI via `uv run gz obpi lock claim`
 4. Sync operations (Stage 5) are atomic per-brief
 
 In Normal mode, OBPIs run sequentially with per-OBPI human attestation.
@@ -563,11 +535,12 @@ In Normal mode, OBPIs run sequentially with per-OBPI human attestation.
 
 ## Relationship to Existing Skills
 
-| Skill | Role in Pipeline |
-|-------|-----------------|
-| `/gz-obpi-lock` | Stage 1 claim, Stage 5 release, abort release |
+| CLI Command / Skill | Role in Pipeline |
+|---------------------|-----------------|
+| `gz obpi lock claim/release` | Stage 1 claim, Stage 5 release, abort release (`--force`) |
 | `/gz-plan-audit` | Pre-pipeline — runs in plan mode, produces receipt |
-| `/gz-obpi-reconcile` | Stage 5 evidence + ledger + table sync |
+| `gz obpi complete` | Stage 5 atomic completion (attestation + brief + receipt) |
+| `gz obpi reconcile` | Stage 5 confirmation — receipt and brief agree |
 | `/gz-session-handoff` | Error recovery — preserves context on abort |
 
 ---
@@ -576,14 +549,12 @@ In Normal mode, OBPIs run sequentially with per-OBPI human attestation.
 
 The pipeline is complete when — and ONLY when — all of these are true:
 
-1. Attestation recorded in ADR-level audit ledger (Stage 5, Step 1)
-2. `/gz-obpi-reconcile` ran (Stage 5, Step 2)
-3. Brief updated to `Completed` (Stage 5, Step 3)
-4. Lock released, markers cleaned (Stage 5, Steps 4-6)
-5. Git-sync #1 committed governance edits (Stage 5, Step 7)
-6. Completion receipt emitted with clean anchor (Stage 5, Step 8)
-7. Reconcile passed (Stage 5, Step 9)
-8. Git-sync #2 committed receipt and reconcile (Stage 5, Step 11)
+1. `gz obpi complete` ran successfully — attestation, brief, and receipt written atomically (Stage 5, Step 1)
+2. Lock released via `gz obpi lock release` (Stage 5, Step 2)
+3. Pipeline markers cleaned (Stage 5, Steps 3-4)
+4. Git-sync #1 committed governance edits (Stage 5, Step 5)
+5. `gz obpi reconcile` passed (Stage 5, Step 6)
+6. Git-sync #2 committed reconcile output (Stage 5, Step 8)
 
 If any of these have not happened, the pipeline is not complete. Do not claim otherwise.
 

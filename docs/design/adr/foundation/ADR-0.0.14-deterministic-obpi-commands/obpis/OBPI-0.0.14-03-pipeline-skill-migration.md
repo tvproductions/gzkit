@@ -3,7 +3,7 @@ id: OBPI-0.0.14-03-pipeline-skill-migration
 parent: ADR-0.0.14-deterministic-obpi-commands
 item: 3
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.14-03: Pipeline and lock skill migration
@@ -281,15 +281,17 @@ uv run mkdocs build --strict
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+grep -c 'gz obpi lock' .claude/skills/gz-obpi-lock/SKILL.md returns 13; grep -ciE 'Write.*(locks|obpi-audit)' .claude/skills/gz-obpi-pipeline/SKILL.md returns 0
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files modified: .claude/skills/gz-obpi-lock/SKILL.md, .claude/skills/gz-obpi-pipeline/SKILL.md, .claude/skills/gz-obpi-pipeline/DISPATCH.md, .gzkit/skills/gz-obpi-lock/SKILL.md, .gzkit/skills/gz-obpi-pipeline/SKILL.md, docs/user/runbook.md
+- Tests added: (none — prose-only migration)
+- Date completed: 2026-04-05
+- Attestation status: Human attested
+- Defects noted: (none)
 
 ## Tracked Defects
 
@@ -297,14 +299,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `Jeffry Babb`
+- Attestation: attest completed
+- Date: 2026-04-06
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-06
 
 **Evidence Hash:** -
