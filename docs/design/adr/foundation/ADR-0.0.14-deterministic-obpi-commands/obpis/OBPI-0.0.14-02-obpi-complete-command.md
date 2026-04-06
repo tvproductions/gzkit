@@ -3,7 +3,7 @@ id: OBPI-0.0.14-02-obpi-complete-command
 parent: ADR-0.0.14-deterministic-obpi-commands
 item: 2
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.14-02: gz obpi complete command
@@ -198,15 +198,18 @@ gz obpi complete NONEXISTENT-OBPI --attestor jeff --attestation-text "test"
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+gz obpi complete -h shows command; 32/32 unit tests pass; 2/2 BDD pass; all 2613 tests pass
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: obpi_complete.py, test_obpi_complete_cmd.py, obpi_complete.feature, obpi-complete.md
+- Files modified: parser_artifacts.py, doc-coverage.json, index.md
+- Tests: 32 unit tests, 2 BDD scenarios, 2613 total pass
+- Date completed: 2026-04-05
+- Attestation status: human-attested
+- Defects noted: none
 
 ## Tracked Defects
 
@@ -214,14 +217,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `jeff`
+- Attestation: attest completed
+- Date: 2026-04-06
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-06
 
 **Evidence Hash:** -

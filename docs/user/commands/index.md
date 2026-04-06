@@ -43,6 +43,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz obpi lock check`](obpi-lock-check.md) | Check if an OBPI is locked |
 | [`gz obpi lock list`](obpi-lock-list.md) | List active OBPI work locks |
 | [`gz obpi audit`](obpi-audit.md) | Gather evidence for OBPI brief and record in audit ledger |
+| [`gz obpi complete`](obpi-complete.md) | Atomically complete an OBPI (validate, write evidence, emit receipt) |
 | [`gz git-sync`](git-sync.md) | Run guarded sync ritual |
 | [`gz chores list`](chores-list.md) | List declared chores from the config registry |
 | [`gz chores plan`](chores-plan.md) | Show deterministic plan details for one chore |

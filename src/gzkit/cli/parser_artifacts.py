@@ -24,6 +24,7 @@ from gzkit.commands.obpi_cmd import (
     obpi_validate_cmd,
     obpi_withdraw_cmd,
 )
+from gzkit.commands.obpi_complete import obpi_complete_cmd
 from gzkit.commands.obpi_lock import (
     obpi_lock_check_cmd,
     obpi_lock_claim_cmd,
@@ -515,6 +516,66 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
     add_json_flag(p_obpi_audit)
     p_obpi_audit.set_defaults(
         func=lambda a: obpi_audit_cmd(obpi_id=a.obpi, adr_id=a.adr_id, as_json=a.as_json)
+    )
+
+    # --- gz obpi complete (atomic OBPI completion transaction) ---
+    p_obpi_complete = obpi_commands.add_parser(
+        "complete",
+        help="Atomically complete an OBPI (validate, write evidence, flip status, emit receipt)",
+        description=(
+            "All-or-nothing OBPI completion: validates the brief, writes evidence "
+            "sections, flips status to Completed, records attestation in the audit "
+            "ledger, and emits a completion receipt. If any step fails, no files "
+            "or ledger entries are modified."
+        ),
+        epilog=build_epilog(
+            [
+                'gz obpi complete OBPI-0.1.0-01 --attestor jeff --attestation-text "Verified"',
+                (
+                    "gz obpi complete OBPI-0.1.0-01 --attestor jeff "
+                    '--attestation-text "Verified" --json'
+                ),
+                (
+                    "gz obpi complete OBPI-0.1.0-01 --attestor jeff "
+                    '--attestation-text "Verified" --dry-run'
+                ),
+            ]
+        ),
+    )
+    p_obpi_complete.add_argument("obpi", help="OBPI identifier (e.g. OBPI-0.0.14-01)")
+    p_obpi_complete.add_argument(
+        "--attestor", required=True, help="Identity of the attestor (required)"
+    )
+    p_obpi_complete.add_argument(
+        "--attestation-text",
+        dest="attestation_text",
+        required=True,
+        help="Substantive attestation text (required)",
+    )
+    p_obpi_complete.add_argument(
+        "--implementation-summary",
+        dest="implementation_summary",
+        default=None,
+        help="Implementation summary text (reads existing from brief if omitted)",
+    )
+    p_obpi_complete.add_argument(
+        "--key-proof",
+        dest="key_proof",
+        default=None,
+        help="Key proof text (reads existing from brief if omitted)",
+    )
+    add_json_flag(p_obpi_complete)
+    add_dry_run_flag(p_obpi_complete)
+    p_obpi_complete.set_defaults(
+        func=lambda a: obpi_complete_cmd(
+            obpi=a.obpi,
+            attestor=a.attestor,
+            attestation_text=a.attestation_text,
+            implementation_summary=a.implementation_summary,
+            key_proof=a.key_proof,
+            as_json=a.as_json,
+            dry_run=a.dry_run,
+        )
     )
 
     # --- Nested lock subcommand group: gz obpi lock {claim|release|check|list} ---
