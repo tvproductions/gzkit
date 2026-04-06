@@ -1,0 +1,4 @@
+interface:
+  display_name: "gz closeout"
+  short_description: "Operate the gz closeout workflow"
+  default_prompt: "Use $gz-closeout to run gz closeout for this task."

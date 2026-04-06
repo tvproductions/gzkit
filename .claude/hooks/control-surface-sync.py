@@ -21,9 +21,7 @@ from pathlib import Path
 
 TIMEOUT_SECONDS = 30
 
-CONTROL_SURFACE_PATTERNS = (
-    ".gzkit/",
-)
+CONTROL_SURFACE_PATTERNS = (".gzkit/",)
 
 
 def main():
@@ -55,8 +53,7 @@ def main():
         sys.exit(0)
 
     matches = any(
-        rel_path.startswith(p) or rel_path == p.rstrip("/")
-        for p in CONTROL_SURFACE_PATTERNS
+        rel_path.startswith(p) or rel_path == p.rstrip("/") for p in CONTROL_SURFACE_PATTERNS
     )
     if not matches:
         sys.exit(0)
@@ -84,4 +81,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

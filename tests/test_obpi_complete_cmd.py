@@ -190,10 +190,7 @@ class TestUpdateHumanAttestation(unittest.TestCase):
 
     def test_updates_attestor_and_text(self):
         content = (
-            "## Human Attestation\n\n"
-            "- Attestor: `<name>`\n"
-            "- Attestation: n/a\n"
-            "- Date: YYYY-MM-DD\n"
+            "## Human Attestation\n\n- Attestor: `<name>`\n- Attestation: n/a\n- Date: YYYY-MM-DD\n"
         )
         result = _update_human_attestation(content, "jeff", "Lock commands verified", "2026-04-05")
         self.assertIn("- Attestor: `jeff`", result)
@@ -449,9 +446,7 @@ class TestObpiCompleteCmdBriefNotFound(unittest.TestCase):
     @patch("gzkit.commands.obpi_complete.ensure_initialized")
     @patch("gzkit.commands.obpi_complete.resolve_obpi_file")
     @patch("gzkit.commands.obpi_complete.Ledger")
-    def test_exits_1_for_missing_brief(
-        self, mock_ledger_cls, mock_resolve, mock_init, mock_root
-    ):
+    def test_exits_1_for_missing_brief(self, mock_ledger_cls, mock_resolve, mock_init, mock_root):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             mock_root.return_value = root

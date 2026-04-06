@@ -55,16 +55,22 @@ class TestObpiValidator(unittest.TestCase):
         subprocess.run(["git", "init", "-b", "main"], cwd=root, check=True, capture_output=True)
         subprocess.run(
             ["git", "config", "user.email", "test@example.com"],
-            cwd=root, check=True, capture_output=True,
+            cwd=root,
+            check=True,
+            capture_output=True,
         )
         subprocess.run(
             ["git", "config", "user.name", "Test User"],
-            cwd=root, check=True, capture_output=True,
+            cwd=root,
+            check=True,
+            capture_output=True,
         )
         subprocess.run(["git", "add", "-A"], cwd=root, check=True, capture_output=True)
         subprocess.run(
             ["git", "commit", "-m", "chore: initial"],
-            cwd=root, check=True, capture_output=True,
+            cwd=root,
+            check=True,
+            capture_output=True,
         )
         cls._shutil = shutil
 

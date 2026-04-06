@@ -662,9 +662,7 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
     )
     p_lock_check.add_argument("obpi", help="OBPI identifier (e.g. OBPI-0.1.0-01)")
     add_json_flag(p_lock_check)
-    p_lock_check.set_defaults(
-        func=lambda a: obpi_lock_check_cmd(obpi_id=a.obpi, as_json=a.as_json)
-    )
+    p_lock_check.set_defaults(func=lambda a: obpi_lock_check_cmd(obpi_id=a.obpi, as_json=a.as_json))
 
     p_lock_list = lock_commands.add_parser(
         "list",
@@ -682,9 +680,7 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         "--adr", dest="adr_id", default=None, help="Filter locks by parent ADR"
     )
     add_json_flag(p_lock_list)
-    p_lock_list.set_defaults(
-        func=lambda a: obpi_lock_list_cmd(adr_id=a.adr_id, as_json=a.as_json)
-    )
+    p_lock_list.set_defaults(func=lambda a: obpi_lock_list_cmd(adr_id=a.adr_id, as_json=a.as_json))
 
     # --- Deprecated flat aliases (OBPI-03 will remove these after skill migration) ---
     p_lock_claim_dep = obpi_commands.add_parser(
