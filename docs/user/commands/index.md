@@ -38,9 +38,10 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz obpi reconcile`](obpi-reconcile.md) | Fail-closed reconciliation for one OBPI |
 | [`gz obpi emit-receipt`](obpi-emit-receipt.md) | Emit completed/validated receipt for one OBPI |
 | [`gz obpi withdraw`](obpi-withdraw.md) | Record an OBPI withdrawal event |
-| [`gz obpi lock-claim`](obpi-lock-claim.md) | Claim an OBPI work lock |
-| [`gz obpi lock-release`](obpi-lock-release.md) | Release an OBPI work lock |
-| [`gz obpi lock-status`](obpi-lock-status.md) | List active OBPI work locks |
+| [`gz obpi lock claim`](obpi-lock-claim.md) | Claim an OBPI work lock |
+| [`gz obpi lock release`](obpi-lock-release.md) | Release an OBPI work lock |
+| [`gz obpi lock check`](obpi-lock-check.md) | Check if an OBPI is locked |
+| [`gz obpi lock list`](obpi-lock-list.md) | List active OBPI work locks |
 | [`gz obpi audit`](obpi-audit.md) | Gather evidence for OBPI brief and record in audit ledger |
 | [`gz git-sync`](git-sync.md) | Run guarded sync ritual |
 | [`gz chores list`](chores-list.md) | List declared chores from the config registry |

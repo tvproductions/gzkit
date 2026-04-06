@@ -250,3 +250,36 @@ def lifecycle_transition_event(
             "to_state": to_state,
         },
     )
+
+
+def obpi_lock_claimed_event(
+    obpi_id: str,
+    agent: str,
+    ttl_minutes: int,
+    branch: str,
+    session_id: str,
+) -> LedgerEvent:
+    """Create an OBPI lock claimed event."""
+    return LedgerEvent(
+        event="obpi_lock_claimed",
+        id=obpi_id,
+        extra={
+            "agent": agent,
+            "ttl_minutes": ttl_minutes,
+            "branch": branch,
+            "session_id": session_id,
+        },
+    )
+
+
+def obpi_lock_released_event(
+    obpi_id: str,
+    agent: str,
+    force: bool = False,
+) -> LedgerEvent:
+    """Create an OBPI lock released event."""
+    return LedgerEvent(
+        event="obpi_lock_released",
+        id=obpi_id,
+        extra={"agent": agent, "force": force},
+    )

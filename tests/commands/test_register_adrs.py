@@ -298,6 +298,56 @@ class TestRegisterAdrsCommand(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             self.assertNotIn("orphan", result.output)
 
+    def test_register_adrs_warns_on_stale_promoted_pool_file(self) -> None:
+        """register-adrs warns when a pool file on disk maps to a promoted versioned ADR."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+
+            # Create and register a pool ADR
+            pool_dir = Path(config.paths.adrs) / "pool"
+            pool_dir.mkdir(parents=True, exist_ok=True)
+            pool_file = pool_dir / "ADR-pool.my-feature.md"
+            pool_file.write_text(
+                "---\nid: ADR-pool.my-feature\nstatus: Pool\nlane: lite\n---\n\n"
+                "# ADR-pool.my-feature\n",
+                encoding="utf-8",
+            )
+
+            result = runner.invoke(main, ["register-adrs"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("Registered ADR: ADR-pool.my-feature", result.output)
+
+            # Simulate promotion: create versioned ADR and record rename event
+            versioned_dir = Path(config.paths.adrs) / "pre-release" / "ADR-0.5.0-my-feature"
+            versioned_dir.mkdir(parents=True, exist_ok=True)
+            (versioned_dir / "ADR-0.5.0-my-feature.md").write_text(
+                "---\nid: ADR-0.5.0-my-feature\nparent: PRD-GZKIT-1.0.0\nlane: heavy\n---\n\n"
+                "# ADR-0.5.0: My Feature\n",
+                encoding="utf-8",
+            )
+
+            from gzkit.ledger import Ledger, adr_created_event, artifact_renamed_event
+
+            ledger = Ledger(Path(config.paths.ledger))
+            ledger.append(adr_created_event("ADR-0.5.0-my-feature", "PRD-GZKIT-1.0.0", "heavy"))
+            ledger.append(
+                artifact_renamed_event(
+                    old_id="ADR-pool.my-feature",
+                    new_id="ADR-0.5.0-my-feature",
+                    reason="pool_promotion",
+                )
+            )
+
+            # Pool file still on disk (stale leftover)
+            # Re-run register — should warn about stale pool file
+            result2 = runner.invoke(main, ["register-adrs"])
+            self.assertEqual(result2.exit_code, 0)
+            self.assertIn("stale", result2.output)
+            self.assertIn("ADR-pool.my-feature", result2.output)
+            self.assertIn("ADR-0.5.0-my-feature", result2.output)
+
     def test_register_adrs_warns_on_unresolvable_parent(self) -> None:
         """register-adrs warns when OBPI parent cannot be resolved."""
         runner = CliRunner()

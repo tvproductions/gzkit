@@ -24,10 +24,11 @@ from gzkit.commands.obpi_cmd import (
     obpi_validate_cmd,
     obpi_withdraw_cmd,
 )
-from gzkit.commands.obpi_lock_cmd import (
+from gzkit.commands.obpi_lock import (
+    obpi_lock_check_cmd,
     obpi_lock_claim_cmd,
+    obpi_lock_list_cmd,
     obpi_lock_release_cmd,
-    obpi_lock_status_cmd,
 )
 from gzkit.commands.status import (
     adr_report_cmd,
@@ -516,15 +517,32 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         func=lambda a: obpi_audit_cmd(obpi_id=a.obpi, adr_id=a.adr_id, as_json=a.as_json)
     )
 
-    p_lock_claim = obpi_commands.add_parser(
-        "lock-claim",
-        help="Claim an OBPI work lock for multi-agent coordination",
-        description="Create a lock file preventing concurrent work on the same OBPI.",
+    # --- Nested lock subcommand group: gz obpi lock {claim|release|check|list} ---
+    p_lock = obpi_commands.add_parser(
+        "lock",
+        help="OBPI work lock management for multi-agent coordination",
+        description="Claim, release, check, and list OBPI work locks.",
         epilog=build_epilog(
             [
-                "gz obpi lock-claim OBPI-0.1.0-01",
-                "gz obpi lock-claim OBPI-0.1.0-01 --ttl 240",
-                "gz obpi lock-claim OBPI-0.1.0-01 --json",
+                "gz obpi lock claim OBPI-0.1.0-01",
+                "gz obpi lock release OBPI-0.1.0-01",
+                "gz obpi lock check OBPI-0.1.0-01",
+                "gz obpi lock list",
+            ]
+        ),
+    )
+    lock_commands = p_lock.add_subparsers(dest="lock_command")
+    lock_commands.required = True
+
+    p_lock_claim = lock_commands.add_parser(
+        "claim",
+        help="Claim an OBPI work lock",
+        description="Create a lock file and emit a ledger event.",
+        epilog=build_epilog(
+            [
+                "gz obpi lock claim OBPI-0.1.0-01",
+                "gz obpi lock claim OBPI-0.1.0-01 --ttl 240",
+                "gz obpi lock claim OBPI-0.1.0-01 --agent my-agent --json",
             ]
         ),
     )
@@ -536,48 +554,128 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         default=120,
         help="Lock TTL in minutes (default: 120)",
     )
+    p_lock_claim.add_argument(
+        "--agent", dest="agent", default=None, help="Override auto-detected agent identity"
+    )
     add_json_flag(p_lock_claim)
     p_lock_claim.set_defaults(
         func=lambda a: obpi_lock_claim_cmd(
-            obpi_id=a.obpi, ttl_minutes=a.ttl_minutes, as_json=a.as_json
+            obpi_id=a.obpi, ttl_minutes=a.ttl_minutes, as_json=a.as_json, agent=a.agent
         )
     )
 
-    p_lock_release = obpi_commands.add_parser(
-        "lock-release",
+    p_lock_release = lock_commands.add_parser(
+        "release",
         help="Release an OBPI work lock",
-        description="Remove a lock file, allowing other agents to claim the OBPI.",
+        description="Remove a lock file with ownership validation and emit a ledger event.",
         epilog=build_epilog(
             [
-                "gz obpi lock-release OBPI-0.1.0-01",
-                "gz obpi lock-release OBPI-0.1.0-01 --json",
+                "gz obpi lock release OBPI-0.1.0-01",
+                "gz obpi lock release OBPI-0.1.0-01 --force",
+                "gz obpi lock release OBPI-0.1.0-01 --json",
             ]
         ),
     )
     p_lock_release.add_argument("obpi", help="OBPI identifier (e.g. OBPI-0.1.0-01)")
+    add_force_flag(p_lock_release, help_override="Release lock regardless of ownership")
+    p_lock_release.add_argument(
+        "--agent", dest="agent", default=None, help="Override auto-detected agent identity"
+    )
     add_json_flag(p_lock_release)
     p_lock_release.set_defaults(
-        func=lambda a: obpi_lock_release_cmd(obpi_id=a.obpi, as_json=a.as_json)
+        func=lambda a: obpi_lock_release_cmd(
+            obpi_id=a.obpi, as_json=a.as_json, force=a.force, agent=a.agent
+        )
     )
 
-    p_lock_status = obpi_commands.add_parser(
-        "lock-status",
-        help="List active OBPI work locks",
-        description="Show all active and expired OBPI work locks.",
+    p_lock_check = lock_commands.add_parser(
+        "check",
+        help="Check if an OBPI is locked (exit 0 = held, exit 1 = free)",
+        description="Query lock status for a single OBPI.",
         epilog=build_epilog(
             [
-                "gz obpi lock-status",
-                "gz obpi lock-status --adr ADR-0.1.0",
-                "gz obpi lock-status --json",
+                "gz obpi lock check OBPI-0.1.0-01",
+                "gz obpi lock check OBPI-0.1.0-01 --json",
             ]
         ),
     )
-    p_lock_status.add_argument(
+    p_lock_check.add_argument("obpi", help="OBPI identifier (e.g. OBPI-0.1.0-01)")
+    add_json_flag(p_lock_check)
+    p_lock_check.set_defaults(
+        func=lambda a: obpi_lock_check_cmd(obpi_id=a.obpi, as_json=a.as_json)
+    )
+
+    p_lock_list = lock_commands.add_parser(
+        "list",
+        help="List active OBPI work locks (auto-reaps expired)",
+        description="Reap expired locks, then list remaining active locks.",
+        epilog=build_epilog(
+            [
+                "gz obpi lock list",
+                "gz obpi lock list --adr ADR-0.1.0",
+                "gz obpi lock list --json",
+            ]
+        ),
+    )
+    p_lock_list.add_argument(
         "--adr", dest="adr_id", default=None, help="Filter locks by parent ADR"
     )
-    add_json_flag(p_lock_status)
-    p_lock_status.set_defaults(
-        func=lambda a: obpi_lock_status_cmd(adr_id=a.adr_id, as_json=a.as_json)
+    add_json_flag(p_lock_list)
+    p_lock_list.set_defaults(
+        func=lambda a: obpi_lock_list_cmd(adr_id=a.adr_id, as_json=a.as_json)
+    )
+
+    # --- Deprecated flat aliases (OBPI-03 will remove these after skill migration) ---
+    p_lock_claim_dep = obpi_commands.add_parser(
+        "lock-claim",
+        help="[deprecated] Use 'gz obpi lock claim' instead",
+        description="Deprecated alias for 'gz obpi lock claim'. Use the nested form instead.",
+        epilog=build_epilog(["gz obpi lock claim OBPI-0.1.0-01"]),
+    )
+    p_lock_claim_dep.add_argument("obpi", help="OBPI identifier")
+    p_lock_claim_dep.add_argument(
+        "--ttl", dest="ttl_minutes", type=int, default=120, help="Lock TTL in minutes"
+    )
+    p_lock_claim_dep.add_argument(
+        "--agent", dest="agent", default=None, help="Override auto-detected agent identity"
+    )
+    add_json_flag(p_lock_claim_dep)
+    p_lock_claim_dep.set_defaults(
+        func=lambda a: obpi_lock_claim_cmd(
+            obpi_id=a.obpi, ttl_minutes=a.ttl_minutes, as_json=a.as_json, agent=a.agent
+        )
+    )
+
+    p_lock_release_dep = obpi_commands.add_parser(
+        "lock-release",
+        help="[deprecated] Use 'gz obpi lock release' instead",
+        description="Deprecated alias for 'gz obpi lock release'. Use the nested form instead.",
+        epilog=build_epilog(["gz obpi lock release OBPI-0.1.0-01"]),
+    )
+    p_lock_release_dep.add_argument("obpi", help="OBPI identifier")
+    add_force_flag(p_lock_release_dep)
+    p_lock_release_dep.add_argument(
+        "--agent", dest="agent", default=None, help="Override auto-detected agent identity"
+    )
+    add_json_flag(p_lock_release_dep)
+    p_lock_release_dep.set_defaults(
+        func=lambda a: obpi_lock_release_cmd(
+            obpi_id=a.obpi, as_json=a.as_json, force=a.force, agent=a.agent
+        )
+    )
+
+    p_lock_status_dep = obpi_commands.add_parser(
+        "lock-status",
+        help="[deprecated] Use 'gz obpi lock list' instead",
+        description="Deprecated alias for 'gz obpi lock list'. Use the nested form instead.",
+        epilog=build_epilog(["gz obpi lock list"]),
+    )
+    p_lock_status_dep.add_argument(
+        "--adr", dest="adr_id", default=None, help="Filter locks by parent ADR"
+    )
+    add_json_flag(p_lock_status_dep)
+    p_lock_status_dep.set_defaults(
+        func=lambda a: obpi_lock_list_cmd(adr_id=a.adr_id, as_json=a.as_json)
     )
 
 

@@ -4,7 +4,7 @@ status: Pool
 parent: PRD-GZKIT-1.0.0
 lane: lite
 enabler: null
-inspired_by: anthropic-agentic-coding-trends-2026
+inspired_by: anthropic-agentic-coding-trends-2026, gsd
 ---
 
 # ADR-pool.universal-agent-onboarding: Universal Agent Onboarding Protocol
@@ -46,6 +46,24 @@ time-to-productive-work and ensures consistent constraint delivery.
 - Optional `--resume <handoff-id>` flag to combine onboarding with handoff resumption.
 - Onboarding payload is deterministic and reproducible (same inputs produce same output).
 
+### Bootstrap Chain (`gz bootstrap`)
+
+One-command guided experience for new projects or new contributors that chains the full governance scaffolding sequence:
+
+- `gz bootstrap` runs the complete first-time setup as a guided flow:
+  1. **Project identity** — name, description, tech stack, repository conventions (from existing code or user input)
+  2. **PRD creation** — `gz prd` with guided interview (what are we building, for whom, why)
+  3. **Constitution** — `gz constitute` with project-specific constraints derived from PRD
+  4. **First ADR** — `gz plan` with interview for the first feature or foundation work
+  5. **OBPI co-creation** — `gz specify` for each ADR checklist item
+  6. **Governance scaffolding** — `gz init` for ledger, config, surfaces if not already present
+- **Resumable:** If interrupted, `gz bootstrap --resume` detects which steps completed (via ledger events) and picks up where it left off.
+- **Opinionated defaults:** For each step, proposes sensible defaults from code analysis (similar to assumptions mode in ADR-pool.pre-planning-interview). Human confirms or corrects.
+- **Output:** Fully scaffolded project with PRD, Constitution, first ADR with OBPIs, and governance infrastructure. Ready for `gz next` to route to first implementation.
+- **Versus `gz onboard`:** Bootstrap is for first-time project setup (creates artifacts). Onboard is for session-start orientation (reads existing artifacts). Bootstrap runs once; onboard runs every session.
+
+**Inspired by:** [GSD](https://github.com/gsd-build/get-shit-done) `/gsd-new-project` — takes a user from zero to full project scaffold (vision, requirements, roadmap, state) in one guided session.
+
 ---
 
 ## Non-Goals
@@ -53,6 +71,8 @@ time-to-productive-work and ensures consistent constraint delivery.
 - No pool OBPIs. OBPIs begin only after promotion to a SemVer ADR.
 - No replacement of AGENTS.md — onboarding is a focused summary, not the full contract.
 - No automatic session detection or vendor fingerprinting.
+- Bootstrap does not replace individual `gz prd`, `gz plan`, `gz specify` commands — it chains them. Each step is independently usable.
+- Bootstrap does not auto-approve — every artifact requires human confirmation before proceeding to the next step.
 
 ---
 
@@ -71,16 +91,15 @@ This pool ADR can be promoted when all are true:
 1. Human assigns a SemVer ADR ID for active implementation.
 2. Onboarding payload format and content scope are accepted.
 3. Vendor adaptation strategy (compile-time templates vs. runtime flags) is decided.
+4. Bootstrap chain: step sequence and resumability mechanism are validated against at least 2 real project bootstraps.
+5. Bootstrap chain: relationship to `gz init` (existing scaffolding) is clearly delineated — no overlapping responsibilities.
 
 ---
 
 ## Inspired By
 
-[Anthropic 2026 Agentic Coding Trends Report](https://resources.anthropic.com/hubfs/2026%20Agentic%20Coding%20Trends%20Report.pdf) — Trend 2: Multi-Agent Teams.
-The report observes that multi-vendor agent environments are becoming standard,
-but cold-start overhead and inconsistent context loading remain friction points.
-AirlineOps already operates three agent vendors with divergent onboarding paths —
-this ADR unifies them behind a single protocol.
+- [Anthropic 2026 Agentic Coding Trends Report](https://resources.anthropic.com/hubfs/2026%20Agentic%20Coding%20Trends%20Report.pdf) — Trend 2: Multi-Agent Teams. Multi-vendor agent environments are becoming standard, but cold-start overhead and inconsistent context loading remain friction points.
+- [GSD](https://github.com/gsd-build/get-shit-done) `/gsd-new-project` — single-command project scaffold that creates vision, requirements, roadmap, and state documents in one guided session. gzkit's bootstrap chain adapts this for the PRD→Constitution→ADR→OBPI artifact sequence.
 
 ---
 
@@ -91,6 +110,8 @@ this ADR unifies them behind a single protocol.
 - Key metric: tokens consumed before first productive action.
 - Consider: should `gz onboard` be the default preamble for `gz plan` and `gz specify`?
 - Consider: integration with CLAUDE.md `@AGENTS.md` reference pattern for Claude Code.
+- Bootstrap may be too large for a single pool ADR. Consider: `gz onboard` and `gz bootstrap` as separate promoted ADRs if scope is unwieldy.
+- Bootstrap's resumability depends on ledger events marking each step's completion — aligns with ADR-pool.agent-execution-intelligence CAP-22 (`gz next`) which also reads ledger state to infer next action.
 
 ## See Also
 
