@@ -120,13 +120,15 @@ uv run gz lint
 #      - Date completed: YYYY-MM-DD
 #    (Do not split values onto nested bullet lines.)
 
-# 5) Run guarded sync before final completion accounting
-uv run gz git-sync --apply --lint --test
+# 5) Complete OBPI atomically (attestation + brief + receipt in one transaction)
+uv run gz obpi complete OBPI-<X.Y.Z-NN>-<slug> --attestor "<name>" --attestation-text "<attestation>"
+uv run gz obpi lock release OBPI-<X.Y.Z-NN>-<slug>
 
-# 6) Emit and reconcile final OBPI completion from the synced state
-uv run gz obpi emit-receipt OBPI-<X.Y.Z-NN>-<slug> --event completed --attestor "human:<name>" --evidence-json '{...}'
+# 6) Run guarded sync, then reconcile and confirm
+uv run gz git-sync --apply --lint --test
 uv run gz obpi reconcile OBPI-<X.Y.Z-NN>-<slug>
 uv run gz adr status ADR-<X.Y.Z> --json
+uv run gz git-sync --apply --lint --test
 ```
 
 ---
@@ -278,12 +280,14 @@ uv run gz gates --gate 3 --adr ADR-0.5.0-skill-lifecycle-governance
 uv run gz lint
 ```
 
-After brief evidence is updated and the Heavy-lane ceremony is accepted, run guarded sync first and only then emit the OBPI receipt:
+After the Heavy-lane ceremony is accepted, complete the OBPI atomically, then sync and reconcile:
 
 ```bash
+uv run gz obpi complete OBPI-0.5.0-05-obpi-acceptance-protocol-runtime-parity --attestor "Jeffry" --attestation-text "I attest I understand the completion of OBPI-0.5.0-05."
+uv run gz obpi lock release OBPI-0.5.0-05-obpi-acceptance-protocol-runtime-parity
 uv run gz git-sync --apply --lint --test
-uv run gz obpi emit-receipt OBPI-0.5.0-05-obpi-acceptance-protocol-runtime-parity --event completed --attestor "Jeffry" --evidence-json '{"attestation":"I attest I understand the completion of OBPI-0.5.0-05.","date":"2026-02-22"}'
 uv run gz obpi reconcile OBPI-0.5.0-05-obpi-acceptance-protocol-runtime-parity
+uv run gz git-sync --apply --lint --test
 ```
 
 ### Flow 2: ADR Closeout (OBPIs Completed)
@@ -606,7 +610,7 @@ Valid values: `true`, `1`, `yes`, `false`, `0`, `no`
 
 - Do not run `gz audit` pre-attestation.
 - Do not use OBPI-scoped receipt emission as a substitute for ADR completion attestation.
-- Do not capture final OBPI completion receipts before `uv run gz git-sync --apply --lint --test` succeeds.
-- `gz adr emit-receipt` remains available for ADR-level accounting and legacy scoped payload flows.
+- `gz obpi complete` handles attestation, brief update, and receipt emission atomically — run it before git-sync.
+- `gz obpi emit-receipt` remains available for manual non-pipeline use; `gz adr emit-receipt` for ADR-level accounting.
 - For heavy lane, Gate 4 must pass before attestation.
 - Historical files under `docs/user/reference/**` are archival and may contain legacy command examples; active operator command contracts are in `docs/user/commands/**` and CLI help output.
