@@ -105,18 +105,20 @@ def adr_audit_check(adr: str, as_json: bool) -> None:
         else:
             complete.append(obpi_id)
 
-    passed = not findings
-
     adr_dir = project_root / config.paths.adrs
     coverage = _compute_adr_coverage(project_root, adr_id, adr_dir)
-    advisory_findings: list[dict[str, Any]] = [
+
+    # REQ coverage is blocking when REQs are defined for the ADR.
+    # Uncovered REQs are findings (not advisory) — they fail the audit.
+    coverage_findings: list[dict[str, Any]] = [
         {
             "id": u["req_id"],
             "issue": "REQ not covered by any @covers test annotation.",
-            "severity": "advisory",
         }
         for u in coverage["uncovered"]
     ]
+
+    passed = not findings and not coverage_findings
 
     result = {
         "adr": adr_id,
@@ -125,7 +127,7 @@ def adr_audit_check(adr: str, as_json: bool) -> None:
         "complete_obpis": complete,
         "findings": findings,
         "coverage": coverage,
-        "advisory_findings": advisory_findings,
+        "coverage_findings": coverage_findings,
     }
 
     if as_json:
@@ -138,12 +140,19 @@ def adr_audit_check(adr: str, as_json: bool) -> None:
                 for obpi_id in complete:
                     console.print(f"  - {obpi_id}")
         else:
-            console.print("[red]FAIL[/red] OBPI completeness/evidence gaps found:")
-            for finding in findings:
-                finding_id = finding.get("id") or "(none)"
-                issue = finding.get("issue", "")
-                console.print(f"  - {finding_id}: {issue}")
-        _print_coverage_section(coverage, advisory_findings)
+            if findings:
+                console.print("[red]FAIL[/red] OBPI completeness/evidence gaps found:")
+                for finding in findings:
+                    finding_id = finding.get("id") or "(none)"
+                    issue = finding.get("issue", "")
+                    console.print(f"  - {finding_id}: {issue}")
+            if coverage_findings:
+                console.print(
+                    f"[red]FAIL[/red] {len(coverage_findings)} REQ(s) missing @covers traceability:"
+                )
+                for cf in coverage_findings:
+                    console.print(f"  - {cf['id']}")
+        _print_coverage_section(coverage, [])
 
     if not passed:
         raise SystemExit(1)
