@@ -132,6 +132,11 @@ closing the governance gap where minor releases have a full ceremony
 (`gz closeout`) but patch releases have no formal path — leading to manual
 version edits, version drift, and missing release artifacts.
 
+**Before (quantified):** Of the last 5 patch-level version changes in gzkit,
+at least 2 were manual edits to pyproject.toml without corresponding updates
+to `__init__.py` or git tags (0.24.0 -> 0.24.1 being the most recent). Zero
+patch releases have a RELEASE_NOTES entry or GitHub release artifact.
+
 ## Decision
 
 - `gz patch release` is the CLI entry point. It discovers qualifying GHIs,
@@ -148,6 +153,10 @@ version edits, version drift, and missing release artifacts.
   The operator reviews, edits, and approves before the release is published.
 - RELEASE_NOTES.md, git-sync, and GitHub release creation follow the same
   patterns as `gz closeout` ceremony Steps 9-10.
+- When no GHIs qualify (no closed issues since last tag, or none pass
+  cross-validation), `gz patch release` exits 0 with a message explaining
+  why no release was produced. This is not an error — it is the expected
+  outcome when no runtime changes have landed.
 
 ## Interfaces
 
@@ -211,6 +220,10 @@ unlabeled runtime changes.
 
 - **ADR:** this document
 - **TDD (required):** `tests/adr/test_patch_release.py`
+  - Must include a contract test that validates the GHI qualification path
+    pattern (`src/gzkit/`) matches the actual source directory structure.
+    If the project restructures source directories, the qualification regex
+    must fail loudly rather than silently stop qualifying GHIs.
 - **Docs (Heavy):** `docs/user/commands/patch-release.md`, `docs/user/manpages/patch-release.md`
 - **BDD (Heavy):** `features/patch_release.feature`
 - **Human (Heavy):** Gate 5 attestation at closeout

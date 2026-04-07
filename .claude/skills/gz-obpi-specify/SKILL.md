@@ -114,7 +114,6 @@ The intended workflow is:
    - populate Discovery Checklist with real prerequisite and existing-code reads
    - replace generic verification with commands that prove this item specifically
    - ensure Acceptance Criteria are concrete and mapped to REQ IDs
-   - **every REQ-ID becomes a mandatory `@covers("REQ-X.Y.Z-NN-MM")` test traceability target** — this is enforced at implementation (Stage 2) and verification (Stage 3) by `gz adr audit-check`
 4. Run `uv run gz obpi validate --authored <path>` and keep authoring until it passes.
 
 The CLI owns deterministic decomposition. The skill owns the semantic authoring

@@ -4,7 +4,7 @@ description: Post-authoring quality evaluation for ADRs and OBPIs. Scores ADRs o
 category: adr-lifecycle
 compatibility: GovZero v6 framework; adapted from AirlineOps for gzkit ADR package layouts
 metadata:
-  skill-version: "6.0.0"
+  skill-version: "6.1.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "lifecycle (pre-proposal QC), quality rubric, OBPI decomposition"
@@ -65,22 +65,38 @@ evaluation scorecards. It does not modify ADR or brief content.
 
 ## Procedure
 
-### Step 1: Run CLI deterministic scoring
+### Step 1: Run CLI deterministic scoring (pre-screen)
 
 ```bash
 uv run gz adr evaluate ADR-X.Y.Z
 ```
 
-This produces the structural quality scores (8 ADR dimensions, OBPI scores) and
-writes `EVALUATION_SCORECARD.md`. If the CLI verdict is GO, skip to Step 4
-(red-team) or finish. If CONDITIONAL GO or NO GO, review the scorecard and
-continue with manual assessment below.
+This produces structural quality scores (8 ADR dimensions, OBPI scores) and
+writes an initial `EVALUATION_SCORECARD.md`.
+
+**The CLI score is a pre-screen, never a gate.** The CLI uses pattern-matching
+heuristics (keyword detection, section structure) that can under-score or
+over-score dimensions when an ADR distributes content across non-standard
+sections. Common false negatives:
+
+- **Problem Clarity:** CLI looks for before/after language in Intent — misses
+  ADRs that carry depth in Rationale or Agent Context Frame
+- **Decision Justification:** CLI looks for numbered items in Decision — misses
+  bullet-point decisions or justification distributed across Decision +
+  Alternatives Considered
+
+**Mandatory next step:** Always proceed to Step 2 regardless of CLI verdict.
+The agent reads the ADR, analyzes every CLI dimension score for
+false-positive and false-negative artifacts, and produces the authoritative
+manual scorecard that supersedes the CLI pre-screen.
 
 ### Step 2: Locate the ADR and its OBPIs
 
 1. Resolve the ADR document under `docs/design/adr/**/ADR-X.Y.Z-*/ADR-X.Y.Z-*.md`
 2. List all OBPI briefs in `obpis/` (preferred) or `briefs/` (legacy)
 3. Read the evaluation framework from `assets/ADR_EVALUATION_FRAMEWORK.md`
+4. Read the CLI-generated `EVALUATION_SCORECARD.md` — note each dimension score
+   and the CLI's stated findings for analysis in Step 3
 
 ### Step 3: Score ADR Quality (Part 1 - 8 Dimensions)
 
@@ -99,6 +115,12 @@ Read Part 1 of the framework and score the ADR on each dimension (1-4 scale):
 
 For each dimension, work through the checklist items in the framework and score
 based on how many checklist items pass with path-level evidence.
+
+**CLI reconciliation (mandatory per dimension):** Compare the agent's manual
+score against the CLI pre-screen score. When they differ, the scorecard MUST
+document why — naming the specific CLI heuristic that misfired (false positive
+or false negative) and the evidence that justifies the override. The manual
+score is authoritative; the CLI score is recorded for traceability.
 
 ### Step 4: Score OBPI Quality (Part 2 - 5 Dimensions)
 
@@ -137,9 +159,13 @@ dimension must be revised.
 ### Step 6: Record Scorecard
 
 Write `EVALUATION_SCORECARD.md` in the ADR directory using the summary template
-from the framework. Include:
+from the framework. This scorecard supersedes the CLI-generated pre-screen.
+Include:
 
-- All ADR dimension scores with weighted totals
+- CLI pre-screen verdict and weighted total (for traceability)
+- All ADR dimension scores with weighted totals and rationale — when the
+  manual score differs from the CLI score, state the CLI score, the manual
+  score, and the specific heuristic mismatch that caused the divergence
 - All OBPI dimension scores with averages
 - Red-team challenge results when run
 - Overall verdict (GO / CONDITIONAL GO / NO GO)
