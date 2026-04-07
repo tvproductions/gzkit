@@ -14,6 +14,15 @@ from gzkit.sync_surfaces import generate_manifest
 from gzkit.validate_pkg.manifest import validate_manifest
 
 
+def covers(target: str):  # noqa: D401
+    """Identity decorator linking test to ADR/OBPI target for traceability."""
+
+    def _identity(obj):  # type: ignore[no-untyped-def]
+        return obj
+
+    return _identity
+
+
 class TestManifestV2Schema(unittest.TestCase):
     """Verify manifest v2 schema generation and validation."""
 
@@ -21,11 +30,13 @@ class TestManifestV2Schema(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             return generate_manifest(Path(tmpdir), GzkitConfig())
 
+    @covers("REQ-0.0.7-01-02")
     def test_schema_version_is_v2(self) -> None:
         """REQ-0.0.7-01-02: Schema version reads gzkit.manifest.v2."""
         manifest = self._generate()
         self.assertEqual(manifest["schema"], "gzkit.manifest.v2")
 
+    @covers("REQ-0.0.7-01-01")
     def test_data_section_present(self) -> None:
         """REQ-0.0.7-01-01: data top-level key exists."""
         manifest = self._generate()
@@ -36,6 +47,7 @@ class TestManifestV2Schema(unittest.TestCase):
         self.assertIn("baselines", data)
         self.assertIn("schemas", data)
 
+    @covers("REQ-0.0.7-01-01")
     def test_ops_section_present(self) -> None:
         """REQ-0.0.7-01-01: ops top-level key exists."""
         manifest = self._generate()
@@ -45,6 +57,7 @@ class TestManifestV2Schema(unittest.TestCase):
         self.assertIn("receipts", ops)
         self.assertIn("proofs", ops)
 
+    @covers("REQ-0.0.7-01-01")
     def test_thresholds_section_present(self) -> None:
         """REQ-0.0.7-01-01: thresholds top-level key exists."""
         manifest = self._generate()
@@ -66,6 +79,7 @@ class TestManifestV2Schema(unittest.TestCase):
         self.assertEqual(t["module_lines"], 600)
         self.assertEqual(t["class_lines"], 300)
 
+    @covers("REQ-0.0.7-01-02")
     def test_v1_keys_preserved(self) -> None:
         """REQ-0.0.7-01-02: All v1 keys remain present and unchanged."""
         manifest = self._generate()
@@ -117,6 +131,7 @@ class TestManifestV2Personas(unittest.TestCase):
 class TestManifestV2Validation(unittest.TestCase):
     """Verify validate_manifest accepts v2 manifests."""
 
+    @covers("REQ-0.0.7-01-03")
     def test_v2_manifest_passes_validation(self) -> None:
         """REQ-0.0.7-01-03: gz validate accepts v2 manifests."""
         with tempfile.TemporaryDirectory() as tmpdir:

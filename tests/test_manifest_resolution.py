@@ -6,6 +6,15 @@ from pathlib import Path
 from gzkit.commands.common import manifest_path
 
 
+def covers(target: str):  # noqa: D401
+    """Identity decorator linking test to ADR/OBPI target for traceability."""
+
+    def _identity(obj):  # type: ignore[no-untyped-def]
+        return obj
+
+    return _identity
+
+
 class TestManifestPathV2(unittest.TestCase):
     """manifest_path() with v2 sectioned manifests."""
 
@@ -25,6 +34,7 @@ class TestManifestPathV2(unittest.TestCase):
             },
         }
 
+    @covers("REQ-0.0.7-02-01")
     def test_resolves_data_section_key(self):
         """REQ-0.0.7-02-01: resolve data.eval_datasets to Path."""
         result = manifest_path(self.manifest, "data", "eval_datasets")
@@ -36,6 +46,7 @@ class TestManifestPathV2(unittest.TestCase):
         self.assertIsInstance(result, Path)
         self.assertEqual(result, Path("artifacts/receipts"))
 
+    @covers("REQ-0.0.7-02-02")
     def test_missing_key_raises_keyerror(self):
         """REQ-0.0.7-02-02: missing key raises KeyError with section+key."""
         with self.assertRaises(KeyError) as ctx:
@@ -44,6 +55,7 @@ class TestManifestPathV2(unittest.TestCase):
         self.assertIn("data", msg)
         self.assertIn("nonexistent", msg)
 
+    @covers("REQ-0.0.7-02-02")
     def test_missing_section_raises_keyerror(self):
         """REQ-0.0.7-02-02: missing section raises KeyError with section name."""
         with self.assertRaises(KeyError) as ctx:
@@ -67,6 +79,7 @@ class TestManifestPathV1Fallback(unittest.TestCase):
             "schemas": "data/schemas",
         }
 
+    @covers("REQ-0.0.7-02-03")
     def test_resolves_v1_key_at_top_level(self):
         """REQ-0.0.7-02-03: v1 manifest resolves top-level key."""
         result = manifest_path(self.manifest, "data", "eval_datasets")
