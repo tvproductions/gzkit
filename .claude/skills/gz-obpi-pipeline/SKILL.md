@@ -270,8 +270,9 @@ When `--no-subagents` is set, Stage 2 runs entirely in the main session (no Agen
 2. Follow the approved plan step by step
 3. Keep edits inside the brief allowlist and transaction contract
 4. Write code with tests (unittest, TempDBMixin for DB, coverage >= 40%)
-5. Run `uv run ruff check . --fix && uv run ruff format .` after code changes
-6. Run `uv run -m unittest -q` after implementation
+5. **Every test method MUST carry `@covers("REQ-X.Y.Z-NN-MM")` decorators** mapping to specific brief requirements. OBPI-level `@covers` is insufficient — REQ-level is mandatory.
+6. Run `uv run ruff check . --fix && uv run ruff format .` after code changes
+7. Run `uv run -m unittest -q` after implementation
 
 **Abort if:** Tests fail after 2 fix attempts. Release lock via `uv run gz obpi lock release {OBPI-SLUG} --force`, create handoff, and stop.
 
@@ -298,6 +299,14 @@ uv run -m behave features/
 ```
 
 If any baseline check fails, attempt fix and re-verify once. If still failing, release lock via `uv run gz obpi lock release {OBPI-SLUG} --force`, create handoff, and stop.
+
+**After baseline checks pass, verify REQ-level @covers traceability:**
+
+```bash
+uv run gz adr audit-check {ADR-ID}
+```
+
+This is **blocking**. If any brief REQs lack `@covers("REQ-...")` decorators in tests, the audit-check will FAIL (exit 1). Fix by adding the missing decorators before proceeding.
 
 #### Phase 2: REQ-Level Verification Dispatch
 

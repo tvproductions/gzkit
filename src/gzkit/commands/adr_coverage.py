@@ -85,7 +85,7 @@ def _compute_adr_coverage(
 
 def _print_coverage_section(
     coverage: dict[str, Any],
-    advisory_findings: list[dict[str, Any]],
+    advisory_findings: list[dict[str, Any]] | None = None,
 ) -> None:
     """Render human-readable coverage section for audit-check output."""
     total = coverage["total_reqs"]
@@ -103,10 +103,11 @@ def _print_coverage_section(
         pct_obpi = row["coverage_percent"]
         console.print(f"  {obpi}: {cov}/{tot} ({pct_obpi}%)")
 
-    if advisory_findings:
-        console.print("[yellow]Advisory:[/yellow] Uncovered REQs:")
-        for finding in advisory_findings:
-            console.print(f"  - {finding['id']}")
+    uncovered = [r for r in coverage.get("uncovered", []) if isinstance(r, dict)]
+    if uncovered:
+        console.print(f"[red]Uncovered REQs ({len(uncovered)}):[/red]")
+        for u in uncovered:
+            console.print(f"  - {u['req_id']}")
 
 
 def _collect_covers_annotations(project_root: Path) -> dict[str, list[str]]:

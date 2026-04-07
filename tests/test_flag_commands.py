@@ -100,10 +100,12 @@ class _RegistryMixin:
 class TestFlagsList(_RegistryMixin, unittest.TestCase):
     """gz flags exits 0 and produces table output."""
 
+    @covers("REQ-0.0.8-05-01")
     def test_flags_exits_zero(self) -> None:
         rc = main(["flags"])
         self.assertEqual(rc, 0)
 
+    @covers("REQ-0.0.8-05-01")
     def test_flags_with_stale_no_stale(self) -> None:
         """gz flags --stale exits 0 when no flags are stale."""
         rc = main(["flags", "--stale"])
@@ -119,6 +121,7 @@ class TestFlagsList(_RegistryMixin, unittest.TestCase):
 class TestFlagsStale(_RegistryMixin, unittest.TestCase):
     """gz flags --stale exits 0 and filters correctly."""
 
+    @covers("REQ-0.0.8-05-02")
     def test_stale_with_overdue_flag(self) -> None:
         """A flag past review_by is shown in --stale output."""
         stale_registry = dict(_REGISTRY)
@@ -142,6 +145,7 @@ class TestFlagsStale(_RegistryMixin, unittest.TestCase):
 class TestFlagExplainKnown(_RegistryMixin, unittest.TestCase):
     """gz flag explain <known_key> exits 0 and outputs metadata."""
 
+    @covers("REQ-0.0.8-05-03")
     def test_explain_known_exits_zero(self) -> None:
         rc = main(["flag", "explain", "ops.product_proof"])
         self.assertEqual(rc, 0)
@@ -156,6 +160,7 @@ class TestFlagExplainKnown(_RegistryMixin, unittest.TestCase):
 class TestFlagExplainUnknown(_RegistryMixin, unittest.TestCase):
     """gz flag explain <unknown_key> exits 1."""
 
+    @covers("REQ-0.0.8-05-04")
     def test_explain_unknown_exits_one(self) -> None:
         rc = main(["flag", "explain", "nonexistent.key"])
         self.assertEqual(rc, 1)
@@ -171,6 +176,7 @@ class TestFlagsJson(_RegistryMixin, unittest.TestCase):
     """gz flags --json outputs valid JSON to stdout."""
 
     @patch("sys.stdout")
+    @covers("REQ-0.0.8-05-05")
     def test_json_output_is_valid(self, mock_stdout: unittest.mock.MagicMock) -> None:
         written: list[str] = []
         mock_stdout.write = lambda s: written.append(s)
@@ -189,6 +195,7 @@ class TestFlagsJson(_RegistryMixin, unittest.TestCase):
         self.assertIn("source", first)
 
     @patch("sys.stdout")
+    @covers("REQ-0.0.8-05-05")
     def test_explain_json_is_valid(self, mock_stdout: unittest.mock.MagicMock) -> None:
         written: list[str] = []
         mock_stdout.write = lambda s: written.append(s)

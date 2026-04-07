@@ -306,6 +306,7 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertEqual(payload, self._load_json(legacy_path))
 
     @covers("REQ-0.13.0-03-02")
+    @covers("REQ-0.13.0-01-03")
     def test_ceremony_prints_next_steps_and_preserves_markers(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():

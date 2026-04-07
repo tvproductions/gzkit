@@ -13,6 +13,16 @@ from gzkit.commands.config_paths import (
     _is_path_covered_by_manifest,
 )
 
+
+def covers(target: str):  # noqa: D401
+    """Identity decorator linking test to ADR/OBPI target for traceability."""
+
+    def _identity(obj):  # type: ignore[no-untyped-def]
+        return obj
+
+    return _identity
+
+
 SAMPLE_MANIFEST = {
     "structure": {
         "source_root": "src",
@@ -74,6 +84,7 @@ class TestIsPathCovered(unittest.TestCase):
 class TestSourcePathLiteralScan(unittest.TestCase):
     """Verify source scanning detects unmapped path literals."""
 
+    @covers("REQ-0.0.7-05-04")
     def test_clean_source_no_issues(self):
         """Source with only manifest-mapped paths produces no issues."""
         with tempfile.TemporaryDirectory() as tmp:
@@ -87,6 +98,7 @@ class TestSourcePathLiteralScan(unittest.TestCase):
             issues = _collect_source_path_literal_issues(root, SAMPLE_MANIFEST)
             self.assertEqual(issues, [])
 
+    @covers("REQ-0.0.7-05-02")
     def test_unmapped_literal_flagged(self):
         """Source with a path literal not in manifest is flagged."""
         with tempfile.TemporaryDirectory() as tmp:

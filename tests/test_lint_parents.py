@@ -10,9 +10,19 @@ from pathlib import Path
 from gzkit.quality import run_parents_pattern_lint
 
 
+def covers(target: str):  # noqa: D401
+    """Identity decorator linking test to ADR/OBPI target for traceability."""
+
+    def _identity(obj):  # type: ignore[no-untyped-def]
+        return obj
+
+    return _identity
+
+
 class TestParentsPatternLint(unittest.TestCase):
     """Verify the parents-pattern lint rule catches violations."""
 
+    @covers("REQ-0.0.7-05-04")
     def test_clean_source_passes(self):
         """Given clean source, lint exits 0."""
         with tempfile.TemporaryDirectory() as tmp:
@@ -27,6 +37,7 @@ class TestParentsPatternLint(unittest.TestCase):
             self.assertTrue(result.success)
             self.assertEqual(result.returncode, 0)
 
+    @covers("REQ-0.0.7-05-01")
     def test_violation_detected(self):
         """Given source with Path(__file__).parents[, lint fails."""
         with tempfile.TemporaryDirectory() as tmp:

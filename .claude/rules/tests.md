@@ -36,6 +36,12 @@ class TestSomething(unittest.TestCase):
             self.assertEqual(result, expected)
 ```
 
+## REQ-Level @covers Traceability (Mandatory)
+
+Every test method for an OBPI brief MUST carry `@covers("REQ-X.Y.Z-NN-MM")` decorators mapping to specific brief requirements. OBPI-level `@covers("OBPI-...")` is insufficient — it provides no requirement-level traceability.
+
+`gz adr audit-check` enforces this: uncovered REQs fail the audit (exit 1).
+
 ## Coverage Floor
 
 - **Minimum line coverage: 40.00%**

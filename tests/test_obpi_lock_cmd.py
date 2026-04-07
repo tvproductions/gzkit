@@ -89,6 +89,7 @@ def _expired_iso(minutes_ago: int = 200) -> str:
 class TestLockDataModel(unittest.TestCase):
     """Unit tests for the LockData Pydantic model."""
 
+    @covers("REQ-0.0.14-01-01")
     def test_valid_lock_data(self):
         lock = _make_lock()
         self.assertEqual(lock.obpi_id, "OBPI-0.0.14-01")
@@ -108,10 +109,12 @@ class TestLockDataModel(unittest.TestCase):
                 unknown_extra_field="bad",
             )
 
+    @covers("REQ-0.0.14-01-08")
     def test_is_expired_true(self):
         lock = _make_lock(claimed_at=_expired_iso(200), ttl_minutes=120)
         self.assertTrue(lock.is_expired)
 
+    @covers("REQ-0.0.14-01-08")
     def test_is_expired_false(self):
         lock = _make_lock(claimed_at=datetime.now(UTC).isoformat(), ttl_minutes=120)
         self.assertFalse(lock.is_expired)
@@ -147,6 +150,7 @@ class TestLockManagerIO(unittest.TestCase):
             result = read_lock(root, "OBPI-0.0.14-01")
             self.assertIsNone(result)
 
+    @covers("REQ-0.0.14-01-01")
     def test_write_lock_creates_file(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -167,6 +171,7 @@ class TestLockManagerIO(unittest.TestCase):
             self.assertNotIn("is_expired", data)
             self.assertNotIn("elapsed_minutes", data)
 
+    @covers("REQ-0.0.14-01-03")
     def test_delete_lock_removes_file(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -182,6 +187,7 @@ class TestLockManagerIO(unittest.TestCase):
             result = delete_lock(root, "OBPI-0.0.14-01")
             self.assertFalse(result)
 
+    @covers("REQ-0.0.14-01-08")
     def test_reap_expired_locks_removes_expired(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -196,6 +202,7 @@ class TestLockManagerIO(unittest.TestCase):
             self.assertEqual(reaped[0].obpi_id, "OBPI-0.0.14-01")
             self.assertFalse(lock_path(root, "OBPI-0.0.14-01").exists())
 
+    @covers("REQ-0.0.14-01-08")
     def test_reap_expired_locks_preserves_active(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -237,6 +244,7 @@ class TestLockManagerIO(unittest.TestCase):
 class TestLedgerLockEvents(unittest.TestCase):
     """Event factory tests for OBPI lock ledger events."""
 
+    @covers("REQ-0.0.14-01-01")
     def test_obpi_lock_claimed_event_structure(self):
         event = obpi_lock_claimed_event(
             obpi_id="OBPI-0.0.14-01",
@@ -252,6 +260,7 @@ class TestLedgerLockEvents(unittest.TestCase):
         self.assertEqual(event.extra["branch"], "main")
         self.assertEqual(event.extra["session_id"], "sess-abc")
 
+    @covers("REQ-0.0.14-01-03")
     def test_obpi_lock_released_event_structure(self):
         event = obpi_lock_released_event(
             obpi_id="OBPI-0.0.14-01",
@@ -302,6 +311,7 @@ class TestLockClaim(unittest.TestCase):
 
     @patch("gzkit.commands.obpi_lock.get_project_root")
     @patch("gzkit.commands.obpi_lock.ensure_initialized")
+    @covers("REQ-0.0.14-01-01")
     def test_claim_creates_lock_file(self, mock_init, mock_root):
         with tempfile.TemporaryDirectory() as tmp:
             root = _setup_project(tmp)
@@ -318,6 +328,7 @@ class TestLockClaim(unittest.TestCase):
 
     @patch("gzkit.commands.obpi_lock.get_project_root")
     @patch("gzkit.commands.obpi_lock.ensure_initialized")
+    @covers("REQ-0.0.14-01-01")
     def test_claim_emits_ledger_event(self, mock_init, mock_root):
         with tempfile.TemporaryDirectory() as tmp:
             root = _setup_project(tmp)
@@ -336,6 +347,7 @@ class TestLockClaim(unittest.TestCase):
 
     @patch("gzkit.commands.obpi_lock.get_project_root")
     @patch("gzkit.commands.obpi_lock.ensure_initialized")
+    @covers("REQ-0.0.14-01-07")
     def test_claim_json_output(self, mock_init, mock_root):
         with tempfile.TemporaryDirectory() as tmp:
             root = _setup_project(tmp)
@@ -371,6 +383,7 @@ class TestLockClaim(unittest.TestCase):
 
     @patch("gzkit.commands.obpi_lock.get_project_root")
     @patch("gzkit.commands.obpi_lock.ensure_initialized")
+    @covers("REQ-0.0.14-01-02")
     def test_claim_exits_1_on_conflict(self, mock_init, mock_root):
         with tempfile.TemporaryDirectory() as tmp:
             root = _setup_project(tmp)
@@ -427,6 +440,7 @@ class TestLockRelease(unittest.TestCase):
 
     @patch("gzkit.commands.obpi_lock.get_project_root")
     @patch("gzkit.commands.obpi_lock.ensure_initialized")
+    @covers("REQ-0.0.14-01-03")
     def test_release_removes_lock(self, mock_init, mock_root):
         with tempfile.TemporaryDirectory() as tmp:
             root = _setup_project(tmp)
@@ -441,6 +455,7 @@ class TestLockRelease(unittest.TestCase):
 
     @patch("gzkit.commands.obpi_lock.get_project_root")
     @patch("gzkit.commands.obpi_lock.ensure_initialized")
+    @covers("REQ-0.0.14-01-03")
     def test_release_emits_ledger_event(self, mock_init, mock_root):
         with tempfile.TemporaryDirectory() as tmp:
             root = _setup_project(tmp)
@@ -473,6 +488,7 @@ class TestLockRelease(unittest.TestCase):
 
     @patch("gzkit.commands.obpi_lock.get_project_root")
     @patch("gzkit.commands.obpi_lock.ensure_initialized")
+    @covers("REQ-0.0.14-01-07")
     def test_release_json_output(self, mock_init, mock_root):
         with tempfile.TemporaryDirectory() as tmp:
             root = _setup_project(tmp)
@@ -490,6 +506,7 @@ class TestLockRelease(unittest.TestCase):
 
     @patch("gzkit.commands.obpi_lock.get_project_root")
     @patch("gzkit.commands.obpi_lock.ensure_initialized")
+    @covers("REQ-0.0.14-01-04")
     def test_release_validates_ownership(self, mock_init, mock_root):
         with tempfile.TemporaryDirectory() as tmp:
             root = _setup_project(tmp)
@@ -507,6 +524,7 @@ class TestLockRelease(unittest.TestCase):
 
     @patch("gzkit.commands.obpi_lock.get_project_root")
     @patch("gzkit.commands.obpi_lock.ensure_initialized")
+    @covers("REQ-0.0.14-01-04")
     def test_release_force_bypasses_ownership(self, mock_init, mock_root):
         with tempfile.TemporaryDirectory() as tmp:
             root = _setup_project(tmp)
@@ -537,6 +555,7 @@ class TestLockCheck(unittest.TestCase):
 
     @patch("gzkit.commands.obpi_lock.get_project_root")
     @patch("gzkit.commands.obpi_lock.ensure_initialized")
+    @covers("REQ-0.0.14-01-05")
     def test_check_exits_0_when_held(self, mock_init, mock_root):
         with tempfile.TemporaryDirectory() as tmp:
             root = _setup_project(tmp)
@@ -553,6 +572,7 @@ class TestLockCheck(unittest.TestCase):
 
     @patch("gzkit.commands.obpi_lock.get_project_root")
     @patch("gzkit.commands.obpi_lock.ensure_initialized")
+    @covers("REQ-0.0.14-01-05")
     def test_check_exits_1_when_free(self, mock_init, mock_root):
         with tempfile.TemporaryDirectory() as tmp:
             root = _setup_project(tmp)
@@ -565,6 +585,7 @@ class TestLockCheck(unittest.TestCase):
 
     @patch("gzkit.commands.obpi_lock.get_project_root")
     @patch("gzkit.commands.obpi_lock.ensure_initialized")
+    @covers("REQ-0.0.14-01-05")
     def test_check_exits_1_when_expired(self, mock_init, mock_root):
         with tempfile.TemporaryDirectory() as tmp:
             root = _setup_project(tmp)
@@ -584,6 +605,7 @@ class TestLockCheck(unittest.TestCase):
 
     @patch("gzkit.commands.obpi_lock.get_project_root")
     @patch("gzkit.commands.obpi_lock.ensure_initialized")
+    @covers("REQ-0.0.14-01-07")
     def test_check_json_held(self, mock_init, mock_root):
         with tempfile.TemporaryDirectory() as tmp:
             root = _setup_project(tmp)
@@ -601,6 +623,7 @@ class TestLockCheck(unittest.TestCase):
 
     @patch("gzkit.commands.obpi_lock.get_project_root")
     @patch("gzkit.commands.obpi_lock.ensure_initialized")
+    @covers("REQ-0.0.14-01-07")
     def test_check_json_free(self, mock_init, mock_root):
         with tempfile.TemporaryDirectory() as tmp:
             root = _setup_project(tmp)
@@ -627,6 +650,8 @@ class TestLockList(unittest.TestCase):
 
     @patch("gzkit.commands.obpi_lock.get_project_root")
     @patch("gzkit.commands.obpi_lock.ensure_initialized")
+    @covers("REQ-0.0.14-01-06")
+    @covers("REQ-0.0.14-01-07")
     def test_list_empty(self, mock_init, mock_root):
         with tempfile.TemporaryDirectory() as tmp:
             root = _setup_project(tmp)
@@ -644,6 +669,8 @@ class TestLockList(unittest.TestCase):
 
     @patch("gzkit.commands.obpi_lock.get_project_root")
     @patch("gzkit.commands.obpi_lock.ensure_initialized")
+    @covers("REQ-0.0.14-01-06")
+    @covers("REQ-0.0.14-01-08")
     def test_list_reaps_expired_before_listing(self, mock_init, mock_root):
         with tempfile.TemporaryDirectory() as tmp:
             root = _setup_project(tmp)
@@ -669,6 +696,8 @@ class TestLockList(unittest.TestCase):
 
     @patch("gzkit.commands.obpi_lock.get_project_root")
     @patch("gzkit.commands.obpi_lock.ensure_initialized")
+    @covers("REQ-0.0.14-01-06")
+    @covers("REQ-0.0.14-01-07")
     def test_list_json_output(self, mock_init, mock_root):
         with tempfile.TemporaryDirectory() as tmp:
             root = _setup_project(tmp)
@@ -687,6 +716,7 @@ class TestLockList(unittest.TestCase):
 
     @patch("gzkit.commands.obpi_lock.get_project_root")
     @patch("gzkit.commands.obpi_lock.ensure_initialized")
+    @covers("REQ-0.0.14-01-06")
     def test_list_filters_by_adr(self, mock_init, mock_root):
         with tempfile.TemporaryDirectory() as tmp:
             root = _setup_project(tmp)

@@ -70,16 +70,19 @@ def _make_lock(
 class TestLockData(unittest.TestCase):
     """Unit tests for the LockData Pydantic model."""
 
+    @covers("REQ-0.0.14-01-01")
     def test_construction(self):
         lock = _make_lock()
         self.assertEqual(lock.obpi_id, "OBPI-0.0.14-01")
         self.assertEqual(lock.agent, "claude-code")
         self.assertEqual(lock.pid, 12345)
 
+    @covers("REQ-0.0.14-01-08")
     def test_is_expired_false_for_fresh_lock(self):
         lock = _make_lock(ttl_minutes=120)
         self.assertFalse(lock.is_expired)
 
+    @covers("REQ-0.0.14-01-08")
     def test_is_expired_true_for_old_lock(self):
         old_time = (datetime.now(UTC) - timedelta(minutes=200)).isoformat()
         lock = _make_lock(claimed_at=old_time, ttl_minutes=120)
@@ -122,6 +125,7 @@ class TestLockData(unittest.TestCase):
 class TestResolveAgent(unittest.TestCase):
     """Unit tests for resolve_agent()."""
 
+    @covers("REQ-0.0.14-01-01")
     def test_override_returned_verbatim(self):
         self.assertEqual(resolve_agent("my-agent"), "my-agent")
 
@@ -154,6 +158,7 @@ class TestResolveAgent(unittest.TestCase):
 class TestCurrentBranch(unittest.TestCase):
     """Unit tests for current_branch()."""
 
+    @covers("REQ-0.0.14-01-01")
     def test_returns_nonempty_string(self):
         branch = current_branch()
         self.assertIsInstance(branch, str)
@@ -180,6 +185,7 @@ class TestCurrentBranch(unittest.TestCase):
 class TestLockDirAndPath(unittest.TestCase):
     """Unit tests for lock_dir() and lock_path()."""
 
+    @covers("REQ-0.0.14-01-01")
     def test_lock_dir_creates_directory(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -193,6 +199,7 @@ class TestLockDirAndPath(unittest.TestCase):
             lock_dir(root)
             lock_dir(root)  # second call must not raise
 
+    @covers("REQ-0.0.14-01-01")
     def test_lock_path_filename(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -210,6 +217,7 @@ class TestLockDirAndPath(unittest.TestCase):
 class TestReadWriteLock(unittest.TestCase):
     """Unit tests for read_lock() and write_lock()."""
 
+    @covers("REQ-0.0.14-01-01")
     def test_write_then_read_roundtrip(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -224,6 +232,7 @@ class TestReadWriteLock(unittest.TestCase):
             self.assertEqual(recovered.agent, original.agent)
             self.assertEqual(recovered.ttl_minutes, original.ttl_minutes)
 
+    @covers("REQ-0.0.14-01-01")
     def test_write_excludes_computed_fields(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -233,11 +242,13 @@ class TestReadWriteLock(unittest.TestCase):
             self.assertNotIn("is_expired", raw)
             self.assertNotIn("elapsed_minutes", raw)
 
+    @covers("REQ-0.0.14-01-01")
     def test_read_lock_missing_returns_none(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             self.assertIsNone(read_lock(root, "OBPI-0.0.14-99"))
 
+    @covers("REQ-0.0.14-01-01")
     def test_read_lock_corrupt_json_returns_none(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -255,6 +266,7 @@ class TestReadWriteLock(unittest.TestCase):
 class TestDeleteLock(unittest.TestCase):
     """Unit tests for delete_lock()."""
 
+    @covers("REQ-0.0.14-01-03")
     def test_delete_existing_lock(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -263,6 +275,7 @@ class TestDeleteLock(unittest.TestCase):
             self.assertTrue(result)
             self.assertIsNone(read_lock(root, "OBPI-0.0.14-01"))
 
+    @covers("REQ-0.0.14-01-03")
     def test_delete_nonexistent_lock_returns_false(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -279,11 +292,13 @@ class TestDeleteLock(unittest.TestCase):
 class TestListLocks(unittest.TestCase):
     """Unit tests for list_locks()."""
 
+    @covers("REQ-0.0.14-01-06")
     def test_empty_dir_returns_empty(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             self.assertEqual(list_locks(root), [])
 
+    @covers("REQ-0.0.14-01-06")
     def test_lists_multiple_locks(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -292,6 +307,7 @@ class TestListLocks(unittest.TestCase):
             locks = list_locks(root)
             self.assertEqual(len(locks), 2)
 
+    @covers("REQ-0.0.14-01-06")
     def test_adr_filter_matches_correct_obpi(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -301,6 +317,7 @@ class TestListLocks(unittest.TestCase):
             self.assertEqual(len(locks), 1)
             self.assertEqual(locks[0].obpi_id, "OBPI-0.0.14-01")
 
+    @covers("REQ-0.0.14-01-06")
     def test_adr_filter_excludes_all(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -308,6 +325,7 @@ class TestListLocks(unittest.TestCase):
             locks = list_locks(root, adr_filter="ADR-9.9.9")
             self.assertEqual(locks, [])
 
+    @covers("REQ-0.0.14-01-06")
     def test_corrupt_files_skipped(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -328,6 +346,7 @@ class TestListLocks(unittest.TestCase):
 class TestReapExpiredLocks(unittest.TestCase):
     """Unit tests for reap_expired_locks()."""
 
+    @covers("REQ-0.0.14-01-08")
     def test_reaps_expired_lock(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -341,6 +360,7 @@ class TestReapExpiredLocks(unittest.TestCase):
             # File should be gone
             self.assertIsNone(read_lock(root, "OBPI-0.0.14-01"))
 
+    @covers("REQ-0.0.14-01-08")
     def test_preserves_active_lock(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -350,6 +370,7 @@ class TestReapExpiredLocks(unittest.TestCase):
             self.assertEqual(reaped, [])
             self.assertIsNotNone(read_lock(root, "OBPI-0.0.14-01"))
 
+    @covers("REQ-0.0.14-01-08")
     def test_mixed_reaps_only_expired(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -362,6 +383,7 @@ class TestReapExpiredLocks(unittest.TestCase):
             self.assertEqual(reaped[0].obpi_id, "OBPI-0.0.14-01")
             self.assertIsNotNone(read_lock(root, "OBPI-0.0.14-02"))
 
+    @covers("REQ-0.0.14-01-08")
     def test_empty_dir_returns_empty(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

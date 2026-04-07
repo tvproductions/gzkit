@@ -119,17 +119,21 @@ _COMPLETED_BRIEF = _MINIMAL_BRIEF.replace("status: Draft", "status: Completed").
 class TestIsPlaceholder(unittest.TestCase):
     """Tests for _is_placeholder detection."""
 
+    @covers("REQ-0.0.14-02-02")
     def test_empty_is_placeholder(self):
         self.assertTrue(_is_placeholder(""))
         self.assertTrue(_is_placeholder("   "))
 
+    @covers("REQ-0.0.14-02-02")
     def test_known_placeholders(self):
         for p in ("tbd", "TBD", "...", "-", "none", "(none)"):
             self.assertTrue(_is_placeholder(p), msg=f"Expected placeholder: {p}")
 
+    @covers("REQ-0.0.14-02-02")
     def test_real_content_is_not_placeholder(self):
         self.assertFalse(_is_placeholder("Implemented claim/release/check/list"))
 
+    @covers("REQ-0.0.14-02-02")
     def test_template_bullet_is_placeholder(self):
         self.assertTrue(_is_placeholder("- Files created/modified: "))
 
@@ -138,9 +142,11 @@ class TestIsPlaceholder(unittest.TestCase):
 class TestReadExistingSummary(unittest.TestCase):
     """Tests for _read_existing_summary."""
 
+    @covers("REQ-0.0.14-02-02")
     def test_returns_none_when_only_placeholders(self):
         self.assertIsNone(_read_existing_summary(_MINIMAL_BRIEF))
 
+    @covers("REQ-0.0.14-02-02")
     def test_returns_content_when_substantive(self):
         brief = _MINIMAL_BRIEF.replace(
             "- Files created/modified:",
@@ -155,9 +161,11 @@ class TestReadExistingSummary(unittest.TestCase):
 class TestReadExistingKeyProof(unittest.TestCase):
     """Tests for _read_existing_key_proof."""
 
+    @covers("REQ-0.0.14-02-02")
     def test_returns_none_for_html_comment_placeholder(self):
         self.assertIsNone(_read_existing_key_proof(_MINIMAL_BRIEF))
 
+    @covers("REQ-0.0.14-02-02")
     def test_returns_content_when_substantive(self):
         brief = _MINIMAL_BRIEF.replace(
             "<!-- One concrete usage example, command, or before/after behavior. -->",
@@ -171,6 +179,7 @@ class TestReadExistingKeyProof(unittest.TestCase):
 class TestReplaceH3Section(unittest.TestCase):
     """Tests for _replace_h3_section."""
 
+    @covers("REQ-0.0.14-02-03")
     def test_replaces_section_body(self):
         content = "### Summary\n\nOld body\n\n### Next\n\nOther"
         result = _replace_h3_section(content, "Summary", "New body here")
@@ -178,6 +187,7 @@ class TestReplaceH3Section(unittest.TestCase):
         self.assertNotIn("Old body", result)
         self.assertIn("### Next", result)
 
+    @covers("REQ-0.0.14-02-03")
     def test_preserves_heading(self):
         content = "### Summary\n\nOld body\n\n### Next\n"
         result = _replace_h3_section(content, "Summary", "New body")
@@ -188,6 +198,7 @@ class TestReplaceH3Section(unittest.TestCase):
 class TestUpdateHumanAttestation(unittest.TestCase):
     """Tests for _update_human_attestation."""
 
+    @covers("REQ-0.0.14-02-08")
     def test_updates_attestor_and_text(self):
         content = (
             "## Human Attestation\n\n- Attestor: `<name>`\n- Attestation: n/a\n- Date: YYYY-MM-DD\n"
@@ -202,6 +213,7 @@ class TestUpdateHumanAttestation(unittest.TestCase):
 class TestBuildCompletedBrief(unittest.TestCase):
     """Tests for _build_completed_brief."""
 
+    @covers("REQ-0.0.14-02-04")
     def test_sets_frontmatter_status(self):
         result = _build_completed_brief(
             content=_MINIMAL_BRIEF,
@@ -213,6 +225,7 @@ class TestBuildCompletedBrief(unittest.TestCase):
         )
         self.assertIn("status: Completed", result)
 
+    @covers("REQ-0.0.14-02-04")
     def test_sets_brief_status_line(self):
         result = _build_completed_brief(
             content=_MINIMAL_BRIEF,
@@ -225,6 +238,7 @@ class TestBuildCompletedBrief(unittest.TestCase):
         self.assertIn("**Brief Status:** Completed", result)
         self.assertIn("**Date Completed:** 2026-04-05", result)
 
+    @covers("REQ-0.0.14-02-03")
     def test_updates_human_attestation(self):
         result = _build_completed_brief(
             content=_MINIMAL_BRIEF,
@@ -257,16 +271,19 @@ class TestValidateWouldBeContent(unittest.TestCase):
             date_completed="2026-04-05",
         )
 
+    @covers("REQ-0.0.14-02-02")
     def test_valid_content_passes(self):
         content = self._completed_content()
         errors = _validate_would_be_content(content, requires_human=True)
         self.assertEqual(errors, [])
 
+    @covers("REQ-0.0.14-02-02")
     def test_template_content_fails_summary_and_proof(self):
         errors = _validate_would_be_content(_MINIMAL_BRIEF, requires_human=False)
         self.assertTrue(any("Implementation Summary" in e for e in errors))
         self.assertTrue(any("Key Proof" in e for e in errors))
 
+    @covers("REQ-0.0.14-02-02")
     def test_human_attestation_required_but_missing(self):
         # Content with good summary and proof but no attestation
         content = _build_completed_brief(
@@ -285,6 +302,7 @@ class TestValidateWouldBeContent(unittest.TestCase):
 class TestSubstantiveChecks(unittest.TestCase):
     """Tests for _has_substantive_implementation_summary and _has_substantive_key_proof."""
 
+    @covers("REQ-0.0.14-02-02")
     def test_placeholder_summary_not_substantive(self):
         # Template bullets like "- Files created/modified:" with no values
         # are captured as fallback bullets with text like "Files created/modified:".
@@ -298,6 +316,7 @@ class TestSubstantiveChecks(unittest.TestCase):
         # correctly bounded and template lines are correctly identified.
         self.assertFalse(_has_substantive_implementation_summary(_MINIMAL_BRIEF))
 
+    @covers("REQ-0.0.14-02-02")
     def test_real_summary_is_substantive(self):
         brief = _MINIMAL_BRIEF.replace(
             "- Files created/modified:",
@@ -305,10 +324,12 @@ class TestSubstantiveChecks(unittest.TestCase):
         )
         self.assertTrue(_has_substantive_implementation_summary(brief))
 
+    @covers("REQ-0.0.14-02-02")
     def test_placeholder_key_proof_not_substantive(self):
         # HTML comment is a placeholder
         self.assertFalse(_has_substantive_key_proof(_MINIMAL_BRIEF))
 
+    @covers("REQ-0.0.14-02-02")
     def test_real_key_proof_is_substantive(self):
         brief = _MINIMAL_BRIEF.replace(
             "<!-- One concrete usage example, command, or before/after behavior. -->",
@@ -326,6 +347,7 @@ class TestSubstantiveChecks(unittest.TestCase):
 class TestAuditLedger(unittest.TestCase):
     """Tests for audit ledger append and rollback."""
 
+    @covers("REQ-0.0.14-02-05")
     def test_append_creates_entry(self):
         with tempfile.TemporaryDirectory() as tmp:
             adr_dir = Path(tmp) / "adr"
@@ -348,6 +370,7 @@ class TestAuditLedger(unittest.TestCase):
             self.assertEqual(parsed["type"], "obpi-audit")
             self.assertEqual(parsed["attestation_type"], "human")
 
+    @covers("REQ-0.0.14-02-07")
     def test_rollback_removes_last_entry(self):
         with tempfile.TemporaryDirectory() as tmp:
             adr_dir = Path(tmp) / "adr"
@@ -364,6 +387,7 @@ class TestAuditLedger(unittest.TestCase):
             self.assertEqual(len(lines), 1)
             self.assertEqual(json.loads(lines[0])["obpi_id"], "first")
 
+    @covers("REQ-0.0.14-02-07")
     def test_rollback_empty_file(self):
         with tempfile.TemporaryDirectory() as tmp:
             ledger_file = Path(tmp) / "obpi-audit.jsonl"
@@ -377,6 +401,7 @@ class TestAuditLedger(unittest.TestCase):
 class TestBuildAttestationEntry(unittest.TestCase):
     """Tests for _build_attestation_audit_entry."""
 
+    @covers("REQ-0.0.14-02-05")
     def test_human_attestation_entry(self):
         entry = _build_attestation_audit_entry(
             obpi_id="OBPI-0.0.14-02",
@@ -392,6 +417,7 @@ class TestBuildAttestationEntry(unittest.TestCase):
         self.assertEqual(entry["evidence"]["attestation_text"], "Lock commands verified")
         self.assertEqual(entry["action_taken"], "attestation_recorded")
 
+    @covers("REQ-0.0.14-02-05")
     def test_self_close_entry(self):
         entry = _build_attestation_audit_entry(
             obpi_id="OBPI-0.1.0-01",
@@ -446,6 +472,7 @@ class TestObpiCompleteCmdBriefNotFound(unittest.TestCase):
     @patch("gzkit.commands.obpi_complete.ensure_initialized")
     @patch("gzkit.commands.obpi_complete.resolve_obpi_file")
     @patch("gzkit.commands.obpi_complete.Ledger")
+    @covers("REQ-0.0.14-02-01")
     def test_exits_1_for_missing_brief(self, mock_ledger_cls, mock_resolve, mock_init, mock_root):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -478,6 +505,7 @@ class TestObpiCompleteCmdAlreadyCompleted(unittest.TestCase):
     @patch("gzkit.commands.obpi_complete.ensure_initialized")
     @patch("gzkit.commands.obpi_complete.resolve_obpi_file")
     @patch("gzkit.commands.obpi_complete.Ledger")
+    @covers("REQ-0.0.14-02-01")
     def test_exits_1_for_already_completed(
         self, mock_ledger_cls, mock_resolve, mock_init, mock_root
     ):
@@ -516,6 +544,7 @@ class TestObpiCompleteCmdDryRun(unittest.TestCase):
     @patch("gzkit.commands.obpi_complete.ensure_initialized")
     @patch("gzkit.commands.obpi_complete.resolve_obpi_file")
     @patch("gzkit.commands.obpi_complete.Ledger")
+    @covers("REQ-0.0.14-02-07")
     def test_dry_run_no_writes(
         self,
         mock_ledger_cls,
@@ -569,6 +598,7 @@ class TestObpiCompleteCmdJsonOutput(unittest.TestCase):
     @patch("gzkit.commands.obpi_complete.ensure_initialized")
     @patch("gzkit.commands.obpi_complete.resolve_obpi_file")
     @patch("gzkit.commands.obpi_complete.Ledger")
+    @covers("REQ-0.0.14-02-09")
     def test_json_dry_run_output(
         self,
         mock_ledger_cls,
@@ -633,6 +663,9 @@ class TestObpiCompleteCmdHappyPath(unittest.TestCase):
     @patch("gzkit.commands.obpi_complete.ensure_initialized")
     @patch("gzkit.commands.obpi_complete.resolve_obpi_file")
     @patch("gzkit.commands.obpi_complete.Ledger")
+    @covers("REQ-0.0.14-02-04")
+    @covers("REQ-0.0.14-02-05")
+    @covers("REQ-0.0.14-02-06")
     def test_completes_brief_and_emits_receipt(
         self,
         mock_ledger_cls,
@@ -706,6 +739,7 @@ class TestObpiCompleteCmdRollback(unittest.TestCase):
     @patch("gzkit.commands.obpi_complete.ensure_initialized")
     @patch("gzkit.commands.obpi_complete.resolve_obpi_file")
     @patch("gzkit.commands.obpi_complete.Ledger")
+    @covers("REQ-0.0.14-02-07")
     def test_rollback_on_ledger_failure(
         self,
         mock_ledger_cls,
