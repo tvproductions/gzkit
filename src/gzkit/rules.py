@@ -472,6 +472,8 @@ def load_rules(rules_dir: Path) -> list[CanonicalRule]:
 
     rules: list[CanonicalRule] = []
     for md_file in sorted(rules_dir.glob("*.md")):
+        if md_file.name == "AGENTS.md":
+            continue
         rules.append(load_rule(md_file))
 
     return sorted(rules, key=lambda r: r.frontmatter.id)

@@ -59,10 +59,17 @@ def _build_obpi_index(
 ) -> list[tuple[str, str, Path]]:
     """Scan all OBPI files once and return (canonical_id, canonical_parent, path) tuples."""
     artifacts = scan_existing_artifacts(project_root, config.paths.design_root)
+    graph = ledger.get_artifact_graph()
     index: list[tuple[str, str, Path]] = []
     for obpi_file in artifacts.get("obpis", []):
         metadata = parse_artifact_metadata(obpi_file)
         obpi_id = ledger.canonicalize_id(metadata.get("id", obpi_file.stem))
+        # When frontmatter ID doesn't match any ledger entry but the file stem
+        # does, prefer the file stem — it is the registered form.
+        if obpi_id not in graph:
+            stem_id = ledger.canonicalize_id(obpi_file.stem)
+            if stem_id in graph:
+                obpi_id = stem_id
         parent = metadata.get("parent", "")
         canonical_parent = ledger.canonicalize_id(parent) if parent else ""
         index.append((obpi_id, canonical_parent, obpi_file))
