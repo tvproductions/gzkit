@@ -4,6 +4,7 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
+skill-version: "6.0.1"
 last_reviewed: 2026-03-16
 ---
 
@@ -404,15 +405,17 @@ Include the exact command and its output or expected output.>
 **Files modified:**
 - <path> (<description>)
 
-**REQ verification:**
-- REQ-X.Y.Z-NN-01: <function/mechanism> — <what it detected/proved>
-- REQ-X.Y.Z-NN-02: ...
-- ...
+**REQ Coverage:**
+
+| REQ | Mechanism | Test Coverage | Result |
+|-----|-----------|---------------|--------|
+| REQ-X.Y.Z-NN-01 | <function/mechanism> | <test class> (N tests) | Pass |
+| REQ-X.Y.Z-NN-02 | ... | ... | ... |
 
 **4. Awaiting attestation.** Do NOT proceed to Stage 5 until human responds.
 ```
 
-**Every field above MUST be populated.** Do not skip the evidence table. Do not skip REQ verification. Do not skip files created/modified. The human needs all of this to make an attestation decision.
+**Every field above MUST be populated.** Do not skip the evidence table. Do not skip REQ coverage. Do not skip files created/modified. The human needs all of this to make an attestation decision.
 
 Wait for the human to respond "Accepted", "Completed", or equivalent. Do NOT proceed until attestation is received.
 
