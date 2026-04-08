@@ -17,6 +17,11 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.commands.common import GzCliError, console, get_project_root
+from gzkit.commands.version_sync import (
+    _read_current_project_version,
+    compute_patch_increment,
+    sync_project_version,
+)
 from gzkit.utils import git_cmd, run_exec
 
 # ---------------------------------------------------------------------------
@@ -60,6 +65,8 @@ class DiscoveryResult(BaseModel):
     ghi_count: int = Field(..., description="Total GHIs discovered")
     qualifications: list[GhiQualification] = Field(..., description="Per-GHI results")
     warnings: list[str] = Field(default_factory=list, description="Top-level warnings")
+    current_version: str | None = Field(None, description="Current version from pyproject.toml")
+    proposed_version: str | None = Field(None, description="Proposed patch version (Z+1)")
 
 
 # ---------------------------------------------------------------------------
@@ -199,6 +206,14 @@ def _render_dry_run_rich(result: DiscoveryResult) -> None:
         console.print(f"  Latest tag: {result.tag} ({result.tag_date or 'unknown date'})")
     else:
         console.print("  Latest tag: [dim]none (all closed GHIs are candidates)[/dim]")
+    if result.current_version and result.proposed_version:
+        console.print(
+            f"  Version: {result.current_version} -> {result.proposed_version} (proposed)"
+        )
+    elif result.current_version:
+        console.print(f"  Version: {result.current_version} (cannot compute increment)")
+    else:
+        console.print("  Version: [dim]unknown (pyproject.toml unreadable)[/dim]")
     console.print(f"  GHIs discovered: {result.ghi_count}")
     console.print()
 
@@ -229,8 +244,9 @@ def _render_json(result: DiscoveryResult) -> None:
 def patch_release_cmd(*, dry_run: bool, as_json: bool) -> None:
     """Run the patch release ceremony.
 
-    Currently implements GHI discovery and cross-validation (OBPI-02).
-    Full release execution arrives in later OBPIs.
+    Discovers qualifying GHIs, computes the next patch version, and
+    (unless ``--dry-run``) bumps all version locations via
+    ``sync_project_version``.
     """
     project_root = get_project_root()
     _ensure_gh_available(project_root)
@@ -239,9 +255,14 @@ def patch_release_cmd(*, dry_run: bool, as_json: bool) -> None:
     ghis = _discover_ghis(project_root, tag_date)
     qualifications = [_classify_ghi(project_root, ghi) for ghi in ghis]
 
+    current_version = _read_current_project_version(project_root)
+    proposed_version = compute_patch_increment(current_version) if current_version else None
+
     top_warnings: list[str] = []
     if tag is None:
         top_warnings.append("No git tags found; all closed GHIs treated as candidates.")
+    if current_version is None:
+        top_warnings.append("Cannot read current version from pyproject.toml.")
 
     result = DiscoveryResult(
         tag=tag,
@@ -249,20 +270,36 @@ def patch_release_cmd(*, dry_run: bool, as_json: bool) -> None:
         ghi_count=len(qualifications),
         qualifications=qualifications,
         warnings=top_warnings,
+        current_version=current_version,
+        proposed_version=proposed_version,
     )
-
-    if as_json:
-        _render_json(result)
-        return
 
     if dry_run:
-        _render_dry_run_rich(result)
+        if as_json:
+            _render_json(result)
+        else:
+            _render_dry_run_rich(result)
         return
 
-    # Non-dry-run: show discovery then note that full execution is deferred
-    _render_dry_run_rich(result)
-    console.print()
-    console.print(
-        "[yellow]Full release execution (version sync, manifests, ceremony) "
-        "arrives in later OBPIs.[/yellow]"
-    )
+    # Execute: bump version via sync_project_version (REQ-01, REQ-02)
+    if proposed_version is None:
+        if as_json:
+            _render_json(result)
+        else:
+            _render_dry_run_rich(result)
+            console.print()
+            console.print("[red]Cannot compute patch version (pyproject.toml unreadable).[/red]")
+        raise SystemExit(1)
+
+    updated_files = sync_project_version(project_root, proposed_version)
+
+    if as_json:
+        payload = result.model_dump()
+        payload["version_sync"] = {"updated_files": updated_files}
+        print(json.dumps(payload, indent=2))  # noqa: T201
+    else:
+        _render_dry_run_rich(result)
+        console.print()
+        console.print(f"[green]Version bumped: {current_version} -> {proposed_version}[/green]")
+        for f in updated_files:
+            console.print(f"  Updated: {f}")
