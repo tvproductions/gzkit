@@ -127,7 +127,7 @@ Skill behavior is standardized and synchronized by `gz agent sync control-surfac
 `gz-adr-autolink`, `gz-adr-emit-receipt`, `gz-adr-map`, `gz-adr-recon`, `gz-adr-sync`
 
 #### ADR Audit & Closeout
-`gz-adr-audit`, `gz-adr-closeout-ceremony`
+`gz-adr-audit`, `gz-adr-closeout-ceremony`, `gz-patch-release`
 
 #### OBPI Pipeline
 `gz-obpi-lock`, `gz-obpi-pipeline`, `gz-obpi-reconcile`, `gz-obpi-simplify`, `gz-obpi-specify`, `gz-plan-audit`
