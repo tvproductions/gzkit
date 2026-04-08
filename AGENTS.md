@@ -144,9 +144,6 @@ Skill behavior is standardized and synchronized by `gz agent sync control-surfac
 #### Cross-Repository
 `airlineops-parity-scan`
 
-#### Uncategorized
-`format`, `gz-adr-check`, `gz-adr-manager`, `gz-adr-verification`, `gz-arb`, `gz-attest`, `gz-audit`, `gz-closeout`, `gz-interview`, `gz-obpi-audit`, `gz-obpi-brief`, `gz-obpi-sync`, `gz-register-adrs`, `gz-specify`, `gz-typecheck`, `lint`, `test`
-
 For details on any skill, read its `SKILL.md` in `.gzkit/skills/<skill-name>/`.
 
 ## Gate Covenant

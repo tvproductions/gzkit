@@ -819,6 +819,118 @@ class TestSyncControlSurfaces(unittest.TestCase):
             self.assertEqual(len(skills), 1)
             self.assertEqual(skills[0]["category"], "adr-lifecycle")
 
+    def test_collect_skills_catalog_excludes_retired_skills(self) -> None:
+        """Retired skills are excluded from the catalog."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            active_skill = project_root / config.paths.skills / "gz-plan"
+            active_skill.mkdir(parents=True, exist_ok=True)
+            (active_skill / "SKILL.md").write_text(
+                "---\nname: gz-plan\ndescription: Create ADR artifacts.\n"
+                "category: adr-lifecycle\nlifecycle_state: active\n"
+                "owner: gzkit-governance\nlast_reviewed: 2026-03-15\n---\n"
+            )
+
+            retired_skill = project_root / config.paths.skills / "old-skill"
+            retired_skill.mkdir(parents=True, exist_ok=True)
+            (retired_skill / "SKILL.md").write_text(
+                _skill_markdown(
+                    "old-skill",
+                    lifecycle_state="retired",
+                    deprecation_replaced_by="gz-plan",
+                    deprecation_migration="Use /gz-plan",
+                    deprecation_communication="Consolidated",
+                    deprecation_announced_on=date.today().isoformat(),
+                    retired_on=date.today().isoformat(),
+                )
+            )
+
+            skills = collect_skills_catalog(project_root, config.paths.skills)
+            names = [s["name"] for s in skills]
+            self.assertIn("gz-plan", names)
+            self.assertNotIn("old-skill", names)
+
+    def test_find_stale_mirror_paths_includes_retired_skill_mirrors(self) -> None:
+        """Mirrors of retired skills are reported as stale."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            # Active canonical skill
+            active_skill = project_root / config.paths.skills / "demo-skill"
+            active_skill.mkdir(parents=True, exist_ok=True)
+            (active_skill / "SKILL.md").write_text(_skill_markdown("demo-skill"))
+
+            # Retired canonical skill
+            retired_skill = project_root / config.paths.skills / "old-skill"
+            retired_skill.mkdir(parents=True, exist_ok=True)
+            (retired_skill / "SKILL.md").write_text(
+                _skill_markdown(
+                    "old-skill",
+                    lifecycle_state="retired",
+                    deprecation_replaced_by="demo-skill",
+                    deprecation_migration="Use /demo-skill",
+                    deprecation_communication="Consolidated",
+                    deprecation_announced_on=date.today().isoformat(),
+                    retired_on=date.today().isoformat(),
+                )
+            )
+
+            # Mirror of retired skill (leftover from before filtering)
+            retired_mirror = project_root / config.paths.claude_skills / "old-skill"
+            retired_mirror.mkdir(parents=True, exist_ok=True)
+            (retired_mirror / "SKILL.md").write_text(
+                _skill_markdown(
+                    "old-skill",
+                    lifecycle_state="retired",
+                    deprecation_replaced_by="demo-skill",
+                    deprecation_migration="Use /demo-skill",
+                    deprecation_communication="Consolidated",
+                    deprecation_announced_on=date.today().isoformat(),
+                    retired_on=date.today().isoformat(),
+                )
+            )
+
+            stale_paths = find_stale_mirror_paths(project_root, config)
+            self.assertIn(".claude/skills/old-skill", stale_paths)
+
+    def test_sync_skill_mirrors_skips_retired_skills(self) -> None:
+        """Mirror sync does not copy retired skills to vendor mirrors."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            active_skill = project_root / config.paths.skills / "demo-skill"
+            active_skill.mkdir(parents=True, exist_ok=True)
+            (active_skill / "SKILL.md").write_text(_skill_markdown("demo-skill"))
+
+            retired_skill = project_root / config.paths.skills / "old-skill"
+            retired_skill.mkdir(parents=True, exist_ok=True)
+            (retired_skill / "SKILL.md").write_text(
+                _skill_markdown(
+                    "old-skill",
+                    lifecycle_state="retired",
+                    deprecation_replaced_by="demo-skill",
+                    deprecation_migration="Use /demo-skill",
+                    deprecation_communication="Consolidated",
+                    deprecation_announced_on=date.today().isoformat(),
+                    retired_on=date.today().isoformat(),
+                )
+            )
+
+            sync_all(project_root, config)
+
+            # Active skill should be mirrored
+            self.assertTrue(
+                (project_root / config.paths.claude_skills / "demo-skill" / "SKILL.md").exists()
+            )
+            # Retired skill should NOT be mirrored
+            self.assertFalse(
+                (project_root / config.paths.claude_skills / "old-skill" / "SKILL.md").exists()
+            )
+
     def test_render_skills_catalog_categorized_groups_by_category(self) -> None:
         """Categorized renderer groups skills under category headers."""
         from gzkit.sync import render_skills_catalog

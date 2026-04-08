@@ -106,7 +106,11 @@ def validate_mirror_root(
     mirror_root: Path,
     canonical_dirs: dict[str, Path],
 ) -> None:
-    """Validate mirror parity for one mirror root."""
+    """Validate mirror parity for one mirror root.
+
+    Retired skills are excluded from mirror expectations — they should not
+    be mirrored and their presence in a mirror is a non-blocking warning.
+    """
     mirror_dirs = _skill_dirs(mirror_root)
     for name, path in sorted(mirror_dirs.items()):
         if KEBAB_CASE_RE.match(name):
@@ -119,7 +123,13 @@ def validate_mirror_root(
             "Mirrored skill directory name must be kebab-case.",
         )
 
-    canonical_names = set(canonical_dirs.keys())
+    # Retired skills should not be mirrored — exclude from expected set.
+    retired = {
+        name
+        for name, path in canonical_dirs.items()
+        if (fm := _read_frontmatter(path / "SKILL.md")) and fm.get("lifecycle_state") == "retired"
+    }
+    canonical_names = set(canonical_dirs.keys()) - retired
     mirror_names = set(mirror_dirs.keys())
 
     for name in sorted(canonical_names - mirror_names):
