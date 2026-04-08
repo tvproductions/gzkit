@@ -35,6 +35,7 @@ artifacts. Requires human attestation that the release is correct.
 - `src/gzkit/__init__.py` (via `sync_project_version` at runtime)
 - `RELEASE_NOTES.md`
 - `docs/releases/PATCH-v0.24.3.md` (new manifest)
+- `.gzkit/ledger.jsonl` (patch-release event — product proof workaround for #118)
 
 ## Denied Paths
 

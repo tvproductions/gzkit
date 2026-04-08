@@ -1,0 +1,62 @@
+{
+  "adr_id": "ADR-0.0.15-ghi-driven-patch-release-ceremony",
+  "current_step": 11,
+  "is_foundation": true,
+  "started_at": "2026-04-08T11:24:21Z",
+  "updated_at": "2026-04-08T12:47:13Z",
+  "step_history": [
+    {
+      "step": 1,
+      "presented_at": "2026-04-08T11:24:21Z",
+      "acknowledged_at": "2026-04-08T11:24:37Z"
+    },
+    {
+      "step": 2,
+      "presented_at": "2026-04-08T11:24:37Z",
+      "acknowledged_at": "2026-04-08T11:30:29Z"
+    },
+    {
+      "step": 3,
+      "presented_at": "2026-04-08T11:30:29Z",
+      "acknowledged_at": "2026-04-08T12:36:28Z"
+    },
+    {
+      "step": 4,
+      "presented_at": "2026-04-08T12:36:28Z",
+      "acknowledged_at": "2026-04-08T12:38:37Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-04-08T12:38:37Z",
+      "acknowledged_at": "2026-04-08T12:38:42Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-04-08T12:38:42Z",
+      "acknowledged_at": "2026-04-08T12:40:07Z"
+    },
+    {
+      "step": 7,
+      "presented_at": "2026-04-08T12:40:07Z",
+      "acknowledged_at": "2026-04-08T12:44:27Z"
+    },
+    {
+      "step": 8,
+      "presented_at": "2026-04-08T12:44:27Z",
+      "acknowledged_at": "2026-04-08T12:47:13Z"
+    },
+    {
+      "step": 11,
+      "presented_at": "2026-04-08T12:47:13Z",
+      "acknowledged_at": null
+    }
+  ],
+  "walkthrough_commands": [
+    "uv run gz patch release --help"
+  ],
+  "walkthrough_index": 0,
+  "attestation": "Completed",
+  "completed_at": "2026-04-08T12:47:13Z",
+  "attempt": 1,
+  "paused_at": null
+}
