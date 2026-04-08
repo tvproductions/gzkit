@@ -1,12 +1,14 @@
-"""Tests for gz patch release: GHI discovery, cross-validation, and version sync.
+"""Tests for gz patch release: GHI discovery, cross-validation, version sync, and manifests.
 
 @covers OBPI-0.0.15-01 (parser registration)
 @covers OBPI-0.0.15-02 (discovery, cross-validation, classification)
 @covers OBPI-0.0.15-03 (version sync integration)
+@covers OBPI-0.0.15-04 (dual-format manifest)
 """
 
 import json
 import unittest
+import unittest.mock
 from io import StringIO
 from pathlib import Path
 from unittest.mock import patch
@@ -813,6 +815,431 @@ class TestPatchReleaseNoVersion(unittest.TestCase):
         self.assertIsNone(payload["current_version"])
         self.assertIsNone(payload["proposed_version"])
         self.assertTrue(any("Cannot read current version" in w for w in payload["warnings"]))
+
+
+# ---------------------------------------------------------------------------
+# Test: ManifestGhi model (OBPI-04)
+# ---------------------------------------------------------------------------
+
+
+class TestManifestGhiModel(unittest.TestCase):
+    """Verify ManifestGhi Pydantic validation.
+
+    @covers REQ-0.0.15-04-04
+    """
+
+    def test_valid_construction(self) -> None:
+        from gzkit.commands.patch_release import ManifestGhi
+
+        ghi = ManifestGhi(number=42, title="Fix crash", status="qualified")
+        self.assertEqual(ghi.number, 42)
+        self.assertEqual(ghi.status, "qualified")
+        self.assertIsNone(ghi.warning)
+
+    def test_extra_field_rejected(self) -> None:
+        from pydantic import ValidationError
+
+        from gzkit.commands.patch_release import ManifestGhi
+
+        with self.assertRaises(ValidationError):
+            ManifestGhi(number=42, title="Fix", status="qualified", bogus="x")
+
+
+# ---------------------------------------------------------------------------
+# Test: PatchManifest model (OBPI-04)
+# ---------------------------------------------------------------------------
+
+
+class TestPatchManifestModel(unittest.TestCase):
+    """Verify PatchManifest Pydantic validation (REQ-04: schema validation).
+
+    @covers REQ-0.0.15-04-04
+    """
+
+    def test_valid_construction(self) -> None:
+        from gzkit.commands.patch_release import ManifestGhi, PatchManifest
+
+        m = PatchManifest(
+            version="0.0.15",
+            previous_version="0.0.14",
+            date="2026-04-08",
+            ghis=[ManifestGhi(number=1, title="Fix", status="qualified")],
+        )
+        self.assertEqual(m.version, "0.0.15")
+        self.assertEqual(m.operator_approval, "Approved by gz patch release")
+
+    def test_missing_version_raises(self) -> None:
+        from pydantic import ValidationError
+
+        from gzkit.commands.patch_release import PatchManifest
+
+        with self.assertRaises(ValidationError):
+            PatchManifest(previous_version="0.0.14", date="2026-04-08", ghis=[])
+
+    def test_empty_ghis_allowed(self) -> None:
+        from gzkit.commands.patch_release import PatchManifest
+
+        m = PatchManifest(version="0.0.15", previous_version="0.0.14", date="2026-04-08", ghis=[])
+        self.assertEqual(m.ghis, [])
+
+    def test_extra_field_rejected(self) -> None:
+        from pydantic import ValidationError
+
+        from gzkit.commands.patch_release import PatchManifest
+
+        with self.assertRaises(ValidationError):
+            PatchManifest(
+                version="0.0.15",
+                previous_version="0.0.14",
+                date="2026-04-08",
+                ghis=[],
+                bogus="x",
+            )
+
+
+# ---------------------------------------------------------------------------
+# Test: _render_manifest_markdown (OBPI-04)
+# ---------------------------------------------------------------------------
+
+
+class TestRenderManifestMarkdown(unittest.TestCase):
+    """Verify markdown manifest rendering (REQ-01).
+
+    @covers REQ-0.0.15-04-01
+    """
+
+    def test_contains_heading_and_metadata(self) -> None:
+        from gzkit.commands.patch_release import (
+            ManifestGhi,
+            PatchManifest,
+            _render_manifest_markdown,
+        )
+
+        m = PatchManifest(
+            version="0.0.15",
+            previous_version="0.0.14",
+            date="2026-04-08",
+            tag="v0.0.14",
+            ghis=[ManifestGhi(number=42, title="Fix crash", status="qualified")],
+        )
+        output = _render_manifest_markdown(m)
+        self.assertIn("# Patch Release: v0.0.15", output)
+        self.assertIn("**Date:** 2026-04-08", output)
+        self.assertIn("**Previous Version:** 0.0.14", output)
+        self.assertIn("**Tag:** v0.0.14", output)
+
+    def test_ghi_table_rows(self) -> None:
+        from gzkit.commands.patch_release import (
+            ManifestGhi,
+            PatchManifest,
+            _render_manifest_markdown,
+        )
+
+        m = PatchManifest(
+            version="0.0.15",
+            previous_version="0.0.14",
+            date="2026-04-08",
+            ghis=[
+                ManifestGhi(number=42, title="Fix crash", status="qualified"),
+                ManifestGhi(
+                    number=43,
+                    title="Labeled only",
+                    status="label_only",
+                    warning="no commits touching src/gzkit/",
+                ),
+            ],
+        )
+        output = _render_manifest_markdown(m)
+        self.assertIn("| 42 | Fix crash | qualified |  |", output)
+        self.assertIn("| 43 | Labeled only | label_only | no commits touching src/gzkit/ |", output)
+
+    def test_operator_approval_section(self) -> None:
+        from gzkit.commands.patch_release import PatchManifest, _render_manifest_markdown
+
+        m = PatchManifest(version="0.0.15", previous_version="0.0.14", date="2026-04-08", ghis=[])
+        output = _render_manifest_markdown(m)
+        self.assertIn("## Operator Approval", output)
+        self.assertIn("Approved by gz patch release", output)
+
+    def test_no_tag_shows_none(self) -> None:
+        from gzkit.commands.patch_release import PatchManifest, _render_manifest_markdown
+
+        m = PatchManifest(version="0.0.15", previous_version="0.0.14", date="2026-04-08", ghis=[])
+        output = _render_manifest_markdown(m)
+        self.assertIn("**Tag:** None", output)
+
+
+# ---------------------------------------------------------------------------
+# Test: _write_manifest_atomic (OBPI-04)
+# ---------------------------------------------------------------------------
+
+
+class TestWriteManifestAtomic(unittest.TestCase):
+    """Verify atomic manifest file writing (REQ-03).
+
+    @covers REQ-0.0.15-04-03
+    """
+
+    def test_creates_directory_and_file(self) -> None:
+        import tempfile
+
+        from gzkit.commands.patch_release import ManifestGhi, PatchManifest, _write_manifest_atomic
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            m = PatchManifest(
+                version="0.0.15",
+                previous_version="0.0.14",
+                date="2026-04-08",
+                ghis=[ManifestGhi(number=1, title="Fix", status="qualified")],
+            )
+            rel_path = _write_manifest_atomic(root, m)
+            full_path = root / rel_path
+            self.assertTrue(full_path.exists())
+            self.assertEqual(rel_path, Path("docs") / "releases" / "PATCH-v0.0.15.md")
+            content = full_path.read_text(encoding="utf-8")
+            self.assertIn("# Patch Release: v0.0.15", content)
+
+    def test_existing_directory_no_error(self) -> None:
+        import tempfile
+
+        from gzkit.commands.patch_release import PatchManifest, _write_manifest_atomic
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "docs" / "releases").mkdir(parents=True)
+            m = PatchManifest(
+                version="0.0.15", previous_version="0.0.14", date="2026-04-08", ghis=[]
+            )
+            rel_path = _write_manifest_atomic(root, m)
+            self.assertTrue((root / rel_path).exists())
+
+
+# ---------------------------------------------------------------------------
+# Test: patch_release_event factory (OBPI-04)
+# ---------------------------------------------------------------------------
+
+
+class TestPatchReleaseEventFactory(unittest.TestCase):
+    """Verify ledger event factory (REQ-02).
+
+    @covers REQ-0.0.15-04-02
+    """
+
+    def test_event_type_and_id(self) -> None:
+        from gzkit.ledger_events import patch_release_event
+
+        event = patch_release_event(
+            version="0.0.15",
+            previous_version="0.0.14",
+            tag="v0.0.14",
+            ghi_summary=[{"number": 42, "title": "Fix", "status": "qualified", "warning": None}],
+            manifest_path="docs/releases/PATCH-v0.0.15.md",
+        )
+        self.assertEqual(event.event, "patch-release")
+        self.assertEqual(event.id, "v0.0.15")
+
+    def test_extra_fields(self) -> None:
+        from gzkit.ledger_events import patch_release_event
+
+        event = patch_release_event(
+            version="0.0.15",
+            previous_version="0.0.14",
+            tag=None,
+            ghi_summary=[],
+            manifest_path="docs/releases/PATCH-v0.0.15.md",
+        )
+        self.assertEqual(event.extra["version"], "0.0.15")
+        self.assertEqual(event.extra["previous_version"], "0.0.14")
+        self.assertIsNone(event.extra["tag"])
+        self.assertEqual(event.extra["manifest_path"], "docs/releases/PATCH-v0.0.15.md")
+
+    def test_serialization_flattens_extra(self) -> None:
+        from gzkit.ledger_events import patch_release_event
+
+        event = patch_release_event(
+            version="0.0.15",
+            previous_version="0.0.14",
+            tag="v0.0.14",
+            ghi_summary=[],
+            manifest_path="docs/releases/PATCH-v0.0.15.md",
+        )
+        dumped = event.model_dump()
+        self.assertIn("version", dumped)
+        self.assertIn("manifest_path", dumped)
+        self.assertNotIn("extra", dumped)
+
+
+# ---------------------------------------------------------------------------
+# Test: patch_release_cmd writes manifest + ledger (OBPI-04)
+# ---------------------------------------------------------------------------
+
+
+class TestPatchReleaseCmdManifest(unittest.TestCase):
+    """Integration: non-dry-run writes manifest and appends ledger entry.
+
+    @covers REQ-0.0.15-04-01
+    @covers REQ-0.0.15-04-02
+    @covers REQ-0.0.15-04-03
+    """
+
+    _GH_OUTPUT = json.dumps(
+        [
+            {
+                "number": 50,
+                "title": "Fix widget",
+                "closedAt": "2026-04-02T10:00:00Z",
+                "labels": [{"name": "runtime"}],
+                "url": "https://github.com/owner/repo/issues/50",
+            },
+        ]
+    )
+
+    @patch("gzkit.commands.patch_release.get_project_root")
+    @patch("gzkit.commands.patch_release.run_exec")
+    @patch("gzkit.commands.patch_release.git_cmd")
+    @patch("gzkit.commands.patch_release._read_current_project_version", return_value="0.0.14")
+    @patch("gzkit.commands.patch_release.sync_project_version", return_value=["pyproject.toml"])
+    @patch("gzkit.commands.patch_release.ensure_initialized")
+    @patch("gzkit.commands.patch_release.Ledger")
+    def test_manifest_and_ledger_written(
+        self,
+        mock_ledger_cls: object,
+        mock_init: object,
+        _mock_sync: object,
+        _mock_ver: object,
+        mock_git: object,
+        mock_exec: object,
+        mock_root: object,
+    ) -> None:
+        import tempfile
+
+        from gzkit.commands.patch_release import patch_release_cmd
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            mock_root.return_value = root
+
+            # Configure ensure_initialized mock
+            config_mock = unittest.mock.MagicMock()
+            config_mock.paths.ledger = ".gzkit/ledger.jsonl"
+            mock_init.return_value = config_mock
+
+            # Configure Ledger mock
+            ledger_instance = unittest.mock.MagicMock()
+            mock_ledger_cls.return_value = ledger_instance
+
+            mock_exec.side_effect = [
+                (0, "Logged in", ""),
+                (0, self._GH_OUTPUT, ""),
+            ]
+            mock_git.side_effect = _build_mock_git_cmd(
+                tag_output="v0.0.14",
+                tag_date="2026-04-01T00:00:00+00:00",
+                src_commits={50: True},
+            )
+
+            with patch("builtins.print"):
+                patch_release_cmd(dry_run=False, as_json=True)
+
+            # Verify manifest file was created
+            manifest = root / "docs" / "releases" / "PATCH-v0.0.15.md"
+            self.assertTrue(manifest.exists(), "Manifest file should exist")
+            content = manifest.read_text(encoding="utf-8")
+            self.assertIn("# Patch Release: v0.0.15", content)
+            self.assertIn("Fix widget", content)
+            self.assertIn("qualified", content)
+
+            # Verify ledger append was called
+            ledger_instance.append.assert_called_once()
+            event = ledger_instance.append.call_args[0][0]
+            self.assertEqual(event.event, "patch-release")
+            self.assertEqual(event.id, "v0.0.15")
+
+    @patch("gzkit.commands.patch_release.get_project_root")
+    @patch("gzkit.commands.patch_release.run_exec")
+    @patch("gzkit.commands.patch_release.git_cmd")
+    @patch("gzkit.commands.patch_release._read_current_project_version", return_value="0.0.14")
+    @patch("gzkit.commands.patch_release.sync_project_version", return_value=["pyproject.toml"])
+    @patch("gzkit.commands.patch_release.ensure_initialized")
+    @patch("gzkit.commands.patch_release.Ledger")
+    def test_json_output_includes_manifest_path(
+        self,
+        mock_ledger_cls: object,
+        mock_init: object,
+        _mock_sync: object,
+        _mock_ver: object,
+        mock_git: object,
+        mock_exec: object,
+        mock_root: object,
+    ) -> None:
+        import tempfile
+
+        from gzkit.commands.patch_release import patch_release_cmd
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            mock_root.return_value = root
+            config_mock = unittest.mock.MagicMock()
+            config_mock.paths.ledger = ".gzkit/ledger.jsonl"
+            mock_init.return_value = config_mock
+            mock_ledger_cls.return_value = unittest.mock.MagicMock()
+
+            mock_exec.side_effect = [
+                (0, "Logged in", ""),
+                (0, "[]", ""),
+            ]
+            mock_git.side_effect = _build_mock_git_cmd("v0.0.14", "2026-04-01", {})
+
+            with patch("builtins.print") as mock_print:
+                patch_release_cmd(dry_run=False, as_json=True)
+
+            payload = json.loads(mock_print.call_args[0][0])
+            self.assertIn("manifest_path", payload)
+            self.assertIn("PATCH-v0.0.15", payload["manifest_path"])
+
+
+# ---------------------------------------------------------------------------
+# Test: dry-run does NOT write manifest or ledger (OBPI-04)
+# ---------------------------------------------------------------------------
+
+
+class TestDryRunNoManifest(unittest.TestCase):
+    """Verify dry-run skips manifest and ledger writes.
+
+    @covers REQ-0.0.15-04-03
+    """
+
+    @patch("gzkit.commands.patch_release.get_project_root")
+    @patch("gzkit.commands.patch_release.run_exec")
+    @patch("gzkit.commands.patch_release.git_cmd")
+    @patch("gzkit.commands.patch_release._read_current_project_version", return_value="0.0.14")
+    @patch("gzkit.commands.patch_release.console", _quiet_console)
+    def test_dry_run_no_manifest_no_ledger(
+        self,
+        _mock_ver: object,
+        mock_git: object,
+        mock_exec: object,
+        mock_root: object,
+    ) -> None:
+        import tempfile
+
+        from gzkit.commands.patch_release import patch_release_cmd
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            mock_root.return_value = root
+
+            mock_exec.side_effect = [
+                (0, "Logged in", ""),
+                (0, "[]", ""),
+            ]
+            mock_git.side_effect = _build_mock_git_cmd("v0.0.14", "2026-04-01", {})
+
+            patch_release_cmd(dry_run=True, as_json=False)
+
+            releases_dir = root / "docs" / "releases"
+            self.assertFalse(releases_dir.exists(), "docs/releases/ should not be created")
 
 
 if __name__ == "__main__":

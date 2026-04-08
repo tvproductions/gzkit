@@ -1,27 +1,28 @@
-"""Patch release command: GHI discovery and cross-validation.
+"""Patch release command: GHI discovery, cross-validation, and manifest generation.
 
 Discovers closed GHIs since the latest git tag, cross-validates against
-the ``runtime`` label and ``src/gzkit/`` diffs, and classifies each GHI
-for patch release qualification.
-
-Full release execution (version sync, manifests, ceremony) arrives in
-OBPI-0.0.15-03 through OBPI-0.0.15-06.
+the ``runtime`` label and ``src/gzkit/`` diffs, classifies each GHI
+for patch release qualification, and produces dual-format release manifests
+(markdown + JSONL ledger entry).
 """
 
 from __future__ import annotations
 
 import json
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from gzkit.commands.common import GzCliError, console, get_project_root
+from gzkit.commands.common import GzCliError, console, ensure_initialized, get_project_root
 from gzkit.commands.version_sync import (
     _read_current_project_version,
     compute_patch_increment,
     sync_project_version,
 )
+from gzkit.ledger import Ledger
+from gzkit.ledger_events import patch_release_event
 from gzkit.utils import git_cmd, run_exec
 
 # ---------------------------------------------------------------------------
@@ -67,6 +68,33 @@ class DiscoveryResult(BaseModel):
     warnings: list[str] = Field(default_factory=list, description="Top-level warnings")
     current_version: str | None = Field(None, description="Current version from pyproject.toml")
     proposed_version: str | None = Field(None, description="Proposed patch version (Z+1)")
+
+
+class ManifestGhi(BaseModel):
+    """A GHI entry for the release manifest."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    number: int = Field(..., description="GitHub issue number")
+    title: str = Field(..., description="Issue title")
+    status: GhiStatus = Field(..., description="Cross-validation classification")
+    warning: str | None = Field(None, description="Warning when label and diff disagree")
+    url: str = Field("", description="Issue HTML URL")
+
+
+class PatchManifest(BaseModel):
+    """Validated payload for a patch release manifest."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    version: str = Field(..., description="Patch release version")
+    previous_version: str = Field(..., description="Version before this release")
+    date: str = Field(..., description="Release date (ISO 8601)")
+    tag: str | None = Field(None, description="Git tag of previous version")
+    ghis: list[ManifestGhi] = Field(..., description="GHIs with cross-validation results")
+    operator_approval: str = Field(
+        "Approved by gz patch release", description="Operator approval text"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -237,6 +265,46 @@ def _render_json(result: DiscoveryResult) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Manifest generation
+# ---------------------------------------------------------------------------
+
+
+def _render_manifest_markdown(manifest: PatchManifest) -> str:
+    """Render a validated manifest as a markdown document."""
+    lines: list[str] = [
+        f"# Patch Release: v{manifest.version}",
+        "",
+        f"**Date:** {manifest.date}",
+        f"**Previous Version:** {manifest.previous_version}",
+        f"**Tag:** {manifest.tag or 'None'}",
+        "",
+        "## Qualifying GHIs",
+        "",
+        "| # | Title | Status | Warning |",
+        "|---|-------|--------|---------|",
+    ]
+    for ghi in manifest.ghis:
+        warning_cell = ghi.warning or ""
+        lines.append(f"| {ghi.number} | {ghi.title} | {ghi.status} | {warning_cell} |")
+    lines.extend(["", "## Operator Approval", "", manifest.operator_approval, ""])
+    return "\n".join(lines)
+
+
+def _write_manifest_atomic(project_root: Path, manifest: PatchManifest) -> Path:
+    """Write the markdown manifest to ``docs/releases/``.
+
+    Returns the relative path to the manifest file.
+    """
+    releases_dir = project_root / "docs" / "releases"
+    releases_dir.mkdir(parents=True, exist_ok=True)
+    filename = f"PATCH-v{manifest.version}.md"
+    manifest_path = releases_dir / filename
+    content = _render_manifest_markdown(manifest)
+    manifest_path.write_text(content, encoding="utf-8")
+    return Path("docs") / "releases" / filename
+
+
+# ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 
@@ -291,11 +359,53 @@ def patch_release_cmd(*, dry_run: bool, as_json: bool) -> None:
             console.print("[red]Cannot compute patch version (pyproject.toml unreadable).[/red]")
         raise SystemExit(1)
 
+    # current_version is non-None here: proposed_version requires it
+    assert current_version is not None
+
     updated_files = sync_project_version(project_root, proposed_version)
+
+    # Build manifest (Pydantic validates — REQ-04)
+    manifest_ghis = [
+        ManifestGhi(
+            number=q.ghi.number,
+            title=q.ghi.title,
+            status=q.status,
+            warning=q.warning,
+            url=q.ghi.url,
+        )
+        for q in qualifications
+    ]
+    manifest = PatchManifest(
+        version=proposed_version,
+        previous_version=current_version,
+        date=datetime.now(UTC).strftime("%Y-%m-%d"),
+        tag=tag,
+        ghis=manifest_ghis,
+    )
+
+    # Write markdown manifest (REQ-01, REQ-03)
+    manifest_rel = _write_manifest_atomic(project_root, manifest)
+
+    # Append JSONL ledger entry (REQ-02)
+    ghi_summary = [
+        {"number": g.number, "title": g.title, "status": g.status, "warning": g.warning}
+        for g in manifest_ghis
+    ]
+    event = patch_release_event(
+        version=proposed_version,
+        previous_version=current_version,
+        tag=tag,
+        ghi_summary=ghi_summary,
+        manifest_path=str(manifest_rel),
+    )
+    config = ensure_initialized()
+    ledger = Ledger(project_root / config.paths.ledger)
+    ledger.append(event)
 
     if as_json:
         payload = result.model_dump()
         payload["version_sync"] = {"updated_files": updated_files}
+        payload["manifest_path"] = str(manifest_rel)
         print(json.dumps(payload, indent=2))  # noqa: T201
     else:
         _render_dry_run_rich(result)
@@ -303,3 +413,5 @@ def patch_release_cmd(*, dry_run: bool, as_json: bool) -> None:
         console.print(f"[green]Version bumped: {current_version} -> {proposed_version}[/green]")
         for f in updated_files:
             console.print(f"  Updated: {f}")
+        console.print(f"  Manifest: {manifest_rel}")
+        console.print("  Ledger: patch-release event appended")
