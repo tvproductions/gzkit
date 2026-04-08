@@ -4,7 +4,7 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.0.1"
+skill-version: "6.0.2"
 last_reviewed: 2026-03-16
 ---
 
@@ -391,6 +391,8 @@ Include the exact command and its output or expected output.>
 
 **3. Evidence**
 
+**Quality checks:**
+
 | Check | Command | Result |
 |-------|---------|--------|
 | Tests | `uv run gz test` | <N> pass |
@@ -405,7 +407,7 @@ Include the exact command and its output or expected output.>
 **Files modified:**
 - <path> (<description>)
 
-**REQ Coverage:**
+**REQ coverage:**
 
 | REQ | Mechanism | Test Coverage | Result |
 |-----|-----------|---------------|--------|
