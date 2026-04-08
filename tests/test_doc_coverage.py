@@ -121,6 +121,7 @@ class TestDiscoverCommands(unittest.TestCase):
             "skill new",
             "skill list",
             "skill audit",
+            "patch release",
             "plan create",
             "plan audit",
         }

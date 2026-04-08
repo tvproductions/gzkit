@@ -1,7 +1,7 @@
 """Governance lifecycle subparser registrations for gz CLI.
 
 Registers: init, prd, constitute, specify, plan, state, status, closeout,
-audit, attest, implement, gates, migrate-semver, register-adrs, roles.
+patch, audit, attest, implement, gates, migrate-semver, register-adrs, roles.
 """
 
 import argparse
@@ -19,6 +19,7 @@ from gzkit.commands.audit_cmd import audit_cmd
 from gzkit.commands.closeout import closeout_cmd
 from gzkit.commands.gates import gates_cmd, implement_cmd
 from gzkit.commands.init_cmd import constitute, init, prd
+from gzkit.commands.patch_release import patch_release_cmd
 from gzkit.commands.personas import persona_drift_cmd, personas_list_cmd
 from gzkit.commands.plan import plan_cmd
 from gzkit.commands.plan_audit_cmd import plan_audit_cmd
@@ -395,6 +396,37 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
     )
 
     p_closeout.set_defaults(func=lambda a: _closeout_dispatch(a))
+
+    p_patch = commands.add_parser(
+        "patch",
+        help="Patch release ceremony commands",
+        description="GHI-driven patch release ceremony.",
+        epilog=build_epilog(
+            [
+                "gz patch release --dry-run",
+                "gz patch release --json",
+            ]
+        ),
+    )
+    patch_commands = p_patch.add_subparsers(dest="patch_command")
+    patch_commands.required = True
+
+    p_patch_release = patch_commands.add_parser(
+        "release",
+        help="Run the patch release ceremony",
+        description="Execute the GHI-driven patch release ceremony.",
+        epilog=build_epilog(
+            [
+                "gz patch release --dry-run",
+                "gz patch release --json",
+            ]
+        ),
+    )
+    add_dry_run_flag(p_patch_release)
+    add_json_flag(p_patch_release)
+    p_patch_release.set_defaults(
+        func=lambda a: patch_release_cmd(dry_run=a.dry_run, as_json=a.as_json)
+    )
 
     p_audit = commands.add_parser(
         "audit",
