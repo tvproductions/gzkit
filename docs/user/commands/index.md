@@ -29,6 +29,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz flags`](flags.md) | Display all registered feature flags with current values |
 | [`gz flag explain`](flag-explain.md) | Inspect one flag: metadata, resolved value, staleness, linked ADR |
 | [`gz closeout`](closeout.md) | Present closeout paths/commands and record closeout initiation |
+| [`gz patch release`](patch-release.md) | Run the GHI-driven patch release ceremony |
 | [`gz attest`](attest.md) | Record human attestation with prerequisite enforcement |
 | [`gz audit`](audit.md) | Run strict post-attestation audit reconciliation |
 | [`gz adr emit-receipt`](adr-emit-receipt.md) | Emit completed/validated receipt with optional evidence scope |
