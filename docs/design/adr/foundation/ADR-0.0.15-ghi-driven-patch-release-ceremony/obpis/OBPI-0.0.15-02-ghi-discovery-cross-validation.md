@@ -1,9 +1,9 @@
 ---
-id: OBPI-0.0.15-02
+id: OBPI-0.0.15-02-ghi-discovery-cross-validation
 parent: ADR-0.0.15-ghi-driven-patch-release-ceremony
 item: 2
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.15-02: GHI Discovery and Cross-Validation
@@ -141,19 +141,24 @@ uv run gz patch release --dry-run
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before this OBPI, `gz patch release --dry-run` printed a placeholder message. Now it discovers GHIs closed since the last git tag, cross-validates each against the `runtime` label and `src/gzkit/` diff evidence, and classifies every GHI as qualified, label_only, diff_only, or excluded with explicit warnings on disagreements.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+```bash
+uv run -m unittest tests/adr/test_patch_release.py -v
+# 23/23 pass including 4-case classification matrix
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files modified: `src/gzkit/commands/patch_release.py`, `tests/adr/test_patch_release.py`
+- Tests added: 23 (TestEnsureGhAvailable, TestGetLatestTag, TestDiscoverGhis, TestGhiHasSrcCommits, TestClassifyGhi, TestPatchReleaseDryRun, TestPatchReleaseJson, TestPatchReleaseNoTags, TestPatchReleaseParserRegistration)
+- Date completed: 2026-04-08
+- Attestation status: Completed
+- Defects noted: None
 
 ## Tracked Defects
 
@@ -161,14 +166,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a`
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `Jeffry`
+- Attestation: attest completed
+- Date: 2026-04-08
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-08
 
 **Evidence Hash:** -
