@@ -1,7 +1,8 @@
-"""Tests for gz patch release: GHI discovery and cross-validation.
+"""Tests for gz patch release: GHI discovery, cross-validation, and version sync.
 
 @covers OBPI-0.0.15-01 (parser registration)
 @covers OBPI-0.0.15-02 (discovery, cross-validation, classification)
+@covers OBPI-0.0.15-03 (version sync integration)
 """
 
 import json
@@ -353,7 +354,16 @@ class TestPatchReleaseJson(unittest.TestCase):
     @patch("gzkit.commands.patch_release.get_project_root", return_value=_PROJECT_ROOT)
     @patch("gzkit.commands.patch_release.run_exec")
     @patch("gzkit.commands.patch_release.git_cmd")
-    def test_json_structure(self, mock_git: object, mock_exec: object, _root: object) -> None:
+    @patch("gzkit.commands.patch_release._read_current_project_version", return_value="0.0.14")
+    @patch("gzkit.commands.patch_release.sync_project_version", return_value=["pyproject.toml"])
+    def test_json_structure(
+        self,
+        _mock_sync: object,
+        _mock_ver: object,
+        mock_git: object,
+        mock_exec: object,
+        _root: object,
+    ) -> None:
         from gzkit.commands.patch_release import patch_release_cmd
 
         mock_exec.side_effect = [
@@ -385,8 +395,15 @@ class TestPatchReleaseJson(unittest.TestCase):
     @patch("gzkit.commands.patch_release.get_project_root", return_value=_PROJECT_ROOT)
     @patch("gzkit.commands.patch_release.run_exec")
     @patch("gzkit.commands.patch_release.git_cmd")
+    @patch("gzkit.commands.patch_release._read_current_project_version", return_value="0.0.14")
+    @patch("gzkit.commands.patch_release.sync_project_version", return_value=["pyproject.toml"])
     def test_json_warnings_surfaced(
-        self, mock_git: object, mock_exec: object, _root: object
+        self,
+        _mock_sync: object,
+        _mock_ver: object,
+        mock_git: object,
+        mock_exec: object,
+        _root: object,
     ) -> None:
         from gzkit.commands.patch_release import patch_release_cmd
 
@@ -428,9 +445,16 @@ class TestPatchReleaseNoTags(unittest.TestCase):
     @patch("gzkit.commands.patch_release.get_project_root", return_value=_PROJECT_ROOT)
     @patch("gzkit.commands.patch_release.run_exec")
     @patch("gzkit.commands.patch_release.git_cmd")
+    @patch("gzkit.commands.patch_release._read_current_project_version", return_value="0.0.14")
+    @patch("gzkit.commands.patch_release.sync_project_version", return_value=["pyproject.toml"])
     @patch("gzkit.commands.patch_release.console", _quiet_console)
     def test_no_tags_still_discovers(
-        self, mock_git: object, mock_exec: object, _root: object
+        self,
+        _mock_sync: object,
+        _mock_ver: object,
+        mock_git: object,
+        mock_exec: object,
+        _root: object,
     ) -> None:
         from gzkit.commands.patch_release import patch_release_cmd
 
@@ -500,6 +524,295 @@ class TestPatchReleaseParserRegistration(unittest.TestCase):
         output = buf.getvalue()
         self.assertIn("--dry-run", output)
         self.assertIn("--json", output)
+
+
+# ---------------------------------------------------------------------------
+# Test: compute_patch_increment (OBPI-03)
+# ---------------------------------------------------------------------------
+
+
+class TestComputePatchIncrement(unittest.TestCase):
+    """Table-driven patch increment computation.
+
+    @covers REQ-0.0.15-03-02
+    """
+
+    _CASES = [
+        ("0.24.1", "0.24.2"),
+        ("0.0.14", "0.0.15"),
+        ("1.0.0", "1.0.1"),
+        ("0.0.0", "0.0.1"),
+        ("10.20.30", "10.20.31"),
+    ]
+
+    def test_increment_matrix(self) -> None:
+        from gzkit.commands.version_sync import compute_patch_increment
+
+        for current, expected in self._CASES:
+            with self.subTest(current=current):
+                self.assertEqual(compute_patch_increment(current), expected)
+
+
+# ---------------------------------------------------------------------------
+# Test: --dry-run shows proposed version (OBPI-03)
+# ---------------------------------------------------------------------------
+
+
+class TestPatchReleaseDryRunVersion(unittest.TestCase):
+    """Verify --dry-run includes proposed version and does NOT call sync.
+
+    @covers REQ-0.0.15-03-04
+    """
+
+    @patch("gzkit.commands.patch_release.get_project_root", return_value=_PROJECT_ROOT)
+    @patch("gzkit.commands.patch_release.run_exec")
+    @patch("gzkit.commands.patch_release.git_cmd")
+    @patch(
+        "gzkit.commands.patch_release._read_current_project_version",
+        return_value="0.0.14",
+    )
+    @patch("gzkit.commands.patch_release.sync_project_version")
+    @patch("gzkit.commands.patch_release.console", _quiet_console)
+    def test_dry_run_shows_version_no_sync(
+        self,
+        mock_sync: object,
+        _mock_ver: object,
+        mock_git: object,
+        mock_exec: object,
+        _root: object,
+    ) -> None:
+        from gzkit.commands.patch_release import patch_release_cmd
+
+        mock_exec.side_effect = [
+            (0, "Logged in", ""),
+            (0, "[]", ""),
+        ]
+        mock_git.side_effect = _build_mock_git_cmd("v0.0.14", "2026-04-01", {})
+
+        buf = StringIO()
+        quiet = Console(file=buf)
+        with patch("gzkit.commands.patch_release.console", quiet):
+            patch_release_cmd(dry_run=True, as_json=False)
+
+        output = buf.getvalue()
+        self.assertIn("0.0.14", output)
+        self.assertIn("0.0.15", output)
+        self.assertIn("proposed", output)
+        mock_sync.assert_not_called()
+
+    @patch("gzkit.commands.patch_release.get_project_root", return_value=_PROJECT_ROOT)
+    @patch("gzkit.commands.patch_release.run_exec")
+    @patch("gzkit.commands.patch_release.git_cmd")
+    @patch(
+        "gzkit.commands.patch_release._read_current_project_version",
+        return_value="0.0.14",
+    )
+    @patch("gzkit.commands.patch_release.sync_project_version")
+    def test_dry_run_json_includes_version(
+        self,
+        mock_sync: object,
+        _mock_ver: object,
+        mock_git: object,
+        mock_exec: object,
+        _root: object,
+    ) -> None:
+        from gzkit.commands.patch_release import patch_release_cmd
+
+        mock_exec.side_effect = [
+            (0, "Logged in", ""),
+            (0, "[]", ""),
+        ]
+        mock_git.side_effect = _build_mock_git_cmd("v0.0.14", "2026-04-01", {})
+
+        with patch("builtins.print") as mock_print:
+            patch_release_cmd(dry_run=True, as_json=True)
+
+        payload = json.loads(mock_print.call_args[0][0])
+        self.assertEqual(payload["current_version"], "0.0.14")
+        self.assertEqual(payload["proposed_version"], "0.0.15")
+        mock_sync.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# Test: non-dry-run calls sync_project_version (OBPI-03)
+# ---------------------------------------------------------------------------
+
+
+class TestPatchReleaseExecutesVersionSync(unittest.TestCase):
+    """Verify non-dry-run invokes sync_project_version with the correct version.
+
+    @covers REQ-0.0.15-03-01
+    @covers REQ-0.0.15-03-03 (single code path — imports from version_sync)
+    """
+
+    @patch("gzkit.commands.patch_release.get_project_root", return_value=_PROJECT_ROOT)
+    @patch("gzkit.commands.patch_release.run_exec")
+    @patch("gzkit.commands.patch_release.git_cmd")
+    @patch(
+        "gzkit.commands.patch_release._read_current_project_version",
+        return_value="0.0.14",
+    )
+    @patch(
+        "gzkit.commands.patch_release.sync_project_version",
+        return_value=["pyproject.toml", "src/gzkit/__init__.py"],
+    )
+    @patch("gzkit.commands.patch_release.console", _quiet_console)
+    def test_execute_calls_sync(
+        self,
+        mock_sync: object,
+        _mock_ver: object,
+        mock_git: object,
+        mock_exec: object,
+        _root: object,
+    ) -> None:
+        from gzkit.commands.patch_release import patch_release_cmd
+
+        mock_exec.side_effect = [
+            (0, "Logged in", ""),
+            (0, "[]", ""),
+        ]
+        mock_git.side_effect = _build_mock_git_cmd("v0.0.14", "2026-04-01", {})
+
+        patch_release_cmd(dry_run=False, as_json=False)
+        mock_sync.assert_called_once_with(_PROJECT_ROOT, "0.0.15")
+
+    @patch("gzkit.commands.patch_release.get_project_root", return_value=_PROJECT_ROOT)
+    @patch("gzkit.commands.patch_release.run_exec")
+    @patch("gzkit.commands.patch_release.git_cmd")
+    @patch(
+        "gzkit.commands.patch_release._read_current_project_version",
+        return_value="0.0.14",
+    )
+    @patch(
+        "gzkit.commands.patch_release.sync_project_version",
+        return_value=["pyproject.toml", "src/gzkit/__init__.py", "README.md"],
+    )
+    def test_execute_json_includes_sync_results(
+        self,
+        mock_sync: object,
+        _mock_ver: object,
+        mock_git: object,
+        mock_exec: object,
+        _root: object,
+    ) -> None:
+        from gzkit.commands.patch_release import patch_release_cmd
+
+        mock_exec.side_effect = [
+            (0, "Logged in", ""),
+            (0, "[]", ""),
+        ]
+        mock_git.side_effect = _build_mock_git_cmd("v0.0.14", "2026-04-01", {})
+
+        with patch("builtins.print") as mock_print:
+            patch_release_cmd(dry_run=False, as_json=True)
+
+        payload = json.loads(mock_print.call_args[0][0])
+        self.assertIn("version_sync", payload)
+        self.assertEqual(
+            payload["version_sync"]["updated_files"],
+            ["pyproject.toml", "src/gzkit/__init__.py", "README.md"],
+        )
+        mock_sync.assert_called_once_with(_PROJECT_ROOT, "0.0.15")
+
+
+# ---------------------------------------------------------------------------
+# Test: no version handling (OBPI-03)
+# ---------------------------------------------------------------------------
+
+
+class TestPatchReleaseNoVersion(unittest.TestCase):
+    """Verify graceful handling when pyproject.toml has no version.
+
+    @covers REQ-0.0.15-03-02
+    """
+
+    @patch("gzkit.commands.patch_release.get_project_root", return_value=_PROJECT_ROOT)
+    @patch("gzkit.commands.patch_release.run_exec")
+    @patch("gzkit.commands.patch_release.git_cmd")
+    @patch(
+        "gzkit.commands.patch_release._read_current_project_version",
+        return_value=None,
+    )
+    @patch("gzkit.commands.patch_release.console", _quiet_console)
+    def test_no_version_exits_nonzero(
+        self,
+        _mock_ver: object,
+        mock_git: object,
+        mock_exec: object,
+        _root: object,
+    ) -> None:
+        from gzkit.commands.patch_release import patch_release_cmd
+
+        mock_exec.side_effect = [
+            (0, "Logged in", ""),
+            (0, "[]", ""),
+        ]
+        mock_git.side_effect = _build_mock_git_cmd("v0.0.14", "2026-04-01", {})
+
+        with self.assertRaises(SystemExit) as ctx:
+            patch_release_cmd(dry_run=False, as_json=False)
+        self.assertEqual(ctx.exception.code, 1)
+
+    @patch("gzkit.commands.patch_release.get_project_root", return_value=_PROJECT_ROOT)
+    @patch("gzkit.commands.patch_release.run_exec")
+    @patch("gzkit.commands.patch_release.git_cmd")
+    @patch(
+        "gzkit.commands.patch_release._read_current_project_version",
+        return_value=None,
+    )
+    @patch("gzkit.commands.patch_release.console", _quiet_console)
+    def test_no_version_dry_run_still_works(
+        self,
+        _mock_ver: object,
+        mock_git: object,
+        mock_exec: object,
+        _root: object,
+    ) -> None:
+        from gzkit.commands.patch_release import patch_release_cmd
+
+        mock_exec.side_effect = [
+            (0, "Logged in", ""),
+            (0, "[]", ""),
+        ]
+        mock_git.side_effect = _build_mock_git_cmd("v0.0.14", "2026-04-01", {})
+
+        buf = StringIO()
+        quiet = Console(file=buf)
+        with patch("gzkit.commands.patch_release.console", quiet):
+            patch_release_cmd(dry_run=True, as_json=False)
+
+        output = buf.getvalue()
+        self.assertIn("unknown", output)
+
+    @patch("gzkit.commands.patch_release.get_project_root", return_value=_PROJECT_ROOT)
+    @patch("gzkit.commands.patch_release.run_exec")
+    @patch("gzkit.commands.patch_release.git_cmd")
+    @patch(
+        "gzkit.commands.patch_release._read_current_project_version",
+        return_value=None,
+    )
+    def test_no_version_warning_in_json(
+        self,
+        _mock_ver: object,
+        mock_git: object,
+        mock_exec: object,
+        _root: object,
+    ) -> None:
+        from gzkit.commands.patch_release import patch_release_cmd
+
+        mock_exec.side_effect = [
+            (0, "Logged in", ""),
+            (0, "[]", ""),
+        ]
+        mock_git.side_effect = _build_mock_git_cmd("v0.0.14", "2026-04-01", {})
+
+        with patch("builtins.print") as mock_print:
+            patch_release_cmd(dry_run=True, as_json=True)
+
+        payload = json.loads(mock_print.call_args[0][0])
+        self.assertIsNone(payload["current_version"])
+        self.assertIsNone(payload["proposed_version"])
+        self.assertTrue(any("Cannot read current version" in w for w in payload["warnings"]))
 
 
 if __name__ == "__main__":

@@ -1,9 +1,9 @@
 ---
-id: OBPI-0.0.15-03
+id: OBPI-0.0.15-03-version-sync-integration
 parent: ADR-0.0.15-ghi-driven-patch-release-ceremony
 item: 3
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.15-03: Version Sync Integration
@@ -125,50 +125,56 @@ uv run gz patch release --dry-run
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded in this brief
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+Ran 31 tests in 0.097s — OK
+10 new tests for OBPI-03 (compute_patch_increment, dry-run version, execute sync, no-version handling)
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+Lint: All checks passed
+Typecheck: Type check passed (1 pre-existing warning in personas.py)
+Tests: 2672 pass
 ```
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before this OBPI, `gz patch release` could discover GHIs but had no version bump capability. The non-dry-run path printed a placeholder message. Now the command computes X.Y.(Z+1) from pyproject.toml and atomically updates all version locations via `sync_project_version`, preventing the version drift pattern that motivated ADR-0.0.15.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+`uv run gz patch release --dry-run` shows current version, proposed patch version, and discovered GHIs without modifying files. Non-dry-run calls `sync_project_version` atomically.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files modified: `src/gzkit/commands/version_sync.py` (added `compute_patch_increment`), `src/gzkit/commands/patch_release.py` (integrated version sync), `tests/adr/test_patch_release.py` (10 new tests, 3 existing tests updated)
+- Tests added: TestComputePatchIncrement, TestPatchReleaseDryRunVersion, TestPatchReleaseExecutesVersionSync, TestPatchReleaseNoVersion
+- Date completed: 2026-04-08
+- Attestation status: Pending
+- Defects noted: #113 (pipeline REQ coverage table), #114 (resolve_obpi slug mismatch)
 
 ## Tracked Defects
 
-_No defects tracked._
+- #113: Pipeline skill should verify @covers decorators on REQ tests
+- #114: resolve_obpi prefix match creates short-vs-full slug mismatch
 
 ## Human Attestation
 
-- Attestor: `n/a`
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `Jeffry`
+- Attestation: ok
+- Date: 2026-04-08
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-08
 
 **Evidence Hash:** -

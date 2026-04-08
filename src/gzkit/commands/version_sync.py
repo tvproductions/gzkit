@@ -32,6 +32,12 @@ def _read_current_project_version(project_root: Path) -> str | None:
     return None
 
 
+def compute_patch_increment(current_version: str) -> str:
+    """Compute ``X.Y.(Z+1)`` from a semver string."""
+    parts = _parse_semver_tuple(current_version)
+    return f"{parts[0]}.{parts[1]}.{parts[2] + 1}"
+
+
 def sync_project_version(project_root: Path, new_version: str) -> list[str]:
     """Bump version in pyproject.toml, __init__.py, and README badge.
 
