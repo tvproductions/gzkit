@@ -1,9 +1,9 @@
 ---
-id: OBPI-0.0.15-04
+id: OBPI-0.0.15-04-dual-format-manifest
 parent: ADR-0.0.15-ghi-driven-patch-release-ceremony
 item: 4
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.15-04: Dual-Format Release Manifest
@@ -144,15 +144,18 @@ uv run gz patch release --dry-run
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+uv run -m unittest tests.adr.test_patch_release.TestPatchReleaseCmdManifest.test_manifest_and_ledger_written -v
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: data/schemas/patch_release_manifest.schema.json
+- Files modified: src/gzkit/commands/patch_release.py, src/gzkit/ledger_events.py, tests/adr/test_patch_release.py
+- Tests added: 7 test classes (16 tests) covering models, rendering, atomic write, event factory, integration
+- Date completed: 2026-04-08
+- Attestation status: Completed
+- Defects noted: tvproductions/gzkit#115 (ceremony template REQ table)
 
 ## Tracked Defects
 
@@ -160,14 +163,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a`
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `Jeffry`
+- Attestation: completed
+- Date: 2026-04-08
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-08
 
 **Evidence Hash:** -
