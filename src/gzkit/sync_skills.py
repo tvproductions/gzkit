@@ -170,6 +170,28 @@ def _extract_skill_frontmatter_field(skill_file: Path, field: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Retired skill detection
+# ---------------------------------------------------------------------------
+
+
+def _retired_skill_names(skills_root: Path) -> set[str]:
+    """Return directory names of skills with lifecycle_state 'retired'."""
+    retired: set[str] = set()
+    if not skills_root.exists():
+        return retired
+    for skill_dir in skills_root.iterdir():
+        if not skill_dir.is_dir():
+            continue
+        skill_file = skill_dir / "SKILL.md"
+        if not skill_file.exists():
+            continue
+        state = _extract_skill_frontmatter_field(skill_file, "lifecycle_state")
+        if state == "retired":
+            retired.add(skill_dir.name)
+    return retired
+
+
+# ---------------------------------------------------------------------------
 # Skill catalog collection and rendering
 # ---------------------------------------------------------------------------
 
@@ -179,6 +201,8 @@ def collect_skills_catalog(
     skills_dir: str,
 ) -> list[dict[str, str]]:
     """Collect canonical skill metadata from the configured skills directory.
+
+    Retired skills are excluded from the catalog.
 
     Args:
         project_root: Project root directory.
@@ -196,6 +220,10 @@ def collect_skills_catalog(
     for skill_dir in sorted(skills_path.iterdir()):
         skill_file = skill_dir / "SKILL.md"
         if not skill_dir.is_dir() or not skill_file.exists():
+            continue
+
+        state = _extract_skill_frontmatter_field(skill_file, "lifecycle_state")
+        if state == "retired":
             continue
 
         skills.append(
@@ -266,6 +294,8 @@ def sync_skill_mirror(
     project_root: Path,
     source_dir: str,
     target_dir: str,
+    *,
+    exclude_dirs: set[str] | None = None,
 ) -> list[str]:
     """Copy canonical skills into a tool-local mirror directory.
 
@@ -276,6 +306,7 @@ def sync_skill_mirror(
         project_root: Project root directory.
         source_dir: Canonical skills path.
         target_dir: Tool-local mirrored skills path.
+        exclude_dirs: Top-level directory names to skip (e.g. retired skills).
 
     Returns:
         List of mirrored files that were written.
@@ -292,6 +323,9 @@ def sync_skill_mirror(
             continue
 
         relative_path = source_file.relative_to(source_root)
+        if exclude_dirs and relative_path.parts and relative_path.parts[0] in exclude_dirs:
+            continue
+
         target_file = target_root / relative_path
         target_file.parent.mkdir(parents=True, exist_ok=True)
 
@@ -449,13 +483,19 @@ def _mirror_roots(project_root: Path, config: GzkitConfig) -> list[Path]:
 
 
 def find_stale_mirror_paths(project_root: Path, config: GzkitConfig | None = None) -> list[str]:
-    """Find mirror-only files/directories not present in canonical skills root."""
+    """Find mirror-only files/directories not present in canonical skills root.
+
+    Mirrors of retired skills are also considered stale since retired skills
+    are excluded from sync.
+    """
     if config is None:
         config = GzkitConfig.load(project_root / ".gzkit.json")
 
     canonical_root = project_root / config.paths.skills
     if not canonical_root.exists():
         return []
+
+    retired = _retired_skill_names(canonical_root)
 
     stale_paths: list[str] = []
     for mirror_root in _mirror_roots(project_root, config):
@@ -470,7 +510,9 @@ def find_stale_mirror_paths(project_root: Path, config: GzkitConfig | None = Non
             rel = mirror_entry.relative_to(mirror_root)
             if rel.name == "AGENTS.md":
                 continue
-            if (canonical_root / rel).exists():
+            # Treat mirrors of retired skills as stale.
+            is_retired = rel.parts and rel.parts[0] in retired
+            if not is_retired and (canonical_root / rel).exists():
                 continue
 
             rel_project = mirror_entry.relative_to(project_root).as_posix()
@@ -501,6 +543,7 @@ def sync_skill_mirrors(
         "codex": config.paths.codex_skills,
     }
 
+    retired = _retired_skill_names(project_root / config.paths.skills)
     updated: list[str] = []
     seen: set[str] = set()
     for vendor_name, target in vendor_skill_map.items():
@@ -511,10 +554,15 @@ def sync_skill_mirrors(
             if vendor_cfg is not None and not vendor_cfg.enabled:
                 continue
         seen.add(target)
-        updated.extend(sync_skill_mirror(project_root, config.paths.skills, target))
+        updated.extend(
+            sync_skill_mirror(project_root, config.paths.skills, target, exclude_dirs=retired)
+        )
     return updated
 
 
 def sync_claude_skills(project_root: Path, config: GzkitConfig) -> list[str]:
     """Backward-compatible wrapper for older call sites."""
-    return sync_skill_mirror(project_root, config.paths.skills, config.paths.claude_skills)
+    retired = _retired_skill_names(project_root / config.paths.skills)
+    return sync_skill_mirror(
+        project_root, config.paths.skills, config.paths.claude_skills, exclude_dirs=retired
+    )
