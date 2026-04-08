@@ -1,9 +1,9 @@
 ---
-id: OBPI-0.0.15-05
+id: OBPI-0.0.15-05-ceremony-skill
 parent: ADR-0.0.15-ghi-driven-patch-release-ceremony
 item: 5
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.15-05: Patch Release Ceremony Skill
@@ -147,35 +147,49 @@ uv run gz validate --surfaces
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded in OBPI brief and parent ADR checklist item #6
 
 ### Gate 2 (TDD)
 
 ```text
-# Paste test output here
+Ran 2690 tests in 20.736s — OK
+All checks passed (lint, typecheck, tests, docs validation, surface validation, mkdocs build)
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+Lint: All checks passed
+Typecheck: Passed (1 pre-existing warning in personas.py)
+Surfaces: All validations passed
+Documents: All validations passed
+MkDocs: Built in 1.31s (strict mode)
 ```
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before this OBPI, gzkit had the `gz patch release` CLI command but no agent
+ceremony skill to orchestrate the human-in-the-loop release workflow. An operator
+asking for a patch release would get no structured guidance. Now, `gz-patch-release`
+provides a deterministic ceremony with narrative drafting from GHI content, an
+operator approval gate, Iron Law post-approval execution, and Foundation skip policy.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+test -f .gzkit/skills/gz-patch-release/SKILL.md && echo PASS: canonical skill exists
+test -f .claude/skills/gz-patch-release/SKILL.md && echo PASS: mirror exists
+uv run gz validate --surfaces => All validations passed
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: .gzkit/skills/gz-patch-release/SKILL.md (canonical skill, 232 lines)
+- Files mirrored: .claude/skills/gz-patch-release/SKILL.md (via gz agent sync control-surfaces)
+- Tests added: N/A (markdown skill artifact, verified via surface validation and mkdocs build)
+- Date completed: 2026-04-08
+- Attestation status: Completed
+- Defects noted: Brief frontmatter id was short-form, fixed to match ledger slug
 
 ## Tracked Defects
 
@@ -183,14 +197,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a`
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `Jeffry`
+- Attestation: attest completed
+- Date: 2026-04-08
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-08
 
 **Evidence Hash:** -
