@@ -283,3 +283,24 @@ def obpi_lock_released_event(
         id=obpi_id,
         extra={"agent": agent, "force": force},
     )
+
+
+def patch_release_event(
+    version: str,
+    previous_version: str,
+    tag: str | None,
+    ghi_summary: list[dict[str, Any]],
+    manifest_path: str,
+) -> LedgerEvent:
+    """Create a patch-release event for the governance ledger."""
+    return LedgerEvent(
+        event="patch-release",
+        id=f"v{version}",
+        extra={
+            "version": version,
+            "previous_version": previous_version,
+            "tag": tag,
+            "ghi_summary": ghi_summary,
+            "manifest_path": manifest_path,
+        },
+    )

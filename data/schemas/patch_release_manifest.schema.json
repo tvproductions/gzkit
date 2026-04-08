@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gzkit.patch_release_manifest.v1",
+  "title": "Patch Release Manifest",
+  "description": "Schema for patch release manifest payload (Pydantic-validated at runtime).",
+  "type": "object",
+  "required": ["version", "previous_version", "date", "ghis", "operator_approval"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Patch release version"
+    },
+    "previous_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Version before this release"
+    },
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+      "description": "Release date (ISO 8601)"
+    },
+    "tag": {
+      "type": ["string", "null"],
+      "description": "Git tag of previous version"
+    },
+    "ghis": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/ManifestGhi" },
+      "description": "Qualifying GHIs with cross-validation results"
+    },
+    "operator_approval": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Operator approval text"
+    }
+  },
+  "$defs": {
+    "ManifestGhi": {
+      "type": "object",
+      "required": ["number", "title", "status"],
+      "additionalProperties": false,
+      "properties": {
+        "number": {
+          "type": "integer",
+          "description": "GitHub issue number"
+        },
+        "title": {
+          "type": "string",
+          "description": "Issue title"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["qualified", "label_only", "diff_only", "excluded"],
+          "description": "Cross-validation classification"
+        },
+        "warning": {
+          "type": ["string", "null"],
+          "description": "Warning when label and diff disagree"
+        },
+        "url": {
+          "type": "string",
+          "description": "Issue HTML URL"
+        }
+      }
+    }
+  }
+}
