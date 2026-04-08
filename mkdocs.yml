@@ -104,6 +104,7 @@ nav:
     - gz obpi reconcile: user/commands/obpi-reconcile.md
     - gz obpi emit-receipt: user/commands/obpi-emit-receipt.md
     - gz closeout: user/commands/closeout.md
+    - gz patch release: user/commands/patch-release.md
     - gz audit: user/commands/audit.md
     - gz git-sync: user/commands/git-sync.md
     - gz attest: user/commands/attest.md

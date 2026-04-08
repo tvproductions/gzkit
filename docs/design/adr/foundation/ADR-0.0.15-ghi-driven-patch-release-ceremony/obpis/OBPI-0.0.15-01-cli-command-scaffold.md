@@ -1,9 +1,9 @@
 ---
-id: OBPI-0.0.15-01
+id: OBPI-0.0.15-01-cli-command-scaffold
 parent: ADR-0.0.15-ghi-driven-patch-release-ceremony
 item: 1
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.15-01: CLI Command Scaffold
@@ -162,19 +162,27 @@ uv run gz patch release --json
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before this OBPI, gzkit had no CLI surface for patch releases. Operators wanting to
+ship patch-level version bumps had no formal command, leading to manual edits and
+version drift. Now `gz patch release` exists as a registered governance command with
+`--dry-run` and `--json` flags, establishing the foundation for OBPIs 02-06.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+```bash
+$ uv run gz patch release --json
+{"status": "not_implemented", "message": "gz patch release is scaffolded. Full logic arrives in later OBPIs.", "dry_run": false}
+```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created/modified: src/gzkit/commands/patch_release.py (new), src/gzkit/cli/parser_governance.py (modified), tests/adr/test_patch_release.py (new), features/patch_release.feature (new), docs/user/commands/patch-release.md (new), docs/user/manpages/patch-release.md (new)
+- Tests added: 7 unit tests in test_patch_release.py, 3 BDD scenarios in patch_release.feature
+- Date completed: 2026-04-07
+- Attestation status: Completed
+- Defects noted: None
 
 ## Tracked Defects
 
@@ -182,14 +190,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a`
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `Jeffry`
+- Attestation: Completed — all 4 REQs verified, 2645 tests pass, BDD green, docs built.
+- Date: 2026-04-08
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-08
 
 **Evidence Hash:** -

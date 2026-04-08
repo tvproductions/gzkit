@@ -82,6 +82,16 @@
       },
       "governance_relevant": true
     },
+    "patch release": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": false,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
     "audit": {
       "surfaces": {
         "manpage": true,
