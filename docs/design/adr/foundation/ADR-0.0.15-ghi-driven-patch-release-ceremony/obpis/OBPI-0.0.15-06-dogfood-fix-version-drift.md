@@ -1,9 +1,9 @@
 ---
-id: OBPI-0.0.15-06
+id: OBPI-0.0.15-06-dogfood-fix-version-drift
 parent: ADR-0.0.15-ghi-driven-patch-release-ceremony
 item: 6
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.15-06: Dogfood — Fix 0.24.1 Version Drift
@@ -17,10 +17,12 @@ status: Draft
 
 ## Objective
 
-Run `gz patch release` for real against the existing 0.24.1 drift (pyproject.toml
-says 0.24.1, `__init__.py` says 0.24.0, no tag or release exists). This is the
-first real invocation — proving the command works end-to-end and fixing a real
-governance gap simultaneously.
+Run `gz patch release` for real against existing version drift (pyproject.toml
+says 0.24.2, `__init__.py` says 0.24.1). The original 0.24.0/0.24.1 drift was
+resolved by prior releases; the current drift is between 0.24.2 and 0.24.1.
+The command bumps to the next patch version (0.24.3), fixing the drift by
+moving forward. This is the first real invocation — proving the command works
+end-to-end and fixing a real governance gap simultaneously.
 
 ## Lane
 
@@ -32,7 +34,7 @@ artifacts. Requires human attestation that the release is correct.
 - `pyproject.toml` (via `sync_project_version` at runtime)
 - `src/gzkit/__init__.py` (via `sync_project_version` at runtime)
 - `RELEASE_NOTES.md`
-- `docs/releases/PATCH-v0.24.1.md` (new manifest)
+- `docs/releases/PATCH-v0.24.3.md` (new manifest)
 
 ## Denied Paths
 
@@ -44,10 +46,10 @@ artifacts. Requires human attestation that the release is correct.
 1. REQUIREMENT: `gz patch release` MUST be invoked as the fix mechanism —
    NEVER manually edit version files
 2. REQUIREMENT: After completion, pyproject.toml, `__init__.py`, and README
-   badge MUST all show 0.24.1
-3. REQUIREMENT: A `PATCH-v0.24.1.md` manifest MUST exist in `docs/releases/`
-4. REQUIREMENT: RELEASE_NOTES.md MUST have a v0.24.1 entry
-5. REQUIREMENT: Git tag `v0.24.1` MUST exist (non-foundation — this is a
+   badge MUST all show 0.24.3
+3. REQUIREMENT: A `PATCH-v0.24.3.md` manifest MUST exist in `docs/releases/`
+4. REQUIREMENT: RELEASE_NOTES.md MUST have a v0.24.3 entry
+5. REQUIREMENT: Git tag `v0.24.3` MUST exist (non-foundation — this is a
    feature-line patch, not a foundation patch)
 
 > STOP-on-BLOCKERS: if `gz patch release` has bugs discovered during dogfooding,
@@ -69,7 +71,7 @@ artifacts. Requires human attestation that the release is correct.
 
 - [ ] `gz patch release` command fully operational
 - [ ] Ceremony skill exists and is registered
-- [ ] Current version drift confirmed: pyproject.toml=0.24.1, __init__.py=0.24.0
+- [ ] Current version drift confirmed: pyproject.toml=0.24.2, __init__.py=0.24.1
 
 **Existing Code (understand current state):**
 
@@ -114,20 +116,20 @@ uv run gz typecheck
 uv run gz test
 
 # Specific verification
-python -c "import gzkit; print(gzkit.__version__)"  # Should print 0.24.1
-grep version pyproject.toml | head -1                # Should show 0.24.1
-git tag | grep v0.24.1                               # Should exist
-gh release view v0.24.1                              # Should exist
-cat docs/releases/PATCH-v0.24.1.md                   # Should exist
+python -c "import gzkit; print(gzkit.__version__)"  # Should print 0.24.3
+grep version pyproject.toml | head -1                # Should show 0.24.3
+git tag | grep v0.24.3                               # Should exist
+gh release view v0.24.3                              # Should exist
+cat docs/releases/PATCH-v0.24.3.md                   # Should exist
 ```
 
 ## Acceptance Criteria
 
 - [ ] REQ-0.0.15-06-01: Version drift resolved via `gz patch release`
-- [ ] REQ-0.0.15-06-02: All version locations agree on 0.24.1
-- [ ] REQ-0.0.15-06-03: Patch manifest exists at `docs/releases/PATCH-v0.24.1.md`
-- [ ] REQ-0.0.15-06-04: RELEASE_NOTES.md has v0.24.1 entry
-- [ ] REQ-0.0.15-06-05: Git tag and GitHub release for v0.24.1 exist
+- [ ] REQ-0.0.15-06-02: All version locations agree on 0.24.3
+- [ ] REQ-0.0.15-06-03: Patch manifest exists at `docs/releases/PATCH-v0.24.3.md`
+- [ ] REQ-0.0.15-06-04: RELEASE_NOTES.md has v0.24.3 entry
+- [ ] REQ-0.0.15-06-05: Git tag and GitHub release for v0.24.3 exist
 
 ## Completion Checklist
 
@@ -164,15 +166,17 @@ cat docs/releases/PATCH-v0.24.1.md                   # Should exist
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+uv run gz patch release -> Version bumped: 0.24.2 -> 0.24.3. Updated: pyproject.toml, src/gzkit/__init__.py, README.md. Manifest: docs/releases/PATCH-v0.24.3.md. Ledger: patch-release event appended.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created/modified: docs/releases/PATCH-v0.24.3.md (new), pyproject.toml, src/gzkit/__init__.py, README.md, RELEASE_NOTES.md, .gzkit/ledger.jsonl
+- Tests added: none (dogfood invocation, not new code)
+- Date completed: 2026-04-08
+- Attestation status: Human attested (Jeffry)
+- Defects noted: Brief frontmatter id used short-form OBPI-0.0.15-06 instead of full slug (fixed inline)
 
 ## Tracked Defects
 
@@ -180,14 +184,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a`
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `Jeffry`
+- Attestation: Completed
+- Date: 2026-04-08
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-08
 
 **Evidence Hash:** -

@@ -1,5 +1,27 @@
 # gzkit Release Notes
 
+## v0.24.3 (2026-04-08)
+
+Version sync release — first dogfood invocation of `gz patch release`
+(ADR-0.0.15, OBPI-0.0.15-06).
+
+### Version Drift Fix
+
+- Resolved `__init__.py` drift: was 0.24.1, now synced to 0.24.3 via
+  `sync_project_version`
+- All version locations (pyproject.toml, `__init__.py`, README badge) now agree
+
+### Governance
+
+- First end-to-end run of the GHI-driven patch release ceremony
+- Patch manifest: `docs/releases/PATCH-v0.24.3.md`
+- 5 GHIs discovered since v0.24.2, all excluded (governance-only, no runtime changes)
+
+### Stats
+
+- 5 GHIs closed (#109, #110, #111, #112, #115)
+- 0 qualifying runtime GHIs (all governance/defect work)
+
 ## v0.24.2 (2026-04-05)
 
 Patch release closing 50 GHIs across 69 commits. Covers defect fixes, hook
