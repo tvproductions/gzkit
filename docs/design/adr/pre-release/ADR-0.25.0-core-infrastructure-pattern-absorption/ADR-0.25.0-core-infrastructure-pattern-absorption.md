@@ -22,24 +22,26 @@ date: 2026-03-21
 **Date Closed:**
 **Status:** Proposed
 **SemVer:** 0.25.0
-**Area:** Core Infrastructure — Companion Absorption (Tier 1 Foundation)
+**Area:** Core Infrastructure — Pattern Harvest (Tier 1 Foundation)
 
 ## Agent Context Frame — MANDATORY
 
-**Role:** Absorption evaluator — comparing airlineops core infrastructure patterns against gzkit equivalents, determining which implementation is superior, and absorbing the best into gzkit.
+**Role:** Pattern harvester — mining airlineops for battle-tested infrastructure patterns worth capturing into gzkit before gzkit replaces airlineops's infrastructure layer and becomes the spec-driven development toolkit for all projects.
 
-**Purpose:** When this ADR is complete, gzkit owns all reusable core infrastructure patterns that currently reside in `airlineops/src/airlineops/core/` and `common/`. For each of the 17 modules, gzkit either absorbed the airlineops implementation (because it was superior), confirmed its own implementation is sufficient (with documented rationale), or explicitly excluded the module as domain-specific.
+**Purpose:** When this ADR is complete, gzkit owns all reusable core infrastructure patterns that currently reside in `airlineops/src/airlineops/core/` and `common/`. For each of the 17 modules, gzkit either captured the airlineops pattern (because it earned its way into the platform), confirmed its own implementation already covers the need, or explicitly excluded the module as airline-domain-specific. airlineops development is not being progressed — gzkit is being maximized so it can replace the opsdev layer.
 
 **Goals:**
 
 - Every core/common module in airlineops is examined individually with a documented decision
-- gzkit's infrastructure layer is at least as capable as airlineops's for all generic patterns
-- No reusable pattern remains stranded in the airlineops codebase
+- gzkit's infrastructure layer is comprehensive enough to serve as the platform foundation for airlineops and future projects
+- No reusable pattern remains unexamined in the airlineops codebase
 - The subtraction test holds: `airlineops - gzkit = pure airline domain`
 
-**Critical Constraint:** Implementations MUST compare both codebases honestly — opsdev wins where it's more battle-tested. Do not assume gzkit is always better. The goal is MAX gzkit, not gzkit-by-default.
+**Maturity Context:** This ADR was drafted when airlineops was clearly the more mature codebase. Since then, gzkit has been under exclusive active development and has progressed past airlineops in several areas. The relative maturity of each module is now genuinely case-by-case — some airlineops modules may still have battle-tested patterns worth capturing, while gzkit may already be ahead in others. Do not assume either codebase is uniformly stronger.
 
-**Anti-Pattern Warning:** A failed implementation looks like: rubber-stamping gzkit's existing code as "sufficient" without actually reading and comparing the airlineops implementation. Equally bad: blindly copying airlineops code without adapting it to gzkit's architecture (Pydantic models, pathlib paths, UTF-8 encoding).
+**Critical Constraint:** Implementations MUST compare both codebases honestly — if airlineops has a stronger pattern, capture it. If gzkit has already surpassed what airlineops offers, confirm and move on. Do not rubber-stamp either direction. The goal is MAX gzkit — the strongest possible toolkit — not gzkit-by-default and not airlineops-by-nostalgia.
+
+**Anti-Pattern Warning:** A failed implementation looks like: rubber-stamping gzkit's existing code as "sufficient" without actually reading the airlineops version. Equally bad: blindly copying airlineops code into a gzkit module that has already evolved past it.
 
 **Integration Points:**
 
@@ -100,13 +102,13 @@ Support obligations for the checklist above:
 
 ## Intent
 
-gzkit must own all reusable core infrastructure patterns. airlineops's `core/` and `common/` packages contain battle-tested implementations of attestation, progress tracking, cryptographic signing, world-state hashing, registry patterns, error hierarchies, admission control, cross-platform file operations, and console output — none of which are airline-specific. This ADR governs the item-by-item evaluation and absorption of these 17 modules into gzkit, ensuring the subtraction test holds: after absorption, the only thing left in airlineops that isn't from gzkit is pure airline domain code.
+gzkit is the forward platform — it will serve as the governance and infrastructure foundation for airlineops and future projects. To fulfil that role, gzkit must own all reusable core infrastructure patterns. airlineops's `core/` and `common/` packages contain battle-tested implementations of attestation, progress tracking, cryptographic signing, world-state hashing, registry patterns, error hierarchies, admission control, cross-platform file operations, and console output — none of which are airline-specific. This ADR governs a one-time harvest: examining each of these 17 modules to capture the best patterns into gzkit before it assumes platform responsibility. After absorption, the subtraction test holds: the only thing left in airlineops that isn't from gzkit is pure airline domain code.
 
 ## Decision
 
 - Each of the 17 airlineops core/common modules gets individual OBPI examination
 - For each module: read both implementations, compare maturity/completeness/robustness, document decision
-- Three possible outcomes per module: **Absorb** (airlineops is better), **Confirm** (gzkit is sufficient), **Exclude** (domain-specific, does not belong in gzkit)
+- Three possible outcomes per module: **Absorb** (airlineops has a pattern worth capturing), **Confirm** (gzkit already covers this), **Exclude** (domain-specific, does not belong in gzkit)
 - Absorbed modules must follow gzkit conventions: Pydantic BaseModel, pathlib.Path, UTF-8 encoding, no bare except
 
 ### Alternatives Considered
@@ -115,7 +117,7 @@ gzkit must own all reusable core infrastructure patterns. airlineops's `core/` a
 |-------------|-------------|
 | **Single mega-OBPI for all 17 modules** | Too opaque. A monolithic absorption effort would hide per-module rationale, make partial progress hard to review, and break the subtraction-test audit trail. |
 | **Group modules into a few broad domains instead of per-module decisions** | Better than one mega-OBPI, but still too coarse. Stronger modules would mask weaker ones, and reviewers could not see exactly which reusable patterns did or did not move upstream. |
-| **Only absorb modules missing from gzkit and skip side-by-side comparisons where gzkit already has an implementation** | This would bias the program toward gzkit-by-default and violate the ADR's own critical constraint that airlineops wins where it is more battle-tested. |
+| **Only absorb modules missing from gzkit and skip side-by-side comparisons where gzkit already has an implementation** | This would bias the program toward gzkit-by-default and miss battle-tested patterns worth capturing. The whole point of the harvest is honest comparison. |
 | **Use file size or rough surface similarity as the sufficiency test** | Length is not proof of maturity, edge-case handling, or better abstractions. The anti-pattern here is deciding without reading both implementations completely. |
 
 ### Checklist Item Necessity Table
@@ -124,7 +126,7 @@ gzkit must own all reusable core infrastructure patterns. airlineops's `core/` a
 |---|------|----------------------------------------------|
 | 1 | Attestation | No explicit decision on whether gzkit is missing reusable attestation infrastructure. |
 | 2 | Progress | No grounded decision on whether gzkit needs a unified progress facade. |
-| 3 | Signature | No decision on cryptographic hashing/fingerprinting absorption, leaving a likely generic primitive stranded. |
+| 3 | Signature | No decision on cryptographic hashing/fingerprinting absorption, leaving a likely generic primitive uncaptured. |
 | 4 | World state | No decision on immutable snapshot/state identity patterns. |
 | 5 | Dataset version | No decision on whether airlineops version-management logic is reusable or airline-specific. |
 | 6 | Registry | No explicit proof that gzkit's registry truly subsumes airlineops's pattern. |
@@ -214,8 +216,8 @@ verification required by the winning modules.
 
 - No wholesale rewrite of gzkit infrastructure beyond the specific module
   selected by an `Absorb` decision.
-- No assumption that airlineops always wins because it is older or more
-  battle-tested, or that gzkit always wins because it is larger.
+- No assumption that airlineops patterns are automatically better because
+  they are older, or that gzkit is automatically sufficient because it is larger.
 - No absorption of airline-specific semantics that fail the subtraction test.
 - No bundling of multiple module decisions into one undocumented rationale.
 - No uncontrolled refactor of unrelated gzkit command flows while evaluating a
@@ -234,12 +236,13 @@ verification required by the winning modules.
 
 ## Rationale
 
-airlineops's `core/` and `common/` packages represent 1,700+ lines of battle-tested, domain-agnostic infrastructure. gzkit currently has partial equivalents for some of these (ledger, registry, quality, hooks, config) but lacks others entirely (attestation, signatures, world state, errors, admission control, cross-platform OS utilities). The subtraction test demands that all reusable patterns flow upstream to gzkit. This ADR ensures nothing is missed by examining every module individually.
+gzkit is becoming a spec-driven development toolkit that will replace most of opsdev in airlineops and serve as the foundation for future projects. This ADR addresses one layer of that transition: harvesting reusable infrastructure patterns from airlineops's `core/` and `common/` packages (1,700+ lines of domain-agnostic code). gzkit has partial equivalents for some of these (ledger, registry, quality, hooks, config) and does not yet implement others (attestation, signatures, world state, errors, admission control, cross-platform OS utilities). Full replacement of opsdev also requires governance authority migration (ADR-pool.airlineops-direct-governance-migration, not yet promoted) and additional work beyond this ADR's scope. This ADR ensures the infrastructure foundation is solid by examining every module individually.
 
 ## Consequences
 
-- gzkit's infrastructure layer becomes comprehensive and self-sufficient
-- airlineops can depend on gzkit for all core patterns, reducing its own infrastructure footprint
+- gzkit's infrastructure foundation becomes solid enough to begin replacing opsdev in airlineops — this ADR is a necessary predecessor, not the complete replacement
+- Combined with governance migration (future ADR), most of airlineops's opsdev layer becomes redundant
+- Future projects start on gzkit directly, inheriting the harvested patterns without repeating the exercise
 - New modules in gzkit may require new tests, documentation, and integration work
 - Some airlineops modules may be excluded as domain-specific (e.g., dataset_version.py may have airline-specific semantics)
 
@@ -249,10 +252,11 @@ airlineops's `core/` and `common/` packages represent 1,700+ lines of battle-tes
   companion absorption work should not skip per-module rationale.
 - Any future reusable airlineops core/common module added without an upstream
   gzkit decision record is doctrinal drift.
-- `Confirm` decisions are not permanent exemptions; if airlineops later grows a
-  materially stronger generic pattern, the comparison should be re-opened.
+- This is a one-time harvest. After absorption completes, innovation flows
+  from gzkit outward — airlineops and future projects adopt gzkit patterns,
+  not the reverse.
 - `Absorb` decisions must leave behind tests and, where relevant, behavioral
-  proof so the upstreamed pattern remains verifiable after airlineops evolves.
+  proof so the captured pattern remains verifiable as gzkit evolves.
 
 ## Evidence (Four Gates)
 
