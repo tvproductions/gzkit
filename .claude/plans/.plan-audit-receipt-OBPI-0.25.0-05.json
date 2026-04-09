@@ -1,0 +1,10 @@
+{
+  "obpi_id": "OBPI-0.25.0-05",
+  "timestamp": "2026-04-09T11:57:07.478083+00:00",
+  "verdict": "FAIL",
+  "plan_file": null,
+  "gaps_found": 1,
+  "gaps": [
+    "No plan file found in .claude/plans/ for OBPI-0.25.0-05"
+  ]
+}
