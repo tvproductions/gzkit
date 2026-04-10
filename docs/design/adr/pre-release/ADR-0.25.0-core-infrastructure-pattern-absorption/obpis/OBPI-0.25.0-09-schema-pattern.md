@@ -2,7 +2,7 @@
 id: OBPI-0.25.0-09-schema-pattern
 parent: ADR-0.25.0-core-infrastructure-pattern-absorption
 item: 9
-status: Pending
+status: Completed
 lane: heavy
 date: 2026-03-21
 ---
@@ -115,14 +115,127 @@ uv run -m behave features/core_infrastructure.feature
 # Expected: only required when operator-visible behavior changes
 ```
 
+## Comparison Analysis
+
+### airlineops `core/schema.py` (90 lines)
+
+SQLite DDL helpers extracted from the data warehouse ingestion pipeline
+(`OBPI-0.1.8-23 Phase 2`). Provides four functions:
+
+- `infer_sql_type(val)` — maps Python types to SQL column types
+  (bool/int -> INTEGER, float -> REAL, else -> TEXT)
+- `ensure_table_with_schema(conn, table, canonical_schema)` — creates a SQLite
+  table from an explicit column schema with idempotent ALTER TABLE for new columns
+- `ensure_table(conn, table, sample)` — creates a SQLite table from a sample
+  dictionary with inferred types
+- `normalize_union_rows(rows)` — normalizes heterogeneous dictionaries to a
+  superset of all keys for uniform SQL INSERT
+
+**Single call site:** `airlineops/warehouse/ingest/loader/io.py` (the JSONL-to-
+SQLite data warehouse loader). Not imported anywhere else in airlineops.
+
+### gzkit `schemas/__init__.py` (49 lines)
+
+JSON Schema loading for governance artifact validation. Provides two functions:
+
+- `load_schema(name)` — loads a JSON schema from the `gzkit.schemas` package
+  using `importlib.resources`
+- `get_schema_path(name)` — returns the filesystem path to a schema file
+
+Backed by 7 JSON Schema files (manifest, ADR, OBPI, PRD, persona, agents,
+ledger) totaling ~755 lines. gzkit has zero SQLite usage anywhere in its
+codebase.
+
+### Comparison Summary
+
+| Dimension | airlineops `core/schema.py` | gzkit `schemas/__init__.py` |
+|-----------|---------------------------|----------------------------|
+| Domain | SQLite DDL for data warehouse | JSON Schema for governance validation |
+| Purpose | Dynamic table creation during JSONL ingestion | Static schema loading for document validation |
+| Database dependency | sqlite3 (direct) | None |
+| Call sites | 1 (warehouse loader) | Multiple (validation commands) |
+| Reuse potential | Airline-domain data pipeline | Governance toolkit |
+
+These modules share only the word "schema" in their paths. They address
+completely different problems in completely different domains.
+
+## Decision: Exclude
+
+**Rationale:** The airlineops `core/schema.py` module is airline-domain data
+warehouse infrastructure. It provides SQLite DDL helpers specifically designed
+for the JSONL-to-SQL ingestion pipeline — a concern that exists nowhere in
+gzkit and has no governance application.
+
+**Subtraction test:** `airlineops - gzkit = pure airline domain`. SQLite DDL
+helpers for data warehouse ingestion are exactly the kind of domain-specific
+code that should remain in airlineops. gzkit's schema infrastructure serves a
+fundamentally different purpose (JSON Schema validation of governance
+artifacts).
+
+**Why not Absorb:** gzkit has no SQLite usage. Absorbing SQLite DDL helpers
+would introduce an unused dependency with no consumer. The functions are tightly
+coupled to the warehouse ingestion workflow and would need to be significantly
+redesigned to serve any other purpose.
+
+**Why not Confirm:** The modules are not equivalent implementations of the same
+concern — they solve different problems entirely. "Confirm" implies gzkit
+already covers the need; in this case, the need (SQLite DDL for data
+warehouse ingestion) does not exist in gzkit.
+
+## Gate 4 (BDD): N/A
+
+No operator-visible behavior changes. The Exclude decision means no code is
+absorbed and no gzkit commands or surfaces are affected. No behavioral proof
+is required.
+
 ## Completion Checklist (Heavy)
 
-- [ ] **Gate 1 (ADR):** Intent recorded
-- [ ] **Gate 2 (TDD):** Tests pass
-- [ ] **Gate 3 (Docs):** Decision rationale completed
-- [ ] **Gate 4 (BDD):** Behavioral proof present or `N/A` recorded with rationale
+- [x] **Gate 1 (ADR):** Intent recorded
+- [x] **Gate 2 (TDD):** Tests pass (no absorption, existing tests remain green)
+- [x] **Gate 3 (Docs):** Decision rationale completed
+- [x] **Gate 4 (BDD):** N/A recorded with rationale (no operator-visible behavior change)
 - [ ] **Gate 5 (Human):** Attestation recorded
+
+### Value Narrative
+
+Before this OBPI, it was unclear whether airlineops's `core/schema.py` contained reusable schema infrastructure that gzkit was missing. After thorough comparison, the two modules solve entirely different problems: airlineops provides SQLite DDL helpers for data warehouse JSONL-to-SQL ingestion, while gzkit provides JSON Schema loading for governance artifact validation. The Exclude decision confirms the subtraction test holds: this is pure airline-domain code with no governance application.
+
+### Key Proof
+
+
+- Decision: Exclude
+- airlineops core/schema.py: 90 lines, SQLite DDL helpers for warehouse ingestion
+- gzkit schemas/__init__.py: 49 lines, JSON Schema loading for governance validation
+- gzkit has zero SQLite usage anywhere in its codebase
+- airlineops schema.py has exactly one call site: warehouse/ingest/loader/io.py
+
+### Implementation Summary
+
+
+- Decision: Exclude
+- Files created: none
+- Files modified: this brief only
+- Tests added: none (no code changes)
+- Rationale: airlineops core/schema.py is SQLite DDL for warehouse ingestion; gzkit has zero SQLite usage
+- Date: 2026-04-10
+
+## Tracked Defects
+
+_No defects tracked._
+
+## Human Attestation
+
+- Attestor: `Jeffry`
+- Attestation: attest completed
+- Date: 2026-04-09
 
 ## Closing Argument
 
-*To be authored at completion from delivered evidence.*
+The airlineops `core/schema.py` module provides SQLite DDL helpers for the data
+warehouse JSONL-to-SQL ingestion pipeline. gzkit's `schemas/__init__.py` serves
+an entirely different purpose: loading JSON Schema files for governance artifact
+validation. These modules share no functional overlap. The airlineops module is
+used in exactly one place (the warehouse loader), has no governance application,
+and introduces a dependency (sqlite3) that gzkit does not use. **Decision:
+Exclude** — this is pure airline-domain infrastructure that correctly remains in
+airlineops.
