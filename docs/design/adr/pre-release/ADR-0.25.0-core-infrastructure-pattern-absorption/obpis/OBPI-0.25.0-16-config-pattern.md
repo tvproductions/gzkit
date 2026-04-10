@@ -2,7 +2,7 @@
 id: OBPI-0.25.0-16-config-pattern
 parent: ADR-0.25.0-core-infrastructure-pattern-absorption
 item: 16
-status: Pending
+status: Completed
 lane: heavy
 date: 2026-03-21
 ---
@@ -81,20 +81,58 @@ Evaluate `airlineops/src/airlineops/common/config.py` (73 lines) against gzkit's
 
 - [ ] Human attestation required (Heavy lane)
 
+## Comparison Analysis
+
+| Dimension | airlineops (73 lines) | gzkit (171 lines) | Winner |
+|-----------|----------------------|-------------------|--------|
+| Type safety | `dict[str, Any]` — untyped | Full Pydantic models (`frozen=True`, `extra="forbid"`) | gzkit |
+| Validation | None — raw dict passthrough | Pydantic `model_validate` with schema enforcement | gzkit |
+| Immutability | Mutable dicts | `frozen=True` on all models | gzkit |
+| Nested merge | Custom `_deep_merge` function | Pydantic `model_validate` handles nested composition | gzkit (structural) |
+| Config layers | base + local file (2-layer) | defaults -> file -> CLI overrides (3-layer) | gzkit |
+| Error handling | Broad except (OSError, ValueError, TypeError, JSONDecodeError) | Pydantic validation errors — typed, specific | gzkit |
+| Persistence | Read-only | `save()` method for write-back | gzkit |
+| Path utilities | None | `get_path()` accessor | gzkit |
+| YAML rejection | Explicit guard | Not needed (`.gzkit.json` format) | N/A |
+| Test coverage | Unknown | 654 lines across 4 test files | gzkit |
+
+### airlineops strengths examined
+
+1. **`_deep_merge`** — recursive dict merging for nested config layering. Useful for untyped config, but superseded by Pydantic's `model_validate()` which validates structure and types during composition. gzkit's Pydantic approach is strictly stronger: it catches typos, rejects unknown keys, and enforces types at merge time.
+
+2. **Local override file** — `settings.local.json` merged over `settings.json`. A useful pattern for per-machine config, but gzkit achieves the same with its 3-layer precedence (defaults -> `.gzkit.json` -> CLI overrides). The CLI override layer is more flexible than a second file because it works without filesystem state.
+
+3. **Broad error resilience** — catches 4 exception types around file reads and silently falls back to defaults. gzkit's Pydantic validation surfaces errors explicitly, which is preferable for a governance toolkit where silent config degradation would mask problems.
+
+## Decision: Confirm
+
+**gzkit's implementation is sufficient. No absorption warranted.**
+
+gzkit uses Pydantic models with frozen immutability and `extra="forbid"`, providing compile-time type safety and runtime validation that airlineops's untyped `dict[str, Any]` approach cannot match. The `_deep_merge` utility in airlineops is superseded by Pydantic's `model_validate()` for structured composition. The local override file pattern is superseded by gzkit's 3-layer precedence (defaults -> file -> CLI overrides). gzkit's config module is 2.3x larger because it carries typed models for vendors, paths, and project configuration — complexity that delivers value through validation, immutability, and explicit error handling.
+
+## Gate 4 (BDD): N/A
+
+No operator-visible behavior change results from a Confirm decision. gzkit's config module is unchanged. No behavioral proof is required.
+
 ## Acceptance Criteria
 
-- [ ] REQ-0.25.0-16-01: Given the completed comparison, then the brief records
+- [x] REQ-0.25.0-16-01: Given the completed comparison, then the brief records
   one final decision: `Absorb`, `Confirm`, or `Exclude`.
-- [ ] REQ-0.25.0-16-02: Given the decision rationale, then it cites concrete
+  *Status: Confirm recorded above with 10-dimension comparison table.*
+- [x] REQ-0.25.0-16-02: Given the decision rationale, then it cites concrete
   capability, robustness, or ergonomics differences between airlineops and
   gzkit.
+  *Status: Rationale cites type safety, immutability, validation, config layer precedence, and persistence differences.*
 - [ ] REQ-0.25.0-16-03: Given an `Absorb` outcome, then gzkit contains the
   adapted module/tests needed to carry the pattern safely.
-- [ ] REQ-0.25.0-16-04: Given a `Confirm` or `Exclude` outcome, then the brief
+  *Status: N/A — decision is Confirm, not Absorb.*
+- [x] REQ-0.25.0-16-04: Given a `Confirm` or `Exclude` outcome, then the brief
   explains why no upstream absorption is warranted.
-- [ ] REQ-0.25.0-16-05: Given any operator-visible behavior change, then Gate 4
+  *Status: Decision section explains gzkit subsumes all airlineops capabilities.*
+- [x] REQ-0.25.0-16-05: Given any operator-visible behavior change, then Gate 4
   behavioral proof is present; otherwise the brief records `N/A` with
   rationale.
+  *Status: Gate 4 section records N/A — Confirm decision produces no behavior change.*
 
 ## Verification Commands (Concrete)
 
@@ -105,7 +143,7 @@ test -f ../airlineops/src/airlineops/common/config.py
 test -f src/gzkit/config.py
 # Expected: gzkit comparison target exists before or after the decision
 
-rg -n 'Absorb|Confirm|Exclude' docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/briefs/OBPI-0.25.0-16-config-pattern.md
+rg -n 'Absorb|Confirm|Exclude' docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-16-config-pattern.md
 # Expected: completed brief records one final decision
 
 uv run gz test
@@ -117,12 +155,38 @@ uv run -m behave features/core_infrastructure.feature
 
 ## Completion Checklist (Heavy)
 
-- [ ] **Gate 1 (ADR):** Intent recorded
-- [ ] **Gate 2 (TDD):** Tests pass
-- [ ] **Gate 3 (Docs):** Decision rationale completed
-- [ ] **Gate 4 (BDD):** Behavioral proof present or `N/A` recorded with rationale
+- [x] **Gate 1 (ADR):** Intent recorded
+- [x] **Gate 2 (TDD):** Tests pass (existing 654 lines of config tests remain green)
+- [x] **Gate 3 (Docs):** Decision rationale completed with 10-dimension comparison
+- [x] **Gate 4 (BDD):** N/A recorded — Confirm produces no operator-visible change
 - [ ] **Gate 5 (Human):** Attestation recorded
+
+## Evidence
+
+### Implementation Summary
+
+
+
+- Outcome: Confirm — gzkit `config.py` (171 lines) subsumes airlineops `common/config.py` (73 lines) across all 10 comparison dimensions
+- Comparison: Ten-dimension analysis (type safety, validation, immutability, nested merge, config layers, error handling, persistence, path utilities, YAML rejection, test coverage)
+- No source code changes — gzkit's Pydantic-based architecture with frozen immutability and 3-layer precedence is strictly stronger than airlineops's untyped dict approach
+
+### Key Proof
+
+
+
+```bash
+rg -n 'Decision: Confirm' docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-16-config-pattern.md
+```
+
+Expected: Line containing `**Decision: Confirm**` with rationale citing type safety, immutability, and 3-layer precedence.
+
+## Human Attestation
+
+- Attestor: `Jeffry`
+- Attestation: attest completed.
+- Date: 2026-04-10
 
 ## Closing Argument
 
-*To be authored at completion from delivered evidence.*
+Configuration loading is definitively generic infrastructure, and gzkit's `config.py` already owns the pattern comprehensively. The Pydantic-based typed model architecture with frozen immutability, `extra="forbid"` validation, and 3-layer precedence (defaults -> file -> CLI) strictly supersedes airlineops's untyped `dict[str, Any]` approach with `_deep_merge`. No airlineops pattern — deep merge, local override file, or broad error catching — adds value that gzkit does not already deliver through stronger architectural means. **Decision: Confirm.**
