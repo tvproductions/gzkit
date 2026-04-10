@@ -28,11 +28,12 @@ date: 2026-03-21
 
 **Role:** Pattern harvester — mining airlineops for battle-tested infrastructure patterns worth capturing into gzkit before gzkit replaces airlineops's infrastructure layer and becomes the spec-driven development toolkit for all projects.
 
-**Purpose:** When this ADR is complete, gzkit owns all reusable core infrastructure patterns that currently reside in `airlineops/src/airlineops/core/` and `common/`. For each of the 17 modules, gzkit either captured the airlineops pattern (because it earned its way into the platform), confirmed its own implementation already covers the need, or explicitly excluded the module as airline-domain-specific. airlineops development is not being progressed — gzkit is being maximized so it can replace the opsdev layer.
+**Purpose:** When this ADR is complete, gzkit owns all reusable core infrastructure patterns that currently reside in airlineops. Phase 1 examines `airlineops/src/airlineops/core/` and `common/` (17 modules). Phase 2 examines `airlineops/src/opsdev/` (16 modules) — the governance tooling layer that shares direct functional overlap with gzkit's command and library surface. For each module, gzkit either captured the airlineops pattern (because it earned its way into the platform), confirmed its own implementation already covers the need, or explicitly excluded the module as airline-domain-specific. airlineops development is not being progressed — gzkit is being maximized so it can replace the opsdev layer.
 
 **Goals:**
 
-- Every core/common module in airlineops is examined individually with a documented decision
+- Every core/common module in airlineops is examined individually with a documented decision (Phase 1)
+- Every opsdev module in airlineops is examined individually with a documented decision (Phase 2)
 - gzkit's infrastructure layer is comprehensive enough to serve as the platform foundation for airlineops and future projects
 - No reusable pattern remains unexamined in the airlineops codebase
 - The subtraction test holds: `airlineops - gzkit = pure airline domain`
@@ -43,7 +44,7 @@ date: 2026-03-21
 
 **Anti-Pattern Warning:** A failed implementation looks like: rubber-stamping gzkit's existing code as "sufficient" without actually reading the airlineops version. Equally bad: blindly copying airlineops code into a gzkit module that has already evolved past it.
 
-**Integration Points:**
+**Integration Points (Phase 1 — core/common):**
 
 - `src/gzkit/config.py` — configuration loading (compare with `airlineops/config/`)
 - `src/gzkit/registry.py` — content type registry (compare with `airlineops/core/registry.py`)
@@ -51,6 +52,18 @@ date: 2026-03-21
 - `src/gzkit/quality.py` — quality checks (compare with `airlineops/core/qc.py`)
 - `src/gzkit/hooks/core.py` — hook infrastructure (compare with `airlineops/core/hooks.py`)
 - `src/gzkit/commands/common.py` — console/output patterns (compare with `airlineops/common/console.py`)
+
+**Integration Points (Phase 2 — opsdev):**
+
+- `src/gzkit/commands/adr_*.py`, `src/gzkit/adr_*.py` — ADR lifecycle (compare with `opsdev/lib/adr.py`, `opsdev/lib/adr_governance.py`)
+- `src/gzkit/ledger.py`, `src/gzkit/ledger_*.py` — ledger schema and events (compare with `opsdev/lib/ledger_schema.py`)
+- `src/gzkit/commands/obpi_*.py` — OBPI reconciliation (compare with `opsdev/lib/adr_recon.py`, `opsdev/lib/adr_audit_ledger.py`)
+- `src/gzkit/commands/adr_map.py` — traceability (compare with `opsdev/lib/adr_traceability.py`)
+- `src/gzkit/commands/cli_audit.py` — CLI audit (compare with `opsdev/lib/cli_audit.py`)
+- `src/gzkit/commands/validate.py` — validation (compare with `opsdev/lib/docs.py`, `opsdev/lib/layout_verify.py`)
+- `src/gzkit/arb/` — ARB receipts (compare with `opsdev/arb/`)
+- `src/gzkit/drift.py` — drift detection (compare with `opsdev/lib/drift_detection.py`)
+- `src/gzkit/hooks/` — policy guards (compare with `opsdev/lib/guards.py`)
 
 ---
 
@@ -89,7 +102,44 @@ date: 2026-03-21
 17. **OBPI-0.25.0-17:** Console abstraction comparison and decision for
     `common/console.py`
 
-Support obligations for the checklist above:
+### Phase 2 — opsdev Governance Tooling (Amendment 2026-04-09)
+
+**Premise correction:** Phase 1 targeted `airlineops/core/` and `common/`, which are primarily airline-domain modules. The actual governance tooling that shares functional overlap with gzkit lives in `airlineops/src/opsdev/`. Phase 2 examines these modules — the ones most likely to yield Absorb or Confirm decisions rather than Exclude.
+
+18. **OBPI-0.25.0-18:** ADR lifecycle comparison and decision for
+    `opsdev/lib/adr.py` (1603 lines) — ADR index generation, status tables, title normalization
+19. **OBPI-0.25.0-19:** ADR audit ledger comparison and decision for
+    `opsdev/lib/adr_audit_ledger.py` (249 lines) — OBPI audit ledger consumption for Gate 5
+20. **OBPI-0.25.0-20:** ADR governance comparison and decision for
+    `opsdev/lib/adr_governance.py` (535 lines) — evidence audit and autolink management
+21. **OBPI-0.25.0-21:** ADR reconciliation comparison and decision for
+    `opsdev/lib/adr_recon.py` (607 lines) — OBPI table sync with ledger proof
+22. **OBPI-0.25.0-22:** ADR traceability comparison and decision for
+    `opsdev/lib/adr_traceability.py` (277 lines) — ADR-to-artifact relationship inference
+23. **OBPI-0.25.0-23:** Artifact management comparison and decision for
+    `opsdev/lib/artifacts.py` (232 lines) — artifact scanning and registry cleanup
+24. **OBPI-0.25.0-24:** CLI audit comparison and decision for
+    `opsdev/lib/cli_audit.py` (238 lines) — CLI structure and consistency audit
+25. **OBPI-0.25.0-25:** Documentation validation comparison and decision for
+    `opsdev/lib/docs.py` (218 lines) — documentation structure validation
+26. **OBPI-0.25.0-26:** Drift detection comparison and decision for
+    `opsdev/lib/drift_detection.py` (384 lines) — validation receipt temporal anchoring
+27. **OBPI-0.25.0-27:** Policy guards comparison and decision for
+    `opsdev/lib/guards.py` (145 lines) — policy enforcement scanning
+28. **OBPI-0.25.0-28:** Layout verification comparison and decision for
+    `opsdev/lib/layout_verify.py` (143 lines) — tree layout validation against config
+29. **OBPI-0.25.0-29:** Ledger schema comparison and decision for
+    `opsdev/lib/ledger_schema.py` (501 lines) — unified Pydantic schema for JSONL ledger entries
+30. **OBPI-0.25.0-30:** References comparison and decision for
+    `opsdev/lib/references.py` (797 lines) — bibliography index and citation generation
+31. **OBPI-0.25.0-31:** Validation receipts comparison and decision for
+    `opsdev/lib/validation_receipt.py` (274 lines) — validation anchoring schema
+32. **OBPI-0.25.0-32:** Handoff validation comparison and decision for
+    `opsdev/governance/handoff_validation.py` (312 lines) — session handoff governance
+33. **OBPI-0.25.0-33:** ARB analysis comparison and decision for
+    `opsdev/arb/` (603 lines total) — receipt advise, validate, and pattern extraction
+
+Support obligations for the checklists above:
 
 - Parent ADR is Heavy because the program explicitly permits absorption into
   shared runtime and operator-facing surfaces
@@ -102,11 +152,17 @@ Support obligations for the checklist above:
 
 ## Intent
 
-gzkit is the forward platform — it will serve as the governance and infrastructure foundation for airlineops and future projects. To fulfil that role, gzkit must own all reusable core infrastructure patterns. airlineops's `core/` and `common/` packages contain battle-tested implementations of attestation, progress tracking, cryptographic signing, world-state hashing, registry patterns, error hierarchies, admission control, cross-platform file operations, and console output — none of which are airline-specific. This ADR governs a one-time harvest: examining each of these 17 modules to capture the best patterns into gzkit before it assumes platform responsibility. After absorption, the subtraction test holds: the only thing left in airlineops that isn't from gzkit is pure airline domain code.
+gzkit is the forward platform — it will serve as the governance and infrastructure foundation for airlineops and future projects. To fulfil that role, gzkit must own all reusable core infrastructure patterns. This ADR governs a one-time harvest across two phases:
+
+**Phase 1** examines airlineops's `core/` and `common/` packages (17 modules) — attestation, progress tracking, cryptographic signing, world-state hashing, registry patterns, error hierarchies, admission control, cross-platform file operations, and console output.
+
+**Phase 2** (amendment 2026-04-09) examines airlineops's `opsdev/` package (16 modules) — ADR lifecycle management, audit ledgers, reconciliation, traceability, drift detection, CLI audit, policy guards, ledger schemas, validation receipts, handoff governance, and ARB analysis. These are the governance tooling modules that share direct functional overlap with gzkit's command and library surface. Phase 1 established that most `core/` modules are airline-domain-specific; Phase 2 targets the modules most likely to yield meaningful Absorb or Confirm decisions.
+
+After absorption, the subtraction test holds: the only thing left in airlineops that isn't from gzkit is pure airline domain code.
 
 ## Decision
 
-- Each of the 17 airlineops core/common modules gets individual OBPI examination
+- Each of the 33 airlineops modules (17 core/common + 16 opsdev) gets individual OBPI examination
 - For each module: read both implementations, compare maturity/completeness/robustness, document decision
 - Three possible outcomes per module: **Absorb** (airlineops has a pattern worth capturing), **Confirm** (gzkit already covers this), **Exclude** (domain-specific, does not belong in gzkit)
 - Absorbed modules must follow gzkit conventions: Pydantic BaseModel, pathlib.Path, UTF-8 encoding, no bare except
@@ -141,6 +197,22 @@ gzkit is the forward platform — it will serve as the governance and infrastruc
 | 15 | Manifests | No grounded decision on manifest loading/validation reuse. |
 | 16 | Config | No explicit comparison proving gzkit config helpers are sufficient. |
 | 17 | Console | No decision on whether airlineops has cleaner console abstractions worth extracting into gzkit. |
+| 18 | ADR lifecycle | No comparison of ADR index/status table generation between opsdev and gzkit. |
+| 19 | ADR audit ledger | No comparison of OBPI audit ledger consumption patterns. |
+| 20 | ADR governance | No comparison of evidence audit and autolink management approaches. |
+| 21 | ADR reconciliation | No comparison of OBPI table reconciliation strategies. |
+| 22 | ADR traceability | No comparison of ADR-to-artifact traceability inference. |
+| 23 | Artifacts | No comparison of artifact scanning and registry management. |
+| 24 | CLI audit | No comparison of CLI structure audit approaches. |
+| 25 | Docs validation | No comparison of documentation validation strategies. |
+| 26 | Drift detection | No comparison of validation receipt temporal anchoring. |
+| 27 | Policy guards | No comparison of policy enforcement scanning approaches. |
+| 28 | Layout verify | No comparison of tree layout validation against config. |
+| 29 | Ledger schema | No comparison of unified JSONL ledger Pydantic schemas. |
+| 30 | References | No decision on whether bibliography/citation management belongs in gzkit. |
+| 31 | Validation receipts | No comparison of validation anchoring schema approaches. |
+| 32 | Handoff validation | No comparison of session handoff governance validation. |
+| 33 | ARB analysis | No comparison of ARB receipt analysis, validation, and pattern extraction. |
 
 ## Interfaces
 
@@ -170,6 +242,27 @@ gzkit is the forward platform — it will serve as the governance and infrastruc
 | 16 | OBPI-0.25.0-16 | Evaluate and absorb `common/config.py` (73 lines) — configuration loading helpers | Heavy | Pending |
 | 17 | OBPI-0.25.0-17 | Evaluate and absorb `common/console.py` (45 lines) — console I/O abstractions | Heavy | Pending |
 
+### Phase 2 — opsdev Governance Tooling (Amendment 2026-04-09)
+
+| # | OBPI | Specification Summary | Lane | Status |
+|---|------|----------------------|------|--------|
+| 18 | OBPI-0.25.0-18 | Evaluate and absorb `opsdev/lib/adr.py` (1603 lines) — ADR index generation, status tables, title normalization | Heavy | Pending |
+| 19 | OBPI-0.25.0-19 | Evaluate and absorb `opsdev/lib/adr_audit_ledger.py` (249 lines) — OBPI audit ledger consumption for Gate 5 | Heavy | Pending |
+| 20 | OBPI-0.25.0-20 | Evaluate and absorb `opsdev/lib/adr_governance.py` (535 lines) — evidence audit and autolink management | Heavy | Pending |
+| 21 | OBPI-0.25.0-21 | Evaluate and absorb `opsdev/lib/adr_recon.py` (607 lines) — OBPI table sync with ledger proof | Heavy | Pending |
+| 22 | OBPI-0.25.0-22 | Evaluate and absorb `opsdev/lib/adr_traceability.py` (277 lines) — ADR-to-artifact relationship inference | Heavy | Pending |
+| 23 | OBPI-0.25.0-23 | Evaluate and absorb `opsdev/lib/artifacts.py` (232 lines) — artifact scanning and registry cleanup | Heavy | Pending |
+| 24 | OBPI-0.25.0-24 | Evaluate and absorb `opsdev/lib/cli_audit.py` (238 lines) — CLI structure and consistency audit | Heavy | Pending |
+| 25 | OBPI-0.25.0-25 | Evaluate and absorb `opsdev/lib/docs.py` (218 lines) — documentation structure validation | Heavy | Pending |
+| 26 | OBPI-0.25.0-26 | Evaluate and absorb `opsdev/lib/drift_detection.py` (384 lines) — validation receipt temporal anchoring | Heavy | Pending |
+| 27 | OBPI-0.25.0-27 | Evaluate and absorb `opsdev/lib/guards.py` (145 lines) — policy enforcement scanning | Heavy | Pending |
+| 28 | OBPI-0.25.0-28 | Evaluate and absorb `opsdev/lib/layout_verify.py` (143 lines) — tree layout validation against config | Heavy | Pending |
+| 29 | OBPI-0.25.0-29 | Evaluate and absorb `opsdev/lib/ledger_schema.py` (501 lines) — unified Pydantic schema for JSONL ledger entries | Heavy | Pending |
+| 30 | OBPI-0.25.0-30 | Evaluate and absorb `opsdev/lib/references.py` (797 lines) — bibliography index and citation generation | Heavy | Pending |
+| 31 | OBPI-0.25.0-31 | Evaluate and absorb `opsdev/lib/validation_receipt.py` (274 lines) — validation anchoring schema | Heavy | Pending |
+| 32 | OBPI-0.25.0-32 | Evaluate and absorb `opsdev/governance/handoff_validation.py` (312 lines) — session handoff governance | Heavy | Pending |
+| 33 | OBPI-0.25.0-33 | Evaluate and absorb `opsdev/arb/` (603 lines total) — receipt advise, validate, and pattern extraction | Heavy | Pending |
+
 **Briefs location:** `obpis/OBPI-0.25.0-*.md`
 
 **WBS Completeness Rule:** Every row in this table has a corresponding brief file.
@@ -177,11 +270,11 @@ gzkit is the forward platform — it will serve as the governance and infrastruc
 **Dependency Graph:**
 
 ```text
-All 17 OBPIs can begin as comparison units once the tidy-first cross-reference
-matrix is assembled.
-
-Comparison tranche (parallelizable):
+Phase 1 (core/common — parallelizable):
   01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17
+
+Phase 2 (opsdev — parallelizable, independent of Phase 1):
+  18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33
 
 Implementation / proof consequence:
   Any OBPI with an Absorb decision
@@ -189,9 +282,9 @@ Implementation / proof consequence:
            └──► docs / Gate 4 proof when operator-visible behavior changes
 ```
 
-**Critical path:** assemble the cross-reference matrix, complete the slowest
-comparison tranche, then execute any absorb-path implementation and behavioral
-verification required by the winning modules.
+**Critical path:** complete the slowest comparison tranche in each phase,
+then execute any absorb-path implementation and behavioral verification
+required by the winning modules. Phase 2 can begin independently of Phase 1.
 
 **Verification spine:**
 
@@ -236,7 +329,7 @@ verification required by the winning modules.
 
 ## Rationale
 
-gzkit is becoming a spec-driven development toolkit that will replace most of opsdev in airlineops and serve as the foundation for future projects. This ADR addresses one layer of that transition: harvesting reusable infrastructure patterns from airlineops's `core/` and `common/` packages (1,700+ lines of domain-agnostic code). gzkit has partial equivalents for some of these (ledger, registry, quality, hooks, config) and does not yet implement others (attestation, signatures, world state, errors, admission control, cross-platform OS utilities). Full replacement of opsdev also requires governance authority migration (ADR-pool.airlineops-direct-governance-migration, not yet promoted) and additional work beyond this ADR's scope. This ADR ensures the infrastructure foundation is solid by examining every module individually.
+gzkit is becoming a spec-driven development toolkit that will replace most of opsdev in airlineops and serve as the foundation for future projects. This ADR addresses two layers of that transition: Phase 1 harvests from airlineops's `core/` and `common/` packages (1,700+ lines), and Phase 2 (amendment 2026-04-09) harvests from the `opsdev/` package (8,100+ lines of governance tooling). Phase 1 established that most `core/` modules are airline-domain-specific. Phase 2 targets the governance tooling that shares direct functional overlap with gzkit — ADR lifecycle, audit ledgers, reconciliation, traceability, drift detection, and ARB analysis. Full replacement of opsdev also requires governance authority migration (ADR-pool.airlineops-direct-governance-migration, not yet promoted) and additional work beyond this ADR's scope. This ADR ensures the infrastructure foundation is solid by examining every module individually.
 
 ## Consequences
 
@@ -248,10 +341,11 @@ gzkit is becoming a spec-driven development toolkit that will replace most of op
 
 ## Long-Term Validity Guards
 
-- The 17-brief matrix is the audit trail for the subtraction test; future
-  companion absorption work should not skip per-module rationale.
-- Any future reusable airlineops core/common module added without an upstream
-  gzkit decision record is doctrinal drift.
+- The 33-brief matrix (17 core/common + 16 opsdev) is the audit trail for the
+  subtraction test; future companion absorption work should not skip per-module
+  rationale.
+- Any future reusable airlineops module added without an upstream gzkit decision
+  record is doctrinal drift.
 - This is a one-time harvest. After absorption completes, innovation flows
   from gzkit outward — airlineops and future projects adopt gzkit patterns,
   not the reverse.
@@ -286,7 +380,8 @@ gzkit is becoming a spec-driven development toolkit that will replace most of op
 
 ### Source & Contracts
 
-- airlineops source: `../airlineops/src/airlineops/core/`, `../airlineops/src/airlineops/common/`
+- airlineops source (Phase 1): `../airlineops/src/airlineops/core/`, `../airlineops/src/airlineops/common/`
+- airlineops source (Phase 2): `../airlineops/src/opsdev/lib/`, `../airlineops/src/opsdev/governance/`, `../airlineops/src/opsdev/arb/`
 - gzkit target: `src/gzkit/` — new or enhanced modules
 
 ### Tests
@@ -306,7 +401,7 @@ gzkit is becoming a spec-driven development toolkit that will replace most of op
 |---------------|-------|-------------------|----------|-------|
 | `src/gzkit/` | M | All absorbed modules integrated | Test output | |
 | `tests/` | M | All absorbed modules tested | `uv run gz test` | |
-| `obpis/` | P | All 17 OBPIs have decisions documented | Brief review | |
+| `obpis/` | P | All 33 OBPIs have decisions documented | Brief review | |
 
 ### SIGN-OFF — Post-Ship Tidy
 
