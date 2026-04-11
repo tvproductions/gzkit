@@ -78,7 +78,7 @@ Work flows through five gates, adapted by lane (Lite or Heavy):
 | Gate | Name | Purpose |
 |------|------|---------|
 | 1 | **ADR** | Record intent and tradeoffs before implementation |
-| 2 | **TDD** | Verify correctness through automated tests |
+| 2 | **TDD** | Red-Green-Refactor: tests derived from spec, not implementation |
 | 3 | **Docs** | Ensure documentation describes actual behavior |
 | 4 | **BDD** | Verify external contracts through acceptance tests |
 | 5 | **Human** | Human observes artifacts and attests completion |

@@ -24,7 +24,7 @@ date: {date}
 | Gate | Lane | Requirement |
 |------|------|-------------|
 | Gate 1 (ADR) | All | All changes have ADRs |
-| Gate 2 (TDD) | All | Tests pass |
+| Gate 2 (TDD) | All | RGR cycle followed, tests derived from brief |
 | Gate 3 (Docs) | Heavy | Documentation updated |
 | Gate 4 (BDD) | Heavy | Behavior tests pass |
 | Gate 5 (Human) | Heavy | Human attestation recorded |
