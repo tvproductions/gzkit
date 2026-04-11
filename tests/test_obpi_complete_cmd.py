@@ -297,6 +297,34 @@ class TestValidateWouldBeContent(unittest.TestCase):
         errors = _validate_would_be_content(content, requires_human=True)
         self.assertTrue(any("attestation" in e.lower() for e in errors))
 
+    @covers("REQ-0.0.14-02-02")
+    def test_human_attestation_placeholder_date_rejected(self):
+        """GHI-126: placeholder date like _(pending)_ must be rejected."""
+        content = _build_completed_brief(
+            content=_MINIMAL_BRIEF,
+            attestor="jeff",
+            attestation_text="attest completed",
+            implementation_summary="- Files: obpi_complete.py",
+            key_proof="gz obpi complete exits 0",
+            date_completed="_(pending)_",
+        )
+        errors = _validate_would_be_content(content, requires_human=True)
+        self.assertTrue(any("attestation" in e.lower() for e in errors))
+
+    @covers("REQ-0.0.14-02-02")
+    def test_human_attestation_missing_attestation_text_rejected(self):
+        """GHI-126: missing Attestation line must be rejected."""
+        content = _build_completed_brief(
+            content=_MINIMAL_BRIEF,
+            attestor="jeff",
+            attestation_text="n/a",
+            implementation_summary="- Files: obpi_complete.py",
+            key_proof="gz obpi complete exits 0",
+            date_completed="2026-04-05",
+        )
+        errors = _validate_would_be_content(content, requires_human=True)
+        self.assertTrue(any("attestation" in e.lower() for e in errors))
+
 
 @covers("OBPI-0.0.14-02")
 class TestSubstantiveChecks(unittest.TestCase):
