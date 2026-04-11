@@ -182,7 +182,9 @@ When gates are passing, emit this shape:
 **Gate 1 (ADR):**
 - ✓ Intent recorded: OBPI-X.Y.Z-NN in ADR-X.Y.Z
 
-**Gate 2 (TDD) — Lite:**
+**Gate 2 (TDD — Red-Green-Refactor) — Lite:**
+- ✓ Tests derived from brief acceptance criteria (not implementation)
+- ✓ RGR cycle followed per behavior increment
 - ✓ Tests pass: {N} tests, 0 failures
   uv run gz test
   # Output: Ran {N} tests in X.XXs — OK
@@ -447,9 +449,10 @@ If the plan is questioned or modified, update it and re-present.
 - [ ] Intent and scope recorded in this OBPI brief (Level 2 WBS)
 - [ ] Parent ADR OBPI entry referenced (Level 1 WBS linkage)
 
-#### Gate 2: TDD
+#### Gate 2: TDD (Red-Green-Refactor)
 
-- [ ] Unit tests written for new/changed behavior
+- [ ] Tests derived from brief acceptance criteria, not from implementation
+- [ ] Red-Green-Refactor cycle followed per behavior increment
 - [ ] Tests pass: `uv run gz test`
 - [ ] Validation commands are recorded with real outputs
 
@@ -468,7 +471,7 @@ Item-specific gates and commands (if any) are listed below.
 #### Before marking OBPI completed
 
 - [ ] **Gate 1 (ADR):** ✓ Intent recorded in brief
-- [ ] **Gate 2 (TDD):** ✓ Unit tests pass (N tests, 0 failures)
+- [ ] **Gate 2 (TDD):** ✓ RGR cycle followed, tests derived from brief (N tests, 0 failures)
 - [ ] **Code Quality:** ✓ Lint, format, type checks clean
 - [ ] **Coverage:** ✓ Coverage ≥40% maintained
 - [ ] **Lane Inheritance Check:** ✓ Parent ADR lane verified (if Heavy/Foundation → human attestation required)
@@ -729,7 +732,7 @@ If an example cannot be tested or a BDD scenario cannot be implemented immediate
 #### Gates 1-4: Implementation
 
 - [ ] Gate 1 (ADR): Intent recorded in brief
-- [ ] Gate 2 (TDD): Unit tests pass, coverage ≥40%
+- [ ] Gate 2 (TDD): RGR cycle followed, tests derived from brief, coverage ≥40%
 - [ ] Gate 3 (Docs): Markdown lint clean, mkdocs build clean
 - [ ] Gate 4 (BDD): All BDD scenarios pass
 - [ ] Code Quality: Lint, format clean
