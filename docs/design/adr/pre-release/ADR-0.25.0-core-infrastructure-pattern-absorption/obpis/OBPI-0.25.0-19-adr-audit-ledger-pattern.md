@@ -2,7 +2,7 @@
 id: OBPI-0.25.0-19-adr-audit-ledger-pattern
 parent: ADR-0.25.0-core-infrastructure-pattern-absorption
 item: 19
-status: Pending
+status: Completed
 lane: heavy
 date: 2026-04-09
 ---
@@ -86,6 +86,88 @@ gzkit's equivalent surface spans `commands/obpi_audit_cmd.py` (423 lines) and
 
 - [ ] Human attestation required (Heavy lane)
 
+## COMPARISON ANALYSIS
+
+### airlineops: `opsdev/lib/adr_audit_ledger.py` (249 lines)
+
+Layer 2 Gate 5 completeness checker. Reads an ADR-local `obpi-audit.jsonl`
+ledger to determine if all OBPIs have passing proof before attestation.
+
+- **Data model:** `LedgerCheckResult` (stdlib `dataclass`) with fields for
+  missing, incomplete, and complete brief lists.
+- **Core function:** `check_ledger_completeness(adr_id)` — resolves ADR
+  folder via `adr_recon` helpers, parses the OBPI table from ADR markdown,
+  reads ledger entries, classifies each brief as missing/incomplete/complete.
+- **Formatter:** `format_ledger_check_report()` — renders a markdown report
+  with summary table, categorized brief lists, and recommendations.
+- **Dependencies:** `adr_recon` module (ADR folder/ledger/markdown resolution,
+  OBPI table parsing, ledger entry reading).
+
+### gzkit equivalent surface (~800+ lines across 3 modules)
+
+| Module | Lines | Role |
+|--------|-------|------|
+| `commands/adr_audit.py` | 415 | `adr_audit_check()` — completeness check + REQ coverage |
+| `validate_pkg/ledger_check.py` | 379 | JSONL ledger schema validation |
+| `commands/obpi_audit_cmd.py` | 423 | Evidence gathering: test discovery, execution, coverage |
+
+**`adr_audit_check()`** resolves the ADR via the central ledger graph
+(not a local audit file), collects OBPI files via
+`_collect_obpi_files_for_adr()`, and inspects each brief with
+`_inspect_obpi_brief()` — checking frontmatter status, Implementation
+Summary, Key Proof sections, and Human Attestation fields. Additionally
+verifies `@covers` REQ traceability annotations.
+
+### Dimension comparison
+
+| Dimension | airlineops | gzkit |
+|-----------|-----------|-------|
+| Purpose | Gate 5 pre-attestation completeness | Same, plus REQ traceability |
+| Data source | ADR-local `obpi-audit.jsonl` | Central ledger graph + brief file inspection |
+| Result model | `LedgerCheckResult` (stdlib dataclass) | Dict-based + Rich console output |
+| Completeness check | missing/incomplete/complete classification | findings-based (gaps vs complete) |
+| Evidence depth | Reads ledger status values only | Inspects brief content sections |
+| REQ coverage | Not present | `@covers` annotation verification |
+| Cross-platform | pathlib + encoding (good) | pathlib + encoding (equivalent) |
+| Error handling | Early returns with error field | `GzCliError` + `SystemExit` |
+
+## DECISION: Confirm
+
+gzkit's audit surface already surpasses the airlineops module. No absorption
+warranted.
+
+### Rationale
+
+1. **Architecture (State Doctrine):** gzkit reads the central ledger graph
+   (Layer 1/2 source of truth), not a local `obpi-audit.jsonl` file. This
+   is architecturally superior — single source of truth, no local cache
+   divergence risk.
+
+2. **Evidence depth:** gzkit's `_inspect_obpi_brief()` checks brief file
+   content (Implementation Summary, Key Proof, Human Attestation sections),
+   not just ledger status values. This catches evidence gaps that ledger
+   entries alone cannot detect.
+
+3. **REQ traceability:** `adr_audit_check()` also verifies `@covers`
+   annotations — a verification dimension airlineops does not check at all.
+
+4. **Convention compliance:** airlineops uses stdlib `dataclass` for
+   `LedgerCheckResult`, which violates gzkit's Pydantic model policy.
+   Absorbing would require a full rewrite to Pydantic `BaseModel` with
+   `ConfigDict`, defeating the purpose of pattern absorption.
+
+5. **Dependency isolation:** airlineops module depends on `adr_recon`
+   helpers (`find_adr_folder`, `find_adr_ledger_path`, `normalize_adr_id`,
+   `parse_obpi_table`, `read_ledger_entries`). gzkit has its own ADR
+   resolution pipeline (`resolve_adr_file`, `resolve_adr_ledger_id`,
+   ledger graph queries).
+
+### Gate 4 (BDD): N/A
+
+No operator-visible behavior change. The Confirm decision validates that
+gzkit's existing audit surface is sufficient — no new commands, flags,
+output formats, or behavioral changes are introduced.
+
 ## Acceptance Criteria
 
 - [ ] REQ-0.25.0-19-01: Given the completed comparison, then the brief records
@@ -128,6 +210,38 @@ uv run -m behave features/core_infrastructure.feature
 - [ ] **Gate 4 (BDD):** Behavioral proof present or `N/A` recorded with rationale
 - [ ] **Gate 5 (Human):** Attestation recorded
 
+### Implementation Summary
+
+
+- Decision: Confirm — gzkit's audit surface already surpasses airlineops
+- Modules compared: airlineops adr_audit_ledger.py (249 lines) vs gzkit adr_audit + validate_ledger + obpi_audit_cmd (~800+ lines)
+- Architecture: gzkit uses central ledger graph (State Doctrine L1/L2), airlineops uses local obpi-audit.jsonl
+- Evidence depth: gzkit inspects brief content sections, airlineops reads status values only
+- REQ traceability: gzkit verifies @covers annotations, airlineops does not
+- No code absorbed — gzkit's existing implementation is sufficient and architecturally superior
+
+### Key Proof
+
+
+```bash
+uv run -m unittest tests/test_adr_audit_ledger_confirm.py -v
+# 4 tests pass — confirming gzkit audit surface covers airlineops capabilities
+```
+
+## Human Attestation
+
+- Attestor: `Jeffry`
+- Date: 2026-04-11
+- Attestation: attest completed
+
 ## Closing Argument
 
-*To be authored at completion from delivered evidence.*
+**Confirm.** airlineops's `adr_audit_ledger.py` is a 249-line Layer 2
+Gate 5 completeness checker that reads a local `obpi-audit.jsonl` to
+classify briefs as missing, incomplete, or complete. gzkit's audit surface
+(`adr_audit_check` + `validate_ledger` + `obpi_audit_cmd`, ~800+ lines)
+already covers this capability and surpasses it: central ledger graph
+instead of local audit file, brief content inspection instead of status-only
+checks, and `@covers` REQ traceability verification. The airlineops module
+uses stdlib `dataclass` and depends on `adr_recon` helpers — absorbing it
+would require a full rewrite with no net capability gain.
