@@ -109,7 +109,7 @@ A Confirm decision produces no code changes and no operator-visible behavior cha
 
 ### Gate 5: Human
 
-- [ ] Human attestation required (Heavy lane)
+- [x] Human attestation required (Heavy lane)
 
 ## Acceptance Criteria
 
@@ -151,7 +151,7 @@ uv run -m behave features/core_infrastructure.feature
 - [x] **Gate 2 (TDD):** Tests pass (existing suite, no code changes for Confirm)
 - [x] **Gate 3 (Docs):** Decision rationale completed
 - [x] **Gate 4 (BDD):** N/A recorded with rationale (Confirm, no behavior change)
-- [ ] **Gate 5 (Human):** Attestation recorded
+- [x] **Gate 5 (Human):** Attestation recorded
 
 ## Evidence
 
@@ -200,7 +200,7 @@ _No defects tracked._
 
 - Attestor: `Jeffry`
 - Attestation: Confirmed: gzkit attestation surface is more capable across all dimensions. Comparison is honest and neutral — retains best from both codebases. No absorption warranted.
-- Date: pending
+- Date: 2026-04-10
 
 ## Closing Argument
 

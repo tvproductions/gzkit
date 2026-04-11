@@ -106,7 +106,7 @@ An Exclude decision produces no code changes and no operator-visible behavior ch
 
 ### Gate 5: Human
 
-- [ ] Human attestation required (Heavy lane)
+- [x] Human attestation required (Heavy lane)
 
 ## Acceptance Criteria
 
@@ -148,7 +148,7 @@ uv run -m behave features/core_infrastructure.feature
 - [x] **Gate 2 (TDD):** Tests pass (existing suite, no code changes for Exclude)
 - [x] **Gate 3 (Docs):** Decision rationale completed
 - [x] **Gate 4 (BDD):** N/A recorded with rationale (Exclude, no behavior change)
-- [ ] **Gate 5 (Human):** Attestation recorded
+- [x] **Gate 5 (Human):** Attestation recorded
 
 ## Evidence
 
@@ -197,7 +197,7 @@ _No defects tracked._
 
 - Attestor: `Jeffry`
 - Attestation: attest completed
-- Date: pending
+- Date: 2026-04-10
 
 ## Closing Argument
 
