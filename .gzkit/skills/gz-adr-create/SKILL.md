@@ -66,7 +66,7 @@ Create GovZero-compliant ADR files with proper SemVer versioning, OBPI briefs, a
 | Gate | Applies | Artifact |
 |------|---------|----------|
 | Gate 1 (ADR) | All | Intent document with problem/decision/consequences |
-| Gate 2 (TDD) | All | Unit tests pass, coverage ≥40% |
+| Gate 2 (TDD) | All | Red-Green-Refactor cycle followed, tests derived from brief, coverage ≥40% |
 | Gate 3 (Docs) | Heavy only | Markdown lint clean, mkdocs build passes |
 | Gate 4 (BDD) | Heavy only | Behave scenarios pass (CLI/API/schema contracts) |
 | Gate 5 (Attestation) | Heavy only | Human directly observes and attests |
