@@ -91,7 +91,7 @@ gzkit must decide whether to absorb opsdev's full ARB (Agent Self-Reporting) rec
 | 6 | OBPI-0.27.0-06 | Evaluate and absorb `arb/tidy.py` (170 lines) — receipt cleanup and lifecycle management | Heavy | Pending |
 | 7 | OBPI-0.27.0-07 | Evaluate and absorb `arb/expunge.py` (114 lines) — receipt expungement and hard deletion | Heavy | Pending |
 | 8 | OBPI-0.27.0-08 | Evaluate and absorb `arb/github_issues.py` (149 lines) — GitHub issue filing from receipt evidence | Heavy | Pending |
-| 9 | OBPI-0.27.0-09 | Evaluate and absorb `arb/supabase_sync.py` (157 lines) — Supabase receipt synchronization | Heavy | Pending |
+| 9 | OBPI-0.27.0-09 | Implement configurable ARB receipt retention via Pydantic Logfire — replaces opsdev Supabase sync | Heavy | Pending |
 | 10 | OBPI-0.27.0-10 | Evaluate and absorb `arb/paths.py` (43 lines) — ARB path resolution and directory layout | Heavy | Pending |
 | 11 | OBPI-0.27.0-11 | Evaluate and absorb `arb_lint_receipt.schema.json` — JSON schema for lint receipt validation | Heavy | Pending |
 | 12 | OBPI-0.27.0-12 | Evaluate and absorb `arb_step_receipt.schema.json` — JSON schema for step receipt validation | Heavy | Pending |
