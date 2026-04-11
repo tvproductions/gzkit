@@ -87,6 +87,35 @@ Work flows through five gates, adapted by lane (Lite or Heavy):
 
 **Heavy lane** (external contracts): Gates 1, 2, 3, 4, 5
 
+## Workflow Lifecycle
+
+```
+  DEFINE        PLAN          BUILD         VERIFY        ATTEST        RELEASE
+ ┌──────┐    ┌──────┐    ┌──────────┐    ┌──────┐    ┌──────┐    ┌──────────┐
+ │Design│───▶│  ADR │───▶│ Pipeline │───▶│Gates │───▶│Human │───▶│ Closeout │
+ │ PRD  │    │ OBPI │    │ TDD Impl │    │Check │    │Attest│    │ Release  │
+ └──────┘    └──────┘    └──────────┘    └──────┘    └──────┘    └──────────┘
+  gz-design   gz-adr-      gz-obpi-       gz-check    gz-adr-     gz-patch-
+  gz-prd      create       pipeline       gz-gates    closeout-   release
+              gz-obpi-     gz-obpi-       gz-validate ceremony
+              specify      simplify
+```
+
+## Skill Catalog
+
+| Category | Skills |
+|----------|--------|
+| **ADR Lifecycle** | `gz-adr-create`, `gz-adr-evaluate`, `gz-adr-promote`, `gz-adr-status`, `gz-design`, `gz-plan` |
+| **ADR Operations** | `gz-adr-autolink`, `gz-adr-emit-receipt`, `gz-adr-map`, `gz-adr-recon`, `gz-adr-sync` |
+| **ADR Audit & Closeout** | `gz-adr-audit`, `gz-adr-closeout-ceremony`, `gz-patch-release` |
+| **OBPI Pipeline** | `gz-obpi-lock`, `gz-obpi-pipeline`, `gz-obpi-reconcile`, `gz-obpi-simplify`, `gz-obpi-specify`, `gz-plan-audit` |
+| **Governance Infrastructure** | `gz-constitute`, `gz-gates`, `gz-implement`, `gz-init`, `gz-prd`, `gz-state`, `gz-status`, `gz-validate` |
+| **Agent & Repository** | `git-sync`, `gz-agent-sync`, `gz-check-config-paths`, `gz-migrate-semver`, `gz-session-handoff`, `gz-tidy` |
+| **Code Quality** | `gz-check`, `gz-chore-runner`, `gz-cli-audit` |
+| **Routing** | `gz-skill-router` |
+
+For details on any skill, read its `SKILL.md` in `.gzkit/skills/<skill-name>/`.
+
 ## Installation
 
 ```bash

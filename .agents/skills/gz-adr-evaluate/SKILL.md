@@ -4,7 +4,7 @@ description: Post-authoring quality evaluation for ADRs and OBPIs. Scores ADRs o
 category: adr-lifecycle
 compatibility: GovZero v6 framework; adapted from AirlineOps for gzkit ADR package layouts
 metadata:
-  skill-version: "6.1.0"
+  skill-version: "6.1.1"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "lifecycle (pre-proposal QC), quality rubric, OBPI decomposition"
@@ -24,6 +24,25 @@ blocking QC step between ADR authoring and human proposal/defense review.
 
 It can be invoked for newly authored ADRs or for retroactive evaluation of an
 existing ADR package.
+
+### Common Rationalizations
+
+| Thought | Reality |
+|---------|---------|
+| "The ADR looks comprehensive, it'll score well" | Comprehensiveness does not equal quality. The rubric measures decision justification, not document length. |
+| "The CLI gave a high score, no need for manual review" | The CLI uses heuristics that produce false negatives. Manual review supersedes CLI pre-screen. |
+| "This is a retroactive evaluation, I'll be lenient" | The rubric is the rubric. Retroactive evaluation with relaxed standards produces misleading scorecards. |
+| "The red-team challenges don't apply to this simple ADR" | Every challenge must be engaged. N/A is not acceptable. Simple ADRs often have unexamined assumptions. |
+| "One dimension scored 1, but the overall weighted score is above 3.0" | Any dimension scoring 1 must be revised regardless of the weighted total. |
+| "I'll skip the OBPI scoring since the ADR scored well" | ADR quality and OBPI quality are independent assessments. Both are required. |
+
+### Red Flags
+
+- EVALUATION_SCORECARD.md written without reading the actual ADR document
+- CLI pre-screen score accepted without manual verification (Step 2 skipped)
+- Manual score differs from CLI score but no explanation of the heuristic mismatch
+- Red-team challenges marked N/A instead of engaged
+- ADR proceeds to proposal/defense with a NO GO or CONDITIONAL GO verdict
 
 ---
 

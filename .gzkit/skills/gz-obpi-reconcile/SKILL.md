@@ -4,7 +4,7 @@ description: OBPI brief reconciliation — Audit briefs against evidence, fix st
 category: obpi-pipeline
 compatibility: GovZero v6 framework with OBPI briefs
 metadata:
-  skill-version: "3.0.0"
+  skill-version: "3.0.1"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   skill-type: "orchestrator"
@@ -32,6 +32,27 @@ This skill ensures:
 
 **Use when:** Before closeout ceremony, after completing work, periodic housekeeping,
 or any time brief status might have drifted from reality.
+
+### Common Rationalizations
+
+These thoughts mean STOP — you are about to skip evidence-backed verification:
+
+| Thought | Reality |
+|---------|---------|
+| "The briefs look correct, reconciliation is unnecessary" | Brief status drifts silently. Only evidence-backed auditing reveals the actual state. |
+| "Tests pass so the OBPIs must be complete" | Tests verify code behavior, not brief metadata. A passing test suite with stale brief statuses is common. |
+| "I'll update the ADR table manually instead" | Manual table updates bypass the ledger. Phase 2-to-3 flow ensures proof precedes derived state. |
+| "One brief is still in progress, I'll reconcile the rest later" | Partial reconciliation creates inconsistent snapshots. Run for the full ADR. |
+| "The ledger already has entries from a previous audit" | Stale ledger entries do not reflect current evidence. Each reconciliation writes fresh proof. |
+| "Coverage is close to 40%, I'll round up" | The threshold is fail-closed. 39.9% is FAIL, not "close enough." |
+
+### Red Flags
+
+- ADR OBPI table shows "Completed" but brief file still says "Accepted"
+- Ledger entries are older than the most recent code changes to OBPI-scoped files
+- Agent updates ADR table directly without running Phase 1 audit first
+- Brief marked Completed without evidence section citing test files and coverage
+- Phase 3 (table sync) runs before Phase 1 (audit) — derived state updated before source verified
 
 ---
 

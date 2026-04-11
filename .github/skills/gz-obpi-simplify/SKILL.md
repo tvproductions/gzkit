@@ -5,6 +5,8 @@ category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-04-03
+metadata:
+  skill-version: "6.0.2"
 ---
 
 # gz-obpi-simplify
@@ -15,6 +17,26 @@ dimensions (reuse, quality, efficiency), fix issues found.
 **Position in workflow:** After implementation (pipeline Stage 2-3), before
 reconcile. This is the implementation quality gate — the pipeline verifies
 correctness; simplify verifies craft.
+
+### Common Rationalizations
+
+These thoughts mean STOP — you are about to skip the craft gate:
+
+| Thought | Reality |
+|---------|---------|
+| "The code is working fine, no simplification needed" | Working code that is hard to read will be hard to fix when it breaks. Simplification is about future maintainability. |
+| "Changing this code is too risky" | Every fix is behavior-preserving and validated by tests. Risk is an excuse to leave technical debt. |
+| "This is just formatting, ruff handles it" | Ruff handles syntax formatting. Semantic simplification (dead code, poor naming, unnecessary complexity) is this skill's domain. |
+| "The OBPI is done, simplification is optional" | Simplification is the craft gate between pipeline completion and reconciliation. Skipping it ships unreviewed complexity. |
+| "I don't understand this code well enough to simplify it" | Step 1 is "understand before touching." If you cannot understand it, that is a red flag for the code, not a reason to skip. |
+
+### Red Flags
+
+- Agent reports "no issues found" without reading the scoped files
+- Review covers only one dimension (e.g., quality) while skipping reuse and efficiency
+- Files outside the OBPI's Allowed Paths are modified
+- Tests fail after simplification and agent proceeds anyway
+- Agent adds new functionality under the guise of "simplification"
 
 ---
 
@@ -60,6 +82,33 @@ The first token is the OBPI ID. Remaining tokens are an optional focus directive
 If no brief is found, abort with an error message.
 
 **The file list is the review scope. Do not review files outside it.**
+
+### Protected Regions
+
+Before reviewing, scan scoped files for `simplify-ignore` annotations. Code
+within these annotations is excluded from all three review dimensions.
+
+```python
+# simplify-ignore-start: governance-critical
+# ... code that must not be simplified ...
+# simplify-ignore-end
+```
+
+Supported reasons:
+
+| Reason | When to use |
+|--------|-------------|
+| `governance-critical` | Code that enforces governance invariants (ledger writes, gate checks) |
+| `performance-sensitive` | Code where clarity was intentionally traded for performance |
+| `external-contract` | Code that implements an external API or protocol exactly |
+| `intentional-complexity` | Code where the complexity is inherent to the problem domain |
+
+**Rules:**
+
+- Do not modify code within annotated regions
+- Do not remove or relocate the annotations themselves
+- If a protected region looks like it no longer needs protection, flag it for human review instead of changing it
+- Report protected regions in the Step 3 summary so the human knows what was excluded
 
 ---
 
@@ -129,6 +178,7 @@ After all reviews complete:
 - **No style-only changes.** Ruff handles formatting. Focus on semantic issues.
 - **Preserve behavior.** Every fix must be behavior-preserving. If uncertain, flag instead of fixing.
 - **Tests must still pass.** If a fix breaks tests, revert it.
+- **Respect `simplify-ignore` annotations.** Do not modify code within annotated protected regions.
 
 ---
 
