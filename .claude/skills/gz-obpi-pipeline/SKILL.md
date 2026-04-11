@@ -4,7 +4,7 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.0.2"
+skill-version: "6.0.3"
 last_reviewed: 2026-03-16
 ---
 
@@ -492,36 +492,13 @@ the reconcile output and ADR status refresh.
 
 ## Evidence Capture
 
-Each stage records evidence to the OBPI audit ledger:
-
-| Stage | Evidence Written |
-|-------|-----------------|
-| Stage 1 | Brief parsed, plan file loaded, lock claimed |
-| Stage 2 | Files changed, tests added |
-| Stage 3 | Verification outputs (pass/fail) |
-| Stage 4 | Attestation text + timestamp |
-| Stage 5 | `gz obpi complete` (Step 1: attestation + brief + receipt), lock released (Step 2), markers cleaned (Steps 3-4), git-sync #1 (Step 5), reconcile (Step 6), git-sync #2 (Step 8) |
+> See references/evidence-capture.md for the full stage-by-stage evidence table.
 
 ---
 
 ## Plan-Audit-Receipt Contract
 
-The plan-audit-receipt (`.claude/plans/.plan-audit-receipt.json`) is the handoff artifact linking plan mode to this pipeline:
-
-```json
-{
-  "obpi_id": "OBPI-0.14.0-05",
-  "timestamp": "2026-03-16T12:00:00Z",
-  "verdict": "PASS",
-  "plan_file": "my-plan-name.md",
-  "gaps_found": 0
-}
-```
-
-- Written by the `plan-audit-gate.py` hook when exiting plan mode
-- Read by Stage 1 to locate the approved plan
-- **verdict = PASS**: plan is aligned with OBPI brief — proceed
-- **verdict = FAIL**: plan has alignment gaps — abort and resolve
+> See references/plan-audit-receipt-contract.md for the receipt JSON schema and contract details.
 
 ---
 
@@ -579,18 +556,7 @@ If a pipeline hook blocks a write, that means the pipeline is not active or evid
 
 ## Design Notes
 
-- AirlineOps is the behavioral reference implementation for this pipeline.
-- gzkit adapts the control surface to its native command vocabulary
-  (`uv run gz lint`, `uv run gz test`, etc.) and repository structure.
-- **Hooks do the hard enforcement.** This pipeline is orchestration narrative, not a security boundary. The real gates are:
-  - `plan-audit-gate.py` — enforces plan ↔ OBPI alignment at plan-mode exit
-  - `obpi-completion-validator.py` — enforces evidence requirements when marking briefs Completed
-  - `pipeline-gate.py` — blocks src/tests writes until pipeline is active
-- The pipeline's value is **sequencing and governance memory** — ensuring the ceremony and sync stages happen, which is exactly what gets lost in freeform execution.
-- `src/gzkit/pipeline_runtime.py` is the canonical shared runtime used
-  by the CLI and generated pipeline hooks.
-- In gzkit, `uv run gz git-sync --apply --lint --test` is the canonical Stage 5
-  sync ritual. Do not substitute ad-hoc git commands.
+> See references/design-notes.md for architectural context, hook enforcement details, and AirlineOps lineage.
 
 ---
 

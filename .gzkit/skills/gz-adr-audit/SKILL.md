@@ -4,7 +4,7 @@ description: Gate-5 audit templates and procedure for ADR verification. GovZero 
 category: adr-audit
 compatibility: GovZero v6 framework; provides audit procedure for COMPLETED→VALIDATED ADR transition
 metadata:
-  skill-version: "6.3.0"
+  skill-version: "6.3.1"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -21,6 +21,24 @@ last_reviewed: 2026-02-18
 # gz-adr-audit
 
 Execute reproducible ADR verification to move from COMPLETED → VALIDATED.
+
+### Common Rationalizations
+
+| Thought | Reality |
+|---------|---------|
+| "All OBPIs passed individually, the ADR is obviously complete" | Individual OBPI completion doesn't prove ADR-level integration. The audit verifies the whole. |
+| "Tests pass and coverage is met, the audit is done" | That's verification, not demonstration. Step 3 (Demonstrate Value) shows the feature working, not just tested. |
+| "The closeout ceremony already covered this" | Audit and closeout are complementary but independent. If only audit is run, Step 3 is mandatory. |
+| "Ledger entries exist from a previous audit, I can skip re-verification" | Check staleness. Entries older than 7 days or predating code changes require fresh verification. |
+| "This is a Foundation ADR, the audit can be lighter" | Foundation ADRs still require value demonstration. The feature must be shown working. |
+
+### Red Flags
+
+- AUDIT.md contains only mechanical checkmarks without a Feature Demonstration section
+- Agent marks ADR as VALIDATED without running `uv run gz adr report` to confirm lifecycle change
+- Audit proofs directory is empty or contains only pass/fail text without actual command output
+- Value demonstration uses generic language that could apply to any ADR
+- Validation receipt emitted before all shortfalls are resolved
 
 **Two-phase workflow:** See [AGENTS.md](../../../AGENTS.md) § Two-Phase ADR Workflow
 
