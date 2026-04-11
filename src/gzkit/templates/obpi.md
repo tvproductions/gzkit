@@ -155,7 +155,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 - [ ] Intent and scope recorded
 
-### Gate 2 (TDD)
+### Gate 2 (TDD — Red-Green-Refactor)
 
 ```text
 # Paste test output here

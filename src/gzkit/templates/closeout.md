@@ -10,7 +10,7 @@ Before requesting attestation, verify:
 
 - [ ] All checklist items in ADR are complete
 - [ ] All OBPIs have passing acceptance criteria
-- [ ] Gate 2 (TDD): Tests pass
+- [ ] Gate 2 (TDD): RGR cycle followed, tests derived from brief, tests pass
 {heavy_gates}
 - [ ] Code reviewed
 
