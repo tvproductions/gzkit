@@ -2,7 +2,7 @@
 id: OBPI-0.25.0-20-adr-governance-pattern
 parent: ADR-0.25.0-core-infrastructure-pattern-absorption
 item: 20
-status: Pending
+status: Completed
 lane: heavy
 date: 2026-04-09
 ---
@@ -85,6 +85,84 @@ equivalent surface spans `commands/covers.py` (178 lines) and
 
 - [ ] Human attestation required (Heavy lane)
 
+## COMPARISON ANALYSIS
+
+### airlineops: `opsdev/lib/adr_governance.py` (535 lines)
+
+Three capabilities consolidated from separate scripts into a single module.
+
+- **`evidence_audit()`** (~120 lines): Scans ADR files for title, status, and
+  evidence section presence. Reports completed ADRs missing evidence. Uses
+  `@dataclass(AdrRecord)`, hardcoded `ADR_DIR`, regex-based title/status parsing,
+  TSV and human format output.
+- **`adr_autolink()`** (~100 lines): Regex-based `@covers` decorator and
+  `# ADR:` comment parsing via `parse_test_file()`. Collects ADR→tests mapping
+  via `collect_test_map()`. Can write Verification sections into ADR files via
+  `write_into_adr()`. Uses numeric 4-digit ADR IDs via `id_fmt()`.
+- **`verification_report()`** (~165 lines): Discovers `@covers` decorators via
+  `discover_covers()` regex scanning. Updates ADR Verification sections.
+  Writes covers-map JSONL ledger entries via `_write_covers_ledger()` using
+  `CoversMapEntry` from `ledger_schema`.
+
+### gzkit equivalent surface (~1010 lines across 3 modules)
+
+| Module | Lines | Role |
+|--------|-------|------|
+| `traceability.py` | 418 | AST-based `@covers` scanning, `covers()` decorator with runtime REQ validation, Pydantic models (`CoverageEntry`, `CoverageRollup`, `CoverageReport`), multi-level rollups |
+| `commands/covers.py` | 178 | `gz covers` CLI with human/JSON/plain output, filtering by ADR/OBPI |
+| `commands/adr_audit.py` | 414 | `adr_audit_check()` brief content inspection + `adr_covers_check()` REQ traceability |
+
+### Dimension comparison
+
+| Dimension | airlineops | gzkit |
+|-----------|-----------|-------|
+| Parsing | Regex-based (`@covers`, `# ADR:` comments) | AST-based (`scan_test_tree()`) |
+| Coverage model | Flat ADR-to-tests mapping | Multi-level rollup: ADR/OBPI/REQ |
+| Data models | stdlib `@dataclass` (`AdrRecord`) | Pydantic `BaseModel` (`CoverageEntry`, `CoverageRollup`, `CoverageReport`) |
+| Evidence audit | Title/status/evidence section presence check | Brief content inspection (Implementation Summary, Key Proof, Human Attestation) |
+| Ledger integration | Local covers-map JSONL file | Central ledger graph (receipt events) |
+| Auto-writing | Injects Verification sections into ADR files | Not used (OBPI briefs + `@covers` workflow) |
+| Runtime validation | None | `covers()` decorator validates REQ exists at decoration time |
+| Output formats | TSV / human text | Human / JSON / plain via `gz covers` CLI |
+
+## DECISION: Confirm
+
+gzkit's governance surface already surpasses the airlineops module across all
+three capabilities. No absorption warranted.
+
+### Rationale
+
+1. **Parsing fidelity:** gzkit uses AST-based scanning (`scan_test_tree`)
+   which correctly handles string expressions, nested decorators, and multi-line
+   constructs. airlineops uses regex (`DECOR_RX`, `COMM_RX`, `RX_COVERS`),
+   which is fragile against non-trivial formatting.
+
+2. **Coverage depth:** gzkit computes three-level rollups (ADR, OBPI, REQ)
+   with `compute_coverage()`. airlineops provides only a flat ADR-to-test-path
+   mapping via `collect_test_map()` and `discover_covers()`.
+
+3. **Evidence audit:** gzkit's `adr_audit_check()` inspects brief content
+   sections (Implementation Summary, Key Proof, Human Attestation) via the
+   central ledger graph. airlineops's `evidence_audit()` only checks for the
+   presence of title, status, and an `## Evidence` heading via regex.
+
+4. **Convention compliance:** airlineops uses stdlib `@dataclass(AdrRecord)`,
+   hardcoded `ADR_DIR` paths, and regex parsing. gzkit uses Pydantic
+   `BaseModel` with `ConfigDict`, `pathlib` throughout, and AST-based
+   scanning — conforming to project data model and cross-platform policies.
+
+5. **Auto-writing is workflow-specific:** airlineops's `write_into_adr()`
+   and `adr_autolink(write=True)` inject Verification sections directly into
+   ADR markdown files. gzkit's governance workflow uses OBPI briefs with
+   `@covers` decorators and the `gz-adr-autolink` skill as a manual workflow
+   instead. This is an intentional design choice, not a gap.
+
+### Gate 4 (BDD): N/A
+
+No operator-visible behavior change. The Confirm decision validates that
+gzkit's existing governance surface is sufficient — no new commands, flags,
+output formats, or behavioral changes are introduced.
+
 ## Acceptance Criteria
 
 - [ ] REQ-0.25.0-20-01: Given the completed comparison, then the brief records
@@ -127,6 +205,43 @@ uv run -m behave features/core_infrastructure.feature
 - [ ] **Gate 4 (BDD):** Behavioral proof present or `N/A` recorded with rationale
 - [ ] **Gate 5 (Human):** Attestation recorded
 
+### Implementation Summary
+
+
+
+- Decision: Confirm — gzkit's governance surface already surpasses airlineops
+- Modules compared: airlineops adr_governance.py (535 lines, 3 capabilities) vs gzkit traceability + covers + adr_audit (~1010 lines)
+- Parsing: gzkit uses AST-based scanning, airlineops uses regex
+- Coverage: gzkit provides multi-level ADR/OBPI/REQ rollups, airlineops provides flat mapping
+- Evidence: gzkit inspects brief content sections, airlineops checks section presence only
+- Auto-writing: airlineops-specific workflow, intentionally not used in gzkit
+- No code absorbed — gzkit's existing implementation is sufficient and architecturally superior
+
+### Key Proof
+
+
+
+```bash
+uv run -m unittest tests/test_adr_governance_confirm.py -v
+# 4 tests pass — confirming gzkit governance surface covers airlineops capabilities
+```
+
+## Human Attestation
+
+- Attestor: `Jeffry`
+- Date: 2026-04-11
+- Attestation: attest completed
+
 ## Closing Argument
 
-*To be authored at completion from delivered evidence.*
+**Confirm.** airlineops's `adr_governance.py` is a 535-line module providing
+evidence audit, autolink, and verification report capabilities via regex-based
+parsing, stdlib dataclass models, and auto-writing Verification sections into
+ADR files. gzkit's governance surface (`traceability.py` + `covers.py` +
+`adr_audit.py`, ~1010 lines) already covers and surpasses all three
+capabilities: AST-based scanning instead of regex, Pydantic models with
+runtime REQ validation instead of stdlib dataclass, multi-level coverage
+rollups (ADR/OBPI/REQ) instead of flat mapping, and brief content inspection
+via the central ledger graph instead of section-presence checks. The
+auto-writing feature is specific to airlineops's older workflow and
+intentionally not used in gzkit's OBPI-based governance model.
