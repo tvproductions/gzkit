@@ -570,7 +570,13 @@ def _has_substantive_key_proof(content: str) -> bool:
 
 
 def _has_human_attestation_content(content: str) -> bool:
-    """Check for substantive Human Attestation section."""
+    """Check for substantive Human Attestation section.
+
+    Validates all three required fields (GHI-126):
+    - Attestor: non-placeholder name
+    - Attestation: substantive text
+    - Date: ISO 8601 date (YYYY-MM-DD)
+    """
     body = section_body(content, "Human Attestation")
     if body is None:
         return False
@@ -578,7 +584,16 @@ def _has_human_attestation_content(content: str) -> bool:
     if not attestor_match:
         return False
     attestor_val = attestor_match.group(1).strip().strip("`")
-    return bool(attestor_val) and attestor_val.lower() not in _PLACEHOLDERS
+    if not attestor_val or attestor_val.lower() in _PLACEHOLDERS:
+        return False
+    attestation_match = re.search(r"^- Attestation:\s*(.+)$", body, flags=re.MULTILINE)
+    if not attestation_match:
+        return False
+    attestation_val = attestation_match.group(1).strip()
+    if not attestation_val or attestation_val.lower() in _PLACEHOLDERS:
+        return False
+    date_match = re.search(r"^- Date:\s*`?(\d{4}-\d{2}-\d{2})`?$", body, flags=re.MULTILINE)
+    return bool(date_match)
 
 
 # ---------------------------------------------------------------------------
