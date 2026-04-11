@@ -178,6 +178,32 @@ def has_substantive_key_proof(content: str) -> bool:
     return False
 
 
+def has_valid_human_attestation(content: str) -> bool:
+    """Check that Human Attestation section has all three valid fields (GHI-126)."""
+    match = re.search(
+        r"^## Human Attestation\s*$([\s\S]*?)(?:^## |\n---|\Z)",
+        content,
+        flags=re.MULTILINE,
+    )
+    if not match:
+        return False
+    body = match.group(1)
+    attestor_match = re.search(r"^- Attestor:\s*(.+)$", body, flags=re.MULTILINE)
+    if not attestor_match:
+        return False
+    attestor_val = attestor_match.group(1).strip().strip("`").lower()
+    if not attestor_val or attestor_val in STRICT_PLACEHOLDERS | {"<name>", "todo", "none"}:
+        return False
+    attestation_match = re.search(r"^- Attestation:\s*(.+)$", body, flags=re.MULTILINE)
+    if not attestation_match:
+        return False
+    attestation_val = attestation_match.group(1).strip().lower()
+    if not attestation_val or attestation_val in STRICT_PLACEHOLDERS:
+        return False
+    date_match = re.search(r"^- Date:\s*`?(\d{4}-\d{2}-\d{2})`?$", body, flags=re.MULTILINE)
+    return bool(date_match)
+
+
 def resolve_would_be_content(abs_path: Path, tool_input: dict) -> str:
     """Resolve the file content that would result from the edit/write."""
     content_field = tool_input.get("content")
@@ -305,6 +331,12 @@ def main():
 
     adr_file = find_parent_adr_file(adr_dir)
 
+    # 4b. Resolve lane early so content quality checks can gate attestation
+    is_foundation = is_foundation_adr(adr_id)
+    parent_lane = get_parent_adr_lane(adr_file)
+    execution_mode = get_execution_mode(adr_file)
+    requires_human = execution_mode != "exception" and (is_foundation or parent_lane == "Heavy")
+
     # 5. Check brief content quality (hard block)
     would_be = resolve_would_be_content(abs_path, tool_input)
     brief_blocks = []
@@ -317,6 +349,11 @@ def main():
         brief_blocks.append(
             "  - Missing or non-substantive 'Key Proof' "
             "(requires test command output or verification evidence)"
+        )
+    if requires_human and not has_valid_human_attestation(would_be):
+        brief_blocks.append(
+            "  - Missing or malformed 'Human Attestation' section "
+            "(requires Attestor, Attestation text, and ISO date YYYY-MM-DD)"
         )
     if brief_blocks:
         details = "\n".join(brief_blocks)
@@ -345,18 +382,11 @@ def main():
         )
         sys.exit(2)
 
-    # 7. Check attestation requirements
-    execution_mode = get_execution_mode(adr_file)
-
+    # 7. Check attestation requirements (lane resolved in step 4b)
     if execution_mode == "exception":
         # Exception mode: self-close allowed. Audit evidence already
         # validated above. Human reviews at ADR closeout.
         sys.exit(0)
-
-    # Normal mode: check lane for attestation rigor
-    is_foundation = is_foundation_adr(adr_id)
-    parent_lane = get_parent_adr_lane(adr_file)
-    requires_human = is_foundation or parent_lane == "Heavy"
 
     if requires_human and not has_human_attestation(adr_dir, obpi_id):
         lane_reason = "Foundation (0.0.x)" if is_foundation else "Heavy lane"

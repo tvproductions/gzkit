@@ -225,6 +225,17 @@ def _record_obpi_completion_if_ready(
         isinstance(parent_adr, str) and bool(re.match(r"^ADR-0\.0\.\d+", parent_adr))
     )
 
+    # Block attested_completed if the brief's Human Attestation section is
+    # missing or malformed (GHI-126).
+    if requires_human_attestation and not human_attestation:
+        print(  # noqa: T201
+            f"Warning: Skipping completion receipt for {obpi_id} — "
+            f"Human Attestation section is missing or malformed "
+            f"(requires Attestor, Attestation text, and ISO date).",
+            file=sys.stderr,
+        )
+        return
+
     # Use 'human:agent-automated' as fallback if session is not human
     # In AirlineOps, agents can record 'completed' events, but they are 'not_attested'
     # unless evidence is present.
