@@ -82,9 +82,10 @@ status: Draft
 - [ ] Intent and scope recorded in this OBPI brief
 - [ ] Parent ADR checklist item quoted
 
-### Gate 2: TDD
+### Gate 2: TDD (Red-Green-Refactor)
 
-- [ ] Tests written before/with implementation
+- [ ] Tests derived from brief acceptance criteria, not from implementation
+- [ ] Red-Green-Refactor cycle followed per behavior increment
 - [ ] Tests pass: `uv run gz test`
 - [ ] Validation commands recorded in evidence with real outputs
 
@@ -137,7 +138,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 <!-- Verify all gates before marking OBPI accepted. -->
 
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** Tests pass, coverage maintained
+- [ ] **Gate 2 (TDD):** RGR cycle followed, tests derived from brief, coverage maintained
 - [ ] **Code Quality:** Lint, format, type checks clean
 - [ ] **Value Narrative:** Problem-before vs capability-now is documented
 - [ ] **Key Proof:** One concrete usage example is included
