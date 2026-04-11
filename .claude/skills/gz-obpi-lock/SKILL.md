@@ -5,11 +5,33 @@ category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-03-16
+metadata:
+  skill-version: "6.0.1"
 ---
 
 # gz-obpi-lock
 
 Claim or release OBPI-level work locks for multi-agent coordination.
+
+### Common Rationalizations
+
+These thoughts mean STOP — you are about to bypass coordination:
+
+| Thought | Reality |
+|---------|---------|
+| "No one else is working on this, I don't need to lock" | You do not know what other agents are doing. The lock is coordination, not permission. |
+| "I'll just do a quick fix, no need for a lock" | Quick fixes that conflict with another agent's work create merge conflicts. Lock first, always. |
+| "The lock expired, so I'll just re-claim it" | An expired lock may mean another agent started work. Check status before re-claiming. |
+| "I'll release the lock manually later" | The pipeline releases at Stage 5. Manual release outside the pipeline risks orphaned work. |
+| "Lock conflicts slow me down" | Merge conflict resolution after concurrent edits is far slower than waiting for a lock. |
+
+### Red Flags
+
+- Multiple agents editing the same ADR's files without lock coordination
+- Lock file exists but agent proceeds without checking it
+- Pipeline completes but lock is never released (orphaned lock)
+- Agent force-releases another agent's lock without investigating
+- Work begins on an OBPI without any `gz obpi lock claim` in the session
 
 ---
 

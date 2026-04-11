@@ -3,7 +3,7 @@ name: gz-design
 description: Collaborative design dialogue that produces GovZero ADR artifacts. Use when exploring a new feature, capability, or architectural change before implementation — replaces superpowers brainstorming for this project. Triggers on "design X", "let's design", "brainstorm X", "I want to build X", "gz-design".
 category: adr-lifecycle
 metadata:
-  skill-version: "1.0.0"
+  skill-version: "1.0.1"
   govzero-framework-version: "v6"
 lifecycle_state: active
 owner: gzkit-governance
@@ -13,6 +13,25 @@ last_reviewed: 2026-03-27
 # gz-design
 
 Collaborative design dialogue that exits into GovZero artifacts — not superpowers specs, not flat plans.
+
+### Common Rationalizations
+
+| Thought | Reality |
+|---------|---------|
+| "The user already knows what they want, just code it" | Design dialogue surfaces constraints, alternatives, and consequences the user hasn't articulated. Skipping it ships unexamined decisions. |
+| "This is a small feature, it doesn't need a design phase" | Small features that skip design produce ADRs with weak rationale. The interview forcing functions are proportional to complexity. |
+| "I'll create the ADR now and refine the design during implementation" | Design refinement during implementation is scope creep. The ADR captures the decision before code exists. |
+| "The pool has a similar idea, I'll just implement that" | Pool ADRs are stubs, not designs. Promote or supersede -- don't treat a stub as a spec. |
+| "The user said 'let's design X' but I can see the answer is obvious" | Your obvious answer lacks the user's context. One question at a time surfaces what you don't know. |
+
+### Red Flags
+
+- Agent writes implementation code during the design skill
+- Multiple clarifying questions bundled into a single message
+- ADR booked without user approval of the design
+- No overlap check against existing pool ADRs and in-flight ADRs
+- gz-adr-evaluate skipped after ADR creation
+- Agent writes to `docs/superpowers/` (removed surface)
 
 ---
 

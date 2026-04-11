@@ -196,9 +196,10 @@ class TestZeroWriteToLockPaths(unittest.TestCase):
 
     @covers("REQ-0.0.14-03-08")
     def test_dispatch_no_write_to_lock_json(self):
-        content = _read(_PIPELINE_DISPATCH)
+        # DISPATCH.md consolidated into SKILL.md — verify same invariant there
+        content = _read(_PIPELINE_SKILL)
         hits = re.findall(r"Write.*\.lock\.json", content, re.IGNORECASE)
-        self.assertEqual(len(hits), 0, "Dispatch must not Write to .lock.json files")
+        self.assertEqual(len(hits), 0, "Pipeline skill must not Write to .lock.json files")
 
 
 # ---------------------------------------------------------------------------
@@ -284,12 +285,13 @@ class TestPipelineToolUsePattern(unittest.TestCase):
 
     @covers("REQ-0.0.14-03-11")
     def test_dispatch_code_blocks_use_gz_obpi(self):
-        content = _read(_PIPELINE_DISPATCH)
+        # DISPATCH.md consolidated into SKILL.md — verify same invariant there
+        content = _read(_PIPELINE_SKILL)
         gz_obpi_refs = re.findall(r"gz obpi", content)
         self.assertGreater(
             len(gz_obpi_refs),
             0,
-            "Dispatch must reference 'gz obpi' commands",
+            "Pipeline skill must reference 'gz obpi' commands",
         )
 
 

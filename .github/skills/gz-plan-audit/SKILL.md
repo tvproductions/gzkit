@@ -7,7 +7,7 @@ owner: gzkit-governance
 last_reviewed: 2026-03-12
 compatibility: Works with GovZero-compliant repositories; in gzkit the receipt is written under .claude/plans/, consumed by gz-obpi-pipeline, and enforced by the registered plan-exit hooks tracked by ADR-0.12.0.
 metadata:
-  skill-version: "6.0.0"
+  skill-version: "6.0.1"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero_layer: "Layer 1 - Evidence Gathering"
@@ -47,6 +47,27 @@ Current gzkit compatibility rule:
 - The registered Claude hook chain now consumes that receipt mechanically:
   `plan-audit-gate.py` blocks `ExitPlanMode` without a valid receipt and
   `pipeline-router.py` routes PASS receipts into `gz-obpi-pipeline`.
+
+### Common Rationalizations
+
+These thoughts mean STOP — you are about to skip a critical alignment check:
+
+| Thought | Reality |
+|---------|---------|
+| "The brief requirements are clear enough to skip the audit" | Clarity is not alignment. The audit catches drift between ADR intent and brief scope that no amount of reading catches. |
+| "I already read the ADR and brief, they match" | Reading is not auditing. The structured comparison catches gaps that casual reading misses every time. |
+| "There's no plan yet, so I'll skip the audit entirely" | The ADR-to-OBPI alignment check runs without a plan. Skip plan checks only — the ADR alignment is still required. |
+| "The plan-audit hook will catch problems later" | The hook enforces receipt existence, not alignment quality. This skill provides the quality check the hook cannot. |
+| "This is a small OBPI, alignment is obvious" | Small OBPIs drift more, not less. Brief constraints are easy to miss when scope feels trivial. |
+| "The ADR hasn't changed since the brief was written" | ADR stability does not guarantee brief fidelity. Briefs are authored under time pressure and miss intent regularly. |
+
+### Red Flags
+
+- Implementation starts without a `.plan-audit-receipt.json` in `.claude/plans/`
+- Plan audit receipt shows PASS but gaps were hand-waved as "minor"
+- Agent proceeds directly from brief reading to implementation without structured comparison
+- ADR intent mentions capabilities not reflected in the OBPI brief requirements
+- Plan file references files outside the brief's Allowed Paths
 
 ## Invocation
 

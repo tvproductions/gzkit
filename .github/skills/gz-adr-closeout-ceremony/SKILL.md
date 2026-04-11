@@ -4,7 +4,7 @@ description: Execute the ADR closeout ceremony protocol for human attestation. G
 category: adr-audit
 compatibility: GovZero v6 framework; provides runbook walkthrough for human ADR attestation
 metadata:
-  skill-version: "7.1.0"
+  skill-version: "7.1.1"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -321,13 +321,7 @@ State is persisted at `.gzkit/ceremonies/<ADR-ID>.json` by the CLI. Structure:
 
 ## CLI Reference
 
-| Command | Purpose |
-|---------|---------|
-| `gz closeout ADR-X.Y.Z --ceremony` | Initialize or resume ceremony |
-| `gz closeout ADR-X.Y.Z --ceremony --next` | Advance to next step |
-| `gz closeout ADR-X.Y.Z --ceremony --attest "..."` | Record attestation at Step 6 |
-| `gz closeout ADR-X.Y.Z --ceremony --ceremony-status` | Show current step and completed steps |
-| `gz closeout ADR-X.Y.Z` | Run closeout pipeline (Step 7) |
+> See references/cli-reference.md for the full command table.
 
 ---
 
@@ -387,15 +381,7 @@ The agent completes attestation but does not sync the repo. The attestation exis
 
 ## ADR Folder Structure (Canonical)
 
-```text
-docs/design/adr/adr-X.Y.x/ADR-X.Y.Z-{slug}/
-  ADR-X.Y.Z-{slug}.md             # Intent document
-  ADR-CLOSEOUT-FORM.md            # Closeout ceremony workspace
-  briefs/
-    OBPI-X.Y.Z-01-*.md            # Atomic implementation units
-  audit/
-    AUDIT-ADR-X.Y.Z-COMPLETED.md  # Post-attestation reconciliation
-```
+> See references/folder-structure.md for the expected directory layout.
 
 ---
 
