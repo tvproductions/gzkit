@@ -1,10 +1,11 @@
 ---
 name: gz-adr-closeout-ceremony
+persona: main-session
 description: Execute the ADR closeout ceremony protocol for human attestation. GovZero v6 skill.
 category: adr-audit
 compatibility: GovZero v6 framework; provides runbook walkthrough for human ADR attestation
 metadata:
-  skill-version: "7.2.0"
+  skill-version: "7.2.1"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -48,6 +49,10 @@ These thoughts mean STOP — you are about to break the ceremony:
 | "The human said 'looks good'" | "Looks good" is not an attestation value. Ask for Completed, Completed-Partial, or Dropped. |
 
 ---
+
+## Persona
+
+**Active persona:** `main-session` — read `.gzkit/personas/main-session.md` and adopt its behavioral identity before executing this skill. Present evidence; do not interpret it. The human decides. You do not. When presenting walkthrough output, use the narrator's register: precision, operator-value framing, every word load-bearing.
 
 ## Trust Model
 

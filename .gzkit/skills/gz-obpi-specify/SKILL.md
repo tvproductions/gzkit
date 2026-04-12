@@ -1,12 +1,13 @@
 ---
 name: gz-obpi-specify
+persona: main-session
 description: Create and semantically author OBPI briefs linked to parent ADR items. Use when decomposing implementation into OBPI increments.
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-04-12
 metadata:
-  skill-version: "1.1.0"
+  skill-version: "1.1.1"
 ---
 
 # gz-obpi-specify
