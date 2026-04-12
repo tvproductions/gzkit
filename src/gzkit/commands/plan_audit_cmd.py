@@ -32,11 +32,13 @@ def plan_audit_cmd(obpi_id: str, as_json: bool) -> None:
     if adr_dir and not brief_path:
         gaps.append(f"OBPI brief not found for {obpi_id}")
 
-    # 4. Find plan file
-    plans_dir = project_root / ".claude" / "plans"
-    plan_file = _find_plan_file(plans_dir, obpi_id)
+    # 4. Find plan file (dual-scan project-local + ~/.claude/plans/, see #128)
+    from gzkit.pipeline_markers import find_plan_for_obpi, pipeline_plans_dir
+
+    plans_dir = pipeline_plans_dir(project_root)
+    plan_file = find_plan_for_obpi(project_root, obpi_id)
     if not plan_file:
-        gaps.append(f"No plan file found in .claude/plans/ for {obpi_id}")
+        gaps.append(f"No plan file found for {obpi_id} in .claude/plans/ or ~/.claude/plans/")
 
     # 5. Path overlap check (plan files must stay within brief allowed paths)
     if brief_path and plan_file:
@@ -129,7 +131,11 @@ def _find_brief(adr_dir: Path, obpi_id: str) -> Path | None:
 
 
 def _find_plan_file(plans_dir: Path, obpi_id: str) -> Path | None:
-    """Find the most recent plan file referencing this OBPI."""
+    """Legacy single-directory plan finder retained for backwards compat.
+
+    Prefer :func:`gzkit.pipeline_markers.find_plan_for_obpi`, which scans both
+    the project-local and global plan directories (see #128).
+    """
     if not plans_dir.exists():
         return None
     candidates = []

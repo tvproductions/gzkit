@@ -232,11 +232,13 @@ def _plan_audit_gate_script() -> str:
             \"\"\"Plan Audit Gate Hook.
 
             PreToolUse hook on ExitPlanMode that enforces the gz-plan-audit pre-flight
-            alignment check. If the most recent plan in .claude/plans/ references an OBPI,
+            alignment check. If the most recent plan referencing an OBPI exists in
+            either ``<project>/.claude/plans/`` or ``~/.claude/plans/`` (Claude Code's
+            plan mode writes new plans to the global directory by default — see #128),
             the agent cannot exit plan mode until /gz-plan-audit has been run.
 
             How it works:
-              1. Finds the most recently modified plan file in .claude/plans/
+              1. Finds the most recently modified plan file across both plan dirs
               2. Checks if the plan references an OBPI ID (pattern: OBPI-X.Y.Z-NN)
               3. If yes, looks for an audit receipt at .claude/plans/.plan-audit-receipt.json
               4. Receipt must reference the same OBPI and be newer than the plan file
@@ -274,18 +276,43 @@ def _plan_audit_gate_script() -> str:
 
 
             def find_plans_dir(cwd: str) -> Path | None:
-                \"\"\"Find .claude/plans/ directory.\"\"\"
+                \"\"\"Return the project-local plans dir (used for receipt lookup).\"\"\"
                 plans_dir = Path(cwd) / ".claude" / "plans"
                 return plans_dir if plans_dir.is_dir() else None
 
 
+            def _claude_home() -> Path:
+                \"\"\"Return Claude home, honoring GZKIT_CLAUDE_HOME for test isolation.\"\"\"
+                override = os.environ.get("GZKIT_CLAUDE_HOME")
+                return Path(override) if override else Path.home()
+
+
+            def plan_search_dirs(cwd: str) -> list[Path]:
+                \"\"\"Return both project-local and global plans dirs (#128).\"\"\"
+                project_local = Path(cwd) / ".claude" / "plans"
+                global_local = _claude_home() / ".claude" / "plans"
+                seen: set[Path] = set()
+                dirs: list[Path] = []
+                for candidate in (project_local, global_local):
+                    try:
+                        resolved = candidate.resolve()
+                    except (OSError, RuntimeError):
+                        continue
+                    if resolved in seen or not candidate.is_dir():
+                        continue
+                    seen.add(resolved)
+                    dirs.append(candidate)
+                return dirs
+
+
             def find_most_recent_plan(plans_dir: Path) -> Path | None:
-                \"\"\"Find the most recently modified non-hidden markdown plan.\"\"\"
-                md_files = [
-                    path
-                    for path in plans_dir.iterdir()
-                    if path.suffix == ".md" and not path.name.startswith(".")
-                ]
+                \"\"\"Find the most recently modified non-hidden markdown plan (#128).\"\"\"
+                cwd_root = plans_dir.parent.parent
+                md_files: list[Path] = []
+                for search_dir in plan_search_dirs(str(cwd_root)):
+                    for path in search_dir.iterdir():
+                        if path.suffix == ".md" and not path.name.startswith("."):
+                            md_files.append(path)
                 if not md_files:
                     return None
                 return max(md_files, key=lambda path: path.stat().st_mtime)

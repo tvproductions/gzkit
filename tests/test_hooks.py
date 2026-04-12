@@ -387,12 +387,19 @@ class TestPlanAuditGateHook(unittest.TestCase):
 
     def _run_hook(self, script_path: Path, cwd: Path) -> subprocess.CompletedProcess[str]:
         payload = {"cwd": str(cwd)}
+        # GHI-128: isolate the subprocess from the developer's real
+        # ~/.claude/plans/ by pointing GZKIT_CLAUDE_HOME at an empty fake home
+        # under the test's tempdir.
+        fake_home = cwd / "_fake_home"
+        (fake_home / ".claude" / "plans").mkdir(parents=True, exist_ok=True)
+        env = {**os.environ, "GZKIT_CLAUDE_HOME": str(fake_home)}
         return subprocess.run(
             [sys.executable, str(script_path)],
             input=json.dumps(payload),
             text=True,
             capture_output=True,
             check=False,
+            env=env,
         )
 
     def _write_plan(self, plans_dir: Path, name: str, content: str) -> Path:

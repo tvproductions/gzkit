@@ -5,9 +5,14 @@ Short-form IDs like ``OBPI-0.0.12-02`` should resolve to full slugs like
 exists in the ledger graph.
 """
 
+import tempfile
 import unittest
+import unittest.mock
+from pathlib import Path
+from unittest.mock import patch
 
-from gzkit.commands.common import _prefix_match_obpi
+from gzkit.commands.common import _prefix_match_obpi, resolve_obpi
+from gzkit.config import GzkitConfig
 
 
 class TestPrefixMatchObpi(unittest.TestCase):
@@ -50,6 +55,53 @@ class TestPrefixMatchObpi(unittest.TestCase):
         }
         result = _prefix_match_obpi(graph, "OBPI-0.0.12-02")
         self.assertIsNone(result)
+
+
+class TestResolveObpiSymmetricExpansion(unittest.TestCase):
+    """GHI-114: resolve_obpi must apply prefix expansion to file IDs too.
+
+    A brief frontmatter ``id: OBPI-0.0.15-03`` (short form) must still match
+    the ledger graph entry ``OBPI-0.0.15-03-version-sync-integration`` (full
+    slug). Before the fix, only the input was expanded, not the file ID,
+    so the file lookup returned ``None``.
+    """
+
+    def test_short_form_brief_id_matches_full_slug_graph(self) -> None:
+        full_slug = "OBPI-0.0.15-03-version-sync-integration"
+        short_form = "OBPI-0.0.15-03"
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            brief_path = root / f"{short_form}.md"
+            brief_path.write_text(
+                f"---\nid: {short_form}\n---\n# OBPI-0.0.15-03\n",
+                encoding="utf-8",
+            )
+
+            ledger = unittest.mock.MagicMock()
+            ledger.canonicalize_id.side_effect = lambda x: x  # identity
+            ledger.get_artifact_graph.return_value = {
+                full_slug: {"type": "obpi"},
+            }
+
+            config = unittest.mock.MagicMock(spec=GzkitConfig)
+            config.paths = unittest.mock.MagicMock()
+            config.paths.design_root = "design"
+
+            with (
+                patch(
+                    "gzkit.commands.common.scan_existing_artifacts",
+                    return_value={"obpis": [brief_path]},
+                ),
+                patch(
+                    "gzkit.commands.common.parse_artifact_metadata",
+                    return_value={"id": short_form},
+                ),
+            ):
+                resolved_id, resolved_path = resolve_obpi(root, config, ledger, short_form)
+
+            self.assertEqual(resolved_id, full_slug)
+            self.assertEqual(resolved_path, brief_path)
 
 
 if __name__ == "__main__":

@@ -366,7 +366,16 @@ def resolve_obpi(
     for obpi_file in artifacts.get("obpis", []):
         metadata = parse_artifact_metadata(obpi_file)
         file_id = metadata.get("id", obpi_file.stem)
-        if ledger.canonicalize_id(file_id) == canonical_obpi:
+        file_canonical = ledger.canonicalize_id(file_id)
+        # GHI-114: A brief frontmatter `id` may be the short form
+        # (OBPI-0.0.15-03) while the ledger graph holds the full slug
+        # (OBPI-0.0.15-03-version-sync-integration). Apply prefix expansion
+        # symmetrically so the comparison succeeds.
+        if file_canonical != canonical_obpi:
+            expanded_file = _prefix_match_obpi(graph, file_canonical)
+            if expanded_file:
+                file_canonical = expanded_file
+        if file_canonical == canonical_obpi:
             matches.append(obpi_file)
 
     if len(matches) > 1:
