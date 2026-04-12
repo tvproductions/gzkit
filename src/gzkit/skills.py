@@ -60,6 +60,7 @@ class Skill(BaseModel):
     name: str
     path: Path
     description: str
+    lifecycle_state: str = "active"
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
@@ -67,6 +68,7 @@ class Skill(BaseModel):
             "name": self.name,
             "path": str(self.path),
             "description": self.description,
+            "lifecycle_state": self.lifecycle_state,
         }
 
 
@@ -175,6 +177,13 @@ def _read_description(skill_file: Path) -> str:
     return frontmatter.get("description") or _body_description(body)
 
 
+def _read_lifecycle_state(skill_file: Path) -> str:
+    """Read the skill's declared lifecycle_state (defaults to active)."""
+    content = skill_file.read_text(encoding="utf-8")
+    frontmatter, _ = _parse_frontmatter(content)
+    return frontmatter.get("lifecycle_state") or "active"
+
+
 def scaffold_skill(
     project_root: Path,
     dir_name: str,
@@ -254,12 +263,22 @@ def scaffold_core_skills(project_root: Path, config: GzkitConfig | None = None) 
     return created
 
 
-def list_skills(project_root: Path, config: GzkitConfig | None = None) -> list[Skill]:
-    """List all skills in the project.
+def list_skills(
+    project_root: Path,
+    config: GzkitConfig | None = None,
+    *,
+    include_retired: bool = False,
+) -> list[Skill]:
+    """List skills in the project.
+
+    By default, retired skills are excluded so the CLI discovery surface matches
+    the generated AGENTS.md skill catalog (see :mod:`gzkit.sync_skills`). Pass
+    ``include_retired=True`` to surface retired/archived compatibility skills.
 
     Args:
         project_root: Project root directory.
         config: Optional configuration.
+        include_retired: When True, include retired skills in the result.
 
     Returns:
         List of Skill objects.
@@ -274,16 +293,22 @@ def list_skills(project_root: Path, config: GzkitConfig | None = None) -> list[S
 
     skills = []
     for skill_path in skills_dir.iterdir():
-        if skill_path.is_dir():
-            skill_file = skill_path / "SKILL.md"
-            if skill_file.exists():
-                skills.append(
-                    Skill(
-                        name=skill_path.name,
-                        path=skill_path,
-                        description=_read_description(skill_file),
-                    )
-                )
+        if not skill_path.is_dir():
+            continue
+        skill_file = skill_path / "SKILL.md"
+        if not skill_file.exists():
+            continue
+        lifecycle_state = _read_lifecycle_state(skill_file)
+        if lifecycle_state == "retired" and not include_retired:
+            continue
+        skills.append(
+            Skill(
+                name=skill_path.name,
+                path=skill_path,
+                description=_read_description(skill_file),
+                lifecycle_state=lifecycle_state,
+            )
+        )
 
     return sorted(skills, key=lambda s: s.name)
 
@@ -317,6 +342,7 @@ def get_skill(
         name=skill_name,
         path=skill_path,
         description=_read_description(skill_file),
+        lifecycle_state=_read_lifecycle_state(skill_file),
     )
 
 

@@ -61,6 +61,68 @@ class TestSkillCommands(unittest.TestCase):
             self.assertIn("gz-adr-create", result.output)
             self.assertNotIn("gz-adr-manager", result.output)
 
+    @staticmethod
+    def _mark_skill_retired(skill_name: str) -> None:
+        """Rewrite a canonical skill file's lifecycle_state to retired."""
+        skill_file = Path(".gzkit/skills") / skill_name / "SKILL.md"
+        content = skill_file.read_text(encoding="utf-8")
+        lines = [
+            "lifecycle_state: retired" if line.startswith("lifecycle_state:") else line
+            for line in content.splitlines()
+        ]
+        skill_file.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    def test_skill_list_hides_retired_by_default(self) -> None:
+        """skill list matches AGENTS catalog semantics — retired skills hidden."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            self._mark_skill_retired("lint")
+            result = runner.invoke(main, ["skill", "list"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertNotIn("lint", result.output)
+            self.assertIn("gz-adr-create", result.output)
+
+    def test_skill_list_all_shows_retired_with_label(self) -> None:
+        """skill list --all surfaces retired skills with an explicit label."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            self._mark_skill_retired("lint")
+            result = runner.invoke(main, ["skill", "list", "--all"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("lint", result.output)
+            self.assertIn("retired", result.output.lower())
+
+    def test_skill_list_json_default_filters_retired(self) -> None:
+        """skill list --json excludes retired skills by default."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            self._mark_skill_retired("lint")
+            result = runner.invoke(main, ["skill", "list", "--json"])
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            names = [s["name"] for s in payload["skills"]]
+            self.assertNotIn("lint", names)
+            self.assertIn("gz-adr-create", names)
+            self.assertFalse(payload["include_retired"])
+
+    def test_skill_list_json_all_includes_lifecycle(self) -> None:
+        """skill list --json --all includes every skill and its lifecycle_state."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            self._mark_skill_retired("lint")
+            result = runner.invoke(main, ["skill", "list", "--all", "--json"])
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            by_name = {s["name"]: s for s in payload["skills"]}
+            self.assertIn("lint", by_name)
+            self.assertEqual(by_name["lint"]["lifecycle_state"], "retired")
+            self.assertEqual(by_name["gz-adr-create"]["lifecycle_state"], "active")
+            self.assertTrue(payload["include_retired"])
+
     def test_skill_new(self) -> None:
         """skill new creates skill."""
         runner = CliRunner()
