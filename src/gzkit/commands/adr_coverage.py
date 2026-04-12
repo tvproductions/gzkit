@@ -6,7 +6,12 @@ from pathlib import Path
 from typing import Any, cast
 
 from gzkit.commands.common import console
-from gzkit.traceability import CoverageEntry, compute_coverage, scan_test_tree
+from gzkit.traceability import (
+    CoverageEntry,
+    compute_coverage,
+    find_covers_in_source,
+    scan_test_tree,
+)
 from gzkit.triangle import ReqId, scan_briefs
 
 
@@ -111,7 +116,15 @@ def _print_coverage_section(
 
 
 def _collect_covers_annotations(project_root: Path) -> dict[str, list[str]]:
-    """Collect @covers("<target>") annotations from tests/**/*.py."""
+    """Collect ``@covers`` references from ``tests/**/*.py``.
+
+    Uses the canonical scanner in :mod:`gzkit.traceability` so this matches
+    what gz drift, gz covers, and gz adr audit-check see (see #120). Returns
+    a mapping of target identifier (REQ/OBPI/ADR) to the list of relative
+    test file paths that reference it. ``adr_covers_check`` also wants to
+    see ADR/OBPI references, which only appear via the decorator-call form;
+    those are picked up via a focused AST pass below.
+    """
     tests_dir = project_root / "tests"
     if not tests_dir.exists():
         return {}
@@ -122,6 +135,14 @@ def _collect_covers_annotations(project_root: Path) -> dict[str, list[str]]:
         content = test_file.read_text(encoding="utf-8")
         rel_path = str(test_file.relative_to(project_root))
 
+        # REQ-form references (decorator + docstring forms) via shared regex.
+        for req_id, _line_num in find_covers_in_source(content):
+            rows = covers.setdefault(req_id, [])
+            if rel_path not in rows:
+                rows.append(rel_path)
+
+        # ADR/OBPI-form references only appear in decorator calls; the regex
+        # above is REQ-shaped. Walk the AST once for those non-REQ targets.
         try:
             tree = ast.parse(content)
         except SyntaxError:
@@ -147,7 +168,7 @@ def _collect_covers_annotations(project_root: Path) -> dict[str, list[str]]:
                 ):
                     continue
                 target = target_arg.value.strip()
-                if not target:
+                if not target or target.startswith("REQ-"):
                     continue
                 rows = covers.setdefault(target, [])
                 if rel_path not in rows:
