@@ -5,9 +5,8 @@ from textwrap import dedent
 
 def _post_edit_ruff_script() -> str:
     """Return the non-blocking post-edit ruff hook script."""
-    return (
-        dedent(
-            """\
+    return dedent(
+        """\
             #!/usr/bin/env python3
             \"\"\"Post-Edit Ruff Hook.
 
@@ -71,6 +70,4 @@ def _post_edit_ruff_script() -> str:
             if __name__ == "__main__":
                 main()
             """
-        )
-        + "\n"
     )
