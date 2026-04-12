@@ -40,9 +40,29 @@ def _readiness_group_score(passed: int, total: int) -> float:
     return round((passed / total) * 3, 2)
 
 
+def _readiness_check_any_of(project_root: Path, candidates: list[dict[str, str]]) -> bool:
+    """Return True if any candidate file/dir exists under project_root."""
+    for candidate in candidates:
+        candidate_kind = candidate.get("kind", "file")
+        rel_path = candidate["path"]
+        if candidate_kind == "dir" and _readiness_check_exists(
+            project_root, rel_path, expect_dir=True
+        ):
+            return True
+        if candidate_kind == "file" and _readiness_check_exists(
+            project_root, rel_path, expect_dir=False
+        ):
+            return True
+    return False
+
+
 def _readiness_check_ok(project_root: Path, check: dict[str, Any]) -> bool:
     """Evaluate one readiness check definition."""
     kind = str(check["kind"])
+    if kind == "any_of":
+        return _readiness_check_any_of(
+            project_root, cast(list[dict[str, str]], check["candidates"])
+        )
     rel_path = str(check["path"])
     if kind == "dir":
         return _readiness_check_exists(project_root, rel_path, expect_dir=True)
@@ -271,10 +291,19 @@ def readiness_audit_cmd(as_json: bool) -> None:
             },
             {
                 "id": "test_surface",
-                "kind": "file",
-                "path": "tests/test_cli.py",
+                "kind": "any_of",
+                "path": "tests/{commands,policy,test_cli_parser.py} or features/",
+                "candidates": [
+                    {"kind": "dir", "path": "tests/commands"},
+                    {"kind": "dir", "path": "tests/policy"},
+                    {"kind": "file", "path": "tests/test_cli_parser.py"},
+                    {"kind": "dir", "path": "features"},
+                ],
                 "required": False,
-                "issue": "core CLI verification surface missing",
+                "issue": (
+                    "CLI verification surfaces missing — expected at least one of "
+                    "tests/commands/, tests/policy/, tests/test_cli_parser.py, features/"
+                ),
             },
             {
                 "id": "readiness_template",
@@ -342,7 +371,16 @@ def readiness_audit_cmd(as_json: bool) -> None:
                 "path": "AGENTS.md",
                 "markers": ("Gate 2", "Gate 4", "BDD"),
             },
-            {"kind": "file", "path": "tests/test_cli.py"},
+            {
+                "kind": "any_of",
+                "path": "tests/{commands,policy,test_cli_parser.py} or features/",
+                "candidates": [
+                    {"kind": "dir", "path": "tests/commands"},
+                    {"kind": "dir", "path": "tests/policy"},
+                    {"kind": "file", "path": "tests/test_cli_parser.py"},
+                    {"kind": "dir", "path": "features"},
+                ],
+            },
             {"kind": "file", "path": "tests/test_sync.py"},
             {"kind": "file", "path": "docs/user/commands/parity-check.md"},
             {"kind": "file", "path": "docs/user/commands/skill-audit.md"},
