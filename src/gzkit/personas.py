@@ -359,11 +359,7 @@ def _evidence_quality_proxy(
             continue
         criteria = raw_ev.get("criteria_evaluated")  # type: ignore[union-attr]
         if isinstance(criteria, list):
-            passing = [
-                c
-                for c in criteria
-                if isinstance(c, dict) and c.get("result") == "PASS"  # type: ignore[union-attr]
-            ]
+            passing = [c for c in criteria if isinstance(c, dict) and c.get("result") == "PASS"]
             if passing:
                 return "pass", f"{len(passing)} criteria evaluated with PASS"
     if not audits:

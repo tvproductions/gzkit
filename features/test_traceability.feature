@@ -49,9 +49,11 @@ Feature: Requirement coverage reporting CLI
     And JSON path "coverage.covered_reqs" equals "1"
     And JSON path "coverage.uncovered_reqs" equals "1"
 
-  Scenario: Audit-check shows uncovered REQs as advisory findings
+  Scenario: Audit-check flags uncovered REQs as blocking coverage findings
     Given the workspace is initialized
     And ADR-0.1.0 exists
     And an OBPI brief with covered and uncovered REQs exists
     When I run the gz command "adr audit-check ADR-0.1.0 --json"
-    Then JSON path "advisory_findings" is not empty
+    Then the command exits with code 1
+    And JSON path "coverage_findings" is not empty
+    And JSON path "passed" equals "False"

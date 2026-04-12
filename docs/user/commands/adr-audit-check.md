@@ -17,7 +17,7 @@ gz adr audit-check <ADR-ID> [--json]
 - ADR-to-OBPI linkage from ledger and artifact metadata
 - OBPI completion markers (`status: Completed` and/or `**Brief Status:** Completed`)
 - Presence of non-placeholder implementation summary evidence
-- Requirement coverage from `@covers` test annotations (advisory)
+- Requirement coverage from `@covers` test annotations (blocking)
 
 Implementation-summary evidence is parsed from inline markdown bullets in
 `### Implementation Summary`, for example:
@@ -38,14 +38,15 @@ The audit-check output includes a coverage section showing which REQs under
 the target ADR are proven by `@covers` test annotations.
 
 - **Per-OBPI rollup**: Each OBPI's REQ coverage count and percentage.
-- **Uncovered REQs**: Listed as advisory findings — they appear in output
-  but do not affect the pass/fail status.
+- **Uncovered REQs**: Listed as blocking findings — any uncovered REQ fails
+  the audit gate (exit code 1, `passed: false`).
 - **JSON output**: The `coverage` key contains `total_reqs`, `covered_reqs`,
   `uncovered_reqs`, `coverage_percent`, `by_obpi` array, and `uncovered` list.
-  The `advisory_findings` key lists uncovered REQs separately from blocking findings.
+  The `coverage_findings` key lists uncovered REQs that block the audit
+  alongside the OBPI evidence findings in the `findings` key.
 
-Coverage is informational. Uncovered REQs are flagged for auditor awareness
-but never block the audit gate.
+When an ADR defines REQs, every REQ must be reachable from a `@covers`
+annotation. Uncovered REQs are not advisory — they block the audit.
 
 ---
 
