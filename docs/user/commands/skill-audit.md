@@ -77,20 +77,37 @@ State-specific requirements:
 
 Date fields must be `YYYY-MM-DD`.
 
-## Mirror Identity Contract (Fail-Closed)
+## Mirror Package Parity Contract (Fail-Closed)
 
-For every mirrored skill, these frontmatter fields must match canonical exactly:
+Mirror parity is enforced at the package level — not just frontmatter. For every
+mirrored skill, the following must match canonical:
 
-- `name`
-- `description`
-- `lifecycle_state`
-- `owner`
-- `last_reviewed`
+1. **`SKILL.md` frontmatter** — identity, lifecycle, capability, metadata,
+   transition and deprecation fields as declared in canonical.
+2. **`SKILL.md` markdown body** — the content after the YAML frontmatter must
+   match canonical byte-for-byte (after trimming trailing whitespace).
+3. **Supporting assets** — every non-`SKILL.md` file under the canonical skill
+   directory must exist in the mirror with identical bytes.
 
-When canonical defines optional capability/metadata/transition/deprecation keys,
-mirrors must preserve those values exactly.
+Any mirror drift, missing mirror directory, missing mirror `SKILL.md`, body
+drift, or asset drift is a blocking error. An asset that is present in a mirror
+but not in canonical emits a non-blocking warning so operators can choose to
+promote it to canonical or remove it.
 
-Any mirror drift, missing mirror directories, or missing mirror `SKILL.md` files is a blocking error.
+### Issue codes
+
+| Code | Blocking | Meaning |
+|---|---|---|
+| `SKA-MIRROR-DIR-MISSING` | yes | Canonical skill has no mirror directory |
+| `SKA-MIRROR-SKILL-FILE-MISSING` | yes | Mirror directory exists but has no `SKILL.md` |
+| `SKA-MIRROR-FIELD-DRIFT` | yes | Frontmatter field drift |
+| `SKA-MIRROR-BODY-DRIFT` | yes | `SKILL.md` body drift |
+| `SKA-MIRROR-ASSET-MISSING` | yes | Canonical asset absent from mirror |
+| `SKA-MIRROR-ASSET-DRIFT` | yes | Shared asset has drifted content |
+| `SKA-MIRROR-DIR-UNEXPECTED` | no (warning) | Mirror has a skill not present in canonical |
+| `SKA-MIRROR-ASSET-UNEXPECTED` | no (warning) | Mirror has an asset not present in canonical |
+
+Run `uv run gz agent sync control-surfaces` to repair any blocking mirror drift.
 
 ## Policy Semantics
 
