@@ -463,12 +463,32 @@ def _register_skill_parsers(commands: argparse._SubParsersAction) -> None:
     p_skill_new.add_argument("--description", help="Short description of the skill")
     p_skill_new.set_defaults(func=lambda a: skill_new(name=a.name, description=a.description))
 
-    skill_commands.add_parser(
+    p_skill_list = skill_commands.add_parser(
         "list",
-        help="List all skills",
-        description="Display all registered skills and their status.",
-        epilog=build_epilog(["gz skill list"]),
-    ).set_defaults(func=lambda a: skill_list())
+        help="List skills (active by default)",
+        description=(
+            "Display skills. Retired/archived skills are hidden by default so the "
+            "CLI matches the generated AGENTS.md catalog filter. Use --all to "
+            "surface retired skills with their lifecycle label."
+        ),
+        epilog=build_epilog(
+            [
+                "gz skill list",
+                "gz skill list --all",
+                "gz skill list --json",
+            ]
+        ),
+    )
+    add_json_flag(p_skill_list)
+    p_skill_list.add_argument(
+        "--all",
+        dest="show_all",
+        action="store_true",
+        help="Include retired/archived skills in the listing.",
+    )
+    p_skill_list.set_defaults(
+        func=lambda a: skill_list(include_retired=a.show_all, as_json=a.as_json)
+    )
 
     p_skill_audit = skill_commands.add_parser(
         "audit",
