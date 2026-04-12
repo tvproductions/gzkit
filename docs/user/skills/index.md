@@ -58,6 +58,8 @@ audience split.
 | [`/gz-obpi-lock`](gz-obpi-lock.md) | Claim or release OBPI-level work locks for multi-agent coordination |
 | [`/gz-obpi-pipeline`](gz-obpi-pipeline.md) | Post-plan OBPI execution pipeline — implement, verify, present, sync |
 | [`/gz-obpi-reconcile`](gz-obpi-reconcile.md) | Audit briefs against evidence, fix stale metadata, write ledger proof |
+| [`/gz-obpi-simplify`](gz-obpi-simplify.md) | OBPI-scoped code review for reuse, quality, and efficiency |
+| [`/gz-obpi-specify`](gz-obpi-specify.md) | Create and author OBPI briefs linked to parent ADR items |
 | [`/gz-obpi-sync`](gz-obpi-sync.md) | Sync OBPI status in ADR table from brief source files |
 | [`/gz-plan-audit`](gz-plan-audit.md) | Pre-flight alignment audit — verify plan aligns with OBPI brief |
 | [`/gz-specify`](gz-specify.md) | Create OBPI briefs linked to parent ADR items |
@@ -104,7 +106,9 @@ audience split.
 | [`/gz-check-config-paths`](gz-check-config-paths.md) | Validate configured and manifest path coherence |
 | [`/gz-migrate-semver`](gz-migrate-semver.md) | Record semver identifier migration events |
 | [`/gz-register-adrs`](gz-register-adrs.md) | Register existing ADR files missing from ledger state |
+| [`/gz-patch-release`](gz-patch-release.md) | Orchestrate the GHI-driven patch release ceremony |
 | [`/gz-session-handoff`](gz-session-handoff.md) | Create and resume session handoff documents for agent context preservation |
+| [`/gz-skill-router`](gz-skill-router.md) | Route agents to the correct skill for a given task type |
 | [`/gz-tidy`](gz-tidy.md) | Run maintenance checks and cleanup routines |
 
 ---
