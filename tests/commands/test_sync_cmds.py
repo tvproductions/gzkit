@@ -100,6 +100,60 @@ class TestSyncCommand(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             self.assertIn("Sync complete", result.output)
 
+    def test_agent_sync_dry_run_reports_complete_write_set(self) -> None:
+        """Dry-run output must list every path that sync_all() would touch."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            apply_result = runner.invoke(main, ["agent", "sync", "control-surfaces"])
+            self.assertEqual(apply_result.exit_code, 0)
+            applied = {
+                line.strip().removeprefix("Updated ")
+                for line in apply_result.output.splitlines()
+                if line.strip().startswith("Updated ")
+            }
+            self.assertTrue(applied, "apply-mode must report at least one updated path")
+
+            dry_result = runner.invoke(main, ["agent", "sync", "control-surfaces", "--dry-run"])
+            self.assertEqual(dry_result.exit_code, 0)
+            for path in applied:
+                self.assertIn(
+                    path,
+                    dry_result.output,
+                    f"dry-run must list {path} from apply-mode write set",
+                )
+
+    def test_agent_sync_dry_run_does_not_mutate_disk(self) -> None:
+        """Dry-run must not modify any file on disk."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            before: dict[str, bytes] = {}
+            for surface_root in (
+                "AGENTS.md",
+                "CLAUDE.md",
+                ".github/copilot-instructions.md",
+                ".claude/hooks",
+                ".claude/skills",
+            ):
+                p = Path(surface_root)
+                if p.is_file():
+                    before[str(p)] = p.read_bytes()
+                elif p.is_dir():
+                    for f in p.rglob("*"):
+                        if f.is_file():
+                            before[str(f)] = f.read_bytes()
+
+            dry_result = runner.invoke(main, ["agent", "sync", "control-surfaces", "--dry-run"])
+            self.assertEqual(dry_result.exit_code, 0)
+
+            for path, original in before.items():
+                self.assertEqual(
+                    original,
+                    Path(path).read_bytes(),
+                    f"dry-run mutated {path}",
+                )
+
     def test_sync_alias_is_removed(self) -> None:
         """sync top-level alias is no longer accepted after hard cutover."""
         runner = CliRunner()
