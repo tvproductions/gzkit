@@ -87,6 +87,41 @@ def _restore(project_root: Path, snapshot: dict[Path, bytes], created: set[Path]
             continue
 
 
+def plan_sync_all(project_root: Path, config: GzkitConfig | None = None) -> list[str]:
+    """Return the exact list of paths ``sync_all()`` would write, without mutating disk.
+
+    Runs the real ``sync_all()`` orchestrator inside a snapshot-restore envelope
+    so the complete write set is derived from the same code path as apply mode.
+    Used by ``gz agent sync control-surfaces --dry-run`` to preview an exact
+    deterministic plan instead of a hand-maintained subset.
+    """
+    if config is None:
+        config = GzkitConfig.load(project_root / ".gzkit.json")
+
+    pre_files = _collect_files(project_root)
+    snapshot = _snapshot(pre_files)
+
+    created: set[Path] = set()
+    planned: list[str] = []
+    try:
+        raw_planned = list(sync_all(project_root, config))
+        for entry in raw_planned:
+            candidate = Path(entry)
+            if candidate.is_absolute():
+                try:
+                    planned.append(candidate.relative_to(project_root).as_posix())
+                except ValueError:
+                    planned.append(candidate.as_posix())
+            else:
+                planned.append(candidate.as_posix())
+        post_files = _collect_files(project_root)
+        created = post_files - pre_files
+    finally:
+        _restore(project_root, snapshot, created)
+
+    return sorted(set(planned))
+
+
 def check_sync_parity(
     project_root: Path, config: GzkitConfig | None = None
 ) -> list[ValidationError]:
