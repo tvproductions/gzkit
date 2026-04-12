@@ -1,5 +1,6 @@
 ---
 name: gz-tidy
+persona: main-session
 description: Run maintenance checks and cleanup routines. Use for repository hygiene and governance maintenance operations.
 category: agent-operations
 lifecycle_state: active
@@ -7,7 +8,7 @@ owner: gzkit-governance
 last_reviewed: 2026-04-12
 model: haiku
 metadata:
-  skill-version: "1.1.0"
+  skill-version: "1.1.1"
 ---
 
 # gz tidy

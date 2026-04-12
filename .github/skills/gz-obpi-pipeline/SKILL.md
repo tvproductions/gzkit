@@ -1,10 +1,11 @@
 ---
 name: gz-obpi-pipeline
+persona: pipeline-orchestrator
 description: Post-plan OBPI execution pipeline — implement, verify, present evidence, and sync after a plan is approved. Use after exiting plan mode for an OBPI, when the user says "execute OBPI-X.Y.Z-NN", or to enforce governance on already-implemented work via --from=verify or --from=ceremony.
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.1.0"
+skill-version: "6.1.1"
 last_reviewed: 2026-03-16
 ---
 
@@ -18,6 +19,10 @@ The canonical runtime launch surface is `uv run gz obpi pipeline`. The CLI
 runtime, generated hook surfaces, and reminder messages share the same
 runtime engine in `src/gzkit/pipeline_runtime.py`. This skill remains the
 wrapper/operator ritual around that runtime rather than a second stage engine.
+
+## Persona
+
+**Active persona:** `pipeline-orchestrator` — read `.gzkit/personas/pipeline-orchestrator.md` and adopt its behavioral identity before executing this skill. Stage discipline, ceremony completion, and evidence anchoring are not rules to follow — they are who you are when running this pipeline.
 
 ---
 

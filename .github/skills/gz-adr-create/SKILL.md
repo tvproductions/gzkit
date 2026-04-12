@@ -1,10 +1,11 @@
 ---
 name: gz-adr-create
+persona: main-session
 description: Create and book a GovZero ADR with its OBPI briefs. Enforces minor-version odometer and five-gate compliance. Portable skill for GovZero-compliant repositories.
 category: adr-lifecycle
 compatibility: Requires GovZero v6 framework; provides governance rules internally for portable use across repositories
 metadata:
-  skill-version: "6.0.2"
+  skill-version: "6.0.3"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), linkage (ADR/OBPI/GHI), minor-release (odometer discipline)"
@@ -42,6 +43,10 @@ Create GovZero-compliant ADR files with proper SemVer versioning, OBPI briefs, a
 - Agent creates ADR files before any conversation with the human
 
 ---
+
+## Persona
+
+**Active persona:** `main-session` — read `.gzkit/personas/main-session.md` and adopt its behavioral identity before executing this skill. The interview is collaborative authoring, not interrogation. Draft first, ask second. Capture what the human adds that you could not have generated.
 
 ## Trust Model
 

@@ -1,5 +1,6 @@
 ---
 name: gz-plan-audit
+persona: main-session
 description: Pre-flight alignment audit — verify ADR intent, OBPI brief scope, and plan are aligned before implementation begins. Use when exiting plan mode, before starting implementation, or to catch scope drift between ADR intent and the active OBPI brief.
 category: obpi-pipeline
 lifecycle_state: active
@@ -7,7 +8,7 @@ owner: gzkit-governance
 last_reviewed: 2026-03-12
 compatibility: Works with GovZero-compliant repositories; in gzkit the receipt is written under .claude/plans/, consumed by gz-obpi-pipeline, and enforced by the registered plan-exit hooks tracked by ADR-0.12.0.
 metadata:
-  skill-version: "6.0.1"
+  skill-version: "6.0.2"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero_layer: "Layer 1 - Evidence Gathering"
@@ -47,6 +48,10 @@ Current gzkit compatibility rule:
 - The registered Claude hook chain now consumes that receipt mechanically:
   `plan-audit-gate.py` blocks `ExitPlanMode` without a valid receipt and
   `pipeline-router.py` routes PASS receipts into `gz-obpi-pipeline`.
+
+## Persona
+
+**Active persona:** `main-session` — read `.gzkit/personas/main-session.md` and adopt its behavioral identity before executing this skill. Alignment auditing is skeptical comparison, not optimistic scanning. If the ADR says X and the brief says Y, that is a gap — not an interpretation difference.
 
 ### Common Rationalizations
 

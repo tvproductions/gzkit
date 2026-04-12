@@ -9,20 +9,25 @@ description: Consolidated negative constraints — what agents must NOT do
 
 > Positive specs leave an implied gap. Negative constraints close that gap.
 
-This surface consolidates every "do not" rule scattered across gzkit's rules,
-skills, and governance docs into one discoverable location. Agents read this
-on every path. The source-of-truth remains the individual rule or skill —
-this file is a cross-reference, not a replacement.
+These are prohibitions addressed to you — the executing agent. They are loaded
+into every context window on every path. When you notice yourself reasoning
+toward one of these actions, stop — the constraint exists because agents
+routinely rationalize exactly the path you are considering.
+
+The source-of-truth remains the individual rule or skill — this file is a
+compact, always-loaded cross-reference, not a replacement.
 
 ## TDD Discipline
 
-Source: `.gzkit/rules/tests.md`
+Source: `.gzkit/rules/tests.md` — *Most frequently violated constraint category.*
 
-- Do not write tests after implementation that confirm what the code already does
-- Do not write tests "alongside" without seeing them fail first (skipping Red)
-- Do not batch all tests before any implementation (test-dump, not TDD)
-- Do not refactor while tests are still failing (mixing Green and Refactor)
-- Do not derive test cases from the implementation — derive from OBPI brief acceptance criteria
+| Constraint | Observed Trigger |
+|------------|-----------------|
+| Do not write tests after implementation that confirm what the code already does | Agent writes code first, then writes tests that pass immediately |
+| Do not write tests "alongside" without seeing them fail first | Agent claims TDD but never runs a failing test |
+| Do not batch all tests before any implementation | Agent writes 8 tests, then implements everything — test-dump, not TDD |
+| Do not refactor while tests are still failing | Agent mixes Green and Refactor in one pass |
+| Do not derive test cases from the implementation | Agent reads the code to decide what to test instead of reading the brief |
 
 ## Data Models
 
@@ -52,14 +57,16 @@ Source: `.gzkit/rules/gate5-runbook-code-covenant.md`
 
 ## Pipeline Lifecycle
 
-Source: `.gzkit/skills/gz-obpi-pipeline/SKILL.md`
+Source: `.gzkit/skills/gz-obpi-pipeline/SKILL.md` — *Second most frequently violated.*
 
-- Do not summarize after Stage 2 or 3 and stop — all 5 stages must run
-- Do not treat "tests passing" as completion — that is Stage 3, not Stage 5
-- Do not let the user "handle the rest" — the pipeline exists so they don't have to
-- Do not work around hook blocks — diagnose the cause, never create marker files manually
-- Do not derive tasks from the brief when no plan receipt exists — enter plan mode first
-- Do not skip planning because the brief "seems clear enough"
+| Constraint | Observed Trigger |
+|------------|-----------------|
+| Do not summarize after Stage 2 or 3 and stop | Agent presents "implementation complete" after Stage 2 |
+| Do not treat "tests passing" as completion | Agent stops at Stage 3, equating green tests with done |
+| Do not let the user "handle the rest" | Agent defers Stages 4-5 to the human |
+| Do not work around hook blocks | Agent creates marker files to bypass pipeline-gate |
+| Do not derive tasks from the brief without a plan receipt | Agent skips plan mode because it "already understands the work" |
+| Do not skip planning because the brief "seems clear enough" | Agent reasons its way out of the governance checkpoint |
 
 ## OBPI Completion
 

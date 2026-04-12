@@ -1,12 +1,13 @@
 ---
 name: gz-skill-router
+persona: main-session
 description: Route agents to the correct skill for a given task type. Use when starting a session, when unsure which skill applies, or when an agent needs to discover the right workflow for a task.
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-04-11
 metadata:
-  skill-version: "6.0.0"
+  skill-version: "6.0.1"
   govzero-framework-version: "v6"
 ---
 

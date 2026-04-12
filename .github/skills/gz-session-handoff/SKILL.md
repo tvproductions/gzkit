@@ -1,10 +1,11 @@
 ---
 name: gz-session-handoff
+persona: main-session
 description: Create and resume session handoff documents for agent context preservation across engineering sessions.
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "6.1.0"
+  skill-version: "6.1.1"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"

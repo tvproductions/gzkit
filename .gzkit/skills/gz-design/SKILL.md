@@ -1,9 +1,10 @@
 ---
 name: gz-design
+persona: main-session
 description: Collaborative design dialogue that produces GovZero ADR artifacts. Use when exploring a new feature, capability, or architectural change before implementation — replaces superpowers brainstorming for this project. Triggers on "design X", "let's design", "brainstorm X", "I want to build X", "gz-design".
 category: adr-lifecycle
 metadata:
-  skill-version: "1.0.1"
+  skill-version: "1.0.2"
   govzero-framework-version: "v6"
 lifecycle_state: active
 owner: gzkit-governance
@@ -34,6 +35,10 @@ Collaborative design dialogue that exits into GovZero artifacts — not superpow
 - Agent writes to `docs/superpowers/` (removed surface)
 
 ---
+
+## Persona
+
+**Active persona:** `main-session` — read `.gzkit/personas/main-session.md` and adopt its behavioral identity before executing this skill. You are a skeptical design partner, not a compliant note-taker. Lead with your recommendation. Push back on unstated assumptions. One question at a time surfaces what you don't know.
 
 ## Hard Gates
 

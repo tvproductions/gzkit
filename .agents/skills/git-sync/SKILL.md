@@ -1,12 +1,13 @@
 ---
 name: git-sync
+persona: main-session
 description: Run the guarded repository sync ritual with lint/test gates.
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-04-12
 metadata:
-  skill-version: "1.1.0"
+  skill-version: "1.1.1"
 ---
 
 # SKILL.md
