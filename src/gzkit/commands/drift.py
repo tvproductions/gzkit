@@ -9,13 +9,13 @@ and the active repository change set to detect spec-test-code drift.
 
 from __future__ import annotations
 
-import re
 import subprocess
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
 from gzkit.commands.common import console, get_project_root
+from gzkit.traceability import find_covers_in_source
 from gzkit.triangle import (
     DriftReport,
     EdgeType,
@@ -26,22 +26,19 @@ from gzkit.triangle import (
     scan_briefs,
 )
 
-_COVERS_PATTERN = re.compile(r"@covers\s+(REQ-\d+\.\d+\.\d+-\d+-\d+)")
-
 
 def scan_covers_references(test_dir: Path) -> list[LinkageRecord]:
     """Scan Python test files for @covers REQ references.
 
-    Extracts linkage records from docstrings and comments containing
-    ``@covers REQ-<semver>-<obpi>-<seq>`` patterns.
+    Delegates to the canonical scanner in :mod:`gzkit.traceability` so drift,
+    coverage, and audit-check share one detection contract (see #120). Both
+    decorator-call and docstring/comment forms are recognized.
     """
     linkages: list[LinkageRecord] = []
 
     for py_file in sorted(test_dir.rglob("*.py")):
         content = py_file.read_text(encoding="utf-8")
-        for match in _COVERS_PATTERN.finditer(content):
-            req_id = match.group(1)
-            line_num = content[: match.start()].count("\n") + 1
+        for req_id, line_num in find_covers_in_source(content):
             linkages.append(
                 LinkageRecord(
                     source=VertexRef(

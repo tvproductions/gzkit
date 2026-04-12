@@ -1,8 +1,9 @@
 """@covers decorator, linkage registry, and coverage anchor scanner.
 
-Provides the ``@covers("REQ-X.Y.Z-NN-MM")`` decorator (OBPI-01) and an
-AST-based scanner that discovers all ``@covers`` annotations across a test
-tree and computes coverage rollups at ADR, OBPI, and REQ levels (OBPI-02).
+Provides the ``@covers("REQ-X.Y.Z-NN-MM")`` decorator (OBPI-01) and the
+canonical scanner used by every coverage-aware command (gz drift, gz covers,
+gz adr audit-check). Both decorator-call and docstring/comment forms of
+``@covers`` are detected by a single regex utility (see #120).
 """
 
 from __future__ import annotations
@@ -10,6 +11,7 @@ from __future__ import annotations
 import ast
 import logging
 import pathlib
+import re
 import types
 from collections.abc import Callable
 from typing import TypeVar
@@ -32,6 +34,32 @@ logger = logging.getLogger(__name__)
 _F = TypeVar("_F")
 
 _TESTABLE_KIND = ReqKind.CODE
+
+# Canonical @covers reference regex used by every scanner.
+# Catches three forms in a single pattern:
+#   @covers("REQ-X.Y.Z-NN-MM")    decorator with double quotes
+#   @covers('REQ-X.Y.Z-NN-MM')    decorator with single quotes
+#   @covers REQ-X.Y.Z-NN-MM       docstring or comment
+# The optional group ``(?:\(\s*['"])?`` handles the decorator-call wrapper;
+# the leading ``\s*`` handles the whitespace-separated docstring form.
+_COVERS_REF_PATTERN = re.compile(r"@covers\s*(?:\(\s*['\"])?(REQ-\d+\.\d+\.\d+-\d+-\d+)")
+
+
+def find_covers_in_source(content: str) -> list[tuple[str, int]]:
+    """Return ``(req_id, line_number)`` for every ``@covers`` reference in source.
+
+    The single canonical scanner used by gz drift, gz covers, and gz adr
+    audit-check. Handles both decorator-call and docstring/comment forms so
+    every coverage-aware command sees the same set of references (see #120).
+    Line numbers are 1-indexed.
+    """
+    hits: list[tuple[str, int]] = []
+    for match in _COVERS_REF_PATTERN.finditer(content):
+        req_id = match.group(1)
+        line_num = content[: match.start()].count("\n") + 1
+        hits.append((req_id, line_num))
+    return hits
+
 
 # ---------------------------------------------------------------------------
 # Global linkage registry
@@ -179,10 +207,15 @@ def _iter_test_functions(
 
 
 def scan_test_tree(test_dir: pathlib.Path) -> list[LinkageRecord]:
-    """Walk a test directory and discover all @covers annotations via AST.
+    """Walk a test directory and discover every @covers annotation.
 
     Parses each ``.py`` file statically — no test files are imported or
-    executed. Returns deterministic results sorted by (file path, line number).
+    executed. Decorator-form ``@covers("REQ-...")`` annotations are extracted
+    via AST so each linkage carries the qualified function name. Docstring
+    and comment-form references (``@covers REQ-...``) are then picked up via
+    the canonical regex scanner so audit-check, drift, and gz covers all see
+    the same set (see #120). Returns deterministic results sorted by
+    (file path, line number).
     """
     records: list[LinkageRecord] = []
 
@@ -194,6 +227,7 @@ def scan_test_tree(test_dir: pathlib.Path) -> list[LinkageRecord]:
             logger.warning("Skipping unparseable file: %s", py_file)
             continue
 
+        decorator_lines: set[int] = set()
         for node in _iter_test_functions(tree):
             for deco in node.decorator_list:
                 req_str = _extract_covers_arg(deco)
@@ -212,6 +246,7 @@ def scan_test_tree(test_dir: pathlib.Path) -> list[LinkageRecord]:
                     continue
 
                 func_name = _ast_qualified_name(node, tree)
+                decorator_lines.add(deco.lineno)
                 records.append(
                     LinkageRecord(
                         source=VertexRef(
@@ -229,6 +264,38 @@ def scan_test_tree(test_dir: pathlib.Path) -> list[LinkageRecord]:
                         evidence_line=deco.lineno,
                     )
                 )
+
+        # Pick up docstring/comment-form @covers that AST cannot see.
+        for req_str, line_num in find_covers_in_source(source):
+            if line_num in decorator_lines:
+                continue
+            try:
+                req_id = ReqId.parse(req_str)
+            except ValueError:
+                logger.warning(
+                    "Malformed REQ in @covers at %s:%d — %s",
+                    py_file,
+                    line_num,
+                    req_str,
+                )
+                continue
+            records.append(
+                LinkageRecord(
+                    source=VertexRef(
+                        vertex_type=VertexType.TEST,
+                        identifier=str(py_file),
+                        location=str(py_file),
+                        line=line_num,
+                    ),
+                    target=VertexRef(
+                        vertex_type=VertexType.SPEC,
+                        identifier=str(req_id),
+                    ),
+                    edge_type=EdgeType.COVERS,
+                    evidence_path=str(py_file),
+                    evidence_line=line_num,
+                )
+            )
 
     records.sort(key=lambda r: (r.evidence_path or "", r.evidence_line or 0))
     return records

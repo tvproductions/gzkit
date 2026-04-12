@@ -14,6 +14,7 @@ from gzkit.traceability import (
     CoverageReport,
     compute_coverage,
     covers,
+    find_covers_in_source,
     get_registry,
     reset_registry,
     scan_test_tree,
@@ -536,6 +537,97 @@ class TestScanTestTree(unittest.TestCase):
             records = scan_test_tree(root)
 
         self.assertEqual(len(records), 1)
+
+    def test_picks_up_docstring_form_covers(self):
+        """Docstring/comment-form @covers must be discovered alongside decorator form (#120)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "test_doc.py").write_text(
+                textwrap.dedent('''\
+                    """Module-level docstring with @covers REQ-0.15.0-03-01 in prose."""
+
+                    def test_one():
+                        """Test docstring referencing @covers REQ-0.15.0-03-02 here."""
+                        pass
+
+                    # @covers REQ-0.20.0-01-01 inline comment
+                    def test_two():
+                        pass
+                '''),
+                encoding="utf-8",
+            )
+
+            records = scan_test_tree(root)
+
+        target_ids = {r.target.identifier for r in records}
+        self.assertEqual(
+            target_ids,
+            {"REQ-0.15.0-03-01", "REQ-0.15.0-03-02", "REQ-0.20.0-01-01"},
+        )
+
+    def test_decorator_and_docstring_dedup_by_line(self):
+        """Decorator @covers and a docstring @covers on the same line do not double-count."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "test_mixed.py").write_text(
+                textwrap.dedent("""\
+                    from gzkit.traceability import covers
+
+                    @covers("REQ-0.15.0-03-01")
+                    def test_one():
+                        '''@covers REQ-0.15.0-03-02 in body docstring.'''
+                        pass
+                """),
+                encoding="utf-8",
+            )
+
+            records = scan_test_tree(root)
+
+        target_ids = sorted(r.target.identifier for r in records)
+        self.assertEqual(target_ids, ["REQ-0.15.0-03-01", "REQ-0.15.0-03-02"])
+
+
+class TestFindCoversInSource(unittest.TestCase):
+    """REQ-#120: shared regex scanner used by drift, audit-check, and gz covers."""
+
+    def test_decorator_double_quotes(self):
+        hits = find_covers_in_source('@covers("REQ-0.15.0-03-01")\n')
+        self.assertEqual(hits, [("REQ-0.15.0-03-01", 1)])
+
+    def test_decorator_single_quotes(self):
+        hits = find_covers_in_source("@covers('REQ-0.15.0-03-01')\n")
+        self.assertEqual(hits, [("REQ-0.15.0-03-01", 1)])
+
+    def test_decorator_with_space_before_paren(self):
+        hits = find_covers_in_source('@covers ("REQ-0.15.0-03-01")\n')
+        self.assertEqual(hits, [("REQ-0.15.0-03-01", 1)])
+
+    def test_docstring_form(self):
+        hits = find_covers_in_source('"""@covers REQ-0.15.0-03-01"""\n')
+        self.assertEqual(hits, [("REQ-0.15.0-03-01", 1)])
+
+    def test_comment_form(self):
+        hits = find_covers_in_source("# @covers REQ-0.15.0-03-01\n")
+        self.assertEqual(hits, [("REQ-0.15.0-03-01", 1)])
+
+    def test_multiple_hits_track_line_numbers(self):
+        source = 'line one\n@covers("REQ-0.15.0-03-01")\nline three\n@covers REQ-0.20.0-01-01\n'
+        hits = find_covers_in_source(source)
+        self.assertEqual(
+            hits,
+            [("REQ-0.15.0-03-01", 2), ("REQ-0.20.0-01-01", 4)],
+        )
+
+    def test_does_not_match_unrelated_decorator(self):
+        hits = find_covers_in_source('@coverage("REQ-0.15.0-03-01")\n')
+        self.assertEqual(hits, [])
+
+    def test_does_not_match_malformed_req(self):
+        hits = find_covers_in_source("@covers REQ-bogus\n")
+        self.assertEqual(hits, [])
+
+    def test_empty_source(self):
+        self.assertEqual(find_covers_in_source(""), [])
 
 
 class TestComputeCoverage(unittest.TestCase):
