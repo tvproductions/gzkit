@@ -1,12 +1,13 @@
 ---
 name: gz-obpi-lock
+persona: main-session
 description: Claim or release OBPI-level work locks for multi-agent coordination. Use when claiming an OBPI before starting work, releasing a lock after completing or abandoning work, or checking which OBPIs are currently claimed by agents.
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-03-16
 metadata:
-  skill-version: "6.0.1"
+  skill-version: "6.0.2"
 ---
 
 # gz-obpi-lock

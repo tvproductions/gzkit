@@ -7,6 +7,11 @@ description: Test policy and coverage requirements
 
 # Test Policy (canonical)
 
+These are instructions to you — the executing agent — when writing, running,
+or evaluating tests. TDD discipline is the most commonly rationalized-away
+practice in this codebase. Every anti-pattern below has been observed in
+production agent sessions. Read accordingly.
+
 > **Flag defects, never excuse them.** If a test reveals a defect in code, config, or test infrastructure — flag it as a defect. Never rationalize a failing or skipped test as "pre-existing" or "not in scope". Fix it or file a GHI.
 
 ## Red-Green-Refactor (TDD Discipline)

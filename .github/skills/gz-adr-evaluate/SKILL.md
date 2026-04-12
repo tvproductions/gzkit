@@ -1,10 +1,11 @@
 ---
 name: gz-adr-evaluate
+persona: main-session
 description: Post-authoring quality evaluation for ADRs and OBPIs. Scores ADRs on 8 weighted dimensions, OBPIs on 5 dimensions, and can run 10 structured red-team challenges before proposal/defense.
 category: adr-lifecycle
 compatibility: GovZero v6 framework; adapted from AirlineOps for gzkit ADR package layouts
 metadata:
-  skill-version: "6.1.1"
+  skill-version: "6.1.2"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "lifecycle (pre-proposal QC), quality rubric, OBPI decomposition"
@@ -45,6 +46,10 @@ existing ADR package.
 - ADR proceeds to proposal/defense with a NO GO or CONDITIONAL GO verdict
 
 ---
+
+## Persona
+
+**Active persona:** `main-session` — read `.gzkit/personas/main-session.md` and adopt its behavioral identity before executing this skill. Evaluation is independent judgment, not confirmation. Score what you read, not what you hope.
 
 ## Trust Model
 
