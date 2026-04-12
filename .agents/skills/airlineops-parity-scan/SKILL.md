@@ -4,7 +4,9 @@ description: Run a repeatable governance parity scan between ../airlineops (cano
 category: cross-repository
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-02-18
+last_reviewed: 2026-04-12
+metadata:
+  skill-version: "1.1.0"
 ---
 
 # SKILL.md
@@ -131,6 +133,30 @@ GovZero mining rule:
 - Do not use patch versions for new feature sequencing.
 - Keep findings actionable: each gap must map to ADR/OBPI follow-up.
 - Do not close a scan cycle with only passive tracking; require execution or a filed defect.
+
+## Common Rationalizations
+
+These thoughts mean STOP — you are about to ship a passive-tracking parity report:
+
+| Thought | Reality |
+|---------|---------|
+| "The matrix is filled in — that closes the cycle" | A scan with `Missing` or `Divergent` findings and no execution artifact (or filed defect) is `INCOMPLETE` by definition. Step 13 is mandatory. |
+| "I'll execute the Import Now items next cycle" | Action closure is per-cycle. Deferring is exactly the perpetual-catch-up pattern the constraint was written to prevent. Ship at least one tranche or file a defect now. |
+| "Textual diff is good enough for parity" | Parity is operational, not textual. You must mine procedural sources across all surfaces (`.github/`, `.claude/`, `.codex/`, `.gzkit/`, `AGENTS.md`) and exercise rituals from the gzkit runtime. |
+| "I don't need to read AirlineOps docs — gzkit is the canonical source now" | The scan is `gzkit ← airlineops`. Skipping the canonical mining inventory makes the report a self-portrait, not a parity scan. |
+| "Most items are Parity, the report is mostly done" | The report is the easy part. The failing parity items are the work. Don't conflate report completeness with cycle completeness. |
+| "I can write the report without running the runnable ritual checks" | Step 9 ritual checks (`gz cli audit`, `gz check-config-paths`, `gz adr audit-check`, `mkdocs --strict`) provide the procedure-parity evidence. Without them you're claiming parity by inspection. |
+| "Findings only need passive `defer (tracked)` classification" | The constraint explicitly prohibits closing a cycle with only passive tracking. Each finding needs an execution path or a tracked defect — there is no third option. |
+
+## Red Flags
+
+- Report contains `Missing` or `Divergent` findings but no commits, diffs, or filed GHIs in the same cycle
+- Mining inventory cites only one or two surface roots instead of the full set
+- Procedure parity claimed without runtime ritual evidence
+- The matrix lists items as `Partial` without specifying what's missing
+- Parity classified `Defer (Tracked)` for more than half the findings (perpetual-catch-up signal)
+- Report omits canonical-root resolution evidence (Step 2)
+- Cycle closed without producing both the parity report AND the mining inventory report
 
 ## Related Skills
 
