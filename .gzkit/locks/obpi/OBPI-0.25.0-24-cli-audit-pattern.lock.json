@@ -1,0 +1,9 @@
+{
+  "obpi_id": "OBPI-0.25.0-24-cli-audit-pattern",
+  "agent": "unknown-27313",
+  "pid": 27313,
+  "session_id": "27313",
+  "claimed_at": "2026-04-12T02:11:19.976081+00:00",
+  "branch": "main",
+  "ttl_minutes": 120
+}

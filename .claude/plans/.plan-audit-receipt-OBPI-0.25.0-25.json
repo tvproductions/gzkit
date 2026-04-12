@@ -1,0 +1,7 @@
+{
+  "obpi_id": "OBPI-0.25.0-25",
+  "timestamp": "2026-04-12T03:03:49.574897+00:00",
+  "verdict": "PASS",
+  "plan_file": "jaunty-zooming-simon.md",
+  "gaps_found": 0
+}
