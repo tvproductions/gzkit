@@ -5,9 +5,8 @@ from textwrap import dedent
 
 def _pipeline_completion_reminder_script() -> str:
     """Return the pipeline completion reminder hook script."""
-    return (
-        dedent(
-            """\
+    return dedent(
+        """\
             #!/usr/bin/env python3
             \"\"\"Pipeline Completion Reminder Hook.
 
@@ -91,16 +90,13 @@ def _pipeline_completion_reminder_script() -> str:
             if __name__ == "__main__":
                 main()
             """
-        )
-        + "\n"
     )
 
 
 def _session_staleness_check_script() -> str:
     """Return the session staleness check hook script."""
-    return (
-        dedent(
-            """\
+    return dedent(
+        """\
             #!/usr/bin/env python3
             \"\"\"Session Staleness Check Hook (gzkit adaptation).
 
@@ -218,16 +214,13 @@ def _session_staleness_check_script() -> str:
             if __name__ == "__main__":
                 main()
             """
-        )
-        + "\n"
     )
 
 
 def _plan_audit_gate_script() -> str:
     """Return the plan-exit audit gate hook script."""
-    return (
-        dedent(
-            """\
+    return dedent(
+        """\
             #!/usr/bin/env python3
             \"\"\"Plan Audit Gate Hook.
 
@@ -434,6 +427,4 @@ def _plan_audit_gate_script() -> str:
             if __name__ == "__main__":
                 main()
             """
-        )
-        + "\n"
     )

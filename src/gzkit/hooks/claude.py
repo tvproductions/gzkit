@@ -4,6 +4,7 @@ Generates Claude hook settings for governance-safe pre/post edit automation.
 """
 
 import json
+from contextlib import suppress
 from pathlib import Path
 
 from gzkit.config import GzkitConfig
@@ -99,6 +100,29 @@ def _write_hook_file(path: Path, content: str, executable: bool = False) -> None
     path.write_text(content, encoding="utf-8")
     if executable:
         path.chmod(0o755)
+
+
+def _ruff_format_dir(directory: Path) -> None:
+    """Run ``ruff format`` on a generated hook directory.
+
+    Generated hook sources are derived from dedented string templates that do
+    not always match ruff's line-length and blank-line rules exactly. Running
+    ruff format as a post-sync normalization step keeps sync_all output
+    byte-stable against the pre-commit formatter, which is what the sync-parity
+    validator compares against.
+    """
+    import subprocess  # noqa: PLC0415
+
+    if not directory.is_dir():
+        return
+    with suppress(FileNotFoundError, subprocess.TimeoutExpired, subprocess.SubprocessError):
+        subprocess.run(
+            ["uv", "run", "ruff", "format", str(directory)],
+            capture_output=True,
+            text=True,
+            timeout=60,
+            check=False,
+        )
 
 
 def generate_claude_settings(config: GzkitConfig) -> dict:
@@ -268,5 +292,7 @@ def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) ->
         f.write("\n")
 
     created.append(str(settings_path.relative_to(project_root)))
+
+    _ruff_format_dir(hooks_path)
 
     return created

@@ -13,11 +13,20 @@ from gzkit.rules import validate_rule_placement
 from gzkit.schemas import load_schema
 
 
-def validate_surfaces(project_root: Path) -> list[ValidationError]:
-    """Validate agent control surfaces exist and are valid.
+def validate_surfaces(
+    project_root: Path, *, check_sync_parity: bool = True
+) -> list[ValidationError]:
+    """Validate agent control surfaces exist, have valid shape, and are synced.
+
+    When ``check_sync_parity`` is True (the default), the validator also verifies
+    that every generated surface file matches what ``sync_all()`` would produce
+    for the current canonical state. This catches direct hand-edits of
+    ``.claude/``, ``.github/``, ``.agents/``, and root-level generated files that
+    would otherwise pass shape validation.
 
     Args:
         project_root: Project root directory.
+        check_sync_parity: When True, enforce canonical/mirror sync parity.
 
     Returns:
         List of validation errors.
@@ -97,6 +106,13 @@ def validate_surfaces(project_root: Path) -> list[ValidationError]:
                 message=warning_msg,
             )
         )
+
+    if check_sync_parity:
+        from gzkit.validate_pkg.sync_parity import (
+            check_sync_parity as _check_parity,  # noqa: PLC0415
+        )
+
+        errors.extend(_check_parity(project_root))
 
     return errors
 
