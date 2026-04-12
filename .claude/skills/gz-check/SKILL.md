@@ -4,8 +4,10 @@ description: Run full quality checks in one pass. Use for pre-merge or pre-attes
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-04-03
+last_reviewed: 2026-04-12
 model: haiku
+metadata:
+  skill-version: "1.1.0"
 ---
 
 # gz check
@@ -84,6 +86,30 @@ uv run gz test
 @claude-code-guide look at .claude/settings.json — are all hook
 references valid? Any deprecated patterns?
 ```
+
+## Common Rationalizations
+
+These thoughts mean STOP — you are about to skip the gate that catches drift:
+
+| Thought | Reality |
+|---------|---------|
+| "I only changed one file — `gz lint` is enough" | `gz check` is the unified gate for a reason: lint passes can hide type or test regressions. Pre-merge always runs the full suite. |
+| "Tests pass locally, no need to typecheck" | `ty` catches signature drift that unittest can't. The two checks are complementary, not redundant. |
+| "Hook errors at session start are cosmetic" | The Claude surface check is part of `gz check` precisely because hook errors mean an agent is operating against stale governance. Resolve before attestation. |
+| "The mirrors look fine, skip the surface check" | Canon/derived drift is silent until it isn't. The mirror parity check is cheap; the bug it prevents is expensive. |
+| "I'll run the individual commands instead of `gz check`" | Individual commands skip the Claude surface check and the deterministic ordering. Use them for iterative fix-up, not for pre-merge or pre-attestation. |
+| "Coverage is close to 40% — round up" | The coverage floor is fail-closed at 40.00%. Rounding rationalizes a regression. |
+| "PyMarkdown warnings are noise" | PyMarkdown is part of `gz lint` because docs are first-class deliverables under the Gate 5 Runbook-Code Covenant. Fix or document the exception. |
+
+## Red Flags
+
+- Closing a brief or attestation without running `gz check`
+- Running `gz lint` but not `gz typecheck` or `gz test` before merge
+- Hook errors in session-start output that were never resolved
+- `.claude/skills/` divergent from `.gzkit/skills/` (sync not run)
+- CLAUDE.md over 200 lines (budget exceeded, adherence drops)
+- Coverage dropped below 40% but the brief was marked complete
+- Skipping the full sequence "because nothing meaningful changed"
 
 ## References
 

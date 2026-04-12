@@ -4,7 +4,9 @@ description: Create and semantically author OBPI briefs linked to parent ADR ite
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-04-03
+last_reviewed: 2026-04-12
+metadata:
+  skill-version: "1.1.0"
 ---
 
 # gz-obpi-specify
@@ -171,6 +173,30 @@ When a brief's lane is Heavy (from WBS or CLI override):
 - Not presenting CLI commands for human verification
 
 ---
+
+## Common Rationalizations
+
+These thoughts mean STOP — you are about to ship a thin or pseudo-authored brief:
+
+| Thought | Reality |
+|---------|---------|
+| "The generated brief looks complete enough — ship it" | `gz specify` only fills ADR-derived defaults. The semantic authoring pass is mandatory. The authored validation gate exists because generated briefs are the start, not the end. |
+| "The Allowed Paths from the template will work" | Template defaults are intentionally broad. Narrow them to the real execution boundary or the OBPI will sprawl during implementation. |
+| "I can leave Discovery Checklist generic — the implementer will figure it out" | Generic checklists produce generic implementations. The checklist is where you record the prerequisite reads that prevent re-discovery on every pipeline run. |
+| "REQ IDs are bookkeeping — I'll add them after the brief is approved" | Tests derive from REQ IDs. No REQ IDs means tests cannot be traced to acceptance criteria, which collapses the TDD discipline at Gate 2. |
+| "Verification commands can be the same across all OBPIs in this ADR" | The point of OBPI-specific verification is that each brief proves *this* increment. Shared verification means you can't tell which brief broke. |
+| "The WBS lane says lite but this is heavier than I thought — I'll just proceed lite" | The WBS lane is the canonical contract. If the work is heavier, fix the WBS first, then re-run specify. Silently proceeding lite skips Gate 5 attestation. |
+| "`gz obpi validate --authored` is failing on minor things — I'll dismiss them" | The authored gate is fail-closed for a reason. Each warning is a brief that won't survive pipeline execution. Fix every one. |
+
+## Red Flags
+
+- A brief whose Allowed Paths matches the parent ADR's full scope (no narrowing)
+- Requirements section that copies the ADR's intent verbatim instead of OBPI-specific fail-closed rules
+- Discovery Checklist with no concrete file paths or prerequisite reads
+- Acceptance Criteria written in prose without REQ-XX identifiers
+- Verification commands that don't actually exercise this OBPI's surface
+- Heavy lane brief without `assets/HEAVY_LANE_PLAN_TEMPLATE.md` consulted
+- Stopping at `gz specify` without running `gz obpi validate --authored`
 
 ## Related Skills
 

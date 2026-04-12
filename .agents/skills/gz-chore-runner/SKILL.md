@@ -4,7 +4,9 @@ description: Run a gzkit chore end-to-end (show, plan, advise, execute, validate
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-03-19
+last_reviewed: 2026-04-12
+metadata:
+  skill-version: "1.1.0"
 ---
 
 # chore-runner
@@ -93,3 +95,27 @@ Execute a repository chore using the canonical `gz chores` workflow.
 - Does not introduce new dependencies.
 - Leaves the repo in a validated state for the configured lane.
 - Evidence is saved to `ops/chores/{slug}/proofs/`.
+
+## Common Rationalizations
+
+These thoughts mean STOP — you are about to ship a chore that broke its own discipline:
+
+| Thought | Reality |
+|---------|---------|
+| "advise looks fine, I'll skip plan and run directly" | The 5-step sequence (show → plan → advise → execute → audit) exists because chores accumulate scope creep when steps merge. Each step is a fail-closed gate. |
+| "I'll add a new dependency — it'll make the fix cleaner" | Acceptance rule: chores do not introduce dependencies. A "cleaner" fix that bloats the dependency surface is a worse fix. |
+| "The chore is lite lane but I need to touch heavy-lane gates" | Lane is set in the chore config, not in the moment. If the work is heavier, fix the chore definition first; do not silently escalate. |
+| "I'll run the chore without reading CHORE.md" | The remediation procedure lives in CHORE.md. Running blind produces ad-hoc fixes that don't match the chore's contract. |
+| "advise passed, no need to run audit" | `gz chores audit` is what records the proof. Skipping it leaves the chore unverified in the registry. |
+| "The diff is bigger than the chore says — that's fine, I'm fixing adjacent rot" | Adjacent rot is its own chore. Large diffs in a small chore mean two chores are colliding; split them. |
+| "Validation failed but the change is minor — ship it" | Lane validation is the chore's stop-light. Failed lint/typecheck/tests means the chore violated its acceptance rule. Fix or revert. |
+
+## Red Flags
+
+- Skipping any of the 5 steps (show, plan, advise, execute, audit)
+- Modifying files outside the chore's declared scope
+- Adding dependencies, scripts, or config keys not part of the chore contract
+- Running `gz chores run` before validation passes
+- No proof file written to `ops/chores/{slug}/proofs/`
+- Mixing two chores in one execution (collision)
+- Ad-hoc command variants instead of `uv run gz chores ...`

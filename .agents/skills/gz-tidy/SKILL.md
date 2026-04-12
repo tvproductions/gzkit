@@ -4,8 +4,10 @@ description: Run maintenance checks and cleanup routines. Use for repository hyg
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-03-15
+last_reviewed: 2026-04-12
 model: haiku
+metadata:
+  skill-version: "1.1.0"
 ---
 
 # gz tidy
@@ -64,3 +66,25 @@ uv run gz tidy --fix
 @claude-code-guide look at .claude/settings.json and .claude/hooks/ —
 diagnose any broken hooks or stale references against current docs
 ```
+
+## Common Rationalizations
+
+These thoughts mean STOP — you are about to leave drift in place:
+
+| Thought | Reality |
+|---------|---------|
+| "Tidy is just cosmetic, skip it" | Tidy catches surface drift before it becomes a Gate 5 blocker. The cost of skipping is paid later in attestation, when the drift is harder to find. |
+| "The mirrors look fine — sync isn't needed" | Skill mirrors and canonical state can diverge silently. Tidy is the routine check that surfaces it. "Looks fine" is not a verification protocol. |
+| "CLAUDE.md is over budget but it's all useful content" | The 200-line budget exists because adherence drops past it. Useful content that the agent can't load is dead content. Prune or relocate via `@path` imports. |
+| "Hook errors at startup are pre-existing — not my problem" | Pre-existing failures are still failures. Tidy is when you self-heal, not when you ignore. |
+| "I'll run `--check` instead of `--fix` to be safe" | `--check` is for diagnosis. If you saw drift and didn't fix it, you traded a 30-second sync for a future debugging session. |
+| "The Claude surface self-heal is too vague to act on" | Tag the broken files with `@claude-code-guide` and let it diagnose against current Anthropic docs. Vagueness is solved by delegation, not avoidance. |
+
+## Red Flags
+
+- Running tidy with `--check` and ignoring the reported drift
+- Skipping the Claude surface validation steps
+- CLAUDE.md over 200 lines with no relocation plan
+- Hook errors observed but never resolved
+- Skill mirrors not regenerated after a skill edit
+- Tidy runs that produce no evidence trail (sync output, log, or proof)
