@@ -320,6 +320,7 @@ def _pipeline_gate_script() -> str:
 
             import json
             import os
+            import re
             import sys
             from pathlib import Path
 
@@ -351,6 +352,42 @@ def _pipeline_gate_script() -> str:
                 return start
 
 
+            def _is_path_within_scope(rel_path: str, allowed_paths: list[str]) -> bool:
+                \"\"\"Check if rel_path falls within any of the OBPI's allowed paths (#127).\"\"\"
+                for allowed in allowed_paths:
+                    clean = allowed.rstrip("/").replace("/**", "")
+                    if rel_path == clean or rel_path.startswith(clean + "/"):
+                        return True
+                return False
+
+
+            def _extract_allowed_paths_from_brief(brief_path: Path) -> list[str]:
+                \"\"\"Extract allowed paths from an OBPI brief file (#127).\"\"\"
+                try:
+                    content = brief_path.read_text(encoding="utf-8")
+                except OSError:
+                    return []
+                match = re.search(
+                    r"^## Allowed Paths\\s*$([\\s\\S]*?)(?:^## |\\Z)",
+                    content,
+                    flags=re.MULTILINE,
+                )
+                if not match:
+                    return []
+                paths: list[str] = []
+                for line in match.group(1).splitlines():
+                    stripped = line.strip()
+                    if not stripped.startswith("-"):
+                        continue
+                    backticked = re.findall(r"`([^`]+)`", stripped)
+                    candidates = backticked or [re.sub(r"^-+\\s*", "", stripped).split(" - ", 1)[0]]
+                    for candidate in candidates:
+                        normalized = candidate.strip().replace("\\\\", "/")
+                        if normalized and " " not in normalized:
+                            paths.append(normalized)
+                return paths
+
+
             def main() -> None:
                 \"\"\"Gate implementation writes until the pipeline is active.\"\"\"
                 try:
@@ -371,6 +408,8 @@ def _pipeline_gate_script() -> str:
 
                 try:
                     from gzkit.pipeline_runtime import (
+                        extract_brief_status,
+                        find_obpi_brief,
                         load_plan_audit_receipt,
                         marker_matches,
                         pipeline_gate_message,
@@ -392,6 +431,19 @@ def _pipeline_gate_script() -> str:
                 obpi_id = str(receipt.get("obpi_id") or "")
                 if not obpi_id:
                     sys.exit(0)
+
+                # GHI-127: Skip gate if the OBPI brief is already Completed (stale receipt).
+                docs_root = project_root / "docs"
+                brief_path = find_obpi_brief(docs_root, obpi_id)
+                if brief_path is not None:
+                    brief_status = extract_brief_status(brief_path)
+                    if brief_status and brief_status.lower() == "completed":
+                        sys.exit(0)
+
+                    # GHI-127: Scope enforcement to the OBPI's allowed paths.
+                    allowed_paths = _extract_allowed_paths_from_brief(brief_path)
+                    if allowed_paths and not _is_path_within_scope(rel_path, allowed_paths):
+                        sys.exit(0)
 
                 obpi_marker, legacy_marker = pipeline_marker_paths(plans_dir, obpi_id)
                 if marker_matches(obpi_marker, obpi_id):
