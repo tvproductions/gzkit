@@ -7,7 +7,14 @@
 from __future__ import annotations
 
 from gzkit.commands.common import console, get_project_root
-from gzkit.quality import DriftAdvisoryResult, run_format, run_lint, run_tests, run_typecheck
+from gzkit.quality import (
+    DriftAdvisoryResult,
+    run_behave,
+    run_format,
+    run_lint,
+    run_tests,
+    run_typecheck,
+)
 
 
 def lint() -> None:
@@ -49,22 +56,35 @@ def format_cmd() -> None:
 
 
 def test() -> None:
-    """Run unit tests."""
+    """Run unit tests and behave scenarios.
+
+    Runs unittest first; on success continues to behave so a single command
+    covers the full test floor (unit + BDD/CLI contract scenarios).
+    """
     project_root = get_project_root()
 
-    console.print("Running tests...")
-    result = run_tests(project_root)
+    console.print("Running unit tests...")
+    unit = run_tests(project_root)
+    if unit.stdout:
+        console.print(unit.stdout)
+    if unit.stderr:
+        console.print(unit.stderr)
+    if not unit.success:
+        console.print("[red]Unit tests failed.[/red]")
+        raise SystemExit(unit.returncode)
+    console.print("[green]Unit tests passed.[/green]")
 
-    if result.stdout:
-        console.print(result.stdout)
-    if result.stderr:
-        console.print(result.stderr)
-
-    if result.success:
-        console.print("[green]Tests passed.[/green]")
+    console.print("Running behave scenarios...")
+    bdd = run_behave(project_root)
+    if bdd.stdout:
+        console.print(bdd.stdout)
+    if bdd.stderr:
+        console.print(bdd.stderr)
+    if bdd.success:
+        console.print("[green]Behave scenarios passed.[/green]")
     else:
-        console.print("[red]Tests failed.[/red]")
-        raise SystemExit(result.returncode)
+        console.print("[red]Behave scenarios failed.[/red]")
+        raise SystemExit(bdd.returncode)
 
 
 def typecheck() -> None:
@@ -108,6 +128,7 @@ def check(as_json: bool = False) -> None:
         ("Format", run_format_check),
         ("Typecheck", run_typecheck),
         ("Test", run_tests),
+        ("Behave", run_behave),
         ("Skill audit", run_skill_audit),
         ("Parity check", run_parity_check),
         ("Readiness audit", run_readiness_audit),

@@ -322,6 +322,22 @@ def run_tests(project_root: Path) -> QualityResult:
     return run_command("uv run -m unittest discover tests", cwd=project_root)
 
 
+def run_behave(project_root: Path) -> QualityResult:
+    """Run BDD scenarios via behave.
+
+    Behave is part of the test floor: `gz test` and `gz check` must run it
+    so feature/CLI contract drift is caught alongside unit failures.
+
+    Args:
+        project_root: Project root directory.
+
+    Returns:
+        QualityResult from the behave run.
+
+    """
+    return run_command("uv run -m behave", cwd=project_root)
+
+
 class DriftAdvisoryResult(BaseModel):
     """Result of an advisory drift detection check."""
 
@@ -358,6 +374,7 @@ class CheckResult(BaseModel):
     format: QualityResult
     typecheck: QualityResult
     test: QualityResult
+    behave: QualityResult
     skill_audit: QualityResult
     parity_check: QualityResult
     readiness_audit: QualityResult
@@ -371,6 +388,7 @@ class CheckResult(BaseModel):
             "format": self.format.to_dict(),
             "typecheck": self.typecheck.to_dict(),
             "test": self.test.to_dict(),
+            "behave": self.behave.to_dict(),
             "skill_audit": self.skill_audit.to_dict(),
             "parity_check": self.parity_check.to_dict(),
             "readiness_audit": self.readiness_audit.to_dict(),
@@ -425,6 +443,7 @@ def run_all_checks(project_root: Path) -> CheckResult:
     format_check = run_format_check(project_root)
     typecheck = run_typecheck(project_root)
     test = run_tests(project_root)
+    behave = run_behave(project_root)
     skill_audit = run_skill_audit(project_root)
     parity_check = run_parity_check(project_root)
     readiness_audit = run_readiness_audit(project_root)
@@ -435,6 +454,7 @@ def run_all_checks(project_root: Path) -> CheckResult:
             format_check.success,
             typecheck.success,
             test.success,
+            behave.success,
             skill_audit.success,
             parity_check.success,
             readiness_audit.success,
@@ -449,6 +469,7 @@ def run_all_checks(project_root: Path) -> CheckResult:
         format=format_check,
         typecheck=typecheck,
         test=test,
+        behave=behave,
         skill_audit=skill_audit,
         parity_check=parity_check,
         readiness_audit=readiness_audit,
