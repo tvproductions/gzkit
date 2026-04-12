@@ -199,6 +199,7 @@ class TestSkillCommands(unittest.TestCase):
                 patch("gzkit.quality.run_format_check", return_value=ok),
                 patch("gzkit.commands.quality.run_typecheck", return_value=ok),
                 patch("gzkit.commands.quality.run_tests", return_value=ok),
+                patch("gzkit.commands.quality.run_behave", return_value=ok),
                 patch("gzkit.quality.run_skill_audit", return_value=warning_skill_audit),
                 patch("gzkit.quality.run_parity_check", return_value=ok),
                 patch("gzkit.quality.run_readiness_audit", return_value=ok),
