@@ -34,17 +34,14 @@ def _run_agent_control_sync(dry_run: bool) -> None:
     project_root = get_project_root()
 
     if dry_run:
+        from gzkit.validate_pkg.sync_parity import plan_sync_all  # noqa: PLC0415
+
         console.print("[yellow]Dry run:[/yellow] no files will be written.")
         console.print("Would update control surfaces:")
-        console.print("  .gzkit/manifest.json")
-        console.print(f"  {config.paths.agents_md}")
-        console.print(f"  {config.paths.claude_md}")
-        console.print(f"  {config.paths.copilot_instructions}")
-        console.print(f"  {config.paths.claude_settings}")
-        console.print("  .copilotignore")
-        console.print(f"  {config.paths.claude_skills}/**")
-        console.print(f"  {config.paths.codex_skills}/**")
-        console.print(f"  {config.paths.copilot_skills}/**")
+        planned = plan_sync_all(project_root, config)
+        for path in planned:
+            console.print(f"  {path}")
+        console.print(f"\n  ({len(planned)} path(s) planned)")
         return
 
     preflight_blockers = collect_canonical_sync_blockers(project_root, config)
