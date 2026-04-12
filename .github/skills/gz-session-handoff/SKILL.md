@@ -4,7 +4,7 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "6.0.0"
+  skill-version: "6.1.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
@@ -249,6 +249,30 @@ for h in handoffs:
 - `resume_handoff()` orchestrates the full workflow and returns a `ResumeResult`
 
 ---
+
+## Common Rationalizations
+
+These thoughts mean STOP — you are about to lose context across the session boundary:
+
+| Thought | Reality |
+|---------|---------|
+| "The handoff is slightly stale but I remember the work" | Stale handoffs trigger the human verification gate for a reason. Memory is not a substitute for explicit verification. Present to the human and wait. |
+| "Branch mismatch is fine, I know what I'm doing" | The branch field exists because branch state is part of session context. Mismatch means the world changed under the handoff. Verify with the human. |
+| "I'll fill the placeholders in later — let me write the scaffold first" | The validation gate rejects placeholders. "Later" means the next agent inherits TBD/TODO markers. Populate every section now. |
+| "All 7 sections are overkill for a 30-minute session" | The 7 sections are the minimum for context preservation. Skipping any one strands the resuming agent in exactly the place that section would have explained. |
+| "The Evidence section references files that exist locally — close enough" | Validation checks every referenced path on disk. A broken reference in a handoff is a broken handoff. Fix or remove. |
+| "I can summarize the chain in one document instead of following continues_from" | The chain is the lineage. Summarizing it loses the audit trail and the rationale that led to the current state. Traverse it. |
+| "This work is uncommitted — I'll handoff after I commit" | Handoffs preserve the in-flight state including uncommitted decisions. Commit pressure is exactly when context is most fragile. Write the handoff now. |
+
+## Red Flags
+
+- Writing a handoff with HTML-comment placeholders still present in any section
+- Resuming a Stale or Very Stale handoff without presenting it to the human first
+- Resuming with a branch mismatch and "I'll fix it as I go"
+- Creating a handoff that references files via prose instead of backtick-quoted paths
+- Skipping the Decisions Made section because "nothing important was decided"
+- Filling Immediate Next Steps with vague intent ("continue the work") instead of concrete actions
+- Creating a chained handoff without setting `continues_from`
 
 ## Related Skills
 
