@@ -1,0 +1,16 @@
+{
+  "obpi_id": "OBPI-0.25.0-24",
+  "obpi_slug": "OBPI-0.25.0-24-cli-audit-pattern",
+  "parent_adr": "ADR-0.25.0-core-infrastructure-pattern-absorption",
+  "lane": "heavy",
+  "entry": "full",
+  "execution_mode": "normal",
+  "current_stage": "implement",
+  "started_at": "2026-04-11T23:00:00Z",
+  "updated_at": "2026-04-11T23:00:00Z",
+  "receipt_state": "PASS",
+  "blockers": [],
+  "required_human_action": null,
+  "next_command": null,
+  "resume_point": null
+}
