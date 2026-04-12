@@ -3,16 +3,19 @@ import tempfile
 import unittest
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from unittest.mock import patch
 
 from gzkit.pipeline_runtime import (
     clear_stale_pipeline_markers,
     extract_brief_status,
     find_active_pipeline_marker,
+    find_plan_for_obpi,
     find_stale_pipeline_markers,
     load_plan_audit_receipt,
     pipeline_command,
     pipeline_completion_reminder_message,
     pipeline_gate_message,
+    pipeline_plan_search_dirs,
     pipeline_receipt_path,
     pipeline_resume_command,
     pipeline_router_message,
@@ -304,6 +307,107 @@ class TestPipelineRuntime(unittest.TestCase):
             stale = find_stale_pipeline_markers(plans_dir)
 
             self.assertEqual(len(stale), 1)
+
+
+class TestPlanFileDualScan(unittest.TestCase):
+    """GHI-128: plan discovery must scan both project-local and ~/.claude/plans/."""
+
+    def test_search_dirs_excludes_missing_directories(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            # No .claude/plans dir created — should return empty when home is also empty.
+            with patch.dict("os.environ", {"GZKIT_CLAUDE_HOME": str(project_root / "home")}):
+                dirs = pipeline_plan_search_dirs(project_root)
+            self.assertEqual(dirs, [])
+
+    def test_search_dirs_returns_both_when_present(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp) / "proj"
+            home = Path(tmp) / "home"
+            (project_root / ".claude" / "plans").mkdir(parents=True)
+            (home / ".claude" / "plans").mkdir(parents=True)
+            with patch.dict("os.environ", {"GZKIT_CLAUDE_HOME": str(home)}):
+                dirs = pipeline_plan_search_dirs(project_root)
+            self.assertEqual(len(dirs), 2)
+            self.assertEqual(dirs[0], project_root / ".claude" / "plans")
+            self.assertEqual(dirs[1], home / ".claude" / "plans")
+
+    def test_finds_plan_in_global_when_project_empty(self) -> None:
+        """The original #128 reproducer: plan only exists in ~/.claude/plans/."""
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp) / "proj"
+            home = Path(tmp) / "home"
+            (project_root / ".claude" / "plans").mkdir(parents=True)
+            global_dir = home / ".claude" / "plans"
+            global_dir.mkdir(parents=True)
+            (global_dir / "humble-fluttering-shore.md").write_text(
+                "Plan for OBPI-0.25.0-26 — drift detection pattern.\n",
+                encoding="utf-8",
+            )
+
+            with patch.dict("os.environ", {"GZKIT_CLAUDE_HOME": str(home)}):
+                found = find_plan_for_obpi(project_root, "OBPI-0.25.0-26")
+
+            self.assertIsNotNone(found)
+            assert found is not None  # for type narrowing
+            # The returned path is in the project-local dir (copy was made).
+            self.assertEqual(found.parent, project_root / ".claude" / "plans")
+            self.assertEqual(found.name, "humble-fluttering-shore.md")
+            self.assertIn("OBPI-0.25.0-26", found.read_text(encoding="utf-8"))
+
+    def test_prefers_most_recent_when_both_locations_have_plans(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp) / "proj"
+            home = Path(tmp) / "home"
+            project_plans = project_root / ".claude" / "plans"
+            project_plans.mkdir(parents=True)
+            global_plans = home / ".claude" / "plans"
+            global_plans.mkdir(parents=True)
+
+            old_plan = project_plans / "old.md"
+            old_plan.write_text("Plan for OBPI-0.25.0-26\n", encoding="utf-8")
+            import os
+
+            os.utime(old_plan, (1_000_000, 1_000_000))
+
+            new_plan = global_plans / "new.md"
+            new_plan.write_text("Newer plan for OBPI-0.25.0-26\n", encoding="utf-8")
+            os.utime(new_plan, (2_000_000, 2_000_000))
+
+            with patch.dict("os.environ", {"GZKIT_CLAUDE_HOME": str(home)}):
+                found = find_plan_for_obpi(project_root, "OBPI-0.25.0-26")
+
+            self.assertIsNotNone(found)
+            assert found is not None
+            self.assertEqual(found.parent, project_plans)
+            self.assertEqual(found.name, "new.md")
+            self.assertIn("Newer plan", found.read_text(encoding="utf-8"))
+
+    def test_returns_none_when_no_plan_matches(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp) / "proj"
+            home = Path(tmp) / "home"
+            (project_root / ".claude" / "plans").mkdir(parents=True)
+            (home / ".claude" / "plans").mkdir(parents=True)
+
+            with patch.dict("os.environ", {"GZKIT_CLAUDE_HOME": str(home)}):
+                self.assertIsNone(find_plan_for_obpi(project_root, "OBPI-0.99.0-01"))
+
+    def test_local_plan_unchanged_when_already_present(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp) / "proj"
+            home = Path(tmp) / "home"
+            project_plans = project_root / ".claude" / "plans"
+            project_plans.mkdir(parents=True)
+            (home / ".claude" / "plans").mkdir(parents=True)
+
+            local_plan = project_plans / "already-here.md"
+            local_plan.write_text("Existing plan for OBPI-0.25.0-26\n", encoding="utf-8")
+
+            with patch.dict("os.environ", {"GZKIT_CLAUDE_HOME": str(home)}):
+                found = find_plan_for_obpi(project_root, "OBPI-0.25.0-26")
+
+            self.assertEqual(found, local_plan)
 
 
 class TestValidateBriefForPipeline(unittest.TestCase):

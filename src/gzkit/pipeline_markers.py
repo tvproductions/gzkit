@@ -7,10 +7,25 @@ All public symbols are re-exported from pipeline_runtime for backward compatibil
 from __future__ import annotations
 
 import json
+import os
 import re
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, cast
+
+
+def _claude_home() -> Path:
+    """Return the Claude Code user home directory.
+
+    Honors the ``GZKIT_CLAUDE_HOME`` environment variable so tests can point
+    plan-discovery at an isolated fake home without monkey-patching the
+    subprocess hook.
+    """
+    override = os.environ.get("GZKIT_CLAUDE_HOME")
+    if override:
+        return Path(override)
+    return Path.home()
+
 
 PIPELINE_RECEIPT_FILE = ".plan-audit-receipt.json"
 PIPELINE_LEGACY_MARKER = ".pipeline-active.json"
@@ -31,8 +46,99 @@ def pipeline_git_sync_command() -> str:
 
 
 def pipeline_plans_dir(project_root: Path) -> Path:
-    """Return the canonical Claude plans directory."""
+    """Return the project-local Claude plans directory.
+
+    Receipts and markers always live here. Plan files (the markdown plans
+    Claude Code's plan mode produces) may originate here OR in
+    ``~/.claude/plans/``; use ``pipeline_plan_search_dirs`` and
+    ``find_plan_for_obpi`` for plan discovery (#128).
+    """
     return project_root / ".claude" / "plans"
+
+
+def pipeline_plan_search_dirs(project_root: Path) -> list[Path]:
+    """Return all directories to search when looking for a plan file (#128).
+
+    Plan mode in Claude Code writes new plans to ``~/.claude/plans/`` (the
+    global user directory), not the project-local ``.claude/plans/``. The
+    historic project-local search missed every plan written by plan mode and
+    produced a silent FAIL receipt that aborted the OBPI pipeline. Both
+    locations must be searched.
+
+    Project-local is listed first so a plan that exists in both wins from the
+    project (its mtime is the more authoritative signal once a plan has been
+    promoted into governance evidence).
+    """
+    project_local = project_root / ".claude" / "plans"
+    global_local = _claude_home() / ".claude" / "plans"
+    candidates: list[Path] = []
+    seen: set[Path] = set()
+    for candidate in (project_local, global_local):
+        try:
+            resolved = candidate.resolve()
+        except (OSError, RuntimeError):
+            continue
+        if resolved in seen:
+            continue
+        seen.add(resolved)
+        if candidate.is_dir():
+            candidates.append(candidate)
+    return candidates
+
+
+def find_plan_for_obpi(project_root: Path, obpi_id: str) -> Path | None:
+    """Locate the most recent plan file referencing ``obpi_id`` across both dirs (#128).
+
+    Searches every directory returned by :func:`pipeline_plan_search_dirs`,
+    chooses the plan file with the most recent mtime that mentions the OBPI,
+    and — if that file lives in the global user directory — copies it into
+    the project-local plans directory so the plan, the receipt, and the
+    pipeline marker stay co-located. Returns the project-local path the
+    caller should treat as authoritative, or ``None`` if no plan was found.
+    """
+    if not obpi_id:
+        return None
+
+    project_local = pipeline_plans_dir(project_root)
+    candidates: list[tuple[float, Path]] = []
+    for plans_dir in pipeline_plan_search_dirs(project_root):
+        for plan_path in plans_dir.glob("*.md"):
+            if plan_path.name.startswith("."):
+                continue
+            try:
+                content = plan_path.read_text(encoding="utf-8")
+            except OSError:
+                continue
+            if obpi_id not in content:
+                continue
+            try:
+                mtime = plan_path.stat().st_mtime
+            except OSError:
+                continue
+            candidates.append((mtime, plan_path))
+
+    if not candidates:
+        return None
+
+    _, source_path = max(candidates, key=lambda item: item[0])
+
+    try:
+        source_resolved = source_path.resolve()
+        project_resolved = project_local.resolve() if project_local.exists() else project_local
+    except (OSError, RuntimeError):
+        return source_path
+
+    if project_local in source_path.parents or source_resolved.parent == project_resolved:
+        return source_path
+
+    project_local.mkdir(parents=True, exist_ok=True)
+    destination = project_local / source_path.name
+    if not destination.exists() or destination.stat().st_mtime < source_path.stat().st_mtime:
+        try:
+            destination.write_text(source_path.read_text(encoding="utf-8"), encoding="utf-8")
+        except OSError:
+            return source_path
+    return destination
 
 
 def load_pipeline_json(path: Path) -> dict[str, Any] | None:

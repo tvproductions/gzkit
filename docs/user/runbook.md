@@ -433,8 +433,15 @@ Use [`/gz-check`](skills/gz-check.md) to run all quality checks in one pass, or 
 - `uv run gz obpi lock check OBPI-<X.Y.Z-NN>` (check if an OBPI is locked)
 - `uv run gz obpi lock list` (list active OBPI work locks)
 - `uv run gz plan create <name> --semver X.Y.Z` (create a new ADR)
-- `uv run gz plan audit OBPI-<X.Y.Z-NN>` (structural prerequisite check for plan-OBPI alignment)
+- `uv run gz plan audit OBPI-<X.Y.Z-NN>` (structural prerequisite check for plan-OBPI alignment; scans both `<project>/.claude/plans/` and `~/.claude/plans/` — see #128)
 - `uv run gz agent sync control-surfaces`
+
+> **Plan file locations:** Claude Code's plan mode writes new plans to
+> `~/.claude/plans/` (the global user directory) by default. `gz plan audit`
+> and the plan-audit-gate hook search both `<project>/.claude/plans/` and
+> `~/.claude/plans/` and copy a matching global plan into the project-local
+> directory so the plan, the audit receipt, and the pipeline marker stay
+> co-located. Project-local always wins on a tie.
 
 ---
 
