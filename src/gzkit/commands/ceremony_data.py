@@ -271,9 +271,9 @@ _READINESS_COLUMNS = [
 
 _SUMMARY_COLUMNS = [
     ColumnDef(header="OBPI", key="id", style="bold", no_wrap=True),
-    ColumnDef(header="Lane", key="lane", no_wrap=True),
-    ColumnDef(header="Status", key="status", no_wrap=True),
-    ColumnDef(header="Objective", key="objective", no_wrap=True, overflow="ellipsis"),
+    ColumnDef(header="Lane", key="lane"),
+    ColumnDef(header="Status", key="status"),
+    ColumnDef(header="Objective", key="objective", overflow="fold"),
 ]
 
 _DOC_COLUMNS = [
@@ -326,16 +326,20 @@ def _short_obpi_id(obpi_id: str) -> str:
 
 
 def format_summary_table(briefs: list[dict[str, Any]], title: str) -> str:
-    """Format OBPI bill of materials as a styled table for Step 2."""
+    """Format OBPI bill of materials as a styled table for Step 2.
+
+    Objectives wrap across multiple lines (overflow=fold) so the full
+    description is readable at normal terminal widths (#116). Lane and Status
+    no longer set ``no_wrap``, but in practice they are short enough that
+    Rich keeps them on one line anyway.
+    """
     rows = []
     for b in briefs:
-        objective = b.get("objective", "").replace("`", "")
-        # First sentence or 35 chars
-        dot = objective.find(".")
-        if 0 < dot < 40:
-            objective = objective[: dot + 1]
-        elif len(objective) > 35:
-            objective = objective[:32] + "..."
+        objective = b.get("objective", "").replace("`", "").strip()
+        # Trim trailing prose to the first paragraph for readability — but no
+        # character truncation. Rich will wrap.
+        if "\n\n" in objective:
+            objective = objective.split("\n\n", 1)[0].strip()
         rows.append(
             {
                 "id": _short_obpi_id(b.get("id", "?")),

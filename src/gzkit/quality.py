@@ -576,6 +576,9 @@ class ObpiProofStatus(BaseModel):
     bdd_evidence_found: bool = Field(
         False, description="BDD feature file exists with substantive content"
     )
+    release_artifact_found: bool = Field(
+        False, description="Release manifest exists in docs/releases/ with substantive content"
+    )
 
     @property
     def has_proof(self) -> bool:
@@ -587,6 +590,7 @@ class ObpiProofStatus(BaseModel):
             or self.governance_artifact_found
             or self.test_evidence_found
             or self.bdd_evidence_found
+            or self.release_artifact_found
         )
 
     @property
@@ -604,6 +608,8 @@ class ObpiProofStatus(BaseModel):
             return "test_evidence"
         if self.bdd_evidence_found:
             return "bdd_evidence"
+        if self.release_artifact_found:
+            return "release_artifact"
         return "MISSING"
 
 
@@ -732,6 +738,25 @@ def _check_bdd_evidence_proof(allowed_paths: list[str], project_root: Path) -> b
     return False
 
 
+def _check_release_artifact_proof(allowed_paths: list[str], project_root: Path) -> bool:
+    """Check if any release artifact in docs/releases/ exists with substantive content (#118).
+
+    Recognizes patch-release manifests and similar release evidence files
+    produced by ``gz patch release`` (e.g. ``docs/releases/PATCH-vX.Y.Z.md``)
+    so OBPIs that ship release artifacts can satisfy product proof.
+    """
+    for path_str in allowed_paths:
+        if not path_str.startswith("docs/releases/"):
+            continue
+        artifact_path = project_root / path_str
+        if not artifact_path.is_file():
+            continue
+        content = artifact_path.read_text(encoding="utf-8").strip()
+        if len(content) > 100:
+            return True
+    return False
+
+
 def check_product_proof(
     adr_id: str,
     obpi_files: dict[str, Path],
@@ -771,6 +796,7 @@ def check_product_proof(
         governance_artifact_found = _check_governance_artifact_proof(allowed_paths, project_root)
         test_evidence_found = _check_test_evidence_proof(allowed_paths, project_root)
         bdd_evidence_found = _check_bdd_evidence_proof(allowed_paths, project_root)
+        release_artifact_found = _check_release_artifact_proof(allowed_paths, project_root)
 
         proofs.append(
             ObpiProofStatus(
@@ -781,6 +807,7 @@ def check_product_proof(
                 governance_artifact_found=governance_artifact_found,
                 test_evidence_found=test_evidence_found,
                 bdd_evidence_found=bdd_evidence_found,
+                release_artifact_found=release_artifact_found,
             )
         )
 
