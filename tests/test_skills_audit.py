@@ -748,5 +748,147 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
             self.assertTrue(after.valid)
 
 
+def _write_skill_with_body(
+    project_root: Path,
+    root_rel: str,
+    skill_dir_name: str,
+    body: str,
+) -> Path:
+    """Write a canonical-style SKILL.md with a custom body. Returns skill dir."""
+    skill_dir = project_root / root_rel / skill_dir_name
+    skill_dir.mkdir(parents=True, exist_ok=True)
+    frontmatter = _skill_frontmatter(skill_dir_name)
+    lines = ["---"]
+    for key, value in frontmatter.items():
+        lines.append(f"{key}: {value}")
+    lines.append("---")
+    lines.append("")
+    lines.append(body)
+    lines.append("")
+    (skill_dir / "SKILL.md").write_text("\n".join(lines), encoding="utf-8")
+    return skill_dir
+
+
+class TestSkillAuditMirrorPackageParity(unittest.TestCase):
+    """Mirror parity must verify body and asset parity, not just frontmatter (GHI #132)."""
+
+    def _base_project(self, tmpdir: str) -> tuple[Path, GzkitConfig]:
+        project_root = Path(tmpdir)
+        config = GzkitConfig(project_name="gzkit-test")
+        for root_rel in (
+            config.paths.skills,
+            config.paths.codex_skills,
+            config.paths.claude_skills,
+            config.paths.copilot_skills,
+        ):
+            _write_skill_with_body(project_root, root_rel, "demo-skill", "Canonical body line.")
+        return project_root, config
+
+    def test_mirror_body_drift_blocks_audit(self) -> None:
+        """When a mirror's SKILL.md body differs from canonical, audit blocks."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root, config = self._base_project(tmpdir)
+            _write_skill_with_body(
+                project_root,
+                config.paths.claude_skills,
+                "demo-skill",
+                "Mirror body has drifted content.",
+            )
+
+            report = audit_skills(project_root, config)
+            self.assertFalse(report.valid)
+            self.assertTrue(
+                any(
+                    issue.path.endswith(".claude/skills/demo-skill/SKILL.md")
+                    and issue.code == "SKA-MIRROR-BODY-DRIFT"
+                    and issue.blocking
+                    for issue in report.issues
+                ),
+                f"expected SKA-MIRROR-BODY-DRIFT; got {[i.code for i in report.issues]}",
+            )
+
+    def test_mirror_body_identical_passes(self) -> None:
+        """Identical bodies must not trigger body-drift findings."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root, config = self._base_project(tmpdir)
+            report = audit_skills(project_root, config)
+            self.assertFalse(any(issue.code == "SKA-MIRROR-BODY-DRIFT" for issue in report.issues))
+
+    def test_mirror_asset_missing_blocks_audit(self) -> None:
+        """Canonical asset not present in a mirror is a blocking error."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root, config = self._base_project(tmpdir)
+            canonical_asset = (
+                project_root / config.paths.skills / "demo-skill" / "assets" / "template.md"
+            )
+            canonical_asset.parent.mkdir(parents=True, exist_ok=True)
+            canonical_asset.write_text("canonical asset content", encoding="utf-8")
+            for mirror_rel in (
+                config.paths.codex_skills,
+                config.paths.copilot_skills,
+            ):
+                mirror_asset = project_root / mirror_rel / "demo-skill" / "assets" / "template.md"
+                mirror_asset.parent.mkdir(parents=True, exist_ok=True)
+                mirror_asset.write_text("canonical asset content", encoding="utf-8")
+
+            report = audit_skills(project_root, config)
+            self.assertFalse(report.valid)
+            self.assertTrue(
+                any(
+                    issue.path.endswith(".claude/skills/demo-skill/assets/template.md")
+                    and issue.code == "SKA-MIRROR-ASSET-MISSING"
+                    and issue.blocking
+                    for issue in report.issues
+                )
+            )
+
+    def test_mirror_asset_drift_blocks_audit(self) -> None:
+        """Shared asset with drifted content is a blocking error."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root, config = self._base_project(tmpdir)
+            for rel in (
+                config.paths.skills,
+                config.paths.codex_skills,
+                config.paths.claude_skills,
+                config.paths.copilot_skills,
+            ):
+                asset = project_root / rel / "demo-skill" / "assets" / "template.md"
+                asset.parent.mkdir(parents=True, exist_ok=True)
+                asset.write_text("canonical asset content", encoding="utf-8")
+            drifted = (
+                project_root / config.paths.claude_skills / "demo-skill" / "assets" / "template.md"
+            )
+            drifted.write_text("mirror-only drifted content", encoding="utf-8")
+
+            report = audit_skills(project_root, config)
+            self.assertFalse(report.valid)
+            self.assertTrue(
+                any(
+                    issue.path.endswith(".claude/skills/demo-skill/assets/template.md")
+                    and issue.code == "SKA-MIRROR-ASSET-DRIFT"
+                    and issue.blocking
+                    for issue in report.issues
+                )
+            )
+
+    def test_mirror_asset_unexpected_is_non_blocking_warning(self) -> None:
+        """An asset present in a mirror but absent from canonical is a warning."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root, config = self._base_project(tmpdir)
+            rogue = project_root / config.paths.claude_skills / "demo-skill" / "extras" / "rogue.md"
+            rogue.parent.mkdir(parents=True, exist_ok=True)
+            rogue.write_text("mirror-only asset", encoding="utf-8")
+
+            report = audit_skills(project_root, config)
+            self.assertTrue(
+                any(
+                    issue.path.endswith(".claude/skills/demo-skill/extras/rogue.md")
+                    and issue.code == "SKA-MIRROR-ASSET-UNEXPECTED"
+                    and not issue.blocking
+                    for issue in report.issues
+                )
+            )
+
+
 if __name__ == "__main__":
     unittest.main()
