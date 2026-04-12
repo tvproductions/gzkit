@@ -1,11 +1,13 @@
 """Skill mirror parity validation for gzkit.
 
 Validates that mirrored skill directories match their canonical sources.
+Parity is enforced at the package level: SKILL.md frontmatter, SKILL.md body,
+and non-SKILL.md supporting files must all agree with canonical.
 """
 
 from pathlib import Path
 
-from gzkit.skills import SkillAuditIssue
+from gzkit.skills import SkillAuditIssue, _parse_frontmatter
 from gzkit.skills_audit import (
     KEBAB_CASE_RE,
     SKILL_CAPABILITY_FIELDS,
@@ -97,6 +99,113 @@ def _validate_mirror_skill(
             "SKA-MIRROR-FIELD-DRIFT",
             mirror_file,
             f"Mirror field drift for '{field}' compared to canonical skill '{name}'.",
+        )
+
+    _validate_mirror_skill_body(project_root, issues, name, canonical_file, mirror_file)
+    _validate_mirror_skill_assets(project_root, issues, name, canonical_dir, mirror_dir)
+
+
+def _read_skill_body(skill_file: Path) -> str:
+    """Return the body of a SKILL.md file after its YAML frontmatter."""
+    try:
+        content = skill_file.read_text(encoding="utf-8")
+    except OSError:
+        return ""
+    _, body = _parse_frontmatter(content)
+    return body.strip()
+
+
+def _validate_mirror_skill_body(
+    project_root: Path,
+    issues: list[SkillAuditIssue],
+    name: str,
+    canonical_file: Path,
+    mirror_file: Path,
+) -> None:
+    """Compare the markdown body of canonical and mirror SKILL.md files."""
+    if _read_skill_body(canonical_file) == _read_skill_body(mirror_file):
+        return
+    _append_audit_issue(
+        issues,
+        project_root,
+        "SKA-MIRROR-BODY-DRIFT",
+        mirror_file,
+        (
+            f"Mirror SKILL.md body drift for canonical skill '{name}'. "
+            "Run `uv run gz agent sync control-surfaces` to repair."
+        ),
+    )
+
+
+def _collect_package_files(skill_dir: Path) -> dict[str, Path]:
+    """Return mapping of rel-posix-path to absolute path for all files below skill_dir.
+
+    Excludes SKILL.md (handled separately) and any file named SKILL.md nested
+    inside asset directories to avoid double-counting.
+    """
+    package: dict[str, Path] = {}
+    if not skill_dir.exists():
+        return package
+    for path in skill_dir.rglob("*"):
+        if not path.is_file():
+            continue
+        if path.name == "SKILL.md" and path.parent == skill_dir:
+            continue
+        rel = path.relative_to(skill_dir).as_posix()
+        package[rel] = path
+    return package
+
+
+def _validate_mirror_skill_assets(
+    project_root: Path,
+    issues: list[SkillAuditIssue],
+    name: str,
+    canonical_dir: Path,
+    mirror_dir: Path,
+) -> None:
+    """Ensure every canonical supporting file exists in the mirror with matching bytes."""
+    canonical_assets = _collect_package_files(canonical_dir)
+    mirror_assets = _collect_package_files(mirror_dir)
+
+    for rel in sorted(set(canonical_assets) - set(mirror_assets)):
+        _append_audit_issue(
+            issues,
+            project_root,
+            "SKA-MIRROR-ASSET-MISSING",
+            mirror_dir / rel,
+            f"Missing mirrored asset '{rel}' for canonical skill '{name}'.",
+        )
+
+    for rel in sorted(set(mirror_assets) - set(canonical_assets)):
+        _append_audit_issue(
+            issues,
+            project_root,
+            "SKA-MIRROR-ASSET-UNEXPECTED",
+            mirror_assets[rel],
+            (
+                f"Unexpected mirror asset '{rel}' not present in canonical skill '{name}'. "
+                "Asset may have been added directly to the mirror."
+            ),
+            blocking=False,
+        )
+
+    for rel in sorted(set(canonical_assets) & set(mirror_assets)):
+        try:
+            canonical_bytes = canonical_assets[rel].read_bytes()
+            mirror_bytes = mirror_assets[rel].read_bytes()
+        except OSError:
+            continue
+        if canonical_bytes == mirror_bytes:
+            continue
+        _append_audit_issue(
+            issues,
+            project_root,
+            "SKA-MIRROR-ASSET-DRIFT",
+            mirror_assets[rel],
+            (
+                f"Mirror asset '{rel}' drifted from canonical skill '{name}'. "
+                "Run `uv run gz agent sync control-surfaces` to repair."
+            ),
         )
 
 
