@@ -16,7 +16,9 @@ gz check [OPTIONS]
 
 ## Description
 
-Runs the complete quality assurance suite: linting with Ruff, static type checking with ty, unit tests with unittest, skill audit, parity check, and readiness audit. After all blocking checks complete, runs advisory drift detection using the same engine as `gz drift`.
+Runs the complete quality assurance suite: linting with Ruff, format check, static type checking with ty, unit tests with unittest, Behave scenarios, skill audit, parity check, readiness audit, CLI documentation audit, and preflight scan for stale pipeline markers and orphan plan-audit receipts. After all blocking checks complete, runs advisory drift detection using the same engine as `gz drift`.
+
+The `CLI audit` and `Preflight` steps catch workflow-integrity drift that would otherwise go undetected — a new subcommand missing from the operator runbook, or stale artifacts left behind from a previous pipeline session — and apply self-healing pressure on every canonical quality run.
 
 Drift findings are advisory — they appear as warnings but do not affect the exit code. This surfaces spec-test-code drift early without blocking the development workflow.
 
