@@ -4,7 +4,7 @@ description: Execute the ADR closeout ceremony protocol for human attestation. G
 category: adr-audit
 compatibility: GovZero v6 framework; provides runbook walkthrough for human ADR attestation
 metadata:
-  skill-version: "7.1.1"
+  skill-version: "7.2.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -208,15 +208,38 @@ gh release create vX.Y.Z --title "vX.Y.Z" --notes-file RELEASE_NOTES.md
 
 After each step, advance via `--next`.
 
-### Step 9: Completion
+### Step 9: Completion (Two-Sync Pattern)
 
-When the CLI outputs the ceremony completion summary (CLI Step 11), present it to the human. Run a final sync if any ceremony artifacts were written:
+When the CLI outputs the ceremony completion summary (CLI Step 11), present it to the human, then run the **two-sync pattern** to commit the closeout cleanly. This mirrors `gz-obpi-pipeline`'s Stage 5 — every governance artifact must land in two reviewable commits.
 
 ```bash
+# Sync 1 — closeout artifacts: ceremony state, attestation receipt, ADR audit
+# updates, GHI close comments, release notes (if applicable).
+uv run gz git-sync --apply --lint --test
+
+# Sync 2 — reconcile output and ADR status refresh after the first sync lands.
+uv run gz adr reconcile ADR-X.Y.Z
 uv run gz git-sync --apply --lint --test
 ```
 
+**Why two syncs:**
+
+1. The first sync makes the human attestation, receipt, and walkthrough evidence durable before any derived state is rebuilt.
+2. The second sync captures the reconciled ADR status (Layer 3 derived state) so `gz status` and downstream consumers see the closure.
+
+If sync 1 fails, the ceremony is paused — fix the failing gate, re-run sync 1. **Never** skip sync 2: skipping it leaves the ledger and the derived ADR table out of sync, which is the same failure family as #129 (canon green, derived view stale).
+
 The ceremony is done.
+
+#### Fallback / Degraded Mode
+
+If `gz git-sync` is unavailable (network failure, gh outage, dirty submodule):
+
+1. Stop the ceremony at the failed sync. Do not advance.
+2. Capture the exact error output and the ceremony state file path (`.gzkit/ceremonies/<ADR-ID>.json`).
+3. Hand off to the human with a one-line summary plus the resume command:
+   `uv run gz closeout ADR-X.Y.Z --ceremony` (re-attaches to the persisted state).
+4. Do **not** manually commit closeout artifacts or hand-edit the ledger as a workaround. The ceremony resumes cleanly once sync is restored.
 
 ---
 

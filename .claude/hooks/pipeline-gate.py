@@ -45,7 +45,7 @@ def find_project_root(start: Path) -> Path:
 
 
 def _is_path_within_scope(rel_path: str, allowed_paths: list[str]) -> bool:
-    """Check if rel_path falls within any of the OBPI's allowed paths."""
+    """Check if rel_path falls within any of the OBPI's allowed paths (#127)."""
     for allowed in allowed_paths:
         clean = allowed.rstrip("/").replace("/**", "")
         if rel_path == clean or rel_path.startswith(clean + "/"):
@@ -54,7 +54,7 @@ def _is_path_within_scope(rel_path: str, allowed_paths: list[str]) -> bool:
 
 
 def _extract_allowed_paths_from_brief(brief_path: Path) -> list[str]:
-    """Extract allowed paths from an OBPI brief file."""
+    """Extract allowed paths from an OBPI brief file (#127)."""
     try:
         content = brief_path.read_text(encoding="utf-8")
     except OSError:

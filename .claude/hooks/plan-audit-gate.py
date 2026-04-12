@@ -2,11 +2,13 @@
 """Plan Audit Gate Hook.
 
 PreToolUse hook on ExitPlanMode that enforces the gz-plan-audit pre-flight
-alignment check. If the most recent plan in .claude/plans/ references an OBPI,
+alignment check. If the most recent plan referencing an OBPI exists in
+either ``<project>/.claude/plans/`` or ``~/.claude/plans/`` (Claude Code's
+plan mode writes new plans to the global directory by default — see #128),
 the agent cannot exit plan mode until /gz-plan-audit has been run.
 
 How it works:
-  1. Finds the most recently modified plan file in .claude/plans/
+  1. Finds the most recently modified plan file across both plan dirs
   2. Checks if the plan references an OBPI ID (pattern: OBPI-X.Y.Z-NN)
   3. If yes, looks for an audit receipt at .claude/plans/.plan-audit-receipt.json
   4. Receipt must reference the same OBPI and be newer than the plan file
@@ -56,12 +58,7 @@ def _claude_home() -> Path:
 
 
 def plan_search_dirs(cwd: str) -> list[Path]:
-    """Return both project-local and global plans dirs (#128).
-
-    Claude Code's plan mode writes new plans to ``~/.claude/plans/`` by
-    default. The historic project-local-only search produced a silent FAIL
-    receipt that aborted the OBPI pipeline.
-    """
+    """Return both project-local and global plans dirs (#128)."""
     project_local = Path(cwd) / ".claude" / "plans"
     global_local = _claude_home() / ".claude" / "plans"
     seen: set[Path] = set()
@@ -79,7 +76,7 @@ def plan_search_dirs(cwd: str) -> list[Path]:
 
 
 def find_most_recent_plan(plans_dir: Path) -> Path | None:
-    """Find the most recent plan across both project-local and global dirs (#128)."""
+    """Find the most recently modified non-hidden markdown plan (#128)."""
     cwd_root = plans_dir.parent.parent
     md_files: list[Path] = []
     for search_dir in plan_search_dirs(str(cwd_root)):

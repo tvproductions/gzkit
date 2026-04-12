@@ -179,7 +179,7 @@ def has_substantive_key_proof(content: str) -> bool:
 
 
 def has_valid_human_attestation(content: str) -> bool:
-    """Check that Human Attestation section has all three valid fields (GHI-126)."""
+    """Check that Human Attestation section has all three valid fields (#126)."""
     match = re.search(
         r"^## Human Attestation\s*$([\s\S]*?)(?:^## |\n---|\Z)",
         content,
@@ -192,7 +192,8 @@ def has_valid_human_attestation(content: str) -> bool:
     if not attestor_match:
         return False
     attestor_val = attestor_match.group(1).strip().strip("`").lower()
-    if not attestor_val or attestor_val in STRICT_PLACEHOLDERS | {"<name>", "todo", "none"}:
+    placeholder_set = STRICT_PLACEHOLDERS | {"<name>", "todo", "none"}
+    if not attestor_val or attestor_val in placeholder_set:
         return False
     attestation_match = re.search(r"^- Attestation:\s*(.+)$", body, flags=re.MULTILINE)
     if not attestation_match:
@@ -331,7 +332,7 @@ def main():
 
     adr_file = find_parent_adr_file(adr_dir)
 
-    # 4b. Resolve lane early so content quality checks can gate attestation
+    # 4b. Resolve lane early so content quality checks can gate attestation (#126)
     is_foundation = is_foundation_adr(adr_id)
     parent_lane = get_parent_adr_lane(adr_file)
     execution_mode = get_execution_mode(adr_file)
