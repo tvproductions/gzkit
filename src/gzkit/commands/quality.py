@@ -113,9 +113,11 @@ def check(as_json: bool = False) -> None:
 
     from gzkit.cli.formatters import OutputFormatter
     from gzkit.quality import (
+        run_cli_audit,
         run_drift_advisory,
         run_format_check,
         run_parity_check,
+        run_preflight,
         run_readiness_audit,
         run_skill_audit,
     )
@@ -132,6 +134,8 @@ def check(as_json: bool = False) -> None:
         ("Skill audit", run_skill_audit),
         ("Parity check", run_parity_check),
         ("Readiness audit", run_readiness_audit),
+        ("CLI audit", run_cli_audit),
+        ("Preflight", run_preflight),
     ]
 
     results: list[tuple[str, bool]] = []

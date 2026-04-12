@@ -50,7 +50,7 @@ Agent passes to `--attestation-text`:
 attest completed — Confirm decision: gzkit cli_audit + doc_coverage surface
 architecturally superior (AST vs parser._actions private API, 5-surface
 manifest-driven coverage, 76 vs 1 tests, frozen Pydantic vs dict[str,Any]);
-no absorption of airlineops/opsdev/lib/cli_audit.py warranted.
+no absorption of the external reference cli_audit module warranted.
 ```
 
 ## Anti-patterns

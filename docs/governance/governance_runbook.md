@@ -47,6 +47,7 @@ uv run gz obpi lock claim OBPI-<X.Y.Z-NN>  # Claim OBPI work lock
 uv run gz obpi lock release OBPI-<X.Y.Z-NN> # Release OBPI work lock
 uv run gz obpi lock check OBPI-<X.Y.Z-NN>  # Check if OBPI is locked
 uv run gz obpi lock list               # List active OBPI work locks
+uv run gz obpi complete OBPI-<X.Y.Z-NN> --attestation-text "<verbatim user words — session evidence>"
 uv run gz obpi emit-receipt OBPI-<X.Y.Z-NN> --event completed --attestor "<name>" --evidence-json '{...}'
 uv run gz flags                       # Display feature flags
 uv run gz flag explain <flag>         # Inspect one flag

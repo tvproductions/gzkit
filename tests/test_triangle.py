@@ -1256,6 +1256,8 @@ class TestDriftAdvisoryResult(unittest.TestCase):
             skill_audit=qr,
             parity_check=qr,
             readiness_audit=qr,
+            cli_audit=qr,
+            preflight=qr,
             drift=drift,
         )
         d = cr.to_dict()
@@ -1278,6 +1280,8 @@ class TestDriftAdvisoryResult(unittest.TestCase):
             skill_audit=qr,
             parity_check=qr,
             readiness_audit=qr,
+            cli_audit=qr,
+            preflight=qr,
         )
         d = cr.to_dict()
         self.assertNotIn("drift", d)

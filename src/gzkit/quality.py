@@ -378,6 +378,8 @@ class CheckResult(BaseModel):
     skill_audit: QualityResult
     parity_check: QualityResult
     readiness_audit: QualityResult
+    cli_audit: QualityResult
+    preflight: QualityResult
     drift: DriftAdvisoryResult | None = None
 
     def to_dict(self) -> dict[str, Any]:
@@ -392,6 +394,8 @@ class CheckResult(BaseModel):
             "skill_audit": self.skill_audit.to_dict(),
             "parity_check": self.parity_check.to_dict(),
             "readiness_audit": self.readiness_audit.to_dict(),
+            "cli_audit": self.cli_audit.to_dict(),
+            "preflight": self.preflight.to_dict(),
         }
         if self.drift is not None:
             result["drift"] = self.drift.to_dict()
@@ -447,6 +451,8 @@ def run_all_checks(project_root: Path) -> CheckResult:
     skill_audit = run_skill_audit(project_root)
     parity_check = run_parity_check(project_root)
     readiness_audit = run_readiness_audit(project_root)
+    cli_audit = run_cli_audit(project_root)
+    preflight = run_preflight(project_root)
 
     success = all(
         [
@@ -458,6 +464,8 @@ def run_all_checks(project_root: Path) -> CheckResult:
             skill_audit.success,
             parity_check.success,
             readiness_audit.success,
+            cli_audit.success,
+            preflight.success,
         ]
     )
 
@@ -473,6 +481,8 @@ def run_all_checks(project_root: Path) -> CheckResult:
         skill_audit=skill_audit,
         parity_check=parity_check,
         readiness_audit=readiness_audit,
+        cli_audit=cli_audit,
+        preflight=preflight,
         drift=drift,
     )
 
@@ -503,6 +513,26 @@ def run_parity_check(project_root: Path) -> QualityResult:
 def run_readiness_audit(project_root: Path) -> QualityResult:
     """Run readiness audit over four disciplines and five primitives."""
     return run_command("uv run gz readiness audit", cwd=project_root)
+
+
+def run_cli_audit(project_root: Path) -> QualityResult:
+    """Run CLI documentation coverage audit.
+
+    Part of the canonical quality path so workflow drift (e.g. a new subcommand
+    not yet documented in the operator runbook) is caught by ``gz check``
+    before release.
+    """
+    return run_command("uv run gz cli audit", cwd=project_root)
+
+
+def run_preflight(project_root: Path) -> QualityResult:
+    """Run preflight scan for stale pipeline markers and orphan receipts.
+
+    Part of the canonical quality path so stale workflow artifacts apply
+    self-healing pressure in the default operator loop rather than
+    accumulating silently.
+    """
+    return run_command("uv run gz preflight", cwd=project_root)
 
 
 def run_eval(project_root: Path) -> QualityResult:
