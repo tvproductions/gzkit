@@ -22,25 +22,49 @@ def skill_new(name: str, description: str | None) -> None:
     console.print(f"Created skill: {skill_file}")
 
 
-def skill_list() -> None:
-    """List all skills."""
+def skill_list(*, include_retired: bool = False, as_json: bool = False) -> None:
+    """List skills.
+
+    By default, retired skills are excluded so discovery matches the generated
+    AGENTS.md skill catalog. Pass ``include_retired=True`` (``--all`` on the
+    command line) to surface retired/archived compatibility skills with a
+    lifecycle label.
+    """
     config = ensure_initialized()
     project_root = get_project_root()
 
-    skills = list_skills(project_root, config)
+    skills = list_skills(project_root, config, include_retired=include_retired)
+
+    if as_json:
+        payload = {
+            "include_retired": include_retired,
+            "skills": [s.to_dict() for s in skills],
+        }
+        print(json.dumps(payload, indent=2))  # noqa: T201
+        return
 
     if not skills:
         console.print("No skills found.")
         return
 
-    table = Table(title="Available Skills")
+    title = "All Skills (active + retired)" if include_retired else "Active Skills"
+    table = Table(title=title)
     table.add_column("Name", style="cyan")
     table.add_column("Description")
+    if include_retired:
+        table.add_column("Lifecycle")
 
     for s in skills:
-        table.add_row(s.name, s.description)
+        if include_retired:
+            table.add_row(s.name, s.description, s.lifecycle_state)
+        else:
+            table.add_row(s.name, s.description)
 
     console.print(table)
+    if not include_retired:
+        console.print(
+            "[dim]Retired/archived skills are hidden. Use `gz skill list --all` to see them.[/dim]"
+        )
 
 
 def _skill_audit_counts(report: Any) -> dict[str, int]:
