@@ -4,7 +4,7 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.0.3"
+skill-version: "6.1.0"
 last_reviewed: 2026-03-16
 ---
 
@@ -295,10 +295,31 @@ uv run gz test
 # If Heavy lane
 uv run gz validate --documents
 uv run mkdocs build --strict
-uv run -m behave features/
 ```
 
+(`gz test` already runs unit tests + behave; the standalone behave invocation is no longer needed.)
+
 If any baseline check fails, attempt fix and re-verify once. If still failing, release lock via `uv run gz obpi lock release {OBPI-SLUG} --force`, create handoff, and stop.
+
+#### Phase 1b: REQ → @covers Parity Gate (#113)
+
+Every REQ defined in the brief MUST be reachable from a `@covers` reference in the test tree. The pipeline does not advance to Stage 4 until parity holds.
+
+```bash
+uv run gz covers {OBPI-SLUG} --json
+```
+
+Read the JSON output. **If `summary.uncovered_reqs > 0`, parity has failed.** The list of unreachable REQs is in `entries` (each entry with `covered: false`).
+
+When parity fails:
+
+1. Identify each uncovered REQ.
+2. Add a `@covers REQ-X.Y.Z-NN-MM` reference in the relevant test — either as a decorator (`@covers("REQ-X.Y.Z-NN-MM")`) or in the test docstring (`@covers REQ-X.Y.Z-NN-MM`). Both forms are detected by the canonical scanner (#120).
+3. Re-run `uv run gz covers {OBPI-SLUG} --json` and confirm `uncovered_reqs == 0`.
+
+The Stage 4 evidence template requires the `@covers` location for every REQ — the parity gate makes that requirement mechanical instead of aspirational.
+
+**Anti-pattern:** Filling in the Stage 4 REQ coverage table without first running the parity gate. The table is verified evidence, not author-attestation prose.
 
 #### Phase 2: REQ-Level Verification Dispatch
 
@@ -407,12 +428,14 @@ Include the exact command and its output or expected output.>
 **Files modified:**
 - <path> (<description>)
 
-**REQ coverage:**
+**REQ coverage:** (every row populated; every cell concrete; verified by Stage 3 Phase 1b)
 
-| REQ | Mechanism | Test Coverage | Result |
-|-----|-----------|---------------|--------|
-| REQ-X.Y.Z-NN-01 | <function/mechanism> | <test class> (N tests) | Pass |
-| REQ-X.Y.Z-NN-02 | ... | ... | ... |
+| REQ | Mechanism | `@covers` location | Test Coverage | Result |
+|-----|-----------|--------------------|---------------|--------|
+| REQ-X.Y.Z-NN-01 | <function/mechanism> | `tests/<file>.py:<line>` or `TestClass.test_method` | <test class> (N tests) | Pass |
+| REQ-X.Y.Z-NN-02 | ... | ... | ... | ... |
+
+The `@covers location` column is **not** optional. If you cannot fill it in for a row, the parity gate in Stage 3 Phase 1b will fail and the pipeline will not advance — fix the gap before continuing.
 
 **4. Awaiting attestation.** Do NOT proceed to Stage 5 until human responds.
 ```
