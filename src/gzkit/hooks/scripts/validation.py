@@ -5,9 +5,8 @@ from textwrap import dedent
 
 def _obpi_completion_validator_script() -> str:
     """Return the OBPI completion validator hook script."""
-    return (
-        dedent(
-            """\
+    return dedent(
+        """\
             #!/usr/bin/env python3
             \"\"\"OBPI Completion Validator Hook.
 
@@ -430,16 +429,13 @@ def _obpi_completion_validator_script() -> str:
             if __name__ == "__main__":
                 main()
             """
-        )
-        + "\n"
     )
 
 
 def _ledger_writer_script() -> str:
     """Return the ledger writer hook script."""
-    return (
-        dedent(
-            """\
+    return dedent(
+        """\
             #!/usr/bin/env python3
             \"\"\"gzkit ledger writer and validator hook for claude.
 
@@ -512,16 +508,13 @@ def _ledger_writer_script() -> str:
             if __name__ == "__main__":
                 sys.exit(main())
             """
-        )
-        + "\n"
     )
 
 
 def _control_surface_sync_script() -> str:
     """Return the post-edit control-surface sync hook script."""
-    return (
-        dedent(
-            """\
+    return dedent(
+        """\
             #!/usr/bin/env python3
             \"\"\"Control Surface Sync Hook.
 
@@ -545,9 +538,7 @@ def _control_surface_sync_script() -> str:
 
             TIMEOUT_SECONDS = 30
 
-            CONTROL_SURFACE_PATTERNS = (
-                ".gzkit/",
-            )
+            CONTROL_SURFACE_PATTERNS = (".gzkit/",)
 
 
             def main():
@@ -609,6 +600,4 @@ def _control_surface_sync_script() -> str:
             if __name__ == "__main__":
                 main()
             """
-        )
-        + "\n"
     )

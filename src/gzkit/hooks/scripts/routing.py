@@ -5,9 +5,8 @@ from textwrap import dedent
 
 def _instruction_router_script() -> str:
     """Return the non-blocking instruction router hook script."""
-    return (
-        dedent(
-            """\
+    return dedent(
+        """\
             #!/usr/bin/env python3
             \"\"\"Instruction Auto-Injection Hook.
 
@@ -214,16 +213,13 @@ def _instruction_router_script() -> str:
             if __name__ == "__main__":
                 main()
             """
-        )
-        + "\n"
     )
 
 
 def _pipeline_router_script() -> str:
     """Return the pipeline router hook script."""
-    return (
-        dedent(
-            """\
+    return dedent(
+        """\
             #!/usr/bin/env python3
             \"\"\"Pipeline Router Hook.
 
@@ -296,16 +292,13 @@ def _pipeline_router_script() -> str:
             if __name__ == "__main__":
                 main()
             """
-        )
-        + "\n"
     )
 
 
 def _pipeline_gate_script() -> str:
     """Return the pipeline gate hook script."""
-    return (
-        dedent(
-            """\
+    return dedent(
+        """\
             #!/usr/bin/env python3
             \"\"\"Pipeline Gate Hook.
 
@@ -459,6 +452,4 @@ def _pipeline_gate_script() -> str:
             if __name__ == "__main__":
                 main()
             """
-        )
-        + "\n"
     )

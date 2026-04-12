@@ -13,7 +13,7 @@ from typing import Any
 
 from gzkit.config import GzkitConfig
 from gzkit.hooks.claude import generate_claude_settings, setup_claude_hooks
-from gzkit.hooks.copilot import setup_copilot_hooks
+from gzkit.hooks.copilot import generate_copilotignore, setup_copilot_hooks
 from gzkit.rules import load_rules, render_rules_to_dir
 from gzkit.rules import sync_claude_rules as sync_claude_rules  # noqa: F401
 from gzkit.rules import sync_nested_agents_md as sync_nested_agents_md  # noqa: F401
@@ -461,14 +461,8 @@ def sync_copilotignore(project_root: Path) -> None:
         project_root: Project root directory.
 
     """
-    ignore_content = """# gzkit governance artifacts
-.gzkit/
-design/
-AGENTS.md
-"""
-
     copilotignore_path = project_root / ".copilotignore"
-    copilotignore_path.write_text(ignore_content, encoding="utf-8")
+    copilotignore_path.write_text(generate_copilotignore(project_root), encoding="utf-8")
 
 
 # ---------------------------------------------------------------------------
