@@ -10,6 +10,7 @@ from gzkit.quality import (
     _check_command_doc_proof,
     _check_docstring_proof,
     _check_governance_artifact_proof,
+    _check_release_artifact_proof,
     _check_runbook_proof,
     _extract_allowed_paths,
     _extract_obpi_slug,
@@ -248,6 +249,49 @@ class TestCheckGovernanceArtifactProof(unittest.TestCase):
             self.assertFalse(_check_governance_artifact_proof([], root))
 
 
+class TestCheckReleaseArtifactProof(unittest.TestCase):
+    """GHI-118: docs/releases/PATCH-vX.Y.Z.md is valid product proof."""
+
+    def test_existing_release_manifest_with_content(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            releases_dir = root / "docs" / "releases"
+            releases_dir.mkdir(parents=True)
+            manifest = releases_dir / "PATCH-v0.24.3.md"
+            manifest.write_text(
+                "# Patch Release v0.24.3\n\n"
+                "**Date:** 2026-04-08\n\n"
+                "## Qualifying GHIs\n\n"
+                "| # | Title | Status |\n|---|---|---|\n"
+                "| 100 | sample | qualified |\n",
+                encoding="utf-8",
+            )
+
+            allowed = ["docs/releases/PATCH-v0.24.3.md"]
+            self.assertTrue(_check_release_artifact_proof(allowed, root))
+
+    def test_missing_release_manifest(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            allowed = ["docs/releases/PATCH-v0.24.3.md"]
+            self.assertFalse(_check_release_artifact_proof(allowed, root))
+
+    def test_empty_release_manifest(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            releases_dir = root / "docs" / "releases"
+            releases_dir.mkdir(parents=True)
+            (releases_dir / "PATCH-v0.0.0.md").write_text("# stub\n", encoding="utf-8")
+            allowed = ["docs/releases/PATCH-v0.0.0.md"]
+            self.assertFalse(_check_release_artifact_proof(allowed, root))
+
+    def test_non_releases_paths_ignored(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            allowed = ["docs/user/runbook.md", "src/gzkit/quality.py"]
+            self.assertFalse(_check_release_artifact_proof(allowed, root))
+
+
 class TestObpiProofStatus(unittest.TestCase):
     """Tests for ObpiProofStatus model."""
 
@@ -290,6 +334,11 @@ class TestObpiProofStatus(unittest.TestCase):
     def test_governance_artifact_lowest_priority(self) -> None:
         status = ObpiProofStatus(obpi_id="OBPI-0.1.0-01", governance_artifact_found=True)
         self.assertEqual(status.proof_type, "governance_artifact")
+
+    def test_has_proof_release_artifact(self) -> None:
+        status = ObpiProofStatus(obpi_id="OBPI-0.1.0-01", release_artifact_found=True)
+        self.assertTrue(status.has_proof)
+        self.assertEqual(status.proof_type, "release_artifact")
 
 
 class TestCheckProductProof(unittest.TestCase):

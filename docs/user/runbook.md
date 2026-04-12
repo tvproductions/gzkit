@@ -206,6 +206,43 @@ Tracked automation defect: `https://github.com/tvproductions/gzkit/issues/3`.
 
 ---
 
+## Loop C: Patch Release (GHI-Driven)
+
+Run after a batch of qualifying GHIs has been merged and you want to ship them
+as a patch release. The ceremony discovers GHIs since the last tag, computes
+the next patch version, writes a release manifest, and bumps the version
+across `pyproject.toml`, `src/gzkit/__init__.py`, and `RELEASE_NOTES.md`.
+
+Skill shortcut: [`/gz-patch-release`](skills/gz-patch-release.md) — orchestrates
+narrative release notes drafting, operator approval, RELEASE_NOTES update,
+git-sync, and the GitHub release.
+
+```bash
+# 1) Discover qualifying GHIs (does not modify state)
+uv run gz patch release --dry-run
+
+# 2) Inspect machine-readable discovery output
+uv run gz patch release --dry-run --json
+
+# 3) Execute the release: writes docs/releases/PATCH-vX.Y.Z.md,
+#    bumps the version everywhere, appends a ledger event
+uv run gz patch release
+
+# 4) Sync the staged release manifest and version bumps
+uv run gz git-sync --apply --lint --test
+
+# 5) Tag and publish the GitHub release (skill recommended)
+gh release create vX.Y.Z --title "vX.Y.Z" --notes-file RELEASE_NOTES.md
+```
+
+The discovery JSON includes `ghi_count`, `qualifications` (per-GHI status:
+`qualified`/`label_only`/`diff_only`/`excluded`), `current_version`,
+`proposed_version`, and `warnings`. Review the qualification list before
+running step 3 — `label_only` and `diff_only` GHIs surface warnings the
+operator should resolve before shipping.
+
+---
+
 ## Loop B: ADR Closeout (After OBPI Batch Completion)
 
 Run this only when linked OBPIs are complete and evidenced.
@@ -434,6 +471,9 @@ Use [`/gz-check`](skills/gz-check.md) to run all quality checks in one pass, or 
 - `uv run gz obpi lock list` (list active OBPI work locks)
 - `uv run gz plan create <name> --semver X.Y.Z` (create a new ADR)
 - `uv run gz plan audit OBPI-<X.Y.Z-NN>` (structural prerequisite check for plan-OBPI alignment; scans both `<project>/.claude/plans/` and `~/.claude/plans/` — see #128)
+- `uv run gz patch release` (GHI-driven patch release ceremony; writes manifest and bumps version)
+- `uv run gz patch release --dry-run` (preview GHI discovery and proposed version without modifying state)
+- `uv run gz patch release --dry-run --json` (machine-readable discovery output)
 - `uv run gz agent sync control-surfaces`
 
 > **Plan file locations:** Claude Code's plan mode writes new plans to
