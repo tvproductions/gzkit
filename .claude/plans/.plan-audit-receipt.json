@@ -1,10 +1,10 @@
 {
-  "obpi_id": "OBPI-0.25.0-28",
-  "timestamp": "2026-04-13T10:35:00Z",
+  "obpi_id": "OBPI-0.25.0-29",
+  "timestamp": "2026-04-13T11:05:00Z",
   "verdict": "PASS",
-  "plan_file": "sharded-doodling-meadow.md",
+  "plan_file": "purrfect-wibbling-kernighan.md",
   "gaps_found": 0,
   "adr_obpi_alignment": "aligned",
   "plan_obpi_alignment": "aligned",
-  "notes": "Exclude decision: airlineops layout_verify.py validates a domain-specific tree_layout.json schema that does not exist in gzkit; gzkit's config_paths.py + validate_pkg/manifest.py is already a functional superset with AST source-literal scanning and control-surface type checks that airlineops lacks; airlineops still uses the retired _repo_root_from_here() anti-pattern gzkit removed in OBPI-0.0.7-04; no narrow robustness feature warrants narrow absorption (contrast OBPI-27's _safe_print case). Documentation-only decision, no code or test edits."
+  "notes": "Exclude rationale pre-staged: architectural scope mismatch — airlineops ledger_schema.py (501L, 4 audit entry types, per-ADR obpi-audit.jsonl) vs gzkit events.py + ledger.py + schemas/ledger.json (1288L, 17+ lifecycle event types, central .gzkit/ledger.jsonl). gzkit already enforces OBPI/ADR ID patterns via Pydantic Field(pattern=...) in core/models.py:37,140 and has richer nested evidence models (ObpiReceiptEvidence, ScopeAudit, GitSyncState, ReqProofInput). No narrow absorption warranted. Final decision subject to brief authoring in Stage 2."
 }
