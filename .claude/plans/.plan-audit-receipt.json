@@ -1,10 +1,10 @@
 {
-  "obpi_id": "OBPI-0.25.0-27-policy-guards-pattern",
-  "timestamp": "2026-04-12T12:00:00Z",
+  "obpi_id": "OBPI-0.25.0-28",
+  "timestamp": "2026-04-13T10:35:00Z",
   "verdict": "PASS",
   "plan_file": "sharded-doodling-meadow.md",
   "gaps_found": 0,
   "adr_obpi_alignment": "aligned",
   "plan_obpi_alignment": "aligned",
-  "notes": "Narrow absorption of _safe_print helper from airlineops guards.py; preserves gzkit's superior forbid_pytest(root) API from OBPI-0.0.7-04 migration; adds first-ever test coverage for hooks/guards.py."
+  "notes": "Exclude decision: airlineops layout_verify.py validates a domain-specific tree_layout.json schema that does not exist in gzkit; gzkit's config_paths.py + validate_pkg/manifest.py is already a functional superset with AST source-literal scanning and control-surface type checks that airlineops lacks; airlineops still uses the retired _repo_root_from_here() anti-pattern gzkit removed in OBPI-0.0.7-04; no narrow robustness feature warrants narrow absorption (contrast OBPI-27's _safe_print case). Documentation-only decision, no code or test edits."
 }

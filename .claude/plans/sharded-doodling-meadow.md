@@ -1,122 +1,133 @@
-# OBPI-0.25.0-27 — Policy Guards Pattern (Absorb)
+# OBPI-0.25.0-28 — Layout Verification Pattern (Exclude)
 
 ## Context
 
-OBPI-0.25.0-27 is a comparison brief inside ADR-0.25.0 (Core Infrastructure
-Pattern Absorption). The task: evaluate `airlineops/src/opsdev/lib/guards.py`
-(145 lines) against `gzkit/src/gzkit/hooks/guards.py` (125 lines) and record
-one of **Absorb / Confirm / Exclude** with concrete rationale, adapted code
-when Absorbing, and tests.
+OBPI-0.25.0-28 is a comparison brief inside ADR-0.25.0 (Core Infrastructure
+Pattern Absorption). The task: evaluate `airlineops/src/opsdev/lib/layout_verify.py`
+(143 lines) against gzkit's layout verification surface
+(`src/gzkit/commands/config_paths.py` 310 lines +
+`src/gzkit/validate_pkg/manifest.py` 116 lines) and record one of
+**Absorb / Confirm / Exclude** with concrete rationale.
 
-The two files are near-siblings. Core scanner logic is byte-equivalent (same
-PATTERNS, same SCAN_EXTS, same `conftest.py` detection, same `pyproject.toml`
-dependency check). Three differences matter:
+Exploration findings from reading both implementations end-to-end:
 
-1. **gzkit has a superior API.** `forbid_pytest(root: Path)` takes the scan
-   root as a parameter. airlineops still derives `root = Path(__file__).resolve().parents[3]`
-   — exactly the anti-pattern gzkit already removed in OBPI-0.0.7-04
-   ("Hooks module migration") as part of ADR-0.0.7 (config-first resolution
-   discipline). Absorbing airlineops wholesale would **regress** gzkit.
-2. **airlineops has one robustness feature gzkit lacks:** `_safe_print(s)`
-   catches `UnicodeEncodeError` and falls back to `s.encode("ascii", "backslashreplace")`
-   for narrow-encoding terminals (Windows cp1252). The helper is ~7 lines.
-3. **airlineops carries airline-specific exclusions** (`archive/`, `tmp/`,
-   `examples/`, `/opsdev/lib/guards.py`) that do not belong in gzkit.
+1. **Different config abstractions, not two implementations of one schema.**
+   airlineops `verify_layout()` loads `config/governance/tree_layout.json` —
+   a file that does not exist in gzkit. It validates six hardcoded root
+   keys: `source_root`, `config_root`, `data_root`, `artifacts_root`,
+   `docs_root`, `ops_tooling_root`. gzkit's equivalent surface reads
+   `.gzkit/manifest.json` via `load_manifest()` and `.gzkit.json` via
+   `GzkitConfig`, and validates against a declared schema
+   (`load_schema("manifest")`). The two modules answer different questions
+   about different config files — they are not two implementations of the
+   same contract.
 
-The `_safe_print` feature is **concretely relevant** to gzkit. The pre-commit
-hook at `.pre-commit-config.yaml:40` invokes `uv run -m gzkit.hooks.guards`
-directly — this bypasses `gzkit/__main__.py`'s `sys.stdout.reconfigure(encoding="utf-8")`
-UTF-8 guard. On a Windows cp1252 terminal, a finding that contains non-ASCII
-bytes in a file path or violation line would raise `UnicodeEncodeError` and
-crash the hook. The `cross-platform.md` rule explicitly warns about this
-scenario. Gzkit's existing file has no test coverage for this path (0% — in
-fact, `hooks/guards.py` has no test file at all in `tests/`).
+2. **gzkit's surface is functionally a superset of what layout_verify.py
+   does.** `check_config_paths_cmd()` already covers:
+   - Required dirs and files from `config.paths.*` (existence + type)
+   - Manifest artifact paths (existence + legacy-OBPI migration contract)
+   - Control-surface paths with explicit dir-vs-file type checking for ten
+     named control surfaces (hooks, skills, canonical_rules, etc.)
+   - OBPI path contract enforcement (rejects deprecated global OBPI paths)
+   - **AST-based source literal scanning** — walks `src/gzkit/**/*.py`,
+     parses each file, and flags string constants that look like
+     filesystem paths but are not covered by any manifest entry. This is
+     a unique capability airlineops lacks entirely.
+   - `--json` output mode wired to the CLI
+   `validate_manifest()` complements this with schema-driven required-field
+   validation, returning typed `ValidationError` instances.
 
-**Decision: Absorb** — narrow absorption of the `_safe_print` pattern into
-the existing gzkit module, with full TDD coverage for the previously untested
-scanner. Keep gzkit's superior `forbid_pytest(root: Path)` API. Do not touch
-the exclusion set (gzkit's list is correct for gzkit's repo layout; airlineops'
-extras are airline-specific). No CLI surface change — this is library + test
-hardening only, so Gate 4 BDD records `N/A` with rationale.
+3. **airlineops uses the retired `_repo_root_from_here()` anti-pattern.**
+   `layout_verify.py:13-19` derives repo root via
+   `Path(__file__).resolve().parents[3]`. This is the exact anti-pattern
+   gzkit removed in OBPI-0.0.7-04 ("Hooks module migration") as part of
+   ADR-0.0.7's config-first resolution discipline. Absorbing the module
+   wholesale would **regress** prior governance work. (Same anti-pattern
+   concern as OBPI-0.25.0-27 flagged in `guards.py`.)
+
+4. **Airline-specific checks.** `verify_layout()` has a hardcoded semantic
+   check at line 121-126: "ops_tooling_root should contain opsdev package"
+   — this assumes the presence of an "opsdev" package under the tooling
+   root, which is an airlineops-only concern.
+
+5. **`_is_within()` path escape check is a non-problem for gzkit.** The
+   only isolated robustness helper in layout_verify.py is a 7-line
+   `_is_within(path, parent)` function that catches paths escaping the
+   repo via `Path.resolve().relative_to()`. This solves the threat of
+   user-supplied runtime paths escaping root — but gzkit's config paths
+   come from trusted in-repo JSON (`.gzkit.json`, `.gzkit/manifest.json`)
+   loaded through `GzkitConfig` with schema validation. Paths are
+   concatenated as `project_root / rel_path` where `rel_path` is a
+   committed string under version control. Path escape is not a live
+   threat model, unlike the `_safe_print` case in OBPI-27 where the
+   Windows cp1252 crash was a concrete pre-commit risk.
+
+**Subtraction test.** Strip airline-specific pieces (tree_layout.json
+schema, required root names `ops_tooling_root`/`artifacts_root`,
+`_repo_root_from_here()`, opsdev package semantic check) and nothing novel
+remains. The only residue is `_is_within()`, which addresses a threat model
+gzkit does not have.
+
+**Decision: Exclude.** This OBPI absorbs no code from airlineops. gzkit's
+layout verification surface (`config_paths.py` + `validate_pkg/manifest.py`)
+is architecturally superior and already covers every capability
+`layout_verify.py` provides. No narrow robustness feature exists that
+concretely benefits gzkit (contrast with OBPI-0.25.0-27, where
+`_safe_print` was directly applicable to gzkit's pre-commit Windows path).
+
+This is a **documentation-only** decision. No `src/` or `tests/` code
+changes. No new test file. Gate 4 BDD is `N/A` because no operator-visible
+behavior changes.
 
 ## Implementation
 
-### 1. Harden `src/gzkit/hooks/guards.py`
+### 1. Update the OBPI brief
 
-- Add module-level `_safe_print(s: str) -> None` helper that tries `print(s)`
-  and, on `UnicodeEncodeError`, prints `s.encode("ascii", "backslashreplace").decode("ascii")`.
-- In `forbid_pytest`, use `_safe_print` for the dynamic lines that interpolate
-  user-controlled data (file paths and violation messages). Keep plain `print`
-  for the static header/footer strings (ASCII-safe by construction).
-- Keep the `forbid_pytest(root: Path)` signature, `iter_files`, `scan_file`,
-  `PATTERNS`, `SCAN_EXTS`, `EXCLUDE_DIRS`, `EXCLUDE_PATH_SNIPPETS`, and
-  `main()` exactly as they are.
-- Keep the `# noqa: T201` annotations (print is intentional here — this is a
-  pre-commit hook whose output goes to operator-visible stderr/stdout).
+Edit `docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-28-layout-verification-pattern.md`:
 
-### 2. Add `tests/test_hooks_guards.py` (new file — currently zero coverage)
+- Add **§Capability Comparison** table with concrete dimensions: config
+  source, API design, root resolution, validation scope, data model,
+  schema validation, CLI integration, unique features, convention
+  compliance, subtraction test.
+- Add **§Decision: Exclude** with the 5-point rationale above.
+- Populate **§Gate 1–5 checklist** marked per actual evidence.
+- Add **§Gate 4 (BDD): N/A** subsection explaining no operator-visible
+  behavior change (no code absorbed, so no external surface to exercise).
+- Add **§Implementation Summary** describing that no code was absorbed and
+  why gzkit's existing surface is sufficient.
+- Add **§Key Proof** (three verification commands + expected output) —
+  subtraction proof, decision-present proof, and existing-gzkit-surface
+  proof.
+- Add **§Closing Argument** narrative tying evidence to decision.
+- Leave **§Human Attestation** section blank until Stage 4 ceremony;
+  `uv run gz obpi complete` will populate it atomically in Stage 5.
 
-Test classes, all using `tempfile.TemporaryDirectory()` context managers and
-temp paths (no real repo mutation):
+### 2. No code changes, no new tests
 
-- `TestIterFiles` — exclusion behavior for `.git/`, `.venv/`, `site/`,
-  `/docs/`, and suffix filtering. Table-driven.
-- `TestScanFileSourceLevel` — pytest import / `from pytest import` /
-  `pytest.` / `@pytest.` / `py.test` pattern hits; line numbers reported
-  correctly; clean files return empty list.
-- `TestScanFileSpecialCases` — `conftest.py` short-circuits to
-  "contains pytest-specific conftest.py"; `pyproject.toml` with `pytest`
-  declaration returns "declares pytest dependency"; `requirements.txt` /
-  `requirements-dev.txt` same path.
-- `TestScanFileReadError` — unreadable file returns `"unreadable file: ..."`
-  (simulate with a directory masquerading via `OSError`, or delete between
-  listing and reading using a mocked `read_text`).
-- `TestForbidPytest` — integration: clean temp root returns 0; root
-  containing `bad.py` with `import pytest` returns 1; findings are printed
-  (capture via `contextlib.redirect_stdout`).
-- `TestSafePrint` — normal ASCII passes through; non-encodable unicode
-  triggers the fallback branch (patch `sys.stdout` with a writer that raises
-  `UnicodeEncodeError` on non-ASCII).
-
-All tests are table-driven where possible, deterministic, no network, no
-real repo state. Coverage for `hooks/guards.py` should go from ~22% to
->=90%.
-
-### 3. Update the OBPI brief
-`docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-27-policy-guards-pattern.md`
-
-Author at completion time:
-
-- **Capability Comparison** table with concrete dimensions (API design, root
-  resolution, cross-platform print safety, exclusion scope, test coverage,
-  lines of code, convention compliance, subtraction test).
-- **Decision: Absorb** with 5–7 point rationale naming the three concrete
-  deltas and why the narrow absorption is the right outcome.
-- **Gate 1–5** checklist marked per actual evidence.
-- **Gate 4 (BDD): N/A** subsection explaining no operator-visible behavior
-  change (scanner still prints the same header/footer; the only change is a
-  fallback branch for unprintable bytes, which by definition changes nothing
-  on any terminal that could previously print them).
-- **Implementation Summary**, **Key Proof** (three commands + expected
-  output), **Closing Argument**, and populated REQ coverage table for the
-  Stage 4 ceremony.
+`src/gzkit/commands/config_paths.py` and `src/gzkit/validate_pkg/manifest.py`
+remain untouched. No files in `tests/` change. Existing test coverage for
+these modules already proves gzkit's superior surface works — no new
+evidence is required by an Exclude decision. The brief allowlist permits
+edits to `src/gzkit/` and `tests/`, but point 5 of the rationale above
+establishes that a hardening backport of `_is_within()` is not warranted.
 
 ## Critical files
 
 | Path | Action | Reason |
 |------|--------|--------|
-| `src/gzkit/hooks/guards.py` | Edit | Add `_safe_print` helper; route dynamic-content prints through it |
-| `tests/test_hooks_guards.py` | **Create** | No existing tests for this module — TDD requires Red first |
-| `docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-27-policy-guards-pattern.md` | Edit | Record decision, rationale, gate checklist, ceremony content |
+| `docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-28-layout-verification-pattern.md` | Edit | Record Exclude decision, rationale, gate checklist, ceremony content |
 
 ## Reuse
 
-- `tempfile.TemporaryDirectory()` context manager — canonical pattern per
-  `.claude/rules/tests.md` and `.claude/rules/cross-platform.md`.
-- `contextlib.redirect_stdout` — stdlib, for capturing `forbid_pytest` output
-  in tests without subprocess.
-- Follows the comparison-brief template established by OBPI-0.25.0-26
-  (drift-detection-pattern), OBPI-0.25.0-24 (cli-audit-pattern), and siblings.
+- Follows the comparison-brief template established by sibling Exclude
+  decisions: OBPI-0.25.0-15 (manifests), OBPI-0.25.0-14 (os),
+  OBPI-0.25.0-12 (admission), OBPI-0.25.0-10 (errors),
+  OBPI-0.25.0-08 (ledger), OBPI-0.25.0-07 (types), OBPI-0.25.0-06
+  (registry), OBPI-0.25.0-05 (dataset version), OBPI-0.25.0-04
+  (world state), OBPI-0.25.0-03 (signature).
+- gzkit's existing validation surface is untouched: `check_config_paths_cmd`
+  in `src/gzkit/commands/config_paths.py:263` and `validate_manifest` in
+  `src/gzkit/validate_pkg/manifest.py:10`.
 
 ## Verification
 
@@ -133,23 +144,26 @@ uv run mkdocs build --strict                # heavy lane
 Stage 3 Phase 1b (REQ → @covers parity):
 
 ```bash
-uv run gz covers OBPI-0.25.0-27-policy-guards-pattern --json
-# Expected: summary.uncovered_reqs == 0
+uv run gz covers OBPI-0.25.0-28-layout-verification-pattern --json
+# Expected: summary.uncovered_reqs == 0 (comparison briefs report
+# total_reqs == 0 — the REQs are stated as brief acceptance criteria,
+# not as Requirements-section entries the canonical scanner parses,
+# so parity is trivially satisfied)
 ```
 
-Stage 3 Phase 2 (REQ-level):
+Stage 3 Phase 2 (brief-specific):
 
 ```bash
-uv run -m unittest tests.test_hooks_guards -v
-# Expected: all new tests pass; ≥90% line coverage of hooks/guards.py
+test -f ../airlineops/src/opsdev/lib/layout_verify.py
+# Expected: airlineops source under review exists
 
-rg -n 'Decision: Absorb' \
-  docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-27-policy-guards-pattern.md
-# Expected: one match
+test -f src/gzkit/validate_pkg/manifest.py
+# Expected: gzkit comparison target exists
 
-test -f ../airlineops/src/opsdev/lib/guards.py && test -f src/gzkit/hooks/guards.py
-# Expected: both exist
+rg -n 'Decision: Exclude' \
+  docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-28-layout-verification-pattern.md
+# Expected: one match — "## Decision: Exclude"
 ```
 
-Out-of-scope: `features/core_infrastructure.feature` — Gate 4 BDD is N/A
-because there is no operator-visible behavior change.
+Out-of-scope: `features/core_infrastructure.feature` — Gate 4 BDD is `N/A`
+because no operator-visible behavior changes (no code absorbed).
