@@ -1,0 +1,22 @@
+{
+  "criteria": [
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run -m unittest -q",
+      "expected": 0,
+      "description": "All tests pass"
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "test -d docs/design/adr/pool",
+      "expected": 0,
+      "description": "Pool directory exists"
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "test -d docs/design/adr/pool/archive",
+      "expected": 0,
+      "description": "Pool archive directory exists"
+    }
+  ]
+}
