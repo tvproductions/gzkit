@@ -33,6 +33,13 @@
             "lane": "lite"
         },
         {
+            "slug": "pool-triage",
+            "title": "Pool ADR Drift Triage (read-only; stopgap for ADR-pool.pool-management)",
+            "version": "0.1.0",
+            "path": "ops/chores/pool-triage",
+            "lane": "lite"
+        },
+        {
             "slug": "pythonic-refactoring",
             "title": "Pythonic Refactoring (ruff + ty)",
             "version": "1.0.0",
