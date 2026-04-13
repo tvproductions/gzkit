@@ -1,7 +1,10 @@
 {
-  "obpi_id": "OBPI-0.25.0-24",
-  "timestamp": "2026-04-12T01:42:18.415048+00:00",
+  "obpi_id": "OBPI-0.25.0-27-policy-guards-pattern",
+  "timestamp": "2026-04-12T12:00:00Z",
   "verdict": "PASS",
-  "plan_file": "moonlit-mapping-octopus.md",
-  "gaps_found": 0
+  "plan_file": "sharded-doodling-meadow.md",
+  "gaps_found": 0,
+  "adr_obpi_alignment": "aligned",
+  "plan_obpi_alignment": "aligned",
+  "notes": "Narrow absorption of _safe_print helper from airlineops guards.py; preserves gzkit's superior forbid_pytest(root) API from OBPI-0.0.7-04 migration; adds first-ever test coverage for hooks/guards.py."
 }
