@@ -106,6 +106,30 @@ gz pool show              # display current priority table with overrides
 
 **Override protocol:** Operator can set any rank with a reason. Overrides persist across triage runs — a re-run of `gz pool rank --apply` recomputes scores but preserves overrides unless the operator clears them. This ensures operator judgment is durable while computed dimensions update as the project evolves.
 
+### 8. Near-Term Implementation: `pool-triage` Chore (gzkit-internal)
+
+**Scope.** A Lite-lane gzkit-internal chore that implements the drift-detection slice of this ADR as a stopgap until the full `gz pool rank` / `gz pool triage` / `gz pool override` CLI surface ships with promotion. The chore is read-only: it surfaces drift signals for operator triage during the between-ADR maintenance window but takes no automated actions.
+
+**Contract.** The chore is subordinate to this ADR. Its design intent, governing artifact (`.gzkit/pool-priority.json` or a simpler placeholder), and heuristics are bounded by what this ADR defines. The chore is not a parallel implementation — it is a time-scoped, reduced-capability preview of one slice of this ADR's design.
+
+**Heuristics (the chore's four drift signals).** Each is derivable from frontmatter + file system + ledger + pool-internal `Dependencies` sections without new data models:
+
+1. **Stale** — pool ADRs with no git-tracked update in >6 months (matches the `Stale` threshold in section 3 above)
+2. **Unarchived-superseded** — pool ADRs with `status: Superseded` in frontmatter that still sit in `docs/design/adr/pool/` instead of `docs/design/adr/pool/archive/` (matches section 4 archival requirement)
+3. **Newly-unblocked** — pool ADRs whose `Dependencies` section references ADRs that are now `Completed` in the ledger, signaling promotion-readiness (matches section 5 promotion triggers)
+4. **Duplicate-scope candidates** — pool ADRs whose titles, keywords, or path references overlap with other pool ADRs, flagged as consolidation candidates (matches section 1 overlap detection, but uses simple keyword heuristics rather than the fuller cluster-identification surface in section 2)
+
+**Out of scope for the chore (deferred to ADR promotion).** Computed priority ranking (section 7 — requires ADDRESS density input from governance-chain evaluation, which the chore has no access to), operator override persistence (section 7 — requires `.gzkit/pool-priority.json` schema design), cluster naming and ADR-candidate boundary proposals (section 2 — requires judgment the chore cannot provide), and any mutation to pool state (the chore surfaces, it does not rewrite).
+
+**Promotion outcome — retire-or-absorb decision.** When this ADR promotes and the full `gz pool rank` / `gz pool triage` surface ships, the chore's fate is decided explicitly:
+
+- **Retire** if the ADR's implementation fully subsumes the chore's four heuristics as first-class CLI commands. The chore registry entry is removed; its scope note references this ADR as successor.
+- **Absorb** if the chore's output format, heuristic implementation, or registry entry has become the operational muscle memory the ADR wants to preserve. In that case, the chore's code and output contract are pulled into the ADR's canonical implementation and the chore registry entry is rewritten as a thin wrapper around the new CLI.
+
+The decision belongs to the ADR's promotion review, not to the chore's author. The chore exists under the understanding that its entire lifetime is bounded by this ADR's promotion cycle.
+
+**Not a framework feature.** The `pool-triage` chore is a gzkit-internal maintenance item — it targets gzkit's own pool, runs in gzkit's own chore suite, and serves gzkit's own operator. Downstream projects that adopt gzkit will have their own pools and may author their own triage chores using gzkit's chore framework, but this specific chore is not packaged as a framework deliverable or a template. The tooling-layer-vs-consumer-layer distinction (see OBPI-0.25.0-29 Exclude precedent) governs here: gzkit ships the *chore framework*, not a catalog of chores for downstream consumers.
+
 ---
 
 ## Non-Goals
