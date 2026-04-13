@@ -1,10 +1,10 @@
 {
-  "obpi_id": "OBPI-0.25.0-29",
-  "timestamp": "2026-04-13T11:05:00Z",
+  "obpi_id": "OBPI-0.25.0-31",
+  "timestamp": "2026-04-13T22:38:00Z",
   "verdict": "PASS",
-  "plan_file": "purrfect-wibbling-kernighan.md",
+  "plan_file": "goofy-mixing-dream.md",
   "gaps_found": 0,
   "adr_obpi_alignment": "aligned",
   "plan_obpi_alignment": "aligned",
-  "notes": "Exclude rationale pre-staged: architectural scope mismatch — airlineops ledger_schema.py (501L, 4 audit entry types, per-ADR obpi-audit.jsonl) vs gzkit events.py + ledger.py + schemas/ledger.json (1288L, 17+ lifecycle event types, central .gzkit/ledger.jsonl). gzkit already enforces OBPI/ADR ID patterns via Pydantic Field(pattern=...) in core/models.py:37,140 and has richer nested evidence models (ObpiReceiptEvidence, ScopeAudit, GitSyncState, ReqProofInput). No narrow absorption warranted. Final decision subject to brief authoring in Stage 2."
+  "notes": "Confirm decision pre-staged: gzkit receipt surface (events.py 470L + ledger_semantics.py 547L + validate_pkg/ledger_check.py 379L + utils.capture_validation_anchor + temporal_drift.py + obpi_complete.py atomic transaction) is architecturally a strict superset of airlineops/opsdev/lib/validation_receipt.py (274L). gzkit has 17+ event types vs 3 fixed Literals, ObpiReceiptEvidence with nested ScopeAudit/GitSyncState/ReqProofInput vs dict[str,Any], CLI integration via gz obpi complete + gz adr emit-receipt, atomic transactions, and central .gzkit/ledger.jsonl vs per-ADR storage. The single narrow win for airlineops (typed ValidationAnchor instead of dict[str,str]) is not worth absorbing because it would require migrating every existing event in the gzkit ledger schema. Final decision subject to brief authoring in Stage 2."
 }
