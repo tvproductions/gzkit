@@ -41,6 +41,8 @@ EXCLUDE_PATH_SNIPPETS = (
     "/site-packages/",
     # Allow pytest mentions in guard enforcement files themselves
     "/gzkit/hooks/guards.py",
+    # Allow pytest mentions in the guards test module (tests must exercise the detected patterns)
+    "/tests/test_hooks_guards.py",
 )
 
 
@@ -48,10 +50,11 @@ def iter_files(root: Path) -> Iterable[Path]:
     """Iterate over files to scan, excluding common generated/virtual paths."""
     for p in root.rglob("*"):
         if p.is_dir():
-            if p.name in EXCLUDE_DIRS:
-                continue
             continue
         if p.suffix.lower() not in SCAN_EXTS:
+            continue
+        # Prune any descendant of an excluded directory (rglob does not prune).
+        if any(part in EXCLUDE_DIRS for part in p.relative_to(root).parts[:-1]):
             continue
         posix = p.as_posix()
         if "/docs/" in posix or posix.startswith("docs/"):
@@ -108,12 +111,27 @@ def forbid_pytest(root: Path) -> int:
     if findings:
         print("pytest usage detected; this repository enforces unittest-only.")  # noqa: T201
         for path, msgs in findings:
-            print(f"- {path}")  # noqa: T201
+            _safe_print(f"- {path}")
             for m in msgs:
-                print(f"    {m}")  # noqa: T201
+                _safe_print(f"    {m}")
         print("\nPlease remove pytest references or dependencies.")  # noqa: T201
         return 1
     return 0
+
+
+def _safe_print(s: str) -> None:
+    """Print a string with ASCII-escape fallback for narrow-encoding terminals.
+
+    The pre-commit hook invocation path (``uv run -m gzkit.hooks.guards``)
+    bypasses the CLI entrypoint's ``sys.stdout.reconfigure(encoding='utf-8')``
+    guard, so finding output that contains non-ASCII bytes can raise
+    ``UnicodeEncodeError`` on Windows cp1252 terminals. Fall back to a
+    backslash-escaped ASCII form rather than crashing the hook.
+    """
+    try:
+        print(s)  # noqa: T201
+    except UnicodeEncodeError:
+        print(s.encode("ascii", "backslashreplace").decode("ascii"))  # noqa: T201
 
 
 def main() -> int:
