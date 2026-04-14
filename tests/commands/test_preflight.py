@@ -95,6 +95,55 @@ class TestPreflightCommand(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             self.assertFalse(marker_path.exists())
 
+    def test_apply_removes_orphan_receipt(self) -> None:
+        """GHI #139: orphan plan-audit receipts are deleted by --apply."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init("lite")
+            plans_dir = Path(".claude/plans")
+            plans_dir.mkdir(parents=True, exist_ok=True)
+            receipt_path = plans_dir / ".plan-audit-receipt-OBPI-0.3.0-01.json"
+            receipt_path.write_text(
+                json.dumps(
+                    {
+                        "obpi_id": "OBPI-0.3.0-01",
+                        "verdict": "PASS",
+                        "timestamp": "2026-03-01T12:00:00Z",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            result = runner.invoke(main, ["preflight", "--apply"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertFalse(receipt_path.exists())
+
+    def test_apply_removes_expired_lock(self) -> None:
+        """GHI #139: expired OBPI locks are deleted by --apply."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init("lite")
+            locks_dir = Path(".gzkit/locks/obpi")
+            locks_dir.mkdir(parents=True, exist_ok=True)
+            expired_time = (datetime.now(UTC) - timedelta(hours=3)).isoformat()
+            lock_path = locks_dir / "OBPI-0.2.0-01.lock.json"
+            lock_path.write_text(
+                json.dumps(
+                    {
+                        "obpi_id": "OBPI-0.2.0-01",
+                        "claimed_at": expired_time,
+                        "ttl_minutes": 120,
+                        "agent": "claude-code",
+                        "pid": 0,
+                        "session_id": "test",
+                        "branch": "main",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            result = runner.invoke(main, ["preflight", "--apply"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertFalse(lock_path.exists())
+
     def test_json_output(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():

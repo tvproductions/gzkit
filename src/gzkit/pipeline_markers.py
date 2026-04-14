@@ -284,6 +284,20 @@ def remove_pipeline_markers(plans_dir: Path, obpi_id: str) -> None:
         marker_path.unlink(missing_ok=True)
 
 
+def remove_pipeline_artifacts(plans_dir: Path, obpi_id: str) -> None:
+    """Remove every plans-dir artifact belonging to this OBPI (GHI #139).
+
+    Self-heals at pipeline completion so per-OBPI plan-audit receipts do not
+    survive as future orphans. Removes:
+
+    - the per-OBPI pipeline marker (``.pipeline-active-<obpi>.json``)
+    - the legacy pipeline marker, only when it still points at this OBPI
+    - the per-OBPI plan-audit receipt (``.plan-audit-receipt-<obpi>.json``)
+    """
+    remove_pipeline_markers(plans_dir, obpi_id)
+    pipeline_receipt_path(plans_dir, obpi_id).unlink(missing_ok=True)
+
+
 def pipeline_concurrency_blockers(plans_dir: Path, obpi_id: str) -> list[str]:
     """Detect active markers that would conflict with this pipeline launch."""
     blockers: list[str] = []
