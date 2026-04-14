@@ -142,15 +142,21 @@ def _extract_subtree_prefix(pattern: str) -> str | None:
     For ``tests/**`` returns ``tests``.
     For ``src/airlineops/warehouse/**`` returns ``src/airlineops/warehouse``.
     Returns None for global patterns like ``**/*``.
+    Returns None for literal file paths with no glob segments (GHI #142) —
+    a pattern with no wildcards is a file path, not a subtree prefix.
     """
     if _is_global_pattern(pattern):
         return None
     parts = pattern.replace("\\", "/").split("/")
     prefix_parts: list[str] = []
+    saw_wildcard = False
     for part in parts:
         if "*" in part or "?" in part:
+            saw_wildcard = True
             break
         prefix_parts.append(part)
+    if not saw_wildcard:
+        return None
     return "/".join(prefix_parts) if prefix_parts else None
 
 
@@ -307,7 +313,7 @@ def sync_nested_agents_md(project_root: Path, config: GzkitConfig | None = None)
 
     for subtree, rules_for_subtree in sorted(subtree_rules.items()):
         subtree_dir = project_root / subtree
-        if not subtree_dir.exists():
+        if not subtree_dir.is_dir():
             continue
 
         agents_path = subtree_dir / "AGENTS.md"
