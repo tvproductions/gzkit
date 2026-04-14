@@ -19,6 +19,7 @@ from gzkit.pipeline_runtime import (
     pipeline_receipt_path,
     pipeline_resume_command,
     pipeline_router_message,
+    remove_pipeline_artifacts,
 )
 from gzkit.traceability import covers
 
@@ -307,6 +308,54 @@ class TestPipelineRuntime(unittest.TestCase):
             stale = find_stale_pipeline_markers(plans_dir)
 
             self.assertEqual(len(stale), 1)
+
+    # --- GHI #139: self-heal at pipeline completion ---
+
+    def test_remove_pipeline_artifacts_cleans_marker_and_receipt(self) -> None:
+        """Pipeline completion must remove both marker and per-OBPI receipt."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            plans_dir = Path(tmpdir)
+            obpi_id = "OBPI-0.13.0-05"
+            marker_path = plans_dir / f".pipeline-active-{obpi_id}.json"
+            marker_path.write_text(json.dumps({"obpi_id": obpi_id}) + "\n", encoding="utf-8")
+            receipt_path = pipeline_receipt_path(plans_dir, obpi_id)
+            receipt_path.write_text(
+                json.dumps({"obpi_id": obpi_id, "verdict": "PASS"}) + "\n",
+                encoding="utf-8",
+            )
+
+            remove_pipeline_artifacts(plans_dir, obpi_id)
+
+            self.assertFalse(marker_path.exists())
+            self.assertFalse(receipt_path.exists())
+
+    def test_remove_pipeline_artifacts_leaves_other_obpi_alone(self) -> None:
+        """Only the target OBPI's artifacts are removed; sibling OBPIs stay."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            plans_dir = Path(tmpdir)
+            target = "OBPI-0.13.0-05"
+            sibling = "OBPI-0.13.0-06"
+            target_marker = plans_dir / f".pipeline-active-{target}.json"
+            target_marker.write_text(json.dumps({"obpi_id": target}) + "\n", encoding="utf-8")
+            sibling_marker = plans_dir / f".pipeline-active-{sibling}.json"
+            sibling_marker.write_text(json.dumps({"obpi_id": sibling}) + "\n", encoding="utf-8")
+            sibling_receipt = pipeline_receipt_path(plans_dir, sibling)
+            sibling_receipt.write_text(
+                json.dumps({"obpi_id": sibling, "verdict": "PASS"}) + "\n",
+                encoding="utf-8",
+            )
+
+            remove_pipeline_artifacts(plans_dir, target)
+
+            self.assertFalse(target_marker.exists())
+            self.assertTrue(sibling_marker.exists())
+            self.assertTrue(sibling_receipt.exists())
+
+    def test_remove_pipeline_artifacts_is_idempotent(self) -> None:
+        """Calling on a plans_dir with nothing to remove is a no-op, not an error."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            plans_dir = Path(tmpdir)
+            remove_pipeline_artifacts(plans_dir, "OBPI-0.13.0-05")
 
 
 class TestPlanFileDualScan(unittest.TestCase):
