@@ -3047,3 +3047,5 @@
 {"schema":"gzkit.ledger.v1","event":"obpi_lock_released","id":"OBPI-0.25.0-31-validation-receipts-pattern","ts":"2026-04-13T22:55:36.530281+00:00","agent":"unknown-39781","force":true}
 {"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.harness-agnostic-plan-capture.md","ts":"2026-04-14T09:19:34.974725+00:00","path":"docs/design/adr/pool/ADR-pool.harness-agnostic-plan-capture.md"}
 {"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.cli-positional-first-doctrine.md","ts":"2026-04-14T11:26:53.335614+00:00","path":"docs/design/adr/pool/ADR-pool.cli-positional-first-doctrine.md"}
+{"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.interpretability-hardened-agent-surfaces.md","ts":"2026-04-14T13:05:14.833902+00:00","path":"docs/design/adr/pool/ADR-pool.interpretability-hardened-agent-surfaces.md"}
+{"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-pool.interpretability-hardened-agent-surfaces","ts":"2026-04-14T13:07:10.317274+00:00","parent":"PRD-GZKIT-1.0.0","lane":"heavy"}

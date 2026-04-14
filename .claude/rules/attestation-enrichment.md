@@ -33,6 +33,43 @@ session:
   inspectability
 - Rationale citing named dimensions, not vague adjectives
 
+## Receipt-ID Requirement (Binding)
+
+Narrative recall of "test counts, coverage deltas, files changed" is not
+sufficient by itself. Even a fully honest agent's end-of-session summary is
+post-hoc reconstruction: the reporting pathway and the execution pathway are
+structurally separate (Lindsey et al. 2025 — the math-explanation pathway
+and the math-execution pathway are distinct circuits; a model can produce a
+plausible explanation of reasoning it did not actually perform).
+
+The only faithful record of a QA step is the wrapped-command receipt. For
+every claim category cited in an attestation, include at least one ARB
+receipt ID (`artifacts/receipts/<id>.json`):
+
+| Claim category | Required receipt |
+|----------------|------------------|
+| Lint clean | ARB `ruff` receipt |
+| Type check clean | ARB `ty check` receipt |
+| Tests pass | ARB `unittest` / `step --name unittest` receipt |
+| Coverage floor | ARB `coverage` receipt |
+
+Receipt IDs should appear inline in the enrichment, e.g.
+`(lint: receipt arb-2026-04-14T12-34-56-ruff)`. The citing agent must also
+have verified that the receipt exists and its status matches the claim —
+fabricating a receipt ID is the same failure as fabricating the claim.
+
+**Lane behavior:**
+
+- **Lite lane:** missing receipt IDs produce a warning. The attestation
+  still records but is flagged as narrative-only.
+- **Heavy lane:** missing receipt IDs are a fail-closed error. Heavy lane
+  attestation without receipts is rejected; re-run the QA steps under ARB
+  and re-cite.
+
+**If you are the agent drafting the attestation and no receipts exist:**
+run the relevant ARB-wrapped commands first, then draft the attestation
+citing the fresh receipt IDs. Narrative substitutes are not acceptable.
+
 ## Applies to
 
 - `uv run gz obpi complete --attestation-text ...`
@@ -51,6 +88,8 @@ attest completed — Confirm decision: gzkit cli_audit + doc_coverage surface
 architecturally superior (AST vs parser._actions private API, 5-surface
 manifest-driven coverage, 76 vs 1 tests, frozen Pydantic vs dict[str,Any]);
 no absorption of the external reference cli_audit module warranted.
+Receipts: lint arb-2026-04-14T12-34-56-ruff; types arb-2026-04-14T12-35-02-ty;
+tests arb-2026-04-14T12-36-18-unittest; coverage arb-2026-04-14T12-37-44-coverage.
 ```
 
 ## Anti-patterns
