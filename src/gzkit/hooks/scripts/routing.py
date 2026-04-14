@@ -273,8 +273,7 @@ def _pipeline_router_script() -> str:
                     sys.exit(0)
 
                 plans_dir = pipeline_plans_dir(project_root)
-                receipt_path = plans_dir / ".plan-audit-receipt.json"
-                if not receipt_path.exists():
+                if not plans_dir.is_dir():
                     sys.exit(0)
 
                 receipt_state, _warnings, receipt = load_plan_audit_receipt(plans_dir, "")
@@ -413,8 +412,7 @@ def _pipeline_gate_script() -> str:
                     sys.exit(0)
 
                 plans_dir = pipeline_plans_dir(project_root)
-                receipt_path = plans_dir / ".plan-audit-receipt.json"
-                if not receipt_path.exists():
+                if not plans_dir.is_dir():
                     sys.exit(0)
 
                 receipt_state, _warnings, receipt = load_plan_audit_receipt(plans_dir, "")

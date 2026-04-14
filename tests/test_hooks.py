@@ -423,6 +423,22 @@ class TestPlanAuditGateHook(unittest.TestCase):
         )
         return receipt_path
 
+    def _write_per_obpi_receipt(self, plans_dir: Path, *, obpi_id: str, verdict: str) -> Path:
+        plans_dir.mkdir(parents=True, exist_ok=True)
+        receipt_path = plans_dir / f".plan-audit-receipt-{obpi_id}.json"
+        receipt_path.write_text(
+            json.dumps(
+                {
+                    "obpi_id": obpi_id,
+                    "timestamp": "2026-03-12T12:00:00Z",
+                    "verdict": verdict,
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        return receipt_path
+
     @covers("REQ-0.12.0-02-01")
     def test_allows_when_plans_dir_is_missing(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -535,6 +551,44 @@ class TestPlanAuditGateHook(unittest.TestCase):
 
             self.assertEqual(result.returncode, 2)
             self.assertIn("invalid verdict", result.stderr)
+
+    @covers("REQ-0.12.0-02-02")
+    def test_allows_when_per_obpi_receipt_is_newer_than_plan(self) -> None:
+        """Per-OBPI receipt path is the canonical receipt written by `gz plan audit`."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            script_path = self._create_hook(project_root)
+            plans_dir = project_root / ".claude" / "plans"
+            plan_path = self._write_plan(plans_dir, "active.md", "Implement OBPI-0.12.0-02\n")
+            receipt_path = self._write_per_obpi_receipt(
+                plans_dir, obpi_id="OBPI-0.12.0-02", verdict="PASS"
+            )
+            os.utime(plan_path, (1_700_000_000, 1_700_000_000))
+            os.utime(receipt_path, (1_700_000_100, 1_700_000_100))
+
+            result = self._run_hook(script_path, project_root)
+
+            self.assertEqual(result.returncode, 0, msg=result.stderr)
+
+    @covers("REQ-0.12.0-02-02")
+    def test_prefers_fresh_per_obpi_over_stale_legacy_receipt(self) -> None:
+        """Stale legacy receipt must not mask a fresh per-OBPI receipt."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            script_path = self._create_hook(project_root)
+            plans_dir = project_root / ".claude" / "plans"
+            plan_path = self._write_plan(plans_dir, "active.md", "Implement OBPI-0.12.0-02\n")
+            stale_legacy = self._write_receipt(plans_dir, obpi_id="OBPI-0.12.0-01", verdict="PASS")
+            fresh_per_obpi = self._write_per_obpi_receipt(
+                plans_dir, obpi_id="OBPI-0.12.0-02", verdict="PASS"
+            )
+            os.utime(stale_legacy, (1_700_000_000, 1_700_000_000))
+            os.utime(plan_path, (1_700_000_050, 1_700_000_050))
+            os.utime(fresh_per_obpi, (1_700_000_100, 1_700_000_100))
+
+            result = self._run_hook(script_path, project_root)
+
+            self.assertEqual(result.returncode, 0, msg=result.stderr)
 
     def test_emits_prior_art_warning_without_blocking_valid_receipt(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:

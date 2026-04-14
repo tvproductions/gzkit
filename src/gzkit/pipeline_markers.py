@@ -309,23 +309,28 @@ def pipeline_receipt_path(plans_dir: Path, obpi_id: str) -> Path:
 
 
 def _resolve_receipt_path(plans_dir: Path, obpi_id: str) -> Path | None:
-    """Find the best receipt file: per-OBPI first, then legacy, then discovery."""
+    """Find the best receipt file: per-OBPI first, then legacy.
+
+    When ``obpi_id`` is provided, prefer the exact per-OBPI receipt and fall
+    back to the legacy path. When ``obpi_id`` is empty, the caller is asking
+    "what receipt should drive this hook?" — pick the most recently modified
+    receipt across per-OBPI and legacy so a stale legacy file cannot mask a
+    fresh per-OBPI receipt (gzkit#140).
+    """
     if obpi_id:
         per_obpi = pipeline_receipt_path(plans_dir, obpi_id)
         if per_obpi.exists():
             return per_obpi
+        legacy = plans_dir / PIPELINE_RECEIPT_FILE
+        return legacy if legacy.exists() else None
+
+    candidates = list(plans_dir.glob(".plan-audit-receipt-*.json"))
     legacy = plans_dir / PIPELINE_RECEIPT_FILE
     if legacy.exists():
-        return legacy
-    if not obpi_id:
-        candidates = sorted(
-            plans_dir.glob(".plan-audit-receipt-*.json"),
-            key=lambda p: p.stat().st_mtime,
-            reverse=True,
-        )
-        if candidates:
-            return candidates[0]
-    return None
+        candidates.append(legacy)
+    if not candidates:
+        return None
+    return max(candidates, key=lambda p: p.stat().st_mtime)
 
 
 def load_plan_audit_receipt(
