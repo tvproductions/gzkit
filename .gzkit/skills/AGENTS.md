@@ -89,3 +89,65 @@ rule defines the semver semantics:
 - Do not manually copy skill files between surfaces — use the sync command
 - Do not skip sync because "both files look the same" — sync also updates
   manifests, registrations, and vendor-specific rendering
+
+# Tool / Skill / Runbook Alignment
+
+gzkit's operator surface is a three-layer hierarchy: **tools** (CLI verbs), **skills** (operator-facing value chains that wield one or more tools), and **runbooks** (the documentation layer that preserves operator intent across iteration). When the layers drift out of alignment, operators get silent misrouting — a skill name that promises one thing and delivers another, or a tool verb that the runbook prescribes but no skill exposes.
+
+These two invariants are the mechanical test for layer alignment. Apply them whenever you author or modify any of the three surfaces.
+
+## Invariants
+
+### Invariant 1 — Every CLI tool has at least one skill that wields it
+
+Every CLI verb registered in `src/gzkit/cli/` must be invoked by at least one skill under `.gzkit/skills/` — either via the skill's frontmatter `gz_command:` field or in the skill's body instructions. An orphaned tool (a live CLI verb with no skill pointing at it) is either dead code or hidden drift — either way, it is a defect signal.
+
+**Canonical violation (2026-04-13):** `gz adr status` is a live CLI verb (handler at `src/gzkit/commands/status.py:385`, registered at `src/gzkit/cli/parser_artifacts.py:84-104`, correctly prescribed by `docs/user/runbook.md:21-202` at multiple line locations, and directly invoked by `gz-adr-audit`, `gz-adr-recon`, `gz-adr-verification`, and `gz-obpi-pipeline`) — yet no skill routes operators to it via skill discovery. The `gz-adr-status` skill routes to `gz adr report` instead (see GHI #141). The verb is live and load-bearing but unreachable through the operator-facing skill layer.
+
+### Invariant 2 — Every skill's `gz_command` matches a runbook-prescribed tool for the same operator moment
+
+Every skill's declared `gz_command:` (frontmatter or body) must resolve to a CLI verb that the runbook prescribes for the same operator moment. If the skill name and its actual CLI target describe different operator moments — or if the skill invokes a verb the runbook does not prescribe for that moment — the skill is drifted from the runbook's preserved intent.
+
+**Canonical violation (2026-04-13):** The skill `.gzkit/skills/gz-adr-status/SKILL.md` has frontmatter `gz_command: adr report` (line 11) and body invoking `uv run gz adr report` (lines 33-34, 48, 51). The skill name says "status," the runbook prescribes `gz adr status` for single-ADR drilldown (`docs/user/runbook.md:23, 130, 192, 202`), but the skill routes to `gz adr report`. The operator gets tabular output from `report` when the skill name and runbook both imply they should get the single-ADR prose output from `status`.
+
+## Rationale
+
+The layered hierarchy exists because acute focus meanders. Skills get renamed during absorption work; CLI verbs get refactored for size-cap compliance; runbooks get edited to reflect operator reality. Each layer holds a different kind of truth:
+
+- **Tools** hold *capability* — what the system can actually do
+- **Skills** hold *operator value chains* — how capability gets composed toward an intent
+- **Runbooks** hold *preserved intent* — the canonical answer to "what should I run to accomplish X"
+
+When the layers agree, the cascade works: operator invokes a skill, the skill wields the right tool, the runbook documents the sequence, and future operators can trace the value chain. When the layers drift, operators get silent misrouting, dependent skills call orphaned verbs directly, and the only thing that preserves intent across the drift is the runbook — which is exactly what happened with GHI #141: the runbook held `gz adr status` correctly across months of absorption work while the skill layer drifted, and the audit surfaced the drift by comparing runtime reality against the runbook's prescribed commands.
+
+## Enforcement
+
+These invariants are currently **advisory** — they govern authoring discipline but are not yet mechanically checked. The long-term home for enforcement is `gz validate --surfaces`, which should grow checks that:
+
+1. Enumerate every CLI verb registered in `src/gzkit/cli/**` and confirm at least one skill under `.gzkit/skills/**` references it (either via `gz_command:` frontmatter or in the skill body)
+2. Enumerate every skill's declared CLI target and confirm the runbook prescribes that same verb for the operator moment the skill's name describes
+
+Until those checks exist, apply the invariants by hand whenever you author or modify a CLI verb, a skill, or a runbook entry.
+
+## When to apply
+
+- **Authoring a new CLI verb** — confirm at least one skill will wield it before merging; if no skill exists yet, either author the skill in the same patch or file a follow-up GHI explicitly tracking the skill gap
+- **Renaming a CLI verb** — audit every skill that references the old name (check both frontmatter `gz_command:` and body invocations); update them in the same patch
+- **Authoring a new skill** — confirm the skill's `gz_command:` target is the same verb the runbook prescribes for the operator moment the skill's name describes
+- **Renaming a skill** — confirm the skill's `gz_command:` still aligns with the new name's implied operator moment; if the skill was routing to a different verb than its name implied, the rename is the opportunity to fix the drift
+- **Editing the runbook** — confirm the prescribed verbs still match the skill layer's routing; if the runbook prescribes a verb no skill wields, either add the skill or update the runbook to prescribe a verb that is wielded
+
+## Anti-patterns
+
+- Authoring a CLI verb without a wielding skill, and deferring the skill to "later"
+- Routing a skill to a different CLI verb than its name implies, without renaming the skill to match
+- Editing the runbook to prescribe a verb no skill exposes, and relying on direct CLI invocation
+- Treating skill-to-CLI drift as a cosmetic naming issue instead of a defect signal
+- Using the runbook as the only surface that preserves intent, without mirroring the intent in skill routing
+
+## Related
+
+- `.gzkit/rules/cli.md` — CLI contract doctrine (Heavy-lane trigger for subcommand changes)
+- `.gzkit/rules/gate5-runbook-code-covenant.md` — runbook as first-class deliverable tracking code
+- `.gzkit/rules/skill-surface-sync.md` — skill version discipline and mirror-drift prevention
+- GHI #141 — status-adjacent CLI/skill routing drift, the audit that surfaced these invariants

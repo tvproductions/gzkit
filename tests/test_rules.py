@@ -186,6 +186,60 @@ class TestSyncNestedAgentsMd(unittest.TestCase):
 
             self.assertEqual(updated, [])
 
+    def test_file_path_apply_to_does_not_crash(self) -> None:
+        """Regression: GHI #142.
+
+        An applyTo pattern that resolves to a literal file path (no glob
+        wildcards) must not cause sync_nested_agents_md to attempt writing
+        AGENTS.md into the file, which triggers ENOTDIR.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            inst = root / ".github" / "instructions"
+            inst.mkdir(parents=True)
+            # The runbook is a real file, not a directory
+            runbook_dir = root / "docs" / "user"
+            runbook_dir.mkdir(parents=True)
+            (runbook_dir / "runbook.md").write_text("# Runbook", encoding="utf-8")
+
+            (inst / "filepath.instructions.md").write_text(
+                _instruction_file("docs/user/runbook.md", "# File-scoped rule")
+            )
+
+            updated = sync_nested_agents_md(root)
+
+            self.assertEqual(updated, [])
+            # The runbook.md file must still exist and be unchanged
+            self.assertTrue((runbook_dir / "runbook.md").is_file())
+
+
+class TestExtractSubtreePrefix(unittest.TestCase):
+    """Test _extract_subtree_prefix() — GHI #142 regression guards."""
+
+    def test_glob_pattern_returns_prefix(self) -> None:
+        from gzkit.rules import _extract_subtree_prefix
+
+        self.assertEqual(_extract_subtree_prefix("docs/**"), "docs")
+
+    def test_nested_glob_returns_full_prefix(self) -> None:
+        from gzkit.rules import _extract_subtree_prefix
+
+        self.assertEqual(
+            _extract_subtree_prefix("src/gzkit/commands/**"),
+            "src/gzkit/commands",
+        )
+
+    def test_file_path_returns_none(self) -> None:
+        """A literal file path (no wildcards) is not a subtree prefix."""
+        from gzkit.rules import _extract_subtree_prefix
+
+        self.assertIsNone(_extract_subtree_prefix("docs/user/runbook.md"))
+
+    def test_global_pattern_returns_none(self) -> None:
+        from gzkit.rules import _extract_subtree_prefix
+
+        self.assertIsNone(_extract_subtree_prefix("**/*"))
+
 
 class TestSyncClaudeRulesFromRules(unittest.TestCase):
     """Test that sync_claude_rules (now in rules.py) still works."""

@@ -32,7 +32,7 @@ import re
 import sys
 from pathlib import Path
 
-RECEIPT_FILE = ".plan-audit-receipt.json"
+LEGACY_RECEIPT_FILE = ".plan-audit-receipt.json"
 OBPI_PATTERN = re.compile(r"OBPI-[\d.]+-\d+")
 NEW_FILE_PATTERNS = re.compile(
     r"\(new\)|\bcreate\s+`?(?:src|tests)/|new\s+file|new\s+module",
@@ -97,14 +97,23 @@ def extract_obpi_ids(plan_path: Path) -> list[str]:
     return list(set(OBPI_PATTERN.findall(content)))
 
 
-def check_audit_receipt(
-    plans_dir: Path, obpi_ids: list[str], plan_mtime: float
-) -> tuple[bool, str]:
-    """Check whether a valid audit receipt exists."""
-    receipt_path = plans_dir / RECEIPT_FILE
-    if not receipt_path.exists():
-        return False, "No audit receipt found"
+def _candidate_receipts(plans_dir: Path, obpi_ids: list[str]) -> list[Path]:
+    """Per-OBPI receipts first (see gzkit#140), then legacy fallback."""
+    candidates: list[Path] = []
+    for obpi_id in obpi_ids:
+        per_obpi = plans_dir / f".plan-audit-receipt-{obpi_id}.json"
+        if per_obpi.exists():
+            candidates.append(per_obpi)
+    legacy = plans_dir / LEGACY_RECEIPT_FILE
+    if legacy.exists():
+        candidates.append(legacy)
+    return candidates
 
+
+def _validate_receipt(
+    receipt_path: Path, obpi_ids: list[str], plan_mtime: float
+) -> tuple[bool, str]:
+    """Validate a single receipt file against the plan's OBPI ids."""
     try:
         receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
@@ -119,8 +128,7 @@ def check_audit_receipt(
             f"Audit receipt is for {receipt_obpi}, but plan references {', '.join(obpi_ids)}",
         )
 
-    receipt_mtime = receipt_path.stat().st_mtime
-    if receipt_mtime < plan_mtime:
+    if receipt_path.stat().st_mtime < plan_mtime:
         return (
             False,
             "Audit receipt is older than plan file (plan was modified after audit)",
@@ -130,6 +138,23 @@ def check_audit_receipt(
         return False, f"Audit receipt has invalid verdict: {receipt_verdict!r}"
 
     return True, f"Valid receipt: {receipt_obpi} -> {receipt_verdict}"
+
+
+def check_audit_receipt(
+    plans_dir: Path, obpi_ids: list[str], plan_mtime: float
+) -> tuple[bool, str]:
+    """Check whether a valid audit receipt exists."""
+    candidates = _candidate_receipts(plans_dir, obpi_ids)
+    if not candidates:
+        return False, "No audit receipt found"
+
+    last_reason = ""
+    for candidate in candidates:
+        ok, reason = _validate_receipt(candidate, obpi_ids, plan_mtime)
+        if ok:
+            return True, reason
+        last_reason = reason
+    return False, last_reason
 
 
 def check_prior_art_awareness(plan_path: Path) -> str | None:
