@@ -107,14 +107,26 @@ Heuristics skip non-path content:
 ```python
 from pathlib import Path
 
-from gzkit.validate import extract_headers, parse_frontmatter
+from gzkit.handoff_validation import (
+    HandoffFrontmatter,
+    parse_frontmatter,
+    validate_handoff_document,
+)
 
-content = Path("handoffs/session.md").read_text()
-frontmatter, body = parse_frontmatter(content)
-headers = extract_headers(body)
+content = Path("handoffs/session.md").read_text(encoding="utf-8")
 
-print(frontmatter.get("schema"))
-print(headers)
+# Structural parse (raises HandoffValidationError on missing delimiters
+# or malformed YAML).
+frontmatter = parse_frontmatter(content)
+
+# Schema validation (raises pydantic.ValidationError on violation).
+model = HandoffFrontmatter(**frontmatter)
+print(model.mode, model.adr_id)
+
+# Full fail-closed sweep — returns every violation as a list of strings.
+errors = validate_handoff_document(content, Path("."))
+for error in errors:
+    print(error)
 ```
 
 ### Operational Validation
@@ -147,10 +159,18 @@ uv run gz interview handoff
 
 ---
 
+## History
+
+- **2026-04-14:** Module implementation absorbed from
+  `../airlineops/src/opsdev/governance/handoff_validation.py` via
+  OBPI-0.25.0-32. Adaptations: dual `@covers` lineage, CRLF normalization
+  on every public validator for Windows line-ending safety. No functional
+  or API changes relative to the absorbed source.
+
 ## See Also
 
 - [Session Handoff Schema](session-handoff-schema.md) -- Schema specification
 - [Staleness Classification](staleness-classification.md) -- Multi-factor staleness system
 - [ADR-0.0.25](../../design/adr/adr-0.0.x/ADR-0.0.25-compounding-engineering-session-handoff-contract/ADR-0.0.25-compounding-engineering-session-handoff-contract.md) -- Architecture decision record
-- Sources: `src/gzkit/validate.py`, `src/gzkit/interview.py`
+- Sources: `src/gzkit/handoff_validation.py`
 - Tests: `tests/governance/test_handoff_validation.py`
