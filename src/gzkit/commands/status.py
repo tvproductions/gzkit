@@ -383,42 +383,22 @@ def _build_adr_status_result(adr: str) -> dict[str, Any]:
 
 
 def adr_status_cmd(adr: str, as_json: bool, show_gates: bool) -> None:
-    """Display focused OBPI progress, lifecycle, and gate readiness for one ADR."""
+    """Display focused OBPI progress, lifecycle, and gate readiness for one ADR.
+
+    Human-readable output delegates to ``_render_adr_report`` — the same
+    deterministic Rich-table renderer used by ``gz adr report``. This enforces
+    the ``gz-adr-status`` skill Output Contract (consistent table format).
+    """
     result = _build_adr_status_result(adr)
-    lane = cast(str, result["lane"])
 
     if as_json:
         print(json.dumps(result, indent=2))  # noqa: T201
         return
 
-    console.print(f"[bold]{result['adr']}[/bold]")
-    console.print(f"  Lifecycle: {result['lifecycle_status']}")
-    console.print(f"  Closeout Phase: {result['closeout_phase']}")
-    obpi_summary = cast(dict[str, Any], result.get("obpi_summary", {}))
-    obpi_total = cast(int, obpi_summary.get("total", 0))
-    obpi_completed = cast(int, obpi_summary.get("completed", 0))
-    obpi_unit_status = cast(str, obpi_summary.get("unit_status", "unscoped"))
-    console.print(f"  OBPI Unit: {_render_obpi_unit_status(obpi_unit_status)}")
-    console.print(f"  OBPI Completion: {obpi_completed}/{obpi_total} complete")
-    console.print("  OBPIs:")
-    obpi_rows = cast(list[dict[str, Any]], result.get("obpis", []))
-    if not obpi_rows:
-        console.print("    - none linked")
-    else:
-        for row in obpi_rows:
-            console.print(f"    - {_render_obpi_row_status(row)}")
-    closeout_label = "[green]READY[/green]" if result["closeout_ready"] else "[red]BLOCKED[/red]"
-    console.print(f"  Closeout Readiness: {closeout_label}")
-    if result["closeout_blockers"]:
-        console.print("  Closeout Blockers:")
-        for blocker in cast(list[str], result["closeout_blockers"]):
-            console.print(f"    - {blocker}")
-
-    gates = cast(dict[str, str], result.get("gates", {}))
-    qc_readiness, qc_blockers = _qc_readiness(gates, lane, obpi_summary)
-    console.print(f"  QC Readiness: {_render_qc_readiness(qc_readiness, qc_blockers)}")
+    _render_adr_report(result)
 
     if show_gates:
+        lane = cast(str, result["lane"])
         console.print("  Gate 1 (ADR):   [green]PASS[/green]")
         console.print(f"  Gate 2 (TDD):   {_render_gate_status(result['gates'].get('2'))}")
         if lane == "heavy":
