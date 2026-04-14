@@ -326,3 +326,15 @@ def _render_adr_report(result: dict[str, Any]) -> None:
         console.print("Issues")
         for line in issues:
             console.print(line)
+
+    # --- Closeout Blockers (specific reasons beyond the per-OBPI Issues list) ---
+    closeout_blockers = cast(list[str], result.get("closeout_blockers", []))
+    if closeout_blockers:
+        console.print(f"Closeout Readiness: {closeout_label}")
+        console.print("Closeout Blockers:")
+        for blocker in closeout_blockers:
+            console.print(f"  - {blocker}")
+
+    # --- QC Pending Checkpoints (specific gates that still need to pass) ---
+    if qc_readiness != "ready" and _qc_blockers:
+        console.print(f"QC Readiness: {qc_label} (pending: {', '.join(_qc_blockers)})")
