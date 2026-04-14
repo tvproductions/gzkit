@@ -3049,3 +3049,6 @@
 {"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.cli-positional-first-doctrine.md","ts":"2026-04-14T11:26:53.335614+00:00","path":"docs/design/adr/pool/ADR-pool.cli-positional-first-doctrine.md"}
 {"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.interpretability-hardened-agent-surfaces.md","ts":"2026-04-14T13:05:14.833902+00:00","path":"docs/design/adr/pool/ADR-pool.interpretability-hardened-agent-surfaces.md"}
 {"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-pool.interpretability-hardened-agent-surfaces","ts":"2026-04-14T13:07:10.317274+00:00","parent":"PRD-GZKIT-1.0.0","lane":"heavy"}
+{"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-pool.cli-positional-first-doctrine","ts":"2026-04-14T17:45:38.404207+00:00","parent":"PRD-GZKIT-1.0.0","lane":"heavy"}
+{"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-pool.design-references-bibliography","ts":"2026-04-14T17:45:38.415081+00:00","lane":"lite"}
+{"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-pool.harness-agnostic-plan-capture","ts":"2026-04-14T17:45:38.424878+00:00","parent":"PRD-GZKIT-1.0.0","lane":"heavy"}
