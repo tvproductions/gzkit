@@ -1092,8 +1092,31 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
 
             result = runner.invoke(main, ["adr", "status", "ADR-0.1.0"])
             self.assertEqual(result.exit_code, 0)
-            self.assertIn("QC Readiness:", result.output)
+            self.assertIn("ADR Overview", result.output)
             self.assertNotIn("Gate 2 (TDD):", result.output)
+
+    def test_adr_status_renders_shared_table_via_deterministic_renderer(self) -> None:
+        """gz adr status renders the same deterministic tables as gz adr report.
+
+        Locks the skill Output Contract that says "consistent table format" and
+        "do not replace the table with prose" for both modes. Before GHI #141's
+        follow-up repair, this command produced ad-hoc indented prose and
+        violated the skill design.
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "0.1.0"])
+
+            status_result = runner.invoke(main, ["adr", "status", "ADR-0.1.0"])
+            report_result = runner.invoke(main, ["adr", "report", "ADR-0.1.0"])
+
+            self.assertEqual(status_result.exit_code, 0)
+            self.assertEqual(report_result.exit_code, 0)
+            self.assertIn("ADR Overview", status_result.output)
+            self.assertIn("OBPIs", status_result.output)
+            self.assertIn("ADR-0.1.0", status_result.output)
+            self.assertIn("ADR Overview", report_result.output)
 
     def test_adr_status_accepts_semver_prefix_for_suffixed_adr(self) -> None:
         runner = CliRunner()
@@ -1114,7 +1137,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
 
             result = runner.invoke(main, ["adr", "status", "0.5.0"])
             self.assertEqual(result.exit_code, 0)
-            self.assertIn("ADR-0.5.0-skill-lifecycle-governance", result.output)
+            self.assertIn("ADR-0.5.0", result.output)
 
     def test_adr_status_show_gates_includes_gate_breakdown(self) -> None:
         runner = CliRunner()
