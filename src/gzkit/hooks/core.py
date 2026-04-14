@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from gzkit.config import GzkitConfig
+from gzkit.events import EventAnchor
 from gzkit.git_sync import assess_git_sync_readiness
 from gzkit.hooks.obpi import (
     ObpiValidator,
@@ -149,7 +150,7 @@ def enrich_completed_receipt_evidence(
     scope_audit: dict[str, list[str]] | None = None,
     git_sync_state: dict[str, Any] | None = None,
     extra_warnings: list[str] | None = None,
-) -> tuple[dict[str, Any], dict[str, str] | None]:
+) -> tuple[dict[str, Any], EventAnchor | None]:
     """Attach structured scope/git metadata and warning-aware anchoring."""
     evidence = dict(base_evidence)
     evidence["scope_audit"] = scope_audit or build_scope_audit(project_root, content)

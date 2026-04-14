@@ -6,6 +6,7 @@ from pathlib import Path
 from gzkit.cli import main
 from gzkit.commands.status_render import TABLE_TITLE_FEATURE  # noqa: F401
 from gzkit.config import GzkitConfig
+from gzkit.events import EventAnchor
 from gzkit.ledger import (
     Ledger,
     adr_created_event,
@@ -487,7 +488,7 @@ class TestStatusCommand(unittest.TestCase):
                             "blockers": [],
                         },
                     },
-                    anchor={"commit": anchor_commit, "semver": "0.1.0"},
+                    anchor=EventAnchor(commit=anchor_commit, semver="0.1.0"),
                 )
             )
 
@@ -563,7 +564,7 @@ class TestStatusCommand(unittest.TestCase):
                             "blockers": [],
                         },
                     },
-                    anchor={"commit": anchor_commit, "semver": "0.1.0"},
+                    anchor=EventAnchor(commit=anchor_commit, semver="0.1.0"),
                 )
             )
 
@@ -674,7 +675,7 @@ class TestStatusCommand(unittest.TestCase):
                             "blockers": [],
                         },
                     },
-                    anchor={"commit": first_anchor, "semver": "0.1.0"},
+                    anchor=EventAnchor(commit=first_anchor, semver="0.1.0"),
                 )
             )
 
@@ -723,7 +724,7 @@ class TestStatusCommand(unittest.TestCase):
                             "blockers": [],
                         },
                     },
-                    anchor={"commit": second_anchor, "semver": "0.1.0"},
+                    anchor=EventAnchor(commit=second_anchor, semver="0.1.0"),
                 )
             )
 
@@ -784,7 +785,7 @@ class TestStatusCommand(unittest.TestCase):
                             "blockers": [],
                         },
                     },
-                    anchor={"commit": anchor_commit, "semver": "0.1.0"},
+                    anchor=EventAnchor(commit=anchor_commit, semver="0.1.0"),
                 )
             )
 
@@ -1288,7 +1289,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
                             "blockers": [],
                         },
                     },
-                    anchor={"commit": anchor_commit, "semver": "0.1.0"},
+                    anchor=EventAnchor(commit=anchor_commit, semver="0.1.0"),
                 )
             )
 

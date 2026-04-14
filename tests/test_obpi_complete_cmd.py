@@ -26,6 +26,7 @@ from gzkit.commands.obpi_complete import (
     _validate_would_be_content,
     obpi_complete_cmd,
 )
+from gzkit.events import EventAnchor
 
 
 def covers(target: str):  # noqa: D401
@@ -588,7 +589,7 @@ class TestObpiCompleteCmdDryRun(unittest.TestCase):
             mock_root.return_value = root
             mock_init.return_value = _mock_config()
             mock_requires_human.return_value = False
-            mock_anchor.return_value = {"commit": "abc1234", "semver": "0.0.14"}
+            mock_anchor.return_value = EventAnchor(commit="abc1234", semver="0.0.14")
 
             obpi_file = root / "brief.md"
             obpi_file.write_text(_MINIMAL_BRIEF, encoding="utf-8")
@@ -642,7 +643,7 @@ class TestObpiCompleteCmdJsonOutput(unittest.TestCase):
             mock_root.return_value = root
             mock_init.return_value = _mock_config()
             mock_requires_human.return_value = False
-            mock_anchor.return_value = {"commit": "abc1234", "semver": "0.0.14"}
+            mock_anchor.return_value = EventAnchor(commit="abc1234", semver="0.0.14")
 
             obpi_file = root / "brief.md"
             obpi_file.write_text(_MINIMAL_BRIEF, encoding="utf-8")
@@ -709,7 +710,7 @@ class TestObpiCompleteCmdHappyPath(unittest.TestCase):
             mock_root.return_value = root
             mock_init.return_value = _mock_config()
             mock_requires_human.return_value = True
-            mock_anchor.return_value = {"commit": "abc1234", "semver": "0.0.14"}
+            mock_anchor.return_value = EventAnchor(commit="abc1234", semver="0.0.14")
 
             # Set up brief file inside an adr/obpis directory structure
             adr_dir = root / "adr"
@@ -783,7 +784,7 @@ class TestObpiCompleteCmdRollback(unittest.TestCase):
             mock_root.return_value = root
             mock_init.return_value = _mock_config()
             mock_requires_human.return_value = False
-            mock_anchor.return_value = {"commit": "abc1234", "semver": "0.0.14"}
+            mock_anchor.return_value = EventAnchor(commit="abc1234", semver="0.0.14")
 
             adr_dir = root / "adr"
             obpis_dir = adr_dir / "obpis"

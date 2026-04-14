@@ -6,6 +6,10 @@ Contains shared logic for shell execution, git, and string parsing.
 import re
 import subprocess
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from gzkit.events import EventAnchor
 
 
 def run_exec(cmd: list[str], cwd: Path, timeout: int | None = None) -> tuple[int, str, str]:
@@ -64,42 +68,55 @@ def list_changed_files_between(
 def capture_validation_anchor_with_warnings(
     project_root: Path,
     adr_id: str | None = None,
-) -> tuple[dict[str, str] | None, list[str]]:
-    """Capture git anchor data and report degradations as warnings."""
-    anchor: dict[str, str] = {}
+) -> "tuple[EventAnchor | None, list[str]]":
+    """Capture git anchor data and report degradations as warnings.
+
+    Returns a typed ``EventAnchor`` when both commit and semver can be
+    resolved; returns ``None`` with accumulated warnings when the anchor
+    is degraded (missing required fields). The typed return shape replaces
+    the legacy ``dict[str, str] | None`` per GHI #143.
+    """
+    from gzkit.events import EventAnchor
+
     warnings: list[str] = []
 
     head_commit = resolve_git_head_commit(project_root)
-    if head_commit:
-        anchor["commit"] = head_commit
-    else:
+    if not head_commit:
         warnings.append("Could not resolve HEAD commit for receipt anchor.")
 
+    tag_value: str | None = None
     rc_tag, tag, err_tag = git_cmd(project_root, "tag", "--points-at", "HEAD")
     if rc_tag == 0 and tag:
-        anchor["tag"] = tag.splitlines()[0].strip()
+        tag_value = tag.splitlines()[0].strip()
     elif rc_tag != 0 and err_tag:
         warnings.append(err_tag)
 
+    semver_value: str | None = None
     if adr_id:
         semver_match = re.search(r"\d+\.\d+\.\d+", adr_id)
         if semver_match:
-            anchor["semver"] = semver_match.group(0)
+            semver_value = semver_match.group(0)
         else:
             warnings.append(f"Could not derive semver anchor from ADR ID: {adr_id}")
     else:
         warnings.append("Could not derive semver anchor: parent ADR ID missing.")
 
-    if "commit" not in anchor or "semver" not in anchor:
+    if head_commit is None or semver_value is None:
         return None, warnings
-    return anchor, warnings
+    return EventAnchor(commit=head_commit, tag=tag_value, semver=semver_value), warnings
 
 
-def capture_validation_anchor(project_root: Path, adr_id: str | None = None) -> dict[str, str]:
-    """Capture git commit and tag info for temporal anchoring."""
+def capture_validation_anchor(project_root: Path, adr_id: str | None = None) -> "EventAnchor":
+    """Capture git commit and tag info for temporal anchoring.
+
+    Degraded fallback returns a sentinel ``EventAnchor`` with zeroed commit
+    and semver so downstream consumers always receive a typed value.
+    """
+    from gzkit.events import EventAnchor
+
     anchor, warnings = capture_validation_anchor_with_warnings(project_root, adr_id)
     if anchor is not None:
         return anchor
 
     _ = warnings
-    return {"commit": "0000000", "semver": "0.0.0"}
+    return EventAnchor(commit="0000000", semver="0.0.0")

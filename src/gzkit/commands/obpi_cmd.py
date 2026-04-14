@@ -29,6 +29,7 @@ from gzkit.commands.obpi_stages import (  # noqa: F401
     _run_pipeline_verify_stage,
 )
 from gzkit.commands.status import _inspect_obpi_brief
+from gzkit.events import EventAnchor
 from gzkit.hooks.obpi import ObpiValidator
 from gzkit.ledger import (
     Ledger,
@@ -129,7 +130,7 @@ def obpi_emit_receipt_cmd(
         parent_lane = resolve_adr_lane(parent_info, config.mode)
 
     obpi_completion: str | None = None
-    anchor: dict[str, str] | None = None
+    anchor: EventAnchor | None = None
     if receipt_event == "completed":
         obpi_content = obpi_file.read_text(encoding="utf-8")
         evidence, obpi_completion, anchor = _validate_obpi_completion_evidence(

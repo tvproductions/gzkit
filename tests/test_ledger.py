@@ -958,6 +958,200 @@ class TestTypedEventModels(unittest.TestCase):
             parse_typed_event(data)
 
 
+class TestEventAnchor(unittest.TestCase):
+    """Tests for the typed EventAnchor model on receipt events (GHI #143)."""
+
+    def test_valid_short_sha_accepted(self) -> None:
+        """EventAnchor accepts a 7-character short SHA."""
+        from gzkit.events import EventAnchor
+
+        anchor = EventAnchor(commit="abc1234", semver="0.25.0")
+        self.assertEqual(anchor.commit, "abc1234")
+        self.assertEqual(anchor.semver, "0.25.0")
+        self.assertIsNone(anchor.tag)
+
+    def test_valid_full_sha_accepted(self) -> None:
+        """EventAnchor accepts a 40-character full SHA."""
+        from gzkit.events import EventAnchor
+
+        full_sha = "a" * 40
+        anchor = EventAnchor(commit=full_sha, semver="1.2.3", tag="v1.2.3")
+        self.assertEqual(anchor.commit, full_sha)
+        self.assertEqual(anchor.tag, "v1.2.3")
+
+    def test_invalid_sha_rejected(self) -> None:
+        """EventAnchor rejects a SHA with non-hex characters."""
+        from pydantic import ValidationError as PydanticValidationError
+
+        from gzkit.events import EventAnchor
+
+        with self.assertRaises(PydanticValidationError):
+            EventAnchor(commit="xyz1234", semver="0.25.0")
+
+    def test_sha_too_short_rejected(self) -> None:
+        """EventAnchor rejects a SHA shorter than 7 characters."""
+        from pydantic import ValidationError as PydanticValidationError
+
+        from gzkit.events import EventAnchor
+
+        with self.assertRaises(PydanticValidationError):
+            EventAnchor(commit="abc123", semver="0.25.0")
+
+    def test_sha_too_long_rejected(self) -> None:
+        """EventAnchor rejects a SHA longer than 40 characters."""
+        from pydantic import ValidationError as PydanticValidationError
+
+        from gzkit.events import EventAnchor
+
+        with self.assertRaises(PydanticValidationError):
+            EventAnchor(commit="a" * 41, semver="0.25.0")
+
+    def test_invalid_semver_rejected(self) -> None:
+        """EventAnchor rejects a semver missing the patch component."""
+        from pydantic import ValidationError as PydanticValidationError
+
+        from gzkit.events import EventAnchor
+
+        with self.assertRaises(PydanticValidationError):
+            EventAnchor(commit="abc1234", semver="0.25")
+
+    def test_extra_fields_rejected(self) -> None:
+        """EventAnchor rejects unknown fields per extra=forbid."""
+        from pydantic import ValidationError as PydanticValidationError
+
+        from gzkit.events import EventAnchor
+
+        with self.assertRaises(PydanticValidationError):
+            EventAnchor.model_validate(
+                {"commit": "abc1234", "semver": "0.25.0", "branch": "main"},
+            )
+
+    def test_frozen(self) -> None:
+        """EventAnchor is immutable — mutation raises."""
+        from pydantic import ValidationError as PydanticValidationError
+
+        from gzkit.events import EventAnchor
+
+        anchor = EventAnchor(commit="abc1234", semver="0.25.0")
+        with self.assertRaises(PydanticValidationError):
+            anchor.commit = "def5678"  # type: ignore[misc]
+
+    def test_audit_receipt_event_accepts_typed_anchor(self) -> None:
+        """AuditReceiptEmittedEvent parses a dict-shaped anchor into EventAnchor."""
+        from gzkit.events import (
+            AuditReceiptEmittedEvent,
+            EventAnchor,
+            parse_typed_event,
+        )
+
+        data = {
+            "schema": "gzkit.ledger.v1",
+            "event": "audit_receipt_emitted",
+            "id": "ADR-0.25.0",
+            "ts": "2026-01-01T00:00:00+00:00",
+            "receipt_event": "validated",
+            "attestor": "human:jeff",
+            "anchor": {"commit": "abc1234", "semver": "0.25.0"},
+        }
+        event = parse_typed_event(data)
+        self.assertIsInstance(event, AuditReceiptEmittedEvent)
+        assert isinstance(event, AuditReceiptEmittedEvent)
+        self.assertIsInstance(event.anchor, EventAnchor)
+        assert event.anchor is not None
+        self.assertEqual(event.anchor.commit, "abc1234")
+        self.assertEqual(event.anchor.semver, "0.25.0")
+
+    def test_obpi_receipt_event_accepts_typed_anchor(self) -> None:
+        """ObpiReceiptEmittedEvent parses a dict-shaped anchor into EventAnchor."""
+        from gzkit.events import (
+            EventAnchor,
+            ObpiReceiptEmittedEvent,
+            parse_typed_event,
+        )
+
+        data = {
+            "schema": "gzkit.ledger.v1",
+            "event": "obpi_receipt_emitted",
+            "id": "OBPI-0.25.0-31-demo",
+            "parent": "ADR-0.25.0",
+            "ts": "2026-01-01T00:00:00+00:00",
+            "receipt_event": "completed",
+            "attestor": "human:jeff",
+            "anchor": {"commit": "abc1234", "semver": "0.25.0", "tag": "v0.25.0"},
+        }
+        event = parse_typed_event(data)
+        self.assertIsInstance(event, ObpiReceiptEmittedEvent)
+        assert isinstance(event, ObpiReceiptEmittedEvent)
+        self.assertIsInstance(event.anchor, EventAnchor)
+        assert event.anchor is not None
+        self.assertEqual(event.anchor.commit, "abc1234")
+        self.assertEqual(event.anchor.tag, "v0.25.0")
+
+    def test_obpi_receipt_event_rejects_invalid_anchor(self) -> None:
+        """ObpiReceiptEmittedEvent rejects a malformed anchor at parse time."""
+        from pydantic import ValidationError as PydanticValidationError
+
+        from gzkit.events import parse_typed_event
+
+        data = {
+            "schema": "gzkit.ledger.v1",
+            "event": "obpi_receipt_emitted",
+            "id": "OBPI-0.25.0-31-demo",
+            "parent": "ADR-0.25.0",
+            "ts": "2026-01-01T00:00:00+00:00",
+            "receipt_event": "completed",
+            "attestor": "human:jeff",
+            "anchor": {"commit": "xyz", "semver": "bad"},
+        }
+        with self.assertRaises(PydanticValidationError):
+            parse_typed_event(data)
+
+    def test_receipt_event_without_anchor_still_valid(self) -> None:
+        """Receipt events without an anchor field parse successfully."""
+        from gzkit.events import ObpiReceiptEmittedEvent, parse_typed_event
+
+        data = {
+            "schema": "gzkit.ledger.v1",
+            "event": "obpi_receipt_emitted",
+            "id": "OBPI-0.25.0-31-demo",
+            "parent": "ADR-0.25.0",
+            "ts": "2026-01-01T00:00:00+00:00",
+            "receipt_event": "completed",
+            "attestor": "human:jeff",
+        }
+        event = parse_typed_event(data)
+        self.assertIsInstance(event, ObpiReceiptEmittedEvent)
+        assert isinstance(event, ObpiReceiptEmittedEvent)
+        self.assertIsNone(event.anchor)
+
+    def test_capture_validation_anchor_returns_typed_model(self) -> None:
+        """capture_validation_anchor_with_warnings returns an EventAnchor instance."""
+        from gzkit.events import EventAnchor
+        from gzkit.utils import capture_validation_anchor_with_warnings
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            # Initialize a minimal git repo so the helper can resolve HEAD.
+            import subprocess
+
+            subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+            subprocess.run(
+                ["git", "config", "user.email", "test@example.com"],
+                cwd=root,
+                check=True,
+            )
+            subprocess.run(["git", "config", "user.name", "Test"], cwd=root, check=True)
+            (root / "file.txt").write_text("x", encoding="utf-8")
+            subprocess.run(["git", "add", "file.txt"], cwd=root, check=True)
+            subprocess.run(["git", "commit", "-q", "-m", "init"], cwd=root, check=True)
+
+            anchor, warnings = capture_validation_anchor_with_warnings(root, adr_id="ADR-0.25.0")
+            self.assertIsInstance(anchor, EventAnchor)
+            assert anchor is not None
+            self.assertEqual(anchor.semver, "0.25.0")
+            self.assertEqual(warnings, [])
+
+
 class TestNestedEvidenceModels(unittest.TestCase):
     """Tests for Pydantic nested evidence models."""
 
