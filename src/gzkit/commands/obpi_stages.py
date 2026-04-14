@@ -19,7 +19,7 @@ from gzkit.pipeline_runtime import (
     pipeline_command,
     pipeline_git_sync_command,
     refresh_pipeline_markers,
-    remove_pipeline_markers,
+    remove_pipeline_artifacts,
 )
 
 BASELINE_VERIFICATION = [
@@ -290,6 +290,6 @@ def _run_pipeline_sync_stage(
             detail = (result.stderr or result.stdout or "").strip()
             console.print(f"  [yellow]WARN[/yellow] {label}: {detail[:200]}")
 
-    remove_pipeline_markers(plans_dir, obpi_id)
+    remove_pipeline_artifacts(plans_dir, obpi_id)
     console.print("")
     console.print(f"Pipeline complete. {obpi_id} synced and lock released.")
