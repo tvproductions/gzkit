@@ -352,6 +352,22 @@ class CloseoutInitiatedEvent(_EventBase):
     evidence: dict[str, Any] | None = None
 
 
+class EventAnchor(BaseModel):
+    """Temporal anchor for receipt events — typed commit/tag/semver triple.
+
+    Replaces the prior ``dict[str, str] | None`` shape so typos in keys,
+    invalid SHAs, and malformed semvers are caught at the model layer
+    rather than at ledger-replay time. Parses existing ledger entries
+    forward because the shape is unchanged.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    commit: str = Field(..., pattern=r"^[0-9a-f]{7,40}$")
+    tag: str | None = None
+    semver: str = Field(..., pattern=r"^\d+\.\d+\.\d+$")
+
+
 class AuditReceiptEmittedEvent(_EventBase):
     """audit_receipt_emitted event."""
 
@@ -359,7 +375,7 @@ class AuditReceiptEmittedEvent(_EventBase):
     receipt_event: str
     attestor: str
     evidence: dict[str, Any] | None = None
-    anchor: dict[str, str] | None = None
+    anchor: EventAnchor | None = None
 
 
 class ObpiReceiptEmittedEvent(_EventBase):
@@ -370,7 +386,7 @@ class ObpiReceiptEmittedEvent(_EventBase):
     attestor: str
     evidence: dict[str, Any] | None = None
     obpi_completion: str | None = None
-    anchor: dict[str, str] | None = None
+    anchor: EventAnchor | None = None
 
 
 class ArtifactRenamedEvent(_EventBase):

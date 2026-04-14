@@ -30,6 +30,7 @@ from gzkit.commands.common import (
     resolve_adr_ledger_id,
 )
 from gzkit.commands.status import _collect_obpi_files_for_adr, _inspect_obpi_brief
+from gzkit.events import EventAnchor
 from gzkit.hooks.core import enrich_completed_receipt_evidence
 from gzkit.hooks.obpi import normalize_git_sync_state, normalize_scope_audit
 from gzkit.ledger import (
@@ -298,7 +299,7 @@ def _validate_obpi_completion_evidence(
     parent_adr: str | None,
     parent_lane: str,
     attestor: str,
-) -> tuple[dict[str, Any], str, dict[str, str] | None]:
+) -> tuple[dict[str, Any], str, EventAnchor | None]:
     """Validate and normalize evidence for OBPI completed receipts."""
     if evidence is None:
         msg = "OBPI completed receipts require --evidence-json with value_narrative and key_proof."

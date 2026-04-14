@@ -13,6 +13,7 @@ from behave import given, then, when
 
 from gzkit.cli import main
 from gzkit.config import GzkitConfig
+from gzkit.events import EventAnchor
 from gzkit.ledger import Ledger, gate_checked_event, obpi_created_event, obpi_receipt_emitted_event
 
 
@@ -144,7 +145,7 @@ def step_completed_anchor_obpi(context) -> None:  # type: ignore[no-untyped-def]
                     "blockers": [],
                 },
             },
-            anchor={"commit": head, "semver": "0.1.0"},
+            anchor=EventAnchor(commit=head, semver="0.1.0"),
         )
     )
     context.anchor_commit = head
