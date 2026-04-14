@@ -8,7 +8,7 @@ owner: gzkit-governance
 last_reviewed: 2026-03-12
 compatibility: Works with GovZero-compliant repositories; in gzkit the receipt is written under .claude/plans/, consumed by gz-obpi-pipeline, and enforced by the registered plan-exit hooks tracked by ADR-0.12.0.
 metadata:
-  skill-version: "6.0.2"
+  skill-version: "6.1.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero_layer: "Layer 1 - Evidence Gathering"
@@ -196,6 +196,43 @@ Compare the plan against the brief:
 | Verification | Does the plan include the brief verification commands? |
 | No gold-plating | Does the plan avoid extra work not required by the brief? |
 | Feasibility | Based on current codebase state, are the plan steps achievable? |
+
+### Step 6a: Plan-Before-Exploration Ordering (Advisory)
+
+This is an advisory check for the "destination-first" failure mode: the agent
+explores deeply, forms a conclusion, and only then authors the plan. The plan
+that results is a reconstruction of a destination already chosen — the audit
+passes because the plan matches the exploration, but the exploration was
+already motivated reasoning.
+
+Interpretability reference: Lindsey et al. 2025, rhyme experiment — the model
+picks the rhyme word (`rabbit`) first and writes the line backward to arrive
+there. When the plan is authored after exploration, you are that model.
+
+**Signals to check in the session transcript (when accessible):**
+
+- Was plan mode entered before or after substantial file reading?
+- How many files were read before plan mode was invoked?
+- How much tool activity preceded plan-mode entry?
+
+**If the plan was entered late in the session:**
+
+Flag a `Drifted — late plan entry` status and require the agent to record,
+inside the audit report:
+
+1. **Destination-in-mind:** What conclusion had I already formed before
+   writing this plan? Name the approach I was going to propose.
+2. **Rejected alternatives:** What other approaches did I consider and reject
+   during exploration? A plan without rejected alternatives is
+   indistinguishable from a reconstruction.
+
+The fields are required in narrative form — not as checkboxes. Empty or
+cosmetic answers are themselves a failure signal.
+
+**Thresholds (advisory, v1):** the agent applies this check subjectively when
+the session shows substantial pre-plan activity. Mechanical enforcement —
+concrete thresholds wired into `gz plan audit` — is deferred until the signal
+proves useful.
 
 ### Step 7: Present the alignment report
 

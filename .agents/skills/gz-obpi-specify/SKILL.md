@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-04-12
 metadata:
-  skill-version: "1.1.1"
+  skill-version: "1.2.0"
 ---
 
 # gz-obpi-specify
@@ -15,6 +15,28 @@ metadata:
 Decompose an ADR's Feature Checklist into implementable OBPI briefs. Each brief
 inherits lane, objective, and scope from the parent ADR's WBS table — not from
 hardcoded defaults.
+
+---
+
+## Rationale: Increment Size as a Safety Property
+
+OBPI increment size is **not a process preference** — it is an architectural
+safety property. The brief boundary is the only reliable firing point for
+governance gates.
+
+Interpretability research (Lindsey et al. 2025) shows that once a model is
+committed mid-output, grammatical-coherence circuits hold it on-rails until
+the current structural unit is finished, even when safety circuits would
+otherwise want it to stop. The repo-level analog: once an agent is three
+files deep in a multi-file edit, completion pressure holds it on-rails until
+the edit is structurally complete — a gate that would otherwise block the
+direction cannot fire cleanly mid-edit.
+
+OBPI briefs function as the agent's "sentence boundaries": the gate can fire
+between briefs, not inside one. Bundling two briefs' worth of work into one
+implementation pass collapses that firing point, even when the two briefs
+are related. Keep briefs narrow enough that the pipeline has somewhere to
+stop you.
 
 ---
 
