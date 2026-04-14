@@ -4,7 +4,7 @@ persona: main-session
 description: Collaborative design dialogue that produces GovZero ADR artifacts. Use when exploring a new feature, capability, or architectural change before implementation — replaces superpowers brainstorming for this project. Triggers on "design X", "let's design", "brainstorm X", "I want to build X", "gz-design".
 category: adr-lifecycle
 metadata:
-  skill-version: "1.0.2"
+  skill-version: "1.1.0"
   govzero-framework-version: "v6"
 lifecycle_state: active
 owner: gzkit-governance
@@ -86,6 +86,20 @@ Ask questions to understand purpose, constraints, and success criteria.
 
 Present options conversationally with trade-offs. Lead with your recommendation and why.
 Each approach should be nameable in 3–5 words.
+
+**Rejected alternatives are required, not optional.**
+
+The chosen approach alone is indistinguishable from a reconstruction of a
+destination already picked. Record, for each design, the approaches that
+were considered and rejected, with the concrete reason each was rejected.
+Interpretability reference: Lindsey et al. 2025, rhyme experiment — a model
+that only writes its chosen word is not distinguishable from a model that
+picked it first and wrote the line backward.
+
+The ADR authoring step must carry the rejected alternatives into the ADR's
+Rationale or Consequences section. Empty or cosmetic rejected-alternatives
+lists (e.g., "no other options considered") are themselves a failure
+signal and should prompt a redesign pass.
 
 ### Step 4: Present Design
 

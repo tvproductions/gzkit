@@ -67,6 +67,7 @@ Source: `.gzkit/skills/gz-obpi-pipeline/SKILL.md` — *Second most frequently vi
 | Do not work around hook blocks | Agent creates marker files to bypass pipeline-gate |
 | Do not derive tasks from the brief without a plan receipt | Agent skips plan mode because it "already understands the work" |
 | Do not skip planning because the brief "seems clear enough" | Agent reasons its way out of the governance checkpoint |
+| Do not bundle two briefs' worth of work into one implementation pass, even when they are related — the brief boundary is the gate's only reliable firing point | Agent absorbs an adjacent OBPI into the current pass because "it's basically the same change" |
 
 ## OBPI Completion
 
