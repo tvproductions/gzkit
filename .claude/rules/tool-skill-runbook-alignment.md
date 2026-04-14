@@ -10,7 +10,7 @@ paths:
 
 gzkit's operator surface is a three-layer hierarchy: **tools** (CLI verbs), **skills** (operator-facing value chains that wield one or more tools), and **runbooks** (the documentation layer that preserves operator intent across iteration). When the layers drift out of alignment, operators get silent misrouting — a skill name that promises one thing and delivers another, or a tool verb that the runbook prescribes but no skill exposes.
 
-These two invariants are the mechanical test for layer alignment. Apply them whenever you author or modify any of the three surfaces.
+These three invariants are the mechanical test for layer alignment. Apply them whenever you author or modify any of the three surfaces.
 
 ## Invariants
 
@@ -25,6 +25,12 @@ Every CLI verb registered in `src/gzkit/cli/` must be invoked by at least one sk
 Every skill's declared `gz_command:` (frontmatter or body) must resolve to a CLI verb that the runbook prescribes for the same operator moment. If the skill name and its actual CLI target describe different operator moments — or if the skill invokes a verb the runbook does not prescribe for that moment — the skill is drifted from the runbook's preserved intent.
 
 **Canonical violation (2026-04-13):** The skill `.gzkit/skills/gz-adr-status/SKILL.md` has frontmatter `gz_command: adr report` (line 11) and body invoking `uv run gz adr report` (lines 33-34, 48, 51). The skill name says "status," the runbook prescribes `gz adr status` for single-ADR drilldown (`docs/user/runbook.md:23, 130, 192, 202`), but the skill routes to `gz adr report`. The operator gets tabular output from `report` when the skill name and runbook both imply they should get the single-ADR prose output from `status`.
+
+### Invariant 3 — Destination verb's default output form must honor the routing skill's Output Contract
+
+When a skill's Output Contract section (or any body prose that makes output-form claims) declares a required rendering form — "table", "JSON", "tree", "plain text", etc. — the CLI verb declared in the skill's `gz_command` field must produce that form as its default human-readable output. If the skill promises a table and the verb emits prose, the skill is drifted from its destination regardless of whether the verb name matches the skill name (Invariant 2). Invariant 3 closes the gap between "right verb routed" and "right rendering produced."
+
+**Canonical violation (2026-04-14, post-#141):** The skill `.gzkit/skills/gz-adr-status/SKILL.md` declared in its Output Contract *"Inspect all ADRs for pending gates and lifecycle at a glance"* and *"consistent table format"*, plus the explicit instruction *"Do not paraphrase, condense, or replace the table with prose unless the user explicitly asks for analysis."* After GHI #141's repair routed the single-ADR case to `uv run gz adr status <ID>` — satisfying Invariant 2 — the destination verb's `adr_status_cmd` at `src/gzkit/commands/status.py:385` rendered ad-hoc indented `console.print` lines rather than a Rich `Table`. The skill's declared form (table) and the verb's observed form (prose) disagreed. Invariant 2 passed; Invariant 3 was violated. The drift went undetected for two days until an operator saw raw prose in a tool call and asked *"do we not have a standardization of that output?"* See GHI #149 for the invariant addition, GHI #150 for the one-time audit sweep, and GHI #151 for the commit-authoring discipline that would have prevented the #141 follow-up class of failure.
 
 ## Rationale
 
@@ -42,16 +48,19 @@ These invariants are currently **advisory** — they govern authoring discipline
 
 1. Enumerate every CLI verb registered in `src/gzkit/cli/**` and confirm at least one skill under `.gzkit/skills/**` references it (either via `gz_command:` frontmatter or in the skill body)
 2. Enumerate every skill's declared CLI target and confirm the runbook prescribes that same verb for the operator moment the skill's name describes
+3. For every skill whose Output Contract (or body prose) declares a rendering form, invoke the declared `gz_command` target against a non-empty fixture and assert the observed default output contains markers consistent with the declared form (table box-drawing characters for "table", JSON-parseable output for "JSON", etc.)
 
-Until those checks exist, apply the invariants by hand whenever you author or modify a CLI verb, a skill, or a runbook entry.
+Until those checks exist, apply the invariants by hand whenever you author or modify a CLI verb, a skill, or a runbook entry. Short-term test-level enforcement for Invariant 3 lives alongside each command's unit tests — every skill whose contract declares "table" should have at least one test asserting the `gz_command` target's default human-readable output contains table markers (e.g. `test_adr_status_renders_shared_table_via_deterministic_renderer` in `tests/commands/test_status.py`).
 
 ## When to apply
 
 - **Authoring a new CLI verb** — confirm at least one skill will wield it before merging; if no skill exists yet, either author the skill in the same patch or file a follow-up GHI explicitly tracking the skill gap
 - **Renaming a CLI verb** — audit every skill that references the old name (check both frontmatter `gz_command:` and body invocations); update them in the same patch
-- **Authoring a new skill** — confirm the skill's `gz_command:` target is the same verb the runbook prescribes for the operator moment the skill's name describes
+- **Authoring a new skill** — confirm the skill's `gz_command:` target is the same verb the runbook prescribes for the operator moment the skill's name describes, AND run the target command once to verify its observed default output matches any form the skill's Output Contract declares
 - **Renaming a skill** — confirm the skill's `gz_command:` still aligns with the new name's implied operator moment; if the skill was routing to a different verb than its name implied, the rename is the opportunity to fix the drift
+- **Re-routing a skill's `gz_command`** — run the new target command and observe its default human-readable output before committing. If the skill's Output Contract says "table" and the new target emits prose, the re-routing has introduced Invariant 3 drift. Fix the destination verb (or the skill contract) before landing; do not assume destination behavior matches the skill's claim
 - **Editing the runbook** — confirm the prescribed verbs still match the skill layer's routing; if the runbook prescribes a verb no skill wields, either add the skill or update the runbook to prescribe a verb that is wielded
+- **Editing a CLI verb's human-readable rendering** — check every skill whose `gz_command` points at that verb. If any skill's Output Contract declares a form (e.g. "table"), the rendering change must preserve that form. Adding a new section is additive; changing table → prose or prose → table is an Output Contract break requiring coordinated skill and test updates
 
 ## Anti-patterns
 
@@ -60,10 +69,41 @@ Until those checks exist, apply the invariants by hand whenever you author or mo
 - Editing the runbook to prescribe a verb no skill exposes, and relying on direct CLI invocation
 - Treating skill-to-CLI drift as a cosmetic naming issue instead of a defect signal
 - Using the runbook as the only surface that preserves intent, without mirroring the intent in skill routing
+- Re-routing a skill's `gz_command` without running the new target once to verify observed output matches the skill's declared form — "it should be tabular" is not verification
+- Writing a test that asserts the currently-observed string in a command's output, without checking whether the currently-observed form matches the routing skill's declared Output Contract — this codifies drift rather than catching it
+
+## Commit-message discipline for skill-routing changes
+
+Any commit that modifies a skill's `gz_command` frontmatter field, changes which verb a skill's body invokes, or edits a CLI verb's default human-readable rendering MUST include one of the following in the commit body:
+
+1. **Observed-output evidence.** The exact command(s) the author ran to verify the destination verb's observed output form, followed by a 3-5 line representative excerpt of what was observed. Example:
+   ```
+   Verified via `uv run gz adr status ADR-0.1.0`:
+
+     ╭───────────┬──────┬───────────┬──────┐
+     │ ADR       │ Lane │ Lifecycle │ OBPI │
+     ├───────────┼──────┼───────────┼──────┤
+     │ ADR-0.1.0 │ lite │ Pending   │ 0/1  │
+     ╰───────────┴──────┴───────────┴──────┘
+   ```
+
+2. **Test reference.** An explicit citation of a test (file path and test name) that asserts the destination verb's default human-readable output contains the form markers the routing skill's Output Contract declares. Example:
+   ```
+   Output form locked by tests/commands/test_status.py::TestLifecycleStatusSemantics::test_adr_status_renders_shared_table_via_deterministic_renderer
+   ```
+
+A commit body that asserts the destination's output form without either of the above — e.g. "the verb's default output is tabular" as a bare claim — does not satisfy this rule. Such claims are post-hoc reasoning pathways, not verification pathways, and are the class of failure that produced the GHI #141 follow-up drift in commit `3a75822b`. The cost of running the command once and pasting the observed output into the commit body is far lower than the cost of a silently-broken skill contract sitting in production until an operator catches it in a raw tool-call output.
+
+**Current enforcement:** advisory. Reviewers should reject PRs whose commit bodies make unverified output-form claims about changed skill routing or changed CLI rendering. Mechanical enforcement via a commit-message hook is tracked under GHI #151.
 
 ## Related
 
 - `.gzkit/rules/cli.md` — CLI contract doctrine (Heavy-lane trigger for subcommand changes)
 - `.gzkit/rules/gate5-runbook-code-covenant.md` — runbook as first-class deliverable tracking code
 - `.gzkit/rules/skill-surface-sync.md` — skill version discipline and mirror-drift prevention
-- GHI #141 — status-adjacent CLI/skill routing drift, the audit that surfaced these invariants
+- `.gzkit/rules/attestation-enrichment.md` — precedent for requiring observed evidence over narrative reconstruction (the ARB receipt requirement is the same shape as the commit-message verification rule above)
+- GHI #141 — status-adjacent CLI/skill routing drift, the audit that surfaced Invariants 1 and 2
+- GHI #149 — Invariant 3 addition (this section), the forward-looking enforcement
+- GHI #150 — one-time audit sweep of every skill's Output Contract claims against observed runtime output (`artifacts/audits/skill-output-contract-audit-2026-04-14.md`)
+- GHI #151 — commit-message discipline for skill-routing changes (the section above), the reasoning-pathway prevention
+- 2026-04-14 post-mortem (in session transcript) — root-cause analysis of the #141 follow-up drift that produced the three ameliorations above
