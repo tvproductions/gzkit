@@ -3052,3 +3052,5 @@
 {"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-pool.cli-positional-first-doctrine","ts":"2026-04-14T17:45:38.404207+00:00","parent":"PRD-GZKIT-1.0.0","lane":"heavy"}
 {"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-pool.design-references-bibliography","ts":"2026-04-14T17:45:38.415081+00:00","lane":"lite"}
 {"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-pool.harness-agnostic-plan-capture","ts":"2026-04-14T17:45:38.424878+00:00","parent":"PRD-GZKIT-1.0.0","lane":"heavy"}
+{"schema":"gzkit.ledger.v1","event":"gate_checked","id":"ADR-0.3.0-airlineops-canon-reconciliation","ts":"2026-04-14T19:17:22.623729+00:00","gate":1,"status":"pass","command":"ADR exists","returncode":0,"evidence":"docs/design/adr/pre-release/ADR-0.3.0-airlineops-canon-reconciliation/ADR-0.3.0-airlineops-canon-reconciliation.md"}
+{"schema":"gzkit.ledger.v1","event":"gate_checked","id":"ADR-0.3.0-airlineops-canon-reconciliation","ts":"2026-04-14T19:18:09.099215+00:00","gate":2,"status":"pass","command":"uv run gz test","returncode":0,"evidence":"stdout/stderr captured"}
