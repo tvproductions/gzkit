@@ -74,6 +74,21 @@ def extract_brief_metadata(obpi_file: Path) -> dict[str, Any]:
     return meta
 
 
+def extract_adr_intent(adr_file: Path) -> str:
+    """Return the prose of the parent ADR's ``## Intent`` section.
+
+    Used by ceremony Step 2 (GHI-155) to frame the scope review: the operator
+    sees the ADR's stated intent alongside the OBPI Bill of Materials and can
+    answer the scope-vs-promise question without opening the ADR doc in a
+    second window.
+
+    Heading match is case-insensitive so ADRs that drift to ``## INTENT``
+    still surface correctly. Returns an empty string if the section is absent.
+    """
+    content = adr_file.read_text(encoding="utf-8")
+    return _extract_section(content.splitlines(), "Intent")
+
+
 def _extract_section(lines: list[str], heading: str) -> str:
     """Return the text body of a ``## {heading}`` section.
 
