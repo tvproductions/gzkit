@@ -240,7 +240,7 @@ def _present_step(
             readiness or {"ready": True, "blockers": []},
         )
     if step == CeremonyStep.SUMMARY:
-        return render_step_2_summary(adr_id, adr_file, obpi_files, manifest, lane, project_root)
+        return render_step_2_summary(adr_id, adr_file, obpi_files, lane, project_root)
     if step == CeremonyStep.DOCS_CHECK:
         return render_step_3_docs_check(adr_id, project_root, obpi_files)
     if step == CeremonyStep.WALKTHROUGH:
