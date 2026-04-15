@@ -49,6 +49,8 @@ Build a scanner that walks the test directory tree, discovers all `@covers` anno
 - [x] REQ-0.21.0-02-01: Given a test tree with 10 `@covers` annotations across 5 files, when scanned, then 10 LinkageRecords are produced with correct file paths.
 - [x] REQ-0.21.0-02-02: Given 8 REQs in briefs and 5 `@covers` annotations, when coverage is computed, then report shows 5/8 covered (62.5%).
 - [x] REQ-0.21.0-02-03: Given coverage data, when rolled up by ADR, then shows per-ADR coverage percentage.
+- [x] REQ-0.21.0-02-04: Given a brief whose REQs are all `[doc]`-kind, when `compute_coverage(include_doc=False)` is invoked (the default), then the corresponding ADR is absent from `report.by_adr`. (Backfilled 2026-04-15 under GHI #160 Phase 3 for operator decision #4.)
+- [x] REQ-0.21.0-02-05: Given a brief whose REQs are all `[doc]`-kind, when `compute_coverage(include_doc=True)` is invoked, then the corresponding ADR appears in `report.by_adr` with `total_reqs > 0`. (Backfilled 2026-04-15 under GHI #160 Phase 3 for operator decision #4.)
 
 ## Verification Commands (Concrete)
 
