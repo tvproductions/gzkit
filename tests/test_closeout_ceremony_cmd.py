@@ -22,6 +22,7 @@ from gzkit.commands.closeout_ceremony import (
     load_ceremony_state,
     save_ceremony_state,
 )
+from gzkit.traceability import covers
 from tests.commands.common import CliRunner, _init_git_repo, _quick_init
 
 # ---------------------------------------------------------------------------
@@ -32,17 +33,20 @@ from tests.commands.common import CliRunner, _init_git_repo, _quick_init
 class TestCeremonyStepRecord(unittest.TestCase):
     """CeremonyStepRecord is frozen with extra=forbid."""
 
+    @covers("REQ-0.23.0-04-15")
     def test_create_and_serialize(self):
         rec = CeremonyStepRecord(step=2, presented_at="2026-03-30T00:00:00Z")
         data = rec.model_dump()
         self.assertEqual(data["step"], 2)
         self.assertIsNone(data["acknowledged_at"])
 
+    @covers("REQ-0.23.0-04-15")
     def test_frozen(self):
         rec = CeremonyStepRecord(step=2, presented_at="2026-03-30T00:00:00Z")
         with self.assertRaises(ValidationError):
             rec.step = 3  # type: ignore[misc]
 
+    @covers("REQ-0.23.0-04-15")
     def test_extra_forbid(self):
         with self.assertRaises(ValidationError):
             CeremonyStepRecord(step=2, presented_at="t", bogus="x")  # type: ignore[call-arg]
@@ -51,6 +55,7 @@ class TestCeremonyStepRecord(unittest.TestCase):
 class TestCeremonyState(unittest.TestCase):
     """CeremonyState round-trips through JSON."""
 
+    @covers("REQ-0.23.0-04-15")
     def test_roundtrip(self):
         state = CeremonyState(
             adr_id="ADR-0.1.0",
@@ -65,6 +70,7 @@ class TestCeremonyState(unittest.TestCase):
         self.assertEqual(loaded.adr_id, "ADR-0.1.0")
         self.assertEqual(loaded.current_step, 2)
 
+    @covers("REQ-0.23.0-04-15")
     def test_frozen(self):
         state = CeremonyState(
             adr_id="ADR-0.1.0",
@@ -76,6 +82,7 @@ class TestCeremonyState(unittest.TestCase):
         with self.assertRaises(ValidationError):
             state.current_step = 3  # type: ignore[misc]
 
+    @covers("REQ-0.23.0-04-15")
     def test_attempt_and_paused_fields(self):
         state = CeremonyState(
             adr_id="ADR-0.1.0",
@@ -98,6 +105,7 @@ class TestCeremonyState(unittest.TestCase):
 class TestNextStep(unittest.TestCase):
     """_next_step advances correctly for normal and foundation ADRs."""
 
+    @covers("REQ-0.23.0-04-15")
     def test_normal_sequential(self):
         """Normal ADR steps advance 1->2->3->...->11."""
         step = 1
@@ -109,6 +117,7 @@ class TestNextStep(unittest.TestCase):
             visited.append(step)
         self.assertEqual(visited, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
 
+    @covers("REQ-0.23.0-04-15")
     def test_foundation_skips_9_10(self):
         """Foundation ADR skips steps 9 (RELEASE_NOTES) and 10 (RELEASE)."""
         step = 1
@@ -122,15 +131,18 @@ class TestNextStep(unittest.TestCase):
         self.assertNotIn(9, visited)
         self.assertNotIn(10, visited)
 
+    @covers("REQ-0.23.0-04-15")
     def test_past_complete_returns_minus_one(self):
         self.assertEqual(_next_step(CeremonyStep.COMPLETE, is_foundation=False), -1)
 
 
 class TestIsFoundationAdr(unittest.TestCase):
+    @covers("REQ-0.23.0-04-15")
     def test_foundation(self):
         self.assertTrue(_is_foundation_adr("ADR-0.0.8"))
         self.assertTrue(_is_foundation_adr("ADR-0.0.8-feature-toggle-system"))
 
+    @covers("REQ-0.23.0-04-15")
     def test_non_foundation(self):
         self.assertFalse(_is_foundation_adr("ADR-0.1.0"))
         self.assertFalse(_is_foundation_adr("ADR-0.10.0"))
@@ -144,6 +156,7 @@ class TestIsFoundationAdr(unittest.TestCase):
 class TestStateIO(unittest.TestCase):
     """State persists to and loads from disk."""
 
+    @covers("REQ-0.23.0-04-15")
     def test_save_and_load(self):
         import tempfile
 
@@ -161,6 +174,7 @@ class TestStateIO(unittest.TestCase):
             self.assertIsNotNone(loaded)
             self.assertEqual(loaded.current_step, 3)
 
+    @covers("REQ-0.23.0-04-15")
     def test_load_missing_returns_none(self):
         import tempfile
 
@@ -177,6 +191,7 @@ class TestCeremonyInit(unittest.TestCase):
     """gz closeout ADR-X.Y.Z --ceremony initializes at Step 1 (readiness)."""
 
     @patch("gzkit.commands.closeout_ceremony._adr_closeout_readiness")
+    @covers("REQ-0.23.0-04-15")
     def test_ceremony_init_creates_state(self, mock_readiness):
         mock_readiness.return_value = {"blockers": [], "ready": True}
         runner = CliRunner()
@@ -193,6 +208,7 @@ class TestCeremonyInit(unittest.TestCase):
             self.assertEqual(state.attempt, 1)
 
     @patch("gzkit.commands.closeout_ceremony._adr_closeout_readiness")
+    @covers("REQ-0.23.0-04-15")
     def test_ceremony_init_json(self, mock_readiness):
         mock_readiness.return_value = {"blockers": [], "ready": True}
         runner = CliRunner()
@@ -208,6 +224,7 @@ class TestCeremonyInit(unittest.TestCase):
             self.assertEqual(data["attempt"], 1)
 
     @patch("gzkit.commands.closeout_ceremony._adr_closeout_readiness")
+    @covers("REQ-0.23.0-04-15")
     def test_ceremony_blocked_by_incomplete_obpis(self, mock_readiness):
         mock_readiness.return_value = {"blockers": ["OBPI-0.1.0-01 is pending"]}
         runner = CliRunner()
@@ -224,6 +241,7 @@ class TestCeremonyAdvance(unittest.TestCase):
     """--ceremony --next advances through steps."""
 
     @patch("gzkit.commands.closeout_ceremony._adr_closeout_readiness")
+    @covers("REQ-0.23.0-04-15")
     def test_advance_step_1_to_2(self, mock_readiness):
         mock_readiness.return_value = {"blockers": [], "ready": True}
         runner = CliRunner()
@@ -239,6 +257,7 @@ class TestCeremonyAdvance(unittest.TestCase):
             self.assertEqual(state.current_step, CeremonyStep.SUMMARY)
 
     @patch("gzkit.commands.closeout_ceremony._adr_closeout_readiness")
+    @covers("REQ-0.23.0-04-15")
     def test_advance_through_all_steps(self, mock_readiness):
         """Advance from init through all steps to completion."""
         mock_readiness.return_value = {"blockers": [], "ready": True}
@@ -274,6 +293,7 @@ class TestCeremonyAdvance(unittest.TestCase):
             self.assertIsNotNone(state.completed_at)
 
     @patch("gzkit.commands.closeout_ceremony._adr_closeout_readiness")
+    @covers("REQ-0.23.0-04-15")
     def test_next_without_init_fails(self, mock_readiness):
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -289,6 +309,7 @@ class TestCeremonyAttestation(unittest.TestCase):
     """--ceremony --attest validates step and records attestation."""
 
     @patch("gzkit.commands.closeout_ceremony._adr_closeout_readiness")
+    @covers("REQ-0.23.0-04-15")
     def test_attest_at_wrong_step_exits_3(self, mock_readiness):
         """Attestation at step != 6 is a policy breach (exit 3)."""
         mock_readiness.return_value = {"blockers": [], "ready": True}
@@ -310,6 +331,7 @@ class TestCeremonyStatus(unittest.TestCase):
     """--ceremony --ceremony-status shows current step."""
 
     @patch("gzkit.commands.closeout_ceremony._adr_closeout_readiness")
+    @covers("REQ-0.23.0-04-15")
     def test_status_shows_step(self, mock_readiness):
         mock_readiness.return_value = {"blockers": [], "ready": True}
         runner = CliRunner()
@@ -325,6 +347,7 @@ class TestCeremonyStatus(unittest.TestCase):
             self.assertIn("INITIALIZE", result.output)
             self.assertIn("attempt 1", result.output)
 
+    @covers("REQ-0.23.0-04-15")
     def test_status_no_ceremony(self):
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -342,6 +365,7 @@ class TestCeremonyResume(unittest.TestCase):
     """Bare --ceremony resumes an existing ceremony."""
 
     @patch("gzkit.commands.closeout_ceremony._adr_closeout_readiness")
+    @covers("REQ-0.23.0-04-15")
     def test_resume_from_step_2(self, mock_readiness):
         mock_readiness.return_value = {"blockers": [], "ready": True}
         runner = CliRunner()
@@ -364,6 +388,7 @@ class TestCeremonyCompleted(unittest.TestCase):
     """Second --ceremony on completed ceremony offers restart."""
 
     @patch("gzkit.commands.closeout_ceremony._adr_closeout_readiness")
+    @covers("REQ-0.23.0-04-15")
     def test_completed_ceremony_offers_restart(self, mock_readiness):
         mock_readiness.return_value = {"blockers": [], "ready": True}
         runner = CliRunner()
@@ -385,6 +410,7 @@ class TestCeremonyCompleted(unittest.TestCase):
             self.assertIn("--restart", result.output)
 
     @patch("gzkit.commands.closeout_ceremony._adr_closeout_readiness")
+    @covers("REQ-0.23.0-04-15")
     def test_restart_increments_attempt(self, mock_readiness):
         mock_readiness.return_value = {"blockers": [], "ready": True}
         runner = CliRunner()
@@ -413,6 +439,7 @@ class TestCeremonyPause(unittest.TestCase):
     """--ceremony --pause saves state for revise-and-resubmit."""
 
     @patch("gzkit.commands.closeout_ceremony._adr_closeout_readiness")
+    @covers("REQ-0.23.0-04-15")
     def test_pause_saves_state(self, mock_readiness):
         mock_readiness.return_value = {"blockers": [], "ready": True}
         runner = CliRunner()
@@ -433,6 +460,7 @@ class TestNonCeremonyUnchanged(unittest.TestCase):
 
     @patch("gzkit.cli.main.run_command")
     @patch("builtins.input", return_value="1")
+    @covers("REQ-0.23.0-04-15")
     def test_non_ceremony_closeout(self, _mock_input, mock_run):
         from gzkit.quality import QualityResult
 
@@ -451,6 +479,7 @@ class TestNonCeremonyUnchanged(unittest.TestCase):
 class TestFlagValidation(unittest.TestCase):
     """Invalid flag combinations are rejected."""
 
+    @covers("REQ-0.23.0-04-15")
     def test_next_and_attest_conflict(self):
         runner = CliRunner()
         with runner.isolated_filesystem():
