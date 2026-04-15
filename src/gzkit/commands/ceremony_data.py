@@ -75,11 +75,18 @@ def extract_brief_metadata(obpi_file: Path) -> dict[str, Any]:
 
 
 def _extract_section(lines: list[str], heading: str) -> str:
-    """Return the text body of a ``## {heading}`` section."""
+    """Return the text body of a ``## {heading}`` section.
+
+    Heading match is case-insensitive (GHI-153): OBPI briefs across several
+    ADRs have drifted from the canonical ``## Objective`` template to
+    ``## OBJECTIVE``. A case-sensitive match silently dropped the objective
+    from ceremony Step 2's Bill-of-Materials table.
+    """
+    target = heading.casefold()
     in_section = False
     buf: list[str] = []
     for line in lines:
-        if line.startswith(f"## {heading}"):
+        if line.startswith("## ") and line[3:].strip().casefold().startswith(target):
             in_section = True
             continue
         if in_section and line.startswith("## "):
