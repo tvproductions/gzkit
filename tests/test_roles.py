@@ -22,11 +22,13 @@ from gzkit.roles import (
     resolve_conflict,
     validate_tool_boundaries,
 )
+from gzkit.traceability import covers
 
 
 class TestRoleTaxonomy(unittest.TestCase):
     """Validate the four-role taxonomy definition."""
 
+    @covers("REQ-0.23.0-03-01")
     def test_exactly_four_roles_defined(self) -> None:
         self.assertEqual(len(ROLE_REGISTRY), 4)
         self.assertEqual(
@@ -74,6 +76,7 @@ class TestToolBoundaries(unittest.TestCase):
         self.assertIn("Edit", impl.agent_spec.tools)
         self.assertIn("Write", impl.agent_spec.tools)
 
+    @covers("REQ-0.23.0-03-01")
     def test_reviewer_has_no_write_tools(self) -> None:
         reviewer = get_role("Reviewer")
         self.assertFalse(reviewer.can_write)
