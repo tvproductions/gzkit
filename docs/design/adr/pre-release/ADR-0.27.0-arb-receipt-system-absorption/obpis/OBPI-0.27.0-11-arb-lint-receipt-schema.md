@@ -58,6 +58,23 @@ Evaluate `data/schemas/arb_lint_receipt.schema.json` from opsdev against gzkit's
 - [ ] Gate 3 (Docs): Decision rationale documented
 - [ ] Gate 5 (Attestation): Human attestation required (Heavy lane)
 
+## Decision: Absorb (executed under OBPI-0.25.0-33)
+
+**Decision:** Absorb.
+
+**Executed under:** `OBPI-0.25.0-33-arb-analysis-pattern` (closed 2026-04-14). Cross-referenced to preserve per-module audit trail.
+
+**Gzkit implementation:**
+
+- `data/schemas/arb_lint_receipt.schema.json` — port of `airlineops/data/schemas/arb_lint_receipt.schema.json`. Renamed `$id` from `airlineops.arb.lint_receipt.schema.json` to `gzkit.arb.lint_receipt.schema.json`, and `properties.schema.const` from `airlineops.arb.lint_receipt.v1` to `gzkit.arb.lint_receipt.v1`. Otherwise structurally identical: Draft 2020-12, `additionalProperties: false`, required fields `[schema, tool, run_id, timestamp_utc, git, findings, exit_status]`, per-finding required `[rule, path, line, message]` with optional `column` and `severity`, regex-validated git commit pattern `^[0-9a-f]{7,40}$`.
+- `tests/arb/test_schemas.py` — 4 Red→Green tests: schema exists, schema is valid Draft 2020-12, schema ID matches `gzkit.arb.lint_receipt.schema.json`, well-formed lint receipt validates against the schema.
+
+**Brief-framing correction:** The brief assumed `data/schemas/arb_lint_receipt.schema.json` might already exist in gzkit because `.gzkit/rules/arb.md` referenced it. The evaluation discovered that the rule referenced a path that did not exist — classic vaporware drift. The absorption closed the gap: the schema file now exists at the referenced path, and the rule is no longer aspirational. See OBPI-0.25.0-33 § Forensic Trace for how this happened (commit `4700b623` mechanical find-and-replace of `opsdev` → `gzkit` without actually adding the implementation).
+
+**Dependency note:** The brief correctly noted "consumed by validate (OBPI-03)." Both were absorbed in the same atomic pass.
+
+**Status:** `status: Pending` in frontmatter preserved; work executed under OBPI-0.25.0-33.
+
 ## Closing Argument
 
-*To be authored at completion from delivered evidence.*
+Absorb executed under OBPI-0.25.0-33 on 2026-04-14. See OBPI-0.25.0-33-arb-analysis-pattern.md § Implementation Summary and § Key Proof for the end-to-end evidence trail.

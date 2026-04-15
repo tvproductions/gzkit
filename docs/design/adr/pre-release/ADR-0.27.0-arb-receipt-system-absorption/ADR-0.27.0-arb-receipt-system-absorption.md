@@ -81,21 +81,23 @@ gzkit must decide whether to absorb opsdev's full ARB (Agent Self-Reporting) rec
 
 ## OBPI Decomposition — Work Breakdown Structure (Level 1)
 
+**⚠ Cross-reference note (2026-04-14):** Nine of the thirteen OBPIs in this ADR were executed under the sibling brief `OBPI-0.25.0-33-arb-analysis-pattern` (ADR-0.25.0-core-infrastructure-pattern-absorption) before this ADR was discovered in governance review. The collision was structural: ADR-0.25.0 line 64 explicitly listed `src/gzkit/arb/` as an integration point for OBPI-0.25.0-33, and OBPI-0.25.0-33 absorbed the entire `opsdev/arb/` surface in a single atomic pass. The per-module decision records that ADR-0.27.0's structure intended are now preserved as Absorb-with-cross-reference notes in each affected brief (01/02/03/04/05/10/11/12/13). The four remaining OBPIs (06-tidy, 07-expunge, 08-github-issues, 09-telemetry-sync/Logfire) are genuinely pending and represent real follow-up work. See OBPI-0.25.0-33-arb-analysis-pattern.md § Forensic Trace and § Decision: Absorb for the full collision narrative.
+
 | # | OBPI | Specification Summary | Lane | Status |
 |---|------|----------------------|------|--------|
-| 1 | OBPI-0.27.0-01 | Evaluate and absorb `arb/ruff_reporter.py` (247 lines) — Ruff lint receipt generation with structured findings | Heavy | Pending |
-| 2 | OBPI-0.27.0-02 | Evaluate and absorb `arb/step_reporter.py` (138 lines) — generic QA step receipt generation | Heavy | Pending |
-| 3 | OBPI-0.27.0-03 | Evaluate and absorb `arb/validate.py` (154 lines) — receipt schema validation and integrity checks | Heavy | Pending |
-| 4 | OBPI-0.27.0-04 | Evaluate and absorb `arb/advise.py` (196 lines) — receipt analysis and recurring pattern advice | Heavy | Pending |
-| 5 | OBPI-0.27.0-05 | Evaluate and absorb `arb/patterns.py` (253 lines) — pattern detection across receipt history | Heavy | Pending |
-| 6 | OBPI-0.27.0-06 | Evaluate and absorb `arb/tidy.py` (170 lines) — receipt cleanup and lifecycle management | Heavy | Pending |
-| 7 | OBPI-0.27.0-07 | Evaluate and absorb `arb/expunge.py` (114 lines) — receipt expungement and hard deletion | Heavy | Pending |
-| 8 | OBPI-0.27.0-08 | Evaluate and absorb `arb/github_issues.py` (149 lines) — GitHub issue filing from receipt evidence | Heavy | Pending |
-| 9 | OBPI-0.27.0-09 | Implement configurable ARB receipt retention via Pydantic Logfire — replaces opsdev Supabase sync | Heavy | Pending |
-| 10 | OBPI-0.27.0-10 | Evaluate and absorb `arb/paths.py` (43 lines) — ARB path resolution and directory layout | Heavy | Pending |
-| 11 | OBPI-0.27.0-11 | Evaluate and absorb `arb_lint_receipt.schema.json` — JSON schema for lint receipt validation | Heavy | Pending |
-| 12 | OBPI-0.27.0-12 | Evaluate and absorb `arb_step_receipt.schema.json` — JSON schema for step receipt validation | Heavy | Pending |
-| 13 | OBPI-0.27.0-13 | Evaluate and absorb `commands/arb_tools.py` (282 lines) — CLI wiring for all ARB subcommands | Heavy | Pending |
+| 1 | OBPI-0.27.0-01 | Evaluate and absorb `arb/ruff_reporter.py` (247 lines) — Ruff lint receipt generation with structured findings | Heavy | Absorbed under OBPI-0.25.0-33 |
+| 2 | OBPI-0.27.0-02 | Evaluate and absorb `arb/step_reporter.py` (138 lines) — generic QA step receipt generation | Heavy | Absorbed under OBPI-0.25.0-33 |
+| 3 | OBPI-0.27.0-03 | Evaluate and absorb `arb/validate.py` (154 lines) — receipt schema validation and integrity checks | Heavy | Absorbed under OBPI-0.25.0-33 |
+| 4 | OBPI-0.27.0-04 | Evaluate and absorb `arb/advise.py` (196 lines) — receipt analysis and recurring pattern advice | Heavy | Absorbed under OBPI-0.25.0-33 |
+| 5 | OBPI-0.27.0-05 | Evaluate and absorb `arb/patterns.py` (253 lines) — pattern detection across receipt history | Heavy | Absorbed under OBPI-0.25.0-33 |
+| 6 | OBPI-0.27.0-06 | Evaluate and absorb `arb/tidy.py` (170 lines) — receipt cleanup and lifecycle management | Heavy | **Pending** |
+| 7 | OBPI-0.27.0-07 | Evaluate and absorb `arb/expunge.py` (114 lines) — receipt expungement and hard deletion | Heavy | **Pending** |
+| 8 | OBPI-0.27.0-08 | Evaluate and absorb `arb/github_issues.py` (149 lines) — GitHub issue filing from receipt evidence | Heavy | **Pending** |
+| 9 | OBPI-0.27.0-09 | Implement configurable ARB receipt retention via Pydantic Logfire — replaces opsdev Supabase sync | Heavy | **Pending** (design preserved; implementation awaits) |
+| 10 | OBPI-0.27.0-10 | Evaluate and absorb `arb/paths.py` (43 lines) — ARB path resolution and directory layout | Heavy | Absorbed under OBPI-0.25.0-33 |
+| 11 | OBPI-0.27.0-11 | Evaluate and absorb `arb_lint_receipt.schema.json` — JSON schema for lint receipt validation | Heavy | Absorbed under OBPI-0.25.0-33 |
+| 12 | OBPI-0.27.0-12 | Evaluate and absorb `arb_step_receipt.schema.json` — JSON schema for step receipt validation | Heavy | Absorbed under OBPI-0.25.0-33 |
+| 13 | OBPI-0.27.0-13 | Evaluate and absorb `commands/arb_tools.py` (282 lines) — CLI wiring for all ARB subcommands | Heavy | Absorbed under OBPI-0.25.0-33 (7 of 9 sub-verbs wired; 4 deferred to OBPIs 06/07/08/09) |
 
 **Briefs location:** `obpis/OBPI-0.27.0-*.md`
 
