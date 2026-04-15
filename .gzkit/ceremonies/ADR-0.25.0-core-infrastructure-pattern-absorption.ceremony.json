@@ -1,18 +1,33 @@
 {
   "adr_id": "ADR-0.25.0-core-infrastructure-pattern-absorption",
-  "current_step": 2,
+  "current_step": 5,
   "is_foundation": false,
-  "started_at": "2026-04-15T03:05:52Z",
-  "updated_at": "2026-04-15T03:07:26Z",
+  "started_at": "2026-04-15T03:24:53Z",
+  "updated_at": "2026-04-15T04:54:09Z",
   "step_history": [
     {
       "step": 1,
-      "presented_at": "2026-04-15T03:05:52Z",
-      "acknowledged_at": "2026-04-15T03:07:26Z"
+      "presented_at": "2026-04-15T03:24:53Z",
+      "acknowledged_at": "2026-04-15T04:28:59Z"
     },
     {
       "step": 2,
-      "presented_at": "2026-04-15T03:07:26Z",
+      "presented_at": "2026-04-15T04:28:59Z",
+      "acknowledged_at": "2026-04-15T04:29:54Z"
+    },
+    {
+      "step": 3,
+      "presented_at": "2026-04-15T04:29:54Z",
+      "acknowledged_at": "2026-04-15T04:53:26Z"
+    },
+    {
+      "step": 4,
+      "presented_at": "2026-04-15T04:53:26Z",
+      "acknowledged_at": "2026-04-15T04:54:09Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-04-15T04:54:09Z",
       "acknowledged_at": null
     }
   ],
