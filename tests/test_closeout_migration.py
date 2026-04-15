@@ -56,6 +56,8 @@ class TestCloseoutMigrationEnforce(unittest.TestCase):
     """When product_proof_enforced=True and proof missing, closeout blocks."""
 
     @covers("REQ-0.0.8-06-01")
+    @covers("REQ-0.23.0-02-02")
+    @covers("REQ-0.23.0-02-03")
     @patch("gzkit.commands.closeout.get_decisions")
     @patch("gzkit.commands.closeout.check_product_proof")
     @patch("gzkit.cli.main.run_command")
@@ -110,6 +112,7 @@ class TestCloseoutMigrationProofPresent(unittest.TestCase):
     """When proof present, closeout succeeds regardless of flag state."""
 
     @covers("REQ-0.0.8-06-03")
+    @covers("REQ-0.23.0-02-02")
     @patch("gzkit.commands.closeout.get_decisions")
     @patch("gzkit.commands.closeout.check_product_proof")
     @patch("gzkit.cli.main.run_command")

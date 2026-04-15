@@ -211,6 +211,7 @@ class TestRenderDefenseBriefSection(unittest.TestCase):
         self.assertIn("*No closing arguments found.*", result)
 
     @covers("REQ-0.23.0-04-02")
+    @covers("REQ-0.23.0-02-07")
     def test_renders_product_proof_table(self):
         proof = ProductProofResult(
             adr_id="ADR-0.1.0",
@@ -229,6 +230,7 @@ class TestRenderDefenseBriefSection(unittest.TestCase):
         self.assertIn("FOUND", result)
 
     @covers("REQ-0.23.0-04-05")
+    @covers("REQ-0.23.0-02-07")
     def test_renders_missing_product_proof(self):
         proof = ProductProofResult(
             adr_id="ADR-0.1.0",
