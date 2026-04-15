@@ -42,6 +42,21 @@ Absorb airlineops's `insight-reminder.py` hook into gzkit. This hook reminds the
 1. Implement and write tests
 1. Document the absorption rationale
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.34.0-13-01: Read the airlineops implementation completely
+- [x] REQ-0.34.0-13-02: Evaluate governance generality (expected: governance-generic)
+- [x] REQ-0.34.0-13-03: Adapt to gzkit hook module architecture
+- [x] REQ-0.34.0-13-04: Implement and write tests
+- [x] REQ-0.34.0-13-05: Document the absorption rationale
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/hooks/` -- target for new hook behavior

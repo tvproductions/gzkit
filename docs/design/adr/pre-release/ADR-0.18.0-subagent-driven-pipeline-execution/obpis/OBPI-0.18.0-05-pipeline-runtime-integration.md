@@ -70,6 +70,27 @@ surface, and modifies runtime behavior.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.18.0-05-01: REQUIREMENT: Pipeline runtime MUST track subagent dispatch state: `{task_id, role, agent_file, model, isolation, background, dispatched_at, completed_at, status, result}`.
+- [x] REQ-0.18.0-05-02: REQUIREMENT: Dispatch state MUST be persisted in the pipeline active marker (`.claude/plans/.pipeline-active-{OBPI-ID}.json`) so status is queryable.
+- [x] REQ-0.18.0-05-03: REQUIREMENT: Result aggregation MUST compute: total tasks, completed, blocked, fix cycles, review findings by severity, model usage per role.
+- [x] REQ-0.18.0-05-04: REQUIREMENT: Model routing configuration MUST be declarative (not hardcoded): task complexity heuristics → model ID mappings (`haiku`/`sonnet`/`opus`) defined in pipeline runtime config.
+- [x] REQ-0.18.0-05-05: REQUIREMENT: `gz roles` CLI MUST list the four roles with their handoff contracts and corresponding `.claude/agents/` file paths.
+- [x] REQ-0.18.0-05-06: REQUIREMENT: `gz roles --pipeline {OBPI-ID}` MUST show which roles were dispatched, their model overrides, isolation mode, and results for a completed or active pipeline run.
+- [x] REQ-0.18.0-05-07: REQUIREMENT: Pipeline SKILL.md MUST document the controller/worker architecture including: dispatch sequence, agent file references, model routing, worktree isolation for parallel verification, and review protocol.
+- [x] REQ-0.18.0-05-08: REQUIREMENT: BDD scenarios MUST cover the full dispatch lifecycle: plan → dispatch → review → verify → ceremony → sync.
+- [x] REQ-0.18.0-05-09: REQUIREMENT: The four agent files (`.claude/agents/implementer.md`, `spec-reviewer.md`, `quality-reviewer.md`, `narrator.md`) MUST be validated as part of OBPI-05 integration — verifying tool restrictions, model defaults, maxTurns, and hooks are correctly wired.
+- [x] REQ-0.18.0-05-10: NEVER: Break the Iron Law — all 5 stages must still run to completion.
+- [x] REQ-0.18.0-05-11: ALWAYS: Subagent dispatch is opt-in per pipeline invocation (default: enabled). A `--no-subagents` flag allows fallback to inline execution for debugging.
+
+
 ## Model Routing (Design Input)
 
 Agent files define `model: inherit` by default. The controller overrides this per-dispatch via the Agent tool's `model` parameter, which takes precedence over the agent file's frontmatter.

@@ -46,6 +46,22 @@ Port opsdev's `mutate` command (450 lines) to gzkit as `gz mutate`. The command 
 1. Create manpage documentation
 1. Preserve session management and survival analysis from the original implementation
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.31.0-07-01: Read the opsdev implementation completely
+- [x] REQ-0.31.0-07-02: Port to gzkit with argparse, exit codes 0/1/2/3, --json/--plain output
+- [x] REQ-0.31.0-07-03: Include help text with description, usage, options, and at least one example
+- [x] REQ-0.31.0-07-04: Write unit tests with >= 40% coverage
+- [x] REQ-0.31.0-07-05: Create manpage documentation
+- [x] REQ-0.31.0-07-06: Preserve session management and survival analysis from the original implementation
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/commands/` --- target for ported command

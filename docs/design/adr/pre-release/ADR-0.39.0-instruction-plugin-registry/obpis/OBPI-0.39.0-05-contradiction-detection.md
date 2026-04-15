@@ -49,6 +49,23 @@ Design and implement contradiction detection between project-local instructions 
 1. Write unit tests with known contradictions and known non-contradictions
 1. Document the contradiction detection approach, limitations, and false positive handling
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.39.0-05-01: Define contradiction types: hard (direct conflict), soft (tension), informational (different emphasis)
+- [x] REQ-0.39.0-05-02: Implement structured rule extraction from instruction files (tables, DO/DO NOT patterns, convention statements)
+- [x] REQ-0.39.0-05-03: Implement pairwise comparison between canonical and local rules within overlapping scopes
+- [x] REQ-0.39.0-05-04: Report contradictions with evidence: the specific rules from each file that conflict
+- [x] REQ-0.39.0-05-05: Integrate with `gz validate instructions` as an additional check (separate flag or default-on)
+- [x] REQ-0.39.0-05-06: Write unit tests with known contradictions and known non-contradictions
+- [x] REQ-0.39.0-05-07: Document the contradiction detection approach, limitations, and false positive handling
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/instructions/` — contradiction detection implementation

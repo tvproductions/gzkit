@@ -114,10 +114,10 @@ uv run gz chores audit --all
 
 ## Acceptance Criteria
 
-- [x] `gz chores` command group exists with list, plan, run, and audit subcommands.
-- [x] Registry loads from `config/gzkit.chores.json` with lanes, evidence, acceptance.
-- [x] Running a chore writes a dated log entry under `docs/design/briefs/chores/CHORE-<slug>/logs/CHORE-LOG.md`.
-- [x] Lane commands execute with timeouts and non-zero exit status on failure.
+- [x] REQ-0.8.0-01-01: `gz chores` command group exists with list, plan, run, and audit subcommands.
+- [x] REQ-0.8.0-01-02: Registry loads from `config/gzkit.chores.json` with lanes, evidence, acceptance.
+- [x] REQ-0.8.0-01-03: Running a chore writes a dated log entry under `docs/design/briefs/chores/CHORE-<slug>/logs/CHORE-LOG.md`.
+- [x] REQ-0.8.0-01-04: Lane commands execute with timeouts and non-zero exit status on failure.
 
 ## Completion Checklist
 

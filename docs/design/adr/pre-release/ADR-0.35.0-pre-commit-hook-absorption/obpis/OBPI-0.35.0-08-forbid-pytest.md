@@ -43,6 +43,20 @@ Compare opsdev's `forbid-pytest` pre-commit hook against gzkit's existing pytest
 1. Evaluate which detection is more comprehensive
 1. Record decision with rationale: Absorb / Confirm
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.35.0-08-01: Read both `forbid-pytest` hook implementations completely
+- [x] REQ-0.35.0-08-02: Document differences: detection patterns, file globs, error messages
+- [x] REQ-0.35.0-08-03: Evaluate which detection is more comprehensive
+- [x] REQ-0.35.0-08-04: Record decision with rationale: Absorb / Confirm
+
+
 ## ALLOWED PATHS
 
 - `.pre-commit-config.yaml` — hook configuration

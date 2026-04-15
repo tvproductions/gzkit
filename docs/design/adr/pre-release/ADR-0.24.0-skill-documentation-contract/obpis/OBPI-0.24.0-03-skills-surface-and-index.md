@@ -38,6 +38,21 @@ Create the `docs/user/skills/` directory with a categorized index page and integ
 1. `uv run mkdocs build --strict` passes with the new surface
 1. Index categories match SKILL.md `category` metadata (e.g., adr-operations, governance, validation)
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.24.0-03-01: Create `docs/user/skills/index.md` with categorized skill listing (using SKILL.md category metadata)
+- [x] REQ-0.24.0-03-02: Each skill in the index has a one-line description and link to its manpage
+- [x] REQ-0.24.0-03-03: Add `docs/user/skills/` to mkdocs.yml navigation under User Guide
+- [x] REQ-0.24.0-03-04: `uv run mkdocs build --strict` passes with the new surface
+- [x] REQ-0.24.0-03-05: Index categories match SKILL.md `category` metadata (e.g., adr-operations, governance, validation)
+
+
 ## ALLOWED PATHS
 
 - `docs/user/skills/index.md`

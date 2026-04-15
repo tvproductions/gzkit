@@ -42,6 +42,21 @@ Compare opsdev's `lint` command (lint_tools.py, 69 lines) against gzkit's lint i
 1. If absorbing: adapt to gzkit conventions and write tests
 1. If confirming: document why gzkit's consolidated approach is sufficient
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.32.0-02-01: Read both implementations completely
+- [x] REQ-0.32.0-02-02: Document comparison: ruff invocation, fix mode, error handling, output formatting
+- [x] REQ-0.32.0-02-03: Record decision with rationale: Absorb Improvements / Confirm Sufficient
+- [x] REQ-0.32.0-02-04: If absorbing: adapt to gzkit conventions and write tests
+- [x] REQ-0.32.0-02-05: If confirming: document why gzkit's consolidated approach is sufficient
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/` -- target for absorbed improvements

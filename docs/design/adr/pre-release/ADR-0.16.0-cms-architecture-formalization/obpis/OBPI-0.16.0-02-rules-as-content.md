@@ -47,6 +47,22 @@ Lite — ADR note + stdlib unittest + smoke (≤60s).
 1. Existing `.github/instructions/` content preserved as migration source (not deleted — vendor rendering comes in OBPI-04)
 1. `load_rules()` function reads and validates all rules from `.gzkit/rules/`
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.16.0-02-01: `.gzkit/rules/` directory created with canonical rule files
+- [x] REQ-0.16.0-02-02: Rule frontmatter schema defined: `id` (string), `paths` (list of glob patterns), `description` (string)
+- [x] REQ-0.16.0-02-03: Pydantic model `RuleFrontmatter` validates rule files
+- [x] REQ-0.16.0-02-04: Rule registered in content type registry (from OBPI-01)
+- [x] REQ-0.16.0-02-05: Existing `.github/instructions/` content preserved as migration source (not deleted — vendor rendering comes in OBPI-04)
+- [x] REQ-0.16.0-02-06: `load_rules()` function reads and validates all rules from `.gzkit/rules/`
+
+
 ## QUALITY GATES (Lite)
 
 - [x] Gate 1 (ADR): Intent recorded in this brief

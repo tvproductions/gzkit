@@ -43,6 +43,20 @@ Evaluate airlineops's `calendars.instructions.md` for extractable generic patter
 1. If generic patterns exist: document what to extract and propose scope
 1. Record decision with rationale: Extract / Exclude
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.36.0-13-01: Read the airlineops `calendars.instructions.md` completely
+- [x] REQ-0.36.0-13-02: Categorize each section as: generic (applicable to any project with dates/times) or domain-specific (airline calendars)
+- [x] REQ-0.36.0-13-03: If generic patterns exist: document what to extract and propose scope
+- [x] REQ-0.36.0-13-04: Record decision with rationale: Extract / Exclude
+
+
 ## ALLOWED PATHS
 
 - `.claude/rules/` — target for new rules file if extracted

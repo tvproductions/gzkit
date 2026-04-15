@@ -53,6 +53,26 @@ Build migration tooling that converts existing flat-file instruction setups (`.c
 1. Write unit tests for each classification case and the manifest generation
 1. Document the migration process with step-by-step guide
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.39.0-06-01: Implement `gz instructions migrate` (or equivalent) command
+- [x] REQ-0.39.0-06-02: Scan `.claude/rules/` and `.github/instructions/` for existing instruction files
+- [x] REQ-0.39.0-06-03: Compare each file against the canonical set using content hashes
+- [x] REQ-0.39.0-06-04: Classify: exact match (canonical, no action), modified (register as specialization), new (register as addition)
+- [x] REQ-0.39.0-06-05: Generate the plugin manifest with all registrations
+- [x] REQ-0.39.0-06-06: Default to dry-run mode: show what would change, write nothing
+- [x] REQ-0.39.0-06-07: With `--apply`: write the manifest and report results
+- [x] REQ-0.39.0-06-08: Run `gz validate instructions` after migration to confirm the result is valid
+- [x] REQ-0.39.0-06-09: Write unit tests for each classification case and the manifest generation
+- [x] REQ-0.39.0-06-10: Document the migration process with step-by-step guide
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/commands/` — migration command implementation

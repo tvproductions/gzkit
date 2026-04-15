@@ -42,6 +42,21 @@ Compare opsdev's `closeout` command (governance lifecycle implementation) agains
 1. If absorbing: adapt to gzkit conventions and write tests
 1. If confirming: document why gzkit's closeout lifecycle is sufficient
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.32.0-11-01: Read both implementations completely
+- [x] REQ-0.32.0-11-02: Document comparison: lifecycle steps, gate checks, attestation integration, error handling
+- [x] REQ-0.32.0-11-03: Record decision with rationale: Absorb Improvements / Confirm Sufficient
+- [x] REQ-0.32.0-11-04: If absorbing: adapt to gzkit conventions and write tests
+- [x] REQ-0.32.0-11-05: If confirming: document why gzkit's closeout lifecycle is sufficient
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/` -- target for absorbed improvements

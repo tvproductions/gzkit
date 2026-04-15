@@ -44,6 +44,21 @@ Evaluate opsdev's `arb-ruff` pre-commit hook — an ARB-wrapped version of ruff 
 1. Determine enforcement timing: pre-commit, Claude hook, or both
 1. Record decision with rationale: Absorb-PreCommit / Absorb-Claude / Absorb-Both / Exclude
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.35.0-01-01: Read the opsdev `arb-ruff` hook implementation completely
+- [x] REQ-0.35.0-01-02: Document: what it does, how it wraps ruff, what receipts it produces, performance impact
+- [x] REQ-0.35.0-01-03: Compare with gzkit's existing `ruff check` pre-commit hook and `arb ruff` CLI command
+- [x] REQ-0.35.0-01-04: Determine enforcement timing: pre-commit, Claude hook, or both
+- [x] REQ-0.35.0-01-05: Record decision with rationale: Absorb-PreCommit / Absorb-Claude / Absorb-Both / Exclude
+
+
 ## ALLOWED PATHS
 
 - `.pre-commit-config.yaml` — hook configuration

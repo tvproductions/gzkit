@@ -43,6 +43,20 @@ Compare airlineops's `models.instructions.md` against gzkit's `.claude/rules/mod
 1. Document content gaps in either direction
 1. Record decision with rationale: Absorb / Confirm
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.36.0-04-01: Read both files completely
+- [x] REQ-0.36.0-04-02: Create a section-by-section comparison: BaseModel policy, ConfigDict, Field, anti-patterns, verify checklist
+- [x] REQ-0.36.0-04-03: Document content gaps in either direction
+- [x] REQ-0.36.0-04-04: Record decision with rationale: Absorb / Confirm
+
+
 ## ALLOWED PATHS
 
 - `.claude/rules/models.md` — target for reconciled content

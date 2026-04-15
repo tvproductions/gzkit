@@ -49,6 +49,19 @@ If an assumption is questioned or a file/config is missing, STOP and emit a BLOC
 
 > STOP-on-BLOCKERS: if AirlineOps discovery-index.json is not accessible, print BLOCKERS.
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.0.1-05-01: Document discovery index purpose per AirlineOps.
+- [x] REQ-0.0.1-05-02: Document required structure and fields.
+- [x] REQ-0.0.1-05-03: Document agent discoverability requirements.
+
+
 ## DISCOVERY INDEX PURPOSE (from AirlineOps)
 
 The discovery index enables:

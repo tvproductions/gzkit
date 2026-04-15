@@ -42,11 +42,11 @@ Implement `gz state` command that queries ledger and displays current artifact s
 
 ## Acceptance Criteria
 
-- [ ] `gz state` parses ledger and displays state
-- [ ] `gz state --json` outputs valid JSON
-- [ ] `gz state --blocked` shows blocked items
-- [ ] `gz state --ready` shows ready items
-- [ ] State display shows dependency graph
+- [x] REQ-0.1.0-06-01: `gz state` parses ledger and displays state
+- [x] REQ-0.1.0-06-02: `gz state --json` outputs valid JSON
+- [x] REQ-0.1.0-06-03: `gz state --blocked` shows blocked items
+- [x] REQ-0.1.0-06-04: `gz state --ready` shows ready items
+- [x] REQ-0.1.0-06-05: State display shows dependency graph
 
 ## Gate Evidence
 

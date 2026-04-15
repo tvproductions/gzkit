@@ -99,12 +99,12 @@ uv run gz status --json
 
 ## Acceptance Criteria
 
-- [x] `gz attest` enforces prerequisite gates by default.
-- [x] `gz audit` blocks pre-attestation and runs only after attestation.
-- [x] `gz closeout` outputs canonical closeout guidance with heavy-lane Gate 4 command or N/A rationale.
-- [x] `gz adr status` and `gz status` expose additive ledger-derived lifecycle semantics.
-- [x] `gz state --ready` returns genuinely gate-ready, unattested ADRs.
-- [x] `docs/user/**` overlays reflect one coherent operator sequence.
+- [x] REQ-0.3.0-04-01: `gz attest` enforces prerequisite gates by default.
+- [x] REQ-0.3.0-04-02: `gz audit` blocks pre-attestation and runs only after attestation.
+- [x] REQ-0.3.0-04-03: `gz closeout` outputs canonical closeout guidance with heavy-lane Gate 4 command or N/A rationale.
+- [x] REQ-0.3.0-04-04: `gz adr status` and `gz status` expose additive ledger-derived lifecycle semantics.
+- [x] REQ-0.3.0-04-05: `gz state --ready` returns genuinely gate-ready, unattested ADRs.
+- [x] REQ-0.3.0-04-06: `docs/user/**` overlays reflect one coherent operator sequence.
 
 ## Evidence
 

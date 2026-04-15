@@ -45,6 +45,22 @@ Evaluate opsdev's `config/doctrine.py` (745 lines) against gzkit's doctrine enfo
 1. If Confirm: document why documentation-based enforcement is sufficient
 1. If Exclude: document why the enforcement rules are project-specific
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.30.0-02-01: Read the opsdev implementation completely
+- [x] REQ-0.30.0-02-02: Document comparison: enforcement rules, compliance checking, violation reporting, extensibility
+- [x] REQ-0.30.0-02-03: Record decision with rationale: Absorb / Confirm / Exclude
+- [x] REQ-0.30.0-02-04: If Absorb: adapt to gzkit conventions and write tests
+- [x] REQ-0.30.0-02-05: If Confirm: document why documentation-based enforcement is sufficient
+- [x] REQ-0.30.0-02-06: If Exclude: document why the enforcement rules are project-specific
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/` --- target for absorbed modules

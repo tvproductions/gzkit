@@ -45,6 +45,21 @@ Lite — ADR note + stdlib unittest + smoke (≤60s).
 1. Registry is a singleton loaded at import time — no lazy initialization surprises
 1. `validate_artifact()` uses the registered Pydantic model for frontmatter validation
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.16.0-01-01: `ContentType` Pydantic model: `name`, `schema_name`, `frontmatter_model`, `lifecycle_states`, `canonical_path_pattern`, `vendor_rendering_rules`
+- [x] REQ-0.16.0-01-02: `ContentTypeRegistry` class with `register()`, `get()`, `list_all()`, `validate_artifact()` methods
+- [x] REQ-0.16.0-01-03: All current types registered: ADR, OBPI, PRD, Constitution, Rule, Skill, Attestation, LedgerEvent
+- [x] REQ-0.16.0-01-04: Registry is a singleton loaded at import time — no lazy initialization surprises
+- [x] REQ-0.16.0-01-05: `validate_artifact()` uses the registered Pydantic model for frontmatter validation
+
+
 ## QUALITY GATES (Lite)
 
 - [x] Gate 1 (ADR): Intent recorded in this brief

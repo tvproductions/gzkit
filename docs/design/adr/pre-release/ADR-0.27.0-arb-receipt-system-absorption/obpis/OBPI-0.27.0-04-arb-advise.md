@@ -45,6 +45,22 @@ Evaluate `opsdev/arb/advise.py` (196 lines) against gzkit's current approach to 
 1. If Confirm: document why raw QA output is sufficient for governance
 1. If Exclude: document why the module is environment-specific
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.27.0-04-01: Read both implementations completely
+- [x] REQ-0.27.0-04-02: Document comparison: analysis depth, pattern categorization, advice quality, dependency chain
+- [x] REQ-0.27.0-04-03: Record decision with rationale: Absorb / Confirm / Exclude
+- [x] REQ-0.27.0-04-04: If Absorb: adapt to gzkit conventions and write tests
+- [x] REQ-0.27.0-04-05: If Confirm: document why raw QA output is sufficient for governance
+- [x] REQ-0.27.0-04-06: If Exclude: document why the module is environment-specific
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/arb/` — target for absorbed modules

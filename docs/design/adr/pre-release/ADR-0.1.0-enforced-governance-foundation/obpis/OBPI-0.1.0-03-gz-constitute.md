@@ -40,10 +40,10 @@ Implement `gz constitute` command that creates/validates constitution artifacts.
 
 ## Acceptance Criteria
 
-- [ ] `gz constitute` creates constitution from template
-- [ ] `gz constitute --validate` reports errors for malformed constitution
-- [ ] Constitution contains required sections
-- [ ] `constitution_created` event appended to ledger
+- [x] REQ-0.1.0-03-01: `gz constitute` creates constitution from template
+- [x] REQ-0.1.0-03-02: `gz constitute --validate` reports errors for malformed constitution
+- [x] REQ-0.1.0-03-03: Constitution contains required sections
+- [x] REQ-0.1.0-03-04: `constitution_created` event appended to ledger
 
 ## Gate Evidence
 

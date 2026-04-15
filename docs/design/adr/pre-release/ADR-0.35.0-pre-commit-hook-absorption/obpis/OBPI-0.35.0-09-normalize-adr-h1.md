@@ -44,6 +44,21 @@ Evaluate opsdev's `normalize-adr-h1` pre-commit hook — enforces consistent H1 
 1. Determine enforcement timing: pre-commit, Claude hook, or both
 1. Record decision with rationale: Absorb-PreCommit / Absorb-Claude / Absorb-Both / Exclude
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.35.0-09-01: Read the opsdev `normalize-adr-h1` hook implementation completely
+- [x] REQ-0.35.0-09-02: Document: what heading format it enforces, how it normalizes, which files it scans
+- [x] REQ-0.35.0-09-03: Evaluate whether gzkit's ADR corpus needs this enforcement
+- [x] REQ-0.35.0-09-04: Determine enforcement timing: pre-commit, Claude hook, or both
+- [x] REQ-0.35.0-09-05: Record decision with rationale: Absorb-PreCommit / Absorb-Claude / Absorb-Both / Exclude
+
+
 ## ALLOWED PATHS
 
 - `.pre-commit-config.yaml` — hook configuration

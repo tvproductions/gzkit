@@ -44,6 +44,21 @@ Compare the generic (non-domain-specific) sections of copilot-instructions.md be
 1. Document which guidance exists in one file but not the other
 1. Record decision with rationale: Absorb / Confirm / Merge
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.38.0-09-01: Read both copilot-instructions.md files completely
+- [x] REQ-0.38.0-09-02: Identify and extract generic sections (non-domain-specific guidance)
+- [x] REQ-0.38.0-09-03: Compare section-by-section: coding conventions, toolchain instructions, governance workflow references, file handling, error handling, cross-platform guidance
+- [x] REQ-0.38.0-09-04: Document which guidance exists in one file but not the other
+- [x] REQ-0.38.0-09-05: Record decision with rationale: Absorb / Confirm / Merge
+
+
 ## ALLOWED PATHS
 
 - `.gzkit/templates/` — template storage

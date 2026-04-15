@@ -42,6 +42,21 @@ Compare opsdev's `cli-audit` command (cli_tools.py, 142 lines) against gzkit's c
 1. If absorbing: adapt to gzkit conventions and write tests
 1. If confirming: document why gzkit's implementation is sufficient
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.32.0-07-01: Read both implementations completely
+- [x] REQ-0.32.0-07-02: Document comparison: validation checks, reporting format, error categorization
+- [x] REQ-0.32.0-07-03: Record decision with rationale: Absorb Improvements / Confirm Sufficient
+- [x] REQ-0.32.0-07-04: If absorbing: adapt to gzkit conventions and write tests
+- [x] REQ-0.32.0-07-05: If confirming: document why gzkit's implementation is sufficient
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/` -- target for absorbed improvements

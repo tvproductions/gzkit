@@ -45,6 +45,22 @@ Evaluate `data/schemas/arb_lint_receipt.schema.json` from opsdev against gzkit's
 1. If Confirm: document why gzkit's existing approach is sufficient
 1. If Exclude: document why the schema is environment-specific
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.27.0-11-01: Read the schema completely
+- [x] REQ-0.27.0-11-02: Document: field coverage, required vs optional fields, validation constraints, interoperability value
+- [x] REQ-0.27.0-11-03: Record decision with rationale: Absorb / Confirm / Exclude
+- [x] REQ-0.27.0-11-04: If Absorb: copy schema to gzkit's `data/schemas/` and validate it
+- [x] REQ-0.27.0-11-05: If Confirm: document why gzkit's existing approach is sufficient
+- [x] REQ-0.27.0-11-06: If Exclude: document why the schema is environment-specific
+
+
 ## ALLOWED PATHS
 
 - `data/schemas/` — target for absorbed schemas

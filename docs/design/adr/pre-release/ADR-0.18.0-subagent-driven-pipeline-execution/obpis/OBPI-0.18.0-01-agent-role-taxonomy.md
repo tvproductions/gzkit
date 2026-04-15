@@ -59,6 +59,24 @@ The `gz roles` CLI surface ships in OBPI-05.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.18.0-01-01: REQUIREMENT: Define exactly four roles: Planner, Implementer, Reviewer, Narrator.
+- [x] REQ-0.18.0-01-02: REQUIREMENT: Each role MUST specify what artifacts it produces and what artifacts it consumes.
+- [x] REQ-0.18.0-01-03: REQUIREMENT: Handoff protocol MUST define the structured result format between roles (e.g., implementer returns `DONE`/`BLOCKED`/`NEEDS_CONTEXT`/`DONE_WITH_CONCERNS`).
+- [x] REQ-0.18.0-01-04: REQUIREMENT: Conflict resolution MUST specify precedence when two agents touch the same file.
+- [x] REQ-0.18.0-01-05: REQUIREMENT: Each role MUST be delivered as a `.claude/agents/{role}.md` file with YAML frontmatter specifying `tools`, `model`, `permissionMode`, `maxTurns`, and `skills` — the Claude Code primitives that enforce role boundaries at dispatch time.
+- [x] REQ-0.18.0-01-06: REQUIREMENT: Tool allowlists MUST enforce role boundaries structurally (not just via prompt instruction). Reviewers MUST NOT have Edit/Write tools. Implementers MUST have full write access.
+- [x] REQ-0.18.0-01-07: NEVER: Allow roles to be vendor-specific — roles are abstract; vendor binding is deployment.
+- [x] REQ-0.18.0-01-08: ALWAYS: A single agent session CAN fill multiple roles sequentially.
+
+
 ## Role Definitions (Design Input)
 
 ### Planner
