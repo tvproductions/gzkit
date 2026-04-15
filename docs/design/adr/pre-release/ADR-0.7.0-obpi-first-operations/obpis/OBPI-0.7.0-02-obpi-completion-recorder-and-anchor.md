@@ -19,6 +19,19 @@ status: Completed
 
 Record OBPI completion transitions as first-class runtime events with optional git anchor capture for temporal provenance.
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 (Mode C — derived from Objective, Implementation Summary, and Key Proof).
+-->
+
+- [x] REQ-0.7.0-02-01: Given an OBPI completion transition, when the recorder hook runs, then a first-class `obpi_receipt_emitted` event is appended to `.gzkit/ledger.jsonl`.
+- [x] REQ-0.7.0-02-02: Given the recorder is enabled, when a completion event fires, then the emitted event includes an `anchor` object capturing the current git commit hash.
+- [x] REQ-0.7.0-02-03: Given the recorder is enabled, when a completion event fires, then the emitted event includes the OBPI's parent ADR semver in the anchor metadata.
+- [x] REQ-0.7.0-02-04: Given the recorder integrates with the hook system, when an OBPI brief transitions to Completed, then the recorder runs automatically (no manual CLI invocation required).
+
 ### Implementation Summary
 
 - Files created: `src/gzkit/utils.py` (Git/Exec utilities)

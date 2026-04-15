@@ -77,6 +77,22 @@ Lite — Template file change, unit test for template validation.
 1. Require three elements: (a) what was built (artifact paths), (b) what it enables (operator capability), (c) why it matters (with proof command or documentation link)
 1. Add template validation test: Closing Argument section must exist and must not contain planning-phase placeholder text
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.23.0-01-01: Given the OBPI brief template, when inspected, then a `Closing Argument` section exists in place of the prior `Value Narrative` heading.
+- [x] REQ-0.23.0-01-02: Given the Closing Argument template guidance, when an agent reads it, then it states the section is authored at COMPLETION (not during planning) from delivered evidence.
+- [x] REQ-0.23.0-01-03: Given the Closing Argument template, when inspected, then it requires a "what was built" element citing concrete artifact paths.
+- [x] REQ-0.23.0-01-04: Given the Closing Argument template, when inspected, then it requires a "what it enables" element naming the operator capability.
+- [x] REQ-0.23.0-01-05: Given the Closing Argument template, when inspected, then it requires a "why it matters" element backed by a proof command or documentation link.
+- [x] REQ-0.23.0-01-06: Given a brief authored against the new template, when validated, then the Closing Argument section is present (validation fails when missing).
+- [x] REQ-0.23.0-01-07: Given a brief whose Closing Argument section contains planning-phase placeholder text, when validated, then validation fails (placeholders are rejected).
+
 ## EDGE CASES
 
 - Brief started under old template but completed under new: migration guidance in template comments

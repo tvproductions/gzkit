@@ -46,6 +46,23 @@ Evaluate `opsdev/commands/arb_tools.py` (282 lines) against gzkit's current ARB 
 1. If Exclude: document why the CLI surface is environment-specific
 1. Note: This OBPI should be evaluated last, after all functional module decisions are made
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.27.0-13-01: Read both implementations completely
+- [x] REQ-0.27.0-13-02: Document comparison: subcommand surface, flag conventions, help text, exit code compliance
+- [x] REQ-0.27.0-13-03: Record decision with rationale: Absorb / Confirm / Exclude
+- [x] REQ-0.27.0-13-04: If Absorb: adapt to gzkit CLI conventions (help text, examples, exit codes per CLI doctrine)
+- [x] REQ-0.27.0-13-05: If Confirm: document why skill-only approach is sufficient
+- [x] REQ-0.27.0-13-06: If Exclude: document why the CLI surface is environment-specific
+- [x] REQ-0.27.0-13-07: Note: This OBPI should be evaluated last, after all functional module decisions are made
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/commands/` — target for absorbed CLI wiring

@@ -45,6 +45,22 @@ Port opsdev's `metrics scan` subcommand (429 lines, shared with `metrics report/
 1. Create manpage documentation
 1. Ensure shared infrastructure is reusable by OBPI-06 (metrics report/watch)
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.31.0-05-01: Read the opsdev implementation completely
+- [x] REQ-0.31.0-05-02: Port the scan subcommand to gzkit with argparse, exit codes 0/1/2/3, --json/--plain output
+- [x] REQ-0.31.0-05-03: Include help text with description, usage, options, and at least one example
+- [x] REQ-0.31.0-05-04: Write unit tests with >= 40% coverage
+- [x] REQ-0.31.0-05-05: Create manpage documentation
+- [x] REQ-0.31.0-05-06: Ensure shared infrastructure is reusable by OBPI-06 (metrics report/watch)
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/commands/` --- target for ported command

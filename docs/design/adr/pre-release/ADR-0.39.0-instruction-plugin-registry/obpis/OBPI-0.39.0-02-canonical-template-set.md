@@ -45,6 +45,22 @@ Extract gzkit's current instruction files (`.claude/rules/*.md`) into a shippabl
 1. Write unit tests verifying the canonical set is complete and all entries are valid
 1. Document the canonical instruction catalog with purpose descriptions
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.39.0-02-01: Catalog every instruction file in `.claude/rules/` with its scope, purpose, and line count
+- [x] REQ-0.39.0-02-02: Classify each as canonical (framework-level, applies to all projects) or repo-specific (gzkit only)
+- [x] REQ-0.39.0-02-03: For each canonical instruction: create a registry entry with id, version, scope, content hash
+- [x] REQ-0.39.0-02-04: Package the canonical set with a set-level manifest (version, instruction list, compatibility)
+- [x] REQ-0.39.0-02-05: Write unit tests verifying the canonical set is complete and all entries are valid
+- [x] REQ-0.39.0-02-06: Document the canonical instruction catalog with purpose descriptions
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/instructions/` — canonical template packaging

@@ -96,6 +96,30 @@ Heavy — Ceremony contract change (new presentation format, new blocking condit
 1. ADR-CLOSEOUT-FORM.md template includes "Defense Brief" section with closing arguments, proof table, and reviewer verdict
 1. Closeout manpage documents the new ceremony flow
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.23.0-04-01: Given the closeout ceremony skill, when run for an ADR, then it presents each OBPI's Closing Argument in sequence (not as a flat checklist).
+- [x] REQ-0.23.0-04-02: Given the ceremony output, when rendered, then a Product Proof Status table is displayed with one row per OBPI showing proof type and status.
+- [x] REQ-0.23.0-04-03: Given a closeout ceremony run, when the reviewer assessment exists, then the ceremony presents the structured fields (promises-met, docs-quality, closing-argument-quality) to the attestor.
+- [x] REQ-0.23.0-04-04: Given any OBPI in the target ADR is missing a Closing Argument, when the ceremony runs, then it blocks before reaching the human attestation prompt.
+- [x] REQ-0.23.0-04-05: Given any OBPI in the target ADR is missing product proof, when the ceremony runs, then it blocks before reaching the human attestation prompt.
+- [x] REQ-0.23.0-04-06: Given no reviewer assessment is available for the target ADR, when the ceremony runs, then it blocks before reaching the human attestation prompt.
+- [x] REQ-0.23.0-04-07: Given the `ADR-CLOSEOUT-FORM.md` template, when inspected, then it includes a `Defense Brief` section containing the closing arguments, product proof table, and reviewer verdict.
+- [x] REQ-0.23.0-04-08: Given the `closeout` command manpage, when read, then it documents the new ceremony flow including blocking conditions and Defense Brief structure.
+- [x] REQ-0.23.0-04-09: Given an OBPI brief whose section heading uses any case variant (`## Objective` / `## OBJECTIVE` / `## ObJeCtIvE`), when ceremony brief metadata extraction runs, then the Objective text is captured (case-insensitive heading match — added under GHI-153).
+- [x] REQ-0.23.0-04-10: Given a closeout ceremony Step 2 render, when produced, then the parent ADR's intent section is extracted from the canonical ADR file and presented inline alongside a scope-review prompt asking the operator to confirm the OBPI scope matches the ADR promise (added under GHI-155).
+- [x] REQ-0.23.0-04-11: Given a closeout ceremony Step 2 render, when produced, then the legacy generic QA command block is omitted in favor of ADR-specific scope-review framing (the operator should never see hardcoded `gz test` / `gz lint` / `mkdocs` lines as the only Step 2 content — added under GHI-155).
+- [x] REQ-0.23.0-04-12: Given the closeout ceremony's demo command discovery (across all three discovery strategies — Demo sections, command-doc links, brief titles), when invocations are derived from briefs, then every emitted `gz <verb>` is validated against the registered CLI parser and unregistered verbs are dropped (added under GHI-156, fail-class fix).
+- [x] REQ-0.23.0-04-13: Given the closeout ceremony's BOM table for Step 2, when rendered, then OBPI objectives are presented without truncation so the operator retains the evidence surface for scope review (preserved under GHI-116/153 follow-ups).
+- [x] REQ-0.23.0-04-14: Given `check_doc_alignment`, when validating doc-coverage rows, then derived slugs are validated against the registered CLI parser and unregistered slugs (e.g. `index.md` ToC pages) are omitted from the alignment table (added under GHI-156 follow-up).
+- [x] REQ-0.23.0-04-15: Given the closeout ceremony command runtime, when invoked across init/advance/pause/resume/attest operations, then ceremony state is persisted to disk, step sequencing is enforced, Foundation-ADR lane detection skips Steps 9-10, and CLI flag combinations are validated (state-machine infrastructure supporting REQs 04-04 through 04-06).
+
 ## EDGE CASES
 
 - Lite-lane-only ADR: ceremony still requires closing arguments and product proof, but reviewer assessment is advisory (warning, not blocker)

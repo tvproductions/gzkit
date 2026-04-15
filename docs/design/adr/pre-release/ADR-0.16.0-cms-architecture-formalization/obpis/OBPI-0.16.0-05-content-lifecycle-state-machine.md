@@ -47,6 +47,22 @@ Lite — ADR note + stdlib unittest + smoke (≤60s).
 1. `gz validate` checks current artifact states against lifecycle rules — flags artifacts in impossible states
 1. Backward-compatible: existing artifacts in valid states pass; no existing workflow breaks
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.16.0-05-01: `LifecycleStateMachine` class with `transition(artifact_id, from_state, to_state)` method
+- [x] REQ-0.16.0-05-02: Per-content-type transition tables (ADR: Pool→Draft→Proposed→Accepted→Completed→Validated; OBPI: Accepted→Completed; Skill: draft→active→deprecated→retired)
+- [x] REQ-0.16.0-05-03: `transition()` validates against allowed transitions; raises `InvalidTransitionError` for violations
+- [x] REQ-0.16.0-05-04: Successful transitions emit a ledger event (`lifecycle_transition` or similar)
+- [x] REQ-0.16.0-05-05: `gz validate` checks current artifact states against lifecycle rules — flags artifacts in impossible states
+- [x] REQ-0.16.0-05-06: Backward-compatible: existing artifacts in valid states pass; no existing workflow breaks
+
+
 ## QUALITY GATES (Lite)
 
 - [x] Gate 1 (ADR): Intent recorded in this brief

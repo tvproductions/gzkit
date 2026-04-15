@@ -50,6 +50,22 @@ Required pilot skills spanning categories:
 1. All manpages render correctly via `uv run mkdocs build --strict`
 1. Index (OBPI-03) updated with links to all pilot manpages
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.24.0-05-01: Write manpages for at least 5 skills across at least 3 categories
+- [x] REQ-0.24.0-05-02: Each manpage follows the template from OBPI-02
+- [x] REQ-0.24.0-05-03: Each manpage includes a "When to Use" section with concrete operator scenarios
+- [x] REQ-0.24.0-05-04: Skills with supporting files must have their assets documented in the manpage
+- [x] REQ-0.24.0-05-05: All manpages render correctly via `uv run mkdocs build --strict`
+- [x] REQ-0.24.0-05-06: Index (OBPI-03) updated with links to all pilot manpages
+
+
 ## ALLOWED PATHS
 
 - `docs/user/skills/*.md`

@@ -41,6 +41,20 @@ Compare `docs/governance/GovZero/releases/minor-release.md` between airlineops a
 1. Evaluate which version is more complete and actionable
 1. Record decision with rationale: Absorb / Confirm / Merge
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.37.0-19-01: Read both versions completely
+- [x] REQ-0.37.0-19-02: Document differences in prerequisites, steps, validation, rollback procedures
+- [x] REQ-0.37.0-19-03: Evaluate which version is more complete and actionable
+- [x] REQ-0.37.0-19-04: Record decision with rationale: Absorb / Confirm / Merge
+
+
 ## ALLOWED PATHS
 
 - `docs/governance/GovZero/releases/minor-release.md` — target for reconciled content

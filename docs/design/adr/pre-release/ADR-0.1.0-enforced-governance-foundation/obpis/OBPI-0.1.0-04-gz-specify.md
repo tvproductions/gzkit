@@ -41,11 +41,11 @@ Implement `gz specify` command that creates briefs linked to PRD/constitution.
 
 ## Acceptance Criteria
 
-- [ ] `gz specify my-feature` creates brief in configured directory
-- [ ] Brief contains constitution reference
-- [ ] Brief has unique ID
-- [ ] `brief_created` event appended to ledger with `parent`
-- [ ] Command fails if constitution does not exist
+- [x] REQ-0.1.0-04-01: `gz specify my-feature` creates brief in configured directory
+- [x] REQ-0.1.0-04-02: Brief contains constitution reference
+- [x] REQ-0.1.0-04-03: Brief has unique ID
+- [x] REQ-0.1.0-04-04: `brief_created` event appended to ledger with `parent`
+- [x] REQ-0.1.0-04-05: Command fails if constitution does not exist
 
 ## Gate Evidence
 

@@ -50,6 +50,25 @@ Implement the `gz validate instructions` command that checks a project's instruc
 1. Write unit tests for each validation check (presence, integrity, registration, manifest)
 1. Document the command with usage examples and expected output
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.39.0-04-01: Implement the `gz validate instructions` subcommand
+- [x] REQ-0.39.0-04-02: Check canonical instruction presence: every canonical instruction must exist in the project
+- [x] REQ-0.39.0-04-03: Check canonical instruction integrity: content hashes must match (unless overridden by registered extension)
+- [x] REQ-0.39.0-04-04: Check extension registration: every instruction file must be either canonical or registered
+- [x] REQ-0.39.0-04-05: Check manifest integrity: every manifest entry must reference an existing file
+- [x] REQ-0.39.0-04-06: Produce human-readable output (default) and machine-readable output (`--json`)
+- [x] REQ-0.39.0-04-07: Follow exit code doctrine: 0=pass, 1=violations found, 2=system error
+- [x] REQ-0.39.0-04-08: Write unit tests for each validation check (presence, integrity, registration, manifest)
+- [x] REQ-0.39.0-04-09: Document the command with usage examples and expected output
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/commands/` — command implementation

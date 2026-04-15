@@ -47,6 +47,19 @@ If an assumption is questioned or a file/config is missing, STOP and emit a BLOC
 
 > STOP-on-BLOCKERS: if AirlineOps path is not accessible, print BLOCKERS.
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.0.1-01-01: Lodestar document must explicitly name AirlineOps as canonical source of GovZero.
+- [x] REQ-0.0.1-01-02: Document the sibling directory relationship (`../airlineops/`).
+- [x] REQ-0.0.1-01-03: Establish that divergence from AirlineOps requires explicit ADR authorization.
+
+
 ## CONTEXT INPUTS (Foundational)
 
 - AirlineOps location: `../airlineops/` (sibling directory)

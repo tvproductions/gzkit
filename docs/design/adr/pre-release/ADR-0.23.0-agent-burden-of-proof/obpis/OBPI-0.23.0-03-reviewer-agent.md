@@ -84,6 +84,25 @@ Heavy — Pipeline contract change (new stage, new output).
 1. Assessment is stored as a reviewable artifact alongside the brief
 1. Ceremony skill presents reviewer assessment to human attestor before attestation prompt
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.23.0-03-01: Given the agent role taxonomy from ADR-0.18.0, when extended, then a `reviewer` role is defined with a distinct dispatch path that does not reuse the implementing agent's context.
+- [x] REQ-0.23.0-03-02: Given the reviewer agent is dispatched for an OBPI, when prompted, then it receives the full OBPI brief.
+- [x] REQ-0.23.0-03-03: Given the reviewer agent is dispatched for an OBPI, when prompted, then it receives the OBPI's authored Closing Argument.
+- [x] REQ-0.23.0-03-04: Given the reviewer agent is dispatched for an OBPI, when prompted, then it receives the list of changed files for that OBPI.
+- [x] REQ-0.23.0-03-05: Given the reviewer agent is dispatched for an OBPI, when prompted, then it receives the relevant operator documentation files for that OBPI.
+- [x] REQ-0.23.0-03-06: Given the reviewer agent's assessment, when parsed, then it includes a `promises-met` field with a yes/no judgment per requirement.
+- [x] REQ-0.23.0-03-07: Given the reviewer agent's assessment, when parsed, then it includes a `docs-quality` field valued one of {substantive, boilerplate, missing}.
+- [x] REQ-0.23.0-03-08: Given the reviewer agent's assessment, when parsed, then it includes a `closing-argument-quality` field valued one of {earned, echoed, missing}.
+- [x] REQ-0.23.0-03-09: Given the reviewer assessment for an OBPI, when produced, then it is stored as a reviewable artifact (`REVIEW-<obpi-id>.md`) alongside the brief.
+- [x] REQ-0.23.0-03-10: Given a closeout ceremony run, when the human attestation prompt is reached, then the ceremony skill has presented the reviewer assessment to the attestor first.
+
 ## EDGE CASES
 
 - Reviewer disagrees with implementer's closing argument: assessment flags the discrepancy, human decides

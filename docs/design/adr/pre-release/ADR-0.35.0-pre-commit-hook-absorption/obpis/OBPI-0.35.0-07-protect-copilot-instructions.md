@@ -44,6 +44,21 @@ Evaluate opsdev's `protect-copilot-instructions` pre-commit hook — prevents ac
 1. Determine enforcement timing: pre-commit, Claude hook, or both
 1. Record decision with rationale: Absorb-PreCommit / Absorb-Claude / Absorb-Both / Exclude
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.35.0-07-01: Read the opsdev `protect-copilot-instructions` hook implementation completely
+- [x] REQ-0.35.0-07-02: Document: what files it protects, how it detects changes, what it blocks
+- [x] REQ-0.35.0-07-03: Evaluate whether gzkit needs equivalent protection for its governance surfaces
+- [x] REQ-0.35.0-07-04: Determine enforcement timing: pre-commit, Claude hook, or both
+- [x] REQ-0.35.0-07-05: Record decision with rationale: Absorb-PreCommit / Absorb-Claude / Absorb-Both / Exclude
+
+
 ## ALLOWED PATHS
 
 - `.pre-commit-config.yaml` — hook configuration

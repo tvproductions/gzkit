@@ -41,6 +41,20 @@ Heavy — external output appearance changes for list commands.
 3. JSON mode continues to bypass reporter (OutputFormatter handles)
 4. Column definitions passed as data — no hard-coded columns in reporter
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.40.0-04-01: All list commands render via `reporter.list_table()` with consistent box.ROUNDED style
+- [x] REQ-0.40.0-04-02: Empty-state messages ("No tasks found", etc.) render through the preset's empty-state handler
+- [x] REQ-0.40.0-04-03: JSON mode continues to bypass reporter (OutputFormatter handles)
+- [x] REQ-0.40.0-04-04: Column definitions passed as data — no hard-coded columns in reporter
+
+
 ## NON-GOALS
 
 - Adding new list commands

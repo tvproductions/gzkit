@@ -43,6 +43,20 @@ Compare opsdev's `ruff-format` pre-commit hook against gzkit's existing `ruff-fo
 1. Evaluate which configuration is more robust/complete
 1. Record decision with rationale: Absorb / Confirm
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.35.0-02-01: Read both `.pre-commit-config.yaml` entries for `ruff-format` completely
+- [x] REQ-0.35.0-02-02: Document differences: args, exclude patterns, file types, stages, versions
+- [x] REQ-0.35.0-02-03: Evaluate which configuration is more robust/complete
+- [x] REQ-0.35.0-02-04: Record decision with rationale: Absorb / Confirm
+
+
 ## ALLOWED PATHS
 
 - `.pre-commit-config.yaml` — hook configuration

@@ -45,6 +45,22 @@ Evaluate opsdev's `tasks verify` subcommand against gzkit's existing verificatio
 1. If Absorb: adapt to gzkit conventions and write tests
 1. If Exclude: document why gzkit's existing verification is sufficient
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.29.0-04-01: Read the `tasks verify` implementation completely
+- [x] REQ-0.29.0-04-02: Map the verification criteria against gzkit's existing verification surfaces
+- [x] REQ-0.29.0-04-03: Document comparison: what is verified, evidence produced, pass/fail semantics
+- [x] REQ-0.29.0-04-04: Record decision with rationale: Absorb / Adapt / Exclude
+- [x] REQ-0.29.0-04-05: If Absorb: adapt to gzkit conventions and write tests
+- [x] REQ-0.29.0-04-06: If Exclude: document why gzkit's existing verification is sufficient
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/commands/` --- target for absorbed commands

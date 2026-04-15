@@ -77,10 +77,10 @@ uvx mkdocs build --strict
 
 ## Acceptance Criteria
 
-- [ ] `docs/user/commands/implement.md` added
-- [ ] `docs/user/commands/gates.md` added
-- [ ] Command index lists new commands
-- [ ] Updated commands document `--dry-run`
+- [x] REQ-0.2.0-03-01: `docs/user/commands/implement.md` added
+- [x] REQ-0.2.0-03-02: `docs/user/commands/gates.md` added
+- [x] REQ-0.2.0-03-03: Command index lists new commands
+- [x] REQ-0.2.0-03-04: Updated commands document `--dry-run`
 
 ## Evidence
 

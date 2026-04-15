@@ -67,9 +67,9 @@ Define canonical skill identity, capability taxonomy, and required lifecycle met
 
 ## Acceptance Criteria
 
-- [x] Required lifecycle metadata contract is explicit and test-covered.
-- [x] Canonical taxonomy is reflected in skill template and docs.
-- [x] Mirrors preserve taxonomy fields.
+- [x] REQ-0.5.0-01-01: Required lifecycle metadata contract is explicit and test-covered.
+- [x] REQ-0.5.0-01-02: Canonical taxonomy is reflected in skill template and docs.
+- [x] REQ-0.5.0-01-03: Mirrors preserve taxonomy fields.
 
 ## Evidence
 

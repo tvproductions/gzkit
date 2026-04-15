@@ -43,6 +43,20 @@ Compare airlineops's `chores.instructions.md` against gzkit's `.claude/rules/cho
 1. Document content gaps in either direction
 1. Record decision with rationale: Absorb / Confirm
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.36.0-09-01: Read both files completely
+- [x] REQ-0.36.0-09-02: Create a section-by-section comparison: principles, command sequences, evidence, attestation
+- [x] REQ-0.36.0-09-03: Document content gaps in either direction
+- [x] REQ-0.36.0-09-04: Record decision with rationale: Absorb / Confirm
+
+
 ## ALLOWED PATHS
 
 - `.claude/rules/chores.md` — target for reconciled content

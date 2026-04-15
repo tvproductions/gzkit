@@ -45,6 +45,22 @@ Evaluate opsdev's legacy adapter bridges against gzkit's config migration strate
 1. If Absorb: extract the generic migration pattern and write tests
 1. If Exclude: document why gzkit does not need legacy adapters
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.30.0-07-01: Read the opsdev legacy adapter implementation completely
+- [x] REQ-0.30.0-07-02: Separate the migration pattern from project-specific format transitions
+- [x] REQ-0.30.0-07-03: Document comparison: migration strategy, version detection, deprecation handling
+- [x] REQ-0.30.0-07-04: Record decision with rationale: Absorb / Adapt / Exclude
+- [x] REQ-0.30.0-07-05: If Absorb: extract the generic migration pattern and write tests
+- [x] REQ-0.30.0-07-06: If Exclude: document why gzkit does not need legacy adapters
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/` --- target for absorbed modules

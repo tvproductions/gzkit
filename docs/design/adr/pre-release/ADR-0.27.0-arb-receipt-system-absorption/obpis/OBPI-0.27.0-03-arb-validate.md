@@ -45,6 +45,22 @@ Evaluate `opsdev/arb/validate.py` (154 lines) against gzkit's current approach t
 1. If Confirm: document why gzkit's existing validation is sufficient
 1. If Exclude: document why the module is environment-specific
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.27.0-03-01: Read both implementations completely
+- [x] REQ-0.27.0-03-02: Document comparison: validation depth, error reporting, schema coupling, integrity checks
+- [x] REQ-0.27.0-03-03: Record decision with rationale: Absorb / Confirm / Exclude
+- [x] REQ-0.27.0-03-04: If Absorb: adapt to gzkit conventions and write tests
+- [x] REQ-0.27.0-03-05: If Confirm: document why gzkit's existing validation is sufficient
+- [x] REQ-0.27.0-03-06: If Exclude: document why the module is environment-specific
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/arb/` — target for absorbed modules

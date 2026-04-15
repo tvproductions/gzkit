@@ -48,6 +48,20 @@ If an assumption is questioned or a file/config is missing, STOP and emit a BLOC
 
 > STOP-on-BLOCKERS: if gz-obpi-sync SKILL.md is not accessible, print BLOCKERS.
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.0.1-04-01: Define ADR as source of truth for OBPI scope.
+- [x] REQ-0.0.1-04-02: Define OBPI as source of truth for implementation detail.
+- [x] REQ-0.0.1-04-03: Document drift detection semantics per AirlineOps gz-obpi-sync.
+- [x] REQ-0.0.1-04-04: Document sync requirements.
+
+
 ## SOURCE OF TRUTH RULES (from AirlineOps)
 
 | Artifact | Is Source Of | Must Sync From |

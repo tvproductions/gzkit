@@ -44,6 +44,21 @@ Compare opsdev's `test` command (test_suites.py, 389 lines) against gzkit's test
 1. If absorbing: adapt to gzkit conventions and write tests
 1. If confirming: document what gzkit provides that makes 389 lines unnecessary
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.32.0-04-01: Read both implementations completely
+- [x] REQ-0.32.0-04-02: Document comparison: test discovery, coverage integration, selective running, reporting, error handling
+- [x] REQ-0.32.0-04-03: Record decision with rationale: Absorb Improvements / Confirm Sufficient
+- [x] REQ-0.32.0-04-04: If absorbing: adapt to gzkit conventions and write tests
+- [x] REQ-0.32.0-04-05: If confirming: document what gzkit provides that makes 389 lines unnecessary
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/` -- target for absorbed improvements

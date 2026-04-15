@@ -69,9 +69,9 @@ Harden `gz agent sync control-surfaces` so repeated runs are deterministic and d
 
 ## Acceptance Criteria
 
-- [x] Deterministic sync behavior is test-covered.
-- [x] Recovery behavior is explicit and validated.
-- [x] Invalid canonical state cannot silently propagate to mirrors.
+- [x] REQ-0.4.0-03-01: Deterministic sync behavior is test-covered.
+- [x] REQ-0.4.0-03-02: Recovery behavior is explicit and validated.
+- [x] REQ-0.4.0-03-03: Invalid canonical state cannot silently propagate to mirrors.
 
 ## Evidence
 

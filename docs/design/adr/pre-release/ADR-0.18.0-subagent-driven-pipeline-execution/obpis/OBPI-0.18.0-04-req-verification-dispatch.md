@@ -60,6 +60,27 @@ Stage 3 already runs verification; this changes how (parallel subagents vs seque
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.18.0-04-01: REQUIREMENT: Stage 3 MUST identify which requirements have non-overlapping test paths before dispatching parallel subagents.
+- [x] REQ-0.18.0-04-02: REQUIREMENT: Requirements with overlapping test paths MUST be verified sequentially (same subagent or inline) to avoid test interference.
+- [x] REQ-0.18.0-04-03: REQUIREMENT: Each verification subagent receives: the requirement text, the specific test files/commands to run, and the expected pass criteria.
+- [x] REQ-0.18.0-04-04: REQUIREMENT: Verification results are aggregated by the controller: all REQs must PASS for Stage 3 to succeed.
+- [x] REQ-0.18.0-04-05: REQUIREMENT: If any verification subagent returns FAIL, the controller attempts one fix cycle (dispatch implementer with failure details), then re-verifies. If still failing after 1 retry, Stage 3 fails with handoff.
+- [x] REQ-0.18.0-04-06: REQUIREMENT: Baseline quality checks (`gz lint`, `gz typecheck`, `gz test`) always run inline in the controller — they are not dispatched to subagents. Only brief-specific requirement verification is parallelized.
+- [x] REQ-0.18.0-04-07: REQUIREMENT: Parallel verification subagents MUST be dispatched with `isolation: "worktree"` — each subagent operates on an isolated git worktree copy. This eliminates file-conflict risk and makes path-overlap analysis a performance optimization rather than a safety requirement.
+- [x] REQ-0.18.0-04-08: REQUIREMENT: Parallel verification subagents MUST be dispatched with `run_in_background: true` to enable concurrent execution. The controller is notified when each completes.
+- [x] REQ-0.18.0-04-09: REQUIREMENT: Verification subagents MUST use read-only tools (`Read, Glob, Grep, Bash`) — Bash is needed for running test commands but Edit/Write are denied since verification should not modify code.
+- [x] REQ-0.18.0-04-10: NEVER: Dispatch parallel verification subagents without worktree isolation.
+- [x] REQ-0.18.0-04-11: ALWAYS: Fall back to sequential inline verification if requirement test paths cannot be determined or worktree creation fails.
+
+
 ## Dispatch Decision Logic (Design Input)
 
 ```text

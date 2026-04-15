@@ -44,6 +44,21 @@ Compare airlineops's `cli.instructions.md` against gzkit's `.claude/rules/cli.md
 1. Document content present in gzkit but missing from airlineops (for awareness)
 1. Record decision with rationale: Absorb / Confirm
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.36.0-01-01: Read both files completely
+- [x] REQ-0.36.0-01-02: Create a section-by-section comparison: exit codes, flag conventions, output contracts, help text, adding features
+- [x] REQ-0.36.0-01-03: Document content present in airlineops but missing from gzkit
+- [x] REQ-0.36.0-01-04: Document content present in gzkit but missing from airlineops (for awareness)
+- [x] REQ-0.36.0-01-05: Record decision with rationale: Absorb / Confirm
+
+
 ## ALLOWED PATHS
 
 - `.claude/rules/cli.md` — target for reconciled content

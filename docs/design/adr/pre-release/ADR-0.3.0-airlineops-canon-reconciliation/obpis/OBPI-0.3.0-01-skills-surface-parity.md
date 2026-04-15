@@ -84,9 +84,9 @@ uv run -m unittest discover tests
 
 ## Acceptance Criteria
 
-- [x] All missing `gz-*` skill directories are present in `.github/skills`.
-- [x] No generated mirror drift remains in `.claude/skills`.
-- [x] Parity scan report was updated with post-OBPI verification and no longer reports missing skill-surface directories.
+- [x] REQ-0.3.0-01-01: All missing `gz-*` skill directories are present in `.github/skills`.
+- [x] REQ-0.3.0-01-02: No generated mirror drift remains in `.claude/skills`.
+- [x] REQ-0.3.0-01-03: Parity scan report was updated with post-OBPI verification and no longer reports missing skill-surface directories.
 
 ## Evidence
 

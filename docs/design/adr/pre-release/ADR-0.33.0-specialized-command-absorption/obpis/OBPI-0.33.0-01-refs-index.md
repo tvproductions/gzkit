@@ -44,6 +44,21 @@ Evaluate opsdev's `refs-index` command (37 lines CLI + 797 lines library) for ab
 1. If absorbing: adapt to gzkit conventions, implement, and write tests
 1. If excluding: document why gzkit does not need reference indexing
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.33.0-01-01: Read the opsdev implementation completely (both CLI and library)
+- [x] REQ-0.33.0-01-02: Evaluate governance generality: Is reference indexing universally useful?
+- [x] REQ-0.33.0-01-03: Document decision: Absorb (add to gzkit) or Exclude (too specialized)
+- [x] REQ-0.33.0-01-04: If absorbing: adapt to gzkit conventions, implement, and write tests
+- [x] REQ-0.33.0-01-05: If excluding: document why gzkit does not need reference indexing
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/` -- target for absorbed command

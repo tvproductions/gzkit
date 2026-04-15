@@ -44,6 +44,21 @@ Evaluate opsdev's `validate-manpages` pre-commit hook — validates manpage mark
 1. Determine enforcement timing: pre-commit, Claude hook, or both
 1. Record decision with rationale: Absorb-PreCommit / Absorb-Claude / Absorb-Both / Exclude
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.35.0-13-01: Read the opsdev `validate-manpages` hook implementation completely
+- [x] REQ-0.35.0-13-02: Document: what sections it validates, how it reports violations, which files it scans
+- [x] REQ-0.35.0-13-03: Evaluate whether gzkit's manpage corpus needs this enforcement
+- [x] REQ-0.35.0-13-04: Determine enforcement timing: pre-commit, Claude hook, or both
+- [x] REQ-0.35.0-13-05: Record decision with rationale: Absorb-PreCommit / Absorb-Claude / Absorb-Both / Exclude
+
+
 ## ALLOWED PATHS
 
 - `.pre-commit-config.yaml` — hook configuration

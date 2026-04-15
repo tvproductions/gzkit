@@ -45,6 +45,22 @@ Evaluate `opsdev/src/opsdev/chores_tools/executor_summary.py` (161 lines) agains
 1. If Confirm: document why gzkit's implementation is sufficient
 1. If Exclude: document why the module is domain-specific
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.28.0-13-01: Read both implementations completely
+- [x] REQ-0.28.0-13-02: Document comparison: feature completeness, error handling, cross-platform robustness, test coverage
+- [x] REQ-0.28.0-13-03: Record decision with rationale: Absorb / Confirm / Exclude
+- [x] REQ-0.28.0-13-04: If Absorb: adapt to gzkit conventions and write tests
+- [x] REQ-0.28.0-13-05: If Confirm: document why gzkit's implementation is sufficient
+- [x] REQ-0.28.0-13-06: If Exclude: document why the module is domain-specific
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/chores_tools/` — target for absorbed modules

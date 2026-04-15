@@ -45,6 +45,22 @@ Evaluate opsdev's `config/opsdev/chores.json` against gzkit's chore configuratio
 1. If Absorb: extract the generic schema pattern and write tests
 1. If Exclude: document why gzkit's current chore config is sufficient
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.30.0-03-01: Read the opsdev chores.json completely
+- [x] REQ-0.30.0-03-02: Separate schema pattern from data content
+- [x] REQ-0.30.0-03-03: Document comparison: schema structure, validation rules, extensibility, defaults
+- [x] REQ-0.30.0-03-04: Record decision with rationale: Absorb / Confirm / Exclude
+- [x] REQ-0.30.0-03-05: If Absorb: extract the generic schema pattern and write tests
+- [x] REQ-0.30.0-03-06: If Exclude: document why gzkit's current chore config is sufficient
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/` --- target for absorbed modules

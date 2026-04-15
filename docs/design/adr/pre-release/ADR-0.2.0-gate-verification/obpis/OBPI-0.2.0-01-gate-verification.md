@@ -115,11 +115,11 @@ uv run gz gates --gate 2
 
 ## Acceptance Criteria
 
-- [ ] `gz implement` runs the manifest test command and exits non-zero on failure
-- [ ] `gz gates` runs the required gates for the current lane
-- [ ] `gz gates --gate 2` runs only Gate 2
-- [ ] Each gate run appends a `gate_checked` ledger event
-- [ ] Gate failure produces non-zero exit code
+- [x] REQ-0.2.0-01-01: `gz implement` runs the manifest test command and exits non-zero on failure
+- [x] REQ-0.2.0-01-02: `gz gates` runs the required gates for the current lane
+- [x] REQ-0.2.0-01-03: `gz gates --gate 2` runs only Gate 2
+- [x] REQ-0.2.0-01-04: Each gate run appends a `gate_checked` ledger event
+- [x] REQ-0.2.0-01-05: Gate failure produces non-zero exit code
 
 ## Completion Checklist
 

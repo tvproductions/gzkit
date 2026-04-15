@@ -47,6 +47,19 @@ If an assumption is questioned or a file/config is missing, STOP and emit a BLOC
 
 > STOP-on-BLOCKERS: if canonical artifacts cannot be inventoried, print BLOCKERS.
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.0.1-02-01: Enumerate canonical artifact paths in AirlineOps.
+- [x] REQ-0.0.1-02-02: Document "frozen" semantics (read-only, no reinterpretation).
+- [x] REQ-0.0.1-02-03: Document review process for canon changes.
+
+
 ## CANONICAL ARTIFACT REGISTRY
 
 The following AirlineOps paths are canonical (to be documented):

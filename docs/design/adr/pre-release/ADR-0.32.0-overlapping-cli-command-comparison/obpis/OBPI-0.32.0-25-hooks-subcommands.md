@@ -42,6 +42,21 @@ Compare opsdev's hooks subcommands (hooks_tools.py, 81 lines) against gzkit's `h
 1. If absorbing: adapt to gzkit conventions and write tests
 1. If confirming: document why gzkit's hooks CLI surface is sufficient
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.32.0-25-01: Read both implementations completely
+- [x] REQ-0.32.0-25-02: Document comparison: CLI subcommands, hook management operations, listing, validation
+- [x] REQ-0.32.0-25-03: Record decision with rationale: Absorb Improvements / Confirm Sufficient
+- [x] REQ-0.32.0-25-04: If absorbing: adapt to gzkit conventions and write tests
+- [x] REQ-0.32.0-25-05: If confirming: document why gzkit's hooks CLI surface is sufficient
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/` -- target for absorbed improvements
