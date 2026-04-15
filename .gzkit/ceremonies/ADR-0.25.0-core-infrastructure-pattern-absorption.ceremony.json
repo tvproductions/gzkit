@@ -1,0 +1,28 @@
+{
+  "adr_id": "ADR-0.25.0-core-infrastructure-pattern-absorption",
+  "current_step": 2,
+  "is_foundation": false,
+  "started_at": "2026-04-15T02:50:48Z",
+  "updated_at": "2026-04-15T02:54:35Z",
+  "step_history": [
+    {
+      "step": 1,
+      "presented_at": "2026-04-15T02:50:48Z",
+      "acknowledged_at": "2026-04-15T02:54:35Z"
+    },
+    {
+      "step": 2,
+      "presented_at": "2026-04-15T02:54:35Z",
+      "acknowledged_at": null
+    }
+  ],
+  "walkthrough_commands": [
+    "uv run gz arb --help",
+    "uv run gz index --help"
+  ],
+  "walkthrough_index": 0,
+  "attestation": null,
+  "completed_at": null,
+  "attempt": 1,
+  "paused_at": null
+}
