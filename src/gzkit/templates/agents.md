@@ -90,6 +90,22 @@ This maxim sits next to the Prime Directive because ownership and completeness w
 
 Every item in that list is drawn from defects observed in this codebase within the window GHI-141 through GHI-156. The pattern is consistent: the author wrote code that *looked* right, committed it, and moved on — because the loop did not include reading, tracing, testing the real path, or running the observed command. **Close the loop.** Do it right.
 
+### TASK-driven workflow (binding)
+
+GHI-160 surfaced a second class of rot: code changes that bypassed the TASK registry entirely. Agents wrote fixes, committed them, and moved on without decomposing the work into TASKs, without `Task:` trailers, and without `@covers` decoration on the new tests. The four-tier traceability chain (`task -> req -> obpi -> adr`) was broken at the leaf level for every GHI-originated fix in the GHI-141 through GHI-156 window.
+
+The binding pattern for any code-change GHI:
+
+1. Locate the governing REQ(s) via `gz covers <ADR-ID>`.
+2. For each REQ, start a TASK: `gz task start TASK-X.Y.Z-NN-MM-PP`.
+3. Run the TDD cycle (Red -> Green -> Refactor) per TASK — not batch-then-run.
+4. Commit with the trailer: `Task: TASK-X.Y.Z-NN-MM-PP` as the final line.
+5. `gz task complete TASK-X.Y.Z-NN-MM-PP`.
+6. Decorate new tests with `@covers(REQ-X.Y.Z-NN-MM)`.
+7. Verify with `uv run gz validate --commit-trailers --requirements`.
+
+The validate checks are advisory gates, not ritual. If they flag a commit or brief, the fix is to restore the chain, not to silence the check.
+
 ## Behavior Rules
 
 ### Always

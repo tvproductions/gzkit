@@ -7,6 +7,8 @@ Validate governance artifacts against schema rules.
 ```bash
 gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--instructions] [--briefs] [--personas]
+            [--interviews] [--decomposition]
+            [--requirements] [--commit-trailers]
 ```
 
 ## Description
@@ -14,7 +16,28 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
 Verifies governance artifacts against their schema definitions and enforces
 canonical/mirror sync parity for generated control surfaces. When no flag is
 supplied, the manifest, documents, surfaces, ledger, instructions, briefs, and
-personas scopes all run.
+personas scopes all run. The `--interviews`, `--decomposition`,
+`--requirements`, and `--commit-trailers` scopes are opt-in and only run when
+explicitly requested.
+
+### `--requirements`
+
+Flags OBPI briefs whose `## REQUIREMENTS` sections contain no
+`REQ-X.Y.Z-NN-MM` identifiers. Such briefs are invisible to `gz covers` and
+break the REQ → test traceability chain. Added under GHI-160 Phase 6 to
+prevent the governance-graph rot that surfaced in ADR-0.23.0 and the 18
+ADRs using the legacy fail-closed requirements template.
+
+### `--commit-trailers`
+
+Flags HEAD commits that touch `src/` or `tests/` without a `Task:` trailer.
+The trailer format is `Task: TASK-X.Y.Z-NN-MM-PP` and provides the
+execution-level link from a code change back to the governing REQ. Added
+under GHI-160 Phase 6 as an advisory guard against the TASK-registry
+bypass pattern observed across GHI-141 through GHI-156.
+
+Non-code commits (docs-only, config-only) and commits with a valid
+trailer pass the check. The scope scans HEAD only.
 
 ### `--surfaces`
 

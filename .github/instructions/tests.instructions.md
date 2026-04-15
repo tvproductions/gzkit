@@ -32,6 +32,36 @@ Gate 2 is named TDD. This is what TDD means — follow it.
 - Writing all tests at once before any implementation (test-dump, not TDD)
 - Refactoring while tests are still failing (mixing Green and Refactor)
 
+## TASK-Driven Workflow (GHI-160 Phase 6)
+
+Every code-change GHI decomposes into TASKs via `gz task`, and every commit
+touching `src/**` or `tests/**` must carry a `Task:` trailer. The
+four-tier chain `task → req → obpi → adr` is the only way to trace a code
+change back to governance intent.
+
+**Binding steps for any GHI-originated code fix:**
+
+1. Identify the REQ(s) the fix addresses. Use `gz covers <ADR-ID>` to locate.
+2. For each REQ, start a TASK: `gz task start TASK-X.Y.Z-NN-MM-PP`.
+3. Perform the TDD cycle (Red → Green → Refactor) for that TASK.
+4. Commit with the trailer: `Task: TASK-X.Y.Z-NN-MM-PP` as the final line.
+5. Complete the TASK: `gz task complete TASK-X.Y.Z-NN-MM-PP`.
+6. Decorate the new tests with `@covers(REQ-X.Y.Z-NN-MM)`.
+
+**Verification:**
+
+```bash
+uv run gz validate --commit-trailers   # flags HEAD commits missing Task: trailer
+uv run gz validate --requirements      # flags OBPIs with bare REQUIREMENTS sections
+```
+
+**Anti-patterns:**
+- Skipping `gz task start` and writing a Task: trailer from memory — the
+  ledger state-machine enforcement is the proof, the trailer is the link.
+- Using a single TASK for multiple unrelated REQ fixes — breaks the
+  REQ-granularity of the coverage graph.
+- Orphan test files (no `@covers`) — invisible to `gz covers`.
+
 ## General Rules
 
 - Use **stdlib `unittest`**; no pytest.
