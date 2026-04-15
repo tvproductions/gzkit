@@ -16,11 +16,13 @@ from gzkit.quality import (
     _extract_obpi_slug,
     check_product_proof,
 )
+from gzkit.traceability import covers
 
 
 class TestExtractAllowedPaths(unittest.TestCase):
     """Tests for _extract_allowed_paths."""
 
+    @covers("REQ-0.23.0-02-01")
     def test_extracts_paths_from_brief(self) -> None:
         brief = textwrap.dedent("""\
             ## OBJECTIVE
@@ -47,10 +49,12 @@ class TestExtractAllowedPaths(unittest.TestCase):
             ],
         )
 
+    @covers("REQ-0.23.0-02-01")
     def test_no_allowed_paths_section(self) -> None:
         brief = "## OBJECTIVE\n\nDo something.\n"
         self.assertEqual(_extract_allowed_paths(brief), [])
 
+    @covers("REQ-0.23.0-02-01")
     def test_paths_with_descriptions(self) -> None:
         brief = textwrap.dedent("""\
             ## ALLOWED PATHS
@@ -67,12 +71,14 @@ class TestExtractAllowedPaths(unittest.TestCase):
 class TestExtractObpiSlug(unittest.TestCase):
     """Tests for _extract_obpi_slug."""
 
+    @covers("REQ-0.23.0-02-01")
     def test_standard_id(self) -> None:
         self.assertEqual(
             _extract_obpi_slug("OBPI-0.23.0-02-product-proof-gate"),
             "product-proof-gate",
         )
 
+    @covers("REQ-0.23.0-02-01")
     def test_short_id(self) -> None:
         self.assertEqual(_extract_obpi_slug("OBPI-0.1.0-01"), "OBPI-0.1.0-01")
 
@@ -80,18 +86,22 @@ class TestExtractObpiSlug(unittest.TestCase):
 class TestCheckRunbookProof(unittest.TestCase):
     """Tests for _check_runbook_proof."""
 
+    @covers("REQ-0.23.0-02-04")
     def test_id_match(self) -> None:
         runbook = "See OBPI-0.23.0-02 for details.\n"
         self.assertTrue(_check_runbook_proof("OBPI-0.23.0-02", "product-proof-gate", runbook))
 
+    @covers("REQ-0.23.0-02-04")
     def test_slug_keyword_match(self) -> None:
         runbook = "The product proof gate validates documentation.\n"
         self.assertTrue(_check_runbook_proof("OBPI-0.23.0-02", "product-proof-gate", runbook))
 
+    @covers("REQ-0.23.0-02-04")
     def test_no_match(self) -> None:
         runbook = "Nothing relevant here.\n"
         self.assertFalse(_check_runbook_proof("OBPI-0.23.0-02", "product-proof-gate", runbook))
 
+    @covers("REQ-0.23.0-02-04")
     def test_case_insensitive_slug(self) -> None:
         runbook = "The Product Proof Gate is important.\n"
         self.assertTrue(_check_runbook_proof("OBPI-0.23.0-02", "product-proof-gate", runbook))
@@ -100,6 +110,7 @@ class TestCheckRunbookProof(unittest.TestCase):
 class TestCheckCommandDocProof(unittest.TestCase):
     """Tests for _check_command_doc_proof."""
 
+    @covers("REQ-0.23.0-02-05")
     def test_existing_doc_with_content(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -111,12 +122,14 @@ class TestCheckCommandDocProof(unittest.TestCase):
             allowed = ["docs/user/commands/closeout.md", "src/gzkit/cli.py"]
             self.assertTrue(_check_command_doc_proof(allowed, root))
 
+    @covers("REQ-0.23.0-02-05")
     def test_missing_doc_file(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             allowed = ["docs/user/commands/closeout.md"]
             self.assertFalse(_check_command_doc_proof(allowed, root))
 
+    @covers("REQ-0.23.0-02-05")
     def test_empty_doc(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -128,6 +141,7 @@ class TestCheckCommandDocProof(unittest.TestCase):
             allowed = ["docs/user/commands/closeout.md"]
             self.assertFalse(_check_command_doc_proof(allowed, root))
 
+    @covers("REQ-0.23.0-02-05")
     def test_no_command_docs_in_allowed(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -138,6 +152,7 @@ class TestCheckCommandDocProof(unittest.TestCase):
 class TestCheckDocstringProof(unittest.TestCase):
     """Tests for _check_docstring_proof."""
 
+    @covers("REQ-0.23.0-02-06")
     def test_public_function_with_docstring(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -155,6 +170,7 @@ class TestCheckDocstringProof(unittest.TestCase):
             allowed = ["src/gzkit/quality.py"]
             self.assertTrue(_check_docstring_proof(allowed, root))
 
+    @covers("REQ-0.23.0-02-06")
     def test_only_private_functions(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -172,6 +188,7 @@ class TestCheckDocstringProof(unittest.TestCase):
             allowed = ["src/gzkit/quality.py"]
             self.assertFalse(_check_docstring_proof(allowed, root))
 
+    @covers("REQ-0.23.0-02-06")
     def test_no_docstrings(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -182,12 +199,14 @@ class TestCheckDocstringProof(unittest.TestCase):
             allowed = ["src/gzkit/quality.py"]
             self.assertFalse(_check_docstring_proof(allowed, root))
 
+    @covers("REQ-0.23.0-02-06")
     def test_non_src_paths_ignored(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             allowed = ["tests/test_foo.py"]
             self.assertFalse(_check_docstring_proof(allowed, root))
 
+    @covers("REQ-0.23.0-02-06")
     def test_class_with_docstring(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -209,6 +228,7 @@ class TestCheckDocstringProof(unittest.TestCase):
 class TestCheckGovernanceArtifactProof(unittest.TestCase):
     """Tests for _check_governance_artifact_proof."""
 
+    @covers("REQ-0.23.0-02-01")
     def test_existing_artifact_with_content(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -220,12 +240,14 @@ class TestCheckGovernanceArtifactProof(unittest.TestCase):
             allowed = [".gzkit/personas/main-session.md"]
             self.assertTrue(_check_governance_artifact_proof(allowed, root))
 
+    @covers("REQ-0.23.0-02-01")
     def test_missing_artifact_file(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             allowed = [".gzkit/personas/main-session.md"]
             self.assertFalse(_check_governance_artifact_proof(allowed, root))
 
+    @covers("REQ-0.23.0-02-01")
     def test_empty_artifact(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -237,12 +259,14 @@ class TestCheckGovernanceArtifactProof(unittest.TestCase):
             allowed = [".gzkit/personas/empty.md"]
             self.assertFalse(_check_governance_artifact_proof(allowed, root))
 
+    @covers("REQ-0.23.0-02-01")
     def test_non_gzkit_paths_ignored(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             allowed = ["src/gzkit/quality.py", "docs/user/runbook.md"]
             self.assertFalse(_check_governance_artifact_proof(allowed, root))
 
+    @covers("REQ-0.23.0-02-01")
     def test_no_allowed_paths(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -252,6 +276,7 @@ class TestCheckGovernanceArtifactProof(unittest.TestCase):
 class TestCheckReleaseArtifactProof(unittest.TestCase):
     """GHI-118: docs/releases/PATCH-vX.Y.Z.md is valid product proof."""
 
+    @covers("REQ-0.23.0-02-01")
     def test_existing_release_manifest_with_content(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -270,12 +295,14 @@ class TestCheckReleaseArtifactProof(unittest.TestCase):
             allowed = ["docs/releases/PATCH-v0.24.3.md"]
             self.assertTrue(_check_release_artifact_proof(allowed, root))
 
+    @covers("REQ-0.23.0-02-01")
     def test_missing_release_manifest(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             allowed = ["docs/releases/PATCH-v0.24.3.md"]
             self.assertFalse(_check_release_artifact_proof(allowed, root))
 
+    @covers("REQ-0.23.0-02-01")
     def test_empty_release_manifest(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -285,6 +312,7 @@ class TestCheckReleaseArtifactProof(unittest.TestCase):
             allowed = ["docs/releases/PATCH-v0.0.0.md"]
             self.assertFalse(_check_release_artifact_proof(allowed, root))
 
+    @covers("REQ-0.23.0-02-01")
     def test_non_releases_paths_ignored(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -295,31 +323,37 @@ class TestCheckReleaseArtifactProof(unittest.TestCase):
 class TestObpiProofStatus(unittest.TestCase):
     """Tests for ObpiProofStatus model."""
 
+    @covers("REQ-0.23.0-02-01")
     def test_has_proof_runbook(self) -> None:
         status = ObpiProofStatus(obpi_id="OBPI-0.1.0-01", runbook_found=True)
         self.assertTrue(status.has_proof)
         self.assertEqual(status.proof_type, "runbook")
 
+    @covers("REQ-0.23.0-02-01")
     def test_has_proof_command_doc(self) -> None:
         status = ObpiProofStatus(obpi_id="OBPI-0.1.0-01", command_doc_found=True)
         self.assertTrue(status.has_proof)
         self.assertEqual(status.proof_type, "command_doc")
 
+    @covers("REQ-0.23.0-02-01")
     def test_has_proof_docstring(self) -> None:
         status = ObpiProofStatus(obpi_id="OBPI-0.1.0-01", docstring_found=True)
         self.assertTrue(status.has_proof)
         self.assertEqual(status.proof_type, "docstring")
 
+    @covers("REQ-0.23.0-02-01")
     def test_has_proof_governance_artifact(self) -> None:
         status = ObpiProofStatus(obpi_id="OBPI-0.1.0-01", governance_artifact_found=True)
         self.assertTrue(status.has_proof)
         self.assertEqual(status.proof_type, "governance_artifact")
 
+    @covers("REQ-0.23.0-02-01")
     def test_missing(self) -> None:
         status = ObpiProofStatus(obpi_id="OBPI-0.1.0-01")
         self.assertFalse(status.has_proof)
         self.assertEqual(status.proof_type, "MISSING")
 
+    @covers("REQ-0.23.0-02-01")
     def test_priority_order(self) -> None:
         """Runbook takes priority over command_doc over docstring over governance_artifact."""
         status = ObpiProofStatus(
@@ -331,10 +365,12 @@ class TestObpiProofStatus(unittest.TestCase):
         )
         self.assertEqual(status.proof_type, "runbook")
 
+    @covers("REQ-0.23.0-02-01")
     def test_governance_artifact_lowest_priority(self) -> None:
         status = ObpiProofStatus(obpi_id="OBPI-0.1.0-01", governance_artifact_found=True)
         self.assertEqual(status.proof_type, "governance_artifact")
 
+    @covers("REQ-0.23.0-02-01")
     def test_has_proof_release_artifact(self) -> None:
         status = ObpiProofStatus(obpi_id="OBPI-0.1.0-01", release_artifact_found=True)
         self.assertTrue(status.has_proof)
@@ -362,6 +398,8 @@ class TestCheckProductProof(unittest.TestCase):
         )
         return brief_path
 
+    @covers("REQ-0.23.0-02-01")
+    @covers("REQ-0.23.0-02-04")
     def test_all_proof_types_present(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = self._make_project(tmp)
@@ -381,6 +419,7 @@ class TestCheckProductProof(unittest.TestCase):
             self.assertEqual(result.missing_count, 0)
             self.assertEqual(result.obpi_proofs[0].proof_type, "runbook")
 
+    @covers("REQ-0.23.0-02-01")
     def test_missing_proof(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = self._make_project(tmp)
@@ -396,6 +435,8 @@ class TestCheckProductProof(unittest.TestCase):
             self.assertEqual(result.missing_count, 1)
             self.assertEqual(result.obpi_proofs[0].proof_type, "MISSING")
 
+    @covers("REQ-0.23.0-02-01")
+    @covers("REQ-0.23.0-02-06")
     def test_docstring_only_proof(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = self._make_project(tmp)
@@ -412,6 +453,7 @@ class TestCheckProductProof(unittest.TestCase):
             self.assertTrue(result.success)
             self.assertEqual(result.obpi_proofs[0].proof_type, "docstring")
 
+    @covers("REQ-0.23.0-02-01")
     def test_empty_obpi_files(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = self._make_project(tmp)
@@ -420,6 +462,7 @@ class TestCheckProductProof(unittest.TestCase):
             self.assertEqual(result.missing_count, 0)
             self.assertEqual(result.obpi_proofs, [])
 
+    @covers("REQ-0.23.0-02-01")
     def test_multiple_obpis_mixed(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = self._make_project(tmp)
@@ -440,6 +483,8 @@ class TestCheckProductProof(unittest.TestCase):
             self.assertFalse(result.success)
             self.assertEqual(result.missing_count, 1)
 
+    @covers("REQ-0.23.0-02-01")
+    @covers("REQ-0.23.0-02-06")
     def test_no_runbook_file(self) -> None:
         """Product proof works even when runbook doesn't exist."""
         with tempfile.TemporaryDirectory() as tmp:
@@ -455,6 +500,7 @@ class TestCheckProductProof(unittest.TestCase):
             result = check_product_proof("ADR-0.1.0", obpi_files, root)
             self.assertTrue(result.success)
 
+    @covers("REQ-0.23.0-02-01")
     def test_governance_artifact_proof(self) -> None:
         """OBPIs with .gzkit/ allowed paths pass via governance artifact proof."""
         with tempfile.TemporaryDirectory() as tmp:
