@@ -1,0 +1,6803 @@
+{
+  "by_adr": [
+    {
+      "identifier": "ADR-0.0.3",
+      "total_reqs": 56,
+      "covered_reqs": 56,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "ADR-0.0.4",
+      "total_reqs": 48,
+      "covered_reqs": 48,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "ADR-0.0.5",
+      "total_reqs": 14,
+      "covered_reqs": 14,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "ADR-0.0.6",
+      "total_reqs": 12,
+      "covered_reqs": 12,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "ADR-0.0.7",
+      "total_reqs": 16,
+      "covered_reqs": 9,
+      "uncovered_reqs": 7,
+      "coverage_percent": 56.2
+    },
+    {
+      "identifier": "ADR-0.0.8",
+      "total_reqs": 41,
+      "covered_reqs": 34,
+      "uncovered_reqs": 7,
+      "coverage_percent": 82.9
+    },
+    {
+      "identifier": "ADR-0.0.9",
+      "total_reqs": 20,
+      "covered_reqs": 2,
+      "uncovered_reqs": 18,
+      "coverage_percent": 10.0
+    },
+    {
+      "identifier": "ADR-0.0.10",
+      "total_reqs": 18,
+      "covered_reqs": 4,
+      "uncovered_reqs": 14,
+      "coverage_percent": 22.2
+    },
+    {
+      "identifier": "ADR-0.0.11",
+      "total_reqs": 20,
+      "covered_reqs": 13,
+      "uncovered_reqs": 7,
+      "coverage_percent": 65.0
+    },
+    {
+      "identifier": "ADR-0.0.12",
+      "total_reqs": 22,
+      "covered_reqs": 21,
+      "uncovered_reqs": 1,
+      "coverage_percent": 95.5
+    },
+    {
+      "identifier": "ADR-0.0.13",
+      "total_reqs": 31,
+      "covered_reqs": 16,
+      "uncovered_reqs": 15,
+      "coverage_percent": 51.6
+    },
+    {
+      "identifier": "ADR-0.0.14",
+      "total_reqs": 29,
+      "covered_reqs": 29,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "ADR-0.0.15",
+      "total_reqs": 27,
+      "covered_reqs": 11,
+      "uncovered_reqs": 16,
+      "coverage_percent": 40.7
+    },
+    {
+      "identifier": "ADR-0.10.0",
+      "total_reqs": 6,
+      "covered_reqs": 6,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "ADR-0.11.0",
+      "total_reqs": 10,
+      "covered_reqs": 10,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "ADR-0.12.0",
+      "total_reqs": 12,
+      "covered_reqs": 12,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "ADR-0.13.0",
+      "total_reqs": 16,
+      "covered_reqs": 16,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "ADR-0.14.0",
+      "total_reqs": 17,
+      "covered_reqs": 17,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "ADR-0.15.0",
+      "total_reqs": 4,
+      "covered_reqs": 4,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "ADR-0.17.0",
+      "total_reqs": 18,
+      "covered_reqs": 18,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "ADR-0.19.0",
+      "total_reqs": 40,
+      "covered_reqs": 40,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "ADR-0.20.0",
+      "total_reqs": 24,
+      "covered_reqs": 24,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "ADR-0.21.0",
+      "total_reqs": 15,
+      "covered_reqs": 15,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "ADR-0.22.0",
+      "total_reqs": 26,
+      "covered_reqs": 26,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "ADR-0.25.0",
+      "total_reqs": 165,
+      "covered_reqs": 25,
+      "uncovered_reqs": 140,
+      "coverage_percent": 15.2
+    },
+    {
+      "identifier": "ADR-0.26.0",
+      "total_reqs": 60,
+      "covered_reqs": 0,
+      "uncovered_reqs": 60,
+      "coverage_percent": 0.0
+    }
+  ],
+  "by_obpi": [
+    {
+      "identifier": "OBPI-0.0.3-01",
+      "total_reqs": 9,
+      "covered_reqs": 9,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.3-02",
+      "total_reqs": 6,
+      "covered_reqs": 6,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.3-03",
+      "total_reqs": 8,
+      "covered_reqs": 8,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.3-04",
+      "total_reqs": 6,
+      "covered_reqs": 6,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.3-05",
+      "total_reqs": 5,
+      "covered_reqs": 5,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.3-06",
+      "total_reqs": 7,
+      "covered_reqs": 7,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.3-07",
+      "total_reqs": 7,
+      "covered_reqs": 7,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.3-08",
+      "total_reqs": 8,
+      "covered_reqs": 8,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.4-02",
+      "total_reqs": 8,
+      "covered_reqs": 8,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.4-03",
+      "total_reqs": 6,
+      "covered_reqs": 6,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.4-04",
+      "total_reqs": 4,
+      "covered_reqs": 4,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.4-05",
+      "total_reqs": 5,
+      "covered_reqs": 5,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.4-06",
+      "total_reqs": 8,
+      "covered_reqs": 8,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.4-07",
+      "total_reqs": 5,
+      "covered_reqs": 5,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.4-08",
+      "total_reqs": 8,
+      "covered_reqs": 8,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.4-09",
+      "total_reqs": 4,
+      "covered_reqs": 4,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.5-01",
+      "total_reqs": 1,
+      "covered_reqs": 1,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.5-02",
+      "total_reqs": 4,
+      "covered_reqs": 4,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.5-03",
+      "total_reqs": 4,
+      "covered_reqs": 4,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.5-04",
+      "total_reqs": 5,
+      "covered_reqs": 5,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.6-01",
+      "total_reqs": 4,
+      "covered_reqs": 4,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.6-02",
+      "total_reqs": 4,
+      "covered_reqs": 4,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.6-03",
+      "total_reqs": 4,
+      "covered_reqs": 4,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.7-01",
+      "total_reqs": 3,
+      "covered_reqs": 3,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.7-02",
+      "total_reqs": 3,
+      "covered_reqs": 3,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.7-03",
+      "total_reqs": 3,
+      "covered_reqs": 0,
+      "uncovered_reqs": 3,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.0.7-04",
+      "total_reqs": 3,
+      "covered_reqs": 0,
+      "uncovered_reqs": 3,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.0.7-05",
+      "total_reqs": 4,
+      "covered_reqs": 3,
+      "uncovered_reqs": 1,
+      "coverage_percent": 75.0
+    },
+    {
+      "identifier": "OBPI-0.0.8-01",
+      "total_reqs": 6,
+      "covered_reqs": 6,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.8-02",
+      "total_reqs": 7,
+      "covered_reqs": 7,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.8-03",
+      "total_reqs": 4,
+      "covered_reqs": 4,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.8-04",
+      "total_reqs": 5,
+      "covered_reqs": 4,
+      "uncovered_reqs": 1,
+      "coverage_percent": 80.0
+    },
+    {
+      "identifier": "OBPI-0.0.8-05",
+      "total_reqs": 5,
+      "covered_reqs": 5,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.8-06",
+      "total_reqs": 4,
+      "covered_reqs": 4,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.8-07",
+      "total_reqs": 4,
+      "covered_reqs": 4,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.8-08",
+      "total_reqs": 6,
+      "covered_reqs": 0,
+      "uncovered_reqs": 6,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.0.9-01",
+      "total_reqs": 3,
+      "covered_reqs": 0,
+      "uncovered_reqs": 3,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.0.9-02",
+      "total_reqs": 3,
+      "covered_reqs": 2,
+      "uncovered_reqs": 1,
+      "coverage_percent": 66.7
+    },
+    {
+      "identifier": "OBPI-0.0.9-03",
+      "total_reqs": 4,
+      "covered_reqs": 0,
+      "uncovered_reqs": 4,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.0.9-04",
+      "total_reqs": 4,
+      "covered_reqs": 0,
+      "uncovered_reqs": 4,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.0.9-05",
+      "total_reqs": 3,
+      "covered_reqs": 0,
+      "uncovered_reqs": 3,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.0.9-06",
+      "total_reqs": 3,
+      "covered_reqs": 0,
+      "uncovered_reqs": 3,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.0.10-01",
+      "total_reqs": 6,
+      "covered_reqs": 0,
+      "uncovered_reqs": 6,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.0.10-02",
+      "total_reqs": 3,
+      "covered_reqs": 3,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.10-03",
+      "total_reqs": 6,
+      "covered_reqs": 0,
+      "uncovered_reqs": 6,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.0.10-04",
+      "total_reqs": 3,
+      "covered_reqs": 1,
+      "uncovered_reqs": 2,
+      "coverage_percent": 33.3
+    },
+    {
+      "identifier": "OBPI-0.0.11-01",
+      "total_reqs": 3,
+      "covered_reqs": 0,
+      "uncovered_reqs": 3,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.0.11-02",
+      "total_reqs": 5,
+      "covered_reqs": 4,
+      "uncovered_reqs": 1,
+      "coverage_percent": 80.0
+    },
+    {
+      "identifier": "OBPI-0.0.11-03",
+      "total_reqs": 3,
+      "covered_reqs": 3,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.11-04",
+      "total_reqs": 3,
+      "covered_reqs": 3,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.11-05",
+      "total_reqs": 3,
+      "covered_reqs": 0,
+      "uncovered_reqs": 3,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.0.11-06",
+      "total_reqs": 3,
+      "covered_reqs": 3,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.12-01",
+      "total_reqs": 3,
+      "covered_reqs": 3,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.12-02",
+      "total_reqs": 3,
+      "covered_reqs": 3,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.12-03",
+      "total_reqs": 3,
+      "covered_reqs": 3,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.12-04",
+      "total_reqs": 3,
+      "covered_reqs": 3,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.12-05",
+      "total_reqs": 3,
+      "covered_reqs": 3,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.12-06",
+      "total_reqs": 4,
+      "covered_reqs": 4,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.12-07",
+      "total_reqs": 3,
+      "covered_reqs": 2,
+      "uncovered_reqs": 1,
+      "coverage_percent": 66.7
+    },
+    {
+      "identifier": "OBPI-0.0.13-01",
+      "total_reqs": 5,
+      "covered_reqs": 5,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.13-02",
+      "total_reqs": 4,
+      "covered_reqs": 0,
+      "uncovered_reqs": 4,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.0.13-03",
+      "total_reqs": 6,
+      "covered_reqs": 0,
+      "uncovered_reqs": 6,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.0.13-04",
+      "total_reqs": 5,
+      "covered_reqs": 5,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.13-05",
+      "total_reqs": 6,
+      "covered_reqs": 6,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.13-06",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.0.14-01",
+      "total_reqs": 8,
+      "covered_reqs": 8,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.14-02",
+      "total_reqs": 9,
+      "covered_reqs": 9,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.14-03",
+      "total_reqs": 12,
+      "covered_reqs": 12,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.15-01",
+      "total_reqs": 4,
+      "covered_reqs": 0,
+      "uncovered_reqs": 4,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.0.15-02",
+      "total_reqs": 5,
+      "covered_reqs": 3,
+      "uncovered_reqs": 2,
+      "coverage_percent": 60.0
+    },
+    {
+      "identifier": "OBPI-0.0.15-03",
+      "total_reqs": 4,
+      "covered_reqs": 4,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.15-04",
+      "total_reqs": 4,
+      "covered_reqs": 4,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.0.15-05",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.0.15-06",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.10.0-01",
+      "total_reqs": 1,
+      "covered_reqs": 1,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.10.0-02",
+      "total_reqs": 3,
+      "covered_reqs": 3,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.10.0-03",
+      "total_reqs": 2,
+      "covered_reqs": 2,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.11.0-01",
+      "total_reqs": 1,
+      "covered_reqs": 1,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.11.0-02",
+      "total_reqs": 3,
+      "covered_reqs": 3,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.11.0-03",
+      "total_reqs": 3,
+      "covered_reqs": 3,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.11.0-04",
+      "total_reqs": 3,
+      "covered_reqs": 3,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.12.0-01",
+      "total_reqs": 2,
+      "covered_reqs": 2,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.12.0-02",
+      "total_reqs": 2,
+      "covered_reqs": 2,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.12.0-03",
+      "total_reqs": 2,
+      "covered_reqs": 2,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.12.0-04",
+      "total_reqs": 2,
+      "covered_reqs": 2,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.12.0-05",
+      "total_reqs": 2,
+      "covered_reqs": 2,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.12.0-06",
+      "total_reqs": 2,
+      "covered_reqs": 2,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.13.0-01",
+      "total_reqs": 4,
+      "covered_reqs": 4,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.13.0-02",
+      "total_reqs": 3,
+      "covered_reqs": 3,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.13.0-03",
+      "total_reqs": 4,
+      "covered_reqs": 4,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.13.0-04",
+      "total_reqs": 3,
+      "covered_reqs": 3,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.13.0-05",
+      "total_reqs": 2,
+      "covered_reqs": 2,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.14.0-01",
+      "total_reqs": 3,
+      "covered_reqs": 3,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.14.0-02",
+      "total_reqs": 3,
+      "covered_reqs": 3,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.14.0-04",
+      "total_reqs": 4,
+      "covered_reqs": 4,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.14.0-05",
+      "total_reqs": 3,
+      "covered_reqs": 3,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.14.0-06",
+      "total_reqs": 4,
+      "covered_reqs": 4,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.15.0-01",
+      "total_reqs": 4,
+      "covered_reqs": 4,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.17.0-02",
+      "total_reqs": 6,
+      "covered_reqs": 6,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.17.0-03",
+      "total_reqs": 6,
+      "covered_reqs": 6,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.17.0-04",
+      "total_reqs": 6,
+      "covered_reqs": 6,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.19.0-01",
+      "total_reqs": 7,
+      "covered_reqs": 7,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.19.0-02",
+      "total_reqs": 7,
+      "covered_reqs": 7,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.19.0-04",
+      "total_reqs": 5,
+      "covered_reqs": 5,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.19.0-05",
+      "total_reqs": 5,
+      "covered_reqs": 5,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.19.0-06",
+      "total_reqs": 5,
+      "covered_reqs": 5,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.19.0-07",
+      "total_reqs": 4,
+      "covered_reqs": 4,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.19.0-08",
+      "total_reqs": 3,
+      "covered_reqs": 3,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.19.0-09",
+      "total_reqs": 4,
+      "covered_reqs": 4,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.20.0-01",
+      "total_reqs": 4,
+      "covered_reqs": 4,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.20.0-02",
+      "total_reqs": 4,
+      "covered_reqs": 4,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.20.0-03",
+      "total_reqs": 5,
+      "covered_reqs": 5,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.20.0-04",
+      "total_reqs": 6,
+      "covered_reqs": 6,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.20.0-05",
+      "total_reqs": 5,
+      "covered_reqs": 5,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.21.0-01",
+      "total_reqs": 5,
+      "covered_reqs": 5,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.21.0-02",
+      "total_reqs": 3,
+      "covered_reqs": 3,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.21.0-03",
+      "total_reqs": 4,
+      "covered_reqs": 4,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.21.0-04",
+      "total_reqs": 3,
+      "covered_reqs": 3,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.22.0-01",
+      "total_reqs": 6,
+      "covered_reqs": 6,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.22.0-02",
+      "total_reqs": 4,
+      "covered_reqs": 4,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.22.0-03",
+      "total_reqs": 4,
+      "covered_reqs": 4,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.22.0-04",
+      "total_reqs": 7,
+      "covered_reqs": 7,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.22.0-05",
+      "total_reqs": 5,
+      "covered_reqs": 5,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.25.0-01",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.25.0-02",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.25.0-03",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.25.0-04",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.25.0-05",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.25.0-06",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.25.0-07",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.25.0-08",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.25.0-09",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.25.0-10",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.25.0-11",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.25.0-12",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.25.0-13",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.25.0-14",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.25.0-15",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.25.0-16",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.25.0-17",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.25.0-18",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.25.0-19",
+      "total_reqs": 5,
+      "covered_reqs": 3,
+      "uncovered_reqs": 2,
+      "coverage_percent": 60.0
+    },
+    {
+      "identifier": "OBPI-0.25.0-20",
+      "total_reqs": 5,
+      "covered_reqs": 3,
+      "uncovered_reqs": 2,
+      "coverage_percent": 60.0
+    },
+    {
+      "identifier": "OBPI-0.25.0-21",
+      "total_reqs": 5,
+      "covered_reqs": 3,
+      "uncovered_reqs": 2,
+      "coverage_percent": 60.0
+    },
+    {
+      "identifier": "OBPI-0.25.0-22",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.25.0-23",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.25.0-24",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.25.0-25",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.25.0-26",
+      "total_reqs": 5,
+      "covered_reqs": 5,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.25.0-27",
+      "total_reqs": 5,
+      "covered_reqs": 5,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.25.0-28",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.25.0-29",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.25.0-30",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.25.0-31",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.25.0-32",
+      "total_reqs": 5,
+      "covered_reqs": 5,
+      "uncovered_reqs": 0,
+      "coverage_percent": 100.0
+    },
+    {
+      "identifier": "OBPI-0.25.0-33",
+      "total_reqs": 5,
+      "covered_reqs": 1,
+      "uncovered_reqs": 4,
+      "coverage_percent": 20.0
+    },
+    {
+      "identifier": "OBPI-0.26.0-01",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.26.0-02",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.26.0-03",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.26.0-04",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.26.0-05",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.26.0-06",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.26.0-07",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.26.0-08",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.26.0-09",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.26.0-10",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.26.0-11",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    },
+    {
+      "identifier": "OBPI-0.26.0-12",
+      "total_reqs": 5,
+      "covered_reqs": 0,
+      "uncovered_reqs": 5,
+      "coverage_percent": 0.0
+    }
+  ],
+  "entries": [
+    {
+      "req_id": "REQ-0.0.3-01-01",
+      "covered": true,
+      "covering_tests": [
+        "TestFileStoreProtocol.test_has_exists",
+        "TestFileStoreProtocol.test_has_iterdir",
+        "TestFileStoreProtocol.test_has_read_text",
+        "TestFileStoreProtocol.test_has_write_text",
+        "TestProtocolImports.test_filestore_importable"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-01-02",
+      "covered": true,
+      "covering_tests": [
+        "TestProcessRunnerProtocol.test_has_run",
+        "TestProtocolImports.test_processrunner_importable"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-01-03",
+      "covered": true,
+      "covering_tests": [
+        "TestLedgerStoreProtocol.test_has_append",
+        "TestLedgerStoreProtocol.test_has_read_all",
+        "TestProtocolImports.test_ledgerstore_importable"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-01-04",
+      "covered": true,
+      "covering_tests": [
+        "TestConfigStoreProtocol.test_has_load",
+        "TestConfigStoreProtocol.test_has_save",
+        "TestProtocolImports.test_configstore_importable"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-01-05",
+      "covered": true,
+      "covering_tests": [
+        "TestPortsBoundaryConstraints.test_ports_init_imports_only_from_ports"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-01-06",
+      "covered": true,
+      "covering_tests": [
+        "TestSkeletonDirectories.test_core_init_exists"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-01-07",
+      "covered": true,
+      "covering_tests": [
+        "TestSkeletonDirectories.test_adapters_init_exists"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-01-08",
+      "covered": true,
+      "covering_tests": [
+        "TestPortsBoundaryConstraints.test_ports_interfaces_imports_only_stdlib"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-01-10",
+      "covered": true,
+      "covering_tests": [
+        "TestSkeletonDirectories.test_ports_init_exists",
+        "TestSkeletonDirectories.test_ports_interfaces_exists"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-02-01",
+      "covered": true,
+      "covering_tests": [
+        "TestCorePureFunctions.test_get_all_states",
+        "TestCorePureFunctions.test_get_allowed_transitions",
+        "TestCorePureFunctions.test_invalid_transition_error",
+        "TestCorePureFunctions.test_is_valid_transition",
+        "TestCoreTransitionRule.test_transition_rule_frozen",
+        "TestCoreTransitionRule.test_transition_rule_immutable",
+        "TestCoreTransitionTables.test_adr_transitions_exist",
+        "TestCoreTransitionTables.test_all_content_types_present",
+        "TestCoreTransitionTables.test_obpi_transitions_exist"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-02-02",
+      "covered": true,
+      "covering_tests": [
+        "TestCoreDecompositionScorecard.test_scorecard_frozen"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-02-03",
+      "covered": true,
+      "covering_tests": [
+        "TestCoreExtractHeaders.test_extracts_h2_headers",
+        "TestCoreParseFrontmatter.test_no_frontmatter",
+        "TestCoreParseFrontmatter.test_parses_yaml_frontmatter"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-02-04",
+      "covered": true,
+      "covering_tests": [
+        "TestCoreAdrFrontmatter.test_valid_adr_frontmatter",
+        "TestCoreObpiFrontmatter.test_valid_obpi_frontmatter",
+        "TestCorePrdFrontmatter.test_valid_prd_frontmatter",
+        "TestCoreValidateFrontmatterModel.test_returns_none_for_unknown_schema"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-02-05",
+      "covered": true,
+      "covering_tests": [
+        "TestCoreReExports.test_lifecycle_reexports_functions",
+        "TestCoreReExports.test_lifecycle_reexports_transition_tables",
+        "TestCoreReExports.test_models_frontmatter_reexports",
+        "TestCoreReExports.test_models_reexports_adr"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-02-08",
+      "covered": true,
+      "covering_tests": [
+        "TestCoreMarkdownParsing.test_extract_section"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-03-01",
+      "covered": true,
+      "covering_tests": [
+        "TestExceptionHierarchy.test_gz_error_is_base"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-03-02",
+      "covered": true,
+      "covering_tests": [
+        "TestExitCodeMapping.test_transient_exit_code_is_2"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-03-03",
+      "covered": true,
+      "covering_tests": [
+        "TestExitCodeMapping.test_permanent_exit_code_is_1"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-03-04",
+      "covered": true,
+      "covering_tests": [
+        "TestExitCodeMapping.test_operator_exit_code_is_1"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-03-05",
+      "covered": true,
+      "covering_tests": [
+        "TestExitCodeMapping.test_policy_exit_code_is_3"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-03-06",
+      "covered": true,
+      "covering_tests": [
+        "TestExceptionHierarchy.test_transient_inherits_gz_error"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-03-07",
+      "covered": true,
+      "covering_tests": [
+        "TestImportPaths.test_all_importable"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-03-08",
+      "covered": true,
+      "covering_tests": [
+        "TestExceptionUsability.test_each_exception_type_distinct"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-04-01",
+      "covered": true,
+      "covering_tests": [
+        "TestFakesPackageImports.test_import_in_memory_file_store"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-04-02",
+      "covered": true,
+      "covering_tests": [
+        "TestFakesPackageImports.test_import_in_memory_process_runner"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-04-03",
+      "covered": true,
+      "covering_tests": [
+        "TestFakesPackageImports.test_import_in_memory_ledger_store"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-04-04",
+      "covered": true,
+      "covering_tests": [
+        "TestFakesPackageImports.test_import_in_memory_config_store"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-04-06",
+      "covered": true,
+      "covering_tests": [
+        "TestInMemoryFileStore.test_write_then_read_round_trip"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-04-08",
+      "covered": true,
+      "covering_tests": [
+        "TestProtocolMethodPresence.test_file_store_protocol_methods"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-05-01",
+      "covered": true,
+      "covering_tests": [
+        "TestLoadConfigDefaults.test_missing_file_returns_defaults"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-05-02",
+      "covered": true,
+      "covering_tests": [
+        "TestLoadConfigDefaults.test_returns_frozen_config"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-05-03",
+      "covered": true,
+      "covering_tests": [
+        "TestFileConfigStore.test_satisfies_config_store_protocol"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-05-04",
+      "covered": true,
+      "covering_tests": [
+        "TestLoadConfigPrecedence.test_no_env_parameter_exists"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-05-07",
+      "covered": true,
+      "covering_tests": [
+        "TestLoadConfigPrecedence.test_cli_overrides_override_file"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-06-02",
+      "covered": true,
+      "covering_tests": [
+        "TestOutputFormatterInit.test_default_mode_is_human"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-06-03",
+      "covered": true,
+      "covering_tests": [
+        "TestJsonMode.test_data_outputs_valid_json_to_stdout"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-06-04",
+      "covered": true,
+      "covering_tests": [
+        "TestHumanMode.test_err_goes_to_stderr",
+        "TestQuietMode.test_print_suppressed"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-06-05",
+      "covered": true,
+      "covering_tests": [
+        "TestVerboseMode.test_verbose_message_shown"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-06-06",
+      "covered": true,
+      "covering_tests": [
+        "TestDebugMode.test_debug_message_shown"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-06-07",
+      "covered": true,
+      "covering_tests": [
+        "TestNoColor.test_no_color_respected_in_human_mode"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-06-08",
+      "covered": true,
+      "covering_tests": [
+        "TestOutputFormatterInit.test_all_valid_modes_accepted"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-07-01",
+      "covered": true,
+      "covering_tests": [
+        "TestConfigureLogging.test_configure_logging_is_single_entry_point"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-07-03",
+      "covered": true,
+      "covering_tests": [
+        "TestConfigureLogging.test_configure_logging_accepts_all_verbosities"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-07-04",
+      "covered": true,
+      "covering_tests": [
+        "TestJsonFileOutput.test_json_file_contains_valid_json"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-07-05",
+      "covered": true,
+      "covering_tests": [
+        "TestConsoleOutput.test_console_output_is_human_readable"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-07-06",
+      "covered": true,
+      "covering_tests": [
+        "TestCorrelationId.test_bind_correlation_id_returns_id"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-07-07",
+      "covered": true,
+      "covering_tests": [
+        "TestCoreLayerBinding.test_structlog_get_logger_works_without_configure"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-07-08",
+      "covered": true,
+      "covering_tests": [
+        "TestConfigureLogging.test_configure_logging_accepts_all_verbosities"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-08-01",
+      "covered": true,
+      "covering_tests": [
+        "TestImportBoundary.test_importable_from_cli_package"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-08-02",
+      "covered": true,
+      "covering_tests": [
+        "TestProgressSpinner.test_spinner_runs_in_human_mode"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-08-03",
+      "covered": true,
+      "covering_tests": [
+        "TestProgressSpinner.test_spinner_suppressed_in_quiet_mode"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-08-04",
+      "covered": true,
+      "covering_tests": [
+        "TestProgressSpinner.test_spinner_suppressed_in_json_mode"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-08-05",
+      "covered": true,
+      "covering_tests": [
+        "TestProgressPhase.test_phase_with_step_counting"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-08-06",
+      "covered": true,
+      "covering_tests": [
+        "TestProgressBar.test_bar_runs_in_human_mode"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-08-07",
+      "covered": true,
+      "covering_tests": [
+        "TestProgressSpinner.test_spinner_cleanup_on_exception"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.3-08-08",
+      "covered": true,
+      "covering_tests": [
+        "TestModeIntegration.test_all_suppressed_modes"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-02-01",
+      "covered": true,
+      "covering_tests": [
+        "TestStableArgumentParserIntegration.test_parser_is_used_in_main"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-02-02",
+      "covered": true,
+      "covering_tests": [
+        "TestStableArgumentParserError.test_error_writes_blockers_prefix_to_stderr"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-02-03",
+      "covered": true,
+      "covering_tests": [
+        "TestStableArgumentParserError.test_parse_error_exits_with_code_2"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-02-04",
+      "covered": true,
+      "covering_tests": [
+        "TestNoHyphenBreaksFormatter.test_fill_text_preserves_hyphenated_tokens",
+        "TestNoHyphenBreaksFormatter.test_split_lines_preserves_hyphenated_tokens"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-02-05",
+      "covered": true,
+      "covering_tests": [
+        "TestNoHyphenBreaksFormatter.test_split_lines_handles_dedent",
+        "TestStableArgumentParserError.test_parser_uses_no_hyphen_breaks_formatter_by_default"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-02-06",
+      "covered": true,
+      "covering_tests": [
+        "TestExitCodeConstants.test_standard_epilog_contains_all_codes",
+        "TestExitCodeConstants.test_standard_epilog_contains_labels",
+        "TestExitCodeConstants.test_standard_epilog_is_string"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-02-07",
+      "covered": true,
+      "covering_tests": [
+        "TestExitCodeConstants.test_exit_policy_breach_is_three",
+        "TestExitCodeConstants.test_exit_success_is_zero",
+        "TestExitCodeConstants.test_exit_system_error_is_two",
+        "TestExitCodeConstants.test_exit_user_error_is_one"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-02-08",
+      "covered": true,
+      "covering_tests": [
+        "TestStableArgumentParserIntegration.test_help_output_preserves_hyphens"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-03-01",
+      "covered": true,
+      "covering_tests": [
+        "TestAddCommonFlagsRegistration.test_registers_quiet",
+        "TestAddCommonFlagsRegistration.test_registers_verbose"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-03-02",
+      "covered": true,
+      "covering_tests": [
+        "TestAddCommonFlagsRegistration.test_registers_debug"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-03-03",
+      "covered": true,
+      "covering_tests": [
+        "TestMutualExclusion.test_quiet_and_verbose_together_raises",
+        "TestMutualExclusion.test_verbose_and_quiet_together_raises"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-03-04",
+      "covered": true,
+      "covering_tests": [
+        "TestFlagRegistration.test_flag_registered"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-03-05",
+      "covered": true,
+      "covering_tests": [
+        "TestHelpOverrides.test_default_help_present_when_no_override",
+        "TestHelpOverrides.test_help_overrides_appear"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-03-06",
+      "covered": true,
+      "covering_tests": [
+        "TestIdempotency.test_double_call_does_not_raise"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-04-01",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_help_text_completeness.py",
+        "TestHelpTextCompleteness.test_all_arguments_have_help"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-04-02",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_help_text_completeness.py",
+        "TestHelpTextCompleteness.test_all_parsers_have_description"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-04-03",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_help_text_completeness.py",
+        "TestHelpTextCompleteness.test_no_forbidden_patterns_in_help"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-04-04",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_help_text_completeness.py",
+        "TestHelpTextCompleteness.test_help_text_under_80_chars"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-05-01",
+      "covered": true,
+      "covering_tests": [
+        "TestBuildEpilog.test_basic_output",
+        "TestBuildEpilog.test_signature_matches_spec"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-05-02",
+      "covered": true,
+      "covering_tests": [
+        "TestEpilogPresence.test_top_level_commands_have_epilog"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-05-03",
+      "covered": true,
+      "covering_tests": [
+        "TestEpilogPresence.test_subcommands_have_epilog"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-05-04",
+      "covered": true,
+      "covering_tests": [
+        "TestEpilogPresence.test_epilogs_contain_examples_section",
+        "TestEpilogPresence.test_epilogs_contain_exit_codes_section"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-05-05",
+      "covered": true,
+      "covering_tests": [
+        "TestEpilogExamples.test_examples_start_with_gz"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-06-01",
+      "covered": true,
+      "covering_tests": [
+        "TestConsoleParameter.test_default_creates_internal_console",
+        "TestConsoleParameter.test_provided_console_is_used",
+        "TestEmitMethod.test_string_human_mode_outputs_to_console",
+        "TestHumanMode.test_print_outputs_to_console",
+        "TestModeFromFlags.test_default_is_human",
+        "TestNoColor.test_no_color_respected_in_human_mode"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-06-02",
+      "covered": true,
+      "covering_tests": [
+        "TestEmitMethod.test_dict_json_mode_outputs_valid_json_sorted",
+        "TestJsonMode.test_data_and_logs_never_mix_on_stdout",
+        "TestJsonMode.test_data_outputs_valid_json_to_stdout",
+        "TestOutputModeEnum.test_has_exactly_five_members",
+        "TestOutputModeEnum.test_member_names"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-06-03",
+      "covered": true,
+      "covering_tests": [
+        "TestEmitMethod.test_pydantic_json_mode_outputs_model_dump_json"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-06-04",
+      "covered": true,
+      "covering_tests": [
+        "TestEmitMethod.test_quiet_mode_suppresses_dict",
+        "TestEmitMethod.test_quiet_mode_suppresses_pydantic_model",
+        "TestEmitMethod.test_quiet_mode_suppresses_string",
+        "TestQuietMode.test_data_suppressed",
+        "TestQuietMode.test_print_suppressed"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-06-05",
+      "covered": true,
+      "covering_tests": [
+        "TestEmitError.test_debug_mode_writes_to_stderr",
+        "TestEmitError.test_human_mode_writes_to_stderr",
+        "TestEmitError.test_json_mode_writes_to_stderr",
+        "TestEmitError.test_quiet_mode_writes_to_stderr_never_suppressed",
+        "TestEmitError.test_verbose_mode_writes_to_stderr",
+        "TestQuietMode.test_err_still_outputs"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-06-06",
+      "covered": true,
+      "covering_tests": [
+        "TestEmitTable.test_human_mode_renders_table",
+        "TestEmitTable.test_json_mode_outputs_valid_json_array",
+        "TestEmitTable.test_json_mode_rows_have_column_keys"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-06-07",
+      "covered": true,
+      "covering_tests": [
+        "TestEmitStatus.test_human_mode_failure_shows_cross",
+        "TestEmitStatus.test_human_mode_success_shows_checkmark",
+        "TestEmitStatus.test_json_mode_failure_outputs_json",
+        "TestEmitStatus.test_json_mode_success_outputs_json"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-06-08",
+      "covered": true,
+      "covering_tests": [
+        "TestEmitBlocker.test_blockers_prefix_always_present",
+        "TestEmitBlocker.test_debug_mode_writes_blockers_to_stderr",
+        "TestEmitBlocker.test_human_mode_writes_blockers_to_stderr",
+        "TestEmitBlocker.test_json_mode_writes_blockers_to_stderr",
+        "TestEmitBlocker.test_quiet_mode_writes_blockers_to_stderr_never_suppressed",
+        "TestEmitBlocker.test_verbose_mode_writes_blockers_to_stderr"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-07-01",
+      "covered": true,
+      "covering_tests": [
+        "TestExceptionHierarchy.test_gzkit_error_is_base",
+        "TestExceptionHierarchy.test_policy_breach_error",
+        "TestExceptionHierarchy.test_transient_error",
+        "TestExceptionHierarchy.test_validation_error"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-07-02",
+      "covered": true,
+      "covering_tests": [
+        "TestStableArgumentParserError.test_error_writes_blockers_prefix_to_stderr"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-07-03",
+      "covered": true,
+      "covering_tests": [
+        "TestStableArgumentParserIntegration.test_parser_is_used_in_main"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-07-04",
+      "covered": true,
+      "covering_tests": [
+        "TestCliBoundaryPattern.test_debug_flag_prints_traceback_to_stderr"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-07-07",
+      "covered": true,
+      "covering_tests": [
+        "TestGzCliErrorIntegration.test_caught_by_gzkit_error_handler",
+        "TestGzCliErrorIntegration.test_gz_cli_error_is_gzkit_error"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-08-01",
+      "covered": true,
+      "covering_tests": [
+        "TestStatusTables.test_status_tables_use_rounded_box"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-08-02",
+      "covered": true,
+      "covering_tests": [
+        "TestCheckSymbols.test_check_function_uses_symbols"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-08-03",
+      "covered": true,
+      "covering_tests": [
+        "TestTidySymbols.test_tidy_uses_symbols"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-08-04",
+      "covered": true,
+      "covering_tests": [
+        "TestValidateItemized.test_validate_shows_scopes"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-08-05",
+      "covered": true,
+      "covering_tests": [
+        "TestGatesSymbols.test_gates_uses_symbols"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-08-06",
+      "covered": true,
+      "covering_tests": [
+        "TestBlockersPrefix.test_parser_error_uses_blockers_prefix"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-08-08",
+      "covered": true,
+      "covering_tests": [
+        "TestNoColorDegradation.test_output_formatter_respects_no_color"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-08-09",
+      "covered": true,
+      "covering_tests": [
+        "TestJsonModeClean.test_emit_status_json_no_symbols"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-09-01",
+      "covered": true,
+      "covering_tests": [
+        "TestProgressPhase.test_phase_runs_in_human_mode"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-09-02",
+      "covered": true,
+      "covering_tests": [
+        "TestProgressSpinner.test_spinner_suppressed_in_quiet_mode"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-09-03",
+      "covered": true,
+      "covering_tests": [
+        "TestProgressSpinner.test_spinner_suppressed_in_json_mode"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.4-09-04",
+      "covered": true,
+      "covering_tests": [
+        "TestProgressBar.test_bar_runs_in_human_mode"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.5-01-03",
+      "covered": true,
+      "covering_tests": [
+        "TestResolveAdrPackage.test_finds_adr_and_obpis"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.5-02-01",
+      "covered": true,
+      "covering_tests": [
+        "TestAdrDimensionScoring.test_strong_adr_scores_above_threshold"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.5-02-02",
+      "covered": true,
+      "covering_tests": [
+        "TestAdrDimensionScoring.test_all_eight_dimensions_scored"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.5-02-03",
+      "covered": true,
+      "covering_tests": [
+        "TestPassesToScore.test_all_pass"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.5-02-04",
+      "covered": true,
+      "covering_tests": [
+        "TestObpiDimensionScoring.test_strong_obpi_scores_well"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.5-03-01",
+      "covered": true,
+      "covering_tests": [
+        "TestVerdictComputation.test_go_verdict"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.5-03-02",
+      "covered": true,
+      "covering_tests": [
+        "TestVerdictComputation.test_no_go_on_low_adr"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.5-03-03",
+      "covered": true,
+      "covering_tests": [
+        "TestVerdictComputation.test_no_go_on_obpi_dimension_1"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.5-03-04",
+      "covered": true,
+      "covering_tests": [
+        "TestLedger.test_get_latest_gate_statuses_uses_latest_event"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.5-04-01",
+      "covered": true,
+      "covering_tests": [
+        "TestComposeRedTeamPrompt.test_includes_adr_content"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.5-04-02",
+      "covered": true,
+      "covering_tests": [
+        "TestEvaluateAdr.test_strong_adr_returns_go_or_conditional"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.5-04-03",
+      "covered": true,
+      "covering_tests": [
+        "TestParseRedTeamResult.test_parses_valid_10_challenges"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.5-04-04",
+      "covered": true,
+      "covering_tests": [
+        "TestScorecardRendering.test_renders_markdown"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.5-04-05",
+      "covered": true,
+      "covering_tests": [
+        "TestLoadFrameworkPrompt.test_loads_from_real_assets"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.6-01-01",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_doc_coverage.py",
+        "TestDiscoverCommands.test_discovers_top_level_commands"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.6-01-02",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_doc_coverage.py",
+        "TestDiscoverCommands.test_total_command_count"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.6-01-03",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_doc_coverage.py",
+        "TestCheckSurfaces.test_manpage_present",
+        "TestFindOrphanedDocs.test_orphaned_manpage_detected"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.6-01-04",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_doc_coverage.py",
+        "TestCheckSurfaces.test_manpage_missing"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.6-02-01",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_doc_coverage.py",
+        "TestManifestModels.test_surface_requirements_frozen"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.6-02-02",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_doc_coverage.py",
+        "TestManifestModels.test_command_entry_frozen"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.6-02-03",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_doc_coverage.py",
+        "TestLoadManifest.test_load_valid_manifest"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.6-02-04",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_doc_coverage.py",
+        "TestManifestModels.test_governance_relevant_entry"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.6-03-01",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_doc_coverage.py",
+        "TestGapReportModels.test_gap_item_frozen"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.6-03-02",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_doc_coverage.py",
+        "TestGapReportModels.test_gap_report_serializes_to_json"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.6-03-03",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_doc_coverage.py",
+        "TestBuildGapReport.test_build_gap_report_returns_valid_report"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.6-03-04",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_doc_coverage.py",
+        "TestRunDocCoverage.test_run_json_mode_returns_int"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.7-01-01",
+      "covered": true,
+      "covering_tests": [
+        "TestManifestV2Schema.test_data_section_present",
+        "TestManifestV2Schema.test_ops_section_present",
+        "TestManifestV2Schema.test_thresholds_section_present"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.7-01-02",
+      "covered": true,
+      "covering_tests": [
+        "TestManifestV2Schema.test_schema_version_is_v2",
+        "TestManifestV2Schema.test_v1_keys_preserved"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.7-01-03",
+      "covered": true,
+      "covering_tests": [
+        "TestManifestV2Validation.test_v2_manifest_passes_validation"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.7-02-01",
+      "covered": true,
+      "covering_tests": [
+        "TestManifestPathV2.test_resolves_data_section_key"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.7-02-02",
+      "covered": true,
+      "covering_tests": [
+        "TestManifestPathV2.test_missing_key_raises_keyerror",
+        "TestManifestPathV2.test_missing_section_raises_keyerror"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.7-02-03",
+      "covered": true,
+      "covering_tests": [
+        "TestManifestPathV1Fallback.test_resolves_v1_key_at_top_level"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.7-03-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.7-03-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.7-03-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.7-04-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.7-04-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.7-04-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.7-05-01",
+      "covered": true,
+      "covering_tests": [
+        "TestParentsPatternLint.test_violation_detected"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.7-05-02",
+      "covered": true,
+      "covering_tests": [
+        "TestSourcePathLiteralScan.test_unmapped_literal_flagged"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.7-05-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.7-05-04",
+      "covered": true,
+      "covering_tests": [
+        "TestParentsPatternLint.test_clean_source_passes",
+        "TestSourcePathLiteralScan.test_clean_source_no_issues"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-01-01",
+      "covered": true,
+      "covering_tests": [
+        "TestFlagSpecCreation.test_valid_ops_flag"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-01-02",
+      "covered": true,
+      "covering_tests": [
+        "TestCategoryValidationRules.test_release_without_remove_by_rejected"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-01-03",
+      "covered": true,
+      "covering_tests": [
+        "TestCategoryValidationRules.test_development_with_default_true_rejected"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-01-04",
+      "covered": true,
+      "covering_tests": [
+        "TestLoadRegistry.test_load_valid_registry"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-01-05",
+      "covered": true,
+      "covering_tests": [
+        "TestDuplicateKeyDetection.test_duplicate_keys_raise"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-01-06",
+      "covered": true,
+      "covering_tests": [
+        "TestSchemaValidation.test_missing_flags_key_rejected"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-02-01",
+      "covered": true,
+      "covering_tests": [
+        "TestPrecedenceChain.test_registry_default_false",
+        "TestPrecedenceChain.test_registry_default_wins_when_no_overrides"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-02-02",
+      "covered": true,
+      "covering_tests": [
+        "TestPrecedenceChain.test_env_var_overrides_registry_default"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-02-03",
+      "covered": true,
+      "covering_tests": [
+        "TestPrecedenceChain.test_config_overrides_env_var"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-02-04",
+      "covered": true,
+      "covering_tests": [
+        "TestOverrideLifecycle.test_clear_test_overrides_restores_prior_resolution",
+        "TestPrecedenceChain.test_test_override_wins_over_config"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-02-05",
+      "covered": true,
+      "covering_tests": [
+        "TestUnknownFlag.test_is_enabled_unknown_raises"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-02-06",
+      "covered": true,
+      "covering_tests": [
+        "TestEnvVarBooleanParsing.test_invalid_env_value_raises"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-02-07",
+      "covered": true,
+      "covering_tests": [
+        "TestEvaluation.test_source_env_when_env_set"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-03-01",
+      "covered": true,
+      "covering_tests": [
+        "TestProductProofEnforced.test_returns_true_when_flag_enabled"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-03-02",
+      "covered": true,
+      "covering_tests": [
+        "TestProductProofEnforced.test_returns_false_when_flag_disabled"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-03-03",
+      "covered": true,
+      "covering_tests": [
+        "TestFlagKeyContainment.test_decision_delegates_to_service"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-03-04",
+      "covered": true,
+      "covering_tests": [
+        "TestGetDecisionsSingleton.test_returns_same_instance"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-04-01",
+      "covered": true,
+      "covering_tests": [
+        "TestGetStaleFlags.test_flag_on_exact_date_not_stale",
+        "TestGetStaleFlags.test_flag_past_remove_by_is_stale",
+        "TestGetStaleFlags.test_flag_past_review_by_is_stale",
+        "TestGetStaleFlags.test_multiple_stale_flags_sorted",
+        "TestGetStaleFlags.test_non_stale_flags_excluded"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-04-02",
+      "covered": true,
+      "covering_tests": [
+        "TestGetFlagHealth.test_approaching_counted",
+        "TestGetFlagHealth.test_category_counts",
+        "TestGetFlagHealth.test_healthy_registry",
+        "TestGetFlagHealth.test_stale_counted",
+        "TestGetFlagHealth.test_stale_not_also_approaching",
+        "TestNoExpiredFlags.test_no_expired_flags"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-04-03",
+      "covered": true,
+      "covering_tests": [
+        "TestNoExpiredFlags.test_no_expired_flags"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-04-04",
+      "covered": true,
+      "covering_tests": [
+        "TestExplainFlag.test_explain_days_remaining_positive",
+        "TestExplainFlag.test_explain_includes_all_fields",
+        "TestExplainFlag.test_explain_no_dates_when_absent",
+        "TestExplainFlag.test_explain_shows_override_source",
+        "TestExplainFlag.test_explain_staleness_detected"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-04-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.8-05-01",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_flag_commands.py",
+        "TestFlagsList.test_flags_exits_zero",
+        "TestFlagsList.test_flags_with_stale_no_stale"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-05-02",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_flag_commands.py",
+        "TestFlagsStale.test_stale_with_overdue_flag"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-05-03",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_flag_commands.py",
+        "TestFlagExplainKnown.test_explain_known_exits_zero"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-05-04",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_flag_commands.py",
+        "TestFlagExplainUnknown.test_explain_unknown_exits_one"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-05-05",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_flag_commands.py",
+        "TestFlagsJson.test_explain_json_is_valid",
+        "TestFlagsJson.test_json_output_is_valid"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-06-01",
+      "covered": true,
+      "covering_tests": [
+        "TestCloseoutMigrationEnforce.test_blocks_when_enforced_and_missing"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-06-02",
+      "covered": true,
+      "covering_tests": [
+        "TestCloseoutMigrationAdvisory.test_warns_when_not_enforced_and_missing"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-06-03",
+      "covered": true,
+      "covering_tests": [
+        "TestCloseoutMigrationProofPresent.test_succeeds_with_proof_flag_true"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-06-04",
+      "covered": true,
+      "covering_tests": [
+        "TestCloseoutMigrationReferenceRemoved.test_primary_path_uses_decisions_not_config_gate"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-07-01",
+      "covered": true,
+      "covering_tests": [
+        "TestConfigGatesFieldRemoved.test_config_loads_without_gates"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-07-02",
+      "covered": true,
+      "covering_tests": [
+        "TestStaleGatesKeyWarning.test_stale_gates_key_warns"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-07-03",
+      "covered": true,
+      "covering_tests": [
+        "TestConfigGateReferencesRemoved.test_no_config_gate_in_source"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-07-04",
+      "covered": true,
+      "covering_tests": [
+        "TestConfigGatesFieldRejected.test_full_test_suite_passes"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.8-08-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.8-08-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.8-08-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.8-08-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.8-08-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.8-08-06",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.9-01-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.9-01-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.9-01-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.9-02-01",
+      "covered": true,
+      "covering_tests": [
+        "TestObpiPipelineCommand.test_blocks_when_obpi_is_ledger_completed"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.9-02-02",
+      "covered": true,
+      "covering_tests": [
+        "TestLedger.test_derive_obpi_semantics_ledger_wins_when_frontmatter_says_completed",
+        "TestLedger.test_derive_obpi_semantics_ledger_wins_when_frontmatter_says_draft"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.9-02-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.9-03-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.9-03-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.9-03-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.9-03-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.9-04-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.9-04-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.9-04-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.9-04-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.9-05-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.9-05-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.9-05-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.9-06-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.9-06-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.9-06-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.10-01-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.10-01-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.10-01-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.10-01-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.10-01-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.10-01-06",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.10-02-01",
+      "covered": true,
+      "covering_tests": [
+        "TestIdentityModelsMapping.test_all_five_surfaces_present",
+        "TestIdentityModelsMapping.test_mapping_values_correct"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.10-02-02",
+      "covered": true,
+      "covering_tests": [
+        "TestFrozenConfig.test_all_models_extra_forbid",
+        "TestFrozenConfig.test_all_models_frozen"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.10-02-03",
+      "covered": true,
+      "covering_tests": [
+        "TestTierPortability.test_adr_portable",
+        "TestTierPortability.test_all_surfaces_roundtrip",
+        "TestTierPortability.test_ev_portable",
+        "TestTierPortability.test_obpi_portable",
+        "TestTierPortability.test_req_portable",
+        "TestTierPortability.test_task_portable"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.10-03-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.10-03-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.10-03-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.10-03-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.10-03-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.10-03-06",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.10-04-01",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/adr/test_storage_tiers.py"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.10-04-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.10-04-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.11-01-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.11-01-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.11-01-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.11-02-01",
+      "covered": true,
+      "covering_tests": [
+        "TestParsePersonaFile.test_incomplete_frontmatter_raises",
+        "TestParsePersonaFile.test_missing_frontmatter_raises",
+        "TestParsePersonaFile.test_parse_valid_file",
+        "TestPersonaFrontmatter.test_anti_traits_alias",
+        "TestPersonaFrontmatter.test_extra_field_rejected",
+        "TestPersonaFrontmatter.test_missing_required_field_raises",
+        "TestPersonaFrontmatter.test_valid_persona_parses"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.11-02-02",
+      "covered": true,
+      "covering_tests": [
+        "TestDiscoverPersonaFiles.test_empty_dir_returns_empty",
+        "TestDiscoverPersonaFiles.test_ignores_non_md_files",
+        "TestDiscoverPersonaFiles.test_missing_dir_returns_empty",
+        "TestDiscoverPersonaFiles.test_returns_sorted_md_files",
+        "TestPersonasListCmd.test_personas_list_empty_dir",
+        "TestPersonasListCmd.test_personas_list_json_empty_dir",
+        "TestPersonasListCmd.test_personas_list_json_mode",
+        "TestPersonasListCmd.test_personas_list_malformed_warns",
+        "TestPersonasListCmd.test_personas_list_no_dir",
+        "TestPersonasListCmd.test_personas_list_with_file"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.11-02-03",
+      "covered": true,
+      "covering_tests": [
+        "TestLoadPersona.test_load_existing_persona",
+        "TestLoadPersona.test_load_invalid_raises",
+        "TestLoadPersona.test_load_missing_returns_none",
+        "TestPersonaPipelineIntegration.test_compose_implementer_prompt_with_persona_context",
+        "TestPersonaPipelineIntegration.test_load_persona_integrates_with_dispatch"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.11-02-04",
+      "covered": true,
+      "covering_tests": [
+        "TestExemplarFile.test_exemplar_implementer_parses"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.11-02-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.11-03-01",
+      "covered": true,
+      "covering_tests": [
+        "TestComposePersonaFrame.test_body_enriches_trait_descriptions",
+        "TestComposePersonaFrame.test_fallback_without_body",
+        "TestComposePersonaFrame.test_multi_trait_composition_order",
+        "TestExemplarComposition.test_implementer_traits_enriched_from_body"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.11-03-02",
+      "covered": true,
+      "covering_tests": [
+        "TestComposePersonaFrame.test_anti_traits_in_suppression_section",
+        "TestComposePersonaFrame.test_empty_anti_traits_omits_section"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.11-03-03",
+      "covered": true,
+      "covering_tests": [
+        "TestComposePersonaFrame.test_deterministic_output",
+        "TestExemplarComposition.test_implementer_exemplar_composes_deterministically"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.11-04-01",
+      "covered": true,
+      "covering_tests": [
+        "TestAgentsPersonaSection.test_agents_persona_references_control_surface",
+        "TestAgentsPersonaSection.test_agents_template_has_persona_section",
+        "TestAgentsPersonaSection.test_persona_discovery_command"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.11-04-02",
+      "covered": true,
+      "covering_tests": [
+        "TestAdrPersonaSection.test_adr_persona_precedes_intent",
+        "TestAdrPersonaSection.test_adr_template_has_persona_section"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.11-04-03",
+      "covered": true,
+      "covering_tests": [
+        "TestAgentsPersonaSection.test_agents_persona_forbids_expertise_claims",
+        "TestAgentsPersonaSection.test_agents_persona_frames_behavioral_identity"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.11-05-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.11-05-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.11-05-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.11-06-01",
+      "covered": true,
+      "covering_tests": [
+        "TestExemplarValidation.test_exemplar_implementer_validates",
+        "TestRequiredFields.test_extra_field_rejected",
+        "TestRequiredFields.test_missing_required_fields",
+        "TestValidPersona.test_valid_persona_passes"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.11-06-02",
+      "covered": true,
+      "covering_tests": [
+        "TestNegativeCoverage.test_empty_anti_traits_list",
+        "TestNegativeCoverage.test_empty_grounding",
+        "TestNegativeCoverage.test_empty_traits_list",
+        "TestNegativeCoverage.test_missing_frontmatter_delimiters",
+        "TestNegativeCoverage.test_name_filename_mismatch",
+        "TestNegativeCoverage.test_non_yaml_frontmatter",
+        "TestNegativeCoverage.test_whitespace_only_grounding"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.11-06-03",
+      "covered": true,
+      "covering_tests": [
+        "TestValidateIntegration.test_multi_persona_directory",
+        "TestValidateIntegration.test_validate_personas_catches_malformed",
+        "TestValidateIntegration.test_validate_personas_empty_dir",
+        "TestValidateIntegration.test_validate_personas_import",
+        "TestValidateIntegration.test_validate_personas_missing_dir",
+        "TestValidateIntegration.test_validate_personas_on_valid_dir"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.12-01-01",
+      "covered": true,
+      "covering_tests": [
+        "TestExemplarFile.test_main_session_parses",
+        "TestMainSessionValidation.test_main_session_validates"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.12-01-02",
+      "covered": true,
+      "covering_tests": [
+        "TestMainSessionValidation.test_main_session_no_expertise_claims"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.12-01-03",
+      "covered": true,
+      "covering_tests": [
+        "TestMainSessionValidation.test_main_session_composition"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.12-02-01",
+      "covered": true,
+      "covering_tests": [
+        "TestImplementerEnrichment.test_implementer_schema_and_grounding"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.12-02-02",
+      "covered": true,
+      "covering_tests": [
+        "TestImplementerEnrichment.test_implementer_no_expertise_claims"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.12-02-03",
+      "covered": true,
+      "covering_tests": [
+        "TestImplementerEnrichment.test_implementer_enriched_traits"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.12-03-01",
+      "covered": true,
+      "covering_tests": [
+        "TestExemplarFile.test_quality_reviewer_parses",
+        "TestExemplarFile.test_spec_reviewer_parses",
+        "TestQualityReviewerValidation.test_quality_reviewer_validates",
+        "TestReviewerOrthogonality.test_trait_clusters_are_orthogonal",
+        "TestSpecReviewerValidation.test_spec_reviewer_validates"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.12-03-02",
+      "covered": true,
+      "covering_tests": [
+        "TestSpecReviewerValidation.test_spec_reviewer_anti_traits",
+        "TestSpecReviewerValidation.test_spec_reviewer_no_expertise_claims",
+        "TestSpecReviewerValidation.test_spec_reviewer_traits"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.12-03-03",
+      "covered": true,
+      "covering_tests": [
+        "TestQualityReviewerValidation.test_quality_reviewer_anti_traits",
+        "TestQualityReviewerValidation.test_quality_reviewer_no_expertise_claims",
+        "TestQualityReviewerValidation.test_quality_reviewer_traits"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.12-04-01",
+      "covered": true,
+      "covering_tests": [
+        "TestExemplarFile.test_narrator_parses",
+        "TestNarratorValidation.test_narrator_validates"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.12-04-02",
+      "covered": true,
+      "covering_tests": [
+        "TestNarratorValidation.test_narrator_anti_traits",
+        "TestNarratorValidation.test_narrator_no_expertise_claims",
+        "TestNarratorValidation.test_narrator_traits"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.12-04-03",
+      "covered": true,
+      "covering_tests": [
+        "TestNarratorValidation.test_narrator_composition"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.12-05-01",
+      "covered": true,
+      "covering_tests": [
+        "TestExemplarFile.test_pipeline_orchestrator_parses",
+        "TestPipelineOrchestratorValidation.test_pipeline_orchestrator_validates"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.12-05-02",
+      "covered": true,
+      "covering_tests": [
+        "TestPipelineOrchestratorValidation.test_pipeline_orchestrator_anti_traits",
+        "TestPipelineOrchestratorValidation.test_pipeline_orchestrator_no_expertise_claims",
+        "TestPipelineOrchestratorValidation.test_pipeline_orchestrator_traits"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.12-05-03",
+      "covered": true,
+      "covering_tests": [
+        "TestPipelineOrchestratorValidation.test_pipeline_orchestrator_composition"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.12-06-01",
+      "covered": true,
+      "covering_tests": [
+        "TestPersonaPipelineIntegration.test_load_persona_for_dispatch_implementer",
+        "TestPersonaPipelineIntegration.test_prepend_persona_to_prompt_with_compose"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.12-06-02",
+      "covered": true,
+      "covering_tests": [
+        "TestPersonaPipelineIntegration.test_load_persona_for_dispatch_missing_file",
+        "TestPersonaPipelineIntegration.test_load_persona_for_dispatch_unknown_role",
+        "TestPersonaPipelineIntegration.test_prepend_persona_passthrough_none"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.12-06-03",
+      "covered": true,
+      "covering_tests": [
+        "TestPersonaPipelineIntegration.test_dispatch_record_persona_field",
+        "TestPersonaPipelineIntegration.test_prepend_persona_deterministic"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.12-06-04",
+      "covered": true,
+      "covering_tests": [
+        "TestPersonaPipelineIntegration.test_load_persona_for_dispatch_malformed"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.12-07-01",
+      "covered": true,
+      "covering_tests": [
+        "TestAgentsPersonaReference.test_persona_section_does_not_inline_full_content",
+        "TestAgentsPersonaReference.test_persona_section_lists_role_mapping",
+        "TestAgentsPersonaReference.test_persona_section_references_adr_0_0_12",
+        "TestAgentsPersonaReference.test_persona_section_references_main_session_grounding"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.12-07-02",
+      "covered": true,
+      "covering_tests": [
+        "TestAgentsPersonaReference.test_persona_references_survive_regeneration"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.12-07-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.13-01-01",
+      "covered": true,
+      "covering_tests": [
+        "TestPortableSchemaStructure.test_schema_has_version_id",
+        "TestPortableSchemaStructure.test_schema_loads_and_has_required_keys"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.13-01-02",
+      "covered": true,
+      "covering_tests": [
+        "TestSchemaRequiredFields.test_pydantic_rejects_missing_field",
+        "TestSchemaRequiredFields.test_schema_declares_required_fields",
+        "TestSchemaRequiredFields.test_schema_rejects_additional_properties"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.13-01-03",
+      "covered": true,
+      "covering_tests": [
+        "TestExistingPersonasValidate.test_all_shipped_personas_pass_schema"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.13-01-04",
+      "covered": true,
+      "covering_tests": [
+        "TestSchemaPortability.test_no_gzkit_specific_references"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.13-01-05",
+      "covered": true,
+      "covering_tests": [
+        "TestSchemaModelAlignment.test_schema_fields_match_model"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.13-02-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.13-02-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.13-02-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.13-02-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.13-03-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.13-03-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.13-03-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.13-03-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.13-03-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.13-03-06",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.13-04-01",
+      "covered": true,
+      "covering_tests": [
+        "TestRenderPersonaClaude.test_contains_anti_traits_as_constraints",
+        "TestRenderPersonaClaude.test_contains_grounding",
+        "TestRenderPersonaClaude.test_contains_traits_as_behavioral_instructions",
+        "TestRenderPersonaClaude.test_without_body_uses_bare_traits"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.13-04-02",
+      "covered": true,
+      "covering_tests": [
+        "TestRenderPersonaCodex.test_contains_anti_patterns_section",
+        "TestRenderPersonaCodex.test_contains_behavioral_traits_section",
+        "TestRenderPersonaCodex.test_contains_grounding",
+        "TestRenderPersonaCodex.test_produces_agents_md_heading",
+        "TestRenderPersonaCodex.test_without_body_uses_bare_names"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.13-04-03",
+      "covered": true,
+      "covering_tests": [
+        "TestRenderPersonaCopilot.test_contains_grounding",
+        "TestRenderPersonaCopilot.test_contains_inline_anti_traits",
+        "TestRenderPersonaCopilot.test_contains_inline_traits",
+        "TestRenderPersonaCopilot.test_produces_h2_heading"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.13-04-04",
+      "covered": true,
+      "covering_tests": [
+        "TestVendorFallback.test_known_vendor_uses_adapter",
+        "TestVendorFallback.test_unknown_vendor_returns_raw_markdown"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.13-04-05",
+      "covered": true,
+      "covering_tests": [
+        "TestAdapterDeterminism.test_claude_deterministic",
+        "TestAdapterDeterminism.test_codex_deterministic",
+        "TestAdapterDeterminism.test_copilot_deterministic",
+        "TestAdapterDeterminism.test_fallback_deterministic"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.13-05-01",
+      "covered": true,
+      "covering_tests": [
+        "TestAntiTraitInversion.test_anti_trait_marked_in_result",
+        "TestEvaluatePersonaDrift.test_all_personas_evaluated",
+        "TestEvaluatePersonaDrift.test_report_model_serializable",
+        "TestGovernanceActivityProxy.test_fail_when_no_events",
+        "TestGovernanceActivityProxy.test_ignores_non_governance_events",
+        "TestGovernanceActivityProxy.test_pass_when_gate_events_present",
+        "TestPersonasDriftCmd.test_drift_human_output",
+        "TestTraitProxyRegistry.test_completion_traits_mapped",
+        "TestTraitProxyRegistry.test_evidence_traits_mapped",
+        "TestTraitProxyRegistry.test_governance_traits_mapped",
+        "TestTraitProxyRegistry.test_plan_traits_mapped",
+        "TestTraitProxyRegistry.test_test_traits_mapped",
+        "TestTraitProxyRegistry.test_unmapped_trait_returns_no_evidence"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.13-05-02",
+      "covered": true,
+      "covering_tests": [
+        "TestCompletionQualityProxy.test_pass_with_attestation",
+        "TestCompletionQualityProxy.test_pass_with_completed_brief",
+        "TestEvidenceQualityProxy.test_fail_without_criteria",
+        "TestEvidenceQualityProxy.test_pass_with_criteria",
+        "TestPersonasDriftCmd.test_drift_json_output",
+        "TestPlanDisciplineProxy.test_fail_when_no_adr_created",
+        "TestPlanDisciplineProxy.test_pass_when_adr_precedes_gate",
+        "TestTestEvidenceProxy.test_fail_with_no_audits",
+        "TestTestEvidenceProxy.test_fail_with_zero_tests",
+        "TestTestEvidenceProxy.test_pass_with_passing_tests"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.13-05-03",
+      "covered": true,
+      "covering_tests": [
+        "TestEvaluatePersonaDrift.test_single_persona_filter",
+        "TestPersonasDriftCmd.test_drift_single_persona"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.13-05-04",
+      "covered": true,
+      "covering_tests": [
+        "TestEvaluatePersonaDrift.test_no_drift_when_all_pass",
+        "TestPersonasDriftCmd.test_drift_exit_0_when_no_drift"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.13-05-05",
+      "covered": true,
+      "covering_tests": [
+        "TestEvaluatePersonaDrift.test_drift_when_proxy_fails",
+        "TestPersonasDriftCmd.test_drift_exit_3_on_policy_breach"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.13-05-06",
+      "covered": true,
+      "covering_tests": [
+        "TestPersonasDriftCmd.test_drift_help"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.13-06-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.13-06-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.13-06-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.13-06-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.13-06-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.14-01-01",
+      "covered": true,
+      "covering_tests": [
+        "TestCurrentBranch.test_returns_nonempty_string",
+        "TestLedgerLockEvents.test_obpi_lock_claimed_event_structure",
+        "TestLockClaim.test_claim_creates_lock_file",
+        "TestLockClaim.test_claim_emits_ledger_event",
+        "TestLockData.test_construction",
+        "TestLockDataModel.test_valid_lock_data",
+        "TestLockDirAndPath.test_lock_dir_creates_directory",
+        "TestLockDirAndPath.test_lock_path_filename",
+        "TestLockManagerIO.test_write_lock_creates_file",
+        "TestReadWriteLock.test_read_lock_corrupt_json_returns_none",
+        "TestReadWriteLock.test_read_lock_missing_returns_none",
+        "TestReadWriteLock.test_write_excludes_computed_fields",
+        "TestReadWriteLock.test_write_then_read_roundtrip",
+        "TestResolveAgent.test_override_returned_verbatim"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.14-01-02",
+      "covered": true,
+      "covering_tests": [
+        "TestLockClaim.test_claim_exits_1_on_conflict"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.14-01-03",
+      "covered": true,
+      "covering_tests": [
+        "TestDeleteLock.test_delete_existing_lock",
+        "TestDeleteLock.test_delete_nonexistent_lock_returns_false",
+        "TestLedgerLockEvents.test_obpi_lock_released_event_structure",
+        "TestLockManagerIO.test_delete_lock_removes_file",
+        "TestLockRelease.test_release_emits_ledger_event",
+        "TestLockRelease.test_release_removes_lock"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.14-01-04",
+      "covered": true,
+      "covering_tests": [
+        "TestLockRelease.test_release_force_bypasses_ownership",
+        "TestLockRelease.test_release_validates_ownership"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.14-01-05",
+      "covered": true,
+      "covering_tests": [
+        "TestLockCheck.test_check_exits_0_when_held",
+        "TestLockCheck.test_check_exits_1_when_expired",
+        "TestLockCheck.test_check_exits_1_when_free"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.14-01-06",
+      "covered": true,
+      "covering_tests": [
+        "TestListLocks.test_adr_filter_excludes_all",
+        "TestListLocks.test_adr_filter_matches_correct_obpi",
+        "TestListLocks.test_corrupt_files_skipped",
+        "TestListLocks.test_empty_dir_returns_empty",
+        "TestListLocks.test_lists_multiple_locks",
+        "TestLockList.test_list_empty",
+        "TestLockList.test_list_filters_by_adr",
+        "TestLockList.test_list_json_output",
+        "TestLockList.test_list_reaps_expired_before_listing"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.14-01-07",
+      "covered": true,
+      "covering_tests": [
+        "TestLockCheck.test_check_json_free",
+        "TestLockCheck.test_check_json_held",
+        "TestLockClaim.test_claim_json_output",
+        "TestLockList.test_list_empty",
+        "TestLockList.test_list_json_output",
+        "TestLockRelease.test_release_json_output"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.14-01-08",
+      "covered": true,
+      "covering_tests": [
+        "TestLockData.test_is_expired_false_for_fresh_lock",
+        "TestLockData.test_is_expired_true_for_old_lock",
+        "TestLockDataModel.test_is_expired_false",
+        "TestLockDataModel.test_is_expired_true",
+        "TestLockList.test_list_reaps_expired_before_listing",
+        "TestLockManagerIO.test_reap_expired_locks_preserves_active",
+        "TestLockManagerIO.test_reap_expired_locks_removes_expired",
+        "TestReapExpiredLocks.test_empty_dir_returns_empty",
+        "TestReapExpiredLocks.test_mixed_reaps_only_expired",
+        "TestReapExpiredLocks.test_preserves_active_lock",
+        "TestReapExpiredLocks.test_reaps_expired_lock"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.14-02-01",
+      "covered": true,
+      "covering_tests": [
+        "TestObpiCompleteCmdAlreadyCompleted.test_exits_1_for_already_completed",
+        "TestObpiCompleteCmdBriefNotFound.test_exits_1_for_missing_brief"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.14-02-02",
+      "covered": true,
+      "covering_tests": [
+        "TestIsPlaceholder.test_empty_is_placeholder",
+        "TestIsPlaceholder.test_known_placeholders",
+        "TestIsPlaceholder.test_real_content_is_not_placeholder",
+        "TestIsPlaceholder.test_template_bullet_is_placeholder",
+        "TestReadExistingKeyProof.test_returns_content_when_substantive",
+        "TestReadExistingKeyProof.test_returns_none_for_html_comment_placeholder",
+        "TestReadExistingSummary.test_returns_content_when_substantive",
+        "TestReadExistingSummary.test_returns_none_when_only_placeholders",
+        "TestSubstantiveChecks.test_placeholder_key_proof_not_substantive",
+        "TestSubstantiveChecks.test_placeholder_summary_not_substantive",
+        "TestSubstantiveChecks.test_real_key_proof_is_substantive",
+        "TestSubstantiveChecks.test_real_summary_is_substantive",
+        "TestValidateWouldBeContent.test_human_attestation_missing_attestation_text_rejected",
+        "TestValidateWouldBeContent.test_human_attestation_placeholder_date_rejected",
+        "TestValidateWouldBeContent.test_human_attestation_required_but_missing",
+        "TestValidateWouldBeContent.test_template_content_fails_summary_and_proof",
+        "TestValidateWouldBeContent.test_valid_content_passes"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.14-02-03",
+      "covered": true,
+      "covering_tests": [
+        "TestBuildCompletedBrief.test_updates_human_attestation",
+        "TestReplaceH3Section.test_preserves_heading",
+        "TestReplaceH3Section.test_replaces_section_body"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.14-02-04",
+      "covered": true,
+      "covering_tests": [
+        "TestBuildCompletedBrief.test_sets_brief_status_line",
+        "TestBuildCompletedBrief.test_sets_frontmatter_status",
+        "TestObpiCompleteCmdHappyPath.test_completes_brief_and_emits_receipt"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.14-02-05",
+      "covered": true,
+      "covering_tests": [
+        "TestAuditLedger.test_append_creates_entry",
+        "TestBuildAttestationEntry.test_human_attestation_entry",
+        "TestBuildAttestationEntry.test_self_close_entry",
+        "TestObpiCompleteCmdHappyPath.test_completes_brief_and_emits_receipt"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.14-02-06",
+      "covered": true,
+      "covering_tests": [
+        "TestObpiCompleteCmdHappyPath.test_completes_brief_and_emits_receipt"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.14-02-07",
+      "covered": true,
+      "covering_tests": [
+        "TestAuditLedger.test_rollback_empty_file",
+        "TestAuditLedger.test_rollback_removes_last_entry",
+        "TestObpiCompleteCmdDryRun.test_dry_run_no_writes",
+        "TestObpiCompleteCmdRollback.test_rollback_on_ledger_failure"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.14-02-08",
+      "covered": true,
+      "covering_tests": [
+        "TestUpdateHumanAttestation.test_updates_attestor_and_text"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.14-02-09",
+      "covered": true,
+      "covering_tests": [
+        "TestObpiCompleteCmdJsonOutput.test_json_dry_run_output"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.14-03-01",
+      "covered": true,
+      "covering_tests": [
+        "TestPipelineStage1LockClaim.test_pipeline_references_gz_obpi_lock_claim"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.14-03-02",
+      "covered": true,
+      "covering_tests": [
+        "TestPipelineStage5Complete.test_pipeline_references_gz_obpi_complete"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.14-03-03",
+      "covered": true,
+      "covering_tests": [
+        "TestPipelineStage5LockRelease.test_pipeline_references_gz_obpi_lock_release"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.14-03-04",
+      "covered": true,
+      "covering_tests": [
+        "TestLockSkillDelegation.test_lock_skill_covers_all_subcommands",
+        "TestLockSkillDelegation.test_lock_skill_references_gz_obpi_lock"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.14-03-05",
+      "covered": true,
+      "covering_tests": [
+        "TestNoFallbackDirectWrites.test_lock_skill_no_write_tool_to_locks",
+        "TestNoFallbackDirectWrites.test_pipeline_no_write_tool_to_locks"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.14-03-06",
+      "covered": true,
+      "covering_tests": [
+        "TestPipelineStageCount.test_pipeline_has_five_stages"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.14-03-07",
+      "covered": true,
+      "covering_tests": [
+        "TestAbortHandoff.test_pipeline_references_release_force"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.14-03-08",
+      "covered": true,
+      "covering_tests": [
+        "TestZeroWriteToLockPaths.test_dispatch_no_write_to_lock_json",
+        "TestZeroWriteToLockPaths.test_lock_skill_no_write_to_lock_json",
+        "TestZeroWriteToLockPaths.test_pipeline_no_write_to_lock_json"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.14-03-09",
+      "covered": true,
+      "covering_tests": [
+        "TestZeroEditBriefStatus.test_pipeline_no_edit_brief_status",
+        "TestZeroEditBriefStatus.test_pipeline_no_edit_frontmatter_status"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.14-03-10",
+      "covered": true,
+      "covering_tests": [
+        "TestSkillsReferenceGzObpi.test_lock_skill_references_gz_obpi",
+        "TestSkillsReferenceGzObpi.test_pipeline_references_gz_obpi"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.14-03-11",
+      "covered": true,
+      "covering_tests": [
+        "TestPipelineToolUsePattern.test_dispatch_code_blocks_use_gz_obpi",
+        "TestPipelineToolUsePattern.test_pipeline_instructs_gz_obpi_via_bash",
+        "TestPipelineToolUsePattern.test_pipeline_no_write_edit_tool_to_governance_in_code_blocks"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.14-03-12",
+      "covered": true,
+      "covering_tests": [
+        "TestPipelineLedgerEventParity.test_pipeline_references_complete_which_emits_receipt",
+        "TestPipelineLedgerEventParity.test_pipeline_references_lock_claim_which_emits_ledger_event",
+        "TestPipelineLedgerEventParity.test_pipeline_references_lock_release_which_emits_ledger_event"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.15-01-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.15-01-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.15-01-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.15-01-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.15-02-01",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/adr/test_patch_release.py"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.15-02-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.15-02-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.15-02-04",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/adr/test_patch_release.py"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.15-02-05",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/adr/test_patch_release.py"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.15-03-01",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/adr/test_patch_release.py"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.15-03-02",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/adr/test_patch_release.py"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.15-03-03",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/adr/test_patch_release.py"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.15-03-04",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/adr/test_patch_release.py"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.15-04-01",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/adr/test_patch_release.py"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.15-04-02",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/adr/test_patch_release.py"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.15-04-03",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/adr/test_patch_release.py"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.15-04-04",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/adr/test_patch_release.py"
+      ]
+    },
+    {
+      "req_id": "REQ-0.0.15-05-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.15-05-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.15-05-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.15-05-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.15-05-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.15-06-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.15-06-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.15-06-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.15-06-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.0.15-06-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.10.0-01-01",
+      "covered": true,
+      "covering_tests": [
+        "TestLedger.test_derive_obpi_semantics_reports_pending_without_proof"
+      ]
+    },
+    {
+      "req_id": "REQ-0.10.0-02-01",
+      "covered": true,
+      "covering_tests": [
+        "TestLedger.test_derive_obpi_semantics_requires_attestation_for_attested_completed"
+      ]
+    },
+    {
+      "req_id": "REQ-0.10.0-02-02",
+      "covered": true,
+      "covering_tests": [
+        "TestLedger.test_derive_obpi_semantics_requires_receipt_proof_for_completion"
+      ]
+    },
+    {
+      "req_id": "REQ-0.10.0-02-03",
+      "covered": true,
+      "covering_tests": [
+        "TestLedger.test_derive_obpi_semantics_reports_validated_state"
+      ]
+    },
+    {
+      "req_id": "REQ-0.10.0-03-01",
+      "covered": true,
+      "covering_tests": [
+        "TestLedger.test_derive_obpi_semantics_reports_superseded_anchor_when_scope_changes"
+      ]
+    },
+    {
+      "req_id": "REQ-0.10.0-03-02",
+      "covered": true,
+      "covering_tests": [
+        "TestLedger.test_derive_obpi_semantics_reports_reflection_drift_without_downgrading_completion"
+      ]
+    },
+    {
+      "req_id": "REQ-0.11.0-01-01",
+      "covered": true,
+      "covering_tests": [
+        "TestObpiValidator.test_validate_completed_blocks_out_of_scope_changes"
+      ]
+    },
+    {
+      "req_id": "REQ-0.11.0-02-01",
+      "covered": true,
+      "covering_tests": [
+        "TestObpiValidator.test_validate_completed_passes_with_allowlisted_changes"
+      ]
+    },
+    {
+      "req_id": "REQ-0.11.0-02-02",
+      "covered": true,
+      "covering_tests": [
+        "TestObpiValidator.test_validate_completed_requires_allowed_paths"
+      ]
+    },
+    {
+      "req_id": "REQ-0.11.0-02-03",
+      "covered": true,
+      "covering_tests": [
+        "TestObpiValidator.test_validate_heavy_completed_missing_attestation"
+      ]
+    },
+    {
+      "req_id": "REQ-0.11.0-03-01",
+      "covered": true,
+      "covering_tests": [
+        "TestObpiValidator.test_recorder_appends_receipt_to_ledger"
+      ]
+    },
+    {
+      "req_id": "REQ-0.11.0-03-02",
+      "covered": true,
+      "covering_tests": [
+        "TestObpiValidator.test_recorder_append_failure_is_warning_only",
+        "TestObpiValidator.test_recorder_appends_receipt_to_ledger"
+      ]
+    },
+    {
+      "req_id": "REQ-0.11.0-03-03",
+      "covered": true,
+      "covering_tests": [
+        "TestObpiValidator.test_recorder_warns_but_keeps_receipt_when_anchor_capture_degrades"
+      ]
+    },
+    {
+      "req_id": "REQ-0.11.0-04-01",
+      "covered": true,
+      "covering_tests": [
+        "TestLedger.test_derive_obpi_semantics_reports_superseded_anchor_when_scope_changes"
+      ]
+    },
+    {
+      "req_id": "REQ-0.11.0-04-02",
+      "covered": true,
+      "covering_tests": [
+        "TestStatusCommand.test_obpi_reconcile_fails_closed_when_proof_missing"
+      ]
+    },
+    {
+      "req_id": "REQ-0.11.0-04-03",
+      "covered": true,
+      "covering_tests": [
+        "TestStatusCommand.test_obpi_reconcile_reports_anchor_drift_for_scope_changes"
+      ]
+    },
+    {
+      "req_id": "REQ-0.12.0-01-01",
+      "covered": true,
+      "covering_tests": [
+        "TestIsGovernanceArtifact.test_agents_md",
+        "TestIsGovernanceArtifact.test_claude_md",
+        "TestIsGovernanceArtifact.test_design_adr",
+        "TestIsGovernanceArtifact.test_design_obpis",
+        "TestIsGovernanceArtifact.test_design_prd",
+        "TestIsGovernanceArtifact.test_docs_adr",
+        "TestIsGovernanceArtifact.test_source_code",
+        "TestIsGovernanceArtifact.test_test_file"
+      ]
+    },
+    {
+      "req_id": "REQ-0.12.0-01-02",
+      "covered": true,
+      "covering_tests": [
+        "TestGenerateHookScript.test_generates_python_script",
+        "TestGenerateHookScript.test_includes_hook_type",
+        "TestWriteHookScript.test_creates_hook_file",
+        "TestWriteHookScript.test_makes_executable"
+      ]
+    },
+    {
+      "req_id": "REQ-0.12.0-02-01",
+      "covered": true,
+      "covering_tests": [
+        "TestPlanAuditGateHook.test_allows_when_latest_plan_has_no_obpi",
+        "TestPlanAuditGateHook.test_allows_when_plans_dir_is_missing",
+        "TestPlanAuditGateHook.test_blocks_when_obpi_plan_has_no_receipt"
+      ]
+    },
+    {
+      "req_id": "REQ-0.12.0-02-02",
+      "covered": true,
+      "covering_tests": [
+        "TestPlanAuditGateHook.test_allows_when_matching_fail_receipt_is_newer_than_plan",
+        "TestPlanAuditGateHook.test_allows_when_matching_pass_receipt_is_newer_than_plan",
+        "TestPlanAuditGateHook.test_allows_when_per_obpi_receipt_is_newer_than_plan",
+        "TestPlanAuditGateHook.test_blocks_when_obpi_plan_has_no_receipt",
+        "TestPlanAuditGateHook.test_prefers_fresh_per_obpi_over_stale_legacy_receipt"
+      ]
+    },
+    {
+      "req_id": "REQ-0.12.0-03-01",
+      "covered": true,
+      "covering_tests": [
+        "TestPipelineRouterHook.test_allows_silently_when_receipt_is_missing"
+      ]
+    },
+    {
+      "req_id": "REQ-0.12.0-03-02",
+      "covered": true,
+      "covering_tests": [
+        "TestPipelineRouterHook.test_routes_when_receipt_verdict_is_pass"
+      ]
+    },
+    {
+      "req_id": "REQ-0.12.0-04-01",
+      "covered": true,
+      "covering_tests": [
+        "TestPipelineGateHook.test_blocks_when_pass_receipt_exists_without_marker"
+      ]
+    },
+    {
+      "req_id": "REQ-0.12.0-04-02",
+      "covered": true,
+      "covering_tests": [
+        "TestPipelineGateHook.test_allows_when_per_obpi_marker_matches"
+      ]
+    },
+    {
+      "req_id": "REQ-0.12.0-05-01",
+      "covered": true,
+      "covering_tests": [
+        "TestPipelineCompletionReminderHook.test_emits_reminder_when_brief_is_incomplete"
+      ]
+    },
+    {
+      "req_id": "REQ-0.12.0-05-02",
+      "covered": true,
+      "covering_tests": [
+        "TestPipelineCompletionReminderHook.test_emits_reminder_with_richer_marker_payload"
+      ]
+    },
+    {
+      "req_id": "REQ-0.12.0-06-01",
+      "covered": true,
+      "covering_tests": [
+        "TestGenerateClaudeSettings.test_includes_active_pipeline_enforcement_registration"
+      ]
+    },
+    {
+      "req_id": "REQ-0.12.0-06-03",
+      "covered": true,
+      "covering_tests": [
+        "TestSetupClaudeHooks.test_creates_full_hook_tranche_and_settings"
+      ]
+    },
+    {
+      "req_id": "REQ-0.13.0-01-01",
+      "covered": true,
+      "covering_tests": [
+        "TestPipelineRuntime.test_load_plan_audit_receipt_without_target_obpi_accepts_pass_receipt"
+      ]
+    },
+    {
+      "req_id": "REQ-0.13.0-01-02",
+      "covered": true,
+      "covering_tests": [
+        "TestPipelineRuntime.test_clear_stale_markers_removes_old_markers"
+      ]
+    },
+    {
+      "req_id": "REQ-0.13.0-01-03",
+      "covered": true,
+      "covering_tests": [
+        "TestObpiPipelineCommand.test_ceremony_prints_next_steps_and_preserves_markers"
+      ]
+    },
+    {
+      "req_id": "REQ-0.13.0-01-04",
+      "covered": true,
+      "covering_tests": [
+        "TestPipelineRuntime.test_extract_brief_status_reads_frontmatter_and_body_variants"
+      ]
+    },
+    {
+      "req_id": "REQ-0.13.0-02-01",
+      "covered": true,
+      "covering_tests": [
+        "TestPipelineRuntime.test_find_active_pipeline_marker_prefers_per_obpi_marker"
+      ]
+    },
+    {
+      "req_id": "REQ-0.13.0-02-02",
+      "covered": true,
+      "covering_tests": [
+        "TestPipelineRuntime.test_load_receipt_prefers_per_obpi_receipt_over_legacy"
+      ]
+    },
+    {
+      "req_id": "REQ-0.13.0-02-03",
+      "covered": true,
+      "covering_tests": [
+        "TestPipelineRuntime.test_find_active_pipeline_marker_skips_corrupted_marker"
+      ]
+    },
+    {
+      "req_id": "REQ-0.13.0-03-01",
+      "covered": true,
+      "covering_tests": [
+        "TestPipelineRuntime.test_pipeline_resume_command_uses_resume_point_when_next_command_missing"
+      ]
+    },
+    {
+      "req_id": "REQ-0.13.0-03-02",
+      "covered": true,
+      "covering_tests": [
+        "TestObpiPipelineCommand.test_ceremony_prints_next_steps_and_preserves_markers",
+        "TestObpiPipelineCommand.test_verify_runs_commands_and_preserves_markers"
+      ]
+    },
+    {
+      "req_id": "REQ-0.13.0-03-03",
+      "covered": true,
+      "covering_tests": [
+        "TestPipelineRuntime.test_find_stale_markers_detects_old_markers"
+      ]
+    },
+    {
+      "req_id": "REQ-0.13.0-03-04",
+      "covered": true,
+      "covering_tests": [
+        "TestObpiPipelineCommand.test_ceremony_rewrites_markers_with_ceremony_stage_state"
+      ]
+    },
+    {
+      "req_id": "REQ-0.13.0-04-01",
+      "covered": true,
+      "covering_tests": [
+        "TestObpiPipelineCommand.test_ceremony_foundation_parent_requires_human_attestation"
+      ]
+    },
+    {
+      "req_id": "REQ-0.13.0-04-02",
+      "covered": true,
+      "covering_tests": [
+        "TestObpiPipelineCommand.test_ceremony_lite_parent_self_closes_and_chains_sync"
+      ]
+    },
+    {
+      "req_id": "REQ-0.13.0-04-03",
+      "covered": true,
+      "covering_tests": [
+        "TestObpiPipelineCommand.test_ceremony_foundation_parent_requires_human_attestation"
+      ]
+    },
+    {
+      "req_id": "REQ-0.13.0-05-01",
+      "covered": true,
+      "covering_tests": [
+        "TestPipelineRuntime.test_pipeline_router_and_gate_messages_use_runtime_command"
+      ]
+    },
+    {
+      "req_id": "REQ-0.13.0-05-02",
+      "covered": true,
+      "covering_tests": [
+        "TestPipelineRuntime.test_pipeline_completion_reminder_uses_runtime_managed_guidance"
+      ]
+    },
+    {
+      "req_id": "REQ-0.14.0-01-01",
+      "covered": true,
+      "covering_tests": [
+        "TestRenderRulesToDir.test_claude_rendering_writes_files"
+      ]
+    },
+    {
+      "req_id": "REQ-0.14.0-01-02",
+      "covered": true,
+      "covering_tests": [
+        "TestSyncAllVendorAware.test_existing_skill_mirroring_preserved"
+      ]
+    },
+    {
+      "req_id": "REQ-0.14.0-01-03",
+      "covered": true,
+      "covering_tests": [
+        "TestRenderRuleForClaude.test_global_rule_omits_frontmatter"
+      ]
+    },
+    {
+      "req_id": "REQ-0.14.0-02-01",
+      "covered": true,
+      "covering_tests": [
+        "TestSyncAllVendorAware.test_disabled_vendor_produces_no_skill_mirrors"
+      ]
+    },
+    {
+      "req_id": "REQ-0.14.0-02-02",
+      "covered": true,
+      "covering_tests": [
+        "TestRenderRuleForClaude.test_scoped_rule_has_paths_frontmatter"
+      ]
+    },
+    {
+      "req_id": "REQ-0.14.0-02-03",
+      "covered": true,
+      "covering_tests": [
+        "TestRenderRulesToDir.test_hand_authored_files_preserved"
+      ]
+    },
+    {
+      "req_id": "REQ-0.14.0-04-01",
+      "covered": true,
+      "covering_tests": [
+        "TestShouldDispatchReview.test_dispatch_review_routing"
+      ]
+    },
+    {
+      "req_id": "REQ-0.14.0-04-02",
+      "covered": true,
+      "covering_tests": [
+        "TestForeignReferences.test_airlineops_detected_in_instruction"
+      ]
+    },
+    {
+      "req_id": "REQ-0.14.0-04-03",
+      "covered": true,
+      "covering_tests": [
+        "TestDrift.test_missing_rule_file_errors"
+      ]
+    },
+    {
+      "req_id": "REQ-0.14.0-04-04",
+      "covered": true,
+      "covering_tests": [
+        "TestCodeContract.test_pydantic_only_codebase_passes"
+      ]
+    },
+    {
+      "req_id": "REQ-0.14.0-05-01",
+      "covered": true,
+      "covering_tests": [
+        "TestExtractVerificationScopes.test_extracts_numbered_requirements"
+      ]
+    },
+    {
+      "req_id": "REQ-0.14.0-05-02",
+      "covered": true,
+      "covering_tests": [
+        "TestComputePathOverlap.test_no_overlap"
+      ]
+    },
+    {
+      "req_id": "REQ-0.14.0-05-03",
+      "covered": true,
+      "covering_tests": [
+        "TestComputePathOverlap.test_full_overlap"
+      ]
+    },
+    {
+      "req_id": "REQ-0.14.0-06-01",
+      "covered": true,
+      "covering_tests": [
+        "TestClassifyTaskComplexity.test_complexity_levels"
+      ]
+    },
+    {
+      "req_id": "REQ-0.14.0-06-02",
+      "covered": true,
+      "covering_tests": [
+        "TestSelectDispatchModel.test_simple_routes_to_haiku"
+      ]
+    },
+    {
+      "req_id": "REQ-0.14.0-06-03",
+      "covered": true,
+      "covering_tests": [
+        "TestExtractPlanTasks.test_heading_format"
+      ]
+    },
+    {
+      "req_id": "REQ-0.14.0-06-04",
+      "covered": true,
+      "covering_tests": [
+        "TestComposeImplementerPrompt.test_contains_task_heading"
+      ]
+    },
+    {
+      "req_id": "REQ-0.15.0-01-01",
+      "covered": true,
+      "covering_tests": [
+        "TestLedgerSchemaAlignment.test_base_required_fields"
+      ]
+    },
+    {
+      "req_id": "REQ-0.15.0-01-02",
+      "covered": true,
+      "covering_tests": [
+        "TestFrontmatterSchemaAlignment.test_adr_required_fields_match"
+      ]
+    },
+    {
+      "req_id": "REQ-0.15.0-01-03",
+      "covered": true,
+      "covering_tests": [
+        "TestSchemaLoading.test_load_schema_all"
+      ]
+    },
+    {
+      "req_id": "REQ-0.15.0-01-04",
+      "covered": true,
+      "covering_tests": [
+        "TestLedgerSchemaAlignment.test_all_schema_events_have_models"
+      ]
+    },
+    {
+      "req_id": "REQ-0.17.0-02-01",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_rules.py",
+        "TestCanonicalRule.test_frozen",
+        "TestCanonicalRule.test_valid_canonical_rule",
+        "TestLoadRule.test_load_multi_path_rule",
+        "TestLoadRule.test_load_valid_rule",
+        "TestRuleFrontmatter.test_extra_forbid",
+        "TestRuleFrontmatter.test_frozen",
+        "TestRuleFrontmatter.test_missing_required_fields",
+        "TestRuleFrontmatter.test_paths_required_nonempty",
+        "TestRuleFrontmatter.test_valid_frontmatter"
+      ]
+    },
+    {
+      "req_id": "REQ-0.17.0-02-02",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_agent_sync.py",
+        "TestRenderRuleForClaude.test_global_rule_omits_frontmatter",
+        "TestRenderRuleForClaude.test_scoped_rule_has_paths_frontmatter"
+      ]
+    },
+    {
+      "req_id": "REQ-0.17.0-02-03",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_agent_sync.py",
+        "TestRenderRuleForCopilot.test_global_rule_uses_star_apply_to",
+        "TestRenderRuleForCopilot.test_renders_apply_to_frontmatter"
+      ]
+    },
+    {
+      "req_id": "REQ-0.17.0-02-04",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_agent_sync.py",
+        "TestRenderRulesToDir.test_claude_rendering_writes_files",
+        "TestRenderRulesToDir.test_stale_generated_files_removed"
+      ]
+    },
+    {
+      "req_id": "REQ-0.17.0-02-05",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_agent_sync.py",
+        "TestLoadRules.test_load_actual_canonical_rules",
+        "TestRenderRulesToDir.test_copilot_rendering_writes_files",
+        "TestSyncAllVendorAware.test_enabled_vendor_gets_canonical_rules"
+      ]
+    },
+    {
+      "req_id": "REQ-0.17.0-02-06",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_instruction_audit.py",
+        "TestDrift.test_drifted_content_errors",
+        "TestDrift.test_missing_rule_file_errors",
+        "TestDrift.test_orphan_rule_errors",
+        "TestDrift.test_synced_content_passes",
+        "TestReachability.test_glob_matches_files_passes",
+        "TestReachability.test_glob_matches_nothing_errors"
+      ]
+    },
+    {
+      "req_id": "REQ-0.17.0-03-02",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_templates.py",
+        "TestAdapterTemplatesReferenceCanon.test_claude_adapter_references_agents_for_skills"
+      ]
+    },
+    {
+      "req_id": "REQ-0.17.0-03-03",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_templates.py",
+        "TestAdapterTemplatesReferenceCanon.test_copilot_adapter_references_agents_for_skills"
+      ]
+    },
+    {
+      "req_id": "REQ-0.17.0-03-04",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_templates.py",
+        "TestAdapterTemplatesReferenceCanon.test_claude_adapter_references_agents_for_skills"
+      ]
+    },
+    {
+      "req_id": "REQ-0.17.0-03-05",
+      "covered": true,
+      "covering_tests": [
+        "TestAgentsTemplateSemantic.test_local_content_injection"
+      ]
+    },
+    {
+      "req_id": "REQ-0.17.0-03-06",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_templates.py",
+        "TestRootSurfaceSlimming.test_agents_template_decomposition_references_doc",
+        "TestRootSurfaceSlimming.test_agents_template_execution_rules_condensed",
+        "TestRootSurfaceSlimming.test_agents_template_no_ceremony_steps",
+        "TestRootSurfaceSlimming.test_copilot_no_inline_ceremony"
+      ]
+    },
+    {
+      "req_id": "REQ-0.17.0-03-07",
+      "covered": true,
+      "covering_tests": [
+        "TestAgentsTemplateSemantic.test_pipeline_runtime_is_canonical"
+      ]
+    },
+    {
+      "req_id": "REQ-0.17.0-04-01",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_schemas.py",
+        "TestSkillSchemaAlignment.test_all_schema_properties_have_model_fields"
+      ]
+    },
+    {
+      "req_id": "REQ-0.17.0-04-02",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_schemas.py",
+        "TestInstructionSchemaAlignment.test_all_schema_properties_have_model_fields"
+      ]
+    },
+    {
+      "req_id": "REQ-0.17.0-04-03",
+      "covered": true,
+      "covering_tests": [
+        "TestSkillSchemaAlignment.test_required_fields_match"
+      ]
+    },
+    {
+      "req_id": "REQ-0.17.0-04-04",
+      "covered": true,
+      "covering_tests": [
+        "TestInstructionSchemaAlignment.test_required_fields_match"
+      ]
+    },
+    {
+      "req_id": "REQ-0.17.0-04-05",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_schemas.py",
+        "TestSkillSchemaAlignment.test_enum_values_match",
+        "TestSkillSchemaAlignment.test_pattern_constraints_match",
+        "TestSkillSchemaAlignment.test_required_fields_match"
+      ]
+    },
+    {
+      "req_id": "REQ-0.17.0-04-06",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_schemas.py",
+        "TestInstructionSchemaAlignment.test_enum_values_match",
+        "TestInstructionSchemaAlignment.test_required_fields_match"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-01-01",
+      "covered": true,
+      "covering_tests": [
+        "TestCloseoutPipelineGates.test_gates_run_inline_and_pass"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-01-02",
+      "covered": true,
+      "covering_tests": [
+        "TestCloseoutPipelineGates.test_gate_failure_halts_pipeline"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-01-03",
+      "covered": true,
+      "covering_tests": [
+        "TestCloseoutPipelineAttestation.test_attestation_recorded_in_ledger"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-01-04",
+      "covered": true,
+      "covering_tests": [
+        "TestCloseoutPipelineVersionBump.test_version_bump_when_needed"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-01-05",
+      "covered": true,
+      "covering_tests": [
+        "TestCloseoutPipelineCompletion.test_adr_marked_completed"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-01-06",
+      "covered": true,
+      "covering_tests": [
+        "TestCloseoutDryRun.test_dry_run_shows_plan_no_execution"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-01-07",
+      "covered": true,
+      "covering_tests": [
+        "TestCloseoutJsonOutput.test_json_output_contains_all_stages"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-02-01",
+      "covered": true,
+      "covering_tests": [
+        "TestAuditAttestationGuard.test_audit_blocks_without_attestation"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-02-02",
+      "covered": true,
+      "covering_tests": [
+        "TestAuditArtifacts.test_audit_creates_artifacts"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-02-03",
+      "covered": true,
+      "covering_tests": [
+        "TestAuditReceiptEmission.test_validation_receipt_in_ledger"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-02-04",
+      "covered": true,
+      "covering_tests": [
+        "TestAuditStatusTransition.test_adr_transitions_to_validated"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-02-05",
+      "covered": true,
+      "covering_tests": [
+        "TestAuditFailureNoTransition.test_no_transition_on_failure"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-02-06",
+      "covered": true,
+      "covering_tests": [
+        "TestAuditDryRun.test_dry_run_shows_receipt_and_transition_plan"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-02-07",
+      "covered": true,
+      "covering_tests": [
+        "TestAuditJsonOutput.test_json_contains_all_fields"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-04-01",
+      "covered": true,
+      "covering_tests": [
+        "TestAuditMdAttestationRecord.test_attestation_section_rendered_with_event"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-04-02",
+      "covered": true,
+      "covering_tests": [
+        "TestAuditMdGateResults.test_gate_results_table_rendered"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-04-03",
+      "covered": true,
+      "covering_tests": [
+        "TestAuditMdEvidenceLinks.test_obpi_files_listed"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-04-04",
+      "covered": true,
+      "covering_tests": [
+        "TestAuditEnrichmentJsonKeys.test_json_output_preserves_existing_keys"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-04-05",
+      "covered": true,
+      "covering_tests": [
+        "TestAuditMdGateResults.test_gate_results_note_when_no_events"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-05-01",
+      "covered": true,
+      "covering_tests": [
+        "TestAuditGeneratedLedgerEvent.test_audit_generated_event_in_ledger"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-05-02",
+      "covered": true,
+      "covering_tests": [
+        "TestAuditGeneratedLedgerEvent.test_audit_generated_event_in_ledger"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-05-03",
+      "covered": true,
+      "covering_tests": [
+        "TestAuditGeneratedLedgerEvent.test_dry_run_no_audit_generated_event"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-05-04",
+      "covered": true,
+      "covering_tests": [
+        "TestAuditGeneratedLedgerEvent.test_attestation_blocker_no_audit_generated_event"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-05-05",
+      "covered": true,
+      "covering_tests": [
+        "TestAuditGeneratedLedgerEvent.test_audit_generated_passed_false_on_failure"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-06-01",
+      "covered": true,
+      "covering_tests": [
+        "TestAuditTemplatesExist.test_audit_template_exists_and_has_placeholders"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-06-02",
+      "covered": true,
+      "covering_tests": [
+        "TestAggregateAuditEvidence.test_returns_all_required_keys"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-06-03",
+      "covered": true,
+      "covering_tests": [
+        "TestAuditMdRenderedFromTemplate.test_audit_md_contains_obpi_summary_section"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-06-04",
+      "covered": true,
+      "covering_tests": [
+        "TestAggregateAuditEvidence.test_obpi_completions_lists_all_children"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-06-05",
+      "covered": true,
+      "covering_tests": [
+        "TestAggregateAuditEvidence.test_deterministic_ordering"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-07-01",
+      "covered": true,
+      "covering_tests": [
+        "TestAuditStatusTransition.test_adr_transitions_to_validated"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-07-02",
+      "covered": true,
+      "covering_tests": [
+        "TestAuditFailureNoTransition.test_artifacts_still_written_on_failure"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-07-03",
+      "covered": true,
+      "covering_tests": [
+        "TestAuditDryRun.test_dry_run_json_includes_receipt_and_transition"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-07-05",
+      "covered": true,
+      "covering_tests": [
+        "TestAuditFailureNoTransition.test_artifacts_still_written_on_failure"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-08-01",
+      "covered": true,
+      "covering_tests": [
+        "TestGatesDeprecationWarning.test_deprecation_warning_emitted"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-08-02",
+      "covered": true,
+      "covering_tests": [
+        "TestGatesDeprecationWarning.test_gates_still_execute_after_warning"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-08-03",
+      "covered": true,
+      "covering_tests": [
+        "TestGatesDeprecationWarning.test_gate_runners_importable_independently"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-09-01",
+      "covered": true,
+      "covering_tests": [
+        "TestAttestDeprecationWarning.test_warning_shown_when_closeout_active"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-09-02",
+      "covered": true,
+      "covering_tests": [
+        "TestAttestDeprecationWarning.test_no_warning_without_closeout"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-09-03",
+      "covered": true,
+      "covering_tests": [
+        "TestAttestDeprecationContinuesNormally.test_attestation_recorded_after_warning"
+      ]
+    },
+    {
+      "req_id": "REQ-0.19.0-09-04",
+      "covered": true,
+      "covering_tests": [
+        "TestAttestDeprecationDryRun.test_dry_run_shows_warning_no_ledger_write"
+      ]
+    },
+    {
+      "req_id": "REQ-0.20.0-01-01",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_traceability.py",
+        "/Users/jeff/Documents/Code/gzkit/tests/test_triangle.py",
+        "TestReqIdParsing.test_parse_valid_req_id"
+      ]
+    },
+    {
+      "req_id": "REQ-0.20.0-01-02",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_triangle.py",
+        "TestReqIdParsingInvalid.test_parse_invalid_prefix"
+      ]
+    },
+    {
+      "req_id": "REQ-0.20.0-01-03",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_triangle.py",
+        "TestLinkageRecord.test_json_serialization_roundtrip"
+      ]
+    },
+    {
+      "req_id": "REQ-0.20.0-01-04",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_triangle.py",
+        "TestEdgeTypes.test_three_edge_types_exist"
+      ]
+    },
+    {
+      "req_id": "REQ-0.20.0-02-01",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_triangle.py",
+        "TestExtractReqsFromBrief.test_extract_unchecked_req"
+      ]
+    },
+    {
+      "req_id": "REQ-0.20.0-02-02",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_triangle.py",
+        "TestExtractReqsFromBrief.test_extract_checked_req"
+      ]
+    },
+    {
+      "req_id": "REQ-0.20.0-02-03",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_triangle.py",
+        "TestScanBriefs.test_scan_three_briefs_twelve_reqs"
+      ]
+    },
+    {
+      "req_id": "REQ-0.20.0-02-04",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_triangle.py",
+        "TestExtractMalformedLines.test_malformed_req_id_logged_and_skipped"
+      ]
+    },
+    {
+      "req_id": "REQ-0.20.0-03-01",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_triangle.py",
+        "TestDriftDetectionNoDrift.test_all_reqs_covered_no_drift"
+      ]
+    },
+    {
+      "req_id": "REQ-0.20.0-03-02",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_triangle.py",
+        "TestDriftDetectionUnlinkedSpecs.test_all_reqs_unlinked"
+      ]
+    },
+    {
+      "req_id": "REQ-0.20.0-03-03",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_triangle.py",
+        "TestDriftDetectionOrphanTests.test_orphan_tests_detected"
+      ]
+    },
+    {
+      "req_id": "REQ-0.20.0-03-04",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_triangle.py",
+        "TestDriftDetectionUnjustifiedCode.test_unjustified_code_changes"
+      ]
+    },
+    {
+      "req_id": "REQ-0.20.0-03-05",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_triangle.py",
+        "TestDriftDetectionDeterminism.test_identical_inputs_identical_outputs"
+      ]
+    },
+    {
+      "req_id": "REQ-0.20.0-04-01",
+      "covered": true,
+      "covering_tests": [
+        "TestFormatHuman.test_drift_shows_categories"
+      ]
+    },
+    {
+      "req_id": "REQ-0.20.0-04-02",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_triangle.py",
+        "TestFormatJson.test_json_output_valid"
+      ]
+    },
+    {
+      "req_id": "REQ-0.20.0-04-03",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_triangle.py",
+        "TestDriftCmdExitCodes.test_exit_0_no_drift"
+      ]
+    },
+    {
+      "req_id": "REQ-0.20.0-04-04",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_triangle.py",
+        "TestDriftCmdExitCodes.test_exit_1_with_drift"
+      ]
+    },
+    {
+      "req_id": "REQ-0.20.0-04-05",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_triangle.py",
+        "TestFormatHuman.test_unjustified_shown"
+      ]
+    },
+    {
+      "req_id": "REQ-0.20.0-04-06",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_triangle.py",
+        "TestDriftHelpText.test_help_includes_description"
+      ]
+    },
+    {
+      "req_id": "REQ-0.20.0-05-01",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_triangle.py",
+        "TestDriftAdvisoryResult.test_advisory_result_with_drift"
+      ]
+    },
+    {
+      "req_id": "REQ-0.20.0-05-02",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_triangle.py",
+        "TestDriftAdvisoryResult.test_advisory_result_no_drift"
+      ]
+    },
+    {
+      "req_id": "REQ-0.20.0-05-03",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_triangle.py",
+        "TestDriftAdvisoryResult.test_check_result_without_drift"
+      ]
+    },
+    {
+      "req_id": "REQ-0.20.0-05-04",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_triangle.py",
+        "TestDriftAdvisoryResult.test_to_dict_includes_advisory_flag"
+      ]
+    },
+    {
+      "req_id": "REQ-0.20.0-05-05",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_triangle.py",
+        "TestDriftAdvisoryResult.test_advisory_labels_unjustified_as_advisory"
+      ]
+    },
+    {
+      "req_id": "REQ-0.21.0-01-01",
+      "covered": true,
+      "covering_tests": [
+        "TestCoversLinkageRegistration.test_single_covers_registers_one_linkage"
+      ]
+    },
+    {
+      "req_id": "REQ-0.21.0-01-02",
+      "covered": true,
+      "covering_tests": [
+        "TestCoversFormatValidation.test_invalid_format_raises_value_error"
+      ]
+    },
+    {
+      "req_id": "REQ-0.21.0-01-03",
+      "covered": true,
+      "covering_tests": [
+        "TestCoversExistenceValidation.test_unknown_req_raises_value_error"
+      ]
+    },
+    {
+      "req_id": "REQ-0.21.0-01-04",
+      "covered": true,
+      "covering_tests": [
+        "TestCoversLinkageRegistration.test_multiple_covers_register_multiple_linkages"
+      ]
+    },
+    {
+      "req_id": "REQ-0.21.0-01-05",
+      "covered": true,
+      "covering_tests": [
+        "TestCoversMetadataOnly.test_return_value_preserved"
+      ]
+    },
+    {
+      "req_id": "REQ-0.21.0-02-01",
+      "covered": true,
+      "covering_tests": [
+        "TestScanTestTree.test_discovers_annotations_across_files"
+      ]
+    },
+    {
+      "req_id": "REQ-0.21.0-02-02",
+      "covered": true,
+      "covering_tests": [
+        "TestComputeCoverage.test_overall_coverage_percentage"
+      ]
+    },
+    {
+      "req_id": "REQ-0.21.0-02-03",
+      "covered": true,
+      "covering_tests": [
+        "TestComputeCoverage.test_per_adr_rollup"
+      ]
+    },
+    {
+      "req_id": "REQ-0.21.0-03-01",
+      "covered": true,
+      "covering_tests": [
+        "TestCoversCLIOutput.test_human_shows_summary"
+      ]
+    },
+    {
+      "req_id": "REQ-0.21.0-03-02",
+      "covered": true,
+      "covering_tests": [
+        "TestCoversCLIOutput.test_filter_by_adr"
+      ]
+    },
+    {
+      "req_id": "REQ-0.21.0-03-03",
+      "covered": true,
+      "covering_tests": [
+        "TestCoversCLIOutput.test_json_output_valid"
+      ]
+    },
+    {
+      "req_id": "REQ-0.21.0-03-04",
+      "covered": true,
+      "covering_tests": [
+        "TestCoversCLIHelp.test_help_exits_zero"
+      ]
+    },
+    {
+      "req_id": "REQ-0.21.0-04-01",
+      "covered": true,
+      "covering_tests": [
+        "TestComputeAdrCoverage.test_returns_coverage_for_adr"
+      ]
+    },
+    {
+      "req_id": "REQ-0.21.0-04-02",
+      "covered": true,
+      "covering_tests": [
+        "TestComputeAdrCoverage.test_uncovered_reqs_listed"
+      ]
+    },
+    {
+      "req_id": "REQ-0.21.0-04-03",
+      "covered": true,
+      "covering_tests": [
+        "TestComputeAdrCoverage.test_includes_per_obpi_data"
+      ]
+    },
+    {
+      "req_id": "REQ-0.22.0-01-01",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_tasks.py",
+        "TestTaskId.test_extra_forbid",
+        "TestTaskId.test_frozen",
+        "TestTaskId.test_parse_invalid_raises",
+        "TestTaskId.test_parse_missing_seq_raises",
+        "TestTaskId.test_parse_multi_digit_components",
+        "TestTaskId.test_parse_strips_whitespace",
+        "TestTaskId.test_parse_valid_id",
+        "TestTaskId.test_str_roundtrip"
+      ]
+    },
+    {
+      "req_id": "REQ-0.22.0-01-02",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_tasks.py",
+        "TestTaskEntity.test_create_task",
+        "TestTaskEntity.test_transition_blocked_to_in_progress",
+        "TestTaskEntity.test_transition_completed_to_anything_raises",
+        "TestTaskEntity.test_transition_escalated_to_anything_raises",
+        "TestTaskEntity.test_transition_in_progress_to_blocked",
+        "TestTaskEntity.test_transition_in_progress_to_completed",
+        "TestTaskEntity.test_transition_in_progress_to_escalated",
+        "TestTaskEntity.test_transition_pending_to_blocked_raises",
+        "TestTaskEntity.test_transition_pending_to_completed_raises",
+        "TestTaskEntity.test_transition_pending_to_in_progress",
+        "TestTaskId.test_extra_forbid",
+        "TestTaskId.test_frozen"
+      ]
+    },
+    {
+      "req_id": "REQ-0.22.0-01-03",
+      "covered": true,
+      "covering_tests": [
+        "TestTaskEntity.test_create_task",
+        "TestTaskEntity.test_transition_blocked_to_in_progress",
+        "TestTaskEntity.test_transition_completed_to_anything_raises",
+        "TestTaskEntity.test_transition_escalated_to_anything_raises",
+        "TestTaskEntity.test_transition_in_progress_to_blocked",
+        "TestTaskEntity.test_transition_in_progress_to_completed",
+        "TestTaskEntity.test_transition_in_progress_to_escalated",
+        "TestTaskEntity.test_transition_pending_to_blocked_raises",
+        "TestTaskEntity.test_transition_pending_to_completed_raises",
+        "TestTaskEntity.test_transition_pending_to_in_progress",
+        "TestTaskId.test_extra_forbid",
+        "TestTaskId.test_frozen"
+      ]
+    },
+    {
+      "req_id": "REQ-0.22.0-01-04",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_tasks.py",
+        "TestCreateTaskFromPlanStep.test_create_auto_pads_seq",
+        "TestCreateTaskFromPlanStep.test_create_from_plan_step"
+      ]
+    },
+    {
+      "req_id": "REQ-0.22.0-01-05",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_tasks.py",
+        "TestTaskStatus.test_exactly_five_states",
+        "TestTaskStatus.test_states_are_strings"
+      ]
+    },
+    {
+      "req_id": "REQ-0.22.0-01-06",
+      "covered": true,
+      "covering_tests": [
+        "TestTaskEntity.test_create_task",
+        "TestTaskEntity.test_transition_blocked_to_in_progress",
+        "TestTaskEntity.test_transition_completed_to_anything_raises",
+        "TestTaskEntity.test_transition_escalated_to_anything_raises",
+        "TestTaskEntity.test_transition_in_progress_to_blocked",
+        "TestTaskEntity.test_transition_in_progress_to_completed",
+        "TestTaskEntity.test_transition_in_progress_to_escalated",
+        "TestTaskEntity.test_transition_pending_to_blocked_raises",
+        "TestTaskEntity.test_transition_pending_to_completed_raises",
+        "TestTaskEntity.test_transition_pending_to_in_progress",
+        "TestTaskId.test_extra_forbid",
+        "TestTaskId.test_frozen",
+        "TestTaskId.test_parse_invalid_raises",
+        "TestTaskId.test_parse_missing_seq_raises",
+        "TestTaskId.test_parse_multi_digit_components",
+        "TestTaskId.test_parse_strips_whitespace",
+        "TestTaskId.test_parse_valid_id",
+        "TestTaskId.test_str_roundtrip"
+      ]
+    },
+    {
+      "req_id": "REQ-0.22.0-02-01",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_tasks.py",
+        "TestAllFourEventTypes.test_all_events_have_common_fields",
+        "TestAllFourEventTypes.test_all_four_roundtrip_via_discriminated_union",
+        "TestAllFourEventTypes.test_four_event_types_defined",
+        "TestTaskBlockedEvent.test_discriminated_union_parses_task_blocked",
+        "TestTaskBlockedEvent.test_reason_required",
+        "TestTaskBlockedEvent.test_serialize_includes_reason",
+        "TestTaskCompletedEvent.test_discriminated_union_parses_task_completed",
+        "TestTaskEscalatedEvent.test_discriminated_union_parses_task_escalated",
+        "TestTaskEscalatedEvent.test_escalated_to_optional",
+        "TestTaskStartedEvent.test_discriminated_union_parses_task_started",
+        "TestTaskStartedEvent.test_jsonl_serializable",
+        "TestTaskStartedEvent.test_serialize_includes_required_fields",
+        "TestTaskStartedEvent.test_task_started_reused_for_resume"
+      ]
+    },
+    {
+      "req_id": "REQ-0.22.0-02-02",
+      "covered": true,
+      "covering_tests": [
+        "TestTaskBlockedEvent.test_discriminated_union_parses_task_blocked",
+        "TestTaskBlockedEvent.test_reason_required",
+        "TestTaskBlockedEvent.test_serialize_includes_reason"
+      ]
+    },
+    {
+      "req_id": "REQ-0.22.0-02-03",
+      "covered": true,
+      "covering_tests": [
+        "TestAllFourEventTypes.test_all_events_have_common_fields",
+        "TestAllFourEventTypes.test_all_four_roundtrip_via_discriminated_union",
+        "TestAllFourEventTypes.test_four_event_types_defined",
+        "TestTaskBlockedEvent.test_discriminated_union_parses_task_blocked",
+        "TestTaskBlockedEvent.test_reason_required",
+        "TestTaskBlockedEvent.test_serialize_includes_reason",
+        "TestTaskCompletedEvent.test_discriminated_union_parses_task_completed",
+        "TestTaskEscalatedEvent.test_discriminated_union_parses_task_escalated",
+        "TestTaskEscalatedEvent.test_escalated_to_optional",
+        "TestTaskStartedEvent.test_discriminated_union_parses_task_started",
+        "TestTaskStartedEvent.test_jsonl_serializable",
+        "TestTaskStartedEvent.test_serialize_includes_required_fields",
+        "TestTaskStartedEvent.test_task_started_reused_for_resume"
+      ]
+    },
+    {
+      "req_id": "REQ-0.22.0-02-04",
+      "covered": true,
+      "covering_tests": [
+        "TestTaskStartedEvent.test_discriminated_union_parses_task_started",
+        "TestTaskStartedEvent.test_jsonl_serializable",
+        "TestTaskStartedEvent.test_serialize_includes_required_fields",
+        "TestTaskStartedEvent.test_task_started_reused_for_resume"
+      ]
+    },
+    {
+      "req_id": "REQ-0.22.0-03-01",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_tasks.py",
+        "TestParseTaskTrailers.test_ignores_non_task_trailers",
+        "TestParseTaskTrailers.test_ignores_task_keyword_in_body",
+        "TestParseTaskTrailers.test_no_trailers_returns_empty",
+        "TestParseTaskTrailers.test_parse_multiple_trailers",
+        "TestParseTaskTrailers.test_parse_single_trailer"
+      ]
+    },
+    {
+      "req_id": "REQ-0.22.0-03-02",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_tasks.py",
+        "TestFormatCommitTrailer.test_format_trailer_from_task_entity",
+        "TestFormatCommitTrailer.test_format_trailer_from_task_id"
+      ]
+    },
+    {
+      "req_id": "REQ-0.22.0-03-03",
+      "covered": true,
+      "covering_tests": [
+        "TestParseTaskTrailers.test_ignores_non_task_trailers",
+        "TestParseTaskTrailers.test_ignores_task_keyword_in_body",
+        "TestParseTaskTrailers.test_no_trailers_returns_empty",
+        "TestParseTaskTrailers.test_parse_multiple_trailers",
+        "TestParseTaskTrailers.test_parse_single_trailer"
+      ]
+    },
+    {
+      "req_id": "REQ-0.22.0-03-04",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_tasks.py",
+        "TestResolveTaskChain.test_resolve_chain",
+        "TestResolveTaskChain.test_resolve_chain_different_ids",
+        "TestResolveTaskChain.test_resolve_chain_keys"
+      ]
+    },
+    {
+      "req_id": "REQ-0.22.0-04-01",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_tasks.py",
+        "TestTaskList.test_list_empty",
+        "TestTaskList.test_list_json",
+        "TestTaskList.test_list_shows_task_after_start"
+      ]
+    },
+    {
+      "req_id": "REQ-0.22.0-04-02",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_tasks.py",
+        "TestTaskStart.test_start_json",
+        "TestTaskStart.test_start_pending",
+        "TestTaskStart.test_start_resume_blocked"
+      ]
+    },
+    {
+      "req_id": "REQ-0.22.0-04-03",
+      "covered": true,
+      "covering_tests": [
+        "TestTaskStart.test_start_json",
+        "TestTaskStart.test_start_pending",
+        "TestTaskStart.test_start_resume_blocked"
+      ]
+    },
+    {
+      "req_id": "REQ-0.22.0-04-04",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_tasks.py",
+        "TestTaskComplete.test_complete_in_progress",
+        "TestTaskComplete.test_complete_pending_fails"
+      ]
+    },
+    {
+      "req_id": "REQ-0.22.0-04-05",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_tasks.py",
+        "TestTaskBlock.test_block_in_progress",
+        "TestTaskBlock.test_block_json",
+        "TestTaskBlock.test_block_pending_fails"
+      ]
+    },
+    {
+      "req_id": "REQ-0.22.0-04-06",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_tasks.py",
+        "TestTaskEscalate.test_escalate_in_progress",
+        "TestTaskEscalate.test_escalate_json",
+        "TestTaskEscalate.test_escalate_pending_fails"
+      ]
+    },
+    {
+      "req_id": "REQ-0.22.0-04-07",
+      "covered": true,
+      "covering_tests": [
+        "TestTaskStart.test_start_resume_blocked"
+      ]
+    },
+    {
+      "req_id": "REQ-0.22.0-05-01",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_tasks.py",
+        "TestStatusTaskSummary.test_status_json_includes_task_summary",
+        "TestStatusTaskSummary.test_status_json_includes_tracing_policy",
+        "TestStatusTaskSummary.test_status_json_no_task_summary_when_no_tasks",
+        "TestStatusTaskSummary.test_status_no_task_section_when_no_tasks",
+        "TestStatusTaskSummary.test_status_shows_escalated_count",
+        "TestStatusTaskSummary.test_status_shows_task_summary_when_tasks_exist",
+        "TestStatusTaskSummary.test_status_shows_tracing_policy"
+      ]
+    },
+    {
+      "req_id": "REQ-0.22.0-05-02",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_tasks.py",
+        "TestStateTaskIntegration.test_state_json_includes_task_data",
+        "TestStateTaskIntegration.test_state_json_no_task_data_when_no_tasks",
+        "TestStateTaskIntegration.test_state_json_task_summary_counts",
+        "TestStateTaskIntegration.test_state_json_task_tracing_policy",
+        "TestStatusTaskSummary.test_status_json_includes_task_summary",
+        "TestStatusTaskSummary.test_status_json_includes_tracing_policy",
+        "TestStatusTaskSummary.test_status_json_no_task_summary_when_no_tasks",
+        "TestStatusTaskSummary.test_status_no_task_section_when_no_tasks",
+        "TestStatusTaskSummary.test_status_shows_escalated_count",
+        "TestStatusTaskSummary.test_status_shows_task_summary_when_tasks_exist",
+        "TestStatusTaskSummary.test_status_shows_tracing_policy"
+      ]
+    },
+    {
+      "req_id": "REQ-0.22.0-05-03",
+      "covered": true,
+      "covering_tests": [
+        "TestStateTaskIntegration.test_state_json_includes_task_data",
+        "TestStateTaskIntegration.test_state_json_no_task_data_when_no_tasks",
+        "TestStateTaskIntegration.test_state_json_task_summary_counts",
+        "TestStateTaskIntegration.test_state_json_task_tracing_policy"
+      ]
+    },
+    {
+      "req_id": "REQ-0.22.0-05-04",
+      "covered": true,
+      "covering_tests": [
+        "TestStatusTaskSummary.test_status_json_includes_task_summary",
+        "TestStatusTaskSummary.test_status_json_includes_tracing_policy",
+        "TestStatusTaskSummary.test_status_json_no_task_summary_when_no_tasks",
+        "TestStatusTaskSummary.test_status_no_task_section_when_no_tasks",
+        "TestStatusTaskSummary.test_status_shows_escalated_count",
+        "TestStatusTaskSummary.test_status_shows_task_summary_when_tasks_exist",
+        "TestStatusTaskSummary.test_status_shows_tracing_policy"
+      ]
+    },
+    {
+      "req_id": "REQ-0.22.0-05-05",
+      "covered": true,
+      "covering_tests": [
+        "TestStateTaskIntegration.test_state_json_includes_task_data",
+        "TestStateTaskIntegration.test_state_json_no_task_data_when_no_tasks",
+        "TestStateTaskIntegration.test_state_json_task_summary_counts",
+        "TestStateTaskIntegration.test_state_json_task_tracing_policy",
+        "TestStatusTaskSummary.test_status_json_includes_task_summary",
+        "TestStatusTaskSummary.test_status_json_includes_tracing_policy",
+        "TestStatusTaskSummary.test_status_json_no_task_summary_when_no_tasks",
+        "TestStatusTaskSummary.test_status_no_task_section_when_no_tasks",
+        "TestStatusTaskSummary.test_status_shows_escalated_count",
+        "TestStatusTaskSummary.test_status_shows_task_summary_when_tasks_exist",
+        "TestStatusTaskSummary.test_status_shows_tracing_policy"
+      ]
+    },
+    {
+      "req_id": "REQ-0.25.0-01-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-01-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-01-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-01-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-01-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-02-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-02-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-02-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-02-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-02-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-03-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-03-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-03-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-03-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-03-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-04-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-04-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-04-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-04-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-04-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-05-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-05-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-05-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-05-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-05-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-06-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-06-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-06-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-06-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-06-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-07-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-07-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-07-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-07-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-07-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-08-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-08-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-08-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-08-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-08-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-09-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-09-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-09-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-09-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-09-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-10-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-10-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-10-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-10-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-10-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-11-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-11-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-11-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-11-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-11-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-12-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-12-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-12-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-12-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-12-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-13-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-13-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-13-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-13-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-13-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-14-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-14-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-14-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-14-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-14-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-15-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-15-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-15-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-15-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-15-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-16-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-16-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-16-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-16-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-16-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-17-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-17-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-17-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-17-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-17-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-18-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-18-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-18-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-18-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-18-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-19-01",
+      "covered": true,
+      "covering_tests": [
+        "TestAuditLedgerSurfaceExists.test_adr_audit_check_importable"
+      ]
+    },
+    {
+      "req_id": "REQ-0.25.0-19-02",
+      "covered": true,
+      "covering_tests": [
+        "TestAuditLedgerSurfaceExists.test_obpi_audit_cmd_importable",
+        "TestAuditLedgerSurfaceExists.test_validate_ledger_importable"
+      ]
+    },
+    {
+      "req_id": "REQ-0.25.0-19-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-19-04",
+      "covered": true,
+      "covering_tests": [
+        "TestAuditLedgerSurfaceExists.test_confirm_decision_no_absorption_needed"
+      ]
+    },
+    {
+      "req_id": "REQ-0.25.0-19-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-20-01",
+      "covered": true,
+      "covering_tests": [
+        "TestGovernanceSurfaceExists.test_scan_test_tree_importable"
+      ]
+    },
+    {
+      "req_id": "REQ-0.25.0-20-02",
+      "covered": true,
+      "covering_tests": [
+        "TestGovernanceSurfaceExists.test_adr_audit_check_importable",
+        "TestGovernanceSurfaceExists.test_compute_coverage_importable"
+      ]
+    },
+    {
+      "req_id": "REQ-0.25.0-20-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-20-04",
+      "covered": true,
+      "covering_tests": [
+        "TestGovernanceSurfaceExists.test_confirm_decision_no_absorption_needed"
+      ]
+    },
+    {
+      "req_id": "REQ-0.25.0-20-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-21-01",
+      "covered": true,
+      "covering_tests": [
+        "TestAdrReconSurfaceExists.test_ledger_proof_importable",
+        "TestAdrReconSurfaceExists.test_ledger_semantics_importable",
+        "TestAdrReconSurfaceExists.test_obpi_reconcile_cmd_importable",
+        "TestAdrReconSurfaceExists.test_parse_wbs_table_importable"
+      ]
+    },
+    {
+      "req_id": "REQ-0.25.0-21-02",
+      "covered": true,
+      "covering_tests": [
+        "TestAdrReconSurfaceExists.test_adr_status_result_builder_importable"
+      ]
+    },
+    {
+      "req_id": "REQ-0.25.0-21-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-21-04",
+      "covered": true,
+      "covering_tests": [
+        "TestAdrReconSurfaceExists.test_confirm_decision_gzkit_surface_broader"
+      ]
+    },
+    {
+      "req_id": "REQ-0.25.0-21-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-22-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-22-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-22-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-22-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-22-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-23-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-23-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-23-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-23-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-23-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-24-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-24-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-24-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-24-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-24-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-25-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-25-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-25-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-25-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-25-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-26-01",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_temporal_drift.py",
+        "TestClassifyDriftSameCommit.test_same_commit_returns_none_status",
+        "TestDetectDriftOrchestrator.test_returns_none_when_ledger_missing",
+        "TestDetectDriftOrchestrator.test_returns_none_when_no_anchored_audit_receipt"
+      ]
+    },
+    {
+      "req_id": "REQ-0.25.0-26-02",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_temporal_drift.py",
+        "TestDetectDriftOrchestrator.test_anchor_at_head_yields_none_status",
+        "TestDetectDriftOrchestrator.test_anchor_two_commits_behind_yields_commits_ahead",
+        "TestDetectDriftOrchestrator.test_latest_anchored_event_wins",
+        "TestDetectDriftOrchestrator.test_unresolvable_anchor_yields_diverged",
+        "TestDetectObpiDriftOrchestrator.test_filter_by_obpi_id",
+        "TestDetectObpiDriftOrchestrator.test_filters_by_parent_adr",
+        "TestDetectObpiDriftOrchestrator.test_obpi_message_includes_obpi_id_prefix",
+        "TestDetectObpiDriftOrchestrator.test_results_sorted_by_obpi_id"
+      ]
+    },
+    {
+      "req_id": "REQ-0.25.0-26-03",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_temporal_drift.py",
+        "TestClassifyDriftCommitsAhead.test_anchor_is_ancestor_returns_commits_ahead",
+        "TestClassifyDriftCommitsAhead.test_count_none_coerces_to_zero",
+        "TestClassifyDriftDiverged.test_anchor_not_ancestor_returns_diverged",
+        "TestClassifyDriftDiverged.test_anchor_not_in_repo_returns_diverged",
+        "TestClassifyDriftFrozen.test_drift_result_is_frozen",
+        "TestGitHelpersRealRepo.test_count_commits_between_linear",
+        "TestGitHelpersRealRepo.test_count_commits_between_unknown_returns_none",
+        "TestGitHelpersRealRepo.test_get_head_commit_returns_full_sha",
+        "TestGitHelpersRealRepo.test_is_ancestor_linear_history",
+        "TestGitHelpersRealRepo.test_is_ancestor_unknown_commit_returns_none",
+        "TestGitHelpersRealRepo.test_resolve_full_commit_from_short_sha",
+        "TestGitHelpersRealRepo.test_resolve_full_commit_unknown_returns_none"
+      ]
+    },
+    {
+      "req_id": "REQ-0.25.0-26-04",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_temporal_drift.py",
+        "TestDetectObpiDriftOrchestrator.test_empty_when_no_obpi_receipts"
+      ]
+    },
+    {
+      "req_id": "REQ-0.25.0-26-05",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_temporal_drift.py",
+        "TestPublicSurface.test_module_exports_match_documented_public_api"
+      ]
+    },
+    {
+      "req_id": "REQ-0.25.0-27-01",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_hooks_guards.py"
+      ]
+    },
+    {
+      "req_id": "REQ-0.25.0-27-02",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_hooks_guards.py"
+      ]
+    },
+    {
+      "req_id": "REQ-0.25.0-27-03",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_hooks_guards.py"
+      ]
+    },
+    {
+      "req_id": "REQ-0.25.0-27-04",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_hooks_guards.py"
+      ]
+    },
+    {
+      "req_id": "REQ-0.25.0-27-05",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/test_hooks_guards.py"
+      ]
+    },
+    {
+      "req_id": "REQ-0.25.0-28-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-28-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-28-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-28-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-28-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-29-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-29-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-29-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-29-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-29-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-30-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-30-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-30-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-30-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-30-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-31-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-31-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-31-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-31-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-31-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-32-01",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/governance/test_handoff_validation.py",
+        "TestHandoffAbsorptionBrief.test_decision_recorded_as_absorb"
+      ]
+    },
+    {
+      "req_id": "REQ-0.25.0-32-02",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/governance/test_handoff_validation.py",
+        "TestHandoffAbsorptionBrief.test_rationale_cites_concrete_differences"
+      ]
+    },
+    {
+      "req_id": "REQ-0.25.0-32-03",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/governance/test_handoff_validation.py",
+        "TestHandoffFrontmatter.test_extra_field_rejected",
+        "TestHandoffFrontmatter.test_invalid_adr_id_format_raises",
+        "TestHandoffFrontmatter.test_invalid_mode_raises",
+        "TestHandoffFrontmatter.test_invalid_obpi_id_format_raises",
+        "TestHandoffFrontmatter.test_invalid_timestamp_raises",
+        "TestHandoffFrontmatter.test_missing_required_field_rejected",
+        "TestHandoffFrontmatter.test_model_is_frozen",
+        "TestHandoffFrontmatter.test_none_obpi_id_passes",
+        "TestHandoffFrontmatter.test_schema_version_constant",
+        "TestHandoffFrontmatter.test_valid_adr_id_passes",
+        "TestHandoffFrontmatter.test_valid_create_frontmatter_parses",
+        "TestHandoffFrontmatter.test_valid_obpi_id_passes",
+        "TestHandoffFrontmatter.test_valid_resume_frontmatter_parses",
+        "TestHandoffFrontmatter.test_valid_timestamp_passes",
+        "TestParseFrontmatter.test_parse_crlf_content",
+        "TestParseFrontmatter.test_parse_invalid_yaml_raises",
+        "TestParseFrontmatter.test_parse_missing_closing_delimiter_raises",
+        "TestParseFrontmatter.test_parse_missing_opening_delimiter_raises",
+        "TestParseFrontmatter.test_parse_non_mapping_body_raises",
+        "TestParseFrontmatter.test_parse_valid_frontmatter",
+        "TestValidateHandoffDocument.test_clean_document_returns_empty",
+        "TestValidateHandoffDocument.test_errors_accumulate",
+        "TestValidateHandoffDocument.test_frontmatter_error_reported_with_prefix",
+        "TestValidateHandoffDocument.test_missing_section_reported_with_prefix",
+        "TestValidateHandoffDocument.test_referenced_file_reported_with_prefix",
+        "TestValidatePlaceholders.test_case_insensitive",
+        "TestValidatePlaceholders.test_clean_body_returns_empty",
+        "TestValidatePlaceholders.test_detects_placeholder_tokens",
+        "TestValidatePlaceholders.test_detects_standalone_ellipsis",
+        "TestValidatePlaceholders.test_ignores_placeholders_in_frontmatter",
+        "TestValidatePlaceholders.test_ignores_placeholders_in_html_comments",
+        "TestValidatePlaceholders.test_word_boundary_avoids_false_positives",
+        "TestValidateReferencedFiles.test_command_prefixes_skipped",
+        "TestValidateReferencedFiles.test_existing_file_passes",
+        "TestValidateReferencedFiles.test_missing_file_reported",
+        "TestValidateReferencedFiles.test_multiple_files_mixed_existence",
+        "TestValidateReferencedFiles.test_no_evidence_section_returns_empty",
+        "TestValidateReferencedFiles.test_non_path_strings_skipped",
+        "TestValidateSecrets.test_case_insensitive",
+        "TestValidateSecrets.test_clean_content_returns_empty",
+        "TestValidateSecrets.test_detects_assignment_patterns",
+        "TestValidateSecrets.test_detects_bearer_token",
+        "TestValidateSecrets.test_detects_github_pat",
+        "TestValidateSecrets.test_detects_openai_key",
+        "TestValidateSecrets.test_detects_private_key",
+        "TestValidateSecrets.test_task_management_not_false_positive",
+        "TestValidateSectionsPresent.test_all_sections_present_returns_empty",
+        "TestValidateSectionsPresent.test_exact_match_required",
+        "TestValidateSectionsPresent.test_extra_whitespace_tolerated",
+        "TestValidateSectionsPresent.test_missing_all_sections_returned",
+        "TestValidateSectionsPresent.test_missing_single_section_returned"
+      ]
+    },
+    {
+      "req_id": "REQ-0.25.0-32-04",
+      "covered": true,
+      "covering_tests": [
+        "TestHandoffAbsorptionBrief.test_req04_not_applicable_outcome_is_absorb"
+      ]
+    },
+    {
+      "req_id": "REQ-0.25.0-32-05",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/governance/test_handoff_validation.py",
+        "TestHandoffAbsorptionBrief.test_gate4_na_recorded_with_rationale"
+      ]
+    },
+    {
+      "req_id": "REQ-0.25.0-33-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-33-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-33-03",
+      "covered": true,
+      "covering_tests": [
+        "/Users/jeff/Documents/Code/gzkit/tests/arb/test_advisor.py",
+        "/Users/jeff/Documents/Code/gzkit/tests/arb/test_paths.py",
+        "/Users/jeff/Documents/Code/gzkit/tests/arb/test_patterns.py",
+        "/Users/jeff/Documents/Code/gzkit/tests/arb/test_ruff_reporter.py",
+        "/Users/jeff/Documents/Code/gzkit/tests/arb/test_schemas.py",
+        "/Users/jeff/Documents/Code/gzkit/tests/arb/test_step_reporter.py",
+        "/Users/jeff/Documents/Code/gzkit/tests/arb/test_validator.py",
+        "/Users/jeff/Documents/Code/gzkit/tests/commands/test_arb_cmd.py",
+        "/Users/jeff/Documents/Code/gzkit/tests/test_config.py",
+        "/Users/jeff/Documents/Code/gzkit/tests/test_parser_arb.py"
+      ]
+    },
+    {
+      "req_id": "REQ-0.25.0-33-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.25.0-33-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-01-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-01-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-01-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-01-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-01-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-02-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-02-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-02-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-02-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-02-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-03-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-03-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-03-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-03-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-03-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-04-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-04-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-04-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-04-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-04-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-05-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-05-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-05-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-05-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-05-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-06-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-06-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-06-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-06-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-06-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-07-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-07-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-07-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-07-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-07-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-08-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-08-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-08-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-08-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-08-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-09-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-09-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-09-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-09-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-09-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-10-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-10-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-10-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-10-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-10-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-11-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-11-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-11-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-11-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-11-05",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-12-01",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-12-02",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-12-03",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-12-04",
+      "covered": false,
+      "covering_tests": []
+    },
+    {
+      "req_id": "REQ-0.26.0-12-05",
+      "covered": false,
+      "covering_tests": []
+    }
+  ],
+  "summary": {
+    "identifier": "all",
+    "total_reqs": 767,
+    "covered_reqs": 482,
+    "uncovered_reqs": 285,
+    "coverage_percent": 62.8
+  }
+}
