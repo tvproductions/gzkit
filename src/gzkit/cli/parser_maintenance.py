@@ -214,6 +214,18 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         action="store_true",
         help="Validate ADR decomposition scorecards and checklist-to-brief alignment",
     )
+    p_validate.add_argument(
+        "--requirements",
+        dest="check_requirements",
+        action="store_true",
+        help="Flag OBPI briefs whose REQUIREMENTS sections lack REQ-ID identifiers",
+    )
+    p_validate.add_argument(
+        "--commit-trailers",
+        dest="check_commit_trailers",
+        action="store_true",
+        help="Flag HEAD commits touching src/ or tests/ without a Task: trailer",
+    )
     add_json_flag(p_validate)
     p_validate.set_defaults(
         func=lambda a: validate(
@@ -226,6 +238,8 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_personas=a.check_personas,
             check_interviews=a.check_interviews,
             check_decomposition=a.check_decomposition,
+            check_requirements=a.check_requirements,
+            check_commit_trailers=a.check_commit_trailers,
             as_json=a.as_json,
         )
     )

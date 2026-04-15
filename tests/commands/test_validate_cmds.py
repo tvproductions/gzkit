@@ -1,8 +1,9 @@
+import subprocess
 import unittest
 from pathlib import Path
 
 from gzkit.cli import main
-from tests.commands.common import CliRunner, _quick_init
+from tests.commands.common import CliRunner, _init_git_repo, _quick_init
 
 
 class TestValidateCommand(unittest.TestCase):
@@ -110,3 +111,185 @@ Rules here
             result = runner.invoke(main, ["validate", "--decomposition"])
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("does not match", result.output)
+
+    def test_validate_requirements_flag_accepted(self) -> None:
+        """--requirements flag runs the requirements scope without crashing."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            result = runner.invoke(main, ["validate", "--requirements"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("requirements", result.output.lower())
+
+    def test_validate_requirements_detects_bare_requirements_section(self) -> None:
+        """OBPI with REQUIREMENTS section but no REQ-IDs is flagged."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            obpi_dir = Path("docs/design/adr/pre-release/ADR-0.0.99-test/obpis")
+            obpi_dir.mkdir(parents=True, exist_ok=True)
+            (obpi_dir / "OBPI-0.0.99-01-thing.md").write_text(
+                """---
+id: OBPI-0.0.99-01-thing
+parent: ADR-0.0.99-test
+item: 1
+lane: Lite
+status: Draft
+---
+
+# OBPI-0.0.99-01 — Thing
+
+## OBJECTIVE
+
+Do the thing.
+
+## REQUIREMENTS (FAIL-CLOSED)
+
+1. The thing must happen
+2. The thing must be documented
+""",
+                encoding="utf-8",
+            )
+            result = runner.invoke(main, ["validate", "--requirements"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("REQ", result.output)
+            self.assertIn("OBPI-0.0.99-01-thing", result.output)
+
+    def test_validate_requirements_passes_when_req_ids_present(self) -> None:
+        """OBPI with REQUIREMENTS section and at least one REQ-ID passes."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            obpi_dir = Path("docs/design/adr/pre-release/ADR-0.0.99-test/obpis")
+            obpi_dir.mkdir(parents=True, exist_ok=True)
+            (obpi_dir / "OBPI-0.0.99-01-thing.md").write_text(
+                """---
+id: OBPI-0.0.99-01-thing
+parent: ADR-0.0.99-test
+item: 1
+lane: Lite
+status: Draft
+---
+
+# OBPI-0.0.99-01 — Thing
+
+## OBJECTIVE
+
+Do the thing.
+
+## REQUIREMENTS (FAIL-CLOSED)
+
+1. The thing must happen
+
+## Acceptance Criteria
+
+- [ ] REQ-0.0.99-01-01: The thing must happen.
+""",
+                encoding="utf-8",
+            )
+            result = runner.invoke(main, ["validate", "--requirements"])
+            self.assertEqual(result.exit_code, 0)
+
+    def test_validate_commit_trailers_flag_accepted(self) -> None:
+        """--commit-trailers flag runs the scope without crashing."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            _init_git_repo(Path.cwd())
+            result = runner.invoke(main, ["validate", "--commit-trailers"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("commit", result.output.lower())
+
+    def test_validate_commit_trailers_flags_src_change_without_task_trailer(self) -> None:
+        """HEAD commit touching src/** without Task: trailer is flagged."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            project_root = Path.cwd()
+            _init_git_repo(project_root)
+            src_file = project_root / "src" / "mypkg" / "module.py"
+            src_file.parent.mkdir(parents=True, exist_ok=True)
+            src_file.write_text("x = 1\n", encoding="utf-8")
+            subprocess.run(
+                ["git", "add", "src"], cwd=project_root, check=True, capture_output=True
+            )
+            subprocess.run(
+                ["git", "commit", "-m", "feat: add module"],
+                cwd=project_root,
+                check=True,
+                capture_output=True,
+            )
+            result = runner.invoke(main, ["validate", "--commit-trailers"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("Task:", result.output)
+
+    def test_validate_commit_trailers_passes_with_trailer(self) -> None:
+        """HEAD commit with Task: trailer passes the check."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            project_root = Path.cwd()
+            _init_git_repo(project_root)
+            src_file = project_root / "src" / "mypkg" / "module.py"
+            src_file.parent.mkdir(parents=True, exist_ok=True)
+            src_file.write_text("x = 1\n", encoding="utf-8")
+            subprocess.run(
+                ["git", "add", "src"], cwd=project_root, check=True, capture_output=True
+            )
+            subprocess.run(
+                ["git", "commit", "-m", "feat: add module\n\nTask: TASK-0.0.1-01-01-01"],
+                cwd=project_root,
+                check=True,
+                capture_output=True,
+            )
+            result = runner.invoke(main, ["validate", "--commit-trailers"])
+            self.assertEqual(result.exit_code, 0)
+
+    def test_validate_commit_trailers_skips_non_code_commits(self) -> None:
+        """HEAD commit touching only docs/ does not require a Task: trailer."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            project_root = Path.cwd()
+            _init_git_repo(project_root)
+            docs_file = project_root / "docs" / "note.md"
+            docs_file.parent.mkdir(parents=True, exist_ok=True)
+            docs_file.write_text("note\n", encoding="utf-8")
+            subprocess.run(
+                ["git", "add", "docs"], cwd=project_root, check=True, capture_output=True
+            )
+            subprocess.run(
+                ["git", "commit", "-m", "docs: add note"],
+                cwd=project_root,
+                check=True,
+                capture_output=True,
+            )
+            result = runner.invoke(main, ["validate", "--commit-trailers"])
+            self.assertEqual(result.exit_code, 0)
+
+    def test_validate_requirements_skips_briefs_without_requirements_section(self) -> None:
+        """OBPI with no REQUIREMENTS section at all is not flagged."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            obpi_dir = Path("docs/design/adr/pre-release/ADR-0.0.99-test/obpis")
+            obpi_dir.mkdir(parents=True, exist_ok=True)
+            (obpi_dir / "OBPI-0.0.99-01-thing.md").write_text(
+                """---
+id: OBPI-0.0.99-01-thing
+parent: ADR-0.0.99-test
+item: 1
+lane: Lite
+status: Draft
+---
+
+# OBPI-0.0.99-01 — Thing
+
+## OBJECTIVE
+
+Do the thing.
+""",
+                encoding="utf-8",
+            )
+            result = runner.invoke(main, ["validate", "--requirements"])
+            self.assertEqual(result.exit_code, 0)
