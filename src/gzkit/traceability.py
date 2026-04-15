@@ -396,15 +396,23 @@ def _semver_sort_key(semver: str) -> tuple[int, ...]:
 def compute_coverage(
     known_reqs: list[DiscoveredReq],
     linkage_records: list[LinkageRecord],
+    include_doc: bool = False,
 ) -> CoverageReport:
     """Compute coverage rollup from known REQs and observed linkage records.
 
     Pure computation — no I/O. Deterministic: same inputs always produce same
     outputs. Results sorted by identifier (semantic version ordering).
-    Doc-kind REQs (tagged ``[doc]`` in briefs) are excluded — tests are for code.
+
+    By default, doc-kind REQs (tagged ``[doc]`` in briefs) are excluded —
+    tests are for code, and a doc-only ADR has no test surface. Set
+    ``include_doc=True`` to surface doc-kind REQs in the report (useful for
+    inspecting governance graph completeness rather than test coverage).
     """
-    # Filter to testable REQs only — doc REQs have no test surface
-    testable_reqs = [r for r in known_reqs if r.entity.kind == _TESTABLE_KIND]
+    # Filter to testable REQs only — doc REQs have no test surface unless requested
+    if include_doc:
+        testable_reqs = list(known_reqs)
+    else:
+        testable_reqs = [r for r in known_reqs if r.entity.kind == _TESTABLE_KIND]
 
     # Build map: REQ ID → list of covering test identifiers
     coverage_map: dict[str, list[str]] = {}

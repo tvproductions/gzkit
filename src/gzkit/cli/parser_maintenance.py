@@ -123,6 +123,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
                 "gz covers OBPI-0.20.0-01",
                 "gz covers --json",
                 "gz covers ADR-0.20.0 --plain",
+                "gz covers ADR-0.9.0 --include-doc",
             ]
         ),
     )
@@ -139,6 +140,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
     p_covers.add_argument(
         "--test-dir", default=None, help="Override test directory to scan (default: tests)"
     )
+    p_covers.add_argument(
+        "--include-doc",
+        action="store_true",
+        default=False,
+        help="Include doc-kind REQs (default: excluded — tests are for code)",
+    )
     p_covers.set_defaults(
         func=lambda a: covers_cmd(
             target=a.target,
@@ -146,6 +153,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             plain=a.plain,
             adr_dir=a.adr_dir,
             test_dir=a.test_dir,
+            include_doc=a.include_doc,
         )
     )
 
