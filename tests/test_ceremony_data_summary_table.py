@@ -13,11 +13,13 @@ from __future__ import annotations
 import unittest
 
 from gzkit.commands.ceremony_data import format_summary_table
+from gzkit.traceability import covers
 
 
 class TestFormatSummaryTableNoTruncation(unittest.TestCase):
     """The summary table renders OBPI metadata without lossy truncation."""
 
+    @covers("REQ-0.23.0-04-13")
     def test_long_objective_renders_in_full(self) -> None:
         briefs = [
             {
@@ -47,6 +49,7 @@ class TestFormatSummaryTableNoTruncation(unittest.TestCase):
         for phrase in ("gz patch release", "semantic version", "release manifest"):
             self.assertIn(phrase, flat, f"Objective phrase missing: {phrase!r}")
 
+    @covers("REQ-0.23.0-04-13")
     def test_short_objective_one_line(self) -> None:
         """Short objectives still render cleanly without unnecessary wrapping."""
         briefs = [

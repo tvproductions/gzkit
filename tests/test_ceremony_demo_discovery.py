@@ -37,6 +37,7 @@ from gzkit.commands.ceremony_data import (
     check_doc_alignment,
     discover_demo_commands,
 )
+from gzkit.traceability import covers
 
 # A brief fixture that reproduces the OBPI-0.25.0-33 pattern: a real
 # command-doc link (arb.md), a shared-line mention of index.md, AND a
@@ -71,18 +72,21 @@ Evaluate airlineops opsdev/arb module against gzkit's ARB surface.
 class TestCollectRegisteredInvocations(unittest.TestCase):
     """The registered-invocations set is computed from the live parser tree."""
 
+    @covers("REQ-0.23.0-04-12")
     def test_includes_known_top_level_verbs(self) -> None:
         invocations = _collect_registered_invocations()
         self.assertIn("arb", invocations)
         self.assertIn("adr", invocations)
         self.assertIn("status", invocations)
 
+    @covers("REQ-0.23.0-04-12")
     def test_excludes_nonexistent_verbs(self) -> None:
         invocations = _collect_registered_invocations()
         self.assertNotIn("index", invocations)
         self.assertNotIn("frobnicate", invocations)
         self.assertNotIn("nonexistent-command", invocations)
 
+    @covers("REQ-0.23.0-04-12")
     def test_includes_nested_subcommand_chains(self) -> None:
         """Commands like `gz adr status` must be discoverable at full depth."""
         invocations = _collect_registered_invocations()
@@ -106,6 +110,7 @@ class TestCommandDocLinkDiscoveryValidation(unittest.TestCase):
         cmd_dir.mkdir(parents=True, exist_ok=True)
         (cmd_dir / f"{slug}.md").write_text(f"# {slug}\n", encoding="utf-8")
 
+    @covers("REQ-0.23.0-04-12")
     def test_skips_index_md_because_gz_index_is_not_registered(self) -> None:
         """The triggering case: OBPI-33 references index.md as a real docs file.
 
@@ -125,6 +130,7 @@ class TestCommandDocLinkDiscoveryValidation(unittest.TestCase):
         for cmd in commands:
             self.assertNotIn(" index ", f" {cmd} ")
 
+    @covers("REQ-0.23.0-04-12")
     def test_skips_unregistered_slug_even_when_md_file_exists(self) -> None:
         """A .md file under commands/ does not imply the verb is registered."""
         brief_content = """\
@@ -149,6 +155,7 @@ lane: lite
 
         self.assertEqual(commands, [])
 
+    @covers("REQ-0.23.0-04-12")
     def test_includes_registered_verb_slug(self) -> None:
         brief_content = """\
 ---
@@ -176,6 +183,7 @@ lane: lite
 class TestBriefTitleDiscoveryValidation(unittest.TestCase):
     """Strategy 3 — brief titles validated against parser."""
 
+    @covers("REQ-0.23.0-04-12")
     def test_skips_unregistered_verb_in_title(self) -> None:
         brief_content = """\
 ---
@@ -198,6 +206,7 @@ Does not correspond to a real verb.
 
         self.assertEqual(commands, [])
 
+    @covers("REQ-0.23.0-04-12")
     def test_includes_registered_verb_in_title(self) -> None:
         brief_content = """\
 ---
@@ -224,6 +233,7 @@ Touches the ARB verb.
 class TestDemoSectionDiscoveryValidation(unittest.TestCase):
     """Strategy 1 — ``## Demo`` fenced blocks validated against parser."""
 
+    @covers("REQ-0.23.0-04-12")
     def test_skips_unregistered_verb_in_demo_block(self) -> None:
         brief_content = """\
 ---
@@ -250,6 +260,7 @@ uv run gz nonexistent --help
         self.assertIn("uv run gz arb --help", commands)
         self.assertNotIn("uv run gz nonexistent --help", commands)
 
+    @covers("REQ-0.23.0-04-12")
     def test_passes_through_non_gz_commands_unchanged(self) -> None:
         """Non-gz shell commands in a Demo block are operator-authored and
         should pass through without verb validation — validation only applies
@@ -285,6 +296,7 @@ ls docs/user/commands/
 class TestDiscoverDemoCommandsEndToEnd(unittest.TestCase):
     """Full `discover_demo_commands` pathway against the live parser."""
 
+    @covers("REQ-0.23.0-04-12")
     def test_obpi_33_pattern_does_not_emit_gz_index(self) -> None:
         """Reproduce the exact production failure: OBPI-0.25.0-33 brief shape.
 
@@ -338,6 +350,7 @@ class TestCheckDocAlignmentValidation(unittest.TestCase):
         cmd_dir.mkdir(parents=True, exist_ok=True)
         (cmd_dir / f"{slug}.md").write_text(f"# {slug}\n", encoding="utf-8")
 
+    @covers("REQ-0.23.0-04-14")
     def test_excludes_index_md_row_from_alignment_table(self) -> None:
         """The triggering case: OBPI-33 pattern must not emit gz index row."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -352,6 +365,7 @@ class TestCheckDocAlignmentValidation(unittest.TestCase):
         self.assertIn("gz arb", commands)
         self.assertNotIn("gz index", commands)
 
+    @covers("REQ-0.23.0-04-14")
     def test_excludes_unregistered_slug_even_when_md_file_exists(self) -> None:
         brief_content = """\
 ---
@@ -376,6 +390,7 @@ lane: lite
         commands = [r["command"] for r in results]
         self.assertEqual(commands, [])
 
+    @covers("REQ-0.23.0-04-14")
     def test_includes_registered_slug_row(self) -> None:
         brief_content = """\
 ---

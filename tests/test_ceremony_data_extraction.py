@@ -24,6 +24,7 @@ from gzkit.commands.ceremony_data import (
     format_summary_table,
 )
 from gzkit.commands.ceremony_steps import render_step_2_summary
+from gzkit.traceability import covers
 
 BRIEF_UPPERCASE_HEADINGS = """\
 ---
@@ -57,6 +58,7 @@ Reference implementation at ../airlineops.
 class TestExtractBriefMetadataHeadingCase(unittest.TestCase):
     """extract_brief_metadata captures Objective regardless of heading case."""
 
+    @covers("REQ-0.23.0-04-09")
     def test_uppercase_objective_heading_is_captured(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             brief_path = Path(temp_dir) / "OBPI-0.25.0-01-attestation-pattern.md"
@@ -72,6 +74,7 @@ class TestExtractBriefMetadataHeadingCase(unittest.TestCase):
         self.assertIn("Absorb the attestation pattern", meta["objective"])
         self.assertIn("ledger-backed human decisions", meta["objective"])
 
+    @covers("REQ-0.23.0-04-09")
     def test_titlecase_objective_heading_still_works(self) -> None:
         content = BRIEF_UPPERCASE_HEADINGS.replace("## OBJECTIVE", "## Objective")
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -82,6 +85,7 @@ class TestExtractBriefMetadataHeadingCase(unittest.TestCase):
 
         self.assertIn("Absorb the attestation pattern", meta["objective"])
 
+    @covers("REQ-0.23.0-04-09")
     def test_mixedcase_objective_heading_is_captured(self) -> None:
         content = BRIEF_UPPERCASE_HEADINGS.replace("## OBJECTIVE", "## ObJeCtIvE")
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -92,6 +96,8 @@ class TestExtractBriefMetadataHeadingCase(unittest.TestCase):
 
         self.assertIn("Absorb the attestation pattern", meta["objective"])
 
+    @covers("REQ-0.23.0-04-09")
+    @covers("REQ-0.23.0-04-13")
     def test_bom_table_populates_objective_for_uppercase_brief(self) -> None:
         """End-to-end: brief with uppercase heading → BOM table shows objective."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -150,6 +156,7 @@ Downstream consequences text.
 class TestExtractAdrIntent(unittest.TestCase):
     """GHI-155: extract_adr_intent pulls the ## Intent section for Step 2 framing."""
 
+    @covers("REQ-0.23.0-04-10")
     def test_intent_section_captured_from_canonical_adr(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             adr_path = Path(temp_dir) / "ADR-0.25.0-core-infrastructure-pattern-absorption.md"
@@ -161,6 +168,7 @@ class TestExtractAdrIntent(unittest.TestCase):
         self.assertIn("one-time harvest", intent)
         self.assertIn("subtraction test", intent)
 
+    @covers("REQ-0.23.0-04-10")
     def test_intent_section_excludes_preamble_and_decision(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             adr_path = Path(temp_dir) / "ADR.md"
@@ -173,6 +181,7 @@ class TestExtractAdrIntent(unittest.TestCase):
         self.assertNotIn("individual OBPI examination", intent)
         self.assertNotIn("Downstream consequences", intent)
 
+    @covers("REQ-0.23.0-04-10")
     def test_intent_section_case_insensitive(self) -> None:
         content = ADR_FIXTURE.replace("## Intent", "## INTENT")
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -183,6 +192,7 @@ class TestExtractAdrIntent(unittest.TestCase):
 
         self.assertIn("gzkit is the forward platform", intent)
 
+    @covers("REQ-0.23.0-04-10")
     def test_intent_missing_returns_empty_string(self) -> None:
         content = "# ADR\n\n## Decision\n\nNo intent section here.\n"
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -211,6 +221,7 @@ class TestRenderStep2ScopeReview(unittest.TestCase):
 
         return adr_path, [obpi_path], project_root
 
+    @covers("REQ-0.23.0-04-10")
     def test_step_2_contains_adr_intent_framing(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             adr_path, obpi_files, project_root = self._write_ceremony_fixture(Path(temp_dir))
@@ -225,6 +236,7 @@ class TestRenderStep2ScopeReview(unittest.TestCase):
         self.assertIn("gzkit is the forward platform", rendered)
         self.assertIn("one-time harvest", rendered)
 
+    @covers("REQ-0.23.0-04-10")
     def test_step_2_contains_scope_review_prompt(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             adr_path, obpi_files, project_root = self._write_ceremony_fixture(Path(temp_dir))
@@ -244,6 +256,7 @@ class TestRenderStep2ScopeReview(unittest.TestCase):
             "Step 2 must frame the scope-vs-intent question explicitly",
         )
 
+    @covers("REQ-0.23.0-04-11")
     def test_step_2_omits_generic_qa_command_block(self) -> None:
         """Generic QA commands belong to Steps 4-5 walkthrough, not Step 2."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -263,6 +276,7 @@ class TestRenderStep2ScopeReview(unittest.TestCase):
         self.assertNotIn("uv run -m behave", rendered)
         self.assertNotIn("for your direct observation", rendered)
 
+    @covers("REQ-0.23.0-04-13")
     def test_step_2_still_contains_bom_table_objective(self) -> None:
         """The BOM table must still render the OBPI objective alongside the new framing."""
         with tempfile.TemporaryDirectory() as temp_dir:
