@@ -66,9 +66,9 @@ Define lifecycle transition semantics for skill artifacts (`draft`, `active`, `d
 
 ## Acceptance Criteria
 
-- [x] Lifecycle transition rules are explicit and test-covered.
-- [x] Invalid transition behavior is fail-closed.
-- [x] Operator evidence expectations are documented.
+- [x] REQ-0.5.0-03-01: Lifecycle transition rules are explicit and test-covered.
+- [x] REQ-0.5.0-03-02: Invalid transition behavior is fail-closed.
+- [x] REQ-0.5.0-03-03: Operator evidence expectations are documented.
 
 ## Evidence
 

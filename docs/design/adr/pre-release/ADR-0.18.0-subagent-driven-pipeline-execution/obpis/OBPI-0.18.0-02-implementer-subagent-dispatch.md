@@ -62,6 +62,27 @@ agents and documented in SKILL.md.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.18.0-02-01: REQUIREMENT: Stage 2 MUST dispatch one fresh subagent per plan task. Tasks are never batched.
+- [x] REQ-0.18.0-02-02: REQUIREMENT: Implementer subagents are dispatched sequentially, never in parallel. This prevents file conflicts and ensures each task builds on the previous one's changes.
+- [x] REQ-0.18.0-02-03: REQUIREMENT: Each subagent receives scoped context: task description, allowed file paths (from brief), test expectations, and brief requirements relevant to this task.
+- [x] REQ-0.18.0-02-04: REQUIREMENT: Each subagent MUST return a structured result: `{status, files_changed, tests_added, concerns}`.
+- [x] REQ-0.18.0-02-05: REQUIREMENT: Controller handles all four result statuses: - `DONE` — advance to next task - `DONE_WITH_CONCERNS` — log concerns, advance - `NEEDS_CONTEXT` — provide requested context, re-dispatch - `BLOCKED` — log blocker, attempt fix (2 tries), then handoff
+- [x] REQ-0.18.0-02-06: REQUIREMENT: Model-aware routing — simple tasks (1-2 files, mechanical changes) MAY use economical models (`haiku`); integration/architecture tasks MUST use capable models (`opus`). The controller overrides the agent file's `model: inherit` via the Agent tool's `model` parameter per-dispatch.
+- [x] REQ-0.18.0-02-07: REQUIREMENT: Implementer subagent MUST be dispatched using the `.claude/agents/implementer.md` agent file, which enforces `permissionMode: acceptEdits` (non-blocking file writes) and `maxTurns: 25` (bounded loop).
+- [x] REQ-0.18.0-02-08: REQUIREMENT: File path enforcement MUST use a `hooks.PreToolUse` hook on Edit/Write tools that validates against the brief's allowed paths — structural enforcement, not prompt-only instruction.
+- [x] REQ-0.18.0-02-09: NEVER: Dispatch multiple implementer subagents in parallel for the same OBPI.
+- [x] REQ-0.18.0-02-10: NEVER: Let the controller write implementation code directly — it orchestrates only.
+- [x] REQ-0.18.0-02-11: ALWAYS: After all tasks complete, the controller MUST proceed to Stage 3 immediately (Iron Law).
+
+
 ## Controller Loop (Design Input)
 
 ```text

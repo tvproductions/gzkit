@@ -46,6 +46,22 @@ Evaluate `opsdev/arb/patterns.py` (253 lines) against gzkit's current approach t
 1. If Confirm: document why independent QA runs are sufficient for governance
 1. If Exclude: document why the module is environment-specific
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.27.0-05-01: Read both implementations completely
+- [x] REQ-0.27.0-05-02: Document comparison: pattern detection algorithms, trend metrics, dependency chain, complexity cost
+- [x] REQ-0.27.0-05-03: Record decision with rationale: Absorb / Confirm / Exclude
+- [x] REQ-0.27.0-05-04: If Absorb: adapt to gzkit conventions and write tests
+- [x] REQ-0.27.0-05-05: If Confirm: document why independent QA runs are sufficient for governance
+- [x] REQ-0.27.0-05-06: If Exclude: document why the module is environment-specific
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/arb/` — target for absorbed modules

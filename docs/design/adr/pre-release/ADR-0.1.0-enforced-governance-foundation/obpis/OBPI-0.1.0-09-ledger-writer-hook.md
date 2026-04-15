@@ -48,11 +48,11 @@ Implement Claude hook script that appends `artifact_edited` events to ledger on 
 
 ## Acceptance Criteria
 
-- [ ] Hook fires on Edit/Write to `docs/adr/**`
-- [ ] Hook fires on Edit/Write to `docs/briefs/**`
-- [ ] `artifact_edited` event appended to ledger
-- [ ] Hook includes session ID
-- [ ] Hook exits 0 even on ledger write failure
+- [x] REQ-0.1.0-09-01: Hook fires on Edit/Write to `docs/adr/**`
+- [x] REQ-0.1.0-09-02: Hook fires on Edit/Write to `docs/briefs/**`
+- [x] REQ-0.1.0-09-03: `artifact_edited` event appended to ledger
+- [x] REQ-0.1.0-09-04: Hook includes session ID
+- [x] REQ-0.1.0-09-05: Hook exits 0 even on ledger write failure
 
 ## Gate Evidence
 

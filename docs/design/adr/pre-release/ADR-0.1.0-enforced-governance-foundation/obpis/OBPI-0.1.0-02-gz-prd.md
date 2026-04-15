@@ -42,11 +42,11 @@ Implement `gz prd` command that creates PRDs via mandatory Q&A interview.
 
 ## Acceptance Criteria
 
-- [ ] `gz prd PRD-FOO-1.0.0` runs mandatory Q&A interview
-- [ ] Interview answers populate PRD template
-- [ ] PRD contains hardened sections
-- [ ] `prd_created` event appended to ledger
-- [ ] Q&A transcript saved to `.gzkit/transcripts/`
+- [x] REQ-0.1.0-02-01: `gz prd PRD-FOO-1.0.0` runs mandatory Q&A interview
+- [x] REQ-0.1.0-02-02: Interview answers populate PRD template
+- [x] REQ-0.1.0-02-03: PRD contains hardened sections
+- [x] REQ-0.1.0-02-04: `prd_created` event appended to ledger
+- [x] REQ-0.1.0-02-05: Q&A transcript saved to `.gzkit/transcripts/`
 
 ## Gate Evidence
 

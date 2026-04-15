@@ -45,6 +45,22 @@ Evaluate opsdev's `tasks sync` subcommand against gzkit's existing synchronizati
 1. If Absorb: adapt to gzkit conventions and write tests
 1. If Exclude: document why gzkit's existing sync surfaces are sufficient
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.29.0-03-01: Read the `tasks sync` implementation completely
+- [x] REQ-0.29.0-03-02: Map the synchronization targets against gzkit's existing sync surfaces
+- [x] REQ-0.29.0-03-03: Document comparison: state model, sync direction, conflict resolution, idempotency
+- [x] REQ-0.29.0-03-04: Record decision with rationale: Absorb / Adapt / Exclude
+- [x] REQ-0.29.0-03-05: If Absorb: adapt to gzkit conventions and write tests
+- [x] REQ-0.29.0-03-06: If Exclude: document why gzkit's existing sync surfaces are sufficient
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/commands/` --- target for absorbed commands

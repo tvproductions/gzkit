@@ -43,6 +43,21 @@ Compare opsdev's `audit` command (adr_evidence_audit.py, 453 lines) against gzki
 1. If absorbing: adapt to gzkit conventions and write tests
 1. If confirming: document what gzkit provides that makes 453 lines unnecessary
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.32.0-12-01: Read both implementations completely
+- [x] REQ-0.32.0-12-02: Document comparison: evidence validation, cross-referencing, receipt checking, reporting
+- [x] REQ-0.32.0-12-03: Record decision with rationale: Absorb Improvements / Confirm Sufficient
+- [x] REQ-0.32.0-12-04: If absorbing: adapt to gzkit conventions and write tests
+- [x] REQ-0.32.0-12-05: If confirming: document what gzkit provides that makes 453 lines unnecessary
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/` -- target for absorbed improvements

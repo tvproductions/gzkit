@@ -49,6 +49,22 @@ Lite — ADR note + stdlib unittest + smoke (≤60s).
 1. Event factory functions return typed models (not generic dicts)
 1. All existing ledger validation tests pass — identical error detection
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.15.0-03-01: Base `LedgerEvent` model with `event` field as discriminator
+- [x] REQ-0.15.0-03-02: Specific models for each event type with typed extra fields (e.g., `ObpiReceiptEvent` has typed `evidence` field with `req_proof_inputs`, `scope_audit`, `git_sync_state`)
+- [x] REQ-0.15.0-03-03: `_validate_ledger_event_fields()` replaced with Pydantic discriminated union parsing
+- [x] REQ-0.15.0-03-04: `_validate_obpi_receipt_evidence()`, `_validate_req_proof_inputs()`, `_validate_scope_audit()`, `_validate_git_sync_state()` replaced with nested Pydantic models
+- [x] REQ-0.15.0-03-05: Event factory functions return typed models (not generic dicts)
+- [x] REQ-0.15.0-03-06: All existing ledger validation tests pass — identical error detection
+
+
 ## QUALITY GATES (Lite)
 
 - [x] Gate 1 (ADR): Intent recorded in this brief

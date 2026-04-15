@@ -48,6 +48,23 @@ Design the plugin manifest format for the instruction registry. The manifest mus
 1. Write unit tests validating both valid and invalid manifests against the schema
 1. Document the schema with field-by-field descriptions and examples
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.39.0-01-01: Design the JSON Schema for the instruction plugin manifest
+- [x] REQ-0.39.0-01-02: Define required fields: id, version, type, scope, description
+- [x] REQ-0.39.0-01-03: Define optional fields: dependencies, conflicts, metadata, author
+- [x] REQ-0.39.0-01-04: Write the JSON Schema in `data/schemas/instruction_plugin.schema.json`
+- [x] REQ-0.39.0-01-05: Create a Pydantic BaseModel mirroring the schema for runtime validation
+- [x] REQ-0.39.0-01-06: Write unit tests validating both valid and invalid manifests against the schema
+- [x] REQ-0.39.0-01-07: Document the schema with field-by-field descriptions and examples
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/instructions/` — new module package

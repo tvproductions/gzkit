@@ -19,6 +19,20 @@ status: Completed
 
 Add a pre-completion validator gate that blocks OBPI `Completed` transitions when required evidence or human attestation prerequisites are not satisfied.
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 (Mode C — derived from Objective, Implementation Summary, and Key Proof).
+-->
+
+- [x] REQ-0.7.0-01-01: Given an OBPI brief lacking required evidence, when `gz obpi validate` is run, then the validator emits a `[BLOCK]` message and refuses the Completed transition.
+- [x] REQ-0.7.0-01-02: Given a Heavy-lane OBPI lacking human attestation, when validation runs, then the validator blocks the Completed transition until attestation is recorded.
+- [x] REQ-0.7.0-01-03: Given the validator engine, when invoked, then it reports which specific section is missing or non-substantive (e.g. `Missing or non-substantive 'Implementation Summary'`).
+- [x] REQ-0.7.0-01-04: Given the gzkit hook system, when an OBPI completion event is dispatched, then the validator runs as a hook before any completion side-effect.
+- [x] REQ-0.7.0-01-05: Given the gzkit CLI, when `gz obpi validate <path>` is invoked, then a stand-alone validator subcommand executes the same checks the hook performs.
+
 ### Implementation Summary
 
 - Files created: `src/gzkit/hooks/obpi.py` (Validator Engine)

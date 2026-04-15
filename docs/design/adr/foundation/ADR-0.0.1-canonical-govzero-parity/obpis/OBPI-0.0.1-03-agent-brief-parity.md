@@ -48,6 +48,19 @@ If an assumption is questioned or a file/config is missing, STOP and emit a BLOC
 
 > STOP-on-BLOCKERS: if COPILOT_BRIEF-template.md is not accessible, print BLOCKERS.
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.0.1-03-01: Document required OBPI sections per AirlineOps COPILOT_BRIEF-template.md.
+- [x] REQ-0.0.1-03-02: Define parity rules (what must match, what may vary by lane).
+- [x] REQ-0.0.1-03-03: Document WBS hierarchy, Agent Mode, Output Shapes, Anti-hallucination requirements.
+
+
 ## CANONICAL BRIEF STRUCTURE (from COPILOT_BRIEF-template.md)
 
 | Section | Purpose | Lane |

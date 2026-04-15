@@ -39,6 +39,21 @@ Add skill invocation entries to `docs/user/runbook.md` and `docs/governance/gove
 1. Link each runbook skill reference to the corresponding manpage in `docs/user/skills/`
 1. Do not disrupt existing runbook flow — skill entries are additive
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.24.0-04-01: Identify workflow insertion points in `docs/user/runbook.md` where operator-invocable skills should be referenced
+- [x] REQ-0.24.0-04-02: Identify workflow insertion points in `docs/governance/governance_runbook.md` for governance skills
+- [x] REQ-0.24.0-04-03: Add skill references with brief context: what the skill does and why it's invoked at this point in the workflow
+- [x] REQ-0.24.0-04-04: Link each runbook skill reference to the corresponding manpage in `docs/user/skills/`
+- [x] REQ-0.24.0-04-05: Do not disrupt existing runbook flow — skill entries are additive
+
+
 ## ALLOWED PATHS
 
 - `docs/user/runbook.md`

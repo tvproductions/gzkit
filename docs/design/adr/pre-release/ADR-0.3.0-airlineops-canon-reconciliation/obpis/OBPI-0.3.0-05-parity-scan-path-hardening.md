@@ -92,10 +92,10 @@ uv run gz validate --documents
 
 ## Acceptance Criteria
 
-- [x] Parity scan instructions document robust canonical path discovery.
-- [x] Automation runs no longer block solely due to worktree-relative path assumptions.
-- [x] Parity report generation remains dated, repeatable, and evidence-based.
-- [x] Each parity report includes habit-class status and required follow-up linkage.
+- [x] REQ-0.3.0-05-01: Parity scan instructions document robust canonical path discovery.
+- [x] REQ-0.3.0-05-02: Automation runs no longer block solely due to worktree-relative path assumptions.
+- [x] REQ-0.3.0-05-03: Parity report generation remains dated, repeatable, and evidence-based.
+- [x] REQ-0.3.0-05-04: Each parity report includes habit-class status and required follow-up linkage.
 
 ## Evidence
 

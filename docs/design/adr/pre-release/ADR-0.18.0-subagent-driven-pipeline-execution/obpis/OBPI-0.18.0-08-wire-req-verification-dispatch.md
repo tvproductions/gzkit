@@ -60,6 +60,26 @@ Currently Stage 3 runs all verification sequentially in the main session.
 
 > STOP-on-BLOCKERS: if OBPI-04 verification dispatch machinery is missing, print a BLOCKERS list and halt.
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.18.0-08-01: REQUIREMENT: SKILL.md Stage 3 MUST analyze brief requirements for non-overlapping test paths before dispatching parallel verification.
+- [x] REQ-0.18.0-08-02: REQUIREMENT: Requirements with non-overlapping paths MUST be dispatched as concurrent verification subagents using `isolation: worktree` and `run_in_background: true`.
+- [x] REQ-0.18.0-08-03: REQUIREMENT: Requirements with overlapping paths MUST run sequentially (no concurrent modification risk).
+- [x] REQ-0.18.0-08-04: REQUIREMENT: Each verification subagent MUST receive: the requirement text, test file paths, expected pass criteria, and the current branch state.
+- [x] REQ-0.18.0-08-05: REQUIREMENT: Verification results MUST be aggregated using `DispatchAggregation` (OBPI-05) and recorded in the pipeline marker.
+- [x] REQ-0.18.0-08-06: REQUIREMENT: All verification subagents MUST complete before Stage 3 advances to presenting results.
+- [x] REQ-0.18.0-08-07: REQUIREMENT: `--no-subagents` flag MUST bypass parallel dispatch and run verification sequentially inline.
+- [x] REQ-0.18.0-08-08: REQUIREMENT: Worktree cleanup MUST be automatic — no orphaned worktrees after verification completes or fails.
+- [x] REQ-0.18.0-08-09: NEVER: Dispatch parallel verification for overlapping file paths — data corruption risk.
+- [x] REQ-0.18.0-08-10: ALWAYS: Record wall-clock time savings from parallel vs sequential execution for metrics.
+
+
 ## Edge Cases
 
 - `--no-subagents` — Stage 3 runs verification sequentially inline as today

@@ -45,6 +45,22 @@ Evaluate opsdev's settings validation and environment variable loading against g
 1. If Absorb: adapt to gzkit conventions and write tests
 1. If Exclude: document why gzkit's current validation is sufficient
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.30.0-08-01: Read the opsdev settings validation and env loading implementation completely
+- [x] REQ-0.30.0-08-02: Map validation capabilities against gzkit's current config validation
+- [x] REQ-0.30.0-08-03: Document comparison: validation depth, env var integration, error reporting, fail-fast behavior
+- [x] REQ-0.30.0-08-04: Record decision with rationale: Absorb / Adapt / Exclude
+- [x] REQ-0.30.0-08-05: If Absorb: adapt to gzkit conventions and write tests
+- [x] REQ-0.30.0-08-06: If Exclude: document why gzkit's current validation is sufficient
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/` --- target for absorbed modules

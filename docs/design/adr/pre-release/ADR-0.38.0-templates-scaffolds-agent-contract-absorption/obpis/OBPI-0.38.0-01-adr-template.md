@@ -44,6 +44,21 @@ Compare the ADR template used in airlineops against the ADR template used in gzk
 1. Record decision with rationale: Absorb / Confirm / Merge
 1. If Absorb or Merge: produce the improved canonical template
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.38.0-01-01: Read both ADR templates completely
+- [x] REQ-0.38.0-01-02: Compare section-by-section: frontmatter, tidy first plan, agent context frame, feature checklist, intent, decision, interfaces, OBPI decomposition, rationale, consequences, evidence, acceptance note, evidence ledger, completion checklist
+- [x] REQ-0.38.0-01-03: Document which sections exist in one template but not the other
+- [x] REQ-0.38.0-01-04: Record decision with rationale: Absorb / Confirm / Merge
+- [x] REQ-0.38.0-01-05: If Absorb or Merge: produce the improved canonical template
+
+
 ## ALLOWED PATHS
 
 - `.gzkit/templates/` — template storage

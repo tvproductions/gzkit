@@ -48,6 +48,22 @@ Lite — ADR note + stdlib unittest + smoke (≤60s).
 1. `GzkitConfig` model includes vendor config; `config.vendors.claude.enabled` is the canonical check
 1. Default: `claude: enabled`, all others: disabled (matches current Claude-primary reality)
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.16.0-03-01: `VendorConfig` Pydantic model: `enabled` (bool), `surface_root` (Path), `instruction_format` (enum), extra config per vendor
+- [x] REQ-0.16.0-03-02: `VendorsConfig` Pydantic model: `claude`, `copilot`, `codex`, `gemini`, `opencode` — each a `VendorConfig`
+- [x] REQ-0.16.0-03-03: `.gzkit/manifest.json` updated with `vendors` key (backward-compatible — existing manifests without `vendors` default to current behavior)
+- [x] REQ-0.16.0-03-04: Manifest JSON schema updated to include vendor section
+- [x] REQ-0.16.0-03-05: `GzkitConfig` model includes vendor config; `config.vendors.claude.enabled` is the canonical check
+- [x] REQ-0.16.0-03-06: Default: `claude: enabled`, all others: disabled (matches current Claude-primary reality)
+
+
 ## QUALITY GATES (Lite)
 
 - [x] Gate 1 (ADR): Intent recorded in this brief

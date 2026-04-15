@@ -45,6 +45,22 @@ Evaluate opsdev's `tasks test` subcommand against gzkit's existing test executio
 1. If Absorb: adapt to gzkit conventions and write tests
 1. If Exclude: document why gzkit's existing test execution is sufficient
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.29.0-05-01: Read the `tasks test` implementation completely
+- [x] REQ-0.29.0-05-02: Map the test selection logic against gzkit's existing test execution surfaces
+- [x] REQ-0.29.0-05-03: Document comparison: scope selection, test filtering, result reporting
+- [x] REQ-0.29.0-05-04: Record decision with rationale: Absorb / Adapt / Exclude
+- [x] REQ-0.29.0-05-05: If Absorb: adapt to gzkit conventions and write tests
+- [x] REQ-0.29.0-05-06: If Exclude: document why gzkit's existing test execution is sufficient
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/commands/` --- target for absorbed commands

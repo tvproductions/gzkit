@@ -45,6 +45,22 @@ Compare the structural enforcement modules (`guards.py`, `layout_verify.py`, or 
 1. Record decision with rationale: Absorb / Confirm / Merge
 1. If Absorb or Merge: adapt to gzkit conventions (Pydantic, pathlib, UTF-8)
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.38.0-10-01: Identify and read all structural enforcement modules in both repos
+- [x] REQ-0.38.0-10-02: Compare rule-by-rule: directory structure checks, file existence checks, naming conventions, frontmatter validation, content structure validation
+- [x] REQ-0.38.0-10-03: Evaluate error reporting quality — are violations reported with actionable fix instructions?
+- [x] REQ-0.38.0-10-04: Check for enforcement gaps — rules that exist in one repo but not the other
+- [x] REQ-0.38.0-10-05: Record decision with rationale: Absorb / Confirm / Merge
+- [x] REQ-0.38.0-10-06: If Absorb or Merge: adapt to gzkit conventions (Pydantic, pathlib, UTF-8)
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/` — target for absorbed modules

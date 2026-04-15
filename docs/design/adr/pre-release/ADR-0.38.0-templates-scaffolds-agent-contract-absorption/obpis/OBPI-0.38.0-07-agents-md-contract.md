@@ -44,6 +44,21 @@ Compare the AGENTS.md contract/template used in airlineops against the AGENTS.md
 1. Document which guidance exists in one contract but not the other
 1. Record decision with rationale: Absorb / Confirm / Merge
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.38.0-07-01: Read both AGENTS.md files completely
+- [x] REQ-0.38.0-07-02: Identify and extract generic sections (non-domain-specific governance guidance)
+- [x] REQ-0.38.0-07-03: Compare section-by-section: agent roles, workflow sequences, non-negotiable rules, skill catalogs, control surfaces, gate enforcement
+- [x] REQ-0.38.0-07-04: Document which guidance exists in one contract but not the other
+- [x] REQ-0.38.0-07-05: Record decision with rationale: Absorb / Confirm / Merge
+
+
 ## ALLOWED PATHS
 
 - `.gzkit/templates/` — template storage

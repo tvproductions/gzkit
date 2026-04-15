@@ -35,6 +35,20 @@ Lite — internal helpers with no external contract change.
 3. `format_output()` — dispatch between JSON serialization and Rich console rendering based on mode
 4. All helpers are pure functions or thin wrappers — no business logic, no governance awareness
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.40.0-02-01: `fmt_value()` — humanize numeric values (thousand separators, percentage formatting)
+- [x] REQ-0.40.0-02-02: `render_with_fallback()` — render Rich renderable to console with plain-text fallback on error
+- [x] REQ-0.40.0-02-03: `format_output()` — dispatch between JSON serialization and Rich console rendering based on mode
+- [x] REQ-0.40.0-02-04: All helpers are pure functions or thin wrappers — no business logic, no governance awareness
+
+
 ## NON-GOALS
 
 - Airlineops-specific helpers (report packages, eligibility gates, dataset renderers)

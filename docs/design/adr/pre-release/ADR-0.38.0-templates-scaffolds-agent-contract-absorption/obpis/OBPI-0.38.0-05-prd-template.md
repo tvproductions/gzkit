@@ -44,6 +44,21 @@ Compare the PRD (Product Requirements Document) template used in airlineops agai
 1. Check that ADR linkage is mandatory (not optional) in the template
 1. Record decision with rationale: Absorb / Confirm / Merge
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.38.0-05-01: Read both PRD templates completely
+- [x] REQ-0.38.0-05-02: Compare section-by-section: scope, deliverables, ADR linkage, acceptance criteria, risks, milestones, sign-off
+- [x] REQ-0.38.0-05-03: Evaluate whether deliverable enumeration enforces specificity
+- [x] REQ-0.38.0-05-04: Check that ADR linkage is mandatory (not optional) in the template
+- [x] REQ-0.38.0-05-05: Record decision with rationale: Absorb / Confirm / Merge
+
+
 ## ALLOWED PATHS
 
 - `.gzkit/templates/` — template storage

@@ -65,9 +65,9 @@ Deliver a canonical command surface that promotes pool ADRs into canonical packa
 
 ## Acceptance Criteria
 
-- [x] `gz adr promote` exists with `--dry-run` and deterministic target path output.
-- [x] Promoted ADR includes `promoted_from`, source pool file records `promoted_to`.
-- [x] Ledger lineage event is written during non-dry-run promotion.
+- [x] REQ-0.6.0-02-01: `gz adr promote` exists with `--dry-run` and deterministic target path output.
+- [x] REQ-0.6.0-02-02: Promoted ADR includes `promoted_from`, source pool file records `promoted_to`.
+- [x] REQ-0.6.0-02-03: Ledger lineage event is written during non-dry-run promotion.
 
 ## Evidence
 

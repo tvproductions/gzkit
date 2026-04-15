@@ -44,6 +44,21 @@ Compare the ADR closeout form template used in airlineops against the closeout f
 1. Check that evidence paths reference CLI commands (not just file paths)
 1. Record decision with rationale: Absorb / Confirm / Merge
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.38.0-03-01: Read both closeout form templates completely
+- [x] REQ-0.38.0-03-02: Compare section-by-section: status, pre-attestation checklist, evidence paths, OBPI status table, attestation section
+- [x] REQ-0.38.0-03-03: Evaluate whether checklist items are specific and verifiable vs. vague
+- [x] REQ-0.38.0-03-04: Check that evidence paths reference CLI commands (not just file paths)
+- [x] REQ-0.38.0-03-05: Record decision with rationale: Absorb / Confirm / Merge
+
+
 ## ALLOWED PATHS
 
 - `.gzkit/templates/` — template storage

@@ -45,6 +45,22 @@ Evaluate opsdev's `config/opsdev/git_sync.json` against gzkit's git-sync configu
 1. If Absorb: extract the generic schema pattern and write tests
 1. If Exclude: document why gzkit's current git-sync config is sufficient
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.30.0-04-01: Read the opsdev git_sync.json completely
+- [x] REQ-0.30.0-04-02: Separate schema pattern from data content
+- [x] REQ-0.30.0-04-03: Document comparison: schema structure, path mapping rules, sync semantics
+- [x] REQ-0.30.0-04-04: Record decision with rationale: Absorb / Confirm / Exclude
+- [x] REQ-0.30.0-04-05: If Absorb: extract the generic schema pattern and write tests
+- [x] REQ-0.30.0-04-06: If Exclude: document why gzkit's current git-sync config is sufficient
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/` --- target for absorbed modules

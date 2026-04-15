@@ -44,6 +44,22 @@ Evaluate opsdev's `governance report` subcommand (608 lines) for absorption into
 1. If absorbing: adapt to gzkit conventions, implement, and write tests
 1. If excluding: document why gzkit's existing reporting is sufficient
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.33.0-09-01: Read the opsdev implementation completely
+- [x] REQ-0.33.0-09-02: Compare against gzkit's existing reporting (`gz adr report`, `gz status`)
+- [x] REQ-0.33.0-09-03: Evaluate: Does opsdev's report provide capabilities gzkit lacks?
+- [x] REQ-0.33.0-09-04: Document decision: Absorb (add to gzkit) or Exclude (existing reporting sufficient)
+- [x] REQ-0.33.0-09-05: If absorbing: adapt to gzkit conventions, implement, and write tests
+- [x] REQ-0.33.0-09-06: If excluding: document why gzkit's existing reporting is sufficient
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/` -- target for absorbed command

@@ -95,10 +95,10 @@ uv run ruff format --check .
 
 ## Acceptance Criteria
 
-- [x] All canonical GovZero files are present under `docs/governance/GovZero/` with filename parity.
-- [x] Habit parity report references canonical doc paths as source evidence.
-- [x] Parity scan reports now include OBPI-03 closure artifact documenting canonical doc-surface resolution.
-- [x] Document validation and strict docs build pass after import.
+- [x] REQ-0.3.0-03-01: All canonical GovZero files are present under `docs/governance/GovZero/` with filename parity.
+- [x] REQ-0.3.0-03-02: Habit parity report references canonical doc paths as source evidence.
+- [x] REQ-0.3.0-03-03: Parity scan reports now include OBPI-03 closure artifact documenting canonical doc-surface resolution.
+- [x] REQ-0.3.0-03-04: Document validation and strict docs build pass after import.
 
 ## Evidence
 

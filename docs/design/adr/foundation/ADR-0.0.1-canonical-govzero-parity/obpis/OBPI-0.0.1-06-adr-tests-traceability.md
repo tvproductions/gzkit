@@ -47,6 +47,19 @@ If an assumption is questioned or a file/config is missing, STOP and emit a BLOC
 
 > STOP-on-BLOCKERS: if gz-adr-verification SKILL.md is not accessible, print BLOCKERS.
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.0.1-06-01: Document @covers annotation semantics per AirlineOps gz-adr-verification.
+- [x] REQ-0.0.1-06-02: Define traceability requirements for Gate 2.
+- [x] REQ-0.0.1-06-03: Document verification report structure.
+
+
 ## @COVERS PATTERN (from AirlineOps)
 
 ```python

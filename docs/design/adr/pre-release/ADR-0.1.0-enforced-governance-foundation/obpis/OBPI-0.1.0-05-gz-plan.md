@@ -45,14 +45,14 @@ Implement `gz plan` command that creates ADRs via mandatory Q&A interview.
 
 ## Acceptance Criteria
 
-- [ ] `gz plan ADR-0.1.0 --brief my-feature` runs mandatory Q&A interview
-- [ ] Interview answers populate ADR template
-- [ ] ADR folder structure created with obpis/ subdirectory
-- [ ] ADR-CLOSEOUT-FORM.md created
-- [ ] ADR contains brief linkage
-- [ ] `adr_created` event appended to ledger with `parent`
-- [ ] Command fails if referenced brief does not exist
-- [ ] Command fails if interview not completed
+- [x] REQ-0.1.0-05-01: `gz plan ADR-0.1.0 --brief my-feature` runs mandatory Q&A interview
+- [x] REQ-0.1.0-05-02: Interview answers populate ADR template
+- [x] REQ-0.1.0-05-03: ADR folder structure created with obpis/ subdirectory
+- [x] REQ-0.1.0-05-04: ADR-CLOSEOUT-FORM.md created
+- [x] REQ-0.1.0-05-05: ADR contains brief linkage
+- [x] REQ-0.1.0-05-06: `adr_created` event appended to ledger with `parent`
+- [x] REQ-0.1.0-05-07: Command fails if referenced brief does not exist
+- [x] REQ-0.1.0-05-08: Command fails if interview not completed
 
 ## Gate Evidence
 

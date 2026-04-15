@@ -45,6 +45,22 @@ Compare opsdev's `git-sync` implementation (682 lines) against gzkit's `git-sync
 1. If absorbing: adapt to gzkit conventions and write tests
 1. If confirming: document exactly why 199 lines is sufficient where 682 exists
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.32.0-01-01: Read both implementations completely -- every function, every error path
+- [x] REQ-0.32.0-01-02: Categorize the 483-line gap: what does opsdev have that gzkit lacks?
+- [x] REQ-0.32.0-01-03: Document comparison: error handling, edge cases, conflict resolution, hook integration
+- [x] REQ-0.32.0-01-04: Record decision with rationale: Absorb Improvements / Confirm Sufficient
+- [x] REQ-0.32.0-01-05: If absorbing: adapt to gzkit conventions and write tests
+- [x] REQ-0.32.0-01-06: If confirming: document exactly why 199 lines is sufficient where 682 exists
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/` -- target for absorbed improvements

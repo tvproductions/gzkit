@@ -151,9 +151,9 @@ uv run gz adr status ADR-0.7.0-obpi-first-operations --json
 
 <!-- Specific, testable criteria for completion. Checkbox list. -->
 
-- [ ] Status output reports OBPI-unit completion and open items correctly.
-- [ ] Reconciliation distinguishes missing proof from drifted proof states.
-- [ ] Tests validate OBPI-centric reporting behavior.
+- [x] REQ-0.7.0-04-01: Status output reports OBPI-unit completion and open items correctly.
+- [x] REQ-0.7.0-04-02: Reconciliation distinguishes missing proof from drifted proof states.
+- [x] REQ-0.7.0-04-03: Tests validate OBPI-centric reporting behavior.
 
 ## Completion Checklist
 

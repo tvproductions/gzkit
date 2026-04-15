@@ -42,11 +42,11 @@ Create minimal templates for PRD, constitution, brief, and ADR artifacts.
 
 ## Acceptance Criteria
 
-- [ ] `src/gzkit/templates/prd.md` exists with required sections
-- [ ] `src/gzkit/templates/constitution.md` exists with required sections
-- [ ] `src/gzkit/templates/brief.md` exists with required sections
-- [ ] `src/gzkit/templates/adr.md` exists with required sections
-- [ ] Templates render correctly with variable substitution
+- [x] REQ-0.1.0-10-01: `src/gzkit/templates/prd.md` exists with required sections
+- [x] REQ-0.1.0-10-02: `src/gzkit/templates/constitution.md` exists with required sections
+- [x] REQ-0.1.0-10-03: `src/gzkit/templates/brief.md` exists with required sections
+- [x] REQ-0.1.0-10-04: `src/gzkit/templates/adr.md` exists with required sections
+- [x] REQ-0.1.0-10-05: Templates render correctly with variable substitution
 
 ## Gate Evidence
 

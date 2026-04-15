@@ -43,6 +43,22 @@ Evaluate opsdev's `hygiene` command (155 lines) for absorption into gzkit. The h
 1. If absorbing: adapt to gzkit conventions, implement, and write tests
 1. If excluding: document why gzkit does not need a dedicated hygiene command
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.33.0-05-01: Read the opsdev implementation completely
+- [x] REQ-0.33.0-05-02: Evaluate governance generality: Is hygiene enforcement universally useful?
+- [x] REQ-0.33.0-05-03: Check for overlap with existing gzkit commands (layout-verify, tidy/clean)
+- [x] REQ-0.33.0-05-04: Document decision: Absorb (add to gzkit) or Exclude (too specialized or redundant)
+- [x] REQ-0.33.0-05-05: If absorbing: adapt to gzkit conventions, implement, and write tests
+- [x] REQ-0.33.0-05-06: If excluding: document why gzkit does not need a dedicated hygiene command
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/` -- target for absorbed command

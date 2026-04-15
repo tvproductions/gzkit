@@ -44,6 +44,21 @@ Compare the skill template used in airlineops against the skill template used in
 1. Check that error handling guidance helps agents recover from failures
 1. Record decision with rationale: Absorb / Confirm / Merge
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.38.0-08-01: Read both skill templates completely
+- [x] REQ-0.38.0-08-02: Compare section-by-section: metadata, description, triggers, prerequisites, invocation contract, inputs, outputs, error handling, examples
+- [x] REQ-0.38.0-08-03: Evaluate whether invocation contracts are specific enough for deterministic agent execution
+- [x] REQ-0.38.0-08-04: Check that error handling guidance helps agents recover from failures
+- [x] REQ-0.38.0-08-05: Record decision with rationale: Absorb / Confirm / Merge
+
+
 ## ALLOWED PATHS
 
 - `.gzkit/templates/` — template storage

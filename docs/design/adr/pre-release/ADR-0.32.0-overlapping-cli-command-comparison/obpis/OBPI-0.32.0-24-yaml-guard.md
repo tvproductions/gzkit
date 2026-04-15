@@ -42,6 +42,21 @@ Evaluate opsdev's `yaml-guard` command (yaml_guard_tools.py, 75 lines) for inclu
 1. If absorbing: adapt to gzkit conventions, implement, and write tests
 1. If excluding: document why gzkit does not need this safeguard
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.32.0-24-01: Read the opsdev implementation completely
+- [x] REQ-0.32.0-24-02: Evaluate: Is this a generic governance pattern or opsdev-specific?
+- [x] REQ-0.32.0-24-03: Document decision: Absorb New (add to gzkit) or Exclude (not needed in gzkit)
+- [x] REQ-0.32.0-24-04: If absorbing: adapt to gzkit conventions, implement, and write tests
+- [x] REQ-0.32.0-24-05: If excluding: document why gzkit does not need this safeguard
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/` -- target for new command

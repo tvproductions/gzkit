@@ -42,6 +42,22 @@ Heavy — new module introduces rendering contract consumed by all CLI commands.
 5. `list_table()` uses `box.ROUNDED`, minimal columns, supports empty-state message
 6. All presets are stateless pure functions — no IO, no ledger reads, no business logic
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.40.0-01-01: `src/gzkit/reporter/presets.py` exports `status_table()`, `kv_table()`, `ceremony_panel()`, `list_table()` — each accepts a data dict and returns a Rich renderable
+- [x] REQ-0.40.0-01-02: `status_table()` uses `box.ROUNDED`, supports column definitions, row striping, and title
+- [x] REQ-0.40.0-01-03: `kv_table()` renders two-column label/value pairs with `box.ROUNDED`
+- [x] REQ-0.40.0-01-04: `ceremony_panel()` uses `box.DOUBLE`, accepts title and list of (label, status) tuples
+- [x] REQ-0.40.0-01-05: `list_table()` uses `box.ROUNDED`, minimal columns, supports empty-state message
+- [x] REQ-0.40.0-01-06: All presets are stateless pure functions — no IO, no ledger reads, no business logic
+
+
 ## NON-GOALS
 
 - Migrating existing commands (OBPI-03, OBPI-04, OBPI-05)

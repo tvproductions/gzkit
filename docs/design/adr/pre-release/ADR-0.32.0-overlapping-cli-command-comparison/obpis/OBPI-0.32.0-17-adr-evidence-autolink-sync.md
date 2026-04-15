@@ -42,6 +42,21 @@ Compare opsdev's ADR lifecycle subcommands (`adr evidence`, `adr autolink`, `adr
 1. If absorbing: adapt to gzkit conventions and write tests
 1. If confirming: document why gzkit's implementations are sufficient
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.32.0-17-01: Read both implementations completely for all four subcommands
+- [x] REQ-0.32.0-17-02: Document comparison per subcommand: evidence, autolink, sync, promote
+- [x] REQ-0.32.0-17-03: Record decision with rationale: Absorb Improvements / Confirm Sufficient
+- [x] REQ-0.32.0-17-04: If absorbing: adapt to gzkit conventions and write tests
+- [x] REQ-0.32.0-17-05: If confirming: document why gzkit's implementations are sufficient
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/` -- target for absorbed improvements

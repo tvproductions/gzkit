@@ -44,6 +44,21 @@ Evaluate opsdev's `forbid-prod-db-in-tests` pre-commit hook — prevents test fi
 1. Determine enforcement timing: pre-commit, Claude hook, or both
 1. Record decision with rationale: Absorb-PreCommit / Absorb-Claude / Absorb-Both / Exclude
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.35.0-11-01: Read the opsdev `forbid-prod-db-in-tests` hook implementation completely
+- [x] REQ-0.35.0-11-02: Document: what patterns it detects, which files it scans, how it reports violations
+- [x] REQ-0.35.0-11-03: Evaluate whether the detection patterns are generic or airline-specific
+- [x] REQ-0.35.0-11-04: Determine enforcement timing: pre-commit, Claude hook, or both
+- [x] REQ-0.35.0-11-05: Record decision with rationale: Absorb-PreCommit / Absorb-Claude / Absorb-Both / Exclude
+
+
 ## ALLOWED PATHS
 
 - `.pre-commit-config.yaml` — hook configuration

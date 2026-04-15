@@ -43,6 +43,21 @@ Compare opsdev's skill synchronization commands (skill_sync_tools.py, 456 lines)
 1. If absorbing: adapt to gzkit conventions and write tests
 1. If confirming: document what gzkit provides that makes 456 lines unnecessary
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.32.0-21-01: Read both implementations completely
+- [x] REQ-0.32.0-21-02: Document comparison: skill discovery, template rendering, sync targets, conflict handling
+- [x] REQ-0.32.0-21-03: Record decision with rationale: Absorb Improvements / Confirm Sufficient
+- [x] REQ-0.32.0-21-04: If absorbing: adapt to gzkit conventions and write tests
+- [x] REQ-0.32.0-21-05: If confirming: document what gzkit provides that makes 456 lines unnecessary
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/` -- target for absorbed improvements

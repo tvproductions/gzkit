@@ -70,9 +70,9 @@ Enforce OBPI completion semantics at runtime so `completed` receipts are fail-cl
 
 ## Acceptance Criteria
 
-- [x] Completion evidence enforcement matches heavy/foundation inheritance rules.
-- [x] Ledger/schema surfaces represent completion evidence deterministically.
-- [x] Runtime/command docs reflect fail-closed completion protocol.
+- [x] REQ-0.5.0-05-01: Completion evidence enforcement matches heavy/foundation inheritance rules.
+- [x] REQ-0.5.0-05-02: Ledger/schema surfaces represent completion evidence deterministically.
+- [x] REQ-0.5.0-05-03: Runtime/command docs reflect fail-closed completion protocol.
 
 ## Evidence
 

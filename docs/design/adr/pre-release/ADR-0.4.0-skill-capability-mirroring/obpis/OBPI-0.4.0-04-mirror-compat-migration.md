@@ -72,9 +72,9 @@ Complete transition from legacy opsdev-era assumptions to canonical `gz` skill p
 
 ## Acceptance Criteria
 
-- [x] Active control surfaces are opsdev-free.
-- [x] Migration docs distinguish historical references from active surfaces.
-- [x] Quality and governance checks pass after migration.
+- [x] REQ-0.4.0-04-01: Active control surfaces are opsdev-free.
+- [x] REQ-0.4.0-04-02: Migration docs distinguish historical references from active surfaces.
+- [x] REQ-0.4.0-04-03: Quality and governance checks pass after migration.
 
 ## Evidence
 

@@ -43,12 +43,12 @@ Implement `gz attest` command that records human attestation with ledger event.
 
 ## Acceptance Criteria
 
-- [ ] `gz attest` prompts for term
-- [ ] Attestation records timestamp and identity
-- [ ] `attested` event appended to ledger
-- [ ] `gz attest` fails if gates not passing (without `--force`)
-- [ ] `gz attest --force` overrides with warning
-- [ ] `gz attest --reason` records rationale for Partial/Dropped
+- [x] REQ-0.1.0-08-01: `gz attest` prompts for term
+- [x] REQ-0.1.0-08-02: Attestation records timestamp and identity
+- [x] REQ-0.1.0-08-03: `attested` event appended to ledger
+- [x] REQ-0.1.0-08-04: `gz attest` fails if gates not passing (without `--force`)
+- [x] REQ-0.1.0-08-05: `gz attest --force` overrides with warning
+- [x] REQ-0.1.0-08-06: `gz attest --reason` records rationale for Partial/Dropped
 
 ## Gate Evidence
 

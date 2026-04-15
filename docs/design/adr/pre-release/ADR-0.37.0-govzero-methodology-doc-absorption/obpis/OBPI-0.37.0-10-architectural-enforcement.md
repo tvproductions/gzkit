@@ -41,6 +41,20 @@ Compare `docs/governance/GovZero/architectural-enforcement.md` between airlineop
 1. Evaluate which version is more accurate and complete
 1. Record decision with rationale: Absorb / Confirm / Merge
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.37.0-10-01: Read both versions completely
+- [x] REQ-0.37.0-10-02: Document differences in enforcement patterns, hook descriptions, gate definitions
+- [x] REQ-0.37.0-10-03: Evaluate which version is more accurate and complete
+- [x] REQ-0.37.0-10-04: Record decision with rationale: Absorb / Confirm / Merge
+
+
 ## ALLOWED PATHS
 
 - `docs/governance/GovZero/architectural-enforcement.md` — target for reconciled content

@@ -70,9 +70,9 @@ Define a deterministic mirror contract for `.agents`, `.claude`, and `.github` s
 
 ## Acceptance Criteria
 
-- [x] Mirror contract rules are documented and enforced.
-- [x] Drift between canonical and mirror metadata is blocking.
-- [x] Contract behavior is covered by tests.
+- [x] REQ-0.4.0-02-01: Mirror contract rules are documented and enforced.
+- [x] REQ-0.4.0-02-02: Drift between canonical and mirror metadata is blocking.
+- [x] REQ-0.4.0-02-03: Contract behavior is covered by tests.
 
 ## Evidence
 

@@ -59,6 +59,26 @@ OBPI-01. Reviews run after each task (not batched at end of Stage 2) per superpo
 
 > STOP-on-BLOCKERS: if OBPI-03 review protocol or OBPI-06 implementer wiring is incomplete, print a BLOCKERS list and halt.
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.18.0-07-01: REQUIREMENT: After each implementer task completes with `DONE` or `DONE_WITH_CONCERNS`, SKILL.md MUST dispatch two independent reviewer subagents: spec-reviewer and quality-reviewer.
+- [x] REQ-0.18.0-07-02: REQUIREMENT: Both reviewers MUST be dispatched concurrently using `run_in_background: true` on the first, then foreground on the second (or both background with result collection).
+- [x] REQ-0.18.0-07-03: REQUIREMENT: Spec reviewer MUST receive: the task description, brief requirements, and the diff produced by the implementer.
+- [x] REQ-0.18.0-07-04: REQUIREMENT: Quality reviewer MUST receive: the changed files, test coverage context, and architectural constraints from the brief.
+- [x] REQ-0.18.0-07-05: REQUIREMENT: Review findings MUST be recorded as structured data in the pipeline marker with severity levels (`critical`, `major`, `minor`, `info`).
+- [x] REQ-0.18.0-07-06: REQUIREMENT: Critical findings MUST trigger a fix cycle — redispatch the implementer with the finding as context, then re-review.
+- [x] REQ-0.18.0-07-07: REQUIREMENT: Fix cycles MUST be bounded — maximum 2 fix cycles per task before escalating to the user.
+- [x] REQ-0.18.0-07-08: REQUIREMENT: `--no-subagents` flag MUST skip review dispatch (inline execution has no independent review).
+- [x] REQ-0.18.0-07-09: NEVER: Allow the implementer subagent to also perform its own review. Separation of concerns is the point.
+- [x] REQ-0.18.0-07-10: ALWAYS: Record review timing and finding counts for quality metrics.
+
+
 ## Edge Cases
 
 - `--no-subagents` — no review dispatch; Stage 2 runs inline as today

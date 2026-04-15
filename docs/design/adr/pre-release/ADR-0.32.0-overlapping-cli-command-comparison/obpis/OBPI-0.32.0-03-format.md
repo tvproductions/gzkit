@@ -42,6 +42,21 @@ Compare opsdev's `format` command (format_tools.py, 33 lines) against gzkit's fo
 1. If absorbing: adapt to gzkit conventions and write tests
 1. If confirming: document why gzkit's implementation covers all needs
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.32.0-03-01: Read both implementations completely
+- [x] REQ-0.32.0-03-02: Document comparison: invocation flags, check mode, diff mode, error handling
+- [x] REQ-0.32.0-03-03: Record decision with rationale: Absorb Improvements / Confirm Sufficient
+- [x] REQ-0.32.0-03-04: If absorbing: adapt to gzkit conventions and write tests
+- [x] REQ-0.32.0-03-05: If confirming: document why gzkit's implementation covers all needs
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/` -- target for absorbed improvements

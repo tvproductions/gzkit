@@ -113,10 +113,10 @@ uv run -m behave features/
 
 ## Acceptance Criteria
 
-- [x] `gz chores run` executes registry-declared argv steps and records step rc/duration.
-- [x] Timeout and non-zero subprocess exits fail closed with non-zero CLI status.
-- [x] Missing executable errors fail closed and produce `Status: FAIL` runner log entries.
-- [x] Runner evidence is captured in deterministic chore log paths.
+- [x] REQ-0.8.0-02-01: `gz chores run` executes registry-declared argv steps and records step rc/duration.
+- [x] REQ-0.8.0-02-02: Timeout and non-zero subprocess exits fail closed with non-zero CLI status.
+- [x] REQ-0.8.0-02-03: Missing executable errors fail closed and produce `Status: FAIL` runner log entries.
+- [x] REQ-0.8.0-02-04: Runner evidence is captured in deterministic chore log paths.
 
 ## Completion Checklist
 

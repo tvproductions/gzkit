@@ -66,9 +66,9 @@ Define and implement policy-backed parity checks so mirror drift and metadata vi
 
 ## Acceptance Criteria
 
-- [x] `gz skill audit` reports parity findings deterministically.
-- [x] `gz check` includes skill parity audit.
-- [x] Policy behavior is documented and validated by tests.
+- [x] REQ-0.5.0-02-01: `gz skill audit` reports parity findings deterministically.
+- [x] REQ-0.5.0-02-02: `gz check` includes skill parity audit.
+- [x] REQ-0.5.0-02-03: Policy behavior is documented and validated by tests.
 
 ## Evidence
 

@@ -43,6 +43,21 @@ Evaluate opsdev's `agent-review` command (231 lines) for absorption into gzkit. 
 1. If absorbing: adapt to gzkit conventions, implement, and write tests
 1. If excluding: document why gzkit does not need agent configuration review
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.33.0-04-01: Read the opsdev implementation completely
+- [x] REQ-0.33.0-04-02: Evaluate governance generality: Is agent configuration review universally useful?
+- [x] REQ-0.33.0-04-03: Document decision: Absorb (add to gzkit) or Exclude (too domain-specific)
+- [x] REQ-0.33.0-04-04: If absorbing: adapt to gzkit conventions, implement, and write tests
+- [x] REQ-0.33.0-04-05: If excluding: document why gzkit does not need agent configuration review
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/` -- target for absorbed command

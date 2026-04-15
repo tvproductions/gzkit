@@ -113,11 +113,11 @@ uv run gz chores audit --all
 
 ## Acceptance Criteria
 
-- [x] `gz chores list` renders registry entries from `config/gzkit.chores.json`.
-- [x] `gz chores plan quality-check` reports deterministic lifecycle details including log path and acceptance checks.
-- [x] `gz chores audit --all` reports log presence for configured chores.
-- [x] Lifecycle commands remain non-executing inspection/audit surfaces.
-- [x] Human attestation explicitly accepts lifecycle closeout evidence.
+- [x] REQ-0.8.0-03-01: `gz chores list` renders registry entries from `config/gzkit.chores.json`.
+- [x] REQ-0.8.0-03-02: `gz chores plan quality-check` reports deterministic lifecycle details including log path and acceptance checks.
+- [x] REQ-0.8.0-03-03: `gz chores audit --all` reports log presence for configured chores.
+- [x] REQ-0.8.0-03-04: Lifecycle commands remain non-executing inspection/audit surfaces.
+- [x] REQ-0.8.0-03-05: Human attestation explicitly accepts lifecycle closeout evidence.
 
 ## Completion Checklist
 

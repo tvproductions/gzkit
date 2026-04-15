@@ -44,6 +44,22 @@ Evaluate opsdev's `curation inventory` subcommand (250 lines) for absorption int
 1. If absorbing: adapt to gzkit conventions, implement, and write tests
 1. If excluding: document why gzkit does not need curation inventory
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.33.0-06-01: Read the opsdev implementation completely
+- [x] REQ-0.33.0-06-02: Evaluate governance generality: Is curation inventory universally useful?
+- [x] REQ-0.33.0-06-03: Check for overlap with existing gzkit commands (adr status, adr map)
+- [x] REQ-0.33.0-06-04: Document decision: Absorb (add to gzkit) or Exclude (too specialized or redundant)
+- [x] REQ-0.33.0-06-05: If absorbing: adapt to gzkit conventions, implement, and write tests
+- [x] REQ-0.33.0-06-06: If excluding: document why gzkit does not need curation inventory
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/` -- target for absorbed command

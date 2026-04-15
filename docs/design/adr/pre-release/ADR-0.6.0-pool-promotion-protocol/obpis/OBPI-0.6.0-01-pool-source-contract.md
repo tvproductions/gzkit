@@ -63,9 +63,9 @@ Define pool entry lifecycle semantics so active pool ADRs use `Pool`, while prom
 
 ## Acceptance Criteria
 
-- [x] Pool status doctrine is explicit and consistent.
-- [x] Promotion archival semantics are documented and enforced.
-- [x] Pool index reflects active vs promoted lineage.
+- [x] REQ-0.6.0-01-01: Pool status doctrine is explicit and consistent.
+- [x] REQ-0.6.0-01-02: Promotion archival semantics are documented and enforced.
+- [x] REQ-0.6.0-01-03: Pool index reflects active vs promoted lineage.
 
 ## Evidence
 

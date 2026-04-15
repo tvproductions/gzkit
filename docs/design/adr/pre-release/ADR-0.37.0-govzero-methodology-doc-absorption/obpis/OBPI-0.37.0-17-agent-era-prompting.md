@@ -41,6 +41,20 @@ Compare `docs/governance/GovZero/agent-era-prompting-summary.md` between airline
 1. Evaluate which version is more comprehensive and actionable
 1. Record decision with rationale: Absorb / Confirm / Merge
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.37.0-17-01: Read both versions completely
+- [x] REQ-0.37.0-17-02: Document differences in prompting principles, examples, anti-patterns
+- [x] REQ-0.37.0-17-03: Evaluate which version is more comprehensive and actionable
+- [x] REQ-0.37.0-17-04: Record decision with rationale: Absorb / Confirm / Merge
+
+
 ## ALLOWED PATHS
 
 - `docs/governance/GovZero/agent-era-prompting-summary.md` — target for reconciled content

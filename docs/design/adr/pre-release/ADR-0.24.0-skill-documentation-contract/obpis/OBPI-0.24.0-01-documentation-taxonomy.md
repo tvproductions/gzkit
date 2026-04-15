@@ -39,6 +39,22 @@ Define and document the three-layer documentation taxonomy for gzkit: what artif
 1. Document the linkage model: docstrings reference manpages, manpages reference runbook workflow positions, runbooks orchestrate the end-to-end narrative
 1. Locate the taxonomy in governance docs so it's discoverable and enforceable
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.24.0-01-01: Define which artifact types require manpages (CLI commands, skills, others) — manpages provide exacting, extensive detail so operators and agents know exactly what a tool does and how to use it
+- [x] REQ-0.24.0-01-02: Define which artifact types require runbook entries (workflow participants) — runbooks capture end-to-end overarching workflows: where to start, what to run, how workflows connect
+- [x] REQ-0.24.0-01-03: Define which artifact types require docstrings (code-backed artifacts) — docstrings link back to manpages and runbooks, reinforcing intent and pointing to the broader workflow context
+- [x] REQ-0.24.0-01-04: State the rationale for each: what question does each layer answer, for whom, at what time. The goal: neither operators nor agents should have to guess at the intent of anything in gzkit
+- [x] REQ-0.24.0-01-05: Document the linkage model: docstrings reference manpages, manpages reference runbook workflow positions, runbooks orchestrate the end-to-end narrative
+- [x] REQ-0.24.0-01-06: Locate the taxonomy in governance docs so it's discoverable and enforceable
+
+
 ## ALLOWED PATHS
 
 - `docs/governance/` — taxonomy governance artifact

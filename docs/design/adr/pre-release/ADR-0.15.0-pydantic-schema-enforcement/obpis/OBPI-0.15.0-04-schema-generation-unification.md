@@ -52,6 +52,22 @@ Lite — ADR note + stdlib unittest + smoke (≤60s).
 1. `load_schema()` and `get_schema_path()` continue to work identically
 1. Invariant enforced by test: Pydantic models and JSON schemas cannot drift
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.15.0-04-01: Decision documented: Option A (generate) or Option B (cross-validate)
+- [x] REQ-0.15.0-04-02: If Option A: generation script produces schemas identical to current hand-authored ones (diff-verified before replacing)
+- [x] REQ-0.15.0-04-03: If Option B: test asserts `model_json_schema()` output matches hand-authored schema for every content type
+- [x] REQ-0.15.0-04-04: No JSON Schema consumed by external tools changes shape (backward compatibility)
+- [x] REQ-0.15.0-04-05: `load_schema()` and `get_schema_path()` continue to work identically
+- [x] REQ-0.15.0-04-06: Invariant enforced by test: Pydantic models and JSON schemas cannot drift
+
+
 ## QUALITY GATES (Lite)
 
 - [x] Gate 1 (ADR): Intent recorded in this brief

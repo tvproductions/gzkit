@@ -42,6 +42,21 @@ Compare opsdev's documentation tooling commands (`docs`, `docs-lint`, `md-lint`,
 1. If absorbing: adapt to gzkit conventions and write tests
 1. If confirming: document why gzkit's implementations are sufficient
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.32.0-19-01: Read both implementations completely for all five subcommands
+- [x] REQ-0.32.0-19-02: Document comparison per subcommand: docs, docs-lint, md-lint, md-fix, md-tidy
+- [x] REQ-0.32.0-19-03: Record decision with rationale: Absorb Improvements / Confirm Sufficient
+- [x] REQ-0.32.0-19-04: If absorbing: adapt to gzkit conventions and write tests
+- [x] REQ-0.32.0-19-05: If confirming: document why gzkit's implementations are sufficient
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/` -- target for absorbed improvements

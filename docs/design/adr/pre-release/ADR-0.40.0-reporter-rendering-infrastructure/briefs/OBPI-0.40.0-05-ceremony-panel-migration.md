@@ -40,6 +40,21 @@ Heavy — ceremony output appearance changes; skill templates reference reporter
 4. Check status renders as checkmark (green) or pending marker
 5. Optional: `gz reporter ceremony-box` CLI command for skill templates to invoke
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.40.0-05-01: `ceremony_panel()` accepts title string and list of (step_label, check_status) tuples, returns Rich Panel with box.DOUBLE
+- [x] REQ-0.40.0-05-02: Closeout ceremony skill template references `ceremony_panel()` output instead of hand-drawn box art
+- [x] REQ-0.40.0-05-03: Panel width and alignment are computed by Rich — no manual padding
+- [x] REQ-0.40.0-05-04: Check status renders as checkmark (green) or pending marker
+- [x] REQ-0.40.0-05-05: Optional: `gz reporter ceremony-box` CLI command for skill templates to invoke
+
+
 ## NON-GOALS
 
 - Changing ceremony workflow or attestation logic

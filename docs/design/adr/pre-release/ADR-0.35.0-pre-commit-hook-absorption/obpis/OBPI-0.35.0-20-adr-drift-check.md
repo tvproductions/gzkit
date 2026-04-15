@@ -44,6 +44,21 @@ Evaluate opsdev's `adr-drift-check` pre-commit hook — detects when ADR impleme
 1. Determine enforcement timing: pre-commit, Claude hook, or both
 1. Record decision with rationale: Absorb-PreCommit / Absorb-Claude / Absorb-Both / Exclude
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.35.0-20-01: Read the opsdev `adr-drift-check` hook implementation completely
+- [x] REQ-0.35.0-20-02: Document: how it detects drift, what ADR fields it checks, what triggers violations
+- [x] REQ-0.35.0-20-03: Evaluate whether gzkit needs commit-time ADR drift detection
+- [x] REQ-0.35.0-20-04: Determine enforcement timing: pre-commit, Claude hook, or both
+- [x] REQ-0.35.0-20-05: Record decision with rationale: Absorb-PreCommit / Absorb-Claude / Absorb-Both / Exclude
+
+
 ## ALLOWED PATHS
 
 - `.pre-commit-config.yaml` — hook configuration

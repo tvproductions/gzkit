@@ -42,6 +42,21 @@ Compare airlineops's `instruction-router.py` hook against gzkit's equivalent hoo
 1. If absorbing: integrate into gzkit hook module architecture and write tests
 1. If confirming: document why gzkit's routing is sufficient
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.34.0-04-01: Read both implementations completely
+- [x] REQ-0.34.0-04-02: Document comparison: context signals, routing logic, instruction sources, fallback behavior
+- [x] REQ-0.34.0-04-03: Record decision: gzkit sufficient, or absorb airlineops improvements
+- [x] REQ-0.34.0-04-04: If absorbing: integrate into gzkit hook module architecture and write tests
+- [x] REQ-0.34.0-04-05: If confirming: document why gzkit's routing is sufficient
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/hooks/` -- target for absorbed hook behavior

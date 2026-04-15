@@ -110,10 +110,10 @@ uv run gz plan demo --semver 0.2.0 --dry-run
 
 ## Acceptance Criteria
 
-- [ ] Each listed command accepts `--dry-run` and returns exit code 0
-- [ ] No files or ledger events are created during dry-run
-- [ ] Output includes a clear list of intended actions
-- [ ] Validation errors still surface (e.g., init without `--force`)
+- [x] REQ-0.2.0-02-01: Each listed command accepts `--dry-run` and returns exit code 0
+- [x] REQ-0.2.0-02-02: No files or ledger events are created during dry-run
+- [x] REQ-0.2.0-02-03: Output includes a clear list of intended actions
+- [x] REQ-0.2.0-02-04: Validation errors still surface (e.g., init without `--force`)
 
 ## Completion Checklist
 

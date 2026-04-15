@@ -43,6 +43,20 @@ Compare airlineops's `gate5_runbook_code_covenant.instructions.md` against gzkit
 1. Document content gaps in either direction
 1. Record decision with rationale: Absorb / Confirm
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.36.0-06-01: Read both files completely
+- [x] REQ-0.36.0-06-02: Create a section-by-section comparison: documentation model, required updates, validation bundle, anti-patterns
+- [x] REQ-0.36.0-06-03: Document content gaps in either direction
+- [x] REQ-0.36.0-06-04: Record decision with rationale: Absorb / Confirm
+
+
 ## ALLOWED PATHS
 
 - `.claude/rules/gate5-runbook-code-covenant.md` — target for reconciled content

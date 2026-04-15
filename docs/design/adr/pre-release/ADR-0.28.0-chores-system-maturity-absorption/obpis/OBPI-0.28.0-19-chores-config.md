@@ -46,6 +46,22 @@ Evaluate `opsdev/config/opsdev/chores.json` against gzkit's chore configuration 
 1. If Confirm: document why gzkit's configuration is sufficient
 1. If Exclude: document why the configuration is domain-specific
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.28.0-19-01: Read both config files completely
+- [x] REQ-0.28.0-19-02: Document comparison: schema completeness, lane selection model, dependency declarations, extensibility
+- [x] REQ-0.28.0-19-03: Record decision with rationale: Absorb / Confirm / Exclude
+- [x] REQ-0.28.0-19-04: If Absorb: adapt schema to gzkit conventions and update parser/planner
+- [x] REQ-0.28.0-19-05: If Confirm: document why gzkit's configuration is sufficient
+- [x] REQ-0.28.0-19-06: If Exclude: document why the configuration is domain-specific
+
+
 ## ALLOWED PATHS
 
 - `config/` — target for absorbed configuration schemas

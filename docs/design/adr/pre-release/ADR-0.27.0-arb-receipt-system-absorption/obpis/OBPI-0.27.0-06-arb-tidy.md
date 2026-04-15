@@ -45,6 +45,22 @@ Evaluate `opsdev/arb/tidy.py` (170 lines) against gzkit's current approach to ar
 1. If Confirm: document why receipt lifecycle management is unnecessary
 1. If Exclude: document why the module is environment-specific
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.27.0-06-01: Read both implementations completely
+- [x] REQ-0.27.0-06-02: Document comparison: retention policies, cleanup strategies, dry-run support, reporting
+- [x] REQ-0.27.0-06-03: Record decision with rationale: Absorb / Confirm / Exclude
+- [x] REQ-0.27.0-06-04: If Absorb: adapt to gzkit conventions and write tests
+- [x] REQ-0.27.0-06-05: If Confirm: document why receipt lifecycle management is unnecessary
+- [x] REQ-0.27.0-06-06: If Exclude: document why the module is environment-specific
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/arb/` — target for absorbed modules

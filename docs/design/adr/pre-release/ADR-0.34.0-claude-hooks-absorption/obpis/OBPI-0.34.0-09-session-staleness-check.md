@@ -42,6 +42,21 @@ Compare airlineops's `session-staleness-check.py` hook against gzkit's equivalen
 1. If absorbing: integrate into gzkit hook module architecture and write tests
 1. If confirming: document why gzkit's staleness detection is sufficient
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.34.0-09-01: Read both implementations completely
+- [x] REQ-0.34.0-09-02: Document comparison: staleness signals, detection mechanism, user notification
+- [x] REQ-0.34.0-09-03: Record decision: gzkit sufficient, or absorb airlineops improvements
+- [x] REQ-0.34.0-09-04: If absorbing: integrate into gzkit hook module architecture and write tests
+- [x] REQ-0.34.0-09-05: If confirming: document why gzkit's staleness detection is sufficient
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/hooks/` -- target for absorbed hook behavior

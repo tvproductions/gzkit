@@ -64,9 +64,9 @@ Ensure promotion workflow outputs are operator-readable, evidence-based, and ali
 
 ## Acceptance Criteria
 
-- [x] Promotion manpage documents protocol and examples.
-- [x] Governance lifecycle doc defines lineage outputs (`promoted_to`, `artifact_renamed`).
-- [x] ADR and OBPI records include explicit evidence/value narrative sections.
+- [x] REQ-0.6.0-03-01: Promotion manpage documents protocol and examples.
+- [x] REQ-0.6.0-03-02: Governance lifecycle doc defines lineage outputs (`promoted_to`, `artifact_renamed`).
+- [x] REQ-0.6.0-03-03: ADR and OBPI records include explicit evidence/value narrative sections.
 
 ## Evidence
 
