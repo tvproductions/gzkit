@@ -751,6 +751,76 @@
         "docstring": true
       },
       "governance_relevant": false
+    },
+    "arb ruff": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "arb step": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "arb ty": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "arb coverage": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "arb validate": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "arb advise": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
+    "arb patterns": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
     }
   }
 }

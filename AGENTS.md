@@ -137,7 +137,7 @@ Skill behavior is standardized and synchronized by `gz agent sync control-surfac
 `gz-constitute`, `gz-gates`, `gz-implement`, `gz-init`, `gz-prd`, `gz-state`, `gz-status`, `gz-validate`
 
 #### Agent & Repository Operations
-`git-sync`, `gz-agent-sync`, `gz-check-config-paths`, `gz-migrate-semver`, `gz-session-handoff`, `gz-skill-router`, `gz-tidy`
+`git-sync`, `gz-agent-sync`, `gz-arb`, `gz-check-config-paths`, `gz-migrate-semver`, `gz-session-handoff`, `gz-skill-router`, `gz-tidy`
 
 #### Code Quality
 `gz-check`, `gz-chore-runner`, `gz-cli-audit`

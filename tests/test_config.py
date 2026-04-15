@@ -107,6 +107,55 @@ class TestVendorConfig(unittest.TestCase):
         with self.assertRaises(ValidationError):
             config.enabled = False
 
+
+class TestArbConfig(unittest.TestCase):
+    """Tests for ArbConfig — ARB receipt middleware configuration.
+
+    @covers REQ-0.25.0-33-03
+    """
+
+    def test_defaults(self) -> None:
+        """ArbConfig defaults to artifacts/receipts and limit 20."""
+        from gzkit.config import ArbConfig
+
+        config = ArbConfig()
+        self.assertEqual(config.receipts_root, "artifacts/receipts")
+        self.assertEqual(config.default_limit, 20)
+
+    def test_frozen(self) -> None:
+        """ArbConfig is immutable."""
+        from pydantic import ValidationError
+
+        from gzkit.config import ArbConfig
+
+        config = ArbConfig()
+        with self.assertRaises(ValidationError):
+            config.receipts_root = "other/path"
+
+    def test_gzkit_config_exposes_arb(self) -> None:
+        """GzkitConfig has an arb section with defaults."""
+        from gzkit.config import ArbConfig
+
+        config = GzkitConfig()
+        self.assertIsInstance(config.arb, ArbConfig)
+        self.assertEqual(config.arb.receipts_root, "artifacts/receipts")
+
+    def test_arb_roundtrip_through_gzkit_config(self) -> None:
+        """GzkitConfig round-trips an explicit arb section via save/load."""
+        from gzkit.config import ArbConfig
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            config_path = Path(tmpdir) / ".gzkit.json"
+
+            original = GzkitConfig(
+                arb=ArbConfig(receipts_root="custom/receipts", default_limit=50),
+            )
+            original.save(config_path)
+
+            loaded = GzkitConfig.load(config_path)
+            self.assertEqual(loaded.arb.receipts_root, "custom/receipts")
+            self.assertEqual(loaded.arb.default_limit, 50)
+
     def test_extra_forbid(self) -> None:
         """VendorConfig rejects unknown fields."""
         from pydantic import ValidationError

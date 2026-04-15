@@ -58,6 +58,26 @@ Evaluate `opsdev/arb/paths.py` (43 lines) against gzkit's current path resolutio
 - [ ] Gate 3 (Docs): Decision rationale documented
 - [ ] Gate 5 (Attestation): Human attestation required (Heavy lane)
 
+## Decision: Absorb (executed under OBPI-0.25.0-33)
+
+**Decision:** Absorb.
+
+**Executed under:** `OBPI-0.25.0-33-arb-analysis-pattern` (closed 2026-04-14). Cross-referenced to preserve per-module audit trail.
+
+**Gzkit implementation:**
+
+- `src/gzkit/arb/paths.py` — port of `opsdev/arb/paths.py` (43L source). Replaces airlineops's `Settings + registry` pattern with gzkit's typed `GzkitConfig` approach: adds `ArbConfig` to `src/gzkit/config.py` with `receipts_root: str = "artifacts/receipts"` and `default_limit: int = 20`, wires `arb: ArbConfig = Field(default_factory=ArbConfig)` into `GzkitConfig`. The `receipts_root()` function accepts an optional `config` and `project_root` for test injection, honors a `GZKIT_ARB_RECEIPTS_ROOT` environment variable override, and creates the directory on demand.
+- `tests/arb/test_paths.py` — 4 Red→Green tests: default path from config, custom receipts_root, env override, auto-load config when not provided.
+- `tests/test_config.py::TestArbConfig` — 5 additional tests: defaults, frozen, GzkitConfig exposes arb, roundtrip through GzkitConfig.
+
+**Comparison evidence:** See OBPI-0.25.0-33-arb-analysis-pattern.md § Comparison Evidence — "Storage architecture — Per-run receipt files under `arb.receipts_root` (config-driven)" — parity between opsdev and gzkit post-absorption, with gzkit's typed Pydantic config as the upgrade.
+
+**Dog-fooding proof:** All 4 dog-food receipts (ruff, typecheck step, unittest step, mkdocs step) were written to `artifacts/receipts/` via `receipts_root()`, demonstrating the path resolution works end-to-end in the real project.
+
+**Foundational-module note:** The brief correctly noted "This module is foundational — if the receipt system is adopted, paths must be resolved somewhere." That "somewhere" ended up being `src/gzkit/arb/paths.py` + `ArbConfig` in `src/gzkit/config.py`, executed atomically with the rest of the absorption.
+
+**Status:** `status: Pending` in frontmatter preserved; work executed under OBPI-0.25.0-33.
+
 ## Closing Argument
 
-*To be authored at completion from delivered evidence.*
+Absorb executed under OBPI-0.25.0-33 on 2026-04-14. See OBPI-0.25.0-33-arb-analysis-pattern.md § Implementation Summary and § Key Proof for the end-to-end evidence trail.
