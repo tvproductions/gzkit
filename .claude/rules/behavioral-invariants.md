@@ -29,6 +29,24 @@ Source: `AGENTS.md` § Prime Directive
 | 5 | Flag defects, never excuse them | Rationalizing failures as "pre-existing" or "template drift" |
 | 6 | Every defect must be trackable | Noticing a defect, fixing nothing, filing nothing |
 
+## Craftsmanship — DO IT RIGHT
+
+Source: `AGENTS.md` § DO IT RIGHT (Craftsmanship Maxim)
+
+**The most thorough and comprehensive fix is always preferred.** Ownership
+without craftsmanship produces confident-wrong-direction work — the agent
+"owns" a fix that patches the observed symptom and leaves the class-of-failure
+intact. This maxim sits next to the Prime Directive for that reason.
+
+| # | Invariant | Violation Pattern |
+|---|-----------|-------------------|
+| 6a | Fix the class of failure, not the instance | Patching one symptom ("skip index.md") when the whole class needs validation ("validate every derived verb against the parser") |
+| 6b | No vibe coding | Editing a file without reading its callers; writing code that "looks right" without tracing the data flow |
+| 6c | Prefer the more thorough fix over the narrower fix | Choosing a partial fix because it's a smaller diff, when the class fix has no concrete named downside |
+| 6d | Verify observed behavior, not assumed behavior | Claiming "the output is tabular" without running the command and pasting the observed output |
+| 6e | Read the code before you change it | Guessing what a function probably returns based on its name; skipping the callers during an edit |
+| 6f | Tests assert semantics, not strings | Pinning current byte-output as "the test" instead of asserting the operator-facing purpose the code is meant to serve |
+
 ## Process
 
 Source: `AGENTS.md` § Behavior Rules
