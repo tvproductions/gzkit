@@ -2,11 +2,13 @@
 
 import json
 import re
+import subprocess
 from pathlib import Path
 
 from gzkit.commands.common import console, get_project_root
 from gzkit.instruction_audit import audit_instructions
 from gzkit.models.persona import discover_persona_files, validate_persona_structure
+from gzkit.tasks import parse_task_trailers
 from gzkit.validate import (
     ValidationError,
     validate_document,
@@ -77,6 +79,103 @@ def _validate_personas(project_root: Path) -> list[ValidationError]:
                     message=msg,
                 )
             )
+    return errors
+
+
+_REQUIREMENTS_HEADING_RE = re.compile(r"^##\s+REQUIREMENTS\b", re.IGNORECASE | re.MULTILINE)
+_REQ_ID_RE = re.compile(r"REQ-\d+\.\d+\.\d+-\d+-\d+")
+_CODE_PATH_PREFIXES = ("src/", "tests/")
+
+
+def _head_commit_message_and_files(project_root: Path) -> tuple[str, list[str]] | None:
+    """Return (commit_message, changed_paths) for HEAD, or None if no git/HEAD.
+
+    Paths are reported with forward slashes, relative to the repo root.
+    """
+    try:
+        msg = subprocess.run(
+            ["git", "log", "-1", "--pretty=%B", "HEAD"],
+            cwd=project_root,
+            check=True,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        ).stdout
+        files = subprocess.run(
+            ["git", "show", "--name-only", "--pretty=", "HEAD"],
+            cwd=project_root,
+            check=True,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        ).stdout
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return None
+    return msg, [line.strip() for line in files.splitlines() if line.strip()]
+
+
+def _validate_commit_trailers(project_root: Path) -> list[ValidationError]:
+    """Flag HEAD commits touching src/ or tests/ without a Task: trailer.
+
+    GHI-160 Phase 6 rot-prevention check. Scans HEAD only — the check is
+    advisory and focused on preventing *new* trailer omissions rather than
+    retroactively flagging historical commits. Non-code commits (docs/,
+    config/, etc.) are skipped.
+    """
+    head = _head_commit_message_and_files(project_root)
+    if head is None:
+        return []
+    message, files = head
+    code_files = [f for f in files if f.startswith(_CODE_PATH_PREFIXES)]
+    if not code_files:
+        return []
+    if parse_task_trailers(message):
+        return []
+    short_sha = subprocess.run(
+        ["git", "rev-parse", "--short=7", "HEAD"],
+        cwd=project_root,
+        check=False,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    ).stdout.strip()
+    return [
+        ValidationError(
+            type="commit_trailers",
+            artifact=short_sha or "HEAD",
+            message=(
+                "Commit touches src/ or tests/ but has no Task: trailer — "
+                "TASK chain is broken. Expected trailer like "
+                "'Task: TASK-X.Y.Z-NN-MM-PP'."
+            ),
+        )
+    ]
+
+
+def _validate_requirements(project_root: Path) -> list[ValidationError]:
+    """Flag OBPI briefs whose REQUIREMENTS section has no REQ-ID-shaped items.
+
+    GHI-160 Phase 6 rot-prevention check. An OBPI that declares requirements
+    in prose but never assigns ``REQ-X.Y.Z-NN-MM`` identifiers is invisible
+    to the `gz covers` traceability graph.
+    """
+    errors: list[ValidationError] = []
+    for brief_path in _find_obpi_briefs(project_root):
+        content = brief_path.read_text(encoding="utf-8")
+        if not _REQUIREMENTS_HEADING_RE.search(content):
+            continue
+        if _REQ_ID_RE.search(content):
+            continue
+        errors.append(
+            ValidationError(
+                type="requirements",
+                artifact=str(brief_path.relative_to(project_root)),
+                message=(
+                    "OBPI has a REQUIREMENTS section but no REQ-X.Y.Z-NN-MM "
+                    "identifiers — requirements are invisible to gz covers."
+                ),
+            )
+        )
     return errors
 
 
@@ -164,6 +263,8 @@ def _collect_errors(
     check_personas: bool = False,
     check_interviews: bool = False,
     check_decomposition: bool = False,
+    check_requirements: bool = False,
+    check_commit_trailers: bool = False,
 ) -> list[ValidationError]:
     """Collect validation errors across all requested check types."""
     run_all = not any(
@@ -177,6 +278,8 @@ def _collect_errors(
             check_personas,
             check_interviews,
             check_decomposition,
+            check_requirements,
+            check_commit_trailers,
         ]
     )
     errors: list[ValidationError] = []
@@ -208,6 +311,12 @@ def _collect_errors(
 
     if check_decomposition:
         errors.extend(_validate_decomposition(project_root))
+
+    if check_requirements:
+        errors.extend(_validate_requirements(project_root))
+
+    if check_commit_trailers:
+        errors.extend(_validate_commit_trailers(project_root))
 
     return errors
 
@@ -243,7 +352,7 @@ def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
         "personas",
     ]
     # "opt-in" scopes only activate when explicitly requested
-    opt_in_scopes = ["interviews", "decomposition"]
+    opt_in_scopes = ["interviews", "decomposition", "requirements", "commit_trailers"]
 
     run_all = not any(checks.get(s, False) for s in run_all_scopes + opt_in_scopes)
     scopes: list[str] = []
@@ -281,6 +390,8 @@ def validate(
     check_personas: bool = False,
     check_interviews: bool = False,
     check_decomposition: bool = False,
+    check_requirements: bool = False,
+    check_commit_trailers: bool = False,
     as_json: bool = False,
 ) -> None:
     """Validate governance artifacts against schemas."""
@@ -296,6 +407,8 @@ def validate(
         check_personas,
         check_interviews,
         check_decomposition,
+        check_requirements,
+        check_commit_trailers,
     )
 
     if as_json:
@@ -316,5 +429,7 @@ def validate(
         "personas": check_personas,
         "interviews": check_interviews,
         "decomposition": check_decomposition,
+        "requirements": check_requirements,
+        "commit_trailers": check_commit_trailers,
     }
     _print_validation_result(errors, _resolve_scopes(checks))
