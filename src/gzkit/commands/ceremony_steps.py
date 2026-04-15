@@ -17,6 +17,7 @@ from rich.text import Text
 from gzkit.commands.ceremony_data import (
     _render_to_text,
     check_doc_alignment,
+    extract_adr_intent,
     extract_brief_metadata,
     format_doc_table,
     format_summary_table,
@@ -46,39 +47,56 @@ def render_step_2_summary(
     adr_id: str,
     adr_file: Path,
     obpi_files: list[Path],
-    manifest: dict[str, Any],
     lane: str,
     project_root: Path,
 ) -> str:
-    """Rich bill of materials — OBPI-by-OBPI with objectives."""
+    """Scope Review — ADR intent paired with OBPI Bill of Materials (GHI-155).
+
+    Step 2's operator role is semantic scope review: the human's first chance
+    in the ceremony to ask *does the work these OBPIs delivered match what
+    the parent ADR promised?* Step 1 already proved readiness; Step 2 adds
+    the scope-vs-promise check. To enable it, this renderer pulls the parent
+    ADR's ``## Intent`` section and presents it alongside the BOM table so
+    the operator can answer the question without opening the ADR in another
+    window.
+    """
     briefs = [extract_brief_metadata(f) for f in obpi_files]
+    intent = extract_adr_intent(adr_file)
 
     lines = [
         "I am now in PASSIVE PRESENTER mode. I will not interpret evidence.",
         "",
+        "Step 2 — Scope Review: does the delivered work match the ADR's intent?",
+        "",
         f"ADR: {adr_file.relative_to(project_root)}",
         f"Lane: {lane}",
         "",
-        format_summary_table(
-            briefs,
-            title=f"Bill of Materials — {adr_id}",
-        ),
-        "",
+        "ADR Intent (from parent ADR):",
     ]
 
-    # Verification commands
-    verification = manifest.get("verification", {})
-    lines.append("Quality gate commands (for your direct observation):")
-    lines.append(f"  Tests:     {verification.get('test', 'uv run gz test')}")
-    lines.append(f"  Lint:      {verification.get('lint', 'uv run gz lint')}")
-    lines.append(f"  Typecheck: {verification.get('typecheck', 'uv run gz typecheck')}")
-    lines.append(f"  Docs:      {verification.get('docs', 'uv run mkdocs build --strict')}")
-    if lane == "heavy":
-        lines.append(f"  BDD:       {verification.get('bdd', 'uv run -m behave features/')}")
+    if intent:
+        for intent_line in intent.splitlines():
+            lines.append(f"  {intent_line}" if intent_line else "")
+    else:
+        lines.append("  (parent ADR has no `## Intent` section — review the ADR doc directly)")
 
-    lines.append("")
-    lines.append(f"Step 2 complete. Run `gz closeout {adr_id} --ceremony --next`")
-    lines.append("to proceed to docs alignment check.")
+    lines.extend(
+        [
+            "",
+            format_summary_table(
+                briefs,
+                title=f"Bill of Materials — {adr_id}",
+            ),
+            "",
+            f"Scope review question: do the {len(briefs)} OBPI objectives above",
+            "collectively match the ADR Intent? Any objective missing from scope?",
+            "Any objective delivered that the ADR did not promise? Acknowledge to",
+            "proceed, or request corrections before advancing.",
+            "",
+            f"Step 2 complete. Run `gz closeout {adr_id} --ceremony --next`",
+            "to proceed to docs alignment check.",
+        ]
+    )
     return "\n".join(lines)
 
 
