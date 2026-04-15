@@ -67,6 +67,29 @@ governance not as overhead but as the discipline that keeps work honest.
    - Can't fix in-scope? -> Use one of these (priority order): file a GHI (`gh issue create --label defect`), append to `.gzkit/insights/agent-insights.jsonl`, or note in the brief's evidence section.
    - A defect that isn't trackable doesn't exist.
 
+## DO IT RIGHT (Craftsmanship Maxim)
+
+**The most thorough and comprehensive fix is always preferred.**
+
+This maxim sits next to the Prime Directive because ownership and completeness without craftsmanship produces confident-wrong-direction work — the agent "owns" a fix that patches the observed symptom and leaves the class-of-failure intact, then moves on. Vibe-coded shortcuts compound across a codebase the way template drift compounds across a doc surface: silently, until an operator lands on one and the whole lineage collapses.
+
+1. **Fix the class of failure, not the instance.** When a symptom surfaces, identify the failure family (what assumption was unstated? what validation was missing? what test never ran the derived path?). Repair the root, not the leaf. If a discovered CLI verb doesn't exist, the fix is not "skip that one verb" — it is "validate every derived verb against the registered parser."
+2. **No vibe coding.** Vibe coding is: writing plausible-looking code without reading the surface it touches, without a failing test first, without tracing the data flow, without running the observed-output check the governance rules require. Vibe-coded work passes review because it looks right. It fails in production because it never was.
+3. **Prefer the more thorough fix over the narrower fix.** When you have two fix options — one that closes the specific symptom and one that closes the whole class — pick the class fix unless the class fix has a concrete, named downside larger than the class of failures it prevents. "Smaller diff" is not a concrete downside. "Faster to land" is not a concrete downside. "Less scary" is not a concrete downside.
+4. **Verify observed behavior, not assumed behavior.** Run the destination command, observe its actual output, paste the output into the attestation or commit body. Narrative reconstruction from memory is not verification. This is the same rule as the attestation-enrichment receipt-ID requirement in `.gzkit/rules/attestation-enrichment.md`: claims without observed evidence are post-hoc reasoning pathways, not verification pathways.
+5. **Read the code before you change it.** Vibe coding's defining move is editing a file without understanding what the file does, based on a guess about what a function probably returns or a class probably is. Read the surface. Trace the callers. Understand the contract. Then change it.
+6. **Tests assert semantics, not strings.** A test that pins the current observed output to a string is not a test of the code's purpose — it's a test of its current state. Write tests that assert the behavior the surface is supposed to produce, not the exact bytes it currently produces. GHI-153 and GHI-155 both slipped past tests because the tests asserted "the table renders without truncation" instead of "the table exposes the OBPI objective for operator review."
+
+### The anti-pattern canon (what vibe coding looks like)
+
+- Writing a function that reads `docs/user/commands/*.md` and treats every file as a manpage, without opening the directory and noticing `index.md` is a ToC page
+- Landing a case-sensitive string match (`line.startswith("## Objective")`) in an extractor whose input comes from human-authored markdown files that drift freely in heading case
+- Adding a hardcoded "QA command block" to a ceremony step because "ceremonies have QA commands" without asking what role that block plays in that specific step's operator moment
+- Writing a test file that mocks the data structure the real code consumes, then asserting on the mock, without ever running the real path end-to-end
+- Reading an error message and reaching for "skip this one case" as the fix, when the error message is actually reporting a whole class of cases that the code never considered
+
+Every item in that list is drawn from defects observed in this codebase within the window GHI-141 through GHI-156. The pattern is consistent: the author wrote code that *looked* right, committed it, and moved on — because the loop did not include reading, tracing, testing the real path, or running the observed command. **Close the loop.** Do it right.
+
 ## Behavior Rules
 
 ### Always
