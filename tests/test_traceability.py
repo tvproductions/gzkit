@@ -782,6 +782,42 @@ class TestComputeCoverage(unittest.TestCase):
         self.assertIn("by_adr", json_str)
         self.assertIn("by_obpi", json_str)
 
+    @covers("REQ-0.21.0-02-04")
+    def test_doc_kind_excluded_by_default(self):
+        from gzkit.triangle import ReqEntity, ReqId, ReqKind, ReqStatus
+
+        doc_req = DiscoveredReq(
+            entity=ReqEntity(
+                id=ReqId(semver="0.9.0", obpi_item="01", criterion_index="01"),
+                description="doc-only criterion",
+                status=ReqStatus.CHECKED,
+                parent_obpi="OBPI-0.9.0-01",
+                kind=ReqKind.DOC,
+            ),
+            source_path="test_brief.md",
+        )
+        report = compute_coverage([doc_req], [])
+        self.assertEqual(report.summary.total_reqs, 0)
+        self.assertEqual([a.identifier for a in report.by_adr], [])
+
+    @covers("REQ-0.21.0-02-05")
+    def test_doc_kind_included_when_flag_set(self):
+        from gzkit.triangle import ReqEntity, ReqId, ReqKind, ReqStatus
+
+        doc_req = DiscoveredReq(
+            entity=ReqEntity(
+                id=ReqId(semver="0.9.0", obpi_item="01", criterion_index="01"),
+                description="doc-only criterion",
+                status=ReqStatus.CHECKED,
+                parent_obpi="OBPI-0.9.0-01",
+                kind=ReqKind.DOC,
+            ),
+            source_path="test_brief.md",
+        )
+        report = compute_coverage([doc_req], [], include_doc=True)
+        self.assertEqual(report.summary.total_reqs, 1)
+        self.assertEqual([a.identifier for a in report.by_adr], ["ADR-0.9.0"])
+
 
 # ---------------------------------------------------------------------------
 # OBPI-03: gz covers CLI tests
@@ -958,6 +994,36 @@ class TestCoversCLIOutput(unittest.TestCase):
         _, output = self._run_covers(["ADR-9.9.9", "--json"])
         data = json.loads(output)
         self.assertEqual(data["summary"]["total_reqs"], 0)
+
+    @covers("REQ-0.21.0-02-05")
+    def test_include_doc_flag_surfaces_doc_only_obpi(self):
+        import json
+
+        # Add a doc-only OBPI alongside the existing one.
+        doc_obpi = self.adr_dir / "obpis" / "OBPI-0.15.0-04-doc-only.md"
+        doc_obpi.write_text(
+            "---\n"
+            "id: OBPI-0.15.0-04-doc-only\n"
+            "parent: ADR-0.15.0\n"
+            "item: 4\n"
+            "lane: Lite\n"
+            "status: Accepted\n"
+            "---\n\n"
+            "# OBPI-0.15.0-04: Doc-only\n\n"
+            "## Acceptance Criteria\n\n"
+            "- [x] REQ-0.15.0-04-01: [doc] Documentation-only criterion.\n",
+            encoding="utf-8",
+        )
+
+        _, default_output = self._run_covers(["--json"])
+        default_data = json.loads(default_output)
+        self.assertEqual(default_data["summary"]["total_reqs"], 2)
+
+        _, included_output = self._run_covers(["--include-doc", "--json"])
+        included_data = json.loads(included_output)
+        self.assertEqual(included_data["summary"]["total_reqs"], 3)
+        obpi_ids = {o["identifier"] for o in included_data["by_obpi"]}
+        self.assertIn("OBPI-0.15.0-04", obpi_ids)
 
 
 # ---------------------------------------------------------------------------
