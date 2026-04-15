@@ -154,7 +154,7 @@ def check_sync_parity(
                 errors.append(
                     ValidationError(
                         type="surface",
-                        artifact=str(path.relative_to(project_root)),
+                        artifact=path.relative_to(project_root).as_posix(),
                         message=f"Failed to re-read surface after sync: {exc}",
                     )
                 )
@@ -163,7 +163,7 @@ def check_sync_parity(
                 errors.append(
                     ValidationError(
                         type="surface",
-                        artifact=str(path.relative_to(project_root)),
+                        artifact=path.relative_to(project_root).as_posix(),
                         message=(
                             "Generated surface is out of sync with canonical state. "
                             "Run `uv run gz agent sync control-surfaces` to repair."
@@ -175,7 +175,7 @@ def check_sync_parity(
             errors.append(
                 ValidationError(
                     type="surface",
-                    artifact=str(path.relative_to(project_root)),
+                    artifact=path.relative_to(project_root).as_posix(),
                     message=(
                         "Generated surface missing — sync_all() would create it. "
                         "Run `uv run gz agent sync control-surfaces` to repair."
@@ -187,7 +187,7 @@ def check_sync_parity(
             errors.append(
                 ValidationError(
                     type="surface",
-                    artifact=str(path.relative_to(project_root)),
+                    artifact=path.relative_to(project_root).as_posix(),
                     message=(
                         "Stale surface — sync_all() would remove it. "
                         "Run `uv run gz agent sync control-surfaces` to repair."
