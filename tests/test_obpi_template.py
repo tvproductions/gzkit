@@ -4,6 +4,8 @@ import re
 import unittest
 from pathlib import Path
 
+from gzkit.traceability import covers
+
 TEMPLATE_PATH = (
     Path(__file__).resolve().parents[1]
     / ".github"
@@ -31,6 +33,7 @@ class TestOBPIBriefTemplate(unittest.TestCase):
     def setUpClass(cls):
         cls.template_text = TEMPLATE_PATH.read_text(encoding="utf-8")
 
+    @covers("REQ-0.23.0-01-01")
     def test_closing_argument_section_exists(self):
         """Template must contain at least one '### Closing Argument' heading."""
         matches = re.findall(r"^### Closing Argument", self.template_text, re.MULTILINE)
@@ -38,6 +41,7 @@ class TestOBPIBriefTemplate(unittest.TestCase):
             len(matches), 1, "Template must have a '### Closing Argument' section"
         )
 
+    @covers("REQ-0.23.0-01-01")
     def test_no_value_narrative_heading(self):
         """Template must not contain a standalone '### Value Narrative' heading."""
         matches = re.findall(r"^### Value Narrative\b", self.template_text, re.MULTILINE)
@@ -47,6 +51,7 @@ class TestOBPIBriefTemplate(unittest.TestCase):
             "Template must not have '### Value Narrative' — use '### Closing Argument' instead",
         )
 
+    @covers("REQ-0.23.0-01-02")
     def test_authored_at_completion_guidance(self):
         """Template must include guidance that the section is authored at COMPLETION."""
         self.assertIn(
@@ -55,17 +60,22 @@ class TestOBPIBriefTemplate(unittest.TestCase):
             "Template must include 'authored at COMPLETION' guidance text",
         )
 
+    @covers("REQ-0.23.0-01-03")
+    @covers("REQ-0.23.0-01-04")
+    @covers("REQ-0.23.0-01-05")
     def test_three_required_elements(self):
         """Template must require: what was built, what it enables, why it matters."""
         self.assertIn("What was built", self.template_text)
         self.assertIn("What it enables", self.template_text)
         self.assertIn("Why it matters", self.template_text)
 
+    @covers("REQ-0.23.0-01-01")
     def test_closing_argument_in_both_lanes(self):
         """Both Lite and Heavy lane templates must have Closing Argument sections."""
         self.assertIn("### Closing Argument (Lite)", self.template_text)
         self.assertIn("### Closing Argument (Heavy)", self.template_text)
 
+    @covers("REQ-0.23.0-01-07")
     def test_no_planning_phase_placeholders_in_closing_argument(self):
         """Closing Argument sections in the template must not contain planning placeholders.
 
