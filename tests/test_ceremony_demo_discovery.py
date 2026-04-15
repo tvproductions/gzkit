@@ -34,12 +34,16 @@ from gzkit.commands.ceremony_data import (
     _commands_from_brief_titles,
     _commands_from_command_doc_links,
     _commands_from_demo_sections,
+    check_doc_alignment,
     discover_demo_commands,
 )
 
 # A brief fixture that reproduces the OBPI-0.25.0-33 pattern: a real
-# command-doc link (arb.md) alongside an index.md reference that must NOT
-# become a demo command.
+# command-doc link (arb.md), a shared-line mention of index.md, AND a
+# standalone ``index.md`` line that the regex in ``check_doc_alignment``
+# actually captures as a slug. The real OBPI-0.25.0-33 brief has
+# ``docs/user/commands/index.md`` on its own bullet at line 255, which is
+# how the Step 3 alignment table picked up ``gz index``.
 OBPI_33_STYLE_BRIEF = """\
 ---
 id: OBPI-0.25.0-33-arb-analysis-pattern
@@ -57,6 +61,10 @@ Evaluate airlineops opsdev/arb module against gzkit's ARB surface.
 
 - `docs/user/commands/arb.md`, `docs/user/commands/index.md` — operator command reference
 - `src/gzkit/arb/` — the ARB package surface
+
+## Evidence
+
+- `docs/user/commands/index.md` — new "ARB (Agent Self-Reporting)" section added
 """
 
 
@@ -300,6 +308,98 @@ class TestDiscoverDemoCommandsEndToEnd(unittest.TestCase):
         self.assertIn("uv run gz arb --help", commands)
         for cmd in commands:
             self.assertNotIn("gz index", cmd, f"Discovered unregistered verb in: {cmd}")
+
+
+class TestCheckDocAlignmentValidation(unittest.TestCase):
+    """GHI-156 follow-up: check_doc_alignment had the same class of failure.
+
+    The Step 3 (Docs Alignment Check) renderer derives a ``gz <slug>`` command
+    name from every ``docs/user/commands/*.md`` link it finds in a brief and
+    emits a row in the alignment table. It had the *exact same* missing
+    validation layer as the Step 5 demo discovery: ``index.md`` is the
+    commands-directory ToC page, not a manpage for a verb named ``gz index``,
+    so emitting a row with command=``gz index`` was drift-by-omission.
+
+    These tests were written when the initial GHI-156 fix landed incomplete —
+    discover_demo_commands was patched but check_doc_alignment was missed,
+    and the Step 3 table continued to render ``gz index`` through a fresh
+    ceremony. That is the failure the DO IT RIGHT maxim (added in the same
+    commit as the incomplete fix) explicitly warns against: fixing one
+    instance of a class of failure and leaving the sibling instance intact.
+    """
+
+    def _write_brief(self, temp_dir: Path, content: str) -> Path:
+        brief = temp_dir / "OBPI.md"
+        brief.write_text(content, encoding="utf-8")
+        return brief
+
+    def _seed_command_doc(self, temp_dir: Path, slug: str) -> None:
+        cmd_dir = temp_dir / "docs" / "user" / "commands"
+        cmd_dir.mkdir(parents=True, exist_ok=True)
+        (cmd_dir / f"{slug}.md").write_text(f"# {slug}\n", encoding="utf-8")
+
+    def test_excludes_index_md_row_from_alignment_table(self) -> None:
+        """The triggering case: OBPI-33 pattern must not emit gz index row."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            self._seed_command_doc(root, "arb")
+            self._seed_command_doc(root, "index")
+            brief = self._write_brief(root, OBPI_33_STYLE_BRIEF)
+
+            results = check_doc_alignment(root, [brief])
+
+        commands = [r["command"] for r in results]
+        self.assertIn("gz arb", commands)
+        self.assertNotIn("gz index", commands)
+
+    def test_excludes_unregistered_slug_even_when_md_file_exists(self) -> None:
+        brief_content = """\
+---
+id: OBPI-fake-03
+status: Completed
+lane: lite
+---
+
+# OBPI-fake-03
+
+## Allowed Paths
+
+- `docs/user/commands/frobnicate.md` — fake
+"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            self._seed_command_doc(root, "frobnicate")
+            brief = self._write_brief(root, brief_content)
+
+            results = check_doc_alignment(root, [brief])
+
+        commands = [r["command"] for r in results]
+        self.assertEqual(commands, [])
+
+    def test_includes_registered_slug_row(self) -> None:
+        brief_content = """\
+---
+id: OBPI-valid-03
+status: Completed
+lane: lite
+---
+
+# OBPI-valid-03
+
+## Allowed Paths
+
+- `docs/user/commands/arb.md` — the arb manpage
+"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            self._seed_command_doc(root, "arb")
+            brief = self._write_brief(root, brief_content)
+
+            results = check_doc_alignment(root, [brief])
+
+        commands = [r["command"] for r in results]
+        self.assertIn("gz arb", commands)
+        self.assertEqual(len(commands), 1)
 
 
 if __name__ == "__main__":
