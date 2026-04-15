@@ -129,9 +129,16 @@ def check_doc_alignment(
     1. Explicit ``docs/user/commands/*.md`` links in briefs
     2. Allowed Paths entries pointing at command docs (including globs)
 
+    Every derived slug is validated against the registered CLI parser
+    (GHI-156 follow-up) — a ``.md`` file under ``docs/user/commands/`` whose
+    slug does not correspond to a real ``gz`` verb (e.g. ``index.md``, the
+    commands-directory ToC page) is dropped from the alignment table.
+    Command-coverage checks must not emit rows for non-commands.
+
     Returns list of dicts with *command*, *manpage_path*,
     *manpage_exists*, *runbook_mention*.
     """
+    registered = _collect_registered_invocations()
     results: list[dict[str, Any]] = []
     seen_slugs: set[str] = set()
 
@@ -143,8 +150,11 @@ def check_doc_alignment(
         if slug in seen_slugs:
             return
         seen_slugs.add(slug)
+        verb_chain = slug.replace("-", " ")
+        if verb_chain not in registered:
+            return
         rel = f"docs/user/commands/{slug}.md"
-        gz_cmd = f"gz {slug.replace('-', ' ')}"
+        gz_cmd = f"gz {verb_chain}"
         results.append(
             {
                 "command": gz_cmd,
