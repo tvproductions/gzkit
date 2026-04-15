@@ -8,7 +8,10 @@ Split from ``ceremony_steps.py`` to keep all modules under 600 lines.
 
 from __future__ import annotations
 
+import argparse
 import re
+import shlex
+from functools import lru_cache
 from io import StringIO
 from pathlib import Path
 from typing import Any
@@ -176,6 +179,71 @@ def check_doc_alignment(
 # ---------------------------------------------------------------------------
 
 
+@lru_cache(maxsize=1)
+def _collect_registered_invocations() -> frozenset[str]:
+    """Return every valid ``gz X [Y ...]`` invocation from the live parser.
+
+    Walks the argparse tree built by :func:`gzkit.cli.main._build_parser` and
+    returns a frozenset of space-joined verb chains — e.g. ``{"arb", "arb ruff",
+    "adr", "adr status", ...}``. The set is cached because the parser tree is
+    immutable within a single process lifetime.
+
+    GHI-156: the closeout ceremony's demo discovery used to emit ``uv run gz
+    <slug> --help`` for any slug it found in a brief, whether or not the verb
+    actually existed in the CLI. OBPI-0.25.0-33 legitimately referenced
+    ``docs/user/commands/index.md`` (the commands-directory ToC page) and the
+    discovery pipeline synthesized ``gz index --help`` from the filename,
+    which crashed the walkthrough at exit code 2. This helper is the
+    validation layer those strategies were missing.
+
+    Lazy-imports :mod:`gzkit.cli.main` the same way :mod:`cli_audit` does to
+    avoid an import cycle — ``ceremony_data`` is pulled in by the ceremony
+    command chain, which is itself reached from the CLI dispatcher.
+    """
+    from gzkit.cli.main import _build_parser  # noqa: PLC0415
+
+    parser = _build_parser()
+    invocations: set[str] = set()
+
+    def _walk(p: argparse.ArgumentParser, prefix: tuple[str, ...]) -> None:
+        for action in p._actions:
+            if not isinstance(action, argparse._SubParsersAction):
+                continue
+            for name, subparser in action.choices.items():
+                if not isinstance(subparser, argparse.ArgumentParser):
+                    continue
+                full = (*prefix, name)
+                invocations.add(" ".join(full))
+                _walk(subparser, full)
+
+    _walk(parser, ())
+    return frozenset(invocations)
+
+
+def _extract_gz_verb_chain(line: str) -> str | None:
+    """Return the ``gz`` verb chain from a ``uv run gz ...`` command line.
+
+    Returns ``"arb"`` for ``uv run gz arb --help``, ``"adr status"`` for
+    ``uv run gz adr status ADR-0.1.0``, and ``None`` for any line that is
+    not a ``uv run gz ...`` invocation. Flag arguments (``--help``,
+    ``--json``, positional args that start with a digit or dash) terminate
+    the chain — we only return the verb portion, which is what needs to be
+    validated against the parser.
+    """
+    try:
+        tokens = shlex.split(line)
+    except ValueError:
+        return None
+    if len(tokens) < 3 or tokens[0] != "uv" or tokens[1] != "run" or tokens[2] != "gz":
+        return None
+    verb_tokens: list[str] = []
+    for tok in tokens[3:]:
+        if tok.startswith("-"):
+            break
+        verb_tokens.append(tok)
+    return " ".join(verb_tokens) if verb_tokens else None
+
+
 def discover_demo_commands(
     project_root: Path,
     adr_id: str,
@@ -189,6 +257,10 @@ def discover_demo_commands(
     2. ``--help`` for commands found in command-doc links
     3. ``--help`` for ``gz`` commands parsed from brief titles
     4. Fallback: ``gz adr status``
+
+    Every strategy validates derived ``gz`` invocations against the registered
+    CLI parser (GHI-156) — an unregistered verb chain is dropped before the
+    walkthrough can try to execute it.
     """
     # Strategy 1: ## Demo sections
     commands = _commands_from_demo_sections(obpi_files)
@@ -209,7 +281,14 @@ def discover_demo_commands(
 
 
 def _commands_from_demo_sections(obpi_files: list[Path]) -> list[str]:
-    """Extract commands from ``## Demo`` fenced code blocks."""
+    """Extract commands from ``## Demo`` fenced code blocks.
+
+    ``uv run gz ...`` lines are validated against the registered parser;
+    unregistered verb chains are dropped. Non-gz shell commands (``ls``,
+    ``cat``, etc.) pass through unchanged — operators may author them in
+    briefs and the ceremony has no mechanism to validate arbitrary shell.
+    """
+    registered = _collect_registered_invocations()
     commands: list[str] = []
     for obpi_file in obpi_files:
         lines = obpi_file.read_text(encoding="utf-8").splitlines()
@@ -222,8 +301,12 @@ def _commands_from_demo_sections(obpi_files: list[Path]) -> list[str]:
             if stripped.startswith("```"):
                 in_code = not in_code
                 continue
-            if in_code and stripped and not stripped.startswith("#"):
-                commands.append(stripped)
+            if not (in_code and stripped) or stripped.startswith("#"):
+                continue
+            verb_chain = _extract_gz_verb_chain(stripped)
+            if verb_chain is not None and verb_chain not in registered:
+                continue
+            commands.append(stripped)
     return commands
 
 
@@ -231,38 +314,66 @@ def _commands_from_command_doc_links(
     project_root: Path,
     obpi_files: list[Path],
 ) -> list[str]:
-    """Build ``--help`` commands from command-doc links in briefs."""
+    """Build ``--help`` commands from command-doc links in briefs.
+
+    Every slug derived from a ``docs/user/commands/*.md`` reference is
+    validated against the registered CLI parser. ``index.md`` (the
+    commands-directory ToC page) and any other non-manpage page drops out
+    because its derived verb chain is not registered — this is the GHI-156
+    fix that the instance check ``skip index.md by name`` would have missed.
+    """
+    registered = _collect_registered_invocations()
     commands: list[str] = []
     seen: set[str] = set()
     for obpi_file in obpi_files:
         content = obpi_file.read_text(encoding="utf-8")
         for line in content.splitlines():
-            m = re.match(r"^- (?:\[.\] )?`(docs/user/commands/(\S+)\.md)`", line)
-            if not m:
-                continue
-            slug = m.group(2)
-            if slug in seen:
-                continue
-            seen.add(slug)
-            cmd_path = project_root / m.group(1)
-            if not cmd_path.is_file():
-                continue
-            gz_cmd = slug.replace("-", " ")
-            commands.append(f"uv run gz {gz_cmd} --help")
+            for m in re.finditer(r"`(docs/user/commands/(\S+?)\.md)`", line):
+                slug = m.group(2)
+                if slug in seen:
+                    continue
+                seen.add(slug)
+                cmd_path = project_root / m.group(1)
+                if not cmd_path.is_file():
+                    continue
+                verb_chain = slug.replace("-", " ")
+                if verb_chain not in registered:
+                    continue
+                commands.append(f"uv run gz {verb_chain} --help")
     return commands
 
 
 def _commands_from_brief_titles(obpi_files: list[Path]) -> list[str]:
-    """Parse brief titles for ``gz`` commands and build ``--help`` demos."""
+    """Parse brief titles for ``gz`` commands and build ``--help`` demos.
+
+    Title prose is noisy — ``OBPI-...: gz arb surface review`` mentions
+    ``gz arb`` but also carries unrelated trailing tokens. The extractor
+    captures up to the first two tokens after ``gz`` and then validates the
+    longest-to-shortest chain against the registered CLI parser, so
+    ``gz plan create`` (a real nested verb) matches as a two-token chain and
+    ``gz arb surface`` (real verb + noise) matches as the one-token chain
+    ``arb``. A title that produces no registered chain is dropped — the
+    ceremony will fall back to Strategy 4 (adr status).
+    """
+    registered = _collect_registered_invocations()
     commands: list[str] = []
     seen: set[str] = set()
     for obpi_file in obpi_files:
         meta = extract_brief_metadata(obpi_file)
         title = meta.get("title", "")
-        m = re.search(r"\b(gz\s+\S+(?:\s+\S+)?)\b", title)
-        if m and m.group(1) not in seen:
-            seen.add(m.group(1))
-            commands.append(f"uv run {m.group(1)} --help")
+        m = re.search(r"\bgz\s+(\S+)(?:\s+(\S+))?", title)
+        if not m:
+            continue
+        first, second = m.group(1), m.group(2)
+        candidates = [f"{first} {second}", first] if second else [first]
+        verb_chain = next((c for c in candidates if c in registered), None)
+        if verb_chain is None:
+            continue
+        gz_invocation = f"gz {verb_chain}"
+        if gz_invocation in seen:
+            continue
+        seen.add(gz_invocation)
+        commands.append(f"uv run {gz_invocation} --help")
     return commands
 
 

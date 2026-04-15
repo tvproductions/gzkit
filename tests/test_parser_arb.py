@@ -20,8 +20,13 @@ class TestArbParserRegistration(unittest.TestCase):
         parser: argparse.ArgumentParser,
     ) -> dict[str, argparse.ArgumentParser]:
         for action in parser._actions:
-            if isinstance(action, argparse._SubParsersAction):
-                return action.choices
+            if not isinstance(action, argparse._SubParsersAction):
+                continue
+            return {
+                name: subparser
+                for name, subparser in action.choices.items()
+                if isinstance(subparser, argparse.ArgumentParser)
+            }
         self.fail("parser has no subparsers")
         return {}
 
