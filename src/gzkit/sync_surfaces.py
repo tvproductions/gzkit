@@ -638,4 +638,8 @@ def sync_all(project_root: Path, config: GzkitConfig | None = None) -> list[str]
     persona_mirrored = sync_persona_mirrors(project_root, config, vendor_aware=vendor_aware)
     updated.extend(persona_mirrored)
 
-    return sorted(set(updated))
+    # Normalize to forward-slash POSIX form so cross-platform consumers
+    # (tests, drift reporters, operator output) see a stable shape. See
+    # .gzkit/rules/cross-platform.md: no hard-coded path separators.
+    normalized = [Path(entry).as_posix() for entry in updated]
+    return sorted(set(normalized))
