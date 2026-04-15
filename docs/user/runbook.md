@@ -120,7 +120,19 @@ uv run gz lint
 #      - Date completed: YYYY-MM-DD
 #    (Do not split values onto nested bullet lines.)
 
+# 4b) (Heavy lane only) Produce ARB receipts for attestation-enrichment evidence
+#     — `.claude/rules/attestation-enrichment.md` requires a receipt ID for every
+#     claim category cited in Heavy-lane attestations (lint, typecheck, tests,
+#     coverage). Run each wrapped QA step before drafting the attestation text.
+uv run gz arb ruff src tests
+uv run gz arb step --name typecheck -- uvx ty check . --exclude 'features/**'
+uv run gz arb step --name unittest -- uv run -m unittest -q
+uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
+uv run gz arb validate --limit 20
+
 # 5) Complete OBPI atomically (attestation + brief + receipt in one transaction)
+#    Cite the ARB receipt IDs from step 4b in --attestation-text per
+#    `.claude/rules/attestation-enrichment.md`.
 uv run gz obpi complete OBPI-<X.Y.Z-NN>-<slug> --attestor "<name>" --attestation-text "<attestation>"
 uv run gz obpi lock release OBPI-<X.Y.Z-NN>-<slug>
 

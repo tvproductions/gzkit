@@ -7,9 +7,9 @@ description: ARB (Agent Self-Reporting) middleware QA workflow
 
 # ARB (Agent Self-Reporting) Middleware
 
-**Version:** 1.0
+**Version:** 1.1
 **Status:** Active
-**Last reviewed:** 2026-01-19
+**Last reviewed:** 2026-04-14 (ARB absorbed from airlineops under OBPI-0.25.0-33)
 
 ARB is a QA middleware layer that wraps real verification steps (lint, type check, tests, etc.) and emits structured JSON receipts for deterministic validation and governance auditing.
 
@@ -56,28 +56,37 @@ This allows agents and humans to:
 ### Wrap a QA Tool (Generic)
 
 ```bash
-uv run -m gzkit arb ruff
-uv run -m gzkit arb ruff --fix
-uv run -m gzkit arb step --name unittest -- uv run -m unittest -q
-uv run -m gzkit arb ty check . --exclude 'features/**'
-uv run -m gzkit arb coverage run -m unittest discover -s tests -t .
+uv run gz arb ruff
+uv run gz arb ruff --fix
+uv run gz arb step --name unittest -- uv run -m unittest -q
+uv run gz arb ty check . --exclude 'features/**'
+uv run gz arb coverage run -m unittest discover -s tests -t .
 ```
 
-### Validate & Analyze Receipts
+### Validate and Analyze Receipts
 
 ```bash
-uv run -m gzkit arb validate
-uv run -m gzkit arb validate --limit 50
-uv run -m gzkit arb advise
-uv run -m gzkit arb advise --category lint
+uv run gz arb validate
+uv run gz arb validate --limit 50
+uv run gz arb advise
+uv run gz arb advise --limit 10
+```
+
+### Extract Recurring Anti-Patterns
+
+```bash
+uv run gz arb patterns
+uv run gz arb patterns --compact
+uv run gz arb patterns --json
 ```
 
 ---
 
-## Receipt Schema & Storage
+## Receipt Schema and Storage
 
-- **Schema:** `data/schemas/arb_lint_receipt.schema.json`
-- **Storage:** `artifacts/receipts/`
+- **Lint receipt schema:** `data/schemas/arb_lint_receipt.schema.json` (`$id: gzkit.arb.lint_receipt.schema.json`)
+- **Step receipt schema:** `data/schemas/arb_step_receipt.schema.json` (`$id: gzkit.arb.step_receipt.schema.json`)
+- **Storage:** `artifacts/receipts/` (configurable via `arb.receipts_root` in `.gzkit.json`)
 
 ---
 

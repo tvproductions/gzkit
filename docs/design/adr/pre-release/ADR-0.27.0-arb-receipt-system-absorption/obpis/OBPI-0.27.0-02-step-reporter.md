@@ -58,6 +58,27 @@ Evaluate `opsdev/arb/step_reporter.py` (138 lines) against gzkit's current ARB s
 - [ ] Gate 3 (Docs): Decision rationale documented
 - [ ] Gate 5 (Attestation): Human attestation required (Heavy lane)
 
+## Decision: Absorb (executed under OBPI-0.25.0-33)
+
+**Decision:** Absorb.
+
+**Executed under:** `OBPI-0.25.0-33-arb-analysis-pattern` (ADR-0.25.0-core-infrastructure-pattern-absorption, closed 2026-04-14). Cross-referenced to preserve per-module audit trail.
+
+**Gzkit implementation:**
+
+- `src/gzkit/arb/step_reporter.py` — port of `opsdev/arb/step_reporter.py` (138L source). Drops `supabase_sync.py` import; renames `SCHEMA_ID` from `airlineops.arb.step_receipt.v1` to `gzkit.arb.step_receipt.v1`; subprocess invocation uses `text=True, encoding="utf-8", errors="replace"` per `.gzkit/rules/cross-platform.md` (handles non-UTF-8 output gracefully); always writes the receipt regardless of exit status so exit 0 consistently means "command succeeded, receipt created"; raises `ValueError` on empty name or cmd (caller-guarded).
+- `tests/arb/test_step_reporter.py` — 5 Red→Green tests: passing step receipt, failing step receipt, tail truncation (max_output_chars honored), empty name rejection, empty cmd rejection.
+
+**Comparison evidence:** See OBPI-0.25.0-33-arb-analysis-pattern.md § Comparison Evidence — "Step receipt emission — `step_reporter.py:51-135` — `run_step()` wraps any command, captures stdout/stderr tail, writes receipt" against gzkit pre-absorption "None — `gz check` runs the step and discards output."
+
+**Dog-fooding proof:** Multiple step receipts under `artifacts/receipts/`:
+- `arb-step-typecheck-5cd0e1da148b4b82b938e55c9c917879.json` — `uvx ty check` wrapped via ARB step, exit 0
+- `arb-step-unittest-arb-full-865bd7c0ce074b77bf1f92d2bd81df6e.json` — 54 ARB tests wrapped, exit 0, "Ran 54 tests, OK" captured in stderr_tail
+- `arb-step-mkdocs-a3947f56aa1d4887802607414708ea4c.json` — `mkdocs build --strict` wrapped, exit 0, build time preserved as `duration_ms`
+- All validated against `gzkit.arb.step_receipt.v1` schema.
+
+**Status:** `status: Pending` in frontmatter preserved; work executed under OBPI-0.25.0-33.
+
 ## Closing Argument
 
-*To be authored at completion from delivered evidence.*
+Absorb executed under OBPI-0.25.0-33 on 2026-04-14. See OBPI-0.25.0-33-arb-analysis-pattern.md § Implementation Summary and § Key Proof for the end-to-end evidence trail.

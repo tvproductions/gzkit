@@ -58,6 +58,23 @@ Evaluate `data/schemas/arb_step_receipt.schema.json` from opsdev against gzkit's
 - [ ] Gate 3 (Docs): Decision rationale documented
 - [ ] Gate 5 (Attestation): Human attestation required (Heavy lane)
 
+## Decision: Absorb (executed under OBPI-0.25.0-33)
+
+**Decision:** Absorb.
+
+**Executed under:** `OBPI-0.25.0-33-arb-analysis-pattern` (closed 2026-04-14). Cross-referenced to preserve per-module audit trail.
+
+**Gzkit implementation:**
+
+- `data/schemas/arb_step_receipt.schema.json` — port of `airlineops/data/schemas/arb_step_receipt.schema.json`. Renamed `$id` to `gzkit.arb.step_receipt.schema.json` and `properties.schema.const` to `gzkit.arb.step_receipt.v1`. Draft 2020-12, `additionalProperties: false`, required fields `[schema, step, run_id, timestamp_utc, git, exit_status, duration_ms, stdout_tail, stderr_tail, stdout_truncated, stderr_truncated]`. The `step` subobject requires `[name, command]` where `command` is a `minItems: 1` array of strings (matches Python argv convention).
+- `tests/arb/test_schemas.py` — schema meta-validation test covers both lint and step schemas; well-formed step receipt validation test asserts the step-receipt shape loads and validates cleanly.
+
+**Brief-framing correction:** Same pattern as OBPI-0.27.0-11 — the brief assumed the schema might exist; the absorption discovered the rule referenced a non-existent path and produced the real artifact.
+
+**Dependency note:** The brief correctly noted "consumed by validate (OBPI-03) and step_reporter (OBPI-02)." All three were absorbed atomically in the OBPI-0.25.0-33 implementation pass.
+
+**Status:** `status: Pending` in frontmatter preserved; work executed under OBPI-0.25.0-33.
+
 ## Closing Argument
 
-*To be authored at completion from delivered evidence.*
+Absorb executed under OBPI-0.25.0-33 on 2026-04-14. See OBPI-0.25.0-33-arb-analysis-pattern.md § Implementation Summary and § Key Proof for the end-to-end evidence trail.

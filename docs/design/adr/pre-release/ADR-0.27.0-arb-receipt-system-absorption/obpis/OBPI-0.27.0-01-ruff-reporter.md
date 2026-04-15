@@ -58,6 +58,23 @@ Evaluate `opsdev/arb/ruff_reporter.py` (247 lines) against gzkit's current ARB s
 - [ ] Gate 3 (Docs): Decision rationale documented
 - [ ] Gate 5 (Attestation): Human attestation required (Heavy lane)
 
+## Decision: Absorb (executed under OBPI-0.25.0-33)
+
+**Decision:** Absorb.
+
+**Executed under:** `OBPI-0.25.0-33-arb-analysis-pattern` (ADR-0.25.0-core-infrastructure-pattern-absorption, closed 2026-04-14). The work this brief prescribed was done under the sibling OBPI before ADR-0.27.0 was discovered in governance review; this brief is retroactively cross-referenced to preserve the per-module audit trail ADR-0.27.0's structure intended.
+
+**Gzkit implementation:**
+
+- `src/gzkit/arb/ruff_reporter.py` — port of `opsdev/arb/ruff_reporter.py` (247L source). Drops `github_issues.py` and `supabase_sync.py` imports (airlineops-infra); renames `SCHEMA_ID` from `airlineops.arb.lint_receipt.v1` to `gzkit.arb.lint_receipt.v1`; switches ruff invocation from `sys.executable -m ruff` (module form) to `["ruff", "check", ...]` (binary form) because gzkit's ruff is a standalone binary, not an importable module; always writes the receipt (removes the zero-findings skip optimization so exit 0 consistently means "command succeeded, receipt created" per `.gzkit/rules/arb.md` exit-code contract); subprocess calls use `text=True, encoding="utf-8"` per `.gzkit/rules/cross-platform.md`.
+- `tests/arb/test_ruff_reporter.py` — 4 Red→Green tests: passing run (empty findings), failing run (parsed findings), broken ruff (fallback `ARB000`), clean-run-still-writes-receipt (exit-code contract).
+
+**Comparison evidence:** See OBPI-0.25.0-33-arb-analysis-pattern.md § Comparison Evidence for the 11-dimension table covering all 7 opsdev/arb modules; the relevant row is "Lint receipt emission — `ruff_reporter.py:176-244` — `run_ruff()` wraps ruff, parses JSON findings, writes to `artifacts/receipts/`" against gzkit pre-absorption "None — `gz check` runs ruff directly with no receipt artifact."
+
+**Dog-fooding proof:** `artifacts/receipts/arb-ruff-96af31501b1e40f09ce8afd77ac93bbe.json` — real receipt emitted by `uv run gz arb ruff src/gzkit/arb src/gzkit/commands/arb.py src/gzkit/cli/parser_arb.py tests/arb tests/commands/test_arb_cmd.py tests/test_parser_arb.py`, schema `gzkit.arb.lint_receipt.v1`, exit 0, zero findings, ruff 0.15.4, git commit `200dc2abde788f7ce19072c7fdd269c99443fbfe`.
+
+**Status:** This brief remains `status: Pending` in the frontmatter because the OBPI-0.27.0 pipeline was not run for it. Closing the brief through the hook-enforced completion flow would require duplicating the completion ceremony for the same artifacts. The governance-honest record is: the decision and implementation were executed under OBPI-0.25.0-33, documented here for per-module audit traceability, and will be formally closed alongside the ADR-0.27.0 closeout ceremony (or via a batch `gz obpi complete` pass specifically targeted at the 9 superseded briefs).
+
 ## Closing Argument
 
-*To be authored at completion from delivered evidence.*
+Absorb executed under OBPI-0.25.0-33 on 2026-04-14. See OBPI-0.25.0-33-arb-analysis-pattern.md § Implementation Summary and § Key Proof for the end-to-end evidence trail.

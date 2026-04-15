@@ -9,6 +9,7 @@ from gzkit import __version__
 from gzkit.cli.helpers import add_common_flags
 from gzkit.cli.helpers.exit_codes import exit_code_for
 from gzkit.cli.parser import StableArgumentParser
+from gzkit.cli.parser_arb import register_arb_parsers
 from gzkit.cli.parser_artifacts import register_artifact_parsers
 from gzkit.cli.parser_governance import register_governance_parsers
 from gzkit.cli.parser_maintenance import register_maintenance_parsers
@@ -54,6 +55,7 @@ def _build_parser() -> argparse.ArgumentParser:
     register_governance_parsers(commands)
     register_artifact_parsers(commands)
     register_maintenance_parsers(commands)
+    register_arb_parsers(commands)
 
     # Register common flags on every subcommand so users can write
     # ``gz status --verbose`` (not only ``gz --verbose status``).

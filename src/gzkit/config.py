@@ -100,6 +100,21 @@ class PathConfig(BaseModel):
     personas: str = ".gzkit/personas"
 
 
+class ArbConfig(BaseModel):
+    """ARB (Agent Self-Reporting) middleware configuration."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    receipts_root: str = Field(
+        default="artifacts/receipts",
+        description="Directory where ARB writes receipt JSON files.",
+    )
+    default_limit: int = Field(
+        default=20,
+        description="Default number of recent receipts scanned by validate/advise.",
+    )
+
+
 class GzkitConfig(BaseModel):
     """Root configuration for a gzkit-enabled project."""
 
@@ -108,6 +123,7 @@ class GzkitConfig(BaseModel):
     mode: Literal["lite", "heavy"] = "lite"
     paths: PathConfig = Field(default_factory=PathConfig)
     vendors: VendorsConfig = Field(default_factory=VendorsConfig)
+    arb: ArbConfig = Field(default_factory=ArbConfig)
     project_name: str = ""
 
     @classmethod
@@ -142,12 +158,14 @@ class GzkitConfig(BaseModel):
 
         paths_data = data.get("paths", {})
         vendors_data = data.get("vendors", {})
+        arb_data = data.get("arb", {})
 
         return cls.model_validate(
             {
                 "mode": data.get("mode", "lite"),
                 "paths": paths_data,
                 "vendors": vendors_data,
+                "arb": arb_data,
                 "project_name": data.get("project_name", ""),
             }
         )

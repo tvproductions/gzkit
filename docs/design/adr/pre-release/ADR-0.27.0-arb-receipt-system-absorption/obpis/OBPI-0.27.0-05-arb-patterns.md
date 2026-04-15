@@ -59,6 +59,25 @@ Evaluate `opsdev/arb/patterns.py` (253 lines) against gzkit's current approach t
 - [ ] Gate 3 (Docs): Decision rationale documented
 - [ ] Gate 5 (Attestation): Human attestation required (Heavy lane)
 
+## Decision: Absorb (executed under OBPI-0.25.0-33)
+
+**Decision:** Absorb.
+
+**Executed under:** `OBPI-0.25.0-33-arb-analysis-pattern` (closed 2026-04-14). Cross-referenced to preserve per-module audit trail.
+
+**Gzkit implementation:**
+
+- `src/gzkit/arb/patterns.py` — port of `opsdev/arb/patterns.py` (253L source, the largest ARB module). Converts `@dataclass(frozen=True)` for `PatternCandidate` and `PatternReport` to Pydantic `BaseModel(frozen=True, extra="forbid")`. Preserves the `RULE_GUIDANCE` dict (14 entries mapping ruff codes to human-readable anti-pattern labels + correct-approach text). Preserves the prefix-matching guidance fallback (`UP*`/`SIM*`/`PERF*`/`COM*`). Keeps the ≥2 occurrence threshold for candidate elevation and the top-20 aggregation. Exposes both `render_patterns_markdown()` (full report) and `render_patterns_compact()` (one-line summary) for different operator moments.
+- `tests/arb/test_patterns.py` — 6 Red→Green tests: empty directory, recurring rule becomes candidate, single-occurrence ignored, prefix-guidance-for-UP/SIM/PERF, report-is-frozen-pydantic, render-markdown-produces-table.
+
+**Comparison evidence:** See OBPI-0.25.0-33-arb-analysis-pattern.md § Comparison Evidence — "Pattern extraction — `patterns.py:130-194` — `collect_patterns()` maps recurring rules through `RULE_GUIDANCE` dict to `PatternCandidate` + `PatternReport`" against gzkit pre-absorption "None — `instruction_eval.py` and `instruction_audit.py` audit instruction surfaces, not lint findings."
+
+**Dog-fooding proof:** During the Stage 4 demonstration, `uv run gz arb patterns --limit 20` against 3 demo receipts emitted a ready-to-paste Markdown table mapping each recurring rule (F841, F401, I001, E501, SIM105) to its anti-pattern guidance and sample file paths. The output shape matches the intended "drop rows into CLAUDE.md/AGENTS.md" use case. Compact mode (`--compact`) emits a one-line summary suitable for dashboards.
+
+**Complexity-vs-value note:** The brief correctly flagged "At 253 lines, this is the most complex ARB module — complexity-vs-value ratio is critical." The dog-fooding demonstration showed that the ready-to-paste pattern catalog is the single highest-leverage output of the entire ARB surface — it's the closing half of the feedback loop (collect receipts → advise → extract patterns → update agent guardrails → reduce defects). The complexity is justified.
+
+**Status:** `status: Pending` in frontmatter preserved; work executed under OBPI-0.25.0-33.
+
 ## Closing Argument
 
-*To be authored at completion from delivered evidence.*
+Absorb executed under OBPI-0.25.0-33 on 2026-04-14. See OBPI-0.25.0-33-arb-analysis-pattern.md § Implementation Summary and § Key Proof for the end-to-end evidence trail.
