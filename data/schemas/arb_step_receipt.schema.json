@@ -1,0 +1,101 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "gzkit.arb.step_receipt.schema.json",
+    "title": "ARB Step Receipt",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "schema",
+        "step",
+        "run_id",
+        "timestamp_utc",
+        "git",
+        "exit_status",
+        "duration_ms",
+        "stdout_tail",
+        "stderr_tail",
+        "stdout_truncated",
+        "stderr_truncated"
+    ],
+    "properties": {
+        "schema": {
+            "type": "string",
+            "const": "gzkit.arb.step_receipt.v1",
+            "description": "Schema identifier for this receipt."
+        },
+        "step": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "command"],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Logical step name (e.g., ty, unittest)."
+                },
+                "command": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": { "type": "string" },
+                    "description": "Command argv executed for the step."
+                }
+            }
+        },
+        "run_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Unique run identifier for this ARB execution."
+        },
+        "timestamp_utc": {
+            "type": "string",
+            "format": "date-time",
+            "description": "UTC timestamp when the ARB run completed."
+        },
+        "git": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["commit"],
+            "properties": {
+                "commit": {
+                    "type": ["string", "null"],
+                    "pattern": "^[0-9a-f]{7,40}$",
+                    "description": "Git commit hash (short or full) if available."
+                },
+                "branch": {
+                    "type": ["string", "null"],
+                    "description": "Git branch name if available."
+                },
+                "dirty": {
+                    "type": "boolean",
+                    "description": "True if the working tree had local modifications."
+                }
+            }
+        },
+        "exit_status": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Process exit status from the step run."
+        },
+        "duration_ms": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Measured runtime in milliseconds."
+        },
+        "stdout_tail": {
+            "type": "string",
+            "description": "Tail of stdout (possibly truncated)."
+        },
+        "stderr_tail": {
+            "type": "string",
+            "description": "Tail of stderr (possibly truncated)."
+        },
+        "stdout_truncated": {
+            "type": "boolean",
+            "description": "True if stdout_tail was truncated."
+        },
+        "stderr_truncated": {
+            "type": "boolean",
+            "description": "True if stderr_tail was truncated."
+        }
+    }
+}

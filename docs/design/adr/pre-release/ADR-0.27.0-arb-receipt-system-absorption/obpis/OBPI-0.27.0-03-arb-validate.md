@@ -58,6 +58,25 @@ Evaluate `opsdev/arb/validate.py` (154 lines) against gzkit's current approach t
 - [ ] Gate 3 (Docs): Decision rationale documented
 - [ ] Gate 5 (Attestation): Human attestation required (Heavy lane)
 
+## Decision: Absorb (executed under OBPI-0.25.0-33)
+
+**Decision:** Absorb.
+
+**Executed under:** `OBPI-0.25.0-33-arb-analysis-pattern` (closed 2026-04-14). Cross-referenced to preserve per-module audit trail.
+
+**Gzkit implementation:**
+
+- `src/gzkit/arb/validator.py` — port of `opsdev/arb/validate.py` (154L source). Converts airlineops's `@dataclass(frozen=True) ArbReceiptValidationResult` to Pydantic `BaseModel(frozen=True, extra="forbid")` with `Field(..., description=...)` per `.gzkit/rules/models.md`. Uses `gzkit.commands.common.get_project_root()` for project root resolution instead of `Path(__file__).parents[N]` (which the gzkit ADR path contract check rejects). Loads schemas from `data/schemas/arb_lint_receipt.schema.json` and `data/schemas/arb_step_receipt.schema.json` via `jsonschema.Draft202012Validator`. Handles JSON decode errors, schema-id lookup misses, and unknown-schema cases distinctly.
+- `tests/arb/test_validator.py` — 7 Red→Green tests: all-valid case, malformed-counts-invalid, unknown schema, missing schema field, empty directory, limit honored, result-is-frozen-pydantic.
+
+**Comparison evidence:** See OBPI-0.25.0-33-arb-analysis-pattern.md § Comparison Evidence — "Receipt validation — `validate.py:59-128` — Draft 2020-12 validator, schema ID lookup, counts valid/invalid/unknown" against gzkit pre-absorption "None — `validate_pkg/ledger_check.py` validates governance ledger events (Pydantic `ObpiReceiptEvidence`), not lint/step receipts."
+
+**Dog-fooding proof:** `uv run gz arb validate --limit 20` run against the 4 dog-food receipts reports `Receipts scanned: 4, Valid: 4, Invalid: 0`. The `arb validate` command is the user-visible entry point and returns exit 0 when invalid==0, exit 1 when invalid>0, exit 2 on ARB internal error (per `.gzkit/rules/arb.md`).
+
+**Dependency note:** This brief correctly noted dependency on OBPI-0.27.0-11 (lint schema) and OBPI-0.27.0-12 (step schema). Both schemas were absorbed under OBPI-0.25.0-33 in the same implementation pass, so the dependency chain resolved atomically.
+
+**Status:** `status: Pending` in frontmatter preserved; work executed under OBPI-0.25.0-33.
+
 ## Closing Argument
 
-*To be authored at completion from delivered evidence.*
+Absorb executed under OBPI-0.25.0-33 on 2026-04-14. See OBPI-0.25.0-33-arb-analysis-pattern.md § Implementation Summary and § Key Proof for the end-to-end evidence trail.

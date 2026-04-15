@@ -58,6 +58,25 @@ Evaluate `opsdev/arb/advise.py` (196 lines) against gzkit's current approach to 
 - [ ] Gate 3 (Docs): Decision rationale documented
 - [ ] Gate 5 (Attestation): Human attestation required (Heavy lane)
 
+## Decision: Absorb (executed under OBPI-0.25.0-33)
+
+**Decision:** Absorb.
+
+**Executed under:** `OBPI-0.25.0-33-arb-analysis-pattern` (closed 2026-04-14). Cross-referenced to preserve per-module audit trail.
+
+**Gzkit implementation:**
+
+- `src/gzkit/arb/advisor.py` — port of `opsdev/arb/advise.py` (196L source). Converts `@dataclass(frozen=True) ArbAdvice` to Pydantic `BaseModel(frozen=True, extra="forbid")`. Keeps the rule-categorization heuristic (`F/B` → correctness, `E/W/I/UP/COM` → style, `PERF/SIM` → quality) and the recommendation logic (style-dominant → tighten agent loop, correctness → smaller diffs and more tests, quality → refactor pattern). Rewrites the retention nudge text from `uv run -m opsdev arb tidy` to `uv run gz arb tidy --keep-last 200 --apply` (gzkit form, even though `gz arb tidy` is out of scope for OBPI-0.25.0-33 and remains pending under OBPI-0.27.0-06).
+- `tests/arb/test_advisor.py` — 6 Red→Green tests: empty-directory zero-state, style-dominant recommendation, correctness-rules recommendation, tidy-nudge-references-gz-arb-form (regression guard preventing reversion to `opsdev`), limit honored, frozen Pydantic.
+
+**Comparison evidence:** See OBPI-0.25.0-33-arb-analysis-pattern.md § Comparison Evidence — "Advice aggregation — `advise.py:100-165` — `collect_arb_advice()` aggregates recent lint receipts, categorizes rules, emits `ArbAdvice`" against gzkit pre-absorption "None — `chores_advise()` in `chores.py:267` is dry-run chore criteria, unrelated to lint telemetry."
+
+**Dog-fooding proof:** During the Stage 4 demonstration, `uv run gz arb advise --limit 20` was run against a demo set of 3 receipts containing real lint violations (F841, F401, I001, E501, SIM105, UP035, UP006, E402, F811). The output produced a ranked "Top rules" table, a "Top paths" hotspot list, and conditional recommendations that matched the rule distribution (`F841`/`F401` correctness-class present → correctness recommendation; `SIM105` quality rule present → quality recommendation; tidy nudge in gzkit form). This is the concrete evidence that `advise` is not just a printer — it produces actionable, data-conditional agent guidance.
+
+**Dependency note:** This brief correctly noted dependency on receipt storage (OBPI-0.27.0-10) and patterns (OBPI-0.27.0-05). Both were absorbed under OBPI-0.25.0-33 in the same implementation pass.
+
+**Status:** `status: Pending` in frontmatter preserved; work executed under OBPI-0.25.0-33.
+
 ## Closing Argument
 
-*To be authored at completion from delivered evidence.*
+Absorb executed under OBPI-0.25.0-33 on 2026-04-14. See OBPI-0.25.0-33-arb-analysis-pattern.md § Implementation Summary and § Key Proof for the end-to-end evidence trail.

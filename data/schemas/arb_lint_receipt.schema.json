@@ -1,0 +1,124 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "gzkit.arb.lint_receipt.schema.json",
+    "title": "ARB Lint Receipt",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "schema",
+        "tool",
+        "run_id",
+        "timestamp_utc",
+        "git",
+        "findings",
+        "exit_status"
+    ],
+    "properties": {
+        "schema": {
+            "type": "string",
+            "const": "gzkit.arb.lint_receipt.v1",
+            "description": "Schema identifier for this receipt."
+        },
+        "tool": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "version"],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Lint tool name (e.g., ruff)."
+                },
+                "version": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Lint tool version string."
+                }
+            }
+        },
+        "run_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Unique run identifier for this ARB execution."
+        },
+        "timestamp_utc": {
+            "type": "string",
+            "format": "date-time",
+            "description": "UTC timestamp when the ARB run completed."
+        },
+        "git": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["commit"],
+            "properties": {
+                "commit": {
+                    "type": ["string", "null"],
+                    "pattern": "^[0-9a-f]{7,40}$",
+                    "description": "Git commit hash (short or full) if available."
+                },
+                "branch": {
+                    "type": ["string", "null"],
+                    "description": "Git branch name if available."
+                },
+                "dirty": {
+                    "type": "boolean",
+                    "description": "True if the working tree had local modifications."
+                }
+            }
+        },
+        "findings": {
+            "type": "array",
+            "description": "Structured lint findings emitted by the tool.",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["rule", "path", "line", "message"],
+                "properties": {
+                    "rule": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Lint rule/code identifier."
+                    },
+                    "path": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "File path associated with the finding."
+                    },
+                    "line": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "description": "1-based line number."
+                    },
+                    "column": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "description": "1-based column number."
+                    },
+                    "message": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Human-readable lint message."
+                    },
+                    "severity": {
+                        "type": "string",
+                        "description": "Optional severity indicator."
+                    }
+                }
+            }
+        },
+        "findings_total": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Total number of findings produced by the tool before any truncation."
+        },
+        "findings_truncated": {
+            "type": "boolean",
+            "description": "True if the findings list was truncated to cap receipt size."
+        },
+        "exit_status": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Process exit status from the lint run."
+        }
+    }
+}
