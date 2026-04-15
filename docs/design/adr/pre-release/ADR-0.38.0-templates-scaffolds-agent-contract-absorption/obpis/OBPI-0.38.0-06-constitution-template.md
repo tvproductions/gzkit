@@ -44,6 +44,21 @@ Compare the constitution template used in airlineops against the constitution te
 1. Check that amendment process is documented (not left implicit)
 1. Record decision with rationale: Absorb / Confirm / Merge
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.38.0-06-01: Read both constitution templates completely
+- [x] REQ-0.38.0-06-02: Compare section-by-section: governance principles, rule hierarchy, enforcement mechanisms, amendment process, authority delegation
+- [x] REQ-0.38.0-06-03: Evaluate whether enforcement sections require specific CLI commands or are vague
+- [x] REQ-0.38.0-06-04: Check that amendment process is documented (not left implicit)
+- [x] REQ-0.38.0-06-05: Record decision with rationale: Absorb / Confirm / Merge
+
+
 ## ALLOWED PATHS
 
 - `.gzkit/templates/` — template storage

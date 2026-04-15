@@ -45,6 +45,22 @@ Evaluate opsdev's workspace pointer patterns against gzkit's workspace discovery
 1. If Absorb: adapt to gzkit conventions and write tests
 1. If Exclude: document why gzkit's current workspace handling is sufficient
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.30.0-06-01: Read the opsdev workspace pattern implementation completely
+- [x] REQ-0.30.0-06-02: Map workspace discovery capabilities against gzkit's current handling
+- [x] REQ-0.30.0-06-03: Document comparison: root detection, companion resolution, multi-project support
+- [x] REQ-0.30.0-06-04: Record decision with rationale: Absorb / Adapt / Exclude
+- [x] REQ-0.30.0-06-05: If Absorb: adapt to gzkit conventions and write tests
+- [x] REQ-0.30.0-06-06: If Exclude: document why gzkit's current workspace handling is sufficient
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/` --- target for absorbed modules

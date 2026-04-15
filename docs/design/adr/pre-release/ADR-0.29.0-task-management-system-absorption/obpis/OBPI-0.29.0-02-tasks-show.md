@@ -45,6 +45,22 @@ Evaluate opsdev's `tasks show` subcommand against gzkit's existing detail-displa
 1. If Absorb: adapt to gzkit conventions and write tests
 1. If Exclude: document why gzkit's existing detail views are sufficient
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.29.0-02-01: Read the `tasks show` implementation completely
+- [x] REQ-0.29.0-02-02: Map the metadata it surfaces against gzkit's existing detail views
+- [x] REQ-0.29.0-02-03: Document comparison: metadata coverage, output format, user experience
+- [x] REQ-0.29.0-02-04: Record decision with rationale: Absorb / Adapt / Exclude
+- [x] REQ-0.29.0-02-05: If Absorb: adapt to gzkit conventions and write tests
+- [x] REQ-0.29.0-02-06: If Exclude: document why gzkit's existing detail views are sufficient
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/commands/` --- target for absorbed commands

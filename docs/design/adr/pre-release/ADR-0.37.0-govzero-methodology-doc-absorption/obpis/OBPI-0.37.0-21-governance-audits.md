@@ -44,6 +44,21 @@ Compare the `docs/governance/GovZero/audits/` directory between airlineops and g
 1. Evaluate which version of shared files is more complete
 1. Record decision with rationale: Absorb / Confirm / Merge
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.37.0-21-01: List all files in both `audits/` directories
+- [x] REQ-0.37.0-21-02: Compare each file present in both repos
+- [x] REQ-0.37.0-21-03: Identify files present in only one repo
+- [x] REQ-0.37.0-21-04: Evaluate which version of shared files is more complete
+- [x] REQ-0.37.0-21-05: Record decision with rationale: Absorb / Confirm / Merge
+
+
 ## ALLOWED PATHS
 
 - `docs/governance/GovZero/audits/` — target for reconciled content

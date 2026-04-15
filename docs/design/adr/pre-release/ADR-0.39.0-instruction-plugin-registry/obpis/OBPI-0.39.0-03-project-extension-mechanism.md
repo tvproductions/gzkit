@@ -49,6 +49,23 @@ Design and implement the mechanism by which downstream projects register domain-
 1. Write unit tests for each extension type and for unregistered file detection
 1. Document the extension mechanism with examples for each type
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.39.0-03-01: Define the three extension types: addition, specialization, supplement
+- [x] REQ-0.39.0-03-02: Design the registration mechanism in the project manifest
+- [x] REQ-0.39.0-03-03: Implement extension discovery: scan registered paths, validate against manifest
+- [x] REQ-0.39.0-03-04: Implement extension loading: merge canonical + extensions into the active instruction set
+- [x] REQ-0.39.0-03-05: Enforce that unregistered instruction files are flagged as violations
+- [x] REQ-0.39.0-03-06: Write unit tests for each extension type and for unregistered file detection
+- [x] REQ-0.39.0-03-07: Document the extension mechanism with examples for each type
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/instructions/` — extension mechanism implementation

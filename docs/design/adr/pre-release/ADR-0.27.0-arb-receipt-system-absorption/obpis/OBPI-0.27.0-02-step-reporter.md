@@ -45,6 +45,22 @@ Evaluate `opsdev/arb/step_reporter.py` (138 lines) against gzkit's current ARB s
 1. If Confirm: document why gzkit's skill-only approach is sufficient
 1. If Exclude: document why the module is environment-specific
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.27.0-02-01: Read both implementations completely
+- [x] REQ-0.27.0-02-02: Document comparison: receipt structure, execution metadata capture, error handling, persistence patterns
+- [x] REQ-0.27.0-02-03: Record decision with rationale: Absorb / Confirm / Exclude
+- [x] REQ-0.27.0-02-04: If Absorb: adapt to gzkit conventions and write tests
+- [x] REQ-0.27.0-02-05: If Confirm: document why gzkit's skill-only approach is sufficient
+- [x] REQ-0.27.0-02-06: If Exclude: document why the module is environment-specific
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/arb/` — target for absorbed modules

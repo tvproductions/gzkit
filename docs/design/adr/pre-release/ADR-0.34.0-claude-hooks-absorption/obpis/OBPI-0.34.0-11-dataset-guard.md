@@ -43,6 +43,21 @@ Evaluate airlineops's `dataset-guard.py` hook to determine whether it is domain-
 1. If governance-generic: document Absorb, adapt to gzkit conventions, implement, and write tests
 1. If partially generic: document which aspects to absorb and which to exclude
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.34.0-11-01: Read the airlineops implementation completely
+- [x] REQ-0.34.0-11-02: Evaluate: Is the guard pattern domain-specific or governance-generic?
+- [x] REQ-0.34.0-11-03: If domain-specific: document Exclude with rationale
+- [x] REQ-0.34.0-11-04: If governance-generic: document Absorb, adapt to gzkit conventions, implement, and write tests
+- [x] REQ-0.34.0-11-05: If partially generic: document which aspects to absorb and which to exclude
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/hooks/` -- target if absorbing

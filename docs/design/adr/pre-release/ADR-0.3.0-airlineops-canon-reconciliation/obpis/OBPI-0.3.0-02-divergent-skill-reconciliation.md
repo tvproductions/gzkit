@@ -99,11 +99,11 @@ uv run gz status --json
 
 ## Acceptance Criteria
 
-- [x] `gz-adr-audit` and `gz-adr-create` are full-depth and non-stub in canonical and mirror surfaces.
-- [x] `gz-adr-manager` is removed from active gzkit surfaces.
-- [x] Runtime commands required by these skills are implemented and tested.
-- [x] Manpages and runbook match command behavior.
-- [x] New parity report records F-002 closure for gzkit and mandatory AirlineOps backport work.
+- [x] REQ-0.3.0-02-01: `gz-adr-audit` and `gz-adr-create` are full-depth and non-stub in canonical and mirror surfaces.
+- [x] REQ-0.3.0-02-02: `gz-adr-manager` is removed from active gzkit surfaces.
+- [x] REQ-0.3.0-02-03: Runtime commands required by these skills are implemented and tested.
+- [x] REQ-0.3.0-02-04: Manpages and runbook match command behavior.
+- [x] REQ-0.3.0-02-05: New parity report records F-002 closure for gzkit and mandatory AirlineOps backport work.
 
 ## Evidence
 

@@ -60,6 +60,25 @@ Agent tool, collecting structured results (`DONE`, `DONE_WITH_CONCERNS`, `NEEDS_
 
 > STOP-on-BLOCKERS: if OBPI-02 or OBPI-05 dispatch machinery is missing, print a BLOCKERS list and halt.
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.18.0-06-01: REQUIREMENT: SKILL.md Stage 2 MUST dispatch a fresh implementer subagent per plan task using the Agent tool with `subagent_type` referencing the implementer agent file.
+- [x] REQ-0.18.0-06-02: REQUIREMENT: Each dispatch MUST pass scoped context: task description, allowed files, test expectations, brief requirements.
+- [x] REQ-0.18.0-06-03: REQUIREMENT: Each dispatch MUST use model-aware routing from `ModelRoutingConfig` (OBPI-05) based on task complexity heuristics.
+- [x] REQ-0.18.0-06-04: REQUIREMENT: Dispatch results MUST be recorded as `SubagentDispatchRecord` entries in the pipeline active marker.
+- [x] REQ-0.18.0-06-05: REQUIREMENT: The controller MUST handle all four result statuses: `DONE` (advance), `DONE_WITH_CONCERNS` (log and advance), `NEEDS_CONTEXT` (provide context and retry once), `BLOCKED` (halt and report).
+- [x] REQ-0.18.0-06-06: REQUIREMENT: `--no-subagents` flag MUST bypass dispatch and execute inline (preserving current behavior as fallback).
+- [x] REQ-0.18.0-06-07: REQUIREMENT: Dispatch MUST be sequential (not parallel) per superpowers methodology — one implementer at a time.
+- [x] REQ-0.18.0-06-08: NEVER: Skip remaining stages after all tasks dispatch. The Iron Law holds.
+- [x] REQ-0.18.0-06-09: ALWAYS: Record dispatch timing for model routing optimization.
+
+
 ## Edge Cases
 
 - `--no-subagents` — Stage 2 runs inline as today; no Agent tool calls

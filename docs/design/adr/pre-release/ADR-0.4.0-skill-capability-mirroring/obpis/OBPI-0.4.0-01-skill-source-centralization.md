@@ -95,10 +95,10 @@ uv run gz status
 
 ## Acceptance Criteria
 
-- [x] Config defaults place canonical skills under `.gzkit/skills`.
-- [x] Sync mirrors canonical skills to Claude, Codex, and Copilot paths.
-- [x] Manifest schema and CLI path audits enforce new mirror topology.
-- [x] Generated AGENTS/CLAUDE/Copilot surfaces show canonical + three mirrors.
+- [x] REQ-0.4.0-01-01: Config defaults place canonical skills under `.gzkit/skills`.
+- [x] REQ-0.4.0-01-02: Sync mirrors canonical skills to Claude, Codex, and Copilot paths.
+- [x] REQ-0.4.0-01-03: Manifest schema and CLI path audits enforce new mirror topology.
+- [x] REQ-0.4.0-01-04: Generated AGENTS/CLAUDE/Copilot surfaces show canonical + three mirrors.
 
 ## Evidence
 

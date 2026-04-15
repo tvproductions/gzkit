@@ -41,6 +41,20 @@ Compare `docs/governance/GovZero/gate5-architecture.md` between airlineops and g
 1. Evaluate which version is more complete and precise
 1. Record decision with rationale: Absorb / Confirm / Merge
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.37.0-04-01: Read both versions completely
+- [x] REQ-0.37.0-04-02: Document differences in architecture descriptions, attestation flows, enforcement rules
+- [x] REQ-0.37.0-04-03: Evaluate which version is more complete and precise
+- [x] REQ-0.37.0-04-04: Record decision with rationale: Absorb / Confirm / Merge
+
+
 ## ALLOWED PATHS
 
 - `docs/governance/GovZero/gate5-architecture.md` — target for reconciled content

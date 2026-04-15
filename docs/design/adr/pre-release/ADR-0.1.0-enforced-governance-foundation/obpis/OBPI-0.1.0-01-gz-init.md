@@ -42,13 +42,13 @@ Implement `gz init` command that scaffolds project structure, ledger, and Claude
 
 ## Acceptance Criteria
 
-- [ ] `gz init test-project` creates all directories
-- [ ] `.gzkit/ledger.jsonl` created (empty or with init event)
-- [ ] `.gzkit/config.json` created with defaults
-- [ ] `.claude/settings.json` created with hook config
-- [ ] `.claude/hooks/ledger-writer.py` created and executable
-- [ ] `project_init` event appended to ledger
-- [ ] Command fails with clear error if structure already exists
+- [x] REQ-0.1.0-01-01: `gz init test-project` creates all directories
+- [x] REQ-0.1.0-01-02: `.gzkit/ledger.jsonl` created (empty or with init event)
+- [x] REQ-0.1.0-01-03: `.gzkit/config.json` created with defaults
+- [x] REQ-0.1.0-01-04: `.claude/settings.json` created with hook config
+- [x] REQ-0.1.0-01-05: `.claude/hooks/ledger-writer.py` created and executable
+- [x] REQ-0.1.0-01-06: `project_init` event appended to ledger
+- [x] REQ-0.1.0-01-07: Command fails with clear error if structure already exists
 
 ## Gate Evidence
 

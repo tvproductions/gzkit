@@ -44,6 +44,21 @@ Compare the OBPI brief template used in airlineops against the OBPI brief templa
 1. Evaluate guidance quality — does each section explain what the agent should write?
 1. Record decision with rationale: Absorb / Confirm / Merge
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.38.0-02-01: Read both OBPI brief templates completely
+- [x] REQ-0.38.0-02-02: Compare section-by-section: frontmatter, ADR item reference, objective, source material, assumptions, non-goals, requirements, allowed paths, quality gates, closing argument
+- [x] REQ-0.38.0-02-03: Document which sections exist in one template but not the other
+- [x] REQ-0.38.0-02-04: Evaluate guidance quality — does each section explain what the agent should write?
+- [x] REQ-0.38.0-02-05: Record decision with rationale: Absorb / Confirm / Merge
+
+
 ## ALLOWED PATHS
 
 - `.gzkit/templates/` — template storage

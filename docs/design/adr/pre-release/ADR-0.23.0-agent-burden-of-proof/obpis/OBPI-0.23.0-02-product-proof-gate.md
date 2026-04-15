@@ -83,6 +83,23 @@ Heavy — CLI contract change (new exit behavior, new output).
 1. Output: table per OBPI showing proof type found or "MISSING"
 1. BDD scenario: closeout with and without product proof
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.23.0-02-01: Given an ADR identifier, when `check_product_proof(adr_id)` is invoked, then it scans for operator documentation per OBPI and returns a structured per-OBPI proof status.
+- [x] REQ-0.23.0-02-02: Given `closeout_cmd()` is invoked for an ADR, when it runs, then it invokes the product proof check before any closeout side-effects proceed.
+- [x] REQ-0.23.0-02-03: Given a target ADR with at least one OBPI lacking product proof, when `closeout_cmd()` runs, then it exits 1 and emits a clear per-OBPI report identifying the missing proof.
+- [x] REQ-0.23.0-02-04: Given an OBPI delivers an operator capability, when product proof is checked, then a runbook entry whose text references the capability is accepted as proof (keyword match).
+- [x] REQ-0.23.0-02-05: Given an OBPI delivers a CLI command, when product proof is checked, then an existing manpage file with a non-empty synopsis is accepted as proof.
+- [x] REQ-0.23.0-02-06: Given an OBPI delivers a public module/class/function, when product proof is checked, then a meaningful docstring on the introduced public interface is accepted as proof.
+- [x] REQ-0.23.0-02-07: Given a closeout run, when the product proof check completes, then a per-OBPI table is emitted showing the proof type found or `MISSING` for each OBPI.
+- [x] REQ-0.23.0-02-08: Given the closeout product proof feature, when BDD scenarios run, then both the with-proof and without-proof paths are exercised end-to-end.
+
 ## EDGE CASES
 
 - OBPI delivers only internal refactoring with no operator-facing surface: docstring on changed public interfaces satisfies the gate

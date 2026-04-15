@@ -51,6 +51,25 @@ Replace the opsdev Supabase sync approach (`arb/supabase_sync.py`, 157 lines) wi
 1. Unit tests with mocked Logfire SDK — no real network calls in tests
 1. Document configuration in command docs and runbook
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.27.0-09-01: Add `logfire` as an optional dependency (`uv add logfire --optional telemetry`)
+- [x] REQ-0.27.0-09-02: Implement `src/gzkit/arb/telemetry.py` — configurable telemetry emitter with Logfire as default backend
+- [x] REQ-0.27.0-09-03: Configuration: enable/disable via `gzkit.toml` or environment variable (`GZKIT_TELEMETRY_ENABLED=true/false`), backend selection, graceful no-op when Logfire is not installed
+- [x] REQ-0.27.0-09-04: Instrument ARB step execution with Logfire spans (`logfire.span("arb.step", ...)`) so QA steps appear as traced operations
+- [x] REQ-0.27.0-09-05: Bridge existing structlog loggers to Logfire so `logger.info(...)` calls flow to the platform when enabled
+- [x] REQ-0.27.0-09-06: Emit receipt events (lint findings, step results, gate outcomes) as structured span attributes
+- [x] REQ-0.27.0-09-07: All telemetry code must be guarded — `ImportError` for missing `logfire` package produces a no-op emitter, not a crash
+- [x] REQ-0.27.0-09-08: Unit tests with mocked Logfire SDK — no real network calls in tests
+- [x] REQ-0.27.0-09-09: Document configuration in command docs and runbook
+
+
 ## DESIGN NOTES
 
 ### State Doctrine Alignment

@@ -43,6 +43,20 @@ Compare opsdev's `xenon-complexity` pre-commit hook against gzkit's existing com
 1. Evaluate which configuration is more appropriate for governance tooling
 1. Record decision with rationale: Absorb / Confirm
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.35.0-06-01: Read both `.pre-commit-config.yaml` entries for `xenon-complexity` completely
+- [x] REQ-0.35.0-06-02: Document differences: threshold values, exclude patterns, stages
+- [x] REQ-0.35.0-06-03: Evaluate which configuration is more appropriate for governance tooling
+- [x] REQ-0.35.0-06-04: Record decision with rationale: Absorb / Confirm
+
+
 ## ALLOWED PATHS
 
 - `.pre-commit-config.yaml` — hook configuration

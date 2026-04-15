@@ -44,6 +44,21 @@ Compare the audit template used in airlineops against the audit template used in
 1. Check that evidence gathering references CLI commands (not manual inspection)
 1. Record decision with rationale: Absorb / Confirm / Merge
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.38.0-04-01: Read both audit templates completely
+- [x] REQ-0.38.0-04-02: Compare section-by-section: audit sequence, evidence gathering commands, receipt emission, gate verification, compliance summary
+- [x] REQ-0.38.0-04-03: Evaluate whether audit steps are specific and reproducible
+- [x] REQ-0.38.0-04-04: Check that evidence gathering references CLI commands (not manual inspection)
+- [x] REQ-0.38.0-04-05: Record decision with rationale: Absorb / Confirm / Merge
+
+
 ## ALLOWED PATHS
 
 - `.gzkit/templates/` — template storage

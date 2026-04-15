@@ -42,6 +42,21 @@ Compare opsdev's `tidy/clean` command (clean_tools.py, 57 lines) against gzkit's
 1. If absorbing: adapt to gzkit conventions and write tests
 1. If confirming: document why gzkit's implementation is sufficient
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.32.0-08-01: Read both implementations completely
+- [x] REQ-0.32.0-08-02: Document comparison: artifact types, safety checks, dry-run, cross-platform handling
+- [x] REQ-0.32.0-08-03: Record decision with rationale: Absorb Improvements / Confirm Sufficient
+- [x] REQ-0.32.0-08-04: If absorbing: adapt to gzkit conventions and write tests
+- [x] REQ-0.32.0-08-05: If confirming: document why gzkit's implementation is sufficient
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/` -- target for absorbed improvements

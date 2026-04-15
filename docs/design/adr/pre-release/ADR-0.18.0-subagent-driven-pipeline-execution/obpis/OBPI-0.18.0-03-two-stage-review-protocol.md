@@ -57,6 +57,27 @@ protocol is consumed by the pipeline skill, not exposed as a user-facing surface
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.18.0-03-01: REQUIREMENT: After each implementer task with status `DONE` or `DONE_WITH_CONCERNS`, dispatch spec compliance reviewer first, then code quality reviewer.
+- [x] REQ-0.18.0-03-02: REQUIREMENT: Spec compliance reviewer MUST independently read the actual code changes — never trust the implementer's self-report. Prompt MUST include: "The implementer may be optimistic. Verify everything independently."
+- [x] REQ-0.18.0-03-03: REQUIREMENT: Spec compliance reviewer receives: the plan task description, brief requirements relevant to this task, and the list of files changed by the implementer.
+- [x] REQ-0.18.0-03-04: REQUIREMENT: Code quality reviewer dispatches ONLY after spec compliance passes. If spec compliance fails, dispatch a fix cycle (new implementer subagent with review feedback) before quality review.
+- [x] REQ-0.18.0-03-05: REQUIREMENT: Code quality reviewer receives: files changed, test files, and evaluates against SOLID principles, file organization, test coverage, and maintainability.
+- [x] REQ-0.18.0-03-06: REQUIREMENT: Review verdicts use structured format: `{verdict: PASS|FAIL|CONCERNS, findings: [{severity: critical|important|minor, description, file, line}]}`.
+- [x] REQ-0.18.0-03-07: REQUIREMENT: Critical findings from either reviewer MUST block task advancement. Important findings are logged. Minor findings are noted but do not block.
+- [x] REQ-0.18.0-03-08: REQUIREMENT: Both reviewer subagents MUST be dispatched using their respective `.claude/agents/` files (`spec-reviewer.md`, `quality-reviewer.md`) which enforce read-only access via `tools: Read, Glob, Grep` — no Edit, Write, or Bash. This is structural independence: the reviewer literally cannot modify the code it reviews.
+- [x] REQ-0.18.0-03-09: REQUIREMENT: Reviewer subagents MUST use capable models (`sonnet` minimum, `opus` for complex reviews). Reviews always require judgment — never route to `haiku`.
+- [x] REQ-0.18.0-03-10: NEVER: Skip the spec compliance review — even for "simple" tasks.
+- [x] REQ-0.18.0-03-11: ALWAYS: Review cycle limit: max 2 fix cycles per task before escalating to BLOCKED.
+
+
 ## Review Dispatch Sequence (Design Input)
 
 ```text

@@ -43,6 +43,20 @@ Compare `docs/governance/GovZero/charter.md` between airlineops and gzkit. The c
 1. Evaluate which version is more complete and authoritative
 1. Record decision with rationale: Absorb / Confirm / Merge
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.37.0-01-01: Read both versions of `charter.md` completely
+- [x] REQ-0.37.0-01-02: Document differences: sections, principles, mission statements, philosophy
+- [x] REQ-0.37.0-01-03: Evaluate which version is more complete and authoritative
+- [x] REQ-0.37.0-01-04: Record decision with rationale: Absorb / Confirm / Merge
+
+
 ## ALLOWED PATHS
 
 - `docs/governance/GovZero/charter.md` — target for reconciled content

@@ -43,6 +43,20 @@ Compare opsdev's `interrogate` pre-commit hook against gzkit's existing docstrin
 1. Evaluate which configuration is more appropriate for governance tooling
 1. Record decision with rationale: Absorb / Confirm
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.35.0-15-01: Read both `.pre-commit-config.yaml` entries for `interrogate` completely
+- [x] REQ-0.35.0-15-02: Document differences: thresholds, exclude patterns, verbosity, stages
+- [x] REQ-0.35.0-15-03: Evaluate which configuration is more appropriate for governance tooling
+- [x] REQ-0.35.0-15-04: Record decision with rationale: Absorb / Confirm
+
+
 ## ALLOWED PATHS
 
 - `.pre-commit-config.yaml` — hook configuration

@@ -44,6 +44,21 @@ Verify completeness of GovZero methodology documents that exist only in gzkit (n
 1. Document any completeness gaps or needed updates
 1. Record verification result: Complete / Needs Updates (with specifics)
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.37.0-23-01: List all files in gzkit's `docs/governance/GovZero/` that have no airlineops counterpart
+- [x] REQ-0.37.0-23-02: For each gzkit-only file: verify completeness (all sections filled, no TODOs, no stale references)
+- [x] REQ-0.37.0-23-03: Verify cross-references to other methodology docs are accurate
+- [x] REQ-0.37.0-23-04: Document any completeness gaps or needed updates
+- [x] REQ-0.37.0-23-05: Record verification result: Complete / Needs Updates (with specifics)
+
+
 ## ALLOWED PATHS
 
 - `docs/governance/GovZero/` — target for completeness verification and updates

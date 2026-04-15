@@ -45,6 +45,22 @@ Evaluate opsdev's `tasks tidy` subcommand against gzkit's existing cleanup surfa
 1. If Absorb: adapt to gzkit conventions and write tests
 1. If Exclude: document why gzkit's existing cleanup surfaces are sufficient
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.29.0-07-01: Read the `tasks tidy` implementation completely
+- [x] REQ-0.29.0-07-02: Map the cleanup operations against gzkit's existing cleanup surfaces
+- [x] REQ-0.29.0-07-03: Document comparison: what is cleaned, state transitions, idempotency, safety checks
+- [x] REQ-0.29.0-07-04: Record decision with rationale: Absorb / Adapt / Exclude
+- [x] REQ-0.29.0-07-05: If Absorb: adapt to gzkit conventions and write tests
+- [x] REQ-0.29.0-07-06: If Exclude: document why gzkit's existing cleanup surfaces are sufficient
+
+
 ## ALLOWED PATHS
 
 - `src/gzkit/commands/` --- target for absorbed commands

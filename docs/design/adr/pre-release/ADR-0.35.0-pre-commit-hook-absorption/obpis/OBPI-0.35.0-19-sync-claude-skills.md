@@ -44,6 +44,21 @@ Evaluate opsdev's `sync-claude-skills` pre-commit hook — ensures Claude skills
 1. Determine enforcement timing: pre-commit, Claude hook, or both
 1. Record decision with rationale: Absorb-PreCommit / Absorb-Claude / Absorb-Both / Exclude
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.35.0-19-01: Read the opsdev `sync-claude-skills` hook implementation completely
+- [x] REQ-0.35.0-19-02: Document: what it validates, how it detects drift, what files it compares
+- [x] REQ-0.35.0-19-03: Evaluate whether gzkit needs commit-time sync enforcement
+- [x] REQ-0.35.0-19-04: Determine enforcement timing: pre-commit, Claude hook, or both
+- [x] REQ-0.35.0-19-05: Record decision with rationale: Absorb-PreCommit / Absorb-Claude / Absorb-Both / Exclude
+
+
 ## ALLOWED PATHS
 
 - `.pre-commit-config.yaml` — hook configuration

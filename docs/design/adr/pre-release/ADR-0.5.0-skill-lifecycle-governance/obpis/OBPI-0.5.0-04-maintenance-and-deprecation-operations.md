@@ -69,9 +69,9 @@ Define repeatable maintenance operations for skill lifecycle updates, deprecatio
 
 ## Acceptance Criteria
 
-- [x] Maintenance cadence and ownership are explicit.
-- [x] Deprecation semantics are documented and enforceable.
-- [x] Sync + audit behavior remains deterministic across lifecycle operations.
+- [x] REQ-0.5.0-04-01: Maintenance cadence and ownership are explicit.
+- [x] REQ-0.5.0-04-02: Deprecation semantics are documented and enforceable.
+- [x] REQ-0.5.0-04-03: Sync + audit behavior remains deterministic across lifecycle operations.
 
 ## Evidence
 

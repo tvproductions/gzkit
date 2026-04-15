@@ -38,6 +38,21 @@ Create a standardized skill manpage template at `docs/user/skills/_TEMPLATE.md` 
 1. Template must document supporting files when a skill has assets, configs, or subagent definitions
 1. Place template at `docs/user/skills/_TEMPLATE.md`
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.24.0-02-01: Template must include at minimum: Purpose, When to Use, What to Expect, Invocation, Supporting Files, Related Skills/Commands
+- [x] REQ-0.24.0-02-02: Template must NOT duplicate SKILL.md agent-facing content; it must translate for operators
+- [x] REQ-0.24.0-02-03: Template must include a "When to Use" section that situates the skill in workflow context (connecting to runbook)
+- [x] REQ-0.24.0-02-04: Template must document supporting files when a skill has assets, configs, or subagent definitions
+- [x] REQ-0.24.0-02-05: Place template at `docs/user/skills/_TEMPLATE.md`
+
+
 ## ALLOWED PATHS
 
 - `docs/user/skills/_TEMPLATE.md`

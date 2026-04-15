@@ -47,6 +47,21 @@ Lite — ADR note + stdlib unittest + smoke (≤60s).
 1. `validate_frontmatter()` in validate.py uses Pydantic model instantiation instead of manual field checks
 1. All existing validation tests pass — identical error messages and error types
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.15.0-02-01: `AdrFrontmatter` model: `id` field with regex pattern `ADR-\d+\.\d+\.\d+`, `status` as enum, `lane` as enum, optional `parent`
+- [x] REQ-0.15.0-02-02: `ObpiFrontmatter` model: `id` field with regex pattern `OBPI-\d+\.\d+\.\d+-\d+-[\w-]+`, `parent` reference, `status` as enum
+- [x] REQ-0.15.0-02-03: `PrdFrontmatter` model: `id` field with regex pattern `PRD-[\w]+-\d+\.\d+\.\d+`, `status` as enum
+- [x] REQ-0.15.0-02-04: `validate_frontmatter()` in validate.py uses Pydantic model instantiation instead of manual field checks
+- [x] REQ-0.15.0-02-05: All existing validation tests pass — identical error messages and error types
+
+
 ## QUALITY GATES (Lite)
 
 - [x] Gate 1 (ADR): Intent recorded in this brief

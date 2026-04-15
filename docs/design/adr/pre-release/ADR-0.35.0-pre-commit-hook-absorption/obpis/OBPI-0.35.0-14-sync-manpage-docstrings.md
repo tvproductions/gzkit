@@ -44,6 +44,21 @@ Evaluate opsdev's `sync-manpage-docstrings` pre-commit hook — ensures that com
 1. Determine enforcement timing: pre-commit, Claude hook, or both
 1. Record decision with rationale: Absorb-PreCommit / Absorb-Claude / Absorb-Both / Exclude
 
+## Acceptance Criteria
+
+<!--
+Specific, testable criteria for completion.
+Each checkbox carries a deterministic REQ ID: REQ-<semver>-<obpi_item>-<criterion_index>.
+Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
+-->
+
+- [x] REQ-0.35.0-14-01: Read the opsdev `sync-manpage-docstrings` hook implementation completely
+- [x] REQ-0.35.0-14-02: Document: how it detects drift, what fields it compares, how it reports violations
+- [x] REQ-0.35.0-14-03: Evaluate whether gzkit needs this enforcement for its Gate 5 covenant
+- [x] REQ-0.35.0-14-04: Determine enforcement timing: pre-commit, Claude hook, or both
+- [x] REQ-0.35.0-14-05: Record decision with rationale: Absorb-PreCommit / Absorb-Claude / Absorb-Both / Exclude
+
+
 ## ALLOWED PATHS
 
 - `.pre-commit-config.yaml` — hook configuration

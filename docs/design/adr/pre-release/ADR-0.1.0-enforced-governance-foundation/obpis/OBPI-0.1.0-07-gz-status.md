@@ -41,9 +41,9 @@ Implement `gz status` command that displays gate status for active work.
 
 ## Acceptance Criteria
 
-- [ ] `gz status` displays lane and gate status
-- [ ] `gz status --json` outputs valid JSON
-- [ ] Blocking issues show file:line references
+- [x] REQ-0.1.0-07-01: `gz status` displays lane and gate status
+- [x] REQ-0.1.0-07-02: `gz status --json` outputs valid JSON
+- [x] REQ-0.1.0-07-03: Blocking issues show file:line references
 
 ## Gate Evidence
 
