@@ -9,6 +9,8 @@ on:
       - "mkdocs.yml"
       - "requirements-docs.txt"
       - ".github/workflows/docs.yml"
+      - "RELEASE_NOTES.md"
+      - "README.md"
   workflow_dispatch:
 
 permissions:
