@@ -158,7 +158,7 @@ def _discover_ghis(project_root: Path, since_date: str | None) -> list[GhiRecord
         "200",
     ]
     if since_date is not None:
-        cmd.extend(["--search", f"closed:>{since_date[:10]}"])
+        cmd.extend(["--search", f"closed:>={since_date[:10]}"])
 
     rc, stdout, _err = run_exec(cmd, cwd=project_root)
     if rc != 0 or not stdout.strip():
