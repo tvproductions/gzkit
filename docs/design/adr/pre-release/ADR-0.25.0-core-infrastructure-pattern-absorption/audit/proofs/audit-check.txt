@@ -1,0 +1,41 @@
+ADR audit-check: ADR-0.25.0-core-infrastructure-pattern-absorption
+PASS All linked OBPIs are completed with evidence.
+  - OBPI-0.25.0-01-attestation-pattern
+  - OBPI-0.25.0-02-progress-pattern
+  - OBPI-0.25.0-03-signature-pattern
+  - OBPI-0.25.0-04-world-state-pattern
+  - OBPI-0.25.0-05-dataset-version-pattern
+  - OBPI-0.25.0-06-registry-pattern
+  - OBPI-0.25.0-07-types-pattern
+  - OBPI-0.25.0-08-ledger-pattern
+  - OBPI-0.25.0-09-schema-pattern
+  - OBPI-0.25.0-10-errors-pattern
+  - OBPI-0.25.0-11-hooks-pattern
+  - OBPI-0.25.0-12-admission-pattern
+  - OBPI-0.25.0-13-qc-pattern
+  - OBPI-0.25.0-14-os-pattern
+  - OBPI-0.25.0-15-manifests-pattern
+  - OBPI-0.25.0-16-config-pattern
+  - OBPI-0.25.0-17-console-pattern
+  - OBPI-0.25.0-18-adr-lifecycle-pattern
+  - OBPI-0.25.0-19-adr-audit-ledger-pattern
+  - OBPI-0.25.0-20-adr-governance-pattern
+  - OBPI-0.25.0-21-adr-reconciliation-pattern
+  - OBPI-0.25.0-22-adr-traceability-pattern
+  - OBPI-0.25.0-23-artifact-management-pattern
+  - OBPI-0.25.0-24-cli-audit-pattern
+  - OBPI-0.25.0-25-docs-validation-pattern
+  - OBPI-0.25.0-26-drift-detection-pattern
+  - OBPI-0.25.0-27-policy-guards-pattern
+  - OBPI-0.25.0-28-layout-verification-pattern
+  - OBPI-0.25.0-29-ledger-schema-pattern
+  - OBPI-0.25.0-30-references-pattern
+  - OBPI-0.25.0-31-validation-receipts-pattern
+  - OBPI-0.25.0-32-handoff-validation-pattern
+  - OBPI-0.25.0-33-arb-analysis-pattern
+
+Coverage: 8/8 REQs covered (100.0%)
+  OBPI-0.25.0-26: 2/2 (100.0%)
+  OBPI-0.25.0-27: 2/2 (100.0%)
+  OBPI-0.25.0-32: 2/2 (100.0%)
+  OBPI-0.25.0-33: 2/2 (100.0%)
