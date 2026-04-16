@@ -1,11 +1,11 @@
 """Init, PRD, and constitution command implementations."""
 
+import re
 from datetime import date
 from pathlib import Path
 from typing import Literal, cast
 
 from gzkit.commands.common import (
-    GzCliError,
     _confirm,
     console,
     ensure_initialized,
@@ -33,6 +33,164 @@ from gzkit.sync import (
     write_manifest,
 )
 from gzkit.templates import render_template
+
+
+def _normalize_package_name(project_name: str) -> str:
+    """Normalize a project name to a valid Python package name.
+
+    Replaces hyphens and spaces with underscores, strips non-alphanumeric
+    characters, and lowercases the result.
+    """
+    name = project_name.lower().replace("-", "_").replace(" ", "_")
+    name = re.sub(r"[^a-z0-9_]", "", name)
+    name = re.sub(r"_+", "_", name).strip("_")
+    return name or "app"
+
+
+def _scaffold_project_skeleton(
+    project_root: Path,
+    project_name: str,
+    source_root: str,
+    tests_root: str,
+    *,
+    dry_run: bool = False,
+) -> list[str]:
+    """Create the minimal Python project skeleton.
+
+    Creates pyproject.toml, src/<package>/__init__.py, and tests/__init__.py.
+    Idempotent: skips any artifact that already exists.
+
+    Returns a list of human-readable descriptions of created artifacts.
+    """
+    created: list[str] = []
+    package_name = _normalize_package_name(project_name)
+
+    # --- pyproject.toml ---
+    pyproject_path = project_root / "pyproject.toml"
+    if not pyproject_path.exists():
+        if dry_run:
+            created.append("Would create pyproject.toml")
+        else:
+            pyproject_content = (
+                "[project]\n"
+                f'name = "{project_name}"\n'
+                'version = "0.1.0"\n'
+                f'description = "{project_name}"\n'
+                'readme = "README.md"\n'
+                'requires-python = ">=3.13"\n'
+                "\n"
+                "dependencies = []\n"
+                "\n"
+                "[project.optional-dependencies]\n"
+                "dev = [\n"
+                '    "ruff>=0.8",\n'
+                "]\n"
+                "\n"
+                "[build-system]\n"
+                'requires = ["hatchling"]\n'
+                'build-backend = "hatchling.build"\n'
+                "\n"
+                "[tool.hatch.build.targets.wheel]\n"
+                f'packages = ["{source_root}/{package_name}"]\n'
+                "\n"
+                "[tool.ruff]\n"
+                'target-version = "py313"\n'
+                "line-length = 100\n"
+                f'src = ["{source_root}", "{tests_root}"]\n'
+                "\n"
+                "[tool.ruff.lint]\n"
+                'select = ["E", "F", "I", "UP", "B", "SIM", "TRY", "RUF"]\n'
+            )
+            pyproject_path.write_text(pyproject_content, encoding="utf-8")
+            created.append("Created pyproject.toml")
+
+    # --- src/<package>/__init__.py ---
+    package_dir = project_root / source_root / package_name
+    init_file = package_dir / "__init__.py"
+    if not init_file.exists():
+        if dry_run:
+            created.append(f"Would create {source_root}/{package_name}/__init__.py")
+        else:
+            package_dir.mkdir(parents=True, exist_ok=True)
+            init_content = f'"""{project_name}."""\n'
+            init_file.write_text(init_content, encoding="utf-8")
+            created.append(f"Created {source_root}/{package_name}/__init__.py")
+
+    # --- tests/__init__.py ---
+    tests_dir = project_root / tests_root
+    tests_init = tests_dir / "__init__.py"
+    if not tests_init.exists():
+        if dry_run:
+            created.append(f"Would create {tests_root}/__init__.py")
+        else:
+            tests_dir.mkdir(parents=True, exist_ok=True)
+            tests_init.write_text("", encoding="utf-8")
+            created.append(f"Created {tests_root}/__init__.py")
+
+    return created
+
+
+def _repair_missing_artifacts(
+    project_root: Path,
+    config: GzkitConfig,
+    *,
+    no_skeleton: bool = False,
+    dry_run: bool = False,
+) -> None:
+    """Detect and repair missing artifacts on an already-initialized project.
+
+    Runs the idempotent portions of init without requiring --force.
+    """
+    project_name = config.project_name or detect_project_name(project_root)
+    structure = detect_project_structure(project_root)
+    repaired: list[str] = []
+
+    console.print(f"Repairing [bold]{project_name}[/bold]...")
+
+    # Repair project skeleton
+    if not no_skeleton:
+        skeleton = _scaffold_project_skeleton(
+            project_root,
+            project_name,
+            config.paths.source_root,
+            config.paths.tests_root,
+            dry_run=dry_run,
+        )
+        repaired.extend(skeleton)
+
+    # Repair governance directories
+    design_root = config.paths.design_root
+    for dir_name in ["prd", "constitutions", "adr"]:
+        dir_path = project_root / design_root / dir_name
+        if not dir_path.exists():
+            if dry_run:
+                repaired.append(f"Would create {design_root}/{dir_name}/")
+            else:
+                dir_path.mkdir(parents=True, exist_ok=True)
+                repaired.append(f"Created {design_root}/{dir_name}/")
+
+    # Repair manifest
+    manifest_path = project_root / config.paths.manifest
+    if not manifest_path.exists():
+        if dry_run:
+            repaired.append("Would regenerate .gzkit/manifest.json")
+        else:
+            manifest = generate_manifest(project_root, config, structure)
+            write_manifest(project_root, manifest)
+            repaired.append("Regenerated .gzkit/manifest.json")
+
+    # Always re-sync control surfaces (idempotent, not counted as repairs)
+    if not dry_run:
+        sync_all(project_root, config)
+
+    if repaired:
+        if dry_run:
+            console.print("[yellow]Dry run:[/yellow] no files written.")
+        for item in repaired:
+            console.print(f"  {item}")
+        console.print(f"\n[green]Repaired {len(repaired)} artifact(s).[/green]")
+    else:
+        console.print("  All artifacts present. Nothing to repair.")
 
 
 def _setup_init_hooks(project_root: Path, config: GzkitConfig) -> None:
@@ -96,19 +254,23 @@ def _register_existing_artifacts(
     return True
 
 
-def init(mode: str, force: bool, dry_run: bool) -> None:
+def init(mode: str, force: bool, dry_run: bool, *, no_skeleton: bool = False) -> None:
     """Initialize gzkit in the current project."""
     project_root = get_project_root()
     gzkit_dir = project_root / ".gzkit"
 
+    # Already initialized and no --force: run repair instead of erroring
     if gzkit_dir.exists() and not force:
-        msg = "Project already initialized. Use --force to reinitialize."
-        raise GzCliError(msg)  # noqa: TRY003
+        config = GzkitConfig.load(project_root / ".gzkit.json")
+        _repair_missing_artifacts(project_root, config, no_skeleton=no_skeleton, dry_run=dry_run)
+        return
 
     # Detect project structure
     structure = detect_project_structure(project_root)
     project_name = detect_project_name(project_root)
     design_root = structure.get("design_root", "design")
+    source_root = structure.get("source_root", "src")
+    tests_root = structure.get("tests_root", "tests")
 
     console.print(f"Initializing gzkit for [bold]{project_name}[/bold] in {mode} mode...")
 
@@ -119,6 +281,12 @@ def init(mode: str, force: bool, dry_run: bool) -> None:
         console.print("  Would create .gzkit.json")
         console.print("  Would generate .gzkit/manifest.json")
         console.print("  Would create governance directories (prd, constitutions, adr)")
+        if not no_skeleton:
+            skeleton = _scaffold_project_skeleton(
+                project_root, project_name, source_root, tests_root, dry_run=True
+            )
+            for item in skeleton:
+                console.print(f"  {item}")
         console.print("  Would generate control surfaces (AGENTS.md, CLAUDE.md, etc.)")
         console.print("  Would set up hooks and scaffold core skills")
         console.print("  Would scaffold default personas")
@@ -141,8 +309,8 @@ def init(mode: str, force: bool, dry_run: bool) -> None:
         constitutions=f"{design_root}/constitutions",
         obpis=f"{design_root}/adr",
         adrs=f"{design_root}/adr",
-        source_root=structure.get("source_root", "src"),
-        tests_root=structure.get("tests_root", "tests"),
+        source_root=source_root,
+        tests_root=tests_root,
         docs_root=structure.get("docs_root", "docs"),
     )
     config = GzkitConfig(mode=mode_literal, paths=paths, project_name=project_name)
@@ -158,6 +326,12 @@ def init(mode: str, force: bool, dry_run: bool) -> None:
         if not dir_path.exists():
             dir_path.mkdir(parents=True, exist_ok=True)
             console.print(f"  Created {design_root}/{dir_name}/")
+
+    # Scaffold project skeleton (pyproject.toml, src/, tests/)
+    if not no_skeleton:
+        skeleton = _scaffold_project_skeleton(project_root, project_name, source_root, tests_root)
+        for item in skeleton:
+            console.print(f"  {item}")
 
     # Scaffold core skills
     skills = scaffold_core_skills(project_root, config)

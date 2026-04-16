@@ -71,11 +71,15 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
     p_init = commands.add_parser(
         "init",
         help="Initialize gzkit in the current project",
-        description="Initialize gzkit governance scaffolding in the current directory.",
+        description=(
+            "Initialize gzkit governance scaffolding and Python project skeleton. "
+            "Re-running on an initialized project repairs missing artifacts."
+        ),
         epilog=build_epilog(
             [
                 "gz init",
                 "gz init --mode heavy",
+                "gz init --no-skeleton",
                 "gz init --force --dry-run",
             ]
         ),
@@ -86,9 +90,19 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
         default="lite",
         help="Governance lane mode (lite|heavy)",
     )
+    p_init.add_argument(
+        "--no-skeleton",
+        action="store_true",
+        default=False,
+        help="Skip Python project skeleton (pyproject.toml, src/, tests/)",
+    )
     add_force_flag(p_init)
     add_dry_run_flag(p_init)
-    p_init.set_defaults(func=lambda a: init(mode=a.mode, force=a.force, dry_run=a.dry_run))
+    p_init.set_defaults(
+        func=lambda a: init(
+            mode=a.mode, force=a.force, dry_run=a.dry_run, no_skeleton=a.no_skeleton
+        )
+    )
 
     p_prd = commands.add_parser(
         "prd",
