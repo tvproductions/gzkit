@@ -3154,3 +3154,4 @@
 {"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.sandboxed-delegation.md","ts":"2026-04-16T12:03:10.787248+00:00","path":"docs/design/adr/pool/ADR-pool.sandboxed-delegation.md"}
 {"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.content-injection-scanning.md","ts":"2026-04-16T12:03:35.106760+00:00","path":"docs/design/adr/pool/ADR-pool.content-injection-scanning.md"}
 {"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.compression-governance-hooks.md","ts":"2026-04-16T12:03:57.805629+00:00","path":"docs/design/adr/pool/ADR-pool.compression-governance-hooks.md"}
+{"schema":"gzkit.ledger.v1","event":"patch-release","id":"v0.25.7","ts":"2026-04-16T14:13:32.412551+00:00","version":"0.25.7","previous_version":"0.25.6","tag":"v0.25.6","ghi_summary":[],"manifest_path":"docs/releases/PATCH-v0.25.7.md"}
