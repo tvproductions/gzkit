@@ -1,5 +1,48 @@
 # gzkit Release Notes
 
+## v0.25.0 (2026-04-15)
+
+**ADR:** ADR-0.25.0 — Core Infrastructure Pattern Absorption
+
+Systematic evaluation of 33 infrastructure patterns from the airlineops companion
+codebase. Each pattern received an individual OBPI with a documented
+Absorb/Confirm/Exclude decision and rationale.
+
+### Delivered
+
+- **3 Absorb decisions** — drift detection, policy guards, and ARB analysis
+  patterns ported into gzkit with full test coverage
+- **14 Confirm decisions** — gzkit's existing implementations (attestation,
+  progress, config, console, ADR lifecycle/audit/governance/reconciliation/
+  traceability, CLI audit, docs validation, validation receipts, handoff
+  validation) confirmed as architecturally superior with documented rationale
+- **16 Exclude decisions** — domain-specific airlineops patterns (signatures,
+  world state, dataset versioning, registry, types, ledger, schemas, errors,
+  hooks, admission, QC, OS, manifests, artifact management, layout verification,
+  ledger schema, references) excluded with documented rationale
+- **`gz arb` command group** — 7 subcommands for receipt-based QA evidence
+  (ruff, step, ty, coverage, validate, advise, patterns)
+
+### Governance Rot Remediation (GHI-160)
+
+Comprehensive 7-phase remedy program completed during this release cycle:
+- Phase 1: Audit — 29 ADRs with zero REQs identified
+- Phase 3: REQ-ID backfill across 260 OBPI briefs
+- Phase 4: Retroactive `@covers` for orphan ceremony tests
+- Phase 5: ADR-0.41.0 TDD RED/GREEN emission design (pool, RHEA migration target)
+- Phase 6: `gz validate --requirements` and `--commit-trailers` enforcement
+- Phase 7: Retroactive TASK backfill for GHI-153/155/156
+
+### Infrastructure
+
+- `decision_doc` proof type added to product proof gate (GHI-163)
+- 2 new chores registered: `hex-port-enforcement`, `adr-frontmatter-drift`
+- GHI #162 filed for ADR frontmatter ↔ ledger drift (94.7% stale rate)
+
+### Gate Evidence
+
+All 5 GovZero gates satisfied. 33/33 OBPIs attested. 2990 tests passing.
+
 ## v0.24.3 (2026-04-08)
 
 Version sync release — first dogfood invocation of `gz patch release`
