@@ -1,25 +1,36 @@
-"""Patch release command: GHI discovery, cross-validation, and manifest generation.
+"""Patch release command: GHI discovery, cross-validation, manifest, and full ceremony.
 
 Discovers closed GHIs since the latest git tag, cross-validates against
 the ``runtime`` label and ``src/gzkit/`` diffs, classifies each GHI
 for patch release qualification, and produces dual-format release manifests
 (markdown + JSONL ledger entry).
+
+With ``--full``, executes the complete release ceremony: bump, release-notes,
+commit, push (with lint/test gates), and ``gh release create``.
 """
 
 from __future__ import annotations
 
 import json
+import re
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from gzkit.commands.common import GzCliError, console, ensure_initialized, get_project_root
+from gzkit.commands.common import (
+    GzCliError,
+    _confirm,
+    console,
+    ensure_initialized,
+    get_project_root,
+)
 from gzkit.commands.version_sync import (
     _read_current_project_version,
     compute_patch_increment,
     sync_project_version,
+    validate_version_consistency,
 )
 from gzkit.ledger import Ledger
 from gzkit.ledger_events import patch_release_event
@@ -305,11 +316,199 @@ def _write_manifest_atomic(project_root: Path, manifest: PatchManifest) -> Path:
 
 
 # ---------------------------------------------------------------------------
+# Ceremony stages (commit, push, release)
+# ---------------------------------------------------------------------------
+
+
+def _author_release_notes(
+    project_root: Path,
+    version: str,
+    qualifications: list[GhiQualification],
+) -> str:
+    """Generate and prepend a RELEASE_NOTES.md entry. Returns the entry text."""
+    today = datetime.now(UTC).strftime("%Y-%m-%d")
+    qualified = [q for q in qualifications if q.status in ("qualified", "diff_only")]
+
+    # Categorize GHIs by label
+    fixed: list[str] = []
+    changed: list[str] = []
+    added: list[str] = []
+    for q in qualified:
+        labels = {lbl.lower() for lbl in q.ghi.labels}
+        title = q.ghi.title
+        entry = f"- **GHI #{q.ghi.number}:** {title}"
+        if "defect" in labels or "bug" in labels:
+            fixed.append(entry)
+        elif "enhancement" in labels:
+            added.append(entry)
+        else:
+            changed.append(entry)
+
+    # Build the section
+    lines = [f"## v{version} ({today})", ""]
+
+    # Summary line from GHI titles
+    ghi_refs = ", ".join(f"#{q.ghi.number}" for q in qualified)
+    if ghi_refs:
+        lines.append(f"**GHIs: {ghi_refs}**")
+        lines.append("")
+
+    if fixed:
+        lines.append("### Fixed")
+        lines.append("")
+        lines.extend(fixed)
+        lines.append("")
+    if added:
+        lines.append("### Added")
+        lines.append("")
+        lines.extend(added)
+        lines.append("")
+    if changed:
+        lines.append("### Changed")
+        lines.append("")
+        lines.extend(changed)
+        lines.append("")
+
+    lines.append("---")
+    lines.append("")
+    entry_text = "\n".join(lines)
+
+    # Prepend to RELEASE_NOTES.md after the h1 header
+    rn_path = project_root / "RELEASE_NOTES.md"
+    if rn_path.exists():
+        content = rn_path.read_text(encoding="utf-8")
+        # Insert after the first line (# gzkit Release Notes\n\n)
+        header_match = re.match(r"^(# [^\n]*\n\n)", content)
+        if header_match:
+            header = header_match.group(1)
+            rest = content[len(header) :]
+            new_content = header + entry_text + rest
+        else:
+            new_content = entry_text + content
+    else:
+        new_content = "# gzkit Release Notes\n\n" + entry_text
+
+    rn_path.write_text(new_content, encoding="utf-8")
+    return entry_text
+
+
+def _extract_latest_entry(project_root: Path) -> str:
+    """Extract the latest release notes entry for use as gh release body."""
+    rn_path = project_root / "RELEASE_NOTES.md"
+    if not rn_path.exists():
+        return ""
+    content = rn_path.read_text(encoding="utf-8")
+    # Find first ## vX.Y.Z section and extract until the next ---
+    m = re.search(r"(## v\d+\.\d+\.\d+.*?)(?=\n---\n)", content, re.DOTALL)
+    return m.group(1).strip() if m else ""
+
+
+def _commit_release(project_root: Path, version: str) -> None:
+    """Stage and commit the release changes."""
+    # Stage the files that patch release touches
+    files_to_stage = [
+        "pyproject.toml",
+        "uv.lock",
+        "src/gzkit/__init__.py",
+        "README.md",
+        "RELEASE_NOTES.md",
+        ".gzkit/ledger.jsonl",
+    ]
+    # Also stage any manifest files
+    releases_dir = project_root / "docs" / "releases"
+    if releases_dir.exists():
+        files_to_stage.append("docs/releases/")
+
+    for f in files_to_stage:
+        path = project_root / f
+        if path.exists():
+            git_cmd(project_root, "add", f)
+
+    rc, _out, err = git_cmd(
+        project_root,
+        "commit",
+        "-m",
+        f"release: v{version}",
+    )
+    if rc != 0:
+        raise GzCliError(f"Commit failed: {err}")
+    console.print(f"  Committed: release: v{version}")
+
+
+def _push_release(project_root: Path) -> None:
+    """Push to origin with lint/test gates via git-sync internals."""
+    from gzkit.quality import run_lint, run_tests  # noqa: PLC0415
+
+    # Pre-push gates
+    lint_result = run_lint(project_root)
+    if not lint_result.success:
+        raise GzCliError("Lint failed. Fix before releasing.")
+    console.print("  Lint: passed")
+
+    test_result = run_tests(project_root)
+    if not test_result.success:
+        raise GzCliError("Tests failed. Fix before releasing.")
+    console.print("  Tests: passed")
+
+    rc, _out, err = git_cmd(project_root, "push", "origin", "main")
+    if rc != 0:
+        raise GzCliError(f"Push failed: {err}")
+    console.print("  Pushed to origin/main")
+
+
+def _create_gh_release(project_root: Path, version: str) -> str:
+    """Create the GitHub release. Returns the release URL."""
+    entry = _extract_latest_entry(project_root)
+    tag = f"v{version}"
+    cmd = [
+        "gh",
+        "release",
+        "create",
+        tag,
+        "--target",
+        "main",
+        "--title",
+        tag,
+        "--latest",
+        "--notes",
+        entry,
+    ]
+    rc, stdout, err = run_exec(cmd, cwd=project_root)
+    if rc != 0:
+        raise GzCliError(f"gh release create failed: {err}")
+    url = stdout.strip()
+    console.print(f"  Release: {url}")
+    return url
+
+
+def _verify_release(project_root: Path, version: str) -> None:
+    """Post-release verification: version consistency and tag exists."""
+    errors = validate_version_consistency(project_root)
+    if errors:
+        for e in errors:
+            console.print(f"  [red]Version mismatch: {e.message}[/red]")
+        raise GzCliError("Version inconsistency after release.")
+
+    rc, _out, _err = git_cmd(project_root, "tag", "-l", f"v{version}")
+    if rc != 0 or not _out.strip():
+        console.print(f"  [yellow]Warning: tag v{version} not found locally[/yellow]")
+    else:
+        console.print(f"  Tag v{version} verified")
+
+    # Clean working tree check
+    rc_st, stdout_st, _err_st = git_cmd(project_root, "status", "--porcelain")
+    if rc_st == 0 and not stdout_st.strip():
+        console.print("  Working tree: clean")
+    else:
+        console.print("  [yellow]Warning: working tree has uncommitted changes[/yellow]")
+
+
+# ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 
 
-def patch_release_cmd(*, dry_run: bool, as_json: bool) -> None:
+def patch_release_cmd(*, dry_run: bool, as_json: bool, full: bool = False) -> None:
     """Run the patch release ceremony.
 
     Discovers qualifying GHIs, computes the next patch version, and
@@ -407,11 +606,52 @@ def patch_release_cmd(*, dry_run: bool, as_json: bool) -> None:
         payload["version_sync"] = {"updated_files": updated_files}
         payload["manifest_path"] = str(manifest_rel)
         print(json.dumps(payload, indent=2))  # noqa: T201
-    else:
-        _render_dry_run_rich(result)
-        console.print()
-        console.print(f"[green]Version bumped: {current_version} -> {proposed_version}[/green]")
-        for f in updated_files:
-            console.print(f"  Updated: {f}")
-        console.print(f"  Manifest: {manifest_rel}")
-        console.print("  Ledger: patch-release event appended")
+        return
+
+    _render_dry_run_rich(result)
+    console.print()
+    console.print(f"[green]Version bumped: {current_version} -> {proposed_version}[/green]")
+    for f in updated_files:
+        console.print(f"  Updated: {f}")
+    console.print(f"  Manifest: {manifest_rel}")
+    console.print("  Ledger: patch-release event appended")
+
+    if not full:
+        return
+
+    # --- Full ceremony: release notes, commit, push, release, verify ---
+    console.print()
+    console.print("[bold]Release notes[/bold]")
+    entry = _author_release_notes(project_root, proposed_version, qualifications)
+    console.print(entry)
+
+    if not _confirm("Proceed with commit, push, and GitHub release?"):
+        console.print("[yellow]Aborted. Version bumped but not released.[/yellow]")
+        console.print("  Edit RELEASE_NOTES.md manually, then:")
+        console.print(f"  git add -A && git commit -m 'release: v{proposed_version}'")
+        console.print("  git push origin main")
+        console.print(
+            f"  gh release create v{proposed_version} --target main"
+            f" --title v{proposed_version} --latest"
+            f" --notes-file RELEASE_NOTES.md"
+        )
+        return
+
+    console.print()
+    console.print("[bold]Committing[/bold]")
+    _commit_release(project_root, proposed_version)
+
+    console.print()
+    console.print("[bold]Pushing (with gates)[/bold]")
+    _push_release(project_root)
+
+    console.print()
+    console.print("[bold]Creating GitHub release[/bold]")
+    _create_gh_release(project_root, proposed_version)
+
+    console.print()
+    console.print("[bold]Verifying[/bold]")
+    _verify_release(project_root, proposed_version)
+
+    console.print()
+    console.print(f"[green bold]v{proposed_version} released successfully.[/green bold]")

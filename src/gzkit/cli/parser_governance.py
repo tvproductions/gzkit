@@ -418,6 +418,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
         epilog=build_epilog(
             [
                 "gz patch release --dry-run",
+                "gz patch release --full",
                 "gz patch release --json",
             ]
         ),
@@ -428,18 +429,29 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
     p_patch_release = patch_commands.add_parser(
         "release",
         help="Run the patch release ceremony",
-        description="Execute the GHI-driven patch release ceremony.",
+        description=(
+            "Execute the GHI-driven patch release ceremony. "
+            "With --full: bump, author release notes, commit, push "
+            "(with lint/test gates), and create the GitHub release "
+            "as one transaction."
+        ),
         epilog=build_epilog(
             [
                 "gz patch release --dry-run",
+                "gz patch release --full",
                 "gz patch release --json",
             ]
         ),
     )
     add_dry_run_flag(p_patch_release)
     add_json_flag(p_patch_release)
+    p_patch_release.add_argument(
+        "--full",
+        action="store_true",
+        help="Execute the full ceremony: bump, release notes, commit, push, gh release",
+    )
     p_patch_release.set_defaults(
-        func=lambda a: patch_release_cmd(dry_run=a.dry_run, as_json=a.as_json)
+        func=lambda a: patch_release_cmd(dry_run=a.dry_run, as_json=a.as_json, full=a.full)
     )
 
     p_audit = commands.add_parser(

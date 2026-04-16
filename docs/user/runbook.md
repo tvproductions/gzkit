@@ -228,13 +228,27 @@ Tracked automation defect: `https://github.com/tvproductions/gzkit/issues/3`.
 ## Loop C: Patch Release (GHI-Driven)
 
 Run after a batch of qualifying GHIs has been merged and you want to ship them
-as a patch release. The ceremony discovers GHIs since the last tag, computes
-the next patch version, writes a release manifest, and bumps the version
-across `pyproject.toml`, `src/gzkit/__init__.py`, and `RELEASE_NOTES.md`.
+as a patch release.
 
-Skill shortcut: [`/gz-patch-release`](skills/gz-patch-release.md) — orchestrates
-narrative release notes drafting, operator approval, RELEASE_NOTES update,
-git-sync, and the GitHub release.
+| Skill (preferred) | CLI equivalent |
+|---|---|
+| `/gz-patch-release` | `gz patch release --full` |
+
+### Full ceremony (recommended)
+
+One command does everything: discover GHIs, bump version, author release notes,
+commit (with lint/test gates), push, and create the GitHub release. Pauses for
+operator confirmation before commit/push/release.
+
+```bash
+# Preview what would ship
+uv run gz patch release --dry-run
+
+# Execute the full ceremony end-to-end
+uv run gz patch release --full
+```
+
+### Step-by-step (when you need manual control)
 
 ```bash
 # 1) Discover qualifying GHIs (does not modify state)
@@ -243,14 +257,15 @@ uv run gz patch release --dry-run
 # 2) Inspect machine-readable discovery output
 uv run gz patch release --dry-run --json
 
-# 3) Execute the release: writes docs/releases/PATCH-vX.Y.Z.md,
-#    bumps the version everywhere, appends a ledger event
+# 3) Bump version and write manifest (no commit/push/release)
 uv run gz patch release
 
-# 4) Sync the staged release manifest and version bumps
+# 4) Edit RELEASE_NOTES.md manually
+
+# 5) Sync the staged release manifest and version bumps
 uv run gz git-sync --apply --lint --test
 
-# 5) Tag and publish the GitHub release (skill recommended)
+# 6) Tag and publish the GitHub release
 gh release create vX.Y.Z --title "vX.Y.Z" --notes-file RELEASE_NOTES.md
 ```
 
