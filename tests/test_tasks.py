@@ -679,30 +679,42 @@ def _invoke(args: list[str]) -> tuple[int, str]:
 
 
 class _TaskCliBase(unittest.TestCase):
-    """Base class that sets up an isolated workspace with an OBPI in the ledger."""
+    """Base class that sets up an isolated workspace with an OBPI in the ledger.
 
-    def setUp(self) -> None:
-        self._tmp_ctx = tempfile.TemporaryDirectory(prefix="gzkit-task-test-")
-        self._tmpdir = self._tmp_ctx.name
-        self._orig_cwd = Path.cwd()
+    Expensive operations (``gz init``, ``gz plan create``) run once per class
+    in ``setUpClass``.  Each test gets a fresh ledger restored from the base
+    snapshot so mutations in one test don't leak into another.
+    """
+
+    @classmethod
+    def setUpClass(cls) -> None:
         import os
 
-        os.chdir(self._tmpdir)
-        # Initialize workspace
+        cls._tmp_ctx = tempfile.TemporaryDirectory(prefix="gzkit-task-test-")
+        cls._tmpdir = cls._tmp_ctx.name
+        cls._orig_cwd = Path.cwd()
+        os.chdir(cls._tmpdir)
+        # Initialize workspace (expensive — do once)
         code, out = _invoke(["init"])
-        self.assertEqual(code, 0, out)
-        # Create ADR
+        assert code == 0, out
+        # Create ADR (expensive — do once)
         code, out = _invoke(["plan", "create", "0.1.0"])
-        self.assertEqual(code, 0, out)
-        # Seed OBPI in ledger
+        assert code == 0, out
+        # Seed OBPI and snapshot the ledger
         ledger = Ledger(Path(".gzkit/ledger.jsonl"))
         ledger.append(obpi_created_event("OBPI-0.1.0-01", "ADR-0.1.0"))
+        cls._base_ledger = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
 
-    def tearDown(self) -> None:
+    def setUp(self) -> None:
+        # Restore ledger to base state so tests are isolated
+        Path(".gzkit/ledger.jsonl").write_text(self._base_ledger, encoding="utf-8")
+
+    @classmethod
+    def tearDownClass(cls) -> None:
         import os
 
-        os.chdir(self._orig_cwd)
-        self._tmp_ctx.cleanup()
+        os.chdir(cls._orig_cwd)
+        cls._tmp_ctx.cleanup()
 
     def _seed_task_started(self, task_id: str = "TASK-0.1.0-01-01-01") -> None:
         """Emit a task_started event so the task is in_progress."""
