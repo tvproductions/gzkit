@@ -1,5 +1,31 @@
 # gzkit Release Notes
 
+## v0.25.7 (2026-04-16)
+
+**`gz patch release --full` executes the complete release ceremony end-to-end (GHI #177).**
+
+### Added
+
+- **`--full` flag on `gz patch release`** — one command runs the entire
+  ceremony: discover GHIs, bump version, author RELEASE_NOTES.md entry,
+  commit (with lint/test gates), push, `gh release create`, and post-release
+  verification. Pauses for operator confirmation before commit/push/release.
+- **Auto-generated release notes** — `--full` categorizes qualifying GHIs by
+  label (Fixed/Added/Changed) and prepends a structured entry to
+  RELEASE_NOTES.md.
+- **Post-release verification** — checks version consistency across
+  pyproject.toml, `__init__.py`, and README badge; confirms tag exists and
+  working tree is clean.
+- **GitHub issue templates** — `.github/ISSUE_TEMPLATE/` with defect,
+  enhancement, and observation templates for adopter feedback.
+
+### Changed
+
+- Runbook Loop C updated to recommend `gz patch release --full` as the
+  primary release path, with step-by-step as fallback.
+
+---
+
 ## v0.25.6 (2026-04-16)
 
 **Skill discoverability, adopter onboarding, and standard docs parity (GHI #173, #174, #175, #176).**
