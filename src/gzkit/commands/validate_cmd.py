@@ -3,6 +3,7 @@
 import json
 import re
 import subprocess
+from collections.abc import Callable
 from pathlib import Path
 
 from gzkit.commands.common import console, get_project_root
@@ -252,6 +253,125 @@ def _validate_decomposition(project_root: Path) -> list[ValidationError]:
     return errors
 
 
+def _resolve_ledger_id(
+    fm_id: str,
+    stem_id: str,
+    graph: dict,
+    canonicalize: Callable[[str], str],
+) -> str | None:
+    """Map a file's frontmatter ID / stem to its ledger graph key."""
+    for candidate in (fm_id, stem_id):
+        canonical = canonicalize(candidate)
+        if canonical in graph:
+            return canonical
+        if candidate in graph:
+            return candidate
+    return None
+
+
+def _check_one_artifact(
+    fm: dict,
+    ledger_id: str,
+    info: dict,
+    rel_path: str,
+    canonicalize: Callable[[str], str],
+) -> list[ValidationError]:
+    """Compare one file's frontmatter against its ledger entry."""
+    errors: list[ValidationError] = []
+    fm_id = fm.get("id", "")
+
+    if fm_id and canonicalize(fm_id) != ledger_id:
+        errors.append(
+            ValidationError(
+                type="frontmatter",
+                artifact=rel_path,
+                field="id",
+                message=f"Frontmatter id '{fm_id}' does not match ledger id '{ledger_id}'",
+            )
+        )
+
+    fm_parent = fm.get("parent", "")
+    ledger_parent = info.get("parent") or ""
+    if fm_parent and ledger_parent and canonicalize(fm_parent) != canonicalize(ledger_parent):
+        errors.append(
+            ValidationError(
+                type="frontmatter",
+                artifact=rel_path,
+                field="parent",
+                message=(
+                    f"Frontmatter parent '{fm_parent}' does not match "
+                    f"ledger parent '{ledger_parent}'"
+                ),
+            )
+        )
+
+    fm_lane = fm.get("lane", "").lower()
+    ledger_lane = (info.get("lane") or "").lower()
+    if fm_lane and ledger_lane and fm_lane != ledger_lane:
+        errors.append(
+            ValidationError(
+                type="frontmatter",
+                artifact=rel_path,
+                field="lane",
+                message=(
+                    f"Frontmatter lane '{fm_lane}' does not match ledger lane '{ledger_lane}'"
+                ),
+            )
+        )
+
+    return errors
+
+
+def _validate_frontmatter_coherence(project_root: Path) -> list[ValidationError]:
+    """Validate frontmatter fields against ledger truth (GHI-167).
+
+    For every ADR/OBPI file on disk, parse frontmatter and compare ``id``,
+    ``parent``, and ``lane`` against the ledger's artifact graph.  Disagreements
+    are returned as ``ValidationError`` instances.
+    """
+    from gzkit.config import GzkitConfig  # noqa: PLC0415
+    from gzkit.core.validation_rules import parse_frontmatter  # noqa: PLC0415
+    from gzkit.ledger import Ledger  # noqa: PLC0415
+    from gzkit.sync import scan_existing_artifacts  # noqa: PLC0415
+
+    config_path = project_root / ".gzkit.json"
+    ledger_path = project_root / ".gzkit" / "ledger.jsonl"
+    if not config_path.is_file() or not ledger_path.is_file():
+        return []
+
+    config = GzkitConfig.load(config_path)
+    ledger = Ledger(ledger_path)
+    try:
+        graph = ledger.get_artifact_graph()
+    except (json.JSONDecodeError, KeyError, ValueError):
+        return []
+
+    artifacts = scan_existing_artifacts(project_root, config.paths.design_root)
+    errors: list[ValidationError] = []
+
+    for file_list in [artifacts.get("adrs", []), artifacts.get("obpis", [])]:
+        for artifact_file in file_list:
+            try:
+                content = artifact_file.read_text(encoding="utf-8")
+            except OSError:
+                continue
+            fm, _ = parse_frontmatter(content)
+            if not fm:
+                continue
+
+            ledger_id = _resolve_ledger_id(
+                fm.get("id", ""), artifact_file.stem, graph, ledger.canonicalize_id
+            )
+            if ledger_id is None:
+                continue
+
+            rel_path = str(artifact_file.relative_to(project_root))
+            canon = ledger.canonicalize_id
+            errors.extend(_check_one_artifact(fm, ledger_id, graph[ledger_id], rel_path, canon))
+
+    return errors
+
+
 def _collect_errors(
     project_root: Path,
     check_manifest: bool,
@@ -265,57 +385,68 @@ def _collect_errors(
     check_decomposition: bool = False,
     check_requirements: bool = False,
     check_commit_trailers: bool = False,
+    check_frontmatter: bool = False,
 ) -> list[ValidationError]:
     """Collect validation errors across all requested check types."""
-    run_all = not any(
-        [
-            check_manifest,
-            check_documents,
-            check_surfaces,
-            check_ledger,
-            check_instructions,
-            check_briefs,
-            check_personas,
-            check_interviews,
-            check_decomposition,
-            check_requirements,
-            check_commit_trailers,
-        ]
-    )
+    # Scopes included in "run_all" (no flags = run these)
+    default_scopes: dict[str, bool] = {
+        "manifest": check_manifest,
+        "documents": check_documents,
+        "surfaces": check_surfaces,
+        "ledger": check_ledger,
+        "instructions": check_instructions,
+        "briefs": check_briefs,
+        "personas": check_personas,
+        "frontmatter": check_frontmatter,
+    }
+    # Scopes that only run when explicitly requested
+    explicit_scopes: dict[str, bool] = {
+        "interviews": check_interviews,
+        "decomposition": check_decomposition,
+        "requirements": check_requirements,
+        "commit_trailers": check_commit_trailers,
+    }
+    run_all = not any(default_scopes.values()) and not any(explicit_scopes.values())
+
+    return _run_scope_checks(project_root, default_scopes, explicit_scopes, run_all)
+
+
+def _run_scope_checks(
+    project_root: Path,
+    default_scopes: dict[str, bool],
+    explicit_scopes: dict[str, bool],
+    run_all: bool,
+) -> list[ValidationError]:
+    """Dispatch validation checks based on active scopes."""
     errors: list[ValidationError] = []
 
-    if run_all or check_manifest:
+    def active(scope: str) -> bool:
+        return run_all and scope in default_scopes or default_scopes.get(scope, False)
+
+    if active("manifest"):
         errors.extend(validate_manifest(project_root / ".gzkit" / "manifest.json"))
-
-    if run_all or check_surfaces:
+    if active("surfaces"):
         errors.extend(validate_surfaces(project_root))
-
-    if run_all or check_ledger:
+    if active("ledger"):
         errors.extend(validate_ledger(project_root / ".gzkit" / "ledger.jsonl"))
-
-    if run_all or check_instructions:
+    if active("instructions"):
         errors.extend(audit_instructions(project_root))
-
-    if run_all or check_briefs:
+    if active("briefs"):
         for brief_path in _find_obpi_briefs(project_root):
             errors.extend(validate_document(brief_path, "obpi"))
-
-    if run_all or check_documents:
+    if active("documents"):
         errors.extend(_validate_manifest_documents(project_root))
-
-    if run_all or check_personas:
+    if active("personas"):
         errors.extend(_validate_personas(project_root))
-
-    if check_interviews:
+    if active("frontmatter"):
+        errors.extend(_validate_frontmatter_coherence(project_root))
+    if explicit_scopes.get("interviews"):
         errors.extend(_validate_interviews(project_root))
-
-    if check_decomposition:
+    if explicit_scopes.get("decomposition"):
         errors.extend(_validate_decomposition(project_root))
-
-    if check_requirements:
+    if explicit_scopes.get("requirements"):
         errors.extend(_validate_requirements(project_root))
-
-    if check_commit_trailers:
+    if explicit_scopes.get("commit_trailers"):
         errors.extend(_validate_commit_trailers(project_root))
 
     return errors
@@ -392,6 +523,7 @@ def validate(
     check_decomposition: bool = False,
     check_requirements: bool = False,
     check_commit_trailers: bool = False,
+    check_frontmatter: bool = False,
     as_json: bool = False,
 ) -> None:
     """Validate governance artifacts against schemas."""
@@ -409,6 +541,7 @@ def validate(
         check_decomposition,
         check_requirements,
         check_commit_trailers,
+        check_frontmatter,
     )
 
     if as_json:
@@ -431,5 +564,6 @@ def validate(
         "decomposition": check_decomposition,
         "requirements": check_requirements,
         "commit_trailers": check_commit_trailers,
+        "frontmatter": check_frontmatter,
     }
     _print_validation_result(errors, _resolve_scopes(checks))
