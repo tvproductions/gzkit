@@ -53,6 +53,10 @@ cd /path/to/rhea
 
 ### Step 1.1: Bootstrap gzkit
 
+| Skill (preferred) | CLI equivalent |
+|---|---|
+| `/gz-init` | `gz init --mode lite` |
+
 ```bash
 gz init --mode lite
 ```
@@ -82,6 +86,12 @@ appropriate until RHEA has a public surface worth governing with Heavy gates.
 ### Step 1.2: Create the PRD
 
 The README already articulates RHEA's vision. Translate it into a PRD:
+
+| Skill (preferred) | CLI equivalent |
+|---|---|
+| `/gz-prd` | `gz prd RHEA-1.0.0 --title "Repository Harness for Entity Abstraction"` |
+
+The `/gz-prd` skill runs a guided interview before generating the PRD.
 
 ```bash
 gz prd RHEA-1.0.0 --title "Repository Harness for Entity Abstraction"
@@ -162,8 +172,15 @@ A: Given the same data and the same predicate, every adapter must return
 
 RHEA's first feature is the core `ReadRepo[T]` interface and predicate DSL.
 
+| Skill (preferred) | CLI equivalent |
+|---|---|
+| `/gz-plan` | `gz plan create 0.1.0 --title "Core ReadRepo interface and predicate DSL" --lane lite` |
+
+The `/gz-plan` skill runs 20+ design forcing-function questions before
+generating the ADR.
+
 ```bash
-gz plan 0.1.0 --title "Core ReadRepo interface and predicate DSL" --lane lite
+gz plan create 0.1.0 --title "Core ReadRepo interface and predicate DSL" --lane lite
 ```
 
 Fill in the ADR:
@@ -245,6 +262,10 @@ which backend is active.
 ```
 
 ### Step 2.2: Create task briefs
+
+| Skill (preferred) | CLI equivalent |
+|---|---|
+| `/gz-obpi-specify` | `gz specify <slug> --parent ADR-0.1.0 --item N --lane lite` |
 
 ```bash
 gz specify "ReadRepo protocol" --parent ADR-0.1.0 --item 1 --lane lite
@@ -330,6 +351,10 @@ Predicate = Eq | Gt | In_ | And | Or
 
 ### Step 3.1: Run gates
 
+| Skill (preferred) | CLI equivalent |
+|---|---|
+| `/gz-gates ADR-0.1.0` | `gz gates --adr ADR-0.1.0` |
+
 ```bash
 gz gates --adr ADR-0.1.0
 ```
@@ -337,6 +362,13 @@ gz gates --adr ADR-0.1.0
 Both Gate 1 (ADR exists) and Gate 2 (tests pass) must be green.
 
 ### Step 3.2: Closeout
+
+| Skill (preferred) | CLI equivalent |
+|---|---|
+| `/gz-adr-closeout-ceremony ADR-0.1.0` | `gz closeout ADR-0.1.0` |
+
+The `/gz-adr-closeout-ceremony` skill runs the full walkthrough protocol
+and rejects vague acknowledgment.
 
 ```bash
 gz closeout ADR-0.1.0
@@ -364,8 +396,13 @@ suggests:
 | 0.4.0 | Public API and documentation | Heavy |
 | 0.5.0 | DuckDB/Parquet adapter | Lite |
 
-Each follows the same cycle: `gz plan → gz specify → implement → gz gates
-→ gz closeout → gz attest`.
+Each follows the same cycle. In a Claude Code session, prefer the skills:
+
+```text
+/gz-plan → /gz-obpi-specify → /gz-obpi-pipeline → /gz-gates → /gz-adr-closeout-ceremony → gz attest
+```
+
+CLI equivalent: `gz plan → gz specify → implement → gz gates → gz closeout → gz attest`.
 
 ---
 

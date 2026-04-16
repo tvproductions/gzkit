@@ -12,8 +12,70 @@ from pydantic import BaseModel, ConfigDict
 from gzkit.config import GzkitConfig
 from gzkit.templates import render_template
 
-# Core skills that are scaffolded by `gz init`
+# Core skills that are scaffolded by `gz init`.
+#
+# This set covers the governance workflow sequence that the quickstart
+# recommends (init → prd → plan → specify → pipeline → gates → closeout →
+# attest) plus the quality skills.  See GHI #173.
 CORE_SKILLS = {
+    # --- Governance workflow (quickstart sequence) ---
+    "gz-prd": {
+        "skill_name": "PRD",
+        "skill_description": "Guided product requirements declaration with interview logic.",
+        "trigger_description": "When defining or revising project-level intent.",
+        "behavior_description": "Interview the operator, then generate a PRD artifact.",
+        "prerequisites": "Project initialized with gz init",
+    },
+    "gz-plan": {
+        "skill_name": "Plan",
+        "skill_description": "Create ADR artifacts with 20+ design forcing-function questions.",
+        "trigger_description": "When planning a new feature or architectural change.",
+        "behavior_description": "Run design interview, score decomposition, generate ADR.",
+        "prerequisites": "PRD exists for the project",
+    },
+    "gz-status": {
+        "skill_name": "Status",
+        "skill_description": "Report gate and lifecycle status across ADRs.",
+        "trigger_description": "When checking blockers and next governance actions.",
+        "behavior_description": "Run `gz status` and present a structured overview.",
+        "prerequisites": "Project initialized with gz init",
+    },
+    "gz-gates": {
+        "skill_name": "Gates",
+        "skill_description": "Run lane-required gate checks for an ADR.",
+        "trigger_description": "After implementation, before closeout.",
+        "behavior_description": "Run gate checks and report pass/fail per gate.",
+        "prerequisites": "ADR exists with implementation work",
+    },
+    "gz-constitute": {
+        "skill_name": "Constitute",
+        "skill_description": "Create governance constitution artifacts.",
+        "trigger_description": "When governance constitutions must be created or refreshed.",
+        "behavior_description": "Guide constitution creation with structured prompts.",
+        "prerequisites": "Project initialized with gz init",
+    },
+    "gz-implement": {
+        "skill_name": "Implement",
+        "skill_description": "Run Gate 2 verification and record result events.",
+        "trigger_description": "When validating implementation progress for an ADR.",
+        "behavior_description": "Run TDD verification, record gate events.",
+        "prerequisites": "ADR exists with implementation in progress",
+    },
+    "gz-obpi-pipeline": {
+        "skill_name": "OBPI Pipeline",
+        "skill_description": "Execute the staged OBPI pipeline end-to-end.",
+        "trigger_description": "When executing an OBPI through the full pipeline.",
+        "behavior_description": "Orchestrate plan, implement, verify, ceremony, and sync.",
+        "prerequisites": "OBPI brief exists and is authored",
+    },
+    "gz-adr-closeout-ceremony": {
+        "skill_name": "ADR Closeout Ceremony",
+        "skill_description": "Execute the full closeout ceremony with human attestation protocol.",
+        "trigger_description": "When all OBPIs for an ADR are complete and ready for sign-off.",
+        "behavior_description": "Walkthrough, verification, and attestation protocol.",
+        "prerequisites": "All linked OBPIs completed with evidence",
+    },
+    # --- ADR lifecycle ---
     "gz-adr-create": {
         "skill_name": "ADR Create",
         "skill_description": "Create ADRs with OBPI briefs.",
@@ -28,6 +90,7 @@ CORE_SKILLS = {
         "behavior_description": "Check OBPIs have evidence, verify tests and docs exist.",
         "prerequisites": "ADR exists with implementation complete",
     },
+    # --- Quality ---
     "lint": {
         "skill_name": "Lint",
         "skill_description": "Run code linting with Ruff and PyMarkdown.",

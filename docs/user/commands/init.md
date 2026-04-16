@@ -126,7 +126,7 @@ Initializing gzkit for my-project in lite mode...
   Created src/my_project/__init__.py
   Created tests/__init__.py
   Ran uv sync (virtualenv created)
-  Scaffolded 5 core skills
+  Scaffolded 15 skills (run gz skill list to see all)
   Scaffolded 2 default personas
   Generated CLAUDE.md
   Created .claude/settings.json
@@ -134,8 +134,48 @@ Initializing gzkit for my-project in lite mode...
 
 gzkit initialized successfully!
 
+  Scaffolded 15 skills (run gz skill list to see all)
+
 Next steps:
-  gz prd <name>       Create a PRD
-  gz status           Check OBPI progress and lifecycle status
-  gz validate         Validate artifacts
+  Skill (preferred)         CLI equivalent
+  /gz-prd                    gz prd <name>
+  /gz-plan                   gz plan create <name>
+  /gz-status                 gz status
+  /gz-gates                  gz gates --adr ADR-<X.Y.Z>
 ```
+
+---
+
+## Result Tree
+
+After `gz init --mode lite`, your project looks like this:
+
+```text
+my-project/
+├── .gzkit/
+│   ├── ledger.jsonl           ← Governance event log
+│   ├── manifest.json          ← Project structure manifest
+│   ├── personas/              ← Agent persona definitions
+│   ├── rules/                 ← Canonical governance rules
+│   └── skills/                ← Canonical skill definitions (15 core skills)
+├── .gzkit.json                ← Project configuration
+├── .claude/
+│   ├── rules/                 ← Mirror of .gzkit/rules/
+│   ├── skills/                ← Mirror of .gzkit/skills/
+│   └── settings.json          ← Claude Code hooks
+├── design/
+│   ├── prd/                   ← Product Requirements Documents
+│   ├── constitutions/         ← Governance constitutions
+│   └── adr/                   ← Architecture Decision Records + OBPIs
+├── src/my_project/
+│   └── __init__.py
+├── tests/
+│   └── __init__.py
+├── pyproject.toml
+├── .gitignore
+├── AGENTS.md                  ← Agent governance contract
+└── CLAUDE.md                  ← Claude Code instructions (generated)
+```
+
+Use `--no-skeleton` to skip `pyproject.toml`, `src/`, and `tests/` if your
+project already has them.

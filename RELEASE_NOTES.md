@@ -1,5 +1,40 @@
 # gzkit Release Notes
 
+## v0.25.6 (2026-04-16)
+
+**Skill discoverability, adopter onboarding, and standard docs parity (GHI #173, #174, #175, #176).**
+
+### Changed
+
+- **`gz init` now scaffolds 15 core skills** (was 5). Added the governance
+  workflow sequence: `gz-prd`, `gz-plan`, `gz-status`, `gz-gates`,
+  `gz-constitute`, `gz-implement`, `gz-obpi-pipeline`,
+  `gz-adr-closeout-ceremony`. Init completion message shows Skill/CLI
+  comparison table instead of bare CLI commands.
+- **Runbook restructured** — Loop A uses Skill/CLI comparison tables instead
+  of burying skills in bash comments. Adopter Feedback section links to
+  GitHub issue templates.
+- **Tutorials surface skills** — first-project and RHEA bootstrap tutorials
+  replace "(coming soon)" blocks with Skill/CLI tables at every governance
+  step.
+- **Quickstart adds output tree and friction points** — shows directory
+  structure after `gz init`, common sharp edges table with fixes.
+
+### Added
+
+- **GitHub issue templates** for adopter feedback: defect reports, enhancement
+  requests, and observations (`.github/ISSUE_TEMPLATE/`).
+- **Decomposition scorecard worked example** in `plan-create` manpage with
+  concrete dimension scores and task count derivation.
+- **Lane selection decision guide** in concepts — scenario-based table for
+  choosing Lite vs Heavy.
+- **Implementation order guidance** in first-project tutorial — dependency
+  chain analysis before coding.
+- **Init manpage result tree** — shows full directory structure after
+  initialization.
+
+---
+
 ## v0.25.5 (2026-04-16)
 
 **GHI #172: `gz init --force` no longer destroys user hooks in settings.json.**

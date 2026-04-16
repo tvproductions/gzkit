@@ -477,10 +477,18 @@ def init(mode: str, force: bool, dry_run: bool, *, no_skeleton: bool = False) ->
         console.print("  (No existing artifacts to register)")
 
     console.print("\n[green]gzkit initialized successfully![/green]")
+    console.print(f"\n  Scaffolded {len(skills)} skills (run gz skill list to see all)")
     console.print("\nNext steps:")
-    console.print("  gz prd <name>       Create a PRD")
-    console.print("  gz status           Check OBPI progress and lifecycle status")
-    console.print("  gz validate         Validate artifacts")
+    console.print("  [bold]Skill (preferred)[/bold]         [dim]CLI equivalent[/dim]")
+    console.print("  /gz-prd                    gz prd <name>")
+    console.print("  /gz-plan                   gz plan create <name>")
+    console.print("  /gz-status                 gz status")
+    console.print("  /gz-gates                  gz gates --adr ADR-<X.Y.Z>")
+    console.print(
+        "\nSkills add interview logic, forcing functions, and governance"
+        "\nvalidation that bare CLI commands do not. Use them when available."
+        "\nSee: /user/skills/ in the docs or run gz skill list."
+    )
 
 
 def prd(name: str, title: str | None, dry_run: bool) -> None:

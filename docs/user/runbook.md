@@ -16,38 +16,40 @@ Legacy parity note: when external docs mention `/gz-adr-manager`, use `/gz-adr-c
 
 ## Loop A: OBPI Increment (Primary Daily Loop)
 
+> Skills add interview logic, forcing functions, and governance validation
+> that bare CLI commands do not — **prefer the skill when one exists.**
+
+### Step 1: Orientation + parent ADR context
+
+| Skill (preferred) | CLI equivalent |
+|---|---|
+| `/gz-adr-status ADR-<X.Y.Z>` | `uv run gz adr status ADR-<X.Y.Z> --json` |
+| `/gz-status` | `uv run gz status --table` |
+| `/gz-adr-evaluate ADR-<X.Y.Z>` | `uv run gz adr evaluate ADR-<X.Y.Z>` |
+
 ```bash
-# 1) Orientation + parent ADR context
-uv run gz status
-uv run gz status --table
-uv run gz adr status ADR-<X.Y.Z> --json
-
-#    Skill shortcut — focused ADR drilldown without raw JSON:
-#    /gz-adr-status ADR-<X.Y.Z>
-#    See: docs/user/skills/gz-adr-status.md
-
-# 1b) Validate OBPI briefs before pipeline (authored execution contracts only)
+# Validate OBPI briefs before pipeline (authored execution contracts only)
 uv run gz obpi validate --adr ADR-<X.Y.Z> --authored
+```
 
-# 1c) Evaluate ADR quality (NO GO verdict blocks pipeline)
-#    Skill shortcut — structured quality scoring and red-team challenges:
-#    /gz-adr-evaluate ADR-<X.Y.Z>
-#    See: docs/user/skills/gz-adr-evaluate.md
-uv run gz adr evaluate ADR-<X.Y.Z>
+### Step 2: Execute the OBPI through the staged pipeline
 
-# 2) Execute the OBPI through the staged pipeline
-uv run gz obpi pipeline OBPI-<X.Y.Z-NN>
+| Skill (preferred) | CLI equivalent |
+|---|---|
+| `/gz-obpi-pipeline OBPI-<X.Y.Z-NN>` | `uv run gz obpi pipeline OBPI-<X.Y.Z-NN>` |
 
-#    Thin wrapper skill remains available:
-#    /gz-obpi-pipeline OBPI-<X.Y.Z-NN>
-#
-#    Compatibility entry points:
-#    uv run gz obpi pipeline OBPI-<X.Y.Z-NN> --from=verify
-#    uv run gz obpi pipeline OBPI-<X.Y.Z-NN> --from=ceremony
-#
-#    The CLI and generated Claude hooks share the same runtime engine in
-#    src/gzkit/pipeline_runtime.py. Treat active pipeline markers as
-#    runtime-managed state; do not clear them by hand.
+Compatibility entry points for partial re-runs:
+
+```bash
+uv run gz obpi pipeline OBPI-<X.Y.Z-NN> --from=verify
+uv run gz obpi pipeline OBPI-<X.Y.Z-NN> --from=ceremony
+```
+
+> The CLI and generated Claude hooks share the same runtime engine in
+> `src/gzkit/pipeline_runtime.py`. Treat active pipeline markers as
+> runtime-managed state; do not clear them by hand.
+
+```bash
 
 # 2b) Inspect pipeline roles and dispatch history
 uv run gz roles
@@ -85,9 +87,14 @@ uv run gz roles --pipeline OBPI-<X.Y.Z-NN>
 
 # 3) Verify this increment
 #    Skill shortcuts — run all quality checks in one pass or with receipt artifacts:
-#    /gz-check                  (all checks: lint, typecheck, test, docs)
-#    /gz-arb                    (same checks with structured JSON receipts)
-#    See: docs/user/skills/gz-check.md, docs/user/skills/gz-arb.md
+#
+#    | Skill (preferred) | CLI equivalent |
+#    |---|---|
+#    | /gz-check | uv run gz check |
+#    | /gz-arb | uv run gz arb ruff; uv run gz arb step ... |
+#    | /gz-implement | uv run gz implement --adr ADR-<X.Y.Z> |
+#    | /gz-gates ADR-<X.Y.Z> | uv run gz gates --adr ADR-<X.Y.Z> |
+#
 uv run gz implement --adr ADR-<X.Y.Z>
 uv run gz gates --gate 3 --adr ADR-<X.Y.Z>   # when docs changed
 uv run gz lint
@@ -564,6 +571,19 @@ ADR-0.0.11 lineage.
 uv run gz personas list              # List loaded persona definitions
 uv run gz personas list --json       # Machine-readable persona output
 ```
+
+---
+
+## Adopter Feedback
+
+File bug reports, feature requests, or observations via GitHub Issues:
+
+- **Defect:** [File a defect report](https://github.com/tvproductions/gzkit/issues/new?template=defect.yml)
+- **Enhancement:** [Request a feature](https://github.com/tvproductions/gzkit/issues/new?template=enhancement.yml)
+- **Observation:** [Share an observation](https://github.com/tvproductions/gzkit/issues/new?template=observation.yml)
+
+Include your gzkit version (`gz --version`), Python version, and platform.
+The issue templates prompt for this automatically.
 
 ---
 

@@ -1,0 +1,34 @@
+name: Adopter Observation
+description: Share feedback from adopting gzkit in your project.
+labels: ["documentation"]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: gzkit version
+      description: "Output of `gz --version`"
+      placeholder: "0.25.5"
+    validations:
+      required: true
+  - type: input
+    id: project-type
+    attributes:
+      label: Project type
+      description: "What kind of project are you governing? (library, CLI, API, course project, etc.)"
+      placeholder: "Python library"
+    validations:
+      required: false
+  - type: textarea
+    id: observation
+    attributes:
+      label: What did you observe?
+      description: "Describe the sharp edge, gap, or surprise you encountered while adopting gzkit."
+    validations:
+      required: true
+  - type: textarea
+    id: recommendation
+    attributes:
+      label: Recommendation
+      description: "What would have made this smoother?"
+    validations:
+      required: false

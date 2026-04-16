@@ -1,0 +1,26 @@
+name: Enhancement Request
+description: Suggest an improvement or new capability.
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: "Describe the friction, gap, or missing capability you encountered."
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: "How would you like this to work? CLI syntax, behavior, output format."
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: gzkit version
+      description: "Output of `gz --version` (if relevant)"
+      placeholder: "0.25.5"
+    validations:
+      required: false
