@@ -1,9 +1,9 @@
 {
   "adr_id": "ADR-0.25.0-core-infrastructure-pattern-absorption",
-  "current_step": 4,
+  "current_step": 10,
   "is_foundation": false,
   "started_at": "2026-04-15T06:19:29Z",
-  "updated_at": "2026-04-15T06:24:28Z",
+  "updated_at": "2026-04-16T02:44:37Z",
   "step_history": [
     {
       "step": 1,
@@ -23,6 +23,36 @@
     {
       "step": 4,
       "presented_at": "2026-04-15T06:24:28Z",
+      "acknowledged_at": "2026-04-16T02:22:33Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-04-16T02:22:33Z",
+      "acknowledged_at": "2026-04-16T02:23:03Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-04-16T02:23:03Z",
+      "acknowledged_at": "2026-04-16T02:24:38Z"
+    },
+    {
+      "step": 7,
+      "presented_at": "2026-04-16T02:24:38Z",
+      "acknowledged_at": "2026-04-16T02:42:37Z"
+    },
+    {
+      "step": 8,
+      "presented_at": "2026-04-16T02:42:37Z",
+      "acknowledged_at": "2026-04-16T02:44:09Z"
+    },
+    {
+      "step": 9,
+      "presented_at": "2026-04-16T02:44:09Z",
+      "acknowledged_at": "2026-04-16T02:44:37Z"
+    },
+    {
+      "step": 10,
+      "presented_at": "2026-04-16T02:44:37Z",
       "acknowledged_at": null
     }
   ],
@@ -30,7 +60,7 @@
     "uv run gz arb --help"
   ],
   "walkthrough_index": 0,
-  "attestation": null,
+  "attestation": "Completed",
   "completed_at": null,
   "attempt": 1,
   "paused_at": null

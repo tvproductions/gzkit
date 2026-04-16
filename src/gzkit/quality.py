@@ -609,6 +609,9 @@ class ObpiProofStatus(BaseModel):
     release_artifact_found: bool = Field(
         False, description="Release manifest exists in docs/releases/ with substantive content"
     )
+    decision_doc_found: bool = Field(
+        False, description="Brief contains a substantive Confirm/Exclude/Absorb decision"
+    )
 
     @property
     def has_proof(self) -> bool:
@@ -621,6 +624,7 @@ class ObpiProofStatus(BaseModel):
             or self.test_evidence_found
             or self.bdd_evidence_found
             or self.release_artifact_found
+            or self.decision_doc_found
         )
 
     @property
@@ -640,6 +644,8 @@ class ObpiProofStatus(BaseModel):
             return "bdd_evidence"
         if self.release_artifact_found:
             return "release_artifact"
+        if self.decision_doc_found:
+            return "decision_doc"
         return "MISSING"
 
 
@@ -787,6 +793,22 @@ def _check_release_artifact_proof(allowed_paths: list[str], project_root: Path) 
     return False
 
 
+_DECISION_PATTERN = re.compile(
+    r"(?:Decision:\s*\*{0,2}\s*|^\*{2})(Confirm|Exclude|Absorb)\b",
+    re.IGNORECASE | re.MULTILINE,
+)
+
+
+def _check_decision_doc_proof(brief_text: str) -> bool:
+    """Check if the brief contains a substantive Confirm/Exclude/Absorb decision.
+
+    Decision-only OBPIs (Confirm existing code, Exclude domain-specific code)
+    produce no file-based artifacts — the decision rationale in the brief IS
+    the product proof.
+    """
+    return bool(_DECISION_PATTERN.search(brief_text))
+
+
 def check_product_proof(
     adr_id: str,
     obpi_files: dict[str, Path],
@@ -827,6 +849,7 @@ def check_product_proof(
         test_evidence_found = _check_test_evidence_proof(allowed_paths, project_root)
         bdd_evidence_found = _check_bdd_evidence_proof(allowed_paths, project_root)
         release_artifact_found = _check_release_artifact_proof(allowed_paths, project_root)
+        decision_doc_found = _check_decision_doc_proof(brief_text)
 
         proofs.append(
             ObpiProofStatus(
@@ -838,6 +861,7 @@ def check_product_proof(
                 test_evidence_found=test_evidence_found,
                 bdd_evidence_found=bdd_evidence_found,
                 release_artifact_found=release_artifact_found,
+                decision_doc_found=decision_doc_found,
             )
         )
 

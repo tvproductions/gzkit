@@ -410,3 +410,9 @@ Human Approver: ___________________________
 Date: _________________________
 
 Decision: Accept | Request Changes
+
+## Attestation Block
+
+| Term | Status | Attested By | Date | Reason |
+|------|--------|-------------|------|--------|
+| 0.25.0 | Completed | Jeffry | 2026-04-15 | completed |
