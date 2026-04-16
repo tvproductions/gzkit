@@ -226,6 +226,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         action="store_true",
         help="Flag HEAD commits touching src/ or tests/ without a Task: trailer",
     )
+    p_validate.add_argument(
+        "--frontmatter",
+        dest="check_frontmatter",
+        action="store_true",
+        help="Validate frontmatter fields (id, parent, lane) against ledger truth",
+    )
     add_json_flag(p_validate)
     p_validate.set_defaults(
         func=lambda a: validate(
@@ -240,6 +246,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_decomposition=a.check_decomposition,
             check_requirements=a.check_requirements,
             check_commit_trailers=a.check_commit_trailers,
+            check_frontmatter=a.check_frontmatter,
             as_json=a.as_json,
         )
     )

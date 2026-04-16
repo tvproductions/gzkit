@@ -1,0 +1,10 @@
+{
+  "criteria": [
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run gz validate --frontmatter",
+      "expected": 0,
+      "description": "All frontmatter fields must match ledger truth"
+    }
+  ]
+}

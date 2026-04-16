@@ -1081,6 +1081,64 @@ class TestStatusCommand(unittest.TestCase):
             self.assertEqual(payload["req_proof_inputs"], [])
 
 
+class TestOrphanedAdrWarning(unittest.TestCase):
+    """Tests for _warn_orphaned_adrs false-positive prevention (GHI-166)."""
+
+    def test_no_false_positive_when_stem_has_slug_but_ledger_has_bare_id(self) -> None:
+        """ADR file with slugged stem (ADR-0.1.0-my-feature) should not warn
+        when the ledger has the bare ID (ADR-0.1.0).  GHI-166."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            project_root = Path.cwd()
+            config = GzkitConfig.load(project_root / ".gzkit.json")
+
+            # Create ADR file with slugged filename
+            adr_dir = project_root / config.paths.design_root / "adr" / "pre-release"
+            adr_dir.mkdir(parents=True, exist_ok=True)
+            slug_dir = adr_dir / "ADR-0.1.0-my-feature"
+            slug_dir.mkdir()
+            adr_file = slug_dir / "ADR-0.1.0-my-feature.md"
+            adr_file.write_text(
+                "---\nid: ADR-0.1.0\nstatus: Draft\nlane: lite\n---\n# ADR-0.1.0\n",
+                encoding="utf-8",
+            )
+
+            # Register with bare ID in ledger (as gz adr create does)
+            ledger = Ledger(project_root / ".gzkit" / "ledger.jsonl")
+            ledger.append(adr_created_event("ADR-0.1.0", "PRD-TEST-1.0.0", "lite"))
+
+            # gz adr report should NOT warn about this ADR
+            result = runner.invoke(main, ["adr", "report"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertNotIn("exist on disk but are not registered", result.output)
+            self.assertNotIn("WARNING", result.output)
+
+    def test_genuine_orphan_still_warns(self) -> None:
+        """An ADR file with no ledger entry at all should still produce a warning."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            project_root = Path.cwd()
+            config = GzkitConfig.load(project_root / ".gzkit.json")
+
+            # Create ADR file with no matching ledger entry
+            adr_dir = project_root / config.paths.design_root / "adr" / "pre-release"
+            adr_dir.mkdir(parents=True, exist_ok=True)
+            slug_dir = adr_dir / "ADR-0.99.0-totally-orphaned"
+            slug_dir.mkdir()
+            adr_file = slug_dir / "ADR-0.99.0-totally-orphaned.md"
+            adr_file.write_text(
+                "---\nid: ADR-0.99.0\nstatus: Draft\nlane: lite\n---\n# ADR-0.99.0\n",
+                encoding="utf-8",
+            )
+
+            # No ledger entry — should warn
+            result = runner.invoke(main, ["adr", "report"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("exist on disk but are not registered", result.output)
+
+
 class TestLifecycleStatusSemantics(unittest.TestCase):
     """Tests for derived lifecycle semantics on status/state surfaces."""
 
