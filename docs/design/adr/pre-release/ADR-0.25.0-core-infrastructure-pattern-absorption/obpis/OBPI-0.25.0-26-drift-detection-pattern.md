@@ -229,14 +229,14 @@ own the corresponding behave coverage.
 
 ## Acceptance Criteria
 
-- [x] REQ-0.25.0-26-01: Given the completed comparison, then the brief records
+- [x] REQ-0.25.0-26-01: [doc] Given the completed comparison, then the brief records
   one final decision: `Absorb`, `Confirm`, or `Exclude`.
-- [x] REQ-0.25.0-26-02: Given the decision rationale, then it cites concrete
+- [x] REQ-0.25.0-26-02: [doc] Given the decision rationale, then it cites concrete
   capability, robustness, or ergonomics differences between airlineops and
   gzkit.
 - [x] REQ-0.25.0-26-03: Given an `Absorb` outcome, then gzkit contains the
   adapted module/tests needed to carry the pattern safely.
-- [x] REQ-0.25.0-26-04: Given a `Confirm` or `Exclude` outcome, then the brief
+- [x] REQ-0.25.0-26-04: [doc] Given a `Confirm` or `Exclude` outcome, then the brief
   explains why no upstream absorption is warranted — N/A (Absorb decision; see
   Decision section for rationale that this is not Confirm/Exclude).
 - [x] REQ-0.25.0-26-05: Given any operator-visible behavior change, then Gate 4

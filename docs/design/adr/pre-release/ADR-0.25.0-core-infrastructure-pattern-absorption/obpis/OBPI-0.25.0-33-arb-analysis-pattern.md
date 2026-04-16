@@ -93,10 +93,10 @@ extraction.
 
 ## Acceptance Criteria
 
-- [x] REQ-0.25.0-33-01: Given the completed comparison, the brief records Decision: **Absorb**.
-- [x] REQ-0.25.0-33-02: Given the decision rationale, it cites concrete capability, CLI integration, storage, and governance-vacuum differences between airlineops and gzkit in the Comparison Evidence table.
+- [x] REQ-0.25.0-33-01: [doc] Given the completed comparison, the brief records Decision: **Absorb**.
+- [x] REQ-0.25.0-33-02: [doc] Given the decision rationale, it cites concrete capability, CLI integration, storage, and governance-vacuum differences between airlineops and gzkit in the Comparison Evidence table.
 - [x] REQ-0.25.0-33-03: Given an `Absorb` outcome, gzkit contains the adapted `src/gzkit/arb/` package, `gz arb` CLI dispatcher, JSON schemas, and test suite under `tests/arb/` and `tests/commands/test_arb_cmd.py`.
-- [x] REQ-0.25.0-33-04: N/A — outcome is Absorb.
+- [x] REQ-0.25.0-33-04: [doc] N/A — outcome is Absorb.
 - [x] REQ-0.25.0-33-05: `gz arb` is a new operator-visible CLI surface, so Gate 4 behavioral proof is present (`features/arb.feature`, six scenarios).
 
 ## Verification Commands (Concrete)
