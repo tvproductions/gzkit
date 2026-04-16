@@ -299,12 +299,20 @@ def scaffold_skill(
     return skill_file
 
 
-def scaffold_core_skills(project_root: Path, config: GzkitConfig | None = None) -> list[Path]:
+def scaffold_core_skills(
+    project_root: Path,
+    config: GzkitConfig | None = None,
+    *,
+    skip_existing: bool = False,
+) -> list[Path]:
     """Scaffold all core skills.
 
     Args:
         project_root: Project root directory.
         config: Optional configuration.
+        skip_existing: When True, skip skills whose SKILL.md already exists.
+            Used by repair mode so upgraded gzkit versions deliver new skills
+            without overwriting user-modified existing ones.
 
     Returns:
         List of paths to created SKILL.md files.
@@ -315,6 +323,10 @@ def scaffold_core_skills(project_root: Path, config: GzkitConfig | None = None) 
 
     created = []
     for dir_name, kwargs in CORE_SKILLS.items():
+        if skip_existing:
+            existing = project_root / config.paths.skills / dir_name / "SKILL.md"
+            if existing.exists():
+                continue
         skill_file = scaffold_skill(
             project_root,
             dir_name,
