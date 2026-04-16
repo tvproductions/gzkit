@@ -3147,3 +3147,10 @@
 {"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.0.2-03-canonical-sync-grammar","ts":"2026-04-16T03:15:41.352165+00:00","parent":"ADR-0.0.2-stdlib-cli-and-agent-sync"}
 {"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.0.2-04-runtime-test-click-removal","ts":"2026-04-16T03:15:41.361817+00:00","parent":"ADR-0.0.2-stdlib-cli-and-agent-sync"}
 {"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.0.2-05-control-surface-regeneration","ts":"2026-04-16T03:15:41.371422+00:00","parent":"ADR-0.0.2-stdlib-cli-and-agent-sync"}
+{"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.research-skill-composition.md","ts":"2026-04-16T12:01:50.297859+00:00","path":"docs/design/adr/pool/ADR-pool.research-skill-composition.md"}
+{"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.skill-feedback-loop.md","ts":"2026-04-16T12:02:12.276055+00:00","path":"docs/design/adr/pool/ADR-pool.skill-feedback-loop.md"}
+{"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.cross-session-search.md","ts":"2026-04-16T12:02:33.290166+00:00","path":"docs/design/adr/pool/ADR-pool.cross-session-search.md"}
+{"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.filesystem-checkpoints.md","ts":"2026-04-16T12:02:49.224174+00:00","path":"docs/design/adr/pool/ADR-pool.filesystem-checkpoints.md"}
+{"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.sandboxed-delegation.md","ts":"2026-04-16T12:03:10.787248+00:00","path":"docs/design/adr/pool/ADR-pool.sandboxed-delegation.md"}
+{"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.content-injection-scanning.md","ts":"2026-04-16T12:03:35.106760+00:00","path":"docs/design/adr/pool/ADR-pool.content-injection-scanning.md"}
+{"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.compression-governance-hooks.md","ts":"2026-04-16T12:03:57.805629+00:00","path":"docs/design/adr/pool/ADR-pool.compression-governance-hooks.md"}
