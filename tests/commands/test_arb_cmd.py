@@ -1,6 +1,7 @@
 """Tests for gzkit.commands.arb dispatchers.
 
 @covers REQ-0.25.0-33-03
+@covers REQ-0.25.0-33-05
 """
 
 import io

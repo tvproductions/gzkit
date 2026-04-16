@@ -210,9 +210,7 @@ Do the thing.
             src_file = project_root / "src" / "mypkg" / "module.py"
             src_file.parent.mkdir(parents=True, exist_ok=True)
             src_file.write_text("x = 1\n", encoding="utf-8")
-            subprocess.run(
-                ["git", "add", "src"], cwd=project_root, check=True, capture_output=True
-            )
+            subprocess.run(["git", "add", "src"], cwd=project_root, check=True, capture_output=True)
             subprocess.run(
                 ["git", "commit", "-m", "feat: add module"],
                 cwd=project_root,
@@ -233,9 +231,7 @@ Do the thing.
             src_file = project_root / "src" / "mypkg" / "module.py"
             src_file.parent.mkdir(parents=True, exist_ok=True)
             src_file.write_text("x = 1\n", encoding="utf-8")
-            subprocess.run(
-                ["git", "add", "src"], cwd=project_root, check=True, capture_output=True
-            )
+            subprocess.run(["git", "add", "src"], cwd=project_root, check=True, capture_output=True)
             subprocess.run(
                 ["git", "commit", "-m", "feat: add module\n\nTask: TASK-0.0.1-01-01-01"],
                 cwd=project_root,

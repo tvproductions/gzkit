@@ -1,3 +1,4 @@
+# @covers REQ-0.25.0-33-05
 Feature: ARB self-reporting middleware
   As an agent producing verification evidence for Heavy-lane attestations
   I want a CLI surface that wraps QA commands and emits validated receipts

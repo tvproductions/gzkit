@@ -1,4 +1,7 @@
-"""BDD steps for heavy-lane governance behavior."""
+"""BDD steps for heavy-lane governance behavior.
+
+@covers REQ-0.25.0-33-05
+"""
 
 from __future__ import annotations
 
