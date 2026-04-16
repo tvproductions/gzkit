@@ -247,5 +247,82 @@ class TestAdrPathContractLint(unittest.TestCase):
             self.assertTrue(result.success)
 
 
+class TestDecisionDocProof(unittest.TestCase):
+    """Tests for decision_doc proof type in product proof gate.
+
+    @covers('REQ-GHI-163-01')
+    GHI #163: Product proof gate missing decision_doc proof type.
+    """
+
+    def test_confirm_decision_satisfies_proof(self) -> None:
+        """An OBPI brief with a Confirm decision has decision_doc proof."""
+        from gzkit.quality import ObpiProofStatus
+
+        status = ObpiProofStatus(
+            obpi_id="OBPI-0.25.0-01-attestation-pattern",
+            decision_doc_found=True,
+        )
+        self.assertTrue(status.has_proof)
+        self.assertEqual(status.proof_type, "decision_doc")
+
+    def test_exclude_decision_satisfies_proof(self) -> None:
+        """An OBPI brief with an Exclude decision has decision_doc proof."""
+        from gzkit.quality import ObpiProofStatus
+
+        status = ObpiProofStatus(
+            obpi_id="OBPI-0.25.0-03-signature-pattern",
+            decision_doc_found=True,
+        )
+        self.assertTrue(status.has_proof)
+        self.assertEqual(status.proof_type, "decision_doc")
+
+    def test_no_decision_no_proof(self) -> None:
+        """An OBPI brief with no decision and no other proof is MISSING."""
+        from gzkit.quality import ObpiProofStatus
+
+        status = ObpiProofStatus(
+            obpi_id="OBPI-0.99.0-01-fake",
+        )
+        self.assertFalse(status.has_proof)
+        self.assertEqual(status.proof_type, "MISSING")
+
+    def test_check_decision_doc_detects_confirm(self) -> None:
+        """_check_decision_doc_proof finds 'Decision: Confirm' in brief text."""
+        from gzkit.quality import _check_decision_doc_proof
+
+        brief_text = (
+            "## Decision\n\n**Decision: Confirm** — gzkit's implementation is sufficient.\n"
+        )
+        self.assertTrue(_check_decision_doc_proof(brief_text))
+
+    def test_check_decision_doc_detects_exclude(self) -> None:
+        """_check_decision_doc_proof finds 'Decision: Exclude' in brief text."""
+        from gzkit.quality import _check_decision_doc_proof
+
+        brief_text = "**Decision: Exclude** — domain-specific, not warranted.\n"
+        self.assertTrue(_check_decision_doc_proof(brief_text))
+
+    def test_check_decision_doc_detects_absorb(self) -> None:
+        """_check_decision_doc_proof finds 'Decision: Absorb' in brief text."""
+        from gzkit.quality import _check_decision_doc_proof
+
+        brief_text = "Decision: **Absorb** — the module adds governance value.\n"
+        self.assertTrue(_check_decision_doc_proof(brief_text))
+
+    def test_check_decision_doc_detects_heading_then_bold_value(self) -> None:
+        """_check_decision_doc_proof finds '## Decision' heading + '**Absorb**' value."""
+        from gzkit.quality import _check_decision_doc_proof
+
+        brief_text = "## Decision\n\n**Absorb** — the airlineops module has been ported.\n"
+        self.assertTrue(_check_decision_doc_proof(brief_text))
+
+    def test_check_decision_doc_rejects_no_decision(self) -> None:
+        """_check_decision_doc_proof returns False when no decision is present."""
+        from gzkit.quality import _check_decision_doc_proof
+
+        brief_text = "## Objective\n\nJust an objective, no decision.\n"
+        self.assertFalse(_check_decision_doc_proof(brief_text))
+
+
 if __name__ == "__main__":
     unittest.main()
