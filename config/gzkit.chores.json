@@ -215,6 +215,13 @@
             "path": "ops/chores/memory-hygiene",
             "lane": "lite",
             "vendor": "claude"
+        },
+        {
+            "slug": "frontmatter-ledger-coherence",
+            "title": "Frontmatter-Ledger Coherence Audit (GHI-167)",
+            "version": "1.0.0",
+            "path": "ops/chores/frontmatter-ledger-coherence",
+            "lane": "lite"
         }
     ]
 }
