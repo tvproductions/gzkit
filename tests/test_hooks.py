@@ -378,6 +378,83 @@ class TestSetupClaudeHooks(unittest.TestCase):
             self.assertIn("hook that records governance", readme_text)
 
 
+class TestSettingsMergePreservesUserHooks(unittest.TestCase):
+    """GHI #172: setup_claude_hooks must preserve user-added hooks."""
+
+    def test_user_hooks_survive_setup(self) -> None:
+        """User-added hooks in settings.json are preserved after setup_claude_hooks."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            # First setup — creates settings.json
+            setup_claude_hooks(project_root, config)
+
+            # Simulate user adding a custom hook
+            settings_path = project_root / ".claude" / "settings.json"
+            settings = json.loads(settings_path.read_text(encoding="utf-8"))
+            settings["hooks"]["PostToolUse"].append(
+                {
+                    "matcher": "Bash",
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": "python my-custom-build-logger.py",
+                        }
+                    ],
+                }
+            )
+            settings["myCustomKey"] = "preserve-me"
+            settings_path.write_text(json.dumps(settings, indent=2) + "\n", encoding="utf-8")
+
+            # Re-run setup (simulates gz init --force or sync)
+            setup_claude_hooks(project_root, config)
+
+            # Verify user hook survived
+            result = json.loads(settings_path.read_text(encoding="utf-8"))
+            post_hooks = result["hooks"]["PostToolUse"]
+            user_matchers = [
+                h
+                for h in post_hooks
+                if any(
+                    hook.get("command") == "python my-custom-build-logger.py"
+                    for hook in h.get("hooks", [])
+                )
+            ]
+            self.assertEqual(len(user_matchers), 1, "User hook was destroyed")
+
+            # Verify custom top-level key survived
+            self.assertEqual(result.get("myCustomKey"), "preserve-me")
+
+    def test_gzkit_hooks_are_updated(self) -> None:
+        """gzkit-owned hooks are replaced with fresh versions on re-setup."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            setup_claude_hooks(project_root, config)
+
+            # Tamper with a gzkit-owned hook command
+            settings_path = project_root / ".claude" / "settings.json"
+            settings = json.loads(settings_path.read_text(encoding="utf-8"))
+            settings["hooks"]["PostToolUse"][1]["hooks"][0]["command"] = "tampered"
+            settings_path.write_text(json.dumps(settings, indent=2) + "\n", encoding="utf-8")
+
+            # Re-run setup
+            setup_claude_hooks(project_root, config)
+
+            # Verify gzkit hook was restored
+            result = json.loads(settings_path.read_text(encoding="utf-8"))
+            edit_write_hooks = [
+                h for h in result["hooks"]["PostToolUse"] if h.get("matcher") == "Edit|Write"
+            ]
+            self.assertEqual(len(edit_write_hooks), 1)
+            self.assertIn(
+                ".claude/hooks/post-edit-ruff.py",
+                edit_write_hooks[0]["hooks"][0]["command"],
+            )
+
+
 class TestPlanAuditGateHook(unittest.TestCase):
     """Tests for the generated plan-audit gate script."""
 

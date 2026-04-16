@@ -1,5 +1,22 @@
 # gzkit Release Notes
 
+## v0.25.5 (2026-04-16)
+
+**GHI #172: `gz init --force` no longer destroys user hooks in settings.json.**
+
+### Fixed
+
+- **`setup_claude_hooks` now merges into existing `.claude/settings.json`**
+  instead of overwriting it. gzkit-owned hooks (identified by `.claude/hooks/`
+  command paths) are replaced with fresh versions; user-added hooks and
+  top-level settings keys are preserved. Applies to `gz init`, `gz init
+  --force`, repair mode, and `gz agent sync control-surfaces`.
+- `.gitignore` template updated to use
+  [github/gitignore](https://github.com/github/gitignore) canonical Python
+  template as reference.
+
+---
+
 ## v0.25.4 (2026-04-16)
 
 **`gz init` scaffolds .gitignore; test suite performance fix.**

@@ -214,6 +214,109 @@ def generate_claude_settings(config: GzkitConfig) -> dict:
     }
 
 
+def _is_gzkit_owned_hook(hook_entry: dict, hooks_dir: str) -> bool:
+    """Return True if a hook entry's command references the gzkit hooks directory."""
+    command = hook_entry.get("command", "")
+    return hooks_dir in command
+
+
+def _is_gzkit_owned_group(group: dict, hooks_dir: str) -> bool:
+    """Return True if all hooks in a matcher group are gzkit-owned."""
+    hooks = group.get("hooks", [])
+    return bool(hooks) and all(_is_gzkit_owned_hook(h, hooks_dir) for h in hooks)
+
+
+def _merge_hook_phase(
+    existing_groups: list[dict],
+    gzkit_groups: list[dict],
+    hooks_dir: str,
+) -> list[dict]:
+    """Merge a single hook phase (PreToolUse or PostToolUse).
+
+    For each matcher that gzkit defines, the gzkit hooks replace all existing
+    hooks for that matcher.  User-added hooks within that same matcher group
+    are preserved alongside the fresh gzkit hooks.  Matcher groups that gzkit
+    does not define are kept as-is.
+    """
+    gzkit_by_matcher = {g["matcher"]: g for g in gzkit_groups}
+    seen_matchers: set[str] = set()
+    merged: list[dict] = []
+
+    for existing_group in existing_groups:
+        matcher = existing_group.get("matcher", "")
+
+        if matcher in gzkit_by_matcher:
+            if matcher not in seen_matchers:
+                # First time seeing this matcher — emit fresh gzkit hooks
+                # plus any user-owned hooks from the existing group
+                fresh = gzkit_by_matcher[matcher]
+                user_hooks = [
+                    h
+                    for h in existing_group.get("hooks", [])
+                    if not _is_gzkit_owned_hook(h, hooks_dir)
+                ]
+                hooks = list(fresh.get("hooks", [])) + user_hooks
+                merged.append({"matcher": matcher, "hooks": hooks})
+                seen_matchers.add(matcher)
+            # else: duplicate matcher in existing — skip (gzkit version already emitted)
+        else:
+            # Matcher not gzkit-owned — preserve entirely
+            merged.append(existing_group)
+
+    # Add any gzkit matchers not present in existing
+    for matcher, group in gzkit_by_matcher.items():
+        if matcher not in seen_matchers:
+            merged.append(group)
+
+    return merged
+
+
+def _merge_settings(
+    settings_path: Path,
+    gzkit_settings: dict,
+    hooks_dir: str,
+) -> dict:
+    """Merge gzkit-generated settings into existing settings.json.
+
+    Preserves user-added hooks and top-level keys. Replaces gzkit-owned
+    hook groups with fresh versions.
+    """
+    existing: dict = {}
+    if settings_path.is_file():
+        with suppress(json.JSONDecodeError):
+            existing = json.loads(settings_path.read_text(encoding="utf-8"))
+
+    if not existing:
+        return gzkit_settings
+
+    # Start with existing settings to preserve user keys
+    merged = dict(existing)
+
+    # Merge top-level gzkit keys (enabledPlugins, etc.) — gzkit wins
+    for key, value in gzkit_settings.items():
+        if key != "hooks":
+            merged[key] = value
+
+    # Merge hooks phase by phase
+    existing_hooks = existing.get("hooks", {})
+    gzkit_hooks = gzkit_settings.get("hooks", {})
+    merged_hooks: dict[str, list] = {}
+
+    # Process phases that gzkit defines
+    for phase in ("PreToolUse", "PostToolUse"):
+        existing_phase = existing_hooks.get(phase, [])
+        gzkit_phase = gzkit_hooks.get(phase, [])
+        merged_hooks[phase] = _merge_hook_phase(existing_phase, gzkit_phase, hooks_dir)
+
+    # Preserve user-defined phases gzkit doesn't touch
+    for phase, groups in existing_hooks.items():
+        if phase not in merged_hooks:
+            merged_hooks[phase] = groups
+
+    merged["hooks"] = merged_hooks
+    return merged
+
+
 def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) -> list[str]:
     """Set up Claude Code hooks for the project.
 
@@ -282,13 +385,15 @@ def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) ->
     _write_hook_file(readme_path, _claude_hooks_readme())
     created.append(str(readme_path.relative_to(project_root)))
 
-    # Write settings.json
-    settings = generate_claude_settings(config)
+    # Write settings.json — merge to preserve user-added hooks
+    gzkit_settings = generate_claude_settings(config)
     settings_path = project_root / config.paths.claude_settings
     settings_path.parent.mkdir(parents=True, exist_ok=True)
 
+    merged = _merge_settings(settings_path, gzkit_settings, config.paths.claude_hooks)
+
     with settings_path.open("w") as f:
-        json.dump(settings, f, indent=2)
+        json.dump(merged, f, indent=2)
         f.write("\n")
 
     created.append(str(settings_path.relative_to(project_root)))
