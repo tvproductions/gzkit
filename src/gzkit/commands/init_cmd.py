@@ -131,6 +131,41 @@ def _scaffold_project_skeleton(
     return created
 
 
+_GITIGNORE_CONTENT = """\
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Virtual environment
+.venv/
+
+# Claude Code user settings (machine-specific)
+.claude/settings.local.json
+
+# OS
+.DS_Store
+Thumbs.db
+"""
+
+
+def _scaffold_gitignore(project_root: Path, *, dry_run: bool = False) -> str | None:
+    """Create a Python-oriented .gitignore if one does not exist.
+
+    Idempotent: preserves any existing .gitignore.
+    Returns a human-readable status string, or None if skipped.
+    """
+    gitignore = project_root / ".gitignore"
+    if gitignore.exists():
+        return None
+    if dry_run:
+        return "Would create .gitignore"
+    gitignore.write_text(_GITIGNORE_CONTENT, encoding="utf-8")
+    return "Created .gitignore"
+
+
 def _run_uv_sync(project_root: Path, *, dry_run: bool = False) -> str | None:
     """Run ``uv sync`` to hydrate the virtualenv if needed.
 
@@ -206,6 +241,11 @@ def _repair_missing_artifacts(
         uv_status = _run_uv_sync(project_root, dry_run=dry_run)
         if uv_status:
             repaired.append(uv_status)
+
+    # Repair .gitignore
+    gi_status = _scaffold_gitignore(project_root, dry_run=dry_run)
+    if gi_status:
+        repaired.append(gi_status)
 
     # Repair manifest
     manifest_path = project_root / config.paths.manifest
@@ -326,6 +366,7 @@ def init(mode: str, force: bool, dry_run: bool, *, no_skeleton: bool = False) ->
             for item in skeleton:
                 console.print(f"  {item}")
             console.print("  Would run uv sync")
+        console.print("  Would create .gitignore")
         console.print("  Would generate control surfaces (AGENTS.md, CLAUDE.md, etc.)")
         console.print("  Would set up hooks and scaffold core skills")
         console.print("  Would scaffold default personas")
@@ -374,6 +415,11 @@ def init(mode: str, force: bool, dry_run: bool, *, no_skeleton: bool = False) ->
         uv_status = _run_uv_sync(project_root)
         if uv_status:
             console.print(f"  {uv_status}")
+
+    # Create .gitignore
+    gi_status = _scaffold_gitignore(project_root)
+    if gi_status:
+        console.print(f"  {gi_status}")
 
     # Scaffold core skills
     skills = scaffold_core_skills(project_root, config)

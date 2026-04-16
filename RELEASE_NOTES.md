@@ -1,5 +1,27 @@
 # gzkit Release Notes
 
+## v0.25.4 (2026-04-16)
+
+**`gz init` scaffolds .gitignore; test suite performance fix.**
+
+### Fixed
+
+- **`gz init` now creates a Python-oriented `.gitignore`** — excludes
+  `.venv/`, `__pycache__/`, `.claude/settings.local.json`, and OS artifacts.
+  Idempotent: preserves any existing `.gitignore`. Works with `--no-skeleton`
+  (`.gitignore` is project infrastructure, not skeleton). Repair mode
+  re-creates it if missing. 4 tests added.
+- **`test_tasks.py` setUp optimization** — expensive `gz init` + `gz plan
+  create` moved from per-test `setUp` to per-class `setUpClass` with ledger
+  reset per test. 25s -> 6.5s for 81 tests.
+- **`test_validate_sync_parity.py` init caching** — single cached `gz init`
+  copied via `shutil.copytree` instead of 5 separate init calls. 4.7s -> 2.2s.
+- **`gz validate --version`** checks that pyproject.toml, `__init__.py`,
+  and README badge versions all agree. Runs automatically as part of
+  `gz validate` (no flags). 5 tests added.
+
+---
+
 ## v0.25.3 (2026-04-16)
 
 **Skills as first-class control surfaces in documentation.**
