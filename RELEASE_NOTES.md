@@ -1,5 +1,23 @@
 # gzkit Release Notes
 
+## v0.25.8 (2026-04-16)
+
+**Two fixes from Rhea adopter feedback and dogfood (GHI #178, #179).**
+
+### Fixed
+
+- **Patch release discovery includes same-day GHI closes** (GHI #178) —
+  changed `closed:>` to `closed:>=` in the GitHub search query so GHIs
+  closed on the same calendar day as the latest tag are included in
+  discovery. Cross-validation already filters false positives.
+- **Repair mode delivers new skills from upgraded gzkit versions** (GHI #179) —
+  `gz init` repair mode now diffs installed skills against `CORE_SKILLS` and
+  scaffolds any missing ones without overwriting existing user-modified skills.
+  Projects initialized on older gzkit versions pick up newly added core
+  skills on re-run.
+
+---
+
 ## v0.25.7 (2026-04-16)
 
 **`gz patch release --full` executes the complete release ceremony end-to-end (GHI #177).**
