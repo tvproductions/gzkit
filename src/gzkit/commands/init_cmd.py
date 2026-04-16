@@ -1,6 +1,7 @@
 """Init, PRD, and constitution command implementations."""
 
 import re
+import subprocess
 from datetime import date
 from pathlib import Path
 from typing import Literal, cast
@@ -130,6 +131,37 @@ def _scaffold_project_skeleton(
     return created
 
 
+def _run_uv_sync(project_root: Path, *, dry_run: bool = False) -> str | None:
+    """Run ``uv sync`` to hydrate the virtualenv if needed.
+
+    Idempotent: skips if no pyproject.toml exists or .venv already present.
+
+    Returns a human-readable status string, or None if skipped.
+    """
+    if not (project_root / "pyproject.toml").exists():
+        return None
+    if (project_root / ".venv").exists():
+        return None
+
+    if dry_run:
+        return "Would run uv sync"
+
+    result = subprocess.run(
+        ["uv", "sync"],
+        cwd=project_root,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+    if result.returncode == 0:
+        return "Ran uv sync (virtualenv created)"
+    console.print(f"  [yellow]uv sync failed (exit {result.returncode}):[/yellow]")
+    if result.stderr:
+        for line in result.stderr.strip().splitlines()[:5]:
+            console.print(f"    {line}")
+    return None
+
+
 def _repair_missing_artifacts(
     project_root: Path,
     config: GzkitConfig,
@@ -168,6 +200,12 @@ def _repair_missing_artifacts(
             else:
                 dir_path.mkdir(parents=True, exist_ok=True)
                 repaired.append(f"Created {design_root}/{dir_name}/")
+
+    # Hydrate virtualenv
+    if not no_skeleton:
+        uv_status = _run_uv_sync(project_root, dry_run=dry_run)
+        if uv_status:
+            repaired.append(uv_status)
 
     # Repair manifest
     manifest_path = project_root / config.paths.manifest
@@ -287,6 +325,7 @@ def init(mode: str, force: bool, dry_run: bool, *, no_skeleton: bool = False) ->
             )
             for item in skeleton:
                 console.print(f"  {item}")
+            console.print("  Would run uv sync")
         console.print("  Would generate control surfaces (AGENTS.md, CLAUDE.md, etc.)")
         console.print("  Would set up hooks and scaffold core skills")
         console.print("  Would scaffold default personas")
@@ -332,6 +371,9 @@ def init(mode: str, force: bool, dry_run: bool, *, no_skeleton: bool = False) ->
         skeleton = _scaffold_project_skeleton(project_root, project_name, source_root, tests_root)
         for item in skeleton:
             console.print(f"  {item}")
+        uv_status = _run_uv_sync(project_root)
+        if uv_status:
+            console.print(f"  {uv_status}")
 
     # Scaffold core skills
     skills = scaffold_core_skills(project_root, config)

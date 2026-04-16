@@ -1,6 +1,6 @@
 # gzkit Release Notes
 
-## v0.25.1 (2026-04-15)
+## v0.25.2 (2026-04-16)
 
 **GHI:** #171 — gz init does not scaffold Python project skeleton
 
@@ -13,15 +13,18 @@ Python skeleton.
 - **`gz init` now creates a Python project skeleton** — `pyproject.toml`
   (Python >=3.13, hatchling, ruff config), `src/<project>/__init__.py`, and
   `tests/__init__.py` are created alongside governance scaffolding
+- **`gz init` runs `uv sync`** to hydrate the virtualenv after creating
+  `pyproject.toml` — project is immediately runnable, not just scaffolded
 - **Re-running `gz init` enters repair mode** — detects and creates missing
-  artifacts (skeleton files, governance dirs, manifest) without overwriting
-  existing files; no `--force` required
+  artifacts (skeleton files, governance dirs, manifest, virtualenv) without
+  overwriting existing files; no `--force` required
 - **`--no-skeleton` flag** — opt out of project skeleton creation for
   governance-only init on projects with existing build setups
 
 ### Changed
 
 - `gz init` on an already-initialized project no longer errors; it repairs
+- `uv sync` only runs when `.venv` does not yet exist (idempotent)
 - Parser description and epilog updated to reflect new behavior
 - `gz-init` skill updated with repair workflow documentation
 
