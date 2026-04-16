@@ -212,6 +212,52 @@ class TestInitPersonaScaffolding(unittest.TestCase):
             self.assertIn("custom", content)
 
 
+class TestInitGitignore(unittest.TestCase):
+    """Tests for .gitignore scaffolding during gz init."""
+
+    def test_init_creates_gitignore(self) -> None:
+        """init creates .gitignore with Python defaults."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(main, ["init"])
+            self.assertEqual(result.exit_code, 0)
+            gitignore = Path(".gitignore")
+            self.assertTrue(gitignore.exists())
+            content = gitignore.read_text(encoding="utf-8")
+            self.assertIn(".venv/", content)
+            self.assertIn("__pycache__/", content)
+            self.assertIn("settings.local.json", content)
+
+    def test_init_does_not_overwrite_existing_gitignore(self) -> None:
+        """init preserves an existing .gitignore."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            custom = "my-custom-ignore\n"
+            Path(".gitignore").write_text(custom, encoding="utf-8")
+            result = runner.invoke(main, ["init"])
+            self.assertEqual(result.exit_code, 0)
+            content = Path(".gitignore").read_text(encoding="utf-8")
+            self.assertEqual(content, custom)
+
+    def test_repair_creates_missing_gitignore(self) -> None:
+        """Re-running init creates .gitignore if missing."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            Path(".gitignore").unlink()
+            result = runner.invoke(main, ["init"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertTrue(Path(".gitignore").exists())
+
+    def test_no_skeleton_still_creates_gitignore(self) -> None:
+        """--no-skeleton still creates .gitignore (it's not a skeleton file)."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(main, ["init", "--no-skeleton"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertTrue(Path(".gitignore").exists())
+
+
 class TestNormalizePackageName(unittest.TestCase):
     """Tests for _normalize_package_name."""
 
