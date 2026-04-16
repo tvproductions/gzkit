@@ -13,6 +13,26 @@ Lanes determine which gates must be satisfied.
 
 ---
 
+## When to Choose Which Lane
+
+| Project type | Lane | Why |
+|-------------|------|-----|
+| Internal library (no public API) | Lite | No external consumers to break; TDD is sufficient proof |
+| Internal tool or script | Lite | Scope is contained; documentation and BDD add overhead without audience |
+| CLI with external users | Heavy | Command contracts are public surfaces; docs and acceptance tests protect adopters |
+| Public API or SDK | Heavy | Breaking changes affect downstream projects; full gate coverage required |
+| Schema or data model change | Heavy | Persistence contracts outlive code; human attestation catches silent drift |
+| Documentation-only change | Lite | No runtime behavior changed; ADR + review is sufficient |
+
+**Rule of thumb:** if someone outside your team could notice the change
+broke something, use Heavy. If the blast radius is your own codebase, Lite.
+
+You can upgrade from Lite to Heavy mid-ADR if scope expands (e.g., an
+internal refactor grows into a public API change). Downgrading from Heavy
+to Lite requires explicit justification in the ADR's Q&A section.
+
+---
+
 ## Heavy-Lane Gate 4 Detail
 
 Heavy lane requires BDD verification (Gate 4) to pass.

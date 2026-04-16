@@ -66,13 +66,20 @@ reading-list/
     └── adr/             ← ADRs and tasks go here
 ```
 
-> **With gzkit CLI (coming soon):**
+> **With gzkit (recommended for Claude Code users):**
+>
+> | Skill (preferred) | CLI equivalent |
+> |---|---|
+> | `/gz-init` | `gz init --mode lite` |
+>
 > ```bash
 > uv tool install gzkit
 > gz init --mode lite
 > ```
-> This will scaffold the governance structure automatically, including
-> a ledger, manifest, and skill definitions.
+>
+> This scaffolds the governance structure automatically, including
+> a ledger, manifest, and skill definitions. The `/gz-init` skill
+> detects missing scaffolding and enters repair mode on re-init.
 
 ---
 
@@ -136,12 +143,15 @@ git add docs/design/prd/
 git commit -m "Add PRD: Reading List Tracker"
 ```
 
-> **With gzkit CLI (coming soon):**
-> ```bash
-> gz prd READING-LIST-1.0.0 --title "Reading List Tracker"
-> ```
-> This generates the file from the template and records a `prd_created`
-> event in the governance ledger.
+> **With gzkit:**
+>
+> | Skill (preferred) | CLI equivalent |
+> |---|---|
+> | `/gz-prd` | `gz prd READING-LIST-1.0.0 --title "Reading List Tracker"` |
+>
+> The `/gz-prd` skill runs a guided interview before generating the PRD.
+> The CLI command generates the file from the template directly and
+> records a `prd_created` event in the governance ledger.
 
 ---
 
@@ -251,10 +261,15 @@ git add docs/design/adr/
 git commit -m "Add ADR-0.1.0: Book storage and retrieval"
 ```
 
-> **With gzkit CLI (coming soon):**
-> ```bash
-> gz plan 0.1.0 --title "Book storage and retrieval" --lane lite
-> ```
+> **With gzkit:**
+>
+> | Skill (preferred) | CLI equivalent |
+> |---|---|
+> | `/gz-plan` | `gz plan create 0.1.0 --title "Book storage and retrieval" --lane lite` |
+>
+> The `/gz-plan` skill runs 20+ design forcing-function questions
+> (pre-mortem, constraint archaeology, reversibility) before generating
+> the ADR.
 
 ---
 
@@ -348,17 +363,46 @@ git add docs/design/adr/ADR-0.1.0/obpis/
 git commit -m "Add task briefs for ADR-0.1.0"
 ```
 
-> **With gzkit CLI (coming soon):**
+> **With gzkit:**
+>
+> | Skill (preferred) | CLI equivalent |
+> |---|---|
+> | `/gz-obpi-specify` | `gz specify "Book model" --parent ADR-0.1.0 --item 1 --lane lite` |
+>
 > ```bash
 > gz specify "Book model" --parent ADR-0.1.0 --item 1 --lane lite
 > gz specify "SQLite repository" --parent ADR-0.1.0 --item 2 --lane lite
 > gz specify "CLI commands" --parent ADR-0.1.0 --item 3 --lane lite
 > gz specify "Unit tests" --parent ADR-0.1.0 --item 4 --lane lite
 > ```
+>
+> The `/gz-obpi-specify` skill adds semantic authoring with lane
+> resolution from the ADR's WBS table.
 
 ---
 
 ## Step 5: Implement
+
+### Choosing implementation order
+
+Don't implement tasks in checklist order — implement them in **dependency
+order**. Read each task's Allowed Paths and Requirements, then ask: "which
+task's output does another task need?"
+
+For this ADR:
+
+```text
+Task 1 (Book model)        ← no dependencies — pure data model
+Task 2 (SQLite repository) ← depends on Task 1 (stores Book objects)
+Task 3 (CLI commands)      ← depends on Tasks 1 and 2 (needs model + repo)
+Task 4 (Unit tests)        ← depends on Tasks 1-3 (tests everything)
+```
+
+Here the checklist order happens to match the dependency order, but that's
+not always the case. In a project where Task 2 depends on Task 3's output,
+implement Task 3 first regardless of numbering.
+
+### Task 1: Book model
 
 Now write the actual code. Start with Task 1 (the model):
 
@@ -516,10 +560,12 @@ git add docs/design/adr/ADR-0.1.0/
 git commit -m "Update ADR-0.1.0 evidence: all gates pass"
 ```
 
-> **With gzkit CLI (coming soon):**
-> ```bash
-> gz gates --adr ADR-0.1.0
-> ```
+> **With gzkit:**
+>
+> | Skill (preferred) | CLI equivalent |
+> |---|---|
+> | `/gz-gates ADR-0.1.0` | `gz gates --adr ADR-0.1.0` |
+>
 > This runs the gate checks automatically and records pass/fail events
 > in the governance ledger.
 
@@ -541,12 +587,14 @@ what the evidence shows. Walk through:
 
 The instructor observes the test output live and reviews the artifacts.
 
-> **With gzkit CLI (coming soon):**
-> ```bash
-> gz closeout ADR-0.1.0
-> ```
-> This generates a structured closeout report with verification commands
-> and attestation choices.
+> **With gzkit:**
+>
+> | Skill (preferred) | CLI equivalent |
+> |---|---|
+> | `/gz-adr-closeout-ceremony ADR-0.1.0` | `gz closeout ADR-0.1.0` |
+>
+> The `/gz-adr-closeout-ceremony` skill runs the full walkthrough
+> protocol and rejects vague acknowledgment ("ok", "looks good").
 
 ---
 
@@ -573,10 +621,12 @@ git add docs/design/adr/ADR-0.1.0/
 git commit -m "Attest ADR-0.1.0: completed"
 ```
 
-> **With gzkit CLI (coming soon):**
+> **With gzkit:**
+>
 > ```bash
 > gz attest ADR-0.1.0 --status completed
 > ```
+>
 > This records a timestamped `attested` event in the governance ledger
 > and checks prerequisite gates before allowing attestation.
 

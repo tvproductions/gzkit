@@ -1,0 +1,54 @@
+name: Defect Report
+description: Something isn't working as expected.
+labels: ["defect"]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: gzkit version
+      description: "Output of `gz --version`"
+      placeholder: "0.25.5"
+    validations:
+      required: true
+  - type: input
+    id: python
+    attributes:
+      label: Python version
+      description: "Output of `python --version`"
+      placeholder: "3.13.0"
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Platform
+      description: "OS and version (e.g. macOS 15.4, Windows 11, Ubuntu 24.04)"
+      placeholder: "macOS 15.4"
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: "Describe what you observed. Include the command you ran and the output you got."
+      placeholder: "I ran `gz init --mode lite` and got..."
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+      description: "Describe what you expected to happen instead."
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: "Minimal steps to reproduce the issue."
+      placeholder: |
+        1. gz init --mode lite
+        2. gz prd my-project
+        3. ...
+    validations:
+      required: false
