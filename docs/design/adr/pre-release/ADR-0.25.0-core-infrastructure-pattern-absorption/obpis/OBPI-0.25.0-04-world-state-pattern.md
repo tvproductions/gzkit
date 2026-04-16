@@ -119,16 +119,16 @@ An Exclude decision produces no code changes and no operator-visible behavior ch
 
 ## Acceptance Criteria
 
-- [x] REQ-0.25.0-04-01: Given the completed comparison, then the brief records
+- [x] REQ-0.25.0-04-01: [doc] Given the completed comparison, then the brief records
   one final decision: `Absorb` or `Exclude`. — **Exclude** recorded in Decision section.
-- [x] REQ-0.25.0-04-02: Given the decision rationale, then it cites concrete
+- [x] REQ-0.25.0-04-02: [doc] Given the decision rationale, then it cites concrete
   capability, robustness, or ergonomics differences between airlineops and
   gzkit. — Twelve-dimension comparison table in Comparison Analysis section.
-- [x] REQ-0.25.0-04-03: Given an `Absorb` outcome, then gzkit contains the
+- [x] REQ-0.25.0-04-03: [doc] Given an `Absorb` outcome, then gzkit contains the
   adapted module/tests needed to carry the pattern safely. — N/A (Exclude decision).
-- [x] REQ-0.25.0-04-04: Given an `Exclude` outcome, then the brief explains why
+- [x] REQ-0.25.0-04-04: [doc] Given an `Exclude` outcome, then the brief explains why
   the pattern is domain-specific or otherwise not fit for gzkit. — Subtraction test and rationale in Decision and Comparison Analysis sections.
-- [x] REQ-0.25.0-04-05: Given any operator-visible behavior change, then Gate 4
+- [x] REQ-0.25.0-04-05: [doc] Given any operator-visible behavior change, then Gate 4
   behavioral proof is present; otherwise the brief records `N/A` with
   rationale. — N/A recorded in Gate 4 BDD section.
 

@@ -87,16 +87,16 @@ airline-domain-specific tooling.
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.25.0-30-01: Given the completed comparison, then the brief records
+- [ ] REQ-0.25.0-30-01: [doc] Given the completed comparison, then the brief records
   one final decision: `Absorb` or `Exclude`.
-- [ ] REQ-0.25.0-30-02: Given the decision rationale, then it cites concrete
+- [ ] REQ-0.25.0-30-02: [doc] Given the decision rationale, then it cites concrete
   capability, robustness, or ergonomics differences between airlineops and
   gzkit.
-- [ ] REQ-0.25.0-30-03: Given an `Absorb` outcome, then gzkit contains the
+- [ ] REQ-0.25.0-30-03: [doc] Given an `Absorb` outcome, then gzkit contains the
   adapted module/tests needed to carry the pattern safely.
-- [ ] REQ-0.25.0-30-04: Given an `Exclude` outcome, then the brief explains why
+- [ ] REQ-0.25.0-30-04: [doc] Given an `Exclude` outcome, then the brief explains why
   the pattern is domain-specific or otherwise not fit for gzkit.
-- [ ] REQ-0.25.0-30-05: Given any operator-visible behavior change, then Gate 4
+- [ ] REQ-0.25.0-30-05: [doc] Given any operator-visible behavior change, then Gate 4
   behavioral proof is present; otherwise the brief records `N/A` with
   rationale.
 

@@ -165,16 +165,16 @@ output formats, or behavioral changes are introduced.
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.25.0-20-01: Given the completed comparison, then the brief records
+- [ ] REQ-0.25.0-20-01: [doc] Given the completed comparison, then the brief records
   one final decision: `Absorb`, `Confirm`, or `Exclude`.
-- [ ] REQ-0.25.0-20-02: Given the decision rationale, then it cites concrete
+- [ ] REQ-0.25.0-20-02: [doc] Given the decision rationale, then it cites concrete
   capability, robustness, or ergonomics differences between airlineops and
   gzkit.
-- [ ] REQ-0.25.0-20-03: Given an `Absorb` outcome, then gzkit contains the
+- [ ] REQ-0.25.0-20-03: [doc] Given an `Absorb` outcome, then gzkit contains the
   adapted module/tests needed to carry the pattern safely.
-- [ ] REQ-0.25.0-20-04: Given a `Confirm` or `Exclude` outcome, then the brief
+- [ ] REQ-0.25.0-20-04: [doc] Given a `Confirm` or `Exclude` outcome, then the brief
   explains why no upstream absorption is warranted.
-- [ ] REQ-0.25.0-20-05: Given any operator-visible behavior change, then Gate 4
+- [ ] REQ-0.25.0-20-05: [doc] Given any operator-visible behavior change, then Gate 4
   behavioral proof is present; otherwise the brief records `N/A` with
   rationale.
 
