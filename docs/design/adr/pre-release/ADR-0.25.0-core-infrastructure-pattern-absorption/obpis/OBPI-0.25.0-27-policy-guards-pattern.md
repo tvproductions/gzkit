@@ -206,16 +206,16 @@ update is required.
 
 ## Acceptance Criteria
 
-- [x] REQ-0.25.0-27-01: Given the completed comparison, then the brief records
+- [x] REQ-0.25.0-27-01: [doc] Given the completed comparison, then the brief records
   one final decision: `Absorb`, `Confirm`, or `Exclude`.
-- [x] REQ-0.25.0-27-02: Given the decision rationale, then it cites concrete
+- [x] REQ-0.25.0-27-02: [doc] Given the decision rationale, then it cites concrete
   capability, robustness, or ergonomics differences between airlineops and
   gzkit — see the 12-row Capability Comparison table and the 7-point rationale.
 - [x] REQ-0.25.0-27-03: Given an `Absorb` outcome, then gzkit contains the
   adapted module/tests needed to carry the pattern safely —
   `src/gzkit/hooks/guards.py:_safe_print` plus `tests/test_hooks_guards.py`
   (26 tests).
-- [x] REQ-0.25.0-27-04: Given a `Confirm` or `Exclude` outcome, then the brief
+- [x] REQ-0.25.0-27-04: [doc] Given a `Confirm` or `Exclude` outcome, then the brief
   explains why no upstream absorption is warranted — N/A (Absorb chosen; see
   rationale for why partial absorption with gzkit API preservation is the
   right outcome rather than full Absorb or Confirm).

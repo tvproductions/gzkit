@@ -140,16 +140,16 @@ No operator-visible behavior change. This is a Confirm decision — no code was 
 
 ## Acceptance Criteria
 
-- [x] REQ-0.25.0-22-01: Given the completed comparison, then the brief records
+- [x] REQ-0.25.0-22-01: [doc] Given the completed comparison, then the brief records
   one final decision: `Absorb`, `Confirm`, or `Exclude`.
-- [x] REQ-0.25.0-22-02: Given the decision rationale, then it cites concrete
+- [x] REQ-0.25.0-22-02: [doc] Given the decision rationale, then it cites concrete
   capability, robustness, or ergonomics differences between airlineops and
   gzkit.
-- [x] REQ-0.25.0-22-03: Given an `Absorb` outcome, then gzkit contains the
+- [x] REQ-0.25.0-22-03: [doc] Given an `Absorb` outcome, then gzkit contains the
   adapted module/tests needed to carry the pattern safely.
-- [x] REQ-0.25.0-22-04: Given a `Confirm` or `Exclude` outcome, then the brief
+- [x] REQ-0.25.0-22-04: [doc] Given a `Confirm` or `Exclude` outcome, then the brief
   explains why no upstream absorption is warranted.
-- [x] REQ-0.25.0-22-05: Given any operator-visible behavior change, then Gate 4
+- [x] REQ-0.25.0-22-05: [doc] Given any operator-visible behavior change, then Gate 4
   behavioral proof is present; otherwise the brief records `N/A` with
   rationale.
 
