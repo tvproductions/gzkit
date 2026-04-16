@@ -1,0 +1,27 @@
+arb: invalid step invocation: ARB step name is required
+----------------------------------------------------------------------
+Ran 2991 tests in 33.475s
+
+OK
+usage: gz patch release [-h] [--dry-run] [--json] [--quiet | --verbose]
+                        [--debug]
+
+Execute the GHI-driven patch release ceremony.
+
+options:
+  -h, --help     show this help message and exit
+  --dry-run      Show planned actions without executing
+  --json         Output as JSON
+  --quiet, -q    Suppress non-error output
+  --verbose, -v  Enable verbose output
+  --debug        Enable debug mode with full tracebacks
+
+Examples
+    gz patch release --dry-run
+    gz patch release --json
+
+Exit codes
+    0   Success
+    1   User/config error
+    2   System/IO error
+    3   Policy breach

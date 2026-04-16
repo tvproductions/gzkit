@@ -1,0 +1,4 @@
+Running type checker...
+All checks passed!
+
+Type check passed.
