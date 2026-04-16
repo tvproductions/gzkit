@@ -58,8 +58,10 @@ By default, `gz init` creates a minimal Python project skeleton:
 | `pyproject.toml` | Project metadata, Python >=3.13, ruff config, hatchling build |
 | `src/<project>/__init__.py` | Source package (name derived from directory) |
 | `tests/__init__.py` | Test package |
+| `.venv/` | Virtual environment (via `uv sync`) |
 
 All skeleton files are idempotent — existing files are never overwritten.
+`uv sync` only runs when `.venv` does not yet exist.
 Use `--no-skeleton` to skip skeleton creation entirely (governance-only init).
 
 ---
@@ -123,6 +125,7 @@ Initializing gzkit for my-project in lite mode...
   Created pyproject.toml
   Created src/my_project/__init__.py
   Created tests/__init__.py
+  Ran uv sync (virtualenv created)
   Scaffolded 5 core skills
   Scaffolded 2 default personas
   Generated CLAUDE.md
