@@ -2,6 +2,7 @@ import unittest
 from pathlib import Path
 
 from gzkit.cli import main
+from gzkit.commands.init_cmd import _normalize_package_name
 from tests.commands.common import CliRunner
 
 
@@ -42,14 +43,27 @@ class TestInitCommand(unittest.TestCase):
             self.assertTrue(Path("design/constitutions").exists())
             self.assertTrue(Path("design/adr").exists())
 
-    def test_init_fails_if_already_initialized(self) -> None:
-        """init fails if already initialized."""
+    def test_init_rerun_repairs_instead_of_failing(self) -> None:
+        """Re-running init without --force repairs missing artifacts."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            # Delete a skeleton file to simulate missing artifact
+            pyproject = Path("pyproject.toml")
+            pyproject.unlink()
+            result = runner.invoke(main, ["init"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("Repairing", result.output)
+            self.assertTrue(pyproject.exists())
+
+    def test_init_rerun_reports_nothing_to_repair(self) -> None:
+        """Re-running init when everything exists reports nothing to repair."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             runner.invoke(main, ["init"])
             result = runner.invoke(main, ["init"])
-            self.assertNotEqual(result.exit_code, 0)
-            self.assertIn("already initialized", result.output)
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("Nothing to repair", result.output)
 
     def test_init_with_force(self) -> None:
         """init --force reinitializes."""
@@ -58,6 +72,109 @@ class TestInitCommand(unittest.TestCase):
             runner.invoke(main, ["init"])
             result = runner.invoke(main, ["init", "--force"])
             self.assertEqual(result.exit_code, 0)
+
+
+class TestInitProjectSkeleton(unittest.TestCase):
+    """Tests for project skeleton scaffolding during gz init."""
+
+    def test_init_creates_pyproject_toml(self) -> None:
+        """init creates pyproject.toml."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(main, ["init"])
+            self.assertEqual(result.exit_code, 0)
+            pyproject = Path("pyproject.toml")
+            self.assertTrue(pyproject.exists())
+            content = pyproject.read_text(encoding="utf-8")
+            self.assertIn("[project]", content)
+            self.assertIn('requires-python = ">=3.13"', content)
+
+    def test_init_creates_src_package(self) -> None:
+        """init creates src/<project>/__init__.py."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(main, ["init"])
+            self.assertEqual(result.exit_code, 0)
+            # Directory name becomes the package name
+            src_dirs = list(Path("src").iterdir())
+            self.assertGreaterEqual(len(src_dirs), 1)
+            package_dir = src_dirs[0]
+            self.assertTrue((package_dir / "__init__.py").exists())
+
+    def test_init_creates_tests_init(self) -> None:
+        """init creates tests/__init__.py."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(main, ["init"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertTrue(Path("tests/__init__.py").exists())
+
+    def test_init_no_skeleton_skips_project_files(self) -> None:
+        """init --no-skeleton does not create project skeleton."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(main, ["init", "--no-skeleton"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertFalse(Path("pyproject.toml").exists())
+            self.assertFalse(Path("tests/__init__.py").exists())
+
+    def test_init_does_not_overwrite_existing_pyproject(self) -> None:
+        """init preserves an existing pyproject.toml."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            custom = '[project]\nname = "my-custom"\nversion = "9.9.9"\n'
+            Path("pyproject.toml").write_text(custom, encoding="utf-8")
+            result = runner.invoke(main, ["init"])
+            self.assertEqual(result.exit_code, 0)
+            content = Path("pyproject.toml").read_text(encoding="utf-8")
+            self.assertIn("9.9.9", content)
+
+    def test_init_pyproject_uses_project_name(self) -> None:
+        """pyproject.toml contains the detected project name."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(main, ["init"])
+            self.assertEqual(result.exit_code, 0)
+            content = Path("pyproject.toml").read_text(encoding="utf-8")
+            # The directory name is the project name (from tempdir)
+            self.assertIn('name = "', content)
+
+    def test_repair_creates_missing_skeleton(self) -> None:
+        """Re-running init repairs missing skeleton files."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            # Delete skeleton files
+            Path("pyproject.toml").unlink()
+            import shutil
+
+            shutil.rmtree("tests")
+            # Re-run should repair
+            result = runner.invoke(main, ["init"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertTrue(Path("pyproject.toml").exists())
+            self.assertTrue(Path("tests/__init__.py").exists())
+
+    def test_repair_partial_skeleton_fills_gaps(self) -> None:
+        """Repair with partial skeleton only creates what's missing."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            # Keep pyproject.toml, delete only tests/
+            original_pyproject = Path("pyproject.toml").read_text(encoding="utf-8")
+            import shutil
+
+            shutil.rmtree("tests")
+            # Re-run should repair tests/ but leave pyproject.toml untouched
+            result = runner.invoke(main, ["init"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertTrue(Path("tests/__init__.py").exists())
+            self.assertEqual(
+                Path("pyproject.toml").read_text(encoding="utf-8"),
+                original_pyproject,
+            )
+            # Only tests/ repair should appear, not pyproject.toml
+            self.assertNotIn("pyproject.toml", result.output)
 
 
 class TestInitPersonaScaffolding(unittest.TestCase):
@@ -93,3 +210,25 @@ class TestInitPersonaScaffolding(unittest.TestCase):
             runner.invoke(main, ["init", "--force"])
             content = persona_file.read_text(encoding="utf-8")
             self.assertIn("custom", content)
+
+
+class TestNormalizePackageName(unittest.TestCase):
+    """Tests for _normalize_package_name."""
+
+    _CASES = [
+        ("my-project", "my_project"),
+        ("My Project", "my_project"),
+        ("rhea", "rhea"),
+        ("RHEA", "rhea"),
+        ("my--double--hyphen", "my_double_hyphen"),
+        ("project.name", "projectname"),
+        ("123start", "123start"),
+        ("", "app"),
+        ("---", "app"),
+    ]
+
+    def test_normalize_cases(self) -> None:
+        """Package name normalization produces valid Python identifiers."""
+        for input_name, expected in self._CASES:
+            with self.subTest(input_name=input_name):
+                self.assertEqual(_normalize_package_name(input_name), expected)

@@ -1,5 +1,35 @@
 # gzkit Release Notes
 
+## v0.25.1 (2026-04-15)
+
+**GHI:** #171 — gz init does not scaffold Python project skeleton
+
+First non-dogfooded use of gzkit (RHEA project) revealed that `gz init`
+scaffolded governance infrastructure but left the project without a runnable
+Python skeleton.
+
+### Fixed
+
+- **`gz init` now creates a Python project skeleton** — `pyproject.toml`
+  (Python >=3.13, hatchling, ruff config), `src/<project>/__init__.py`, and
+  `tests/__init__.py` are created alongside governance scaffolding
+- **Re-running `gz init` enters repair mode** — detects and creates missing
+  artifacts (skeleton files, governance dirs, manifest) without overwriting
+  existing files; no `--force` required
+- **`--no-skeleton` flag** — opt out of project skeleton creation for
+  governance-only init on projects with existing build setups
+
+### Changed
+
+- `gz init` on an already-initialized project no longer errors; it repairs
+- Parser description and epilog updated to reflect new behavior
+- `gz-init` skill updated with repair workflow documentation
+
+### Tests
+
+- 19 tests covering skeleton creation, idempotent repair, partial skeleton
+  fill, package name normalization, and `--no-skeleton` opt-out
+
 ## v0.25.0 (2026-04-15)
 
 **ADR:** ADR-0.25.0 — Core Infrastructure Pattern Absorption
