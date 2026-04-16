@@ -1,8 +1,13 @@
 """Version sync helpers and audit evidence aggregation for CLI commands."""
 
+from __future__ import annotations
+
 import re
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from gzkit.core.validation_rules import ValidationError
 
 from gzkit.ledger import Ledger
 
@@ -87,8 +92,61 @@ def sync_project_version(project_root: Path, new_version: str) -> list[str]:
     return updated
 
 
+def validate_version_consistency(project_root: Path) -> list[ValidationError]:
+    """Assert pyproject.toml, __init__.py, and README badge versions all match.
+
+    Returns a list of ``ValidationError`` for each file whose version
+    disagrees with pyproject.toml (the source of truth).
+    """
+    from gzkit.core.validation_rules import ValidationError  # noqa: PLC0415
+
+    canonical = _read_current_project_version(project_root)
+    if canonical is None:
+        return []
+
+    errors: list[ValidationError] = []
+
+    # __init__.py
+    init_py = project_root / "src" / "gzkit" / "__init__.py"
+    if init_py.is_file():
+        text = init_py.read_text(encoding="utf-8")
+        m = re.search(r'^__version__\s*=\s*"(\d+\.\d+\.\d+)"', text, re.MULTILINE)
+        if m and m.group(1) != canonical:
+            errors.append(
+                ValidationError(
+                    type="version_sync",
+                    artifact="src/gzkit/__init__.py",
+                    message=(
+                        f"__init__.py version {m.group(1)} does not match "
+                        f"pyproject.toml version {canonical}"
+                    ),
+                )
+            )
+
+    # README badge
+    readme = project_root / "README.md"
+    if readme.is_file():
+        text = readme.read_text(encoding="utf-8")
+        m = _VERSION_BADGE_RE.search(text)
+        if m:
+            badge_ver_match = re.search(r"version-(\d+\.\d+\.\d+)", m.group(0))
+            if badge_ver_match and badge_ver_match.group(1) != canonical:
+                errors.append(
+                    ValidationError(
+                        type="version_sync",
+                        artifact="README.md",
+                        message=(
+                            f"README.md badge version {badge_ver_match.group(1)} does not match "
+                            f"pyproject.toml version {canonical}"
+                        ),
+                    )
+                )
+
+    return errors
+
+
 def aggregate_audit_evidence(
-    ledger: "Ledger",
+    ledger: Ledger,
     adr_id: str,
     graph: dict[str, Any],
 ) -> dict[str, Any]:
