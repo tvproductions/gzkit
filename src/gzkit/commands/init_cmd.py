@@ -277,6 +277,20 @@ def _repair_missing_artifacts(
     if gi_status:
         repaired.append(gi_status)
 
+    # Repair skills — scaffold any core skills added in newer gzkit versions
+    new_skills = scaffold_core_skills(project_root, config, skip_existing=not dry_run)
+    if dry_run:
+        # In dry-run, check which skills are missing without writing
+        from gzkit.skills import CORE_SKILLS  # noqa: PLC0415
+
+        skills_dir = project_root / config.paths.skills
+        for dir_name in CORE_SKILLS:
+            if not (skills_dir / dir_name / "SKILL.md").exists():
+                repaired.append(f"Would scaffold skill: {dir_name}")
+    elif new_skills:
+        for skill_path in new_skills:
+            repaired.append(f"Scaffolded new skill: {skill_path.parent.name}")
+
     # Repair manifest
     manifest_path = project_root / config.paths.manifest
     if not manifest_path.exists():
