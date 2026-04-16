@@ -7,6 +7,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 from gzkit.commands.common import console, get_project_root
+from gzkit.commands.version_sync import validate_version_consistency
 from gzkit.instruction_audit import audit_instructions
 from gzkit.models.persona import discover_persona_files, validate_persona_structure
 from gzkit.tasks import parse_task_trailers
@@ -386,6 +387,7 @@ def _collect_errors(
     check_requirements: bool = False,
     check_commit_trailers: bool = False,
     check_frontmatter: bool = False,
+    check_version: bool = False,
 ) -> list[ValidationError]:
     """Collect validation errors across all requested check types."""
     # Scopes included in "run_all" (no flags = run these)
@@ -398,6 +400,7 @@ def _collect_errors(
         "briefs": check_briefs,
         "personas": check_personas,
         "frontmatter": check_frontmatter,
+        "version": check_version,
     }
     # Scopes that only run when explicitly requested
     explicit_scopes: dict[str, bool] = {
@@ -440,6 +443,8 @@ def _run_scope_checks(
         errors.extend(_validate_personas(project_root))
     if active("frontmatter"):
         errors.extend(_validate_frontmatter_coherence(project_root))
+    if active("version"):
+        errors.extend(validate_version_consistency(project_root))
     if explicit_scopes.get("interviews"):
         errors.extend(_validate_interviews(project_root))
     if explicit_scopes.get("decomposition"):
@@ -481,6 +486,7 @@ def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
         "briefs",
         "documents",
         "personas",
+        "version",
     ]
     # "opt-in" scopes only activate when explicitly requested
     opt_in_scopes = ["interviews", "decomposition", "requirements", "commit_trailers"]
@@ -524,6 +530,7 @@ def validate(
     check_requirements: bool = False,
     check_commit_trailers: bool = False,
     check_frontmatter: bool = False,
+    check_version: bool = False,
     as_json: bool = False,
 ) -> None:
     """Validate governance artifacts against schemas."""
@@ -542,6 +549,7 @@ def validate(
         check_requirements,
         check_commit_trailers,
         check_frontmatter,
+        check_version,
     )
 
     if as_json:
@@ -565,5 +573,6 @@ def validate(
         "requirements": check_requirements,
         "commit_trailers": check_commit_trailers,
         "frontmatter": check_frontmatter,
+        "version": check_version,
     }
     _print_validation_result(errors, _resolve_scopes(checks))

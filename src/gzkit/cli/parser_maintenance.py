@@ -232,6 +232,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         action="store_true",
         help="Validate frontmatter fields (id, parent, lane) against ledger truth",
     )
+    p_validate.add_argument(
+        "--version",
+        dest="check_version",
+        action="store_true",
+        help="Validate version consistency across all locations",
+    )
     add_json_flag(p_validate)
     p_validate.set_defaults(
         func=lambda a: validate(
@@ -247,6 +253,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_requirements=a.check_requirements,
             check_commit_trailers=a.check_commit_trailers,
             check_frontmatter=a.check_frontmatter,
+            check_version=a.check_version,
             as_json=a.as_json,
         )
     )

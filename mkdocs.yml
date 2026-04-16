@@ -72,12 +72,42 @@ nav:
     - Test Traceability: user/concepts/test-traceability.md
   - Skills:
     - Overview: user/skills/index.md
-    - /gz-adr-map: user/skills/gz-adr-map.md
-    - /gz-adr-create: user/skills/gz-adr-create.md
-    - /gz-arb: user/skills/gz-arb.md
-    - /gz-check: user/skills/gz-check.md
-    - /gz-session-handoff: user/skills/gz-session-handoff.md
-    - /gz-chore-runner: user/skills/gz-chore-runner.md
+    - Project Setup:
+      - /gz-init: user/skills/gz-init.md
+      - /gz-prd: user/skills/gz-prd.md
+      - /gz-constitute: user/skills/gz-constitute.md
+      - /gz-design: user/skills/gz-design.md
+    - Planning:
+      - /gz-plan: user/skills/gz-plan.md
+      - /gz-adr-create: user/skills/gz-adr-create.md
+      - /gz-obpi-specify: user/skills/gz-obpi-specify.md
+      - /gz-adr-evaluate: user/skills/gz-adr-evaluate.md
+      - /gz-plan-audit: user/skills/gz-plan-audit.md
+    - Execution:
+      - /gz-obpi-pipeline: user/skills/gz-obpi-pipeline.md
+      - /gz-implement: user/skills/gz-implement.md
+      - /gz-gates: user/skills/gz-gates.md
+      - /gz-check: user/skills/gz-check.md
+      - /gz-arb: user/skills/gz-arb.md
+    - Status & Review:
+      - /gz-status: user/skills/gz-status.md
+      - /gz-adr-status: user/skills/gz-adr-status.md
+      - /gz-state: user/skills/gz-state.md
+      - /gz-obpi-simplify: user/skills/gz-obpi-simplify.md
+      - /gz-adr-map: user/skills/gz-adr-map.md
+    - Closeout & Audit:
+      - /gz-adr-closeout-ceremony: user/skills/gz-adr-closeout-ceremony.md
+      - /gz-adr-audit: user/skills/gz-adr-audit.md
+      - /gz-obpi-reconcile: user/skills/gz-obpi-reconcile.md
+      - /gz-adr-emit-receipt: user/skills/gz-adr-emit-receipt.md
+      - /gz-validate: user/skills/gz-validate.md
+    - Operations:
+      - /git-sync: user/skills/git-sync.md
+      - /gz-patch-release: user/skills/gz-patch-release.md
+      - /gz-session-handoff: user/skills/gz-session-handoff.md
+      - /gz-chore-runner: user/skills/gz-chore-runner.md
+      - /gz-obpi-lock: user/skills/gz-obpi-lock.md
+      - /gz-cli-audit: user/skills/gz-cli-audit.md
   - Commands:
     - Overview: user/commands/index.md
     - gz init: user/commands/init.md

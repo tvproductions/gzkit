@@ -1,5 +1,44 @@
 # gzkit Release Notes
 
+## v0.25.3 (2026-04-16)
+
+**Skills as first-class control surfaces in documentation.**
+
+First non-dogfooded use of gzkit (RHEA project) revealed that documentation
+treated skills as optional shortcuts in comments, not as co-equal operator
+surfaces. Skills carry governance logic (interviews, forcing functions,
+semantic authoring, pipeline orchestration) that raw CLI commands skip — they
+should be the recommended path in Claude Code sessions.
+
+### Changed
+
+- **Quickstart** now shows both CLI and skill invocations side-by-side for
+  every step, with notes on what governance logic each skill adds
+- **User index** adds a "Two Operator Surfaces" section and a CLI/skill
+  comparison table in the operational contract
+- **PRD Guide** adds "Creating a PRD in gzkit" section with CLI and skill
+  paths, and a lifecycle table in "From PRD to Action"
+- **ADR Guide** adds "Creating an ADR in gzkit" section recommending
+  `/gz-plan` for its design forcing functions, plus `/gz-design` for
+  pre-ADR exploration
+- **Task Guide** adds "Creating and Executing Tasks in gzkit" table mapping
+  the full task lifecycle to CLI commands and skills
+- **Daily Workflow** concept page elevates skills from "wrapper" language to
+  co-equal surface with explicit CLI vs Skill comparison table
+- **mkdocs.yml** expands skill navigation from 6 entries to 30, organized
+  by lifecycle phase (Project Setup, Planning, Execution, Status & Review,
+  Closeout & Audit, Operations)
+- **User index** "Start Here" section now links to the skills reference
+
+### Added
+
+- **`gz validate --version`** checks that pyproject.toml, `__init__.py`,
+  and README badge versions all agree. Runs automatically as part of
+  `gz validate` (no flags) so existing quality gates catch version drift
+  before it ships. 5 tests added.
+
+---
+
 ## v0.25.2 (2026-04-16)
 
 **GHI:** #171 — gz init does not scaffold Python project skeleton

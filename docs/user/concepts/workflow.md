@@ -8,22 +8,34 @@ This is the operator habit loop for gzkit-first GovZero parity.
 
 1. OBPI is the unit of execution and completion.
 2. ADR is the roll-up boundary for attestation/audit lifecycle state.
-3. After planning an OBPI, execution should flow through `uv run gz obpi pipeline`
-   (or the wrapper skill `gz-obpi-pipeline`), not freeform implementation.
-   The CLI and generated hook surfaces now share `src/gzkit/pipeline_runtime.py`
+3. After planning an OBPI, execution should flow through the pipeline —
+   either `uv run gz obpi pipeline` (CLI) or `/gz-obpi-pipeline` (skill).
+   The CLI and generated hook surfaces share `src/gzkit/pipeline_runtime.py`
    as the canonical runtime engine.
 4. Run ADR closeout only when OBPI evidence is complete.
+
+### CLI vs Skill
+
+Both surfaces invoke the same runtime engine. The difference is governance
+logic:
+
+| Surface | What it adds |
+|---------|-------------|
+| CLI (`gz <verb>`) | Direct command execution — assumes governance steps already happened |
+| Skill (`/gz-<name>`) | Interview logic, forcing functions, staged orchestration, subagent dispatch |
+
+When a skill exists for your current workflow step, prefer it.
 
 ---
 
 ## OBPI Increment Loop (Default)
 
 1. **Orient**
-   - `uv run gz status`
-   - `uv run gz adr status ADR-<X.Y.Z> --json`
+   - CLI: `uv run gz status` + `uv run gz adr status ADR-<X.Y.Z> --json`
+   - Skill: `/gz-adr-status ADR-<X.Y.Z>`
 2. **Execute through the pipeline**
-   - `uv run gz obpi pipeline OBPI-<X.Y.Z-NN>`
-   - wrapper skill remains available: `/gz-obpi-pipeline OBPI-<X.Y.Z-NN>`
+   - CLI: `uv run gz obpi pipeline OBPI-<X.Y.Z-NN>`
+   - Skill: `/gz-obpi-pipeline OBPI-<X.Y.Z-NN>`
 3. **Verify increment**
    - `uv run gz obpi validate path/to/OBPI-<X.Y.Z-NN>-<slug>.md`
    - `uv run gz implement --adr ADR-<X.Y.Z>`
@@ -31,7 +43,8 @@ This is the operator habit loop for gzkit-first GovZero parity.
 4. **Present evidence**
    - value narrative, key proof, verification outputs
 5. **Run guarded sync**
-   - `uv run gz git-sync --apply --lint --test`
+   - CLI: `uv run gz git-sync --apply --lint --test`
+   - Skill: `/git-sync`
 6. **Record OBPI completion from the synced state**
    - `uv run gz obpi emit-receipt OBPI-<X.Y.Z-NN>-<slug> --event completed ...`
    - `uv run gz obpi reconcile OBPI-<X.Y.Z-NN>-<slug>`
@@ -44,7 +57,7 @@ This is the operator habit loop for gzkit-first GovZero parity.
 
 1. `uv run gz obpi reconcile OBPI-<X.Y.Z-NN>-<slug>`
 2. `uv run gz adr audit-check ADR-<X.Y.Z>`
-3. `uv run gz closeout ADR-<X.Y.Z>`
+3. CLI: `uv run gz closeout ADR-<X.Y.Z>` / Skill: `/gz-adr-closeout-ceremony ADR-<X.Y.Z>`
 4. `uv run gz attest ADR-<X.Y.Z> --status completed`
 5. `uv run gz audit ADR-<X.Y.Z>`
 6. `uv run gz adr emit-receipt ADR-<X.Y.Z> --event validated ...`
@@ -66,3 +79,4 @@ This is the operator habit loop for gzkit-first GovZero parity.
 - [Closeout](closeout.md)
 - [OBPIs](obpis.md)
 - [Runbook](../runbook.md)
+- [Skills](../skills/index.md)

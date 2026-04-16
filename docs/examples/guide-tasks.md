@@ -236,6 +236,22 @@ professional teams:
 The core principle is identical: **one brief per deliverable, with clear
 acceptance criteria and a way to verify completion.**
 
+### Creating and Executing Tasks in gzkit
+
+gzkit provides CLI commands and skills for the full task lifecycle:
+
+| Step | CLI | Skill | What it does |
+|------|-----|-------|--------------|
+| Create OBPI brief | `gz specify slug --parent ADR-0.1.0 --item 1` | `/gz-obpi-specify` | Author the task brief with acceptance criteria |
+| Execute pipeline | `gz obpi pipeline OBPI-0.1.0-01-slug` | `/gz-obpi-pipeline` | Implement, verify, present evidence, sync |
+| Track task work | `gz task start TASK-0.1.0-01-01-01` | (CLI only) | Start a leaf task under an OBPI |
+| Verify gates | `gz gates --adr ADR-0.1.0` | `/gz-gates` | Run lane-required quality gates |
+| Check quality | `gz check` | `/gz-check` | Full quality pass (lint + test + typecheck) |
+
+When working in Claude Code, use the skills — they carry governance
+orchestration (staged pipeline, subagent dispatch, review cycles) that the
+raw CLI does not.
+
 ---
 
 ## Templates

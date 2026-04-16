@@ -137,6 +137,27 @@ Title + Metadata (who, when, version)
 
 ---
 
+## Creating a PRD in gzkit
+
+gzkit provides both a CLI command and a skill for creating PRDs.
+
+**CLI (terminal):**
+
+```bash
+gz prd MYPROJECT-1.0.0 --title "My Project Name"
+```
+
+**Skill (Claude Code session):**
+
+```text
+/gz-prd
+```
+
+The `/gz-prd` skill is recommended when working in Claude Code — it guides
+you through declaring project-level intent before ADR planning begins.
+
+---
+
 ## From PRD to Action
 
 A PRD tells you *what* to build. The next step is deciding *how* to break it
@@ -147,6 +168,16 @@ PRD (what to build)
   └── ADR (how to approach a specific feature)
         └── Tasks (individual work items per feature)
 ```
+
+In gzkit, the flow continues:
+
+| Step | CLI | Skill | What it does |
+|------|-----|-------|--------------|
+| 1 | `gz prd` | `/gz-prd` | Declare project intent |
+| 2 | `gz plan 0.1.0 --title "..."` | `/gz-plan` | Create the first ADR (skill adds design interviews) |
+| 3 | `gz specify slug --parent ADR-0.1.0 --item 1` | `/gz-obpi-specify` | Break out OBPI items under the ADR |
+| 4 | `gz obpi pipeline OBPI-0.1.0-01-...` | `/gz-obpi-pipeline` | Implement, verify, present evidence |
+| 5 | `gz gates --adr ADR-0.1.0` | `/gz-gates` | Run gate checks |
 
 See: [ADR Guide](guide-adr.md) and [Task Guide](guide-tasks.md)
 

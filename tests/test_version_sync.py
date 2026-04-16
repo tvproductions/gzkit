@@ -148,5 +148,79 @@ class TestCheckVersionSync(unittest.TestCase):
             self.assertFalse(needs)
 
 
+class TestValidateVersionConsistency(unittest.TestCase):
+    """Version-consistency validation: all three version locations must agree."""
+
+    def _make_project(
+        self,
+        root: Path,
+        pyproject_ver: str = "0.25.3",
+        init_ver: str = "0.25.3",
+        badge_ver: str = "0.25.3",
+    ) -> None:
+        (root / "pyproject.toml").write_text(
+            f'[project]\nname = "gzkit"\nversion = "{pyproject_ver}"\n',
+            encoding="utf-8",
+        )
+        src = root / "src" / "gzkit"
+        src.mkdir(parents=True)
+        (src / "__init__.py").write_text(f'__version__ = "{init_ver}"\n', encoding="utf-8")
+        (root / "README.md").write_text(
+            f"# gzkit\n[![Version](https://img.shields.io/badge/version-{badge_ver}-blue.svg)](RELEASE_NOTES.md)\n",
+            encoding="utf-8",
+        )
+
+    def test_all_match_returns_no_errors(self) -> None:
+        from gzkit.commands.version_sync import validate_version_consistency
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._make_project(root, "0.25.3", "0.25.3", "0.25.3")
+            errors = validate_version_consistency(root)
+            self.assertEqual(errors, [])
+
+    def test_badge_drift_detected(self) -> None:
+        from gzkit.commands.version_sync import validate_version_consistency
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._make_project(root, "0.25.3", "0.25.3", "0.25.0")
+            errors = validate_version_consistency(root)
+            self.assertEqual(len(errors), 1)
+            self.assertIn("README.md", errors[0].message)
+            self.assertIn("0.25.0", errors[0].message)
+
+    def test_init_drift_detected(self) -> None:
+        from gzkit.commands.version_sync import validate_version_consistency
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._make_project(root, "0.25.3", "0.25.1", "0.25.3")
+            errors = validate_version_consistency(root)
+            self.assertEqual(len(errors), 1)
+            self.assertIn("__init__.py", errors[0].message)
+
+    def test_all_three_different_returns_two_errors(self) -> None:
+        from gzkit.commands.version_sync import validate_version_consistency
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._make_project(root, "0.25.3", "0.25.1", "0.25.0")
+            errors = validate_version_consistency(root)
+            self.assertEqual(len(errors), 2)
+
+    def test_missing_files_skipped_gracefully(self) -> None:
+        from gzkit.commands.version_sync import validate_version_consistency
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "pyproject.toml").write_text(
+                '[project]\nname = "gzkit"\nversion = "0.25.3"\n',
+                encoding="utf-8",
+            )
+            errors = validate_version_consistency(root)
+            self.assertEqual(errors, [])
+
+
 if __name__ == "__main__":
     unittest.main()
