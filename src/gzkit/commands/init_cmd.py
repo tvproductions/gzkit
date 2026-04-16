@@ -132,15 +132,45 @@ def _scaffold_project_skeleton(
 
 
 _GITIGNORE_CONTENT = """\
-# Python
+# Byte-compiled / optimized / DLL files
+# Reference: https://github.com/github/gitignore/blob/main/Python.gitignore
 __pycache__/
-*.py[cod]
-*.egg-info/
-dist/
-build/
+*.py[codz]
+*$py.class
 
-# Virtual environment
+# C extensions
+*.so
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Unit test / coverage reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+*.py.cover
+
+# Environments
+.env
 .venv/
+env/
+venv/
+
+# Type checkers
+.mypy_cache/
+.pytype/
+.pyre/
+
+# Ruff
+.ruff_cache/
+
+# mkdocs
+/site
 
 # Claude Code user settings (machine-specific)
 .claude/settings.local.json
