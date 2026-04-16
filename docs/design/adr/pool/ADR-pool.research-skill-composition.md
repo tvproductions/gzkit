@@ -34,11 +34,23 @@ without bespoke retrieval infrastructure.
 
 ## Target Scope
 
-- Author a `gz-research` skill that teaches agents the discover-assess-read workflow: search structured APIs for metadata, evaluate relevance from abstracts, read full text only for high-signal hits.
-- Provide zero-dependency Python helper scripts for arxiv Atom API and Semantic Scholar REST API (no auth required for either).
-- Define a citation format for ADR evidence sections that links to paper IDs, RFC numbers, or standard identifiers.
-- Integrate with `agent-insights.jsonl` so research findings persist across sessions.
+### Discovery (search → filter → read)
+
+- Author a `gz-research` skill that teaches agents the 7-step workflow: (1) search arxiv by keyword/category, (2) assess impact via Semantic Scholar citation counts and influential citation flags, (3) read abstracts for relevance, (4) read full text only for high-signal papers, (5) explore related work via Semantic Scholar recommendations, (6) trace citation lineage (references and citing papers), (7) generate citations.
+- Provide a zero-dependency Python helper script for the arxiv Atom API (stdlib `urllib` + `xml.etree`). Semantic Scholar is REST-only — the agent calls it directly, no script needed.
 - Support category-scoped search (e.g., cs.SE for software engineering, cs.AI for agent architectures).
+
+### Persistence (findings → governance artifacts)
+
+Hermes treats research findings as ephemeral conversation context — once the session ends, the knowledge is lost. gzkit closes this gap by linking findings to governance artifacts at three tiers:
+
+- **ADR evidence sections** (Layer 1) — When a paper informs an architectural decision, the agent adds a structured citation to the ADR's evidence or references section. This is the permanent traceability record: "this design decision was informed by [paper Y]."
+- **`agent-insights.jsonl`** (Layer 2) — Research findings that don't yet attach to a specific ADR are recorded as insights with structured metadata (paper ID, title, relevance summary, discovery date). This enables cross-session recall: "we found a paper on append-only ledgers last week."
+- **FTS5 search index** (Layer 3, if ADR-pool.cross-session-search is promoted) — Insights and evidence citations become searchable, enabling "find everything we've read about X" queries.
+
+### Citation format
+
+- Define a citation format for ADR evidence sections that links to paper IDs (arxiv: `arXiv:XXXX.XXXXX`), RFC numbers (`RFC NNNN`), or standard identifiers (`NIST SP 800-XX`).
 
 ---
 
@@ -74,16 +86,21 @@ This pool ADR can be promoted when all are true:
 [NousResearch/hermes-agent](https://github.com/nousresearch/hermes-agent) —
 `skills/research/arxiv/` implements a zero-dependency arxiv search script
 (`search_arxiv.py` using `urllib.request` against the Atom API) composed with
-a SKILL.md that teaches the agent to assess impact via Semantic Scholar and
-read full text via `web_extract()`. The pattern demonstrates that structured
-knowledge access requires no heavy infrastructure — a helper script plus a
-composable skill document is sufficient.
+a SKILL.md that teaches the agent a 7-step workflow: discover via script,
+filter by Semantic Scholar impact, read selectively via `web_extract()`,
+explore citations, generate BibTeX. The discovery and composition pattern is
+strong. The persistence gap is the opportunity: Hermes treats findings as
+ephemeral conversation context (lost when the session ends, unless the agent
+manually writes a note to a 2200-char `MEMORY.md` scratch pad). gzkit's
+structured governance artifacts — ADR evidence sections, ledger events,
+searchable insights — provide a natural durable home that Hermes lacks.
 
 ---
 
 ## Notes
 
 - Hermes's arxiv script returns metadata only (title, authors, abstract snippet, links). Full-text reading is delegated to a separate tool. This separation keeps the discovery step fast and cheap.
-- Semantic Scholar's API provides citation counts, influential citation flags, and recommendation endpoints — useful for assessing whether a paper is worth reading in full.
-- The arxiv Atom API supports boolean queries, category filters, and author search. Rate limit is generous (3 requests/second).
-- Key design tension: should research findings go into `agent-insights.jsonl` (session-scoped) or into ADR evidence sections (artifact-scoped)? Likely both — insights for cross-session recall, evidence sections for governance traceability.
+- Semantic Scholar's API provides citation counts, influential citation flags, and recommendation endpoints — useful for filtering before committing to a full-text read. No auth required; rate limit is 1 req/s (100 req/s with free API key).
+- The arxiv Atom API supports boolean queries (`AND`, `OR`, `ANDNOT`), prefix-scoped fields (`ti:`, `au:`, `abs:`, `cat:`), and pagination. Rate limit is ~1 req/3s.
+- The persistence model resolves the earlier design tension: findings go to both `agent-insights.jsonl` (cross-session recall) and ADR evidence sections (governance traceability). Insights are the working memory; evidence sections are the permanent record.
+- Consider: should `gz-research` emit a `research_finding` ledger event? This would make findings first-class governance events, queryable via `gz search` and auditable alongside gate checks. Lighter alternative: structured entries in `agent-insights.jsonl` only.
