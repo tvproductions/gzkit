@@ -17,7 +17,8 @@ gz init [OPTIONS]
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `--mode` | `lite` \| `heavy` | `lite` | Governance mode |
-| `--force` | flag | — | Overwrite existing initialization |
+| `--force` | flag | — | Full reinitialize (overwrites config, re-scaffolds) |
+| `--no-skeleton` | flag | — | Skip Python project skeleton (pyproject.toml, src/, tests/) |
 | `--dry-run` | flag | — | Show actions without writing |
 
 ---
@@ -27,10 +28,39 @@ gz init [OPTIONS]
 1. Creates `.gzkit/` directory with ledger
 2. Creates `.gzkit.json` configuration
 3. Detects project structure (source, tests, docs paths)
-4. Generates `CLAUDE.md` from governance canon
-5. Sets up agent hooks (Claude, Copilot)
-6. Creates `design/` directories for governance artifacts
-7. Scans for existing PRDs/ADRs and offers to register them
+4. Creates Python project skeleton (`pyproject.toml`, `src/<project>/`, `tests/`)
+5. Generates `CLAUDE.md` from governance canon
+6. Sets up agent hooks (Claude, Copilot)
+7. Creates `design/` directories for governance artifacts
+8. Scans for existing PRDs/ADRs and offers to register them
+
+---
+
+## Re-run (Repair Mode)
+
+Running `gz init` on an already-initialized project enters **repair mode**:
+
+- Detects and creates any missing artifacts (skeleton files, governance dirs, manifest)
+- Re-syncs control surfaces
+- Does not overwrite existing files
+- Does not require `--force`
+
+Use `--force` only when you need a full reinitialize (rewrites config, re-scaffolds everything).
+
+---
+
+## Project Skeleton
+
+By default, `gz init` creates a minimal Python project skeleton:
+
+| Artifact | Content |
+|----------|---------|
+| `pyproject.toml` | Project metadata, Python >=3.13, ruff config, hatchling build |
+| `src/<project>/__init__.py` | Source package (name derived from directory) |
+| `tests/__init__.py` | Test package |
+
+All skeleton files are idempotent — existing files are never overwritten.
+Use `--no-skeleton` to skip skeleton creation entirely (governance-only init).
 
 ---
 
@@ -62,13 +92,19 @@ Use when changing CLI, API, or schema contracts.
 ## Example
 
 ```bash
-# Initialize with defaults
+# Initialize with defaults (governance + project skeleton)
 gz init
 
 # Initialize in heavy mode
 gz init --mode heavy
 
-# Reinitialize (overwrites existing)
+# Governance-only (no pyproject.toml, src/, tests/)
+gz init --no-skeleton
+
+# Repair missing artifacts on an existing project
+gz init
+
+# Full reinitialize
 gz init --force
 
 # Dry run
@@ -83,17 +119,20 @@ gz init --dry-run
 Initializing gzkit for my-project in lite mode...
   Created design/prd/
   Created design/constitutions/
-  Created design/briefs/
   Created design/adr/
+  Created pyproject.toml
+  Created src/my_project/__init__.py
+  Created tests/__init__.py
+  Scaffolded 5 core skills
+  Scaffolded 2 default personas
   Generated CLAUDE.md
   Created .claude/settings.json
   Created .copilotignore
-  Scaffolded 3 core skills
 
 gzkit initialized successfully!
 
 Next steps:
   gz prd <name>       Create a PRD
-  gz status           Check gate status
+  gz status           Check OBPI progress and lifecycle status
   gz validate         Validate artifacts
 ```
