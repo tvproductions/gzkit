@@ -429,8 +429,14 @@ def _warn_orphaned_adrs(project_root: Path, config: GzkitConfig, ledger: Ledger)
     for adr_file in artifacts.get("adrs", []):
         stem_id = adr_file.stem
         canonical = ledger.canonicalize_id(stem_id)
-        if stem_id not in known and canonical not in known:
-            orphans.append(stem_id)
+        # Check exact match first, then prefix match: file stems follow the
+        # convention {ADR-X.Y.Z}-{slug} so a registered ledger ID (ADR-X.Y.Z)
+        # is a prefix of the stem.  Uses filesystem convention, not frontmatter.
+        if stem_id in known or canonical in known:
+            continue
+        if any(stem_id.startswith(f"{kid}-") for kid in known):
+            continue
+        orphans.append(stem_id)
 
     if orphans:
         console.print(
