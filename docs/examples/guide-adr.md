@@ -230,9 +230,42 @@ time slot, and instructor."
 
 ---
 
+## Creating an ADR in gzkit
+
+gzkit provides both CLI commands and skills for ADR creation.
+
+**CLI (terminal):**
+
+```bash
+gz plan 0.1.0 --title "Course Search Implementation"
+```
+
+**Skill (Claude Code session):**
+
+```text
+/gz-plan
+```
+
+The `/gz-plan` skill is strongly recommended — it runs 20+ design
+forcing-function questions (pre-mortem analysis, constraint archaeology,
+reversibility assessment) that the raw CLI skips entirely. These questions
+surface risks and alternatives before you commit to a decision.
+
+For design exploration before committing to an ADR:
+
+```text
+/gz-design
+```
+
+The `/gz-design` skill runs a collaborative design dialogue that produces
+ADR artifacts after structured brainstorming.
+
+---
+
 ## From ADR to Tasks
 
-Once an ADR is accepted, each checklist item becomes a task:
+Once an ADR is accepted, each checklist item becomes a task (called an
+**OBPI** — One Brief Per Item — in gzkit):
 
 ```text
 ADR-001: Course Search Implementation
@@ -241,6 +274,16 @@ ADR-001: Course Search Implementation
   ├── Task 3: CLI or API endpoint for search
   └── Task 4: Results pagination
 ```
+
+In gzkit, decompose checklist items into OBPI briefs:
+
+| CLI | Skill | What it does |
+|-----|-------|--------------|
+| `gz specify slug --parent ADR-0.1.0 --item 1` | `/gz-obpi-specify` | Create and semantically author the OBPI brief |
+
+The `/gz-obpi-specify` skill performs lane resolution from the ADR's WBS
+table and validates decomposition scorecard alignment — raw CLI generates
+thin placeholder briefs that require manual authoring.
 
 See: [Task Guide](guide-tasks.md) for how to structure these.
 
