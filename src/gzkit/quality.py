@@ -310,7 +310,7 @@ def run_typecheck(project_root: Path) -> QualityResult:
 
 
 def run_tests(project_root: Path) -> QualityResult:
-    """Run unit tests via unittest-parallel for module-level parallelism.
+    """Run unit tests (unittest discover).
 
     Args:
         project_root: Project root directory.
@@ -319,7 +319,7 @@ def run_tests(project_root: Path) -> QualityResult:
         QualityResult from testing.
 
     """
-    return run_command("uv run unittest-parallel -s tests -t . -q", cwd=project_root)
+    return run_command("uv run -m unittest discover tests", cwd=project_root)
 
 
 def run_behave(project_root: Path) -> QualityResult:
