@@ -55,13 +55,28 @@ def format_cmd() -> None:
         raise SystemExit(result.returncode)
 
 
-def test() -> None:
-    """Run unit tests and behave scenarios.
+def test(*, integration: bool = False) -> None:
+    """Run the test tier (unit by default, integration with --integration).
 
-    Runs unittest first; on success continues to behave so a single command
-    covers the full test floor (unit + BDD/CLI contract scenarios).
+    Unit tier runs unittest over ``tests/`` (excluding ``tests/integration/``)
+    then behave scenarios — the fast pre-commit floor. Integration tier runs
+    only ``tests/integration/`` (subprocess-spawning, real-filesystem tests)
+    and skips behave.
     """
     project_root = get_project_root()
+
+    if integration:
+        console.print("Running integration tier...")
+        result = run_tests(project_root, integration=True)
+        if result.stdout:
+            console.print(result.stdout)
+        if result.stderr:
+            console.print(result.stderr)
+        if not result.success:
+            console.print("[red]Integration tests failed.[/red]")
+            raise SystemExit(result.returncode)
+        console.print("[green]Integration tests passed.[/green]")
+        return
 
     console.print("Running unit tests...")
     unit = run_tests(project_root)
