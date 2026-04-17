@@ -116,32 +116,29 @@ def _resolve_obpi_test_names(project_root, obpi: str) -> list[str]:
 def _resolve_obpi_behave_tags(project_root, obpi: str) -> list[str]:
     """Return behave scenario tags (``@REQ-...``) covering this OBPI's REQs.
 
-    Scans ``features/**/*.feature`` for scenario tag lines (``@REQ-X.Y.Z-NN-MM``
-    at scenario or feature level). Returns only tags whose REQ ID belongs to
-    this OBPI — the filter list passed to ``behave --tags=``.
+    Delegates feature-file parsing to ``scan_feature_tree`` — the canonical
+    scanner used by ``gz covers`` (GHI #185) — so the tag list this
+    function emits is always consistent with the coverage graph.
     """
-    import re  # noqa: PLC0415
+    from gzkit.traceability import EdgeType, scan_feature_tree  # noqa: PLC0415
+    from gzkit.triangle import ReqId  # noqa: PLC0415
 
     req_ids = _resolve_obpi_req_ids(project_root, obpi)
     if not req_ids:
         return []
 
-    req_tag_pattern = re.compile(r"@REQ-\d+\.\d+\.\d+-\d+-\d+")
-    features_root = project_root / "features"
-    if not features_root.is_dir():
-        return []
-
+    records = scan_feature_tree(project_root / "features")
     tags: set[str] = set()
-    for feature_file in features_root.rglob("*.feature"):
-        try:
-            content = feature_file.read_text(encoding="utf-8")
-        except OSError:
+    for rec in records:
+        if rec.edge_type != EdgeType.COVERS:
             continue
-        for match in req_tag_pattern.finditer(content):
-            tag = match.group(0)
-            req_id = tag.removeprefix("@")
-            if req_id in req_ids:
-                tags.add(tag)
+        try:
+            target_req = ReqId.parse(rec.target.identifier)
+        except ValueError:
+            continue
+        if str(target_req) not in req_ids:
+            continue
+        tags.add(f"@{target_req}")
     return sorted(tags)
 
 
