@@ -8,7 +8,7 @@ owner: gzkit-governance
 last_reviewed: 2026-04-12
 model: haiku
 metadata:
-  skill-version: "1.1.1"
+  skill-version: "1.2.0"
 ---
 
 # gz check
@@ -32,7 +32,7 @@ Unified quality gate for all code verification. Replaces the individual
 
 - **Quick fix-up:** Run individual commands (`gz lint`, `gz format`) after small edits
 - **Pre-merge / pre-attestation:** Run `gz check` for the full suite
-- **Before `gz git-sync --apply --lint --test`:** Run `gz check` first
+- **Before `gz git-sync --apply`:** Run `gz check` first
 - **Before Gate 2 / Gate 3 verification:** Full suite required
 - **Before closeout and attestation workflows:** Full suite required
 

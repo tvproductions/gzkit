@@ -5,7 +5,7 @@ description: Execute the ADR closeout ceremony protocol for human attestation. G
 category: adr-audit
 compatibility: GovZero v6 framework; provides runbook walkthrough for human ADR attestation
 metadata:
-  skill-version: "7.2.1"
+  skill-version: "7.3.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -207,7 +207,7 @@ For non-Foundation releases:
 ```bash
 # Step 9: Update RELEASE_NOTES.md (agent edits the file)
 # Step 10: Sync and create GitHub release
-uv run gz git-sync --apply --lint --test
+uv run gz git-sync --apply
 gh release create vX.Y.Z --title "vX.Y.Z" --notes-file RELEASE_NOTES.md
 ```
 
@@ -220,11 +220,11 @@ When the CLI outputs the ceremony completion summary (CLI Step 11), present it t
 ```bash
 # Sync 1 — closeout artifacts: ceremony state, attestation receipt, ADR audit
 # updates, GHI close comments, release notes (if applicable).
-uv run gz git-sync --apply --lint --test
+uv run gz git-sync --apply
 
 # Sync 2 — reconcile output and ADR status refresh after the first sync lands.
 uv run gz adr reconcile ADR-X.Y.Z
-uv run gz git-sync --apply --lint --test
+uv run gz git-sync --apply
 ```
 
 **Why two syncs:**
@@ -363,7 +363,7 @@ State is persisted at `.gzkit/ceremonies/<ADR-ID>.json` by the CLI. Structure:
 6. **MUST** wait for explicit human attestation before closing — acknowledgment is not attestation
 7. **MUST** run `uv run gz closeout ADR-X.Y.Z` for the closeout pipeline — never manually record attestation
 8. **MUST** review and close related GitHub Issues after attestation
-9. **MUST** run `uv run gz git-sync --apply --lint --test` before `gh release create` (non-Foundation) and after ceremony completion
+9. **MUST** run `uv run gz git-sync --apply` before `gh release create` (non-Foundation) and after ceremony completion
 10. **MUST** follow the Rejection Loop-Back procedure when the human requests corrections
 
 ---
