@@ -151,6 +151,76 @@ uv run gz validate --requirements      # flags OBPIs with bare REQUIREMENTS sect
 - Fixtures: local, small, reproducible; avoid huge goldens.
 - **Database isolation**: Unit tests MUST use `tempfile` temp DBs; NEVER use live/production databases.
 
+## Unit vs Integration Tier (GHI #181)
+
+gzkit splits its test tree into two tiers. The boundary is mechanical, not
+aspirational — `gz test` defaults to the unit tier and the pre-commit hook
+targets unit tier only. Integration tier runs on demand or in CI.
+
+| Tier | Location | Runner | Allowed |
+|------|----------|--------|---------|
+| Unit | `tests/` (excluding `tests/integration/`) | `gz test` | `tempfile`, mocked subprocess, `_quick_init`, in-process CliRunner |
+| Integration | `tests/integration/` | `gz test --integration` | real `git` subprocess, real `uv sync`, full `gz init` via CliRunner |
+
+### Unit-tier contract
+
+A test belongs in the unit tier if and only if:
+
+- It does **not** spawn real `git`, `uv`, or any external subprocess
+  (except via mocks/patches)
+- It does **not** invoke `runner.invoke(main, ["init"])` — use `_quick_init`
+  from `tests/commands/common.py` instead
+- It completes in < 200ms on a typical workstation
+- It is deterministic across repeated runs without filesystem cleanup races
+
+### Integration-tier contract
+
+A test belongs in `tests/integration/` if any of the following hold:
+
+- It spawns `git`, `uv sync`, or any external CLI as a real subprocess
+- It exercises the full `gz init` flow (template rendering, skill mirroring,
+  hook generation) under `CliRunner().isolated_filesystem()`
+- It verifies end-to-end behavior that mocked boundaries cannot honestly test
+  (sync parity between canonical and mirrored surfaces, subprocess timeouts,
+  real git history manipulation)
+
+Integration tests MUST continue to use the same `tests.commands.common`
+helpers (`CliRunner`, `_init_git_repo`) so the boundary remains about
+runtime behavior, not import hierarchy.
+
+### Tier gating mechanism
+
+`tests/integration/__init__.py` implements a `load_tests` protocol that
+returns an empty suite unless discovery was initiated against
+`tests/integration/` directly or with `GZKIT_TIER=integration` in the
+environment. This makes `unittest discover tests` safe to invoke as the
+unit-tier runner without listing files explicitly.
+
+### Canonical violation
+
+`tests/commands/test_sync_cmds.py::TestGitSyncCommand::test_git_sync_dry_run_in_git_repo` (pre-GHI #181):
+
+- Spawned `git init`, `git config`, `git add`, `git commit` — 5 real
+  subprocesses per test
+- Cost ~1.07s per invocation versus ~10ms for a mocked equivalent
+- Asserted only that the string `"Git sync plan"` appeared in output —
+  the real git state was never inspected
+
+Remediation: file relocated to `tests/integration/commands/test_sync_cmds.py`.
+Any future test with the same shape belongs in the integration tier, not
+`tests/commands/`.
+
+### Anti-patterns
+
+- Adding a subprocess-spawning test to `tests/commands/` because "it's a
+  command test and lives next to the others"
+- Using `runner.invoke(main, ["init"])` when `_quick_init` would give
+  identical fixture state 5x faster
+- Moving a test to `tests/integration/` to "make it pass" when the real
+  fix is to mock the subprocess boundary
+- Running `gz test --integration` from a pre-commit hook — the integration
+  tier is designed for on-demand and CI use, not per-commit
+
 ## DB Isolation (Django-like philosophy)
 
 - Never touch live/production DBs from tests.
