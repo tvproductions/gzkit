@@ -9,6 +9,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--instructions] [--briefs] [--personas]
             [--interviews] [--decomposition]
             [--requirements] [--commit-trailers]
+            [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
 ```
 
 ## Description
@@ -63,9 +64,57 @@ the caller's perspective the check is non-mutating. The operational
 `- **Updated**: YYYY-MM-DD` line in `AGENTS.md` is normalized before
 comparison so stale sync timestamps never trigger false drift.
 
+### `--frontmatter`
+
+Validates the four governed frontmatter fields (`id`, `parent`, `lane`,
+`status`) on every ADR and OBPI file against the ledger's artifact graph.
+Keys lookups on filesystem path only — never on frontmatter `id:` (that
+pattern reproduces GHI #166). The check uses the same canonical ledger
+semantics API that `gz adr report` uses, so drift reported by this scope
+is the same drift the operator sees in the report surface.
+
+Ungoverned frontmatter keys (`tags:`, `related:`, any key outside the
+four governed fields) are ignored. The validator never mutates files —
+reconciliation belongs to `gz chore run frontmatter-ledger-coherence`
+(ADR-0.0.16 / OBPI-03). Exits 3 on drift per CLI doctrine 4-code map.
+
+#### `--adr <ID>`
+
+Scopes `--frontmatter` validation to one ADR (and its child OBPIs).
+Useful for iterating on a single artifact without reprinting repo-wide
+drift.
+
+#### `--explain <ADR-ID>`
+
+Prints step-by-step remediation per drifted field for the named ADR.
+Every drifted field gets a one-line recovery command naming an executable
+`gz` verb (`gz register-adrs`, `gz adr promote`,
+`gz chore run frontmatter-ledger-coherence`). Never suggests hand-editing
+frontmatter — frontmatter is L3 derived state, not a source of truth.
+
+#### Examples
+
+```bash
+# Repo-wide frontmatter coherence check
+gz validate --frontmatter
+
+# Machine-readable drift report (emits drift[] array in payload)
+gz validate --frontmatter --json
+
+# One ADR at a time
+gz validate --frontmatter --adr ADR-0.1.0
+
+# Remediation guidance for a drifted ADR
+gz validate --frontmatter --explain ADR-0.1.0
+```
+
 ## Exit Codes
 
-| Code | Meaning |
-|------|---------|
-| 0 | All artifacts valid |
-| 1 | Validation errors found |
+Follows the CLI doctrine 4-code map:
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | All artifacts valid | — |
+| 1 | User/config error or non-frontmatter validation error | Fix invocation or address reported errors |
+| 2 | System/IO error | Check filesystem and retry |
+| 3 | Frontmatter-ledger policy breach (drift) | Run `gz validate --frontmatter --explain <ADR>` then the suggested recovery command |
