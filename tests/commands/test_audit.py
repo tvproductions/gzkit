@@ -2,12 +2,24 @@ import json
 import shutil
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from gzkit.cli import main
 from gzkit.doc_coverage.manifest import manpage_path_for
 from tests.commands.common import CliRunner
 
 _REAL_PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
+_uv_sync_patcher = patch("gzkit.commands.init_cmd._run_uv_sync", return_value=None)
+
+
+def setUpModule() -> None:
+    """Stub subprocess calls to ``uv sync`` — each real invocation costs ~1s."""
+    _uv_sync_patcher.start()
+
+
+def tearDownModule() -> None:
+    _uv_sync_patcher.stop()
 
 
 class TestConfigAndCliAuditCommands(unittest.TestCase):
