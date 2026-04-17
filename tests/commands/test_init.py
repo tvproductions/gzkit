@@ -1,9 +1,21 @@
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from gzkit.cli import main
 from gzkit.commands.init_cmd import _normalize_package_name
 from tests.commands.common import CliRunner
+
+_uv_sync_patcher = patch("gzkit.commands.init_cmd._run_uv_sync", return_value=None)
+
+
+def setUpModule() -> None:
+    """Stub subprocess calls to ``uv sync`` — each real invocation costs ~1s."""
+    _uv_sync_patcher.start()
+
+
+def tearDownModule() -> None:
+    _uv_sync_patcher.stop()
 
 
 class TestInitCommand(unittest.TestCase):
