@@ -78,4 +78,5 @@ dev = [
     "pyinstaller>=6.19.0",
     "ruff>=0.15",
     "ty>=0.0.31",
+    "unittest-parallel>=1.7",
 ]
