@@ -19,6 +19,8 @@ class ValidationError(BaseModel):
     artifact: str  # Path or identifier
     message: str
     field: str | None = None  # Specific field that failed
+    ledger_value: str | None = None  # Ledger-derived value (frontmatter drift)
+    frontmatter_value: str | None = None  # Observed frontmatter value (frontmatter drift)
 
 
 class ValidationResult(BaseModel):

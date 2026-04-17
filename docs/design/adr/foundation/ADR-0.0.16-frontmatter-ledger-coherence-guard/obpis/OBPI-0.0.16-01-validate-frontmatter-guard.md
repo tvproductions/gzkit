@@ -3,7 +3,7 @@ id: OBPI-0.0.16-01-validate-frontmatter-guard
 parent: ADR-0.0.16
 item: 1
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.16-01-validate-frontmatter-guard: gz validate --frontmatter guard
@@ -184,66 +184,131 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 ### Gate 2 (TDD — Red-Green-Refactor)
 
 ```text
-# Paste test output here
+$ uv run gz arb step --name unittest -- \
+    uv run -m unittest tests.commands.test_validate_frontmatter tests.commands.test_validate_cmds
+Ran 28 tests in 0.887s
+OK
+receipt: artifacts/receipts/arb-step-unittest-4e7ee0eb9f634b09a5287787488158e7.json
 ```
+
+Full-suite evidence: `uv run gz test` → 3029 unit pass; 116 behave scenarios pass.
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+$ uv run gz arb ruff
+receipt: artifacts/receipts/arb-ruff-9ac850603e89458db82bc3416063722f.json (exit 0)
+
+$ uv run gz arb step --name typecheck -- uvx ty check . --exclude 'features/**'
+Found 1 diagnostic (pre-existing, scripts/backfill_req_ids.py:246 — tracked as GHI #184)
+receipt: artifacts/receipts/arb-step-typecheck-52d070c2f9f24b5a862012a2e09b2ae6.json
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here when Gate 3 applies
+$ uv run mkdocs build --strict
+INFO -  Documentation built in 1.95 seconds
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here when Gate 4 applies
+$ uv run gz test  # includes behave
+18 features passed, 0 failed, 0 skipped
+116 scenarios passed, 0 failed, 0 skipped
+613 steps passed, 0 failed, 0 skipped
+Took 0min 55.766s
 ```
 
 ### Gate 5 (Human)
 
-```text
-# Record attestation text here when required by parent lane
-```
+See Human Attestation section below.
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before this OBPI, frontmatter drift on ADR/OBPI files was a silent corruption
+vector — 13 code paths across 8 files read `id`/`parent`/`lane`/`status` as
+authoritative, and 94.7% of `status:` values disagreed with ledger truth with
+no mechanical check. After this OBPI, `gz validate --frontmatter`
+deterministically reports per-field drift using the same canonical ledger
+semantics API that `gz adr report` uses (`Ledger.derive_adr_semantics`,
+`_derive_obpi_runtime_state`), exits 3 per CLI doctrine on policy breach, and
+offers `--adr`/`--explain` surfaces for scoped diagnosis and operator-facing
+remediation naming.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+```
+$ uv run gz validate --frontmatter --explain ADR-0.0.16
+Remediation for ADR-0.0.16:
+
+  Field status: ledger='pending' frontmatter='Draft'
+    → run: gz chore run frontmatter-ledger-coherence
+  ... (one line per drifted field, naming a gz recovery command)
+
+$ echo $?
+3
+```
+
+Repo-wide dogfood: `gz validate --frontmatter` detects 315 drift entries on
+the current repo (matches the ADR's 94.7% premise — guard working as
+designed; OBPI-0.0.16-04 backfill will clear).
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
+
+- Files created:
+  - `src/gzkit/commands/validate_frontmatter.py` (278 lines) — path-keyed
+    resolver, four-field comparison, status derivation via canonical
+    ledger-semantics API, explain renderer
+  - `tests/commands/test_validate_frontmatter.py` (266 lines) — 10
+    REQ-decorated tests covering all eight acceptance criteria
+- Files modified:
+  - `src/gzkit/commands/validate_cmd.py` — threads `frontmatter_adr` /
+    `frontmatter_explain` through `validate()`, routes exit 3 for
+    frontmatter drift, emits `drift[]` JSON key
+  - `src/gzkit/cli/parser_maintenance.py` — registers `--adr` and
+    `--explain` flags
+  - `src/gzkit/core/validation_rules.py` — extends `ValidationError` with
+    optional `ledger_value` / `frontmatter_value` fields (additive,
+    non-breaking via `exclude_none=True`)
+  - `docs/user/commands/validate.md` — documents `--frontmatter`,
+    `--adr`, `--explain`; full 4-code exit-code table
+- Tests added: 10 (`@covers REQ-0.0.16-01-01..08`), 0.355s total
+- REQ parity: `gz covers OBPI-0.0.16-01 --json` → 8/8 REQs covered (100%)
+- Date completed: 2026-04-17
+- Attestation status: completed (Normal mode, Heavy lane)
 - Defects noted:
+  - GHI #183 — unit-tier test-perf hot spots (test_init/test_skills/
+    test_sync_cmds/test_audit > 800ms/test); pre-existing, deferred per
+    operator decision
+  - Pre-existing `uvx ty check` diagnostic in
+    `scripts/backfill_req_ids.py:246` — tracked by ARB receipt
+    `arb-step-typecheck-52d070c2f9f24b5a862012a2e09b2ae6`; unrelated to
+    this OBPI
 
 ## Tracked Defects
 
 <!-- Record GitHub defect linkage when defects are discovered during this OBPI.
      Use one bullet per issue so status surfaces can preserve traceability. -->
 
-_No defects tracked._
+- GHI #183 — Unit-tier test-perf hot spots
+  (test_init/test_skills/test_sync_cmds/test_audit > 800ms/test). Pre-existing
+  infrastructure defect surfaced during Stage 3 verification; deferred per
+  operator decision. Not caused by this OBPI.
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `jeff`
+- Attestation: attest completed — Path-keyed frontmatter/ledger coherence guard shipped with exit-3 policy-breach routing, four-field (id/parent/lane/status) comparison, --adr scope and --explain remediation surfaces. 10 tests @covers REQ-0.0.16-01-01..08 (8/8 parity via gz covers, 100%); 3029 unit + 116 behave pass; mkdocs --strict clean. Canonical ledger semantics reused (Ledger.derive_adr_semantics + _derive_obpi_runtime_state) to stay under 1.0s budget on 125-ADR / 451-OBPI real repo (actual 0.355s). Dogfood detects 315 drift entries matching ADR's 94.7% premise — OBPI-04 backfill will clear. Receipts: lint arb-ruff-9ac850603e89458db82bc3416063722f; typecheck arb-step-typecheck-52d070c2f9f24b5a862012a2e09b2ae6 (1 pre-existing diagnostic in scripts/backfill_req_ids.py:246, non-OBPI-scoped); tests arb-step-unittest-4e7ee0eb9f634b09a5287787488158e7. Tracked defect: GHI #183 unit-tier test-perf hot spots, deferred per operator decision.
+- Date: 2026-04-17
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-17
 
 **Evidence Hash:** -

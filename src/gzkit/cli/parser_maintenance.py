@@ -267,7 +267,19 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         "--frontmatter",
         dest="check_frontmatter",
         action="store_true",
-        help="Validate frontmatter fields (id, parent, lane) against ledger truth",
+        help="Validate frontmatter against ledger truth (exit 3 on drift)",
+    )
+    p_validate.add_argument(
+        "--adr",
+        dest="frontmatter_adr",
+        default=None,
+        help="Scope --frontmatter validation to one ADR (and its OBPIs)",
+    )
+    p_validate.add_argument(
+        "--explain",
+        dest="frontmatter_explain",
+        default=None,
+        help="Print step-by-step remediation commands per drifted field for one ADR",
     )
     p_validate.add_argument(
         "--version",
@@ -292,6 +304,8 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_frontmatter=a.check_frontmatter,
             check_version=a.check_version,
             as_json=a.as_json,
+            frontmatter_adr=a.frontmatter_adr,
+            frontmatter_explain=a.frontmatter_explain,
         )
     )
 
