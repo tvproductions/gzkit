@@ -3,11 +3,14 @@
 Registers: init, prd, constitute, specify, plan, state, status, closeout,
 patch, audit, attest, implement, gates, migrate-semver, register-adrs, roles.
 
-Command handlers are resolved lazily via module-level ``__getattr__`` so
-``gz --help`` does not import handler modules (and their heavy transitive
-dependencies) just to render the help tree.
+Command handlers listed in ``_LAZY_HANDLERS`` are bound at module-import
+time as forwarding stubs via ``_make_lazy`` so ``gz --help`` avoids
+pulling heavy handler dependencies. Because the bindings happen
+dynamically in a loop, ruff cannot see them statically — hence the
+file-level F821 suppression below.
 """
 
+# ruff: noqa: F821 -- handler names populated dynamically from _LAZY_HANDLERS
 from __future__ import annotations
 
 import argparse
