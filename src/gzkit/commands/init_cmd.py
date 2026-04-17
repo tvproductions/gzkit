@@ -505,21 +505,33 @@ def init(mode: str, force: bool, dry_run: bool, *, no_skeleton: bool = False) ->
     )
 
 
+def _canonicalize_prd_id(name: str) -> tuple[str, str]:
+    """Normalize a user-supplied PRD name to the canonical ``PRD-<UPPER>-<semver>`` form.
+
+    The validator schema at ``src/gzkit/schemas/prd.json`` requires
+    ``^PRD-[A-Z0-9]+-[0-9]+\\.[0-9]+\\.[0-9]+$``. This function guarantees the
+    scaffolder and validator agree on the id format (GHI #186).
+
+    Returns ``(prd_id, semver)``.
+    """
+    stem = name[4:] if name.startswith("PRD-") else name
+    semver = "1.0.0"
+    trailing = stem.rsplit("-", 1)
+    if len(trailing) == 2 and re.fullmatch(r"\d+\.\d+\.\d+", trailing[1]):
+        stem, semver = trailing[0], trailing[1]
+    slug = re.sub(r"[^A-Za-z0-9]", "", stem).upper()
+    if not slug:
+        raise SystemExit(f"Invalid PRD slug: {name!r} (need at least one alphanumeric character)")
+    return f"PRD-{slug}-{semver}", semver
+
+
 def prd(name: str, title: str | None, dry_run: bool) -> None:
     """Create a new PRD."""
     config = ensure_initialized()
     project_root = get_project_root()
 
-    # Build PRD ID
-    prd_id = name if name.startswith("PRD-") else f"PRD-{name}"
+    prd_id, semver = _canonicalize_prd_id(name)
     prd_title = title or prd_id
-
-    # Determine semver from name if present
-    semver = "1.0.0"
-    if "-" in name:
-        parts = name.rsplit("-", 1)
-        if "." in parts[-1]:
-            semver = parts[-1]
 
     # Render template
     content = render_template(
