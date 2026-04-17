@@ -5,7 +5,7 @@ description: Execute the ADR closeout ceremony protocol for human attestation. G
 category: adr-audit
 compatibility: GovZero v6 framework; provides runbook walkthrough for human ADR attestation
 metadata:
-  skill-version: "7.3.0"
+  skill-version: "7.4.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -271,7 +271,7 @@ Present this template at Step 5, before requesting attestation. Every field is m
 | Command | Result | Notes |
 |---------|--------|-------|
 | `uv run gz lint` | Pass | <summary> |
-| `uv run gz test` | Pass | <N> tests |
+| `uv run gz test --bdd` | Pass | <N> unit + <M> behave scenarios (closeout = full suite) |
 | `uv run gz typecheck` | Pass | <summary> |
 | `uv run gz validate --documents` | Pass | <summary> |
 | `uv run mkdocs build --strict` | Pass | <summary> |

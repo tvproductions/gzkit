@@ -5,7 +5,7 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.2.0"
+skill-version: "6.3.0"
 last_reviewed: 2026-04-17
 ---
 
@@ -292,17 +292,23 @@ Stage 3 runs two phases: **baseline quality checks** and **REQ-level verificatio
 Run the standard quality checks sequentially (these are always inline, never dispatched):
 
 ```bash
-# Always
+# Always — OBPI-scoped, fast
 uv run gz lint
 uv run gz typecheck
-uv run gz test
+uv run gz test --obpi {OBPI-SLUG}   # runs only @covers tests for this OBPI's REQs
 
 # If Heavy lane
 uv run gz validate --documents
 uv run mkdocs build --strict
 ```
 
-(`gz test` already runs unit tests + behave; the standalone behave invocation is no longer needed.)
+**Scope discipline (GHI-incoming, 2026-04-17).** At OBPI Stage 3, run only the
+tests that cover *this* OBPI's REQs (`--obpi` uses the `@covers` graph to
+target them — typically <1s vs ~70s for the full suite). The full unittest
+suite + behave run at ADR closeout, where cross-OBPI interactions are caught.
+Pre-commit hooks (ruff + ty + unittest) still run on every commit, so the
+full suite isn't bypassed — it's just not re-run synchronously at every
+OBPI increment. Heavy-lane BDD runs via `gz test --bdd` at ADR closeout.
 
 If any baseline check fails, attempt fix and re-verify once. If still failing, release lock via `uv run gz obpi lock release {OBPI-SLUG} --force`, create handoff, and stop.
 

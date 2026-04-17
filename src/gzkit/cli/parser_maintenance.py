@@ -94,16 +94,36 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         description="Run Ruff formatter on the codebase.",
         epilog=build_epilog(["gz format"]),
     ).set_defaults(func=lambda a: _lazy("format_cmd")())
-    commands.add_parser(
+    p_test = commands.add_parser(
         "test",
-        help="Run tests",
+        help="Run unit tests (--obpi scopes to one OBPI; --bdd adds behave)",
         description=(
-            "Run the unittest suite under tests/ followed by behave scenarios. "
-            "Unit tests mock subprocess boundaries; end-to-end CLI behavior "
-            "is covered by behave under features/."
+            "Run tests with scope selection. Default = full unittest suite. "
+            "--obpi OBPI-X.Y.Z-NN runs only tests whose @covers decorator "
+            "targets a REQ in that OBPI (fastest; pipeline Stage 3 default). "
+            "--bdd adds behave scenarios (ADR closeout / Heavy-lane). "
+            "--obpi and --bdd are mutually exclusive. See .gzkit/rules/tests.md."
         ),
-        epilog=build_epilog(["gz test"]),
-    ).set_defaults(func=lambda a: _lazy("test")())
+        epilog=build_epilog(
+            [
+                "gz test --obpi OBPI-0.0.16-01",
+                "gz test",
+                "gz test --bdd",
+            ]
+        ),
+    )
+    p_test.add_argument(
+        "--bdd",
+        action="store_true",
+        default=False,
+        help="Also run behave scenarios (Heavy-lane / closeout ceremony)",
+    )
+    p_test.add_argument(
+        "--obpi",
+        default=None,
+        help="Scope run to tests @covers-covering one OBPI's REQs",
+    )
+    p_test.set_defaults(func=lambda a: _lazy("test")(bdd=a.bdd, obpi=a.obpi))
     commands.add_parser(
         "typecheck",
         help="Run type checks",

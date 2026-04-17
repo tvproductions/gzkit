@@ -8,7 +8,7 @@ owner: gzkit-governance
 last_reviewed: 2026-04-12
 model: haiku
 metadata:
-  skill-version: "1.2.0"
+  skill-version: "1.3.0"
 ---
 
 # gz check
@@ -25,7 +25,9 @@ Unified quality gate for all code verification. Replaces the individual
 | `uv run gz lint` | Ruff linting + PyMarkdown |
 | `uv run gz format` | Ruff auto-formatting |
 | `uv run gz typecheck` | Static type checks (ty) |
-| `uv run gz test` | Unit tests (unittest) |
+| `uv run gz test --obpi OBPI-X.Y.Z-NN` | Tests covering one OBPI's REQs (pipeline Stage 3) |
+| `uv run gz test` | Full unittest suite |
+| `uv run gz test --bdd` | Unit tests + behave (ADR closeout / Heavy-lane) |
 | `uv run gz check` | All of the above in one pass |
 
 ## When to Use
@@ -62,7 +64,7 @@ When deterministic receipts are needed (e.g., for audit evidence):
 ```bash
 uv run gz lint
 uv run gz typecheck
-uv run gz test
+uv run gz test --bdd    # full suite including behave — pre-attestation
 uv run gz check
 ```
 
