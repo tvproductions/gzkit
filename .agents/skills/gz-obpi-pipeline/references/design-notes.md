@@ -10,5 +10,8 @@
 - The pipeline's value is **sequencing and governance memory** -- ensuring the ceremony and sync stages happen, which is exactly what gets lost in freeform execution.
 - `src/gzkit/pipeline_runtime.py` is the canonical shared runtime used
   by the CLI and generated pipeline hooks.
-- In gzkit, `uv run gz git-sync --apply --lint --test` is the canonical Stage 5
-  sync ritual. Do not substitute ad-hoc git commands.
+- In gzkit, `uv run gz git-sync --apply` is the canonical Stage 5 sync
+  ritual. Pre-commit hooks (ruff, ty, unittest, xenon) enforce the gates on
+  every commit, so `--lint` / `--test` flags are redundant for the normal
+  ritual and are retained only for explicit edge-case verification
+  (airlineops parity, 2026-04-17). Do not substitute ad-hoc git commands.
