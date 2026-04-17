@@ -71,75 +71,83 @@ uv run gz validate --requirements      # flags OBPIs with bare REQUIREMENTS sect
 - Fixtures: local, small, reproducible; avoid huge goldens.
 - **Database isolation**: Unit tests MUST use `tempfile` temp DBs; NEVER use live/production databases.
 
-## Unit vs Integration Tier (GHI #181)
+## Two runners, one test surface (GHI #181, #182)
 
-gzkit splits its test tree into two tiers. The boundary is mechanical, not
-aspirational — `gz test` defaults to the unit tier and the pre-commit hook
-targets unit tier only. Integration tier runs on demand or in CI.
+gzkit does not have a separate "integration tier" under `unittest`. There
+are two runners and they play different roles:
 
-| Tier | Location | Runner | Allowed |
-|------|----------|--------|---------|
-| Unit | `tests/` (excluding `tests/integration/`) | `gz test` | `tempfile`, mocked subprocess, `_quick_init`, in-process CliRunner |
-| Integration | `tests/integration/` | `gz test --integration` | real `git` subprocess, real `uv sync`, full `gz init` via CliRunner |
+| Runner | Location | Purpose | Contract |
+|--------|----------|---------|----------|
+| `unittest` | `tests/` | Pure Python behavior, command contracts | Mocked subprocess boundaries; deterministic; fast |
+| `behave` | `features/` | End-to-end CLI and governance scenarios | Real operator flows, Gherkin-readable |
+
+`gz test` runs `unittest` over `tests/` and then `behave` over `features/`.
+Both gates must pass for `gz check`.
 
 ### Unit-tier contract
 
-A test belongs in the unit tier if and only if:
+A test under `tests/` must:
 
-- It does **not** spawn real `git`, `uv`, or any external subprocess
-  (except via mocks/patches)
-- It does **not** invoke `runner.invoke(main, ["init"])` — use `_quick_init`
-  from `tests/commands/common.py` instead
-- It completes in < 200ms on a typical workstation
-- It is deterministic across repeated runs without filesystem cleanup races
+- Mock every subprocess boundary it touches. The canonical helpers in
+  `tests/commands/common.py` are:
+  - `_uv_sync_patcher` — stubs `gzkit.commands.init_cmd._run_uv_sync`
+  - `_git_subprocess_patcher` — stubs `gzkit.utils.git_cmd` at every
+    import site used by `gz git-sync`
+  - `_quick_init(mode)` — 5x faster replacement for
+    `runner.invoke(main, ["init"])` when the test is not exercising
+    `gz init` itself
+- Complete in < 200ms on a typical workstation
+- Be deterministic across repeated runs without filesystem cleanup races
+- Use `tempfile` temp DBs; NEVER touch live/production databases
 
-### Integration-tier contract
+Tests that exercise `gz init` directly (e.g. `tests/commands/test_init.py`)
+keep `_uv_sync_patcher` module-level — `gz init` itself is the subject, but
+its `uv sync` subprocess child is always mocked. Tests that touch real git
+state (e.g. closeout-ceremony fixtures) may use `_init_git_repo` from the
+common helper; this is a deliberate exception for tests where the real git
+history is load-bearing and the mocking overhead exceeds the subprocess
+cost.
 
-A test belongs in `tests/integration/` if any of the following hold:
+### End-to-end coverage lives in behave
 
-- It spawns `git`, `uv sync`, or any external CLI as a real subprocess
-- It exercises the full `gz init` flow (template rendering, skill mirroring,
-  hook generation) under `CliRunner().isolated_filesystem()`
-- It verifies end-to-end behavior that mocked boundaries cannot honestly test
-  (sync parity between canonical and mirrored surfaces, subprocess timeouts,
-  real git history manipulation)
+If a scenario requires real `git` subprocess semantics, real `uv sync`, or
+a real `gz init` template-rendering round trip for its assertion, it
+belongs in `features/*.feature`. The behave runner's step definitions
+(`features/steps/`) handle subprocess setup explicitly, and the Gherkin
+surface keeps the operator intent visible. Adding a third tier under
+`unittest` (the mistake GHI #182 closes) obscures the boundary and
+duplicates behave's role.
 
-Integration tests MUST continue to use the same `tests.commands.common`
-helpers (`CliRunner`, `_init_git_repo`) so the boundary remains about
-runtime behavior, not import hierarchy.
+### Canonical history
 
-### Tier gating mechanism
-
-`tests/integration/__init__.py` implements a `load_tests` protocol that
-returns an empty suite unless discovery was initiated against
-`tests/integration/` directly or with `GZKIT_TIER=integration` in the
-environment. This makes `unittest discover tests` safe to invoke as the
-unit-tier runner without listing files explicitly.
-
-### Canonical violation
-
-`tests/commands/test_sync_cmds.py::TestGitSyncCommand::test_git_sync_dry_run_in_git_repo` (pre-GHI #181):
-
-- Spawned `git init`, `git config`, `git add`, `git commit` — 5 real
-  subprocesses per test
-- Cost ~1.07s per invocation versus ~10ms for a mocked equivalent
-- Asserted only that the string `"Git sync plan"` appeared in output —
-  the real git state was never inspected
-
-Remediation: file relocated to `tests/integration/commands/test_sync_cmds.py`.
-Any future test with the same shape belongs in the integration tier, not
-`tests/commands/`.
+- **GHI #181** (landed in `e22ac553`): introduced `tests/integration/` as
+  a second `unittest` tier to isolate 83 subprocess-wrapping tests from
+  the unit tier. Fast fix for the symptom (`gz test` from 90s to 30s),
+  but labeled the wrong class of failure.
+- **GHI #182** (this rewrite): per the DO IT RIGHT maxim in
+  `.gzkit/rules/behavioral-invariants.md` § 6a/6c, the thorough fix is
+  per-test triage — every test under the old `tests/integration/` was
+  either (a) already mockable at the Python level and relocated back to
+  `tests/commands/` with `_git_subprocess_patcher` / `_uv_sync_patcher` /
+  `_quick_init`, or (b) genuinely E2E and the operator flow it covers
+  belongs in `features/`. The triage decisions are recorded in
+  `artifacts/audits/ghi-182-triage.md`. `tests/integration/`, the
+  `load_tests` gating protocol, and the `gz test --integration` flag are
+  removed.
 
 ### Anti-patterns
 
-- Adding a subprocess-spawning test to `tests/commands/` because "it's a
-  command test and lives next to the others"
-- Using `runner.invoke(main, ["init"])` when `_quick_init` would give
-  identical fixture state 5x faster
-- Moving a test to `tests/integration/` to "make it pass" when the real
-  fix is to mock the subprocess boundary
-- Running `gz test --integration` from a pre-commit hook — the integration
-  tier is designed for on-demand and CI use, not per-commit
+- Adding a third tier (`--integration`, `--e2e`, `--slow`) to `gz test` —
+  the runner boundary (`unittest` vs `behave`) is the gate
+- Spawning real `git` or `uv sync` in a `tests/` module without a
+  documented justification — mock it with `_git_subprocess_patcher` /
+  `_uv_sync_patcher` first
+- Using `runner.invoke(main, ["init"])` when `_quick_init` would produce
+  equivalent fixture state 5x faster
+- Porting a subprocess-spawning test to behave without checking whether
+  `features/` already covers the scenario — behave duplication is the
+  same defect one layer down
+- Deleting a test without verifying its coverage is preserved elsewhere
 
 ## DB Isolation (Django-like philosophy)
 
