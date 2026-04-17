@@ -54,7 +54,7 @@ Register a `frontmatter-ledger-coherence` chore at `config/chores/frontmatter-le
 1. REQUIREMENT: A chore named `frontmatter-ledger-coherence` is registered at `config/chores/frontmatter-ledger-coherence.toml` and appears in `gz chores list`.
 2. REQUIREMENT: The chore imports and invokes the OBPI-01 validator — it NEVER reimplements drift detection. If the validator returns exit code 0, the chore emits an empty-receipt and exits 0.
 3. REQUIREMENT: When drift is detected, the chore ALWAYS rewrites the frontmatter to match the ledger (ledger-wins). It NEVER rewrites the ledger to match frontmatter.
-4. REQUIREMENT: The `status:` field is rewritten using the OBPI-02 canonical status-vocabulary mapping, not the raw ledger term. (If the mapping does not cover a term, the chore STOPs with a BLOCKER naming the unmapped term — it NEVER silently passes it through.)
+4. REQUIREMENT: The `status:` field is rewritten using the OBPI-05 canonical status-vocabulary mapping (imported as `STATUS_VOCAB_MAPPING`), not the raw ledger term. (If the mapping does not cover a term, the chore STOPs with a BLOCKER naming the unmapped term — it NEVER silently passes it through.)
 5. REQUIREMENT: A reconciliation receipt is written to `artifacts/receipts/frontmatter-coherence/<ISO8601>.json` on every non-dry-run invocation. The receipt contains: `ledger_cursor` (latest ledger event hash/id sampled), `run_started_at`, `run_completed_at`, `files_rewritten` (list), `files_rewritten[].path`, `files_rewritten[].diffs[]` (with `field`, `before`, `after`), `dry_run` (bool).
 6. REQUIREMENT: The receipt validates against a JSON schema `data/schemas/frontmatter_coherence_receipt.schema.json` with `$id: gzkit.frontmatter_coherence_receipt.schema.json`.
 7. REQUIREMENT: `--dry-run` produces the same receipt content with `dry_run=true` and makes NO filesystem writes to ADR/OBPI files. The dry-run receipt is still emitted to `artifacts/receipts/frontmatter-coherence/`.
@@ -64,6 +64,15 @@ Register a `frontmatter-ledger-coherence` chore at `config/chores/frontmatter-le
 11. REQUIREMENT: The chore does NOT close any GitHub issues. Issue closure is OBPI-04's responsibility.
 12. REQUIREMENT: The chore does NOT wire into `gz gates`. Gate integration lives in OBPI-02.
 13. REQUIREMENT: Tests cover: chore registration visibility (`gz chores list`), ledger-wins rewrite correctness (one ADR per governed field), idempotence, dry-run non-mutation, receipt schema validation, ungoverned-key preservation, unmapped-status-term BLOCKER behavior.
+14. REQUIREMENT (prerequisites): OBPI-0.0.16-01 (validator) AND OBPI-0.0.16-05 (status-vocab mapping) MUST both be completed before this OBPI starts.
+
+### Known Edge Cases (MUST be addressed in implementation)
+
+These edge cases were surfaced during ADR-0.0.16 red-team review (Consumer Challenge). They are not hypothetical — each has a concrete failure mode the chore must handle explicitly.
+
+1. **Mid-gate-transition race.** If a ledger write is in flight (a gate transition event being appended) when the chore reads the ledger cursor, the chore can see the pre-event state and rewrite frontmatter to the pre-transition value — which is then immediately stale. **Resolution:** the chore snapshots the ledger cursor at run-start and samples the artifact graph at that cursor only; it NEVER mixes the starting cursor with any subsequent ledger state during the same run. Tests cover this by seeding a ledger mutation mid-run (via fixtures, not real concurrency) and asserting the chore's receipt reflects the starting cursor's state.
+2. **Pool ADRs (unregistered frontmatter).** ADR files under `docs/design/adr/pool/` may exist on disk without a corresponding ledger entry (they are pre-promotion backlog). For a pool ADR, the ledger's artifact-graph lookup returns nothing. **Resolution:** the chore skips pool ADRs entirely (identified by the `ADR-pool.` prefix in `id:` or path location under `pool/`) and emits a per-skip note in the receipt so operators see which files were intentionally untouched. Tests assert that seeding drift into a pool ADR's frontmatter leaves it unchanged after the chore runs.
+3. **Partial-failure mid-sweep.** If the chore crashes after rewriting N of M files (disk full, SIGKILL, etc.), the receipt must still reflect the N completed rewrites so the operator can resume or audit the partial state. **Resolution:** the chore writes each per-file rewrite's receipt entry immediately after each file's write, not as a single batch at the end. The receipt file is append-flushed per file. If the chore is interrupted, the receipt shows exactly which files were rewritten. A subsequent full run is idempotent (per REQUIREMENT 8) and completes the remainder. Tests cover this by simulating interruption after file N and asserting the receipt shows N entries, then re-running and asserting idempotent completion.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -157,7 +166,10 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - [ ] REQ-0.0.16-03-04: Given the chore has completed once against a drifted repo, when it is invoked a second time with no intervening ledger change, then the receipt's `files_rewritten` array is empty.
 - [ ] REQ-0.0.16-03-05: Given a frontmatter file with ungoverned keys (`tags:`, `related:`), when the chore rewrites governed fields, then the ungoverned keys are preserved byte-identically.
 - [ ] REQ-0.0.16-03-06: Given every emitted receipt, when validated against `data/schemas/frontmatter_coherence_receipt.schema.json`, then validation succeeds.
-- [ ] REQ-0.0.16-03-07: Given a ledger term with no mapping in the OBPI-02 status vocab, when the chore encounters it, then the chore exits with a BLOCKER naming the unmapped term and NO files are mutated.
+- [ ] REQ-0.0.16-03-07: Given a ledger term with no mapping in the OBPI-05 status vocab, when the chore encounters it, then the chore exits with a BLOCKER naming the unmapped term and NO files are mutated.
+- [ ] REQ-0.0.16-03-08: Given a simulated mid-run ledger mutation (fixture injection), when the chore completes, then the receipt reflects the starting-cursor state only — never a mixed view.
+- [ ] REQ-0.0.16-03-09: Given a pool ADR with seeded frontmatter drift (`ADR-pool.*` or path under `docs/design/adr/pool/`), when the chore runs, then the file is skipped and a per-skip note appears in the receipt.
+- [ ] REQ-0.0.16-03-10: Given a simulated interruption after rewriting N of M files, when the receipt is inspected, then it shows exactly N entries; a subsequent re-run idempotently completes the remaining M-N rewrites.
 
 ## Completion Checklist
 

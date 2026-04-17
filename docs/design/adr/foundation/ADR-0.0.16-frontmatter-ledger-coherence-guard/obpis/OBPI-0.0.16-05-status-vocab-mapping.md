@@ -1,23 +1,23 @@
 ---
-id: OBPI-0.0.16-02-gate-integration
+id: OBPI-0.0.16-05-status-vocab-mapping
 parent: ADR-0.0.16
-item: 2
+item: 5
 lane: Heavy
 status: Draft
 ---
 
-# OBPI-0.0.16-02-gate-integration: Gate integration with canonicalization
+# OBPI-0.0.16-05-status-vocab-mapping: Canonical status-vocabulary mapping
 
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.16-frontmatter-ledger-coherence-guard/ADR-0.0.16-frontmatter-ledger-coherence-guard.md`
-- **Checklist Item:** #2 - "Gate integration: wire guard into gz gates (Gate 1 or 2) so drift blocks progression; error messages name recovery commands and doc anchors; canonicalizes status vocabulary to ledger state machine"
+- **Checklist Item:** #5 - "OBPI-0.0.16-05: Author canonical status-vocabulary mapping — addendum to ADR-0.0.9 in `docs/governance/state-doctrine.md` plus typed `STATUS_VOCAB_MAPPING` constant in `src/gzkit/governance/status_vocab.py` that OBPI-02 (gate output) and OBPI-03 (chore canonicalization) import."
 
 **Status:** Draft
 
 ## Objective
 
-Wire the OBPI-01 validator (`gz validate --frontmatter`) into `gz gates` so frontmatter drift blocks gate progression. The check runs at Gate 1 (ADR/artifact prerequisites) and emits exit code 3 (policy breach) on drift, naming an executable recovery command per drifted field. Gate error output consumes the canonical status-vocabulary mapping produced by OBPI-05 so the operator sees the canon term, not the drifted frontmatter term. This OBPI does NOT author the vocabulary mapping (that is OBPI-05), does NOT register the chore (OBPI-03), and does NOT run the backfill (OBPI-04).
+Author the canonical status-vocabulary mapping as a standalone, parallel-root OBPI so OBPI-02 (gate output) and OBPI-03 (chore `status:` rewrite) can both run concurrently after OBPI-01 lands instead of serializing through a bundled OBPI-02. Deliverables are data-only: (a) a typed `STATUS_VOCAB_MAPPING` constant in `src/gzkit/governance/status_vocab.py` mapping every observed frontmatter term (`Draft`, `Proposed`, `Pending`, `Validated`, `Completed`, plus any term surfaced by OBPI-01's drift evidence) to its ledger-state-machine canonical term; and (b) a "Canonical status vocabulary (ADR-0.0.16 addendum)" section appended to `docs/governance/state-doctrine.md` that presents the same mapping as a Markdown table with rationale. No consumers are updated in this OBPI — OBPI-02 and OBPI-03 each import the typed constant. No frontmatter is mutated here; no chore is registered here; no gate is wired here.
 
 ## Lane
 
@@ -31,9 +31,9 @@ Wire the OBPI-01 validator (`gz validate --frontmatter`) into `gz gates` so fron
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
-- `src/gzkit/commands/gates.py` — wire the OBPI-01 validator into the Gate 1 check pipeline
-- `tests/commands/test_gates_frontmatter.py` — gate-wiring tests for drift blocking and recovery-command output
-- `docs/user/commands/gates.md` — document the new Gate 1 frontmatter check
+- `src/gzkit/governance/status_vocab.py` — new module exporting the `STATUS_VOCAB_MAPPING` typed constant
+- `tests/governance/test_status_vocab.py` — unit tests for the mapping (exhaustiveness, round-trip, BLOCKER on unmapped terms)
+- `docs/governance/state-doctrine.md` — append the canonical status-vocabulary addendum to ADR-0.0.9
 - `docs/design/adr/foundation/ADR-0.0.16-frontmatter-ledger-coherence-guard/ADR-0.0.16-frontmatter-ledger-coherence-guard.md` — parent ADR for intent and scope
 
 ## Denied Paths
@@ -49,16 +49,14 @@ Wire the OBPI-01 validator (`gz validate --frontmatter`) into `gz gates` so fron
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
      These are the rules agents ground against. If not met, OBPI fails. -->
 
-1. REQUIREMENT: `gz gates` invokes `gz validate --frontmatter` at Gate 1 (artifact prerequisites). The gate's exit contract maps exit 3 from the validator to a Gate 1 blocker (policy breach).
-2. REQUIREMENT: Gate 1 output NEVER suppresses the validator's per-field drift listing — the operator must see every drifted field with ledger-vs-frontmatter values and the recovery command, not a generic "Gate 1 failed."
-3. REQUIREMENT: Gate error messages NEVER suggest hand-editing frontmatter. ALWAYS name an executable recovery command (`gz chore run frontmatter-ledger-coherence`, `gz adr promote`, `gz register-adrs`) plus the doc anchor in `docs/governance/state-doctrine.md`.
-4. REQUIREMENT: There is NO `--skip-frontmatter` or equivalent bypass flag on `gz gates`. If the operator needs to bypass, they resolve the drift via the chore (OBPI-03) or fix the ledger via the named recovery command.
-5. REQUIREMENT: Gate error output imports the `STATUS_VOCAB_MAPPING` constant authored by OBPI-05 and displays the canonical term for any drifted `status:` field. This OBPI does NOT author the mapping — it is a consumer. STOP-on-BLOCKER if OBPI-05 has not landed.
-6. REQUIREMENT: Prerequisites — OBPI-0.0.16-01 (validator) and OBPI-0.0.16-05 (status-vocab mapping) MUST both be completed before this OBPI starts.
-7. REQUIREMENT: Gate-wiring tests cover: (a) a repo with no frontmatter drift → Gate 1 passes; (b) a seeded drift → Gate 1 blocks with exit 3 and the drift line appears in stderr/stdout; (c) recovery-command text is present in the error output; (d) no `--skip-frontmatter` flag is accepted (argparse rejection test).
-8. REQUIREMENT: Runtime budget: gate-wiring MUST NOT add more than the validator's measured cost (from OBPI-01 budget). Test asserts `gz gates` latency regression is bounded.
-9. REQUIREMENT: This OBPI does NOT mutate any ADR/OBPI files. It does NOT register a chore. It does NOT run a backfill.
-10. REQUIREMENT: If Gate 1 is the wrong placement (e.g., current `gz gates` treats Gate 1 as untouchable), this OBPI STOPs with a BLOCKER naming the placement constraint and either Gate 2 or a new Gate 1a is chosen with operator sign-off before proceeding.
+1. REQUIREMENT: `src/gzkit/governance/status_vocab.py` exports a typed `STATUS_VOCAB_MAPPING` constant (Pydantic `BaseModel` with `frozen=True, extra="forbid"` or a typed `dict[str, str]` literal) that maps every frontmatter-observed status term to its canonical ledger state-machine term.
+2. REQUIREMENT: The mapping is exhaustive over the five terms currently observed in frontmatter (`Draft`, `Proposed`, `Pending`, `Validated`, `Completed`) AND any additional terms surfaced during OBPI-01 validator evidence. If OBPI-01's drift report names any status term not present in the mapping, this OBPI MUST add it before closing.
+3. REQUIREMENT: The canonical target terms match the ledger state-machine defined in ADR-0.0.9 exactly. NEVER invent a canonical term that the ledger does not use.
+4. REQUIREMENT: `docs/governance/state-doctrine.md` gains a new section "Canonical status vocabulary (ADR-0.0.16 addendum)" that presents the mapping as a Markdown table (`frontmatter term | ledger canonical term | rationale`) and explicitly names this ADR as the addendum's origin.
+5. REQUIREMENT: This OBPI authors DATA only — no consumers are updated here. OBPI-02 (gate output) and OBPI-03 (chore rewrite) import `STATUS_VOCAB_MAPPING`; they do NOT inline duplicates.
+6. REQUIREMENT: If a consumer (OBPI-02 or OBPI-03) encounters a term at runtime that is not in the mapping, the consumer MUST BLOCK with a clear error naming the unmapped term. NEVER silently skip. The test for this lives in the consumer OBPI; this OBPI only exports the typed constant.
+7. REQUIREMENT: This OBPI is a parallel-root with OBPI-0.0.16-01. It does NOT depend on the validator and can start as soon as the ADR is Validated. It does NOT touch `gz gates`, the chore, or any ADR/OBPI frontmatter.
+8. REQUIREMENT: Tests cover: (a) the mapping is non-empty and contains all five currently-observed terms; (b) every value in the mapping is a term accepted by the ledger state machine (cross-checked against the canonical enum); (c) the typed constant is importable from `src/gzkit/governance/status_vocab.py` without side-effects; (d) model/dict immutability is enforced (mutation raises).
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -80,7 +78,7 @@ Wire the OBPI-01 validator (`gz validate --frontmatter`) into `gz gates` so fron
 **Prerequisites (check existence, STOP if missing):**
 
 - [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.16-frontmatter-ledger-coherence-guard/ADR-0.0.16-frontmatter-ledger-coherence-guard.md`
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.16-frontmatter-ledger-coherence-guard/**`
+- [ ] Required path exists or is intentionally created in this OBPI: `docs/governance/state-doctrine.md`
 - [ ] Parent ADR evidence artifacts referenced by this brief are present
 
 **Existing Code (understand current state):**
@@ -136,6 +134,8 @@ uv run gz test
 
 # Specific verification for this OBPI
 test -f docs/design/adr/foundation/ADR-0.0.16-frontmatter-ledger-coherence-guard/ADR-0.0.16-frontmatter-ledger-coherence-guard.md
+test -f docs/governance/state-doctrine.md
+test -f src/gzkit/governance/status_vocab.py
 ```
 
 ## Acceptance Criteria
@@ -146,12 +146,12 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.0.16-02-01: Given a clean repo with no frontmatter drift, when `gz gates --adr <ID>` runs, then Gate 1 passes with no frontmatter-related blocker.
-- [ ] REQ-0.0.16-02-02: Given a seeded frontmatter drift in any of the four governed fields, when `gz gates` runs, then it blocks Gate 1 with exit code 3 and the per-field drift listing is visible to the operator.
-- [ ] REQ-0.0.16-02-03: Given a Gate 1 block, when the operator reads the error output, then at least one executable recovery command (`gz chore run frontmatter-ledger-coherence`, `gz adr promote`, or `gz register-adrs`) is named explicitly per drifted field.
-- [ ] REQ-0.0.16-02-04: Given any attempt to pass a `--skip-frontmatter` or equivalent bypass flag to `gz gates`, when argparse processes it, then the flag is rejected (unknown option).
-- [ ] REQ-0.0.16-02-05: Given a drifted `status:` field, when Gate 1 blocks and emits its error message, then the message displays the OBPI-05 canonical term (via `STATUS_VOCAB_MAPPING` import) rather than the raw frontmatter term.
-- [ ] REQ-0.0.16-02-06: Given gate-wiring latency measurement, when `gz gates` runs against the current repo, then the added cost stays within the OBPI-01 validator's measured budget.
+- [ ] REQ-0.0.16-05-01: Given `from gzkit.governance.status_vocab import STATUS_VOCAB_MAPPING`, when the import runs, then the name is bound to a non-empty typed mapping without side effects.
+- [ ] REQ-0.0.16-05-02: Given the mapping, when its keys are listed, then they include at least `Draft`, `Proposed`, `Pending`, `Validated`, and `Completed` (the five terms observed in current-repo frontmatter).
+- [ ] REQ-0.0.16-05-03: Given each mapped value, when checked against the ledger state-machine canonical set (from ADR-0.0.9), then every value is a member of that set.
+- [ ] REQ-0.0.16-05-04: Given `docs/governance/state-doctrine.md`, when a reader scrolls to the "Canonical status vocabulary (ADR-0.0.16 addendum)" section, then the section contains a Markdown table presenting the same pairs as `STATUS_VOCAB_MAPPING`, with a rationale column and an explicit pointer back to ADR-0.0.16.
+- [ ] REQ-0.0.16-05-05: Given any attempt to mutate `STATUS_VOCAB_MAPPING` at runtime, when the mutation runs, then it raises (Pydantic `frozen=True` violation or `dict` immutability enforced by wrapping).
+- [ ] REQ-0.0.16-05-06: Given an OBPI-01 drift report that names a status term not in the mapping, when OBPI-05 is revisited, then the term is added before OBPI-05 is marked Completed.
 
 ## Completion Checklist
 

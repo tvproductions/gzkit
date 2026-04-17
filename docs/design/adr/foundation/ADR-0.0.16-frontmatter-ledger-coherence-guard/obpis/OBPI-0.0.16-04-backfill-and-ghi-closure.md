@@ -50,7 +50,7 @@ Execute the OBPI-03 chore once against the live repo to clear the current 94.7% 
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
      These are the rules agents ground against. If not met, OBPI fails. -->
 
-1. REQUIREMENT: Prerequisites — OBPI-0.0.16-01 (validator), OBPI-0.0.16-02 (gate wiring + canonical vocabulary mapping), and OBPI-0.0.16-03 (chore) MUST all be completed before this OBPI starts. STOP-on-BLOCKERS if any prerequisite is Pending.
+1. REQUIREMENT: Prerequisites — OBPI-0.0.16-01 (validator), OBPI-0.0.16-02 (gate wiring), OBPI-0.0.16-03 (chore), and OBPI-0.0.16-05 (status-vocab mapping) MUST all be completed before this OBPI starts. STOP-on-BLOCKERS if any prerequisite is Pending.
 2. REQUIREMENT: ALWAYS run `gz chore run frontmatter-ledger-coherence --dry-run` FIRST, paste the dry-run receipt summary into this OBPI's Evidence section, and obtain operator sign-off on the list of files-to-be-rewritten before the non-dry-run invocation.
 3. REQUIREMENT: After operator sign-off, run `gz chore run frontmatter-ledger-coherence` once. The receipt path (`artifacts/receipts/frontmatter-coherence/<ISO8601>.json`) is recorded in this OBPI's Evidence section and in the ADR's Evidence section.
 4. REQUIREMENT: After the run, `gz validate --frontmatter` on the full repo MUST exit 0 (no residual drift). If it exits 3, STOP and triage — do NOT hand-edit remaining drift; fix the chore.
