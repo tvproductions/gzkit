@@ -30,7 +30,7 @@ repos:
 
       - id: unittest
         name: unittest
-        entry: uv run -m unittest discover -q tests
+        entry: uv run unittest-parallel -s tests -t . -q
         language: system
         pass_filenames: false
         types: [python]
