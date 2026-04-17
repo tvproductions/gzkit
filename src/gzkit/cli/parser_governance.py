@@ -2,9 +2,16 @@
 
 Registers: init, prd, constitute, specify, plan, state, status, closeout,
 patch, audit, attest, implement, gates, migrate-semver, register-adrs, roles.
+
+Command handlers are resolved lazily via module-level ``__getattr__`` so
+``gz --help`` does not import handler modules (and their heavy transitive
+dependencies) just to render the help tree.
 """
 
+from __future__ import annotations
+
 import argparse
+from typing import Any
 
 from gzkit.cli.helpers import (
     add_adr_option,
@@ -14,20 +21,39 @@ from gzkit.cli.helpers import (
     add_table_flag,
     build_epilog,
 )
-from gzkit.commands.attest import attest
-from gzkit.commands.audit_cmd import audit_cmd
-from gzkit.commands.closeout import closeout_cmd
-from gzkit.commands.gates import gates_cmd, implement_cmd
-from gzkit.commands.init_cmd import constitute, init, prd
-from gzkit.commands.patch_release import patch_release_cmd
-from gzkit.commands.personas import persona_drift_cmd, personas_list_cmd
-from gzkit.commands.plan import plan_cmd
-from gzkit.commands.plan_audit_cmd import plan_audit_cmd
-from gzkit.commands.register import migrate_semver, register_adrs
-from gzkit.commands.roles import roles_cmd
-from gzkit.commands.specify_cmd import specify
-from gzkit.commands.state import state
-from gzkit.commands.status import status
+
+_LAZY_HANDLERS: dict[str, str] = {
+    "attest": "gzkit.commands.attest",
+    "audit_cmd": "gzkit.commands.audit_cmd",
+    "closeout_cmd": "gzkit.commands.closeout",
+    "gates_cmd": "gzkit.commands.gates",
+    "implement_cmd": "gzkit.commands.gates",
+    "constitute": "gzkit.commands.init_cmd",
+    "init": "gzkit.commands.init_cmd",
+    "prd": "gzkit.commands.init_cmd",
+    "patch_release_cmd": "gzkit.commands.patch_release",
+    "persona_drift_cmd": "gzkit.commands.personas",
+    "personas_list_cmd": "gzkit.commands.personas",
+    "plan_cmd": "gzkit.commands.plan",
+    "plan_audit_cmd": "gzkit.commands.plan_audit_cmd",
+    "migrate_semver": "gzkit.commands.register",
+    "register_adrs": "gzkit.commands.register",
+    "roles_cmd": "gzkit.commands.roles",
+    "specify": "gzkit.commands.specify_cmd",
+    "state": "gzkit.commands.state",
+    "status": "gzkit.commands.status",
+}
+
+
+def __getattr__(name: str) -> Any:
+    module_path = _LAZY_HANDLERS.get(name)
+    if module_path is None:
+        raise AttributeError(f"module 'gzkit.cli.parser_governance' has no attribute {name!r}")
+    from importlib import import_module
+
+    value = getattr(import_module(module_path), name)
+    globals()[name] = value
+    return value
 
 
 def _state_handler(a: argparse.Namespace) -> None:
