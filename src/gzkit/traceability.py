@@ -301,6 +301,136 @@ def scan_test_tree(test_dir: pathlib.Path) -> list[LinkageRecord]:
     return records
 
 
+_REQ_TAG_PATTERN = re.compile(r"@(REQ-\d+\.\d+\.\d+-\d+-\d+)")
+_SCENARIO_HEADER_PATTERN = re.compile(r"^\s*(?:Scenario(?: Outline)?|Example):\s*(?P<name>.+?)\s*$")
+_FEATURE_HEADER_PATTERN = re.compile(r"^\s*Feature:\s*(?P<name>.+?)\s*$")
+
+
+def scan_feature_tree(features_dir: pathlib.Path) -> list[LinkageRecord]:
+    """Walk a behave features directory and discover every ``@REQ-...`` scenario tag.
+
+    For each ``@REQ-X.Y.Z-NN-MM`` tag that precedes a ``Scenario:`` or
+    ``Feature:`` header, emits a ``LinkageRecord`` with ``source.identifier``
+    set to ``<FeatureName>::<ScenarioName>`` (or ``<FeatureName>`` for
+    feature-level tags). This gives ``gz covers`` the same REQ-to-behave
+    coverage graph it already has for unit tests, closing the remaining gap
+    in GHI #185.
+    """
+    records: list[LinkageRecord] = []
+    if not features_dir.is_dir():
+        return records
+
+    for feature_file in sorted(features_dir.rglob("*.feature")):
+        try:
+            source = feature_file.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            logger.warning("Skipping unreadable feature file: %s", feature_file)
+            continue
+        records.extend(_scan_feature_source(feature_file, source))
+
+    records.sort(key=lambda r: (r.evidence_path or "", r.evidence_line or 0))
+    return records
+
+
+def _scan_feature_source(feature_path: pathlib.Path, source: str) -> list[LinkageRecord]:
+    """Parse one .feature file and emit linkage records for every @REQ-... tag."""
+    records: list[LinkageRecord] = []
+    lines = source.splitlines()
+    feature_name = _extract_feature_name(lines)
+
+    # Pending tags accumulate on consecutive tag-only lines until a header consumes them.
+    pending: list[tuple[str, int]] = []  # (req_id, line_num)
+
+    for idx, line in enumerate(lines, start=1):
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+
+        # Collect @REQ tags on this line.
+        new_tags = [(m.group(1), idx) for m in _REQ_TAG_PATTERN.finditer(stripped)]
+
+        # If the line is ONLY tags (plus leading/trailing whitespace/@... tokens),
+        # it is a tag line attached to the next header. Accumulate and continue.
+        if new_tags and _is_tag_only_line(stripped):
+            pending.extend(new_tags)
+            continue
+
+        scenario_match = _SCENARIO_HEADER_PATTERN.match(line)
+        feature_match = _FEATURE_HEADER_PATTERN.match(line)
+
+        if scenario_match:
+            scenario_name = scenario_match.group("name")
+            identifier = f"{feature_name}::{scenario_name}" if feature_name else scenario_name
+            _emit_pending_records(records, pending, feature_path, identifier)
+            pending = []
+            # A @REQ tag written inline on the same scenario line also counts.
+            for req_str, line_num in new_tags:
+                _append_feature_record(records, req_str, feature_path, identifier, line_num)
+        elif feature_match:
+            # Feature-level tags (above the Feature: keyword) attach to the feature.
+            identifier = feature_match.group("name")
+            feature_name = identifier
+            _emit_pending_records(records, pending, feature_path, identifier)
+            pending = []
+
+    return records
+
+
+def _is_tag_only_line(stripped: str) -> bool:
+    """True if the line contains only ``@...`` tokens (whitespace-separated)."""
+    tokens = stripped.split()
+    return all(token.startswith("@") for token in tokens)
+
+
+def _extract_feature_name(lines: list[str]) -> str | None:
+    for line in lines:
+        match = _FEATURE_HEADER_PATTERN.match(line)
+        if match:
+            return match.group("name")
+    return None
+
+
+def _emit_pending_records(
+    records: list[LinkageRecord],
+    pending: list[tuple[str, int]],
+    feature_path: pathlib.Path,
+    identifier: str,
+) -> None:
+    for req_str, line_num in pending:
+        _append_feature_record(records, req_str, feature_path, identifier, line_num)
+
+
+def _append_feature_record(
+    records: list[LinkageRecord],
+    req_str: str,
+    feature_path: pathlib.Path,
+    identifier: str,
+    line_num: int,
+) -> None:
+    try:
+        req_id = ReqId.parse(req_str)
+    except ValueError:
+        logger.warning("Malformed @REQ tag at %s:%d — %s", feature_path, line_num, req_str)
+        return
+    records.append(
+        LinkageRecord(
+            source=VertexRef(
+                vertex_type=VertexType.TEST,
+                identifier=identifier,
+                location=str(feature_path),
+                line=line_num,
+            ),
+            target=VertexRef(
+                vertex_type=VertexType.SPEC,
+                identifier=str(req_id),
+            ),
+            edge_type=EdgeType.COVERS,
+            evidence_path=str(feature_path),
+            evidence_line=line_num,
+        )
+    )
+
+
 def _extract_covers_arg(node: ast.expr) -> str | None:
     """Extract the string argument from a ``@covers("...")`` decorator node."""
     if not isinstance(node, ast.Call):

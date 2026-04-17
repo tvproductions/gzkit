@@ -217,6 +217,53 @@ def _write_obpi(
     path.write_text("\n".join(lines) + "\n")
 
 
+_uv_sync_patcher = patch("gzkit.commands.init_cmd._run_uv_sync", return_value=None)
+_ruff_format_patchers = (
+    patch("gzkit.hooks.claude._ruff_format_dir", return_value=None),
+    patch("gzkit.hooks.copilot._ruff_format_dir", return_value=None),
+)
+
+
+def start_init_subprocess_patches() -> None:
+    """Stub the two subprocess calls that dominate ``gz init`` wall-clock.
+
+    Call from ``setUpModule`` in any test module that invokes
+    ``runner.invoke(main, ["init"])``. Stubs:
+
+    * ``_run_uv_sync`` — each real ``uv sync`` costs ~1s.
+    * ``_ruff_format_dir`` — each call spawns ``uv run ruff format`` on a
+      generated hooks directory; ``gz init`` invokes it 4 times (~600ms
+      total per init). Hook templates are already formatted; skipping the
+      format step does not affect behavioral correctness under test.
+
+    Paired with ``stop_init_subprocess_patches()`` in ``tearDownModule``.
+    GHI #183: per-test budget for test_init/test_skills/test_sync_cmds/
+    test_audit drops from ~800ms to <200ms.
+    """
+    _uv_sync_patcher.start()
+    for patcher in _ruff_format_patchers:
+        patcher.start()
+
+
+def stop_init_subprocess_patches() -> None:
+    """Stop the init-subprocess patches started by ``start_init_subprocess_patches``."""
+    for patcher in _ruff_format_patchers:
+        patcher.stop()
+    _uv_sync_patcher.stop()
+
+
+# Back-compat shims for callers that used the narrower helpers during GHI #183
+# rollout. Prefer start_init_subprocess_patches / stop_init_subprocess_patches.
+def start_uv_sync_patch() -> None:
+    """Back-compat alias; prefer ``start_init_subprocess_patches``."""
+    start_init_subprocess_patches()
+
+
+def stop_uv_sync_patch() -> None:
+    """Back-compat alias; prefer ``stop_init_subprocess_patches``."""
+    stop_init_subprocess_patches()
+
+
 def _quick_init(mode: str = "lite") -> None:
     """Lightweight project init for tests — skips sync_all and hook setup.
 
