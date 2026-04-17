@@ -9,17 +9,17 @@ See `.gzkit/rules/arb.md` for the rule contract.
 from __future__ import annotations
 
 import argparse
+from typing import Any
 
 from gzkit.cli.helpers import add_json_flag, build_epilog
-from gzkit.commands.arb import (
-    arb_advise_cmd,
-    arb_coverage_cmd,
-    arb_patterns_cmd,
-    arb_ruff_cmd,
-    arb_step_cmd,
-    arb_ty_cmd,
-    arb_validate_cmd,
-)
+
+
+def _arb(name: str) -> Any:
+    """Resolve an ``arb_*_cmd`` handler lazily so ``gz --help`` stays fast."""
+    from importlib import import_module
+
+    module = import_module("gzkit.commands.arb")
+    return getattr(module, name)
 
 
 def register_arb_parsers(commands: argparse._SubParsersAction) -> None:
@@ -70,7 +70,7 @@ def _register_ruff(arb_commands: argparse._SubParsersAction) -> None:
         help="Emit a receipt but always return exit 0 (measurement-only mode).",
     )
     p.set_defaults(
-        func=lambda a: arb_ruff_cmd(
+        func=lambda a: _arb("arb_ruff_cmd")(
             paths=a.paths or None,
             fix=a.fix,
             quiet=getattr(a, "quiet", False),
@@ -106,7 +106,7 @@ def _register_step(arb_commands: argparse._SubParsersAction) -> None:
         help="Command to run (everything after '--').",
     )
     p.set_defaults(
-        func=lambda a: arb_step_cmd(
+        func=lambda a: _arb("arb_step_cmd")(
             name=a.name,
             argv=[arg for arg in a.argv if arg != "--"],
             quiet=getattr(a, "quiet", False),
@@ -124,7 +124,7 @@ def _register_ty(arb_commands: argparse._SubParsersAction) -> None:
     )
     p.add_argument("argv", nargs=argparse.REMAINDER, help="Arguments to forward to ty.")
     p.set_defaults(
-        func=lambda a: arb_ty_cmd(
+        func=lambda a: _arb("arb_ty_cmd")(
             argv=[arg for arg in a.argv if arg != "--"],
             quiet=getattr(a, "quiet", False),
         )
@@ -140,7 +140,7 @@ def _register_coverage(arb_commands: argparse._SubParsersAction) -> None:
     )
     p.add_argument("argv", nargs=argparse.REMAINDER, help="Arguments to forward to coverage.")
     p.set_defaults(
-        func=lambda a: arb_coverage_cmd(
+        func=lambda a: _arb("arb_coverage_cmd")(
             argv=[arg for arg in a.argv if arg != "--"],
             quiet=getattr(a, "quiet", False),
         )
@@ -164,7 +164,7 @@ def _register_validate(arb_commands: argparse._SubParsersAction) -> None:
         help="Maximum number of most-recent receipts to validate (default: 50).",
     )
     add_json_flag(p)
-    p.set_defaults(func=lambda a: arb_validate_cmd(limit=a.limit, as_json=a.as_json))
+    p.set_defaults(func=lambda a: _arb("arb_validate_cmd")(limit=a.limit, as_json=a.as_json))
 
 
 def _register_advise(arb_commands: argparse._SubParsersAction) -> None:
@@ -184,7 +184,7 @@ def _register_advise(arb_commands: argparse._SubParsersAction) -> None:
         help="Maximum number of most-recent receipts to summarize (default: 50).",
     )
     add_json_flag(p)
-    p.set_defaults(func=lambda a: arb_advise_cmd(limit=a.limit, as_json=a.as_json))
+    p.set_defaults(func=lambda a: _arb("arb_advise_cmd")(limit=a.limit, as_json=a.as_json))
 
 
 def _register_patterns(arb_commands: argparse._SubParsersAction) -> None:
@@ -212,7 +212,7 @@ def _register_patterns(arb_commands: argparse._SubParsersAction) -> None:
     )
     add_json_flag(p)
     p.set_defaults(
-        func=lambda a: arb_patterns_cmd(
+        func=lambda a: _arb("arb_patterns_cmd")(
             limit=a.limit,
             as_json=a.as_json,
             compact=a.compact,

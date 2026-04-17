@@ -1,9 +1,16 @@
 """Artifact-focused subparser registrations for gz CLI.
 
 Registers: adr subcommands, obpi subcommands, task subcommands.
+
+Command handlers are resolved lazily via module-level ``__getattr__`` so
+``gz --help`` does not import handler modules (and their heavy transitive
+dependencies) just to render the help tree.
 """
 
+from __future__ import annotations
+
 import argparse
+from typing import Any
 
 from gzkit.cli.helpers import (
     add_dry_run_flag,
@@ -11,39 +18,44 @@ from gzkit.cli.helpers import (
     add_json_flag,
     build_epilog,
 )
-from gzkit.commands.adr_audit import (
-    adr_audit_check,
-    adr_covers_check,
-    adr_emit_receipt_cmd,
-)
-from gzkit.commands.adr_promote import adr_eval_cmd, adr_promote_cmd
-from gzkit.commands.obpi_audit_cmd import obpi_audit_cmd
-from gzkit.commands.obpi_cmd import (
-    obpi_emit_receipt_cmd,
-    obpi_pipeline_cmd,
-    obpi_validate_cmd,
-    obpi_withdraw_cmd,
-)
-from gzkit.commands.obpi_complete import obpi_complete_cmd
-from gzkit.commands.obpi_lock import (
-    obpi_lock_check_cmd,
-    obpi_lock_claim_cmd,
-    obpi_lock_list_cmd,
-    obpi_lock_release_cmd,
-)
-from gzkit.commands.status import (
-    adr_report_cmd,
-    adr_status_cmd,
-    obpi_reconcile_cmd,
-    obpi_status_cmd,
-)
-from gzkit.commands.task import (
-    task_block_cmd,
-    task_complete_cmd,
-    task_escalate_cmd,
-    task_list_cmd,
-    task_start_cmd,
-)
+
+_LAZY_HANDLERS: dict[str, str] = {
+    "adr_audit_check": "gzkit.commands.adr_audit",
+    "adr_covers_check": "gzkit.commands.adr_audit",
+    "adr_emit_receipt_cmd": "gzkit.commands.adr_audit",
+    "adr_eval_cmd": "gzkit.commands.adr_promote",
+    "adr_promote_cmd": "gzkit.commands.adr_promote",
+    "obpi_audit_cmd": "gzkit.commands.obpi_audit_cmd",
+    "obpi_emit_receipt_cmd": "gzkit.commands.obpi_cmd",
+    "obpi_pipeline_cmd": "gzkit.commands.obpi_cmd",
+    "obpi_validate_cmd": "gzkit.commands.obpi_cmd",
+    "obpi_withdraw_cmd": "gzkit.commands.obpi_cmd",
+    "obpi_complete_cmd": "gzkit.commands.obpi_complete",
+    "obpi_lock_check_cmd": "gzkit.commands.obpi_lock",
+    "obpi_lock_claim_cmd": "gzkit.commands.obpi_lock",
+    "obpi_lock_list_cmd": "gzkit.commands.obpi_lock",
+    "obpi_lock_release_cmd": "gzkit.commands.obpi_lock",
+    "adr_report_cmd": "gzkit.commands.status",
+    "adr_status_cmd": "gzkit.commands.status",
+    "obpi_reconcile_cmd": "gzkit.commands.status",
+    "obpi_status_cmd": "gzkit.commands.status",
+    "task_block_cmd": "gzkit.commands.task",
+    "task_complete_cmd": "gzkit.commands.task",
+    "task_escalate_cmd": "gzkit.commands.task",
+    "task_list_cmd": "gzkit.commands.task",
+    "task_start_cmd": "gzkit.commands.task",
+}
+
+
+def __getattr__(name: str) -> Any:
+    module_path = _LAZY_HANDLERS.get(name)
+    if module_path is None:
+        raise AttributeError(f"module 'gzkit.cli.parser_artifacts' has no attribute {name!r}")
+    from importlib import import_module
+
+    value = getattr(import_module(module_path), name)
+    globals()[name] = value
+    return value
 
 _ADR_TYPE_NAMES = {"foundation", "feature", "pool"}
 
