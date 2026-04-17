@@ -3,10 +3,13 @@
 import json
 import re
 import subprocess
-from collections.abc import Callable
 from pathlib import Path
 
 from gzkit.commands.common import console, get_project_root
+from gzkit.commands.validate_frontmatter import (
+    _render_frontmatter_explain,
+    _validate_frontmatter_coherence,
+)
 from gzkit.commands.version_sync import validate_version_consistency
 from gzkit.instruction_audit import audit_instructions
 from gzkit.models.persona import discover_persona_files, validate_persona_structure
@@ -254,125 +257,6 @@ def _validate_decomposition(project_root: Path) -> list[ValidationError]:
     return errors
 
 
-def _resolve_ledger_id(
-    fm_id: str,
-    stem_id: str,
-    graph: dict,
-    canonicalize: Callable[[str], str],
-) -> str | None:
-    """Map a file's frontmatter ID / stem to its ledger graph key."""
-    for candidate in (fm_id, stem_id):
-        canonical = canonicalize(candidate)
-        if canonical in graph:
-            return canonical
-        if candidate in graph:
-            return candidate
-    return None
-
-
-def _check_one_artifact(
-    fm: dict,
-    ledger_id: str,
-    info: dict,
-    rel_path: str,
-    canonicalize: Callable[[str], str],
-) -> list[ValidationError]:
-    """Compare one file's frontmatter against its ledger entry."""
-    errors: list[ValidationError] = []
-    fm_id = fm.get("id", "")
-
-    if fm_id and canonicalize(fm_id) != ledger_id:
-        errors.append(
-            ValidationError(
-                type="frontmatter",
-                artifact=rel_path,
-                field="id",
-                message=f"Frontmatter id '{fm_id}' does not match ledger id '{ledger_id}'",
-            )
-        )
-
-    fm_parent = fm.get("parent", "")
-    ledger_parent = info.get("parent") or ""
-    if fm_parent and ledger_parent and canonicalize(fm_parent) != canonicalize(ledger_parent):
-        errors.append(
-            ValidationError(
-                type="frontmatter",
-                artifact=rel_path,
-                field="parent",
-                message=(
-                    f"Frontmatter parent '{fm_parent}' does not match "
-                    f"ledger parent '{ledger_parent}'"
-                ),
-            )
-        )
-
-    fm_lane = fm.get("lane", "").lower()
-    ledger_lane = (info.get("lane") or "").lower()
-    if fm_lane and ledger_lane and fm_lane != ledger_lane:
-        errors.append(
-            ValidationError(
-                type="frontmatter",
-                artifact=rel_path,
-                field="lane",
-                message=(
-                    f"Frontmatter lane '{fm_lane}' does not match ledger lane '{ledger_lane}'"
-                ),
-            )
-        )
-
-    return errors
-
-
-def _validate_frontmatter_coherence(project_root: Path) -> list[ValidationError]:
-    """Validate frontmatter fields against ledger truth (GHI-167).
-
-    For every ADR/OBPI file on disk, parse frontmatter and compare ``id``,
-    ``parent``, and ``lane`` against the ledger's artifact graph.  Disagreements
-    are returned as ``ValidationError`` instances.
-    """
-    from gzkit.config import GzkitConfig  # noqa: PLC0415
-    from gzkit.core.validation_rules import parse_frontmatter  # noqa: PLC0415
-    from gzkit.ledger import Ledger  # noqa: PLC0415
-    from gzkit.sync import scan_existing_artifacts  # noqa: PLC0415
-
-    config_path = project_root / ".gzkit.json"
-    ledger_path = project_root / ".gzkit" / "ledger.jsonl"
-    if not config_path.is_file() or not ledger_path.is_file():
-        return []
-
-    config = GzkitConfig.load(config_path)
-    ledger = Ledger(ledger_path)
-    try:
-        graph = ledger.get_artifact_graph()
-    except (json.JSONDecodeError, KeyError, ValueError):
-        return []
-
-    artifacts = scan_existing_artifacts(project_root, config.paths.design_root)
-    errors: list[ValidationError] = []
-
-    for file_list in [artifacts.get("adrs", []), artifacts.get("obpis", [])]:
-        for artifact_file in file_list:
-            try:
-                content = artifact_file.read_text(encoding="utf-8")
-            except OSError:
-                continue
-            fm, _ = parse_frontmatter(content)
-            if not fm:
-                continue
-
-            ledger_id = _resolve_ledger_id(
-                fm.get("id", ""), artifact_file.stem, graph, ledger.canonicalize_id
-            )
-            if ledger_id is None:
-                continue
-
-            rel_path = str(artifact_file.relative_to(project_root))
-            canon = ledger.canonicalize_id
-            errors.extend(_check_one_artifact(fm, ledger_id, graph[ledger_id], rel_path, canon))
-
-    return errors
-
-
 def _collect_errors(
     project_root: Path,
     check_manifest: bool,
@@ -388,6 +272,7 @@ def _collect_errors(
     check_commit_trailers: bool = False,
     check_frontmatter: bool = False,
     check_version: bool = False,
+    frontmatter_adr: str | None = None,
 ) -> list[ValidationError]:
     """Collect validation errors across all requested check types."""
     # Scopes included in "run_all" (no flags = run these)
@@ -411,7 +296,9 @@ def _collect_errors(
     }
     run_all = not any(default_scopes.values()) and not any(explicit_scopes.values())
 
-    return _run_scope_checks(project_root, default_scopes, explicit_scopes, run_all)
+    return _run_scope_checks(
+        project_root, default_scopes, explicit_scopes, run_all, frontmatter_adr=frontmatter_adr
+    )
 
 
 def _run_scope_checks(
@@ -419,6 +306,7 @@ def _run_scope_checks(
     default_scopes: dict[str, bool],
     explicit_scopes: dict[str, bool],
     run_all: bool,
+    frontmatter_adr: str | None = None,
 ) -> list[ValidationError]:
     """Dispatch validation checks based on active scopes."""
     errors: list[ValidationError] = []
@@ -442,7 +330,7 @@ def _run_scope_checks(
     if active("personas"):
         errors.extend(_validate_personas(project_root))
     if active("frontmatter"):
-        errors.extend(_validate_frontmatter_coherence(project_root))
+        errors.extend(_validate_frontmatter_coherence(project_root, adr_scope=frontmatter_adr))
     if active("version"):
         errors.extend(validate_version_consistency(project_root))
     if explicit_scopes.get("interviews"):
@@ -502,19 +390,45 @@ def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
     return scopes
 
 
-def _print_validation_result(errors: list[ValidationError], scopes: list[str]) -> None:
-    """Print human-readable validation results and exit on failure."""
+def _print_validation_result(
+    errors: list[ValidationError],
+    scopes: list[str],
+    *,
+    frontmatter_only: bool = False,
+) -> None:
+    """Print human-readable results and exit per CLI doctrine 4-code map.
+
+    Exit codes:
+        * 0 — clean
+        * 1 — validation errors outside the frontmatter scope
+        * 3 — frontmatter drift only (policy breach)
+
+    When ``frontmatter_only`` and no drift is found, suppresses the success
+    prose (REQ-01: empty-input / fully-coherent output is empty).
+    """
+    frontmatter_errors = [e for e in errors if e.type == "frontmatter"]
+    other_errors = [e for e in errors if e.type != "frontmatter"]
+
+    if not errors:
+        if frontmatter_only:
+            return
+        console.print(f"[bold]Validated:[/bold] {', '.join(scopes)}\n")
+        console.print(f"[green]✓ All validations passed ({len(scopes)} scopes).[/green]")
+        return
+
     console.print(f"[bold]Validated:[/bold] {', '.join(scopes)}\n")
-    if errors:
-        console.print(f"[red]❌ Validation failed with {len(errors)} error(s):[/red]\n")
-        for error in errors:
-            console.print(f"   [red]→[/red] [{error.type}] {error.artifact}")
-            console.print(f"    {error.message}")
-            if error.field:
-                console.print(f"    Field: {error.field}")
-            console.print()
+    console.print(f"[red]❌ Validation failed with {len(errors)} error(s):[/red]\n")
+    for error in errors:
+        console.print(f"   [red]→[/red] [{error.type}] {error.artifact}")
+        console.print(f"    {error.message}")
+        if error.field:
+            console.print(f"    Field: {error.field}")
+        console.print()
+
+    if other_errors:
         raise SystemExit(1)
-    console.print(f"[green]✓ All validations passed ({len(scopes)} scopes).[/green]")
+    if frontmatter_errors:
+        raise SystemExit(3)
 
 
 def validate(
@@ -532,9 +446,22 @@ def validate(
     check_frontmatter: bool = False,
     check_version: bool = False,
     as_json: bool = False,
+    frontmatter_adr: str | None = None,
+    frontmatter_explain: str | None = None,
 ) -> None:
-    """Validate governance artifacts against schemas."""
+    """Validate governance artifacts against schemas.
+
+    Exit codes follow the CLI doctrine 4-code map:
+        * 0 — clean
+        * 1 — user/config error or non-frontmatter validation error
+        * 2 — system/IO error (raised by underlying validators)
+        * 3 — frontmatter-ledger policy breach (drift found)
+    """
     project_root = get_project_root()
+    # --explain implies --frontmatter and scope
+    if frontmatter_explain:
+        check_frontmatter = True
+        frontmatter_adr = frontmatter_explain
     errors = _collect_errors(
         project_root,
         check_manifest,
@@ -550,14 +477,26 @@ def validate(
         check_commit_trailers,
         check_frontmatter,
         check_version,
+        frontmatter_adr=frontmatter_adr,
     )
 
     if as_json:
-        result = {
+        payload: dict[str, object] = {
             "valid": len(errors) == 0,
             "errors": [e.model_dump(exclude_none=True) for e in errors],
         }
-        print(json.dumps(result, indent=2))  # noqa: T201
+        if check_frontmatter:
+            payload["drift"] = [
+                {
+                    "path": e.artifact,
+                    "field": e.field,
+                    "ledger_value": e.ledger_value,
+                    "frontmatter_value": e.frontmatter_value,
+                }
+                for e in errors
+                if e.type == "frontmatter"
+            ]
+        print(json.dumps(payload, indent=2))  # noqa: T201
         return
 
     checks = {
@@ -575,4 +514,13 @@ def validate(
         "frontmatter": check_frontmatter,
         "version": check_version,
     }
-    _print_validation_result(errors, _resolve_scopes(checks))
+    scopes = _resolve_scopes(checks)
+    frontmatter_only = scopes == ["frontmatter"]
+
+    if frontmatter_explain:
+        _render_frontmatter_explain(errors, frontmatter_explain)
+        if any(e.type == "frontmatter" for e in errors):
+            raise SystemExit(3)
+        return
+
+    _print_validation_result(errors, scopes, frontmatter_only=frontmatter_only)
