@@ -325,19 +325,26 @@ def run_tests(project_root: Path) -> QualityResult:
     return run_command("uv run -m unittest discover tests", cwd=project_root)
 
 
-def run_behave(project_root: Path) -> QualityResult:
-    """Run BDD scenarios via behave.
+def run_behave(project_root: Path, tags: list[str] | None = None) -> QualityResult:
+    """Run BDD scenarios via behave, optionally filtered by tag list.
 
-    Behave is part of the test floor: `gz test` and `gz check` must run it
-    so feature/CLI contract drift is caught alongside unit failures.
+    ADR closeout (``gz test --bdd``) runs the full suite; OBPI-scoped
+    pipeline stages can pass ``tags`` (e.g. ``["@REQ-0.0.16-01-05"]``) to
+    run only scenarios covering that OBPI's requirements.
 
     Args:
         project_root: Project root directory.
+        tags: Optional list of behave scenario tags (with leading ``@``) to
+            filter on. When non-empty, invokes ``behave --tags=<tag1>,<tag2>``.
+            None or empty list runs every scenario under ``features/``.
 
     Returns:
         QualityResult from the behave run.
 
     """
+    if tags:
+        tag_arg = ",".join(tags)
+        return run_command(f"uv run -m behave --tags={tag_arg}", cwd=project_root)
     return run_command("uv run -m behave", cwd=project_root)
 
 
