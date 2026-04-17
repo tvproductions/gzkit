@@ -32,9 +32,10 @@ Closeout evidence verified:
 | OBPI | Description | Status |
 |------|-------------|--------|
 | OBPI-0.0.16-01-validate-frontmatter-guard | `gz validate --frontmatter` guard function | Pending |
-| OBPI-0.0.16-02-gate-integration | Wire guard into `gz gates` with canonicalization | Pending |
+| OBPI-0.0.16-02-gate-integration | Wire guard into `gz gates`, consume OBPI-05 vocab in error output | Pending |
 | OBPI-0.0.16-03-chore-registration | `frontmatter-ledger-coherence` chore with ledger-wins reconciliation | Pending |
 | OBPI-0.0.16-04-backfill-and-ghi-closure | One-time backfill run + close GHI #162/#167/#168/#169/#170 | Pending |
+| OBPI-0.0.16-05-status-vocab-mapping | Canonical status-vocabulary addendum to ADR-0.0.9 + typed constant | Pending |
 
 ## Defense Brief
 
@@ -50,6 +51,7 @@ Closeout evidence verified:
 | OBPI-0.0.16-02-gate-integration | integration_test + docs | PENDING |
 | OBPI-0.0.16-03-chore-registration | config_file + receipt_sample | PENDING |
 | OBPI-0.0.16-04-backfill-and-ghi-closure | reconciliation_receipt + issue_closures | PENDING |
+| OBPI-0.0.16-05-status-vocab-mapping | typed_constant + doc_addendum | PENDING |
 
 ### Reviewer Assessment
 
