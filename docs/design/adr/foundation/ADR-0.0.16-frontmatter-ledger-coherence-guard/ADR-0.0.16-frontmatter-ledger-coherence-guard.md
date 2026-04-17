@@ -17,23 +17,25 @@ This ADR is a Foundation addition. Foundations are baseline assumptions about go
 
 ## Intent
 
-YAML frontmatter on ADR/OBPI files (id, parent, lane, status) is Layer 3 derived state — written as a side-effect of ledger events — but 13 code paths across 8 files consume it as if it were authoritative. With no guard gate or chore audit reconciling frontmatter against ledger truth, drift accumulates silently: 94.7% of sampled ADR status: fields (18/19) disagree with ledger lifecycle. The state-doctrine rule 'frontmatter is L3 derived state; read the ledger' (ADR-0.0.9; .gzkit/rules/constraints.md § State Doctrine) has no mechanical enforcement, so every consumer is a silent corruption vector. Operator-facing output (agent reads frontmatter → reports stale lifecycle) has already misled a design session (GHI #162 surface event, 2026-04-15, ADR-0.22.0). This ADR closes the governance cluster GHI #162, #167, #168, #169, #170 by adding the missing mechanical guard and automated reconciliation, not by rewriting the 13 consumer paths.
+YAML frontmatter on ADR/OBPI files (id, parent, lane, status) is Layer 3 derived state — written as a side-effect of ledger events — but 13 code paths across 8 files consume it as if it were authoritative. With no guard gate or chore audit reconciling frontmatter against ledger truth, drift accumulates silently: 94.7% of sampled ADR status: fields (18/19) disagree with ledger lifecycle. The state-doctrine rule 'frontmatter is L3 derived state; read the ledger' (ADR-0.0.9; .gzkit/rules/constraints.md § State Doctrine) has no mechanical enforcement today, so every consumer is a silent corruption vector. Operator-facing output (agent reads frontmatter → reports stale lifecycle) has already misled a design session (GHI #162 surface event, 2026-04-15, ADR-0.22.0). **After this ADR, every `gz gates` invocation mechanically confirms frontmatter-ledger coherence for the four governed fields; drift is either auto-fixed by the registered chore or blocks gate progression with a named recovery command. The 94.7% existing status-field drift is cleared in the one-time backfill run that ships as part of the ADR's dogfood evidence.** This ADR closes the governance cluster GHI #162, #167, #168, #169, #170 by adding the missing mechanical guard and automated reconciliation, not by rewriting the 13 consumer paths.
 
 ## Decision
 
 Build a frontmatter-ledger coherence guard, not per-consumer rewrites. The umbrella GHI #167 explicitly reframes the 13 consumer paths as acceptable cache reads once a guard exists; rewriting each consumer is speculative cleanup with no named failure mode the guard would not already catch.
 
-**Precedent and exemplar alignment.** This ADR follows the existing pattern established by ADR-0.0.6 (documentation-cross-coverage-enforcement) and ADR-0.0.7 (config-first-resolution-discipline): both are Foundation ADRs that added a `gz validate` check to mechanically enforce an architectural invariant declared elsewhere in canon. The validator implementation will live alongside existing `gz validate` subcommands (see `src/gzkit/commands/validate.py` as the exemplar module) and will reuse the artifact-graph API already consumed by `src/gzkit/commands/status.py` for `gz adr report` lifecycle derivation. The chore follows the precedent of existing entries under `config/chores/` and uses the `gz chores` framework (`src/gzkit/commands/chores.py`). Anti-pattern guardrails: NEVER reimplement lifecycle derivation in the validator; NEVER add a `--skip-frontmatter` bypass to `gz gates`; NEVER key ledger lookups on frontmatter `id:` (that reproduces GHI #166); NEVER mutate frontmatter outside the OBPI-03 chore.
+**Precedent and exemplar alignment.** ADR-0.0.6 (documentation-cross-coverage-enforcement) and ADR-0.0.7 (config-first-resolution-discipline) are the exemplars for the **validator-surface** pattern only: both are Foundation ADRs that added a `gz validate` check to mechanically enforce an architectural invariant declared elsewhere in canon. This ADR borrows that pattern for OBPI-01 — the validator lives alongside existing `gz validate` subcommands (see `src/gzkit/commands/validate.py` as the exemplar module) and reuses the artifact-graph API already consumed by `src/gzkit/commands/status.py` for `gz adr report` lifecycle derivation. **The auto-fix chore with ledger-wins reconciliation, receipt emission, and a one-time dogfood backfill (OBPIs 03–04) is a novel structural contribution of this ADR — not inherited from either exemplar.** Those earlier ADRs surfaced drift but required manual operator remediation; this ADR adds the automated-reconciliation half of the pattern for the first time. The chore itself uses the existing `gz chores` framework (`src/gzkit/commands/chores.py`, existing entries under `config/chores/`) as its hosting surface, which is the legitimate inherited piece on the chore side. Anti-pattern guardrails: NEVER reimplement lifecycle derivation in the validator; NEVER add a `--skip-frontmatter` bypass to `gz gates`; NEVER key ledger lookups on frontmatter `id:` (that reproduces GHI #166); NEVER mutate frontmatter outside the OBPI-04 chore.
 
-**Four OBPIs decompose the decision:**
+**Five OBPIs decompose the decision:**
 
-**OBPI-A — Guard function:** `gz validate --frontmatter` parses every ADR/OBPI file, compares id/parent/lane/status against the ledger's artifact graph, and emits a per-file per-field drift report in both human and --json modes. Scoped to the four governed fields; ignores ungoverned frontmatter (tags:, related:, etc.). Exit codes follow the CLI doctrine 4-code map (0 clean, 1 user error, 2 system error, 3 policy breach = drift found). Truth source must be the same API gz adr report uses for lifecycle so two derived views cannot diverge. Supports --adr <ID> single-file scope for fast iteration. Supports --explain <ADR-ID> that names the recovery command per drifted field (e.g. 'run gz adr promote … --lane heavy' or 'run gz chore run frontmatter-ledger-coherence').
+**OBPI-01 — Guard function:** `gz validate --frontmatter` parses every ADR/OBPI file, compares id/parent/lane/status against the ledger's artifact graph, and emits a per-file per-field drift report in both human and --json modes. Scoped to the four governed fields; ignores ungoverned frontmatter (tags:, related:, etc.). Exit codes follow the CLI doctrine 4-code map (0 clean, 1 user error, 2 system error, 3 policy breach = drift found). Truth source must be the same API gz adr report uses for lifecycle so two derived views cannot diverge. Supports --adr <ID> single-file scope for fast iteration. Supports --explain <ADR-ID> that names the recovery command per drifted field (e.g. 'run gz adr promote … --lane heavy' or 'run gz chore run frontmatter-ledger-coherence'). **Parallel-root: no predecessor; can start alongside OBPI-05.**
 
-**OBPI-B — Gate integration:** Wire the guard into gz gates (Gate 1 or Gate 2) so frontmatter drift blocks progression. Error messages name recovery commands and doc anchors; never suggest hand-editing frontmatter. Canonicalizes the status vocabulary to match the ledger state machine so frontmatter uses one canon (currently Draft/Proposed/Pending/Validated/Completed are used inconsistently). Canonicalization is documented as a sticky residue (see Consequences).
+**OBPI-02 — Gate integration:** Wire the guard into gz gates (Gate 1 or Gate 2) so frontmatter drift blocks progression. Error messages name recovery commands and doc anchors; never suggest hand-editing frontmatter. Consumes the OBPI-05 status-vocabulary mapping so gate error output uses the canonical term. **Depends on OBPI-01 and OBPI-05; can run in parallel with OBPI-03.**
 
-**OBPI-C — Chore registration:** config/chores/frontmatter-ledger-coherence.toml registers a chore with ledger-wins auto-fix, idempotent reconciliation semantics, receipt emission per run at artifacts/receipts/frontmatter-coherence/<timestamp>.json. Receipt includes the ledger cursor sampled and every file rewritten so 'drift was introduced between event N and M' is answerable. Supports --dry-run showing the per-field diff before any destructive write. Documented operator notes state frontmatter is derived and hand-edits lose on the next run.
+**OBPI-03 — Chore registration:** config/chores/frontmatter-ledger-coherence.toml registers a chore with ledger-wins auto-fix, idempotent reconciliation semantics, receipt emission per run at artifacts/receipts/frontmatter-coherence/<timestamp>.json. Receipt includes the ledger cursor sampled and every file rewritten so 'drift was introduced between event N and M' is answerable. Supports --dry-run showing the per-field diff before any destructive write. Documented operator notes state frontmatter is derived and hand-edits lose on the next run. Consumes the OBPI-05 status-vocabulary mapping to canonicalize `status:` rewrites. **Depends on OBPI-01 and OBPI-05; can run in parallel with OBPI-02.**
 
-**OBPI-D — One-time backfill + GHI closure:** Execute the chore once against the current repo (clears the 94.7% status: drift), attach the reconciliation receipt as evidence, and close GHI #162, #167, #168, #169, #170 with receipt reference in the closeout evidence and GH issue comments.
+**OBPI-04 — One-time backfill + GHI closure:** Execute the chore once against the current repo (clears the 94.7% status: drift), attach the reconciliation receipt as evidence, and close GHI #162, #167, #168, #169, #170 with receipt reference in the closeout evidence and GH issue comments. **Depends on OBPI-01, OBPI-02, OBPI-03, OBPI-05 (the chain-tail dogfood run).**
+
+**OBPI-05 — Canonical status-vocabulary mapping:** Author a canonical mapping from every frontmatter-observed status term (`Draft`, `Proposed`, `Pending`, `Validated`, `Completed`, plus any others discovered during OBPI-01 evidence) to the ledger state-machine canon. Two deliverables: (a) a short addendum to ADR-0.0.9 in `docs/governance/state-doctrine.md` documenting the mapping as data; (b) a typed Python constant (`STATUS_VOCAB_MAPPING` in `src/gzkit/governance/status_vocab.py`) that OBPI-02 (gate output) and OBPI-03 (chore canonicalization) import. **Parallel-root: no predecessor; can start alongside OBPI-01. Unblocks OBPI-02 and OBPI-03 to run in parallel once OBPI-01 also lands.**
 
 **Scope boundary — what this ADR explicitly does NOT do:**
 - Does NOT rewrite the 13 consumer code paths listed in GHI #167 (register.py, common.py, status.py, status_obpi.py, adr_promote_utils.py, triangle.py, hooks/obpi.py, init_cmd.py). Those remain cache reads, now guarded.
@@ -80,35 +82,37 @@ Build a frontmatter-ledger coherence guard, not per-consumer rewrites. The umbre
 6. Status: vocabulary mismatch is wider than the guard alone solves — frontmatter uses Draft/Proposed/Pending/Validated/Completed inconsistently; the ledger has a canonical state machine. The guard must canonicalize frontmatter writes to match ledger vocabulary, not preserve the file's existing word. Risk: operators see an unfamiliar term appear after reconciliation.
 7. Sticky residue from one-time backfill — git history preserves originals but operational workflow no longer sees them. Cultural signal 'ledger wins' becomes team convention, effectively a one-way door on the vocabulary choice.
 8. Coupling of guard truth-source to gz adr report lifecycle derivation — if that derivation is itself wrong, the guard silently enforces wrong truth. Must share the same derivation API, not reimplement it.
+9. Chore cadence regression — if nobody runs the chore after this ADR validates (no CI integration, no periodic operator habit, no `gz tidy` hookup actually exercised), drift silently reaccumulates and the ADR's automated-reconciliation promise degrades to a manual-reconciliation-I-forgot-to-run promise. Mitigation: register the chore with a default cadence in `config/chores/frontmatter-ledger-coherence.toml`; integrate into `gz tidy` sweeps; include a `last_run_at` check in the chore's help output so operators can see recency at a glance. Longer-term: CI runs the chore in dry-run on PR and fails if it would have rewritten governed fields without a paired ledger change.
 
 ## Decomposition Scorecard
 
 <!-- Deterministic OBPI sizing: score each dimension 0/1/2. -->
 <!-- Cutoffs are notional defaults and should be calibrated over time from project evidence. -->
 
-- Data/State: 1
+- Data/State: 2
 - Logic/Engine: 2
 - Interface: 2
 - Observability: 2
 - Lineage: 1
-- Dimension Total: 8
-- Baseline Range: 4
-- Baseline Selected: 4
+- Dimension Total: 9
+- Baseline Range: 5+
+- Baseline Selected: 5
 - Split Single-Narrative: 0
 - Split Surface Boundary: 0
 - Split State Anchor: 0
 - Split Testability Ceiling: 0
 - Split Total: 0
-- Final Target OBPI Count: 4
+- Final Target OBPI Count: 5
 
 ## Checklist
 
 <!-- Each item becomes an OBPI (One Brief Per Item). Sequential numbering, no gaps. -->
 
 - [ ] OBPI-0.0.16-01: `gz validate --frontmatter` guard parses every ADR/OBPI file, compares four governed fields against ledger graph via path-keyed lookup, emits per-file per-field drift report (human + JSON), supports `--adr` single-file scope and `--explain` remediation mode, exit codes follow CLI doctrine 4-code map.
-- [ ] OBPI-0.0.16-02: Wire guard into `gz gates` at Gate 1 so drift blocks progression; error messages name executable recovery commands; canonical status-vocabulary mapping authored as ADR-0.0.9 addendum in `docs/governance/state-doctrine.md` and exposed as typed Python constant.
+- [ ] OBPI-0.0.16-02: Wire guard into `gz gates` at Gate 1 so drift blocks progression; error messages name executable recovery commands; consume the OBPI-05 status-vocabulary mapping to produce canonical terms in error output.
 - [ ] OBPI-0.0.16-03: Register `frontmatter-ledger-coherence` chore at `config/chores/frontmatter-ledger-coherence.toml` with ledger-wins reconciliation, idempotent semantics, receipt emission at `artifacts/receipts/frontmatter-coherence/<ISO8601>.json`, `--dry-run` mode, and receipt schema at `data/schemas/frontmatter_coherence_receipt.schema.json`.
 - [ ] OBPI-0.0.16-04: Execute the chore once as dogfood backfill, attach reconciliation receipt as ADR evidence, verify `gz validate --frontmatter` post-run exits 0, close GHI #162/#167/#168/#169/#170 with `gh issue close` comments citing receipt path and ADR ID.
+- [ ] OBPI-0.0.16-05: Author canonical status-vocabulary mapping — addendum to ADR-0.0.9 in `docs/governance/state-doctrine.md` plus typed `STATUS_VOCAB_MAPPING` constant in `src/gzkit/governance/status_vocab.py` that OBPI-02 (gate output) and OBPI-03 (chore canonicalization) import.
 
 ## Q&A Transcript
 
