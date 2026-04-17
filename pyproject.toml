@@ -28,9 +28,6 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = [
-    "ruff>=0.8",
-]
 docs = [
     "mkdocs==1.6.1",
     "mkdocs-material==9.7.1",
@@ -79,4 +76,6 @@ dev = [
     "mkdocs==1.6.1",
     "mkdocs-material==9.7.1",
     "pyinstaller>=6.19.0",
+    "ruff>=0.15",
+    "ty>=0.0.31",
 ]
