@@ -198,6 +198,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         "--test-dir", default=None, help="Override test directory to scan (default: tests)"
     )
     p_covers.add_argument(
+        "--features-dir",
+        dest="features_dir",
+        default=None,
+        help="Override behave features directory to scan (default: features)",
+    )
+    p_covers.add_argument(
         "--include-doc",
         action="store_true",
         default=False,
@@ -210,6 +216,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             plain=a.plain,
             adr_dir=a.adr_dir,
             test_dir=a.test_dir,
+            features_dir=a.features_dir,
             include_doc=a.include_doc,
         )
     )

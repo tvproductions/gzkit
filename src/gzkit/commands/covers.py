@@ -18,6 +18,7 @@ from gzkit.commands.common import console, get_project_root
 from gzkit.traceability import (
     CoverageReport,
     compute_coverage,
+    scan_feature_tree,
     scan_test_tree,
 )
 from gzkit.triangle import scan_briefs
@@ -150,13 +151,15 @@ def covers_cmd(
     plain: bool = False,
     adr_dir: str | None = None,
     test_dir: str | None = None,
+    features_dir: str | None = None,
     include_doc: bool = False,
 ) -> None:
-    """Report requirement coverage from @covers annotations.
+    """Report requirement coverage from @covers annotations and @REQ scenario tags.
 
-    Scans test files for @covers decorators, cross-references against
-    known REQs from OBPI briefs, and reports coverage at ADR, OBPI,
-    and REQ granularity. Exit code is always 0 (informational).
+    Scans test files for ``@covers`` decorators and behave feature files
+    for ``@REQ-X.Y.Z-NN-MM`` scenario tags (GHI #185), cross-references
+    against known REQs from OBPI briefs, and reports coverage at ADR,
+    OBPI, and REQ granularity. Exit code is always 0 (informational).
 
     ``include_doc=True`` surfaces doc-kind REQs in the report (governance
     graph completeness rather than test coverage). The default excludes
@@ -165,9 +168,10 @@ def covers_cmd(
     project_root = get_project_root()
     briefs_dir = Path(adr_dir) if adr_dir else project_root / "docs" / "design" / "adr"
     tests_dir = Path(test_dir) if test_dir else project_root / "tests"
+    feat_dir = Path(features_dir) if features_dir else project_root / "features"
 
     discovered = scan_briefs(briefs_dir)
-    linkage_records = scan_test_tree(tests_dir)
+    linkage_records = scan_test_tree(tests_dir) + scan_feature_tree(feat_dir)
     report = compute_coverage(discovered, linkage_records, include_doc=include_doc)
 
     if target:

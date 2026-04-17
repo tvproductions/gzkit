@@ -17,6 +17,7 @@ from gzkit.traceability import (
     find_covers_in_source,
     get_registry,
     reset_registry,
+    scan_feature_tree,
     scan_test_tree,
     set_known_reqs,
 )
@@ -1169,3 +1170,147 @@ class TestComputeAdrCoverage(unittest.TestCase):
         result = _compute_adr_coverage(self.root, "ADR-0.15.0", self.adr_dir)
         self.assertEqual(result["covered_reqs"], 2)
         self.assertEqual(result["uncovered"], [])
+
+
+class TestScanFeatureTree(unittest.TestCase):
+    """Tests for scan_feature_tree — GHI #185 behave @REQ-tag scanner."""
+
+    def _write_feature(self, dirpath: Path, name: str, body: str) -> Path:
+        dirpath.mkdir(parents=True, exist_ok=True)
+        path = dirpath / f"{name}.feature"
+        path.write_text(textwrap.dedent(body).lstrip("\n"), encoding="utf-8")
+        return path
+
+    def test_scenario_level_req_tags_are_discovered(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            features = Path(tmp)
+            self._write_feature(
+                features,
+                "example",
+                """
+                Feature: Example
+                  Narrative text
+
+                  @REQ-0.0.16-01-05
+                  Scenario: drift is reported
+                    Given something
+                    When I run it
+                    Then it passes
+                """,
+            )
+            records = scan_feature_tree(features)
+            self.assertEqual(len(records), 1)
+            rec = records[0]
+            self.assertEqual(rec.edge_type, EdgeType.COVERS)
+            self.assertEqual(rec.target.identifier, "REQ-0.0.16-01-05")
+            self.assertEqual(rec.source.vertex_type, VertexType.TEST)
+            self.assertEqual(rec.source.identifier, "Example::drift is reported")
+
+    def test_multiple_req_tags_on_one_scenario(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            features = Path(tmp)
+            self._write_feature(
+                features,
+                "multi",
+                """
+                Feature: Multi
+
+                  @REQ-0.0.16-01-05
+                  @REQ-0.0.16-01-06
+                  Scenario: covers two REQs
+                    Given X
+                """,
+            )
+            records = scan_feature_tree(features)
+            req_ids = sorted(r.target.identifier for r in records)
+            self.assertEqual(req_ids, ["REQ-0.0.16-01-05", "REQ-0.0.16-01-06"])
+            scenarios = {r.source.identifier for r in records}
+            self.assertEqual(scenarios, {"Multi::covers two REQs"})
+
+    def test_feature_level_req_tag_attaches_to_feature(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            features = Path(tmp)
+            self._write_feature(
+                features,
+                "feat",
+                """
+                @REQ-0.0.16-01-07
+                Feature: Top-level coverage
+                  Scenario: unscoped
+                    Given anything
+                """,
+            )
+            records = scan_feature_tree(features)
+            self.assertEqual(len(records), 1)
+            self.assertEqual(records[0].target.identifier, "REQ-0.0.16-01-07")
+            self.assertEqual(records[0].source.identifier, "Top-level coverage")
+
+    def test_untagged_scenarios_produce_no_records(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            features = Path(tmp)
+            self._write_feature(
+                features,
+                "plain",
+                """
+                Feature: Plain
+                  Scenario: nothing tagged
+                    Given nothing
+                """,
+            )
+            self.assertEqual(scan_feature_tree(features), [])
+
+    def test_missing_directory_returns_empty(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(scan_feature_tree(Path(tmp) / "nonexistent"), [])
+
+    def test_compute_coverage_merges_unit_and_behave(self) -> None:
+        """gz covers-style integration: unit @covers + behave @REQ tags unify."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            tests_dir = root / "tests"
+            features_dir = root / "features"
+            tests_dir.mkdir()
+            (tests_dir / "test_unit.py").write_text(
+                textwrap.dedent("""
+                    from gzkit.traceability import covers
+
+                    @covers("REQ-0.0.16-01-05")
+                    def test_unit_case():
+                        pass
+                """).lstrip("\n"),
+                encoding="utf-8",
+            )
+            self._write_feature(
+                features_dir,
+                "behave",
+                """
+                Feature: Behave cover
+
+                  @REQ-0.0.16-01-05
+                  Scenario: behave path
+                    Given Y
+                """,
+            )
+            known = [
+                DiscoveredReq(
+                    entity=ReqEntity(
+                        id=ReqId(semver="0.0.16", obpi_item="01", criterion_index="05"),
+                        description="x",
+                        status=ReqStatus.UNCHECKED,
+                        parent_obpi="OBPI-0.0.16-01",
+                    ),
+                    source_path="brief.md",
+                )
+            ]
+            linkage = scan_test_tree(tests_dir) + scan_feature_tree(features_dir)
+            report = compute_coverage(known, linkage)
+            self.assertEqual(report.summary.covered_reqs, 1)
+            # covering_tests should carry both the unit test identifier and
+            # the feature-scenario identifier.
+            entry = report.entries[0]
+            self.assertIn("test_unit_case", entry.covering_tests)
+            self.assertIn("Behave cover::behave path", entry.covering_tests)
+
+
+if __name__ == "__main__":
+    unittest.main()
