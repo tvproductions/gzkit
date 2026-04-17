@@ -4,11 +4,15 @@ Registers: check, drift, covers, lint, format, test, typecheck, validate,
 skill subcommands, parity, readiness, check-config-paths, preflight, cli,
 agent, git-sync, tidy, chores, interview.
 
-Command handlers are resolved lazily via module-level ``__getattr__`` so
-``gz --help`` does not import handler modules (and their heavy transitive
-dependencies) just to render the help tree.
+Command handlers listed in ``_LAZY_HANDLERS`` are bound at module-import
+time as forwarding stubs via ``_make_lazy`` so ``gz --help`` avoids
+pulling heavy handler dependencies. Because the bindings happen
+dynamically in a loop, ruff cannot see them statically — hence the
+file-level F821 suppression below. Adding or removing handlers means
+editing ``_LAZY_HANDLERS``, not the reference sites.
 """
 
+# ruff: noqa: F821 -- handler names populated dynamically from _LAZY_HANDLERS
 from __future__ import annotations
 
 import argparse
