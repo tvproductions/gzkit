@@ -18,7 +18,7 @@ from gzkit.git_sync import (
     _skip_disables_xenon,
     _skip_tokens,
 )
-from gzkit.quality import run_behave, run_lint, run_tests
+from gzkit.quality import run_lint, run_tests
 from gzkit.utils import git_cmd
 
 GIT_SYNC_SKILL_PATH = ".gzkit/skills/git-sync/SKILL.md"
@@ -120,13 +120,9 @@ def _run_sync_prechecks(
             executed.append("gz test (pre-sync)")
         else:
             blockers.append("Tests failed before sync.")
-
-    if run_test_gate and not blockers:
-        behave_result = run_behave(project_root)
-        if behave_result.success:
-            executed.append("gz behave (pre-sync)")
-        else:
-            blockers.append("Behave scenarios failed before sync.")
+        # Behave no longer runs as a sync pre-gate — pre-commit enforces
+        # unittest/lint/type checks, and behave is Heavy-lane / closeout-scope.
+        # For explicit pre-sync BDD coverage, run `gz test --bdd` beforehand.
 
 
 def _build_sync_commit_message(staged_files: list[str]) -> str:
