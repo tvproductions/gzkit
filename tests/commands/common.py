@@ -2,9 +2,11 @@ import io
 import os
 import subprocess
 import tempfile
+from collections.abc import Iterator
 from contextlib import contextmanager, redirect_stderr, redirect_stdout
 from dataclasses import dataclass
 from pathlib import Path
+from unittest.mock import patch
 
 
 @dataclass
@@ -46,6 +48,74 @@ class CliRunner:
             exit_code=0 if exit_code is None else int(exit_code),
             output=output.getvalue(),
         )
+
+
+@contextmanager
+def _git_subprocess_patcher(
+    *,
+    branch: str = "main",
+    head_sha: str = "abc1234",
+    remote: str = "origin",
+    clean: bool = True,
+    responses: dict[tuple[str, ...], tuple[int, str, str]] | None = None,
+) -> Iterator[None]:
+    """Patch ``gzkit.utils.git_cmd`` with a fake that simulates a healthy repo.
+
+    This is the ``git`` counterpart to ``_uv_sync_patcher`` — unit tests that
+    exercise ``gz git-sync`` or any flow touching ``git_cmd`` should wrap
+    their invocation with this context manager instead of spawning real
+    subprocesses via ``_init_git_repo``. Typical call:
+
+        with _git_subprocess_patcher():
+            result = runner.invoke(main, ["git-sync"])
+
+    The fake responds to common git introspection commands used by
+    ``gzkit.git_sync`` and ``gzkit.commands.sync``:
+
+    - ``rev-parse --is-inside-work-tree`` returns ``"true"``
+    - ``rev-parse --abbrev-ref HEAD`` returns ``branch``
+    - ``rev-parse --show-toplevel`` returns the project root
+    - ``rev-parse ...`` returns ``head_sha``
+    - ``status --porcelain`` returns empty when ``clean=True``
+    - ``rev-list --count`` returns ``"0"``
+    - ``log``/``diff`` return empty success
+
+    Pass ``responses`` to override specific ``(args, ...)`` tuples.
+    """
+    overrides = responses or {}
+
+    def fake_git_cmd(project_root: Path, *args: str) -> tuple[int, str, str]:
+        if args in overrides:
+            return overrides[args]
+        if args == ("rev-parse", "--is-inside-work-tree"):
+            return (0, "true", "")
+        if args == ("rev-parse", "--abbrev-ref", "HEAD"):
+            return (0, branch, "")
+        if args == ("rev-parse", "--show-toplevel"):
+            return (0, str(project_root), "")
+        if args == ("status", "--porcelain"):
+            return (0, "" if clean else "?? untracked.txt\n", "")
+        if args[:1] == ("rev-parse",):
+            return (0, head_sha, "")
+        if args[:1] == ("rev-list",):
+            return (0, "0", "")
+        if args[:1] in (("log",), ("diff",), ("status",), ("branch",), ("show",)):
+            return (0, "", "")
+        return (0, "", "")
+
+    patchers = [
+        patch("gzkit.utils.git_cmd", side_effect=fake_git_cmd),
+        patch("gzkit.git_sync.git_cmd", side_effect=fake_git_cmd),
+        patch("gzkit.commands.sync.git_cmd", side_effect=fake_git_cmd),
+    ]
+    _ = remote  # argument kept for documentation / future use
+    for p in patchers:
+        p.start()
+    try:
+        yield
+    finally:
+        for p in patchers:
+            p.stop()
 
 
 def _init_git_repo(path: Path, *, seed_file: str = "README.md") -> str:

@@ -1,11 +1,10 @@
 import os
-import subprocess
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
 from gzkit.cli import main
-from tests.commands.common import CliRunner
+from tests.commands.common import CliRunner, _git_subprocess_patcher
 
 _uv_sync_patcher = patch("gzkit.commands.init_cmd._run_uv_sync", return_value=None)
 
@@ -48,32 +47,13 @@ class TestGitSyncCommand(unittest.TestCase):
             self.assertIn("not a git repository", result.output.lower())
 
     def test_git_sync_dry_run_in_git_repo(self) -> None:
-        """git-sync dry-run works in a local git repo."""
+        """git-sync dry-run works in a local git repo — mocked git subprocess."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             runner.invoke(main, ["init"])
-            subprocess.run(["git", "init"], check=True, capture_output=True, text=True)
-            subprocess.run(
-                ["git", "config", "user.email", "test@example.com"],
-                check=True,
-                capture_output=True,
-                text=True,
-            )
-            subprocess.run(
-                ["git", "config", "user.name", "Test User"],
-                check=True,
-                capture_output=True,
-                text=True,
-            )
-            subprocess.run(["git", "add", "-A"], check=True, capture_output=True, text=True)
-            subprocess.run(
-                ["git", "commit", "-m", "chore: initial"],
-                check=True,
-                capture_output=True,
-                text=True,
-            )
 
-            result = runner.invoke(main, ["git-sync"])
+            with _git_subprocess_patcher():
+                result = runner.invoke(main, ["git-sync"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("Git sync plan", result.output)
 

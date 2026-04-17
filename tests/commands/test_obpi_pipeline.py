@@ -119,7 +119,8 @@ class TestObpiPipelineCommand(unittest.TestCase):
         config_mode: str = "heavy",
         obpi_id: str = "OBPI-0.13.0-01-runtime-command-contract",
     ) -> None:
-        runner.invoke(main, ["init", "--mode", config_mode])
+        del runner  # retained for call-site symmetry with older fixture
+        _quick_init(config_mode)
         config = GzkitConfig.load(Path(".gzkit.json"))
         self._seed_parent_adr(config, parent_adr, semver=parent_semver, lane=parent_lane)
         self._seed_obpi(config, parent_adr, obpi_id=obpi_id)

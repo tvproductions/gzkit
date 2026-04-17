@@ -29,14 +29,13 @@ repos:
         exclude: ^site/
 
       - id: unittest
-        name: unittest (unit tier)
+        name: unittest
         entry: uv run -m unittest discover -q tests
         language: system
         pass_filenames: false
         types: [python]
-        # Unit tier only. tests/integration/__init__.py gates integration
-        # discovery behind GZKIT_TIER=integration; without it, only unit-
-        # tier tests run here. Integration tier runs via `gz test --integration`.
+        # Unit tests mock subprocess boundaries. End-to-end CLI behavior
+        # is covered by behave under features/ — see .gzkit/rules/tests.md.
 
       - id: forbid-pytest
         name: forbid pytest (unittest-only policy)

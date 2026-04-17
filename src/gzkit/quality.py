@@ -4,7 +4,6 @@ Provides unified interface to linting, formatting, testing, and type checking.
 """
 
 import ast
-import os
 import re
 import subprocess
 from pathlib import Path
@@ -38,22 +37,17 @@ class QualityResult(BaseModel):
 def run_command(
     command: str,
     cwd: Path | None = None,
-    env: dict[str, str] | None = None,
 ) -> QualityResult:
     """Run a shell command and capture output.
 
     Args:
         command: Command to run.
         cwd: Working directory.
-        env: Optional environment variables to merge onto the inherited env.
 
     Returns:
         QualityResult with command output.
 
     """
-    resolved_env: dict[str, str] | None = None
-    if env is not None:
-        resolved_env = {**os.environ, **env}
     try:
         result = subprocess.run(
             command,
@@ -63,7 +57,6 @@ def run_command(
             encoding="utf-8",
             errors="replace",
             cwd=cwd,
-            env=resolved_env,
         )
         return QualityResult(
             success=result.returncode == 0,
@@ -319,29 +312,16 @@ def run_typecheck(project_root: Path) -> QualityResult:
     return run_command("uv run ty check src", cwd=project_root)
 
 
-def run_tests(project_root: Path, *, integration: bool = False) -> QualityResult:
-    """Run the unit or integration test tier.
-
-    Unit tier (default) discovers ``tests/`` and relies on
-    ``tests/integration/__init__.py`` ``load_tests`` protocol to skip
-    integration-tier modules. Integration tier discovers ``tests/integration/``
-    directly with ``GZKIT_TIER=integration`` set so the protocol returns the
-    full suite.
+def run_tests(project_root: Path) -> QualityResult:
+    """Run the unittest test suite.
 
     Args:
         project_root: Project root directory.
-        integration: When True, run the integration tier instead of unit.
 
     Returns:
         QualityResult from testing.
 
     """
-    if integration:
-        return run_command(
-            "uv run -m unittest discover tests/integration",
-            cwd=project_root,
-            env={"GZKIT_TIER": "integration"},
-        )
     return run_command("uv run -m unittest discover tests", cwd=project_root)
 
 

@@ -55,28 +55,14 @@ def format_cmd() -> None:
         raise SystemExit(result.returncode)
 
 
-def test(*, integration: bool = False) -> None:
-    """Run the test tier (unit by default, integration with --integration).
+def test() -> None:
+    """Run the test suite: unittest over ``tests/`` followed by behave scenarios.
 
-    Unit tier runs unittest over ``tests/`` (excluding ``tests/integration/``)
-    then behave scenarios — the fast pre-commit floor. Integration tier runs
-    only ``tests/integration/`` (subprocess-spawning, real-filesystem tests)
-    and skips behave.
+    Unit tests mock subprocess boundaries. End-to-end CLI behavior is
+    covered by behave under ``features/``. There is no separate integration
+    tier — see ``.gzkit/rules/tests.md`` for the contract.
     """
     project_root = get_project_root()
-
-    if integration:
-        console.print("Running integration tier...")
-        result = run_tests(project_root, integration=True)
-        if result.stdout:
-            console.print(result.stdout)
-        if result.stderr:
-            console.print(result.stderr)
-        if not result.success:
-            console.print("[red]Integration tests failed.[/red]")
-            raise SystemExit(result.returncode)
-        console.print("[green]Integration tests passed.[/green]")
-        return
 
     console.print("Running unit tests...")
     unit = run_tests(project_root)
