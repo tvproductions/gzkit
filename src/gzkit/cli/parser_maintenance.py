@@ -3,38 +3,66 @@
 Registers: check, drift, covers, lint, format, test, typecheck, validate,
 skill subcommands, parity, readiness, check-config-paths, preflight, cli,
 agent, git-sync, tidy, chores, interview.
+
+Command handlers are resolved lazily via module-level ``__getattr__`` so
+``gz --help`` does not import handler modules (and their heavy transitive
+dependencies) just to render the help tree.
 """
 
+from __future__ import annotations
+
 import argparse
+from typing import Any
 
 from gzkit.cli.helpers import (
     add_dry_run_flag,
     add_json_flag,
     build_epilog,
 )
-from gzkit.commands.chores import (
-    chores_advise,
-    chores_audit,
-    chores_list,
-    chores_plan,
-    chores_run,
-    chores_show,
-)
-from gzkit.commands.cli_audit import cli_audit_cmd
-from gzkit.commands.config_paths import check_config_paths_cmd
-from gzkit.commands.covers import covers_cmd
-from gzkit.commands.drift import drift_cmd
-from gzkit.commands.flags import flag_explain_cmd, flags_list_cmd
-from gzkit.commands.interview_cmd import interview
-from gzkit.commands.parity import parity_check_cmd
-from gzkit.commands.preflight import preflight_cmd
-from gzkit.commands.quality import check, format_cmd, lint, test, typecheck
-from gzkit.commands.readiness import readiness_audit_cmd, readiness_eval_cmd
-from gzkit.commands.skills_cmd import skill_audit_cmd, skill_list, skill_new
-from gzkit.commands.sync import git_sync
-from gzkit.commands.tidy import sync_control_surfaces, tidy
-from gzkit.commands.validate_cmd import validate
 from gzkit.skills import DEFAULT_MAX_REVIEW_AGE_DAYS
+
+_LAZY_HANDLERS: dict[str, str] = {
+    "chores_advise": "gzkit.commands.chores",
+    "chores_audit": "gzkit.commands.chores",
+    "chores_list": "gzkit.commands.chores",
+    "chores_plan": "gzkit.commands.chores",
+    "chores_run": "gzkit.commands.chores",
+    "chores_show": "gzkit.commands.chores",
+    "cli_audit_cmd": "gzkit.commands.cli_audit",
+    "check_config_paths_cmd": "gzkit.commands.config_paths",
+    "covers_cmd": "gzkit.commands.covers",
+    "drift_cmd": "gzkit.commands.drift",
+    "flag_explain_cmd": "gzkit.commands.flags",
+    "flags_list_cmd": "gzkit.commands.flags",
+    "interview": "gzkit.commands.interview_cmd",
+    "parity_check_cmd": "gzkit.commands.parity",
+    "preflight_cmd": "gzkit.commands.preflight",
+    "check": "gzkit.commands.quality",
+    "format_cmd": "gzkit.commands.quality",
+    "lint": "gzkit.commands.quality",
+    "test": "gzkit.commands.quality",
+    "typecheck": "gzkit.commands.quality",
+    "readiness_audit_cmd": "gzkit.commands.readiness",
+    "readiness_eval_cmd": "gzkit.commands.readiness",
+    "skill_audit_cmd": "gzkit.commands.skills_cmd",
+    "skill_list": "gzkit.commands.skills_cmd",
+    "skill_new": "gzkit.commands.skills_cmd",
+    "git_sync": "gzkit.commands.sync",
+    "sync_control_surfaces": "gzkit.commands.tidy",
+    "tidy": "gzkit.commands.tidy",
+    "validate": "gzkit.commands.validate_cmd",
+}
+
+
+def __getattr__(name: str) -> Any:
+    module_path = _LAZY_HANDLERS.get(name)
+    if module_path is None:
+        raise AttributeError(f"module 'gzkit.cli.parser_maintenance' has no attribute {name!r}")
+    from importlib import import_module
+
+    value = getattr(import_module(module_path), name)
+    globals()[name] = value
+    return value
 
 
 def register_maintenance_parsers(commands: argparse._SubParsersAction) -> None:
