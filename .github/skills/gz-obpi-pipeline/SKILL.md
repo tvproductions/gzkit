@@ -5,8 +5,8 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.1.1"
-last_reviewed: 2026-03-16
+skill-version: "6.2.0"
+last_reviewed: 2026-04-17
 ---
 
 # gz-obpi-pipeline
@@ -488,12 +488,12 @@ the reconcile output and ADR status refresh.
 3. Remove `.claude/plans/.pipeline-active-{OBPI-ID}.json` if it was created.
 4. Remove `.claude/plans/.pipeline-active.json` only when it still points at
    the same OBPI as the per-OBPI marker.
-5. **Git-sync #1** — `uv run gz git-sync --apply --lint --test`
+5. **Git-sync #1** — `uv run gz git-sync --apply`
    Commits all governance edits from steps 1-4. Tree is now clean.
 6. Run `uv run gz obpi reconcile {OBPI-SLUG}` to confirm receipt and brief agree.
 7. Run `uv run gz adr status {PARENT-ADR} --json` so the parent ADR view
    reflects the reconciled OBPI state.
-8. **Git-sync #2** — `uv run gz git-sync --apply --lint --test`
+8. **Git-sync #2** — `uv run gz git-sync --apply`
    Commits the reconcile output (step 6) and ADR status refresh (step 7).
 9. Create a session handoff if more OBPIs remain or follow-up work is deferred.
 
