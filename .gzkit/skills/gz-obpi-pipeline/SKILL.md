@@ -5,7 +5,7 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.3.0"
+skill-version: "6.4.0"
 last_reviewed: 2026-04-17
 ---
 
@@ -295,9 +295,10 @@ Run the standard quality checks sequentially (these are always inline, never dis
 # Always — OBPI-scoped, fast
 uv run gz lint
 uv run gz typecheck
-uv run gz test --obpi {OBPI-SLUG}   # runs only @covers tests for this OBPI's REQs
+uv run gz test --obpi {OBPI-SLUG}          # Lite-lane: @covers unit tests only
 
-# If Heavy lane
+# If Heavy lane (covers unit tests + @REQ-tagged behave scenarios)
+uv run gz test --obpi {OBPI-SLUG} --bdd
 uv run gz validate --documents
 uv run mkdocs build --strict
 ```

@@ -198,6 +198,27 @@ surface keeps the operator intent visible. Adding a third tier under
 `unittest` (the mistake GHI #182 closes) obscures the boundary and
 duplicates behave's role.
 
+### Behave scenario tagging (REQ coverage — GHI #185)
+
+Behave scenarios that cover a REQ carry `@REQ-X.Y.Z-NN-MM` as a scenario
+tag (one tag per REQ covered, with the leading `@`). This lets
+`gz test --obpi OBPI-X.Y.Z-NN --bdd` filter to exactly the scenarios
+covering that OBPI's requirements — the same scope discipline as
+`@covers` decorators on unit tests.
+
+```gherkin
+  @REQ-0.0.16-02-03
+  @REQ-0.0.16-02-04
+  Scenario: gz gates blocks on frontmatter drift
+    Given an ADR with drifted status frontmatter
+    When I run "gz gates --adr ADR-X.Y.Z"
+    Then the exit code is 3
+```
+
+Feature-level `# @covers REQ-...` comments remain supported for narrative
+authorship but are too coarse for OBPI-scoped filtering — use
+scenario-level `@REQ-*` tags for mechanical coverage derivation.
+
 ### Canonical history
 
 - **GHI #181** (landed in `e22ac553`): introduced `tests/integration/` as
