@@ -6,6 +6,9 @@
 
 from __future__ import annotations
 
+import pathlib
+import subprocess
+
 from gzkit.commands.common import console, get_project_root
 from gzkit.quality import (
     DriftAdvisoryResult,
@@ -55,14 +58,102 @@ def format_cmd() -> None:
         raise SystemExit(result.returncode)
 
 
-def test() -> None:
-    """Run the test suite: unittest over ``tests/`` followed by behave scenarios.
+def _resolve_obpi_test_names(project_root, obpi: str) -> list[str]:
+    """Return unittest-runnable names for tests covering this OBPI's REQs.
 
-    Unit tests mock subprocess boundaries. End-to-end CLI behavior is
-    covered by behave under ``features/``. There is no separate integration
-    tier — see ``.gzkit/rules/tests.md`` for the contract.
+    Uses the canonical traceability API (``@covers`` scanner + brief REQ
+    extraction) to identify which tests cover REQs belonging to the target
+    OBPI. Returns unittest-addressable identifiers like
+    ``tests.commands.test_validate_frontmatter.TestClass.test_method``.
+    """
+    from gzkit.traceability import EdgeType, scan_test_tree  # noqa: PLC0415
+    from gzkit.triangle import ReqId, scan_briefs  # noqa: PLC0415
+
+    short = obpi.upper().removeprefix("OBPI-")
+    if "-" not in short:
+        raise ValueError(f"Expected OBPI-<semver>-<item> form, got {obpi!r}")
+    semver, item = short.split("-", 1)
+    item = item.split("-", 1)[0]  # Drop any trailing slug
+
+    brief_root = project_root / "docs" / "design" / "adr"
+    briefs = scan_briefs(brief_root)
+    req_ids = {
+        str(b.entity.id)
+        for b in briefs
+        if b.entity.id.semver == semver and b.entity.id.obpi_item == item
+    }
+    if not req_ids:
+        return []
+
+    test_root = project_root / "tests"
+    records = scan_test_tree(test_root)
+
+    names: set[str] = set()
+    for rec in records:
+        if rec.edge_type != EdgeType.COVERS:
+            continue
+        try:
+            target_req = ReqId.parse(rec.target.identifier)
+        except ValueError:
+            continue
+        if str(target_req) not in req_ids:
+            continue
+        location = rec.source.location
+        if location is None:
+            continue
+        rel_path = pathlib.Path(location).relative_to(project_root)
+        module = ".".join(rel_path.with_suffix("").parts)
+        names.add(f"{module}.{rec.source.identifier}")
+
+    return sorted(names)
+
+
+def test(bdd: bool = False, obpi: str | None = None) -> None:
+    """Run the unit-test suite; optionally scoped to one OBPI or with BDD.
+
+    Scope selection:
+
+    * ``--obpi OBPI-X.Y.Z-NN`` — run only tests decorated with
+      ``@covers`` for REQs belonging to that OBPI (fastest;
+      OBPI-scoped pipeline stage 3). Incompatible with ``--bdd``.
+    * ``--bdd`` — run the full unittest suite plus behave scenarios
+      (Heavy-lane / ADR closeout / pre-release ceremony).
+    * default — run the full unittest suite (ad-hoc, CI-safe). Pre-commit
+      hooks already enforce this on every commit, so operators rarely
+      need to invoke it manually for OBPI-scoped work.
+
+    See ``.gzkit/rules/tests.md`` for policy.
     """
     project_root = get_project_root()
+
+    if obpi and bdd:
+        console.print(
+            "[red]--obpi and --bdd are mutually exclusive. "
+            "OBPI-scoped runs are unit-only; BDD belongs to ADR closeout.[/red]"
+        )
+        raise SystemExit(1)
+
+    if obpi:
+        names = _resolve_obpi_test_names(project_root, obpi)
+        if not names:
+            console.print(
+                f"[yellow]No @covers tests found for {obpi}. "
+                "Either no REQs have test coverage yet, or the OBPI has no "
+                "testable REQs (docs-only).[/yellow]"
+            )
+            return
+        console.print(f"Running {len(names)} test(s) scoped to {obpi}...")
+        result = subprocess.run(
+            ["uv", "run", "-m", "unittest", "-v", *names],
+            cwd=project_root,
+            check=False,
+            encoding="utf-8",
+        )
+        if result.returncode != 0:
+            console.print("[red]OBPI-scoped tests failed.[/red]")
+            raise SystemExit(result.returncode)
+        console.print(f"[green]OBPI-scoped tests passed ({len(names)} tests).[/green]")
+        return
 
     console.print("Running unit tests...")
     unit = run_tests(project_root)
@@ -75,17 +166,20 @@ def test() -> None:
         raise SystemExit(unit.returncode)
     console.print("[green]Unit tests passed.[/green]")
 
+    if not bdd:
+        return
+
     console.print("Running behave scenarios...")
-    bdd = run_behave(project_root)
-    if bdd.stdout:
-        console.print(bdd.stdout)
-    if bdd.stderr:
-        console.print(bdd.stderr)
-    if bdd.success:
+    behave_result = run_behave(project_root)
+    if behave_result.stdout:
+        console.print(behave_result.stdout)
+    if behave_result.stderr:
+        console.print(behave_result.stderr)
+    if behave_result.success:
         console.print("[green]Behave scenarios passed.[/green]")
     else:
         console.print("[red]Behave scenarios failed.[/red]")
-        raise SystemExit(bdd.returncode)
+        raise SystemExit(behave_result.returncode)
 
 
 def typecheck() -> None:
