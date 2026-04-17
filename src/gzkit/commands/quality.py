@@ -58,6 +58,24 @@ def format_cmd() -> None:
         raise SystemExit(result.returncode)
 
 
+def _resolve_obpi_req_ids(project_root, obpi: str) -> set[str]:
+    """Return the set of REQ IDs belonging to the given OBPI."""
+    from gzkit.triangle import scan_briefs  # noqa: PLC0415
+
+    short = obpi.upper().removeprefix("OBPI-")
+    if "-" not in short:
+        raise ValueError(f"Expected OBPI-<semver>-<item> form, got {obpi!r}")
+    semver, item = short.split("-", 1)
+    item = item.split("-", 1)[0]
+
+    briefs = scan_briefs(project_root / "docs" / "design" / "adr")
+    return {
+        str(b.entity.id)
+        for b in briefs
+        if b.entity.id.semver == semver and b.entity.id.obpi_item == item
+    }
+
+
 def _resolve_obpi_test_names(project_root, obpi: str) -> list[str]:
     """Return unittest-runnable names for tests covering this OBPI's REQs.
 
@@ -67,26 +85,13 @@ def _resolve_obpi_test_names(project_root, obpi: str) -> list[str]:
     ``tests.commands.test_validate_frontmatter.TestClass.test_method``.
     """
     from gzkit.traceability import EdgeType, scan_test_tree  # noqa: PLC0415
-    from gzkit.triangle import ReqId, scan_briefs  # noqa: PLC0415
+    from gzkit.triangle import ReqId  # noqa: PLC0415
 
-    short = obpi.upper().removeprefix("OBPI-")
-    if "-" not in short:
-        raise ValueError(f"Expected OBPI-<semver>-<item> form, got {obpi!r}")
-    semver, item = short.split("-", 1)
-    item = item.split("-", 1)[0]  # Drop any trailing slug
-
-    brief_root = project_root / "docs" / "design" / "adr"
-    briefs = scan_briefs(brief_root)
-    req_ids = {
-        str(b.entity.id)
-        for b in briefs
-        if b.entity.id.semver == semver and b.entity.id.obpi_item == item
-    }
+    req_ids = _resolve_obpi_req_ids(project_root, obpi)
     if not req_ids:
         return []
 
-    test_root = project_root / "tests"
-    records = scan_test_tree(test_root)
+    records = scan_test_tree(project_root / "tests")
 
     names: set[str] = set()
     for rec in records:
@@ -108,51 +113,99 @@ def _resolve_obpi_test_names(project_root, obpi: str) -> list[str]:
     return sorted(names)
 
 
+def _resolve_obpi_behave_tags(project_root, obpi: str) -> list[str]:
+    """Return behave scenario tags (``@REQ-...``) covering this OBPI's REQs.
+
+    Scans ``features/**/*.feature`` for scenario tag lines (``@REQ-X.Y.Z-NN-MM``
+    at scenario or feature level). Returns only tags whose REQ ID belongs to
+    this OBPI — the filter list passed to ``behave --tags=``.
+    """
+    import re  # noqa: PLC0415
+
+    req_ids = _resolve_obpi_req_ids(project_root, obpi)
+    if not req_ids:
+        return []
+
+    req_tag_pattern = re.compile(r"@REQ-\d+\.\d+\.\d+-\d+-\d+")
+    features_root = project_root / "features"
+    if not features_root.is_dir():
+        return []
+
+    tags: set[str] = set()
+    for feature_file in features_root.rglob("*.feature"):
+        try:
+            content = feature_file.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        for match in req_tag_pattern.finditer(content):
+            tag = match.group(0)
+            req_id = tag.removeprefix("@")
+            if req_id in req_ids:
+                tags.add(tag)
+    return sorted(tags)
+
+
+def _run_obpi_scoped_unit(project_root, obpi: str) -> None:
+    """Run unit tests covering this OBPI's REQs (exit on failure)."""
+    names = _resolve_obpi_test_names(project_root, obpi)
+    if not names:
+        console.print(f"[yellow]No @covers unit tests found for {obpi}.[/yellow]")
+        return
+    console.print(f"Running {len(names)} unit test(s) scoped to {obpi}...")
+    result = subprocess.run(
+        ["uv", "run", "-m", "unittest", "-v", *names],
+        cwd=project_root,
+        check=False,
+        encoding="utf-8",
+    )
+    if result.returncode != 0:
+        console.print("[red]OBPI-scoped unit tests failed.[/red]")
+        raise SystemExit(result.returncode)
+    console.print(f"[green]OBPI-scoped unit tests passed ({len(names)} tests).[/green]")
+
+
+def _run_obpi_scoped_behave(project_root, obpi: str) -> None:
+    """Run behave scenarios tagged with this OBPI's REQs (exit on failure)."""
+    tags = _resolve_obpi_behave_tags(project_root, obpi)
+    if not tags:
+        console.print(
+            f"[yellow]No @REQ-tagged behave scenarios found for {obpi}. "
+            "Tag scenarios with @REQ-X.Y.Z-NN-MM to opt in (GHI #185).[/yellow]"
+        )
+        return
+    console.print(f"Running behave scenarios for {len(tags)} REQ tag(s) of {obpi}...")
+    behave_result = run_behave(project_root, tags=tags)
+    if behave_result.stdout:
+        console.print(behave_result.stdout)
+    if behave_result.stderr:
+        console.print(behave_result.stderr)
+    if not behave_result.success:
+        console.print("[red]OBPI-scoped behave scenarios failed.[/red]")
+        raise SystemExit(behave_result.returncode)
+    console.print("[green]OBPI-scoped behave scenarios passed.[/green]")
+
+
 def test(bdd: bool = False, obpi: str | None = None) -> None:
-    """Run the unit-test suite; optionally scoped to one OBPI or with BDD.
+    """Run the test suite; optionally scoped to one OBPI and/or with BDD.
 
     Scope selection:
 
-    * ``--obpi OBPI-X.Y.Z-NN`` — run only tests decorated with
-      ``@covers`` for REQs belonging to that OBPI (fastest;
-      OBPI-scoped pipeline stage 3). Incompatible with ``--bdd``.
-    * ``--bdd`` — run the full unittest suite plus behave scenarios
-      (Heavy-lane / ADR closeout / pre-release ceremony).
-    * default — run the full unittest suite (ad-hoc, CI-safe). Pre-commit
-      hooks already enforce this on every commit, so operators rarely
-      need to invoke it manually for OBPI-scoped work.
+    * ``--obpi OBPI-X.Y.Z-NN`` — run unit tests decorated with ``@covers``
+      for REQs belonging to that OBPI (~1s typical). Combine with ``--bdd``
+      to additionally run behave scenarios tagged with those REQs.
+      OBPI pipeline Stage 3 uses this.
+    * ``--bdd`` (no ``--obpi``) — full unittest suite + full behave run
+      (ADR closeout / Heavy-lane ceremony).
+    * default — full unittest suite only (ad-hoc / CI / pre-commit baseline).
 
-    See ``.gzkit/rules/tests.md`` for policy.
+    See ``.gzkit/rules/tests.md`` and GHI #185 for the scenario-tag convention.
     """
     project_root = get_project_root()
 
-    if obpi and bdd:
-        console.print(
-            "[red]--obpi and --bdd are mutually exclusive. "
-            "OBPI-scoped runs are unit-only; BDD belongs to ADR closeout.[/red]"
-        )
-        raise SystemExit(1)
-
     if obpi:
-        names = _resolve_obpi_test_names(project_root, obpi)
-        if not names:
-            console.print(
-                f"[yellow]No @covers tests found for {obpi}. "
-                "Either no REQs have test coverage yet, or the OBPI has no "
-                "testable REQs (docs-only).[/yellow]"
-            )
-            return
-        console.print(f"Running {len(names)} test(s) scoped to {obpi}...")
-        result = subprocess.run(
-            ["uv", "run", "-m", "unittest", "-v", *names],
-            cwd=project_root,
-            check=False,
-            encoding="utf-8",
-        )
-        if result.returncode != 0:
-            console.print("[red]OBPI-scoped tests failed.[/red]")
-            raise SystemExit(result.returncode)
-        console.print(f"[green]OBPI-scoped tests passed ({len(names)} tests).[/green]")
+        _run_obpi_scoped_unit(project_root, obpi)
+        if bdd:
+            _run_obpi_scoped_behave(project_root, obpi)
         return
 
     console.print("Running unit tests...")
