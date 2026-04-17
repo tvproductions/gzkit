@@ -5,7 +5,7 @@ description: "Orchestrate the GHI-driven patch release ceremony: draft narrative
 category: adr-audit
 compatibility: GovZero v6 framework; provides ceremony walkthrough for GHI-driven patch releases
 metadata:
-  skill-version: "1.0.1"
+  skill-version: "1.1.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/releases/patch-release.md, docs/design/adr/foundation/ADR-0.0.15-ghi-driven-patch-release-ceremony/ADR-0.0.15-ghi-driven-patch-release-ceremony.md"
@@ -170,7 +170,7 @@ below the document header and above the most recent existing entry.
 #### 4c. Git-sync
 
 ```bash
-uv run gz git-sync --apply --lint --test
+uv run gz git-sync --apply
 ```
 
 This MUST run immediately before `gh release create`. Same policy as the
@@ -228,7 +228,7 @@ This mirrors the `FOUNDATION_SKIP_STEPS` behavior in the closeout ceremony.
 
 1. **MUST** draft narrative release notes from GHI content — never use raw titles
 2. **MUST** wait for explicit operator approval before any publish action
-3. **MUST** run `uv run gz git-sync --apply --lint --test` immediately before
+3. **MUST** run `uv run gz git-sync --apply` immediately before
    `gh release create`
 4. **MUST** skip GitHub release creation for Foundation (0.0.x) ADRs
 5. **MUST** use `sync_project_version` via `gz patch release` — never manually
@@ -255,7 +255,7 @@ This mirrors the `FOUNDATION_SKIP_STEPS` behavior in the closeout ceremony.
 | `gz patch release --dry-run --json` | Discovery: machine-readable output |
 | `gz patch release` | Execute: version sync + manifest generation |
 | `gz patch release --json` | Execute: machine-readable output |
-| `gz git-sync --apply --lint --test` | Pre-release sync with quality gates |
+| `gz git-sync --apply` | Pre-release sync with quality gates |
 | `gh release create vX.Y.Z ...` | GitHub release (non-Foundation only) |
 
 ---

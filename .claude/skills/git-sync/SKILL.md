@@ -1,13 +1,13 @@
 ---
 name: git-sync
 persona: main-session
-description: Run the guarded repository sync ritual with lint/test gates.
+description: Run the guarded repository sync ritual; pre-commit hooks enforce lint/test automatically.
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-04-12
+last_reviewed: 2026-04-17
 metadata:
-  skill-version: "1.1.1"
+  skill-version: "1.2.0"
 ---
 
 # SKILL.md
@@ -35,10 +35,16 @@ Use the `gz git-sync` command flow (dry-run first, then apply as requested).
 
 1. Preview planned actions:
    `uv run gz git-sync`
-2. Execute git-only sync when requested:
+2. Execute the standard ritual:
    `uv run gz git-sync --apply`
-3. Execute full ritual with quality gates:
+3. Explicit redundant-gate invocation (edge cases only, e.g. verifying
+   pre-commit config drift):
    `uv run gz git-sync --apply --lint --test`
+
+> The pre-commit hook runs ruff, ty, unittest, and xenon on every commit.
+> `--lint` and `--test` re-run those gates at the `gz` level — redundant
+> for the normal ritual and multi-minute pain. Defaults were flipped to
+> `False` to match this reality (airlineops parity evolution).
 
 ## Examples
 
@@ -46,7 +52,7 @@ Use the `gz git-sync` command flow (dry-run first, then apply as requested).
 
 **Input**: "git sync"
 
-**Output**: Runs `uv run gz git-sync --apply --lint --test` (or dry-run first if safety confirmation is needed).
+**Output**: Runs `uv run gz git-sync --apply` (or dry-run first if safety confirmation is needed). Pre-commit hook handles lint/test automatically.
 
 ## Constraints
 

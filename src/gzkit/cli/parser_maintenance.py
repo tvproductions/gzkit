@@ -412,9 +412,13 @@ def _register_tooling_parsers(commands: argparse._SubParsersAction) -> None:
     p_git_sync = commands.add_parser(
         "git-sync",
         help="Sync branch with guarded ritual",
-        description="Commit, lint-gate, test-gate, and push in one ritual.",
+        description=(
+            "Commit, fetch, rebase, push — pre-commit hooks enforce lint/test "
+            "automatically. Use --lint/--test only for explicit edge-case gates."
+        ),
         epilog=build_epilog(
             [
+                "gz git-sync --apply",
                 "gz git-sync --apply --lint --test",
                 "gz git-sync --apply --no-push",
                 "gz git-sync --json",
@@ -658,21 +662,27 @@ def _add_git_sync_options(parser: argparse.ArgumentParser) -> None:
         "--lint",
         dest="run_lint_gate",
         action="store_true",
-        default=True,
-        help="Run lint gate before sync (default)",
+        default=False,
+        help="Run lint gate before sync (redundant with pre-commit hook; opt-in)",
     )
     parser.add_argument(
-        "--no-lint", dest="run_lint_gate", action="store_false", help="Skip lint gate"
+        "--no-lint",
+        dest="run_lint_gate",
+        action="store_false",
+        help="Skip lint gate (default; pre-commit hook handles lint)",
     )
     parser.add_argument(
         "--test",
         dest="run_test_gate",
         action="store_true",
-        default=True,
-        help="Run test gate before sync (default)",
+        default=False,
+        help="Run test gate before sync (redundant with pre-commit hook; opt-in)",
     )
     parser.add_argument(
-        "--no-test", dest="run_test_gate", action="store_false", help="Skip test gate"
+        "--no-test",
+        dest="run_test_gate",
+        action="store_false",
+        help="Skip test gate (default; pre-commit hook handles tests)",
     )
     parser.add_argument(
         "--auto-add",
