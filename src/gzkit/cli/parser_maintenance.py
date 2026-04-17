@@ -4,18 +4,17 @@ Registers: check, drift, covers, lint, format, test, typecheck, validate,
 skill subcommands, parity, readiness, check-config-paths, preflight, cli,
 agent, git-sync, tidy, chores, interview.
 
-Command handlers listed in ``_LAZY_HANDLERS`` are bound at module-import
-time as forwarding stubs via ``_make_lazy`` so ``gz --help`` avoids
-pulling heavy handler dependencies. Because the bindings happen
-dynamically in a loop, ruff cannot see them statically — hence the
-file-level F821 suppression below. Adding or removing handlers means
-editing ``_LAZY_HANDLERS``, not the reference sites.
+Command handlers are resolved on demand via ``_lazy`` so ``gz --help``
+avoids pulling heavy handler dependencies. Each handler's module lives in
+``_LAZY_HANDLERS``; ``_lazy`` imports the module on first call and caches
+the resolved callable.
 """
 
-# ruff: noqa: F821 -- handler names populated dynamically from _LAZY_HANDLERS
 from __future__ import annotations
 
 import argparse
+from collections.abc import Callable
+from importlib import import_module
 from typing import Any
 
 from gzkit.cli.helpers import (
@@ -58,24 +57,17 @@ _LAZY_HANDLERS: dict[str, str] = {
 }
 
 
-def _make_lazy(module_path: str, name: str) -> Any:
-    """Return a stub that imports *module_path* on first call and forwards."""
-
-    def stub(*args: Any, **kwargs: Any) -> Any:
-        from importlib import import_module
-
-        impl = getattr(import_module(module_path), name)
-        globals()[name] = impl
-        return impl(*args, **kwargs)
-
-    stub.__name__ = name
-    stub.__qualname__ = name
-    return stub
+_HANDLER_CACHE: dict[str, Callable[..., Any]] = {}
 
 
-for _name, _mod in _LAZY_HANDLERS.items():
-    globals()[_name] = _make_lazy(_mod, _name)
-del _name, _mod
+def _lazy(name: str) -> Callable[..., Any]:
+    cached = _HANDLER_CACHE.get(name)
+    if cached is not None:
+        return cached
+    module_path = _LAZY_HANDLERS[name]
+    impl = getattr(import_module(module_path), name)
+    _HANDLER_CACHE[name] = impl
+    return impl
 
 
 def register_maintenance_parsers(commands: argparse._SubParsersAction) -> None:
@@ -95,25 +87,25 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Run lint checks",
         description="Run Ruff linter on the codebase.",
         epilog=build_epilog(["gz lint"]),
-    ).set_defaults(func=lambda a: lint())
+    ).set_defaults(func=lambda a: _lazy("lint")())
     commands.add_parser(
         "format",
         help="Run formatter",
         description="Run Ruff formatter on the codebase.",
         epilog=build_epilog(["gz format"]),
-    ).set_defaults(func=lambda a: format_cmd())
+    ).set_defaults(func=lambda a: _lazy("format_cmd")())
     commands.add_parser(
         "test",
         help="Run tests",
         description="Run the unittest test suite.",
         epilog=build_epilog(["gz test"]),
-    ).set_defaults(func=lambda a: test())
+    ).set_defaults(func=lambda a: _lazy("test")())
     commands.add_parser(
         "typecheck",
         help="Run type checks",
         description="Run static type analysis with ty.",
         epilog=build_epilog(["gz typecheck"]),
-    ).set_defaults(func=lambda a: typecheck())
+    ).set_defaults(func=lambda a: _lazy("typecheck")())
 
     p_check = commands.add_parser(
         "check",
@@ -122,7 +114,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         epilog=build_epilog(["gz check", "gz check --json"]),
     )
     add_json_flag(p_check)
-    p_check.set_defaults(func=lambda a: check(as_json=a.as_json))
+    p_check.set_defaults(func=lambda a: _lazy("check")(as_json=a.as_json))
 
     p_drift = commands.add_parser(
         "drift",
@@ -148,7 +140,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         "--test-dir", default=None, help="Override test directory to scan (default: tests)"
     )
     p_drift.set_defaults(
-        func=lambda a: drift_cmd(
+        func=lambda a: _lazy("drift_cmd")(
             as_json=a.as_json, plain=a.plain, adr_dir=a.adr_dir, test_dir=a.test_dir
         )
     )
@@ -188,7 +180,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Include doc-kind REQs (default: excluded — tests are for code)",
     )
     p_covers.set_defaults(
-        func=lambda a: covers_cmd(
+        func=lambda a: _lazy("covers_cmd")(
             target=a.target,
             as_json=a.as_json,
             plain=a.plain,
@@ -281,7 +273,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
     )
     add_json_flag(p_validate)
     p_validate.set_defaults(
-        func=lambda a: validate(
+        func=lambda a: _lazy("validate")(
             check_manifest=a.check_manifest,
             check_documents=a.check_documents,
             check_surfaces=a.check_surfaces,
@@ -306,7 +298,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         epilog=build_epilog(["gz check-config-paths", "gz check-config-paths --json"]),
     )
     add_json_flag(p_check_paths)
-    p_check_paths.set_defaults(func=lambda a: check_config_paths_cmd(as_json=a.as_json))
+    p_check_paths.set_defaults(func=lambda a: _lazy("check_config_paths_cmd")(as_json=a.as_json))
 
 
 def _register_tooling_parsers(commands: argparse._SubParsersAction) -> None:
@@ -322,7 +314,9 @@ def _register_tooling_parsers(commands: argparse._SubParsersAction) -> None:
     )
     p_tidy.add_argument("--fix", action="store_true", help="Apply automatic fixes")
     add_dry_run_flag(p_tidy)
-    p_tidy.set_defaults(func=lambda a: tidy(check_only=a.check_only, fix=a.fix, dry_run=a.dry_run))
+    p_tidy.set_defaults(
+        func=lambda a: _lazy("tidy")(check_only=a.check_only, fix=a.fix, dry_run=a.dry_run)
+    )
 
     p_preflight = commands.add_parser(
         "preflight",
@@ -334,7 +328,9 @@ def _register_tooling_parsers(commands: argparse._SubParsersAction) -> None:
         "--apply", action="store_true", help="Remove stale artifacts (default: dry-run report only)"
     )
     add_json_flag(p_preflight)
-    p_preflight.set_defaults(func=lambda a: preflight_cmd(apply=a.apply, as_json=a.as_json))
+    p_preflight.set_defaults(
+        func=lambda a: _lazy("preflight_cmd")(apply=a.apply, as_json=a.as_json)
+    )
 
     p_cli = commands.add_parser(
         "cli",
@@ -351,7 +347,7 @@ def _register_tooling_parsers(commands: argparse._SubParsersAction) -> None:
         epilog=build_epilog(["gz cli audit", "gz cli audit --json"]),
     )
     add_json_flag(p_cli_audit)
-    p_cli_audit.set_defaults(func=lambda a: cli_audit_cmd(as_json=a.as_json))
+    p_cli_audit.set_defaults(func=lambda a: _lazy("cli_audit_cmd")(as_json=a.as_json))
 
     p_parity = commands.add_parser(
         "parity",
@@ -368,7 +364,7 @@ def _register_tooling_parsers(commands: argparse._SubParsersAction) -> None:
         epilog=build_epilog(["gz parity check", "gz parity check --json"]),
     )
     add_json_flag(p_parity_check)
-    p_parity_check.set_defaults(func=lambda a: parity_check_cmd(as_json=a.as_json))
+    p_parity_check.set_defaults(func=lambda a: _lazy("parity_check_cmd")(as_json=a.as_json))
 
     p_readiness = commands.add_parser(
         "readiness",
@@ -385,7 +381,7 @@ def _register_tooling_parsers(commands: argparse._SubParsersAction) -> None:
         epilog=build_epilog(["gz readiness audit", "gz readiness audit --json"]),
     )
     add_json_flag(p_readiness_audit)
-    p_readiness_audit.set_defaults(func=lambda a: readiness_audit_cmd(as_json=a.as_json))
+    p_readiness_audit.set_defaults(func=lambda a: _lazy("readiness_audit_cmd")(as_json=a.as_json))
     p_readiness_eval = readiness_commands.add_parser(
         "evaluate",
         help="Run instruction eval suite with positive/negative controls",
@@ -393,7 +389,7 @@ def _register_tooling_parsers(commands: argparse._SubParsersAction) -> None:
         epilog=build_epilog(["gz readiness evaluate", "gz readiness evaluate --json"]),
     )
     add_json_flag(p_readiness_eval)
-    p_readiness_eval.set_defaults(func=lambda a: readiness_eval_cmd(as_json=a.as_json))
+    p_readiness_eval.set_defaults(func=lambda a: _lazy("readiness_eval_cmd")(as_json=a.as_json))
 
     p_git_sync = commands.add_parser(
         "git-sync",
@@ -409,7 +405,7 @@ def _register_tooling_parsers(commands: argparse._SubParsersAction) -> None:
     )
     _add_git_sync_options(p_git_sync)
     p_git_sync.set_defaults(
-        func=lambda a: git_sync(
+        func=lambda a: _lazy("git_sync")(
             branch=a.branch,
             remote=a.remote,
             apply=a.apply,
@@ -440,7 +436,7 @@ def _register_tooling_parsers(commands: argparse._SubParsersAction) -> None:
         help="Load answers from a JSON file instead of interactive prompts",
     )
     p_interview.set_defaults(
-        func=lambda a: interview(document_type=a.document_type, from_file=a.from_file),
+        func=lambda a: _lazy("interview")(document_type=a.document_type, from_file=a.from_file),
     )
 
 
@@ -462,7 +458,7 @@ def _register_chores_parsers(commands: argparse._SubParsersAction) -> None:
         help="List chores from registry",
         description="Display all registered chores and their status.",
         epilog=build_epilog(["gz chores list"]),
-    ).set_defaults(func=lambda a: chores_list())
+    ).set_defaults(func=lambda a: _lazy("chores_list")())
 
     p_chores_show = chores_commands.add_parser(
         "show",
@@ -471,7 +467,7 @@ def _register_chores_parsers(commands: argparse._SubParsersAction) -> None:
         epilog=build_epilog(["gz chores show my-chore"]),
     )
     p_chores_show.add_argument("slug", help="Chore slug identifier")
-    p_chores_show.set_defaults(func=lambda a: chores_show(slug=a.slug))
+    p_chores_show.set_defaults(func=lambda a: _lazy("chores_show")(slug=a.slug))
 
     p_chores_plan = chores_commands.add_parser(
         "plan",
@@ -480,7 +476,7 @@ def _register_chores_parsers(commands: argparse._SubParsersAction) -> None:
         epilog=build_epilog(["gz chores plan my-chore"]),
     )
     p_chores_plan.add_argument("slug", help="Chore slug identifier")
-    p_chores_plan.set_defaults(func=lambda a: chores_plan(slug=a.slug))
+    p_chores_plan.set_defaults(func=lambda a: _lazy("chores_plan")(slug=a.slug))
 
     p_chores_advise = chores_commands.add_parser(
         "advise",
@@ -489,7 +485,7 @@ def _register_chores_parsers(commands: argparse._SubParsersAction) -> None:
         epilog=build_epilog(["gz chores advise my-chore"]),
     )
     p_chores_advise.add_argument("slug", help="Chore slug identifier")
-    p_chores_advise.set_defaults(func=lambda a: chores_advise(slug=a.slug))
+    p_chores_advise.set_defaults(func=lambda a: _lazy("chores_advise")(slug=a.slug))
 
     p_chores_run = chores_commands.add_parser(
         "run",
@@ -498,7 +494,7 @@ def _register_chores_parsers(commands: argparse._SubParsersAction) -> None:
         epilog=build_epilog(["gz chores run my-chore"]),
     )
     p_chores_run.add_argument("slug", help="Chore slug identifier")
-    p_chores_run.set_defaults(func=lambda a: chores_run(slug=a.slug))
+    p_chores_run.set_defaults(func=lambda a: _lazy("chores_run")(slug=a.slug))
 
     p_chores_audit = chores_commands.add_parser(
         "audit",
@@ -511,7 +507,9 @@ def _register_chores_parsers(commands: argparse._SubParsersAction) -> None:
         "--all", dest="all_chores", action="store_true", help="Audit all registered chores"
     )
     chores_audit_target.add_argument("--slug", help="Audit a single chore by slug")
-    p_chores_audit.set_defaults(func=lambda a: chores_audit(all_chores=a.all_chores, slug=a.slug))
+    p_chores_audit.set_defaults(
+        func=lambda a: _lazy("chores_audit")(all_chores=a.all_chores, slug=a.slug)
+    )
 
 
 def _register_skill_parsers(commands: argparse._SubParsersAction) -> None:
@@ -538,7 +536,9 @@ def _register_skill_parsers(commands: argparse._SubParsersAction) -> None:
     )
     p_skill_new.add_argument("name", help="Skill name (kebab-case)")
     p_skill_new.add_argument("--description", help="Short description of the skill")
-    p_skill_new.set_defaults(func=lambda a: skill_new(name=a.name, description=a.description))
+    p_skill_new.set_defaults(
+        func=lambda a: _lazy("skill_new")(name=a.name, description=a.description)
+    )
 
     p_skill_list = skill_commands.add_parser(
         "list",
@@ -564,7 +564,7 @@ def _register_skill_parsers(commands: argparse._SubParsersAction) -> None:
         help="Include retired/archived skills in the listing.",
     )
     p_skill_list.set_defaults(
-        func=lambda a: skill_list(include_retired=a.show_all, as_json=a.as_json)
+        func=lambda a: _lazy("skill_list")(include_retired=a.show_all, as_json=a.as_json)
     )
 
     p_skill_audit = skill_commands.add_parser(
@@ -584,7 +584,7 @@ def _register_skill_parsers(commands: argparse._SubParsersAction) -> None:
         help="Maximum age of last_reviewed before audit fails (default: 90).",
     )
     p_skill_audit.set_defaults(
-        func=lambda a: skill_audit_cmd(
+        func=lambda a: _lazy("skill_audit_cmd")(
             as_json=a.as_json, strict=a.strict, max_review_age_days=a.max_review_age_days
         )
     )
@@ -621,7 +621,9 @@ def _register_agent_parsers(commands: argparse._SubParsersAction) -> None:
         ),
     )
     add_dry_run_flag(p_control_surfaces)
-    p_control_surfaces.set_defaults(func=lambda a: sync_control_surfaces(dry_run=a.dry_run))
+    p_control_surfaces.set_defaults(
+        func=lambda a: _lazy("sync_control_surfaces")(dry_run=a.dry_run)
+    )
 
 
 def _add_git_sync_options(parser: argparse.ArgumentParser) -> None:
@@ -701,7 +703,7 @@ def _register_flag_parsers(commands: argparse._SubParsersAction) -> None:
         help="Show only stale flags (past review_by or remove_by dates)",
     )
     add_json_flag(p_flags)
-    p_flags.set_defaults(func=lambda a: flags_list_cmd(stale=a.stale, as_json=a.as_json))
+    p_flags.set_defaults(func=lambda a: _lazy("flags_list_cmd")(stale=a.stale, as_json=a.as_json))
 
     # --- gz flag (single-flag inspection) -----------------------------------
     p_flag = commands.add_parser(
@@ -731,4 +733,4 @@ def _register_flag_parsers(commands: argparse._SubParsersAction) -> None:
     )
     p_explain.add_argument("key", help="Dotted flag key (e.g. ops.product_proof)")
     add_json_flag(p_explain)
-    p_explain.set_defaults(func=lambda a: flag_explain_cmd(key=a.key, as_json=a.as_json))
+    p_explain.set_defaults(func=lambda a: _lazy("flag_explain_cmd")(key=a.key, as_json=a.as_json))

@@ -165,7 +165,7 @@ def run_lint(project_root: Path) -> QualityResult:
         QualityResult from linting.
 
     """
-    ruff_result = run_command("uvx ruff check src tests", cwd=project_root)
+    ruff_result = run_command("uv run ruff check src tests", cwd=project_root)
     path_contract_result = run_adr_path_contract_lint(project_root)
     parents_result = run_parents_pattern_lint(project_root)
 
@@ -177,7 +177,7 @@ def run_lint(project_root: Path) -> QualityResult:
 
     return QualityResult(
         success=success,
-        command="uvx ruff check src tests + ADR path contract lint + parents-pattern lint",
+        command="uv run ruff check src tests + ADR path contract lint + parents-pattern lint",
         stdout=stdout,
         stderr=stderr,
         returncode=returncode,
@@ -265,7 +265,7 @@ def run_format_check(project_root: Path) -> QualityResult:
         QualityResult from format check.
 
     """
-    return run_command("uvx ruff format --check .", cwd=project_root)
+    return run_command("uv run ruff format --check .", cwd=project_root)
 
 
 def run_format(project_root: Path) -> QualityResult:
@@ -279,17 +279,17 @@ def run_format(project_root: Path) -> QualityResult:
 
     """
     # Run ruff format first
-    format_result = run_command("uvx ruff format .", cwd=project_root)
+    format_result = run_command("uv run ruff format .", cwd=project_root)
     if not format_result.success:
         return format_result
 
     # Then run ruff check --fix
-    fix_result = run_command("uvx ruff check --fix src tests", cwd=project_root)
+    fix_result = run_command("uv run ruff check --fix src tests", cwd=project_root)
 
     # Combine results
     return QualityResult(
         success=fix_result.success,
-        command="uvx ruff format . && uvx ruff check --fix src tests",
+        command="uv run ruff format . && uv run ruff check --fix src tests",
         stdout=format_result.stdout + "\n" + fix_result.stdout,
         stderr=format_result.stderr + "\n" + fix_result.stderr,
         returncode=fix_result.returncode,
@@ -306,7 +306,7 @@ def run_typecheck(project_root: Path) -> QualityResult:
         QualityResult from type checking.
 
     """
-    return run_command("uvx ty check src", cwd=project_root)
+    return run_command("uv run ty check src", cwd=project_root)
 
 
 def run_tests(project_root: Path) -> QualityResult:

@@ -3,17 +3,17 @@
 Registers: init, prd, constitute, specify, plan, state, status, closeout,
 patch, audit, attest, implement, gates, migrate-semver, register-adrs, roles.
 
-Command handlers listed in ``_LAZY_HANDLERS`` are bound at module-import
-time as forwarding stubs via ``_make_lazy`` so ``gz --help`` avoids
-pulling heavy handler dependencies. Because the bindings happen
-dynamically in a loop, ruff cannot see them statically — hence the
-file-level F821 suppression below.
+Command handlers are resolved on demand via ``_lazy`` so ``gz --help``
+avoids pulling heavy handler dependencies. Each handler's module lives in
+``_LAZY_HANDLERS``; ``_lazy`` imports the module on first call and caches
+the resolved callable.
 """
 
-# ruff: noqa: F821 -- handler names populated dynamically from _LAZY_HANDLERS
 from __future__ import annotations
 
 import argparse
+from collections.abc import Callable
+from importlib import import_module
 from typing import Any
 
 from gzkit.cli.helpers import (
@@ -47,25 +47,17 @@ _LAZY_HANDLERS: dict[str, str] = {
     "status": "gzkit.commands.status",
 }
 
-
-def _make_lazy(module_path: str, name: str) -> Any:
-    """Return a stub that imports *module_path* on first call and forwards."""
-
-    def stub(*args: Any, **kwargs: Any) -> Any:
-        from importlib import import_module
-
-        impl = getattr(import_module(module_path), name)
-        globals()[name] = impl
-        return impl(*args, **kwargs)
-
-    stub.__name__ = name
-    stub.__qualname__ = name
-    return stub
+_HANDLER_CACHE: dict[str, Callable[..., Any]] = {}
 
 
-for _name, _mod in _LAZY_HANDLERS.items():
-    globals()[_name] = _make_lazy(_mod, _name)
-del _name, _mod
+def _lazy(name: str) -> Callable[..., Any]:
+    cached = _HANDLER_CACHE.get(name)
+    if cached is not None:
+        return cached
+    module_path = _LAZY_HANDLERS[name]
+    impl = getattr(import_module(module_path), name)
+    _HANDLER_CACHE[name] = impl
+    return impl
 
 
 def _state_handler(a: argparse.Namespace) -> None:
@@ -75,7 +67,7 @@ def _state_handler(a: argparse.Namespace) -> None:
 
         state_repair(as_json=a.as_json)
     else:
-        state(as_json=a.as_json, blocked=a.blocked, ready=a.ready)
+        _lazy("state")(as_json=a.as_json, blocked=a.blocked, ready=a.ready)
 
 
 def _closeout_dispatch(a: argparse.Namespace) -> None:
@@ -101,7 +93,7 @@ def _closeout_dispatch(a: argparse.Namespace) -> None:
             ceremony_restart=a.ceremony_restart,
         )
     else:
-        closeout_cmd(adr=a.adr, as_json=a.as_json, dry_run=a.dry_run)
+        _lazy("closeout_cmd")(adr=a.adr, as_json=a.as_json, dry_run=a.dry_run)
 
 
 def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  # noqa: PLR0915
@@ -137,7 +129,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
     add_force_flag(p_init)
     add_dry_run_flag(p_init)
     p_init.set_defaults(
-        func=lambda a: init(
+        func=lambda a: _lazy("init")(
             mode=a.mode, force=a.force, dry_run=a.dry_run, no_skeleton=a.no_skeleton
         )
     )
@@ -157,7 +149,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
     p_prd.add_argument("name", help="PRD slug name (kebab-case)")
     p_prd.add_argument("--title", help="PRD title override")
     add_dry_run_flag(p_prd)
-    p_prd.set_defaults(func=lambda a: prd(name=a.name, title=a.title, dry_run=a.dry_run))
+    p_prd.set_defaults(func=lambda a: _lazy("prd")(name=a.name, title=a.title, dry_run=a.dry_run))
 
     p_constitute = commands.add_parser(
         "constitute",
@@ -175,7 +167,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
     p_constitute.add_argument("--title", help="Constitution title override")
     add_dry_run_flag(p_constitute)
     p_constitute.set_defaults(
-        func=lambda a: constitute(name=a.name, title=a.title, dry_run=a.dry_run)
+        func=lambda a: _lazy("constitute")(name=a.name, title=a.title, dry_run=a.dry_run)
     )
 
     p_specify = commands.add_parser(
@@ -208,7 +200,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
     p_specify.add_argument("--title", help="OBPI title override")
     add_dry_run_flag(p_specify)
     p_specify.set_defaults(
-        func=lambda a: specify(
+        func=lambda a: _lazy("specify")(
             name=a.name,
             parent=a.parent,
             item=a.item,
@@ -300,7 +292,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
     )
     add_dry_run_flag(p_plan_create)
     p_plan_create.set_defaults(
-        func=lambda a: plan_cmd(
+        func=lambda a: _lazy("plan_cmd")(
             name=a.name,
             parent_obpi=a.parent_obpi,
             semver=a.semver,
@@ -333,7 +325,9 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
     )
     p_plan_audit.add_argument("obpi_id", help="OBPI identifier (e.g. OBPI-0.1.0-01)")
     add_json_flag(p_plan_audit)
-    p_plan_audit.set_defaults(func=lambda a: plan_audit_cmd(obpi_id=a.obpi_id, as_json=a.as_json))
+    p_plan_audit.set_defaults(
+        func=lambda a: _lazy("plan_audit_cmd")(obpi_id=a.obpi_id, as_json=a.as_json)
+    )
 
     p_state = commands.add_parser(
         "state",
@@ -384,7 +378,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
         help="Show detailed gate-level QC breakdown (internal diagnostics).",
     )
     p_status.set_defaults(
-        func=lambda a: status(as_json=a.as_json, show_gates=a.show_gates, as_table=a.table)
+        func=lambda a: _lazy("status")(as_json=a.as_json, show_gates=a.show_gates, as_table=a.table)
     )
 
     p_closeout = commands.add_parser(
@@ -489,7 +483,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
         help="Execute the full ceremony: bump, release notes, commit, push, gh release",
     )
     p_patch_release.set_defaults(
-        func=lambda a: patch_release_cmd(dry_run=a.dry_run, as_json=a.as_json, full=a.full)
+        func=lambda a: _lazy("patch_release_cmd")(dry_run=a.dry_run, as_json=a.as_json, full=a.full)
     )
 
     p_audit = commands.add_parser(
@@ -507,7 +501,9 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
     p_audit.add_argument("adr", help="ADR identifier to audit (e.g. ADR-0.0.4)")
     add_json_flag(p_audit)
     add_dry_run_flag(p_audit)
-    p_audit.set_defaults(func=lambda a: audit_cmd(adr=a.adr, as_json=a.as_json, dry_run=a.dry_run))
+    p_audit.set_defaults(
+        func=lambda a: _lazy("audit_cmd")(adr=a.adr, as_json=a.as_json, dry_run=a.dry_run)
+    )
 
     p_implement = commands.add_parser(
         "implement",
@@ -520,7 +516,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
         ),
     )
     add_adr_option(p_implement)
-    p_implement.set_defaults(func=lambda a: implement_cmd(adr=a.adr))
+    p_implement.set_defaults(func=lambda a: _lazy("implement_cmd")(adr=a.adr))
 
     p_gates = commands.add_parser(
         "gates",
@@ -537,7 +533,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
         "--gate", dest="gate_number", type=int, help="Run a specific gate number only"
     )
     add_adr_option(p_gates)
-    p_gates.set_defaults(func=lambda a: gates_cmd(gate_number=a.gate_number, adr=a.adr))
+    p_gates.set_defaults(func=lambda a: _lazy("gates_cmd")(gate_number=a.gate_number, adr=a.adr))
 
     p_attest = commands.add_parser(
         "attest",
@@ -563,7 +559,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
     add_force_flag(p_attest)
     add_dry_run_flag(p_attest)
     p_attest.set_defaults(
-        func=lambda a: attest(
+        func=lambda a: _lazy("attest")(
             adr=a.adr,
             attest_status=a.attest_status,
             reason=a.reason,
@@ -584,7 +580,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
         ),
     )
     add_dry_run_flag(p_migrate)
-    p_migrate.set_defaults(func=lambda a: migrate_semver(dry_run=a.dry_run))
+    p_migrate.set_defaults(func=lambda a: _lazy("migrate_semver")(dry_run=a.dry_run))
 
     p_register_adrs = commands.add_parser(
         "register-adrs",
@@ -623,7 +619,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
     )
     add_dry_run_flag(p_register_adrs)
     p_register_adrs.set_defaults(
-        func=lambda a: register_adrs(
+        func=lambda a: _lazy("register_adrs")(
             lane=a.lane,
             pool_only=a.pool_only,
             dry_run=a.dry_run,
@@ -645,7 +641,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
     )
     p_roles.add_argument("--pipeline", help="Show dispatch history for an OBPI pipeline run")
     add_json_flag(p_roles)
-    p_roles.set_defaults(func=lambda a: roles_cmd(pipeline=a.pipeline, as_json=a.as_json))
+    p_roles.set_defaults(func=lambda a: _lazy("roles_cmd")(pipeline=a.pipeline, as_json=a.as_json))
 
     p_personas = commands.add_parser(
         "personas",
@@ -673,7 +669,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
         ),
     )
     add_json_flag(p_personas_list)
-    p_personas_list.set_defaults(func=lambda a: personas_list_cmd(as_json=a.as_json))
+    p_personas_list.set_defaults(func=lambda a: _lazy("personas_list_cmd")(as_json=a.as_json))
 
     p_personas_drift = personas_commands.add_parser(
         "drift",
@@ -699,5 +695,5 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
     )
     add_json_flag(p_personas_drift)
     p_personas_drift.set_defaults(
-        func=lambda a: persona_drift_cmd(persona=a.persona, as_json=a.as_json)
+        func=lambda a: _lazy("persona_drift_cmd")(persona=a.persona, as_json=a.as_json)
     )

@@ -2,17 +2,17 @@
 
 Registers: adr subcommands, obpi subcommands, task subcommands.
 
-Command handlers listed in ``_LAZY_HANDLERS`` are bound at module-import
-time as forwarding stubs via ``_make_lazy`` so ``gz --help`` avoids
-pulling heavy handler dependencies. Because the bindings happen
-dynamically in a loop, ruff cannot see them statically — hence the
-file-level F821 suppression below.
+Command handlers are resolved on demand via ``_lazy`` so ``gz --help``
+avoids pulling heavy handler dependencies. Each handler's module lives in
+``_LAZY_HANDLERS``; ``_lazy`` imports the module on first call and caches
+the resolved callable.
 """
 
-# ruff: noqa: F821 -- handler names populated dynamically from _LAZY_HANDLERS
 from __future__ import annotations
 
 import argparse
+from collections.abc import Callable
+from importlib import import_module
 from typing import Any
 
 from gzkit.cli.helpers import (
@@ -49,25 +49,18 @@ _LAZY_HANDLERS: dict[str, str] = {
     "task_start_cmd": "gzkit.commands.task",
 }
 
-
-def _make_lazy(module_path: str, name: str) -> Any:
-    """Return a stub that imports *module_path* on first call and forwards."""
-
-    def stub(*args: Any, **kwargs: Any) -> Any:
-        from importlib import import_module
-
-        impl = getattr(import_module(module_path), name)
-        globals()[name] = impl
-        return impl(*args, **kwargs)
-
-    stub.__name__ = name
-    stub.__qualname__ = name
-    return stub
+_HANDLER_CACHE: dict[str, Callable[..., Any]] = {}
 
 
-for _name, _mod in _LAZY_HANDLERS.items():
-    globals()[_name] = _make_lazy(_mod, _name)
-del _name, _mod
+def _lazy(name: str) -> Callable[..., Any]:
+    cached = _HANDLER_CACHE.get(name)
+    if cached is not None:
+        return cached
+    module_path = _LAZY_HANDLERS[name]
+    impl = getattr(import_module(module_path), name)
+    _HANDLER_CACHE[name] = impl
+    return impl
+
 
 _ADR_TYPE_NAMES = {"foundation", "feature", "pool"}
 
@@ -76,9 +69,9 @@ def _dispatch_adr_report(a: argparse.Namespace) -> None:
     """Route gz adr report to summary or detail mode."""
     target = a.adr
     if target and target.lower() in _ADR_TYPE_NAMES:
-        adr_report_cmd(adr=None, adr_type=target.lower())
+        _lazy("adr_report_cmd")(adr=None, adr_type=target.lower())
     else:
-        adr_report_cmd(adr=target, adr_type=a.type)
+        _lazy("adr_report_cmd")(adr=target, adr_type=a.type)
 
 
 def register_artifact_parsers(commands: argparse._SubParsersAction) -> None:
@@ -125,7 +118,9 @@ def _register_adr_parsers(commands: argparse._SubParsersAction) -> None:
         help="Show detailed gate-level QC breakdown (internal diagnostics).",
     )
     p_adr_status.set_defaults(
-        func=lambda a: adr_status_cmd(adr=a.adr, as_json=a.as_json, show_gates=a.show_gates)
+        func=lambda a: _lazy("adr_status_cmd")(
+            adr=a.adr, as_json=a.as_json, show_gates=a.show_gates
+        )
     )
 
     p_adr_report = adr_commands.add_parser(
@@ -203,7 +198,7 @@ def _register_adr_parsers(commands: argparse._SubParsersAction) -> None:
         help_override="Override scaffold quality gate (briefs contain only template defaults)",
     )
     p_adr_promote.set_defaults(
-        func=lambda a: adr_promote_cmd(
+        func=lambda a: _lazy("adr_promote_cmd")(
             pool_adr=a.pool_adr,
             semver=a.semver,
             slug=a.slug,
@@ -239,7 +234,7 @@ def _register_adr_parsers(commands: argparse._SubParsersAction) -> None:
         help="Skip writing scorecard file to disk",
     )
     p_adr_eval.set_defaults(
-        func=lambda a: adr_eval_cmd(
+        func=lambda a: _lazy("adr_eval_cmd")(
             adr_id=a.adr_id,
             as_json=a.as_json,
             write_scorecard=a.write_scorecard,
@@ -259,7 +254,9 @@ def _register_adr_parsers(commands: argparse._SubParsersAction) -> None:
     )
     p_adr_audit_check.add_argument("adr", help="ADR identifier (e.g. ADR-0.0.4)")
     add_json_flag(p_adr_audit_check)
-    p_adr_audit_check.set_defaults(func=lambda a: adr_audit_check(adr=a.adr, as_json=a.as_json))
+    p_adr_audit_check.set_defaults(
+        func=lambda a: _lazy("adr_audit_check")(adr=a.adr, as_json=a.as_json)
+    )
 
     p_adr_covers_check = adr_commands.add_parser(
         "covers-check",
@@ -274,7 +271,9 @@ def _register_adr_parsers(commands: argparse._SubParsersAction) -> None:
     )
     p_adr_covers_check.add_argument("adr", help="ADR identifier (e.g. ADR-0.0.4)")
     add_json_flag(p_adr_covers_check)
-    p_adr_covers_check.set_defaults(func=lambda a: adr_covers_check(adr=a.adr, as_json=a.as_json))
+    p_adr_covers_check.set_defaults(
+        func=lambda a: _lazy("adr_covers_check")(adr=a.adr, as_json=a.as_json)
+    )
 
     p_adr_emit = adr_commands.add_parser(
         "emit-receipt",
@@ -309,7 +308,7 @@ def _register_adr_parsers(commands: argparse._SubParsersAction) -> None:
     )
     add_dry_run_flag(p_adr_emit)
     p_adr_emit.set_defaults(
-        func=lambda a: adr_emit_receipt_cmd(
+        func=lambda a: _lazy("adr_emit_receipt_cmd")(
             adr=a.adr,
             receipt_event=a.receipt_event,
             attestor=a.attestor,
@@ -369,7 +368,7 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
     )
     add_dry_run_flag(p_obpi_emit)
     p_obpi_emit.set_defaults(
-        func=lambda a: obpi_emit_receipt_cmd(
+        func=lambda a: _lazy("obpi_emit_receipt_cmd")(
             obpi=a.obpi,
             receipt_event=a.receipt_event,
             attestor=a.attestor,
@@ -391,7 +390,9 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
     )
     p_obpi_status.add_argument("obpi", help="OBPI identifier (e.g. OBPI-0.0.4-01)")
     add_json_flag(p_obpi_status)
-    p_obpi_status.set_defaults(func=lambda a: obpi_status_cmd(obpi=a.obpi, as_json=a.as_json))
+    p_obpi_status.set_defaults(
+        func=lambda a: _lazy("obpi_status_cmd")(obpi=a.obpi, as_json=a.as_json)
+    )
 
     p_obpi_pipeline = obpi_commands.add_parser(
         "pipeline",
@@ -436,7 +437,7 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         help="Disable subagent dispatch (single-session fallback)",
     )
     p_obpi_pipeline.set_defaults(
-        func=lambda a: obpi_pipeline_cmd(
+        func=lambda a: _lazy("obpi_pipeline_cmd")(
             obpi=a.obpi,
             start_from=a.start_from,
             clear_stale=a.clear_stale,
@@ -458,7 +459,9 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
     )
     p_obpi_reconcile.add_argument("obpi", help="OBPI identifier (e.g. OBPI-0.0.4-01)")
     add_json_flag(p_obpi_reconcile)
-    p_obpi_reconcile.set_defaults(func=lambda a: obpi_reconcile_cmd(obpi=a.obpi, as_json=a.as_json))
+    p_obpi_reconcile.set_defaults(
+        func=lambda a: _lazy("obpi_reconcile_cmd")(obpi=a.obpi, as_json=a.as_json)
+    )
 
     p_obpi_validate = obpi_commands.add_parser(
         "validate",
@@ -491,7 +494,7 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         help="Require authored-ready brief content before pipeline execution.",
     )
     p_obpi_validate.set_defaults(
-        func=lambda a: obpi_validate_cmd(
+        func=lambda a: _lazy("obpi_validate_cmd")(
             obpi_path=a.obpi_path,
             adr_id=a.adr_id,
             authored=a.authored,
@@ -516,7 +519,7 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
     p_obpi_withdraw.add_argument("--reason", required=True, help="Reason for withdrawal")
     add_dry_run_flag(p_obpi_withdraw)
     p_obpi_withdraw.set_defaults(
-        func=lambda a: obpi_withdraw_cmd(obpi=a.obpi, reason=a.reason, dry_run=a.dry_run)
+        func=lambda a: _lazy("obpi_withdraw_cmd")(obpi=a.obpi, reason=a.reason, dry_run=a.dry_run)
     )
 
     p_obpi_audit = obpi_commands.add_parser(
@@ -539,7 +542,7 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
     )
     add_json_flag(p_obpi_audit)
     p_obpi_audit.set_defaults(
-        func=lambda a: obpi_audit_cmd(obpi_id=a.obpi, adr_id=a.adr_id, as_json=a.as_json)
+        func=lambda a: _lazy("obpi_audit_cmd")(obpi_id=a.obpi, adr_id=a.adr_id, as_json=a.as_json)
     )
 
     # --- gz obpi complete (atomic OBPI completion transaction) ---
@@ -591,7 +594,7 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
     add_json_flag(p_obpi_complete)
     add_dry_run_flag(p_obpi_complete)
     p_obpi_complete.set_defaults(
-        func=lambda a: obpi_complete_cmd(
+        func=lambda a: _lazy("obpi_complete_cmd")(
             obpi=a.obpi,
             attestor=a.attestor,
             attestation_text=a.attestation_text,
@@ -644,7 +647,7 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
     )
     add_json_flag(p_lock_claim)
     p_lock_claim.set_defaults(
-        func=lambda a: obpi_lock_claim_cmd(
+        func=lambda a: _lazy("obpi_lock_claim_cmd")(
             obpi_id=a.obpi, ttl_minutes=a.ttl_minutes, as_json=a.as_json, agent=a.agent
         )
     )
@@ -668,7 +671,7 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
     )
     add_json_flag(p_lock_release)
     p_lock_release.set_defaults(
-        func=lambda a: obpi_lock_release_cmd(
+        func=lambda a: _lazy("obpi_lock_release_cmd")(
             obpi_id=a.obpi, as_json=a.as_json, force=a.force, agent=a.agent
         )
     )
@@ -686,7 +689,9 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
     )
     p_lock_check.add_argument("obpi", help="OBPI identifier (e.g. OBPI-0.1.0-01)")
     add_json_flag(p_lock_check)
-    p_lock_check.set_defaults(func=lambda a: obpi_lock_check_cmd(obpi_id=a.obpi, as_json=a.as_json))
+    p_lock_check.set_defaults(
+        func=lambda a: _lazy("obpi_lock_check_cmd")(obpi_id=a.obpi, as_json=a.as_json)
+    )
 
     p_lock_list = lock_commands.add_parser(
         "list",
@@ -704,7 +709,9 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         "--adr", dest="adr_id", default=None, help="Filter locks by parent ADR"
     )
     add_json_flag(p_lock_list)
-    p_lock_list.set_defaults(func=lambda a: obpi_lock_list_cmd(adr_id=a.adr_id, as_json=a.as_json))
+    p_lock_list.set_defaults(
+        func=lambda a: _lazy("obpi_lock_list_cmd")(adr_id=a.adr_id, as_json=a.as_json)
+    )
 
     # --- Deprecated flat aliases (OBPI-03 will remove these after skill migration) ---
     p_lock_claim_dep = obpi_commands.add_parser(
@@ -722,7 +729,7 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
     )
     add_json_flag(p_lock_claim_dep)
     p_lock_claim_dep.set_defaults(
-        func=lambda a: obpi_lock_claim_cmd(
+        func=lambda a: _lazy("obpi_lock_claim_cmd")(
             obpi_id=a.obpi, ttl_minutes=a.ttl_minutes, as_json=a.as_json, agent=a.agent
         )
     )
@@ -740,7 +747,7 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
     )
     add_json_flag(p_lock_release_dep)
     p_lock_release_dep.set_defaults(
-        func=lambda a: obpi_lock_release_cmd(
+        func=lambda a: _lazy("obpi_lock_release_cmd")(
             obpi_id=a.obpi, as_json=a.as_json, force=a.force, agent=a.agent
         )
     )
@@ -756,7 +763,7 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
     )
     add_json_flag(p_lock_status_dep)
     p_lock_status_dep.set_defaults(
-        func=lambda a: obpi_lock_list_cmd(adr_id=a.adr_id, as_json=a.as_json)
+        func=lambda a: _lazy("obpi_lock_list_cmd")(adr_id=a.adr_id, as_json=a.as_json)
     )
 
 
@@ -794,7 +801,7 @@ def _register_task_parsers(commands: argparse._SubParsersAction) -> None:
     )
     p_task_list.add_argument("obpi", help="OBPI identifier (e.g. OBPI-0.20.0-01)")
     add_json_flag(p_task_list)
-    p_task_list.set_defaults(func=lambda a: task_list_cmd(obpi=a.obpi, as_json=a.as_json))
+    p_task_list.set_defaults(func=lambda a: _lazy("task_list_cmd")(obpi=a.obpi, as_json=a.as_json))
 
     p_task_start = task_commands.add_parser(
         "start",
@@ -810,7 +817,7 @@ def _register_task_parsers(commands: argparse._SubParsersAction) -> None:
     p_task_start.add_argument("task_id", help="TASK identifier (e.g. TASK-0.20.0-01-01-01)")
     add_json_flag(p_task_start)
     p_task_start.set_defaults(
-        func=lambda a: task_start_cmd(task_id_str=a.task_id, as_json=a.as_json)
+        func=lambda a: _lazy("task_start_cmd")(task_id_str=a.task_id, as_json=a.as_json)
     )
 
     p_task_complete = task_commands.add_parser(
@@ -826,7 +833,7 @@ def _register_task_parsers(commands: argparse._SubParsersAction) -> None:
     p_task_complete.add_argument("task_id", help="TASK identifier (e.g. TASK-0.20.0-01-01-01)")
     add_json_flag(p_task_complete)
     p_task_complete.set_defaults(
-        func=lambda a: task_complete_cmd(task_id_str=a.task_id, as_json=a.as_json)
+        func=lambda a: _lazy("task_complete_cmd")(task_id_str=a.task_id, as_json=a.as_json)
     )
 
     p_task_block = task_commands.add_parser(
@@ -843,7 +850,9 @@ def _register_task_parsers(commands: argparse._SubParsersAction) -> None:
     p_task_block.add_argument("--reason", required=True, help="Reason for blocking the task")
     add_json_flag(p_task_block)
     p_task_block.set_defaults(
-        func=lambda a: task_block_cmd(task_id_str=a.task_id, reason=a.reason, as_json=a.as_json)
+        func=lambda a: _lazy("task_block_cmd")(
+            task_id_str=a.task_id, reason=a.reason, as_json=a.as_json
+        )
     )
 
     p_task_escalate = task_commands.add_parser(
@@ -860,5 +869,7 @@ def _register_task_parsers(commands: argparse._SubParsersAction) -> None:
     p_task_escalate.add_argument("--reason", required=True, help="Reason for escalation")
     add_json_flag(p_task_escalate)
     p_task_escalate.set_defaults(
-        func=lambda a: task_escalate_cmd(task_id_str=a.task_id, reason=a.reason, as_json=a.as_json)
+        func=lambda a: _lazy("task_escalate_cmd")(
+            task_id_str=a.task_id, reason=a.reason, as_json=a.as_json
+        )
     )

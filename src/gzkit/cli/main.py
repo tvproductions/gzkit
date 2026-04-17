@@ -4,6 +4,8 @@ A Development Covenant for Human-AI Collaboration.
 """
 
 import argparse
+from importlib import import_module
+from typing import Any
 
 from gzkit import __version__
 from gzkit.cli.helpers import add_common_flags
@@ -13,27 +15,42 @@ from gzkit.cli.parser_arb import register_arb_parsers
 from gzkit.cli.parser_artifacts import register_artifact_parsers
 from gzkit.cli.parser_governance import register_governance_parsers
 from gzkit.cli.parser_maintenance import register_maintenance_parsers
-from gzkit.commands.audit_cmd import _write_audit_artifacts  # noqa: F401 -- test-mock compat
-from gzkit.commands.common import (
-    GzCliError,  # noqa: F401 -- backward-compat re-export
-    console,
-    ensure_initialized,  # noqa: F401 -- test-mock compat
-    get_project_root,  # noqa: F401 -- test-mock compat
-    load_manifest,  # noqa: F401 -- test-mock compat
-    resolve_adr_file,  # noqa: F401 -- backward-compat re-export
-    resolve_target_adr,  # noqa: F401 -- test-mock compat
-)
-from gzkit.commands.gates import (
-    _run_eval_delta,  # noqa: F401 -- test-mock compat
-    _run_gate_1,  # noqa: F401 -- test-mock compat
-    _run_gate_2,  # noqa: F401 -- test-mock compat
-    _run_gate_3,  # noqa: F401 -- test-mock compat
-    _run_gate_4,  # noqa: F401 -- test-mock compat
-    _run_gate_5,  # noqa: F401 -- test-mock compat
-)
 from gzkit.core.exceptions import GzkitError
-from gzkit.ledger import resolve_adr_lane  # noqa: F401 -- test-mock compat
-from gzkit.quality import run_all_checks, run_command  # noqa: F401 -- test-mock compat
+
+# Lazy re-exports preserved for ``@patch("gzkit.cli.main.X")`` compatibility in
+# tests and for backward-compat callers. Resolving these at module top pulls
+# ``gzkit.commands.common`` -> ``gzkit.sync`` -> ``yaml`` into every ``gz --help``
+# invocation (GHI #180). PEP 562 ``__getattr__`` defers the import to first use
+# while keeping the attribute addressable by name.
+_LAZY_EXPORTS: dict[str, tuple[str, str]] = {
+    "_write_audit_artifacts": ("gzkit.commands.audit_cmd", "_write_audit_artifacts"),
+    "GzCliError": ("gzkit.commands.common", "GzCliError"),
+    "console": ("gzkit.commands.common", "console"),
+    "ensure_initialized": ("gzkit.commands.common", "ensure_initialized"),
+    "get_project_root": ("gzkit.commands.common", "get_project_root"),
+    "load_manifest": ("gzkit.commands.common", "load_manifest"),
+    "resolve_adr_file": ("gzkit.commands.common", "resolve_adr_file"),
+    "resolve_target_adr": ("gzkit.commands.common", "resolve_target_adr"),
+    "_run_eval_delta": ("gzkit.commands.gates", "_run_eval_delta"),
+    "_run_gate_1": ("gzkit.commands.gates", "_run_gate_1"),
+    "_run_gate_2": ("gzkit.commands.gates", "_run_gate_2"),
+    "_run_gate_3": ("gzkit.commands.gates", "_run_gate_3"),
+    "_run_gate_4": ("gzkit.commands.gates", "_run_gate_4"),
+    "_run_gate_5": ("gzkit.commands.gates", "_run_gate_5"),
+    "resolve_adr_lane": ("gzkit.ledger", "resolve_adr_lane"),
+    "run_all_checks": ("gzkit.quality", "run_all_checks"),
+    "run_command": ("gzkit.quality", "run_command"),
+}
+
+
+def __getattr__(name: str) -> Any:
+    target = _LAZY_EXPORTS.get(name)
+    if target is None:
+        raise AttributeError(f"module 'gzkit.cli.main' has no attribute {name!r}")
+    module_name, attr = target
+    value = getattr(import_module(module_name), attr)
+    globals()[name] = value
+    return value
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -122,9 +139,11 @@ def main(argv: list[str] | None = None) -> int:
     try:
         handler(args)
     except GzkitError as exc:
+        from gzkit.commands.common import console  # noqa: PLC0415
+
         if getattr(args, "debug", False):
-            import sys
-            import traceback
+            import sys  # noqa: PLC0415
+            import traceback  # noqa: PLC0415
 
             traceback.print_exc(file=sys.stderr)
         console.print(f"[red]{exc}[/red]")
@@ -132,12 +151,16 @@ def main(argv: list[str] | None = None) -> int:
     except SystemExit as exc:
         return int(exc.code) if isinstance(exc.code, int) else 1
     except KeyboardInterrupt:
+        from gzkit.commands.common import console  # noqa: PLC0415
+
         console.print("[yellow]Interrupted.[/yellow]")
         return 130
     except Exception as exc:  # noqa: BLE001 -- CLI main entry point
+        from gzkit.commands.common import console  # noqa: PLC0415
+
         if getattr(args, "debug", False):
-            import sys
-            import traceback
+            import sys  # noqa: PLC0415
+            import traceback  # noqa: PLC0415
 
             traceback.print_exc(file=sys.stderr)
         console.print(f"[red]Unexpected error: {exc}[/red]")

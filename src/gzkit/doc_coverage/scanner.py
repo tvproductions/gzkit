@@ -36,7 +36,11 @@ def _extract_string_arg(call: ast.Call, index: int = 0) -> str | None:
 
 
 def _extract_handler_name(set_defaults_call: ast.Call) -> str | None:
-    """Extract function name from set_defaults(func=lambda a: HANDLER(...))."""
+    """Extract function name from set_defaults(func=lambda a: HANDLER(...)).
+
+    Also supports the lazy form ``lambda a: _lazy("HANDLER")(...)`` used by
+    parser modules that defer handler imports until first invocation.
+    """
     for kw in set_defaults_call.keywords:
         if kw.arg != "func":
             continue
@@ -50,6 +54,15 @@ def _extract_handler_name(set_defaults_call: ast.Call) -> str | None:
             return func.id
         if isinstance(func, ast.Attribute):
             return func.attr
+        if (
+            isinstance(func, ast.Call)
+            and isinstance(func.func, ast.Name)
+            and func.func.id == "_lazy"
+            and func.args
+            and isinstance(func.args[0], ast.Constant)
+            and isinstance(func.args[0].value, str)
+        ):
+            return func.args[0].value
     return None
 
 
@@ -216,7 +229,13 @@ def discover_commands(source: str) -> list[DiscoveredCommand]:
 
 
 def _build_import_map(source: str) -> dict[str, str]:
-    """Parse top-level from-imports and return function_name -> module_path mapping."""
+    """Return function_name -> module_path mapping.
+
+    Collects bindings from two shapes:
+    1. Top-level ``from X import Y`` statements.
+    2. ``_LAZY_HANDLERS: dict[str, str] = {"Y": "X", ...}`` dict literals
+       used by parser modules that defer handler imports.
+    """
     tree = ast.parse(source)
     import_map: dict[str, str] = {}
     for node in ast.walk(tree):
@@ -224,6 +243,21 @@ def _build_import_map(source: str) -> dict[str, str]:
             for alias in node.names:
                 func_name = alias.asname if alias.asname else alias.name
                 import_map[func_name] = node.module
+        elif isinstance(node, ast.AnnAssign | ast.Assign):
+            targets = [node.target] if isinstance(node, ast.AnnAssign) else node.targets
+            is_lazy_handlers = any(
+                isinstance(t, ast.Name) and t.id == "_LAZY_HANDLERS" for t in targets
+            )
+            if not is_lazy_handlers or not isinstance(node.value, ast.Dict):
+                continue
+            for key, value in zip(node.value.keys, node.value.values, strict=False):
+                if (
+                    isinstance(key, ast.Constant)
+                    and isinstance(key.value, str)
+                    and isinstance(value, ast.Constant)
+                    and isinstance(value.value, str)
+                ):
+                    import_map[key.value] = value.value
     return import_map
 
 
