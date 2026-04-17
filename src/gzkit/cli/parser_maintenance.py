@@ -94,12 +94,23 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         description="Run Ruff formatter on the codebase.",
         epilog=build_epilog(["gz format"]),
     ).set_defaults(func=lambda a: _lazy("format_cmd")())
-    commands.add_parser(
+    p_test = commands.add_parser(
         "test",
         help="Run tests",
-        description="Run the unittest test suite.",
-        epilog=build_epilog(["gz test"]),
-    ).set_defaults(func=lambda a: _lazy("test")())
+        description=(
+            "Run the unittest test suite. Default runs the unit tier "
+            "(tests/ excluding tests/integration/). Use --integration to "
+            "run the integration tier (subprocess-spawning tests under "
+            "tests/integration/)."
+        ),
+        epilog=build_epilog(["gz test", "gz test --integration"]),
+    )
+    p_test.add_argument(
+        "--integration",
+        action="store_true",
+        help="Run the integration tier (tests/integration/) instead of the unit tier",
+    )
+    p_test.set_defaults(func=lambda a: _lazy("test")(integration=a.integration))
     commands.add_parser(
         "typecheck",
         help="Run type checks",
