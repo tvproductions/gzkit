@@ -54,15 +54,24 @@ _LAZY_HANDLERS: dict[str, str] = {
 }
 
 
-def __getattr__(name: str) -> Any:
-    module_path = _LAZY_HANDLERS.get(name)
-    if module_path is None:
-        raise AttributeError(f"module 'gzkit.cli.parser_maintenance' has no attribute {name!r}")
-    from importlib import import_module
+def _make_lazy(module_path: str, name: str) -> Any:
+    """Return a stub that imports *module_path* on first call and forwards."""
 
-    value = getattr(import_module(module_path), name)
-    globals()[name] = value
-    return value
+    def stub(*args: Any, **kwargs: Any) -> Any:
+        from importlib import import_module
+
+        impl = getattr(import_module(module_path), name)
+        globals()[name] = impl
+        return impl(*args, **kwargs)
+
+    stub.__name__ = name
+    stub.__qualname__ = name
+    return stub
+
+
+for _name, _mod in _LAZY_HANDLERS.items():
+    globals()[_name] = _make_lazy(_mod, _name)
+del _name, _mod
 
 
 def register_maintenance_parsers(commands: argparse._SubParsersAction) -> None:
