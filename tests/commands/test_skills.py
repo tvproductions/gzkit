@@ -8,6 +8,17 @@ from gzkit.cli import main
 from gzkit.quality import QualityResult
 from tests.commands.common import CliRunner
 
+_uv_sync_patcher = patch("gzkit.commands.init_cmd._run_uv_sync", return_value=None)
+
+
+def setUpModule() -> None:
+    """Stub subprocess calls to ``uv sync`` — each real invocation costs ~1s."""
+    _uv_sync_patcher.start()
+
+
+def tearDownModule() -> None:
+    _uv_sync_patcher.stop()
+
 
 class TestSkillCommands(unittest.TestCase):
     """Tests for skill subcommands."""
