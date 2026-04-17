@@ -1,5 +1,43 @@
 # gzkit Release Notes
 
+## v0.25.9 (2026-04-17)
+
+**PRD scaffolder fix, CLI startup perf, and test tier doctrine (GHI #180, #181, #182, #186).**
+
+### Fixed
+
+- **PRD scaffolder emits validator-compatible ids** (GHI #186) — `gz prd <slug>`
+  now writes `PRD-<SLUG>-X.Y.Z` ids that match the validator's
+  `^PRD-[A-Z0-9]+-\d+\.\d+\.\d+$` schema. Previously the scaffolder emitted
+  kebab-case `PRD-<slug>` while the validator (same binary, same version)
+  required uppercase-alphanumeric + semver, so every freshly scaffolded PRD
+  failed validation until hand-edited. Blocked the documented quickstart at
+  step 2; reported by Rhea adopter (GZKIT-BOOTSTRAP-007).
+- **`gz --help` startup budget restored to < 1.0s** (GHI #180) — lazy-loaded
+  CLI command handlers and `gzkit.cli` re-exports via PEP 562 `__getattr__`.
+  Eagerly imported `jsonschema`, `pydantic`, `structlog`, and `rich.console`
+  no longer pull into the `--help` hot path. Wall-clock dropped from 2.4-3.7s
+  back under the 1.0s policy ceiling enforced by `test_help_renders_fast`.
+
+### Changed
+
+- **Two-runner test doctrine: `unittest` + `behave`** (GHI #181, #182) —
+  the short-lived `tests/integration/` tier introduced in #181 (90s → 30s
+  symptom patch) is collapsed. Per-test triage moved genuinely end-to-end
+  scenarios into `features/` and refactored the rest under `tests/commands/`
+  using the canonical subprocess patchers (`_git_subprocess_patcher`,
+  `_uv_sync_patcher`, `_quick_init`). `gz test --integration` and the
+  `load_tests` gating protocol are removed. The runner boundary
+  (`unittest` for mocked Python behavior, `behave` for real CLI flows) is
+  now the only test tier gate. Triage decisions recorded in
+  `artifacts/audits/ghi-182-triage.md`.
+
+### Stats
+
+- 4 GHIs closed (1 high-severity defect, 3 perf/doctrine)
+
+---
+
 ## v0.25.8 (2026-04-16)
 
 **Two fixes from Rhea adopter feedback and dogfood (GHI #178, #179).**
