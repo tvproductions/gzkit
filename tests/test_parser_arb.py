@@ -34,10 +34,19 @@ class TestArbParserRegistration(unittest.TestCase):
         commands = self._subparser_choices(self.parser)
         self.assertIn("arb", commands)
 
-    def test_arb_exposes_all_seven_verbs(self) -> None:
+    def test_arb_exposes_canonical_verbs(self) -> None:
         commands = self._subparser_choices(self.parser)
         arb_commands = self._subparser_choices(commands["arb"])
-        expected = {"ruff", "step", "ty", "coverage", "validate", "advise", "patterns"}
+        expected = {
+            "ruff",
+            "step",
+            "ty",
+            "typecheck",
+            "coverage",
+            "validate",
+            "advise",
+            "patterns",
+        }
         self.assertEqual(set(arb_commands.keys()), expected)
 
     def test_each_verb_has_help(self) -> None:
