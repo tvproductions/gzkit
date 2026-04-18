@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.18-02-runbook-prd-to-adr
-parent: ADR-0.0.18
+parent: ADR-0.0.18-adr-taxonomy-doctrine
 item: 2
 lane: Lite
 status: Draft

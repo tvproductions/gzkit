@@ -1,0 +1,22 @@
+                                 ADR Overview                                  
+┌────────────┬───────┬───────────┬────────────────┬──────┬──────────┬─────────┐
+│ ADR        │ Lane  │ Lifecycle │ Closeout Phase │ OBPI │ Closeout │ QC      │
+├────────────┼───────┼───────────┼────────────────┼──────┼──────────┼─────────┤
+│ ADR-0.0.16 │ heavy │ Completed │ attested       │ 5/5  │ READY    │ PENDING │
+└────────────┴───────┴───────────┴────────────────┴──────┴──────────┴─────────┘
+                                     OBPIs                                     
+┌────┬────────────────────────────────┬────────────────────┬───────────┬──────┐
+│ #  │ OBPI ID                        │ State              │ Brief     │ Done │
+├────┼────────────────────────────────┼────────────────────┼───────────┼──────┤
+│ 01 │ OBPI-0.0.16-01-validate-frontm │ attested_completed │ completed │ yes  │
+│    │ atter-guard                    │                    │           │      │
+│ 02 │ OBPI-0.0.16-02-gate-integratio │ attested_completed │ completed │ yes  │
+│    │ n                              │                    │           │      │
+│ 03 │ OBPI-0.0.16-03-chore-registrat │ attested_completed │ completed │ yes  │
+│    │ ion                            │                    │           │      │
+│ 04 │ OBPI-0.0.16-04-backfill-and-gh │ attested_completed │ completed │ yes  │
+│    │ i-closure                      │                    │           │      │
+│ 05 │ OBPI-0.0.16-05-status-vocab-ma │ attested_completed │ completed │ yes  │
+│    │ pping                          │                    │           │      │
+└────┴────────────────────────────────┴────────────────────┴───────────┴──────┘
+QC Readiness: PENDING (pending: TDD)

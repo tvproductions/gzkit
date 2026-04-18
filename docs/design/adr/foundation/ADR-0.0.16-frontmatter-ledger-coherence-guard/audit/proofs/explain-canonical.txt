@@ -1,0 +1,30 @@
+Remediation for ADR-0.0.17-adr-taxonomy-mechanical:
+
+  Field id: ledger='ADR-0.0.17-adr-taxonomy-mechanical' 
+frontmatter='ADR-0.0.17'
+    → run: gz register-adrs --all
+
+  Field parent: ledger='ADR-0.0.17-adr-taxonomy-mechanical' 
+frontmatter='ADR-0.0.17'
+    → run: gz register-adrs --all
+
+  Field parent: ledger='ADR-0.0.17-adr-taxonomy-mechanical' 
+frontmatter='ADR-0.0.17'
+    → run: gz register-adrs --all
+
+  Field parent: ledger='ADR-0.0.17-adr-taxonomy-mechanical' 
+frontmatter='ADR-0.0.17'
+    → run: gz register-adrs --all
+
+  Field parent: ledger='ADR-0.0.17-adr-taxonomy-mechanical' 
+frontmatter='ADR-0.0.17'
+    → run: gz register-adrs --all
+
+  Field parent: ledger='ADR-0.0.17-adr-taxonomy-mechanical' 
+frontmatter='ADR-0.0.17'
+    → run: gz register-adrs --all
+
+  Field parent: ledger='ADR-0.0.17-adr-taxonomy-mechanical' 
+frontmatter='ADR-0.0.17'
+    → run: gz register-adrs --all
+

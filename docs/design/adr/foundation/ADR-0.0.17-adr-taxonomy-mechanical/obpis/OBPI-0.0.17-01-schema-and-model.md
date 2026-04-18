@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.17-01-schema-and-model
-parent: ADR-0.0.17
+parent: ADR-0.0.17-adr-taxonomy-mechanical
 item: 1
 lane: Heavy
 status: Draft

@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.17-04-validate-taxonomy
-parent: ADR-0.0.17
+parent: ADR-0.0.17-adr-taxonomy-mechanical
 item: 4
 lane: Heavy
 status: Draft

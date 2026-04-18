@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.17-06-agents-md-correction
-parent: ADR-0.0.17
+parent: ADR-0.0.17-adr-taxonomy-mechanical
 item: 6
 lane: Lite
 status: Draft
