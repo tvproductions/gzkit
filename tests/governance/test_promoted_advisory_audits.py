@@ -73,5 +73,75 @@ class PromotedAdvisoryAudits(unittest.TestCase):
         self._assert_clean(audit_reconcile_freshness(_PROJECT_ROOT), "reconcile_freshness")
 
 
+class VersionReleaseAuditChickenAndEgg(unittest.TestCase):
+    """GHI #217 — audit must not block the release commit that creates the tag.
+
+    `gz patch release` writes a release manifest at
+    ``docs/releases/PATCH-v{version}.md`` BEFORE the bump commit is attempted.
+    The manifest is L1 proof that the canonical release ceremony is in flight.
+    `audit_version_release` must accept it as equivalent to a git tag for the
+    brief window between the bump commit and `gh release create`, otherwise
+    the audit and the release pipeline are mutually exclusive.
+    """
+
+    def _write_pyproject(self, root: Path, version: str) -> None:
+        (root / "pyproject.toml").write_text(
+            f'[project]\nname = "demo"\nversion = "{version}"\n',
+            encoding="utf-8",
+        )
+
+    def _init_empty_git(self, root: Path) -> None:
+        import subprocess  # noqa: PLC0415
+
+        subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+
+    def test_naked_bump_still_fails(self) -> None:
+        """Bump without manifest and without tag — class of failure the audit catches."""
+        import tempfile  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._init_empty_git(root)
+            self._write_pyproject(root, "9.9.9")
+            errors = audit_version_release(root)
+            self.assertEqual(len(errors), 1, msg=f"expected one violation, got {errors}")
+            self.assertIn("9.9.9", errors[0].message)
+
+    def test_in_flight_release_manifest_satisfies_audit(self) -> None:
+        """Manifest at docs/releases/PATCH-v{version}.md is L1 evidence of release in flight."""
+        import tempfile  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._init_empty_git(root)
+            self._write_pyproject(root, "9.9.9")
+            manifest_dir = root / "docs" / "releases"
+            manifest_dir.mkdir(parents=True)
+            (manifest_dir / "PATCH-v9.9.9.md").write_text(
+                "# Patch Release: v9.9.9\n", encoding="utf-8"
+            )
+            self.assertEqual(
+                audit_version_release(root),
+                [],
+                msg="audit must pass when PATCH-v{version}.md exists (release mid-ceremony)",
+            )
+
+    def test_manifest_for_different_version_does_not_satisfy(self) -> None:
+        """Only a manifest matching the declared version counts; stale manifests do not."""
+        import tempfile  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._init_empty_git(root)
+            self._write_pyproject(root, "9.9.9")
+            manifest_dir = root / "docs" / "releases"
+            manifest_dir.mkdir(parents=True)
+            (manifest_dir / "PATCH-v9.9.8.md").write_text(
+                "# Patch Release: v9.9.8\n", encoding="utf-8"
+            )
+            errors = audit_version_release(root)
+            self.assertEqual(len(errors), 1, msg=f"expected one violation, got {errors}")
+
+
 if __name__ == "__main__":
     unittest.main()
