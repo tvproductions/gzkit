@@ -392,6 +392,72 @@ class TestLedger(unittest.TestCase):
             self.assertEqual(graph["OBPI-0.21.0-01"]["withdrawn_reason"], "phantom")
             self.assertFalse(graph["OBPI-0.21.0-02"]["withdrawn"])
 
+    def test_get_artifact_graph_marks_obpi_attested_from_receipt_event(self) -> None:
+        """OBPI attestation surfaces on the graph node (GHI #193 regression).
+
+        ``gz obpi complete`` emits ``obpi_receipt_emitted`` with
+        ``evidence.human_attestation=True`` — never a separate ``attested``
+        event. The graph builder MUST recognize this nested signal and flip
+        ``attested=True``. Before GHI #193 landed, this flag stayed False on
+        every attested OBPI, which silently corrupted downstream runtime-state
+        derivation (see ``_derive_obpi_runtime_state``).
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ledger_path = Path(tmpdir) / "ledger.jsonl"
+            ledger = Ledger(ledger_path)
+
+            ledger.append(adr_created_event("ADR-0.7.0", "", "heavy"))
+            ledger.append(obpi_created_event("OBPI-0.7.0-01", "ADR-0.7.0"))
+            ledger.append(
+                obpi_receipt_emitted_event(
+                    "OBPI-0.7.0-01",
+                    "completed",
+                    "jeff",
+                    evidence={
+                        "human_attestation": True,
+                        "attestation_text": "attest completed — evidence",
+                    },
+                    obpi_completion="attested_completed",
+                )
+            )
+
+            graph = ledger.get_artifact_graph()
+            obpi = graph["OBPI-0.7.0-01"]
+            self.assertTrue(
+                obpi["attested"],
+                "obpi_receipt_emitted with human_attestation=True must set attested=True",
+            )
+            self.assertEqual(obpi["attestation_status"], "attested_completed")
+            self.assertEqual(obpi["attestation_by"], "jeff")
+
+    def test_get_artifact_graph_does_not_mark_attested_without_human_attestation(
+        self,
+    ) -> None:
+        """Non-attestation receipt events do NOT flip attested=True.
+
+        A receipt emitted without ``evidence.human_attestation`` (e.g. an
+        implementation-stage completed receipt) MUST leave ``attested=False``
+        so downstream consumers don't misinterpret a narrative receipt as a
+        human attestation.
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ledger_path = Path(tmpdir) / "ledger.jsonl"
+            ledger = Ledger(ledger_path)
+
+            ledger.append(adr_created_event("ADR-0.7.1", "", "heavy"))
+            ledger.append(obpi_created_event("OBPI-0.7.1-01", "ADR-0.7.1"))
+            ledger.append(
+                obpi_receipt_emitted_event(
+                    "OBPI-0.7.1-01",
+                    "completed",
+                    "jeff",
+                    evidence={"acceptance": "observed"},
+                )
+            )
+
+            graph = ledger.get_artifact_graph()
+            self.assertFalse(graph["OBPI-0.7.1-01"]["attested"])
+
     def test_derive_obpi_semantics_withdrawn_returns_withdrawn_state(self) -> None:
         """Withdrawn OBPIs return runtime_state='withdrawn' and completed=False."""
         info: dict[str, Any] = {"withdrawn": True, "type": "obpi"}

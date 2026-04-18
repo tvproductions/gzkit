@@ -73,6 +73,17 @@ def arb_ty_cmd(*, argv: list[str], quiet: bool = False) -> int:
     return arb_step_cmd(name="ty", argv=["uvx", "ty", *argv], quiet=quiet)
 
 
+def arb_typecheck_cmd(*, quiet: bool = False) -> int:
+    """Run the canonical ``gz typecheck`` command via ARB step wrapper.
+
+    This is the Heavy-lane attestation receipt form for type checks: it wraps
+    the exact command ``gz typecheck`` (and therefore ``gz closeout``) runs,
+    so ARB receipts cannot claim "types clean" against a scope that diverges
+    from the governance gate. See GHI #199.
+    """
+    return arb_step_cmd(name="typecheck", argv=["uv", "run", "ty", "check", "src"], quiet=quiet)
+
+
 def arb_coverage_cmd(*, argv: list[str], quiet: bool = False) -> int:
     """Run coverage via ARB step wrapper."""
     return arb_step_cmd(name="coverage", argv=["coverage", *argv], quiet=quiet)
@@ -140,5 +151,6 @@ __all__ = [
     "arb_ruff_cmd",
     "arb_step_cmd",
     "arb_ty_cmd",
+    "arb_typecheck_cmd",
     "arb_validate_cmd",
 ]

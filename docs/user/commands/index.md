@@ -101,6 +101,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz arb ruff`](arb.md#wrap-a-ruff-run) | Run ruff via ARB and emit a lint receipt |
 | [`gz arb step`](arb.md#wrap-an-arbitrary-step) | Wrap an arbitrary command and emit a step receipt |
 | [`gz arb ty`](arb.md#dedicated-wrappers) | Run `uvx ty` via ARB step wrapper |
+| [`gz arb typecheck`](arb.md#typecheck) | Canonical Heavy-lane type-check receipt — wraps `gz typecheck` scope |
 | [`gz arb coverage`](arb.md#dedicated-wrappers) | Run `coverage` via ARB step wrapper |
 | [`gz arb validate`](arb.md#validate-analyze-receipts) | Validate recent receipts against JSON schemas |
 | [`gz arb advise`](arb.md#recommendations-from-recent-receipts) | Summarize recent receipts into recommendations |

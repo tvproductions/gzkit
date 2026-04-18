@@ -45,14 +45,23 @@ plausible explanation of reasoning it did not actually perform).
 
 The only faithful record of a QA step is the wrapped-command receipt. For
 every claim category cited in an attestation, include at least one ARB
-receipt ID (`artifacts/receipts/<id>.json`):
+receipt ID (`artifacts/receipts/<id>.json`) produced by the **canonical
+command** listed below. Parallel approximations (different scope, different
+target tree, different flags) are not acceptable — GHI #199 traces the class
+of failure where an ARB receipt reported exit 0 against `ty check .` while
+the governance gate (`gz typecheck` → `ty check src`) reported exit 1.
 
-| Claim category | Required receipt |
-|----------------|------------------|
-| Lint clean | ARB `ruff` receipt |
-| Type check clean | ARB `ty check` receipt |
-| Tests pass | ARB `unittest` / `step --name unittest` receipt |
-| Coverage floor | ARB `coverage` receipt |
+| Claim category | Canonical invocation | Receipt name prefix |
+|----------------|----------------------|---------------------|
+| Lint clean | `uv run gz arb ruff` | `arb-ruff-` |
+| Type check clean | `uv run gz arb typecheck` | `arb-step-typecheck-` |
+| Tests pass | `uv run gz arb step --name unittest -- uv run -m unittest -q` | `arb-step-unittest-` |
+| Coverage floor | `uv run gz arb coverage run -m unittest discover -s tests -t .` | `arb-coverage-` |
+
+`gz arb typecheck` (added under GHI #199) wraps `uv run ty check src` — the
+same command `gz typecheck` and `gz closeout` invoke. Do not author heavy-lane
+type-check receipts via `gz arb ty check <custom-scope>`; the receipt will
+drift from the gate and the attestation claim will be post-hoc false.
 
 Receipt IDs should appear inline in the enrichment, e.g.
 `(lint: receipt arb-2026-04-14T12-34-56-ruff)`. The citing agent must also

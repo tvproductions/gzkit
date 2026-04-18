@@ -63,6 +63,17 @@ gz arb ty check .
 gz arb coverage run -m unittest discover -s tests -t .
 ```
 
+### Canonical Typecheck Receipt
+
+For Heavy-lane attestation evidence, prefer `gz arb typecheck` over
+`gz arb ty check <custom-scope>`. It wraps the exact command `gz typecheck`
+and `gz closeout` invoke so the receipt cannot diverge from the governance
+gate's scope. Closes GHI #199.
+
+```bash
+gz arb typecheck
+```
+
 ### Validate Analyze Receipts
 
 ```bash

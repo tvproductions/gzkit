@@ -132,7 +132,7 @@ uv run gz lint
 #     claim category cited in Heavy-lane attestations (lint, typecheck, tests,
 #     coverage). Run each wrapped QA step before drafting the attestation text.
 uv run gz arb ruff src tests
-uv run gz arb step --name typecheck -- uvx ty check . --exclude 'features/**'
+uv run gz arb typecheck
 uv run gz arb step --name unittest -- uv run -m unittest -q
 uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
 uv run gz arb validate --limit 20

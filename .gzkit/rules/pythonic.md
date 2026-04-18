@@ -42,3 +42,21 @@ description: Pythonic standards and idiomatic code contract
 | **ruff**     | Linting/formatting    | `uv run ruff check .`   |
 | **ty**       | Static typing         | `uvx ty check .`        |
 | **unittest** | Testing               | `uv run -m unittest -q` |
+
+## Type-check suppression syntax (ty — binding)
+
+`ty` does not honor mypy-style bracketed codes. `# type: ignore[override]`,
+`# type: ignore[union-attr]`, `# type: ignore[arg-type]`, etc. look valid but
+suppress nothing — the diagnostic still fires. This silently accumulated
+across 12 lines in 6 files before ADR-0.0.16 closeout exposed them (GHI #197).
+
+Use exactly one of:
+
+| Form | When |
+|------|------|
+| `# type: ignore` (bare) | When the suppression is unconditional and precise narrowing is unnecessary |
+| `# ty: ignore[<ty-code>]` | When you want specificity — cite ty's own error code (e.g. `invalid-method-override`, `no-matching-overload`, `invalid-assignment`, `unresolved-attribute`, `call-non-callable`, `invalid-argument-type`) |
+
+`tests/governance/test_type_ignore_syntax.py` fail-closes on any
+`# type: ignore[<code>]` under `src/**`. Fix the suppression syntax rather than
+disabling the test.
