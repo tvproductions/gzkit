@@ -89,6 +89,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz interview`](interview.md) | Run interactive governance interviews |
 | [`gz chores advise`](chores-advise.md) | Dry-run acceptance criteria for one chore |
 | [`gz chores show`](chores-show.md) | Display CHORE.md content for one chore |
+| [`gz frontmatter reconcile`](frontmatter-reconcile.md) | Rewrite drifted ADR/OBPI frontmatter to match ledger (ledger-wins) |
 
 ---
 

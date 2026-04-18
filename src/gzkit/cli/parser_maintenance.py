@@ -35,6 +35,7 @@ _LAZY_HANDLERS: dict[str, str] = {
     "check_config_paths_cmd": "gzkit.commands.config_paths",
     "covers_cmd": "gzkit.commands.covers",
     "drift_cmd": "gzkit.commands.drift",
+    "frontmatter_reconcile_cmd": "gzkit.commands.frontmatter_reconcile",
     "flag_explain_cmd": "gzkit.commands.flags",
     "flags_list_cmd": "gzkit.commands.flags",
     "interview": "gzkit.commands.interview_cmd",
@@ -78,6 +79,41 @@ def register_maintenance_parsers(commands: argparse._SubParsersAction) -> None:
     _register_skill_parsers(commands)
     _register_agent_parsers(commands)
     _register_flag_parsers(commands)
+    _register_frontmatter_parsers(commands)
+
+
+def _register_frontmatter_parsers(commands: argparse._SubParsersAction) -> None:
+    """Register ``gz frontmatter`` sub-command group (ADR-0.0.16 OBPI-03)."""
+    p_fm = commands.add_parser(
+        "frontmatter",
+        help="Frontmatter-ledger coherence commands",
+        description="Reconcile ADR/OBPI frontmatter with the ledger (ledger-wins).",
+        epilog=build_epilog(
+            ["gz frontmatter reconcile --dry-run", "gz frontmatter reconcile --json"]
+        ),
+    )
+    fm_sub = p_fm.add_subparsers(dest="frontmatter_cmd")
+    p_reconcile = fm_sub.add_parser(
+        "reconcile",
+        help="Rewrite drifted frontmatter to match ledger (ledger-wins)",
+        description=(
+            "Detect frontmatter drift via the OBPI-01 validator and rewrite the "
+            "drifted id/parent/lane/status fields to match the ledger. Emits a "
+            "schema-validated receipt under artifacts/receipts/frontmatter-coherence/."
+        ),
+        epilog=build_epilog(
+            [
+                "gz frontmatter reconcile",
+                "gz frontmatter reconcile --dry-run",
+                "gz frontmatter reconcile --json",
+            ]
+        ),
+    )
+    add_dry_run_flag(p_reconcile)
+    add_json_flag(p_reconcile)
+    p_reconcile.set_defaults(
+        func=lambda a: _lazy("frontmatter_reconcile_cmd")(dry_run=a.dry_run, as_json=a.as_json)
+    )
 
 
 def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:

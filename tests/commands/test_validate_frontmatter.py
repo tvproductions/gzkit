@@ -241,7 +241,9 @@ class TestFrontmatterGuard(unittest.TestCase):
     def test_runtime_budget_under_one_second_on_real_repo(self) -> None:
         """Real repo runtime < 1.0s (~80 ADRs / ~200 OBPIs scale)."""
         from gzkit.commands.common import get_project_root  # noqa: PLC0415
-        from gzkit.commands.validate_cmd import _validate_frontmatter_coherence  # noqa: PLC0415
+        from gzkit.commands.validate_frontmatter import (
+            validate_frontmatter_coherence,  # noqa: PLC0415
+        )
 
         project_root = get_project_root()
         # Skip if this test runner is not inside the gzkit project
@@ -249,7 +251,7 @@ class TestFrontmatterGuard(unittest.TestCase):
             self.skipTest("No gzkit ledger present — not inside the gzkit repo")
 
         start = time.perf_counter()
-        _validate_frontmatter_coherence(project_root)
+        validate_frontmatter_coherence(project_root)
         elapsed = time.perf_counter() - start
         self.assertLess(
             elapsed,

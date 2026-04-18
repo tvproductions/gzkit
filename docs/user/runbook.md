@@ -557,6 +557,16 @@ uv run gz chores run <slug>        # Execute and log one chore
 uv run gz chores audit --all       # Audit log presence for all chores
 ```
 
+### Frontmatter-Ledger Reconciliation
+
+```bash
+uv run gz frontmatter reconcile --dry-run   # Preview drifted frontmatter rewrites
+uv run gz frontmatter reconcile             # Apply ledger-wins reconciliation
+uv run gz frontmatter reconcile --json      # Emit receipt JSON to stdout
+```
+
+Rewrites drifted ADR/OBPI `id`/`parent`/`lane`/`status` to match the ledger; ungoverned keys preserved byte-identically. See [`gz frontmatter reconcile`](commands/frontmatter-reconcile.md) and ADR-0.0.16 for details.
+
 ---
 
 ## Task Commands

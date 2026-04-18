@@ -8,13 +8,19 @@ Extracted from ``validate_cmd`` to keep both modules under the 600-line cap.
 Shares the canonical ledger semantics API used by ``gz adr report``.
 """
 
+from __future__ import annotations
+
 import json
 import re
 from collections.abc import Callable
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from gzkit.commands.common import console
 from gzkit.validate import ValidationError
+
+if TYPE_CHECKING:
+    from gzkit.ledger import Ledger
 
 _ADR_ID_PATTERN = re.compile(r"^(ADR-[\d.]+)")
 _OBPI_ID_PATTERN = re.compile(r"^(OBPI-\d+\.\d+\.\d+-\d+)")
@@ -180,9 +186,11 @@ def _derive_status_with_index(
     return None
 
 
-def _validate_frontmatter_coherence(
+def validate_frontmatter_coherence(
     project_root: Path,
     adr_scope: str | None = None,
+    *,
+    ledger: Ledger | None = None,
 ) -> list[ValidationError]:
     """Validate frontmatter fields against ledger truth (GHI-167, ADR-0.0.16).
 
@@ -190,6 +198,12 @@ def _validate_frontmatter_coherence(
     for every ADR/OBPI file on disk. Keys lookups on filesystem path only —
     never on frontmatter ``id:``. When ``adr_scope`` is set, restricts output
     to that single ADR (and its OBPIs).
+
+    When ``ledger`` is provided (OBPI-0.0.16-03), the validator uses the
+    supplied pre-snapshotted Ledger instance instead of opening a fresh one.
+    This lets a caller pin the ledger state for a run — the reconciliation
+    chore uses this to guarantee the receipt reflects the starting cursor's
+    state only, never a mid-run mutation.
     """
     from gzkit.commands.status_obpi import _build_obpi_index
     from gzkit.config import GzkitConfig
@@ -203,7 +217,8 @@ def _validate_frontmatter_coherence(
         return []
 
     config = GzkitConfig.load(config_path)
-    ledger = Ledger(ledger_path)
+    if ledger is None:
+        ledger = Ledger(ledger_path)
     try:
         graph = ledger.get_artifact_graph()
     except (json.JSONDecodeError, KeyError, ValueError):

@@ -1,0 +1,7 @@
+{
+  "obpi_id": "OBPI-0.0.16-03-chore-registration",
+  "timestamp": "2026-04-18T08:41:57.173140+00:00",
+  "verdict": "PASS",
+  "plan_file": "flickering-sauteeing-storm.md",
+  "gaps_found": 0
+}
