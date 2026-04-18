@@ -3,7 +3,7 @@ id: OBPI-0.0.16-04-backfill-and-ghi-closure
 parent: ADR-0.0.16
 item: 4
 lane: Heavy
-status: in_progress
+status: Completed
 ---
 
 # OBPI-0.0.16-04-backfill-and-ghi-closure: One-time backfill and GHI closure
