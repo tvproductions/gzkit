@@ -243,7 +243,10 @@ def main() -> int:
         status, n_reqs = process_obpi_file(path, args.dry_run)
         by_status[status] = by_status.get(status, 0) + 1
         if status.startswith("backfilled"):
-            adr_id = re.match(r"OBPI-(\d+\.\d+\.\d+)", path.name).group(1)
+            match = re.match(r"OBPI-(\d+\.\d+\.\d+)", path.name)
+            if match is None:
+                continue
+            adr_id = match.group(1)
             by_adr[adr_id] = by_adr.get(adr_id, 0) + n_reqs
             tag = status.removeprefix("backfilled-")
             prefix = "[dry-run] " if args.dry_run else ""
