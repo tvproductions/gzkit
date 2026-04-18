@@ -49,6 +49,7 @@ def register_arb_parsers(commands: argparse._SubParsersAction) -> None:
     _register_ruff(arb_commands)
     _register_step(arb_commands)
     _register_ty(arb_commands)
+    _register_typecheck(arb_commands)
     _register_coverage(arb_commands)
     _register_validate(arb_commands)
     _register_advise(arb_commands)
@@ -128,6 +129,23 @@ def _register_ty(arb_commands: argparse._SubParsersAction) -> None:
             argv=[arg for arg in a.argv if arg != "--"],
             quiet=getattr(a, "quiet", False),
         )
+    )
+
+
+def _register_typecheck(arb_commands: argparse._SubParsersAction) -> None:
+    p = arb_commands.add_parser(
+        "typecheck",
+        help="Run the canonical `gz typecheck` command via ARB and emit a step receipt",
+        description=(
+            "Heavy-lane canonical type-check receipt. Wraps the exact command "
+            "`gz typecheck` runs so ARB receipts cannot diverge from the "
+            "governance gate's scope. Prefer this over `gz arb ty check ...` "
+            "for attestation evidence. See GHI #199."
+        ),
+        epilog=build_epilog(["gz arb typecheck"]),
+    )
+    p.set_defaults(
+        func=lambda a: _arb("arb_typecheck_cmd")(quiet=getattr(a, "quiet", False)),
     )
 
 

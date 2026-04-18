@@ -802,6 +802,16 @@
       },
       "governance_relevant": false
     },
+    "arb typecheck": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
     "arb coverage": {
       "surfaces": {
         "manpage": true,
