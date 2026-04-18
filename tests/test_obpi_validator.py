@@ -555,6 +555,87 @@ status: {status}
         self.assertTrue(any("'Discovery Checklist'" in error for error in errors))
         self.assertTrue(any("Verification must include" in error for error in errors))
 
+    def test_authored_validation_flags_unregistered_gz_command_in_brief(self):
+        """GHI #194: brief-prescribed `gz` commands must resolve against the parser.
+
+        Seeds a brief with the same command-shape defect as OBPI-0.0.16-04
+        (singular `gz chore run` instead of plural `gz chores run`). Pre-fix
+        the validator missed this; post-fix it must surface the error
+        before the agent runs the wrong command at pipeline runtime.
+        """
+        self._register_adr("ADR-0.1.0", commit=False)
+        obpi_id = "OBPI-ADR-0.1.0-01"
+        path = self.project_root / f"{obpi_id}.md"
+        path.write_text(
+            f"---\nid: {obpi_id}\nparent: ADR-0.1.0\nstatus: Draft\nlane: Lite\n---\n\n"
+            f"# {obpi_id}\n\n"
+            "## Objective\nTest brief with deliberately-broken gz command.\n\n"
+            "## Lane\n**Lite** - Internal contract.\n\n"
+            "## Allowed Paths\n- `src/gzkit/ports/` - Port definitions\n\n"
+            "## Denied Paths\n- `docs/user/commands/` - No operator-surface changes\n\n"
+            "## Requirements (FAIL-CLOSED)\n"
+            "1. REQUIREMENT: Run `uv run gz chore run frontmatter-ledger-coherence "
+            "--dry-run` first.\n\n"
+            "## Discovery Checklist\n"
+            "**Prerequisites (check existence, STOP if missing):**\n"
+            "- [ ] `src/gzkit/runtime.py`\n\n"
+            "**Existing Code (understand current state):**\n"
+            "- [ ] `src/gzkit/ports.py`\n\n"
+            "## Verification\n```bash\nuv run gz lint\n```\n\n"
+            "## Acceptance Criteria\n- [ ] REQ-0.1.0-01-01: Real criterion.\n",
+            encoding="utf-8",
+        )
+        errors = self.validator.validate_file(path, require_authored=True)
+        # Must flag the broken `chore` (singular) verb chain — message names
+        # the unregistered verb and offers the available alternatives.
+        chore_errors = [
+            e for e in errors if "command-shape" in e.lower() and "'chore'" in e and "chores" in e
+        ]
+        self.assertTrue(
+            chore_errors,
+            f"Expected command-shape error naming 'chore' with 'chores' in alternatives, "
+            f"got: {errors}",
+        )
+
+    def test_authored_validation_passes_when_all_gz_commands_resolve(self):
+        """GHI #194: brief with valid `gz` commands has zero command-shape errors."""
+        self._register_adr("ADR-0.1.0", commit=False)
+        obpi_id = "OBPI-ADR-0.1.0-01"
+        path = self.project_root / f"{obpi_id}.md"
+        path.write_text(
+            f"---\nid: {obpi_id}\nparent: ADR-0.1.0\nstatus: Draft\nlane: Lite\n---\n\n"
+            f"# {obpi_id}\n\n"
+            "## Objective\nValid brief with correct gz commands.\n\n"
+            "## Lane\n**Lite** - Internal contract.\n\n"
+            "## Allowed Paths\n- `src/gzkit/ports/` - Port definitions\n\n"
+            "## Denied Paths\n- `docs/user/commands/` - No operator-surface changes\n\n"
+            "## Requirements (FAIL-CLOSED)\n"
+            "1. REQUIREMENT: Run `uv run gz chores run frontmatter-ledger-coherence` "
+            "(plural).\n"
+            "2. REQUIREMENT: Run `uv run gz frontmatter reconcile --dry-run`.\n\n"
+            "## Discovery Checklist\n"
+            "**Prerequisites (check existence, STOP if missing):**\n"
+            "- [ ] `src/gzkit/runtime.py`\n\n"
+            "**Existing Code (understand current state):**\n"
+            "- [ ] `src/gzkit/ports.py`\n\n"
+            "## Verification\n```bash\n"
+            "uv run gz lint\n"
+            "uv run gz typecheck\n"
+            "uv run gz validate --documents\n"
+            "uv run gz adr status ADR-0.1.0\n"
+            "uv run gz obpi reconcile OBPI-0.1.0-01\n"
+            "```\n\n"
+            "## Acceptance Criteria\n- [ ] REQ-0.1.0-01-01: Real criterion.\n",
+            encoding="utf-8",
+        )
+        errors = self.validator.validate_file(path, require_authored=True)
+        cmd_errors = [e for e in errors if "command-shape" in e.lower()]
+        self.assertEqual(
+            cmd_errors,
+            [],
+            msg=f"Expected no command-shape errors, got: {cmd_errors}",
+        )
+
     def test_authored_validation_passes_substantive_draft(self):
         """Authored mode passes drafts that are ready for pipeline execution."""
         self._register_adr("ADR-0.1.0", commit=False)
