@@ -132,9 +132,23 @@ change back to governance intent.
 **Verification:**
 
 ```bash
-uv run gz validate --commit-trailers   # flags HEAD commits missing Task: trailer
+uv run gz validate --commit-trailers   # flags HEAD commits missing governance-intent trailer
 uv run gz validate --requirements      # flags OBPIs with bare REQUIREMENTS sections
 ```
+
+**Governance-intent trailers (GHI #201):** A src/tests-touching commit MUST
+carry one of:
+
+- `Task: TASK-X.Y.Z-NN-MM-PP` — for hand-crafted work scoped to a single
+  TASK (the canonical four-tier binding).
+- `Ceremony: <name>` — for chore/sync commits that bundle work from
+  multiple governance anchors (e.g. `Ceremony: gz-git-sync`,
+  `Ceremony: obpi-reconcile`, `Ceremony: adr-closeout`). The ceremony
+  name itself is the audit anchor; sub-work is traced through the OBPI,
+  ADR, or defect fixes the ceremony consumed.
+
+`gz git-sync` emits `Ceremony: gz-git-sync` automatically. Hand-rolled
+ceremony commits must include the trailer explicitly.
 
 **Anti-patterns:**
 - Skipping `gz task start` and writing a Task: trailer from memory — the
@@ -142,6 +156,9 @@ uv run gz validate --requirements      # flags OBPIs with bare REQUIREMENTS sect
 - Using a single TASK for multiple unrelated REQ fixes — breaks the
   REQ-granularity of the coverage graph.
 - Orphan test files (no `@covers`) — invisible to `gz covers`.
+- Using `Ceremony:` as a blanket bypass for task-scoped hand edits —
+  ceremony trailers are for genuine multi-anchor chore/sync commits, not
+  for avoiding task discipline on a single focused change.
 
 ## General Rules
 
