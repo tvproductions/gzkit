@@ -1,0 +1,285 @@
+{
+  "dry_run": true,
+  "files_rewritten": [],
+  "ledger_cursor": "sha256:356c8108a6756730f39308d940c8801a94cab09480741f7340680a27a560203d",
+  "run_completed_at": "2026-04-18T10:48:25.204631+00:00",
+  "run_started_at": "2026-04-18T10:48:24.915251+00:00",
+  "skipped": [
+    {
+      "path": "docs/design/adr/pool/ADR-pool.adr-amendment-tracking.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.agent-execution-intelligence.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.agent-pipeline-refinements.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.agent-reliability-framework.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.agent-role-specialization.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.agentic-security-review.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.ai-runtime-foundations.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.airlineops-canon-reconciliation.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.airlineops-direct-governance-migration.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.atomic-obpi-commits.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.attestation-advisory-agent.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.change-isolation-workspace.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.channel-agnostic-human-triggers.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.cli-positional-first-doctrine.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.command-aliases.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.compression-governance-hooks.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.constitution-invariants.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.constraint-cli-surfaces.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.constraint-library.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.content-injection-scanning.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.controlled-agency-recovery.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.cross-session-search.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.design-references-bibliography.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.documented-decorator-contract.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.execution-memory-graph.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.filesystem-checkpoints.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.focused-context-loader.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.ghi-triage-closeout.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.go-runtime-parity.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.graduated-oversight-model.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.gz-preflight-health-orchestration.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.harness-agnostic-plan-capture.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.harness-aware-execution-modes.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.heavy-lane.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.interpretability-hardened-agent-surfaces.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.pause-resume-handoff-runtime.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.per-command-persona-context.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.pool-dag-promotion-routing.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.pool-health-management.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.pool-management.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.pre-planning-interview.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.prime-context-hooks.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.progressive-context-disclosure.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.pydantic-schema-enforcement.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.rag-anything-governance-retrieval.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.release-hardening.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.research-skill-composition.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.sandboxed-delegation.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.session-productivity-metrics.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.skill-behavioral-hardening.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.skill-feedback-loop.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.spec-delta-markers.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.storage-simplicity-profile.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.structured-blocker-envelopes.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.structured-prompt-architecture.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.structured-research-phase.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.structured-uat-walkthrough.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.student-mode.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.svfr-quick-adhoc.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.unified-closeout-audit-processes.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.universal-agent-onboarding.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.vendor-alignment-claude-code.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.vendor-alignment-codex.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.vendor-alignment-copilot.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.vendor-alignment-gemini-cli.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.vendor-alignment-opencode.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.vendor-scoped-chores.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.wave-dependency-execution.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/README.md",
+      "reason": "pool-adr"
+    }
+  ]
+}

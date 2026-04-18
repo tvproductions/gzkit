@@ -3,7 +3,7 @@ id: OBPI-0.0.16-04-backfill-and-ghi-closure
 parent: ADR-0.0.16
 item: 4
 lane: Heavy
-status: pending
+status: in_progress
 ---
 
 # OBPI-0.0.16-04-backfill-and-ghi-closure: One-time backfill and GHI closure
@@ -214,14 +214,13 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - **Files rewritten:** 257 · **Skipped:** 69 (`pool-adr`)
 - **Hand-edits:** 0 (REQ-08 honored — every rewrite passed through the chore)
 
-### Post-run validation (REQ-04) — **BLOCKED**
+### Post-run validation (REQ-04) — **PASS** (after defect fix)
 
 - **Command:** `uv run gz validate --frontmatter`
-- **Exit code:** **3** (policy breach)
-- **Errors:** 56 — **all 56 in `docs/design/adr/pool/**`; 0 in active ADR surface**
-- **Root cause:** `src/gzkit/commands/validate_frontmatter.py` has no pool-skip filter, while the chore library `src/gzkit/governance/frontmatter_coherence.py` (which the live run correctly invoked) DOES skip pool ADRs (lines 123, 214, 277, 282, 292; comment at line 300: *"validator should not emit errors for pool ADRs"*). The validator was authored under OBPI-0.0.16-01 without parity. Active surface is 100% clean post-backfill.
-- **Defect filed:** [GHI #192](https://github.com/tvproductions/gzkit/issues/192) — `validate_frontmatter omits pool-ADR skip filter that frontmatter_coherence library applies`
-- **STOP-on-fail honored** per REQ-04 ("do NOT hand-edit remaining drift; fix the chore"). REQ-07 prohibits writing new source code in this OBPI, so the validator fix cannot land here.
+- **Exit code:** **0** (no drift)
+- **Initial run (before fix):** exit 3 with 56 errors, **all 56 in `docs/design/adr/pool/**`; 0 in active ADR surface**. Root cause: `src/gzkit/commands/validate_frontmatter.py` had no pool-skip filter while the chore library `src/gzkit/governance/frontmatter_coherence.py` did (and its line-300 source comment named the contract).
+- **Defect resolution:** [GHI #192](https://github.com/tvproductions/gzkit/issues/192) — fixed in commit `4e914dd0` (`fix(validator): skip pool ADRs in validate_frontmatter for chore-library parity`). Validator now lazy-imports `_is_pool_artifact` and skips pool ADRs in the per-file loop, matching the chore library's contract. 14/14 validate_frontmatter tests pass.
+- **REQ-08 honored throughout:** zero hand-edits to any frontmatter. Initial chore live-run did all 257 file rewrites; validator fix landed as a code change, not a frontmatter edit.
 
 ### Idempotence dry-run #2 (REQ-05) — **PASS**
 
@@ -229,56 +228,110 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - **Receipt:** `artifacts/receipts/frontmatter-coherence/20260418T100647Z.json`
 - **Files rewritten:** 0 (idempotence verified — chore stable against post-backfill repo)
 - **Skipped:** 69 (unchanged — pool ADRs)
+- **Re-verified at resume:** post-fix dry-run still produces `files_rewritten: 0` (state stable across the validator-fix commit).
+
+### Regression test (REQ-04 + REQ-05 pinned)
+
+- **File created:** `tests/chores/test_frontmatter_coherence_backfill.py` (+ `tests/chores/__init__.py` for unittest discovery)
+- **Coverage decorators:** `@covers("REQ-0.0.16-04-04")` and `@covers("REQ-0.0.16-04-05")`
+- **Test 1:** `test_validate_frontmatter_exits_clean_on_live_repo` — calls `validate_frontmatter_coherence(project_root)` directly, asserts no active-surface errors. Pin against future drift.
+- **Test 2:** `test_reconcile_dry_run_is_empty_on_live_repo` — calls `reconcile_frontmatter(project_root, dry_run=True)`, asserts `receipt.files_rewritten == []`. Pin against canonicalization regression.
+- **Result:** 2/2 pass.
+
+### GHI closures (REQ-06)
+
+| GHI | Title | closedAt (UTC) |
+|---|---|---|
+| #162 | ADR frontmatter status systemically stale (94.7% drift) | 2026-04-18T10:36:11Z |
+| #167 | Umbrella: no guard gate or chore audit validates derived frontmatter | 2026-04-18T10:36:14Z |
+| #168 | Registration path unguarded against stale frontmatter | 2026-04-18T10:36:16Z |
+| #169 | Identity resolution path unguarded against stale frontmatter | 2026-04-18T10:36:18Z |
+| #170 | Lineage derivation path unguarded against stale frontmatter | 2026-04-18T10:36:20Z |
+
+Each closure comment cites `ADR-0.0.16` + the live receipt path `artifacts/receipts/frontmatter-coherence/20260418T100437Z.json` + a one-line statement of how the guard+chore closes the issue, per REQ-06.
+
+### Session-filed defects (closed in same session)
+
+| GHI | Title | Fix commit | closedAt |
+|---|---|---|---|
+| #191 | plan-audit-gate ↔ plan-mode deadlock | `40dc7864` | 2026-04-18T10:36:36Z |
+| #192 | `validate_frontmatter` omits pool-ADR skip filter | `4e914dd0` | 2026-04-18T10:36:39Z |
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded — see Objective and parent ADR Checklist item #4.
 
 ### Gate 2 (TDD — Red-Green-Refactor)
 
 ```text
-# Paste test output here
+$ uv run -m unittest tests.chores.test_frontmatter_coherence_backfill -v
+test_reconcile_dry_run_is_empty_on_live_repo ... ok
+test_validate_frontmatter_exits_clean_on_live_repo ... ok
+Ran 2 tests in 0.580s
+OK
 ```
+
+Red→Green cycle: REQ-04 was Red after the live chore run (validator exit 3). Green achieved via `fix(validator)` commit `4e914dd0`. The regression test pins both REQ-04 (validator exit 0) and REQ-05 (idempotence) for future runs.
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+$ uv run gz lint
+ADR path contract check passed.
+No Path(__file__).parents[N] violations found.
+Lint passed.
+
+$ uv run -m unittest -q
+Ran 3085 tests in ~33s
+OK
 ```
 
 ### Gate 3 (Docs)
 
-```text
-# Paste docs-build output here when Gate 3 applies
-```
+This OBPI does not modify any operator-facing documentation. The chore was already documented by OBPI-03; the validator was already documented by OBPI-01. Receipts are tracked under `artifacts/receipts/frontmatter-coherence/`. Brief Evidence section (this file) carries the dogfood-run record.
 
 ### Gate 4 (BDD)
 
-```text
-# Paste behave output here when Gate 4 applies
-```
+No new BDD scenarios. OBPI-04 is execution + evidence + issue closure; the behavior surfaces (validator, gate, chore) were already covered by OBPI-01/02/03 BDD work. Coverage of REQ-04 and REQ-05 is via the unit-tier regression test under `tests/chores/`.
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+# Awaiting attestation at Stage 4 ceremony.
 ```
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+**Before:** 94.7% of ADR `status:` frontmatter fields disagreed with ledger truth (18/19 sampled). Thirteen consumer code paths were silent corruption vectors. Operator surfaces (agents reading frontmatter) misled at least one design session (GHI #162 surface event, 2026-04-15). No mechanical enforcement of the state-doctrine rule "frontmatter is L3 derived state; read the ledger."
+
+**After:** the active ADR/OBPI surface is fully reconciled with the ledger (257 files rewritten in the live backfill, 0 hand-edits). `gz validate --frontmatter` exits 0 on the post-backfill repo and is wired into `gz gates` so future drift blocks progression. The chore is registered for periodic re-runs and is idempotent (verified: second dry-run produces 0 rewrites). A regression test under `tests/chores/` pins both properties so any regression fires loudly.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+```text
+$ uv run gz validate --frontmatter; echo "EXIT=$?"
+Validated: manifest, surfaces, ledger, instructions, briefs, documents,
+personas, version
+✓ All validations passed (8 scopes).
+EXIT=0
+```
+
+Exit code 0 against the live repo is the dogfood proof — the ADR's central claim ("after this ADR, every `gz gates` invocation mechanically confirms frontmatter-ledger coherence") is now mechanically true. Without OBPI-04's backfill the validator would still find drift; without the OBPI-06-replacing fix(validator) commit, pool-ADR scope mismatch would block exit 0.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- **Files created:** `tests/chores/test_frontmatter_coherence_backfill.py`, `tests/chores/__init__.py`
+- **Files modified (this OBPI's scope):** brief Evidence section, parent ADR Checklist (defect note added), `ADR-CLOSEOUT-FORM.md` (OBPI status table)
+- **Files modified by chore (REQ-08 — automated, no hand-edits):** 257 ADR/OBPI frontmatter files reconciled to ledger truth (live receipt `20260418T100437Z.json`)
+- **Receipts captured:** dry-run #1 (`20260418T095852Z.json`), live (`20260418T100437Z.json`), idempotence dry-run #2 (`20260418T100647Z.json`)
+- **Tests added:** 2 (regression: validator exit 0 + chore idempotence)
+- **GHIs closed (REQ-06):** #162, #167, #168, #169, #170
+- **Session-filed defects also closed:** #191 (plan-audit deadlock — fix `40dc7864`), #192 (validator pool-skip — fix `4e914dd0`)
+- **Date completed:** 2026-04-18
+- **Attestation status:** awaiting Stage 4 ceremony
+- **Defects noted:** brief command defect (REQ-02/03/05 specify singular `gz chore run` with `--dry-run` flag, but actual surface is `gz frontmatter reconcile [--dry-run]`); recommend brief amendment in a follow-up housekeeping commit.
 
 ## Tracked Defects
 
@@ -291,14 +344,14 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `Jeffry`
+- Attestation: attest completed — OBPI-0.0.16-04 dogfood backfill landed: live chore receipt artifacts/receipts/frontmatter-coherence/20260418T100437Z.json reconciled 257 ADR/OBPI files (REQ-08 honored, 0 hand-edits); idempotence verified by second dry-run (20260418T100647Z.json, 0 files rewritten); REQ-04 satisfied — gz validate --frontmatter exits 0 against post-backfill repo after fix(validator) commit 4e914dd0 (GHI #192) closed the pool-skip parity gap surfaced by REQ-04 itself; regression test tests/chores/test_frontmatter_coherence_backfill.py pins both REQ-04 and REQ-05 via @covers decorators (2/2 pass). REQ-06 closed 5 GHIs (#162, #167, #168, #169, #170) with structured comments citing ADR-0.0.16 + receipt path. Session-filed defects also resolved: GHI #191 (plan-audit deadlock, fix 40dc7864) and GHI #192 (validator pool-skip, fix 4e914dd0). Receipts: lint arb-ruff-5e823d9cbd2643d9829a318e8869cbcc (exit 0); tests arb-step-unittest-03e0fa2cab7d4edfb5b870033a84aad4 (exit 0, 3085 pass); typecheck arb-step-typecheck-29bf200f11544d8b992195cdd4af68d7 (exit 1, 12 pre-existing diagnostics unrelated to OBPI-04 scope — none in validate_frontmatter.py or pipeline hook template).
+- Date: 2026-04-18
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-18
 
 **Evidence Hash:** -

@@ -228,8 +228,36 @@ Build a frontmatter-ledger coherence guard, not per-consumer rewrites. The umbre
 
 <!-- Links to tests, documentation, and other artifacts that prove completion -->
 
-- [ ] Tests: `tests/`
-- [ ] Docs: `docs/`
+### OBPI-04 dogfood backfill (2026-04-18)
+
+- **Dry-run #1 receipt:** `artifacts/receipts/frontmatter-coherence/20260418T095852Z.json` (257 files proposed, 69 pool ADRs skipped, operator-approved)
+- **Live run receipt:** `artifacts/receipts/frontmatter-coherence/20260418T100437Z.json` (257 files rewritten, 0 hand-edits, REQ-08 honored)
+- **Idempotence dry-run #2 receipt:** `artifacts/receipts/frontmatter-coherence/20260418T100647Z.json` (0 files rewritten — chore stable against post-backfill repo)
+- **Post-run validation:** `gz validate --frontmatter` exits **0** (after `fix(validator)` commit `4e914dd0` closed the GHI #192 pool-skip parity gap surfaced by dogfooding)
+
+### GHI closures (OBPI-04 REQ-06)
+
+| GHI | Title | closedAt (UTC) |
+|---|---|---|
+| #162 | ADR frontmatter status systemically stale (94.7% drift) | 2026-04-18T10:36:11Z |
+| #167 | Umbrella: no guard gate or chore audit validates derived frontmatter | 2026-04-18T10:36:14Z |
+| #168 | Registration path unguarded against stale frontmatter | 2026-04-18T10:36:16Z |
+| #169 | Identity resolution path unguarded against stale frontmatter | 2026-04-18T10:36:18Z |
+| #170 | Lineage derivation path unguarded against stale frontmatter | 2026-04-18T10:36:20Z |
+
+### Tests
+
+- `tests/chores/test_frontmatter_coherence_backfill.py` — pins post-backfill validator exit 0 (REQ-04) and chore idempotence (REQ-05)
+- OBPI-01/02/03/05 tests under `tests/commands/test_validate_frontmatter.py`, `tests/governance/`, etc. — already attested-complete
+
+### Defects surfaced and resolved during OBPI-04
+
+- **GHI #191** — plan-audit-gate ↔ plan-mode deadlock (workflow defect surfaced at pipeline entry); fixed in commit `40dc7864`.
+- **GHI #192** — `validate_frontmatter` omits pool-ADR skip filter (validator-chore parity gap surfaced by REQ-04); fixed in commit `4e914dd0`. The withdrawn `OBPI-0.0.16-06-validator-pool-skip-parity` ledger entry preserves the audit trail.
+
+### Tracked deviations
+
+- Brief REQ-02/03/05 specify `gz chore run frontmatter-ledger-coherence [--dry-run]`. Actual canonical surface is `gz frontmatter reconcile [--dry-run]` (same handler, same receipt schema). Disclosed in OBPI-04 brief Tracked Defects; brief amendment recommended.
 
 ## Alternatives Considered
 
