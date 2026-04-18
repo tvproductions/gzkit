@@ -135,3 +135,29 @@ uv run gz adr audit-check <ADR-ID>  # Verify no evidence gaps remain
 | Manually editing `.gzkit/ledger.jsonl` | Ledger is append-only by policy | Use `gz` commands to emit events |
 | Treating reconciliation as optional maintenance | Drift accumulates and gates produce false results | Run reconciliation as part of lifecycle |
 | Blocking a gate check on a missing L3 artifact | L3 cannot fail-close gates (Rule 5) | Only L1 and L2 evidence can block gates |
+
+---
+
+## Canonical Status Vocabulary (ADR-0.0.16 addendum)
+
+**Source:** [ADR-0.0.16 — Frontmatter-Ledger Coherence Guard](../design/adr/foundation/ADR-0.0.16-frontmatter-ledger-coherence-guard/ADR-0.0.16-frontmatter-ledger-coherence-guard.md)
+
+**Canonical constant:** `gzkit.governance.status_vocab.STATUS_VOCAB_MAPPING`
+
+Frontmatter `status:` terms in circulation across gzkit (as of ADR-0.0.16 authoring) do not all match the ledger state-machine terms defined in ADR-0.0.9. This addendum records the canonical mapping that downstream surfaces — `gz gates` error output (OBPI-0.0.16-02) and the `frontmatter-ledger-coherence` chore (OBPI-0.0.16-03) — consume. There is exactly one canonical mapping; consumers import the constant and never inline duplicates.
+
+| Frontmatter term | Canonical ledger term | Rationale |
+|------------------|-----------------------|-----------|
+| Draft | pending | Authoring state; no ledger events yet |
+| Proposed | pending | ADR authored but not validated |
+| Pool | pending | Backlog item; no lifecycle events |
+| Promoted | pending | Recently promoted from pool; no events yet |
+| Pending | pending | Direct mirror |
+| Accepted | validated | Historical term for Gate-1 validated |
+| Validated | validated | Direct mirror |
+| Pending-Attestation | completed | Work done, awaiting human attestation |
+| Completed | completed | Direct mirror (may lag `attested_completed` post-ceremony) |
+| Superseded | abandoned | Replaced by later decision |
+| archived | abandoned | Retired; no longer active |
+
+Canonical targets are drawn from `OBPI_RUNTIME_STATES` (at `src/gzkit/ledger.py`) and ADR lifecycle states (`pending`/`validated`/`completed`/`abandoned`). Lookups are case-insensitive; consumers that encounter a frontmatter term not in this mapping MUST block with a clear error naming the unmapped term — they never silently skip.
