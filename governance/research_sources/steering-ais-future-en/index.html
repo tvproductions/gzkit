@@ -1,0 +1,5632 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Keep humans in the loop when AI writes your code">
+      
+      
+        <meta name="author" content="Jeffry">
+      
+      
+        <link rel="canonical" href="https://gzkit.org/governance/research_sources/steering-ais-future-en/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>Steering AI's future (EN) - gzkit</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="deep-orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#steering-ais-future-en" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="gzkit" class="md-header__button md-logo" aria-label="gzkit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            gzkit
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Steering AI's future (EN)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/tvproductions/gzkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tvproductions/gzkit
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="gzkit" class="md-nav__button md-logo" aria-label="gzkit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    gzkit
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/tvproductions/gzkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tvproductions/gzkit
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/runbook/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runbook
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/why/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Why gzkit?
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Examples
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/tutorial-first-project/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    First Project
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/tutorial-rhea-bootstrap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RHEA Bootstrap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_3" id="__nav_5_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/guide-prd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRD Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/guide-adr/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/guide-tasks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Task Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/guide-releasing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releasing Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_4" id="__nav_5_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Templates
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Templates
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/templates/prd-template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRD Template
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/templates/adr-template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Template
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/templates/task-template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Task Template
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Not Started"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_5" id="__nav_5_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Assessments
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Assessments
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/gzkit-readiness-assessment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GZKit Readiness Assessment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/go-live-gap-analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Go-Live Gap Analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/comparison-gzkit-speckit-bmad/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Framework Comparison
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concepts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Concepts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/concepts/gates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/concepts/lanes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lanes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/concepts/lifecycle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lifecycle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/concepts/obpis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OBPIs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/concepts/closeout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Closeout Ceremony
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/concepts/workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Daily Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/concepts/test-traceability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Traceability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Skills
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_2" id="__nav_7_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Setup
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project Setup
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-init/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-init
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-prd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-prd
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-constitute/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-constitute
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_3" id="__nav_7_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Planning
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Planning
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-adr-create/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-create
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-obpi-specify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-obpi-specify
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-adr-evaluate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-evaluate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-plan-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-plan-audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_4" id="__nav_7_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Execution
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Execution
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-obpi-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-obpi-pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-implement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-implement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-gates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-gates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-check/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-check
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-arb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-arb
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_5" id="__nav_7_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Status & Review
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Status & Review
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-adr-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-state/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-state
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-obpi-simplify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-obpi-simplify
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-adr-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_6" id="__nav_7_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Closeout & Audit
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Closeout & Audit
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-adr-closeout-ceremony/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-closeout-ceremony
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-adr-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-obpi-reconcile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-obpi-reconcile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-adr-emit-receipt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-emit-receipt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-validate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-validate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_7" id="__nav_7_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operations
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Operations
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/git-sync/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /git-sync
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-patch-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-patch-release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-session-handoff/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-session-handoff
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-chore-runner/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-chore-runner
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-obpi-lock/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-obpi-lock
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-cli-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-cli-audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Commands
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Commands
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/init/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz init
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/prd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz prd
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/constitute/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz constitute
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/specify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz specify
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/plan-create/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz plan create
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/plan-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz plan audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/implement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz implement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/gates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz gates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/state/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz state
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/adr-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/adr-promote/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr promote
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/adr-audit-check/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr audit-check
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/adr-covers-check/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr covers-check
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/adr-emit-receipt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr emit-receipt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/covers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz covers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/flags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz flags
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/flag-explain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz flag explain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/obpi-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz obpi status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/obpi-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz obpi pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/obpi-validate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz obpi validate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/obpi-reconcile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz obpi reconcile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/obpi-emit-receipt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz obpi emit-receipt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/closeout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz closeout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/patch-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz patch release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/git-sync/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz git-sync
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/attest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz attest
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/migrate-semver/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz migrate-semver
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/register-adrs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz register-adrs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/chores-list/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz chores list
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/chores-plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz chores plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/chores-run/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz chores run
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/chores-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz chores audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/skill-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz skill audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/parity-check/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz parity check
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/readiness-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz readiness audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/check-config-paths/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz check-config-paths
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/cli-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz cli audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/task-list/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz task list
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/task-start/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz task start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/task-complete/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz task complete
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/task-block/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz task block
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/task-escalate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz task escalate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/personas-list/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz personas list
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/agent-sync-control-surfaces/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz agent sync control-surfaces
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Governance (Canonical)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Governance (Canonical)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance_runbook/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Governance Runbook
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../state-doctrine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    State Doctrine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../storage-tiers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Storage Tiers Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipeline-marker-migration-path/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline Marker Migration Path
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../documentation-taxonomy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation Taxonomy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../feature-flags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature Flags
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../parity-intake-rubric/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Parity Intake Rubric
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/charter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Charter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/adr-lifecycle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Lifecycle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/obpi-transaction-contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OBPI Transaction Contract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/obpi-runtime-contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OBPI Runtime Contract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/obpi-decomposition-matrix/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OBPI Decomposition Matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/adr-obpi-ghi-audit-linkage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR/OBPI/GHI/Audit Linkage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/adr-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/audit-protocol/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Audit Protocol
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/gate5-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gate 5 Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/architectural-enforcement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architectural Enforcement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/gzkit-structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gzkit Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/governance-registry-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Governance Registry Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/agent-era-prompting-summary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent-Era Prompting Summary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/layered-trust/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Layered Trust
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/ledger-schema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ledger Schema
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/session-handoff-obligations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Session Handoff Obligations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/session-handoff-schema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Session Handoff Schema
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/handoff-chaining/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Handoff Chaining
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/handoff-validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Handoff Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/staleness-classification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Staleness Classification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/validation-receipts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validation Receipts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9_29" >
+        
+          
+          <label class="md-nav__link" for="__nav_9_29" id="__nav_9_29_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releases
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_29_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_29">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Releases
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/releases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/releases/major-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Major Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/releases/minor-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Minor Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/releases/patch-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Patch Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9_30" >
+        
+          
+          <label class="md-nav__link" for="__nav_9_30" id="__nav_9_30_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Audits
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_30_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_30">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Audits
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/audits/AUDIT-BRIEF-governance-harmonization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Harmonization Brief
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/audits/governance-harmonization-2026-01-11/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Harmonization Audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/audits/AUDIT-TEMPLATE-agent-readiness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Readiness Audit Template
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docs README
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/reference/charter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Charter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/reference/lineage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lineage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/reference/agent-input-disciplines/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Input Disciplines
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/reference/genesis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Genesis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/reference/genesis-transcript/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Genesis Transcript
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/reference/airlineops-exploration-verbatim/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AirlineOps Exploration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="steering-ais-future-en">Steering AI's future (EN)<a class="headerlink" href="#steering-ais-future-en" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>Source: https://www.oecd.org/content/dam/oecd/en/publications/reports/2025/02/steering-ai-s-future_70e4a856/5480ff0a-en.pdf
+Pages: 34
+Author: OECD</p>
+</blockquote>
+<hr />
+<p>OECD ARTIFICIAL INTELLIGENCE PAPERS February 2025 No. 32 STEERING AI’S FUTURE: STRATEGIES FOR ANTICIPATORY GOVERNANCE</p>
+<!-- Page 2 -->
+
+<p>2  STEERING AI'S FUTURE: STRATEGIES FOR ANTICIPATORY GOVERNANCE OECD ARTIFICIAL INTELLIGENCE PAPERS Fo reword This report emphasises the need for adaptable governance frameworks to navigate the rapid advancements and complexities of a rtificial i ntelligence (AI). Highlighting the potential and challenges of AI, the paper advocates for the inclusion of proactive str ategies that anticipate future developments and ensure responsible innovation. The report was written by Karine Perset, Luis Aranda and Bénédicte Rispal under the supervision of Audrey Plonk, Deputy Director of the OECD Science Technology and Innovation Di rectorate . The report also benefitted from the inputs of delegates for the OECD Working Party on Artificial Intelligence (AIGO ) , the Working Party on Bio - , Nano - , and Converging Technologies (BNCT) and the Committee for Scientific and Technology Policy (CS TP ) . Andreia Furtado , John Tarver and Sarah Ferguson provided editorial support. This report was developed as a contribution to the OECD’s 2023 - 2024 horizontal project on Going Digital , Phase IV , under the Technology Governance Pillar. This paper was appro ved and declassified by written procedure by the OECD Digital Policy Committee (DPC) on 13 December 2024 and prepared for publication by the OECD Secretariat . Note to Delegations: This document is also available on O.N.E Members &amp; Partners under the reference code: DSTI/DPC/AIGO(2024)10 /FINAL This document, as well as any data and map included herein, are without prejudice to the status of or sovereignty over any territory, to the delimitation of international frontiers and boundaries and to the name of any territory, city or area. Cover image: © Kjpargeter/Shutterstock.com © OECD 202 5 Attribution 4.0 International (CC BY 4.0) This work is made available under the Creative Commons Attribution 4.0 International licence. By using this work, you accept to be bound by the terms of this licence ( https://creativecommons.org/licenses/by/4.0/ ). Attribution – you must cite the work. Translations – you must cite the original work, identify changes to the original and add the following text: In the event of any discrepancy between the original work and the translation, only the text of original work should be considered valid. Adaptations – you must cite the original work and add the following text: This is an adaptation of an original work by the OECD. The opinions expressed and arguments employed in this adaptation should not be reported as representing the official views of the OECD or of its Member countries. Third - party material – the licence does not apply to third - party material in the work. If using such material, you are responsible for obtaining permission from the third party and for any claims of in fringement. You must not use the OECD logo, visual identity or cover image without express permission or suggest the OECD endorses your use of the work. Any dispute arising under this licence shall be settled by arbitration in accordance with the Permanent Court of Arbitration (PCA) Arbitration Rules 2012. The seat of arbitration shall be Paris (France). The number of arbitrators shall be one.</p>
+<!-- Page 3 -->
+
+<p>STEERING AI'S FUTURE: STRATEGIES FOR ANTICIPATORY GOVERNANCE  3 OECD ARTIFICIAL INTELLIGENCE PAPERS Acknowledgements This report was developed as a contribution to the OECD’s 2023 - 2024 horizontal project on Going Di gital , Phase IV , under the Technology Governance Pillar, in collaboration with the Committee for Scientific and Technological Policy (CSTP), the Regulatory Policy Committee (RPC), the Investment Committee (INV), the Digital Policy Committee (DPC) and the O ECD Strategic Foresight Unit. This report was presented at the Working Party on Bio - , Nano - , and Converging Technologies (BNCT) and the Committee for Scientific and Technology Policy (CSTP ) and circulated to the AI Governance Working Party (AIGO), the Dig ital Policy Committee (DPC), the Regulatory Policy Committee (RPC), the Investment Committee (INV) and the Working Party on Responsible Business Conduct (WPRBC) . As such, it benefited from feedback and suggestions from numerous country delegates and experts. The authors thank in particular the US Delegation to DPC for their invaluable insights. The authors would also like to thank David Winickoff and Laura Kreiling for their guidance, leadership and effective co - ordination of this horizontal project . Additionally, Rashad Abelson and Jamie Berryhill provided substantial inputs for the drafting of sections 4 and 2 , respectively. Finally, the authors thank all those who have contributed to the report throughout its development. This includes Jerry Sheehan , Audrey Plonk , Hanna - Mari Kilpelainen, Alessandra Colecchia, David Winickoff, Laura Kreiling, Jamie Berryhill, Douglas K.R. Robinson, Gallia Daor and Julia Carro (Directorate for Science, Technology and Innovation) ; Rebecca King (Public Governance Directo rate) ; Barbara Bijelic and Rashad Abelson ( Directorate for Financial and Enterprise Affairs ) ; and Rafal K ierzenkowski, Dexter Docherty and Hamish Hobbs (OECD Strategic Foresight Unit) for providing valuable comments and guidance. The authors would like to thank Andreia Furtado , John Tarver and Sarah Ferguson for editorial support. The overall quality of this report benefited significantly from their engagement.</p>
+<!-- Page 4 -->
+
+<p>4  STEERING AI'S FUTURE: STRATEGIES FOR ANTICIPATORY GOVERNANCE OECD ARTIFICIAL INTELLIGENCE PAPERS Table of contents Foreword 2 Acknowledgements 3 Abstract 6 Résumé 7 Executive summary 8 Introduction 10 1 Guiding values for AI governance 11 Identifying shared values for AI governance 11 Enabling deliberative AI governance processes 12 Embedding values throughout the AI innovation proc ess 13 2 Strategic intelligence approaches to AI governance 14 Sentinel and real - time monitoring approaches for AI governance 14 Strategic foresight approaches for AI go vernance 16 3 Stakeholder engagement for AI governance 19 Informative engagement for AI governance 19 Consultative engagement for AI governance 19 Collaborative engagement for AI governance 20 AI as tool to boost engagement in AI governance 21 4 Agile governance for AI 22 Controlled environments and regulatory sandboxes 22 Standards and by - design approaches for AI governance 24 A responsible business conduct (RBC) approach to AI governance 26</p>
+<!-- Page 5 -->
+
+<p>STEERING AI'S FUTURE: STRATEGIES FOR ANTICIPATORY GOVERNANCE  5 OECD ARTIFICIAL INTELLIGENCE PAPERS 5 International co - operation for AI governance 28 Conclusion 30 References 31 FIGURES Figure 1. Five elements of emerging technology governance 10 Figure 1.1. The OECD AI Principles 12 Figure 1.2. The Catalogue of Tools and Metrics for Trustworthy AI 13 Figure 2.1. AI Incidents Monitor (AIM) 15 Figure 2.2. Weak signals and future AI threats identified by the AI Incidents Monitor 15 Figure 4.1. High - level AI risk - management interoperability framework 25 TABLES Table 4.1. Benefits and challenges of regulatory sandboxes 23 BOXES Box 2.1. The OECD.AI expert group on AI incidents: Defining, monitoring and reporting AI incidents 16 Box 2.2. What is strategic foresight? 17 Box 2.3. Illustrative potential future AI benefits, risks and solutions prioritised by the OECD.AI Expert Group on AI Futures 18 Box 3.1. OECD Network of Experts on AI (ONE AI) 21 Box 4.1. Sample regulatory sandboxes for AI 24 Box 4.2. The RBC approach in practice: leveraging the role of finance in AI 27</p>
+<!-- Page 6 -->
+
+<p>6  STEERING AI'S FUTURE: STRATEGIES FOR ANTICIPATORY GOVERNANCE OECD ARTIFICIAL INTELLIGENCE PAPERS Abstract This report emphasises the ne cessity for adaptable governance frameworks to manage the rapid developments and complexities of Artificial Intelligence (AI). By h ighlighting the potential and challenges posed by AI, the paper advocates for the inc orporation of proactive strategies that anticipate future advancements and ensure responsible innovation. This repor t maps existing OECD and related initiatives in AI to illustrate how the five elements of anticipatory governance of the OECD Framework for Anticipatory Governance of Emerging Technologies apply to AI governance. The learnings and insights in this domain c an help guide the governance of other emerging technologies.</p>
+<!-- Page 7 -->
+
+<p>STEERING AI'S FUTURE: STRATEGIES FOR ANTICIPATORY GOVERNANCE  7 OECD ARTIFICIAL INTELLIGENCE PAPERS Résumé Ce rapport soulève la nécessité de disposer de cadres de gouvernance adaptables pour faire face aux progrès rapides et à la complexité de l'intelligence artificielle (IA). Soulignant le potentiel et les défis de l'IA, le document met en avant l’importance d’ inclu re de s stratégies proactives qui anticipent les développements futurs et garantissent une innovation responsable. Ce rapport présente d es initiatives existantes de l'OCDE et des initiatives connexes dans le domaine de l'IA afin d'illustrer comment les cinq éléme nts du Cadre relatif à la gouvernance anticipative des technologies émergentes s'appliquent à la gouvernance de l'IA. Les enseignements tirés dans ce domaine peuvent aider à guider la gouvernance d'autres technologies émergentes.</p>
+<!-- Page 8 -->
+
+<p>8  STEERING AI'S FUTURE: STRATEGIES FOR ANTICIPATORY GOVERNANCE OECD ARTIFICIAL INTELLIGENCE PAPERS Executive summary The sw ift advancement of Artificial Intelligence (AI) emphasises the importance of in tegrat ing anticipat ory and future - oriented approaches as components of AI governance. Artificial intelligence (AI) technologies present significant opportunities but also challenges. Nevertheless , the complexity and rapid evolution of AI make anticipating future opportunities and challenges difficult . This, i n turn, poses challeng es for the design of governance mechanisms and tools that are both effe ctive and durable . In this context , a gile and proactive governance approaches are necessary . Governments should seek and leverage knowledge from relevant stakeholders to identify, adjust , and de velop appropriate regulatory approaches . The OECD Framework for Anticipatory Governance of Emerging Technologies supports governments and societies to plan for and manage the challenges stemming from technologies . B y leveraging the OECD's existing work and legal instruments , including the OECD AI Pri nciples and the framework for the classification of AI systems, the OECD Framework for Anticipatory Governance of Emerging Technologies e mpowers governments, innovators, and societies to foresee governance challenges and enhance their ability to shap e innovation , both by design and post - deployment . It offers five key elements for governing emerging technologies and AI: guiding values, strategic intelligence, stakeholder engagement, agile regulatio n, and international co - operation. Guiding values should be intentionally embedded in to the AI innovation process . Policymakers and other actors should identify foundational values to support responsible innovation , as exemplified by the OECD AI Principles . They should establish robust processes and involving experts from all stakeholder groups , including those at the forefront of AI innovation , to deliberate on proposed values and on appl ication . They should also integrat e values in to every phase of the innovation cycle by utilising tools such as th ose found in the OECD.AI Catalogue of Tools and Metrics for Trustworthy AI . Collecting s trategic intelligence is essential for technologies with significant societal impacts but uncertain timeline s , pathways , and real - world applications . Sentinel and real - time monitoring tools and methods , like the OECD AI Incidents Monitor (AIM), are key to anticipat ing and manag ing emerging trends, risks, and opportunities . They can enable the identif ication of weak signals and possible future threats . Tools for technology appraisal, such as technology impact assessments and strategic foresight, should complement these approaches. F uture -</p>
+<!-- Page 9 -->
+
+<p>STEERING AI'S FUTURE: STRATEGIES FOR ANTICIPATORY GOVERNANCE  9 OECD ARTIFICIAL INTELLIGENCE PAPERS focused activities , like the OECD .AI E xpert G roup on AI F utures , can help the global AI community understand and proactively shap e AI’s possible medium and long - term impacts . Stakeholder engagement is essential for the success of AI governance initiatives . Based on the level of involvement, stakeholder engagement c an be categorised into three primary activities: informative engagement, encompassing blog s and social media updates; consultative engagement, which includes public consultations and open discussions; and collaborative engagement , exemplified by the Global Partnership on AI (GPAI) and the OECD Working Party on AI Governance (AIGO) . AI governance must remain agile to keep up with the r apid advancements in AI technology. Adaptive approaches can help ensure that regulatory frameworks effectively balance innovation with ethical and safety considerations. Strategies that promote forward - loo king and agile governance of AI systems include , a mong st others, u tilising controlled environments like regulatory sandboxes for more formal regulation , enabling interoperability through standards and by - design approaches , and Responsible Business Conduct (RBC) guidelines for AI. The latter underscore s th e role of businesses in ensuring due diligence across the AI value chain. A I governance is a global issue that requires international c o - o peration t o be effective . International AI governance remains a dynamic field . Discussions are ongoing to address the rapid pace of AI development and the diverse challenges and opportunities it presents. A range of initiatives is emerging in this regard, with efforts spanning global, regional, and multilateral leve ls . These initiati ves , led by various stakeholders like international organisation s and national authorities, include promoting interoperability and facilitating shared good practices in AI governance . Experiences in AI governance may provide valuable insights for other eme rging tech nologies. Governments have implemented diverse strategies and regulations , including forward - looking approaches and policies , to govern AI . While many of these efforts are still nascent, several lessons and good practices are starting to emerge. The se insights could prove valuable to the governance of other emerging technologies, such as quantum and biotechnologies. Despite p rogress , steer ing the future of AI through anticipatory governance requires additional efforts. Th is paper draws pr imarily on the OECD ’s AI governance experiences , highlighting the critical role of forward - looking approaches in effectively manag ing and guid ing AI developments. While anticipatory governance efforts at the OECD and among key stakeholders ha ve made progre ss in shaping the future of AI, much more remains to be done to fully address its challenges and harness its benefits. Innovative approaches from other fields and emerging technologies could offer valuable insights to enhance AI governance.</p>
+<!-- Page 10 -->
+
+<p>10  STEERING AI'S FUTURE: STRATEGIES FOR ANTICIPATORY GOVERNANCE OECD ARTIFICIAL INTELLIGENCE PAPERS Introduction Artificial i ntelligence (AI) systems are increasingly shaping daily li f e , offering opportunities for economic growth, and tackling social, economic and environmental challenges . Yet , the se systems also present growing risks , such as enabling malicious cyber activity, spreading disinformation, invasive surveillance and privacy violations (OECD, 2024 [1] ) . As AI continues to evolve, governing these developments becomes even more crucial. AI governance addresses the need to promote the benefits of AI systems while preventing and mitigating the ir risks . However, t he r apid pace of AI development s makes design ing governance mechanisms that can stand the test of time challenging . To help addres s this challenge, it is crucial to include anticipation and forward - looking approaches in AI governance. The OECD Framework for Anticipatory Governance of Emerging Technologies equips governments, other innovation actors and societies to anticipate and ge t ahead of governance challenges and build longer - term capacities to shape innovation more effectively. This framework consists of five interdependent elements and associated tools for agile and anticipatory governance of emerging technologies: (1) guiding values, (2) strategic intelligence, (3) stakeholder engagement, (4) agile regulation and (5) international co - operation ( Figure 1 ). A gile approaches, including controlled , experimental environments and standards, can promote adaptive regulation and international co - operation. This report draws from existing OECD and related initiatives in AI to examine how the five elements of anticipatory governance figure in the AI policy landscape . Figure 1 . Five elements of emerging technology governance Source: OECD (2024 [2] ) , “Framework for Anticipatory Governance of Emerging Technolog ies”, OECD Science, Technology and Industry Policy Papers, No. 165, OECD Publishing, Paris, https://doi.org/10.1787/0248ead5 - en .</p>
+<!-- Page 11 -->
+
+<p>STEERING AI'S FUTURE: STRATEGIES FOR ANTICIPATORY GOVERNANCE  11 OECD ARTIFICIAL INTELLIGENCE PAPERS The first element of the OECD Framework for Anticipatory Governance of Emerging Technologies emphasises the importance of embedding guiding values in the innovation process (OECD, 2024 [2] ) . This includes identifying a set of foundational values and technology - specific values to root responsible innovation; building robust processes and engaging fora in which to discuss these values and how they should be applied in particular contexts; and integrating values through different means in different phas es of the innovation cycle. Identifying shared values for AI governance Effective AI governance requires guiding values and principles to ensure the trustworthy development and use of AI systems. The OECD Recommendation on Artificial Intelligence, also kno w n as the “ OECD AI Principles ”, was initially adopted in 2019 as the first intergovernmental standard on AI. T he Principles were updated in May 2024 to consider new technological and policy developments, ensuring they remain robust and fit for purpose (Čorba et al., 2024 [3] ) . The OECD AI Principles aim to foster innovative and trustworthy AI which uphold s human rights and democratic values . The y guide AI actors in their efforts to develop trustworthy AI and provide policymakers with recommendations for effective AI policies. As such, t hey set out a framework containing ten principles – divided into five values - based principles and five recommendations to governments – to promote and implement trustworthy AI ( Fig ure 1 . 1 ) . The Principles include both foundational (e.g., respect for human rights and privacy) and AI - spec i fic values (e.g., transparency and explainability) . 1 G uiding values for AI governance</p>
+<!-- Page 12 -->
+
+<p>12  STEERING AI'S FUTURE: STRATEGIES FOR ANTICIPATORY GOVERNANCE OECD ARTIFICIAL INTELLIGENCE PAPERS Fig ure 1 . 1 . The OECD AI Principles Source: OECD (2024), OECD AI Principles, https://oecd.ai/ai - principles . Since their adoption in 2019, these Principles have become a global reference point for trustworthy AI. Several countries around the world have leveraged the Principles to design their governance frameworks . Additionally, c ountries use the OECD AI Principles and related tools to shape policies and create AI risk frameworks, building a foundation for global interoperability between jurisdictions. Today, the European Union, the Council of Europe, the United States, the United Nations and other jurisdictions use the OECD’s definition of an AI system and lifecyc le in their legislative and regulatory frameworks and guidance. The principles, definition and lifecycle are all part of the OECD Recommendation on Artificial Intelligence (OECD, 2023 [4] ) . Enabling deliberative AI gove rnance processes Embedding values into governance processes involves creating for a at various levels of governance and across diverse stakeholder communities to share good practices and gather input for political and technological decision - making. An examp le might be to support technology observatories like the OECD . AI Policy Observatory ( OECD.AI ) . OECD.AI is a forum where countries and stakeholder groups join forces to shape trustworthy AI. Its tools, data and other AI p olicy resources are freely accessible to all actors and stakeholder groups in developed and developing countries. As a global hub for AI policy , OECD.AI serves as a one - stop - shop that brings stakeholders together to inform policy responses on emerging topi cs, from AI risk assessments to tools for implementing trustworthy AI and measuring national AI comput e capacities. OECD.AI help s governments worldwide to put guiding values for AI governance – especially the OECD AI Principles – into practice.</p>
+<!-- Page 13 -->
+
+<p>STEERING AI'S FUTURE: STRATEGIES FOR ANTICIPATORY GOVERNANCE  13 OECD ARTIFICIAL INTELLIGENCE PAPERS Embedding values throughout the AI innovation process AI a ctors should strive to integrate values throughout the AI innovation process and the lifecycle of an AI system , not merely as an aspirational initial statement. For instance, e xplain ability, transparency , privacy , avoiding bias and minimising disinformation are among the most critical challenges for AI practitioners, and can be particularly hard to attain for advanced AI systems. While many tools exist today to address these challenge s, it is not always easy to find them and even more difficult to know which ones are the most effective. The Catalogue of Tools &amp; Metrics for Trustworthy AI aims to help solve this issue ( Figure 1 . 2 ) . It provides the much - needed space where AI practitioners from all over the world can share and compare tools and build upon each other’s efforts to create global best practices and speed up the process of implementing the OECD AI Principles throughout the AI system lifecycle . Additionally, the catalogue allows users to submit their experiences as use cases, where they can give guidance, insights and a general appreciation of the tool s. Figure 1 . 2 . The Catalogue of Tools and Metrics for Trustworthy AI A living repository of tools and metrics to help AI actors develop and use trustworthy A I . Source: OECD .AI (2025), Catalogue of To ols &amp; Metrics for Trustworthy AI, www.oecd.ai/catalogue .</p>
+<!-- Page 14 -->
+
+<p>14  STEERING AI'S FUTURE: STRATEGIES FOR ANTICIPATORY GOVERNANCE OECD ARTIFICIAL INTELLIGENCE PAPERS Strategic intelligence involves collecting, processing, analysing, disseminating and utilising information to support long - term decision - making and planning (Kuosa, 2011 [5] ) . Strategic intelligence enables forward - looking analysis of emerging technologies like AI, including potential future developments, economic impacts, ethical and societal considerations, and potential benefits and risks. While it is challenging to reach consensus on future techn ological risks and their likelihood, strategic intelligence mechanisms are crucial for technologies with potentially high societal impacts but uncertain timelines and pathway s (OECD, 2024 [2] ) . This section illustrates strategic intelligence mechanisms informing AI governance today, including sentinel and real - time monitoring approaches and strategic foresight. Sentinel and real - time monitoring approaches for AI governance S entinel and real - time monitoring are two key mechanisms in technology governance approaches to anticipate and manage emerging trends, risks, and opportunities. Sentinel monitoring involves systematically scanning the environment (e.g., news, social media, research articles) for weak signa ls, trends, and disruptions that could significantly impact economies or societies. Unlike sentinel monitoring, which focuses on identifying emerging trends and weak signals, real - time monitoring emphasi s es the continuous tracking and analysis of ongoing e vents and environment changes . As AI use grows, so do occurrences of AI incidents and hazards. A n example of both a sentinel and real - time monitoring approach to AI governance is the OECD AI Incidents Monitor (AIM). Using machine learning models, t he AIM identifies and classifies AI incidents and hazards reported in reputable international media globally. It helps policymakers, AI practitioners, and all stakeholders worldwide gain valuable insights into AI risks and h arms ( Figure 2 . 1 ). Over time, and with its continuous enhancement , the AIM will help to show patterns and establish a collective understanding of AI incidents and their multifaceted nature and serve as an important tool for trustworthy AI . 2 Strategic intelligence approaches to AI governance</p>
+<!-- Page 15 -->
+
+<p>STEERING AI'S FUTURE: STRATEGIES FOR ANTICIPATORY GOVERNANCE  15 OECD ARTIFICIAL INTELLIGENCE PAPERS Figure 2 . 1 . AI Incidents Monitor (AIM) Tracking of AI incidents in real - time to inform AI governance discussions. Note: Methodology and disclosures available at https://oecd.ai/incidents - methodology . Source: OECD.AI (2025), OECD AI Incidents Monitor (AIM), www.oecd.ai/incidents . Besides providing a mechanism to monitor the risks and harms of AI systems in real - time, t he AIM also enables strategic intelligence insights by helping to identify weak signals and possibl e future threats ( Figure 2 . 2 ). Figure 2 . 2 . Weak signals and f uture AI threats identified by the AI I ncidents M onitor Note: The AIM methodology and disclosures are available at https://oecd.ai/incidents - methodology . Source: OECD.AI (2024 [6] ) , OECD AI Incidents Monitor ( AIM) , https://oecd.ai/en/incidents . The AIM was created to serve as a resource to track and comprehend the evolution of AI - related challenges. H owever, it currently rel ies solely on incidents reported by the me dia, which most likely</p>
+<!-- Page 16 -->
+
+<p>16  STEERING AI'S FUTURE: STRATEGIES FOR ANTICIPATORY GOVERNANCE OECD ARTIFICIAL INTELLIGENCE PAPERS result s in incomplete and possibly non - representative information. An open submission and review process allowing stakeholders to submi t new reports or contribute to existing one s is being developed t o overcome this limitation and promote transparency, accountability and participation . Also, it is planned that incident and hazard data from news articles be complemented with court rulings and decisions from public oversight bodies wherever available. To ensure trustwor thy AI, relevant AI actors and stakeholders need to handle risks in a coordinated and coherent fashion . This involves having a shared understanding of AI incidents. Reporting and monitoring of incidents should be interoperable worldwide, allowing AI practi tioners and policymakers to learn from global experiences. T o achieve this interoperability , t he OECD has defined AI incidents and hazards and is developing a common framework for reporting them ( Box 2 . 1 ) . While implementing sentinel real - time monitoring approaches is expected to benefit AI governance, it can also pose challenges , including e nsuring the quality and accuracy of the collected data , extrapolating weak signals in the present into potential future pat hways, and integrating these systems into existing AI governance frameworks . Other tools for technology appraisal, such as technology assessments and strategic foresight should thus complement these approaches. Strategic f oresight approache s for AI governance T he long - term impacts of rapidly advancing AI technologies are still largely unknown and intensely debated. Experts highlight potential risks as well as significant benefits from AI . Future - focused activities are essential to understand AI’s possible long - term impacts and to shap e them proactively . The difficulty of identifying and agreeing on future opportunities and challenges of AI is comp ounded by its complexity and rapid evol ution . Various approaches drawn from a range of disciplines are used to assess AI progress and anticipate future impacts. These approaches and methodologies often complement each other. By combining diverse perspectives and developing a nuanced understanding of various assumptions and uncertainties , str ategic foresight can help navigate these challenges ( Box 2 . 2 ) . Box 2 . 1 . The OECD.AI expert group on AI incidents : Defining, monitoring and reporting AI incidents The OECD.AI expert group on AI incidents operates through two streams of work. The first is focused on defining AI incidents and hazards and developing a common reporting framework. The second leverages the theoretical work on definitions and frameworks to monitor AI incidents and hazards via the AI incidents monitor (AIM), launched at the Paris Peace Forum in November 2023. Combined, these two streams of work establish an evidence - based monitoring system of AI incidents and hazards, enabling governments to prevent, address and learn from these events. Source: OECD.AI (2024 [6] ) , OECD (2023 [7] ; 2024 [8] ) and OECD.AI (2024 [9] )</p>
+<!-- Page 17 -->
+
+<p>STEERING AI'S FUTURE: STRATEGIES FOR ANTICIPATORY GOVERNANCE  17 OECD ARTIFICIAL INTELLIGENCE PAPERS 1. S trategic foresight approaches used with regards to AI include: • Expert surveys and consultations : T his involves t apping into the “wisdom of crowds” to generate forecasts in the form of timelines for potential developments of AI and accompanying milestones (Tetlock and Scoblic, 2020 [10] ) . Such approaches are particularly useful for identifying areas of consensus and disagreement among experts and highlighting areas of uncertainty for further research. • Scenario planning and road mapping : This involves c reating and exploring hypothetical futu re narratives based on different assumptions and variables. This process help s identify potential risks and opportunities by capturing uncertainties, interrelationships and possible time frames that may influence AI development. For example, alternative sc enarios can show how AI might create opportunities or challenges for various stakeholders (Ringland et al., 2020 [11] ) . R oad mapping offers a framework to align strategies and actions required to achieve specific AI goals or milestones over time (Ricard, 2011 [12] ) . • Trends and data analysis : This i nvolves c ollecti n g , processing and interpret ing data on the current state of AI to identify patterns, correlations, insights and opportunities . These findings can be extrapolated to predict future landscape s of AI (Eckersley and Nasser, 2019 [13] ; Constantin, 2019 [14] ; Martínez - Plumed et al., 2019 [15] ) . • Horizon scanning : This involves a broad look at emerging developments that could alter expected trajectories in AI, such as weak or early signals, trends in adjacent domains and wild cards (i.e., low - probability, high - impact event s that can significantly alter the course of future developments ) (OECD, 2017 [16] ) . • Other methodologies include l iterature reviews to provide a comprehensive overview of existing knowledge and identify gaps or controve rsies (Snyder, 2019 [17] ) ; p ublic engagement through consultations and poll s to gauge public awareness, trust and expectations regarding Box 2 . 2 . What is strategic foresight? Strategic foresight is a structured and systematic way of using ideas about the future to anticipate and better prepare for change. It involves exploring different plausible futures that could arise, and the opportunities and challenges they might present. Strategic foresight achieves this by uncovering implicit assumptions, challenging dominant perspectives, and engaging with surprising and significant disruptions that might otherwise be dismissed or ignored. It employs a range of methodologies that inclu de scanning the horizon for emerging changes, analysing weak signals and megatrends, and developing multiple scenarios, to reveal and discuss ideas about the future . Foresight can support government policymaking in the following ways: • b etter anticipation of changes that could emerge in the future ; • p olicy innovation to reveal options for experimentation through innovative approaches ; and • f uture - proofing to stress - test existing or proposed strategies and policies . Strategic foresight does not attempt to offer definitive answers about what society’s future will hold. It understands the future as an emerging entity that i s only partially visible in the pres ent, not a predetermined destiny that can be fully known in advance. There are no hard facts about the future and the evidence base is always incomplete. The objective is not to ‘get the future right’, but to broaden and reframe the range of plausible deve lopments to consider. Source: OECD (2025), Strateg ic Foresight, www.oecd.org/strategic - foresight .</p>
+<!-- Page 18 -->
+
+<p>18  STEERING AI'S FUTURE: STRATEGIES FOR ANTICIPATORY GOVERNANCE OECD ARTIFICIAL INTELLIGENCE PAPERS AI ; empirical evidence to validate and enhance theoretical models and scenarios ; and philosophical analysis to help interpret current AI advancements (Honorof, 2023 [18] ) . The OECD .AI E xpert G roup on AI F utures us es foresight methods to spot potential AI trajectories and su ggest actions Since July 2023, t he OECD.AI expert group on AI f utures has been using foresight to help governments make more effective , forward - looking polic ies on AI (OECD.AI, 2024 [19] ) . For example , the group conducted a thorough literature review, held discussions among expert s, and engaged the public to identif y 21 potential future AI benefits, 38 potential future AI risks, and 66 potential policy solutions and AI governance approaches (OECD.AI, 2024 [20] ) . T he se were prioritised to focus on key government action s ( Box 2 . 3 ) . Box 2 . 3 . Illustrative potential future AI benefits, risks and solutions prioritised by the OECD.AI E xpert G roup on AI F utures P otential future AI benefits : A ccelerat ed scientific progress; better economic growth , productivity gains and living standards ; reduced inequality and poverty; better approaches to urgent and complex issues, including mitigati ng climate change and advancing other Sustainable Development Goals (SDGs) ; better decision - making, sense - making and forecasting; improved information production and distribution; better healthcare and education services ; improved job quality; empowered c itizens, civil soc iety and social partners ; improv ed institutional transparency and governance , instigating monitoring and evaluation . P otential future AI risks : Facilitation of increasingly sophisticated malicious cyber activity ; m anipulation, disinformation, fraud and resulting harms to democra cy and social cohesion ; r ace s to develop and deploy AI systems cause harms due to a lack of sufficient investment in AI safety and trustworthiness ; unexpected harms result from inadequate met hods to align AI system objectives with human stakeholders’ preferences and values; power is concentrat ed in a small number of companies or countries; minor to serious AI incidents and disasters occur in critical systems ; invasive s urveillance and privacy infringements; governance mechanisms and institutions unable to keep up with rapid AI evolutions ; AI systems l ack ing sufficient explainability and interpretability erode accountability ; e xacerbated inequality or poverty within or between countries. Potential future AI policy solutions : Establish clearer rules, including on liability, for AI harms; consider approaches to restrict or prevent certain “red line” AI uses; require or promote the disclosure of key information about some types of AI systems; ensure risk management procedures are followed throughout the lifecycle of AI systems that may pose a high risk; mitigate competitive race dynamics in AI development and deployment that could limit fair competition and result in harms; invest in r esearch on AI safety and trustworthiness approaches, including AI alignment, capability evaluations, interpretability, explainability and transparency; facilitate educational, retraining and reskilling opportunities to help address labour market disruption s and the growing need for AI skills; empower stakeholders and society to help build trust and reinforce democracy; mitigate excessive power concentration; targeted actions to advance specific future AI benefits. Source: OECD (2024 [1] ) , “Assessing potential future artificial intelligence risks, benefits and policy imperatives”, OECD Artificial Intelligence Papers, No. 27, OECD Publishing, Paris, https://doi.org/10.1 787/3f4e3dfb - en .</p>
+<!-- Page 19 -->
+
+<p>STEERING AI'S FUTURE: STRATEGIES FOR ANTICIPATORY GOVERNANCE  19 OECD ARTIFICIAL INTELLIGENCE PAPERS Engaging stakeholders and society in policymaking is essential, as it brings diverse perspectives and enriches understanding . Involving stakeholders, including citizens, in public decision making, helps anticipate public concerns , improves communication and is key to enhancing public trust in government institutions (OECD, 2020 [21] ) . However, public consultation s should be meaningful , only involving citizens when there is room for influence in decision - making , genuine commitment from leadership to consider inputs , adequate resources , and sufficient time within the decision - making cycle to collect and incorporate inputs (OECD, 2022 [22] ) . In emerging technology policy, soliciting input early in technology development through "anticipatory engagement" is crucial to en able equity and inclusion. Includin g stakeholders ’ involvement in processes from the outset , from agenda - setting to governance design, helps to align science and technology with societal needs and goals (OECD, 2024 [2] ) . Stakeholder engagement is key to the success of AI governance initiatives. It involves interacting with individuals or groups who have an interest or stake in the AI ecosystem – be it suppliers of AI knowledge or resources, actors in the AI system lifecycl e, users and affected stakeholders (OECD, 2023 [23] ) . Based on the degree of involvement, s takeholder engagement could be divide d it into three main types : informative, consultative and collaborative engagement (OECD, 2017 [24] ) . Informative engagement for AI governance Informative e ngagemen t provide s stakeholders with information to understand a project or initiative. Examples include websites, newsletters, webinars and reports. One of t he primary goal s of informative engagement is keeping stakeholders up to date with accurate and timely information (OECD, 2017 [24] ) . As a global hub for AI policy, one of the essential missions of t he OECD . AI Policy Ob servatory is to keep stakeholders informed on AI developments in a timely manner. It achieves this through various means: • Data and evidence: OECD.AI ’s live data section utilises alternative data sources to display timely trends in AI development and usage . • Blog : Weekly blog posts by experts on the AI Wonk provide insights into the latest trends and developments in AI. • Social media : Leveraging social media, OECD.AI con ducts outreach and effectively engag es the wider AI community, notably through its LinkedIn community of over 30 000 members . Consultative engagement for AI governance Consultative engagement is a collaborative approach that involves actively seeking input, feedback, and perspectives from stakeholders. The goal is to foster trust, inclusivity, and effective decision - making by considering and acting on the insights and concerns of relevant part ies. Consultative engagement is 3 Stakeholder engagement for AI governance</p>
+<!-- Page 20 -->
+
+<p>20  STEERING AI'S FUTURE: STRATEGIES FOR ANTICIPATORY GOVERNANCE OECD ARTIFICIAL INTELLIGENCE PAPERS more interactive than informative engagement , yet the final decision - making power usually resides with the organi s ation conducting the consultation (OECD, 2017 [24] ) . Part of the OECD’s mission to raise awareness around implementing the OECD AI Principles is to ensure that open dialogue shapes trustworthy AI. Some examples of consultative engagement in AI governance include: • Public consultations : Several public consultations have been conducted to i nform OECD.AI work on priority AI governance topics, including the classification of AI systems according to their potential impact on individuals, society and the planet (OECD, 2022 [25] ) and the measurement of national AI compute capacity (OECD, 2023 [26] ) . • Calls for submissions or volunteers : OECD.AI leverages calls for submissions or volunteers to consult and gather inputs from stakeholders on specific projects or initiatives, such as to develop and grow the Catalogue of Tools and Metrics for Trustw orthy AI . • Open discussions : Forums or platforms where stakeholders can openly share their perspecti v es, exchange ideas and collaborate have been leveraged to inform AI governance discussions, including on potential AI futures . Collaborative engagement for AI governance Collaborative engagement is a participatory approach where stakeholders work together in partnership to address common challenges, share resources, and co - create solutions, empha si s ing co - operation and shared decision - making (OECD, 2017 [24] ) . T hree main initiatives exist at the OECD to foster collaborative engagement for AI governance: • Global Partnership on AI : The OECD and the Global Partnership on Artificial Intelligence (GPAI) join ed forces in July 2024 to advance an ambitious agenda for implemen ting human - centric, safe, secure and trustworthy AI embodied in the principles of the OECD Recommendation on AI. GPAI capitalise s on the extensive, multi - disciplinary and multi - stakeholder expertise of an AI expert community, pooling the networks and group s currently contributing to the GPAI and OECD. • OECD Working Party on AI Governance (AIGO) : The OECD’s Digital Policy Committee (DPC) has a Working Party on Artificial Intelligence Governance (AIGO) to oversee its work on AI policy. Working party members ar e nominated by OECD member governments and are primarily national officials responsible for AI policies in their re spective countries. Representatives from all stakeholder groups also participate in AIGO. • OECD Network of Experts on AI (ONE AI) : The network of experts works with AIGO as an informal group of AI experts from government, business, academia , trade unions and civil society. The network provides AI - specific policy advice for the OECD’s work on AI policy and contributes to the OECD .AI Policy Observator y ( Box 3 . 1 ) .</p>
+<!-- Page 21 -->
+
+<p>STEERING AI'S FUTURE: STRATEGIES FOR ANTICIPATORY GOVERNANCE  21 OECD ARTIFICIAL INTELLIGENCE PAPERS Box 3 . 1 . OECD Network of Experts on AI (ONE AI) The n etwork – now expanded to include GPAI experts – provides the OECD with an “on the ground” perspective on AI . It is a forum where the OECD collaborates and share s information with other international initiatives , organisations and experts on pressing AI governance issues . The network has s even e xpert groups on : AI, data and privacy ; building an AI index ; AI risk and accountability ; AI futures ; AI incidents ; compute and climate ; and AI and health. It provides a space for the international AI community to have in - depth discussions about shared AI policy opportunities and challenges. The network brings together over 400 AI experts from many sectors and backgrounds , including: • AI policy experts from national governments, international organisations, civil society, trade unions, technical organisations and the private sector. Network members from national governments are o ften AI policy experts in charge of coordinating, designing and implementing national AI strategies. • AI technical experts , such as professors, researchers, computer scientists, and engineers . • Experts from social sciences and humanities , such as experts in AI - related legal and ethical issues. ONE AI and the GPAI expert networks are in the process of being merged to combine the ir respective expertise and capabilities and expand their collective reach. Source: https://oecd.ai/network - of - experts AI as tool to boost engagement in AI governance AI systems can serve as powerful tools for engagement, including for AI governance. Governments increasingly use AI applica tions, as enablers of larger and more meaningful citizen participation into policymaking. It can serve as a sense - maker (processing consultation data), content moderator or facilitator, virtual assistant or chatbot, or translator. Such tools may enable a l arger and more meaningful citizen participation into policymaking (OECD, 2024 [27] ) . AI - based tools like the open - source platform Polis have been used for participatory dialogue to inf orm referendums, public policy development and increase youth outreach, among others. Such tools have been adopted across OECD member countries, including in Colombia , where the virtual agent Chatico serves as an official channel for citizen participation and communication. This demonstrates how AI systems can inform policy by enhanc ing communication and engagement with the broader public. Cha llenges remain in using AI systems for citizen participation , particularly in ensuring the quality of AI - generated information and addressing access barriers for non - technologically savvy users (OECD, 2024 [27] ) .</p>
+<!-- Page 22 -->
+
+<p>22  STEERING AI'S FUTURE: STRATEGIES FOR ANTICIPATORY GOVERNANCE OECD ARTIFICIAL INTELLIGENCE PAPERS AI governance needs to be agile and anticipatory to keep pace with the rapid advancements and evolving nature of AI technology. This adaptability ensures that regula tory frameworks can effectively enable innovation while addressing ethical and safety considerations . Agile governance helps improve rules and regulations by promot ing more flexible and adaptable regulatory approaches . For instance, creating standards and guidelines early in the development of new technologies can lead to stronger regulations later on as these technologies mature and their impacts become clearer (OECD, 2021 [28] ) . Agile governance of emerging technologies can le verage various tools, including iterative and adaptive regulatory cycles that address stakeholder and public concerns while coordinating across different regulatory areas. It can leverage regulatory experimentation tools, such as testbeds and sandboxes, an d apply outcome - based approaches that set clear goals and performance indicators while allowing flexibility in how these goals are met. Agile governance can benefit from non - binding methods like principles, guidelines, and codes of conduct to complement fo rmal regulations. Engaging the private sector early with approaches like "ethics - by - design" and Responsible Business Conduct also promotes agile governance responsible innovation (OECD, 2024 [2] ) . This section explores three approaches that facilitate a forward - looking and agile governance of AI systems: using controlled environments like regulatory sandboxes ; en abling interoperability through standards and by - design approaches ; and developing Responsible Business Conduc t (RBC) guidelines for AI. Controlled environments and regulatory sandboxes Regulatory experimentation tools are used to test new economic, institutional and technological approaches and legal provisions in an adapted regulatory environment . These include innovation testbeds, living labs, policy prototypes and regulatory sandboxes (OECD, 2024 [29] ) . This section highlights regulatory sandboxes as one of the most commonly used experimentation tools for AI governance , allowing authorities to collaborate with firms to test innovative products or services that challenge existing legal frameworks. Participating firms receive waivers from certain legal provisions or compliance processes to encourage inno vation (OECD, 2023 [30] ) . Regulatory sandboxes can differ in their approaches but generally share key features: they are temporary, typically lasting around six months; they involve collaboration between regulators and firms; they offer waivers for certain legal provisions and provide customi s ed legal support for specific projects, often through a trial - and - error process. The technical and market data collected helps regulatory authorities determine if existing legal fr ameworks are adequate or need adjustmen t (OECD, 2023 [30] ) . Regulatory sandboxes must strike a delicate balance. On one hand, they aim to foster innovation by allowing experimentation without strict regulatory constrain ts. However, they also need to consider potential risks to stakeholders, society, and the environment. Regulatory sandboxes present both benefits and challenges to regulators, firms and consumers ( Table 4 . 1 ). 4 Agile governance for AI</p>
+<!-- Page 23 -->
+
+<p>STEERING AI'S FUTURE: STRATEGIES FOR ANTICIPATORY GOVERNANCE  23 OECD ARTIFICIAL INTELLIGENCE PAPERS Table 4 . 1 . Benefits and challenges of regulatory sandboxes Benefits Challenges To regulators • Inform long - term policy making through learning and experimentation • Signal commitment to innovation and learning • Engage and communicat e collaboratively with market participants • Adjust regulations that may restrain innovation or result in safety risks • Insufficient technical expertise within regulatory bodies • Multi - disciplinary scope of AI products calls for collaboration of mu ltiple stakeholders • Defining the evaluation methods to determi ne the eligible participating firms To firms • Reduce time to market by streamlining the a pproval process • Reduce regulatory uncertainty by providing clarity on prohibited technologies • Gather feedback on regulatory requirements or risks • Improve access to ca pital • F acilitate market entry for companies, especially SMEs and start - ups , by p rovid ing accessible information about legal framework s • Difficulty in u nderstand ing the eligibility and selection criteria to participate • Capacity constraints may limit the number of firms that can participate To consumers • Promote introduction of innovative and potentially safe r products • Increase access to AI products and services • Inefficient implementation of regulatory sandboxes and their associated safeguards can lead to negative impacts on consumers Source : OECD (2023 [30] ) , The Norwegian Data Protection Authority (2023 [31] ) and Attrey, Lesher and Lomax (2020 [32] ) C ountries like Norway and Singapore have implemented sandbox initiatives to foster the development of trustworthy AI. While t he ir goals and structure may vary , these initiatives are designed to support innovation and ensure compliance with ethical and regulatory standar ds ( Box 4 . 1 ) .</p>
+<!-- Page 24 -->
+
+<p>24  STEERING AI'S FUTURE: STRATEGIES FOR ANTICIPATORY GOVERNANCE OECD ARTIFICIAL INTELLIGENCE PAPERS Box 4 . 1 . Sample regulatory sandboxes for AI The Norwegian regulatory sandbox for responsible AI, launched in autumn 2020 by the Data Protection Authority of Norway, focuses on AI projects involving the use of personal data. Its primary objective is to promote good data protection practices in the development and use of AI systems . In October 2023, Singapore’s I nfocomm Media Development Authority (IMDA) developed a sandbox dedicated to innovations leveraging generative AI. This sandbox aims at informing global standards and policy recommendations for generative AI and large language models (LLMs). Several other AI sandboxes have been set up to align with future regulations and promote international co - operation. For example, the Spanish government's AI regulatory sandbox aims to clarify EU AI Act requirements and provide guidelines to help AI system provide rs and users prepare for the forthcoming regulatory changes. It also invites EU member states to participate, fostering international collaboration . Source: The Norwegian Data Protection Authority (2023 [31] ) , Infocomm Media Development Authority (2023 [33] ) and European Commission (2022 [34] ) . S tandards and by - design approaches for AI governance Standards and by - design approaches are essential to create a n AI governance ecosystem that is agile and interoperable . Standards provide consistent norms and guidelines to facilitat e compliance and accountability , including on fairness, privacy, safety, transparency and interoperability. By - design approaches, such as pr ivacy, ethics, security, and transparency by design, integrate these principles into AI systems from the outset . Together, these strategies help to enable trust in AI development and use and facilitate co - operation across countries and stakeholder groups . Integrating risk management processes into each stage of the AI system lifecy c le – including planning and design, data collection and processing, model building and validati on , deployment, operation and monitoring – is crucial to promote accountability in AI. Processes, tools and by - design approaches already exist to implement values - based principles and manage risks at each stage of the AI lifecycle (OECD, 2023 [23] ) . Interoperability in risk management facilitates agi le AI governance by enabling consistent risk assessment and response to emerging threats. It promotes collaboration among stakeholders and simplifies compliance and reporting processes. Based on a study of burgeoning AI risk management frameworks and stand ards, the h igh - level AI risk - management interoperability framework identifies f our common steps to manage AI risks while ensuring respect for human rights and democratic values : (1) Define scope, context, actors and criteria; (2) Assess the risks at individual, aggregate, and societal levels; (3) Treat risks in ways commensurate to cease, prevent or mitigate adverse impacts; and (4) Govern the risk management process ( Figure 4 . 1 ) (OECD, 2023 [23] ) .</p>
+<!-- Page 25 -->
+
+<p>STEERING AI'S FUTURE: STRATEGIES FOR ANTICIPATORY GOVERNANCE  25 OECD ARTIFICIAL INTELLIGENCE PAPERS Figure 4 . 1 . High - level AI risk - management interoperability framework Governing and managing risks throughout the lifecycle for trustworthy AI. Source: OECD (2023 [23] ) , “Advancing accountability in AI: Governing and managing risks throughout the lifecycle for trustworthy AI”, OECD Digital Economy Papers , No. 349, OECD Publishing, Paris, https://doi.org/10.1787/2448f04b - en . . A recent OECD study of leading AI risk management frameworks and standard s looked at the commonalities and differences among their scope, target audiences and requirements (OECD, 2023 [35] ) . The report found that while the order of operations, target audience, risk scope, and specific terminology us ed may differ, all the frameworks generally seek to achieve the same outcomes (responsible, ethical, trustworthy AI) through roughly the same risk management process. Importantly, most of the differences between frameworks relate to the governance of the r isk management process (the ‘Govern’ function). S everal national and international voluntary industry standards and initiatives could help pave the way for a more agile and interoperable AI governance ecosystem. Examples include the United States National Institute of Standards and Technology AI Risk Management Framework (NIST RMF) (NIST, 2023 [36] ) , the ISO/IEC 23894:2023 Risk Management Guidelines and other related ISO/IEC standards on AI (ISO, 2023 [37] ) , and the Institute of Electrical and Electronics Engineers 7000 - 21 Standard Model Process for Addressing Ethical Concern s during System Design (IEEE 7000 - 21) (IEEE, 2021 [38] ) . T he G7 Hiroshima AI Process provides a voluntary code of conduct which includes elements of risk management (G7, 2023 [39] ) . The Code of Conduct sets out a commitment to identify, address and report on certain risks linked to what it refers to as “advanced” AI systems . In Europe, the European Committee for Standardization (CEN) and the European Committee for Electrotechnical Standardization (CENEL EC) are working together to create harmoni s ed standards that will provide a clear and recogni s ed path towards compliance with the EU AI Act. These standards aim to establish consistent guidelines and requirements for AI systems, ensuring they meet the regu latory expectations set forth by the EU. While standards and by - design approaches aim to improve interoperability and agility in AI governance, they also present challenges. The proliferation of incompatible standards can hinder interoperability and add co mplexity, increasing compliance costs. Additionally, compliance with some technical standards depends on developing specific metrics for aspects like explainability, transparency, privacy, and safety,</p>
+<!-- Page 26 -->
+
+<p>26  STEERING AI'S FUTURE: STRATEGIES FOR ANTICIPATORY GOVERNANCE OECD ARTIFICIAL INTELLIGENCE PAPERS which may not yet exist or be agreed upon. Certificatio ns of conformity with different standards must also be interoperable to ensure a cohesive and functional AI ecosystem. A responsible business conduct (RBC) approach to AI governance Since its inception, the OECD has been committed to leveraging the power of competitive markets, science and new technology as a driving force for sustainable economic and social development. In 1976, the OECD developed the first and most comprehensive int ernational standard on responsible business behaviour, with the adoption of the OECD Guidelines for Multinational Enterprises on Responsible Business Conduct (the MNE Guidelines) (OECD, 2023 [40] ) . The MNE Guidelines ackno wledge and encourage the positive contributions that business can make to economic, environmental and social development, and also recognise that business activities can result in adverse impacts related to workers, human rights, the environment, rule of l aw , consumers and corporate governance. The MNE Guidelines go beyond the traditional, philanthropic Corporate Social Responsibility (CSR) approach by placing the expectations on business to proactively address potential harms. The MNE Guidelines specifica lly recommend that companies carry out due diligence of their own operations, products and services, and also of their business relationships, to address potential and actual adverse impacts they might cause, contribute to or could be directly linked to . T he concept of maximising positive potential by first addressing negative impacts forms the basis for Responsible Business Conduct (RBC). RBC due diligence is defined as the process through which companies can identify, prevent, mitigate and account for how they address their actual and potential adverse impacts as an integral part of business decision - making and risk management systems. T he OECD has developed a Due Diligence Guidance for Responsible Business Conduct (the RBC Guidance) and sector - specific gu idance for carrying out due diligence in minerals, garment &amp; footwear, agriculture, as well as for institutional investors (OECD, 2018 [41] ) . The OECD Working Party on AI Governance (AIGO), together with the Working Party on RB C (WPRBC), is currently considering how to tailor the RBC approach for companies in the AI value chain (OECD, 2023 [35] ) . Risks of adverse impacts can manifest themselves in multiple ways in the development and use of AI syste ms. While RBC due diligence should cover all stages of the AI system lifecycle, companies have the greatest opportunity to anticipate and address risks during the earliest stages of the innovation process. By applying an RBC - by - design strategy developers c an prevent and mitigate potential risks of technologies at every step of development. Concretely, RBC due diligence early in the innovation process could involve: • Setting out internal policies on the objectives and limits of AI systems the company seeks t o develop . • Identifying and prioritising significant impacts of the AI system’s potential use or misuse, including by understanding the nature of the AI system (e.g., facial recognition technology, surveillance technology, autonomous weapons); the type of user (e.g., national security agencies, healthcare providers , judiciary bodies); the geograph ical scope (e.g., regions with high corruption, labour mistreatment, a nd human rights abuses); and the system’s performance (e.g., risks of poor perform ance in critical tasks) . • Designing appropriate safeguards to prevent ad verse impacts . • Meaningfully engaging with relevant stakeholders – particularly representatives of impacted communities – to help ensure that risks are identified and prevention and mitigation measures are adequate.</p>
+<!-- Page 27 -->
+
+<p>STEERING AI'S FUTURE: STRATEGIES FOR ANTICIPATORY GOVERNANCE  27 OECD ARTIFICIAL INTELLIGENCE PAPERS AI c ompanies are already making efforts t o conduct due diligence and implement responsible business conduct practices . Over the course of the last few years , companies have been conducting and publishing human rights risk assessments and policies on how they will develop and use trustworthy AI. N otable examples include Microsoft’s impact assessment on technologies licensed to US law enforcement ; Google’s celebrity recognition API impact assessment ; and Meta’s responsible use guide for open - source generative AI. A key characteristic of the RBC ap proach is that it encompasses the entire AI value chain, not just the organisations developing and deploying AI systems. RBC expectations also extend to actors directly linked to those technologies, such as actors supplying AI knowledge and resources as we ll as users of AI products and services. T his could include content creators, data curators, digital infrastructure providers, data labell ers , hardware manufacturers, and investors. It also includes actors outside the technology sector that rely on digital products and services such as in healthcare, retail, agriculture, human resources and manufacturing. The MNE Guidelines specify that all these value chain actors are expected to build and use leverage (including collective leverage) to influence the entit y causing the adverse impact, in order prevent, mitigate, or remedy the impact ( Box 4 . 2 ) . This makes the MNE Guidelines a unique and especially powerful agile governance tool in interconnected digital economies. Box 4 . 2 . The RBC approach in practice: leveraging the role of finance in AI Venture capital (VC) plays a key role in the development of AI systems, and AI now plays an increasingly significant role in venture capital (growing from 3% of all VC investments in 2012 to 20% of all VC investments in 2021) (OECD, 2021 [42] ) . Finance organisations are often in an ideal position to exert leverage as they are supporting clients to shape and define a project’s outlook. Financial institutions can play a major role in leading clients to identify and address actual o r potential adverse RBC impacts. For example , in 2023 Norway's USD 1.4 trillion wealth fund announced its measures to promote RBC in AI companies in its portfolio (Reuters, 2023 [43] ) . Specifically, companies will be asked to demo nstrate accountability, risk management and due diligence according to the OECD AI Principles and MNE Guidelines (NBIM, 2023 [44] ) . There have already been high profile cases and backlash against large banks for their role in financing certain technology used in human rights abuses. For example, a Swiss bank is the subject of a complaint due to alleged failure to observe the MNE Guidel ines regarding human rights due diligence with regards to its relationship with a Chinese surveillance technology firm (OECD, 2021 [45] ) . Similarly, a large financial institution was reported to have sold its loan to a surveillanc e firm at a loss following reports that the firm’s technology was used to spy on journalists and human rights defenders (Smith, 2019 [46] ) . While different standardisation approaches can be valid, a complex and divergent ecosys tem can challenge governments and organisations in promoting and implementing responsible business practices. Convergence in the AI governance ecosystem could be possible and desirable, as seen in the gold sector. The London Bullion Market Association, Dub ai Multicommodity Centre, Borsa Istanbul, and the India National Stock Exchange all require demonstrating implementation of OECD RBC standards to trade gold. This industry - wide convergence around a single, government - backed standard has promoted global upt ake of RBC practices across the gold value chain (OECD, 2022 [47] ) .</p>
+<!-- Page 28 -->
+
+<p>28  STEERING AI'S FUTURE: STRATEGIES FOR ANTICIPATORY GOVERNANCE OECD ARTIFICIAL INTELLIGENCE PAPERS AI is a global issue ; its development, use, and impact s extend beyond national borders. To be effective, anticipatory AI governance necessitates both national and international governance systems to interoperate . International co - operation in AI governance should be values - driven, based on forward - looking evid ence, involve stakeholder engagement, and remain agile in adapting norms and institutions (OECD, 2024 [2] ) . International AI governance today remains a dynamic field, with ongoing discussions to address the rapid pace o f AI development and the diverse challenges and opportunities it presents. A range of initiatives is emerging in this regard, with efforts spanning global, regional, and multilateral levels : • On the global stage , organisations such as the United Nations (U N), the World Bank, and UNESCO are undertaking efforts to create frameworks and guidelines for safe and trustworthy AI . For example, the UN convened a multi - stakeholder High - level Advisory Body on AI (HLAB) to undertake analysis and advance recommendations for the international governance of AI. The body consist ed of 3 9 experts in various disciplines coming from government, the private sector and civil society from around the world. In September 2024, HLAB published a report p rovid ing recommendations for the UN, governments, and stakeholders to improve existing AI governance frameworks , ma nag e AI - related risks and harness its global potential (UN HLAB, 2024 [48] ) . • At regional level , entities like the European Union , the Inter - American Development Bank (IDB) and the African Union are playing crucial roles. These o rgani s ations are creating harmonised AI policies , standards and initiatives that reflect the unique socio - economic contexts of their member states. For example , the European regulation on AI (the EU AI Act) and the African Union's proposed continental stra tegy on AI demonstrate significant strides toward cohesive regional AI governance frameworks. • Multilateral initiatives bridge the gap between global and regional efforts in AI governance. Examples include GPAI , the OECD , the Council of Europe Convention on AI, NATO’s AI Strategy, the EU - US Trade and Technology Council (TTC), Globalpolicy.AI , G7 and G20 initiatives, AI safety and governance summits , and the AI safety institutes network . These for a facilitate dialogue and co llaboration among countries and regions, promoting an integrated approach to AI governance. In 2023, the G7 launched the “ Hiroshima AI Process ” in Japan, marking a milestone in AI governance. The same year, the first AI Safety Summit in the UK resulted in the Bletchley Declaration, signed by 28 countries, focusing on the safety of advanced AI systems . Globalpolicy.AI is an online platform developed t o strengthen co - operation between intergovernmental organisations with complementary mandates on AI. The OECD has played a crucial role in AI governance since 2019, when 42 countries adopted the OECD AI Principles as the first intergovernmental standard for AI. It has acted as a bridge among global, regional, and multilateral AI initiatives, leading efforts to in form policy by defining AI systems and their lifecycle, classifying them by policy implications, and defining and monitoring AI incidents and hazards, 5 International co - operation for AI governance</p>
+<!-- Page 29 -->
+
+<p>STEERING AI'S FUTURE: STRATEGIES FOR ANTICIPATORY GOVERNANCE  29 OECD ARTIFICIAL INTELLIGENCE PAPERS among others. In July 2024, the OECD and GPAI formed an integrated partnership to promote an ambitious ag enda focused on implementing human - centric, safe, secure, and trustworthy AI, as outlined in the OECD AI Principles. T here is growing momentum to create synergies among AI governance stakeholders and initiatives, foster ing collaboration and coherence in A I governance efforts . For example, the UN and the OECD recently announced a partnership to collaborat e on regular science - and evidence - based assessments of AI risk s and opportunit ies (UN - OECD, 2024 [49] ) . Collectively, these efforts underscore the importance of international co - operation and the need for adaptive, forward - looking and inclusive governance structures to navigate the complexities of AI.</p>
+<!-- Page 30 -->
+
+<p>30  STEERING AI'S FUTURE: STRATEGIES FOR ANTICIPATORY GOVERNANCE OECD ARTIFICIAL INTELLIGENCE PAPERS Conclusion The rapid advancement of AI necessitates robust governance mechanisms that can adapt to its evolving landscape. Anticipatory governance, which focuses on proactive and forward - looking approaches, is important for effectively manag ing the complexities and p otential impacts of AI technologies. By incorporating anticipat ory and future - oriented strategies, governments can better identify and tackle emerging challenges while harnessing AI ’s opportunities. T h is report utilises the OECD Framework for Anticipatory Governance of Emerging Technologies to ex amine recent AI governance experiences from the OECD and beyond . Emphasising guiding values, strategic intelligence, stakeholder engagement, agile regulation, and international co - operation remains crucial in naviga ting the dynamic landscape of emerging technology governance. While significant progress has been made, particularly through initiatives like the OECD AI Principles and the OECD.AI Policy Observatory, continued collaboration and innovation are imperative t o fully reali s e AI’s potential benefits while mitigating associated risks. By integrating lessons learned from other fields and emerging technologies, policymakers can further refine anticipatory governance frameworks to foster an environment conducive to safe, ethical, and innovative AI development globally.</p>
+<!-- Page 31 -->
+
+<p>STEERING AI'S FUTURE: STRATEGIES FOR ANTICIPATORY GOVERNANCE  31 OECD ARTIFICIAL INTELLIGENCE PAPERS References Attrey, A., M. Lesher and C. Lomax (2020), “The role of sandboxes in promoting flexibility and innovation in the digital age” , OECD Going Digital Toolkit Notes , No. 2, OECD Publishing, Paris, https://doi.org/10.1787/cdf5ed45 - en . [32] Constantin (2019), Performance Trends in AI , https://srconstantin.wordpress.com/2017/01/28/performance - trends - in - ai/ . [14] Čorba, J. et al. (2024), Evolving with innovation: The 2 024 OECD AI Principles update , https://oecd.ai/en/wonk/evolving - with - innovation - the - 2024 - oecd - ai - principles - update . [3] Eckersley, P. and Y. Nasser (2019), Measuring the Progress of AI Research , Electronic Frontier Foundation. [13] European Commission (2022), First regulatory sandbox on Artificial Intelligence presented , https://digital - strategy.ec.europa.eu/en/news/first - regulatory - sandbox - artificial - intelligence - presented (accessed on 29 March 2024). [34] G7 (2023), Hiroshima Proc ess International Code of Conduct for Advanced AI Systems , https://www.mofa.go.jp/ecm/ec/page5e_000076.html . [39] Honorof, M. (2023), The future of AI could hinge on two philosophical concepts , https://www.tomsguide.com/features/ai - philosophy - solipsism - bl ockhead . [18] IEEE (2021), 7000 - 2021 - IEEE Standard Model Process for Addressing Ethical Concerns during System Design , https://doi.org/10.1109/IEEESTD.2021.9536679 . [38] Infocomm Media Development Authority (2023), First of its kind Generative AI Evaluation Sandbox for Trusted AI by AI Verify Foundation and IMDA , https://www.imda.gov.sg/resources/press - releases - factsheets - and - speeches/press - releases/2023/generative - ai - evaluation - sandbox . [33] ISO (2023), ISO/IEC 23894:2023 , https://w ww.iso.org/standard/77304.html . [37] Kuosa, T. (2011), “Different approaches of pattern management and strategic intelligence”, Technological Forecasting and Social Change , Vol. 78/3, pp. 458 - 467, https://doi.org/10.1016/j.techfore.2010.06.004 . [5] Martínez - Plumed, F. et al. (2019), Accounting for the Neglected Dimensions of AI Progress . [15] NBIM (2023), Responsible artificial intelligence , https://www.nbim.no/en/publications/our - views/2023/respo nsible - artificial - intelligence/ . [44]</p>
+<!-- Page 32 -->
+
+<p>32  STEERING AI'S FUTURE: STRATEGIES FOR ANTICIPATORY GOVERNANCE OECD ARTIFICIAL INTELLIGENCE PAPERS NIST (2023), Artificial Intelligence Risk Management Framework (AI RMF 1.0) , https://doi.org/10.6028/NIST.AI.100 - 1 . [36] OECD (2024), “Assessing potential future artificial intelligence risks, benefits and policy imperatives” , OECD Artificial Intelligence Papers , No. 27, OECD Publishing, Paris, https://doi.org/10.1787/3f4e3dfb - en . [1] OECD (2024), “Defining AI incidents and related terms” , OECD Artificial Intelligence Papers , No. 16, OECD Publishing, Paris, https://doi.org/10.1787/d1a8d965 - en . [8] OECD (2024), “Framework for Anticipatory Governance of Emerging Technologies” , OECD Science, Technology and Industry Policy Papers , No. 165, OECD Publishing, Paris, https://doi.org/10.1787/0248ead5 - en . [2] OECD (2024), “Governing with Artificial Intelligence: Are governments ready?” , OECD Artificial Intelligence Papers , No. 20, OECD Publishing, Paris, https://doi.org/10.1787/26324bc2 - en . [27] OECD (2024), “Regulatory experimentation: Moving ahead on the agi le regulatory governance agenda” , OECD Public Governance Policy Papers , No. 47, OECD Publishing, Paris, https://doi.org/10.1787/f193910c - en . [29] OECD (2023), “A blueprint for building national compute capacity for artificial intelligence” , OECD Digital E conomy Papers , No. 350, OECD Publishing, Paris, https://doi.org/10.1787/876367e3 - en . [26] OECD (2023), “Advancing accountability in AI: Governing and managing risks throughout the lifecycle for trustworthy AI” , OECD Digital Economy Papers , No. 349, OECD Publishing, Paris, https://doi.org/10.1787/2448f04b - en . [23] OECD (2023), Common guideposts to promote interoperability in AI risk management , https://doi.org/10.1787/ba602d18 - en . [35] OECD (2023), OECD Guidelines for Multinational Enterp rises on Responsible Business Conduct , https://www.oecd - ilibrary.org/docserver/81f92357 - en.pdf?expires=1694803478&amp;id=id&amp;accname=ocid84004878&amp;checksum=E6287EE6E4D5 3B54875A8257FEE19961 . [40] OECD (2023), “Regulatory sandboxes in artificial intelligence” , OECD Digital Economy Papers , No. 356, OECD Publishing, Paris, https://doi.org/10.1787/8f80a0e6 - en . [30] OECD (2023), “Stocktaking for the development of an AI incident definition” , OECD Artificial Intelligence Papers , No. 4, OECD Publishing , Paris, https://doi.org/10.1787/c323ac71 - en . [7] OECD (2023), “The state of implementation of the OECD AI Principles four years on” , OECD Artificial Intelligence Papers , No. 3, OECD Publishing, Paris, https://doi.org/10.1787/835641c9 - en . [4] OECD (2022) , “OECD Framework for the Classification of AI systems” , OECD Digital Economy Papers , No. 323, OECD Publishing, Paris, https://doi.org/10.1787/cb6d9eca - en . [25] OECD (2022), OECD Guidelines for Citizen Participation Processes , OECD Public Governance Revie ws, OECD Publishing, Paris, https://doi.org/10.1787/f765caf6 - en . [22]</p>
+<!-- Page 33 -->
+
+<p>STEERING AI'S FUTURE: STRATEGIES FOR ANTICIPATORY GOVERNANCE  33 OECD ARTIFICIAL INTELLIGENCE PAPERS OECD (2022), Report on the Implementation of the Recommendation of the OECD Council on Due Diligence Guidance for Responsible Supply Chains of Minerals from Conflict - Affected and High - R isk Areas , https://legalinstruments.oecd.org/en/instruments/OECD - LEGAL - 0386 . [47] OECD (2021), Recommendation of the Council for Agile Regulatory Governance to Harness Innovation , https://legalinstruments.oecd.org/en/instruments/OECD - LEGAL - 0464 . [28] OECD (2021), “Tools for trustworthy AI: A framework to compare implementation tools for trustworthy AI systems” , OECD Digital Economy Papers , No. 312, OECD Publishing, Paris, https://d x.doi.org/10.1787/008232ec - en . [45] OECD (2021), Venture capital investments in artificial intelligence , https://www.oecd.org/digital/venture - capital - investments - in - artificial - intelligence - f97beae7 - en.htm . [42] OECD (2020), Innovative Citizen Participati on and New Democratic Institutions: Catching the Deliberative Wave , OECD Publishing, Paris, https://doi.org/10.1787/339306da - en . [21] OECD (2018), OECD Due Diligence Guidance for Responsible Business Conduct , http://mneguidelines.oecd.org/OECD - Due - Diligen ce - Guidance - for - Responsible - Business - Conduct.pdf . [41] OECD (2017), Recommendation of the Council on Open Government , https://legalinstruments.oecd.org/en/instruments/OECD - LEGAL - 0438 . [24] OECD (2017), The Next Production Revolution: Implications for Gov ernments and Business , OECD Publishing, Paris, https://doi.org/10.1787/9789264271036 - en . [16] OECD.AI (2024), AI Futures , https://oecd.ai/en/site/ai - futures (accessed on 3 July 2024). [19] OECD.AI (2024), AI Futures, What do you see as the as the most significant potential benefits and risks of AI 10+ years from now? , https://oecd.ai/en/site/ai - futures/discussions/future - benefits - risks (accessed on 3 July 2024). [20] OECD.AI (2024), OECD AI Incidents Monitor (AIM) - How gun - toting robot dogs could become weapons of mass destruction , https://oecd.ai/en/incidents/90734 (accessed on 3 July 2024). [6] OECD.AI (2024), OECD AI Incidents Monitor, methodology and disclosures , https://oecd.ai/incidents - methodology (accessed on 15 February 2024). [9] Reuters (2023), Norway wealth fund to firms: use AI, but do it responsibly , https://www.reuters.com/business/finance/norway - wealth - fund - firms - use - ai - do - it - responsibly - 2023 - 08 - 15/ . [43] Ricard, L. (2011), From Future Scenarios to Roadmapping: A practical g uide to explore innovation and strategy. , Joint Research Centre. [12] Ringland, G. et al. (2020), Scenarios and roadmapping - how to navigate an uncertain future , University of Cambridge. [11] Smith, R. (2019), “Jefferies and Credit Suisse set to lose on Israeli cyber security deal”, https://www.ft.com/content/e390685a - 5a10 - 11e9 - 939a - 341f5ada9d40 . [46]</p>
+<!-- Page 34 -->
+
+<p>34  STEERING AI'S FUTURE: STRATEGIES FOR ANTICIPATORY GOVERNANCE OECD ARTIFICIAL INTELLIGENCE PAPERS Snyder, H. (2019), “Literature review as a research methodology: An overview and guidelines”, Journal of Business Research , pp. 333 - 339. [17] Tetlock, P. and J. Scoblic (2020), “A Better Crystal Ball: The Right Way to Think”, Foreign Affairs , pp. 10 - 19. [10] The Norwegian Data Protection Authority (2023), Evaluation of the Norwegian Data Protect ion Authority’s Regulatory , https://www.datatilsynet.no/contentassets/41e268e72f7c48d6b0a177156a815c5b/agenda - kaupang - evaluation - sandbox_english_ao.pdf . [31] UN HLAB (2024), Governing AI for Humanity: Final Report , UN, https://www.un.org/sites/un2.un.org/ files/governing_ai_for_humanity_final_report_en.pdf . [48] UN - OECD (2024), OECD and UN announce next steps in collaboration on Artificial Intelligence: Press release , https://www.oecd.org/en/about/news/press - releases/2024/09/oecd - and - un - announce - next - steps - in - collaboration - on - artificial - intelligence.html#:~:text=Our%20joint%20efforts%20will%20help,AI%20risk%20and%20op portunity%20assessments. [49]</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      The human is index zero.
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/tvproductions/gzkit" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.sections", "navigation.expand", "navigation.top", "toc.follow", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

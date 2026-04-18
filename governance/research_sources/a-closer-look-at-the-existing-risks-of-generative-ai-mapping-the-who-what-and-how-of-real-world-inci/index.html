@@ -1,0 +1,5569 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Keep humans in the loop when AI writes your code">
+      
+      
+        <meta name="author" content="Jeffry">
+      
+      
+        <link rel="canonical" href="https://gzkit.org/governance/research_sources/a-closer-look-at-the-existing-risks-of-generative-ai-mapping-the-who-what-and-how-of-real-world-inci/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>A Closer Look at the Existing Risks of Generative AI: Mapping the Who, What, and How of Real-World Incidents - gzkit</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="deep-orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#a-closer-look-at-the-existing-risks-of-generative-ai-mapping-the-who-what-and-how-of-real-world-incidents" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="gzkit" class="md-header__button md-logo" aria-label="gzkit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            gzkit
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              A Closer Look at the Existing Risks of Generative AI: Mapping the Who, What, and How of Real-World Incidents
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/tvproductions/gzkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tvproductions/gzkit
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="gzkit" class="md-nav__button md-logo" aria-label="gzkit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    gzkit
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/tvproductions/gzkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tvproductions/gzkit
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/runbook/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runbook
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/why/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Why gzkit?
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Examples
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/tutorial-first-project/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    First Project
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/tutorial-rhea-bootstrap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RHEA Bootstrap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_3" id="__nav_5_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/guide-prd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRD Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/guide-adr/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/guide-tasks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Task Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/guide-releasing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releasing Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_4" id="__nav_5_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Templates
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Templates
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/templates/prd-template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRD Template
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/templates/adr-template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Template
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/templates/task-template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Task Template
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Not Started"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_5" id="__nav_5_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Assessments
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Assessments
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/gzkit-readiness-assessment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GZKit Readiness Assessment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/go-live-gap-analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Go-Live Gap Analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/comparison-gzkit-speckit-bmad/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Framework Comparison
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concepts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Concepts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/concepts/gates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/concepts/lanes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lanes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/concepts/lifecycle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lifecycle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/concepts/obpis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OBPIs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/concepts/closeout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Closeout Ceremony
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/concepts/workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Daily Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/concepts/test-traceability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Traceability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Skills
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_2" id="__nav_7_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Setup
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project Setup
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-init/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-init
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-prd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-prd
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-constitute/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-constitute
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_3" id="__nav_7_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Planning
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Planning
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-adr-create/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-create
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-obpi-specify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-obpi-specify
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-adr-evaluate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-evaluate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-plan-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-plan-audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_4" id="__nav_7_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Execution
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Execution
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-obpi-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-obpi-pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-implement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-implement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-gates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-gates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-check/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-check
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-arb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-arb
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_5" id="__nav_7_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Status & Review
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Status & Review
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-adr-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-state/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-state
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-obpi-simplify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-obpi-simplify
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-adr-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_6" id="__nav_7_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Closeout & Audit
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Closeout & Audit
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-adr-closeout-ceremony/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-closeout-ceremony
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-adr-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-obpi-reconcile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-obpi-reconcile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-adr-emit-receipt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-emit-receipt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-validate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-validate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_7" id="__nav_7_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operations
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Operations
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/git-sync/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /git-sync
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-patch-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-patch-release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-session-handoff/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-session-handoff
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-chore-runner/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-chore-runner
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-obpi-lock/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-obpi-lock
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-cli-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-cli-audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Commands
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Commands
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/init/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz init
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/prd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz prd
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/constitute/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz constitute
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/specify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz specify
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/plan-create/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz plan create
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/plan-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz plan audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/implement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz implement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/gates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz gates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/state/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz state
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/adr-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/adr-promote/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr promote
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/adr-audit-check/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr audit-check
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/adr-covers-check/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr covers-check
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/adr-emit-receipt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr emit-receipt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/covers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz covers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/flags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz flags
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/flag-explain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz flag explain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/obpi-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz obpi status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/obpi-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz obpi pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/obpi-validate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz obpi validate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/obpi-reconcile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz obpi reconcile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/obpi-emit-receipt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz obpi emit-receipt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/closeout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz closeout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/patch-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz patch release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/git-sync/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz git-sync
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/attest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz attest
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/migrate-semver/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz migrate-semver
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/register-adrs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz register-adrs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/chores-list/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz chores list
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/chores-plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz chores plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/chores-run/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz chores run
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/chores-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz chores audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/skill-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz skill audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/parity-check/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz parity check
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/readiness-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz readiness audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/check-config-paths/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz check-config-paths
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/cli-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz cli audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/task-list/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz task list
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/task-start/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz task start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/task-complete/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz task complete
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/task-block/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz task block
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/task-escalate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz task escalate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/personas-list/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz personas list
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/agent-sync-control-surfaces/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz agent sync control-surfaces
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Governance (Canonical)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Governance (Canonical)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance_runbook/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Governance Runbook
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../state-doctrine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    State Doctrine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../storage-tiers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Storage Tiers Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipeline-marker-migration-path/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline Marker Migration Path
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../documentation-taxonomy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation Taxonomy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../feature-flags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature Flags
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../parity-intake-rubric/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Parity Intake Rubric
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/charter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Charter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/adr-lifecycle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Lifecycle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/obpi-transaction-contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OBPI Transaction Contract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/obpi-runtime-contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OBPI Runtime Contract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/obpi-decomposition-matrix/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OBPI Decomposition Matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/adr-obpi-ghi-audit-linkage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR/OBPI/GHI/Audit Linkage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/adr-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/audit-protocol/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Audit Protocol
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/gate5-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gate 5 Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/architectural-enforcement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architectural Enforcement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/gzkit-structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gzkit Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/governance-registry-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Governance Registry Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/agent-era-prompting-summary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent-Era Prompting Summary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/layered-trust/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Layered Trust
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/ledger-schema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ledger Schema
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/session-handoff-obligations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Session Handoff Obligations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/session-handoff-schema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Session Handoff Schema
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/handoff-chaining/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Handoff Chaining
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/handoff-validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Handoff Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/staleness-classification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Staleness Classification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/validation-receipts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validation Receipts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9_29" >
+        
+          
+          <label class="md-nav__link" for="__nav_9_29" id="__nav_9_29_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releases
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_29_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_29">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Releases
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/releases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/releases/major-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Major Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/releases/minor-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Minor Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/releases/patch-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Patch Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9_30" >
+        
+          
+          <label class="md-nav__link" for="__nav_9_30" id="__nav_9_30_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Audits
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_30_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_30">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Audits
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/audits/AUDIT-BRIEF-governance-harmonization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Harmonization Brief
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/audits/governance-harmonization-2026-01-11/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Harmonization Audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/audits/AUDIT-TEMPLATE-agent-readiness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Readiness Audit Template
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docs README
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/reference/charter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Charter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/reference/lineage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lineage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/reference/agent-input-disciplines/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Input Disciplines
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/reference/genesis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Genesis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/reference/genesis-transcript/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Genesis Transcript
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/reference/airlineops-exploration-verbatim/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AirlineOps Exploration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="a-closer-look-at-the-existing-risks-of-generative-ai-mapping-the-who-what-and-how-of-real-world-incidents">A Closer Look at the Existing Risks of Generative AI: Mapping the Who, What, and How of Real-World Incidents<a class="headerlink" href="#a-closer-look-at-the-existing-risks-of-generative-ai-mapping-the-who-what-and-how-of-real-world-incidents" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>Source: https://ojs.aaai.org/index.php/AIES/article/download/36655/38793
+Pages: 13
+Author: Megan Li, Wendy Bickersteth, Ningjing Tang, Lorrie Cranor, Jason Hong, Hong Shen, Hoda Heidari</p>
+</blockquote>
+<hr />
+<p>A Closer Look at the Existing Risks of Generative AI: Mapping the Who, What, and How of Real-World Incidents Megan Li, Wendy Bickersteth, Ningjing Tang, Lorrie Cranor, Jason Hong, Hong Shen * , Hoda Heidari * Carnegie Mellon University { meganli, wbickers, ningjingt, lorrie, jasonh, hongs, hheidari } @andrew.cmu.edu Abstract Generative AI is applied in an ever-growing set of domains and tasks, leading to an expanding set of risks of harm impact- ing people, communities, society, and the environment. These risks may arise due to failures during the design and develop- ment of the technology, as well as during its release, deploy- ment, or downstream usages and appropriations of its out- puts. In this paper, building on prior taxonomies of AI risks, harms, and failures, we construct a taxonomy specifically for Generative AI failures and map them to the harms they’re as- sociated with in the real world. Through a systematic analysis of 499 publicly reported incidents of harm involving Genera- tive AI, we describe what harms are reported and how often, how they tend to arise, and who they impact. We find that most reported incidents are associated with use-related fail- ures but the harms are experienced by parties beyond the end user(s) of the system at fault, and that the landscape of Gen- erative AI harms is distinct from that of traditional AI. Our work offers actionable insights to policymakers, developers, and end users. In particular, we call for the prioritization of non-technical risk and harm mitigation strategies that center responsible use , including public disclosures, AI literacy ef- forts, and careful regulatory stances. Coded incident dataset — https://doi.org/10.7910/DVN/NISSFZ 1 Introduction Generative AI—defined as AI that produces novel output in the form of text, images, audio, or video (Weidinger et al. 2023)—has taken the world by storm, presenting both risks and benefits to humanity. While there is broad consensus on the need to mitigate the risks of Generative AI, a growing divide separates those who prioritize its existential threats from those who focus on its existing risks. Bostrom (2001) defines existential risks as “one where an adverse outcome would either annihilate Earth-originating intelligent life or permanently and drastically curtail its potential.” We define existing risk as “one whose instances have been observed in the real world and caused harm to individuals, communities, organizations, or the environment.” * These authors contributed equally. Copyright © 2025, Association for the Advancement of Artificial Intelligence (www.aaai.org). All rights reserved. Although some investment in assessing the existen- tial risks of AI is essential for long-term planning (Hendrycks, Mazeika, and Woodside 2023; Karger et al. 2023; Kasirzadeh 2025), effective risk mitigation today re- quires understanding how the harms of Generative AI cur- rently emerge. In this paper, we focus on characterizing the existing risks of Generative AI. We argue that addressing these risks is critical not only because they have already caused harm and are likely to persist, but also because they can accumulate over time into more severe harms. The AI Risk Management Framework (AI RMF) devel- oped by the U.S. National Institute of Standards and Tech- nology (NIST) emphasizes risk identification and prioritiza- tion as critical steps in addressing AI risks (NIST 2023). A growing body of literature identifies the risks and harms of AI across domains and applications (Section 2.1). However, much of this work lacks grounding in real-world evidence and does not address who is affected or how the risk or harm arises, limiting its effectiveness in guiding risk prioritization and mitigation. In this work, we aim to fill this gap by pro- viding a large-scale, empirical mapping of real-world inci- dents of harm associated with Generative AI systems, trac- ing each harm from its underlying sociotechnical failure(s) to its downstream impact on people and society. The AI RMF recommends prioritizing risks based on their projected impact (NIST 2023). While assessing projected impact is complex, two key factors should guide this pro- cess: (1) the prevalence of the risk, or how frequently it causes harm in practice; and (2) who is at risk. This mo- tivates our first two research questions. RQ1: What is the nature and prevalence of Generative AI harms observed in practice today? RQ2: Who is most at risk of these harms? To effectively inform risk mitigation strategies, it is impera- tive to identify the underlying issue(s) – which we refer to as sociotechnical failure modes (Section 2.2) – associated with the incident of harm. While prior work has proposed frame- works to identify where technology fails (Raji et al. 2022; Macrae 2022; Slattery et al. 2025; Carlson 2012; Leveson 2012), much of this work is focused on technical failures, is not grounded in real-world evidence, and does not con- sider how Generative AI may induce a unique landscape of failures and risks compared to other AI technologies. Iden- tifying Generative AI failure modes and mapping them to real-world harms can guide more effective mitigation strate- Proceedings of the Eighth AAAI/ACM Conference on AI, Ethics, and Society (AIES 2025) 1561</p>
+<!-- Page 2 -->
+
+<p>gies, motivating our third research question. RQ3: What is the nature and prevalence of sociotechnical failure modes associated with observed harms of Generative AI? To ground our investigation of these questions in real- world evidence, we follow recent work that uses reposito- ries of publicly reported AI incidents as a critical source of empirical data for mapping and measuring AI harms (Lee et al. 2024; Abercrombie et al. 2024b; Pittaras and McGre- gor 2023; Hoffman and Frase 2023; Raji et al. 2022; Hutiri, Papakyriakopoulos, and Xiang 2024). We performed a sys- tematic analysis of 499 publicly reported Generative AI in- cidents, identifying what harms occurred, how they materi- alized, and who experienced them. Through our analysis, we validated and revised prior taxonomies of AI harms (Figure 1) and developed a novel taxonomy of sociotechnical failure modes (Figure 3), which we present alongside a quantitative analysis of how they relate to each other. We find that most incidents in our analysis bring harm to stakeholders that did not interact directly with the Generative AI system, un- dermining the accountability frameworks assumed in many AI governance models. Additionally, in contrast to previous work that analyzes AI incidents more broadly (Vel´ azquez et al. 2024), we find malicious use to be a prevalent failure mode associated with Generative AI harms. Our dataset is likely not representative of real-world Gen- erative AI harms in terms of scope or frequency. In particu- lar, databases of publicly reported incidents may disguise the actual prevalence of harms due to factors such as reporting bias. Nonetheless, our study provides essential empirical ev- idence to ground discussions of AI risk management, help- ing researchers and policymakers prioritize existing risks, understand where harm mitigation efforts are most urgently needed, and gain insights into where Generative AI requires novel risk mitigation strategies (Section 5). 2 Related Work We define harm as “an outcome negatively affecting people and their interests” and risk as “the magnitude and likelihood of harm” (NIST 2023). We view Generative AI risks and harms in the sociotechnical contexts where they arise; that is, we consider not only technical but also human and societal factors to play critical roles in determining the outcomes of Generative AI (Weidinger et al. 2023; Shelby et al. 2023). 2.1 Taxonomies of AI Risks and Harms Risk and harm taxonomies provide a common vocabulary through which stakeholders can report, evaluate, and miti- gate system failures (Koessler and Schuett 2023). There is some consensus on the broad domains of risk associated with AI. These include risks to the physical or psychological well-being of people, human rights and civil liberties, polit- ical and economic structures, society and culture, and the environment (Abercrombie et al. 2024b). Some taxonomies also consider multiple dimensions of harm, such as the level of severity, the scope of the impacted entities, and whether the harm is reversible (OECD 2023). For example, Hoffman and Frase (2023) proposed a two-dimensional taxonomy of AI harms with domain on one axis and level of realization on the other. Using this taxonomy, harm is described by both a domain category such as Physical Health/Safety or Privacy and whether the harm was realized or yet unrealized. 1 Throughout this paper, we build on Weidinger et al.’s highly-cited risk taxonomy for Generative AI systems, de- veloped through a literature review, and Abercrombie et al.’s harm taxonomy for AI and automated systems, developed through a combination of use case analysis, literature re- view, and annotation testing on publicly reported incidents (Weidinger et al. 2023; Abercrombie et al. 2024b). Our con- tribution goes beyond existing risk and harm taxonomies in two ways: first, we report the quantitative prevalence of dif- ferent Generative AI harms based on real-world incidents, and second, we map harms to the stakeholders they affect and the underlying issues that precipitated them. 2.2 Sociotechnical Failure Modes The harms of Generative AI do not materialize in a vacuum; they arise due to a variety of human and technical factors and their interactions (Macrae 2022). To describe these underly- ing dynamics of harm, we introduce the term sociotechni- cal failure modes , which we define as “the ways in which a technical system, its creators or users, or the various soci- etal structures interacting with it bring risk or harm to some stakeholders.” Most AI risk and harm taxonomies do not ad- dress the topic of how risks and harms surface (Turri and Dzombak 2023). As steps toward filling this gap, Raji et al. (2022) introduce a taxonomy of AI system failures and Slat- tery et al. (2025) organize AI risks in a causal taxonomy. The term “failure mode” is used in safety engineer- ing contexts such as Failure Mode and Effects Analysis (FMEA), a framework for identifying and prioritizing failure modes by (1) listing out “the functions of a component/sys- tem or steps of a process,” (2) identifying the failure mod- es—the “mechanisms by which each function or step can go wrong,” and (3) identifying the impact and cause of each failure mode (Carlson 2012). Recent work proposes the ap- plication of safety engineering approaches including FMEA to assess and mitigate the social and ethical risks of ma- chine learning systems (Rismani et al. 2023). However, our method of identifying failure modes using incident reports is distinct from FMEA in two ways: first, it is performed after the failure has occurred, making it more similar to a post- mortem risk assessment; second, because we are limited to publicly available data, we cannot examine the specific com- ponents, functions, or control actions of the system. Another safety engineering framework that may be appli- cable to machine learning systems is System Theoretic Pro- cess Analysis (STPA), which involves mapping the compo- nents of a system and their interactions to identify potential sources of harm (Leveson 2012). As Rismani et al. (2023) note, STPA is better suited for capturing emergent phenom- ena rather than individual component behavior, congruent with increasing work toward thinking about AI failures in sociotechnical contexts (Tang et al. 2024; Weidinger et al. 2023; Shelby et al. 2023). While our analysis in this work 1 Table 2 in the Appendices at https://arxiv.org/abs/2505.22073 provides a nonexhaustive overview of these taxonomies. 1562</p>
+<!-- Page 3 -->
+
+<p>is less structured than what would constitute an application of STPA, we draw inspiration from the first two steps of the framework. First, we “[identify] losses via outlining stake- holders and their values” by identifying harms via first de- scribing who is affected in each incident. Second, we “model the control structure of the full sociotechnical system” by situating failures within the three-layered framework intro- duced in Weidinger et al. (2023) to describe the sociotech- nical system of Generative AI composed of Capability , Hu- man interaction , and Systemic impact layers. 2.3 AI Incidents as Empirical Data Prior work on identifying AI harms and failures highlights repositories of publicly reported AI incidents as sources of empirical data (Lee et al. 2024; Abercrombie et al. 2024b; Pittaras and McGregor 2023; Hoffman and Frase 2023; Raji et al. 2022; Hutiri, Papakyriakopoulos, and Xiang 2024; Vel´ azquez et al. 2024). For example, Lee et al. (2024) sys- tematically reviewed 321 publicly reported incidents to de- velop a taxonomy of AI privacy risks. Similarly, Raji et al. (2022) reviewed 283 publicly reported incidents to develop their taxonomy of AI system failures. Three commonly cited repositories are the AI Incident Database (AIID); the OECD AI Incidents Monitor; and the AI, Algorithmic and Automation Incidents and Controver- sies (AIAAIC) repository. All of these repositories maintain harm taxonomies for incident annotation and categorization (McGregor 2021; OECD 2025; Abercrombie et al. 2024a). Each repository also provides their own definition of an in- cident ; for example, the AIAAIC’s definition is “a sudden known or unknown event (or ‘trigger’) that becomes public and which takes the form of a disruption, loss, emergency, or crisis” (Abercrombie et al. 2024a). Although the reported-incident analysis approach has sev- eral key limitations due to factors including reporting bias (further discussed in 3.3), the assumption underpinning this approach is that these incidents reflect real-world harms aris- ing in sociotechnical systems and hence serve as reasonable raw material on which to test and apply risk mapping frame- works. Incident repositories also play an important role in reducing risk in other safety-critical domains such as avia- tion and cybersecurity (Turri and Dzombak 2023). 2.4 How, What, Who: Mapping Failures to Harms to Stakeholders Slattery et al. (2025) introduced a causal taxonomy of AI risks where each risk is mapped to the entity (human, AI, or other) that precipitated it, that entity’s intent , and when (pre- deployment, post-deployment, or other) the risk arose. Their work contributes to an understanding of the sociotechnical factors that precipitate AI risks and harms, which may help develop novel harm mitigation strategies and identify the stakeholders best positioned to address specific risks. How- ever, in addition to identifying only coarse-grained causal factors, their work does not identify who tends to experience each type of risk or harm, limiting its utility to prioritize risks and map accountability pathways. To address this gap, Vel´ azquez et al. (2024) applied a “what-where-who” framework to analyze 639 AI incident reports. They used large language models to operational- ize their framework and automatically classify each incident based on what type of harm occurred, where it originated, and who was harmed. They found that the vast majority of incidents in their dataset harmed the individual directly in- teracting with the AI system. Hutiri, Papakyriakopoulos, and Xiang (2024) arrived at a similar conceptual framework to characterize the harms of speech generators, mapping harms from their responsible to affected entities . However, they found that most harms did not affect the individual who in- teracted with the speech generator. Taken together, these pa- pers highlight the importance of mapping harms to the stake- holders they affect. They also suggest that there are critical differences between traditional AI harms and Generative AI harms in terms of who they affect and how they materialize. In this work, we build on these insights to characterize the how, what, and who of Generative AI harms through a systematic manual analysis of 499 publicly reported inci- dents. We report the quantitative prevalence of the harms we identify (the what ), the failure modes that precipitate them (the how ), and the stakeholders who were harmed (the who ). By grounding our analysis in real-world incidents, our work offers a novel, empirical understanding of the sociotechni- cal factors that contribute to Generative AI harms. Our re- sults show how the landscape of Generative AI harms is dis- tinct from traditional AI harms, reveal where pathways of accountability break down, and emphasize the potential im- pact of non-technical harm mitigation. 3 Methods 3.1 Using Case Studies to Construct Generative AI Risk and Failure Mode Taxonomies To develop taxonomies of Generative AI harms and so- ciotechnical failure modes exhibited in publicly reported in- cidents, we performed a systematic review of Generative AI incident reports. We framed each incident as a case study, where the goal was to determine (1) the output modality of the Generative AI system at fault, (2) the human stakehold- ers who experienced harm, (3) the nature of the harm expe- rienced, and (4) any and all sociotechnical failure modes that contributed to the harm. Table 1 provides further details for each of these four attributes. The third and fourth attributes are the building blocks for our taxonomies of harms and so- ciotechnical failure modes, respectively. We sourced incident reports from both the AIID (Mc- Gregor 2021) and the AIAAIC (Abercrombie et al. 2024a). Both sources include incidents that involve a wide range of AI systems, so we manually filtered the union of the two databases to include only incidents where a Generative AI was at fault, resulting in our dataset of 499 Generative AI incidents. We did not use the OECD AI Incidents Monitor (OECD 2025) because it is automatically curated (whereas the incidents in the AIID and AIAAIC undergo manual re- view) and its definition of “incident” is broader than those used in the other two repositories. We scoped our study around incidents—where “incident” is defined as a single event—that have been manually submitted and reviewed. We based our analysis of both harms and sociotechni- 1563</p>
+<!-- Page 4 -->
+
+<p>Column Description Example entries Modality The output modality of the Generative AI sys- tem. text, image, audio, video, multimodal Affected stakeholders (up to 2) The human stakeholders that suffered actual or worst-case scenario harm as a result of the Generative AI system. end user, individual(s) beyond the end user, community, society Harm (up to 2) The actual or worse-case scenario harm expe- rienced by the affected stakeholders. Impersonation/identity theft, Pollution of information ecosystem Sociotechnical failure mode (all that apply) The technical or user issue that most proxi- mally contributed to the harm. Hallucination, Malicious use, Failure of safety guardrails Table 1: Summary of Our Coding Schema cal failure modes on previous literature and used an itera- tive coding process to categorize each of the four attributes described in Table 1. As a preliminary codebook for our analysis of Generative AI harms, we constructed a union of previous harm taxonomies developed by Abercrombie et al. (2024b) and Weidinger et al. (2023). As a preliminary code- book for Generative AI sociotechnical failure modes, we used Raji et al.’s taxonomy of AI system failures as a base- line and used Slattery et al.’s causal taxonomy of AI risks as a framework within which to brainstorm additional possi- ble failure modes (Raji et al. 2022; Slattery et al. 2025). We then expanded and refined each of these codebooks through a systematic review of our incident dataset. Our codebooks are available at the link above Section 1. Significant revisions to the codebook of harms . Weidinger et al. (2023) and Abercrombie et al. (2024b) consider pri- vacy violations to be a specific harm rather than a broad cat- egory. Therefore, we introduced a Privacy &amp; Security cate- gory and populated it using the taxonomy of AI privacy risks introduced in Lee et al. (2024). We also surfaced one harm, Overburdening ecosystems , not captured in our review of prior literature. Our final taxonomy of Generative AI harms has 41 harms organized into 12 categories (Figure 1). Significant revisions to the codebook of sociotechnical fail- ure modes . We first revised each AI system failure described in Raji et al. (2022) to be more specific to Generative AI. For example, we increased the granularity of Implementa- tion Failures by deriving three failure modes from its de- scriptions of implementation issues: Hallucination , Failure of commonsense reasoning , and Failure to comply with con- textual norms . We also noted that Raji et al.’s work is specif- ically concerned with engineering failures, but there were a large number of incidents with use-related failure modes in our dataset. Thus, we generated additional failure modes based on themes that arose in the data and informed by prior literature (Walkowiak and Potts 2024). Our final taxonomy of Generative AI failure modes has 14 failure modes orga- nized into 4 categories (Figure 3). 3.2 Qualitative Analysis Procedure The first and second authors collaborated to code the inci- dent database with the four attributes summarized in Table 1. After developing the preliminary codebooks, the two au- thors convened for a training phase on a random 10% of the data. They then independently coded the remainder of the dataset, reconvening periodically to compare codes, discuss, and reach consensus for all disagreements. The analysis was framed by three questions inspired by Slattery et al. (2025) and Hutiri, Papakyriakopoulos, and Xiang (2024): (1) Which human entities are mentioned in the incident summary? (2) Which entities were harmed and what is the nature of the harm? (3) Was the most proximal source of risk or harm primarily human or technical in na- ture? Was the harm intentional or unintentional? Did the risk materialize pre- or post-deployment? In cases where there was insufficient information to de- termine whether actual harm occurred, the authors imagined the “worst-case scenario.” For example, a chatbot convinced its user to euthanize their dog (Tangermann 2024). In the worst-case scenario, this choice was incorrect and the user suffered significant harm. The authors discussed and coded this incident as if this worst-case scenario were true. Addi- tionally, the coders chose the two most severe harms in cases where there were more than two types of harm, where sever- ity was measured by the scale of the harmed stakeholder and the magnitude of possible harm. The complete coded inci- dent dataset is linked above Section 1. 3.3 Limitations As with other work that relies primarily on databases of pub- licly reported incidents for empirical data, this paper has methodological limitations. Some harms can have a cumulative nature . Both databases from which we sourced incident reports define an inci- dent as a single event (the AIAAIC further specifies it to be “sudden”) (McGregor 2021; Abercrombie et al. 2024a). This means that harms that do not have single precipitating events, but instead accumulate over time, are unlikely to sur- face in these databases. For example, many harms to society (e.g., the devaluation and loss of human creativity) or the en- vironment can only be measured over the course of months or years. While it is possible that certain incidents are in- dicative of cumulative harms—for example, Generative AI systems trained on copyrighted art may produce copyright violations today but lead to the devaluation of human artists over time—we intentionally avoided this kind of specula- tion in our coding process as the landscape of Generative AI changes rapidly. Instead, we tried to be comprehensive in 1564</p>
+<!-- Page 5 -->
+
+<p>our consideration of shorter-term harms. Harms may be over- or under-represented due to reporting bias . Any database of publicly reported incidents will re- flect some level of reporting bias. Concepts that are sensa- tional or relatively well-understood by the public, such as deepfake impersonations, may be overreported. Concepts re- lated to the design or development of Generative AI, such as data acquisition and cleaning or the implementation of safety guardrails, may be underreported, perhaps in part be- cause industry is not incentivized or required to publicly re- port issues they surface during the design, development, and testing of their products. Additionally, the unsanctioned use of Generative AI in academic or workplace settings may be intentionally concealed and therefore infrequently reported despite high incidence in the real world. The observational nature of incident reports makes estab- lishing causation difficult . In general, we cannot infer causal relationships between failures and harms based on the infor- mation available for incidents in our dataset. Thus, our anal- ysis is strictly correlative, but can help assess where more rigorous analyses (such as FMEA) should be prioritized. Still, incident repositories serve as important starting points from which to map and estimate the frequency of materialized harms. Future partnerships with institutions such as MITRE, which is developing a confidential incident repository, may improve representativeness. 4 Findings We report the Generative AI harms (Figure 1) and so- ciotechnical failure modes (Figure 3) surfaced in our inci- dent dataset, their prevalence, who they affect, and how they relate to each other. 2 We also investigate whether particu- lar output modalities are more often associated with cer- tain types of harms and failure modes. While most of the harms we identified are well-defined and taxonomized in prior work (Weidinger et al. 2023; Abercrombie et al. 2024b; Lee et al. 2024), we introduce our taxonomy of sociotechni- cal failure modes, as well as our investigation of the relation- ships between failure modes, harms, and who they affect, as novel contributions. When reporting prevalence data, we re- port the number of occurrences of each harm or failure mode in our incident dataset. Because incidents were coded with up to two harms and as many failure modes as applicable, totals will be greater than the number of incidents. 4.1 What Generative AI Harms Surface in Publicly Reported Incidents? Our taxonomy of Generative AI harms surfaced in our dataset is made up of 41 harms, each falling into exactly one high-level category (Figure 1). These harms and cat- egories are largely identified in previous literature (Aber- crombie et al. 2024b; Weidinger et al. 2023; Lee et al. 2024). We surfaced one new harm, Overburdening ecosystems , and define it as “the pollution of a space or ecosystem in- tended for human productivity or creativity (e.g., creative 2 Harms and failure modes included in our complete codebooks but not applied during the coding process are omitted here. material submission or job application portals) with Genera- tive AI.” This harm is closely associated with risks to human creativity and critical thinking described in prior literature (Abercrombie et al. 2024b). However, previous literature fo- cuses on the cumulative societal implications of automating human labor and creativity, while Overburdening ecosys- tems captures the short-term impacts of synthetic content— often amounting to AI slop —on those tasked with distin- guishing AI from human. For example, several magazines have reported an influx of “low-standard AI-generated” sub- missions, overwhelming their editors and leading them to close their online submission portals (McMillan 2023). 4.2 Who Experiences the Harms? To categorize who experiences the harms of Generative AI, we define two types of stakeholders: interacting stakehold- ers, who directly and intentionally interact with the Gener- ative AI system, and non-interacting stakeholders, who do not directly or intentionally interact with the Generative AI system. We further specify three interacting stakeholders: (1) end user (individual) , referring to an individual end user of a Generative AI system who is acting on their own inter- ests; (2) end user (organization) , referring to an end user of a Generative AI system who is acting as or on behalf of an organization (e.g., a business); (3) developer/deployer , re- ferring to the creators of a Generative AI system, including those developing foundation models and those carrying out downstream customizations; and four non-interacting stake- holders: (1) individual(s) beyond the end user , referring to individuals who are passive or third parties in the incident (e.g., the unknowing subject of a deepfake); (2) organiza- tion(s) beyond the end user , referring to organizations that are passive or third parties in the incident (e.g., a magazine unknowingly receiving AI-generated submissions); (3) com- munity , referring to a group of people with a common inter- est, culture, or within a small geographic region (e.g., visual artists); and (4) society , referring to a large or disparate ag- gregate of people and their institutions. Figure 2 illustrates the distribution of who was affected and highlights the category of harm that most frequently af- fected each type of stakeholder. Most publicly reported inci- dents bring harm to non-interacting stakeholders. For exam- ple, Autonomy harms, the most prevalent category of harm in our dataset, accrued to individuals or organizations be- yond the end user of the Generative AI system in all but one case. Similarly, Political &amp; Economic harms affected soci- ety in all but one case. The only category of risk that tended to affect interacting stakeholders was Reputational harms. These results suggest that stakeholders who tend to expe- rience harm (third-party individuals and organizations, com- munities, and society) are not necessarily the same stake- holders thought to experience the benefits of Generative AI (the end users and creators). This represents a breakdown of one mechanism of accountability, whereby those choosing to participate in the benefits of a technology must also as- sume the associated risks of harm. Our results suggest that those choosing to participate in the benefits of Generative AI can do so while subjecting themselves to relatively little risk, while those who do not choose to participate experience the 1565</p>
+<!-- Page 6 -->
+
+<p>Autonomy (n = 178) Political &amp; Economic (n = 106) Misinformation (n = 84) Societal &amp; Cultural (n = 80) Reputational (n = 80) Representation &amp; Toxicity (n = 71) Psychological (n = 69) Financial &amp; Business (n = 62) Privacy &amp; Security (n = 47) Human Rights &amp; Civil Liberties (n = 14) Physical (n = 9) Environmental (n = 2) Impersonation/i dentity theft (n = 108) IP/copyright/ personality rights loss (n = 69)<em> Political manipulation/ Interference (n = 95) Political instability (n = 4) Institutional trust loss (n = 4) Economic manipulation (n = 3) Propagating misconceptions/ false beliefs (n = 68) Pollution of information ecosystem (n = 10) Erosion of trust in public information (n = 6) Overburdening ecosystems</em> (n = 26) Breach of ethics/values/ norms (n = 25) Loss of creativity/ critical thinking (n = 19) Productivity loss<em> (n = 4) Cheating/ plagiarism (n = 4) Job loss (n = 1) Loss of confidence/ trust (n = 58) Defamation/ libel/slander (n = 22) Erosion of due process</em> (n = 13) Benefits/ entitlements loss (n = 1) Toxic content (n = 48) Stereotyping (n = 12) Unfair capability distribution (n = 10) Sexualization (n = 46) Harassment/ abuse/ Intimidation (n = 12) Emotional distress (n = 5) Coercion/ manipulation (n = 4) Financial/ earnings loss (n = 52) Business operations/ infrastructure damage (n = 6) Confidentiality loss (n = 3) Exclusion (n = 11) Cyber - attacks* (n = 11) Disclosure (n = 10) Secondary use (n = 8) Exposure (n = 3) Distortion (n = 2) Insecurity (n = 2) Loss of life (n = 5) Bodily injury (n = 2) Self - harm (n = 1) Property damage (n = 1) Pollution (n = 1) Excessive energy consumption (n = 1) Taxonomy of Generative AI Harms Autonomy/ agency loss (n = 1) Labor exploitation (n = 1) Cultural dispossession (n = 1) Over - reliance (n = 1) Addiction (n = 1) Opportunity loss (n = 1) 200+ 180 160 120 100 80 60 40 20 0 Prevalence within Incident Dataset Figure 1: Overview of Taxonomy of Generative AI Harms. Darker colors indicate higher prevalence in our dataset. Harms that were heavily altered or created are indicated by an asterisk. 0 50 100 150 200 250 300 developer/deployer end user (organization) community organization(s) beyond the end user end user (individual) society individual(s) beyond the end user Political &amp; Economic Informational Autonomy Reputational Representation &amp; Toxicity Count Stakeholder Figure 2: Distribution of harmed stakeholders, with the most prevalent category of harm to each stakeholder represented by the left (colored) side of the respective bar. The right (gray) side of each bar is all other categories of harm. Most incidents harmed non-interacting stakeholders. vast majority of harm while being deprived of the benefits. 4.3 How do Generative AI Harms Surface in Publicly Reported Incidents? As argued in Section 2.2, the real-world harms of Generative AI are associated with a variety of sociotechnical failures. Although we acknowledge that we often cannot infer causal relationships between failures and harms based on the in- formation available for incidents in our dataset, our analysis offers a high-level idea of what failure modes exist and are prevalent, and what kinds of harm they tend to precipitate. We organize the 14 Generative AI sociotechnical failure modes we identified in our dataset based on whether they arise due to the design , development and evaluation , release , or use of Generative AI. Certain failure modes may arise due to more than one of these stages, but we define each failure mode narrowly and classify it as accurately as possible. Fur- thermore, we situate our taxonomy of failure modes within Weidinger et al.’s sociotechnical framework for Generative AI safety evaluation, composed of Capability, Human inter- action, and Systemic impact layers (Weidinger et al. 2023). Design-related failure modes ( n = 112 ) . These are failure modes arising due to the design of a Generative AI system and cannot be addressed with safety features or improved model implementations. These exist largely at the Systemic impact layer, as they have to do with the broader systems into which the Generative AI system is integrated and are present regardless of the system’s capabilities or human-AI interactions. We identify three design-related failure modes: (1) Problematic data collection and use ( n = 86 ), refer- ring to problems arising due to the indiscriminate nature of a system developers’ collection and use of data, including preventing subjects (e.g., internet users) from giving their informed consent on how their data is used, (2) Poor quality training data ( n = 25 ), referring to when the training data for a system reflects or exacerbates societal biases, overrep- resents a certain type of content, or is polluted with poor quality information which is not sufficiently cleaned, and (3) Resource demands ( n = 3 ), referring to the high cost of training and using Generative AI for inference in terms of both physical and human resources. Development and evaluation-related failure modes ( n = 118 ) . These are failure modes arising due to the develop- ment and evaluation of a Generative AI system and ex- ist largely at the Capability layer: that is, they determine whether the Generative AI system and its technical compo- 1566</p>
+<!-- Page 7 -->
+
+<p>Design - related failure modes (n = 112) Development and evaluation - related failure modes ( 𝑛 = 118) Release - related failure modes ( 𝑛 = 9) Use - related failure modes ( 𝑛 = 301) Problems with data collection and processing ( 𝑛 = 86) Data quality issues ( 𝑛 = 25) Hallucination ( 𝑛 = 56) Failure of commonsense reasoning ( 𝑛 = 2) Failure of safety guardrails ( 𝑛 = 13) Lack of transparency about model’s capabilities/ limitations ( 𝑛 = 3) Unanticipated use ( 𝑛 = 6) Undisclosed or unwelcome use ( 𝑛 = 80) Contested use ( 𝑛 = 7) Improper use ( 𝑛 = 23) Malicious use ( 𝑛 = 198) Taxonomy of Sociotechnical Failure Modes Resource demands ( 𝑛 = 3) 200+ 180 160 120 100 80 60 40 20 0 Prevalence within Incident Dataset Failure to comply with contextual norms ( 𝑛 = 36) Lack of robustness against adversarial prompting ( 𝑛 = 19) Design Use Figure 3: Overview of Taxonomy of Sociotechnical Failure Modes. Darker colors indicate higher overall prevalence in our dataset. Use-related failure modes are the most prevalent of the four categories. nents are likely to exhibit problematic behaviors. We iden- tify five development and evaluation-failure modes: (1) Hal- lucination ( n = 56 ), referring to when a system makes false, misleading, or inaccurate claims as if they were facts, (2) Failure of commonsense reasoning ( n = 2 ), referring to a system producing erroneous outputs resulting from a lack of intrinsic logic or commonsense reasoning, (3) Failure of safety guardrails ( n = 13 ), referring to when a safety fea- ture either produces a new problem or simply fails, (4) Fail- ure to comply with contextual norms ( n = 36 ), referring to when a system fails to meet user expectations (e.g., produc- ing gibberish, parroting), and (5) Lack of robustness against adversarial prompting ( n = 19 ), referring to when a system misbehaves as a result of adversarial prompting. Release-related failure modes ( n = 9 ) . These are issues aris- ing due to the release of a Generative AI system, which is typically accompanied by documentation or other user- facing communication. These exist largely at the Human interaction layer: that is, they determine whether the Gen- erative AI system “perform[s] its intended function at the point of use.” We identify two release-related failure modes: (1) Lack of transparency about model’s capabilities/limita- tions ( n = 3 ), referring to when a system’s developer fails to provide clarity about the system’s robustness, accuracy, or other performance metric in a manner that is comprehensi- ble to its users, and (2) Unanticipated use ( n = 6 ), referring to when a system’s developer fails to anticipate a plausible use case of the system. Use-related failure modes ( n = 301 ) . These are issues aris- ing due to the use of the Generative AI system as a result of either user error or user intention. These exist largely at the Human interaction layer. We identify four use-related failure modes: (1) Undisclosed or unwelcome use ( n = 80 ), refer- ring to when the use of Generative AI in a particular context subverts an explicit or implicit expectation of human exper- tise, labor, or creativity, (2) Contested use ( n = 7 ), referring to when it is unclear whether a Generative AI system was used in a certain context (e.g., resulting in false accusations of academic dishonesty), (3) Improper use ( n = 23 ), re- ferring to when a Generative AI system is used to complete tasks either requiring professional license/training or subject to industry standards and the user fails to properly review outputs, and (4) Malicious use ( n = 198 ), referring to when a bad actor uses Generative AI to facilitate harm to others in- cluding through the spread of disinformation, fraud, defama- tion, nonconsensual sexualization, or security threats. 0 50 100 150 200 250 300 developer/deployer end user (organization) community organization(s) beyond the end user end user (individual) society individual(s) beyond the end user use-related release-related development and evaluation-related design-related Count Stakeholder Figure 4: Bars are divided by the type of failure mode asso- ciated with harm to the respective stakeholder. Use-related failure modes were associated with the vast majority of harms to non-interacting stakeholders while Development and evaluation-related failure modes were most often asso- ciated with harms to interacting stakeholders. Which failure modes affect each type of stakeholder? In Figure 4, we report the types of failure modes that con- tribute to the harms experienced by each type of stakeholder. For all types of non-interacting stakeholders, Use-related failure modes (specifically, Malicious use or Undisclosed or unwelcome use) most often contributed to the harms they ex- 1567</p>
+<!-- Page 8 -->
+
+<p>perienced. Therefore, not only do most publicly reported in- cidents involve harms to stakeholders who did not choose to interact with Generative AI and rarely participate in the ben- efits, but the failure modes most often contributing to those harms are due to user intent. In particular, in cases of Mali- cious use, the apparent benefit that the Generative AI system offers to its user amounts to intentional harm to other parties. The failure mode most frequently associated with harms to interacting stakeholders was Hallucination, a Development and evaluation-related failure mode. Thus, safety evaluations at the Capability layer mostly ad- dress harms to interacting stakeholders while evaluations at the Human interaction layer are necessary (but likely insuf- ficient) to address harms to non-interacting stakeholders. 4.4 Which Failure Modes Are Associated With Each Type of Harm? 0 50 100 150 Physical Human Rights &amp; Civil Liberties Privacy &amp; Security Financial &amp; Business Representation &amp; Toxicity Psychological Societal &amp; Cultural Informational Reputational Political &amp; Economic Autonomy Malicious use Hallucination Undisclosed or unwelcome use Problematic data collection and processing Failure to comply with contextual norms Data quality issues Improper use Lack of robustness against adversarial prompting Count Harm Category Figure 5: We indicate the two most prevalent sociotechni- cal failure modes associated with each category of harm with the colored sections of each bar; the gray sections are all other failure modes combined. We omit Environmental harms due to low frequency in our dataset. As seen in Figure 5, some categories of harm are over- whelmingly associated with a single failure mode. We ex- amined whether the incidents coded with each of these high- frequency combinations (e.g., Autonomy and Malicious use) converged on particular themes. Autonomy, Political &amp; Economic, Psychological, and Fi- nancial &amp; Business harms were all most often associated with Malicious use. The incidents coded with any of these combinations largely involved deepfakes. • Incidents coded with an Autonomy harm and Mali- cious use were largely cases of impersonation. For ex- ample, several companies were defrauded by deepfake impersonations of their C-suite executives (Stupp 2019; Franceschi-Bicchierai 2020) and both public and private individuals were defamed by their impersonations’ offen- sive remarks (Cole 2019; Gilbert 2023). • Incidents coded with a Political &amp; Economic harm and Malicious use largely involved deepfakes deployed to create false narratives about political figures (Horton 2020; Liddell 2024), voter groups (Thruston 2024; Linly 2024), or current events (Reuters 2023; Bond 2023). • Incidents coded with a Psychological harm and Mali- cious use were largely cases where pornographic mate- rial of an individual was created without their knowledge (Stern 2023; Rubin 2023). • Incidents coded with a Financial &amp; Business harm and Malicious use mostly involved deepfake-facilitated scams (Davies 2024; Al-Siabi 2023), fraud (Lo 2023), or extortion (Goodin 2023; Fischer 2021). Incidents coded with Human Rights &amp; Civil Liberties harms and Hallucination represented, in all but one case, when false information generated by AI was presented in a court of law (Durkee 2023; Hyde 2023). Incidents coded with Pri- vacy &amp; Security harms and Problematic data collection and use mostly involved violations of privacy rights due to Gen- erative AI developers’ data acquisition practices, including internet scraping (Davis 2024; Brittain 2023). Some combinations were more heterogeneous; for ex- ample, the combination of Societal &amp; Cultural harms and Undisclosed or unwelcome use included controversies due to the substitution of AI-generated outputs for human artists (Gault 2022; Codega 2022) and students’ use of Generative AI to cheat (Proctor 2024a). Co-occurring failure modes As Weidinger et al. (2023) argue, the Human interaction and Systemic impact layers of the sociotechnical system are critical in determining whether Generative AI harms materialize in the real world. Through- out our analysis, we found that this was demonstrated by several commonly co-occurring failure modes precipitating a particular type of risk. For example, when AI-generated false information was presented in a court of law (Durkee 2023; Hyde 2023), we identified both Hallucination and Im- proper use as associated failure modes – while the AI system produced the false information (Hallucination), the user was ultimately held at least somewhat responsible for not having verified the AI’s output (Improper use). Both failure modes were necessary to have materialized the harm. Role of open-source models As noted in prior work, the technical ecosystem that facilitates the creation of AI- generated non-consensual intimate imagery (AIG-NCII) is built upon open-source models (Gibson et al. 2024; Ding and Suresh 2025). Our work both emphasizes the real-world impact of this finding – our dataset included many incidents of non-consensual deepfake pornography – and corroborates it: in cases where the nudification tool was known, we found that it was built upon an open-source model such as Stable Diffusion (Ly 2024; Milmo 2023; Maiberg 2024). Effect of output modality Among the Generative AI sys- tems associated with the incidents in our dataset, text was the most prevalent output modality ( n = 219 ), followed by image ( n = 93 ), video ( n = 76 ), audio ( n = 49 ), and multi- modal ( n = 62 ). 3 The prevalence of particular sociotechni- 3 Throughout the coding process, we considered code a separate modality, but ultimately merged it with text due to a low number of incidents ( n = 3 ). 1568</p>
+<!-- Page 9 -->
+
+<p>cal failure modes and harm categories was highly dependent on the output modality of the Generative AI system at fault. Hallucination was a prevalent failure mode for systems pro- ducing text while Malicious use was the most prevalent fail- ure mode for systems producing any other output modality. 5 Discussion Our findings offer a quantitative overview of the harms and sociotechnical failure modes of Generative AI systems de- ployed in the real world. Here, we discuss the benefits of eliciting not only the harms, but also who they affect and the sociotechnical failures that underlie them when conducting case studies of real-world incidents. We conclude with sev- eral recommendations for key AI stakeholders. 5.1 Implications of Our Findings Previous taxonomies of AI and Generative AI harms have identified, categorized, and suggested the implications of a wide range of harms (Abercrombie et al. 2024b; Wei- dinger et al. 2023; Hutiri, Papakyriakopoulos, and Xiang 2024; Zeng et al. 2024; Shelby et al. 2023; Critch and Rus- sell 2023; Solaiman et al. 2024; Liu et al. 2024; Bird, Ung- less, and Kasirzadeh 2023; Barnett 2023; Vidgen et al. 2024; Hoffman and Frase 2023; Pittaras and McGregor 2023; Slat- tery et al. 2025). Separately, work has been done to identify failure modes of AI (Raji et al. 2022; Slattery et al. 2025). However, most previous work lacks a real-world understand- ing of how these harms and failure modes relate to each other. In this paper, we develop a relational understanding of harms, failure modes, and affected stakeholders. This co- ordinated approach lends itself to mapping pathways of ac- countability and identifying where they break down, help- ing inform which stakeholders are best positioned to address each harm or risk. The uneven distribution of benefits and harms of Gener- ative AI across stakeholders erodes pathways of account- ability. In particular, our findings suggest that the balance of benefits and harms of Generative AI differs greatly be- tween its interacting and non-interacting stakeholders. We find that the touted benefits of Generative AI (e.g., increased productivity) accrue mostly to its interacting stakeholders while its non-interacting stakeholders bear many of the most critical and prevalent harms, such as harms to their auton- omy, psychological wellbeing, and civil liberties. This has two main implications. First, interacting stakeholders tend not to need to assume substantive risk of harm for their choice to participate in the benefits of Generative AI, erod- ing one path of accountability. Second, ethical and safety considerations at the Human interaction and Systemic im- pact layers of Generative AI sociotechnical systems are highly necessary; however, because non-interacting stake- holders affected by failures at these layers often must rely on indirect and inefficient pathways of recourse – for instance, those harmed by the copyright issues resulting from Gen- erative AI developers’ data acquisition practices are suing the relevant developers (Bruell 2023; Wininger 2024; Picchi 2023) – developers are rarely incentivized to conduct them. Thus, ethics and safety improvements at these layers likely must be either incentivized or enforced by external oversight bodies. We see this in other domains where this lopsided distribution of benefits and risks is present, such as data pri- vacy, where those who collect data benefit while assuming little risk, and those whose data are collected rarely benefit but assume substantive risk. Certain cumulative harms, which, as noted in Section 3.3, are unlikely to surface in analyses of publicly reported inci- dents may accrue largely to the end users of Generative AI. This may change the balance of harms and benefits that end users assume over time. These harms include the deteriora- tion of critical thinking skills due to over-reliance on Gener- ative AI systems, psychological addiction, and psychologi- cal isolation (Abercrombie et al. 2024b). Generative AI changes the landscape of AI harms. As discussed in Section 2.4, Vel´ azquez et al. (2024) applied a framework similar to ours in their analysis of 639 AI inci- dent reports. While their analysis includes incidents involv- ing a wide range of AI systems, we focused our analysis strictly on incidents involving Generative AI. Their work shares some key findings with this paper: for example, they found that Autonomy harms were the most prevalent type of harm in their dataset, which we also found (Figure 1). How- ever, they also came to several conclusions that contrast with our findings. For example, they found that the vast majority of incidents in their dataset harmed the individual directly interacting with the AI system, while we found the oppo- site: the overwhelming majority of incidents in our dataset harmed stakeholders that did not directly interact with the Generative AI system (Figure 2). They also found that most harms were non-malicious while Malicious use was the sin- gle most prevalent failure mode in our analysis (Figure 3). We argue that these contrasting findings are due to differ- ences between how Generative AI and traditional AI harms manifest in the real world; as noted in Section 2.4, this ar- gument is corroborated by the findings of Hutiri, Papakyri- akopoulos, and Xiang (2024). These differences, in concert with our finding that Gen- erative AI systems with different output modalities tend to produce different types of harm via different failure modes (Section 4.4), suggest that effective AI governance is neces- sarily application-specific. 5.2 Recommendations As argued in Section 5.1, the distribution of benefits and harms of Generative AI across stakeholders creates an in- centive structure that leads to the neglect of non-interacting stakeholders. Therefore, we call on academic, industry, le- gal, and policy actors to prioritize and advocate for non- interacting stakeholders’ interests. We outline three recom- mendations that aim to address some of the most prevalent and/or severe harms in our analysis, including Autonomy, Psychological, and Human Rights &amp; Civil Liberties harms. Basic AI literacy can reduce certain risks of harm. Harm is often associated with not just one, but two or more failures in combination (Section 4.4). This suggests that pre- venting just one of the precipitating failures may have pre- vented these harms altogether. Capitalizing on this insight, 1569</p>
+<!-- Page 10 -->
+
+<p>we advocate for work toward promoting basic AI literacy in the general public, which may help minimize Use-related failures. In particular, several incidents associated with Im- proper use demonstrate that members of the general public do not understand the capabilities, limitations, or risks of Generative AI. For example, when a Canadian lawyer cited hallucinations in a divorce case, she claimed that she did not realize that ChatGPT could hallucinate (Proctor 2024b). Because Generative AI applications are often marketed as consumer products, the general public is a critical audience and participant in conversations about Generative AI gover- nance. Yet, many members of the public lack the knowledge and vocabulary to describe the behavior of Generative AI ap- plications. We argue that it is critical to communicate current understandings of the capabilities, limitations, and harms of Generative AI in ways that are comprehensible to the gen- eral public. Some work is being done on consumer-facing safety labels (Chia 2024), which aim to encourage develop- ers and deployers to “be transparent with users by provid- ing information on how the generative AI models and apps work.” This is an important step, but it is insufficient: many of the harms of Generative AI affect those who do not inter- act directly with it, and hence are unlikely to see these labels. Taxonomies of harms and failure modes are important arti- facts for the general public, but are currently largely directed toward expert audiences. Hence, an important area of future research is to create publicly accessible and digestible in- formation about Generative AI failure modes and harms. In the near future, we aim to distill both taxonomies developed in this paper into a non-technical and concise document and assess its usability for members of the public. The current regulatory landscape enables the develop- ment of Generative AI tools specifically for abusive pur- poses, especially for the creation of AIG-NCII. The EU AI Act incentivizes open-source development by reducing the associated obligations of documentation and disclosure (EU 2024). As Kapoor et al. (2024) caution, however, while open-source models offer benefits such as increasing innova- tion, they also pose greater risks of misuse. Our findings cor- roborate this concern (Section 4.4). Although we acknowl- edge that, when limited to publicly available data, it is dif- ficult to confidently determine whether an incident involved an open or closed model, we conjecture that the majority of egregious applications (for example, websites enabling the creation of AIG-NCII) are built on open-source models. This suggests that more research centered on real-world evidence of the supposed risks and benefits of open-source foundation models is necessary to inform regulatory stances. We argue that the current regulatory landscape enables the creation of AIG-NCII. While there has been some work to regulate the spread of AIG-NCII, such as the Take It Down Act (Cruz and Klobuchar 2025), these measures still place the burden of removal on the victims (Ding and Suresh 2025). Therefore, minimizing the creation of AIG-NCII is critical to minimize its psychological harms. Gibson et al. (2024) surface several viable solutions, including, as we have discussed, critical analysis of the benefits of open- source models, as well as consideration of access restrictions and tracking of downstream usage. They also note that in the absence of any regulation requiring verification of deep- fake subjects’ consent or age, many nudification tools do not even mention these issues. Overall, the current lack of reg- ulation of the open-source technical ecosystem enables the existence of tools specifically positioned to be abusive. Provenance data tracking and synthetic content detec- tion can reduce some risks of harm. The NIST AI 100-4 (NIST 2024) proposes provenance data tracking and syn- thetic content detection as strategies to reduce risks posed by synthetic content, including AIG-NCII and misinforma- tion. However, some researchers find that these solutions are incomplete or misaligned. Ding and Suresh (2025) argue that just because AIG-NCII is detectable does not mean it is harmless, and Kapoor and Narayanan (2025) argue that the real bottleneck for misinformation is distribution rather than creation – thus, fears surrounding the proliferation of AI-generated misinformation were overblown. Nonetheless, we argue that data tracking and synthetic content detection can reduce some risks from synthetic con- tent. In particular, researchers have cautioned that Gener- ative AI could still meaningfully change the landscape of online misinformation, although in more incremental ways than originally anticipated (Sanderson, Messing, and Tucker 2024). We corroborate this argument: we found several in- cidents where Generative AI was deployed to generate con- vincing misinformation, causing significant harm. For ex- ample, an AI-generated image of an explosion at the Pen- tagon sparked a dip in the US stock market (Bond 2023). In addition, we surfaced many incidents of deepfake-facilitated scams (Davies 2024; Al-Siabi 2023), fraud (Lo 2023), and extortion (Goodin 2023; Fischer 2021). These incidents have caused significant financial and psychological harm to their victims, and we argue that they can be effectively mitigated by data tracking and synthetic content detection. 6 Conclusion In this paper, we set out to develop an understanding of real- world Generative AI harms, the sociotechnical failures that precipitate them, and who they affect. We ground our work in a systematic review of 499 publicly reported Generative AI incidents. We find that many incidents result in harm to those who do not interact directly with Generative AI (such as the unknowing subject of a deepfake), but are often as- sociated with failures due to those who do interact directly with Generative AI (the end users and developers). Our find- ings also suggest that the landscape of Generative AI harms is meaningfully different from that of traditional AI systems: for example, malicious use may be a far more prevalent fail- ure mode for Generative AI systems than for traditional AI systems. Given these insights, we make several recommen- dations for key AI stakeholder groups to address Generative AI harms, including through public disclosures and educa- tion, regulatory stances on open-source development, and provenance data tracking and synthetic content detection. 1570</p>
+<!-- Page 11 -->
+
+<p>Acknowledgments This work was supported in part by Meta, a Carnegie Mel- lon University Rales Fellowship, the Block Center for Tech- nology and Society at Carnegie Mellon University, and the CMU-NIST Cooperative Research Center on AI Measure- ment Science &amp; Engineering (AIMSEC). Any opinions, findings, conclusions, or recommendations expressed in this material are those of the authors and do not reflect the views of funding entities. References Abercrombie, G.; Benbouzid, D.; Giudici, P.; Golpayegani, D.; Hernandez, J.; Noro, P.; Pandit, H.; Paraschou, E.; Pow- nall, C.; Prajapati; et al. 2024a. AIAAIC - AIAAIC Reposi- tory. Abercrombie, G.; Benbouzid, D.; Giudici, P.; Golpayegani, D.; Hernandez, J.; Noro, P.; Pandit, H.; Paraschou, E.; Pow- nall, C.; Prajapati, J.; Sayre, M. A.; Sengupta, U.; Suriya- wongkul, A.; Thelot, R.; Vei, S.; and Waltersdorfer, L. 2024b. A Collaborative, Human-Centred Taxonomy of AI, Algorithmic, and Automation Harms. arXiv:2407.01294. Al-Siabi, N. 2023. Someone Deepfaked Joe Rogan to Sell a Male Enhancement Product. Futurism . Barnett, J. 2023. The ethical implications of generative au- dio models: A systematic literature review. In Proceedings of the 2023 AAAI/ACM Conference on AI, Ethics, and Soci- ety , 146–161. Bird, C.; Ungless, E.; and Kasirzadeh, A. 2023. Typology of risks of generative text-to-image models. In Proceedings of the 2023 AAAI/ACM Conference on AI, Ethics, and Society , 396–410. Bond, S. 2023. Fake viral images of an explosion at the Pentagon were probably created by AI. NPR . Bostrom, N. 2001. Existential Risks: Analyzing Human Ex- tinction Scenarios and Related Hazards. Journal of Evolu- tion and Technology . Brittain, B. 2023. Google hit with class-action lawsuit over AI data scraping. Reuters . Bruell, A. 2023. New York Times Sues Microsoft and Ope- nAI, Alleging Copyright Infringement. Wall Street Journal . Carlson, C. 2012. Effective FMEAs: Achieving Safe, Reli- able, and Economical Products and Processes Using Failure Mode and Effects Analysis . John Wiley &amp; Sons, Inc. ISBN 9781118007433. Chia, O. 2024. ‘Safety labels’ that clearly indicate AI risks and testing on the cards in Singapore. The Straits Times . Codega, L. 2022. Tor Tried to Hide AI Art on a Book Cover, and It Is a Mess. Gizmodo . Cole, S. 2019. A Site Faking Jordan Peterson’s Voice Shuts Down After Peterson Decries Deepfakes. Vice . Critch, A.; and Russell, S. 2023. TASRA: a Tax- onomy and Analysis of Societal-Scale Risks from AI. arXiv:2306.06924. Cruz, T.; and Klobuchar, A. 2025. S.4569 - 118th Congress (2023-2024): TAKE IT DOWN Act | Congress.gov | Library of Congress. Davies, M. 2024. Michael Mosley ’deepfake’ warning as late doctor’s likeness used in sham footage. Daily Record . Davis, W. 2024. OpenAI transcribed over a million hours of YouTube videos to train GPT-4. The Verge . Ding, M. L.; and Suresh, H. 2025. The Malicious Techni- cal Ecosystem: Exposing Limitations in Technical Gover- nance of AI-Generated Non-Consensual Intimate Images of Adults. arXiv:2504.17663. Durkee, A. 2023. Ex-Trump ‘Fixer’ Michael Cohen Admits He Accidentally Used Google Bard To Put Fake Cases Into Legal Filing. Forbes . EU, T. 2024. High-level summary of the AI Act | EU Artifi- cial Intelligence Act. Fischer, D. 2021. Teen charged with extorting official with explicit photos. AP News . Franceschi-Bicchierai, L. 2020. Listen to This Deepfake Au- dio Impersonating a CEO in Brazen Fraud Attempt. Vice . Gault, M. 2022. An AI-Generated Artwork Won First Place at a State Fair Fine Arts Competition, and Artists Are Pissed. Vice . Gibson, C.; Olszewski, D.; Brigham, N. G.; Crowder, A.; Butler, K. R. B.; Traynor, P.; Redmiles, E. M.; and Kohno, T. 2024. Analyzing the AI Nudification Application Ecosys- tem. arXiv:2411.09751. Gilbert, D. 2023. High Schoolers Made a Racist Deepfake of a Principal Threatening Black Students. Vice . Goodin, D. 2023. FBI warns of increasing use of AI- generated deepfakes in sextortion schemes. ArsTechnica . Hendrycks, D.; Mazeika, M.; and Woodside, T. 2023. An Overview of Catastrophic AI Risks. arxiv:2306.12001 [cs]. Hoffman, M.; and Frase, H. 2023. Adding Structure to AI Harm: An Introduction to CSET’s AI Harm Framework. Center for Security and Emerging Technology . Horton, J. 2020. US 2020 Election: Does Joe Biden support defunding the police? BBC . Hutiri, W.; Papakyriakopoulos, O.; and Xiang, A. 2024. Not my voice! a taxonomy of ethical and safety harms of speech generators. In Proceedings of the 2024 ACM Conference on Fairness, Accountability, and Transparency , 359–376. Hyde, J. 2023. LiP presents false citations to court after asking ChatGPT. The Law Society Gazette . Kapoor, S.; and Narayanan, A. 2025. We Looked at 78 Elec- tion Deepfakes. Political Misinformation is not an AI Prob- lem. AI Snake Oil . Kapoor, S.; et al. 2024. Position: on the societal impact of open foundation models. In Proceedings of the 41st International Conference on Machine Learning , ICML’24. JMLR.org. Karger, E.; Rosenberg, J.; Jacobs, Z.; Hickman, M.; Had- shar, R.; Gamin, K.; and Tetlock, P. 2023. Forecasting Exis- tential Risks: Evidence from a Long-Run Forecasting Tour- nament. Forecasting Research Institute . Kasirzadeh, A. 2025. Two Types of AI Existential Risk: Decisive and Accumulative. arxiv:2401.07836 [cs]. 1571</p>
+<!-- Page 12 -->
+
+<p>Koessler, L.; and Schuett, J. 2023. Risk assessment at AGI companies: A review of popular risk assessment techniques from other safety-critical industries. arXiv:2307.08823. Lee, H.-P.; Yang, Y.-J.; Von Davier, T. S.; Forlizzi, J.; and Das, S. 2024. Deepfakes, phrenology, surveillance, and more! a taxonomy of ai privacy risks. In Proceedings of the 2024 CHI Conference on Human Factors in Computing Systems , 1–19. Leveson, N. 2012. Engineering a Safer World: Systems Thinking Applied to Safety . The MIT Press. ISBN 9780262298247. Liddell, J. 2024. Trump posts AI-generated image of Harris speaking at DNC with communist flags. The Independent . Linly, Z. 2024. GOP Pollster’s Viral AI Fake Photos Of Re- publican ‘Black Voters’ Spotlight Election Misinformation Fears. News One . Liu, Y.; Yao, Y.; Ton, J.-F.; Zhang, X.; Guo, R.; Cheng, H.; Klochkov, Y.; Taufiq, M. F.; and Li, H. 2024. Trustworthy LLMs: a Survey and Guideline for Evaluating Large Lan- guage Models’ Alignment. arXiv:2308.05374. Lo, C. 2023. Hong Kong police arrest 6 in crackdown on fraud syndicate using AI deepfake technology to apply for loans. South China Morning Post . Ly, J. 2024. Open Foundation Models: Implications of Con- temporary Artificial Intelligence. Center for Security and Emerging Technology . Macrae, C. 2022. Learning from the failure of autonomous and intelligent systems: Accidents, safety, and sociotechni- cal sources of risk. Risk analysis , 42(9): 1999–2025. Maiberg, E. 2024. Samsung-Backed AI Image Generator Produces Nonconsensual Porn. 404 Media . McGregor, S. 2021. Preventing repeated real world AI fail- ures by cataloging incidents: The AI incident database. In Proceedings of the AAAI Conference on Artificial Intelli- gence , volume 35, 15458–15463. McMillan, R. 2023. AI Junk Is Starting to Pollute the Inter- net. Wall Street Journal . Milmo, D. 2023. AI-created child sexual abuse images ‘threaten to overwhelm internet’. The Guardian . NIST. 2023. Artificial intelligence risk management frame- work (AI RMF 1.0). National Institute of Standards and Technology , 100–1. NIST. 2024. Reducing risk posed by synthetic content an overview of technical approaches to digital content trans- parency. OECD. 2023. Stocktaking for the development of an AI incident definition. OECD Artificial Intelligence Papers . OECD. 2025. AIM: The OECD AI Incidents Monitor, an evidence base for trustworthy AI. Picchi, A. 2023. George R.R. Martin, John Grisham and other major authors sue OpenAI, alleging ”systematic theft”. CBS News . Pittaras, N.; and McGregor, S. 2023. A Taxonomic System for Failure Cause Analysis of Open Source AI Incidents. In Proceedings of the Workshop on Artificial Intelligence Safety 2023 . Proctor, J. 2024a. Air Canada found liable for chatbot’s bad advice on plane tickets. CBC . Proctor, J. 2024b. B.C. lawyer reprimanded for citing fake cases invented by ChatGPT. CBC . Raji, I. D.; Kumar, I. E.; Horowitz, A.; and Selbst, A. 2022. The fallacy of AI functionality. In Proceedings of the 2022 ACM Conference on Fairness, Accountability, and Trans- parency , 959–972. Reuters. 2023. Kremlin: fake Putin address broadcast on Russian radio stations after ’hack’. Reuters . Rismani, S.; Shelby, R.; Smart, A.; Jatho, E.; Kroll, J.; Moon, A.; and Rostamzadeh, N. 2023. From plane crashes to algorithmic harm: applicability of safety engineering frameworks for responsible ML. In Proceedings of the 2023 CHI Conference on Human Factors in Computing Systems , 1–18. Rubin, A. 2023. Teens exploited by fake nudes illustrate threat of unregulated AI. Axios . Sanderson, Z.; Messing, S.; and Tucker, J. A. 2024. Mis- understood mechanics: How AI, TikTok, and the liar’s divi- dend might affect the 2024 elections. Brookings . Shelby, R.; Rismani, S.; Henne, K.; Moon, A.; Ros- tamzadeh, N.; Nicholas, P.; Yilla-Akbari, N.; Gallegos, J.; Smart, A.; Garcia, E.; et al. 2023. Sociotechnical harms of algorithmic systems: Scoping a taxonomy for harm reduc- tion. In Proceedings of the 2023 AAAI/ACM Conference on AI, Ethics, and Society , 723–741. Slattery, P.; Saeri, A. K.; Grundy, E. A. C.; Graham, J.; Noe- tel, M.; Uuk, R.; Dao, J.; Pour, S.; Casper, S.; and Thomp- son, N. 2025. The AI Risk Repository: A Comprehensive Meta-Review, Database, and Taxonomy of Risks From Arti- ficial Intelligence. arXiv:2408.12622. Solaiman, I.; et al. 2024. Evaluating the Social Im- pact of Generative AI Systems in Systems and Society. arXiv:2306.05949. Stern, M. 2023. A College Girl Found Deepfake Porn of Herself Online. Who Did It Shocked Her. Rolling Stone . Stupp, C. 2019. Fraudsters Used AI to Mimic CEO’s Voice in Unusual Cybercrime Case. Wall Street Journal . Tang, N.; Zhi, J.; Kuo, T.-S.; Kainaroi, C.; Northup, J. J.; Holstein, K.; Zhu, H.; Heidari, H.; and Shen, H. 2024. AI Failure Cards: Understanding and Supporting Grassroots Ef- forts to Mitigate AI Failures in Homeless Services. In Pro- ceedings of the 2024 ACM Conference on Fairness, Ac- countability, and Transparency , 713–732. Tangermann, V. 2024. AI CEO Proud of Chatbot for Con- vincing Woman to Euthanize Her Dog. Futurism . Thruston, J. 2024. AI images of Donald Trump with black voters spread before election. The Times . Turri, V.; and Dzombak, R. 2023. Why we need to know more: Exploring the state of AI incident documentation practices. In Proceedings of the 2023 AAAI/ACM Confer- ence on AI, Ethics, and Society , 576–583. Vel´ azquez, J. D. M.; ˇ S´ cepanovi´ c, S.; Gvirtz, A.; and Quer- cia, D. 2024. Decoding Real-World Artificial Intelligence Incidents. Computer , 57(11): 71–81. 1572</p>
+<!-- Page 13 -->
+
+<p>Vidgen, B.; et al. 2024. Introducing v0.5 of the AI Safety Benchmark from MLCommons. arXiv:2404.12241. Walkowiak, E.; and Potts, J. 2024. Generative AI, Work and Risks in Cultural and Creative Industries. SSRN Electronic Journal . Weidinger, L.; Rauh, M.; Marchal, N.; Manzini, A.; Hen- dricks, L. A.; Mateos-Garcia, J.; Bergman, S.; Kay, J.; Grif- fin, C.; Bariach, B.; Gabriel, I.; Rieser, V.; and Isaac, W. 2023. Sociotechnical Safety Evaluation of Generative AI Systems. arXiv:2310.11986. Wininger, A. 2024. China’s Beijing Internet Court Recog- nizes Personality Rights in Generative AI Case. The Na- tional Law Review . Zeng, Y.; Klyman, K.; Zhou, A.; Yang, Y.; Pan, M.; Jia, R.; Song, D.; Liang, P.; and Li, B. 2024. AI Risk Categoriza- tion Decoded (AIR 2024): From Government Regulations to Corporate Policies. arXiv:2406.17864. 1573</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      The human is index zero.
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/tvproductions/gzkit" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.sections", "navigation.expand", "navigation.top", "toc.follow", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

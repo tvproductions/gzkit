@@ -1,0 +1,5601 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Keep humans in the loop when AI writes your code">
+      
+      
+        <meta name="author" content="Jeffry">
+      
+      
+        <link rel="canonical" href="https://gzkit.org/governance/research_sources/arxiv-240614713/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>arxiv 2406.14713 - gzkit</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="deep-orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#arxiv-240614713" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="gzkit" class="md-header__button md-logo" aria-label="gzkit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            gzkit
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              arxiv 2406.14713
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/tvproductions/gzkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tvproductions/gzkit
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="gzkit" class="md-nav__button md-logo" aria-label="gzkit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    gzkit
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/tvproductions/gzkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tvproductions/gzkit
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/runbook/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runbook
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/why/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Why gzkit?
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Examples
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/tutorial-first-project/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    First Project
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/tutorial-rhea-bootstrap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RHEA Bootstrap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_3" id="__nav_5_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/guide-prd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRD Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/guide-adr/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/guide-tasks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Task Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/guide-releasing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releasing Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_4" id="__nav_5_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Templates
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Templates
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/templates/prd-template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRD Template
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/templates/adr-template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Template
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/templates/task-template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Task Template
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Not Started"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_5" id="__nav_5_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Assessments
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Assessments
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/gzkit-readiness-assessment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GZKit Readiness Assessment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/go-live-gap-analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Go-Live Gap Analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/comparison-gzkit-speckit-bmad/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Framework Comparison
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concepts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Concepts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/concepts/gates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/concepts/lanes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lanes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/concepts/lifecycle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lifecycle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/concepts/obpis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OBPIs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/concepts/closeout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Closeout Ceremony
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/concepts/workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Daily Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/concepts/test-traceability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Traceability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Skills
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_2" id="__nav_7_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Setup
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project Setup
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-init/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-init
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-prd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-prd
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-constitute/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-constitute
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_3" id="__nav_7_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Planning
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Planning
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-adr-create/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-create
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-obpi-specify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-obpi-specify
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-adr-evaluate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-evaluate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-plan-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-plan-audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_4" id="__nav_7_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Execution
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Execution
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-obpi-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-obpi-pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-implement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-implement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-gates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-gates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-check/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-check
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-arb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-arb
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_5" id="__nav_7_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Status & Review
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Status & Review
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-adr-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-state/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-state
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-obpi-simplify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-obpi-simplify
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-adr-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_6" id="__nav_7_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Closeout & Audit
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Closeout & Audit
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-adr-closeout-ceremony/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-closeout-ceremony
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-adr-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-obpi-reconcile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-obpi-reconcile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-adr-emit-receipt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-emit-receipt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-validate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-validate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_7" id="__nav_7_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operations
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Operations
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/git-sync/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /git-sync
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-patch-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-patch-release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-session-handoff/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-session-handoff
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-chore-runner/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-chore-runner
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-obpi-lock/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-obpi-lock
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-cli-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-cli-audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Commands
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Commands
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/init/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz init
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/prd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz prd
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/constitute/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz constitute
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/specify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz specify
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/plan-create/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz plan create
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/plan-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz plan audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/implement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz implement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/gates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz gates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/state/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz state
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/adr-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/adr-promote/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr promote
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/adr-audit-check/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr audit-check
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/adr-covers-check/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr covers-check
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/adr-emit-receipt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr emit-receipt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/covers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz covers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/flags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz flags
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/flag-explain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz flag explain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/obpi-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz obpi status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/obpi-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz obpi pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/obpi-validate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz obpi validate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/obpi-reconcile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz obpi reconcile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/obpi-emit-receipt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz obpi emit-receipt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/closeout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz closeout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/patch-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz patch release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/git-sync/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz git-sync
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/attest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz attest
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/migrate-semver/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz migrate-semver
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/register-adrs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz register-adrs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/chores-list/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz chores list
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/chores-plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz chores plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/chores-run/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz chores run
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/chores-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz chores audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/skill-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz skill audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/parity-check/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz parity check
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/readiness-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz readiness audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/check-config-paths/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz check-config-paths
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/cli-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz cli audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/task-list/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz task list
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/task-start/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz task start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/task-complete/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz task complete
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/task-block/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz task block
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/task-escalate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz task escalate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/personas-list/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz personas list
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/agent-sync-control-surfaces/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz agent sync control-surfaces
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Governance (Canonical)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Governance (Canonical)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance_runbook/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Governance Runbook
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../state-doctrine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    State Doctrine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../storage-tiers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Storage Tiers Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipeline-marker-migration-path/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline Marker Migration Path
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../documentation-taxonomy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation Taxonomy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../feature-flags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature Flags
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../parity-intake-rubric/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Parity Intake Rubric
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/charter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Charter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/adr-lifecycle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Lifecycle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/obpi-transaction-contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OBPI Transaction Contract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/obpi-runtime-contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OBPI Runtime Contract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/obpi-decomposition-matrix/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OBPI Decomposition Matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/adr-obpi-ghi-audit-linkage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR/OBPI/GHI/Audit Linkage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/adr-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/audit-protocol/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Audit Protocol
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/gate5-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gate 5 Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/architectural-enforcement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architectural Enforcement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/gzkit-structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gzkit Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/governance-registry-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Governance Registry Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/agent-era-prompting-summary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent-Era Prompting Summary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/layered-trust/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Layered Trust
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/ledger-schema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ledger Schema
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/session-handoff-obligations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Session Handoff Obligations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/session-handoff-schema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Session Handoff Schema
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/handoff-chaining/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Handoff Chaining
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/handoff-validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Handoff Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/staleness-classification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Staleness Classification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/validation-receipts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validation Receipts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9_29" >
+        
+          
+          <label class="md-nav__link" for="__nav_9_29" id="__nav_9_29_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releases
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_29_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_29">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Releases
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/releases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/releases/major-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Major Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/releases/minor-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Minor Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/releases/patch-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Patch Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9_30" >
+        
+          
+          <label class="md-nav__link" for="__nav_9_30" id="__nav_9_30_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Audits
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_30_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_30">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Audits
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/audits/AUDIT-BRIEF-governance-harmonization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Harmonization Brief
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/audits/governance-harmonization-2026-01-11/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Harmonization Audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GovZero/audits/AUDIT-TEMPLATE-agent-readiness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Readiness Audit Template
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docs README
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/reference/charter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Charter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/reference/lineage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lineage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/reference/agent-input-disciplines/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Input Disciplines
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/reference/genesis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Genesis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/reference/genesis-transcript/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Genesis Transcript
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/reference/airlineops-exploration-verbatim/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AirlineOps Exploration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="arxiv-240614713">arxiv 2406.14713<a class="headerlink" href="#arxiv-240614713" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>Source: https://arxiv.org/pdf/2406.14713
+Pages: 24</p>
+</blockquote>
+<hr />
+<p>Risk thresholds for frontier AI Leonie Koessler ∗ Jonas Schuett Markus Anderljung Centre for the Governance of AI Abstract Frontier artificial intelligence (AI) systems could pose increasing risks to public safety and security. But what level of risk is acceptable? One increasingly popular approach is to define capability thresholds , which describe AI capabilities beyond which an AI system is deemed to pose too much risk. A more direct approach is to define risk thresholds that simply state how much risk would be too much. For instance, they might state that the likelihood of cybercriminals using an AI system to cause X amount of economic damage must not increase by more than Y percentage points. The main upside of risk thresholds is that they are more principled than capability thresholds, but the main downside is that they are more difficult to evaluate reliably. For this reason, we currently recommend that companies (1) define risk thresholds to provide a principled foundation for their decision-making, (2) use these risk thresholds to help set capability thresholds, and then (3) primarily rely on capability thresholds to make their decisions. Regulators should also explore the area because, ultimately, they are the most legitimate actors to define risk thresholds. If AI risk estimates become more reliable, risk thresholds should arguably play an increasingly direct role in decision-making. Risk estimates Risk thresholds Model evaluations Capability thresholds Input to Help set Frontier AI system High-stakes decision If no-go, implement additional safety measures Feed into Directly inform decisions Indirectly inform decisions Compare with Compare with Conduct Conduct Feed into Figure 1: Risk thresholds can directly and indirectly inform high-stakes AI development and deploy- ment decisions. ∗ Corresponding author: leonie.koessler@governance.ai . arXiv:2406.14713v1 [cs.CY] 20 Jun 2024</p>
+<!-- Page 2 -->
+
+<p>Contents 1 Introduction 5 2 Risk thresholds and related concepts 6 2.1 Risk thresholds . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 7 2.2 Capability thresholds . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 8 2.3 Compute thresholds . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 9 3 How to use AI risk thresholds 10 3.1 Using risk thresholds to directly feed into decisions . . . . . . . . . . . . . . . . . 10 3.2 Using risk thresholds to indirectly feed into decisions . . . . . . . . . . . . . . . . 11 4 The case for AI risk thresholds 12 4.1 Arguments for using risk thresholds . . . . . . . . . . . . . . . . . . . . . . . . . 13 4.2 Arguments against using risk thresholds . . . . . . . . . . . . . . . . . . . . . . . 14 4.3 Overall suggestions for using AI risk thresholds . . . . . . . . . . . . . . . . . . . 14 5 How to define AI risk thresholds 15 5.1 Type of risk . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 16 5.2 Level of risk . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 17 6 Conclusion 18 References 20 2</p>
+<!-- Page 3 -->
+
+<p>Executive summary Frontier artificial intelligence (AI) systems could pose increasing risks to public safety and security (e.g. through cyberattacks on critical infrastructure, the acquisition of biological weapons, or loss of control over AI systems). These risks could largely stem from a small number of high-stakes development and deployment decisions made by frontier AI companies (e.g. whether to start a large training run or whether to release a model). When making such decisions, companies do not seem to use risk thresholds, i.e. limits for what likelihood and severity of harm they are willing to accept. Instead, where companies have defined thresholds for what AI systems are too risky to release, those thresholds have been defined in terms of model capabilities. This paper draws on other industries to discuss how to use risk thresholds for making high-stakes AI development and deployment decisions. Risk thresholds serve a different function than capability thresholds and compute thresholds (Section 2). • Compute thresholds. Compute thresholds are defined in terms of computational resources used to train a model (“training compute”). Training compute is a very imperfect proxy for risk, but can easily be measured and forecasted early on in the development process. Compute thresholds should thus be used as an initial filter to identify models that warrant further scrutiny, oversight, and precautionary safety measures. • Capability thresholds. Model capabilities are a better proxy for risk than training compute and are easier to evaluate than risk. Capability thresholds may therefore serve as a key trigger for whether additional safety measures should be implemented before a high-stakes activity may go ahead. • Risk thresholds. Risk estimates try to measure the level of risk directly, but they are still highly unreliable. In theory, risk thresholds are the ideal determinator for when additional safety measures are necessary. But in practice, risk thresholds cannot yet be relied upon for decision-making. More on the role they should play below. In principle, there are two ways in which risk thresholds can be used: they can directly feed into high-stakes AI development and deployment decisions and they can indirectly feed into such decisions by helping set capability thresholds (Section 3). These two ways are illustrated in Figure 1. • Directly feeding into decisions. Using risk thresholds to directly feed into high-stakes decisions is the most common use case for risk thresholds in other industries. Before making a high-stakes decision, many companies compare risk estimates to predefined risk thresholds. If the estimated level of risk is above the risk thresholds, companies implement additional safety measures and repeat the process. This process is similar to how some frontier AI companies evaluate model capabilities and compare them to predefined capability thresholds, but with a focus on risk rather than model capabilities. In this way, both risk thresholds and capability thresholds can directly feed into high-stakes decisions. • Indirectly feeding into decisions. Using risk thresholds to indirectly feed into decisions is less common in other industries. One exception are U.S. nuclear regulators who use risk thresholds to determine adequate safety measures. In the context of frontier AI, capability thresholds and corresponding safety measures could be designed such that they would be estimated to keep risk below some risk thresholds. To that end, risk thresholds need to be defined. Next, risk models can be developed, i.e. mappings of pathways from risk factors to harm. These risk models can help identify the model capabilities at which risk would exceed the risk thresholds, and the safety measures that would keep risk below the risk thresholds. The identified model capabilities then serve as the capability thresholds that trigger the identified safety measures. We argue that risk thresholds are a promising tool for frontier AI regulation (Section 4). • Arguments for using risk thresholds. Risk thresholds may help align business conduct with societal concern; enable consistent allocation of safety resources; ensure risk estimation results are actually acted upon; prevent motivated reasoning regarding what level of risk is acceptable; and avoid locking in premature safety measures. 3</p>
+<!-- Page 4 -->
+
+<p>• Arguments against using risk thresholds. Risk thresholds rely on risk estimates but estimating risks from AI is extremely hard; AI is a dual-use, general-purpose technology; risk thresholds may create an incentive to produce artificially low risk estimates; and defining risk thresholds for AI involves handling thorny normative trade-offs. • How risk thresholds should be used. Overall, we suggest that risk thresholds should be used to indirectly feed into decisions by helping set capability thresholds. Yet risk thresholds should only inform, but not determine, where to set capability thresholds: risk thresholds should not be the sole basis of a strict decision-rule. Other considerations should also be taken into account when setting capability thresholds. Further, we suggest that risk thresholds may be used to directly feed into decisions. However, again, risk thresholds should only inform decisions (e.g. as one of a number of considerations), and not determine decisions (e.g. as the sole basis for a strict decision-rule). If and when our ability to produce risk estimates improves, we can rely more on risk thresholds. Finally, we propose a framework for how to define risk thresholds for frontier AI (Section 5). Before regulators or companies can answer the question of what level of risk is acceptable, they need to decide which type of risk the threshold should refer to, that is, which risk scenarios are in scope. Next, when determining the acceptable level of risk, they need to handle three related normative trade-offs: (1) how to weigh potential harms and benefits, (2) to what extent should mitigation costs be taken into account, and (3) how to deal with uncertainty regarding all of the aforementioned. We encourage frontier AI companies to start experimenting with risk thresholds today. Regulators should also explore the area because, ultimately, they are the most legitimate actors to define risk thresholds. To this end, we need a discussion about what level of risk we, as a society, are willing to accept. 4</p>
+<!-- Page 5 -->
+
+<p>1 Introduction Frontier artificial intelligence (AI) systems 1 pose increasing risks 2 to public safety and security 3 ( Bengio et al., 2024; Hendrycks et al., 2023; Anderljung et al., 2023). For example, frontier AI systems may already increase cybercriminal productivity ( Fang et al., 2024; Hazell, 2023; Lohn &amp; Jackson, 2022; Mirsky et al., 2021), while future systems might increase the risk that terrorists will succeed in acquiring biological weapons ( Boiko et al., 2023; Mouton et al., 2023; Sandbrink, 2023; Soice et al., 2023; Urbina et al., 2022). A more speculative concern is that, at some point, frontier AI systems might evade human control and cause large-scale harm on their own ( Chan et al., 2023; Cohen et al., 2024; Hendrycks et al., 2023; Ngo et al., 2024). Theses risks could largely stem from a small number of high-stakes development and deployment decisions made by frontier AI companies, such as whether to start a final large training run or whether to deploy a model, also referred to as “go/no-go decisions” ( NIST, 2023). When making these decisions, companies necessarily accept some level of risk. 4 For example, a company deploying a system could be accepting a 0.01% increase in the risk that a malicious actor will succeed in acquiring a biological weapon based on instructions from that system. Many frontier AI companies seem to consider potential harms and benefits to society in their decision-making (e.g. Anthropic, 2023; Google AI, 2018; Google DeepMind, 2024; Meta, 2023; Microsoft, 2024; OpenAI, 2023). However, companies do not appear to have clear limits for what likelihood and severity of harm they are willing to accept, so-called “risk thresholds”. 5 At the 2024 AI Summit in South Korea, governments and companies both emphasized the importance of setting thresholds above which risk would be unacceptable. The Seoul Ministerial Statement includes the intention to “identify thresholds at which the level of risk posed by the design, devel- opment, deployment and use of frontier AI models or systems would be severe absent appropriate mitigations” ( DSIT, 2024c). The Seoul Frontier AI Safety Commitments had 16 companies commit to “set out thresholds at which severe risks posed by a model or system, unless adequately mitigated, would be deemed intolerable”, while noting that “thresholds can be defined using model capabilities, estimates of risk [i.e. “risk thresholds”], implemented safeguards, deployment contexts and/or other relevant risk factors” ( DSIT, 2024b). While the past year has seen frontier AI companies increasingly define thresholds in terms of model capabilities, it is unclear whether these thresholds keep risk to an acceptable level. This paper draws on other industries to discuss how regulators and companies should use risk thresholds for making high-stakes AI development and deployment decisions. There is an extensive body of literature on risk thresholds in other industries. Technical standards provide high-level guidance on how to use risk thresholds for business risks (e.g. COSO, 2017; ISO, 2018; ISO &amp; IEC, 2019). The scholarly literature provides more in-depth guidance for business and societal risks (e.g. Aven, 2012, 2015; Popov et al., 2021; Rausand &amp; Haugen, 2020) and discusses 1 We define “frontier AI systems” as “highly capable general-purpose AI models or systems that can perform a wide variety of tasks and match or exceed the capabilities present in the most advanced models” ( DSIT, 2024b). For example, this currently includes systems like GPT-4, Claude 3, and Gemini Ultra. Note that, in contrast to an earlier, otherwise identical definition ( DSIT, 2023a), this definition has replaced “today’s most advanced models” with “the most advanced models”, which implies that the frontier changes as models become more capable. We also note that the term “frontier AI” has been accused of promoting a specific worldview (Helfrich, 2024). 2 We define “risk” as the combination of likelihood and severity of harm ( ISO &amp; IEC, 2014). A recent trend in risk management uses a definition of risk that includes both negative impacts, i.e. harm, and positive impacts, i.e. benefits ( COSO, 2017; ISO, 2018; NIST, 2023). However, in the context of risk thresholds, the understanding of risk typically only includes harm, whereas benefits come into play as the key consideration when choosing what level of risk is acceptable (see Section 5.2). 3 Note that for the purposes of this paper, we focus on risks to individuals, groups, and society as a whole, i.e. societal risks (e.g. fatalities, economic damage, and societal disruption). This means we ignore risks to the company itself, i.e. business risks (e.g. financial risks, legal risks, and reputational risks). We also focus on risks to public safety and security, but the tools we discuss can likely be applied to many other types of societal harm, too. 4 We define “level of risk” as the combined measure of the likelihood and severity of harm. 5 Google AI (2018) commits that it “will not design or deploy AI (...) applications [that] cause or are likely to cause overall harm. Where there is a material risk of harm, we will proceed only where we believe that the benefits substantially outweigh the risks, and will incorporate appropriate safety constraints.” This can be understood as a risk threshold, albeit a very vague one. Much depends on how Google operationalizes this risk threshold. 5</p>
+<!-- Page 6 -->
+
+<p>various issues with risk thresholds, including substantial uncertainties in risk estimates (e.g. Fischhoff et al., 1984; Klinke &amp; Renn, 2002; Starr, 1969). Regulators in many safety-critical industries mandate or recommend specific risk thresholds, such as in the nuclear ( ANVS, 2020; IAEA, 2005; NRC, 1983), maritime ( IMO, 2018), aviation ( EUROCONTROL, 2001; FAA, 1988; ICAO, 2018), and space industries ( ESA, 2023; FAA, 2016). In addition to a large corpus of industry-specific literature, many reports survey the use of risk thresholds across industries and jurisdictions (e.g. CCPS, 2009; Ehrhart et al., 2020; Flamberg et al., 2016; Linkov et al., 2011; Marhavilas &amp; Koulouriotis, 2021). By contrast, in the context of frontier AI development and deployment, regulators and scholars are only starting to discuss risk thresholds. The NIST AI Risk Management Framework recommends that companies define “risk tolerances” ( NIST, 2023), but does not provide much guidance for how to define or use them. DSIT’s policy paper Emerging Processes for Frontier AI Safety recommends that companies use risk thresholds in responsible capability scaling ( DSIT, 2023b), but it only provides high-level guidance. Further, the forthcoming EU AI Act mandates that risk management measures for general-purpose AI models with systemic risk “shall be proportionate to the risks [and] take into consideration their severity and probability” (Article 56(2)(d)). This could be ensured by using risk thresholds. 6 There is only tangential scholarly treatment of AI risk thresholds ( Clymer et al., 2024). Taken together, there is a clear need for more concrete guidance on how to use risk thresholds in the context of frontier AI. This paper aims to help fill this gap. The paper proceeds as follows. First, we introduce the concept of risk thresholds as a specific type of risk acceptance criteria and differentiate it from the related concepts emerging in the frontier AI context: capability thresholds and compute thresholds (Section 2). We then outline how risk thresholds can be used to directly and indirectly feed into high-stakes AI development and deployment decisions (Section 3). Next, we argue that risk thresholds should only be used to inform, but not determine, high-stakes decisions, unless risk estimates become more reliable (Section 4). We also highlight key considerations and provide initial guidance for defining AI risk thresholds (Section 5). We conclude with a summary of our main contributions and suggestions for further research (Section 6). 2 Risk thresholds and related concepts In frontier AI regulation, different thresholds are currently emerging: risk thresholds, capability thresholds, and compute thresholds. These thresholds are predefined values above which additional safety measures are deemed necessary. The thresholds differ regarding the metric in terms of which they are defined (risk, model capabilities, and training compute), and the function they serve in frontier AI regulation (we discuss this for each threshold below). For example, Anthropic’s Responsible Scaling Policy maps specific model capabilities to specific safety measures ( Anthropic, 2023), whereas the EU AI Act classifies general-purpose AI models trained on more than 10 25 floating-point operations as posing systemic risk (Article 51(2)) and imposes more stringent requirements on their providers (Article 55(1)). In this paper, we are most interested in thresholds that can be used in high-stakes decision-making to determine whether the risk from the development and deployment of a frontier AI system is acceptable. This includes both risk thresholds and capability thresholds, though we will focus on risk thresholds based on risk estimates (see DSIT, 2024b). In the remainder of this section, we first conceptualize risk thresholds as risk acceptance criteria and outline how they are used in other industries to directly and indirectly feed into high-stakes decisions (Section 2.1). We then argue that capability thresholds can also be considered risk acceptance criteria that may serve as a key trigger for when to implement additional safety measures in the frontier AI context (Section 2.2). Finally, we assert that compute thresholds should not be considered risk acceptance criteria but only serve as an initial filter to identify models of potential concern (Section 2.3). 6 Similarly, risk management measures for high-risk AI systems “shall be such that the relevant residual risk associated with each hazard, as well as the overall residual risk of the high-risk AI systems is judged to be acceptable” (Article 9(5)). For related discussions, see ( Fraser &amp; Bello y Villarino, 2023; Laux et al., 2024), and ( Schuett, 2023). Moreover, the EU AI Act puts AI systems into risk categories, the boundaries of which have been referred to as risk thresholds ( Novelli et al., 2024), although they are not defined in terms of likelihood and severity of harm, and therefore do not qualify as risk thresholds according to our definition. 6</p>
+<!-- Page 7 -->
+
+<p>2.1 Risk thresholds Risk thresholds are limits to what level of estimated risk is acceptable ( Aven, 2015). Thus, they are also referred to as “risk limits” ( ISO &amp; IEC, 2019), “tolerability limits” ( Aven, 2015), or “risk tolerances” ( NIST, 2023). In the context of business risks, risk thresholds are also sometimes referred to as companies’ “risk appetite” ( COSO, 2017; ISO &amp; IEC, 2019). Risk thresholds vary across different industries and jurisdictions ( Ehrhart et al., 2020; Flamberg et al., 2016; Linkov et al., 2011). For example, in the U.S. aviation industry, the probability of “failure conditions which would prevent continued safe flight and landing” should not exceed 1 × 10 − 9 (one in a billion) per flight-hour ( FAA, 1988). As another example, in the UK nuclear industry, the risk of death of a member of the public is “unacceptable” if it is above 1 × 10 − 4 per plant-year and “broadly acceptable” if it is below 1 × 10 -6 per plant-year (ONR, 2020). Risk thresholds can be understood as a particular type of “risk acceptance criteria”, i.e. criteria that establish the conditions under which risk is acceptable to an organization (e.g. a regulator or a company). Therefore, risk acceptance criteria are also referred to as “risk evaluation criteria”, “decision criteria for risk management decision making”, or simply “risk criteria” ( Aven, 2012, 2015, 2016; ISO, 2018; ISO &amp; IEC, 2019; Morgan &amp; Henrion, 1990). 7 Risk acceptance criteria beyond risk thresholds can take many forms. For example, risk may be acceptable if it is “as low as reasonably practicable” (“ALARP”), if the “best available technology” (“BAT”) is used, or if the affected individuals have given consent ( Klinke &amp; Renn, 2002; Morgan &amp; Henrion, 1990; Vanem, 2012). Compared to other types of risk acceptance criteria, risk thresholds are more often quantitative, although they can also be qualitative (e.g. “only proceed if risk is deemed low”). However, in the regulatory context, qualitative risk thresholds appear to be very uncommon. We highlight that choosing a type of risk acceptance criteria may reflect a particular ethical viewpoint. Although this viewpoint can significantly affect which risks are deemed acceptable, it is rarely made explicit. Common ethical principles that may underlie different types of risk acceptance criteria include principles of utility, fairness, and human rights ( Morgan &amp; Henrion, 1990; Vanem, 2012). Risk thresholds may draw most strongly on the principle of utility, because they focus on potential harms and benefits, outcomes rather than processes, and general welfare rather than individual liberties. 8 However, other principles can be taken into account via the design of the risk thresholds (see Morgan &amp; Henrion, 1990; Vanem, 2012). For example, U.S. oil and gas facilities have to observe stricter risk thresholds regarding particularly vulnerable groups in places such as schools, hospitals, and prisons ( NFPA, 2023). Furthermore, participatory elements can be included when setting risk thresholds, for instance, through public consultations (e.g. NRC, 1983). Finally, we do not argue that risk thresholds should be the only risk acceptance criteria in the frontier AI context. Risk thresholds are defined in terms of likelihood and severity of harm. Likelihood scales refer to the probability of events, which can be estimated using historical data, models, or expert judgment, among other things. Severity scales refer to the magnitude or degree of some type of harm, such as fatalities, injuries, or economic damage. They can also be defined in terms of potentially harmful events, such as a successful cyberattack, the acquisition of a biological weapon, or the creation of a deepfake. 9 Both likelihood and severity scales can be quantitative (i.e. numeric values, e.g. probabilities or numbers of fatalities), semi-quantitative (i.e. ranges of numeric values, e.g. 1 − 5% or 10 , 000 - 100 , 000 fatalities), or qualitative (i.e. categories based on non-numeric values, e.g. “likely” or “severe”) ( ISO &amp; IEC, 2019). Risk thresholds consist of a single pair of likelihood and severity values (e.g. an expected value) or several pairs of likelihood and severity values (e.g. a probability distribution). The latter seems to be much more common in the regulatory context, at least for fatalities (e.g. EUROCONTROL, 2001; HSE, 2001; NRC, 1983). Quantitative risk thresholds can be visualized in graphs (e.g. F/N diagrams with fatalities N on the x -axis and frequencies F on the 7 Note that concepts and terminology vary among sources or are simply unclear. Some authors seem to equate risk thresholds with risk acceptance criteria (e.g. Linkov et al., 2011), whereas other authors seem to understand risk thresholds as quantitative risk acceptance criteria (e.g. ( Flamberg et al., 2016)). For most authors, it simply remains unclear how they conceptualize the relationship between risk thresholds and risk acceptance criteria. 8 On the relationship between utility and rights, see e.g. (Hart, 2017). 9 In this paper, for simplicity, we focus on events that are intrinsic harms. On the one hand, the likelihood of potentially harmful events will usually be easier to estimate than the likelihood of intrinsic harms. On the other hand, the question of at what level to set the threshold is even more complicated for potentially harmful events than it already is for intrinsic harms (Section 5.2). 7</p>
+<!-- Page 8 -->
+
+<p>10 -1 1 10 100 1,000 10,000 10 -2 10 -3 10 -4 10 -5 10 -6 10 -7 10 -8 Intolerable region Broadly acceptable region A B B-1 C A-1 III II I III I IV III I III II V III I IV II V IV II V III V IV II V III 1 2 3 4 5 A B C D E Likelihood rating Consequence rating a b F/N-diagram Risk matrix Numbers of fatalities (N) Frequency of N or more fatalities per year (F) Figure 2: F/N-diagram (quantitative) and risk matrix (semi-quantitative / qualitative) ( ISO &amp; IEC, 2019) y -axis), whereas semi-quantitative and qualitative risk thresholds can be visualized in risk matrices (Figure 2). Risk thresholds can feed into high-stakes decisions in two ways: directly and indirectly . First, when companies make high-stakes decisions, risk thresholds can be used to help decide whether an activity may go ahead ( ISO, 2018). In this way, risk thresholds directly feed into high-stakes decisions. This is the most common way in which other industries use risk thresholds. Second, instead of using risk thresholds on a case-by-case basis, risk thresholds can also be used to help specify which safety measures need to be implemented under which circumstances. In this way, risk thresholds indirectly feed into high-stakes decisions. In the U.S. nuclear industry, “safety goals (...) are to be used (...) in making regulatory judgments on the need of proposing and backfitting new generic requirements on nuclear power plant licensees” ( NRC, 2021). Similarly, Anthropic evaluates for “capability improvements (...) [that] would significantly increase the risk (...) past an unacceptable threshold” to decide when additional safety measures are necessary ( Anthropic, 2023). We elaborate on how to use risk thresholds in the frontier AI context in Section 3. 2.2 Capability thresholds For risks to public safety and security, model capabilities can be considered a key risk factor and even an imperfect proxy for risk. Fundamentally, risks from frontier AI stem from the capabilities a model possesses, because many of these capabilities are dual-use: they can be used for good or for evil ( Anderljung &amp; Hazell, 2023; Bommasani et al., 2021; Shevlane &amp; Dafoe, 2020). For example, a model that can be used by scientists to help develop new pharmaceuticals might also be used by terrorists to help develop new toxins ( Urbina et al., 2022). Thus, model capabilities can be considered a key risk factor. They can even be considered a proxy for risk, a claim that has been made explicitly by some (e.g. Sastry et al., 2024) and to some extent implicitly relied upon by others ( Anderljung et al., 2023; Shevlane et al., 2023; OpenAI, 2023). But factors other than model capabilities are crucial for risk too, such as the number, capacity, and willingness of malicious actors to use the model or the level of societal preparedness ( Anderljung et al., 2023; Bernardi et al., 2024; Kapoor et al., 2024). Nevertheless, a model’s capabilities are easier to evaluate than its risk (Section 4.2), making them a useful metric for frontier AI regulation. Already, frontier AI companies increasingly rely on capability thresholds to make high-stakes de- velopment and deployment decisions. Capability thresholds are predefined model capabilities at which additional safety measures are deemed necessary. Three frontier AI companies have published policies that define capability thresholds and when additional safety measures should be implemented 8</p>
+<!-- Page 9 -->
+
+<p>Training compute Model capabilities Risk Proxy Proxy Measurable Intrinsically relevant Figure 3: Different metrics and the relationships between them before these capability thresholds are crossed. This includes Anthropic’s Responsible Scaling Policy ( Anthropic, 2023), OpenAI’s Preparedness Framework ( OpenAI, 2023), and Google DeepMind’s Frontier Safety Framework ( Google DeepMind, 2024). These policies focus on chemical, biological, radiological, and nuclear (CBRN); cyber; persuasion; autonomy; and some other capabilities, mea- sured by so-called “model evaluations” ( Shevlane et al., 2023; Phuong et al., 2024). Regulators have yet to make use of capability thresholds, but some of them already seem to be thinking along these lines (DSIT, 2023b). While concepts in the frontier AI context are still evolving, capability thresholds can be considered their own type of risk acceptance criteria. Capability thresholds essentially define conditions under which a risky activity may go ahead, namely if a model’s capabilities are below the threshold or if they are above the threshold but adequate safety measures have been implemented. In this way, capability thresholds can be considered a type of risk acceptance criteria that is distinct from risk thresholds. However, concepts in the frontier AI context are still evolving. In particular, not all model evaluations only measure inherent model capabilities; they may also include assessments of how users or even society as a whole interact with models ( DSIT, 2024a; Patwardhan et al., 2024; Solaiman et al., 2023). Moreover, risk thresholds can be used to help with setting capability thresholds, a process that blurs the lines between risk thresholds and capability thresholds. 10 We get back to this in Section 3.2. 2.3 Compute thresholds Under the current deep learning paradigm, the amount of computational resources used to train a model (“training compute”) can be considered a very imperfect proxy for a model’s risk. Empirically, recent advances in model capabilities to a large extent stem from increasing amounts of computational resources being used to train the model, a phenomenon also referred to as “scaling laws” ( Sutton, 2019; Kaplan et al., 2020; Hernandez et al., 2021; Hoffmann et al., 2022). While how long scaling laws will hold is somewhat contentious ( Lohn &amp; Musser, 2022; Villalobos et al., 2022), training compute can be, at least currently, considered a proxy for a model’s capabilities and thereby also the model’s risk ( Anderljung et al., 2023; Sastry et al., 2024). However, training compute is even further removed from risk than model capabilities – they already are an imperfect proxy for risk – meaning that training compute is only a very imperfect proxy for risk. Still, training compute is relatively easy to measure, making it a useful metric to build on in frontier AI regulation ( Anderljung et al., 2023; Heim &amp; Koessler, forthcoming; Pistillo et al., forthcoming; Sastry et al., 2024). We show the relationship between the three metrics in Figure 3. Indeed, regulators in the U.S. and the EU already make use of compute thresholds to identify models that might be of concern and require increased scrutiny, oversight, and precautionary security measures. The U.S. Executive Order on the Safe, Secure, and Trustworthy Development and Use of Artificial Intelligence imposes requirements on companies developing and deploying models above a training compute threshold of 10 26 operations to notify the government before development; report on ownership and possession of model weights and measures taken to secure them; and report on the results of red-teaming tests and measures taken based on them (Section 4.2(i)). Setting a lower threshold while imposing more extensive requirements, the EU AI Act uses a compute threshold of 10 25 floating-point operations to identify “general-purpose AI models” that may pose “systemic risk” (Article 51(2)), and requires providers of such models to conduct model evaluations; assess and 10 Indeed, OpenAI refers to its capability thresholds as “risk thresholds” ( OpenAI, 2023) – presumably because it aims for its capability thresholds to keep risk at an acceptable level. However, OpenAI does not define its thresholds in terms of likelihood and severity of harm, but model capabilities. Therefore, according to our definitions, these thresholds are capability thresholds, and not risk thresholds. 9</p>
+<!-- Page 10 -->
+
+<p>Compute thresholds Capability thresholds Risk thresholds Initial filter for further scrutiny, oversight, and precautionary safety measures (e.g. security) Key trigger for when additional safety measures are necessary, including fast responses (e.g. pausing) Ideal, though immature, determinator for when additional safety measures are necessary; risk thresholds can directly feed into high-stakes decisions and indirectly feed into high-stakes decisions by helping set capability thresholds Table 1: Different thresholds and their functions in frontier AI regulation mitigate systemic risks; track, document, and report serious incidents; and ensure an adequate level of cybersecurity for the model and its physical infrastructure (Article 55(1)). Compute thresholds should not be used as risk acceptance criteria to directly feed into high-stakes decisions. Because compute thresholds are such an imperfect proxy for risk, they should not be used to define conditions under which a risky activity may go ahead. Instead, compute thresholds may serve as an initial filter for further scrutiny, oversight, and some precautionary safety measures ( Heim &amp; Koessler, forthcoming; Pistillo et al., forthcoming). Capability thresholds and risk thresholds can then be used to help decide whether high-stakes decisions may go ahead and under which circumstances additional safety measures are warranted. The U.S. Executive Order on AI and the EU AI Act laudably use compute thresholds mainly in this way. Overall, risk thresholds, capability thresholds, and compute thresholds are not substitutes for each other; each has a distinct function in frontier AI regulation (Table 1)2 3 How to use AI risk thresholds In this section, we discuss two ways in which risk thresholds can be used: to directly feed into high-stakes AI development and deployment decisions (Section 3.1) and to indirectly feed into decisions by helping set capability thresholds (Section 3.2). These two use cases are illustrated in Figure 1. 3.1 Using risk thresholds to directly feed into decisions Using risk thresholds to directly feed into high-stakes decisions is the most common use case for risk thresholds in other industries (Section 2.1). In the standard risk management process, organizations estimate the level of risk (“risk analysis”) and compare the results to predefined risk thresholds (“risk evaluation”). If the estimated level of risk is above the risk threshold, companies need to implement additional safety measures and repeat the process ( ISO, 2018). This process is similar to how some frontier AI companies evaluate model capabilities and compare them to predefined capability thresholds (Section 2.2), but with a focus on risk rather than model capabilities. In this way, both risk thresholds and capability thresholds can directly feed into high-stakes decisions (Figure 1). If the estimated level of risk exceeds a risk threshold, the company needs to implement additional safety measures. In the simplest version of risk thresholds, the company can freely choose among safety measures as long as it brings the level of risk below the risk threshold before proceeding. But risk thresholds can also require companies to take more specific safety measures. For example, companies may take measures to reduce risk or uncertainty about risk as much as possible, or they may notify some internal or external stakeholder. In the case of frontier AI, risk thresholds could also require companies to notify the board of directors or the competent regulator (who may be allowed to veto the decision or be required to give permission to go ahead), or to conduct an extra suite of in-depth model evaluations (which may have to include external parties). Using safety measures other than a clear “no-go” also provides a way for risk thresholds to inform, but not determine, high-stakes decisions. We will get back to this in Section 4.3. 10</p>
+<!-- Page 11 -->
+
+<p>Unacceptable region ALARP region (risk must be reduced if “reasonably practicable”) Acceptable risk Negligible risk 10 -4 per year 10 -6 per year 10 -7 per year Typical probabilities Figure 4: The ALARP framework (Melchers, 2001) It is possible to set a single risk threshold or multiple risk thresholds that trigger different safety measures. The simplest approach is to set a single risk threshold that distinguishes two risk tiers. If this risk threshold is crossed, the activity in question may not go ahead unless either the risk has been reduced or specific safety measures have been taken. But it is also possible to set multiple risk thresholds at different levels of risk to distinguish between more than two risk tiers. For example, two risk thresholds could distinguish between risk being unacceptable under any circumstances, risk being acceptable if specific safety measures have been taken (e.g. risk has been reduced as much as possible, specific information has been gathered, or specific internal or external actors have been notified), and risk being acceptable without further safety measures. Stacking multiple risk thresholds in this way allows predefining more fine-grained decision rules for different levels of risk compared to a single risk threshold. For example, many industries stack two risk thresholds: one threshold above which risk is unac- ceptable and another one above which risk must be “as low as reasonably practicable” (“ALARP”), also sometimes referred to as “as low as reasonably achievable” (“ALARA”) ( Linkov et al., 2011; Melchers, 2001). The ALARP framework, as illustrated in Figure 4, originated in the UK Health and Safety at Work etc. Act 1974 and has since been used in various industries worldwide, including the UK and U.S. nuclear industry ( HSE, 1992; NRC, 2016), the U.S. aerospace industry ( Dezfuli et al., 2015), and the international maritime industry ( IMO, 2018). Typically, risk is considered ALARP if the costs of further risk reduction measures are “grossly disproportionate” to their benefits ( HSE, 1992). The ALARP principle may ensure continuous risk reduction efforts ( Aven, 2015). However, it has also been criticized for being vague, leading to harmful risk aversion, and stifling innovation ( Melchers, 2001; Oakley &amp; Harrison, 2020). Theoretically, any other types of risk acceptance criteria could be applied at the risk tier in the middle, allowing risk thresholds to be combined with the other types of risk acceptance criteria mentioned in Section 2.1. 3.2 Using risk thresholds to indirectly feed into decisions Risk thresholds can also be used to indirectly feed into decisions, such as whether to deploy a model, by helping set capability thresholds. U.S. nuclear regulators use risk thresholds to help determine adequate safety measures (Section 2.1). In the context of frontier AI, capability thresholds are emerging as a key trigger for safety measures (Section 2.2). Capability thresholds and corresponding safety measures could be designed such that they would be estimated to keep risk below some risk threshold. In this way, as capability thresholds directly feed into high-stakes decisions, risk thresholds indirectly feed into decisions (Figure 1). A helpful tool when using risk thresholds to help set capability thresholds is “risk models” (see Google DeepMind, 2024), also referred to as “threat models” ( Anthropic, 2023). 11 Risk models 11 The latter term is currently the most common, but may not be the most suitable. It stems from a security context and may thus lead to a narrow focus on security risks. Moreover, “threat modeling” encompasses more than outlining risk scenarios, in particular, prioritizing among safety measures ( Shostack, 2014). In standard risk management, common terms to refer to risk models are “fault trees” and “event trees” ( Barrett &amp; Baum, 2017), 11</p>
+<!-- Page 12 -->
+
+<p>E.g. fatalities E.g. bio weapon acquisition E.g. model theft Informs level of Informs scope of Capability threshold Risk model Risk threshold E.g. cyber capabilities E.g. persuasive capabilities E.g. bio capabilities Risk factors Harm Model capabilities Figure 5: Risk thresholds, for example via risk models, can help set capability thresholds outline the pathways from risk factors to harm, or “risk scenarios” (see OpenAI, 2023). They can be used to identify model capabilities that may cause large-scale harm and safety measures that may prevent such harm. For example, the capability to provide instructions for the acquisition of biological weapons (dark circle) may increase the risk of fatalities, economic damage, and societal disruption (squares). Risk models may help identify the level of bio capabilities at which the level of risk would exceed the risk threshold unless safety measures are implemented (Figure 5). In more detail, risk thresholds can be used to set capability thresholds via risk models with the following steps. First, define risk thresholds. We provide some guidance for doing so in Section 5. Second, develop risk models. Ideally, risk models are comprehensive, meaning they contain all possible pathways from risk factors to harm. However, developing comprehensive risk models is generally extremely difficult ( Shostack, 2014) and particularly so in the case of a general-purpose technology like AI (Section 4.2). Therefore, at least in the beginning, risk models may focus on a small number of key risk scenarios. Third, identify model capabilities that would lead to unacceptable risks as defined in the first step. This can draw on, for example, the risk models developed in the second step, data gathered about the occurrence of risk factors, near misses, and small-scale harm, as well as methods like trend extrapolation and sensitivity analysis (Frey &amp; Patil, 2002). Frontier AI companies setting capability thresholds already aim to identify the model capabilities that may lead to large-scale harm. In particular, companies increasingly engage in risk modeling ( Anthropic, 2023; OpenAI, 2023; Google DeepMind, 2024). Yet, when doing so, companies currently seem to mostly focus on the possibility that model capabilities may cause large-scale harm rather than also considering the likelihood of this happening. Ignoring likelihood means ignoring a key component of risk and can lead to overly restrictive capability thresholds, because other factors may prevent harm from materializing, such as malicious actors not having access to the model or society ramping up its defenses. At least one company is planning on taking likelihood into account in the future (Anthropic, 2023). 4 The case for AI risk thresholds In this section, we argue that risk thresholds are a promising tool for making high-stakes AI devel- opment and deployment decisions. Risk thresholds may help align business conduct with societal concern; enable consistent allocation of safety resources; ensure risk estimation results are actually acted upon; prevent motivated reasoning regarding what level of risk is acceptable; and avoid locking in premature safety measures (Section 4.1). We also discuss the most important objections to using AI risk thresholds and how they might be overcome. In particular, estimating risks from AI is extremely hard; AI is a dual-use, general-purpose technology; risk thresholds may create an incentive to produce “attack trees” as a variation of fault trees for security risks ( Salter et al., 1998; Schneier, 2011), and “causal maps” to depict non-linear relationships between risk factors (ISO &amp; IEC, 2019; Koessler &amp; Schuett, 2023). 12</p>
+<!-- Page 13 -->
+
+<p>artificially low risk estimates; and defining risk thresholds for AI involves handling thorny normative trade-offs (Section 4.2). Overall, we suggest that risk thresholds should be used indirectly inform high-stakes decisions by helping set, though not determine, capability thresholds. Further, we suggest that risk thresholds may be used to directly inform, though not determine, decisions. If and when our ability to produce risk estimates improves, we can rely more on risk thresholds (Section 4.3). 4.1 Arguments for using risk thresholds First and foremost, risk thresholds are focused on potential harms to society and may thereby help align business conduct with societal concern. Risk thresholds directly pertain to externalities: the likelihood and severity of harm to individuals, groups, and society as a whole. In contrast to compute thresholds and capability thresholds, risk thresholds do not run into the issue of focusing on wrong proxies for risk, such as harmless models or capabilities. As a result, risk thresholds can help ensure companies only go ahead with risky activities if the risk is acceptable to society. Second, risk thresholds can enable consistent allocation of safety resources. Risk thresholds can use the same units (e.g. expected number of fatalities or amount of economic damage in USD) for different risks (e.g. cyber and CBRN risks). As a result, risk thresholds can be set at the same level for different risks. If done well, this leads to a consistent allocation of safety resources. By contrast, capability thresholds (set without the help of risk thresholds) may inadvertently be set at different levels of risk for different model capabilities (e.g. autonomy and persuasion capabilities). This leads to an inconsistent allocation of safety resources. However, we note that this benefit can also be achieved by merely conducting risk estimates and consistently allocating safety resources based on their results, without also setting risk thresholds. Third, in contrast to merely conducting risk estimates, risk thresholds can help ensure risk estimation results are actually acted upon. When using risk thresholds to directly feed into decisions, risk thresholds link the results of risk estimates to decisions (in the simplest version, go or no-go). When using risk thresholds to indirectly feed into decisions, risk estimation results are “enshrined” in capability thresholds, which in turn are integrated in decision rules (again, in the simplest version, go or no-go). In both ways, risk thresholds may help avoid situations where risk estimates are produced but not acted upon. Fourth, risk thresholds may prevent companies from engaging in motivated reasoning regarding what level of risk is acceptable. Companies have strong incentives to argue that risk estimates are acceptable in hindsight . Risk thresholds can prevent this by determining criteria for what level of risk is acceptable in advance . 12 Yet, on the flipside, risk thresholds increase the incentive for companies to provide lower risk estimates in the first place. We discuss this concern below (Section 4.2). Fifth, risk thresholds are future-proof and may help avoid locking in premature safety measures. Given that AI is still evolving (and rapidly so), regulators face the question of how prescriptive their requirements should be. Here, risk thresholds can provide a way out, as they do not require regulators to specify which safety measures companies need to implement. Instead, if regulators mandate risk thresholds to directly or indirectly feed into decisions (leaving it to companies to set capability thresholds), regulators put the burden on companies to find ways to reduce risk and can even continuously incentivize companies to innovate on safety measures, which may lower costs and result in more effective safety measures ( Decker, 2018; Schuett, Anderljung, et al., forthcoming). On the other hand, if regulators mandate risk thresholds, they need a lot of effort and expertise to verify compliance ( Decker, 2018; Schuett, Anderljung, et al., forthcoming). Regulators need to check whether the risk estimates that companies have produced are sound, which involves a case-by-case analysis of companies’ risk estimates. But regulators can require companies to provide them with detailed information about their risk estimates and the reasoning behind them, for example, through established tools like safety cases ( Bishop &amp; Bloomfield, 2000; Buhl et al., forthcoming; Kelly, 1998). Still, given the incentive for companies to provide low risk estimates (see previous paragraph), verifying compliance with risk thresholds may necessitate regulators to conduct their own risk estimates. 12 Note that for risks where AI exacerbates a baseline risk, such as the current risk of cyberattacks on critical infrastructure, this baseline risk needs to be estimated before risk thresholds can be defined. However, even in these cases, risk thresholds are defined before the increase in risk caused by the AI development or deployment decision is estimated. This means that risk thresholds for any risk are defined before the increase in risk caused by AI is estimated. 13</p>
+<!-- Page 14 -->
+
+<p>4.2 Arguments against using risk thresholds The key argument against using risk thresholds is that risk estimation is extremely hard for risks from frontier AI development and deployment. Using risk thresholds requires estimating the level of risk. In general, estimating risks from complex technological systems is hard ( Apostolakis, 2004). This issue is aggravated in the case of frontier AI. There is little data from past incidents, meaning risk estimates mostly have to draw from modeling and expert judgment, which are less reliable. In general, risk estimation struggles with low-probability, high-impact events and “unknown unknowns”, which may be features of many risks from frontier AI. On top of that, understanding of how AI systems work and why they fail is poor, risk taxonomies and risk models are underdeveloped, and relevant information is split between companies and regulators – companies have knowledge of AI capabilities and usage, while regulators possess intelligence data, including about societal vulnerabilities and the number, capacities, and incentives of malicious actors. It might be possible to alleviate these issues, for instance, by improving risk estimation methodologies and gathering data about the occurrence of risk factors, near misses, and small-scale harm ( Schuett, Baumoehl, et al., forthcoming). Nevertheless, the lack of reliable risk estimates currently is the main limitation of risk thresholds. The more strongly high-stakes decisions rely on risk thresholds, the more reliable these risk estimates should be. Second, and relatedly, a common objection to using risk thresholds in frontier AI regulation is that foundation models, similar to electricity, are a dual-use or general-purpose technology that can be used in a tremendous number of ways and have a tremendous number of consequences that are both impossible to foresee and not the responsibility of frontier AI companies to prevent. This is a valid concern. However, this is a common issue in tort and criminal law, where mere causation is not enough ( Wright, 1985). Likewise, in this context, this issue does not refute risk thresholds in general but means that regulators need to specify which effects are in scope (see also Section 5.1). Where to draw this line is a strategic decision that involves a variety of considerations (including economic, geopolitical, fairness, and safety considerations). Relevant qualitative criteria may be what type and amount of harm is at stake and whether intervention at later stages can be expected to be sufficiently effective (Anderljung &amp; Hazell, 2023). Based on these criteria, imposing risk thresholds on frontier AI companies may be especially warranted for scenarios where single events cause large-scale harm and where no downstream developers are involved who could be held accountable instead. Third, risk thresholds may create an incentive to produce artificially low risk estimates. If risk thresholds are used to directly feed into decisions, they establish a clear link between risk estimates and high-stakes decisions, making the implications of risk estimates immediately obvious. If risk thresholds are used to indirectly feed into decisions, the conditional risk estimates for different model capabilities have a less clear, but still perceivable impact on capability thresholds and thus decisions. Companies can take advantage of the uncertainty and subjectivity of the risk estimation process to produce the results they desire, with an added veneer of plausibility. To address this concern, regulators can verify companies’ risk estimates or mandate procedural requirements, such as that companies must involve more, diverse, and external assessors or that they break down risks into multiple events and ask assessors to estimate the risk of the individual events only. For example, instead of asking each assessor to estimate the increase in risk from biological attacks, companies could ask separate assessors to estimate the increases in risk regarding ideation, acquisition, magnification, formulation, and release of biological weapons (Patwardhan et al., 2024). Fourth, it can be very difficult to decide what level of risk is acceptable ( Aven, 2015). In particular, this decision involves making thorny normative judgments such as how much to value a human life ( Reid, 2000; Vanem, 2012), how much to value future generations ( Aven, 2012) or the environment ( Vanem, 2012), and how cautious to be in the face of high uncertainty ( Klinke &amp; Renn, 2002). While making these decisions can be challenging for a single person, it will be even harder for different people or society as a whole to agree on the choice. Yet these decisions are currently being made implicitly through company development and deployment decisions. The fact that defining risk thresholds will be tough provides an argument for getting started sooner rather than later, such that important discussions and investigations can take place with sufficient time and rigor. We aim to help start this process by providing some guidance on how to define risk thresholds in Section 5. 4.3 Overall suggestions for using AI risk thresholds Risk thresholds should be used to indirectly feed into high-stakes decisions, and may additionally be used to directly feed into such decisions. The respective benefits and limitations of risk thresholds 14</p>
+<!-- Page 15 -->
+
+<p>and capability thresholds mean that risk thresholds should complement, rather than replace, capability thresholds. Risk thresholds are directly focused on potential harms to society. However, they rely on risk estimates, which still have methodological limitations and involve substantial uncertainties, whereas capability thresholds rely on model evaluations, whose results are significantly less uncertain. Therefore, the key use case for risk thresholds should be to help set capability thresholds, ensuring that capability thresholds and corresponding safety measures, if followed, keep risk to an acceptable level. Additionally, using risk thresholds to directly feed into high-stakes decisions is helpful if capability thresholds miss the mark or become outdated. In conclusion, the two use cases of risk thresholds are not mutually exclusive but can make up for the limitations of the other. Hence, they should be applied in combination (Figure 1). Nevertheless, as long as risk estimates are not reliable, risk thresholds in both of their use cases should not determine, but only inform, high-stakes decisions. The difficulty of producing reliable risk estimates is the strongest reason against using risk thresholds as the sole basis for a strict decision-rule for whether to go ahead or for where to set capability thresholds. It means that, in both cases, risk thresholds should currently only be used as one among a number of considerations. We provide some concrete examples for how risk thresholds can directly and indirectly inform, rather than determine, high-stakes decisions below. At the same time, to facilitate greater reliance on risk thresholds in the future, regulators and companies should invest in improving risk estimation methodology, gain experience in conducting risk estimates, investigate how much they can rely on them, and gather data about the occurrence of risk factors, near misses, and small-scale harm. Concretely, when using risk thresholds to directly inform high-stakes decisions, they should be used among a number of other considerations, such as capability thresholds (which may or may not have been set with the help of risk thresholds). Moreover, many considerations unrelated to societal risk will come into play, including the company’s appetite for business risks (e.g. liability risk or reputational risk) and various strategic considerations (e.g. whether a competitor is likely to release a similar model soon) (see ISO &amp; IEC, 2019). Beyond that, could inform, rather than determine, decisions in that, if they are crossed, the board of directors or the competent regulator would have to be notified. The notified actor could potentially also be allowed to veto the decision or be required to give permission to proceed. Another option is that exceeding a risk threshold would trigger a requirement to conduct an extra suite of in-depth model evaluations, which may have to include third-party evaluators. When using risk thresholds to indirectly inform decisions by helping set capability thresholds, other important considerations include expert judgment and safe design principles. Safe design involves, for instance, principles like redundancy, defense in depth, loose coupling of components to avoid cascading failures, separation of powers between decision-makers, and fail-safe design ensuring that systems fail gracefully ( Dobbe, 2022; Leveson, 2016; Perrow, 1999; Reason, 1990). The company could also find that risk estimates suggest that one of its capability thresholds does not keep risk to an acceptable level, but nonetheless not change the capability threshold because the relevant model capabilities present substantial benefits or because they have good reasons to believe the risk estimates are unreliable. Moreover, the capability thresholds, set with the help of risk thresholds, may only inform, rather than determine, high-stakes decisions. 5 How to define AI risk thresholds In this section, we propose a framework that consists of important considerations for defining AI risk thresholds. We did not find good general guidance for how to define risk thresholds. Thus, we conducted a non-systematic review of risk thresholds in various industries and jurisdictions, including aviation, nuclear, aerospace, maritime, and transportation and storage of hazardous materials, and tried to identify common ground on the most important considerations. Before regulators or companies can answer the question of what level of risk is acceptable, they need to decide which type of risk the threshold refers to (Section 5.1). Next, when determining the acceptable level of risk, they need to handle three difficult normative trade-offs: how to weigh potential harms and benefits, to what extent should mitigation costs be taken into account, and how to deal with uncertainty regarding all of the aforementioned (Section 5.2). 15</p>
+<!-- Page 16 -->
+
+<p>E.g. terrorist group steals model weights E.g. terrorist group ideates bio weapon E.g. terrorist group develops bio weapon E.g. terrorist group deploys bio weapon E.g. fatalities E.g. cyber capabilities E.g. bio capabilities E.g. persuasive capabilities Risk factors Harm Model capabilities Risk scenario Type of risk Figure 6: Representation of a linear risk model consisting of many risk scenarios 5.1 Type of risk Every risk threshold is set for a specific “type of risk”. This term does not have a standard definition. In general, a type of risk seems to mean a group of risk scenarios that have similar impact, origin, or other characteristics, and may also be referred to as “area of risk” or “category of risk”. For example, common types of business risks include financial, legal, reputational, operational, and strategic risks. When it comes to risks from AI, types of risks could be distinguished by type of harm (e.g. fatalities, injuries, and economic damage) 13 and potentially additionally by the domain or modality of occurrence of that harm (e.g. for fatalities, this could mean distinguishing between fatalities that stem from biological attacks, chemical attacks, and cyberattacks on critical infrastructure) (Figure 6). 14 The choice of how many risk scenarios are in scope may affect where to set the risk threshold. All else equal, the fewer risk scenarios included, the lower, i.e. more strict, the risk thresholds should be because more fine-grained types of risks constitute a smaller fraction of the overall risk. For example, the U.S. aerospace industry used to have separate risk thresholds of 30 × 10 − 6 for the level of risk from each of the three main risk scenarios during rocket launch (explosive debris, toxic release, and blast overpressure). To simplify the licensing process, the industry switched to a risk threshold of 1 × 10 − 4 for the level of risk from all three risk scenarios combined ( FAA, 2016). Note that the overall threshold remained about the same ( 3 × 30 × 10 − 6 ≈ 1 × 10 − 4 ). Many regulators also use separate risk thresholds for different numbers of fatalities. Two very common risk thresholds across many industries and jurisdictions are “individual risk thresholds” and “societal risk thresholds”. While definitions vary, individual risk thresholds usually refer to the risk of death of individuals, while societal risk thresholds refer to the risk of death of groups of people from a single event (e.g. HSE, 2001; IAEA, 2005; IMO, 2018). In short, regulators often use separate risk thresholds for risk scenarios where a single person dies and those where several people die. The previous discussion can be considered to concern a risk threshold’s material scope – in addition, the temporal scope and territorial scope for harm to occur need to be defined. All else equal, the shorter the time period taken into account for harm to materialize, the lower, i.e. more strict, the risk 13 Regulators and companies may want to begin with setting risk thresholds for types of harm that are relatively easy to measure (e.g. fatalities). However, types of harm that are harder to measure, such as discrimination, disinformation, or societal disruption, should not be neglected for this reason. But they require additional effort, because regulators and companies need to develop suitable metrics first. For a first effort in this regard, see Solaiman et al. (2023). 14 Additionally distinguishing by domain or modality of occurrence of harm is not necessary but may allow setting more quantitative risk thresholds for types of risks where more data or better risk estimation methodologies exist. It may also make it easier to use risk thresholds to help with setting capability thresholds, which often focus on capabilities relevant for a particular domain (e.g. bio capabilities). For regulators, it can also make risk estimation easier, because information about different types of risks may be located within different government departments. 16</p>
+<!-- Page 17 -->
+
+<p>thresholds should be, because shorter time periods represent a smaller fraction of the overall risk. While longer time periods are more comprehensive, shorter time periods are easier to assess. For example, aviation has risk thresholds per flight-hour ( ICAO, 2018), whereas the nuclear industry defines risk thresholds per reactor-year ( IAEA, 2005). In the case of AI, a temporal scope of 12 months may align well with the yearly business cycle. However, developing biological weapons, for instance, may take several years and would not be in scope in this case. Similar considerations apply with regard to where the harm occurs. For example, in the U.S. nuclear industry, the individual risk threshold considers individuals within 1 mile of the power plant, whereas the societal risk threshold considers the population within 50 miles of the power plant ( NRC, 1983). In the case of AI, the territorial scope may need to be unrestricted, because frontier AI companies provide their services globally, and harm may thus occur anywhere in the world. For instance, cyberattacks can target any system, especially if it is connected to the internet. There also need to be rules for what type of causation is in scope; for example, second-order effects may be excluded. At the very least, the model needs to be causal for the harm. Causation can be established via the “but-for test” from law ( Hart &amp; Honoré, 1985): “but for the model, would the harm have occurred?” But mere causation may not be sufficient for practical reasons, because it would include a tremendous number of cases where the activity contributes marginally to the occurrence of harm (see also Section 4.2). Therefore, for example, a risk threshold could focus on first-order effects, that is harms directly stemming from the AI development, deployment, or use. Based on this example definition, harm to users or harm caused by malicious actors would be in scope, whereas harm to workers that are displaced by AI systems would not be in scope. However, we highlight that the lines can be blurry, and clear rules need to be established. Finally, for risks where AI exacerbates a baseline risk (e.g. cyberattacks) as opposed to creating a new risk (e.g. rogue AI scenarios), it will usually be preferable for risk thresholds to refer to the increase in risk caused by AI, i.e. “marginal risk”, rather than the total level of risk ( Kapoor et al., 2024). Note that the increase in risk should still be expressed in absolute, not relative, terms: a 5% increase in deaths from heart attacks is far worse than a 5% increase in deaths from shark attacks. However, for many risks from AI it is unclear what should be the relevant baseline risk – the level of risk with or without current AI systems, and whether the former includes AI systems by the company itself or only AI systems by its competitors. It is also unclear whether and, if so, how risk estimates for risk thresholds should take into account the increase in risk caused by expected AI systems from competitors. If they did, that could create a situation where each frontier AI company behaves recklessly in part because it reasons that its competitors will behave recklessly. What constitutes the relevant baseline risk needs to be clearly defined. 5.2 Level of risk There seem to be three main ways used to determine the acceptable level of risk: building on peoples’ revealed preferences, copying what other industries do, and doing cost-benefit analysis ( Philipson, 1983; Reid, 2000). Some regulators have reviewed the level of risk that people accept through engaging in common activities like driving (e.g. HSE, 1992). Other regulators have reviewed the level of risk that society accepts in other industries with comparable benefits (e.g. NRC, 1983 – comparing nuclear to coal, “the competing form of generating electricity”). Most regulators appear to have reviewed and copied the risk thresholds already used in other industries or jurisdictions. As a potential result, many regulators use the same individual risk threshold of 1 × 10 − 6 per fatality and year (e.g. HSE, 2001; IAEA, 2005; IMO, 2018). However, societal risk thresholds seem to vary more strongly. Among industries and jurisdictions, the acceptable risk threshold for 1,000 fatalities ranges from a likelihood of 1 × 10 − 6 to 1 × 10 − 11 per year ( Ehrhart et al., 2020). This study finds, for example, that the UK Health and Safety Commission sets risk thresholds for the transport of dangerous substances, deeming 1 × 10 − 4 unacceptable and 1 × 10 − 6 acceptable. By contrast, the survey finds that the Swiss Federal Office for the Environment sets risk thresholds for fixed installations and tunnels, deeming 1 × 10 − 9 unacceptable and 1 × 10 − 11 acceptable. Few regulators appear to have conducted systematic cost-benefit analysis to determine the acceptable level of risk. A notable exception seems to be the maritime industry ( EMSA, 2015; IMO, 2018). Choosing the acceptable level of risk in a systematic way is extremely difficult ( HSE, 1992). However, given that AI may not be comparable to any other industry in terms of the benefits it might generate, 17</p>
+<!-- Page 18 -->
+
+<p>this may be the necessary approach. In the following, we provide some initial guidance on the three key normative trade-offs that need to be handled in a systematic cost-benefit analysis: how to weigh potential harms and benefits, to what extent to take into account mitigation costs, and how to deal with large amounts of uncertainty. The key question when determining the acceptable level of risk for an activity is how to weigh the many potential harms against the benefits that may come from it ( Hubbard, 2020). 15 Greater benefits can be accounted for by setting higher, i.e. less strict, thresholds. 16 But can the benefits of scientific advances be weighed against the harms of discrimination or disinformation? This is extremely challenging (see Section 4.2). For example, regulators in the maritime industry have developed a target societal risk/benefit ratio, the amount of societal benefit necessary to outweigh the risk of a single fatality. They derived the target societal risk/benefit ratio from aviation – because aviation has “good statistical data” and an “excellent safety record” – estimating the benefits via company revenues. They then apply this target societal risk/benefit ratio to the maritime industry ( EMSA, 2015; IMO, 2018). A key issue with using this approach for AI is that many societal benefits, such as fundamental scientific advances, may not be reflected in company revenue. The second key trade-off when determining the acceptable level of risk is to what extent to take into account the costs of reducing risks, in terms of money, time, or effort. Greater mitigation costs can be accounted for by setting higher, i.e. less strict, thresholds. Alternatively, as discussed in Section 3.1, a common approach in other industries is to set two risk thresholds: one above which risk is unacceptable regardless of mitigation costs, and one above which risk must be “as low as reasonably practicable” or “ALARP”; that is, risk must be reduced until the costs would be “grossly disproportionate” to the benefits of further risk reduction (HSE, 1992). This means mitigation costs do not influence the acceptable level of risk, but above some level of risk they influence what must be done if the threshold is crossed. The third key trade-off when determining the acceptable level of risk is how to set the expected ratio of false negatives to false positives. Estimates of harms, benefits, and mitigation costs will involve large amounts of uncertainty. An approach that is more risk tolerant and therefore more concerned about benefits and mitigation costs, i.e. false positives (either due to the risk threshold accidentally being set too low or the level of risk wrongly being estimated to be above the threshold), leads to higher, i.e. less strict, risk thresholds. The more the risk threshold should be risk averse and reflect concern about harms, i.e. false negatives (either due to the risk threshold accidentally being set too high or the level of risk wrongly being considered below the threshold), the lower, i.e. more strict, the risk thresholds should be to generate a “margin of safety”. It seems prudent to have a margin of safety that is larger the more consequential and irreversible the type of harm at stake (e.g. this applies more to fatalities than to injuries). Some regulators also choose to be more risk averse the larger the harm at stake. For example, the Dutch nuclear industry sets its societal risk threshold at a probability of 1 × 10 − 5 / N 2 for 10 × N fatalities per year ( ANVS, 2020). The division by N 2 instead of N means a steeper slope of the risk thresholds and reflects aversion to large accidents (the acceptable probability decreases exponentially instead of linearly with the number of fatalities increasing). Generally, regulators have more legitimacy and better incentives to define socially desirable thresh- olds than companies do, in particular if companies’ activities may cause externalities to society ( Abrahamsen &amp; Aven, 2012). The public safety and security risks that may stem from frontier AI systems are such externalities. Therefore, ideally regulators, but at least companies, should define risk thresholds. 6 Conclusion This paper has made four main contributions. First, we have clarified the concepts of risk thresholds, capability thresholds, and compute thresholds, arguing that they not only rely on different metrics, but should also serve different functions. Second, we have made the case that risk thresholds are a promising tool for frontier AI regulation to the extent that the reliability of risk estimates can be 15 One often reads that benefits should not be taken into account above the unacceptable risk threshold (e.g. HSE, 2001). But that guidance seems to refer to the moment when the threshold is used . When the threshold is defined , benefits should always be taken into account. 16 A key decision that needs to be made is which benefits are in scope – this raises parallel questions to which harms are in scope, so we refer to that discussion (Section 5.1). 18</p>
+<!-- Page 19 -->
+
+<p>improved. Third, we have argued that risk thresholds should be used to indirectly inform high-stakes decisions by helping set, but not determine, capability thresholds, and may also be used to directly inform, but not determine, high-stakes decisions. Fourth, we have developed initial guidance for defining AI risk thresholds. Many questions around risk thresholds for high-stakes AI development and deployment decisions warrant much further research. We highlight some questions that seem especially important. Fun- damentally, advancing the risk estimation methodology is of utmost importance if regulators and companies want to rely more on risk thresholds for high-stakes decisions. In that regard, developing risk taxonomies and risk models, gaining experience with risk estimation methods, as well as gather- ing data about the occurrence of risk factors, near misses, and small-scale harm may be among the most useful ways forward (see Schuett, Baumoehl, et al., forthcoming). The details of how to use risk thresholds to determine adequate capability thresholds and corresponding safety measures also need to be explored further. In this regard, companies and regulators may be able to learn from the U.S. nuclear industry (see NRC, 2021). Last but not least, the acceptable levels of risk for different types of risks need to be defined. To do so, regulators could conduct comparative studies of thresholds in other industries or systematic cost-benefit analyses. Managing the risks from frontier AI systems is an important and urgent challenge. Frontier AI companies need to improve their risk management practices and should use risk thresholds to help set capability thresholds. Over time, high-stakes development and deployment decisions should be directly informed by risk thresholds set by regulators. To this end, we need a discussion about what level of risk we, as a society, are willing to accept. Abbreviations AI Artificial intelligence ALARA As low as reasonably achievable ALARP As low as reasonably practicable ANVS Dutch Authority for Nuclear Safety and Radiation Protection BEIS UK Department for Business, Energy and Industrial Strategy CCPS Center for Chemical Process Safety COSO Committee of Sponsoring Organizations of the Treadway Commission DSIT UK Department for Science, Innovation and Technology EMSA European Maritime Safety Agency ESA European Space Agency EUROCONTROL European Organisation for the Safety of Air Navigation FAA U.S. Federal Aviation Administration HSE UK Health and Safety Executive IAEA International Atomic Energy Agency ICAO International Civil Aviation Organization IEC International Electrotechnical Commission IMO International Maritime Organization ISO International Organization for Standardization NASA U.S. National Aeronautics and Space Administration NIST U.S. National Institute of Standards and Technology NFPA U.S. National Fire Protection Association NRC U.S. Nuclear Regulatory Commission ONR UK Office for Nuclear Regulation Acknowledgments We are grateful for valuable input from the following individuals, listed in alphabetical order by sur- name: Jide Alaga, Bill Anderson-Samways, Anthony Barrett, Caroline Baumoehl, Samuel Bowman, Ben Bucknall, Marie Buhl, Francisco Carvalho, Alan Chan, Noemi Dreksler, Ben Garfinkel, James 19</p>
+<!-- Page 20 -->
+
+<p>Ginns, John Halstead, Jonathan Happel, Lennart Heim, Samuel Hilton, Holden Karnofsky, Patrick Levermore, Eli Lifland, David Lindner, Sebastien Krier, Yannick Muehlhaeuser, Malcolm Murray, Aidan O’Gara, Cullen O’Keefe, Alex Rand, Luca Righetti, Josh Rosenberg, Gaurav Sett, Rohin Shah, Merlin Stein, Christopher Phenicie, Hjalmar Wijk, Zoe Williams, and Peter Wills. All views and remaining errors are our own. Declarations One author’s spouse holds equity in a frontier AI company. Apart from that, the authors have no relevant financial or non-financial interests to disclose. References Abrahamsen, E. B., &amp; Aven, T. (2012). Why risk acceptance criteria need to be defined by the authorities and not the industry? Reliability Engineering &amp; System Safety , 105 , 47–50. doi: 10.1016/j.ress.2011.11.004 Anderljung, M., Barnhart, J., Korinek, A., Leung, J., O’Keefe, C., Whittlestone, J., . . . Wolf, K. (2023). Frontier AI regulation: Managing emerging risks to public safety. arXiv preprint arXiv:2307.03718 . Anderljung, M., &amp; Hazell, J. (2023). Protecting society from AI misuse: When are restrictions on capabilities warranted? arXiv preprint arXiv:2303.09377 . Anthropic. (2023). Responsible Scaling Policy. Retrieved from https://www.anthropic.com/ news/anthropics-responsible-scaling-policy ANVS. (2020). Guide on Level 3 PSA. Retrieved from https://english.autoriteitnvs.nl/ documents/publication/2020/03/10/anvs-guide-on-level-3-psa Apostolakis, G. E. (2004). How useful is quantitative risk assessment? Risk Analysis , 24 (3), 515–520. doi: 10.1111/j.0272-4332.2004.00455.x Aven, T. (2012). Foundations of risk analysis . Wiley. doi: 10.1002/9781119945482 Aven, T. (2015). Risk analysis . Wiley. doi: 10.1002/9781119057819 Aven, T. (2016). Risk assessment and risk management: Review of recent advances on their foundation. European Journal of Operational Research , 253 (1), 1–13. doi: 10.1016/j.ejor .2015.12.023 Barrett, A. M., &amp; Baum, S. D. (2017). A model of pathways to artificial superintelligence catastrophe for risk and decision analysis. Journal of Experimental &amp; Theoretical Artificial Intelligence , 29 (2), 397–414. doi: 10.1080/0952813X.2016.1186228 Bengio, Y., Hinton, G., Yao, A., Song, D., Abbeel, P., Darrell, T., . . . Mindermann, S. (2024). Managing extreme AI risks amid rapid progress. Science . doi: 10.1126/science.adn0117 Bernardi, J., Mukobi, G., Greaves, H., Heim, L., &amp; Anderljung, M. (2024). Societal adaptation to advanced AI. arXiv preprint arXiv:2405.10295 . Bishop, P., &amp; Bloomfield, R. (2000). A methodology for safety case development. Safety and Reliability , 20 (1), 34–42. doi: 10.1080/09617353.2000.11690698 Boiko, D. A., MacKnight, R., &amp; Gomes, G. (2023). Emergent autonomous scientific research capabilities of large language models. arXiv preprint arXiv:2304.05332 . Bommasani, R., Hudson, D. A., Adeli, E., Altman, R., Arora, S., von Arx, S., . . . Liang, P. (2021). On the opportunities and risks of foundation models. arXiv preprint arXiv:2108.07258 . Buhl, M., Sett, G., Koessler, L., &amp; Schuett, J. (forthcoming). Safety cases for frontier AI. CCPS. (2009). Guidelines for developing quantitative safety risk criteria . Wiley. doi: 10.1002/ 9780470552940 Chan, A., Salganik, R., Markelius, A., Pang, C., Rajkumar, N., Krasheninnikov, D., . . . Maharaj, T. (2023). Harms from increasingly agentic algorithmic systems. In ACM Conference on Fairness, Accountability, and Transparency (pp. 651–666). doi: 10.1145/3593013.3594033 Clymer, J., Gabrieli, N., Krueger, D., &amp; Larsen, T. (2024). Safety cases: How to justify the safety of advanced AI systems. arXiv preprint arXiv:2403.10462 . Cohen, M. K., Kolt, N., Bengio, Y., Hadfield, G. K., &amp; Russell, S. (2024). Regulating advanced artificial agents. Science , 384 (6691), 36–38. doi: 10.1126/science.adl0625 COSO. (2017). Enterprise risk management: Integrating with strategy and performance. Retrieved from https://www.coso.org/guidance-erm 20</p>
+<!-- Page 21 -->
+
+<p>Decker, C. (2018). Goals-based and rules-based approaches to regulation. BEIS . Retrieved from https://www.gov.uk/government/publications/regulation-goals-based -and-rules-based-approaches Dezfuli, H., Benjamin, A., Everett, C., Feather, M., Rutledge, P., Sen, D., &amp; Youngblood, R. (2015). NASA system safety handbook. Volume 2: System safety concepts, guidelines, and implementation examples. NASA . Retrieved from https://ntrs.nasa.gov/citations/ 20150015500 Dobbe, R. I. J. (2022). System safety and artificial intelligence. In J. B. Bullock et al. (Eds.), The Oxford handbook of AI governance (pp. 441–458). Oxford University Press. doi: 10.1093/ oxfordhb/9780197579329.013.67 DSIT. (2023a). AI Safety Summit: Introduction. Retrieved from https://www .gov .uk/ government/publications/ai-safety-summit-introduction DSIT. (2023b). Emerging processes for frontier AI safety. Retrieved from https://www.gov.uk/ government/publications/emerging-processes-for-frontier-ai-safety DSIT. (2024a). AI Safety Institute approach to evaluations. Retrieved from https://www.gov.uk/ government/publications/ai-safety-institute-approach-to-evaluations DSIT. (2024b). Frontier AI Safety Commitments, AI Seoul Summit 2024. Retrieved from https:// www .gov .uk/government/publications/frontier -ai -safety -commitments -ai -seoul-summit-2024 DSIT. (2024c). Seoul Ministerial Statement for advancing AI safety, innovation and inclusivity: AI Seoul Summit 2024. Retrieved from https://www.gov.uk/government/publications/ seoul -ministerial -statement -for -advancing -ai -safety -innovation -and -inclusivity-ai-seoul-summit-2024 Ehrhart, B. D., Brooks, D. M., Muna, A. B., &amp; LaFleur, C. B. (2020). Evaluation of risk acceptance criteria for transporting hazardous materials. Sandia National Laboratories . doi: 10.2172/ 1602640 EMSA. (2015). Risk acceptance criteria and risk based damage stability, final report, part 1: Risk acceptance criteria. Retrieved from https://emsa .europa .eu/csn -menu/ csn-background/items.html?cid=14&amp;id=2419 ESA. (2023). ESA space debris mitigation requirements. Retrieved from https://technology .esa.int/upload/media/ESA-Space-Debris-Mitigation-Requirements-ESSB-ST -U-007-Issue1.pdf EUROCONTROL. (2001). ESARR 4: Risk assessment and mitigation in ATM. Retrieved from https://www .eurocontrol .int/publication/esarr -4 -risk -assessment -and-mitigation-atm FAA. (1988). Advisory Circular 25.1309-1A: System design and analysis. Retrieved from https://www.faa.gov/regulations_policies/advisory_circulars/index.cfm/ go/document.information/documentid/22680 FAA. (2016). Changing the collective risk limits for launches and reentries and clarifying the risk limit used to establish hazard areas for ships and aircraft. Retrieved from https:// www.federalregister.gov/d/2016-17083 Fang, R., Bindu, R., Gupta, A., &amp; Kang, D. (2024). LLM agents can autonomously exploit one-day vulnerabilities. arXiv preprint arXiv:2404.08144 . Fischhoff, B., Lichtenstein, S., Slovic, P., Derby, S. L., &amp; Keeney, R. (1984). Acceptable risk . Cambridge University Press. Flamberg, S., Rose, S., Kurth, B., &amp; Sallaberry, C. (2016). Paper study on risk tolerance. Kiefner . Retrieved from https://trid.trb.org/View/1469903 Fraser, H., &amp; Bello y Villarino, J.-M. (2023). Acceptable risks in Europe’s proposed AI Act: Reasonableness and other principles for deciding how much risk management is enough. European Journal of Risk Regulation , 1–16. doi: 10.1017/err.2023.57 Frey, H. C., &amp; Patil, S. R. (2002). Identification and review of sensitivity analysis methods. Risk Analysis , 22 (3), 553–578. doi: 10.1111/0272-4332.00039 Google AI. (2018). Our principles. Retrieved from https://ai.google/responsibility/ principles Google DeepMind. (2024). Introducing the Frontier Safety Framework. Retrieved from https://deepmind .google/discover/blog/introducing -the -frontier -safety -framework Hart, H. L. A. (2017). Between utility and rights. In L. Ten Chin (Ed.), Theories of rights (pp. 107–125). Routledge. doi: 10.4324/9781315236308-7 21</p>
+<!-- Page 22 -->
+
+<p>Hart, H. L. A., &amp; Honoré, T. (1985). Causation in the law . Clarendon Press. doi: 10.1093/acprof: oso/9780198254744.001.0001 Hazell, J. (2023). Spear phishing with large language models. arXiv preprint arXiv:2305.06972 . Heim, L., &amp; Koessler, L. (forthcoming). Training compute thresholds: Features and functions in AI governance. Helfrich, G. (2024). The harms of terminology: Why we should reject so-called “frontier AI”. AI and Ethics . doi: 10.1007/s43681-024-00438-1 Hendrycks, D., Mazeika, M., &amp; Woodside, T. (2023). An overview of catastrophic AI risks. arXiv preprint arXiv:2306.12001 . Hernandez, D., Kaplan, J., Henighan, T., &amp; McCandlish, S. (2021). Scaling laws for transfer. arXiv preprint arXiv:2102.01293 . Hoffmann, J., Borgeaud, S., Mensch, A., Buchatskaya, E., Cai, T., Rutherford, E., . . . Sifre, L. (2022). Training compute-optimal large language models. arXiv preprint arXiv:2203.15556 . HSE. (1992). The tolerability of risk from nuclear power stations. Retrieved from https:// www.onr.org.uk/media/v1vi3v21/tolerability.pdf HSE. (2001). Reducing risks, protecting people . Retrieved from https://www.hse.gov.uk/ enforce/assets/docs/r2p2.pdf Hubbard, D. W. (2020). The failure of risk management: Why it’s broken and how to fix it (2nd ed.). Wiley. IAEA. (2005). Risk informed regulation of nuclear facilities: Overview of the current status . Retrieved from https://www.iaea.org/publications/7175/risk-informed-regulation-of -nuclear-facilities-overview-of-the-current-status ICAO. (2018). Doc 9859: Safety management manual (4th ed.). Retrieved from https:// skybrary.aero/sites/default/files/bookshelf/5863.pdf IMO. (2018). Revised guidelines for formal safety assessment (FSA) for use in the IMO rule- making process. Retrieved from https://www.imo.org/en/OurWork/Safety/Pages/ FormalSafetyAssessment.aspx ISO. (2018). ISO 31000:2018 Risk management. Retrieved from https://www .iso .org/ iso-31000-risk-management.html ISO &amp; IEC. (2014). ISO/IEC Guide 51:2014 Safety aspects — Guidelines for their inclusion in standards. Retrieved from https://www.iso.org/standard/53940.html ISO &amp; IEC. (2019). ISO/IEC 31010:2019 Risk management — Risk assessment techniques. Retrieved from https://www.iso.org/standard/72140.html Kaplan, J., McCandlish, S., Henighan, T., Brown, T. B., Chess, B., Child, R., . . . Amodei, D. (2020). Scaling laws for neural language models. arXiv preprint arXiv:2001.08361 . Kapoor, S., Bommasani, R., Klyman, K., Longpre, S., Ramaswami, A., Cihon, P., . . . Narayanan, A. (2024). On the societal impact of open foundation models. arXiv preprint arXiv:2403.07918 . Kelly, T. P. (1998). Arguing safety: A systematic approach to managing safety cases (Unpublished doctoral dissertation). University of York. Klinke, A., &amp; Renn, O. (2002). A new approach to risk evaluation and management: Risk-based, precaution-based, and discourse-based strategies. Risk Analysis , 22 (6), 1071–1094. doi: 10.1111/1539-6924.00274 Koessler, L., &amp; Schuett, J. (2023). Risk assessment at AGI companies: A review of popular risk assessment techniques from other safety-critical industries. arXiv preprint arXiv:2307.08823 . Laux, J., Wachter, S., &amp; Mittelstadt, B. (2024). Trustworthy artificial intelligence and the European Union AI Act: On the conflation of trustworthiness and acceptability of risk. Regulation &amp; Governance , 18 (1), 3–32. doi: 10.1111/rego.12512 Leveson, N. G. (2016). Engineering a safer world: Systems thinking applied to safety . MIT Press. doi: 10.7551/mitpress/8179.001.0001 Linkov, I., Bates, M., Loney, D., Sparrevik, M., &amp; Bridges, T. (2011). Risk management practices. In I. Linkov &amp; T. Bridges (Eds.), Climate: Global change and local adaptation (pp. 133–155). Springer. doi: 10.1007/978-94-007-1770-1_8 Lohn, A., &amp; Jackson, K. (2022). Will AI make cyber swords or shields? Center for Security and Emerging Technology . doi: 10.51593/2022ca002 Lohn, A., &amp; Musser, M. (2022). AI and compute: How much longer can computing power drive artificial intelligence progress? Center for Security and Emerging Technology . doi: 10.51593/2021CA009 Marhavilas, P. K., &amp; Koulouriotis, D. E. (2021). Risk-acceptance criteria in occupational health and safety risk-assessment: The state-of-the-art through a systematic literature review. Safety , 7 (4). 22</p>
+<!-- Page 23 -->
+
+<p>doi: 10.3390/safety7040077 Melchers, R. E. (2001). On the ALARP approach to risk management. Reliability Engineering &amp; System Safety , 71 (2), 201–208. doi: 10.1016/S0951-8320(00)00096-X Meta. (2023). Meta’s first responsible business practices report. Retrieved from https://about .fb.com/news/2023/07/metas-first-responsible-business-practices-report Microsoft. (2024). Responsible AI transparency report. Retrieved from https://query.prod.cms .rt.microsoft.com/cms/api/am/binary/RW1l5BO Mirsky, Y., Demontis, A., Kotak, J., Shankar, R., Gelei, D., Yang, L., . . . Biggio, B. (2021). The threat of offensive AI to organizations. arXiv preprint arXiv:2106.15764 . Morgan, M. G., &amp; Henrion, M. (1990). Uncertainty: A guide to dealing with uncertainty in quantita- tive risk and policy analysis . Cambridge University Press. doi: 10.1017/CBO9780511840609 Mouton, C. A., Lucas, C., &amp; Guest, E. (2023). The operational risks of AI in large-scale biological attacks: A red-team approach. RAND . doi: 10.7249/RRA2977-1 NFPA. (2023). NFPA 59A: Standard for the production, storage, and handling of liquefied natural gas (LNG). Retrieved from https://www.nfpa.org/codes-and-standards/nfpa-59a -standard-development/59a Ngo, R., Chan, L., &amp; Mindermann, S. (2024). The alignment problem from a deep learning perspective. arXiv preprint arXiv:2209.00626 . NIST. (2023). Artificial Intelligence Risk Management Framework (AI RMF 1.0). doi: 10.6028/ NIST.AI.100-1 Novelli, C., Casolari, F., Rotolo, A., Taddeo, M., &amp; Floridi, L. (2024). AI risk assessment: A scenario-based, proportional methodology for the AI Act. Digital Society , 3 (1), 1–13. doi: 10.1007/s44206-024-00095-1 NRC. (1983). Safety goals for nuclear power plant operation. Retrieved from https://www.nrc .gov/docs/ML0717/ML071770230.pdf NRC. (2016). Regulatory Guide 8.10: Operating philosophy for maintaining occupational and public radiation exposures as low as is reasonably achievable. Retrieved from https:// www.nrc.gov/docs/ML1610/ML16105A136.pdf NRC. (2021). History of the NRC’s risk-informed regulatory programs. Retrieved from https:// www.nrc.gov/about-nrc/regulatory/risk-informed/history.html Oakley, P. A., &amp; Harrison, D. E. (2020). Death of the ALARA radiation protection principle as used in the medical sector. Dose Response , 18 (2). doi: 10.1177/1559325820921641 ONR. (2020). Safety assessment principles (SAPs). Retrieved from https :// www .onr.org.uk/publications/regulatory-guidance/regulatory-assessment-and -permissioning/safety-assessment-principles-saps OpenAI. (2023). Preparedness Framework (Beta). Retrieved from https://cdn.openai.com/ openai-preparedness-framework-beta.pdf Patwardhan, T., Liu, K., Markov, T., Chowdhury, N., Leet, D., Cone, N., . . . Madry, A. (2024). Building an early warning system for LLM-aided biological threat creation. OpenAI . Re- trieved from https://openai.com/research/building-an-early-warning-system -for-llm-aided-biological-threat-creation Perrow, C. (1999). Normal accidents: Living with high risk technologies . Princeton University Press. Philipson, L. L. (1983). Risk acceptance criteria and their development. Journal of Medical Systems , 7 (5), 437–456. doi: 10.1007/BF00995743 Phuong, M., Aitchison, M., Catt, E., Cogan, S., Kaskasoli, A., Krakovna, V., . . . Shevlane, T. (2024). Evaluating frontier models for dangerous capabilities. arxiv preprint arXiv:2403.13793 . Pistillo, M., Van Arsdale, S., Heim, L., &amp; Winter, C. (forthcoming). The role of compute thresholds for AI governance. George Washington Journal of Law &amp; Technology . Popov, G., Lyon, B. K., &amp; Hollcroft, B. (2021). Risk assessment: A practical guide to assessing operational risks . Wiley. doi: 10.1002/9781119798323 Rausand, M., &amp; Haugen, S. (2020). Risk assessment: Theory, methods, and applications . Wiley. doi: 10.1002/9781119377351 Reason, J. (1990). Human error . Cambridge University Press. doi: 10.1017/CBO9781139062367 Reid, S. G. (2000). Acceptable risk criteria. Progress in Structural Engineering and Materials , 2 (2), 254–262. doi: 10.1002/1528-2716(200004/06)2:2&lt;254::AID-PSE30&gt;3.0.CO;2-K Salter, C., Saydjari, O. S., Schneier, B., &amp; Wallner, J. (1998). Toward a secure system engineering methodology. In Workshop on New Security Paradigms (pp. 2–10). doi: 10.1145/310889 .310900 23</p>
+<!-- Page 24 -->
+
+<p>Sandbrink, J. B. (2023). Artificial intelligence and biological misuse: Differentiating risks of language models and biological design tools. arXiv preprint arXiv:2306.13952 . Sastry, G., Heim, L., Belfield, H., Anderljung, M., Brundage, M., Hazell, J., . . . Coyle, D. (2024). Computing power and the governance of artificial intelligence. arXiv preprint arXiv:2402.08797 . Schneier, B. (2011). Secrets and lies: Digital security in a networked world . Wiley. doi: 10.1002/ 9781119183631 Schuett, J. (2023). Risk management in the Artificial Intelligence Act. European Journal of Risk Regulation , 1–19. doi: 10.1017/err.2023.1 Schuett, J., Anderljung, M., Koessler, L., Carlier, A., &amp; Garfinkel, B. (forthcoming). From principles to rules: A regulatory approach for frontier AI. In P. Hacker, A. Engel, S. Hammer, &amp; B. Mittelstadt (Eds.), Oxford handbook on the foundations and regulation of generative AI. Oxford University Press. Schuett, J., Baumoehl, C., Murray, M., &amp; Koessler, L. (forthcoming). How to estimate the impact and likelihood of risks from AI. Shevlane, T., &amp; Dafoe, A. (2020). The offense-defense balance of scientific knowledge: Does publishing AI research reduce misuse? In AAAI/ACM Conference on AI, Ethics, and Society (pp. 173–179). doi: 10.1145/3375627.3375815 Shevlane, T., Farquhar, S., Garfinkel, B., Phuong, M., Whittlestone, J., Leung, J., . . . Dafoe, A. (2023). Model evaluation for extreme risks. arXiv preprint arXiv:2305.15324 . Shostack, A. (2014). Threat modeling: Designing for security . Wiley. Soice, E. H., Rocha, R., Cordova, K., Specter, M., &amp; Esvelt, K. M. (2023). Can large language models democratize access to dual-use biotechnology? arXiv preprint arXiv:2306.03809 . Solaiman, I., Talat, Z., Agnew, W., Ahmad, L., Baker, D., Blodgett, S. L., . . . Vassilev, A. (2023). Evaluating the social impact of generative AI systems in systems and society. arXiv preprint arXiv:2306.05949 . Starr, C. (1969). Social benefit versus technological risk: What is our society willing to pay for safety? Science , 165 (3899), 1232–1238. doi: 10.1126/science.165.3899.1232 Sutton, R. (2019). The bitter lesson. Retrieved from http://www.incompleteideas.net/ IncIdeas/BitterLesson.html Urbina, F., Lentzos, F., Invernizzi, C., &amp; Ekins, S. (2022). Dual use of artificial intelligence-powered drug discovery. Nature Machine Intelligence , 4 (3), 189–191. doi: 10.1038/s42256-022-00465 -9 Vanem, E. (2012). Ethics and fundamental principles of risk acceptance criteria. Safety Science , 50 (4), 958–967. doi: 10.1016/j.ssci.2011.12.030 Villalobos, P., Sevilla, J., Heim, L., Besiroglu, T., Hobbhahn, M., &amp; Ho, A. (2022). Will we run out of data? Limits of LLM scaling based on human-generated data. arXiv preprint arXiv:2211.04325 . Wright, R. W. (1985). Causation in tort law. California Law Review , 73 (6), 1735–1828. 24</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      The human is index zero.
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/tvproductions/gzkit" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.sections", "navigation.expand", "navigation.top", "toc.follow", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

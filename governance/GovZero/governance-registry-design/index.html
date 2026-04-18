@@ -1,0 +1,7810 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Keep humans in the loop when AI writes your code">
+      
+      
+        <meta name="author" content="Jeffry">
+      
+      
+        <link rel="canonical" href="https://gzkit.org/governance/GovZero/governance-registry-design/">
+      
+      
+        <link rel="prev" href="../gzkit-structure/">
+      
+      
+        <link rel="next" href="../agent-era-prompting-summary/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>Governance Registry Design - gzkit</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="deep-orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#govzero-ontology-design" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="gzkit" class="md-header__button md-logo" aria-label="gzkit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            gzkit
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Governance Registry Design
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/tvproductions/gzkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tvproductions/gzkit
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="gzkit" class="md-nav__button md-logo" aria-label="gzkit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    gzkit
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/tvproductions/gzkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tvproductions/gzkit
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/runbook/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runbook
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/why/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Why gzkit?
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Examples
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/tutorial-first-project/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    First Project
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/tutorial-rhea-bootstrap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RHEA Bootstrap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_3" id="__nav_5_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/guide-prd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRD Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/guide-adr/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/guide-tasks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Task Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/guide-releasing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releasing Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_4" id="__nav_5_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Templates
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Templates
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/templates/prd-template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRD Template
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/templates/adr-template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Template
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Draft"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/templates/task-template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Task Template
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--Not Started"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_5" id="__nav_5_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Assessments
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Assessments
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/gzkit-readiness-assessment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GZKit Readiness Assessment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/go-live-gap-analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Go-Live Gap Analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/comparison-gzkit-speckit-bmad/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Framework Comparison
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concepts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Concepts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/concepts/gates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/concepts/lanes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lanes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/concepts/lifecycle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lifecycle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/concepts/obpis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OBPIs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/concepts/closeout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Closeout Ceremony
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/concepts/workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Daily Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/concepts/test-traceability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Traceability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Skills
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_2" id="__nav_7_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Setup
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project Setup
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-init/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-init
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-prd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-prd
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-constitute/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-constitute
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_3" id="__nav_7_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Planning
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Planning
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-adr-create/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-create
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-obpi-specify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-obpi-specify
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-adr-evaluate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-evaluate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-plan-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-plan-audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_4" id="__nav_7_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Execution
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Execution
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-obpi-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-obpi-pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-implement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-implement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-gates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-gates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-check/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-check
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-arb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-arb
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_5" id="__nav_7_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Status & Review
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Status & Review
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-adr-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-state/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-state
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-obpi-simplify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-obpi-simplify
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-adr-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_6" id="__nav_7_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Closeout & Audit
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Closeout & Audit
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-adr-closeout-ceremony/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-closeout-ceremony
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-adr-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-obpi-reconcile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-obpi-reconcile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-adr-emit-receipt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-adr-emit-receipt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-validate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-validate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_7" id="__nav_7_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operations
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Operations
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/git-sync/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /git-sync
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-patch-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-patch-release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-session-handoff/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-session-handoff
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-chore-runner/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-chore-runner
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-obpi-lock/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-obpi-lock
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/skills/gz-cli-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    /gz-cli-audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Commands
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Commands
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/init/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz init
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/prd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz prd
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/constitute/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz constitute
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/specify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz specify
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/plan-create/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz plan create
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/plan-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz plan audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/implement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz implement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/gates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz gates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/state/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz state
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/adr-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/adr-promote/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr promote
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/adr-audit-check/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr audit-check
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/adr-covers-check/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr covers-check
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/adr-emit-receipt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz adr emit-receipt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/covers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz covers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/flags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz flags
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/flag-explain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz flag explain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/obpi-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz obpi status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/obpi-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz obpi pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/obpi-validate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz obpi validate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/obpi-reconcile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz obpi reconcile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/obpi-emit-receipt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz obpi emit-receipt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/closeout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz closeout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/patch-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz patch release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/git-sync/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz git-sync
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/attest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz attest
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/migrate-semver/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz migrate-semver
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/register-adrs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz register-adrs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/chores-list/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz chores list
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/chores-plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz chores plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/chores-run/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz chores run
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/chores-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz chores audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/skill-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz skill audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/parity-check/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz parity check
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/readiness-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz readiness audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/check-config-paths/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz check-config-paths
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/cli-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz cli audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/task-list/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz task list
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/task-start/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz task start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/task-complete/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz task complete
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/task-block/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz task block
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/task-escalate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz task escalate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/personas-list/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz personas list
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/commands/agent-sync-control-surfaces/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    gz agent sync control-surfaces
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Governance (Canonical)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Governance (Canonical)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../governance_runbook/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Governance Runbook
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../state-doctrine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    State Doctrine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../storage-tiers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Storage Tiers Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipeline-marker-migration-path/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline Marker Migration Path
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../documentation-taxonomy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation Taxonomy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../feature-flags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature Flags
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../parity-intake-rubric/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Parity Intake Rubric
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../charter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Charter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr-lifecycle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Lifecycle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../obpi-transaction-contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OBPI Transaction Contract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../obpi-runtime-contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OBPI Runtime Contract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../obpi-decomposition-matrix/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OBPI Decomposition Matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr-obpi-ghi-audit-linkage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR/OBPI/GHI/Audit Linkage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR Status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../audit-protocol/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Audit Protocol
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gate5-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gate 5 Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architectural-enforcement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architectural Enforcement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gzkit-structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gzkit Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Governance Registry Design
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Governance Registry Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#motivation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Motivation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Motivation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#two-planes-of-governance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Two Planes of Governance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aircraft-manufacturing-parallels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Aircraft Manufacturing Parallels
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-ontology-as-factory-audit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Ontology as Factory Audit
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#problem-statement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem Statement
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Problem Statement">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-core-question" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Core Question
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design Principles
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Design Principles">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#palantir-ontology-alignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Palantir Ontology Alignment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iso-27001-nist-csf-parallels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ISO 27001 / NIST CSF Parallels
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#core-design-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Design Decisions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#two-planes-in-the-ontology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Two Planes in the Ontology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-ontology-as-central-nervous-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Ontology as Central Nervous System
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#object-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Object Types
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Object Types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#doctrine-object-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Doctrine (Object Type)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#policy-object-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Policy (Object Type)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rule-object-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rule (Object Type)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#action-type-object-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Action Type (Object Type)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#link-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Link Types
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#agent-guidance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Agent Guidance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#three-layer-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Three-Layer Architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Three-Layer Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#language-layer-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Language Layer (Schema)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#engine-layer-gzkit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Engine Layer (gzkit)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#toolchain-layer-control-surfaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Toolchain Layer (Control Surfaces)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#enforcement-coverage-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enforcement Coverage Model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#id-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ID Conventions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#proposed-location" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proposed Location
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#maintenance-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Maintenance Model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#doctrines-inventory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Doctrines Inventory
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adr-packaging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ADR Packaging
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ADR Packaging">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#adr-a-govzero-ontology-schema-population" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ADR-A: GovZero Ontology (Schema + Population)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adr-b-tool-integration-generated-artifacts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ADR-B: Tool Integration + Generated Artifacts
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#impact-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Impact Analysis
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Impact Analysis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#for-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        For Agents
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#for-gzkit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        For gzkit
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#for-human-operators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        For Human Operators
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#relationship-to-existing-artifacts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Relationship to Existing Artifacts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../agent-era-prompting-summary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent-Era Prompting Summary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../layered-trust/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Layered Trust
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ledger-schema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ledger Schema
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../session-handoff-obligations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Session Handoff Obligations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../session-handoff-schema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Session Handoff Schema
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../handoff-chaining/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Handoff Chaining
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../handoff-validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Handoff Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../staleness-classification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Staleness Classification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../validation-receipts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validation Receipts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9_29" >
+        
+          
+          <label class="md-nav__link" for="__nav_9_29" id="__nav_9_29_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releases
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_29_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_29">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Releases
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../releases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../releases/major-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Major Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../releases/minor-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Minor Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../releases/patch-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Patch Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9_30" >
+        
+          
+          <label class="md-nav__link" for="__nav_9_30" id="__nav_9_30_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Audits
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_30_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_30">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Audits
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../audits/AUDIT-BRIEF-governance-harmonization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Harmonization Brief
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../audits/governance-harmonization-2026-01-11/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Harmonization Audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../audits/AUDIT-TEMPLATE-agent-readiness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Readiness Audit Template
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docs README
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/reference/charter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Charter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/reference/lineage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lineage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/reference/agent-input-disciplines/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Input Disciplines
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/reference/genesis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Genesis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/reference/genesis-transcript/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Genesis Transcript
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user/reference/airlineops-exploration-verbatim/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AirlineOps Exploration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#motivation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Motivation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Motivation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#two-planes-of-governance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Two Planes of Governance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aircraft-manufacturing-parallels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Aircraft Manufacturing Parallels
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-ontology-as-factory-audit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Ontology as Factory Audit
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#problem-statement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem Statement
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Problem Statement">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-core-question" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Core Question
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design Principles
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Design Principles">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#palantir-ontology-alignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Palantir Ontology Alignment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iso-27001-nist-csf-parallels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ISO 27001 / NIST CSF Parallels
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#core-design-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Design Decisions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#two-planes-in-the-ontology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Two Planes in the Ontology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-ontology-as-central-nervous-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Ontology as Central Nervous System
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#object-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Object Types
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Object Types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#doctrine-object-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Doctrine (Object Type)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#policy-object-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Policy (Object Type)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rule-object-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rule (Object Type)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#action-type-object-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Action Type (Object Type)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#link-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Link Types
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#agent-guidance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Agent Guidance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#three-layer-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Three-Layer Architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Three-Layer Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#language-layer-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Language Layer (Schema)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#engine-layer-gzkit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Engine Layer (gzkit)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#toolchain-layer-control-surfaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Toolchain Layer (Control Surfaces)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#enforcement-coverage-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enforcement Coverage Model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#id-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ID Conventions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#proposed-location" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proposed Location
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#maintenance-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Maintenance Model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#doctrines-inventory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Doctrines Inventory
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adr-packaging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ADR Packaging
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ADR Packaging">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#adr-a-govzero-ontology-schema-population" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ADR-A: GovZero Ontology (Schema + Population)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adr-b-tool-integration-generated-artifacts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ADR-B: Tool Integration + Generated Artifacts
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#impact-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Impact Analysis
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Impact Analysis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#for-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        For Agents
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#for-gzkit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        For gzkit
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#for-human-operators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        For Human Operators
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#relationship-to-existing-artifacts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Relationship to Existing Artifacts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="govzero-ontology-design">GovZero Ontology Design<a class="headerlink" href="#govzero-ontology-design" title="Permanent link">&para;</a></h1>
+<p><strong>Status:</strong> Draft
+<strong>Last reviewed:</strong> 2026-02-15
+<strong>Authority:</strong> Design document (pre-ADR)
+<strong>Inspired by:</strong> <a href="https://www.palantir.com/docs/foundry/architecture-center/ontology-system/">Palantir Ontology</a>,
+ISO 27001 Controls Framework, NIST Cybersecurity Framework,
+<a href="https://engineerfix.com/the-step-by-step-aircraft-manufacturing-process/">Aircraft Manufacturing Process</a></p>
+<hr />
+<h2 id="motivation">Motivation<a class="headerlink" href="#motivation" title="Permanent link">&para;</a></h2>
+<p>AirlineOps has a product and a factory.</p>
+<p>The <strong>product</strong> is an airline scheduling and operations platform --- CLI
+commands, warehouse adapters, data pipelines, configuration schemas. ADRs
+specify what to build. OBPIs hold the implementation to exact spec, like
+jigs holding aircraft parts in sub-millimeter alignment during assembly.
+Gates 1-4 verify the aircraft works.</p>
+<p>The <strong>factory</strong> is the governance system that ensures the product is built
+correctly --- enforcement hooks, policy tests, chores, skills, instruction
+files, agent contracts, attestation ceremonies. Process rules constrain how
+agents work. The factory is what makes three different AI agents (Claude,
+Codex, Copilot) produce consistent, quality results.</p>
+<p>In aircraft manufacturing, you would never build a factory room by room,
+bolting on a new assembly station every time a new variant comes along, then
+ask technicians to reconstruct the full process by reading signs posted on
+10 different walls. The factory has a <strong>master process plan</strong> --- a single
+document that specifies every station, every jig, every quality gate, every
+tool, and how they connect.</p>
+<p>AirlineOps has no master process plan. The factory grew organically. Each
+ADR bolted on its own enforcement wiring. Each doctrine was stated in prose
+across multiple files. Each chore was created as a standalone task with no
+declared connection to the rules it serves. The result: a 1:4 ratio of
+product work to governance overhead. Not because governance is unnecessary,
+but because the factory itself was never designed as a system.</p>
+<p>This document designs the master process plan: the <strong>GovZero Ontology</strong>.</p>
+<h3 id="two-planes-of-governance">Two Planes of Governance<a class="headerlink" href="#two-planes-of-governance" title="Permanent link">&para;</a></h3>
+<p>Both the product and the factory must be governed. Aerospace recognizes this
+with separate certifications: a Type Certificate for the aircraft (product)
+and a Production Certificate for the factory (process). You can have a
+perfect aircraft design and a terrible factory, or vice versa. Both must
+be governed independently.</p>
+<table>
+<thead>
+<tr>
+<th>Plane</th>
+<th>What It Governs</th>
+<th>Certification Analog</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>"Build the right thing"</strong> (Product)</td>
+<td>Code behavior, data contracts, CLI design, API surfaces</td>
+<td>Type Certificate</td>
+</tr>
+<tr>
+<td><strong>"Build the thing right"</strong> (Factory)</td>
+<td>How ADRs are structured, how OBPIs are attested, how chores report, how agents are constrained</td>
+<td>Production Certificate</td>
+</tr>
+</tbody>
+</table>
+<p>The Ontology governs both planes in a single model.</p>
+<h3 id="aircraft-manufacturing-parallels">Aircraft Manufacturing Parallels<a class="headerlink" href="#aircraft-manufacturing-parallels" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Aircraft Manufacturing</th>
+<th>AirlineOps Factory</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CAD/CAE models (3D design, simulation)</td>
+<td>ADRs (design decisions, tradeoff analysis)</td>
+</tr>
+<tr>
+<td>Jigs and fixtures (hold components in exact alignment)</td>
+<td>OBPIs (hold implementation to exact spec, one brief per item)</td>
+</tr>
+<tr>
+<td>Specialized tooling (purpose-built per assembly step)</td>
+<td>Skills, chores, hooks (purpose-built per governance step)</td>
+</tr>
+<tr>
+<td>Major structural assembly (sub-assemblies combined)</td>
+<td>Product code (features assembled per OBPI specifications)</td>
+</tr>
+<tr>
+<td>Ground / taxi / flight tests (sequential gates)</td>
+<td>Gates 1-5 (ADR, TDD, Docs, BDD, Attestation)</td>
+</tr>
+<tr>
+<td>Regulatory certification (FAA/EASA sign-off)</td>
+<td>Human attestation (Gate 5 closeout ceremony)</td>
+</tr>
+<tr>
+<td>Master process plan (every station, tool, gate)</td>
+<td>GovZero Ontology (every rule, enforcement, control surface)</td>
+</tr>
+</tbody>
+</table>
+<p>The master process plan does not add work --- it <strong>eliminates rework</strong>. Without
+it, technicians assemble parts wrong, quality catches it late, parts get
+scrapped and rebuilt. The 1:4 ratio is rework cost: agents doing governance
+wrong, getting caught by hooks they did not know about, redoing work that
+violates rules they could not find.</p>
+<h3 id="the-ontology-as-factory-audit">The Ontology as Factory Audit<a class="headerlink" href="#the-ontology-as-factory-audit" title="Permanent link">&para;</a></h3>
+<p>Creating the Ontology is simultaneously a factory inspection. Every rule
+mapped forces the question: is this rule earning its keep? Is its enforcement
+proportional? Is it stated in the right place, or in too many places? The
+deliverables of ADR-A are simultaneously the audit of the existing governance
+system. Not the product --- the factory.</p>
+<hr />
+<h2 id="problem-statement">Problem Statement<a class="headerlink" href="#problem-statement" title="Permanent link">&para;</a></h2>
+<p>The GovZero governance system has three independently-growing dimensions with no
+central model connecting them:</p>
+<table>
+<thead>
+<tr>
+<th>Dimension</th>
+<th>Count</th>
+<th>Where They Live</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rules/Policies</td>
+<td>~600-700</td>
+<td>6 CLAUDE.md, 13 instruction files, 22 GovZero docs, AGENTS.md</td>
+</tr>
+<tr>
+<td>Enforcement tools</td>
+<td>~140</td>
+<td>24 pre-commit hooks, 15 policy tests, 26 chores, opsdev commands</td>
+</tr>
+<tr>
+<td>Control surfaces</td>
+<td>~113</td>
+<td>Skills (claude/codex/github), hooks, instruction files</td>
+</tr>
+</tbody>
+</table>
+<p>There is <strong>no join table</strong>. No artifact maps a rule to its enforcement, its
+observability surface, its traceability chain, or its remediation path. The
+consequences are:</p>
+<ol>
+<li>
+<p><strong>Agent onboarding cost:</strong> An agent must read ~10 documents (~2,500 lines of
+   prose) to reconstruct the rule landscape. Even then, it cannot answer "what
+   enforces this rule?" without grepping across pre-commit hooks, policy tests,
+   chores, and skills independently.</p>
+</li>
+<li>
+<p><strong>Governance-of-governance gap:</strong> Each new ADR independently wires up its own
+   enforcement. There is no pattern that says "when you create a rule, register
+   it here, and the enforcement chain is X."</p>
+</li>
+<li>
+<p><strong>Gap invisibility:</strong> No mechanism can answer "which rules have no automated
+   enforcement?" (gap analysis), "which enforcement tools cover which rules?"
+   (coverage), or "what is the compliance status of doctrine X across all its
+   policies?" (observability).</p>
+</li>
+<li>
+<p><strong>Productivity cost:</strong> The ratio of product work to governance overhead
+   approaches 1:4 when working with AI agents. The governance system's
+   complexity is a significant contributor because rules are scattered across
+   narrative prose in dozens of files rather than centrally indexed.</p>
+</li>
+<li>
+<p><strong>Tool development friction:</strong> gzkit tools must hardcode knowledge of where
+   rules live, what enforcement exists, and how to check compliance. A central
+   ontology would allow tools to be generic against the governance model.</p>
+</li>
+<li>
+<p><strong>Agent stochasticity:</strong> Every unconstrained decision point is a source of
+   agent improvisation. Improvisation is stochasticity. Maximizing the
+   machine-readable decision-space coverage directly reduces agent variance.</p>
+</li>
+</ol>
+<h3 id="the-core-question">The Core Question<a class="headerlink" href="#the-core-question" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>"What is the full set of constraints an agent must satisfy?"</p>
+</blockquote>
+<p>No single artifact can answer this today.</p>
+<hr />
+<h2 id="design-principles">Design Principles<a class="headerlink" href="#design-principles" title="Permanent link">&para;</a></h2>
+<h3 id="palantir-ontology-alignment">Palantir Ontology Alignment<a class="headerlink" href="#palantir-ontology-alignment" title="Permanent link">&para;</a></h3>
+<p>This design adopts terminology and structure from the
+<a href="https://www.palantir.com/docs/foundry/architecture-center/ontology-system/">Palantir Ontology</a>
+while preserving GovZero-specific concepts where they add precision.</p>
+<p><strong>Adopted from Palantir:</strong></p>
+<ul>
+<li><strong>"Ontology"</strong> as the name for the central semantic model (not "registry")</li>
+<li><strong>Object Types</strong> as the structural primitive for entities</li>
+<li><strong>Link Types</strong> as first-class named relationships between objects</li>
+<li><strong>Action Types</strong> as operational verbs with authorization boundaries</li>
+<li><strong>Three-layer architecture:</strong> Language (schema), Engine (gzkit), Toolchain
+  (control surfaces)</li>
+<li><strong>Four-fold integration model:</strong> data, logic, action, security</li>
+</ul>
+<p><strong>Preserved from GovZero:</strong></p>
+<ul>
+<li><strong>Control surfaces</strong> (more precise than "toolchain" for agent instruction
+  delivery: skills, hooks, instruction files, CLAUDE.md)</li>
+<li><strong>Doctrine / Policy / Rule hierarchy</strong> (richer taxonomy than flat object
+  types; Palantir has no equivalent hierarchy)</li>
+<li><strong>Attestation</strong> (human-gate concept with no Palantir equivalent)</li>
+<li><strong>Observability</strong> (governance-specific compliance visibility)</li>
+<li><strong>Traceability</strong> (governance audit chain)</li>
+</ul>
+<h3 id="iso-27001-nist-csf-parallels">ISO 27001 / NIST CSF Parallels<a class="headerlink" href="#iso-27001-nist-csf-parallels" title="Permanent link">&para;</a></h3>
+<p>The Ontology follows the <strong>controls framework</strong> pattern used by mature
+compliance systems:</p>
+<table>
+<thead>
+<tr>
+<th>ISO 27001</th>
+<th>NIST CSF</th>
+<th>GovZero Ontology</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Control Objective</td>
+<td>Identify</td>
+<td>Doctrine</td>
+</tr>
+<tr>
+<td>Control</td>
+<td>Protect</td>
+<td>Policy / Rule</td>
+</tr>
+<tr>
+<td>Statement of Applicability</td>
+<td>—</td>
+<td>Ontology (the file itself)</td>
+</tr>
+<tr>
+<td>Audit Evidence</td>
+<td>Detect</td>
+<td>Observability</td>
+</tr>
+<tr>
+<td>Corrective Action</td>
+<td>Respond</td>
+<td>Remediation</td>
+</tr>
+<tr>
+<td>Management Review</td>
+<td>Recover</td>
+<td>Governance (self-model)</td>
+</tr>
+</tbody>
+</table>
+<p>The Ontology is the <strong>Statement of Applicability</strong> for software engineering
+governance: a matrix listing every constraint, whether it applies, how it is
+enforced, and where the evidence lives.</p>
+<h3 id="core-design-decisions">Core Design Decisions<a class="headerlink" href="#core-design-decisions" title="Permanent link">&para;</a></h3>
+<p>These decisions were resolved through Q&amp;A (2026-02-15):</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Decision</th>
+<th>Resolution</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Palantir alignment</td>
+<td>Terminology + structure adopted. Object/Link/Action types, Language/Engine/Toolchain layers. GovZero-specific terms preserved.</td>
+</tr>
+<tr>
+<td>2</td>
+<td>AGENTS.md relationship</td>
+<td>Partially generated. Constraints, Permissions, and Enforcement sections rendered from Ontology. Prose sections (Prime Directive, Workflow, Mission) hand-authored.</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Portability</td>
+<td>Build in airlineops, design for extraction. Airlineops is reference implementation; gzkit extracts generalizable patterns when mature.</td>
+</tr>
+<tr>
+<td>4</td>
+<td>ADR packaging</td>
+<td>Two ADRs. ADR-A: Ontology schema + full population. ADR-B: Tool integration + generated artifacts.</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Granularity</td>
+<td>Maximum decision-space coverage. Register everything that constrains agent decisions. Severity as compliance-behavior signal.</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Versioning</td>
+<td>Stable IDs with semantic slugs (ruff-style). Parameters change, identity does not. IDs never reused.</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Permissions</td>
+<td>Action Types with authorization levels (autonomous / human-gated / prohibited).</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Enforcement gaps</td>
+<td>Explicit classification: automated / human-gated / gap.</td>
+</tr>
+<tr>
+<td>9</td>
+<td>File structure</td>
+<td>Single file (ontology.json). Optimized for agent consumption. Human views are generated artifacts.</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Scope</td>
+<td>Central nervous system. All governance tools (ARB, chores, hooks, skills) link through the Ontology.</td>
+</tr>
+<tr>
+<td>11</td>
+<td>Two planes</td>
+<td>Product rules (constrain code) + Process rules (constrain governance). Both in same Ontology.</td>
+</tr>
+<tr>
+<td>12</td>
+<td>Maintenance</td>
+<td>Agent-authored, human-attested, machine-validated. Same pattern as product delivery.</td>
+</tr>
+<tr>
+<td>13</td>
+<td>Agent profiles</td>
+<td>Agent-agnostic core + optional agent-specific guidance field per entry.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="two-planes-in-the-ontology">Two Planes in the Ontology<a class="headerlink" href="#two-planes-in-the-ontology" title="Permanent link">&para;</a></h2>
+<p>As established in the Motivation section, the Ontology governs both the
+product and the factory. Both planes produce rules in the same model:</p>
+<table>
+<thead>
+<tr>
+<th>Plane</th>
+<th>Governs</th>
+<th>Examples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Product</strong> ("build the right thing")</td>
+<td>How code is written</td>
+<td>D-CONFIG-FIRST, R-SQL-PARAM-001</td>
+</tr>
+<tr>
+<td><strong>Process</strong> ("build the thing right")</td>
+<td>How governance tools behave</td>
+<td>R-ADR-LIFECYCLE-001, R-OBPI-ATTESTATION-001</td>
+</tr>
+</tbody>
+</table>
+<p>ADRs and OBPIs are <strong>product delivery tools</strong> --- jigs and CAD models for the
+aircraft. The Ontology does not subsume them. It <strong>governs how they function</strong>:
+how an ADR must be structured, what constitutes valid OBPI completion, what
+evidence is sufficient for attestation.</p>
+<p>Both planes reduce agent stochasticity. Product rules constrain <em>what</em> the
+agent builds. Process rules constrain <em>how</em> the agent works.</p>
+<hr />
+<h2 id="the-ontology-as-central-nervous-system">The Ontology as Central Nervous System<a class="headerlink" href="#the-ontology-as-central-nervous-system" title="Permanent link">&para;</a></h2>
+<p>The Ontology is not a rules index that sits alongside other systems. It is
+the hub through which all governance systems connect:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>                    +-------------+
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>          +--------&gt;|  ONTOLOGY   |&lt;--------+
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>          |         | (single     |         |
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>          |    +---&gt;|  source of  |&lt;---+    |
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>          |    |    |  truth)     |    |    |
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>          |    |    +------+------+    |    |
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>          |    |           |           |    |
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>         ARB  ADR/       Chores     Skills  Hooks
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>         (QA   OBPI      (serve     (enforce (block
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>         receipts (life-  ontology   ontology on
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>         trace  cycle     elements)  rules)  ontology
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>         back)  linked)                      rules)
+</code></pre></div>
+<p>Every existing system gains a <strong>rationale</strong> within the Ontology:</p>
+<ul>
+<li>A chore is not "maintenance task #14" --- it is "the remediation mechanism
+  for rules R-SQL-PARAM-001 through R-SQL-PARAM-012."</li>
+<li>An ARB receipt is not a standalone QA artifact --- it is compliance evidence
+  against specific Ontology rules.</li>
+<li>A skill is not a standalone workflow --- it serves specific Ontology
+  elements (enforcement, remediation, or observation).</li>
+<li>The ADR/OBPI lifecycle tracks changes to the product, governed by process
+  rules in the Ontology.</li>
+</ul>
+<hr />
+<h2 id="object-types">Object Types<a class="headerlink" href="#object-types" title="Permanent link">&para;</a></h2>
+<p>The Ontology contains four top-level object types.</p>
+<h3 id="doctrine-object-type">Doctrine (Object Type)<a class="headerlink" href="#doctrine-object-type" title="Permanent link">&para;</a></h3>
+<p>A high-level engineering principle that guides decision-making. Not directly
+testable --- it is a direction, not a constraint.</p>
+<p><strong>ID format:</strong> <code>D-{SLUG}</code> (e.g., <code>D-CONFIG-FIRST</code>)</p>
+<p><strong>Properties:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>title</td>
+<td>string</td>
+<td>yes</td>
+<td>Human-readable name</td>
+</tr>
+<tr>
+<td>description</td>
+<td>string</td>
+<td>yes</td>
+<td>What this doctrine means and why it exists</td>
+</tr>
+<tr>
+<td>origin_adr</td>
+<td>string</td>
+<td>no</td>
+<td>ADR that established this doctrine</td>
+</tr>
+<tr>
+<td>canonical_source</td>
+<td>string</td>
+<td>yes</td>
+<td>File path of the authoritative statement</td>
+</tr>
+<tr>
+<td>also_stated_in</td>
+<td>array</td>
+<td>no</td>
+<td>Other files that restate this doctrine</td>
+</tr>
+<tr>
+<td>category</td>
+<td>string</td>
+<td>yes</td>
+<td>Classification (see categories below)</td>
+</tr>
+<tr>
+<td>plane</td>
+<td>enum</td>
+<td>yes</td>
+<td><code>product</code> or <code>process</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Categories:</strong> architecture, cli, configuration, data-access, data-modeling,
+dependencies, documentation, portability, process, security, stability,
+testing, tooling, versioning</p>
+<h3 id="policy-object-type">Policy (Object Type)<a class="headerlink" href="#policy-object-type" title="Permanent link">&para;</a></h3>
+<p>A codified interpretation of a doctrine scoped to a specific domain. Broader
+than a single rule but testable at the policy level.</p>
+<p><strong>ID format:</strong> <code>P-{DOCTRINE-ABBREV}-{SLUG}</code> (e.g., <code>P-CFG-NO-ENV</code>)</p>
+<p><strong>Properties:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>title</td>
+<td>string</td>
+<td>yes</td>
+<td>Human-readable name</td>
+</tr>
+<tr>
+<td>description</td>
+<td>string</td>
+<td>yes</td>
+<td>What this policy requires</td>
+</tr>
+<tr>
+<td>doctrine</td>
+<td>string</td>
+<td>yes</td>
+<td>Parent doctrine ID</td>
+</tr>
+<tr>
+<td>scope</td>
+<td>string</td>
+<td>yes</td>
+<td>File paths or domains this policy applies to</td>
+</tr>
+<tr>
+<td>canonical_source</td>
+<td>string</td>
+<td>yes</td>
+<td>File path of the authoritative statement</td>
+</tr>
+</tbody>
+</table>
+<h3 id="rule-object-type">Rule (Object Type)<a class="headerlink" href="#rule-object-type" title="Permanent link">&para;</a></h3>
+<p>An atomic constraint on agent or code behavior. Maximizes decision-space
+coverage to minimize agent stochasticity.</p>
+<p><strong>ID format:</strong> <code>R-{POLICY-ABBREV}-{NNN}</code> (e.g., <code>R-CFG-NO-ENV-001</code>)</p>
+<p><strong>Properties:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>title</td>
+<td>string</td>
+<td>yes</td>
+<td>Human-readable name (semantic slug)</td>
+</tr>
+<tr>
+<td>description</td>
+<td>string</td>
+<td>yes</td>
+<td>Precise statement of the constraint</td>
+</tr>
+<tr>
+<td>policy</td>
+<td>string</td>
+<td>yes</td>
+<td>Parent policy ID</td>
+</tr>
+<tr>
+<td>severity</td>
+<td>enum</td>
+<td>yes</td>
+<td><code>blocking</code>, <code>advisory</code>, <code>pattern</code>, <code>anti-pattern</code></td>
+</tr>
+<tr>
+<td>plane</td>
+<td>enum</td>
+<td>yes</td>
+<td><code>product</code> or <code>process</code></td>
+</tr>
+<tr>
+<td>enforcement</td>
+<td>object</td>
+<td>yes</td>
+<td>Enforcement mechanisms (see Link Types)</td>
+</tr>
+<tr>
+<td>observability</td>
+<td>object</td>
+<td>no</td>
+<td>How to see compliance status</td>
+</tr>
+<tr>
+<td>traceability</td>
+<td>object</td>
+<td>yes</td>
+<td>Links to origin artifacts</td>
+</tr>
+<tr>
+<td>remediation</td>
+<td>object</td>
+<td>no</td>
+<td>How to fix violations</td>
+</tr>
+<tr>
+<td>agent_guidance</td>
+<td>object</td>
+<td>no</td>
+<td>Per-agent hints (see Agent Guidance)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Severity model (compliance-behavior signal):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Severity</th>
+<th>Agent Behavior</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>blocking</code></td>
+<td>Must comply; enforcement will catch violations</td>
+<td>Hard constraint</td>
+</tr>
+<tr>
+<td><code>advisory</code></td>
+<td>Should comply; no automated enforcement yet</td>
+<td>Soft constraint (enforcement gap)</td>
+</tr>
+<tr>
+<td><code>pattern</code></td>
+<td>Preferred approach when multiple options exist</td>
+<td>Decision-space narrower</td>
+</tr>
+<tr>
+<td><code>anti-pattern</code></td>
+<td>Explicitly prohibited; do not consider</td>
+<td>Decision-space exclusion</td>
+</tr>
+</tbody>
+</table>
+<h3 id="action-type-object-type">Action Type (Object Type)<a class="headerlink" href="#action-type-object-type" title="Permanent link">&para;</a></h3>
+<p>An operation with an authorization boundary. Models permissions as first-class
+Ontology entries, mapping to Palantir's Action concept.</p>
+<p><strong>ID format:</strong> <code>A-{SLUG}</code> (e.g., <code>A-GIT-PUSH</code>)</p>
+<p><strong>Properties:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>title</td>
+<td>string</td>
+<td>yes</td>
+<td>Human-readable name</td>
+</tr>
+<tr>
+<td>description</td>
+<td>string</td>
+<td>yes</td>
+<td>What this action does</td>
+</tr>
+<tr>
+<td>authorization</td>
+<td>enum</td>
+<td>yes</td>
+<td><code>autonomous</code>, <code>human-gated</code>, <code>prohibited</code></td>
+</tr>
+<tr>
+<td>scope</td>
+<td>string</td>
+<td>no</td>
+<td>Where this action applies</td>
+</tr>
+<tr>
+<td>rules_enforced</td>
+<td>array</td>
+<td>no</td>
+<td>Rule IDs this action helps enforce</td>
+</tr>
+<tr>
+<td>agent_guidance</td>
+<td>object</td>
+<td>no</td>
+<td>Per-agent hints</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Authorization model:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>autonomous</code></td>
+<td>Agent may perform without asking</td>
+<td>Run unit tests, read files, lint</td>
+</tr>
+<tr>
+<td><code>human-gated</code></td>
+<td>Agent must get explicit approval first</td>
+<td>git push, uv add, file deletion</td>
+</tr>
+<tr>
+<td><code>prohibited</code></td>
+<td>Agent must never perform</td>
+<td>git commit --no-verify, raw SQL for attestation</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="link-types">Link Types<a class="headerlink" href="#link-types" title="Permanent link">&para;</a></h2>
+<p>Named relationships between Ontology objects, adopted from Palantir's Link
+Type concept. Links are stored as properties on the objects they connect
+(not as separate entities).</p>
+<table>
+<thead>
+<tr>
+<th>Link Type</th>
+<th>From</th>
+<th>To</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enforces</code></td>
+<td>Hook / Policy Test</td>
+<td>Rule</td>
+<td>Catches violations of this rule</td>
+</tr>
+<tr>
+<td><code>remediates</code></td>
+<td>Chore</td>
+<td>Rule</td>
+<td>Fixes violations of this rule</td>
+</tr>
+<tr>
+<td><code>evidences</code></td>
+<td>ARB Receipt / Proof</td>
+<td>Rule</td>
+<td>Proves compliance with this rule</td>
+</tr>
+<tr>
+<td><code>implements</code></td>
+<td>ADR / OBPI</td>
+<td>Doctrine / Policy</td>
+<td>Introduced or modified this element</td>
+</tr>
+<tr>
+<td><code>observes</code></td>
+<td>Insight / Log</td>
+<td>Rule</td>
+<td>Observation about this rule's compliance</td>
+</tr>
+<tr>
+<td><code>authorizes</code></td>
+<td>Action Type</td>
+<td>Agent Profile</td>
+<td>Authorization level for this agent</td>
+</tr>
+<tr>
+<td><code>serves</code></td>
+<td>Skill</td>
+<td>Rule / Action</td>
+<td>Helps enforce or execute this element</td>
+</tr>
+<tr>
+<td><code>derives_from</code></td>
+<td>Policy</td>
+<td>Doctrine</td>
+<td>This policy codifies this doctrine</td>
+</tr>
+<tr>
+<td><code>constrains</code></td>
+<td>Rule</td>
+<td>Policy</td>
+<td>This rule is an atomic test of this policy</td>
+</tr>
+</tbody>
+</table>
+<p>Links are represented in the Ontology as foreign key references in object
+properties (e.g., a rule's <code>policy</code> field is a <code>constrains</code> link, a rule's
+<code>enforcement.policy_tests</code> array contains <code>enforces</code> links from tests).</p>
+<hr />
+<h2 id="agent-guidance">Agent Guidance<a class="headerlink" href="#agent-guidance" title="Permanent link">&para;</a></h2>
+<p>Rules and actions may include optional per-agent guidance. The core Ontology
+is agent-agnostic; guidance helps each agent find <em>its</em> specific compliance
+path.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">&quot;agent_guidance&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="nt">&quot;claude_code&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Enforce via chore-config-paths-remediation skill&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="nt">&quot;copilot&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Instruction file: cli.instructions.md section Config-First&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="nt">&quot;codex&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Policy test covers this; run uv run -m unittest tests.policy&quot;</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span><span class="p">}</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="p">}</span>
+</code></pre></div>
+<p>Agent guidance is optional and non-authoritative. The rule itself is the
+authority; guidance is a convenience for reducing agent lookup time. When
+gzkit extracts the schema for other repos, agent guidance fields are
+portable (new repos fill in their own agent hints).</p>
+<hr />
+<h2 id="three-layer-architecture">Three-Layer Architecture<a class="headerlink" href="#three-layer-architecture" title="Permanent link">&para;</a></h2>
+<p>Following Palantir's operationalization model:</p>
+<h3 id="language-layer-schema">Language Layer (Schema)<a class="headerlink" href="#language-layer-schema" title="Permanent link">&para;</a></h3>
+<p>The Ontology schema defines the semantic model: object types, properties,
+link types, ID conventions, severity model. This is the generalizable layer
+that gzkit will eventually extract.</p>
+<p><strong>Artifacts:</strong>
+- <code>.gzkit/governance/ontology.schema.json</code> --- JSON Schema definition
+- This design document --- human-readable specification</p>
+<h3 id="engine-layer-gzkit">Engine Layer (gzkit)<a class="headerlink" href="#engine-layer-gzkit" title="Permanent link">&para;</a></h3>
+<p>The tools that read, write, query, and validate the Ontology. gzkit is the
+engine that operates against the Language layer.</p>
+<p><strong>Capabilities:</strong>
+- Query: "What rules apply to <code>src/airlineops/warehouse/</code>?"
+- Validate: "Do all referenced hooks, tests, chores, and skills exist?"
+- Gap analysis: "Which rules have severity=blocking but enforcement coverage=gap?"
+- Compliance trace: "This session touched files in scope of rules X, Y, Z"</p>
+<h3 id="toolchain-layer-control-surfaces">Toolchain Layer (Control Surfaces)<a class="headerlink" href="#toolchain-layer-control-surfaces" title="Permanent link">&para;</a></h3>
+<p>The control surfaces where governance touches the agent: skills, hooks,
+instruction files, CLAUDE.md, AGENTS.md. These are the delivery mechanisms
+that bring Ontology constraints into agent context.</p>
+<p><strong>Control surface types:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Surface</th>
+<th>Delivery Mechanism</th>
+<th>Agent</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.github/instructions/*.md</code></td>
+<td>Auto-injected by GitHub</td>
+<td>Copilot</td>
+</tr>
+<tr>
+<td><code>CLAUDE.md</code> / <code>AGENTS.md</code></td>
+<td>Read at session start</td>
+<td>All agents</td>
+</tr>
+<tr>
+<td><code>.claude/skills/</code></td>
+<td>Invoked during workflow</td>
+<td>Claude Code</td>
+</tr>
+<tr>
+<td><code>.agents/skills/</code></td>
+<td>Invoked during workflow</td>
+<td>All agents</td>
+</tr>
+<tr>
+<td><code>.pre-commit-config.yaml</code></td>
+<td>Triggered on commit</td>
+<td>All agents</td>
+</tr>
+<tr>
+<td><code>config/opsdev/chores.json</code></td>
+<td>Invoked on demand</td>
+<td>All agents</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="enforcement-coverage-model">Enforcement Coverage Model<a class="headerlink" href="#enforcement-coverage-model" title="Permanent link">&para;</a></h2>
+<p>Each rule declares its enforcement coverage using an explicit classification:</p>
+<table>
+<thead>
+<tr>
+<th>Coverage</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>automated</code></td>
+<td>Machine enforcement exists and is active</td>
+<td>Policy test, pre-commit hook</td>
+</tr>
+<tr>
+<td><code>human-gated</code></td>
+<td>Deliberately requires human judgment (by design)</td>
+<td>Gate 5 attestation, PR review</td>
+</tr>
+<tr>
+<td><code>gap</code></td>
+<td>No enforcement exists; this is a debt</td>
+<td>Rule documented but not yet tested</td>
+</tr>
+</tbody>
+</table>
+<p>This three-way classification enables precise gap analysis:</p>
+<ul>
+<li><strong>Actionable gaps:</strong> Rules where <code>coverage: "gap"</code> --- enforcement is
+  missing and should be built</li>
+<li><strong>Intentional human gates:</strong> Rules where <code>coverage: "human-gated"</code> ---
+  no automated enforcement needed by design</li>
+<li><strong>Fully covered:</strong> Rules where <code>coverage: "automated"</code> --- machine
+  enforcement is active</li>
+</ul>
+<hr />
+<h2 id="id-conventions">ID Conventions<a class="headerlink" href="#id-conventions" title="Permanent link">&para;</a></h2>
+<p>IDs are <strong>stable semantic slugs</strong> following the ruff/ty model:</p>
+<table>
+<thead>
+<tr>
+<th>Object Type</th>
+<th>Prefix</th>
+<th>Format</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Doctrine</td>
+<td><code>D-</code></td>
+<td><code>D-{SLUG}</code></td>
+<td><code>D-CONFIG-FIRST</code></td>
+</tr>
+<tr>
+<td>Policy</td>
+<td><code>P-</code></td>
+<td><code>P-{ABBREV}-{SLUG}</code></td>
+<td><code>P-CFG-NO-ENV</code></td>
+</tr>
+<tr>
+<td>Rule</td>
+<td><code>R-</code></td>
+<td><code>R-{ABBREV}-{NNN}</code></td>
+<td><code>R-CFG-NO-ENV-001</code></td>
+</tr>
+<tr>
+<td>Action</td>
+<td><code>A-</code></td>
+<td><code>A-{SLUG}</code></td>
+<td><code>A-GIT-PUSH</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Rules:</strong></p>
+<ul>
+<li>Slugs are UPPERCASE, HYPHEN-SEPARATED, human-readable</li>
+<li>Numbers are zero-padded to three digits within a policy</li>
+<li>IDs are permanent --- once assigned, never reused, never renamed</li>
+<li>Parameters may change (e.g., coverage threshold 40% to 50%) but the ID
+  and its semantic meaning are stable</li>
+<li>Deprecated rules are marked <code>deprecated: true</code>, never deleted</li>
+<li>Git history tracks all parameter changes</li>
+</ul>
+<hr />
+<h2 id="proposed-location">Proposed Location<a class="headerlink" href="#proposed-location" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>.gzkit/
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>  governance/
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    ontology.json           # The populated GovZero Ontology (single file)
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    ontology.schema.json    # JSON Schema for validation
+</code></pre></div>
+<p><strong>Rationale:</strong> Per the <code>.gzkit/</code> directory structure (ADR-0.0.25), governance
+metadata belongs in <code>.gzkit/</code>, not <code>.github/</code> (GitHub-specific) or <code>config/</code>
+(runtime application config). The Ontology is governance metadata:
+git-tracked, machine-readable, consumed by agents and tools.</p>
+<p>Single file optimized for agent consumption. Human-readable views (governance
+guides, compliance dashboards, rule summaries) are generated artifacts
+produced by Engine layer tools.</p>
+<hr />
+<h2 id="maintenance-model">Maintenance Model<a class="headerlink" href="#maintenance-model" title="Permanent link">&para;</a></h2>
+<p>The Ontology is maintained using the same governance pattern it defines:</p>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Who</th>
+<th>What</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Discovery</td>
+<td>Agent scans codebase</td>
+<td>Identifies candidate rules, enforcement, gaps</td>
+</tr>
+<tr>
+<td>Drafting</td>
+<td>Agent proposes entries</td>
+<td>Writes entries with IDs, links, metadata</td>
+</tr>
+<tr>
+<td>Attestation</td>
+<td>Human reviews</td>
+<td>Approves, adjusts, or rejects proposed entries</td>
+</tr>
+<tr>
+<td>Validation</td>
+<td>Machine checks</td>
+<td>Hook/chore verifies references exist, no orphans</td>
+</tr>
+<tr>
+<td>Evolution</td>
+<td>Agent updates per ADR/OBPI</td>
+<td>New rules are part of the deliverable</td>
+</tr>
+</tbody>
+</table>
+<p>When a new ADR introduces a constraint, the corresponding Ontology entry is
+part of the ADR's deliverables --- not an afterthought.</p>
+<hr />
+<h2 id="doctrines-inventory">Doctrines Inventory<a class="headerlink" href="#doctrines-inventory" title="Permanent link">&para;</a></h2>
+<p>Preliminary enumeration of doctrines currently embedded in governance prose:</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Title</th>
+<th>Origin</th>
+<th>Category</th>
+<th>Plane</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D-CONFIG-FIRST</td>
+<td>Config-First</td>
+<td>ADR-0.1.0</td>
+<td>configuration</td>
+<td>product</td>
+</tr>
+<tr>
+<td>D-SUBSYSTEM-ISOLATION</td>
+<td>Subsystem Isolation</td>
+<td>ADR-0.0.3</td>
+<td>architecture</td>
+<td>product</td>
+</tr>
+<tr>
+<td>D-STDLIB-FIRST</td>
+<td>Stdlib-First</td>
+<td>Convention</td>
+<td>dependencies</td>
+<td>product</td>
+</tr>
+<tr>
+<td>D-CROSS-PLATFORM</td>
+<td>Cross-Platform</td>
+<td>ADR-0.0.1</td>
+<td>portability</td>
+<td>product</td>
+</tr>
+<tr>
+<td>D-FLAG-DEFECTS</td>
+<td>Flag Defects Never Excuse</td>
+<td>ADR-0.0.27</td>
+<td>process</td>
+<td>process</td>
+</tr>
+<tr>
+<td>D-DOCS-AS-DELIVERABLE</td>
+<td>Documentation-as-Deliverable</td>
+<td>GovZero charter</td>
+<td>documentation</td>
+<td>process</td>
+</tr>
+<tr>
+<td>D-LITE-BY-DEFAULT</td>
+<td>Lite-by-Default</td>
+<td>GovZero charter</td>
+<td>process</td>
+<td>process</td>
+</tr>
+<tr>
+<td>D-DB-ISOLATION</td>
+<td>DB Isolation</td>
+<td>Convention</td>
+<td>testing</td>
+<td>product</td>
+</tr>
+<tr>
+<td>D-PYDANTIC-MODELS</td>
+<td>Pydantic Data Models</td>
+<td>Convention</td>
+<td>data-modeling</td>
+<td>product</td>
+</tr>
+<tr>
+<td>D-CLIG-CLI</td>
+<td>clig.dev CLI Design</td>
+<td>Convention</td>
+<td>cli</td>
+<td>product</td>
+</tr>
+<tr>
+<td>D-SQL-HYGIENE</td>
+<td>SQL Hygiene</td>
+<td>Convention</td>
+<td>data-access</td>
+<td>product</td>
+</tr>
+<tr>
+<td>D-OBPI-DISCIPLINE</td>
+<td>One Brief Per Item</td>
+<td>GovZero charter</td>
+<td>process</td>
+<td>process</td>
+</tr>
+<tr>
+<td>D-OWNER-COMPLETION</td>
+<td>Complete Ownership</td>
+<td>GovZero charter</td>
+<td>process</td>
+<td>process</td>
+</tr>
+<tr>
+<td>D-GATE-ATTESTATION</td>
+<td>Human Gate Attestation</td>
+<td>GovZero charter</td>
+<td>process</td>
+<td>process</td>
+</tr>
+<tr>
+<td>D-APPEND-ONLY-LEDGERS</td>
+<td>Append-Only Governance Ledgers</td>
+<td>ADR-0.0.25</td>
+<td>tooling</td>
+<td>process</td>
+</tr>
+<tr>
+<td>D-LAYERED-TRUST</td>
+<td>Layered Trust Architecture</td>
+<td>ADR-0.0.21</td>
+<td>tooling</td>
+<td>process</td>
+</tr>
+<tr>
+<td>D-SESSION-CONTINUITY</td>
+<td>Session Handoff Continuity</td>
+<td>ADR-0.0.25</td>
+<td>process</td>
+<td>process</td>
+</tr>
+<tr>
+<td>D-NO-SECRETS</td>
+<td>No Secrets in Code</td>
+<td>Convention</td>
+<td>security</td>
+<td>product</td>
+</tr>
+<tr>
+<td>D-FROZEN-INTERFACES</td>
+<td>Frozen Interface Protection</td>
+<td>Convention</td>
+<td>stability</td>
+<td>product</td>
+</tr>
+<tr>
+<td>D-SEMVER-ADR</td>
+<td>SemVer ADR Discipline</td>
+<td>Convention</td>
+<td>versioning</td>
+<td>process</td>
+</tr>
+</tbody>
+</table>
+<p>This inventory is preliminary. Full population is ADR-A scope.</p>
+<hr />
+<h2 id="adr-packaging">ADR Packaging<a class="headerlink" href="#adr-packaging" title="Permanent link">&para;</a></h2>
+<h3 id="adr-a-govzero-ontology-schema-population">ADR-A: GovZero Ontology (Schema + Population)<a class="headerlink" href="#adr-a-govzero-ontology-schema-population" title="Permanent link">&para;</a></h3>
+<p><strong>Scope:</strong> Define the Ontology schema and fully populate it with all
+doctrines, policies, rules, and actions for both product and process planes.</p>
+<p><strong>Deliverables:</strong></p>
+<ul>
+<li>Ontology schema (JSON Schema for validation)</li>
+<li>Populated ontology.json (single file, all entries)</li>
+<li>ID conventions and naming rules</li>
+<li>Registration protocol (when you create a rule, add it here)</li>
+<li>Doctrine, policy, rule, and action type definitions</li>
+<li>Link type definitions</li>
+<li>Severity model and enforcement coverage model</li>
+</ul>
+<h3 id="adr-b-tool-integration-generated-artifacts">ADR-B: Tool Integration + Generated Artifacts<a class="headerlink" href="#adr-b-tool-integration-generated-artifacts" title="Permanent link">&para;</a></h3>
+<p><strong>Scope:</strong> Wire existing governance tools through the Ontology and produce
+generated artifacts.</p>
+<p><strong>Deliverables:</strong></p>
+<ul>
+<li>Skills, hooks, and chores reference Ontology entry IDs</li>
+<li>AGENTS.md partial generation (Constraints, Permissions, Enforcement
+  sections rendered from Ontology)</li>
+<li>Pre-commit hook validates Ontology integrity (referenced artifacts exist)</li>
+<li>Generated human-readable governance guide</li>
+<li>Compliance trace tooling (per-session rule coverage)</li>
+<li>discovery-index.json migration to <code>.gzkit/governance/</code></li>
+</ul>
+<hr />
+<h2 id="impact-analysis">Impact Analysis<a class="headerlink" href="#impact-analysis" title="Permanent link">&para;</a></h2>
+<h3 id="for-agents">For Agents<a class="headerlink" href="#for-agents" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Before</th>
+<th>After</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Read ~10 docs (~2,500 lines prose)</td>
+<td>Read ontology.json (structured, filterable)</td>
+</tr>
+<tr>
+<td>Hope you remembered all constraints</td>
+<td>Query rules by category, scope, severity, plane</td>
+</tr>
+<tr>
+<td>Get caught by unknown hooks</td>
+<td>Know enforcement status before starting</td>
+</tr>
+<tr>
+<td>Improvise at unconstrained decision points</td>
+<td>Decision space maximally covered</td>
+</tr>
+<tr>
+<td>No compliance trace</td>
+<td>Generate per-session compliance trace</td>
+</tr>
+</tbody>
+</table>
+<h3 id="for-gzkit">For gzkit<a class="headerlink" href="#for-gzkit" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Before</th>
+<th>After</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tools hardcode knowledge of rules</td>
+<td>Tools query Ontology by ID</td>
+</tr>
+<tr>
+<td>Each tool discovers its own context</td>
+<td>Tools share a common governance model</td>
+</tr>
+<tr>
+<td>Chores are standalone tasks</td>
+<td>Chores serve specific Ontology elements</td>
+</tr>
+<tr>
+<td>Gap analysis requires manual audit</td>
+<td>Gap analysis is an Ontology query</td>
+</tr>
+</tbody>
+</table>
+<h3 id="for-human-operators">For Human Operators<a class="headerlink" href="#for-human-operators" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Before</th>
+<th>After</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Read scattered prose</td>
+<td>Read generated governance guide</td>
+</tr>
+<tr>
+<td>Trust that enforcement exists</td>
+<td>See enforcement coverage map</td>
+</tr>
+<tr>
+<td>Manual audit of compliance</td>
+<td>Dashboard from Ontology data</td>
+</tr>
+<tr>
+<td>Ad hoc rule creation</td>
+<td>Registration protocol with required fields</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="relationship-to-existing-artifacts">Relationship to Existing Artifacts<a class="headerlink" href="#relationship-to-existing-artifacts" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Existing Artifact</th>
+<th>Relationship to Ontology</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>discovery-index.json</code></td>
+<td>Structural navigation; Ontology handles governance semantics. Future (ADR-B): migrate to <code>.gzkit/governance/</code>.</td>
+</tr>
+<tr>
+<td><code>AGENTS.md</code></td>
+<td>Universal agent entry point. Constraints/Permissions/Enforcement sections become generated from Ontology (ADR-B). Prose sections remain hand-authored.</td>
+</tr>
+<tr>
+<td><code>CLAUDE.md</code></td>
+<td>Project orientation; links to Ontology for full constraint set.</td>
+</tr>
+<tr>
+<td><code>.github/instructions/*.md</code></td>
+<td>Domain-specific prose; canonical source for policies. Ontology indexes them, does not replace them.</td>
+</tr>
+<tr>
+<td><code>config/opsdev/chores.json</code></td>
+<td>Chore registry. Each chore gains rationale via Ontology rule IDs it remediates (ADR-B).</td>
+</tr>
+<tr>
+<td><code>.pre-commit-config.yaml</code></td>
+<td>Hook definitions. Each hook linked to Ontology rule IDs it enforces (ADR-B).</td>
+</tr>
+<tr>
+<td><code>tests/policy/*.py</code></td>
+<td>Policy tests. Test docstrings gain <code>@covers</code> references to Ontology rule IDs (ADR-B).</td>
+</tr>
+<tr>
+<td><code>docs/governance/GovZero/*.md</code></td>
+<td>Governance process docs. Remain authoritative for process descriptions. Ontology indexes rules derived from them.</td>
+</tr>
+<tr>
+<td><code>.gzkit/insights/agent-insights.jsonl</code></td>
+<td>Raw observations. Ontology provides structured context for categorizing insights by rule.</td>
+</tr>
+<tr>
+<td>ARB receipts</td>
+<td>QA validation artifacts. Trace back to Ontology rules as compliance evidence (ADR-B).</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://www.palantir.com/docs/foundry/architecture-center/ontology-system/">Palantir Ontology</a> ---
+  Inspiration for terminology and structure</li>
+<li><a href="../charter/">GovZero Charter</a> --- Gate definitions and authority</li>
+<li><a href="../layered-trust/">Layered Trust Architecture</a> --- Tool layer model</li>
+<li><a href="../architectural-enforcement/">Architectural Enforcement</a> --- Enforcement patterns</li>
+<li><a href="../gzkit-structure/">.gzkit/ Directory Structure</a> --- Storage conventions</li>
+<li><a href="../ledger-schema/">Unified Ledger Schema</a> --- JSONL field definitions</li>
+<li><a href="../adr-lifecycle/">ADR Lifecycle</a> --- Status values and transitions</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      The human is index zero.
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/tvproductions/gzkit" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.sections", "navigation.expand", "navigation.top", "toc.follow", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
