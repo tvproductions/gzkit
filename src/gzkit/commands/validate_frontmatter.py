@@ -229,6 +229,12 @@ def validate_frontmatter_coherence(
     except (KeyError, ValueError, AttributeError):
         obpi_index = []
 
+    # GHI #192: lazy import — frontmatter_coherence imports from this module,
+    # so a top-level import would cycle. Single-source-of-truth pool detection
+    # lives there (lines 123, 214 of governance/frontmatter_coherence.py); the
+    # comment at its line 300 explicitly names this contract.
+    from gzkit.governance.frontmatter_coherence import _is_pool_artifact
+
     artifacts = scan_existing_artifacts(project_root, config.paths.design_root)
     canon = ledger.canonicalize_id
     errors: list[ValidationError] = []
@@ -247,6 +253,9 @@ def validate_frontmatter_coherence(
     ):
         scoped_files = _filter_artifact_files(files, artifact_type, adr_scope, graph, canon)
         for artifact_file, ledger_id in scoped_files:
+            rel_path = str(artifact_file.relative_to(project_root))
+            if _is_pool_artifact(artifact_file, rel_path):
+                continue
             try:
                 content = artifact_file.read_text(encoding="utf-8")
             except OSError:
@@ -254,7 +263,6 @@ def validate_frontmatter_coherence(
             fm, _ = parse_frontmatter(content)
             if not fm:
                 continue
-            rel_path = str(artifact_file.relative_to(project_root))
             info = graph[ledger_id]
             fm_status_value = str(fm.get("status", ""))
             errors.extend(
@@ -274,6 +282,17 @@ def validate_frontmatter_coherence(
 def _render_frontmatter_explain(errors: list[ValidationError], adr_id: str) -> None:
     """Print step-by-step remediation per drifted field for one ADR."""
     drift = [e for e in errors if e.type == "frontmatter"]
+    # GHI #192: pool ADRs are out of scope for the validator (no per-artifact
+    # ledger lifecycle to compare against). "No drift detected" is misleading —
+    # surface the structural reason honestly so operators know explain has
+    # nothing to remediate by design, not by chance.
+    if adr_id.startswith("ADR-pool."):
+        console.print(
+            f"[yellow]{adr_id} is a pool artifact; no ledger entry to compare "
+            f"against. The chore library and validator both skip pool ADRs by "
+            f"design (see ADR-0.0.16, GHI #192).[/yellow]"
+        )
+        return
     if not drift:
         console.print(f"[green]No frontmatter drift detected for {adr_id}.[/green]")
         return
