@@ -19,6 +19,8 @@ from gzkit.commands.plan_audit_cmd import (
     _find_brief,
     _find_plan_file,
     _path_within_allowed,
+    _paths_overlap,
+    _scan_sibling_adr_collisions,
     plan_audit_cmd,
 )
 
@@ -243,6 +245,206 @@ class TestExtractAllowedPaths(unittest.TestCase):
             brief.write_text("## Something Else\n\n- path\n", encoding="utf-8")
             result = _extract_allowed_paths(brief)
             self.assertIsNone(result)
+
+    def test_uppercase_heading(self) -> None:
+        """@covers GHI #152 — the majority of real briefs use ## ALLOWED PATHS."""
+        with tempfile.TemporaryDirectory() as tmp:
+            brief = Path(tmp) / "brief.md"
+            brief.write_text(
+                "## ALLOWED PATHS\n\n- `src/gzkit/arb/`\n- `tests/`\n\n## Other\n",
+                encoding="utf-8",
+            )
+            result = _extract_allowed_paths(brief)
+            self.assertEqual(result, ["src/gzkit/arb/", "tests/"])
+
+    def test_heading_with_lane_suffix(self) -> None:
+        """@covers GHI #152 — ## ALLOWED PATHS (Heavy) variants exist in the tree."""
+        with tempfile.TemporaryDirectory() as tmp:
+            brief = Path(tmp) / "brief.md"
+            brief.write_text(
+                "## ALLOWED PATHS (Foundational)\n\n- `src/gzkit/`\n\n## Other\n",
+                encoding="utf-8",
+            )
+            result = _extract_allowed_paths(brief)
+            self.assertEqual(result, ["src/gzkit/"])
+
+    def test_strips_em_dash_commentary(self) -> None:
+        """@covers GHI #152 — bullets commonly carry ` — comment` trailers."""
+        with tempfile.TemporaryDirectory() as tmp:
+            brief = Path(tmp) / "brief.md"
+            brief.write_text(
+                "## ALLOWED PATHS\n\n"
+                "- `src/gzkit/arb/` — target for absorbed modules\n"
+                "- `tests/` — tests for absorbed modules\n",
+                encoding="utf-8",
+            )
+            result = _extract_allowed_paths(brief)
+            self.assertEqual(result, ["src/gzkit/arb/", "tests/"])
+
+
+class TestPathsOverlap(unittest.TestCase):
+    """@covers GHI #152 — directory-prefix overlap semantics for scope collision."""
+
+    def test_equal_paths_overlap(self) -> None:
+        self.assertTrue(_paths_overlap("src/gzkit/arb/", "src/gzkit/arb/"))
+
+    def test_trailing_slash_variance_overlaps(self) -> None:
+        self.assertTrue(_paths_overlap("src/gzkit/arb/", "src/gzkit/arb"))
+
+    def test_parent_contains_child(self) -> None:
+        self.assertTrue(_paths_overlap("src/gzkit/arb/", "src/gzkit/arb/validator.py"))
+
+    def test_child_within_parent(self) -> None:
+        self.assertTrue(_paths_overlap("src/gzkit/arb/validator.py", "src/gzkit/arb/"))
+
+    def test_sibling_paths_do_not_overlap(self) -> None:
+        self.assertFalse(_paths_overlap("src/gzkit/arb/", "src/gzkit/cli/"))
+
+    def test_spurious_prefix_does_not_overlap(self) -> None:
+        # "src/gzkit/a" must not match "src/gzkit/arb" — separator matters.
+        self.assertFalse(_paths_overlap("src/gzkit/a", "src/gzkit/arb/"))
+
+
+class TestScanSiblingAdrCollisions(unittest.TestCase):
+    """@covers GHI #152 — sibling-ADR scope-collision detection."""
+
+    def _mk_brief(self, path: Path, allowed: list[str]) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        body = ["# Brief", "", "## ALLOWED PATHS", ""]
+        body.extend(f"- `{p}`" for p in allowed)
+        body.append("")
+        path.write_text("\n".join(body), encoding="utf-8")
+
+    def test_detects_specific_overlap_across_adrs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            sibling_brief = (
+                root
+                / "docs/design/adr/pre-release/ADR-0.27.0-arb/obpis"
+                / "OBPI-0.27.0-03-arb-validate.md"
+            )
+            self._mk_brief(sibling_brief, ["src/gzkit/arb/validator.py", "tests/"])
+
+            collisions = _scan_sibling_adr_collisions(
+                project_root=root,
+                target_adr_id="ADR-0.25.0",
+                target_obpi_id="OBPI-0.25.0-33-arb-analysis-pattern",
+                target_allowed=["src/gzkit/arb/", "tests/"],
+            )
+
+            self.assertEqual(len(collisions), 1)
+            collision = collisions[0]
+            self.assertEqual(collision["sibling_adr"], "ADR-0.27.0")
+            self.assertIn("OBPI-0.27.0-03", collision["sibling_obpi"])
+            self.assertIn("src/gzkit/arb/validator.py", collision["contested_paths"])
+
+    def test_skips_target_own_adr(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            same_adr_brief = (
+                root
+                / "docs/design/adr/pre-release/ADR-0.25.0-core/obpis"
+                / "OBPI-0.25.0-01-attestation.md"
+            )
+            self._mk_brief(same_adr_brief, ["src/gzkit/arb/"])
+
+            collisions = _scan_sibling_adr_collisions(
+                project_root=root,
+                target_adr_id="ADR-0.25.0",
+                target_obpi_id="OBPI-0.25.0-33-arb-analysis-pattern",
+                target_allowed=["src/gzkit/arb/"],
+            )
+
+            self.assertEqual(collisions, [])
+
+    def test_filters_non_specific_overlaps(self) -> None:
+        """Generic roots like `src/` or `tests/` are too broad to be useful signals."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            sibling_brief = (
+                root
+                / "docs/design/adr/pre-release/ADR-0.27.0-arb/obpis"
+                / "OBPI-0.27.0-99-generic.md"
+            )
+            self._mk_brief(sibling_brief, ["tests/"])
+
+            collisions = _scan_sibling_adr_collisions(
+                project_root=root,
+                target_adr_id="ADR-0.25.0",
+                target_obpi_id="OBPI-0.25.0-33",
+                target_allowed=["tests/"],
+            )
+
+            self.assertEqual(collisions, [])
+
+    def test_returns_empty_when_no_adr_base(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            collisions = _scan_sibling_adr_collisions(
+                project_root=Path(tmp),
+                target_adr_id="ADR-0.25.0",
+                target_obpi_id="OBPI-0.25.0-33",
+                target_allowed=["src/gzkit/arb/"],
+            )
+            self.assertEqual(collisions, [])
+
+
+class TestPlanAuditCmdScopeCollision(unittest.TestCase):
+    """@covers GHI #152 — receipt records scope collisions, verdict stays PASS (advisory)."""
+
+    def test_collision_recorded_without_failing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+
+            # Target: OBPI-0.25.0-33 claims src/gzkit/arb/
+            target_dir = (
+                root / "docs/design/adr/pre-release/ADR-0.25.0-core/obpis"
+            )
+            target_dir.mkdir(parents=True)
+            (target_dir / "OBPI-0.25.0-33-arb-analysis-pattern.md").write_text(
+                "# Brief\n## ALLOWED PATHS\n\n"
+                "- `src/gzkit/arb/` — target for absorbed modules\n",
+                encoding="utf-8",
+            )
+
+            # Sibling: ADR-0.27.0 brief overlaps on src/gzkit/arb/validator.py
+            sibling_dir = (
+                root / "docs/design/adr/pre-release/ADR-0.27.0-arb/obpis"
+            )
+            sibling_dir.mkdir(parents=True)
+            (sibling_dir / "OBPI-0.27.0-03-arb-validate.md").write_text(
+                "# Brief\n## ALLOWED PATHS\n\n"
+                "- `src/gzkit/arb/validator.py` — absorbed module\n",
+                encoding="utf-8",
+            )
+
+            plans_dir = root / ".claude" / "plans"
+            plans_dir.mkdir(parents=True)
+            (plans_dir / "plan.md").write_text(
+                "# Plan for OBPI-0.25.0-33\nModify `src/gzkit/arb/validator.py`\n",
+                encoding="utf-8",
+            )
+
+            (root / ".gzkit.json").write_text("{}", encoding="utf-8")
+
+            quiet_console = Console(file=StringIO(), quiet=True)
+            with (
+                patch("gzkit.commands.plan_audit_cmd.console", quiet_console),
+                patch("gzkit.commands.common.get_project_root", return_value=root),
+                patch("gzkit.commands.common.ensure_initialized"),
+            ):
+                # Advisory — must not raise SystemExit on collision alone.
+                plan_audit_cmd(obpi_id="OBPI-0.25.0-33", as_json=False)
+
+            receipt_path = plans_dir / ".plan-audit-receipt-OBPI-0.25.0-33.json"
+            receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+
+            self.assertEqual(receipt["verdict"], "PASS")
+            self.assertEqual(receipt["gaps_found"], 0)
+            self.assertIn("scope_collisions", receipt)
+            self.assertEqual(len(receipt["scope_collisions"]), 1)
+            collision = receipt["scope_collisions"][0]
+            self.assertEqual(collision["sibling_adr"], "ADR-0.27.0")
+            self.assertIn("src/gzkit/arb/validator.py", collision["contested_paths"])
 
 
 class TestExtractPlanPaths(unittest.TestCase):
