@@ -5,8 +5,8 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.4.0"
-last_reviewed: 2026-04-17
+skill-version: "6.4.1"
+last_reviewed: 2026-04-18
 ---
 
 # gz-obpi-pipeline
@@ -52,10 +52,14 @@ These thoughts mean STOP — you are about to break the pipeline:
 | "The user said 'implement the plan'" | The plan is for an OBPI. OBPI work = this pipeline. All stages. |
 | "No plan receipt exists, I'll derive tasks from the brief" | No. Enter plan mode, get the plan approved, THEN resume. The brief is not a plan. |
 | "The brief requirements are clear enough to skip planning" | Clarity is not the issue. The plan-audit handoff is a governance checkpoint. You do not get to skip it because you think you understand the work. |
+| "The skill says STOP, so I'll stop and ask permission" | STOP means "stop making source edits now and redirect to plan mode via `EnterPlanMode`". It does NOT mean "end your turn and wait for instructions". Stopping the turn is not compliance — invoking the named tool in the same turn is. |
+| "I'll summarize what I'm about to do and wait for the user to say go" | The user invoked the pipeline; they did not ask for a plan of how you will enter plan mode. Call `EnterPlanMode` inline. The plan itself is presented for approval via `ExitPlanMode` at the end of plan mode, not before entering it. |
 
 ### The Plan-Mode Gate
 
-**No plan receipt → no implementation.** If Stage 1 finds no `.plan-audit-receipt.json` and the pipeline was invoked without `--from`, you MUST enter Claude Code's native plan mode before touching any source file. Read the OBPI brief, compose a plan, and wait for user approval. The plan-audit hook writes the receipt on exit. Only then does Stage 2 begin.
+**No plan receipt → no implementation.** If Stage 1 finds no `.plan-audit-receipt.json` (or the existing receipt's `obpi_id` does not match this OBPI) and the pipeline was invoked without `--from`, you MUST enter Claude Code's native plan mode before touching any source file. The mechanical action is: **invoke the `EnterPlanMode` tool in the same turn**, then read the OBPI brief, compose a plan, and present it via `ExitPlanMode` for user approval. The plan-audit hook writes the receipt on exit. Only then does Stage 2 begin.
+
+**Stopping the turn to ask "should I enter plan mode?" is a violation, not compliance.** The skill's "STOP" language directs you to stop *making source edits* and *redirect to plan mode*, not to stop your turn and solicit permission. If you catch yourself composing a message that says "Required next step: enter plan mode" or "Want me to proceed with plan mode on the next turn?" — you are rationalizing. Call `EnterPlanMode` in this same turn instead.
 
 This is not optional. This is not something you can "derive informally." The plan-audit handoff exists because agents consistently skip planning when allowed to. You are not the exception.
 

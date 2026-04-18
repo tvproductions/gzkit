@@ -10,6 +10,17 @@ Universal agent contract for {project_name}.
 
 **Tech Stack**: {tech_stack}
 
+## Why this contract is not minimal
+
+A reasonable reader comparing this file to minimalist references — e.g. [forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills), a single 75-line `CLAUDE.md` distilling Karpathy's LLM-coding pitfalls into four principles — will notice that gzkit is the opposite shape: ~14 rule files, ~50 skills, five gates, three state tiers, a ledger, receipts, and a sync protocol. By the minimalist test ("would a senior engineer say this is overcomplicated?") gzkit's control surface is overcomplicated.
+
+The tradeoff is deliberate, and stating it is the fair thing to do:
+
+- **Minimalist references optimize for** a solo human + one agent, short session, code-level hygiene. Behavior is the whole product; agent trust is the mechanism; the cost of a missed-principle mistake is one discarded diff.
+- **gzkit optimizes for** multi-agent, multi-session, auditable governance where the proof-of-work must survive the agent that produced it. Ledger-of-truth beats agent-trust; receipts beat narrative recall; structural gates beat goodwill. The cost of a missed-principle mistake is a corrupted artifact graph that reconciliation has to untangle months later.
+
+Both shapes are defensible for their problem class. The four Karpathy principles (Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution) are all present in this contract with stronger mechanical backstops — see `.gzkit/rules/behavioral-invariants.md` #11–14 and #6a–f, `.gzkit/rules/tests.md` Red-Green-Refactor, and the ARB receipt requirement in `.gzkit/rules/attestation-enrichment.md`. When in doubt about whether gzkit's surface is worth the cost, the answer is: it is worth the cost for work that must be audited across context boundaries, and it is heavier than necessary for a single trivial edit. Use judgment.
+
 ## Persona
 
 Agent identity is defined by behavioral framing, not expertise claims.
