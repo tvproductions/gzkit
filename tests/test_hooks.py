@@ -462,7 +462,13 @@ class TestPlanAuditGateHook(unittest.TestCase):
         _install_hooks(project_root)
         return project_root / ".claude" / "hooks" / "plan-audit-gate.py"
 
-    def _run_hook(self, script_path: Path, cwd: Path) -> subprocess.CompletedProcess[str]:
+    def _run_hook(
+        self,
+        script_path: Path,
+        cwd: Path,
+        *,
+        plan_audit_cmd: str | None = None,
+    ) -> subprocess.CompletedProcess[str]:
         payload = {"cwd": str(cwd)}
         # GHI-128: isolate the subprocess from the developer's real
         # ~/.claude/plans/ by pointing GZKIT_CLAUDE_HOME at an empty fake home
@@ -470,6 +476,11 @@ class TestPlanAuditGateHook(unittest.TestCase):
         fake_home = cwd / "_fake_home"
         (fake_home / ".claude" / "plans").mkdir(parents=True, exist_ok=True)
         env = {**os.environ, "GZKIT_CLAUDE_HOME": str(fake_home)}
+        # GHI #191: by default, stub the self-audit subprocess to /bin/false
+        # so existing block-path tests stay fast (no `uv run gz plan audit`
+        # spawn) and continue to assert the BLOCKED outcome. Self-run-path
+        # tests pass a real fake-gz script via plan_audit_cmd.
+        env["GZKIT_PLAN_AUDIT_CMD"] = plan_audit_cmd or "/bin/false"
         return subprocess.run(
             [sys.executable, str(script_path)],
             input=json.dumps(payload),
@@ -731,6 +742,110 @@ class TestPlanAuditGateHook(unittest.TestCase):
 
             self.assertEqual(result.returncode, 0)
             self.assertIn("PRIOR ART REMINDER", result.stderr)
+
+    def _make_fake_gz(
+        self,
+        project_root: Path,
+        *,
+        plans_dir: Path,
+        verdict: str = "PASS",
+        succeed: bool = True,
+    ) -> Path:
+        """Create a fake gz binary that mimics 'plan audit' receipt emission.
+
+        When ``succeed=True`` the script writes a per-OBPI receipt at
+        ``plans_dir/.plan-audit-receipt-<obpi>.json`` with the requested
+        verdict and exits 0. When ``succeed=False`` it writes nothing and
+        exits 1, mirroring an audit that itself failed (e.g. brief missing).
+        Argv shape mirrors ``gz plan audit OBPI-X``: the OBPI id is the
+        last argument the hook passes.
+        """
+        fake_gz = project_root / "fake-gz.sh"
+        body = "#!/bin/bash\n"
+        if succeed:
+            body += (
+                f'OBPI="${{!#}}"\n'
+                f'mkdir -p "{plans_dir}"\n'
+                f'cat > "{plans_dir}/.plan-audit-receipt-${{OBPI}}.json" <<EOF\n'
+                f'{{"obpi_id": "${{OBPI}}", "verdict": "{verdict}", '
+                f'"timestamp": "2026-04-18T00:00:00Z"}}\n'
+                f"EOF\n"
+                "exit 0\n"
+            )
+        else:
+            body += 'echo "audit alignment gap (fixture)" >&2\nexit 1\n'
+        fake_gz.write_text(body)
+        fake_gz.chmod(0o755)
+        return fake_gz
+
+    def test_self_audits_when_receipt_missing_and_allows_on_pass(self) -> None:
+        """GHI #191: hook self-runs gz plan audit when receipt missing; allows on PASS."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            script_path = self._create_hook(project_root)
+            plans_dir = project_root / ".claude" / "plans"
+            self._write_plan(plans_dir, "active.md", "Implement OBPI-0.12.0-02\n")
+            fake_gz = self._make_fake_gz(project_root, plans_dir=plans_dir, verdict="PASS")
+
+            result = self._run_hook(script_path, project_root, plan_audit_cmd=str(fake_gz))
+
+            self.assertEqual(result.returncode, 0, msg=result.stderr)
+            self.assertIn("self-running", result.stderr)
+            self.assertIn("self-audit succeeded", result.stderr)
+            receipt = plans_dir / ".plan-audit-receipt-OBPI-0.12.0-02.json"
+            self.assertTrue(receipt.exists(), "self-audit must write the receipt")
+
+    def test_self_audits_when_receipt_obpi_mismatches_and_allows_on_pass(self) -> None:
+        """GHI #191: hook self-runs even when a stale receipt exists for a different OBPI."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            script_path = self._create_hook(project_root)
+            plans_dir = project_root / ".claude" / "plans"
+            plan_path = self._write_plan(plans_dir, "active.md", "Implement OBPI-0.12.0-02\n")
+            stale_receipt = self._write_per_obpi_receipt(
+                plans_dir, obpi_id="OBPI-0.12.0-99", verdict="PASS"
+            )
+            os.utime(plan_path, (1_700_000_000, 1_700_000_000))
+            os.utime(stale_receipt, (1_700_000_100, 1_700_000_100))
+            fake_gz = self._make_fake_gz(project_root, plans_dir=plans_dir, verdict="PASS")
+
+            result = self._run_hook(script_path, project_root, plan_audit_cmd=str(fake_gz))
+
+            self.assertEqual(result.returncode, 0, msg=result.stderr)
+            self.assertIn("self-audit succeeded", result.stderr)
+
+    def test_blocks_when_self_audit_subprocess_fails(self) -> None:
+        """GHI #191: hook still blocks when the self-audit subprocess exits non-zero."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            script_path = self._create_hook(project_root)
+            plans_dir = project_root / ".claude" / "plans"
+            self._write_plan(plans_dir, "active.md", "Implement OBPI-0.12.0-02\n")
+            fake_gz = self._make_fake_gz(project_root, plans_dir=plans_dir, succeed=False)
+
+            result = self._run_hook(script_path, project_root, plan_audit_cmd=str(fake_gz))
+
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("BLOCKED:", result.stderr)
+            self.assertIn("Self-audit attempt:", result.stderr)
+            self.assertIn("audit alignment gap", result.stderr)
+
+    def test_blocks_when_self_audit_writes_fail_receipt(self) -> None:
+        """GHI #191: hook blocks when self-audit succeeds but writes a FAIL verdict."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            script_path = self._create_hook(project_root)
+            plans_dir = project_root / ".claude" / "plans"
+            self._write_plan(plans_dir, "active.md", "Implement OBPI-0.12.0-02\n")
+            fake_gz = self._make_fake_gz(project_root, plans_dir=plans_dir, verdict="FAIL")
+
+            result = self._run_hook(script_path, project_root, plan_audit_cmd=str(fake_gz))
+
+            # FAIL receipt is still a 'valid' receipt per the gate's contract
+            # (PASS or FAIL are both decisions); allow ExitPlanMode so the
+            # operator sees the audit failure surfaced separately.
+            self.assertEqual(result.returncode, 0, msg=result.stderr)
+            self.assertIn("self-audit succeeded", result.stderr)
 
 
 class TestPipelineRouterHook(unittest.TestCase):
