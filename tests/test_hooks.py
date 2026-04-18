@@ -648,6 +648,52 @@ class TestPlanAuditGateHook(unittest.TestCase):
             self.assertEqual(result.returncode, 0, msg=result.stderr)
 
     @covers("REQ-0.12.0-02-02")
+    def test_allows_when_canonical_slug_per_obpi_receipt_matches_short_form_plan(self) -> None:
+        """Receipt filename carries canonical slug (GHI #187 fix writes long form), plan
+        text uses short form from the OBPI_PATTERN regex. Hook must resolve the match
+        via the short-form prefix + receipt field comparison — closes the class-of-
+        failure where CLI canonicalization and hook regex disagree on id shape (#190).
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            script_path = self._create_hook(project_root)
+            plans_dir = project_root / ".claude" / "plans"
+            plan_path = self._write_plan(plans_dir, "active.md", "Implement OBPI-0.0.16-03\n")
+            receipt_path = self._write_per_obpi_receipt(
+                plans_dir,
+                obpi_id="OBPI-0.0.16-03-chore-registration",
+                verdict="PASS",
+            )
+            os.utime(plan_path, (1_700_000_000, 1_700_000_000))
+            os.utime(receipt_path, (1_700_000_100, 1_700_000_100))
+
+            result = self._run_hook(script_path, project_root)
+
+            self.assertEqual(result.returncode, 0, msg=result.stderr)
+
+    def test_blocks_when_canonical_slug_receipt_is_for_different_obpi(self) -> None:
+        """Short-form prefix match must not collide across sibling OBPIs — e.g. a
+        receipt for OBPI-0.0.16-30 must not satisfy a plan referencing OBPI-0.0.16-03.
+        Guards the hyphen boundary in the glob pattern (#190).
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            script_path = self._create_hook(project_root)
+            plans_dir = project_root / ".claude" / "plans"
+            plan_path = self._write_plan(plans_dir, "active.md", "Implement OBPI-0.0.16-03\n")
+            receipt_path = self._write_per_obpi_receipt(
+                plans_dir,
+                obpi_id="OBPI-0.0.16-30-sibling",
+                verdict="PASS",
+            )
+            os.utime(plan_path, (1_700_000_000, 1_700_000_000))
+            os.utime(receipt_path, (1_700_000_100, 1_700_000_100))
+
+            result = self._run_hook(script_path, project_root)
+
+            self.assertEqual(result.returncode, 2)
+
+    @covers("REQ-0.12.0-02-02")
     def test_prefers_fresh_per_obpi_over_stale_legacy_receipt(self) -> None:
         """Stale legacy receipt must not mask a fresh per-OBPI receipt."""
         with tempfile.TemporaryDirectory() as tmpdir:
