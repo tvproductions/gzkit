@@ -28,6 +28,7 @@ from gzkit.tasks import (
     TaskStatus,
     create_task_from_plan_step,
     format_commit_trailer,
+    parse_ceremony_trailers,
     parse_task_trailers,
     resolve_task_chain,
 )
@@ -630,6 +631,27 @@ class TestParseTaskTrailers(unittest.TestCase):
         result = parse_task_trailers(msg)
         self.assertEqual(len(result), 1)
         self.assertEqual(str(result[0]), "TASK-0.20.0-01-01-01")
+
+
+class TestParseCeremonyTrailers(unittest.TestCase):
+    """Ceremony trailers satisfy governance-intent for chore/sync commits (GHI #201)."""
+
+    def test_extracts_ceremony_trailer(self) -> None:
+        msg = "chore: update artifacts (gz git-sync)\n\nCeremony: gz-git-sync\n"
+        result = parse_ceremony_trailers(msg)
+        self.assertEqual(result, ["gz-git-sync"])
+
+    def test_returns_empty_for_no_ceremony(self) -> None:
+        msg = "feat: add module\n\nTask: TASK-0.20.0-01-01-01\n"
+        self.assertEqual(parse_ceremony_trailers(msg), [])
+
+    def test_ignores_ceremony_keyword_in_body(self) -> None:
+        msg = "Work on Ceremony: gz-git-sync mid-paragraph\n\nTask: TASK-0.20.0-01-01-01\n"
+        self.assertEqual(parse_ceremony_trailers(msg), [])
+
+    def test_coexists_with_task_trailer(self) -> None:
+        msg = "fix: patch\n\nTask: TASK-0.20.0-01-01-01\nCeremony: obpi-reconcile\n"
+        self.assertEqual(parse_ceremony_trailers(msg), ["obpi-reconcile"])
 
 
 class TestResolveTaskChain(unittest.TestCase):

@@ -83,11 +83,61 @@ class ProvenanceChecking(unittest.TestCase):
             result = validate_receipts(limit=10, root=root)
             self.assertEqual(result.non_canonical_provenance, 1)
 
+    def test_canonical_coverage_command_validates(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_step_receipt(
+                root,
+                "cov",
+                "coverage",
+                CANONICAL_STEP_COMMANDS["coverage"],
+            )
+            result = validate_receipts(limit=10, root=root)
+            self.assertEqual(result.valid, 1)
+            self.assertEqual(result.non_canonical_provenance, 0)
+
+    def test_non_canonical_coverage_command_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_step_receipt(
+                root,
+                "cov-drifted",
+                "coverage",
+                ["coverage", "run", "-m", "pytest"],  # wrong test runner
+            )
+            result = validate_receipts(limit=10, root=root)
+            self.assertEqual(result.non_canonical_provenance, 1)
+
+    def test_canonical_mkdocs_command_validates(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_step_receipt(
+                root,
+                "md",
+                "mkdocs",
+                CANONICAL_STEP_COMMANDS["mkdocs"],
+            )
+            result = validate_receipts(limit=10, root=root)
+            self.assertEqual(result.valid, 1)
+            self.assertEqual(result.non_canonical_provenance, 0)
+
+    def test_non_canonical_mkdocs_command_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_step_receipt(
+                root,
+                "md-drifted",
+                "mkdocs",
+                ["uv", "run", "mkdocs", "build"],  # missing --strict
+            )
+            result = validate_receipts(limit=10, root=root)
+            self.assertEqual(result.non_canonical_provenance, 1)
+
     def test_uncanonical_step_name_is_ignored(self) -> None:
         """Step names not in the canonical table are not subject to provenance checks."""
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            _write_step_receipt(root, "mk", "mkdocs", ["uv", "run", "mkdocs", "build"])
+            _write_step_receipt(root, "bh", "behave", ["uv", "run", "behave"])
             result = validate_receipts(limit=10, root=root)
             self.assertEqual(result.valid, 1)
             self.assertEqual(result.non_canonical_provenance, 0)
