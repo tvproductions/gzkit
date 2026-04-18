@@ -3,7 +3,7 @@ id: OBPI-0.9.0-02-compatibility-adaptation-blocking-hooks
 parent: ADR-0.9.0-airlineops-surface-breadth-parity
 item: 2
 lane: Lite
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.9.0-02-compatibility-adaptation-blocking-hooks: Compatibility adaptation for blocking hooks

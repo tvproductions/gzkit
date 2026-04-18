@@ -2,7 +2,7 @@
 id: OBPI-0.25.0-27-policy-guards-pattern
 parent: ADR-0.25.0-core-infrastructure-pattern-absorption
 item: 27
-status: Completed
+status: in_progress
 lane: heavy
 date: 2026-04-12
 ---

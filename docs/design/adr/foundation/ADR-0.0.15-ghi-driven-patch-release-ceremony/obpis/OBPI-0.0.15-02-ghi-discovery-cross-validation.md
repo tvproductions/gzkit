@@ -3,7 +3,7 @@ id: OBPI-0.0.15-02-ghi-discovery-cross-validation
 parent: ADR-0.0.15-ghi-driven-patch-release-ceremony
 item: 2
 lane: Lite
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.0.15-02: GHI Discovery and Cross-Validation

@@ -3,7 +3,7 @@ id: OBPI-0.41.0-01-ledger-event-types-for-tdd
 parent: ADR-0.41.0
 item: 1
 lane: Heavy
-status: Draft
+status: pending
 ---
 
 # OBPI-0.41.0-01: Ledger Event Types for TDD Emission

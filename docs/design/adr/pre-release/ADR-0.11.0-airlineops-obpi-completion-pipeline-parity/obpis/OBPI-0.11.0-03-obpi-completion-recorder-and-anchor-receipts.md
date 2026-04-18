@@ -3,7 +3,7 @@ id: OBPI-0.11.0-03-obpi-completion-recorder-and-anchor-receipts
 parent: ADR-0.11.0-airlineops-obpi-completion-pipeline-parity
 item: 3
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.11.0-03-obpi-completion-recorder-and-anchor-receipts: OBPI completion recorder and anchor receipts

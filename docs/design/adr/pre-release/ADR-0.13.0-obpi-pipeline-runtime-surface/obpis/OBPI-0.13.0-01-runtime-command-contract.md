@@ -3,7 +3,7 @@ id: OBPI-0.13.0-01-runtime-command-contract
 parent: ADR-0.13.0-obpi-pipeline-runtime-surface
 item: 1
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.13.0-01-runtime-command-contract: Runtime Command Contract

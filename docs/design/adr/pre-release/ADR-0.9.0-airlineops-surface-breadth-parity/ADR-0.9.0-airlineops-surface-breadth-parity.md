@@ -1,6 +1,6 @@
 ---
 id: ADR-0.9.0-airlineops-surface-breadth-parity
-status: Proposed
+status: Validated
 semver: 0.9.0
 lane: lite
 parent: PRD-GZKIT-1.0.0

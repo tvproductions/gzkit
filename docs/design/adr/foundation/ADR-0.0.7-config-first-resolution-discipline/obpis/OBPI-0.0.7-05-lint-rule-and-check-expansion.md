@@ -3,7 +3,7 @@ id: OBPI-0.0.7-05-lint-rule-and-check-expansion
 parent: ADR-0.0.7-config-first-resolution-discipline
 item: 5
 lane: Lite
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.0.7-05-lint-rule-and-check-expansion: Enforcement and chore integration

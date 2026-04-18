@@ -3,7 +3,7 @@ id: OBPI-0.21.0-05-operator-docs-and-migration
 parent: ADR-0.21.0-tests-for-spec
 item: 5
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.21.0-05: Operator Docs and Migration Guide

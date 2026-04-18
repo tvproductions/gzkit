@@ -1,6 +1,6 @@
 ---
 id: ADR-0.14.0-multi-agent-instruction-architecture-unification
-status: Draft
+status: Validated
 semver: 0.14.0
 lane: heavy
 parent: PRD-GZKIT-1.0.0

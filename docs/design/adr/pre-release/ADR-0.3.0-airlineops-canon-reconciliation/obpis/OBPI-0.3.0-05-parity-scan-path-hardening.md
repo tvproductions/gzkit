@@ -3,7 +3,7 @@ id: OBPI-0.3.0-05-parity-scan-path-hardening
 parent: ADR-0.3.0-airlineops-canon-reconciliation
 item: 5
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.3.0-05-parity-scan-path-hardening: Parity Scan Path Hardening

@@ -3,7 +3,7 @@ id: OBPI-0.41.0-04-tdd-runbook-and-manpage
 parent: ADR-0.41.0
 item: 4
 lane: Heavy
-status: Draft
+status: pending
 ---
 
 # OBPI-0.41.0-04: `gz tdd` Runbook, Manpage, and Rule Updates

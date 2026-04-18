@@ -3,7 +3,7 @@ id: OBPI-0.0.4-09-progress-indication
 parent: ADR-0.0.4-cli-standards-presentation-foundation
 item: 9
 lane: heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.0.4-09: Progress Indication

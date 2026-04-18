@@ -1,7 +1,7 @@
 ---
 id: OBPI-0.40.0-03-status-report-table-migration
 parent: ADR-0.40.0-reporter-rendering-infrastructure
-status: Accepted
+status: pending
 lane: heavy
 semver: 0.40.0
 sequence: 3

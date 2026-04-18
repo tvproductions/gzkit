@@ -3,7 +3,7 @@ id: OBPI-0.23.0-01-closing-argument
 parent: ADR-0.23.0-agent-burden-of-proof
 item: 1
 lane: Lite
-status: Completed
+status: in_progress
 ---
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
 

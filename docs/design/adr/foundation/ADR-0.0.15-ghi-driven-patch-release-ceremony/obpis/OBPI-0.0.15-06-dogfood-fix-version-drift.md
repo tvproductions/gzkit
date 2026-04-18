@@ -3,7 +3,7 @@ id: OBPI-0.0.15-06-dogfood-fix-version-drift
 parent: ADR-0.0.15-ghi-driven-patch-release-ceremony
 item: 6
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.0.15-06: Dogfood — Fix 0.24.1 Version Drift

@@ -1,8 +1,8 @@
 ---
 id: ADR-0.19.0-closeout-audit-processes
-status: Proposed
+status: Validated
 semver: 0.19.0
-lane: heavy
+lane: lite
 parent: PRD-GZKIT-1.0.0
 date: 2026-03-18
 promoted_from: ADR-pool.audit-system

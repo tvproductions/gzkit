@@ -1,6 +1,6 @@
 ---
 id: ADR-0.21.0-tests-for-spec
-status: Proposed
+status: Validated
 semver: 0.21.0
 lane: heavy
 parent: PRD-GZKIT-1.0.0

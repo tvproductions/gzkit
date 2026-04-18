@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.16
-status: Draft
+status: Pending
 semver: 0.0.16
 lane: heavy
 parent: GHI-167
@@ -98,11 +98,13 @@ Build a frontmatter-ledger coherence guard, not per-consumer rewrites. The umbre
 - Baseline Range: 5+
 - Baseline Selected: 5
 - Split Single-Narrative: 0
-- Split Surface Boundary: 0
+- Split Surface Boundary: 1
 - Split State Anchor: 0
 - Split Testability Ceiling: 0
-- Split Total: 0
-- Final Target OBPI Count: 5
+- Split Total: 1
+- Final Target OBPI Count: 6
+
+> **Surface Boundary split (post-authoring, 2026-04-18):** OBPI-04 dogfooding revealed that `gz validate --frontmatter` (validator surface) and `gz frontmatter reconcile` (chore surface) disagree on pool-ADR scope — the chore correctly skips pool ADRs, the validator does not. Both surfaces must agree before REQ-04 can pass. OBPI-06 closes this surface-boundary gap (GHI #192). Lite lane; reuses the chore library's existing `_is_pool_artifact` helper.
 
 ## Checklist
 
@@ -113,6 +115,7 @@ Build a frontmatter-ledger coherence guard, not per-consumer rewrites. The umbre
 - [ ] OBPI-0.0.16-03: Register `frontmatter-ledger-coherence` chore at `config/chores/frontmatter-ledger-coherence.toml` with ledger-wins reconciliation, idempotent semantics, receipt emission at `artifacts/receipts/frontmatter-coherence/<ISO8601>.json`, `--dry-run` mode, and receipt schema at `data/schemas/frontmatter_coherence_receipt.schema.json`.
 - [ ] OBPI-0.0.16-04: Execute the chore once as dogfood backfill, attach reconciliation receipt as ADR evidence, verify `gz validate --frontmatter` post-run exits 0, close GHI #162/#167/#168/#169/#170 with `gh issue close` comments citing receipt path and ADR ID.
 - [ ] OBPI-0.0.16-05: Author canonical status-vocabulary mapping — addendum to ADR-0.0.9 in `docs/governance/state-doctrine.md` plus typed `STATUS_VOCAB_MAPPING` constant in `src/gzkit/governance/status_vocab.py` that OBPI-02 (gate output) and OBPI-03 (chore canonicalization) import.
+- [ ] OBPI-0.0.16-06: Restore validator-chore parity by skipping pool ADRs in `gz validate --frontmatter` — the chore library `frontmatter_coherence.py` already skips pool ADRs (and its source comment names this exact contract), but the validator was authored without the filter. Surfaced by OBPI-04 dogfooding 2026-04-18 (GHI #192). Lite lane; ~5-line filter + TDD; unblocks OBPI-04 REQ-04.
 
 ## Q&A Transcript
 

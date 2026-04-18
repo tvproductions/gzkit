@@ -3,7 +3,7 @@ id: OBPI-0.12.0-07-plan-audit-skill-and-receipt-parity
 parent: ADR-0.12.0-obpi-pipeline-enforcement-parity
 item: 7
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.12.0-07-plan-audit-skill-and-receipt-parity: Plan-audit skill and receipt parity

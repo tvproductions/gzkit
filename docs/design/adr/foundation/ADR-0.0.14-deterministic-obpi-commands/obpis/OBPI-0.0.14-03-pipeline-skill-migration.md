@@ -3,7 +3,7 @@ id: OBPI-0.0.14-03-pipeline-skill-migration
 parent: ADR-0.0.14-deterministic-obpi-commands
 item: 3
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.0.14-03: Pipeline and lock skill migration

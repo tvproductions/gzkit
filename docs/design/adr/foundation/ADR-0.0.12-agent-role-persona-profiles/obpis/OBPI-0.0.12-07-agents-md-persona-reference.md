@@ -3,7 +3,7 @@ id: OBPI-0.0.12-07-agents-md-persona-reference
 parent: ADR-0.0.12-agent-role-persona-profiles
 item: 7
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.0.12-07-agents-md-persona-reference: AGENTS.md Persona Reference Integration

@@ -3,7 +3,7 @@ id: OBPI-0.0.15-05-ceremony-skill
 parent: ADR-0.0.15-ghi-driven-patch-release-ceremony
 item: 5
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.0.15-05: Patch Release Ceremony Skill
