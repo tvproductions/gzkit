@@ -31,8 +31,20 @@
         },
         "status": {
           "type": "string",
-          "enum": ["Draft", "Active", "Completed", "Abandoned"],
-          "description": "OBPI status"
+          "enum": [
+            "Draft",
+            "Active",
+            "Completed",
+            "Abandoned",
+            "pending",
+            "in_progress",
+            "completed",
+            "attested_completed",
+            "validated",
+            "drift",
+            "withdrawn"
+          ],
+          "description": "OBPI status — accepts operator-facing terms and canonical OBPI_RUNTIME_STATES (ADR-0.0.16 STATUS_VOCAB_MAPPING)"
         }
       },
       "additionalProperties": true

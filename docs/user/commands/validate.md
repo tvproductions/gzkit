@@ -75,7 +75,7 @@ is the same drift the operator sees in the report surface.
 
 Ungoverned frontmatter keys (`tags:`, `related:`, any key outside the
 four governed fields) are ignored. The validator never mutates files —
-reconciliation belongs to `gz chore run frontmatter-ledger-coherence`
+reconciliation belongs to `gz chores run frontmatter-ledger-coherence`
 (ADR-0.0.16 / OBPI-03). Exits 3 on drift per CLI doctrine 4-code map.
 
 #### `--adr <ID>`
@@ -89,7 +89,7 @@ drift.
 Prints step-by-step remediation per drifted field for the named ADR.
 Every drifted field gets a one-line recovery command naming an executable
 `gz` verb (`gz register-adrs`, `gz adr promote`,
-`gz chore run frontmatter-ledger-coherence`). Never suggests hand-editing
+`gz chores run frontmatter-ledger-coherence`). Never suggests hand-editing
 frontmatter — frontmatter is L3 derived state, not a source of truth.
 
 #### Examples

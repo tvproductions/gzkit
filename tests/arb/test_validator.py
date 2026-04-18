@@ -20,7 +20,7 @@ _VALID_LINT_RECEIPT = {
 
 _VALID_STEP_RECEIPT = {
     "schema": "gzkit.arb.step_receipt.v1",
-    "step": {"name": "unittest", "command": ["uv", "run"]},
+    "step": {"name": "unittest", "command": ["uv", "run", "-m", "unittest", "-q"]},
     "run_id": "test-0002",
     "timestamp_utc": "2026-04-14T23:59:59Z",
     "git": {"commit": "abc1234"},

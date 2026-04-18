@@ -38,7 +38,19 @@ class ObpiFrontmatter(BaseModel):
     parent: str
     item: str | int
     lane: Literal["lite", "heavy", "Lite", "Heavy"]
-    status: Literal["Draft", "Active", "Completed", "Abandoned"]
+    status: Literal[
+        "Draft",
+        "Active",
+        "Completed",
+        "Abandoned",
+        "pending",
+        "in_progress",
+        "completed",
+        "attested_completed",
+        "validated",
+        "drift",
+        "withdrawn",
+    ]
 
 
 class PrdFrontmatter(BaseModel):
