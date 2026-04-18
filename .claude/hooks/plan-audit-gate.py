@@ -97,15 +97,39 @@ def extract_obpi_ids(plan_path: Path) -> list[str]:
     return list(set(OBPI_PATTERN.findall(content)))
 
 
+def _obpi_short_form(obpi_id: str) -> str:
+    """Strip any canonical-slug suffix, leaving short form OBPI-X.Y.Z-NN.
+
+    CLI writes receipts with the canonical slug form per GHI #187
+    (e.g. OBPI-0.0.16-03-chore-registration). Plan text typically carries
+    the short form matched by OBPI_PATTERN. Comparison must happen at the
+    short form so both ends agree on identity (gzkit#190).
+    """
+    match = OBPI_PATTERN.search(obpi_id)
+    return match.group(0) if match else obpi_id
+
+
 def _candidate_receipts(plans_dir: Path, obpi_ids: list[str]) -> list[Path]:
-    """Per-OBPI receipts first (see gzkit#140), then legacy fallback."""
+    """Per-OBPI receipts (short and canonical-slug forms), then legacy (gzkit#190).
+
+    Matches both .plan-audit-receipt-<short>.json and the canonical-slug
+    variant .plan-audit-receipt-<short>-<slug>.json. The explicit hyphen
+    boundary before the slug prevents NN-prefix collisions (03 vs 030).
+    """
+    seen: set[Path] = set()
     candidates: list[Path] = []
     for obpi_id in obpi_ids:
-        per_obpi = plans_dir / f".plan-audit-receipt-{obpi_id}.json"
-        if per_obpi.exists():
-            candidates.append(per_obpi)
+        short = _obpi_short_form(obpi_id)
+        exact = plans_dir / f".plan-audit-receipt-{short}.json"
+        if exact.exists() and exact not in seen:
+            seen.add(exact)
+            candidates.append(exact)
+        for path in sorted(plans_dir.glob(f".plan-audit-receipt-{short}-*.json")):
+            if path not in seen:
+                seen.add(path)
+                candidates.append(path)
     legacy = plans_dir / LEGACY_RECEIPT_FILE
-    if legacy.exists():
+    if legacy.exists() and legacy not in seen:
         candidates.append(legacy)
     return candidates
 
@@ -122,7 +146,9 @@ def _validate_receipt(
     receipt_obpi = receipt.get("obpi_id", "")
     receipt_verdict = receipt.get("verdict", "")
 
-    if receipt_obpi not in obpi_ids:
+    receipt_short = _obpi_short_form(receipt_obpi)
+    plan_shorts = {_obpi_short_form(oid) for oid in obpi_ids}
+    if receipt_short not in plan_shorts:
         return (
             False,
             f"Audit receipt is for {receipt_obpi}, but plan references {', '.join(obpi_ids)}",
