@@ -563,18 +563,41 @@ def prd(name: str, title: str | None, dry_run: bool) -> None:
     console.print(f"Created PRD: {prd_file}")
 
 
+def _canonicalize_constitution_id(name: str) -> tuple[str, str]:
+    """Normalize a user-supplied constitution name to ``CONSTITUTION-<UPPER>-<semver>``.
+
+    The validator schema at ``src/gzkit/schemas/constitution.json`` requires
+    ``^CONSTITUTION-[A-Z0-9]+-[0-9]+\\.[0-9]+\\.[0-9]+$``. This function guarantees
+    the scaffolder and validator agree on id format (GHI #216 / GZKIT-BOOTSTRAP-008).
+
+    Returns ``(constitution_id, semver)``.
+    """
+    stem = name[len("CONSTITUTION-") :] if name.startswith("CONSTITUTION-") else name
+    semver = "1.0.0"
+    trailing = stem.rsplit("-", 1)
+    if len(trailing) == 2 and re.fullmatch(r"\d+\.\d+\.\d+", trailing[1]):
+        stem, semver = trailing[0], trailing[1]
+    slug = re.sub(r"[^A-Za-z0-9]", "", stem).upper()
+    if not slug:
+        raise SystemExit(
+            f"Invalid constitution slug: {name!r} (need at least one alphanumeric character)"
+        )
+    return f"CONSTITUTION-{slug}-{semver}", semver
+
+
 def constitute(name: str, title: str | None, dry_run: bool) -> None:
     """Create a new constitution."""
     config = ensure_initialized()
     project_root = get_project_root()
 
-    constitution_id = name
-    constitution_title = title or name.replace("-", " ").title()
+    constitution_id, semver = _canonicalize_constitution_id(name)
+    constitution_title = title or constitution_id
 
     content = render_template(
         "constitution",
         id=constitution_id,
         title=constitution_title,
+        semver=semver,
         status="Draft",
         date=date.today().isoformat(),
     )
