@@ -3,7 +3,7 @@ id: OBPI-0.12.0-05-completion-reminder-surface
 parent: ADR-0.12.0-obpi-pipeline-enforcement-parity
 item: 5
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.12.0-05-completion-reminder-surface: Completion reminder surface

@@ -3,7 +3,7 @@ id: OBPI-0.5.0-05-obpi-acceptance-protocol-runtime-parity
 parent: ADR-0.5.0-skill-lifecycle-governance
 item: 5
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.5.0-05-obpi-acceptance-protocol-runtime-parity

@@ -1,6 +1,6 @@
 ---
 id: ADR-0.41.0
-status: Draft
+status: Pending
 semver: 0.41.0
 lane: heavy
 parent: GHI-160

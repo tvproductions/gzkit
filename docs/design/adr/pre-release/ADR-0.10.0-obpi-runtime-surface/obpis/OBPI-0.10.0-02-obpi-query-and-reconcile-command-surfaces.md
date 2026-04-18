@@ -3,7 +3,7 @@ id: OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces
 parent: ADR-0.10.0-obpi-runtime-surface
 item: 2
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces: OBPI query and reconcile command surfaces

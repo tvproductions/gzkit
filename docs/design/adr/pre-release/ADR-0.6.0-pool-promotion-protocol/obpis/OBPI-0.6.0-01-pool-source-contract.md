@@ -3,7 +3,7 @@ id: OBPI-0.6.0-01-pool-source-contract
 parent: ADR-0.6.0-pool-promotion-protocol
 item: 1
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.6.0-01-pool-source-contract

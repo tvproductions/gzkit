@@ -1,6 +1,6 @@
 ---
 id: ADR-0.18.0-subagent-driven-pipeline-execution
-status: Proposed
+status: Validated
 semver: 0.18.0
 lane: heavy
 parent: PRD-GZKIT-1.0.0

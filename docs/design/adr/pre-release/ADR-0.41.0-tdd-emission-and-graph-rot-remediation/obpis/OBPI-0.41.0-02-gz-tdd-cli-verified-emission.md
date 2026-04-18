@@ -3,7 +3,7 @@ id: OBPI-0.41.0-02-gz-tdd-cli-verified-emission
 parent: ADR-0.41.0
 item: 2
 lane: Heavy
-status: Draft
+status: pending
 ---
 
 # OBPI-0.41.0-02: `gz tdd` CLI with Verified Emission

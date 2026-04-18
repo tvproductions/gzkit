@@ -3,7 +3,7 @@ id: OBPI-0.0.4-05-epilog-templates
 parent: ADR-0.0.4-cli-standards-presentation-foundation
 item: 5
 lane: heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.0.4-05: Epilog Templates

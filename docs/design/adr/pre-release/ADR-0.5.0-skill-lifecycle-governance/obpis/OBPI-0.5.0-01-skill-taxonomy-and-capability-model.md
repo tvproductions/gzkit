@@ -3,7 +3,7 @@ id: OBPI-0.5.0-01-skill-taxonomy-and-capability-model
 parent: ADR-0.5.0-skill-lifecycle-governance
 item: 1
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.5.0-01-skill-taxonomy-and-capability-model

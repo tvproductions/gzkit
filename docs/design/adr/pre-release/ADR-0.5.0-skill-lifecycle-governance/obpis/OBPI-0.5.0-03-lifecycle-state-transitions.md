@@ -3,7 +3,7 @@ id: OBPI-0.5.0-03-lifecycle-state-transitions
 parent: ADR-0.5.0-skill-lifecycle-governance
 item: 3
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.5.0-03-lifecycle-state-transitions

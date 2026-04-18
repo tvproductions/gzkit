@@ -3,7 +3,7 @@ id: OBPI-0.12.0-02-plan-exit-audit-gate-parity
 parent: ADR-0.12.0-obpi-pipeline-enforcement-parity
 item: 2
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.12.0-02-plan-exit-audit-gate-parity: Plan-exit audit gate parity

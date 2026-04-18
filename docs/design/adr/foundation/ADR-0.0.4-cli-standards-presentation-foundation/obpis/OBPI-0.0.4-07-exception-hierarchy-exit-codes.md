@@ -3,7 +3,7 @@ id: OBPI-0.0.4-07-exception-hierarchy-exit-codes
 parent: ADR-0.0.4-cli-standards-presentation-foundation
 item: 7
 lane: heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.0.4-07: Exception Hierarchy & Exit Codes

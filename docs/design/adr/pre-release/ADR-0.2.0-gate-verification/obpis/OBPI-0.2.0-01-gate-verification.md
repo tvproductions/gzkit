@@ -3,7 +3,7 @@ id: OBPI-0.2.0-01-gate-verification
 parent: ADR-0.2.0-gate-verification
 item: 1
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.2.0-01-gate-verification: Implement gate verification commands

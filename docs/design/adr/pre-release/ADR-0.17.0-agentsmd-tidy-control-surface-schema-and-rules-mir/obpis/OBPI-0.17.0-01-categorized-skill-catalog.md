@@ -3,7 +3,7 @@ id: OBPI-0.17.0-01-categorized-skill-catalog
 parent: ADR-0.17.0-agentsmd-tidy-control-surface-schema-and-rules-mir
 item: 1
 lane: heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.17.0-01-categorized-skill-catalog: Categorized Skill Catalog

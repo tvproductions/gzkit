@@ -1,7 +1,7 @@
 ---
 id: OBPI-0.40.0-01-reporter-module-scaffold
 parent: ADR-0.40.0-reporter-rendering-infrastructure
-status: Completed
+status: in_progress
 lane: heavy
 semver: 0.40.0
 sequence: 1

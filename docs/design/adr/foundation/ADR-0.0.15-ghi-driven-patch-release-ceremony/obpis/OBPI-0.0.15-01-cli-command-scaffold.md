@@ -3,7 +3,7 @@ id: OBPI-0.0.15-01-cli-command-scaffold
 parent: ADR-0.0.15-ghi-driven-patch-release-ceremony
 item: 1
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.0.15-01: CLI Command Scaffold

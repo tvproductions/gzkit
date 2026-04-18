@@ -3,7 +3,7 @@ id: OBPI-0.6.0-03-operator-narratives-and-auditability
 parent: ADR-0.6.0-pool-promotion-protocol
 item: 3
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.6.0-03-operator-narratives-and-auditability

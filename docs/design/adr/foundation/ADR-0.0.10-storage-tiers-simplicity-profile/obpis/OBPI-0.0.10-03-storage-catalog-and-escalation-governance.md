@@ -3,7 +3,7 @@ id: OBPI-0.0.10-03-storage-catalog-and-escalation-governance
 parent: ADR-0.0.10-storage-tiers-simplicity-profile
 item: 3
 lane: lite
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.0.10-03: Storage Catalog and Tier Escalation Governance

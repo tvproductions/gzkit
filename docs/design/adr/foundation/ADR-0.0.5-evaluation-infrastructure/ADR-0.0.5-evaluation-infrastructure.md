@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.5-evaluation-infrastructure
-status: Pending
+status: Validated
 semver: 0.0.5
 parent: PRD-GZKIT-1.0.0
 lane: lite

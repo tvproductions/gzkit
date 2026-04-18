@@ -3,7 +3,7 @@ id: OBPI-0.2.0-02-dry-run-options
 parent: ADR-0.2.0-gate-verification
 item: 2
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.2.0-02-dry-run-options: Add dry-run support for mutation commands

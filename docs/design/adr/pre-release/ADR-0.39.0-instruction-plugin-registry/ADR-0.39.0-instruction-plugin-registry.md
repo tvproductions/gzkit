@@ -1,6 +1,6 @@
 ---
 id: ADR-0.39.0-instruction-plugin-registry
-status: Proposed
+status: Pending
 semver: 0.39.0
 lane: heavy
 parent: PRD-GZKIT-1.0.0

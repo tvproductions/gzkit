@@ -3,7 +3,7 @@ id: OBPI-0.0.11-04-agents-md-persona-section
 parent: ADR-0.0.11-persona-driven-agent-identity-frames
 item: 4
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.0.11-04-agents-md-persona-section: Agents Md Persona Section

@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.3-hexagonal-architecture-tune-up
-status: Draft
+status: Validated
 semver: 0.0.3
 lane: heavy
 parent:

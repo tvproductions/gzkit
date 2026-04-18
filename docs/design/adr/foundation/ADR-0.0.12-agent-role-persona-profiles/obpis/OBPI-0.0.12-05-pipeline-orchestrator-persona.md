@@ -3,7 +3,7 @@ id: OBPI-0.0.12-05-pipeline-orchestrator-persona
 parent: ADR-0.0.12-agent-role-persona-profiles
 item: 5
 lane: Lite
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.0.12-05-pipeline-orchestrator-persona: Pipeline Orchestrator Persona

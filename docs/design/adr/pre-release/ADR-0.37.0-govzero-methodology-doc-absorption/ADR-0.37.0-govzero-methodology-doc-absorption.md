@@ -1,6 +1,6 @@
 ---
 id: ADR-0.37.0-govzero-methodology-doc-absorption
-status: Proposed
+status: Pending
 semver: 0.37.0
 lane: heavy
 parent: PRD-GZKIT-1.0.0

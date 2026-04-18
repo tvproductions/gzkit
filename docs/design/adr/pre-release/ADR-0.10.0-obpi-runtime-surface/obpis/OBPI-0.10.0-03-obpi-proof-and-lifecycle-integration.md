@@ -3,7 +3,7 @@ id: OBPI-0.10.0-03-obpi-proof-and-lifecycle-integration
 parent: ADR-0.10.0-obpi-runtime-surface
 item: 3
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.10.0-03-obpi-proof-and-lifecycle-integration: OBPI proof and lifecycle integration

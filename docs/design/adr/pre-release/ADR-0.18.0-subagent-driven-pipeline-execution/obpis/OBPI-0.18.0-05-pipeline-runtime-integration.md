@@ -3,7 +3,7 @@ id: OBPI-0.18.0-05-pipeline-runtime-integration
 parent: ADR-0.18.0-subagent-driven-pipeline-execution
 item: 5
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.18.0-05: Pipeline Runtime and Skill Integration

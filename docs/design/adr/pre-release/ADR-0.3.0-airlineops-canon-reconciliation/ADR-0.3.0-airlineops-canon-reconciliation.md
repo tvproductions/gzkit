@@ -1,6 +1,6 @@
 ---
 id: ADR-0.3.0
-status: Proposed
+status: Validated
 semver: 0.3.0
 lane: heavy
 parent: PRD-GZKIT-1.0.0

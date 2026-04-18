@@ -3,7 +3,7 @@ id: OBPI-0.22.0-02-task-ledger-events
 parent: ADR-0.22.0-task-level-governance
 item: 2
 lane: Lite
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.22.0-02: TASK Ledger Events

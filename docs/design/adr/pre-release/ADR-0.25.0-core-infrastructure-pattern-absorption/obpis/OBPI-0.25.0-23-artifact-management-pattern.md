@@ -2,7 +2,7 @@
 id: OBPI-0.25.0-23-artifact-management-pattern
 parent: ADR-0.25.0-core-infrastructure-pattern-absorption
 item: 23
-status: Completed
+status: in_progress
 lane: heavy
 date: 2026-04-09
 ---

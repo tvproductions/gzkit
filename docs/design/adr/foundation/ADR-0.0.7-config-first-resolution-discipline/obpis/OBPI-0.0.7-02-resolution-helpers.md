@@ -3,7 +3,7 @@ id: OBPI-0.0.7-02-resolution-helpers
 parent: ADR-0.0.7-config-first-resolution-discipline
 item: 2
 lane: Lite
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.0.7-02-resolution-helpers: Resolution helpers

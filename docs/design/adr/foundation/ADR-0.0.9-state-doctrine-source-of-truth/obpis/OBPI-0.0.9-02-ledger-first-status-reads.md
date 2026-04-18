@@ -3,7 +3,7 @@ id: OBPI-0.0.9-02-ledger-first-status-reads
 parent: ADR-0.0.9-state-doctrine-source-of-truth
 item: 2
 lane: lite
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.0.9-02: Ledger-First Status Reads

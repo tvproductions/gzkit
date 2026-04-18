@@ -3,7 +3,7 @@ id: OBPI-0.23.0-02-product-proof-gate
 parent: ADR-0.23.0-agent-burden-of-proof
 item: 2
 lane: Lite
-status: Completed
+status: in_progress
 ---
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
 

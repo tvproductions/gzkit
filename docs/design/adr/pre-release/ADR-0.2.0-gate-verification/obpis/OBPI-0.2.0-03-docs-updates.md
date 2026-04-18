@@ -3,7 +3,7 @@ id: OBPI-0.2.0-03-docs-updates
 parent: ADR-0.2.0-gate-verification
 item: 3
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.2.0-03-docs-updates: Update docs for gates and dry-run

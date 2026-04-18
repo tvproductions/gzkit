@@ -3,7 +3,7 @@ id: OBPI-0.0.11-01-persona-research-synthesis
 parent: ADR-0.0.11-persona-driven-agent-identity-frames
 item: 1
 lane: Lite
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.0.11-01-persona-research-synthesis: Persona Research Synthesis

@@ -2,7 +2,7 @@
 id: OBPI-0.25.0-33-arb-analysis-pattern
 parent: ADR-0.25.0-core-infrastructure-pattern-absorption
 item: 33
-status: Completed
+status: in_progress
 lane: heavy
 date: 2026-04-09
 ---

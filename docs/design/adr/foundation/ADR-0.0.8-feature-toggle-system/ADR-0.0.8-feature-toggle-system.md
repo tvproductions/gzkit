@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.8-feature-toggle-system
-status: Draft
+status: Validated
 semver: 0.0.8
 parent: PRD-GZKIT-1.0.0
 lane: heavy

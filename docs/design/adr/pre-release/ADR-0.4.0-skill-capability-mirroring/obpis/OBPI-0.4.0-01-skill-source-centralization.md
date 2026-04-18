@@ -3,7 +3,7 @@ id: OBPI-0.4.0-01-skill-source-centralization
 parent: ADR-0.4.0-skill-capability-mirroring
 item: 1
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.4.0-01-skill-source-centralization: Centralize canonical skills in .gzkit and mirror to Claude/Codex/Copilot

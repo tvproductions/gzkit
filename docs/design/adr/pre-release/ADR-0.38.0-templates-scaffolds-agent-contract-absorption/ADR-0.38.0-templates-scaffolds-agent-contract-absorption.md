@@ -1,6 +1,6 @@
 ---
 id: ADR-0.38.0-templates-scaffolds-agent-contract-absorption
-status: Proposed
+status: Pending
 semver: 0.38.0
 lane: heavy
 parent: PRD-GZKIT-1.0.0

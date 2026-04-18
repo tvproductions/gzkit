@@ -3,7 +3,7 @@ id: OBPI-0.41.0-05-ghi-160-retroactive-governance-housing
 parent: ADR-0.41.0
 item: 5
 lane: Heavy
-status: Draft
+status: pending
 ---
 
 # OBPI-0.41.0-05: GHI-160 Retroactive Governance Housing

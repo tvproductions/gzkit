@@ -3,7 +3,7 @@ id: OBPI-0.0.6-02-documentation-manifest
 parent: ADR-0.0.6-documentation-cross-coverage-enforcement
 item: 2
 lane: lite
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.0.6-02: Documentation Manifest

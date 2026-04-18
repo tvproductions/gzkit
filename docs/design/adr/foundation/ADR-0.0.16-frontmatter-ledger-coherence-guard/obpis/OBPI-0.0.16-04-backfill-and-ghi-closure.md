@@ -3,7 +3,7 @@ id: OBPI-0.0.16-04-backfill-and-ghi-closure
 parent: ADR-0.0.16
 item: 4
 lane: Heavy
-status: Draft
+status: pending
 ---
 
 # OBPI-0.0.16-04-backfill-and-ghi-closure: One-time backfill and GHI closure
@@ -178,6 +178,58 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 <!-- Record observations during/after implementation.
      Command outputs, file:line references, dates. -->
 
+### Dry-run #1 (REQ-02)
+
+- **Command:** `uv run gz frontmatter reconcile --dry-run`
+  - **Brief defect:** Brief REQ-02 specifies `gz chore run frontmatter-ledger-coherence --dry-run`, but `gz chores run` (plural) does not accept `--dry-run`. The canonical dry-run surface is `gz frontmatter reconcile --dry-run` (same handler, same receipt schema, same registry-mapped chore). Filed for follow-up in Tracked Defects.
+- **Receipt:** `artifacts/receipts/frontmatter-coherence/20260418T095852Z.json`
+- **Ledger cursor:** `sha256:519f3e4a2baf7…`
+- **Run window:** `2026-04-18T09:58:52.444Z → 2026-04-18T09:58:52.786Z`
+- **Files rewritten (proposed):** 257
+- **Skipped:** 69 (all `pool-adr` — by-design exclusion)
+- **Diff field totals:** `status` 256 · `lane` 1 · `id` 1 · `parent` 1
+- **Top status transitions:**
+  - `Completed → in_progress` × 204 (largest class — exposes false-completion frontmatter claims)
+  - `Proposed → Validated` × 15
+  - `Proposed → Pending` × 15
+  - `Draft → pending` × 6
+  - `Draft → Validated` × 4
+  - `Accepted → pending` × 4
+  - `Completed → Validated` × 3
+  - `Pending → Validated` × 2
+  - `Draft → Pending` × 2
+  - `Pending-Attestation → Validated` × 1
+- **Non-status rewrites (3, structural):**
+  - `lane: heavy → lite` × 1
+  - `id: OBPI-0.27.0-09-arb-telemetry-sync → OBPI-0.27.0-09-arb-supabase-sync` × 1
+  - `parent: ADR-0.3.0 → PRD-GZKIT-1.0.0` × 1
+- **Operator sign-off:** _Granted 2026-04-18 ("go") after risk review of 204 `Completed → in_progress` rewrites_
+
+### Live run (REQ-03, REQ-08)
+
+- **Command:** `uv run gz frontmatter reconcile`
+- **Receipt:** `artifacts/receipts/frontmatter-coherence/20260418T100437Z.json`
+- **Ledger cursor:** `sha256:15ca97fff9efe…`
+- **Run window:** `2026-04-18T10:04:36.650Z → 2026-04-18T10:04:37.025Z`
+- **Files rewritten:** 257 · **Skipped:** 69 (`pool-adr`)
+- **Hand-edits:** 0 (REQ-08 honored — every rewrite passed through the chore)
+
+### Post-run validation (REQ-04) — **BLOCKED**
+
+- **Command:** `uv run gz validate --frontmatter`
+- **Exit code:** **3** (policy breach)
+- **Errors:** 56 — **all 56 in `docs/design/adr/pool/**`; 0 in active ADR surface**
+- **Root cause:** `src/gzkit/commands/validate_frontmatter.py` has no pool-skip filter, while the chore library `src/gzkit/governance/frontmatter_coherence.py` (which the live run correctly invoked) DOES skip pool ADRs (lines 123, 214, 277, 282, 292; comment at line 300: *"validator should not emit errors for pool ADRs"*). The validator was authored under OBPI-0.0.16-01 without parity. Active surface is 100% clean post-backfill.
+- **Defect filed:** [GHI #192](https://github.com/tvproductions/gzkit/issues/192) — `validate_frontmatter omits pool-ADR skip filter that frontmatter_coherence library applies`
+- **STOP-on-fail honored** per REQ-04 ("do NOT hand-edit remaining drift; fix the chore"). REQ-07 prohibits writing new source code in this OBPI, so the validator fix cannot land here.
+
+### Idempotence dry-run #2 (REQ-05) — **PASS**
+
+- **Command:** `uv run gz frontmatter reconcile --dry-run --json`
+- **Receipt:** `artifacts/receipts/frontmatter-coherence/20260418T100647Z.json`
+- **Files rewritten:** 0 (idempotence verified — chore stable against post-backfill repo)
+- **Skipped:** 69 (unchanged — pool ADRs)
+
 ### Gate 1 (ADR)
 
 - [ ] Intent and scope recorded
@@ -233,7 +285,9 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 <!-- Record GitHub defect linkage when defects are discovered during this OBPI.
      Use one bullet per issue so status surfaces can preserve traceability. -->
 
-_No defects tracked._
+- **[GHI #192](https://github.com/tvproductions/gzkit/issues/192)** — `validate_frontmatter` omits the pool-ADR skip filter that `frontmatter_coherence` library applies. Discovered by REQ-04 dogfooding (this OBPI). Blocks REQ-04 exit 0. Suggested fix: new sibling OBPI-0.0.16-06-validator-pool-skip-parity (Lite lane, ~5-line validator change + TDD). Until then OBPI-04 cannot mark Stage 4 ceremony.
+- **[GHI #191](https://github.com/tvproductions/gzkit/issues/191)** — `plan-audit-gate` ↔ plan-mode deadlock; surfaced during this OBPI's pipeline entry. Not blocking OBPI-04 itself but tracked for follow-up.
+- **Brief command defect** — REQ-02/03/05 specify `gz chore run frontmatter-ledger-coherence [--dry-run]`, but the chores subcommand is plural (`gz chores run`) and does not accept `--dry-run`. Canonical surface is `gz frontmatter reconcile [--dry-run]`. Recommend brief amendment when ADR-0.0.16 reopens for OBPI-06.
 
 ## Human Attestation
 

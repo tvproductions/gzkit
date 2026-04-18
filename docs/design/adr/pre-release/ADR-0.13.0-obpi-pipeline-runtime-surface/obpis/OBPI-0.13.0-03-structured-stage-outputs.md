@@ -3,7 +3,7 @@ id: OBPI-0.13.0-03-structured-stage-outputs
 parent: ADR-0.13.0-obpi-pipeline-runtime-surface
 item: 3
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.13.0-03-structured-stage-outputs: Structured Stage Outputs

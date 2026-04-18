@@ -3,7 +3,7 @@ id: OBPI-0.21.0-04-adr-audit-integration
 parent: ADR-0.21.0-tests-for-spec
 item: 4
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.21.0-04: ADR Audit Integration

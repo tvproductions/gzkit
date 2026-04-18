@@ -2,7 +2,7 @@
 id: OBPI-0.25.0-32-handoff-validation-pattern
 parent: ADR-0.25.0-core-infrastructure-pattern-absorption
 item: 32
-status: Completed
+status: in_progress
 lane: heavy
 date: 2026-04-09
 ---

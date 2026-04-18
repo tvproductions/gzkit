@@ -3,7 +3,7 @@ id: OBPI-0.0.10-01-three-tier-model-and-pool-archive
 parent: ADR-0.0.10-storage-tiers-simplicity-profile
 item: 1
 lane: lite
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.0.10-01: Three-Tier Model Documentation and Pool ADR Archive

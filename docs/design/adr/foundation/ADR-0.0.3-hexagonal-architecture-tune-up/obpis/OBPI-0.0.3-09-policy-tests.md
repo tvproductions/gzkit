@@ -3,7 +3,7 @@ id: OBPI-0.0.3-09-policy-tests
 parent: ADR-0.0.3-hexagonal-architecture-tune-up
 item: 9
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.0.3-09-policy-tests: Policy Tests (Architectural Enforcement)

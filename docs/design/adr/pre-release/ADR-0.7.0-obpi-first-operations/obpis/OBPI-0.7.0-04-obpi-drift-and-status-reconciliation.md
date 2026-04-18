@@ -3,7 +3,7 @@ id: OBPI-0.7.0-04-obpi-drift-and-status-reconciliation
 parent: ADR-0.7.0-obpi-first-operations
 item: 4
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.7.0-04-obpi-drift-and-status-reconciliation: Obpi Drift And Status Reconciliation

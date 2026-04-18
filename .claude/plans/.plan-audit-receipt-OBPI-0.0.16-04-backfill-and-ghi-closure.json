@@ -1,0 +1,7 @@
+{
+  "obpi_id": "OBPI-0.0.16-04-backfill-and-ghi-closure",
+  "timestamp": "2026-04-18T09:57:06.582578+00:00",
+  "verdict": "PASS",
+  "plan_file": "sorted-soaring-cerf.md",
+  "gaps_found": 0
+}

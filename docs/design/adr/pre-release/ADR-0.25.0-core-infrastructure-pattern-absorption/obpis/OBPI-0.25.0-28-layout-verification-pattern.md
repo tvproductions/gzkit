@@ -2,7 +2,7 @@
 id: OBPI-0.25.0-28-layout-verification-pattern
 parent: ADR-0.25.0-core-infrastructure-pattern-absorption
 item: 28
-status: Completed
+status: in_progress
 lane: heavy
 date: 2026-04-09
 ---

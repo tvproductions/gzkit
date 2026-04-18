@@ -2,7 +2,7 @@
 id: OBPI-0.25.0-15-manifests-pattern
 parent: ADR-0.25.0-core-infrastructure-pattern-absorption
 item: 15
-status: Completed
+status: in_progress
 lane: heavy
 date: 2026-03-21
 ---

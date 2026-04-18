@@ -3,7 +3,7 @@ id: OBPI-0.0.15-04-dual-format-manifest
 parent: ADR-0.0.15-ghi-driven-patch-release-ceremony
 item: 4
 lane: Lite
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.0.15-04: Dual-Format Release Manifest

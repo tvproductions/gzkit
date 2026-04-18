@@ -3,7 +3,7 @@ id: OBPI-0.18.0-02-implementer-subagent-dispatch
 parent: ADR-0.18.0-subagent-driven-pipeline-execution
 item: 2
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.18.0-02: Controller/Worker Stage 2 — Implementer Subagent Dispatch

@@ -3,7 +3,7 @@ id: OBPI-0.22.0-05-status-and-state-integration
 parent: ADR-0.22.0-task-level-governance
 item: 5
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.22.0-05: Status and State Integration

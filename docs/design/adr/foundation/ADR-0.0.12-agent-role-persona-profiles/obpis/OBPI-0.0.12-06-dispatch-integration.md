@@ -3,7 +3,7 @@ id: OBPI-0.0.12-06-dispatch-integration
 parent: ADR-0.0.12-agent-role-persona-profiles
 item: 6
 lane: Lite
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.0.12-06-dispatch-integration: Dispatch Integration

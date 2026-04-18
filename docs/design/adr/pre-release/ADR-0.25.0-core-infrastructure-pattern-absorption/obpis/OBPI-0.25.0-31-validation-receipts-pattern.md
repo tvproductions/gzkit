@@ -2,7 +2,7 @@
 id: OBPI-0.25.0-31-validation-receipts-pattern
 parent: ADR-0.25.0-core-infrastructure-pattern-absorption
 item: 31
-status: Completed
+status: in_progress
 lane: heavy
 date: 2026-04-09
 ---

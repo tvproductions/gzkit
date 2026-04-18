@@ -3,7 +3,7 @@ id: OBPI-0.0.6-01-ast-scanner
 parent: ADR-0.0.6-documentation-cross-coverage-enforcement
 item: 1
 lane: heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.0.6-01: AST Scanner

@@ -1,6 +1,6 @@
 ---
 id: ADR-0.40.0-reporter-rendering-infrastructure
-status: Proposed
+status: Pending
 semver: 0.40.0
 lane: heavy
 parent: PRD-GZKIT-1.0.0

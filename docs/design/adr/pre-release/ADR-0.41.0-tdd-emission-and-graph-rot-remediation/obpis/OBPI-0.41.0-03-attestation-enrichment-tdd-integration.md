@@ -3,7 +3,7 @@ id: OBPI-0.41.0-03-attestation-enrichment-tdd-integration
 parent: ADR-0.41.0
 item: 3
 lane: Heavy
-status: Draft
+status: pending
 ---
 
 # OBPI-0.41.0-03: Attestation-Enrichment TDD Integration

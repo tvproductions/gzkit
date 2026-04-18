@@ -3,7 +3,7 @@ id: OBPI-0.7.0-01-obpi-completion-validator-gate
 parent: ADR-0.7.0-obpi-first-operations
 item: 1
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.7.0-01-obpi-completion-validator-gate: Obpi Completion Validator Gate

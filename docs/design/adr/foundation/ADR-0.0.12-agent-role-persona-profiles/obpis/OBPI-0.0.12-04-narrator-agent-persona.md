@@ -3,7 +3,7 @@ id: OBPI-0.0.12-04-narrator-agent-persona
 parent: ADR-0.0.12-agent-role-persona-profiles
 item: 4
 lane: Lite
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.0.12-04-narrator-agent-persona: Narrator Agent Persona
