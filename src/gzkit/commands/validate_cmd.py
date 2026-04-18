@@ -273,6 +273,10 @@ def _collect_errors(
     check_commit_trailers: bool = False,
     check_frontmatter: bool = False,
     check_version: bool = False,
+    check_type_ignores: bool = False,
+    check_cli_alignment: bool = False,
+    check_event_handlers: bool = False,
+    check_validator_fields: bool = False,
     frontmatter_adr: str | None = None,
 ) -> list[ValidationError]:
     """Collect validation errors across all requested check types."""
@@ -294,6 +298,10 @@ def _collect_errors(
         "decomposition": check_decomposition,
         "requirements": check_requirements,
         "commit_trailers": check_commit_trailers,
+        "type_ignores": check_type_ignores,
+        "cli_alignment": check_cli_alignment,
+        "event_handlers": check_event_handlers,
+        "validator_fields": check_validator_fields,
     }
     run_all = not any(default_scopes.values()) and not any(explicit_scopes.values())
 
@@ -342,6 +350,22 @@ def _run_scope_checks(
         errors.extend(_validate_requirements(project_root))
     if explicit_scopes.get("commit_trailers"):
         errors.extend(_validate_commit_trailers(project_root))
+    if explicit_scopes.get("type_ignores"):
+        from gzkit.governance.trust_audits import audit_type_ignores  # noqa: PLC0415
+
+        errors.extend(audit_type_ignores(project_root))
+    if explicit_scopes.get("cli_alignment"):
+        from gzkit.governance.trust_audits import audit_cli_alignment  # noqa: PLC0415
+
+        errors.extend(audit_cli_alignment(project_root))
+    if explicit_scopes.get("event_handlers"):
+        from gzkit.governance.trust_audits import audit_event_handlers  # noqa: PLC0415
+
+        errors.extend(audit_event_handlers(project_root))
+    if explicit_scopes.get("validator_fields"):
+        from gzkit.governance.trust_audits import audit_validator_fields  # noqa: PLC0415
+
+        errors.extend(audit_validator_fields(project_root))
 
     return errors
 
@@ -378,7 +402,16 @@ def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
         "version",
     ]
     # "opt-in" scopes only activate when explicitly requested
-    opt_in_scopes = ["interviews", "decomposition", "requirements", "commit_trailers"]
+    opt_in_scopes = [
+        "interviews",
+        "decomposition",
+        "requirements",
+        "commit_trailers",
+        "type_ignores",
+        "cli_alignment",
+        "event_handlers",
+        "validator_fields",
+    ]
 
     run_all = not any(checks.get(s, False) for s in run_all_scopes + opt_in_scopes)
     scopes: list[str] = []
@@ -446,6 +479,10 @@ def validate(
     check_commit_trailers: bool = False,
     check_frontmatter: bool = False,
     check_version: bool = False,
+    check_type_ignores: bool = False,
+    check_cli_alignment: bool = False,
+    check_event_handlers: bool = False,
+    check_validator_fields: bool = False,
     as_json: bool = False,
     frontmatter_adr: str | None = None,
     frontmatter_explain: str | None = None,
@@ -478,6 +515,10 @@ def validate(
         check_commit_trailers,
         check_frontmatter,
         check_version,
+        check_type_ignores=check_type_ignores,
+        check_cli_alignment=check_cli_alignment,
+        check_event_handlers=check_event_handlers,
+        check_validator_fields=check_validator_fields,
         frontmatter_adr=frontmatter_adr,
     )
 
@@ -514,6 +555,10 @@ def validate(
         "commit_trailers": check_commit_trailers,
         "frontmatter": check_frontmatter,
         "version": check_version,
+        "type_ignores": check_type_ignores,
+        "cli_alignment": check_cli_alignment,
+        "event_handlers": check_event_handlers,
+        "validator_fields": check_validator_fields,
     }
     scopes = _resolve_scopes(checks)
     frontmatter_only = scopes == ["frontmatter"]
