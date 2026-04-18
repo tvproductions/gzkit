@@ -75,16 +75,31 @@ def plan_audit_cmd(obpi_id: str, as_json: bool) -> None:
         gaps.append(f"No plan file found for {obpi_id} in .claude/plans/ or ~/.claude/plans/")
 
     # 5. Path overlap check (plan files must stay within brief allowed paths)
+    target_allowed: list[str] | None = None
     if brief_path and plan_file:
-        allowed = _extract_allowed_paths(brief_path)
-        if allowed is not None:
+        target_allowed = _extract_allowed_paths(brief_path)
+        if target_allowed is not None:
             plan_paths = _extract_plan_paths(plan_file)
             for p in plan_paths:
-                if not _path_within_allowed(p, allowed):
+                if not _path_within_allowed(p, target_allowed):
                     gaps.append(f"Plan references path outside brief scope: {p}")
 
+    # 6. Sibling-ADR scope-collision scan (GHI #152 — advisory, not gap-producing).
+    collisions: list[dict[str, str | list[str]]] = []
+    if brief_path and adr_id:
+        allowed_for_scan = target_allowed if target_allowed is not None else (
+            _extract_allowed_paths(brief_path) or []
+        )
+        if allowed_for_scan:
+            collisions = _scan_sibling_adr_collisions(
+                project_root=project_root,
+                target_adr_id=adr_id,
+                target_obpi_id=obpi_id,
+                target_allowed=allowed_for_scan,
+            )
+
     # Write receipt and emit output
-    _emit_result(obpi_id, gaps, plans_dir, plan_file, as_json)
+    _emit_result(obpi_id, gaps, plans_dir, plan_file, as_json, collisions)
 
 
 def _emit_result(
@@ -93,12 +108,13 @@ def _emit_result(
     plans_dir: Path,
     plan_file: Path | None,
     as_json: bool,
+    collisions: list[dict[str, str | list[str]]] | None = None,
 ) -> None:
     """Write receipt file and emit human or JSON output."""
     from gzkit.pipeline_markers import pipeline_receipt_path
 
     verdict = "PASS" if not gaps else "FAIL"
-    receipt: dict[str, str | None | int | list[str]] = {
+    receipt: dict[str, object] = {
         "obpi_id": obpi_id,
         "timestamp": datetime.now(UTC).isoformat(),
         "verdict": verdict,
@@ -107,6 +123,8 @@ def _emit_result(
     }
     if gaps:
         receipt["gaps"] = gaps
+    if collisions:
+        receipt["scope_collisions"] = collisions
 
     receipt_path = pipeline_receipt_path(plans_dir, obpi_id)
     plans_dir.mkdir(parents=True, exist_ok=True)
@@ -121,6 +139,17 @@ def _emit_result(
             console.print(f"[red]FAIL:[/red] {obpi_id} -- {len(gaps)} gap(s) found:")
             for gap in gaps:
                 console.print(f"  - {gap}")
+        if collisions:
+            console.print(
+                f"[yellow]DRIFTED -- scope-collision:[/yellow] "
+                f"{len(collisions)} sibling-ADR overlap(s) detected (advisory):"
+            )
+            for c in collisions:
+                contested = c["contested_paths"]
+                paths = ", ".join(contested) if isinstance(contested, list) else ""
+                console.print(
+                    f"  - {c['sibling_adr']} / {c['sibling_obpi']} -- contested: {paths}"
+                )
         console.print(f"  Receipt: {receipt_path}")
 
     if verdict == "FAIL":
@@ -192,22 +221,139 @@ def _find_plan_file(plans_dir: Path, obpi_id: str) -> Path | None:
     return max(candidates, key=lambda p: p.stat().st_mtime)
 
 
+_ALLOWED_HEADING_RE = re.compile(r"^##\s+ALLOWED\s+PATHS(\s*\(.*?\))?\s*$", re.IGNORECASE)
+_BULLET_PATH_RE = re.compile(r"^\s*-\s*`([^`]+)`")
+
+
 def _extract_allowed_paths(brief_path: Path) -> list[str] | None:
-    """Extract allowed paths from OBPI brief."""
+    """Extract allowed paths from an OBPI brief.
+
+    Accepts ``## Allowed Paths`` and ``## ALLOWED PATHS`` (and parenthesized
+    lane suffixes like ``## ALLOWED PATHS (Foundational)``). Path bullets are
+    read from the first backtick-delimited token on each bullet line, so
+    trailing ``-- commentary`` is ignored.
+    """
     content = brief_path.read_text(encoding="utf-8")
     in_allowed = False
     paths: list[str] = []
     for line in content.splitlines():
-        if "## Allowed Paths" in line or "## Allowed paths" in line:
+        if _ALLOWED_HEADING_RE.match(line):
             in_allowed = True
             continue
         if in_allowed and line.startswith("## "):
             break
-        if in_allowed and line.strip().startswith("- "):
-            path = line.strip().lstrip("- ").strip("`")
-            if path:
-                paths.append(path)
+        if in_allowed:
+            match = _BULLET_PATH_RE.match(line)
+            if match:
+                path = match.group(1).strip()
+                if path:
+                    paths.append(path)
     return paths if paths else None
+
+
+def _paths_overlap(a: str, b: str) -> bool:
+    """Return True when two declared paths share a directory-prefix relationship.
+
+    Separator-aware: ``src/gzkit/a`` does not overlap ``src/gzkit/arb``.
+    """
+    a = a.rstrip("/")
+    b = b.rstrip("/")
+    if not a or not b:
+        return False
+    if a == b:
+        return True
+    return b.startswith(a + "/") or a.startswith(b + "/")
+
+
+def _is_specific_path(path: str) -> bool:
+    """A path is specific enough to yield useful collision signal.
+
+    Root-level globs like ``src/``, ``tests/``, ``docs/``, or two-component
+    paths like ``src/gzkit/`` are too broad -- every brief targets one of
+    them. We only flag overlaps whose contested path descends at least three
+    components deep.
+    """
+    parts = [p for p in path.rstrip("/").split("/") if p]
+    return len(parts) >= 3
+
+
+_ADR_ID_RE = re.compile(r"^(ADR-\d+\.\d+\.\d+)")
+
+
+def _adr_id_from_dir(name: str) -> str | None:
+    """Recover the canonical ``ADR-X.Y.Z`` id from a package directory name."""
+    match = _ADR_ID_RE.match(name)
+    return match.group(1) if match else None
+
+
+def _obpi_id_from_brief_name(name: str) -> str:
+    """Strip the ``.md`` extension to recover the OBPI slug."""
+    if name.endswith(".md"):
+        return name[:-3]
+    return name
+
+
+def _scan_sibling_adr_collisions(
+    project_root: Path,
+    target_adr_id: str,
+    target_obpi_id: str,
+    target_allowed: list[str],
+) -> list[dict[str, str | list[str]]]:
+    """Scan sibling ADR packages for OBPI briefs whose allowed-paths overlap.
+
+    GHI #152 -- plan-audit previously verified ADR<->OBPI<->Plan alignment but
+    did not cross-reference sibling ADRs. OBPI-0.25.0-33 and 9 OBPI-0.27.0
+    briefs claimed overlapping source files; both receipts passed. This scan
+    surfaces the overlap advisorily so the agent can record a resolution
+    narrative before attestation.
+
+    Same-ADR siblings are excluded (intra-ADR scope conflicts are governed
+    by the existing brief-authoring discipline). Overlaps whose contested
+    paths are all root-level globs are excluded as noise.
+    """
+    adr_base = project_root / "docs" / "design" / "adr"
+    if not adr_base.exists():
+        return []
+
+    collisions: list[dict[str, str | list[str]]] = []
+    for series_dir in adr_base.iterdir():
+        if not series_dir.is_dir():
+            continue
+        for pkg_dir in series_dir.iterdir():
+            if not pkg_dir.is_dir() or not pkg_dir.name.startswith("ADR-"):
+                continue
+            sibling_adr = _adr_id_from_dir(pkg_dir.name)
+            if sibling_adr is None or sibling_adr == target_adr_id:
+                continue
+            obpis_dir = pkg_dir / "obpis"
+            if not obpis_dir.exists():
+                continue
+            for brief in obpis_dir.glob("*.md"):
+                sibling_obpi = _obpi_id_from_brief_name(brief.name)
+                if sibling_obpi == target_obpi_id:
+                    continue
+                sibling_allowed = _extract_allowed_paths(brief)
+                if not sibling_allowed:
+                    continue
+                contested: list[str] = []
+                for tp in target_allowed:
+                    for sp in sibling_allowed:
+                        if _paths_overlap(tp, sp):
+                            # Report the more-specific of the two as the
+                            # contested path for operator signal.
+                            specific = sp if len(sp) >= len(tp) else tp
+                            if specific not in contested:
+                                contested.append(specific)
+                specific_contested = [p for p in contested if _is_specific_path(p)]
+                if specific_contested:
+                    collisions.append(
+                        {
+                            "sibling_adr": sibling_adr,
+                            "sibling_obpi": sibling_obpi,
+                            "contested_paths": specific_contested,
+                        }
+                    )
+    return collisions
 
 
 def _extract_plan_paths(plan_file: Path) -> list[str]:
