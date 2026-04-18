@@ -3,6 +3,7 @@
 import json
 import re
 import subprocess
+from collections.abc import Callable
 from pathlib import Path
 
 from gzkit.commands.common import console, get_project_root
@@ -277,6 +278,16 @@ def _collect_errors(
     check_cli_alignment: bool = False,
     check_event_handlers: bool = False,
     check_validator_fields: bool = False,
+    check_utf8_prefix: bool = False,
+    check_test_tiers: bool = False,
+    check_pydantic_models: bool = False,
+    check_class_size: bool = False,
+    check_version_release: bool = False,
+    check_pool_adr_isolation: bool = False,
+    check_behave_req_tags: bool = False,
+    check_skill_alignment: bool = False,
+    check_advisory_scorecard: bool = False,
+    check_reconcile_freshness: bool = False,
     frontmatter_adr: str | None = None,
 ) -> list[ValidationError]:
     """Collect validation errors across all requested check types."""
@@ -302,12 +313,74 @@ def _collect_errors(
         "cli_alignment": check_cli_alignment,
         "event_handlers": check_event_handlers,
         "validator_fields": check_validator_fields,
+        "utf8_prefix": check_utf8_prefix,
+        "test_tiers": check_test_tiers,
+        "pydantic_models": check_pydantic_models,
+        "class_size": check_class_size,
+        "version_release": check_version_release,
+        "pool_adr_isolation": check_pool_adr_isolation,
+        "behave_req_tags": check_behave_req_tags,
+        "skill_alignment": check_skill_alignment,
+        "advisory_scorecard": check_advisory_scorecard,
+        "reconcile_freshness": check_reconcile_freshness,
     }
     run_all = not any(default_scopes.values()) and not any(explicit_scopes.values())
 
     return _run_scope_checks(
         project_root, default_scopes, explicit_scopes, run_all, frontmatter_adr=frontmatter_adr
     )
+
+
+def _default_scope_runners(
+    project_root: Path,
+    frontmatter_adr: str | None,
+) -> dict[str, Callable[[], list[ValidationError]]]:
+    """Return runners for scopes that activate when no explicit flag is set."""
+    return {
+        "manifest": lambda: list(validate_manifest(project_root / ".gzkit" / "manifest.json")),
+        "surfaces": lambda: list(validate_surfaces(project_root)),
+        "ledger": lambda: list(validate_ledger(project_root / ".gzkit" / "ledger.jsonl")),
+        "instructions": lambda: list(audit_instructions(project_root)),
+        "briefs": lambda: [
+            err
+            for brief_path in _find_obpi_briefs(project_root)
+            for err in validate_document(brief_path, "obpi")
+        ],
+        "documents": lambda: _validate_manifest_documents(project_root),
+        "personas": lambda: _validate_personas(project_root),
+        "frontmatter": lambda: list(
+            validate_frontmatter_coherence(project_root, adr_scope=frontmatter_adr)
+        ),
+        "version": lambda: list(validate_version_consistency(project_root)),
+    }
+
+
+def _explicit_scope_runners(
+    project_root: Path,
+) -> dict[str, Callable[[], list[ValidationError]]]:
+    """Return runners for scopes that only activate when explicitly requested."""
+    from gzkit.governance import trust_audits  # noqa: PLC0415
+
+    return {
+        "interviews": lambda: _validate_interviews(project_root),
+        "decomposition": lambda: _validate_decomposition(project_root),
+        "requirements": lambda: _validate_requirements(project_root),
+        "commit_trailers": lambda: _validate_commit_trailers(project_root),
+        "type_ignores": lambda: trust_audits.audit_type_ignores(project_root),
+        "cli_alignment": lambda: trust_audits.audit_cli_alignment(project_root),
+        "event_handlers": lambda: trust_audits.audit_event_handlers(project_root),
+        "validator_fields": lambda: trust_audits.audit_validator_fields(project_root),
+        "utf8_prefix": lambda: trust_audits.audit_utf8_prefix(project_root),
+        "test_tiers": lambda: trust_audits.audit_test_tiers(project_root),
+        "pydantic_models": lambda: trust_audits.audit_pydantic_models(project_root),
+        "class_size": lambda: trust_audits.audit_class_size(project_root),
+        "version_release": lambda: trust_audits.audit_version_release(project_root),
+        "pool_adr_isolation": lambda: trust_audits.audit_pool_adr_isolation(project_root),
+        "behave_req_tags": lambda: trust_audits.audit_behave_req_tags(project_root),
+        "skill_alignment": lambda: trust_audits.audit_skill_alignment(project_root),
+        "advisory_scorecard": lambda: trust_audits.audit_advisory_scorecard(project_root),
+        "reconcile_freshness": lambda: trust_audits.audit_reconcile_freshness(project_root),
+    }
 
 
 def _run_scope_checks(
@@ -319,54 +392,15 @@ def _run_scope_checks(
 ) -> list[ValidationError]:
     """Dispatch validation checks based on active scopes."""
     errors: list[ValidationError] = []
+    default_runners = _default_scope_runners(project_root, frontmatter_adr)
+    explicit_runners = _explicit_scope_runners(project_root)
 
-    def active(scope: str) -> bool:
-        return run_all and scope in default_scopes or default_scopes.get(scope, False)
-
-    if active("manifest"):
-        errors.extend(validate_manifest(project_root / ".gzkit" / "manifest.json"))
-    if active("surfaces"):
-        errors.extend(validate_surfaces(project_root))
-    if active("ledger"):
-        errors.extend(validate_ledger(project_root / ".gzkit" / "ledger.jsonl"))
-    if active("instructions"):
-        errors.extend(audit_instructions(project_root))
-    if active("briefs"):
-        for brief_path in _find_obpi_briefs(project_root):
-            errors.extend(validate_document(brief_path, "obpi"))
-    if active("documents"):
-        errors.extend(_validate_manifest_documents(project_root))
-    if active("personas"):
-        errors.extend(_validate_personas(project_root))
-    if active("frontmatter"):
-        errors.extend(validate_frontmatter_coherence(project_root, adr_scope=frontmatter_adr))
-    if active("version"):
-        errors.extend(validate_version_consistency(project_root))
-    if explicit_scopes.get("interviews"):
-        errors.extend(_validate_interviews(project_root))
-    if explicit_scopes.get("decomposition"):
-        errors.extend(_validate_decomposition(project_root))
-    if explicit_scopes.get("requirements"):
-        errors.extend(_validate_requirements(project_root))
-    if explicit_scopes.get("commit_trailers"):
-        errors.extend(_validate_commit_trailers(project_root))
-    if explicit_scopes.get("type_ignores"):
-        from gzkit.governance.trust_audits import audit_type_ignores  # noqa: PLC0415
-
-        errors.extend(audit_type_ignores(project_root))
-    if explicit_scopes.get("cli_alignment"):
-        from gzkit.governance.trust_audits import audit_cli_alignment  # noqa: PLC0415
-
-        errors.extend(audit_cli_alignment(project_root))
-    if explicit_scopes.get("event_handlers"):
-        from gzkit.governance.trust_audits import audit_event_handlers  # noqa: PLC0415
-
-        errors.extend(audit_event_handlers(project_root))
-    if explicit_scopes.get("validator_fields"):
-        from gzkit.governance.trust_audits import audit_validator_fields  # noqa: PLC0415
-
-        errors.extend(audit_validator_fields(project_root))
-
+    for scope, runner in default_runners.items():
+        if run_all and scope in default_scopes or default_scopes.get(scope, False):
+            errors.extend(runner())
+    for scope, runner in explicit_runners.items():
+        if explicit_scopes.get(scope):
+            errors.extend(runner())
     return errors
 
 
@@ -411,6 +445,16 @@ def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
         "cli_alignment",
         "event_handlers",
         "validator_fields",
+        "utf8_prefix",
+        "test_tiers",
+        "pydantic_models",
+        "class_size",
+        "version_release",
+        "pool_adr_isolation",
+        "behave_req_tags",
+        "skill_alignment",
+        "advisory_scorecard",
+        "reconcile_freshness",
     ]
 
     run_all = not any(checks.get(s, False) for s in run_all_scopes + opt_in_scopes)
@@ -483,6 +527,16 @@ def validate(
     check_cli_alignment: bool = False,
     check_event_handlers: bool = False,
     check_validator_fields: bool = False,
+    check_utf8_prefix: bool = False,
+    check_test_tiers: bool = False,
+    check_pydantic_models: bool = False,
+    check_class_size: bool = False,
+    check_version_release: bool = False,
+    check_pool_adr_isolation: bool = False,
+    check_behave_req_tags: bool = False,
+    check_skill_alignment: bool = False,
+    check_advisory_scorecard: bool = False,
+    check_reconcile_freshness: bool = False,
     as_json: bool = False,
     frontmatter_adr: str | None = None,
     frontmatter_explain: str | None = None,
@@ -519,6 +573,16 @@ def validate(
         check_cli_alignment=check_cli_alignment,
         check_event_handlers=check_event_handlers,
         check_validator_fields=check_validator_fields,
+        check_utf8_prefix=check_utf8_prefix,
+        check_test_tiers=check_test_tiers,
+        check_pydantic_models=check_pydantic_models,
+        check_class_size=check_class_size,
+        check_version_release=check_version_release,
+        check_pool_adr_isolation=check_pool_adr_isolation,
+        check_behave_req_tags=check_behave_req_tags,
+        check_skill_alignment=check_skill_alignment,
+        check_advisory_scorecard=check_advisory_scorecard,
+        check_reconcile_freshness=check_reconcile_freshness,
         frontmatter_adr=frontmatter_adr,
     )
 
@@ -559,6 +623,16 @@ def validate(
         "cli_alignment": check_cli_alignment,
         "event_handlers": check_event_handlers,
         "validator_fields": check_validator_fields,
+        "utf8_prefix": check_utf8_prefix,
+        "test_tiers": check_test_tiers,
+        "pydantic_models": check_pydantic_models,
+        "class_size": check_class_size,
+        "version_release": check_version_release,
+        "pool_adr_isolation": check_pool_adr_isolation,
+        "behave_req_tags": check_behave_req_tags,
+        "skill_alignment": check_skill_alignment,
+        "advisory_scorecard": check_advisory_scorecard,
+        "reconcile_freshness": check_reconcile_freshness,
     }
     scopes = _resolve_scopes(checks)
     frontmatter_only = scopes == ["frontmatter"]

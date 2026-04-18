@@ -380,6 +380,66 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         action="store_true",
         help="Run all four trust-doctrine pattern audits",
     )
+    p_validate.add_argument(
+        "--utf8-prefix",
+        dest="check_utf8_prefix",
+        action="store_true",
+        help="Forbid `PYTHONUTF8=1 uv run gz` anti-pattern in docs/skills",
+    )
+    p_validate.add_argument(
+        "--test-tiers",
+        dest="check_test_tiers",
+        action="store_true",
+        help="Forbid third test tier under tests/ (integration/e2e/slow/bdd)",
+    )
+    p_validate.add_argument(
+        "--pydantic-models",
+        dest="check_pydantic_models",
+        action="store_true",
+        help="Governance classes use Pydantic BaseModel + ConfigDict, not @dataclass",
+    )
+    p_validate.add_argument(
+        "--class-size",
+        dest="check_class_size",
+        action="store_true",
+        help="Classes under src/gzkit/ <=300 lines unless explicitly waived",
+    )
+    p_validate.add_argument(
+        "--version-release",
+        dest="check_version_release",
+        action="store_true",
+        help="pyproject version has a matching vX.Y.Z git tag",
+    )
+    p_validate.add_argument(
+        "--pool-adr-isolation",
+        dest="check_pool_adr_isolation",
+        action="store_true",
+        help="Pool ADRs never receive runtime-track lifecycle/gate events",
+    )
+    p_validate.add_argument(
+        "--behave-req-tags",
+        dest="check_behave_req_tags",
+        action="store_true",
+        help="Heavy/Foundation OBPIs have @REQ-X.Y.Z-NN-MM scenario coverage",
+    )
+    p_validate.add_argument(
+        "--skill-alignment",
+        dest="check_skill_alignment",
+        action="store_true",
+        help="Every CLI verb has a wielding skill (Invariant 1)",
+    )
+    p_validate.add_argument(
+        "--advisory-scorecard",
+        dest="check_advisory_scorecard",
+        action="store_true",
+        help="Every .gzkit/rules file appears in advisory-rules-audit scorecard",
+    )
+    p_validate.add_argument(
+        "--reconcile-freshness",
+        dest="check_reconcile_freshness",
+        action="store_true",
+        help="Flag if no reconcile event since HEAD (grace: 24h)",
+    )
     add_json_flag(p_validate)
     p_validate.set_defaults(
         func=lambda a: _lazy("validate")(
@@ -400,6 +460,16 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_cli_alignment=a.check_cli_alignment or a.check_audits,
             check_event_handlers=a.check_event_handlers or a.check_audits,
             check_validator_fields=a.check_validator_fields or a.check_audits,
+            check_utf8_prefix=a.check_utf8_prefix,
+            check_test_tiers=a.check_test_tiers,
+            check_pydantic_models=a.check_pydantic_models,
+            check_class_size=a.check_class_size,
+            check_version_release=a.check_version_release,
+            check_pool_adr_isolation=a.check_pool_adr_isolation,
+            check_behave_req_tags=a.check_behave_req_tags,
+            check_skill_alignment=a.check_skill_alignment,
+            check_advisory_scorecard=a.check_advisory_scorecard,
+            check_reconcile_freshness=a.check_reconcile_freshness,
             as_json=a.as_json,
             frontmatter_adr=a.frontmatter_adr,
             frontmatter_explain=a.frontmatter_explain,
