@@ -417,5 +417,54 @@ class TestRecoveryCommandsResolveToCli(unittest.TestCase):
                 )
 
 
+class TestStatusMatchesVocabAware(unittest.TestCase):
+    """Regression tests for ``_status_matches`` vocab-canonicalized comparison.
+
+    Before the ADR-0.0.16 closeout repair (2026-04-18), the validator compared
+    frontmatter ``status:`` vs ledger canonical state as raw lowercase strings.
+    Frontmatter ``Completed`` (which canonicalizes to ``completed`` via
+    STATUS_VOCAB_MAPPING) was flagged as drift whenever the ledger had
+    advanced to ``attested_completed`` after attestation. These tests lock the
+    vocab-canonicalized comparison so the bug cannot silently return.
+    """
+
+    @covers("REQ-0.0.16-01-02")
+    def test_frontmatter_completed_matches_ledger_attested_completed(self) -> None:
+        """Frontmatter 'Completed' should not drift against ledger 'attested_completed'.
+
+        ``attested_completed`` is a specialization of ``completed``: the
+        frontmatter is less specific, not contradictory. This shape surfaces
+        after every heavy-lane OBPI attestation.
+        """
+        from gzkit.commands.validate_frontmatter import _status_matches  # noqa: PLC0415
+
+        self.assertTrue(_status_matches("Completed", "attested_completed"))
+        self.assertTrue(_status_matches("completed", "attested_completed"))
+
+    @covers("REQ-0.0.16-01-02")
+    def test_frontmatter_completed_drifts_against_in_progress(self) -> None:
+        """Frontmatter 'Completed' vs ledger 'in_progress' must still report drift."""
+        from gzkit.commands.validate_frontmatter import _status_matches  # noqa: PLC0415
+
+        self.assertFalse(_status_matches("Completed", "in_progress"))
+        self.assertFalse(_status_matches("Completed", "pending"))
+
+    @covers("REQ-0.0.16-01-02")
+    def test_unmapped_frontmatter_term_falls_back_to_literal_compare(self) -> None:
+        """Terms absent from STATUS_VOCAB_MAPPING fall back to case-insensitive literal compare."""
+        from gzkit.commands.validate_frontmatter import _status_matches  # noqa: PLC0415
+
+        self.assertTrue(_status_matches("XYZZY", "xyzzy"))
+        self.assertFalse(_status_matches("XYZZY", "other"))
+
+    @covers("REQ-0.0.16-01-02")
+    def test_in_progress_frontmatter_matches_in_progress_ledger(self) -> None:
+        """Frontmatter written as canonical 'in_progress' matches ledger 'in_progress'."""
+        from gzkit.commands.validate_frontmatter import _status_matches  # noqa: PLC0415
+
+        self.assertTrue(_status_matches("in_progress", "in_progress"))
+        self.assertTrue(_status_matches("In-Progress", "in_progress"))
+
+
 if __name__ == "__main__":
     unittest.main()

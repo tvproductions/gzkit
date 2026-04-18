@@ -10,6 +10,7 @@
 gz arb ruff [--fix] [--soft-fail] [PATHS...]
 gz arb step --name NAME [--soft-fail] -- COMMAND [ARGS...]
 gz arb ty COMMAND [ARGS...]
+gz arb typecheck
 gz arb coverage COMMAND [ARGS...]
 gz arb validate [--limit N] [--json]
 gz arb advise [--limit N] [--json]
@@ -65,6 +66,16 @@ Dedicated wrappers for common step invocations.
 gz arb ty check .
 gz arb coverage run -m unittest discover
 ```
+
+### typecheck
+
+Canonical Heavy-lane type-check receipt producer. Wraps the exact command `gz typecheck` runs (`uv run ty check src`) so ARB receipts cannot diverge from the governance gate's scope. Use this for attestation evidence rather than `gz arb ty check <custom-scope>`.
+
+```bash
+gz arb typecheck
+```
+
+See GHI #199 for the class-of-failure this closes.
 
 ### validate
 
