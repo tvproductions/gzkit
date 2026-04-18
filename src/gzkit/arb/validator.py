@@ -44,9 +44,16 @@ class ArbReceiptValidationResult(BaseModel):
 # key here MUST carry the listed ``step.command`` — otherwise the receipt
 # claims to be a heavy-lane attestation label while measuring a different
 # scope. Extending this table widens the provenance net; do not shrink it.
+#
+# Each canonical command mirrors the exact invocation the corresponding
+# governance gate runs (``run_typecheck``, ``run_tests``, ``run_coverage``,
+# ``run_mkdocs`` under ``src/gzkit/quality.py``) so ARB receipts cannot
+# drift from the gate's scope — the GHI #199 class of failure.
 CANONICAL_STEP_COMMANDS: dict[str, list[str]] = {
     "typecheck": ["uv", "run", "ty", "check", "src"],
     "unittest": ["uv", "run", "-m", "unittest", "-q"],
+    "coverage": ["coverage", "run", "-m", "unittest", "discover", "-s", "tests", "-t", "."],
+    "mkdocs": ["uv", "run", "mkdocs", "build", "--strict"],
 }
 
 
