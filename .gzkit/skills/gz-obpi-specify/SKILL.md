@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-04-12
 metadata:
-  skill-version: "1.2.0"
+  skill-version: "1.3.0"
 ---
 
 # gz-obpi-specify
@@ -143,6 +143,71 @@ The intended workflow is:
 
 The CLI owns deterministic decomposition. The skill owns the semantic authoring
 pass that turns the generated brief into an execution contract.
+
+---
+
+## Pre-Save Ground-Truth Check (GHI #190)
+
+Before saving a brief, every path in the `Allowed Paths` and `Denied Paths`
+sections MUST be verified against on-disk reality. LLM authoring routinely
+imports model priors from adjacent projects (airlineops, half-remembered
+TOML-based chore patterns) and writes them as if they were gzkit conventions.
+The OBPI-0.0.16-03 brief shipped with fabricated framework paths
+(`config/chores/<slug>.toml`, `src/gzkit/chores/<module>.py`,
+`tests/chores/test_<module>.py`) — none of those conventions exist; the real
+chore framework uses `config/gzkit.chores.json` + `ops/chores/<slug>/`
+packages. The implementer had to rewrite Allowed Paths as a scope amendment
+before proceeding.
+
+### Per-path verification — apply to every Allowed Paths and Denied Paths entry
+
+For each path:
+
+1. **Glob the path** — `Glob(pattern=<path>)`. If the path matches existing
+   files, the path is grounded. Continue.
+2. **Glob the parent directory** — `Glob(pattern=<parent>/*)`. If the parent
+   exists, inspect its contents:
+   - Confirm at least one file in the parent uses the same extension
+     (`.py`, `.toml`, `.json`, `.md`) as the proposed path. The matching
+     extension is your evidence that the file you propose to create is
+     consistent with the convention of the directory.
+   - If the parent exists but no file shares the extension, STOP — either
+     the convention is different (verify by reading a sibling file) or the
+     proposed path is fabricated. Do not save.
+3. **If neither the path nor the parent exists** — the path is green-field.
+   Verify the convention by:
+   - Reading the parent ADR's Interfaces / Evidence sections for the
+     intended layout, OR
+   - Searching for adjacent precedents (`Grep`, `Glob`) that establish the
+     intended convention, OR
+   - Asking the human ("the brief proposes `<path>` but no precedent exists;
+     is this a new convention?") before saving.
+
+### Mandatory STOP conditions
+
+Do NOT save a brief if any of the following is true:
+
+- An Allowed Path references a directory tree that does not exist and has
+  no precedent (e.g. `src/gzkit/chores/` when chores live in `ops/chores/`).
+- An Allowed Path uses an extension that no sibling file uses
+  (e.g. `.toml` when sibling files are `.json`).
+- The author has not personally read at least one existing file in each
+  parent directory of an Allowed Path before saving.
+
+### Anti-pattern
+
+| Thought | Reality |
+|---------|---------|
+| "The framework probably uses TOML for chores like airlineops does" | Verify it. `Glob("config/**/*.toml")` and `Glob("config/**/*.json")` will tell you in one call which convention this repo uses. |
+| "I'll let the implementer correct the paths if they're wrong" | The OBPI-0.0.16-03 implementer paid the cost of a scope amendment + context-burning rewrite because the brief author skipped this check. The cost of one Glob call before saving is far lower than the cost of an in-flight scope amendment. |
+| "The Allowed Paths look architecturally correct — that's enough" | Architectural plausibility is not ground truth. Run the Glob. Read a sibling file. Then save. |
+
+### Future mechanical enforcement
+
+A future iteration adds `gz validate --briefs --ground-truth` — a fail-closed
+CLI pass that checks every Allowed Path in every Draft brief against on-disk
+reality. Until then, this section governs authoring discipline by hand.
+Tracked as a follow-up to GHI #190.
 
 ---
 
