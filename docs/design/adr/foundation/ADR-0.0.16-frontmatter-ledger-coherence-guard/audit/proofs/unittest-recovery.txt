@@ -1,0 +1,115 @@
+arb: invalid step invocation: ARB step name is required
+======================================================================
+FAIL: test_blocks_when_self_audit_subprocess_fails (tests.test_hooks.TestPlanAuditGateHook.test_blocks_when_self_audit_subprocess_fails)
+GHI #191: hook still blocks when the self-audit subprocess exits non-zero.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Jeff\source\repos\va\gzkit\tests\test_hooks.py", line 831, in test_blocks_when_self_audit_subprocess_fails
+    self.assertIn("audit alignment gap", result.stderr)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'audit alignment gap' not found in "plan-audit-gate: receipt no audit receipt found; self-running 'gz plan audit OBPI-0.12.0-02'...\nBLOCKED: Cannot exit plan mode - plan audit required.\n\nPlan 'active.md' references: OBPI-0.12.0-02\nReason: No audit receipt found\n\nSelf-audit attempt: self-audit command not found: [WinError 2] The system cannot find the file specified\n\nREQUIRED: Run the pre-flight alignment audit manually:\n  /gz-plan-audit OBPI-0.12.0-02\n\nThis verifies ADR <-> OBPI <-> Plan alignment before implementation begins.\n\n"
+
+======================================================================
+FAIL: test_blocks_when_self_audit_writes_fail_receipt (tests.test_hooks.TestPlanAuditGateHook.test_blocks_when_self_audit_writes_fail_receipt)
+GHI #191: hook blocks when self-audit succeeds but writes a FAIL verdict.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Jeff\source\repos\va\gzkit\tests\test_hooks.py", line 847, in test_blocks_when_self_audit_writes_fail_receipt
+    self.assertEqual(result.returncode, 0, msg=result.stderr)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0 : plan-audit-gate: receipt no audit receipt found; self-running 'gz plan audit OBPI-0.12.0-02'...
+BLOCKED: Cannot exit plan mode - plan audit required.
+
+Plan 'active.md' references: OBPI-0.12.0-02
+Reason: No audit receipt found
+
+Self-audit attempt: self-audit command not found: [WinError 2] The system cannot find the file specified
+
+REQUIRED: Run the pre-flight alignment audit manually:
+  /gz-plan-audit OBPI-0.12.0-02
+
+This verifies ADR <-> OBPI <-> Plan alignment before implementation begins.
+
+
+
+======================================================================
+FAIL: test_self_audits_when_receipt_missing_and_allows_on_pass (tests.test_hooks.TestPlanAuditGateHook.test_self_audits_when_receipt_missing_and_allows_on_pass)
+GHI #191: hook self-runs gz plan audit when receipt missing; allows on PASS.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Jeff\source\repos\va\gzkit\tests\test_hooks.py", line 792, in test_self_audits_when_receipt_missing_and_allows_on_pass
+    self.assertEqual(result.returncode, 0, msg=result.stderr)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0 : plan-audit-gate: receipt no audit receipt found; self-running 'gz plan audit OBPI-0.12.0-02'...
+BLOCKED: Cannot exit plan mode - plan audit required.
+
+Plan 'active.md' references: OBPI-0.12.0-02
+Reason: No audit receipt found
+
+Self-audit attempt: self-audit command not found: [WinError 2] The system cannot find the file specified
+
+REQUIRED: Run the pre-flight alignment audit manually:
+  /gz-plan-audit OBPI-0.12.0-02
+
+This verifies ADR <-> OBPI <-> Plan alignment before implementation begins.
+
+
+
+======================================================================
+FAIL: test_self_audits_when_receipt_obpi_mismatches_and_allows_on_pass (tests.test_hooks.TestPlanAuditGateHook.test_self_audits_when_receipt_obpi_mismatches_and_allows_on_pass)
+GHI #191: hook self-runs even when a stale receipt exists for a different OBPI.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Jeff\source\repos\va\gzkit\tests\test_hooks.py", line 814, in test_self_audits_when_receipt_obpi_mismatches_and_allows_on_pass
+    self.assertEqual(result.returncode, 0, msg=result.stderr)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0 : plan-audit-gate: receipt no audit receipt found; self-running 'gz plan audit OBPI-0.12.0-02'...
+BLOCKED: Cannot exit plan mode - plan audit required.
+
+Plan 'active.md' references: OBPI-0.12.0-02
+Reason: No audit receipt found
+
+Self-audit attempt: self-audit command not found: [WinError 2] The system cannot find the file specified
+
+REQUIRED: Run the pre-flight alignment audit manually:
+  /gz-plan-audit OBPI-0.12.0-02
+
+This verifies ADR <-> OBPI <-> Plan alignment before implementation begins.
+
+
+
+----------------------------------------------------------------------
+Ran 3158 tests in 87.775s
+
+FAILED (failures=4)
+usage: gz patch release [-h] [--dry-run] [--json] [--full] [--quiet |
+                        --verbose] [--debug]
+
+Execute the GHI-driven patch release ceremony. With --full: bump, author release notes, commit, push (with lint/test gates), and create the GitHub release as one transaction.
+
+options:
+  -h, --help     show this help message and exit
+  --dry-run      Show planned actions without executing
+  --json         Output as JSON
+  --full         Execute the full ceremony: bump, release notes, commit, push,
+                 gh release
+  --quiet, -q    Suppress non-error output
+  --verbose, -v  Enable verbose output
+  --debug        Enable debug mode with full tracebacks
+
+Examples
+    gz patch release --dry-run
+    gz patch release --full
+    gz patch release --json
+
+Exit codes
+    0   Success
+    1   User/config error
+    2   System/IO error
+    3   Policy breach
+Manual edit to .gzkit/ledger.jsonl detected — ledger is append-only via gz commands (CLAUDE.md governance rule 16).
+  offending line: -{"event": "x"}
+Skill/rule sync drift detected:
+  - .gzkit/rules/new-rule.md edited without `.claude/rules/new-rule.md` / `.github/instructions/new-rule.md` mirror. Run `uv run gz agent sync control-surfaces`.
+Skill/rule sync drift detected:
+  - .gzkit/skills/foo/SKILL.md edited without `.claude/skills/foo/SKILL.md` / `.github/skills/foo/SKILL.md` mirror. Run `uv run gz agent sync control-surfaces`.

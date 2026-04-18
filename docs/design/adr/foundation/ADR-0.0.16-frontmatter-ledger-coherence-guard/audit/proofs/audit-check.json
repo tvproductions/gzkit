@@ -1,0 +1,106 @@
+{
+  "adr": "ADR-0.0.16-frontmatter-ledger-coherence-guard",
+  "passed": false,
+  "checked_obpis": [
+    "OBPI-0.0.16-01-validate-frontmatter-guard",
+    "OBPI-0.0.16-02-gate-integration",
+    "OBPI-0.0.16-03-chore-registration",
+    "OBPI-0.0.16-04-backfill-and-ghi-closure",
+    "OBPI-0.0.16-05-status-vocab-mapping"
+  ],
+  "complete_obpis": [
+    "OBPI-0.0.16-01-validate-frontmatter-guard",
+    "OBPI-0.0.16-02-gate-integration",
+    "OBPI-0.0.16-03-chore-registration",
+    "OBPI-0.0.16-04-backfill-and-ghi-closure",
+    "OBPI-0.0.16-05-status-vocab-mapping"
+  ],
+  "findings": [],
+  "coverage": {
+    "total_reqs": 37,
+    "covered_reqs": 32,
+    "uncovered_reqs": 5,
+    "coverage_percent": 86.5,
+    "by_obpi": [
+      {
+        "obpi": "OBPI-0.0.16-01",
+        "total_reqs": 8,
+        "covered_reqs": 8,
+        "uncovered_reqs": 0,
+        "coverage_percent": 100.0
+      },
+      {
+        "obpi": "OBPI-0.0.16-02",
+        "total_reqs": 6,
+        "covered_reqs": 6,
+        "uncovered_reqs": 0,
+        "coverage_percent": 100.0
+      },
+      {
+        "obpi": "OBPI-0.0.16-03",
+        "total_reqs": 10,
+        "covered_reqs": 10,
+        "uncovered_reqs": 0,
+        "coverage_percent": 100.0
+      },
+      {
+        "obpi": "OBPI-0.0.16-04",
+        "total_reqs": 7,
+        "covered_reqs": 2,
+        "uncovered_reqs": 5,
+        "coverage_percent": 28.6
+      },
+      {
+        "obpi": "OBPI-0.0.16-05",
+        "total_reqs": 6,
+        "covered_reqs": 6,
+        "uncovered_reqs": 0,
+        "coverage_percent": 100.0
+      }
+    ],
+    "uncovered": [
+      {
+        "req_id": "REQ-0.0.16-04-01",
+        "severity": "advisory"
+      },
+      {
+        "req_id": "REQ-0.0.16-04-02",
+        "severity": "advisory"
+      },
+      {
+        "req_id": "REQ-0.0.16-04-03",
+        "severity": "advisory"
+      },
+      {
+        "req_id": "REQ-0.0.16-04-06",
+        "severity": "advisory"
+      },
+      {
+        "req_id": "REQ-0.0.16-04-07",
+        "severity": "advisory"
+      }
+    ]
+  },
+  "coverage_findings": [
+    {
+      "id": "REQ-0.0.16-04-01",
+      "issue": "REQ not covered by any @covers test annotation."
+    },
+    {
+      "id": "REQ-0.0.16-04-02",
+      "issue": "REQ not covered by any @covers test annotation."
+    },
+    {
+      "id": "REQ-0.0.16-04-03",
+      "issue": "REQ not covered by any @covers test annotation."
+    },
+    {
+      "id": "REQ-0.0.16-04-06",
+      "issue": "REQ not covered by any @covers test annotation."
+    },
+    {
+      "id": "REQ-0.0.16-04-07",
+      "issue": "REQ not covered by any @covers test annotation."
+    }
+  ]
+}

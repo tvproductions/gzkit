@@ -1,0 +1,6 @@
+Running linters...
+All checks passed!
+
+ADR path contract check passed.
+No Path(__file__).parents[N] violations found.
+Lint passed.

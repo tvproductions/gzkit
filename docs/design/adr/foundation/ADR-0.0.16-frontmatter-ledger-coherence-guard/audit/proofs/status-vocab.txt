@@ -1,0 +1,26 @@
+CANONICAL_LEDGER_TERMS: ['abandoned', 'attested_completed', 'completed', 'drift', 'in_progress', 'pending', 'validated', 'withdrawn']
+
+MAPPING SIZE: 16
+
+{
+  "Draft": "pending",
+  "Proposed": "pending",
+  "Pool": "pending",
+  "Promoted": "pending",
+  "Pending": "pending",
+  "in_progress": "in_progress",
+  "In-Progress": "in_progress",
+  "In Progress": "in_progress",
+  "Accepted": "validated",
+  "Validated": "validated",
+  "Pending-Attestation": "completed",
+  "Completed": "completed",
+  "attested_completed": "attested_completed",
+  "Attested": "attested_completed",
+  "Superseded": "abandoned",
+  "archived": "abandoned"
+}
+
+canonicalize("Draft") = pending
+canonicalize("Completed") = completed
+canonicalize("Proposed") = pending
