@@ -101,13 +101,13 @@ view with metadata, resolution source, and staleness status).
 
 ```bash
 # CLI smoke tests
-PYTHONUTF8=1 uv run gz flags
-PYTHONUTF8=1 uv run gz flags --stale
-PYTHONUTF8=1 uv run gz flag explain ops.product_proof
-PYTHONUTF8=1 uv run gz flags --json | python -m json.tool
+uv run gz flags
+uv run gz flags --stale
+uv run gz flag explain ops.product_proof
+uv run gz flags --json | python -m json.tool
 
 # Error case
-PYTHONUTF8=1 uv run gz flag explain nonexistent.key; echo "Exit: $?"
+uv run gz flag explain nonexistent.key; echo "Exit: $?"
 # Expected: exit code 1
 
 # Unit tests

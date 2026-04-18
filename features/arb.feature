@@ -4,6 +4,7 @@ Feature: ARB self-reporting middleware
   I want a CLI surface that wraps QA commands and emits validated receipts
   So that attestation-enrichment claims can cite deterministic artifacts.
 
+  @REQ-0.25.0-33-05
   Scenario: arb surface exposes every rule-declared verb
     When I run the gz command "arb --help"
     Then the command exits with code 0
