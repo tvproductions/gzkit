@@ -1,11 +1,40 @@
 """Plan-audit CLI: structural prerequisite checks for OBPI plan alignment."""
 
 import json
+import re
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
 from gzkit.commands.common import console
+
+
+def _canonicalize_obpi_id(project_root: Path, obpi_id: str) -> str:
+    """Expand a short-form OBPI ID to its full slug via the ledger graph.
+
+    GHI #187 — the plan-audit writer previously persisted the raw input
+    verbatim (e.g. ``OBPI-0.0.16-05``) while ``gz obpi pipeline`` wrote the
+    full slug (``OBPI-0.0.16-05-status-vocab-mapping``) into the pipeline
+    marker. ``pipeline-gate.py`` compares the two literals and blocks on
+    mismatch. Canonicalizing at the writer closes the mismatch class for
+    this layer — same fix shape as GHI #114's ``resolve_obpi`` repair.
+
+    Returns the input unchanged when the ID cannot be resolved through the
+    graph (missing brief, uninitialized ledger, etc.) so the surrounding
+    gap-check still surfaces a clear "brief not found" message instead of
+    an opaque resolver error.
+    """
+    from gzkit.commands.common import GzCliError, resolve_obpi
+    from gzkit.config import load_config
+    from gzkit.ledger import Ledger
+
+    try:
+        config = load_config()
+        ledger = Ledger(project_root / config.paths.ledger)
+        canonical, _ = resolve_obpi(project_root, config, ledger, obpi_id)
+    except (GzCliError, OSError, ValueError):
+        return obpi_id
+    return canonical
 
 
 def plan_audit_cmd(obpi_id: str, as_json: bool) -> None:
@@ -14,6 +43,11 @@ def plan_audit_cmd(obpi_id: str, as_json: bool) -> None:
 
     ensure_initialized()
     project_root = get_project_root()
+
+    # GHI #187: canonicalize short-form input to the full slug before any
+    # downstream lookup or receipt write. This keeps the plan-audit receipt
+    # in lockstep with the pipeline marker's obpi_id.
+    obpi_id = _canonicalize_obpi_id(project_root, obpi_id)
 
     gaps: list[str] = []
 
@@ -93,16 +127,21 @@ def _emit_result(
         sys.exit(1)
 
 
+_OBPI_SEMVER_RE = re.compile(r"^OBPI-(\d+\.\d+\.\d+)-")
+
+
 def _derive_adr_id(obpi_id: str) -> str | None:
-    """Derive ADR-X.Y.Z from OBPI-X.Y.Z-NN."""
-    if not obpi_id.startswith("OBPI-"):
+    """Derive ADR-X.Y.Z from OBPI-X.Y.Z-NN or OBPI-X.Y.Z-NN-<slug> (GHI #187).
+
+    Both the short form and the full slug map to the same ADR — the semver
+    triple after the ``OBPI-`` prefix. A prior ``rsplit("-", 1)`` variant
+    broke on full slugs like ``OBPI-0.0.16-05-status-vocab-mapping`` because
+    the last segment was the slug tail, not the item number.
+    """
+    match = _OBPI_SEMVER_RE.match(obpi_id)
+    if match is None:
         return None
-    # OBPI-X.Y.Z-NN -> X.Y.Z-NN -> X.Y.Z
-    suffix = obpi_id[5:]  # Remove "OBPI-"
-    parts = suffix.rsplit("-", 1)
-    if len(parts) == 2:
-        return f"ADR-{parts[0]}"
-    return None
+    return f"ADR-{match.group(1)}"
 
 
 def _find_adr_dir(project_root: Path, adr_id: str) -> Path | None:
