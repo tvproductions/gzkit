@@ -148,11 +148,11 @@ class TestGate1FrontmatterIntegration(unittest.TestCase):
 
             # Baseline: validator standalone on the same fixture.
             from gzkit.commands.validate_frontmatter import (
-                _validate_frontmatter_coherence,
+                validate_frontmatter_coherence,
             )
 
             validator_start = time.perf_counter()
-            _validate_frontmatter_coherence(Path.cwd(), adr_scope="ADR-0.1.0")
+            validate_frontmatter_coherence(Path.cwd(), adr_scope="ADR-0.1.0")
             validator_cost = time.perf_counter() - validator_start
 
             # Gate 1 cost on the same fixture.

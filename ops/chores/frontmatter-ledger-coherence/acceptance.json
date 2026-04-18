@@ -2,9 +2,9 @@
   "criteria": [
     {
       "type": "exitCodeEquals",
-      "command": "uv run gz validate --frontmatter",
+      "command": "uv run gz frontmatter reconcile --dry-run",
       "expected": 0,
-      "description": "All frontmatter fields must match ledger truth"
+      "description": "Ledger-wins reconciliation dry-run exits 0 when no drift would be rewritten. If non-zero, run the non-dry-run variant (uv run gz frontmatter reconcile) to resolve drift, then re-verify."
     }
   ]
 }

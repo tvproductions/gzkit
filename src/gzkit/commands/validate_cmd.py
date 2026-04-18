@@ -8,7 +8,7 @@ from pathlib import Path
 from gzkit.commands.common import console, get_project_root
 from gzkit.commands.validate_frontmatter import (
     _render_frontmatter_explain,
-    _validate_frontmatter_coherence,
+    validate_frontmatter_coherence,
 )
 from gzkit.commands.version_sync import validate_version_consistency
 from gzkit.instruction_audit import audit_instructions
@@ -330,7 +330,7 @@ def _run_scope_checks(
     if active("personas"):
         errors.extend(_validate_personas(project_root))
     if active("frontmatter"):
-        errors.extend(_validate_frontmatter_coherence(project_root, adr_scope=frontmatter_adr))
+        errors.extend(validate_frontmatter_coherence(project_root, adr_scope=frontmatter_adr))
     if active("version"):
         errors.extend(validate_version_consistency(project_root))
     if explicit_scopes.get("interviews"):
