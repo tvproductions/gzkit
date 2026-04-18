@@ -139,19 +139,24 @@ Invariants #1–17 in the behavioral invariants doc are primarily **judgment** r
 
 ## Recommended promotion order (highest leverage first)
 
-1. **Rule 28/29 — Skill ↔ CLI ↔ runbook alignment (Invariants 1–2).** Rule file explicitly calls out that enforcement is "long-term home for `gz validate --surfaces`." This is the exact same shape as the trust-doctrine audits; the hardest work is the audit design, not the fix. Tractable to ship in one session.
+Each promotion candidate has a tracking GHI. Close the GHI when the promotion lands per the discipline in § Promotion discipline below.
 
-2. **Rules 25/26 — Pydantic `BaseModel` + `ConfigDict` usage.** AST scan fails on `@dataclass` or `BaseModel` subclass without `model_config`. Low false-positive risk; the existing models all satisfy the rule so the audit would pass immediately.
-
-3. **Rule 21 — Class size limit (300 lines).** Extension of the existing function-size check. One-liner AST traversal.
-
-4. **Rule 11 — Version bump → release.** Scan `pyproject.toml` version; shell out to `gh release view vX.Y.Z`; fail if the version doesn't have a corresponding release. Catches the "bumped but didn't release" half-finished state.
-
-5. **Rule 9 — Never prefix `uv run gz` with `PYTHONUTF8=1`.** Regex scan of `.gzkit/skills/`, `docs/user/runbook.md`, `docs/user/commands/`. Cheap.
-
-6. **Rule 16 — No manual ledger edits.** Pre-commit check scanning staged diff. Moderate complexity but high payoff (ledger is append-only by policy; manual edits are a corruption vector).
-
-7. **Rule 30 — Output Contract matches destination verb.** Harder: requires running each skill's `gz_command` and asserting form markers. The most expensive, highest-value promotable check. Suggested follow-up after items 1–6 are in place.
+| # | Rule(s) | GHI | Summary |
+|---|---------|-----|---------|
+| 1 | 28 / 29 / 30 | [#202](https://github.com/tvproductions/gzkit/issues/202) | Skill ↔ CLI ↔ runbook alignment (Invariants 1–3) |
+| 2 | 25 / 26 | [#203](https://github.com/tvproductions/gzkit/issues/203) | Pydantic `BaseModel` + `ConfigDict` discipline |
+| 3 | 21 | [#204](https://github.com/tvproductions/gzkit/issues/204) | Class size limit (300 lines) |
+| 4 | 11 | [#205](https://github.com/tvproductions/gzkit/issues/205) | Version bump → GitHub release alignment |
+| 5 | 9 | [#206](https://github.com/tvproductions/gzkit/issues/206) | No `PYTHONUTF8=1` prefix on `uv run gz` |
+| 6 | 16 | [#207](https://github.com/tvproductions/gzkit/issues/207) | No manual ledger edits (pre-commit guard) |
+| 7 | 1 / 2 | [#208](https://github.com/tvproductions/gzkit/issues/208) | Pool ADRs never touch the runtime track |
+| 8 | 37 | [#209](https://github.com/tvproductions/gzkit/issues/209) | No third test tier under `unittest` |
+| 9 | 33 | [#210](https://github.com/tvproductions/gzkit/issues/210) | Sync after every skill/rule edit |
+| 10 | 39 | [#211](https://github.com/tvproductions/gzkit/issues/211) | Behave scenarios tagged `@REQ-X.Y.Z-NN-MM` |
+| 11 | meta | [#212](https://github.com/tvproductions/gzkit/issues/212) | Scorecard self-test (catch new rules added without score) |
+| 12 | 4 | [#213](https://github.com/tvproductions/gzkit/issues/213) | Reconcile freshness audit |
+| 13 | 6 (extension) | [#214](https://github.com/tvproductions/gzkit/issues/214) | L3 derived-view audits beyond frontmatter/graph |
+| 14 | discoverability | [#215](https://github.com/tvproductions/gzkit/issues/215) | Wire trust-doctrine + scorecard into agent control surfaces |
 
 ---
 
