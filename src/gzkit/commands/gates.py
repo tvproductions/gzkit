@@ -13,7 +13,7 @@ from gzkit.commands.common import (
 )
 from gzkit.commands.validate_frontmatter import (
     _RECOVERY_COMMANDS,
-    _validate_frontmatter_coherence,
+    validate_frontmatter_coherence,
 )
 from gzkit.config import GzkitConfig
 from gzkit.governance.status_vocab import canonicalize_status
@@ -109,7 +109,7 @@ def _run_gate_1(
         return "fail"
 
     evidence = str(adr_file.relative_to(project_root))
-    drift_errors = _validate_frontmatter_coherence(project_root, adr_scope=adr_id)
+    drift_errors = validate_frontmatter_coherence(project_root, adr_scope=adr_id)
     if drift_errors:
         _render_gate1_frontmatter_drift(drift_errors)
         drift_evidence = json.dumps(

@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gzkit.frontmatter_coherence_receipt.schema.json",
+  "title": "Frontmatter-Ledger Coherence Reconciliation Receipt",
+  "description": "Receipt emitted by the frontmatter-ledger-coherence chore (ADR-0.0.16 OBPI-03) on every invocation. Records the ledger cursor sampled at run-start, every frontmatter file rewritten with per-field before/after diffs, and any pool ADRs skipped. Validates against this schema before being written to disk.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "ledger_cursor",
+    "run_started_at",
+    "run_completed_at",
+    "files_rewritten",
+    "skipped",
+    "dry_run"
+  ],
+  "properties": {
+    "ledger_cursor": {
+      "type": "string",
+      "description": "Stable identifier of the ledger state sampled at run-start. Format: 'sha256:<64 hex>' over the raw bytes of .gzkit/ledger.jsonl at the moment the Ledger instance was opened.",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "run_started_at": {
+      "type": "string",
+      "description": "ISO8601 UTC timestamp recorded at reconcile_frontmatter() entry.",
+      "format": "date-time"
+    },
+    "run_completed_at": {
+      "type": "string",
+      "description": "ISO8601 UTC timestamp recorded at reconcile_frontmatter() exit (normal path).",
+      "format": "date-time"
+    },
+    "files_rewritten": {
+      "type": "array",
+      "description": "One entry per non-pool file whose governed frontmatter fields were (or would have been, under --dry-run) rewritten to match the ledger. Empty array when there is no drift.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "diffs"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Path to the ADR or OBPI file relative to the project root."
+          },
+          "diffs": {
+            "type": "array",
+            "description": "Non-empty list of per-field diffs for this file.",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["field", "before", "after"],
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "description": "Governed frontmatter field being rewritten.",
+                  "enum": ["id", "parent", "lane", "status"]
+                },
+                "before": {
+                  "type": "string",
+                  "description": "Frontmatter value observed before the rewrite."
+                },
+                "after": {
+                  "type": "string",
+                  "description": "Ledger value written in place of the frontmatter value (ledger-wins)."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "skipped": {
+      "type": "array",
+      "description": "Files deliberately not considered for reconciliation. The only current reason is 'pool-adr' (pool ADRs have no ledger entry by design).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "reason"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Path to the skipped file relative to the project root."
+          },
+          "reason": {
+            "type": "string",
+            "enum": ["pool-adr"],
+            "description": "Reason the file was skipped. Extensible enum; pool-adr is the only value emitted today."
+          }
+        }
+      }
+    },
+    "dry_run": {
+      "type": "boolean",
+      "description": "True when the reconciler was invoked with --dry-run (no filesystem writes to ADR/OBPI files). The receipt itself is still written to disk in both modes."
+    }
+  }
+}
