@@ -3,7 +3,7 @@ id: OBPI-0.0.3-07-structured-logging-structlog
 parent: ADR-0.0.3-hexagonal-architecture-tune-up
 item: 7
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.0.3-07-structured-logging-structlog: Structured Logging

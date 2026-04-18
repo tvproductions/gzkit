@@ -3,7 +3,7 @@ id: OBPI-0.12.0-01-canonical-hook-inventory-and-parity-contract
 parent: ADR-0.12.0-obpi-pipeline-enforcement-parity
 item: 1
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.12.0-01-canonical-hook-inventory-and-parity-contract: Canonical hook inventory and parity contract

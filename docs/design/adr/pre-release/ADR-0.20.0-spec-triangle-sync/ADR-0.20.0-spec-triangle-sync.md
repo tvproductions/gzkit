@@ -1,6 +1,6 @@
 ---
 id: ADR-0.20.0-spec-triangle-sync
-status: Proposed
+status: Validated
 semver: 0.20.0
 lane: heavy
 parent: PRD-GZKIT-1.0.0

@@ -3,7 +3,7 @@ id: OBPI-0.0.3-02-domain-extraction
 parent: ADR-0.0.3-hexagonal-architecture-tune-up
 item: 2
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.0.3-02-domain-extraction: Domain Extraction

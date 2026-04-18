@@ -3,7 +3,7 @@ id: OBPI-0.3.0-03-govzero-canonical-doc-surface
 parent: ADR-0.3.0-airlineops-canon-reconciliation
 item: 3
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.3.0-03-govzero-canonical-doc-surface: GovZero Canonical Doc Surface

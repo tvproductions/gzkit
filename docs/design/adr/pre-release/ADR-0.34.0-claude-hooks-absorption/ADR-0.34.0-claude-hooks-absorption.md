@@ -1,6 +1,6 @@
 ---
 id: ADR-0.34.0-claude-hooks-absorption
-status: Proposed
+status: Pending
 semver: 0.34.0
 lane: heavy
 parent: PRD-GZKIT-1.0.0

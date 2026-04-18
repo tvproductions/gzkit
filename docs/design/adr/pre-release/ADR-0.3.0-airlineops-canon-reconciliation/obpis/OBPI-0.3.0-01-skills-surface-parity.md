@@ -3,7 +3,7 @@ id: OBPI-0.3.0-01-skills-surface-parity
 parent: ADR-0.3.0-airlineops-canon-reconciliation
 item: 1
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.3.0-01-skills-surface-parity: Skills Surface Parity

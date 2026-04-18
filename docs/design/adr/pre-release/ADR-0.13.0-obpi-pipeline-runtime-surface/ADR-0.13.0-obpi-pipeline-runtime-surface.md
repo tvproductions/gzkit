@@ -1,6 +1,6 @@
 ---
 id: ADR-0.13.0-obpi-pipeline-runtime-surface
-status: Proposed
+status: Validated
 semver: 0.13.0
 lane: heavy
 parent: PRD-GZKIT-1.0.0

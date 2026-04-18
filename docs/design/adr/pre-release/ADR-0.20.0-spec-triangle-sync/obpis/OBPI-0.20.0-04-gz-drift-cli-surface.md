@@ -3,7 +3,7 @@ id: OBPI-0.20.0-04-gz-drift-cli-surface
 parent: ADR-0.20.0-spec-triangle-sync
 item: 4
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.20.0-04: gz drift CLI Surface

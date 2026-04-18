@@ -3,7 +3,7 @@ id: OBPI-0.0.3-03-exception-hierarchy
 parent: ADR-0.0.3-hexagonal-architecture-tune-up
 item: 3
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.0.3-03-exception-hierarchy: Exception Hierarchy & Exit Codes

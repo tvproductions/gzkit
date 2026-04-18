@@ -3,7 +3,7 @@ id: OBPI-0.0.14-01-obpi-lock-command
 parent: ADR-0.0.14-deterministic-obpi-commands
 item: 1
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.0.14-01: gz obpi lock command

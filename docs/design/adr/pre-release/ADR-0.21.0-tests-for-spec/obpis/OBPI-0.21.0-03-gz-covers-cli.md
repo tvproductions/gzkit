@@ -3,7 +3,7 @@ id: OBPI-0.21.0-03-gz-covers-cli
 parent: ADR-0.21.0-tests-for-spec
 item: 3
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.21.0-03: gz covers CLI

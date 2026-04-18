@@ -1,7 +1,7 @@
 ---
 id: OBPI-0.40.0-02-common-rendering-helpers
 parent: ADR-0.40.0-reporter-rendering-infrastructure
-status: Accepted
+status: pending
 lane: lite
 semver: 0.40.0
 sequence: 2

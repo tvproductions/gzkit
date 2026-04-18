@@ -3,7 +3,7 @@ id: OBPI-0.0.5-01-define-reference-datasets-for-top-level-workflows-golden-paths
 parent: ADR-0.0.5-evaluation-infrastructure
 item: 1
 lane: lite
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.0.5-01: Define Reference Datasets

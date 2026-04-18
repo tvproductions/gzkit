@@ -1,6 +1,6 @@
 ---
 id: ADR-0.12.0-obpi-pipeline-enforcement-parity
-status: Proposed
+status: Validated
 semver: 0.12.0
 lane: heavy
 parent: PRD-GZKIT-1.0.0

@@ -3,7 +3,7 @@ id: OBPI-0.11.0-05-gz-obpi-pipeline-skill-and-mirror-surface
 parent: ADR-0.11.0-airlineops-obpi-completion-pipeline-parity
 item: 5
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.11.0-05-gz-obpi-pipeline-skill-and-mirror-surface: Gz obpi pipeline skill and mirror surface
