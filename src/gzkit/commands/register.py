@@ -52,6 +52,8 @@ SEMVER_ID_RENAMES: tuple[tuple[str, str], ...] = (
     ("ADR-0.2.0", "ADR-0.2.0-gate-verification"),
     ("ADR-0.3.0", "ADR-0.3.0-airlineops-canon-reconciliation"),
     ("ADR-0.24.0", "ADR-0.24.0-skill-documentation-contract"),
+    ("ADR-0.0.16", "ADR-0.0.16-frontmatter-ledger-coherence-guard"),
+    ("ADR-0.41.0", "ADR-0.41.0-tdd-emission-and-graph-rot-remediation"),
     # ADR-0.20.0 promotion slug → brief slug reconciliation.
     (
         "OBPI-0.20.0-01-define-triangle-sync-semantics-for-spec-tests-code-spec",
