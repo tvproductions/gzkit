@@ -12,7 +12,8 @@ How it works:
   2. Checks if the plan references an OBPI ID (pattern: OBPI-X.Y.Z-NN)
   3. If yes, looks for an audit receipt at .claude/plans/.plan-audit-receipt.json
   4. Receipt must reference the same OBPI and be newer than the plan file
-  5. No valid receipt -> exit 2 (blocked)
+  5. No valid receipt -> attempt synchronous self-audit (GHI #191), then re-check
+  6. Still no valid receipt -> exit 2 (blocked)
 
 Receipt format (.claude/plans/.plan-audit-receipt.json):
   {
@@ -21,14 +22,23 @@ Receipt format (.claude/plans/.plan-audit-receipt.json):
     "verdict": "PASS"
   }
 
+Self-audit (GHI #191): plan mode forbids non-plan-file writes, so the
+operator could not produce the receipt the gate demands without exiting
+plan mode first. Resolution: when the receipt is missing or stale, the
+hook invokes ``gz plan audit <OBPI>`` itself, then re-checks. The
+command is overridable via ``GZKIT_PLAN_AUDIT_CMD`` (space-separated
+argv) for test isolation; defaults to ``uv run gz plan audit``.
+
 Exit codes:
   0 - Allow operation (no OBPI plan, or audit receipt valid)
-  2 - Block operation (OBPI plan exists but no valid audit receipt)
+  2 - Block operation (OBPI plan exists, self-audit failed or produced FAIL)
 """
 
 import json
 import os
 import re
+import shlex
+import subprocess
 import sys
 from pathlib import Path
 
@@ -183,6 +193,47 @@ def check_audit_receipt(
     return False, last_reason
 
 
+PLAN_AUDIT_CMD_ENV = "GZKIT_PLAN_AUDIT_CMD"
+DEFAULT_PLAN_AUDIT_CMD = ("uv", "run", "gz", "plan", "audit")
+SELF_AUDIT_TIMEOUT_SECONDS = 60
+
+
+def _resolve_plan_audit_cmd() -> list[str]:
+    """Return argv for the plan-audit invocation, honoring the env override."""
+    override = os.environ.get(PLAN_AUDIT_CMD_ENV)
+    if override and override.strip():
+        return shlex.split(override)
+    return list(DEFAULT_PLAN_AUDIT_CMD)
+
+
+def attempt_self_audit(obpi_id: str, cwd: str) -> tuple[bool, str]:
+    """Invoke gz plan audit to refresh the receipt (GHI #191).
+
+    Returns ``(invocation_ok, captured_output)``. ``invocation_ok`` is
+    True only when the subprocess returned exit 0; the caller still
+    re-checks the receipt to determine whether the audit produced a
+    valid PASS/FAIL receipt for this OBPI. Bounded to
+    ``SELF_AUDIT_TIMEOUT_SECONDS`` to prevent the hook hanging.
+    """
+    cmd = _resolve_plan_audit_cmd() + [obpi_id]
+    try:
+        completed = subprocess.run(  # noqa: S603 — controlled argv via env override
+            cmd,
+            cwd=cwd,
+            capture_output=True,
+            text=True,
+            timeout=SELF_AUDIT_TIMEOUT_SECONDS,
+            check=False,
+        )
+    except FileNotFoundError as exc:
+        return False, f"self-audit command not found: {exc}"
+    except subprocess.TimeoutExpired:
+        return False, (f"self-audit timed out after {SELF_AUDIT_TIMEOUT_SECONDS}s")
+
+    output = (completed.stdout + completed.stderr).strip()
+    return completed.returncode == 0, output
+
+
 def check_prior_art_awareness(plan_path: Path) -> str | None:
     """Warn when new-file plans omit evidence of prior-art discovery."""
     try:
@@ -232,14 +283,35 @@ def main() -> None:
     if is_valid:
         sys.exit(0)
 
+    # GHI #191: receipt missing/stale, self-run gz plan audit before blocking.
+    # The first-listed OBPI is the audit target; downstream tests cover
+    # multi-OBPI plans with explicit fixtures.
+    target_obpi = obpi_ids[0]
+    print(
+        f"plan-audit-gate: receipt {reason.lower()}; self-running 'gz plan audit {target_obpi}'...",
+        file=sys.stderr,
+    )
+    self_audit_ok, self_audit_output = attempt_self_audit(target_obpi, cwd)
+    if self_audit_ok:
+        is_valid, reason = check_audit_receipt(plans_dir, obpi_ids, plan_file.stat().st_mtime)
+        if is_valid:
+            print(
+                f"plan-audit-gate: self-audit succeeded ({reason}); allowing ExitPlanMode.",
+                file=sys.stderr,
+            )
+            sys.exit(0)
+
+    self_audit_summary = self_audit_output or "(no output)"
     print(
         f"BLOCKED: Cannot exit plan mode - plan audit required.\n"
         f"\n"
         f"Plan '{plan_file.name}' references: {', '.join(obpi_ids)}\n"
         f"Reason: {reason}\n"
         f"\n"
-        f"REQUIRED: Run the pre-flight alignment audit first:\n"
-        f"  /gz-plan-audit {obpi_ids[0]}\n"
+        f"Self-audit attempt: {self_audit_summary}\n"
+        f"\n"
+        f"REQUIRED: Run the pre-flight alignment audit manually:\n"
+        f"  /gz-plan-audit {target_obpi}\n"
         f"\n"
         f"This verifies ADR <-> OBPI <-> Plan alignment before "
         f"implementation begins.\n",
