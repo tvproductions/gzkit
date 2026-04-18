@@ -3,7 +3,7 @@ id: OBPI-0.0.16-05-status-vocab-mapping
 parent: ADR-0.0.16
 item: 5
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.16-05-status-vocab-mapping: Canonical status-vocabulary mapping
@@ -207,19 +207,36 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+ADR-0.0.16 OBPI-01 landed the frontmatter/ledger drift guard and surfaced 11 distinct status terms in circulation (the 5 the brief anticipated plus 6 additional drift-evidence terms: `Accepted`, `archived`, `Pending-Attestation`, `Pool`, `Promoted`, `Superseded`). OBPI-02 (gate output) and OBPI-03 (chore canonicalization) both need exactly one authoritative term→canon mapping to consume. This OBPI ships that mapping as a typed, immutable constant plus a documented addendum to the state-doctrine, unblocking OBPI-02 and OBPI-03 to proceed in parallel.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+```
+$ uv run python -c "from gzkit.governance.status_vocab import STATUS_VOCAB_MAPPING, canonicalize_status; \
+  print(STATUS_VOCAB_MAPPING['Draft']); \
+  print(canonicalize_status('PENDING-ATTESTATION')); \
+  print(len(STATUS_VOCAB_MAPPING))"
+pending
+completed
+11
+
+$ uv run python -c "from gzkit.governance.status_vocab import STATUS_VOCAB_MAPPING; STATUS_VOCAB_MAPPING['Draft'] = 'x'"
+TypeError: 'mappingproxy' object does not support item assignment
+```
 
 ### Implementation Summary
 
+
 - Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+  - `src/gzkit/governance/__init__.py` (new, sub-package marker)
+  - `src/gzkit/governance/status_vocab.py` (new, 66 lines — exports `STATUS_VOCAB_MAPPING`, `CANONICAL_LEDGER_TERMS`, `canonicalize_status`)
+  - `tests/governance/test_status_vocab.py` (new, 139 lines — 8 `@covers` tests)
+  - `docs/governance/state-doctrine.md` (modified, +33 lines — "Canonical Status Vocabulary (ADR-0.0.16 addendum)" section with 11-row table)
+- Tests added: 8 unit tests in `tests/governance/test_status_vocab.py` covering REQ-01..06 plus immutability (`MappingProxyType` raises `TypeError` on mutation) and doctrine-table sync (every mapping key must appear in the addendum table).
+- Date completed: 2026-04-18
+- Attestation status: attested (human)
+- Defects noted: GHI #187 (seventh instance of the short-form-vs-full-slug defect class) surfaced during Stage 2 of this OBPI; Layer-1 fix landed in commit `ab142962` (`plan_audit_cmd` canonicalizes `obpi_id` via `Ledger.canonicalize_id` + prefix expansion before writing the receipt; `_derive_adr_id` rewritten as regex match on the `OBPI-X.Y.Z-` prefix to handle both short and full slug inputs; 4 new regression tests). Layer-2 Pydantic invariant — reject un-canonicalized writes at model construction to stop the class entirely — deferred to a GHI #187 follow-up OBPI.
 
 ## Tracked Defects
 
@@ -230,14 +247,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `jeff`
+- Attestation: attest completed — Canonical frontmatter→ledger status-vocabulary mapping shipped as data-only OBPI: 11-entry MappingProxyType constant covers the 5 brief-mandated terms plus 6 drift-evidence terms from OBPI-01 with canonical targets from OBPI_RUNTIME_STATES + ADR lifecycle terms, case-insensitive canonicalize_status() helper returning None on unmapped input, state-doctrine.md ADR-0.0.16 addendum section with matching table. 8 @covers tests parity-clean (uncovered_reqs=0); 8/8 pass; lint clean; 12 typecheck diagnostics pre-existing non-OBPI-scoped (same pattern as OBPI-01); docs + mkdocs --strict clean. Parallel-root invariant preserved — no consumer updates, no validator changes, no chore wiring. During this pipeline run fixed GHI #187 (seventh short-form-vs-full-slug instance): commit ab142962 canonicalizes plan_audit_cmd receipts + rewrites _derive_adr_id as regex match, 4 new regression tests. Layer-2 Pydantic invariant to stop the class deferred to GHI #187 follow-up. Unblocks OBPI-0.0.16-02 and OBPI-0.0.16-03 to proceed in parallel. Receipts: lint arb-ruff-7c280033f29746bba7e5b6869e417953; types arb-step-typecheck-2b4d9b0e94c5491281f2db28078af1bb (non-OBPI-scoped); tests arb-step-unittest-ceb3f2cdd27b446fbe9afe1e71a611b2; defect-fix lint arb-ruff-bbb7bcbf97f742c681a38d79f20f1184; defect-fix tests arb-step-unittest-eb158e619111406e825874783b696ec6.
+- Date: 2026-04-18
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-18
 
 **Evidence Hash:** -
