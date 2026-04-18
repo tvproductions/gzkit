@@ -86,7 +86,7 @@ def _render_gate1_frontmatter_drift(errors: list[ValidationError]) -> None:
                 )
             else:
                 console.print(f"      canonical ledger term: [cyan]{canonical}[/cyan]")
-        command = _RECOVERY_COMMANDS.get(field, "gz chore run frontmatter-ledger-coherence")
+        command = _RECOVERY_COMMANDS.get(field, "gz chores run frontmatter-ledger-coherence")
         console.print(f"      → run: [cyan]{command}[/cyan]")
 
 

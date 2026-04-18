@@ -29,7 +29,7 @@ _RECOVERY_COMMANDS: dict[str, str] = {
     "id": "gz register-adrs --all",
     "parent": "gz register-adrs --all",
     "lane": "gz adr promote <ADR-ID> --lane <canonical-lane>",
-    "status": "gz chore run frontmatter-ledger-coherence",
+    "status": "gz chores run frontmatter-ledger-coherence",
 }
 
 
@@ -282,7 +282,7 @@ def _render_frontmatter_explain(errors: list[ValidationError], adr_id: str) -> N
         field = error.field or "?"
         ledger_value = error.ledger_value or "?"
         fm_value = error.frontmatter_value or "?"
-        command = _RECOVERY_COMMANDS.get(field, "gz chore run frontmatter-ledger-coherence")
+        command = _RECOVERY_COMMANDS.get(field, "gz chores run frontmatter-ledger-coherence")
         console.print(
             f"  Field [bold]{field}[/bold]: ledger='{ledger_value}' frontmatter='{fm_value}'"
         )
