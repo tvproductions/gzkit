@@ -1,6 +1,7 @@
 ---
 id: {id}
 status: {status}
+semver: {semver}
 date: {date}
 ---
 
