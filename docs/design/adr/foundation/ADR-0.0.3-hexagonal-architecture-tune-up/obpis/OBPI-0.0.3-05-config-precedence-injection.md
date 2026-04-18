@@ -3,7 +3,7 @@ id: OBPI-0.0.3-05-config-precedence-injection
 parent: ADR-0.0.3-hexagonal-architecture-tune-up
 item: 5
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.0.3-05-config-precedence-injection: Config Precedence & Injection

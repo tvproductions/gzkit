@@ -3,7 +3,7 @@ id: OBPI-0.12.0-03-pipeline-router-and-active-marker-bridge
 parent: ADR-0.12.0-obpi-pipeline-enforcement-parity
 item: 3
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.12.0-03-pipeline-router-and-active-marker-bridge: Pipeline router and active-marker bridge

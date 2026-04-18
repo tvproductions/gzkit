@@ -3,7 +3,7 @@ id: OBPI-0.0.8-04-diagnostics-and-staleness
 parent: ADR-0.0.8-feature-toggle-system
 item: 4
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.0.8-04: Diagnostics and Staleness

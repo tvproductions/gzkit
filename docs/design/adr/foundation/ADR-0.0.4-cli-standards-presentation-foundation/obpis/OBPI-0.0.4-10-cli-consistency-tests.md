@@ -3,7 +3,7 @@ id: OBPI-0.0.4-10-cli-consistency-tests
 parent: ADR-0.0.4-cli-standards-presentation-foundation
 item: 10
 lane: heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.0.4-10: CLI Consistency Tests

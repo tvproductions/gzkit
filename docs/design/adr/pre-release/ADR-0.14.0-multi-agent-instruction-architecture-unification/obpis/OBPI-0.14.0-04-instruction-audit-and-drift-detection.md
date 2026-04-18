@@ -3,7 +3,7 @@ id: OBPI-0.14.0-04-instruction-audit-and-drift-detection
 parent: ADR-0.14.0-multi-agent-instruction-architecture-unification
 item: 4
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.14.0-04-instruction-audit-and-drift-detection: Instruction Audit and Drift Detection

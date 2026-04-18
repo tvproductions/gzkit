@@ -257,7 +257,7 @@ class _EventBase(BaseModel):
         """Serialize with schema_→schema mapping and typed fields flattened."""
         result: dict[str, Any] = {
             "schema": self.schema_,
-            "event": self.event,  # type: ignore[attr-defined]
+            "event": self.event,  # ty: ignore[unresolved-attribute]
             "id": self.id,
             "ts": self.ts,
         }

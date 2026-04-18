@@ -3,7 +3,7 @@ id: OBPI-0.0.9-03-state-repair-command
 parent: ADR-0.0.9-state-doctrine-source-of-truth
 item: 3
 lane: heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.0.9-03: State Repair Command

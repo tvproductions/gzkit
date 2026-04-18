@@ -3,7 +3,7 @@ id: OBPI-0.20.0-03-drift-detection-engine
 parent: ADR-0.20.0-spec-triangle-sync
 item: 3
 lane: Lite
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.20.0-03: Drift Detection Engine

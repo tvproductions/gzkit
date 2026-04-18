@@ -3,7 +3,7 @@ id: OBPI-0.7.0-03-ledger-first-obpi-audit-consumption
 parent: ADR-0.7.0-obpi-first-operations
 item: 3
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.7.0-03-ledger-first-obpi-audit-consumption: Ledger First Obpi Audit Consumption

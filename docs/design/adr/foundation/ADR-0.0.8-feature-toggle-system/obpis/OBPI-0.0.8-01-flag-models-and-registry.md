@@ -3,7 +3,7 @@ id: OBPI-0.0.8-01-flag-models-and-registry
 parent: ADR-0.0.8-feature-toggle-system
 item: 1
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.0.8-01: Flag Models and Registry

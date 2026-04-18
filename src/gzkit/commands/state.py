@@ -50,7 +50,7 @@ def _enrich_obpi_with_tasks(
         parent_adr = info.get("parent", "")
         parent_info = graph.get(parent_adr, {})
         lane = resolve_adr_lane(parent_info, default_mode)
-        counts["tracing_policy"] = "required" if lane == "heavy" else "advisory"  # type: ignore[assignment]
+        counts["tracing_policy"] = "required" if lane == "heavy" else "advisory"  # ty: ignore[invalid-assignment]
         info["task_summary"] = counts
 
 

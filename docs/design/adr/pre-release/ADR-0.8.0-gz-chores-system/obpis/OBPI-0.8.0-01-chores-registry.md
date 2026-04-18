@@ -3,7 +3,7 @@ id: OBPI-0.8.0-01-chores-registry
 parent: ADR-0.8.0-gz-chores-system
 item: 1
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.8.0-01-chores-registry: Chores registry and configuration

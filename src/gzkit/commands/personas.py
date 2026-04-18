@@ -59,8 +59,8 @@ def personas_list_cmd(*, as_json: bool = False) -> None:
         grounding = str(p["grounding"])
         table.add_row(
             str(p["name"]),
-            ", ".join(p["traits"]),  # type: ignore[arg-type]
-            ", ".join(p["anti_traits"]),  # type: ignore[arg-type]
+            ", ".join(p["traits"]),  # ty: ignore[no-matching-overload]
+            ", ".join(p["anti_traits"]),  # ty: ignore[no-matching-overload]
             grounding[:80] + "..." if len(grounding) > 80 else grounding,
         )
     console.print(table)

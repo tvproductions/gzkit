@@ -3,7 +3,7 @@ id: OBPI-0.0.13-05-persona-drift-monitoring
 parent: ADR-0.0.13-portable-persona-control-surface
 item: 5
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.0.13-05-persona-drift-monitoring: Persona Drift Monitoring

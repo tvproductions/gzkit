@@ -3,7 +3,7 @@ id: OBPI-0.18.0-06-wire-implementer-dispatch
 parent: ADR-0.18.0-subagent-driven-pipeline-execution
 item: 6
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.18.0-06: Wire Implementer Dispatch into Stage 2

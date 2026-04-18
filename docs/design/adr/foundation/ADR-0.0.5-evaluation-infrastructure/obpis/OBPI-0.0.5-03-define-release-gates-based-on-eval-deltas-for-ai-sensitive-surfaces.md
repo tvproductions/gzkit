@@ -3,7 +3,7 @@ id: OBPI-0.0.5-03-define-release-gates-based-on-eval-deltas-for-ai-sensitive-sur
 parent: ADR-0.0.5-evaluation-infrastructure
 item: 3
 lane: lite
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.0.5-03: Eval-Delta Release Gates

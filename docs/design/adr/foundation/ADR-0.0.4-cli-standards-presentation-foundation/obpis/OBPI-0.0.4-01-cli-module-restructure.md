@@ -3,7 +3,7 @@ id: OBPI-0.0.4-01-cli-module-restructure
 parent: ADR-0.0.4-cli-standards-presentation-foundation
 item: 1
 lane: heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.0.4-01: CLI Module Restructure

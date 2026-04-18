@@ -46,7 +46,7 @@ class StableArgumentParser(argparse.ArgumentParser):
         kwargs.setdefault("formatter_class", _NoHyphenBreaksFormatter)
         super().__init__(**kwargs)
 
-    def error(self, message: str) -> None:  # type: ignore[override]
+    def error(self, message: str) -> None:  # ty: ignore[invalid-method-override]
         """Print a structured error and exit with code 2."""
         sys.stderr.write(f"BLOCKERS: {self.prog}: error: {message}\n")
         raise SystemExit(2)

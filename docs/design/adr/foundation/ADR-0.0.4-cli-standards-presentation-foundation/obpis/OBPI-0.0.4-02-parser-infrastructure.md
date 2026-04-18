@@ -3,7 +3,7 @@ id: OBPI-0.0.4-02-parser-infrastructure
 parent: ADR-0.0.4-cli-standards-presentation-foundation
 item: 2
 lane: heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.0.4-02: Parser Infrastructure

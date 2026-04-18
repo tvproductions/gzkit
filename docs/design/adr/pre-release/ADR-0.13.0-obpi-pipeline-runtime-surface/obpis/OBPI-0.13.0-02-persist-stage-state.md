@@ -3,7 +3,7 @@ id: OBPI-0.13.0-02-persist-stage-state
 parent: ADR-0.13.0-obpi-pipeline-runtime-surface
 item: 2
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.13.0-02-persist-stage-state: Persist Pipeline Stage State

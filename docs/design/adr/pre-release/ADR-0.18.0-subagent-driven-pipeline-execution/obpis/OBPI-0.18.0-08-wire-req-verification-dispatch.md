@@ -3,7 +3,7 @@ id: OBPI-0.18.0-08-wire-req-verification-dispatch
 parent: ADR-0.18.0-subagent-driven-pipeline-execution
 item: 8
 lane: Heavy
-status: in_progress
+status: attested_completed
 date_completed: 2026-03-21
 ---
 

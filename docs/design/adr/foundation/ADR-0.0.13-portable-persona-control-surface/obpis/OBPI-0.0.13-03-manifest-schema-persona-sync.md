@@ -3,7 +3,7 @@ id: OBPI-0.0.13-03-manifest-schema-persona-sync
 parent: ADR-0.0.13-portable-persona-control-surface
 item: 3
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.0.13-03-manifest-schema-persona-sync: Manifest Schema Persona Sync

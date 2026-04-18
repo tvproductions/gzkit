@@ -153,10 +153,15 @@ Frontmatter `status:` terms in circulation across gzkit (as of ADR-0.0.16 author
 | Pool | pending | Backlog item; no lifecycle events |
 | Promoted | pending | Recently promoted from pool; no events yet |
 | Pending | pending | Direct mirror |
+| in_progress | in_progress | Canonical ledger term written verbatim in frontmatter |
+| In-Progress | in_progress | Operator-facing hyphenated variant |
+| In Progress | in_progress | Operator-facing space-separated variant |
 | Accepted | validated | Historical term for Gate-1 validated |
 | Validated | validated | Direct mirror |
 | Pending-Attestation | completed | Work done, awaiting human attestation |
-| Completed | completed | Direct mirror (may lag `attested_completed` post-ceremony) |
+| Completed | completed | Direct mirror (accepted as a valid specialization when ledger is `attested_completed`) |
+| attested_completed | attested_completed | Canonical ledger term written verbatim in frontmatter post-attestation |
+| Attested | attested_completed | Operator-facing post-attestation term |
 | Superseded | abandoned | Replaced by later decision |
 | archived | abandoned | Retired; no longer active |
 

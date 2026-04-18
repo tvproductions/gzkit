@@ -14,7 +14,7 @@ Feature: gz gates frontmatter integration (ADR-0.0.16 / OBPI-0.0.16-02)
     When I run the gz command "gates --gate 1 --adr ADR-0.1.0"
     Then the command exits with code 3
     And the output contains "status"
-    And the output contains "gz chore run frontmatter-ledger-coherence"
+    And the output contains "gz chores run frontmatter-ledger-coherence"
 
   @REQ-0.0.16-02-04
   Scenario: gz gates rejects the --skip-frontmatter bypass flag

@@ -3,7 +3,7 @@ id: OBPI-0.20.0-02-brief-req-extraction
 parent: ADR-0.20.0-spec-triangle-sync
 item: 2
 lane: Lite
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.20.0-02: Brief REQ Extraction

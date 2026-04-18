@@ -3,7 +3,7 @@ id: OBPI-0.0.12-01-main-session-persona
 parent: ADR-0.0.12-agent-role-persona-profiles
 item: 1
 lane: Lite
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.0.12-01-main-session-persona: Main Session Persona

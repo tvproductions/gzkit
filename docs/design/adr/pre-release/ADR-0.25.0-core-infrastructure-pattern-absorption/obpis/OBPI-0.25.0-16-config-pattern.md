@@ -2,7 +2,7 @@
 id: OBPI-0.25.0-16-config-pattern
 parent: ADR-0.25.0-core-infrastructure-pattern-absorption
 item: 16
-status: in_progress
+status: attested_completed
 lane: heavy
 date: 2026-03-21
 ---

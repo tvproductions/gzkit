@@ -3,7 +3,7 @@ id: OBPI-0.0.6-03-chore-registration-and-enforcement
 parent: ADR-0.0.6-documentation-cross-coverage-enforcement
 item: 3
 lane: heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.0.6-03: Chore Registration and Enforcement

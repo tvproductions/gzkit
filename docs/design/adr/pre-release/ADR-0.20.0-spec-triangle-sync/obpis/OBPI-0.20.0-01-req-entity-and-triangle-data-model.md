@@ -3,7 +3,7 @@ id: OBPI-0.20.0-01-req-entity-and-triangle-data-model
 parent: ADR-0.20.0-spec-triangle-sync
 item: 1
 lane: Lite
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.20.0-01: REQ Entity and Triangle Data Model

@@ -3,7 +3,7 @@ id: OBPI-0.0.8-05-cli-surface
 parent: ADR-0.0.8-feature-toggle-system
 item: 5
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.0.8-05: CLI Surface

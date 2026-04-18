@@ -3,7 +3,7 @@ id: OBPI-0.3.0-04-core-semantics-reconciliation
 parent: ADR-0.3.0-airlineops-canon-reconciliation
 item: 4
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.3.0-04-core-semantics-reconciliation: Core Semantics Reconciliation

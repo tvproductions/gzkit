@@ -3,7 +3,7 @@ id: OBPI-0.0.12-02-implementer-agent-persona
 parent: ADR-0.0.12-agent-role-persona-profiles
 item: 2
 lane: Lite
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.0.12-02-implementer-agent-persona: Implementer Agent Persona

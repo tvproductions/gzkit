@@ -3,7 +3,7 @@ id: OBPI-0.5.0-02-parity-verification-policy
 parent: ADR-0.5.0-skill-lifecycle-governance
 item: 2
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.5.0-02-parity-verification-policy

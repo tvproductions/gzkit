@@ -3,7 +3,7 @@ id: OBPI-0.0.13-06-cross-project-validation
 parent: ADR-0.0.13-portable-persona-control-surface
 item: 6
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.0.13-06-cross-project-validation: Cross Project Validation

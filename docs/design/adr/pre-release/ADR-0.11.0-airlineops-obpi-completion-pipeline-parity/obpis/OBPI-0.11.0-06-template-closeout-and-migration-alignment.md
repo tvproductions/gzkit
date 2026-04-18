@@ -3,7 +3,7 @@ id: OBPI-0.11.0-06-template-closeout-and-migration-alignment
 parent: ADR-0.11.0-airlineops-obpi-completion-pipeline-parity
 item: 6
 lane: Lite
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.11.0-06-template-closeout-and-migration-alignment: Template, closeout, and migration alignment

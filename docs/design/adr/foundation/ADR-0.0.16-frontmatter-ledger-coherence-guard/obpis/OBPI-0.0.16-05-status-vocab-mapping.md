@@ -3,7 +3,7 @@ id: OBPI-0.0.16-05-status-vocab-mapping
 parent: ADR-0.0.16
 item: 5
 lane: Heavy
-status: in_progress
+status: Completed
 ---
 
 # OBPI-0.0.16-05-status-vocab-mapping: Canonical status-vocabulary mapping

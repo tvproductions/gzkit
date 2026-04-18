@@ -3,7 +3,7 @@ id: OBPI-0.14.0-02-native-path-scoped-rules
 parent: ADR-0.14.0-multi-agent-instruction-architecture-unification
 item: 2
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.14.0-02-native-path-scoped-rules: Native Path-Scoped Instruction Surfaces

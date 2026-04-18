@@ -3,7 +3,7 @@ id: OBPI-0.0.8-06-closeout-migration
 parent: ADR-0.0.8-feature-toggle-system
 item: 6
 lane: Lite
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.0.8-06: Closeout Migration

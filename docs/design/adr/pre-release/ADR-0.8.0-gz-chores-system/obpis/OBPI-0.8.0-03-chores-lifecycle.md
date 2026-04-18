@@ -3,7 +3,7 @@ id: OBPI-0.8.0-03-chores-lifecycle
 parent: ADR-0.8.0-gz-chores-system
 item: 3
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.8.0-03-chores-lifecycle: Chores lifecycle (plan, list, audit) and logging

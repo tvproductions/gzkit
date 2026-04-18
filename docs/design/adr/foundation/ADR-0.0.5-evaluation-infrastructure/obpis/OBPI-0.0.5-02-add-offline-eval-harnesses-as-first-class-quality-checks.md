@@ -3,7 +3,7 @@ id: OBPI-0.0.5-02-add-offline-eval-harnesses-as-first-class-quality-checks
 parent: ADR-0.0.5-evaluation-infrastructure
 item: 2
 lane: lite
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.0.5-02: Offline Eval Harnesses

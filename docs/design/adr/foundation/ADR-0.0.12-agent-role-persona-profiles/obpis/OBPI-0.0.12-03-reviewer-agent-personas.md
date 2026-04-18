@@ -3,7 +3,7 @@ id: OBPI-0.0.12-03-reviewer-agent-personas
 parent: ADR-0.0.12-agent-role-persona-profiles
 item: 3
 lane: Lite
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.0.12-03-reviewer-agent-personas: Reviewer Agent Personas

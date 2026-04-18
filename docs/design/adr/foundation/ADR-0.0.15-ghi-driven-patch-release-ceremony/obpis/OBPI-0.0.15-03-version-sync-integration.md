@@ -3,7 +3,7 @@ id: OBPI-0.0.15-03-version-sync-integration
 parent: ADR-0.0.15-ghi-driven-patch-release-ceremony
 item: 3
 lane: Lite
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.0.15-03: Version Sync Integration

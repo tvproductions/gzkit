@@ -3,7 +3,7 @@ id: OBPI-0.0.16-02-gate-integration
 parent: ADR-0.0.16
 item: 2
 lane: Heavy
-status: in_progress
+status: Completed
 ---
 
 # OBPI-0.0.16-02-gate-integration: Gate integration with canonicalization

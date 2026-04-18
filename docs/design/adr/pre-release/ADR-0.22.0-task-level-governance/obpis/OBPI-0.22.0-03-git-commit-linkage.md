@@ -3,7 +3,7 @@ id: OBPI-0.22.0-03-git-commit-linkage
 parent: ADR-0.22.0-task-level-governance
 item: 3
 lane: Lite
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.22.0-03: Git Commit Linkage
