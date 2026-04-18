@@ -260,5 +260,50 @@ class TestFrontmatterGuard(unittest.TestCase):
         )
 
 
+class TestRecoveryCommandsResolveToCli(unittest.TestCase):
+    """Mechanical guard for ``_RECOVERY_COMMANDS`` (GHI #189).
+
+    Each recovery hint printed to operators on frontmatter drift must invoke
+    a registered CLI subcommand. A typo in a hint silently shipped (singular
+    ``gz chore run`` vs. plural ``gz chores run``) because nothing
+    mechanically checked the dict's verbs against the parser. This test
+    closes the class of failure.
+    """
+
+    def _verb_chain(self, hint: str) -> list[str]:
+        """Walk hint tokens after ``gz`` until first placeholder / flag."""
+        import shlex  # noqa: PLC0415
+
+        tokens = shlex.split(hint)
+        if not tokens or tokens[0] != "gz":
+            self.fail(f"Recovery hint must start with 'gz': {hint!r}")
+        chain: list[str] = []
+        for tok in tokens[1:]:
+            if tok.startswith(("<", "-")):
+                break
+            chain.append(tok)
+        return chain
+
+    def test_every_recovery_hint_resolves_to_a_registered_cli_verb(self) -> None:
+        """Every ``_RECOVERY_COMMANDS`` value invokes a registered subcommand."""
+        from gzkit.commands.validate_frontmatter import (
+            _RECOVERY_COMMANDS,  # noqa: PLC0415
+        )
+
+        runner = CliRunner()
+        for field, hint in _RECOVERY_COMMANDS.items():
+            verbs = self._verb_chain(hint)
+            with self.subTest(field=field, hint=hint):
+                result = runner.invoke(main, [*verbs, "--help"])
+                self.assertEqual(
+                    result.exit_code,
+                    0,
+                    msg=(
+                        f"Recovery hint for field '{field}' uses an unregistered "
+                        f"verb chain {verbs!r}. Hint: {hint!r}\nOutput:\n{result.output}"
+                    ),
+                )
+
+
 if __name__ == "__main__":
     unittest.main()

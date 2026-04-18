@@ -98,7 +98,7 @@ class TestGate1FrontmatterIntegration(unittest.TestCase):
             result = runner.invoke(main, ["gates", "--gate", "1", "--adr", "ADR-0.1.0"])
             self.assertEqual(result.exit_code, 3, msg=result.output)
             # status drift → recovery command from _RECOVERY_COMMANDS is named.
-            self.assertIn("gz chore run frontmatter-ledger-coherence", result.output)
+            self.assertIn("gz chores run frontmatter-ledger-coherence", result.output)
 
     @covers("REQ-0.0.16-02-04")
     def test_gates_rejects_skip_frontmatter_bypass_flag(self) -> None:
