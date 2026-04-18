@@ -1,5 +1,121 @@
 # gzkit Release Notes
 
+## v0.25.10 (2026-04-18)
+
+**Constitution scaffolder/validator parity, advisory-rules promotion wave,
+Stage 5 pre-flight, plan-audit hardening, and seven chained hook/validator
+fixes (GHI #187–#216).**
+
+### Fixed
+
+- **#216 — Constitution schema registered; scaffolder emits validator-compatible
+  ids** (GZKIT-BOOTSTRAP-008) — `gz validate --documents` was erroring
+  `Unknown schema: constitution` on every file under `design/constitutions/`
+  because no `gzkit.constitution.v1` schema shipped, and `gz constitute`
+  emitted raw kebab-case ids with no `semver` field. Same class as GHI #186
+  (PRD), one layer up. New `src/gzkit/schemas/constitution.json` with id
+  pattern `^CONSTITUTION-[A-Z0-9]+-\d+\.\d+\.\d+$`; `ConstitutionFrontmatter`
+  Pydantic model; `_canonicalize_constitution_id()` helper mirrors the GHI
+  #186 PRD shape (`rhea-kernel` → `CONSTITUTION-RHEAKERNEL-1.0.0`).
+  Round-trip test locks the scaffolder→validator contract. Reported by RHEA
+  adopter.
+- **#194 — OBPI validator verifies brief-prescribed `gz` commands against the
+  CLI parser** — briefs can no longer ship Verification / Requirements /
+  Acceptance / Evidence sections containing CLI commands that do not resolve
+  against the live parser. Catches singular-vs-plural drift (`gz chore run`
+  vs `gz chores run`) and hallucinated flags at authoring time instead of
+  pipeline runtime.
+- **#192 — Validator skips pool ADRs in `validate_frontmatter`** — `gz
+  validate --frontmatter` now honors the `_is_pool_artifact` contract the
+  chore library already implemented, so 56 pool-ADR false positives no
+  longer green-wash live backfill progress.
+- **#191 — Plan-audit-gate self-runs `gz plan audit` on stale receipts** —
+  removes the ExitPlanMode deadlock where the gate demanded a receipt the
+  operator could not produce without leaving plan mode. Bounded 60s
+  subprocess; overridable via `GZKIT_PLAN_AUDIT_CMD`.
+- **#189 — Validator recovery hint uses plural `gz chores run`** —
+  `_RECOVERY_COMMANDS["status"]` and two fallback defaults corrected from
+  the non-existent singular verb. New `TestRecoveryCommandsResolveToCli`
+  mechanically asserts every recovery command resolves against `gz --help`.
+- **#188 — Plan-audit gate accepts canonical-slug receipts** — 5th patch in
+  the CLI-vs-hook receipt-resolution chain. Hook now globs both short-form
+  and canonical-slug receipt filenames and compares `obpi_id` by short form
+  so mixed-form plan+receipt pairs resolve to the same identity.
+- **#187 — `gz plan audit` canonicalizes `obpi_id` before writing the
+  receipt** — 7th instance of the short-form-vs-full-slug defect class
+  (#41/#60/#61/#79/#108/#114). Fix shape matches GHI #114's `resolve_obpi`
+  repair: canonicalize through `Ledger.canonicalize_id` + prefix expansion
+  before any downstream lookup or write.
+
+### Added
+
+- **#196 — `gz obpi precomplete`: Stage 5 mechanical pre-flight** — new CLI
+  verb runs five checks before `gz obpi complete` (brief readiness,
+  reconcile idempotence, lock held, ARB receipts present, plan-audit
+  receipt valid) with named remediation per failure. Exit 0 = ready;
+  exit 3 = blocker. Wired into `gz-obpi-pipeline` skill as mandatory Stage 5
+  Step 0. Closes the reactive-triage class of failure.
+- **#195 — Defect-fix routing rule with explicit direct-fix vs ceremony
+  thresholds** — `.gzkit/rules/defect-fix-routing.md` documents mechanical
+  criteria (≤10 source lines or ≤2 files, in-flight trigger, prior
+  `fix(…)` precedent in the last 20 commits, unit-testable) for routing a
+  defect to a direct commit rather than a full OBPI ceremony. Closes the
+  class of ceremony over-application surfaced during OBPI-0.0.16-04
+  dogfooding.
+- **#190 — `gz-obpi-specify` pre-save ground-truth check** — skill now
+  prompts authors to verify file paths, config keys, and CLI commands exist
+  before saving the brief. Closes the "LLM priors from adjacent projects"
+  class of brief fabrication surfaced by OBPI-0.0.16-03.
+
+### Governance
+
+- **Advisory → mechanical promotion wave: 10 new `gz validate` scopes + 2
+  pre-commit hook guards** (#202–#215) — the largest agent-discipline →
+  fail-closed conversion since launch. Scorecard: Mechanical 12 → 33
+  (30% → 59%); Promotable 14 → 5.
+
+  New `gz validate` scopes:
+  - `--skill-alignment` (#202, Invariant 1): every CLI verb has a wielding
+    skill.
+  - `--pydantic-models` (#203): `@dataclass` flagged outside waivers;
+    `BaseModel` requires `ConfigDict`.
+  - `--class-size` (#204): classes >300 lines require explicit waiver
+    rationale.
+  - `--version-release` (#205): `pyproject.toml` version must have a
+    matching `vX.Y.Z` tag.
+  - `--utf8-prefix` (#206): regex scan forbids `PYTHONUTF8=1 uv run gz`.
+  - `--pool-adr-isolation` (#208): ledger scan for pool ADRs receiving
+    gate/attestation/lifecycle events.
+  - `--test-tiers` (#209): forbids `tests/integration|e2e|slow|bdd` dirs
+    and `--integration / --e2e / --slow / --bdd-only` flags.
+  - `--behave-req-tags` (#211): feature-level `# @covers REQ-*` comments
+    require matching scenario-level `@REQ-X.Y.Z-NN-MM` tags.
+  - `--advisory-scorecard` (#212, meta): every `.gzkit/rules/*.md` must
+    appear in `docs/governance/advisory-rules-audit.md`.
+  - `--reconcile-freshness` (#213): latest reconcile event within 24h of
+    HEAD (no-op until reconcile events standardize).
+
+  New pre-commit hook guards:
+  - `forbid_manual_ledger_edits` (#207): staged `ledger.jsonl` must be
+    strict append; deletion hunks fail closed.
+  - `forbid_skill_sync_drift` (#210): `.gzkit/skills|rules` edits without
+    their `.claude/` + `.github/` mirrors in the same commit fail closed.
+
+  Also: L3 derived-view inventory under
+  `docs/governance/layer-three-derived-views.md` (#214); agent surfaces
+  updated with a Governance Doctrine Surfaces section pointing at
+  trust-doctrine + advisory scorecard (#215).
+
+### Stats
+
+- 1 adopter-reported quickstart defect closed (GZKIT-BOOTSTRAP-008 → #216)
+- 6 additional fixes across hooks, validators, and the plan-audit chain
+- 3 new features (precomplete CLI verb, defect-fix routing rule, ground-truth skill guidance)
+- 14 advisory rules promoted to mechanical enforcement
+- Full suite: 3155 tests, all green
+
+---
+
 ## v0.25.9 (2026-04-17)
 
 **PRD scaffolder fix, CLI startup perf, and test tier doctrine (GHI #180, #181, #182, #186).**
