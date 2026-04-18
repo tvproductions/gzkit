@@ -2,16 +2,25 @@
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
+from gzkit.cli.helpers.exit_codes import EXIT_POLICY_BREACH, EXIT_USER_ERROR
 from gzkit.commands.common import (
     GzCliError,
     _cli_main,
     console,
     resolve_adr_file,
 )
+from gzkit.commands.validate_frontmatter import (
+    _RECOVERY_COMMANDS,
+    _validate_frontmatter_coherence,
+)
 from gzkit.config import GzkitConfig
+from gzkit.governance.status_vocab import canonicalize_status
 from gzkit.ledger import Ledger, gate_checked_event
+from gzkit.validate import ValidationError
+
+Gate1Result = Literal["pass", "fail", "policy_breach"]
 
 
 def _record_gate_result(
@@ -42,18 +51,88 @@ def _print_command_output(result: Any) -> None:
         console.print(result.stderr)
 
 
-def _run_gate_1(project_root: Path, config: GzkitConfig, ledger: Ledger, adr_id: str) -> bool:
+def _render_gate1_frontmatter_drift(errors: list[ValidationError]) -> None:
+    """Render Gate 1 frontmatter drift listing (OBPI-0.0.16-02).
+
+    Emits one block per drifted field with ledger-vs-frontmatter values, the
+    recovery command from ``_RECOVERY_COMMANDS``, and — for ``status:`` drift —
+    the canonical ledger term via ``STATUS_VOCAB_MAPPING`` (OBPI-0.0.16-05).
+    Unmapped status terms surface on a distinct "unmapped" line rather than
+    silently falling back, per REQ-0.0.16-05-06.
+
+    Migration breadcrumb: when ``gz gates`` is removed in favor of
+    ``gz closeout``, this renderer migrates to ``gz closeout`` Stage 1 (near
+    ``closeout.py`` ADR-existence check) so the frontmatter guard stays
+    mechanical at the operator's daily surface.
+    """
+    drift = [e for e in errors if e.type == "frontmatter"]
+    if not drift:
+        return
+    console.print("  [red]❌[/red] Gate 1 (ADR): [red]FAIL[/red] (frontmatter drift)")
+    for error in drift:
+        field = error.field or "?"
+        ledger_value = error.ledger_value or "?"
+        fm_value = error.frontmatter_value or "?"
+        console.print(
+            f"    Field [bold]{field}[/bold] in {error.artifact}: "
+            f"ledger='{ledger_value}' frontmatter='{fm_value}'"
+        )
+        if field == "status":
+            canonical = canonicalize_status(fm_value)
+            if canonical is None:
+                console.print(
+                    f"      [yellow]unmapped status term[/yellow] '{fm_value}' — "
+                    "add it to STATUS_VOCAB_MAPPING"
+                )
+            else:
+                console.print(f"      canonical ledger term: [cyan]{canonical}[/cyan]")
+        command = _RECOVERY_COMMANDS.get(field, "gz chore run frontmatter-ledger-coherence")
+        console.print(f"      → run: [cyan]{command}[/cyan]")
+
+
+def _run_gate_1(
+    project_root: Path, config: GzkitConfig, ledger: Ledger, adr_id: str
+) -> Gate1Result:
+    """Gate 1: ADR existence AND frontmatter-ledger coherence.
+
+    Returns ``"policy_breach"`` on frontmatter drift so ``gates_cmd`` exits
+    with ``EXIT_POLICY_BREACH`` (3). Returns ``"fail"`` on other Gate 1
+    failures (e.g. ADR missing). Precedence rule: policy-breach exits shadow
+    plain-failure exits within the same run; every gate still renders its
+    output before the exit is raised, and the ledger records both events.
+    """
     try:
         adr_file, _ = resolve_adr_file(project_root, config, adr_id)
-        evidence = str(adr_file.relative_to(project_root))
-        _record_gate_result(ledger, adr_id, 1, "pass", "ADR exists", 0, evidence)
-        console.print(f"  [green]✓[/green] Gate 1 (ADR): [green]PASS[/green] ({evidence})")
     except GzCliError as exc:
         _record_gate_result(ledger, adr_id, 1, "fail", "ADR exists", 1, str(exc))
         console.print(f"  [red]❌[/red] Gate 1 (ADR): [red]FAIL[/red] ({exc})")
-        return False
-    else:
-        return True
+        return "fail"
+
+    evidence = str(adr_file.relative_to(project_root))
+    drift_errors = _validate_frontmatter_coherence(project_root, adr_scope=adr_id)
+    if drift_errors:
+        _render_gate1_frontmatter_drift(drift_errors)
+        drift_evidence = json.dumps(
+            {
+                "artifact": evidence,
+                "drifted_fields": [
+                    {
+                        "field": e.field,
+                        "ledger_value": e.ledger_value,
+                        "frontmatter_value": e.frontmatter_value,
+                        "artifact": e.artifact,
+                    }
+                    for e in drift_errors
+                    if e.type == "frontmatter"
+                ],
+            }
+        )
+        _record_gate_result(ledger, adr_id, 1, "fail", "frontmatter-coherence", 3, drift_evidence)
+        return "policy_breach"
+
+    _record_gate_result(ledger, adr_id, 1, "pass", "ADR exists", 0, evidence)
+    console.print(f"  [green]✓[/green] Gate 1 (ADR): [green]PASS[/green] ({evidence})")
+    return "pass"
 
 
 def _run_gate_2(
@@ -245,6 +324,20 @@ def _run_eval_delta(
     return False
 
 
+def _exit_for_gate_outcomes(policy_breaches: int, failures: int) -> None:
+    """Route final exit code across mixed gate outcomes.
+
+    Policy-breach exits (3) shadow plain-failure exits (1) within one run so
+    ``gz gates`` surfaces the governance violation as the primary signal.
+    Every gate still renders its output before this is raised; the ledger
+    records both events. Only the final exit code is narrowed.
+    """
+    if policy_breaches:
+        raise SystemExit(EXIT_POLICY_BREACH)
+    if failures:
+        raise SystemExit(EXIT_USER_ERROR)
+
+
 def implement_cmd(adr: str | None) -> None:
     """Run Gate 2 (tests) and record results."""
     _m = _cli_main()
@@ -290,6 +383,7 @@ def gates_cmd(gate_number: int | None, adr: str | None) -> None:
     gate_list = [gate_number] if gate_number is not None else list(gates_for_lane)
 
     failures = 0
+    policy_breaches = 0
 
     gate_handlers = {
         1: lambda: _m._run_gate_1(project_root, config, ledger, adr_id),
@@ -320,8 +414,10 @@ def gates_cmd(gate_number: int | None, adr: str | None) -> None:
             _m.console.print(f"Unknown gate: {gate}")
             failures += 1
             continue
-        if not handler():
+        outcome = handler()
+        if outcome == "policy_breach":
+            policy_breaches += 1
+        elif not outcome:
             failures += 1
 
-    if failures:
-        raise SystemExit(1)
+    _exit_for_gate_outcomes(policy_breaches, failures)

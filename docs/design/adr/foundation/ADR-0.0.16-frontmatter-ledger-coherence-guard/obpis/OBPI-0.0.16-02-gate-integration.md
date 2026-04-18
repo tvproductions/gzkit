@@ -3,7 +3,7 @@ id: OBPI-0.0.16-02-gate-integration
 parent: ADR-0.0.16
 item: 2
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.16-02-gate-integration: Gate integration with canonicalization
@@ -173,71 +173,111 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded — parent ADR-0.0.16 line 32 explicitly authorizes OBPI-02 gate integration; brief L20 picks Gate 1 (one of ADR's "Gate 1 or Gate 2" options).
 
 ### Gate 2 (TDD — Red-Green-Refactor)
 
+Red cycle verified first: `test_gate1_blocks_on_status_drift_with_exit_3` and 4 sibling tests failed with the right reason (gate passed when drift should have blocked). Green cycle: implemented `_run_gate_1` + `_render_gate1_frontmatter_drift` + `gates_cmd` routing — all 8 OBPI tests green, then full `unittest -q` green.
+
 ```text
-# Paste test output here
+# OBPI-scoped
+$ uv run gz test --obpi OBPI-0.0.16-02-gate-integration
+Running 8 unit test(s) scoped to OBPI-0.0.16-02-gate-integration...
+OBPI-scoped unit tests passed (8 tests).
+ARB receipt: arb-step-unittest-obpi-150e16e8b78542e986916623f5e630fc
+
+# Full
+$ uv run -m unittest -q
+Ran 3060 tests in 31.705s
+OK
+ARB receipt: arb-step-unittest-full-02bfb1a7c98044d7a8a3f77bf93d92fc
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+$ uv run gz arb ruff src tests
+arb ruff exit_status=0
+ARB receipt: arb-ruff-c56787459f044bebaac79fd88df31ff8
+
+$ uv run gz arb step --name ty -- uvx ty check . --exclude 'features/**'
+All checks passed!
+ARB receipt: arb-step-ty-e68baed0da5b47a9984f9de5e62b7d74
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here when Gate 3 applies
+$ uv run mkdocs build --strict
+INFO    -  Documentation built in 1.92 seconds
+ARB receipt: arb-step-mkdocs-9cab5f669afb4123a9c220c4c058c9d6
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here when Gate 4 applies
+$ uv run gz test --obpi OBPI-0.0.16-02-gate-integration --bdd
+1 feature passed, 0 failed, 18 skipped
+2 scenarios passed, 0 failed, 116 skipped
+12 steps passed, 0 failed, 613 skipped
+OBPI-scoped behave scenarios passed.
+ARB receipt: arb-step-behave-obpi-65357b245a6f4945befd1556454e23a4
 ```
 
 ### Gate 5 (Human)
 
-```text
-# Record attestation text here when required by parent lane
-```
+Awaiting attestation — see "Human Attestation" section below.
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before this OBPI, the `gz validate --frontmatter` validator (OBPI-01) existed but was never invoked during the normal `gz gates` flow — frontmatter drift accumulated silently even though the ADR-0.0.16 state-doctrine says ledger is authoritative. An operator running `gz gates --adr ADR-X.Y.Z` could attest completion while 94.7% of ADR status fields silently disagreed with ledger truth. After this OBPI, Gate 1 mechanically invokes the validator on every `gz gates` run; drift blocks Gate 1 with exit code 3 (policy breach) and the operator sees a per-field listing naming an executable recovery command. The Layer 2 authority rule moves from advisory prose to a gate-blocked check — the first moment in the repository's history where the state-doctrine has a mechanical enforcement surface.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+```text
+$ uv run gz gates --gate 1 --adr ADR-0.1.0   # on a repo with drifted status
+⚠ Deprecated: `gz gates` will be removed in a future release. Use `gz closeout` instead.
+  ❌ Gate 1 (ADR): FAIL (frontmatter drift)
+    Field status in design/adr/ADR-0.1.0.md: ledger='Pending' frontmatter='Completed'
+      canonical ledger term: completed
+      → run: gz chore run frontmatter-ledger-coherence
+$ echo $?
+3
+```
 
 ### Implementation Summary
 
+
 - Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+  - `src/gzkit/commands/gates.py` — `_run_gate_1` widened to tri-state `Gate1Result`; `_render_gate1_frontmatter_drift` added; `_exit_for_gate_outcomes` extracted; `gates_cmd` dispatch now accumulates policy-breach vs failure counters and routes to `EXIT_POLICY_BREACH` (3) vs `EXIT_USER_ERROR` (1) via the existing constants in `src/gzkit/cli/helpers/exit_codes.py`.
+  - `tests/commands/test_gates_frontmatter.py` — new module, 8 `@covers`-decorated tests covering all 6 REQs.
+  - `features/gates.feature` — new, 2 `@REQ-*`-tagged scenarios for Gate 4.
+  - `features/steps/gates_frontmatter_steps.py` — new, single drift-seeding `@given` step.
+  - `docs/user/commands/gates.md` — Gate 1 section added; drift-block example; exit-code table; no-bypass-flag note.
+  - Adjacent coherence fixes in `tests/commands/test_l3_gate_independence.py` and `tests/commands/test_gates.py` — pre-existing tests that relied on `gz plan create`'s template `status: Draft` now strip the field post-planning so they test what they intend (L3 marker independence) rather than default-template content.
+  - Pre-existing ty defect fixed in `scripts/backfill_req_ids.py:246` (null-guard on `re.match().group(1)`) — unblocked the full-repo ty check that the OBPI's ARB receipt requires.
+- Tests added: 8 unit tests + 2 behave scenarios (10 new test entities total; coverage graph shows 6/6 REQ parity).
+- Date completed: 2026-04-18.
+- Attestation status: awaiting human attestation (Heavy lane).
+- Defects noted: 2 deferred (see Tracked Defects below).
 
 ## Tracked Defects
 
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
-
-_No defects tracked._
+- **Gates manpage absent.** No `docs/user/manpages/gates.md` exists today. CLI Doctrine (`.claude/rules/cli.md:87`) prescribes a manpage for heavy-lane subcommand contract changes. Pre-existing state; brief did not scope manpage creation. File `gh issue create --label defect` at ADR closeout.
+- **Deprecation migration.** `gz gates` emits a deprecation notice (`gates.py:275-277`); the frontmatter guard must migrate to `gz closeout` Stage 1 when `gz gates` is removed. Breadcrumb placed in the `_render_gate1_frontmatter_drift` docstring (`gates.py:56-67`).
+- **`gz plan create` template drift.** The ADR/OBPI templates rendered by `gz plan create` emit `status: Draft` frontmatter — Gate 1 correctly flags this as drift against ledger-derived `Pending` because the validator does not apply `STATUS_VOCAB_MAPPING` during comparison. OBPI-04's one-time backfill clears in-repo drift but does not fix the template. File a follow-up GHI at closeout to update the templates (either emit canonical ledger terms or omit `status:` entirely since it is L3 derived state).
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `Jeffry`
+- Attestation: attest completed — Heavy-lane OBPI-0.0.16-02 wires OBPI-01's _validate_frontmatter_coherence into gz gates Gate 1 with policy-breach routing via existing EXIT_POLICY_BREACH constant; gate-local renderer consumes STATUS_VOCAB_MAPPING for canonical-term display and surfaces unmapped status terms on a distinct line rather than silent fallback; _RECOVERY_COMMANDS imported from validate_frontmatter rather than duplicated; closeout-migration breadcrumb in renderer docstring. 8 @covers-decorated unit tests + 2 @REQ-tagged behave scenarios give 6/6 REQ parity via gz covers. Adjacent coherence fixes in test_l3_gate_independence.py and test_gates.py preserve L3-independence assertions under the new Gate 1 contract; pre-existing ty defect in scripts/backfill_req_ids.py:246 closed with a one-line null guard. Receipts: lint arb-ruff-c56787459f044bebaac79fd88df31ff8; types arb-step-ty-e68baed0da5b47a9984f9de5e62b7d74; OBPI-scoped tests arb-step-unittest-obpi-150e16e8b78542e986916623f5e630fc (8/8); full tests arb-step-unittest-full-02bfb1a7c98044d7a8a3f77bf93d92fc (3060/3060); docs arb-step-mkdocs-9cab5f669afb4123a9c220c4c058c9d6; bdd arb-step-behave-obpi-65357b245a6f4945befd1556454e23a4.
+- Date: 2026-04-18
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-18
 
 **Evidence Hash:** -
