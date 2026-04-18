@@ -36,8 +36,112 @@ class TestDeriveAdrId(unittest.TestCase):
         self.assertIsNone(_derive_adr_id("ADR-0.1.0"))
 
     def test_no_item_number(self) -> None:
-        # "OBPI-0.1.0" has no trailing -NN, rsplit produces only one part
+        # "OBPI-0.1.0" has no trailing -NN, derivation should fail cleanly
         self.assertIsNone(_derive_adr_id("OBPI-0.1.0"))
+
+    def test_full_slug_obpi(self) -> None:
+        """@covers GHI #187 — full slug must still resolve to the same ADR."""
+        self.assertEqual(
+            _derive_adr_id("OBPI-0.0.16-05-status-vocab-mapping"),
+            "ADR-0.0.16",
+        )
+
+    def test_full_slug_with_multi_segment_tail(self) -> None:
+        """@covers GHI #187 — multi-hyphen slug tails do not leak into the ADR ID."""
+        self.assertEqual(
+            _derive_adr_id("OBPI-0.14.0-03-implementer-agent-persona"),
+            "ADR-0.14.0",
+        )
+
+
+class TestCanonicalizeObpiId(unittest.TestCase):
+    """@covers GHI #187 — receipt writer must canonicalize short-form input."""
+
+    def test_canonicalization_falls_back_to_input_when_ungraphable(self) -> None:
+        """In a temp project with no ledger, canonicalization returns input unchanged."""
+        from gzkit.commands.plan_audit_cmd import _canonicalize_obpi_id
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            # No .gzkit.json, no ledger — helper must not raise.
+            result = _canonicalize_obpi_id(root, "OBPI-0.1.0-01")
+            self.assertEqual(result, "OBPI-0.1.0-01")
+
+    def test_receipt_uses_canonical_full_slug_when_graph_resolves(self) -> None:
+        """@covers GHI #187 — canonicalizer returns full slug when graph resolves."""
+        from gzkit.commands.plan_audit_cmd import _canonicalize_obpi_id
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / ".gzkit.json").write_text("{}", encoding="utf-8")
+
+            fake_canonical = "OBPI-0.1.0-01-scaffold"
+
+            def _fake_resolve_obpi(
+                project_root: Path,
+                config: object,
+                ledger: object,
+                obpi: str,
+            ) -> tuple[str, None]:
+                return fake_canonical, None
+
+            with patch(
+                "gzkit.commands.common.resolve_obpi",
+                new=_fake_resolve_obpi,
+            ):
+                result = _canonicalize_obpi_id(root, "OBPI-0.1.0-01")
+
+            self.assertEqual(result, fake_canonical)
+
+    def test_plan_audit_cmd_writes_canonical_obpi_id_to_receipt(self) -> None:
+        """@covers GHI #187 — the receipt's obpi_id field is the full slug."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+
+            adr_dir = root / "docs" / "design" / "adr" / "foundation" / "ADR-0.1.0-scaffold"
+            obpis_dir = adr_dir / "obpis"
+            obpis_dir.mkdir(parents=True)
+            brief = obpis_dir / "OBPI-0.1.0-01-scaffold.md"
+            brief.write_text("# Brief\n", encoding="utf-8")
+
+            plans_dir = root / ".claude" / "plans"
+            plans_dir.mkdir(parents=True)
+            plan = plans_dir / "plan.md"
+            plan.write_text("# Plan for OBPI-0.1.0-01-scaffold\n", encoding="utf-8")
+
+            (root / ".gzkit.json").write_text("{}", encoding="utf-8")
+
+            fake_canonical = "OBPI-0.1.0-01-scaffold"
+
+            def _fake_resolve_obpi(
+                project_root: Path,
+                config: object,
+                ledger: object,
+                obpi: str,
+            ) -> tuple[str, None]:
+                return fake_canonical, None
+
+            quiet_console = Console(file=StringIO(), quiet=True)
+            with (
+                patch("gzkit.commands.plan_audit_cmd.console", quiet_console),
+                patch("gzkit.commands.common.get_project_root", return_value=root),
+                patch("gzkit.commands.common.ensure_initialized"),
+                patch("gzkit.commands.common.resolve_obpi", new=_fake_resolve_obpi),
+            ):
+                plan_audit_cmd(obpi_id="OBPI-0.1.0-01", as_json=False)
+
+            receipt_path = plans_dir / f".plan-audit-receipt-{fake_canonical}.json"
+            self.assertTrue(
+                receipt_path.exists(),
+                f"receipt file should be written at the canonical slug path: {receipt_path}",
+            )
+            receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+            self.assertEqual(
+                receipt["obpi_id"],
+                fake_canonical,
+                "receipt obpi_id field must be the full slug — this is the "
+                "invariant that prevents the pipeline-gate short-vs-full mismatch",
+            )
 
 
 class TestFindAdrDir(unittest.TestCase):
