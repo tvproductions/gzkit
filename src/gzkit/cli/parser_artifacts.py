@@ -31,6 +31,7 @@ _LAZY_HANDLERS: dict[str, str] = {
     "obpi_audit_cmd": "gzkit.commands.obpi_audit_cmd",
     "obpi_emit_receipt_cmd": "gzkit.commands.obpi_cmd",
     "obpi_pipeline_cmd": "gzkit.commands.obpi_cmd",
+    "obpi_precomplete_cmd": "gzkit.commands.obpi_precomplete",
     "obpi_validate_cmd": "gzkit.commands.obpi_cmd",
     "obpi_withdraw_cmd": "gzkit.commands.obpi_cmd",
     "obpi_complete_cmd": "gzkit.commands.obpi_complete",
@@ -499,6 +500,28 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
             adr_id=a.adr_id,
             authored=a.authored,
         )
+    )
+
+    p_obpi_precomplete = obpi_commands.add_parser(
+        "precomplete",
+        help="Verify Stage 5 preconditions before invoking 'gz obpi complete'",
+        description=(
+            "Mechanical pre-flight checklist: brief readiness, frontmatter "
+            "idempotence, lock ownership, ARB receipts, plan-audit receipt. "
+            "Each check exits with a named remediation when it fails. Closes "
+            "the reactive-triage class of failure (GHI #196)."
+        ),
+        epilog=build_epilog(
+            [
+                "gz obpi precomplete OBPI-0.1.0-01",
+                "gz obpi precomplete OBPI-0.0.16-04 --json",
+            ]
+        ),
+    )
+    p_obpi_precomplete.add_argument("obpi", help="OBPI identifier (e.g. OBPI-0.0.16-04)")
+    add_json_flag(p_obpi_precomplete)
+    p_obpi_precomplete.set_defaults(
+        func=lambda a: _lazy("obpi_precomplete_cmd")(obpi_id=a.obpi, as_json=a.as_json)
     )
 
     p_obpi_withdraw = obpi_commands.add_parser(
