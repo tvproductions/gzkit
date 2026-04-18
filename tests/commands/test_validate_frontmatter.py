@@ -38,6 +38,21 @@ def _scaffold_obpi(project_root: Path, adr_id: str, obpi_id: str, frontmatter: s
     return path
 
 
+def _scaffold_pool_adr(project_root: Path, adr_id: str, frontmatter: str) -> Path:
+    """Create a pool ADR file under docs/design/adr/pool/.
+
+    Pool ADRs live outside the active ADR tree and have no per-artifact
+    lifecycle. The chore library's ``_is_pool_artifact`` skips them; the
+    validator must agree (GHI #192).
+    """
+    config = GzkitConfig.load(project_root / ".gzkit.json")
+    pool_dir = project_root / config.paths.design_root / "adr" / "pool"
+    pool_dir.mkdir(parents=True, exist_ok=True)
+    path = pool_dir / f"{adr_id}.md"
+    path.write_text(frontmatter, encoding="utf-8")
+    return path
+
+
 class TestFrontmatterGuard(unittest.TestCase):
     """REQ-level acceptance tests for the frontmatter coherence guard."""
 
@@ -258,6 +273,103 @@ class TestFrontmatterGuard(unittest.TestCase):
             1.0,
             f"Frontmatter guard exceeded 1.0s budget (took {elapsed:.2f}s)",
         )
+
+
+class TestPoolAdrSkipParity(unittest.TestCase):
+    """GHI #192: validator must skip pool ADRs in parity with the chore library.
+
+    The chore library ``frontmatter_coherence.py`` skips pool ADRs (and its
+    line-300 source comment names this exact contract: "validator should not
+    emit errors for pool ADRs"). Pool ADRs are an authoring backlog with no
+    per-artifact ledger lifecycle, so frontmatter-vs-ledger comparison is
+    structurally meaningless.
+    """
+
+    def test_pool_adr_with_drift_is_skipped_silently(self) -> None:
+        """Pool ADR with drifted status MUST NOT appear in validator output.
+
+        Pre-fix: validator emits an error for pool ADRs whose frontmatter
+        status disagrees with the ledger's derived 'Pending'. Post-fix: pool
+        ADRs are excluded from the iteration set.
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            root = Path.cwd()
+            ledger = Ledger(root / ".gzkit" / "ledger.jsonl")
+            # Register a pool ADR in the ledger so it appears in the graph
+            # with derived status 'Pending'. Frontmatter says 'Pool', which
+            # before the fix would emit a drift error.
+            ledger.append(adr_created_event("ADR-pool.test-feature", "PRD-TEST-1.0.0", "lite"))
+            _scaffold_pool_adr(
+                root,
+                "ADR-pool.test-feature",
+                "---\nid: ADR-pool.test-feature\nparent: PRD-TEST-1.0.0\n"
+                "lane: lite\nstatus: Pool\n---\n# Pool ADR\n",
+            )
+            result = runner.invoke(main, ["validate", "--frontmatter"])
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            self.assertNotIn("ADR-pool.test-feature", result.output)
+            self.assertNotIn("/adr/pool/", result.output)
+
+    def test_active_adr_drift_still_reported_when_pool_present(self) -> None:
+        """Pool-skip must NOT over-broaden — active ADR drift remains reported.
+
+        Regression guard: the fix filters only pool/ paths and pool ids,
+        leaving the active ADR tree fully validated.
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            root = Path.cwd()
+            ledger = Ledger(root / ".gzkit" / "ledger.jsonl")
+            ledger.append(adr_created_event("ADR-0.1.0", "PRD-TEST-1.0.0", "lite"))
+            ledger.append(adr_created_event("ADR-pool.test-feature", "PRD-TEST-1.0.0", "lite"))
+            # Active ADR with drifted status (lane disagreement)
+            _scaffold_adr(
+                root,
+                "ADR-0.1.0",
+                "---\nid: ADR-0.1.0\nparent: PRD-TEST-1.0.0\nlane: heavy\n---\n# ADR\n",
+            )
+            # Pool ADR with drift — must not be reported (skipped)
+            _scaffold_pool_adr(
+                root,
+                "ADR-pool.test-feature",
+                "---\nid: ADR-pool.test-feature\nparent: PRD-TEST-1.0.0\n"
+                "lane: lite\nstatus: Pool\n---\n# Pool ADR\n",
+            )
+            result = runner.invoke(main, ["validate", "--frontmatter"])
+            self.assertEqual(result.exit_code, 3, msg=result.output)
+            # Active drift IS reported
+            self.assertIn("ADR-0.1.0", result.output)
+            self.assertIn("lane", result.output)
+            # Pool drift IS NOT reported
+            self.assertNotIn("ADR-pool.test-feature", result.output)
+
+    def test_explain_on_pool_adr_emits_pool_aware_message(self) -> None:
+        """`--explain ADR-pool.X` returns exit 0 with an informational pool note.
+
+        Pre-fix: --explain prints "No frontmatter drift detected" which
+        misleads operators (it's not "no drift", it's "out of scope").
+        Post-fix: the renderer detects pool ids and prints an honest line.
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            root = Path.cwd()
+            ledger = Ledger(root / ".gzkit" / "ledger.jsonl")
+            ledger.append(adr_created_event("ADR-pool.test-feature", "PRD-TEST-1.0.0", "lite"))
+            _scaffold_pool_adr(
+                root,
+                "ADR-pool.test-feature",
+                "---\nid: ADR-pool.test-feature\nparent: PRD-TEST-1.0.0\n"
+                "lane: lite\nstatus: Pool\n---\n# Pool ADR\n",
+            )
+            result = runner.invoke(
+                main, ["validate", "--frontmatter", "--explain", "ADR-pool.test-feature"]
+            )
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            self.assertIn("pool", result.output.lower())
 
 
 class TestRecoveryCommandsResolveToCli(unittest.TestCase):
