@@ -3,7 +3,7 @@ id: OBPI-0.17.0-05-manifest-update-and-final-sync
 parent: ADR-0.17.0-agentsmd-tidy-control-surface-schema-and-rules-mir
 item: 5
 lane: heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.17.0-05-manifest-update-and-final-sync: Manifest Update and Final Sync

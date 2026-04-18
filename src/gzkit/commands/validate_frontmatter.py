@@ -17,10 +17,33 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from gzkit.commands.common import console
+from gzkit.governance.status_vocab import canonicalize_status
 from gzkit.validate import ValidationError
 
 if TYPE_CHECKING:
     from gzkit.ledger import Ledger
+
+_STATUS_SUPERSETS: dict[str, frozenset[str]] = {
+    "completed": frozenset({"completed", "attested_completed"}),
+    "attested_completed": frozenset({"attested_completed"}),
+}
+
+
+def _status_matches(fm_status: str, ledger_status: str) -> bool:
+    """Return True when a frontmatter status agrees with the ledger canonical state.
+
+    Uses STATUS_VOCAB_MAPPING to canonicalize the frontmatter term, then treats
+    ``attested_completed`` as a valid specialization of ``completed``. This lets
+    frontmatter say "Completed" while the ledger has advanced to
+    ``attested_completed`` without flagging drift — the frontmatter is less
+    specific, not contradictory.
+    """
+    canon = canonicalize_status(fm_status)
+    if canon is None:
+        return fm_status.lower() == ledger_status.lower()
+    allowed = _STATUS_SUPERSETS.get(canon, frozenset({canon}))
+    return ledger_status.lower() in {s.lower() for s in allowed}
+
 
 _ADR_ID_PATTERN = re.compile(r"^(ADR-[\d.]+)")
 _OBPI_ID_PATTERN = re.compile(r"^(OBPI-\d+\.\d+\.\d+-\d+)")
@@ -109,7 +132,7 @@ def _check_one_artifact(
     fm_status = fm.get("status", "")
     if fm_status:
         ledger_status = derive_status()
-        if ledger_status and fm_status.lower() != ledger_status.lower():
+        if ledger_status and not _status_matches(fm_status, ledger_status):
             errors.append(_field_error(rel_path, "status", ledger_status, fm_status))
 
     return errors

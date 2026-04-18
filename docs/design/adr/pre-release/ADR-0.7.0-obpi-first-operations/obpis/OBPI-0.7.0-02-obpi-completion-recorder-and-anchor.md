@@ -3,7 +3,7 @@ id: OBPI-0.7.0-02-obpi-completion-recorder-and-anchor
 parent: ADR-0.7.0-obpi-first-operations
 item: 2
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.7.0-02-obpi-completion-recorder-and-anchor: Obpi Completion Recorder And Anchor

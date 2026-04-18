@@ -3,7 +3,7 @@ id: OBPI-0.0.9-01-three-layer-model-documentation
 parent: ADR-0.0.9-state-doctrine-source-of-truth
 item: 1
 lane: lite
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.0.9-01: Three-Layer Model and Authority Rules Documentation

@@ -3,7 +3,7 @@ id: OBPI-0.16.0-01-content-type-registry
 parent: ADR-0.16.0-cms-architecture-formalization
 item: 1
 lane: Lite
-status: in_progress
+status: attested_completed
 ---
 
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->

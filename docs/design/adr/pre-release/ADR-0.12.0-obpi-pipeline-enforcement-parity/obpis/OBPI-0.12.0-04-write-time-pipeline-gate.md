@@ -3,7 +3,7 @@ id: OBPI-0.12.0-04-write-time-pipeline-gate
 parent: ADR-0.12.0-obpi-pipeline-enforcement-parity
 item: 4
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.12.0-04-write-time-pipeline-gate: Write-time pipeline gate

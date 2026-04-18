@@ -3,7 +3,7 @@ id: OBPI-0.15.0-02-content-type-frontmatter-models
 parent: ADR-0.15.0-pydantic-schema-enforcement
 item: 2
 lane: Lite
-status: in_progress
+status: attested_completed
 ---
 
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->

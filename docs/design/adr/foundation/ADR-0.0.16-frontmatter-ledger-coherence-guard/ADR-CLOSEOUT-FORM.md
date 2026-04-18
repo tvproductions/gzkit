@@ -1,6 +1,6 @@
-# ADR Closeout Form: ADR-0.0.16-frontmatter-ledger-coherence-guard
+# ADR Closeout Form: ADR-0.0.16
 
-**Status**: Phase 1 — Authored
+**Status**: Phase 2 — Completed
 
 ---
 
@@ -8,11 +8,11 @@
 
 Closeout evidence verified:
 
-- [ ] All checklist items in ADR are complete
-- [ ] All OBPIs have passing acceptance criteria
-- [ ] Gate 2 (TDD): Tests pass
-- [ ] Gate 3 (Docs): Docs build passes
-- [ ] Gate 4 (BDD): Behave suite passes
+- [x] All checklist items in ADR are complete
+- [x] All OBPIs have passing acceptance criteria
+- [x] Gate 2 (TDD): Tests pass
+- [x] Gate 3 (Docs): Docs build passes
+- [x] Gate 4 (BDD): Behave suite passes
 - [ ] Code reviewed
 
 ## Evidence Paths
@@ -21,47 +21,48 @@ Closeout evidence verified:
 |------|----------|--------------|
 | Gate 1 | ADR exists | `docs/design/adr/foundation/ADR-0.0.16-frontmatter-ledger-coherence-guard/ADR-0.0.16-frontmatter-ledger-coherence-guard.md` |
 | Gate 2 (TDD) | Tests pass | `uv run gz test` |
-| Gate 3 (Docs) | Docs build passes | `uv run mkdocs build --strict` |
-| Gate 4 (BDD) | Behave suite passes | `uv run gz behave` |
 | Quality (Lint) | Lint passes | `uv run gz lint` |
 | Quality (Typecheck) | Typecheck passes | `uv run gz typecheck` |
-| Gate 5 | Human attests | `uv run gz closeout ADR-0.0.16-frontmatter-ledger-coherence-guard` |
+| Gate 3 (Docs) | Docs build | `uv run mkdocs build --strict` |
+| Gate 4 (BDD) | BDD passes | `uv run -m behave features/` |
+| Gate 5 | Human attests | `uv run gz closeout ADR-0.0.16` |
 
 ## OBPI Status
 
 | OBPI | Description | Status |
 |------|-------------|--------|
-| OBPI-0.0.16-01-validate-frontmatter-guard | `gz validate --frontmatter` guard function | Pending |
-| OBPI-0.0.16-02-gate-integration | Wire guard into `gz gates`, consume OBPI-05 vocab in error output | Pending |
-| OBPI-0.0.16-03-chore-registration | `frontmatter-ledger-coherence` chore with ledger-wins reconciliation | Pending |
-| OBPI-0.0.16-04-backfill-and-ghi-closure | One-time backfill run + close GHI #162/#167/#168/#169/#170 | Awaiting Attestation |
-| OBPI-0.0.16-05-status-vocab-mapping | Canonical status-vocabulary addendum to ADR-0.0.9 + typed constant | Pending |
+| [OBPI-0.0.16-01-validate-frontmatter-guard](OBPI-0.0.16-01-validate-frontmatter-guard.md) | gz validate --frontmatter guard | Completed |
+| [OBPI-0.0.16-02-gate-integration](OBPI-0.0.16-02-gate-integration.md) | Gate integration with canonicalization | Completed |
+| [OBPI-0.0.16-03-chore-registration](OBPI-0.0.16-03-chore-registration.md) | Chore registration and reconciliation | Completed |
+| [OBPI-0.0.16-04-backfill-and-ghi-closure](OBPI-0.0.16-04-backfill-and-ghi-closure.md) | One-time backfill and GHI closure | Completed |
+| [OBPI-0.0.16-05-status-vocab-mapping](OBPI-0.0.16-05-status-vocab-mapping.md) | Canonical status-vocabulary mapping | Completed |
 
 ## Defense Brief
 
 ### Closing Arguments
 
-*Authored; awaiting OBPI implementation evidence.*
+*No closing arguments found.*
 
 ### Product Proof
 
 | OBPI | Proof Type | Status |
 |------|-----------|--------|
-| OBPI-0.0.16-01-validate-frontmatter-guard | command_doc + tests | PENDING |
-| OBPI-0.0.16-02-gate-integration | integration_test + docs | PENDING |
-| OBPI-0.0.16-03-chore-registration | config_file + receipt_sample | PENDING |
-| OBPI-0.0.16-04-backfill-and-ghi-closure | reconciliation_receipt + issue_closures | EVIDENCE |
-| OBPI-0.0.16-05-status-vocab-mapping | typed_constant + doc_addendum | PENDING |
+| OBPI-0.0.16-01-validate-frontmatter-guard | command_doc | FOUND |
+| OBPI-0.0.16-02-gate-integration | command_doc | FOUND |
+| OBPI-0.0.16-03-chore-registration | command_doc | FOUND |
+| OBPI-0.0.16-04-backfill-and-ghi-closure | test_evidence | FOUND |
+| OBPI-0.0.16-05-status-vocab-mapping | docstring | FOUND |
 
 ### Reviewer Assessment
 
-*Pending post-implementation review.*
+*No reviewer assessments found.*
+
 
 ## Human Attestation
 
 ### Verbatim Attestation
 
-*Pending.*
+- `completed`
 
-**Attested by**: *Pending*
-**Timestamp (UTC)**: *Pending*
+**Attested by**: Jeffry
+**Timestamp (UTC)**: 2026-04-18T11:44:51Z

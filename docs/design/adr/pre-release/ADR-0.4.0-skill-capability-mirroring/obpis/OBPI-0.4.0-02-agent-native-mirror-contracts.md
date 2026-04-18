@@ -3,7 +3,7 @@ id: OBPI-0.4.0-02-agent-native-mirror-contracts
 parent: ADR-0.4.0-skill-capability-mirroring
 item: 2
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.4.0-02-agent-native-mirror-contracts

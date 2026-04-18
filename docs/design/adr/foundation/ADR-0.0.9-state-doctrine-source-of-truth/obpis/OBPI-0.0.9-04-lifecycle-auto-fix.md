@@ -3,7 +3,7 @@ id: OBPI-0.0.9-04-lifecycle-auto-fix
 parent: ADR-0.0.9-state-doctrine-source-of-truth
 item: 4
 lane: lite
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.0.9-04: Lifecycle Auto-Fix

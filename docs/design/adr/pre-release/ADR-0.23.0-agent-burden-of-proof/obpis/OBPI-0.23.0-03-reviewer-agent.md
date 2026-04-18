@@ -3,7 +3,7 @@ id: OBPI-0.23.0-03-reviewer-agent
 parent: ADR-0.23.0-agent-burden-of-proof
 item: 3
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
 

@@ -3,7 +3,7 @@ id: OBPI-0.4.0-04-mirror-compat-migration
 parent: ADR-0.4.0-skill-capability-mirroring
 item: 4
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.4.0-04-mirror-compat-migration

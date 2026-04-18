@@ -3,7 +3,7 @@ id: OBPI-0.22.0-04-gz-task-cli
 parent: ADR-0.22.0-task-level-governance
 item: 4
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.22.0-04: gz task CLI

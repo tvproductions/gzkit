@@ -126,8 +126,8 @@ def _handle_assignment(stmt: ast.Assign, state: _ParserState) -> None:
 
     target_name = stmt.targets[0].id
     call = stmt.value
-    attr = call.func.attr  # type: ignore[union-attr]
-    obj = call.func.value  # type: ignore[union-attr]
+    attr = call.func.attr  # ty: ignore[unresolved-attribute]
+    obj = call.func.value  # ty: ignore[unresolved-attribute]
     if not isinstance(obj, ast.Name):
         return
     obj_name = obj.id

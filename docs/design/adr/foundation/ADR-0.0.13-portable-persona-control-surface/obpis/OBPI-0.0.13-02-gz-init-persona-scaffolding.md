@@ -3,7 +3,7 @@ id: OBPI-0.0.13-02-gz-init-persona-scaffolding
 parent: ADR-0.0.13-portable-persona-control-surface
 item: 2
 lane: Lite
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.0.13-02-gz-init-persona-scaffolding: Gz Init Persona Scaffolding

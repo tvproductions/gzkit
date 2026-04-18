@@ -3,7 +3,7 @@ id: OBPI-0.0.10-02-identity-surfaces
 parent: ADR-0.0.10-storage-tiers-simplicity-profile
 item: 2
 lane: lite
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.0.10-02: Identity Surfaces

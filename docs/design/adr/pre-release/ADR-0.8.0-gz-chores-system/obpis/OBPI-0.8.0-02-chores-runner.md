@@ -3,7 +3,7 @@ id: OBPI-0.8.0-02-chores-runner
 parent: ADR-0.8.0-gz-chores-system
 item: 2
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.8.0-02-chores-runner: Chores runner and execution engine

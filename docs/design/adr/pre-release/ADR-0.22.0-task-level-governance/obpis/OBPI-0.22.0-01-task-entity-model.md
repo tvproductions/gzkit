@@ -3,7 +3,7 @@ id: OBPI-0.22.0-01-task-entity-model
 parent: ADR-0.22.0-task-level-governance
 item: 1
 lane: Lite
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.22.0-01: TASK Entity Model

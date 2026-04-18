@@ -3,7 +3,7 @@ id: OBPI-0.15.0-03-ledger-event-discrimination
 parent: ADR-0.15.0-pydantic-schema-enforcement
 item: 3
 lane: Lite
-status: in_progress
+status: attested_completed
 ---
 
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
