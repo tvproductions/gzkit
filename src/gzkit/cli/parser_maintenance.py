@@ -350,6 +350,36 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         action="store_true",
         help="Validate version consistency across all locations",
     )
+    p_validate.add_argument(
+        "--type-ignores",
+        dest="check_type_ignores",
+        action="store_true",
+        help="Fail on `# type: ignore[<code>]` under src/ (ty-unhonored)",
+    )
+    p_validate.add_argument(
+        "--cli-alignment",
+        dest="check_cli_alignment",
+        action="store_true",
+        help="Every `gz <verb>` in features/operator-docs must resolve",
+    )
+    p_validate.add_argument(
+        "--event-handlers",
+        dest="check_event_handlers",
+        action="store_true",
+        help="Every ledger event type must be claimed by a graph handler",
+    )
+    p_validate.add_argument(
+        "--validator-fields",
+        dest="check_validator_fields",
+        action="store_true",
+        help="Every validator info.get(field) must have a graph writer",
+    )
+    p_validate.add_argument(
+        "--audits",
+        dest="check_audits",
+        action="store_true",
+        help="Run all four trust-doctrine pattern audits",
+    )
     add_json_flag(p_validate)
     p_validate.set_defaults(
         func=lambda a: _lazy("validate")(
@@ -366,6 +396,10 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_commit_trailers=a.check_commit_trailers,
             check_frontmatter=a.check_frontmatter,
             check_version=a.check_version,
+            check_type_ignores=a.check_type_ignores or a.check_audits,
+            check_cli_alignment=a.check_cli_alignment or a.check_audits,
+            check_event_handlers=a.check_event_handlers or a.check_audits,
+            check_validator_fields=a.check_validator_fields or a.check_audits,
             as_json=a.as_json,
             frontmatter_adr=a.frontmatter_adr,
             frontmatter_explain=a.frontmatter_explain,
