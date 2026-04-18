@@ -216,3 +216,30 @@ class TestSyncCommand(unittest.TestCase):
             self.assertEqual(first.exit_code, 0)
             self.assertEqual(second.exit_code, 0)
             self.assertEqual(first.output, second.output)
+
+
+class TestBuildSyncCommitMessage(unittest.TestCase):
+    """_build_sync_commit_message carries a Ceremony trailer (GHI #201)."""
+
+    def test_empty_sync_carries_ceremony_trailer(self) -> None:
+        from gzkit.commands.sync import _build_sync_commit_message  # noqa: PLC0415
+
+        msg = _build_sync_commit_message([])
+        self.assertIn("Ceremony: gz-git-sync", msg)
+
+    def test_src_touching_sync_carries_ceremony_trailer(self) -> None:
+        from gzkit.commands.sync import _build_sync_commit_message  # noqa: PLC0415
+
+        msg = _build_sync_commit_message(["src/gzkit/commands/foo.py", "tests/test_foo.py"])
+        self.assertIn("Ceremony: gz-git-sync", msg)
+        # Trailer must be separated from the subject by a blank line so
+        # git parses it as a trailer.
+        self.assertIn("\n\nCeremony: gz-git-sync", msg)
+
+    def test_ceremony_trailer_satisfies_parse_ceremony_trailers(self) -> None:
+        """End-to-end: the emitted message parses as a valid ceremony trailer."""
+        from gzkit.commands.sync import _build_sync_commit_message  # noqa: PLC0415
+        from gzkit.tasks import parse_ceremony_trailers  # noqa: PLC0415
+
+        msg = _build_sync_commit_message(["src/gzkit/commands/foo.py"])
+        self.assertEqual(parse_ceremony_trailers(msg), ["gz-git-sync"])
