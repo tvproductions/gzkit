@@ -3336,3 +3336,5 @@
 {"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.0.18-03-pool-curation-policy","ts":"2026-04-18T14:37:14.268650+00:00","parent":"ADR-0.0.18-adr-taxonomy-doctrine"}
 {"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.0.18-04-epic-grouping","ts":"2026-04-18T14:37:14.281509+00:00","parent":"ADR-0.0.18-adr-taxonomy-doctrine"}
 {"schema":"gzkit.ledger.v1","event":"obpi_created","id":"OBPI-0.0.18-05-skill-prompt-enrichment","ts":"2026-04-18T14:37:14.291328+00:00","parent":"ADR-0.0.18-adr-taxonomy-doctrine"}
+{"schema":"gzkit.ledger.v1","event":"artifact_renamed","id":"ADR-0.0.16","ts":"2026-04-18T16:16:56.624904+00:00","new_id":"ADR-0.0.16-frontmatter-ledger-coherence-guard","reason":"semver_minor_sequence_migration"}
+{"schema":"gzkit.ledger.v1","event":"artifact_renamed","id":"ADR-0.41.0","ts":"2026-04-18T16:16:56.627626+00:00","new_id":"ADR-0.41.0-tdd-emission-and-graph-rot-remediation","reason":"semver_minor_sequence_migration"}
