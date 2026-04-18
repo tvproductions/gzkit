@@ -497,6 +497,14 @@ uv run gz chores run <slug>                # Execute and log one chore
 uv run gz chores audit --all               # Audit log presence for all chores
 ```
 
+Frontmatter-ledger reconciliation (ADR-0.0.16 OBPI-03):
+
+```bash
+uv run gz frontmatter reconcile --dry-run  # Preview ledger-wins rewrites
+uv run gz frontmatter reconcile            # Apply rewrites; emit receipt under artifacts/receipts/frontmatter-coherence/
+uv run gz frontmatter reconcile --json     # Receipt JSON to stdout
+```
+
 Maintenance gate commands:
 
 ```bash
