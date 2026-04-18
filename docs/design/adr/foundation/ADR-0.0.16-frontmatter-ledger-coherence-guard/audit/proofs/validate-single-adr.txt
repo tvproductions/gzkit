@@ -1,0 +1,4 @@
+Validated: manifest, surfaces, ledger, instructions, briefs, documents, 
+personas, version
+
+✓ All validations passed (8 scopes).

@@ -51,10 +51,10 @@ Execute the OBPI-03 chore once against the live repo to clear the current 94.7% 
      These are the rules agents ground against. If not met, OBPI fails. -->
 
 1. REQUIREMENT: Prerequisites — OBPI-0.0.16-01 (validator), OBPI-0.0.16-02 (gate wiring), OBPI-0.0.16-03 (chore), and OBPI-0.0.16-05 (status-vocab mapping) MUST all be completed before this OBPI starts. STOP-on-BLOCKERS if any prerequisite is Pending.
-2. REQUIREMENT: ALWAYS run `gz chore run frontmatter-ledger-coherence --dry-run` FIRST, paste the dry-run receipt summary into this OBPI's Evidence section, and obtain operator sign-off on the list of files-to-be-rewritten before the non-dry-run invocation.
-3. REQUIREMENT: After operator sign-off, run `gz chore run frontmatter-ledger-coherence` once. The receipt path (`artifacts/receipts/frontmatter-coherence/<ISO8601>.json`) is recorded in this OBPI's Evidence section and in the ADR's Evidence section.
+2. REQUIREMENT: ALWAYS run `gz frontmatter reconcile --dry-run` FIRST, paste the dry-run receipt summary into this OBPI's Evidence section, and obtain operator sign-off on the list of files-to-be-rewritten before the non-dry-run invocation.
+3. REQUIREMENT: After operator sign-off, run `gz frontmatter reconcile` once. The receipt path (`artifacts/receipts/frontmatter-coherence/<ISO8601>.json`) is recorded in this OBPI's Evidence section and in the ADR's Evidence section.
 4. REQUIREMENT: After the run, `gz validate --frontmatter` on the full repo MUST exit 0 (no residual drift). If it exits 3, STOP and triage — do NOT hand-edit remaining drift; fix the chore.
-5. REQUIREMENT: A second `gz chore run frontmatter-ledger-coherence --dry-run` invocation MUST produce an empty-receipt (idempotence check against the live repo).
+5. REQUIREMENT: A second `gz frontmatter reconcile --dry-run` invocation MUST produce an empty-receipt (idempotence check against the live repo).
 6. REQUIREMENT: Close each of the following GHIs via `gh issue close <N> --comment "..."`. The comment text MUST include: the ADR ID (`ADR-0.0.16`), the receipt path from step 3, and a one-line statement of how the guard+chore closes the issue:
    - GHI #162 (ADR frontmatter status: systemically stale — 94.7% drift rate) — closed by backfill receipt.
    - GHI #167 (umbrella: no guard gate or chore audit validates derived frontmatter) — closed by guard (OBPI-01) + gate (OBPI-02) + chore (OBPI-03).
@@ -153,10 +153,10 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
 - [ ] REQ-0.0.16-04-01: Given all three prerequisite OBPIs are Completed, when OBPI-04 begins, then validator/gate/chore are all runnable end-to-end.
-- [ ] REQ-0.0.16-04-02: Given `gz chore run frontmatter-ledger-coherence --dry-run` has been executed, when its receipt is reviewed, then the Evidence section of this brief cites the receipt path and a summary of the files it proposes to rewrite.
-- [ ] REQ-0.0.16-04-03: Given operator sign-off on the dry-run plan, when `gz chore run frontmatter-ledger-coherence` executes once, then the live receipt appears under `artifacts/receipts/frontmatter-coherence/<ISO8601>.json` and is cited in both this OBPI's and the ADR's Evidence sections.
+- [ ] REQ-0.0.16-04-02: Given `gz frontmatter reconcile --dry-run` has been executed, when its receipt is reviewed, then the Evidence section of this brief cites the receipt path and a summary of the files it proposes to rewrite.
+- [ ] REQ-0.0.16-04-03: Given operator sign-off on the dry-run plan, when `gz frontmatter reconcile` executes once, then the live receipt appears under `artifacts/receipts/frontmatter-coherence/<ISO8601>.json` and is cited in both this OBPI's and the ADR's Evidence sections.
 - [ ] REQ-0.0.16-04-04: Given the live backfill has completed, when `gz validate --frontmatter` runs against the full repo, then exit code is 0 and no drift is reported.
-- [ ] REQ-0.0.16-04-05: Given the backfill has completed, when `gz chore run frontmatter-ledger-coherence --dry-run` runs a second time, then the receipt's `files_rewritten` list is empty (idempotence verified).
+- [ ] REQ-0.0.16-04-05: Given the backfill has completed, when `gz frontmatter reconcile --dry-run` runs a second time, then the receipt's `files_rewritten` list is empty (idempotence verified).
 - [ ] REQ-0.0.16-04-06: Given the five target GHIs (#162, #167, #168, #169, #170), when each is closed via `gh issue close`, then each closure comment cites `ADR-0.0.16` and the live-run receipt path.
 - [ ] REQ-0.0.16-04-07: Given the ADR Evidence section, when it is read at closeout, then it contains: dry-run receipt path, live-run receipt path, five GH issue numbers with closure timestamps, and the post-run `gz validate --frontmatter` exit code.
 

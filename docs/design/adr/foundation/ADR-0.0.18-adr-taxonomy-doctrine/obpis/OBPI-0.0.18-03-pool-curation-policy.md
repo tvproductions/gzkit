@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.18-03-pool-curation-policy
-parent: ADR-0.0.18
+parent: ADR-0.0.18-adr-taxonomy-doctrine
 item: 3
 lane: Lite
 status: Draft
