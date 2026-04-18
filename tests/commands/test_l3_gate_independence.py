@@ -16,8 +16,21 @@ from tests.commands.common import CliRunner, _quick_init
 
 
 def _plan_adr(runner: CliRunner) -> None:
-    """Invoke gz plan to register an ADR so gate 1 has an L1 artifact to find."""
+    """Invoke gz plan to register an ADR so gate 1 has an L1 artifact to find.
+
+    After planning, strips the template's ``status: Draft`` frontmatter field
+    so Gate 1's frontmatter-coherence check (OBPI-0.0.16-02) does not flag
+    legitimate template drift here — these tests isolate L3 marker
+    independence, not default-template frontmatter content.
+    """
     runner.invoke(main, ["plan", "create", "0.1.0"])
+    adr_path = Path("design/adr/ADR-0.1.0.md")
+    if adr_path.is_file():
+        content = adr_path.read_text(encoding="utf-8")
+        stripped = "\n".join(
+            line for line in content.splitlines() if not line.strip().startswith("status:")
+        )
+        adr_path.write_text(stripped + "\n", encoding="utf-8")
 
 
 class TestGate1WithoutMarkersDirectory(unittest.TestCase):

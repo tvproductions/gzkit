@@ -28,6 +28,21 @@ Source: `AGENTS.md` § Prime Directive
 | 5 | Flag defects, never excuse them | Rationalizing failures as "pre-existing" or "template drift" |
 | 6 | Every defect must be trackable | Noticing a defect, fixing nothing, filing nothing |
 
+### Scope boundary for Invariants 2 and 4
+
+Invariants 2 ("complete all work fully — including adjacent files") and 4 ("scope expansion is not scope creep") are about **defects discovered in flight** — a broken adjacent file, a stale doc example, a drifted manpage that your code change has just invalidated. They license expanding scope to close the defect, or to file it as a GHI when close-in-scope is infeasible.
+
+They do **not** license:
+
+- Tangential refactors of adjacent code that is not broken ("while I'm here, let me clean this up")
+- Style improvements to match your personal preference when existing code is consistent with the ruff/ty/`pythonic.md` contract
+- Speculative abstraction extraction from files you happen to have open
+- Deleting pre-existing dead code unrelated to the defect you found
+
+The test for whether an adjacent-file edit is covered by Invariants 2/4: **did your primary change break this, or is it independently broken and you just noticed?** If yes to either, Invariants 2/4 apply — fix or file. If neither — if the file is merely *imperfect by your taste* — leave it alone. Every changed line should trace to either the user's request or to a defect the change surfaced.
+
+This reconciles Invariants 2/4 with the surgical-changes discipline that governs adjacent untouched code. The covenant is: own every defect that falls in your path; touch nothing that does not.
+
 ## Craftsmanship — DO IT RIGHT
 
 Source: `AGENTS.md` § DO IT RIGHT (Craftsmanship Maxim)
@@ -56,6 +71,7 @@ Source: `AGENTS.md` § Behavior Rules
 | 8 | Follow the gate covenant (Lite: 1-2; Heavy: 1-5) | Shipping without running gates, or skipping Gate 5 attestation |
 | 9 | Record governance events via CLI, never manually | Editing `ledger.jsonl` directly or skipping event emission |
 | 10 | Preserve human intent across context boundaries | Drifting from the brief's requirements during long sessions |
+| 10a | When a skill step names a tool to invoke, invoke it in the same turn | Ending the turn with "Required next step: enter plan mode" instead of calling `EnterPlanMode`; treating "STOP" in a skill as "end your turn" rather than "stop making source edits and redirect to the named tool" |
 
 ## Judgment
 
