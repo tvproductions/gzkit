@@ -195,6 +195,37 @@ def parse_task_trailers(commit_message: str) -> list[TaskId]:
     return results
 
 
+_CEREMONY_TRAILER_RE = re.compile(r"^Ceremony:\s*(?P<value>\S+)\s*$")
+
+
+def parse_ceremony_trailers(commit_message: str) -> list[str]:
+    """Extract ``Ceremony: <value>`` markers from a commit's trailer block.
+
+    Ceremony trailers satisfy the ``--commit-trailers`` governance-intent
+    check for chore/sync commits that are not scoped to a single TASK
+    (e.g. ``gz git-sync`` auto-commits bundling multi-OBPI reconcile work).
+    The value names the governing ceremony (``gz-git-sync``,
+    ``adr-closeout``, ``obpi-reconcile``) so audits can still trace the
+    code change back to governance intent even without a TASK id.
+    """
+    lines = commit_message.rstrip("\n").split("\n")
+    trailer_start = len(lines)
+    for i in range(len(lines) - 1, -1, -1):
+        line = lines[i]
+        if not line.strip():
+            break
+        if re.match(r"^[\w-]+:\s", line):
+            trailer_start = i
+        else:
+            trailer_start = len(lines)
+            break
+    return [
+        m.group("value")
+        for line in lines[trailer_start:]
+        if (m := _CEREMONY_TRAILER_RE.match(line))
+    ]
+
+
 def resolve_task_chain(task_id: TaskId) -> dict[str, str]:
     """Resolve the four-tier traceability chain from a TASK identifier.
 

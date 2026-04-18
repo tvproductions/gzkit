@@ -243,6 +243,31 @@ Do the thing.
             result = runner.invoke(main, ["validate", "--commit-trailers"])
             self.assertEqual(result.exit_code, 0)
 
+    def test_validate_commit_trailers_accepts_ceremony_trailer(self) -> None:
+        """HEAD commit with ``Ceremony: gz-git-sync`` trailer passes (GHI #201)."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            project_root = Path.cwd()
+            _init_git_repo(project_root)
+            src_file = project_root / "src" / "mypkg" / "module.py"
+            src_file.parent.mkdir(parents=True, exist_ok=True)
+            src_file.write_text("x = 1\n", encoding="utf-8")
+            subprocess.run(["git", "add", "src"], cwd=project_root, check=True, capture_output=True)
+            subprocess.run(
+                [
+                    "git",
+                    "commit",
+                    "-m",
+                    "chore: update src/mypkg (gz git-sync)\n\nCeremony: gz-git-sync",
+                ],
+                cwd=project_root,
+                check=True,
+                capture_output=True,
+            )
+            result = runner.invoke(main, ["validate", "--commit-trailers"])
+            self.assertEqual(result.exit_code, 0)
+
     def test_validate_commit_trailers_skips_non_code_commits(self) -> None:
         """HEAD commit touching only docs/ does not require a Task: trailer."""
         runner = CliRunner()

@@ -13,7 +13,7 @@ from gzkit.commands.validate_frontmatter import (
 from gzkit.commands.version_sync import validate_version_consistency
 from gzkit.instruction_audit import audit_instructions
 from gzkit.models.persona import discover_persona_files, validate_persona_structure
-from gzkit.tasks import parse_task_trailers
+from gzkit.tasks import parse_ceremony_trailers, parse_task_trailers
 from gzkit.validate import (
     ValidationError,
     validate_document,
@@ -134,7 +134,7 @@ def _validate_commit_trailers(project_root: Path) -> list[ValidationError]:
     code_files = [f for f in files if f.startswith(_CODE_PATH_PREFIXES)]
     if not code_files:
         return []
-    if parse_task_trailers(message):
+    if parse_task_trailers(message) or parse_ceremony_trailers(message):
         return []
     short_sha = subprocess.run(
         ["git", "rev-parse", "--short=7", "HEAD"],
@@ -149,9 +149,10 @@ def _validate_commit_trailers(project_root: Path) -> list[ValidationError]:
             type="commit_trailers",
             artifact=short_sha or "HEAD",
             message=(
-                "Commit touches src/ or tests/ but has no Task: trailer — "
-                "TASK chain is broken. Expected trailer like "
-                "'Task: TASK-X.Y.Z-NN-MM-PP'."
+                "Commit touches src/ or tests/ but has no governance-intent "
+                "trailer — TASK chain is broken. Expected 'Task: TASK-X.Y.Z-NN-MM-PP' "
+                "for task-scoped work or 'Ceremony: <name>' for chore/sync commits "
+                "(e.g. 'Ceremony: gz-git-sync')."
             ),
         )
     ]

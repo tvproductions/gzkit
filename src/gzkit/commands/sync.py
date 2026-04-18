@@ -125,10 +125,21 @@ def _run_sync_prechecks(
         # For explicit pre-sync BDD coverage, run `gz test --bdd` beforehand.
 
 
+_SYNC_CEREMONY_TRAILER = "Ceremony: gz-git-sync"
+
+
 def _build_sync_commit_message(staged_files: list[str]) -> str:
-    """Build a descriptive commit message from staged file paths."""
+    """Build a descriptive commit message from staged file paths.
+
+    Every sync commit carries a ``Ceremony: gz-git-sync`` trailer so
+    ``gz validate --commit-trailers`` accepts the commit as
+    governance-intent-bound (GHI #201). Sync commits bundle work already
+    authored under other governance anchors (OBPIs, ADRs, defect fixes);
+    the ceremony trailer names this class explicitly rather than forcing
+    a synthetic Task id.
+    """
     if not staged_files:
-        return "chore: sync staged changes (gz git-sync)"
+        return f"chore: sync staged changes (gz git-sync)\n\n{_SYNC_CEREMONY_TRAILER}"
 
     # Classify changes by top-level area
     areas: dict[str, list[str]] = {}
@@ -164,7 +175,7 @@ def _build_sync_commit_message(staged_files: list[str]) -> str:
     if len(area_summaries) > 4:
         summary += f" +{len(area_summaries) - 4} more"
 
-    return f"chore: update {summary} (gz git-sync)"
+    return f"chore: update {summary} (gz git-sync)\n\n{_SYNC_CEREMONY_TRAILER}"
 
 
 def _commit_staged_changes(project_root: Path, blockers: list[str], executed: list[str]) -> None:

@@ -55,7 +55,14 @@ the governance gate (`gz typecheck` → `ty check src`) reported exit 1.
 | Lint clean | `uv run gz arb ruff` | `arb-ruff-` |
 | Type check clean | `uv run gz arb typecheck` | `arb-step-typecheck-` |
 | Tests pass | `uv run gz arb step --name unittest -- uv run -m unittest -q` | `arb-step-unittest-` |
-| Coverage floor | `uv run gz arb coverage run -m unittest discover -s tests -t .` | `arb-coverage-` |
+| Coverage floor | `uv run gz arb coverage run -m unittest discover -s tests -t .` | `arb-step-coverage-` |
+| Docs build clean | `uv run gz arb step --name mkdocs -- uv run mkdocs build --strict` | `arb-step-mkdocs-` |
+
+Each canonical invocation above is locked by `CANONICAL_STEP_COMMANDS` in
+`src/gzkit/arb/validator.py` and enforced by `gz arb validate` — a receipt
+whose `step.name` is one of these labels but whose `step.command` diverges
+is flagged as non-canonical provenance and counted as invalid. Extending
+the table widens the provenance net; do not shrink it.
 
 `gz arb typecheck` (added under GHI #199) wraps `uv run ty check src` — the
 same command `gz typecheck` and `gz closeout` invoke. Do not author heavy-lane
