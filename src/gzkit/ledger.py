@@ -390,11 +390,21 @@ class Ledger:
         canonical_id: str,
         event: LedgerEvent,
     ) -> None:
-        if event.event != "attested" or canonical_id not in graph:
+        if canonical_id not in graph:
             return
-        graph[canonical_id]["attested"] = True
-        graph[canonical_id]["attestation_status"] = event.extra.get("status")
-        graph[canonical_id]["attestation_by"] = event.extra.get("by")
+        if event.event == "attested":
+            graph[canonical_id]["attested"] = True
+            graph[canonical_id]["attestation_status"] = event.extra.get("status")
+            graph[canonical_id]["attestation_by"] = event.extra.get("by")
+            return
+        if event.event == "obpi_receipt_emitted":
+            evidence = event.extra.get("evidence") or {}
+            if isinstance(evidence, dict) and evidence.get("human_attestation"):
+                graph[canonical_id]["attested"] = True
+                graph[canonical_id]["attestation_status"] = evidence.get(
+                    "obpi_completion"
+                ) or event.extra.get("obpi_completion")
+                graph[canonical_id]["attestation_by"] = event.extra.get("attestor")
 
     @staticmethod
     def _apply_closeout_metadata(

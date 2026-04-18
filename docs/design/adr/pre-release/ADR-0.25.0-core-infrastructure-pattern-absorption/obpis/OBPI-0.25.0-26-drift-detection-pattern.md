@@ -2,7 +2,7 @@
 id: OBPI-0.25.0-26-drift-detection-pattern
 parent: ADR-0.25.0-core-infrastructure-pattern-absorption
 item: 26
-status: in_progress
+status: attested_completed
 lane: heavy
 date: 2026-04-09
 ---

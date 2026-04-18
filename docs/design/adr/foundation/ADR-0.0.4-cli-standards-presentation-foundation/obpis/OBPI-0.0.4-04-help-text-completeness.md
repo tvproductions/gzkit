@@ -3,7 +3,7 @@ id: OBPI-0.0.4-04-help-text-completeness
 parent: ADR-0.0.4-cli-standards-presentation-foundation
 item: 4
 lane: heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.0.4-04: Help Text Completeness

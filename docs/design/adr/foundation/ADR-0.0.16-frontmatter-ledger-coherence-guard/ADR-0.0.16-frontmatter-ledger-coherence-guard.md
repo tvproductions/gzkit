@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.16
-status: Pending
+status: Completed
 semver: 0.0.16
 lane: heavy
 parent: GHI-167
@@ -275,4 +275,4 @@ Build a frontmatter-ledger coherence guard, not per-consumer rewrites. The umbre
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.16 | Pending | | | |
+| 0.0.16 | Completed | Jeffry | 2026-04-18 | completed |

@@ -3,7 +3,7 @@ id: OBPI-0.0.11-06-persona-schema-validation
 parent: ADR-0.0.11-persona-driven-agent-identity-frames
 item: 6
 lane: Lite
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.0.11-06-persona-schema-validation: Persona Schema Validation

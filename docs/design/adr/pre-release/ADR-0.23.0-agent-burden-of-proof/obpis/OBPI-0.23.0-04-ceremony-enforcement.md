@@ -3,7 +3,7 @@ id: OBPI-0.23.0-04-ceremony-enforcement
 parent: ADR-0.23.0-agent-burden-of-proof
 item: 4
 lane: Lite
-status: in_progress
+status: attested_completed
 ---
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
 

@@ -2,7 +2,7 @@
 id: OBPI-0.25.0-24-cli-audit-pattern
 parent: ADR-0.25.0-core-infrastructure-pattern-absorption
 item: 24
-status: in_progress
+status: attested_completed
 lane: heavy
 date: 2026-04-09
 ---

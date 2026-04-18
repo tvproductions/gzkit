@@ -3,7 +3,7 @@ id: OBPI-0.0.14-02-obpi-complete-command
 parent: ADR-0.0.14-deterministic-obpi-commands
 item: 2
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.0.14-02: gz obpi complete command

@@ -3,7 +3,7 @@ id: OBPI-0.18.0-07-wire-two-stage-review
 parent: ADR-0.18.0-subagent-driven-pipeline-execution
 item: 7
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.18.0-07: Wire Two-Stage Review into Pipeline Flow

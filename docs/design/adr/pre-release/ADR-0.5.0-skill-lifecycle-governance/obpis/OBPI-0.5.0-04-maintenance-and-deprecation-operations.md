@@ -3,7 +3,7 @@ id: OBPI-0.5.0-04-maintenance-and-deprecation-operations
 parent: ADR-0.5.0-skill-lifecycle-governance
 item: 4
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.5.0-04-maintenance-and-deprecation-operations

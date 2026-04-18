@@ -3,7 +3,7 @@ id: OBPI-0.0.8-08-operator-docs
 parent: ADR-0.0.8-feature-toggle-system
 item: 8
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.0.8-08: Operator Documentation

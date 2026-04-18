@@ -3,7 +3,7 @@ id: OBPI-0.10.0-01-obpi-runtime-contract-and-state-model
 parent: ADR-0.10.0-obpi-runtime-surface
 item: 1
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.10.0-01-obpi-runtime-contract-and-state-model: OBPI runtime contract and state model

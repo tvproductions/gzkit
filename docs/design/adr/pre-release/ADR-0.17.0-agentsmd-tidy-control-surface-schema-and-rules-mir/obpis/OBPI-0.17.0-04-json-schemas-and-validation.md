@@ -3,7 +3,7 @@ id: OBPI-0.17.0-04-json-schemas-and-validation
 parent: ADR-0.17.0-agentsmd-tidy-control-surface-schema-and-rules-mir
 item: 4
 lane: heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.17.0-04-json-schemas-and-validation: JSON Schemas and Validation

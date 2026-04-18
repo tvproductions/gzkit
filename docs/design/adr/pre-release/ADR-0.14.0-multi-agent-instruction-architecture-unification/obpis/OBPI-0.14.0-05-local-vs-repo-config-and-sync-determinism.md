@@ -3,7 +3,7 @@ id: OBPI-0.14.0-05-local-vs-repo-config-and-sync-determinism
 parent: ADR-0.14.0-multi-agent-instruction-architecture-unification
 item: 5
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.14.0-05-local-vs-repo-config-and-sync-determinism: Local vs Repo Config and Sync Determinism

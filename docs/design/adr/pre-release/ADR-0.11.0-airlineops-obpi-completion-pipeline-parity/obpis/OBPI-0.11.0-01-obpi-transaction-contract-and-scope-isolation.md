@@ -3,7 +3,7 @@ id: OBPI-0.11.0-01-obpi-transaction-contract-and-scope-isolation
 parent: ADR-0.11.0-airlineops-obpi-completion-pipeline-parity
 item: 1
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.11.0-01-obpi-transaction-contract-and-scope-isolation: OBPI transaction contract and scope isolation

@@ -3,7 +3,7 @@ id: OBPI-0.0.11-03-trait-composition-model
 parent: ADR-0.0.11-persona-driven-agent-identity-frames
 item: 3
 lane: Lite
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.0.11-03-trait-composition-model: Trait Composition Model

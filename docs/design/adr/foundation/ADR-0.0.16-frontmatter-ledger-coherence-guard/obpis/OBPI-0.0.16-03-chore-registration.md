@@ -3,7 +3,7 @@ id: OBPI-0.0.16-03-chore-registration
 parent: ADR-0.0.16
 item: 3
 lane: Heavy
-status: in_progress
+status: Completed
 ---
 
 # OBPI-0.0.16-03-chore-registration: Chore registration and reconciliation

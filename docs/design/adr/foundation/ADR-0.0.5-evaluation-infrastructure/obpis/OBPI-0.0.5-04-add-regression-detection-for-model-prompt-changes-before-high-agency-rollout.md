@@ -3,7 +3,7 @@ id: OBPI-0.0.5-04-add-regression-detection-for-model-prompt-changes-before-high-
 parent: ADR-0.0.5-evaluation-infrastructure
 item: 4
 lane: lite
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.0.5-04: Regression Detection for Model/Prompt Changes

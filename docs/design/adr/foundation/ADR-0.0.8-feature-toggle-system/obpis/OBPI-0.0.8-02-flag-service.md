@@ -3,7 +3,7 @@ id: OBPI-0.0.8-02-flag-service
 parent: ADR-0.0.8-feature-toggle-system
 item: 2
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.0.8-02: Flag Service
