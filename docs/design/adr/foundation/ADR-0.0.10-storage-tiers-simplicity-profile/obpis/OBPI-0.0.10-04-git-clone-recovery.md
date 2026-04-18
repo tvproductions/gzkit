@@ -3,7 +3,7 @@ id: OBPI-0.0.10-04-git-clone-recovery
 parent: ADR-0.0.10-storage-tiers-simplicity-profile
 item: 4
 lane: lite
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.0.10-04: Git Clone Recovery

@@ -3,7 +3,7 @@ id: OBPI-0.0.7-01-manifest-v2-schema
 parent: ADR-0.0.7-config-first-resolution-discipline
 item: 1
 lane: Lite
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.0.7-01-manifest-v2-schema: Manifest v2 schema

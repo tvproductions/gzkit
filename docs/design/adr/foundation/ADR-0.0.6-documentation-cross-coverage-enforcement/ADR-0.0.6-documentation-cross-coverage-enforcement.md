@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.6-documentation-cross-coverage-enforcement
-status: Pending
+status: Validated
 semver: 0.0.6
 lane: heavy
 parent: PRD-GZKIT-1.0.0

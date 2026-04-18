@@ -3,7 +3,7 @@ id: OBPI-0.0.3-08-progress-indication
 parent: ADR-0.0.3-hexagonal-architecture-tune-up
 item: 8
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.0.3-08-progress-indication: Progress Indication

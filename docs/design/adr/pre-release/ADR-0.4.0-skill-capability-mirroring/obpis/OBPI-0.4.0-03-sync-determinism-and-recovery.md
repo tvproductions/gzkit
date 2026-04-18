@@ -3,7 +3,7 @@ id: OBPI-0.4.0-03-sync-determinism-and-recovery
 parent: ADR-0.4.0-skill-capability-mirroring
 item: 3
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.4.0-03-sync-determinism-and-recovery

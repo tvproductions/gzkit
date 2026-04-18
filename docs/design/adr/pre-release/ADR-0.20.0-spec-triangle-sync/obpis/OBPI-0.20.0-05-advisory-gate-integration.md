@@ -3,7 +3,7 @@ id: OBPI-0.20.0-05-advisory-gate-integration
 parent: ADR-0.20.0-spec-triangle-sync
 item: 5
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.20.0-05: Advisory Gate Integration

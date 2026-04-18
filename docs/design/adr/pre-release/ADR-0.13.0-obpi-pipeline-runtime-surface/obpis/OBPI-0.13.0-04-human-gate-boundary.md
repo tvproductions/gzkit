@@ -3,7 +3,7 @@ id: OBPI-0.13.0-04-human-gate-boundary
 parent: ADR-0.13.0-obpi-pipeline-runtime-surface
 item: 4
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.13.0-04-human-gate-boundary: Human Gate Boundary

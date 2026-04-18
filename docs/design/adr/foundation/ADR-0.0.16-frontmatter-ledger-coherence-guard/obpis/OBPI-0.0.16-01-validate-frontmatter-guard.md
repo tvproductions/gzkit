@@ -3,7 +3,7 @@ id: OBPI-0.0.16-01-validate-frontmatter-guard
 parent: ADR-0.0.16
 item: 1
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.0.16-01-validate-frontmatter-guard: gz validate --frontmatter guard

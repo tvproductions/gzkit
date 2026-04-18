@@ -1,5 +1,5 @@
 ---
-id: OBPI-0.27.0-09-arb-telemetry-sync
+id: OBPI-0.27.0-09-arb-supabase-sync
 parent: ADR-0.27.0-arb-receipt-system-absorption
 item: 9
 status: Pending

@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.4-cli-standards-presentation-foundation
-status: Completed
+status: Validated
 semver: 0.0.4
 lane: heavy
 parent:

@@ -1,6 +1,6 @@
 ---
 id: ADR-0.36.0-instruction-file-reconciliation
-status: Proposed
+status: Pending
 semver: 0.36.0
 lane: heavy
 parent: PRD-GZKIT-1.0.0

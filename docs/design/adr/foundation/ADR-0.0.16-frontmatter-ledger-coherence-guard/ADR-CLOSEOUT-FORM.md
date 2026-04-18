@@ -36,6 +36,7 @@ Closeout evidence verified:
 | OBPI-0.0.16-03-chore-registration | `frontmatter-ledger-coherence` chore with ledger-wins reconciliation | Pending |
 | OBPI-0.0.16-04-backfill-and-ghi-closure | One-time backfill run + close GHI #162/#167/#168/#169/#170 | Pending |
 | OBPI-0.0.16-05-status-vocab-mapping | Canonical status-vocabulary addendum to ADR-0.0.9 + typed constant | Pending |
+| OBPI-0.0.16-06-validator-pool-skip-parity | Validator skips pool ADRs (parity with chore library); unblocks OBPI-04 REQ-04 — added 2026-04-18 from GHI #192 | Pending |
 
 ## Defense Brief
 
@@ -52,6 +53,7 @@ Closeout evidence verified:
 | OBPI-0.0.16-03-chore-registration | config_file + receipt_sample | PENDING |
 | OBPI-0.0.16-04-backfill-and-ghi-closure | reconciliation_receipt + issue_closures | PENDING |
 | OBPI-0.0.16-05-status-vocab-mapping | typed_constant + doc_addendum | PENDING |
+| OBPI-0.0.16-06-validator-pool-skip-parity | unit_test + cli_smoke_exit_0 | PENDING |
 
 ### Reviewer Assessment
 

@@ -3,7 +3,7 @@ id: OBPI-0.14.0-03-root-surface-slimming-and-workflow-relocation
 parent: ADR-0.14.0-multi-agent-instruction-architecture-unification
 item: 3
 lane: Heavy
-status: Completed
+status: in_progress
 ---
 
 # OBPI-0.14.0-03-root-surface-slimming-and-workflow-relocation: Root Surface Slimming and Workflow Relocation
