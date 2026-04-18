@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.17-03-adr-promote-kind
-parent: ADR-0.0.17
+parent: ADR-0.0.17-adr-taxonomy-mechanical
 item: 3
 lane: Heavy
 status: Draft

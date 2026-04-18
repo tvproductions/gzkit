@@ -1,78 +1,114 @@
-"""Regression test pinning post-backfill cleanliness (OBPI-0.0.16-04).
+"""Structural regression tests for OBPI-0.0.16-04's dogfood-state invariants.
 
-After the one-time backfill chore runs against the live repo (live receipt
-``artifacts/receipts/frontmatter-coherence/20260418T100437Z.json``), the
-governed-frontmatter surface is fully reconciled with the ledger. Two
-properties must hold from that point forward and are pinned here:
+The prior version of this file asserted the *current project root* passed
+the validator and that a dry-run rewrote zero files. That invariant is
+transient — any new ADR authored in short-form ``id:`` breaks it before the
+next chore run — so those tests fired against downstream authoring drift,
+not regressions in the chore itself (GHI #220).
 
-REQ-0.0.16-04-04: ``gz validate --frontmatter`` exits 0 on the live repo.
-REQ-0.0.16-04-05: A dry-run of the chore on the post-backfill repo
-    produces an empty ``files_rewritten`` list (idempotence).
+These replacements pin the underlying policy at the library level using a
+seeded fixture: given a project with known drift, the chore produces a
+clean state, and a follow-on dry-run is idempotent.
 
-If either regresses (e.g. a future ledger event introduces drift the chore
-no longer canonicalizes), this test fires and points the operator at the
-cause: re-run the chore, then investigate why drift reappeared.
+REQ-0.0.16-04-04: after ``reconcile_frontmatter`` runs non-dry-run against a
+    project with known drift, ``validate_frontmatter_coherence`` returns no
+    active-surface errors.
+REQ-0.0.16-04-05: after a successful reconcile, the next dry-run produces
+    an empty ``files_rewritten`` list (idempotence).
 """
 
+from __future__ import annotations
+
 import unittest
+from pathlib import Path
 
-from gzkit.commands.common import get_project_root
 from gzkit.commands.validate_frontmatter import validate_frontmatter_coherence
+from gzkit.config import GzkitConfig
 from gzkit.governance.frontmatter_coherence import reconcile_frontmatter
+from gzkit.ledger import Ledger, adr_created_event
 from gzkit.traceability import covers
+from tests.commands.common import CliRunner, _quick_init
 
 
-class TestFrontmatterCoherenceBackfillStability(unittest.TestCase):
-    """Pin post-backfill cleanliness against the live repo."""
+def _scaffold_drifted_adr(root: Path) -> Path:
+    """Seed a gzkit project with one drifted ADR and return its path.
 
-    @classmethod
-    def setUpClass(cls) -> None:
-        cls.project_root = get_project_root()
-        if not (cls.project_root / ".gzkit" / "ledger.jsonl").is_file():
-            raise unittest.SkipTest("Not inside a gzkit project — skipping live-repo test")
+    Uses the same path shape as the existing ``tests/governance`` fixtures
+    (``{design_root}/adr/pre-release/{adr_id}-test/{adr_id}-test.md``) and
+    seeds drift on both ``lane`` (heavy vs ledger's lite) and ``status``
+    (Completed vs ledger's pending). Both terms are in
+    ``STATUS_VOCAB_MAPPING`` so the chore does not raise ``UnmappedStatusBlocker``.
+    """
+    ledger = Ledger(root / ".gzkit" / "ledger.jsonl")
+    ledger.append(adr_created_event("ADR-0.1.0", "PRD-TEST-1.0.0", "lite"))
+    config = GzkitConfig.load(root / ".gzkit.json")
+    adr_dir = root / config.paths.design_root / "adr" / "pre-release" / "ADR-0.1.0-test"
+    adr_dir.mkdir(parents=True, exist_ok=True)
+    path = adr_dir / "ADR-0.1.0-test.md"
+    path.write_text(
+        "---\n"
+        "id: ADR-0.1.0\n"
+        "parent: PRD-TEST-1.0.0\n"
+        "lane: heavy\n"
+        "status: Completed\n"
+        "---\n# ADR\n",
+        encoding="utf-8",
+    )
+    return path
+
+
+class TestStructuralBackfillInvariants(unittest.TestCase):
+    """Policy-level pins for the chore's post-run invariants."""
 
     @covers("REQ-0.0.16-04-04")
-    def test_validate_frontmatter_exits_clean_on_live_repo(self) -> None:
-        """REQ-04: post-backfill repo has zero frontmatter-vs-ledger drift.
+    def test_validator_clean_after_reconcile(self) -> None:
+        """REQ-04: after reconcile, the validator has no active-surface errors."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            root = Path.cwd()
+            _scaffold_drifted_adr(root)
 
-        Calls the validator's coherence function directly (same path the
-        ``gz validate --frontmatter`` CLI takes) and asserts an empty
-        error list. Pool ADRs are skipped per GHI #192 fix; only
-        active-surface drift would surface here.
-        """
-        errors = validate_frontmatter_coherence(self.project_root)
-        active_errors = [e for e in errors if "/adr/pool/" not in (e.artifact or "")]
-        self.assertEqual(
-            active_errors,
-            [],
-            msg=(
-                f"Post-backfill repo regressed — {len(active_errors)} "
-                f"active-surface frontmatter drift error(s). Re-run "
-                f"`gz frontmatter reconcile` and investigate the cause:\n"
-                + "\n".join(f"  {e.artifact}: {e.message}" for e in active_errors[:10])
-            ),
-        )
+            receipt = reconcile_frontmatter(root, dry_run=False)
+            self.assertGreaterEqual(
+                len(receipt.files_rewritten),
+                1,
+                "fixture must have drift the chore can rewrite",
+            )
+
+            errors = validate_frontmatter_coherence(root)
+            active_errors = [e for e in errors if "/adr/pool/" not in (e.artifact or "")]
+            self.assertEqual(
+                active_errors,
+                [],
+                msg=(
+                    "Post-reconcile project has residual drift — the chore is not "
+                    "producing a clean state:\n"
+                    + "\n".join(f"  {e.artifact}: {e.message}" for e in active_errors[:5])
+                ),
+            )
 
     @covers("REQ-0.0.16-04-05")
-    def test_reconcile_dry_run_is_empty_on_live_repo(self) -> None:
-        """REQ-05: chore dry-run produces empty rewrite list (idempotence).
+    def test_dry_run_is_idempotent_after_reconcile(self) -> None:
+        """REQ-05: a post-reconcile dry-run rewrites zero files."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            root = Path.cwd()
+            _scaffold_drifted_adr(root)
 
-        Invokes the chore library's ``reconcile_frontmatter`` directly in
-        dry-run mode. If the receipt's ``files_rewritten`` list grows,
-        the chore is no longer at a fixed point against the ledger —
-        either the ledger advanced or the canonicalization changed.
-        """
-        receipt = reconcile_frontmatter(self.project_root, dry_run=True)
-        self.assertEqual(
-            list(receipt.files_rewritten),
-            [],
-            msg=(
-                f"Chore is no longer idempotent — would rewrite "
-                f"{len(receipt.files_rewritten)} file(s). Receipt cursor: "
-                f"{receipt.ledger_cursor}. Re-run "
-                f"`gz frontmatter reconcile` and capture a new receipt."
-            ),
-        )
+            reconcile_frontmatter(root, dry_run=False)
+            second = reconcile_frontmatter(root, dry_run=True)
+
+            self.assertEqual(
+                list(second.files_rewritten),
+                [],
+                msg=(
+                    "Chore is not idempotent — would rewrite "
+                    f"{len(second.files_rewritten)} file(s) on second dry-run "
+                    "against a post-reconcile project."
+                ),
+            )
 
 
 if __name__ == "__main__":  # pragma: no cover

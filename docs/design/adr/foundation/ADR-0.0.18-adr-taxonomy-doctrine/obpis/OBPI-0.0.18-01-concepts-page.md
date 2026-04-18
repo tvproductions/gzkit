@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.18-01-concepts-page
-parent: ADR-0.0.18
+parent: ADR-0.0.18-adr-taxonomy-doctrine
 item: 1
 lane: Lite
 status: Draft

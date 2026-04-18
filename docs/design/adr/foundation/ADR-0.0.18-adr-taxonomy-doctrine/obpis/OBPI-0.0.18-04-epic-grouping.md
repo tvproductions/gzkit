@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.18-04-epic-grouping
-parent: ADR-0.0.18
+parent: ADR-0.0.18-adr-taxonomy-doctrine
 item: 4
 lane: Lite
 status: Draft

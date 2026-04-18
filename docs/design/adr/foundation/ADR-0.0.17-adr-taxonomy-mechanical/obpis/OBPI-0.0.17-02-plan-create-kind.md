@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.17-02-plan-create-kind
-parent: ADR-0.0.17
+parent: ADR-0.0.17-adr-taxonomy-mechanical
 item: 2
 lane: Heavy
 status: Draft
