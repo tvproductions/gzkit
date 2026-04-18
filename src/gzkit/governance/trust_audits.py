@@ -651,6 +651,12 @@ def audit_version_release(project_root: Path) -> list[ValidationError]:
     Every version bump is a release (CLAUDE.md local rule 11). This audit
     compares the declared pyproject version against the local git-tag set;
     if the bump landed without a tag, the release step was skipped.
+
+    Per GHI #217, the audit also accepts an in-flight release manifest at
+    ``docs/releases/PATCH-v{version}.md`` as equivalent evidence. The
+    manifest is written by ``gz patch release`` before the bump commit is
+    attempted, so it satisfies the audit during the brief window between
+    the commit and ``gh release create`` (which creates the tag).
     """
     import subprocess  # noqa: PLC0415
 
@@ -659,6 +665,10 @@ def audit_version_release(project_root: Path) -> list[ValidationError]:
         return []
     version = _read_pyproject_version(pyproject)
     if version is None:
+        return []
+    expected = f"v{version}"
+    manifest = project_root / "docs" / "releases" / f"PATCH-{expected}.md"
+    if manifest.is_file():
         return []
     try:
         result = subprocess.run(
@@ -672,7 +682,6 @@ def audit_version_release(project_root: Path) -> list[ValidationError]:
     except (subprocess.CalledProcessError, FileNotFoundError):
         return []
     tags = {line.strip() for line in result.stdout.splitlines() if line.strip()}
-    expected = f"v{version}"
     if expected in tags:
         return []
     return [
