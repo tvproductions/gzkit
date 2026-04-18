@@ -1114,6 +1114,38 @@ class TestOrphanedAdrWarning(unittest.TestCase):
             self.assertNotIn("exist on disk but are not registered", result.output)
             self.assertNotIn("WARNING", result.output)
 
+    def test_no_false_positive_when_stem_is_bare_and_ledger_has_slugged_id(
+        self,
+    ) -> None:
+        """Frontmatter id is authoritative: bare-stem file with slugged ledger
+        entry is not an orphan. Filesystem-convention prefix match cannot
+        resolve this case (bare stem is not a prefix of the slugged id).
+        GHI-166 principled fix."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            project_root = Path.cwd()
+            config = GzkitConfig.load(project_root / ".gzkit.json")
+
+            adr_dir = project_root / config.paths.design_root / "adr" / "pre-release"
+            adr_dir.mkdir(parents=True, exist_ok=True)
+            adr_file = adr_dir / "ADR-0.5.0.md"
+            adr_file.write_text(
+                "---\nid: ADR-0.5.0-skill-lifecycle\nstatus: Draft\nlane: lite\n---\n"
+                "# ADR-0.5.0: skill-lifecycle\n",
+                encoding="utf-8",
+            )
+
+            ledger = Ledger(project_root / ".gzkit" / "ledger.jsonl")
+            ledger.append(
+                adr_created_event("ADR-0.5.0-skill-lifecycle", "PRD-TEST-1.0.0", "lite")
+            )
+
+            result = runner.invoke(main, ["adr", "report"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertNotIn("exist on disk but are not registered", result.output)
+            self.assertNotIn("WARNING", result.output)
+
     def test_genuine_orphan_still_warns(self) -> None:
         """An ADR file with no ledger entry at all should still produce a warning."""
         runner = CliRunner()

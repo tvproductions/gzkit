@@ -419,7 +419,7 @@ def adr_status_cmd(adr: str, as_json: bool, show_gates: bool) -> None:
 
 def _warn_orphaned_adrs(project_root: Path, config: GzkitConfig, ledger: Ledger) -> None:
     """Warn about ADR files on disk that are not registered in the ledger."""
-    from gzkit.sync import scan_existing_artifacts  # noqa: PLC0415
+    from gzkit.sync import parse_artifact_metadata, scan_existing_artifacts  # noqa: PLC0415
 
     artifacts = scan_existing_artifacts(project_root, config.paths.design_root)
     graph = ledger.get_artifact_graph()
@@ -428,11 +428,18 @@ def _warn_orphaned_adrs(project_root: Path, config: GzkitConfig, ledger: Ledger)
     orphans: list[str] = []
     for adr_file in artifacts.get("adrs", []):
         stem_id = adr_file.stem
-        canonical = ledger.canonicalize_id(stem_id)
-        # Check exact match first, then prefix match: file stems follow the
-        # convention {ADR-X.Y.Z}-{slug} so a registered ledger ID (ADR-X.Y.Z)
-        # is a prefix of the stem.  Uses filesystem convention, not frontmatter.
-        if stem_id in known or canonical in known:
+        metadata = parse_artifact_metadata(adr_file)
+        parsed_id = metadata.get("id", stem_id)
+        # Frontmatter id is authoritative; fall back to stem + canonical forms
+        # so legacy files without frontmatter still resolve. Mirrors the
+        # dual-lookup pattern in register.py::_adr_register_identity (GHI-166).
+        candidates = {
+            stem_id,
+            parsed_id,
+            ledger.canonicalize_id(stem_id),
+            ledger.canonicalize_id(parsed_id),
+        }
+        if candidates & known:
             continue
         if any(stem_id.startswith(f"{kid}-") for kid in known):
             continue
