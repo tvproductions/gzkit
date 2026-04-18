@@ -63,7 +63,7 @@ Example drift-block output:
     Field status in docs/design/adr/.../ADR-0.1.0-test.md:
       ledger='Pending' frontmatter='Completed'
       canonical ledger term: completed
-      → run: gz chore run frontmatter-ledger-coherence
+      → run: gz chores run frontmatter-ledger-coherence
 ```
 
 ### Exit codes
@@ -75,7 +75,7 @@ Example drift-block output:
 | 3 | Policy breach (e.g., Gate 1 frontmatter drift) |
 
 There is no `--skip-frontmatter` bypass flag. Resolve drift via
-`gz chore run frontmatter-ledger-coherence`, `gz register-adrs --all`, or
+`gz chores run frontmatter-ledger-coherence`, `gz register-adrs --all`, or
 `gz adr promote <ADR-ID> --lane <canonical-lane>` — see the per-field
 recovery line in the drift-block output.
 
