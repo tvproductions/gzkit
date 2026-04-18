@@ -5,7 +5,7 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.4.1"
+skill-version: "6.5.0"
 last_reviewed: 2026-04-18
 ---
 
@@ -485,6 +485,15 @@ command atomically writes the attestation to the ADR-level audit ledger, updates
 the brief to Completed, and emits the completion receipt. Git-sync #1 commits all
 these governance edits plus lock release and marker cleanup. Git-sync #2 commits
 the reconcile output and ADR status refresh.
+
+0. **Pre-flight checklist (MANDATORY, GHI #196)** — `uv run gz obpi precomplete {OBPI-SLUG}`
+   Mechanical verification of all Stage 5 preconditions: brief authored
+   readiness, frontmatter idempotence (catches GHI #193 drift before it
+   bites), lock ownership, ARB receipts present, plan-audit receipt PASS.
+   **If exit code is non-zero, do NOT invoke `gz obpi complete` — fix each
+   reported precondition first using the named remediation.** Exit 0 here is
+   the gate that prevents the reactive-triage class of failure (the original
+   OBPI-04 Stage 5 cost ~3 turns to discover the same gaps one at a time).
 
 1. **Complete OBPI atomically** — `uv run gz obpi complete {OBPI-SLUG} --attestor {attestor} --attestation-text "{text}" [--implementation-summary "{summary}"] [--key-proof "{proof}"]`
    This single command atomically: validates brief state, writes attestation to the
