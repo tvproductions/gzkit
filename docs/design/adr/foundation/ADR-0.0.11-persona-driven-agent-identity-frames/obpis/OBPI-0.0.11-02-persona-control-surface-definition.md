@@ -3,7 +3,7 @@ id: OBPI-0.0.11-02-persona-control-surface-definition
 parent: ADR-0.0.11-persona-driven-agent-identity-frames
 item: 2
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.0.11-02-persona-control-surface-definition: Persona Control Surface Definition

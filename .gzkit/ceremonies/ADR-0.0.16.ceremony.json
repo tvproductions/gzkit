@@ -1,0 +1,64 @@
+{
+  "adr_id": "ADR-0.0.16",
+  "current_step": 11,
+  "is_foundation": true,
+  "started_at": "2026-04-18T11:23:09Z",
+  "updated_at": "2026-04-18T11:45:07Z",
+  "step_history": [
+    {
+      "step": 1,
+      "presented_at": "2026-04-18T11:23:09Z",
+      "acknowledged_at": "2026-04-18T11:23:34Z"
+    },
+    {
+      "step": 2,
+      "presented_at": "2026-04-18T11:23:34Z",
+      "acknowledged_at": "2026-04-18T11:24:00Z"
+    },
+    {
+      "step": 3,
+      "presented_at": "2026-04-18T11:24:00Z",
+      "acknowledged_at": "2026-04-18T11:25:10Z"
+    },
+    {
+      "step": 4,
+      "presented_at": "2026-04-18T11:25:10Z",
+      "acknowledged_at": "2026-04-18T11:25:45Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-04-18T11:25:45Z",
+      "acknowledged_at": "2026-04-18T11:31:23Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-04-18T11:31:23Z",
+      "acknowledged_at": "2026-04-18T11:33:29Z"
+    },
+    {
+      "step": 7,
+      "presented_at": "2026-04-18T11:33:29Z",
+      "acknowledged_at": "2026-04-18T11:44:54Z"
+    },
+    {
+      "step": 8,
+      "presented_at": "2026-04-18T11:44:54Z",
+      "acknowledged_at": "2026-04-18T11:45:07Z"
+    },
+    {
+      "step": 11,
+      "presented_at": "2026-04-18T11:45:07Z",
+      "acknowledged_at": null
+    }
+  ],
+  "walkthrough_commands": [
+    "uv run gz validate --help",
+    "uv run gz frontmatter reconcile --help",
+    "uv run gz gates --help"
+  ],
+  "walkthrough_index": 0,
+  "attestation": "attest completed — ADR-0.0.16 closes the frontmatter-ledger coherence cluster: gz validate --frontmatter (OBPI-01) exits 0 on current repo confirming the 94.7% status: drift is cleared; gz frontmatter reconcile (OBPI-03) chore present with 20+ receipts under artifacts/receipts/frontmatter-coherence/; gz gates wires the validator at Gate 1 (OBPI-02); STATUS_VOCAB_MAPPING seeded in src/gzkit/governance/status_vocab.py (OBPI-05); backfill + umbrella GHI closure completed (OBPI-04) with #162, #167, #168, #169, #170 all CLOSED. Five OBPIs recorded Completed with evidence OK. Receipts: lint arb-ruff-b912f19a1c024e3cbcc32e3a8e7767ee; types arb-step-ty-a127758584c64c978663e7699bf4cceb; tests arb-step-unittest-91774dedd89c484395cc79f27420fc95.",
+  "completed_at": "2026-04-18T11:45:07Z",
+  "attempt": 1,
+  "paused_at": null
+}

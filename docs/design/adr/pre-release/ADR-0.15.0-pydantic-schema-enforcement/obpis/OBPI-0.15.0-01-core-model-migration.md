@@ -3,7 +3,7 @@ id: OBPI-0.15.0-01-core-model-migration
 parent: ADR-0.15.0-pydantic-schema-enforcement
 item: 1
 lane: Lite
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.15.0-01-core-model-migration: Core Model Migration

@@ -3,7 +3,7 @@ id: OBPI-0.6.0-02-promotion-command-lineage
 parent: ADR-0.6.0-pool-promotion-protocol
 item: 2
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.6.0-02-promotion-command-lineage

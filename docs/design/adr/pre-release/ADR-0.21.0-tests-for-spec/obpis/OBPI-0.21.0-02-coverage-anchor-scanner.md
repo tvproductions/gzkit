@@ -3,7 +3,7 @@ id: OBPI-0.21.0-02-coverage-anchor-scanner
 parent: ADR-0.21.0-tests-for-spec
 item: 2
 lane: Lite
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.21.0-02: Coverage Anchor Scanner

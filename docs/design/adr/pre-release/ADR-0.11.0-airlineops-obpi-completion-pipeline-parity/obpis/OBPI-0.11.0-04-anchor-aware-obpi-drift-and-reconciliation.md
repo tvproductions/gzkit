@@ -3,7 +3,7 @@ id: OBPI-0.11.0-04-anchor-aware-obpi-drift-and-reconciliation
 parent: ADR-0.11.0-airlineops-obpi-completion-pipeline-parity
 item: 4
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.11.0-04-anchor-aware-obpi-drift-and-reconciliation: Anchor-aware OBPI drift and reconciliation

@@ -3,7 +3,7 @@ id: OBPI-0.17.0-02-rules-mirroring
 parent: ADR-0.17.0-agentsmd-tidy-control-surface-schema-and-rules-mir
 item: 2
 lane: heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.17.0-02-rules-mirroring: Rules Mirroring

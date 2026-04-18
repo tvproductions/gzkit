@@ -1,0 +1,2286 @@
+{
+  "dry_run": false,
+  "files_rewritten": [
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.10-storage-tiers-simplicity-profile/obpis/OBPI-0.0.10-01-three-tier-model-and-pool-archive.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.10-storage-tiers-simplicity-profile/obpis/OBPI-0.0.10-02-identity-surfaces.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.10-storage-tiers-simplicity-profile/obpis/OBPI-0.0.10-03-storage-catalog-and-escalation-governance.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.10-storage-tiers-simplicity-profile/obpis/OBPI-0.0.10-04-git-clone-recovery.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.11-persona-driven-agent-identity-frames/obpis/OBPI-0.0.11-01-persona-research-synthesis.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.11-persona-driven-agent-identity-frames/obpis/OBPI-0.0.11-02-persona-control-surface-definition.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.11-persona-driven-agent-identity-frames/obpis/OBPI-0.0.11-03-trait-composition-model.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.11-persona-driven-agent-identity-frames/obpis/OBPI-0.0.11-04-agents-md-persona-section.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.11-persona-driven-agent-identity-frames/obpis/OBPI-0.0.11-05-supersede-pool-persona-context.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.11-persona-driven-agent-identity-frames/obpis/OBPI-0.0.11-06-persona-schema-validation.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.12-agent-role-persona-profiles/obpis/OBPI-0.0.12-01-main-session-persona.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.12-agent-role-persona-profiles/obpis/OBPI-0.0.12-02-implementer-agent-persona.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.12-agent-role-persona-profiles/obpis/OBPI-0.0.12-03-reviewer-agent-personas.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.12-agent-role-persona-profiles/obpis/OBPI-0.0.12-04-narrator-agent-persona.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.12-agent-role-persona-profiles/obpis/OBPI-0.0.12-05-pipeline-orchestrator-persona.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.12-agent-role-persona-profiles/obpis/OBPI-0.0.12-06-dispatch-integration.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.12-agent-role-persona-profiles/obpis/OBPI-0.0.12-07-agents-md-persona-reference.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.13-portable-persona-control-surface/obpis/OBPI-0.0.13-01-portable-persona-schema.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.13-portable-persona-control-surface/obpis/OBPI-0.0.13-02-gz-init-persona-scaffolding.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.13-portable-persona-control-surface/obpis/OBPI-0.0.13-03-manifest-schema-persona-sync.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.13-portable-persona-control-surface/obpis/OBPI-0.0.13-04-vendor-neutral-persona-loading.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.13-portable-persona-control-surface/obpis/OBPI-0.0.13-05-persona-drift-monitoring.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.13-portable-persona-control-surface/obpis/OBPI-0.0.13-06-cross-project-validation.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.14-deterministic-obpi-commands/obpis/OBPI-0.0.14-01-obpi-lock-command.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.14-deterministic-obpi-commands/obpis/OBPI-0.0.14-02-obpi-complete-command.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.14-deterministic-obpi-commands/obpis/OBPI-0.0.14-03-pipeline-skill-migration.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.15-ghi-driven-patch-release-ceremony/obpis/OBPI-0.0.15-01-cli-command-scaffold.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.15-ghi-driven-patch-release-ceremony/obpis/OBPI-0.0.15-02-ghi-discovery-cross-validation.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.15-ghi-driven-patch-release-ceremony/obpis/OBPI-0.0.15-03-version-sync-integration.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.15-ghi-driven-patch-release-ceremony/obpis/OBPI-0.0.15-04-dual-format-manifest.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.15-ghi-driven-patch-release-ceremony/obpis/OBPI-0.0.15-05-ceremony-skill.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.15-ghi-driven-patch-release-ceremony/obpis/OBPI-0.0.15-06-dogfood-fix-version-drift.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "Completed",
+          "before": "Pending",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.16-frontmatter-ledger-coherence-guard/ADR-0.0.16-frontmatter-ledger-coherence-guard.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.3-hexagonal-architecture-tune-up/obpis/OBPI-0.0.3-01-hexagonal-skeleton.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.3-hexagonal-architecture-tune-up/obpis/OBPI-0.0.3-02-domain-extraction.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.3-hexagonal-architecture-tune-up/obpis/OBPI-0.0.3-03-exception-hierarchy.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.3-hexagonal-architecture-tune-up/obpis/OBPI-0.0.3-04-test-fakes-separation.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.3-hexagonal-architecture-tune-up/obpis/OBPI-0.0.3-05-config-precedence-injection.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.3-hexagonal-architecture-tune-up/obpis/OBPI-0.0.3-06-output-formatter.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.3-hexagonal-architecture-tune-up/obpis/OBPI-0.0.3-07-structured-logging-structlog.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.3-hexagonal-architecture-tune-up/obpis/OBPI-0.0.3-08-progress-indication.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.3-hexagonal-architecture-tune-up/obpis/OBPI-0.0.3-09-policy-tests.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.4-cli-standards-presentation-foundation/obpis/OBPI-0.0.4-01-cli-module-restructure.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.4-cli-standards-presentation-foundation/obpis/OBPI-0.0.4-02-parser-infrastructure.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.4-cli-standards-presentation-foundation/obpis/OBPI-0.0.4-03-common-flags-option-factories.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.4-cli-standards-presentation-foundation/obpis/OBPI-0.0.4-04-help-text-completeness.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.4-cli-standards-presentation-foundation/obpis/OBPI-0.0.4-05-epilog-templates.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.4-cli-standards-presentation-foundation/obpis/OBPI-0.0.4-06-output-formatter.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.4-cli-standards-presentation-foundation/obpis/OBPI-0.0.4-07-exception-hierarchy-exit-codes.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.4-cli-standards-presentation-foundation/obpis/OBPI-0.0.4-08-runtime-presentation.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.4-cli-standards-presentation-foundation/obpis/OBPI-0.0.4-09-progress-indication.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.4-cli-standards-presentation-foundation/obpis/OBPI-0.0.4-10-cli-consistency-tests.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.5-evaluation-infrastructure/obpis/OBPI-0.0.5-01-define-reference-datasets-for-top-level-workflows-golden-paths-and-edge-cases.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.5-evaluation-infrastructure/obpis/OBPI-0.0.5-02-add-offline-eval-harnesses-as-first-class-quality-checks.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.5-evaluation-infrastructure/obpis/OBPI-0.0.5-03-define-release-gates-based-on-eval-deltas-for-ai-sensitive-surfaces.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.5-evaluation-infrastructure/obpis/OBPI-0.0.5-04-add-regression-detection-for-model-prompt-changes-before-high-agency-rollout.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.6-documentation-cross-coverage-enforcement/obpis/OBPI-0.0.6-01-ast-scanner.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.6-documentation-cross-coverage-enforcement/obpis/OBPI-0.0.6-02-documentation-manifest.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.6-documentation-cross-coverage-enforcement/obpis/OBPI-0.0.6-03-chore-registration-and-enforcement.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.7-config-first-resolution-discipline/obpis/OBPI-0.0.7-01-manifest-v2-schema.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.7-config-first-resolution-discipline/obpis/OBPI-0.0.7-02-resolution-helpers.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.7-config-first-resolution-discipline/obpis/OBPI-0.0.7-03-eval-module-migration.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.7-config-first-resolution-discipline/obpis/OBPI-0.0.7-04-hooks-module-migration.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.7-config-first-resolution-discipline/obpis/OBPI-0.0.7-05-lint-rule-and-check-expansion.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.8-feature-toggle-system/obpis/OBPI-0.0.8-01-flag-models-and-registry.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.8-feature-toggle-system/obpis/OBPI-0.0.8-02-flag-service.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.8-feature-toggle-system/obpis/OBPI-0.0.8-03-feature-decisions.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.8-feature-toggle-system/obpis/OBPI-0.0.8-04-diagnostics-and-staleness.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.8-feature-toggle-system/obpis/OBPI-0.0.8-05-cli-surface.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.8-feature-toggle-system/obpis/OBPI-0.0.8-06-closeout-migration.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.8-feature-toggle-system/obpis/OBPI-0.0.8-07-config-gates-removal.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.8-feature-toggle-system/obpis/OBPI-0.0.8-08-operator-docs.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.9-state-doctrine-source-of-truth/obpis/OBPI-0.0.9-01-three-layer-model-documentation.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.9-state-doctrine-source-of-truth/obpis/OBPI-0.0.9-02-ledger-first-status-reads.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.9-state-doctrine-source-of-truth/obpis/OBPI-0.0.9-03-state-repair-command.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.9-state-doctrine-source-of-truth/obpis/OBPI-0.0.9-04-lifecycle-auto-fix.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.9-state-doctrine-source-of-truth/obpis/OBPI-0.0.9-05-l3-gate-independence.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/foundation/ADR-0.0.9-state-doctrine-source-of-truth/obpis/OBPI-0.0.9-06-marker-migration-path.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.10.0-obpi-runtime-surface/obpis/OBPI-0.10.0-01-obpi-runtime-contract-and-state-model.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.10.0-obpi-runtime-surface/obpis/OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.10.0-obpi-runtime-surface/obpis/OBPI-0.10.0-03-obpi-proof-and-lifecycle-integration.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.11.0-airlineops-obpi-completion-pipeline-parity/obpis/OBPI-0.11.0-01-obpi-transaction-contract-and-scope-isolation.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.11.0-airlineops-obpi-completion-pipeline-parity/obpis/OBPI-0.11.0-02-obpi-completion-validator-and-git-sync-gate.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.11.0-airlineops-obpi-completion-pipeline-parity/obpis/OBPI-0.11.0-03-obpi-completion-recorder-and-anchor-receipts.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.11.0-airlineops-obpi-completion-pipeline-parity/obpis/OBPI-0.11.0-04-anchor-aware-obpi-drift-and-reconciliation.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.11.0-airlineops-obpi-completion-pipeline-parity/obpis/OBPI-0.11.0-05-gz-obpi-pipeline-skill-and-mirror-surface.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.11.0-airlineops-obpi-completion-pipeline-parity/obpis/OBPI-0.11.0-06-template-closeout-and-migration-alignment.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.12.0-obpi-pipeline-enforcement-parity/obpis/OBPI-0.12.0-01-canonical-hook-inventory-and-parity-contract.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.12.0-obpi-pipeline-enforcement-parity/obpis/OBPI-0.12.0-02-plan-exit-audit-gate-parity.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.12.0-obpi-pipeline-enforcement-parity/obpis/OBPI-0.12.0-03-pipeline-router-and-active-marker-bridge.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.12.0-obpi-pipeline-enforcement-parity/obpis/OBPI-0.12.0-04-write-time-pipeline-gate.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.12.0-obpi-pipeline-enforcement-parity/obpis/OBPI-0.12.0-05-completion-reminder-surface.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.12.0-obpi-pipeline-enforcement-parity/obpis/OBPI-0.12.0-06-settings-registration-and-operator-verification-alignment.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.12.0-obpi-pipeline-enforcement-parity/obpis/OBPI-0.12.0-07-plan-audit-skill-and-receipt-parity.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.13.0-obpi-pipeline-runtime-surface/obpis/OBPI-0.13.0-01-runtime-command-contract.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.13.0-obpi-pipeline-runtime-surface/obpis/OBPI-0.13.0-02-persist-stage-state.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.13.0-obpi-pipeline-runtime-surface/obpis/OBPI-0.13.0-03-structured-stage-outputs.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.13.0-obpi-pipeline-runtime-surface/obpis/OBPI-0.13.0-04-human-gate-boundary.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.13.0-obpi-pipeline-runtime-surface/obpis/OBPI-0.13.0-05-runtime-engine-integration.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.14.0-multi-agent-instruction-architecture-unification/obpis/OBPI-0.14.0-01-canon-shared-instruction-model.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.14.0-multi-agent-instruction-architecture-unification/obpis/OBPI-0.14.0-02-native-path-scoped-rules.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.14.0-multi-agent-instruction-architecture-unification/obpis/OBPI-0.14.0-03-root-surface-slimming-and-workflow-relocation.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.14.0-multi-agent-instruction-architecture-unification/obpis/OBPI-0.14.0-04-instruction-audit-and-drift-detection.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.14.0-multi-agent-instruction-architecture-unification/obpis/OBPI-0.14.0-05-local-vs-repo-config-and-sync-determinism.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.14.0-multi-agent-instruction-architecture-unification/obpis/OBPI-0.14.0-06-instruction-evals-and-readiness-checks.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.15.0-pydantic-schema-enforcement/obpis/OBPI-0.15.0-01-core-model-migration.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.15.0-pydantic-schema-enforcement/obpis/OBPI-0.15.0-02-content-type-frontmatter-models.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.15.0-pydantic-schema-enforcement/obpis/OBPI-0.15.0-03-ledger-event-discrimination.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.15.0-pydantic-schema-enforcement/obpis/OBPI-0.15.0-04-schema-generation-unification.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.16.0-cms-architecture-formalization/obpis/OBPI-0.16.0-01-content-type-registry.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.17.0-agentsmd-tidy-control-surface-schema-and-rules-mir/obpis/OBPI-0.17.0-01-categorized-skill-catalog.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.17.0-agentsmd-tidy-control-surface-schema-and-rules-mir/obpis/OBPI-0.17.0-02-rules-mirroring.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.17.0-agentsmd-tidy-control-surface-schema-and-rules-mir/obpis/OBPI-0.17.0-03-slim-claudemd-template.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.17.0-agentsmd-tidy-control-surface-schema-and-rules-mir/obpis/OBPI-0.17.0-04-json-schemas-and-validation.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.17.0-agentsmd-tidy-control-surface-schema-and-rules-mir/obpis/OBPI-0.17.0-05-manifest-update-and-final-sync.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.18.0-subagent-driven-pipeline-execution/obpis/OBPI-0.18.0-02-implementer-subagent-dispatch.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.18.0-subagent-driven-pipeline-execution/obpis/OBPI-0.18.0-05-pipeline-runtime-integration.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.18.0-subagent-driven-pipeline-execution/obpis/OBPI-0.18.0-06-wire-implementer-dispatch.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.18.0-subagent-driven-pipeline-execution/obpis/OBPI-0.18.0-07-wire-two-stage-review.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.18.0-subagent-driven-pipeline-execution/obpis/OBPI-0.18.0-08-wire-req-verification-dispatch.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.2.0-gate-verification/obpis/OBPI-0.2.0-01-gate-verification.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.2.0-gate-verification/obpis/OBPI-0.2.0-02-dry-run-options.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.2.0-gate-verification/obpis/OBPI-0.2.0-03-docs-updates.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.20.0-spec-triangle-sync/obpis/OBPI-0.20.0-01-req-entity-and-triangle-data-model.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.20.0-spec-triangle-sync/obpis/OBPI-0.20.0-02-brief-req-extraction.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.20.0-spec-triangle-sync/obpis/OBPI-0.20.0-03-drift-detection-engine.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.20.0-spec-triangle-sync/obpis/OBPI-0.20.0-04-gz-drift-cli-surface.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.20.0-spec-triangle-sync/obpis/OBPI-0.20.0-05-advisory-gate-integration.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.21.0-tests-for-spec/obpis/OBPI-0.21.0-01-covers-decorator-and-registration.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.21.0-tests-for-spec/obpis/OBPI-0.21.0-02-coverage-anchor-scanner.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.21.0-tests-for-spec/obpis/OBPI-0.21.0-03-gz-covers-cli.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.21.0-tests-for-spec/obpis/OBPI-0.21.0-04-adr-audit-integration.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.21.0-tests-for-spec/obpis/OBPI-0.21.0-05-operator-docs-and-migration.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.22.0-task-level-governance/obpis/OBPI-0.22.0-01-task-entity-model.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.22.0-task-level-governance/obpis/OBPI-0.22.0-02-task-ledger-events.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.22.0-task-level-governance/obpis/OBPI-0.22.0-03-git-commit-linkage.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.22.0-task-level-governance/obpis/OBPI-0.22.0-04-gz-task-cli.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.22.0-task-level-governance/obpis/OBPI-0.22.0-05-status-and-state-integration.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.23.0-agent-burden-of-proof/obpis/OBPI-0.23.0-01-closing-argument.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.23.0-agent-burden-of-proof/obpis/OBPI-0.23.0-02-product-proof-gate.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.23.0-agent-burden-of-proof/obpis/OBPI-0.23.0-03-reviewer-agent.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.23.0-agent-burden-of-proof/obpis/OBPI-0.23.0-04-ceremony-enforcement.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-01-attestation-pattern.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-02-progress-pattern.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-03-signature-pattern.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-04-world-state-pattern.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-05-dataset-version-pattern.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-06-registry-pattern.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-07-types-pattern.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-08-ledger-pattern.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-09-schema-pattern.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-10-errors-pattern.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-11-hooks-pattern.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-12-admission-pattern.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-13-qc-pattern.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-14-os-pattern.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-15-manifests-pattern.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-16-config-pattern.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-17-console-pattern.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-18-adr-lifecycle-pattern.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-19-adr-audit-ledger-pattern.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-20-adr-governance-pattern.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-21-adr-reconciliation-pattern.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-22-adr-traceability-pattern.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-23-artifact-management-pattern.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-24-cli-audit-pattern.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-25-docs-validation-pattern.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-26-drift-detection-pattern.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-27-policy-guards-pattern.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-28-layout-verification-pattern.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-29-ledger-schema-pattern.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-30-references-pattern.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-31-validation-receipts-pattern.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-32-handoff-validation-pattern.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-33-arb-analysis-pattern.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.3.0-airlineops-canon-reconciliation/obpis/OBPI-0.3.0-01-skills-surface-parity.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.3.0-airlineops-canon-reconciliation/obpis/OBPI-0.3.0-02-divergent-skill-reconciliation.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.3.0-airlineops-canon-reconciliation/obpis/OBPI-0.3.0-03-govzero-canonical-doc-surface.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.3.0-airlineops-canon-reconciliation/obpis/OBPI-0.3.0-04-core-semantics-reconciliation.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.3.0-airlineops-canon-reconciliation/obpis/OBPI-0.3.0-05-parity-scan-path-hardening.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.4.0-skill-capability-mirroring/obpis/OBPI-0.4.0-01-skill-source-centralization.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.4.0-skill-capability-mirroring/obpis/OBPI-0.4.0-02-agent-native-mirror-contracts.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.4.0-skill-capability-mirroring/obpis/OBPI-0.4.0-03-sync-determinism-and-recovery.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.4.0-skill-capability-mirroring/obpis/OBPI-0.4.0-04-mirror-compat-migration.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.40.0-reporter-rendering-infrastructure/briefs/OBPI-0.40.0-01-reporter-module-scaffold.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.5.0-skill-lifecycle-governance/obpis/OBPI-0.5.0-01-skill-taxonomy-and-capability-model.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.5.0-skill-lifecycle-governance/obpis/OBPI-0.5.0-02-parity-verification-policy.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.5.0-skill-lifecycle-governance/obpis/OBPI-0.5.0-03-lifecycle-state-transitions.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.5.0-skill-lifecycle-governance/obpis/OBPI-0.5.0-04-maintenance-and-deprecation-operations.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.5.0-skill-lifecycle-governance/obpis/OBPI-0.5.0-05-obpi-acceptance-protocol-runtime-parity.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.6.0-pool-promotion-protocol/obpis/OBPI-0.6.0-01-pool-source-contract.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.6.0-pool-promotion-protocol/obpis/OBPI-0.6.0-02-promotion-command-lineage.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.6.0-pool-promotion-protocol/obpis/OBPI-0.6.0-03-operator-narratives-and-auditability.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.7.0-obpi-first-operations/obpis/OBPI-0.7.0-01-obpi-completion-validator-gate.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.7.0-obpi-first-operations/obpis/OBPI-0.7.0-02-obpi-completion-recorder-and-anchor.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.7.0-obpi-first-operations/obpis/OBPI-0.7.0-03-ledger-first-obpi-audit-consumption.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.7.0-obpi-first-operations/obpis/OBPI-0.7.0-04-obpi-drift-and-status-reconciliation.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.8.0-gz-chores-system/obpis/OBPI-0.8.0-01-chores-registry.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.8.0-gz-chores-system/obpis/OBPI-0.8.0-02-chores-runner.md"
+    },
+    {
+      "diffs": [
+        {
+          "after": "attested_completed",
+          "before": "in_progress",
+          "field": "status"
+        }
+      ],
+      "path": "docs/design/adr/pre-release/ADR-0.8.0-gz-chores-system/obpis/OBPI-0.8.0-03-chores-lifecycle.md"
+    }
+  ],
+  "ledger_cursor": "sha256:1aae1d7c88a442d5b550f1b24c367bc537f10243132e1f493aa8c8a77ef1d2a8",
+  "run_completed_at": "2026-04-18T11:54:44.907781+00:00",
+  "run_started_at": "2026-04-18T11:54:44.606587+00:00",
+  "skipped": [
+    {
+      "path": "docs/design/adr/pool/ADR-pool.adr-amendment-tracking.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.agent-execution-intelligence.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.agent-pipeline-refinements.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.agent-reliability-framework.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.agent-role-specialization.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.agentic-security-review.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.ai-runtime-foundations.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.airlineops-canon-reconciliation.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.airlineops-direct-governance-migration.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.atomic-obpi-commits.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.attestation-advisory-agent.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.change-isolation-workspace.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.channel-agnostic-human-triggers.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.cli-positional-first-doctrine.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.command-aliases.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.compression-governance-hooks.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.constitution-invariants.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.constraint-cli-surfaces.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.constraint-library.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.content-injection-scanning.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.controlled-agency-recovery.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.cross-session-search.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.design-references-bibliography.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.documented-decorator-contract.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.execution-memory-graph.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.filesystem-checkpoints.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.focused-context-loader.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.ghi-triage-closeout.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.go-runtime-parity.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.graduated-oversight-model.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.gz-preflight-health-orchestration.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.harness-agnostic-plan-capture.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.harness-aware-execution-modes.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.heavy-lane.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.interpretability-hardened-agent-surfaces.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.pause-resume-handoff-runtime.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.per-command-persona-context.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.pool-dag-promotion-routing.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.pool-health-management.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.pool-management.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.pre-planning-interview.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.prime-context-hooks.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.progressive-context-disclosure.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.pydantic-schema-enforcement.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.rag-anything-governance-retrieval.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.release-hardening.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.research-skill-composition.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.sandboxed-delegation.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.session-productivity-metrics.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.skill-behavioral-hardening.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.skill-feedback-loop.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.spec-delta-markers.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.storage-simplicity-profile.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.structured-blocker-envelopes.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.structured-prompt-architecture.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.structured-research-phase.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.structured-uat-walkthrough.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.student-mode.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.svfr-quick-adhoc.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.unified-closeout-audit-processes.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.universal-agent-onboarding.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.vendor-alignment-claude-code.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.vendor-alignment-codex.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.vendor-alignment-copilot.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.vendor-alignment-gemini-cli.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.vendor-alignment-opencode.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.vendor-scoped-chores.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/ADR-pool.wave-dependency-execution.md",
+      "reason": "pool-adr"
+    },
+    {
+      "path": "docs/design/adr/pool/README.md",
+      "reason": "pool-adr"
+    }
+  ]
+}

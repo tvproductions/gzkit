@@ -3,7 +3,7 @@ id: OBPI-0.13.0-05-runtime-engine-integration
 parent: ADR-0.13.0-obpi-pipeline-runtime-surface
 item: 5
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.13.0-05-runtime-engine-integration: Runtime Engine Integration

@@ -3,7 +3,7 @@ id: OBPI-0.14.0-01-canon-shared-instruction-model
 parent: ADR-0.14.0-multi-agent-instruction-architecture-unification
 item: 1
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.14.0-01-canon-shared-instruction-model: Canonical Shared Instruction Model

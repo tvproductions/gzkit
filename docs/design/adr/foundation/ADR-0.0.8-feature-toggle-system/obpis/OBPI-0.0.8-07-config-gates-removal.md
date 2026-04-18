@@ -3,7 +3,7 @@ id: OBPI-0.0.8-07-config-gates-removal
 parent: ADR-0.0.8-feature-toggle-system
 item: 7
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.0.8-07: Config Gates Removal

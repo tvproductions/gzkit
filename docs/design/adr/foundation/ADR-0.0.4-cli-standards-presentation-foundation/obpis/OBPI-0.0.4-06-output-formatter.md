@@ -3,7 +3,7 @@ id: OBPI-0.0.4-06-output-formatter
 parent: ADR-0.0.4-cli-standards-presentation-foundation
 item: 6
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.0.4-06: OutputFormatter

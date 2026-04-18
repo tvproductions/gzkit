@@ -3,7 +3,7 @@ id: OBPI-0.12.0-06-settings-registration-and-operator-verification-alignment
 parent: ADR-0.12.0-obpi-pipeline-enforcement-parity
 item: 6
 lane: Heavy
-status: in_progress
+status: attested_completed
 ---
 
 # OBPI-0.12.0-06-settings-registration-and-operator-verification-alignment: Settings registration and operator verification alignment
