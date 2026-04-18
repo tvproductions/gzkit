@@ -64,6 +64,17 @@ class PrdFrontmatter(BaseModel):
     date: str = Field(..., pattern=r"^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
 
 
+class ConstitutionFrontmatter(BaseModel):
+    """Constitution frontmatter — mirrors ``src/gzkit/schemas/constitution.json``."""
+
+    model_config = ConfigDict(frozen=True, extra="allow")
+
+    id: str = Field(..., pattern=r"^CONSTITUTION-[A-Z0-9]+-[0-9]+\.[0-9]+\.[0-9]+$")
+    status: Literal["Draft", "Review", "Ratified", "Superseded"]
+    semver: str = Field(..., pattern=r"^[0-9]+\.[0-9]+\.[0-9]+$")
+    date: str = Field(..., pattern=r"^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
+
+
 # ---------------------------------------------------------------------------
 # Control-surface frontmatter models
 # ---------------------------------------------------------------------------
@@ -245,6 +256,7 @@ SCHEMA_TO_MODEL: dict[str, type[BaseModel]] = {
     "gzkit.adr.v1": AdrFrontmatter,
     "gzkit.obpi.v1": ObpiFrontmatter,
     "gzkit.prd.v1": PrdFrontmatter,
+    "gzkit.constitution.v1": ConstitutionFrontmatter,
 }
 
 

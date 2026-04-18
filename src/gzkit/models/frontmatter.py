@@ -7,6 +7,7 @@ all public symbols for backward compatibility.
 from gzkit.core.models import (
     SCHEMA_TO_MODEL,
     AdrFrontmatter,
+    ConstitutionFrontmatter,
     InstructionFrontmatter,
     ObpiFrontmatter,
     PrdFrontmatter,
@@ -16,6 +17,7 @@ from gzkit.core.models import (
 
 __all__ = [
     "AdrFrontmatter",
+    "ConstitutionFrontmatter",
     "InstructionFrontmatter",
     "ObpiFrontmatter",
     "PrdFrontmatter",
