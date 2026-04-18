@@ -8,6 +8,18 @@
 - Every version bump is a release. After bumping `pyproject.toml`, `__init__.py`, and the README badge, always create a GitHub release with `gh release create vX.Y.Z --target main --title "vX.Y.Z" --latest --notes "..."`. The release workflow triggers PyPI publish and binary builds from the tag. Never leave a version bump uncommitted without a corresponding release.
 - When scaffolding `.gitignore` files (in `gz init` or any related skill), use [github/gitignore](https://github.com/github/gitignore) as the canonical reference. The Python template lives at `Python.gitignore` in that repo. Fetch it via `gh api repos/github/gitignore/contents/Python.gitignore --jq '.content' | base64 -d`. Keep the scaffolded version focused on what's relevant to gzkit projects, plus gzkit-specific entries (`.claude/settings.local.json`).
 
+## Governance doctrine surfaces
+
+Read before touching governance code, rules, or audits:
+
+- `docs/governance/trust-doctrine.md` — trust-chain poisoning pattern and the T1/T2/T3 invariants every layer boundary must satisfy.
+- `docs/governance/advisory-rules-audit.md` — the scorecard catalogue of every rule in `CLAUDE.md` and `.gzkit/rules/`. Score each new rule **Mechanical / Promotable / Judgment / Ambiguous**; promote Promotable rules to mechanical under a tracking GHI.
+- `docs/governance/state-doctrine.md` — storage-tier doctrine; Layer 3 derived views are never source-of-truth.
+
+The advisory scorecard is self-testing via `uv run gz validate --advisory-scorecard`: a new rule file under `.gzkit/rules/` without a scorecard entry fails the audit.
+
+Promoted audits run via `uv run gz validate --<scope>` — see `gz validate --help` for the full flag list. The trust-doctrine and scorecard pages list every promoted scope and the GHI under which it landed.
+
 ## Architectural Boundaries
 
 *Source: Architecture Planning Memo Section 12 (Decision Record 2026-03-29).*
