@@ -43,6 +43,84 @@ TEMPLATE_SCAFFOLD_MARKERS: dict[str, list[str]] = {
 }
 
 
+# GHI #194: brief-prescribed gz commands must resolve against the registered
+# parser. The pattern matches `(uv run )?gz <verb-chain>` where the chain is
+# one or more lowercase verb tokens. Whitespace is `[ \t]` (not `\s`) so the
+# chain cannot span newlines — each prescribed command is one line. The
+# extractor confines matching to backtick-inline and fenced-code contexts so
+# prose mentions like "transcribe gz commands" are not interpreted as
+# prescriptive invocations.
+_GZ_COMMAND_PATTERN = re.compile(
+    r"(?:uv run[ \t]+)?\bgz[ \t]+([a-z][a-z-]*(?:[ \t]+[a-z][a-z-]*)*)",
+)
+_INLINE_CODE_PATTERN = re.compile(r"`([^`\n]+)`")
+_FENCED_BLOCK_PATTERN = re.compile(r"```[a-z]*\n(.*?)\n```", flags=re.DOTALL)
+
+
+def extract_gz_command_chains(content: str) -> list[list[str]]:
+    """Extract every `gz <verb> [<verb>...]` chain from brief code segments.
+
+    Scans inline code (\\`...\\`) and fenced code blocks (\\`\\`\\`...\\`\\`\\`)
+    only — prose mentions are ignored by design (brief authors quote
+    prescriptive commands; prose references are descriptive). Used by
+    ObpiValidator._validate_command_shapes to verify each chain resolves
+    against the registered CLI parser tree (GHI #194).
+    """
+    chains: list[list[str]] = []
+    code_segments = _INLINE_CODE_PATTERN.findall(content) + _FENCED_BLOCK_PATTERN.findall(content)
+    for segment in code_segments:
+        for line in segment.splitlines():
+            for match in _GZ_COMMAND_PATTERN.finditer(line):
+                chain = match.group(1).split()
+                if chain:
+                    chains.append(chain)
+    return chains
+
+
+def verify_gz_chain(verbs: list[str]) -> tuple[bool, str]:
+    """Walk a verb chain through the gz parser tree.
+
+    Returns ``(ok, reason)``. The walk advances through subparser levels;
+    when the current level has no further subparsers (a leaf verb), the
+    remaining tokens are treated as positional arguments (e.g.
+    ``gz chores run frontmatter-ledger-coherence`` resolves at ``run`` and
+    the slug is a positional). Verbs at intermediate levels MUST be
+    registered choices — typos fail closed.
+    """
+    import argparse  # noqa: PLC0415
+
+    from gzkit.cli.main import _get_parser  # noqa: PLC0415
+
+    parser = _get_parser()
+    current: argparse.ArgumentParser = parser
+    walked: list[str] = []
+    for verb in verbs:
+        sub_action = next(
+            (a for a in current._actions if isinstance(a, argparse._SubParsersAction)),
+            None,
+        )
+        if sub_action is None:
+            # Current parser is a leaf; remaining tokens are positional args.
+            return True, f"resolved 'gz {' '.join(walked)}'"
+        if verb not in sub_action.choices:
+            available = sorted(sub_action.choices.keys())
+            sample = ", ".join(available[:8])
+            suffix = "..." if len(available) > 8 else ""
+            prefix = f"'gz {' '.join(walked)}'" if walked else "'gz'"
+            return False, (
+                f"{prefix} — '{verb}' is not a registered subcommand at "
+                f"this level (available: {sample}{suffix})"
+            )
+        walked.append(verb)
+        # argparse _SubParsersAction.choices values are ArgumentParser at runtime
+        # but the stub types them as object; safe cast based on isinstance check above.
+        next_parser = sub_action.choices[verb]
+        if not isinstance(next_parser, argparse.ArgumentParser):
+            return True, f"resolved 'gz {' '.join(walked)}' (leaf choice)"
+        current = next_parser
+    return True, f"resolved 'gz {' '.join(walked)}'"
+
+
 def section_body(content: str, heading: str) -> str | None:
     """Return the body of an H2/H3 section when present."""
     for marker in ("##", "###"):
@@ -344,6 +422,30 @@ class ObpiValidator:
                 "for authored readiness."
             )
 
+        errors.extend(self._validate_command_shapes(content))
+
+        return errors
+
+    def _validate_command_shapes(self, content: str) -> list[str]:
+        """Verify every brief-prescribed `gz X Y Z` invocation resolves (GHI #194).
+
+        Closes the class-of-failure where brief authors transcribe an
+        unregistered verb chain (e.g. singular ``gz chore run`` instead of
+        plural ``gz chores run``) and the agent only discovers the typo at
+        pipeline runtime. Each unique chain is verified once against the
+        cached parser tree.
+        """
+        errors: list[str] = []
+        chains = extract_gz_command_chains(content)
+        seen: set[tuple[str, ...]] = set()
+        for chain in chains:
+            key = tuple(chain)
+            if key in seen:
+                continue
+            seen.add(key)
+            ok, reason = verify_gz_chain(chain)
+            if not ok:
+                errors.append(f"Brief command-shape error: {reason}")
         return errors
 
     def _detect_template_scaffold(self, content: str) -> list[str]:
