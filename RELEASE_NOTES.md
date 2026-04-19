@@ -1,5 +1,79 @@
 # gzkit Release Notes
 
+## v0.25.11 (2026-04-18)
+
+**Release ceremony unblocked and correctness-anchored: patch-release discovery now anchors to the
+commit range (doctrine: "count what we CLOSE, not what we book"); the version-release audit accepts
+in-flight manifests so `gz patch release --full` can ship itself; plan-audit cross-references sibling
+ADRs for scope collisions; audit-check recognizes BDD and doc-proof channels; per-increment TDD
+rhythm codified with named anti-patterns. 6 GHIs closed.**
+
+### Fixed
+
+- **#233 — Patch-release discovery anchored to commit range, not close-time window.** `gz patch
+  release --dry-run` had reported 30 qualifying GHIs for v0.25.11 against 6 real closures — a 5×
+  over-count driven by (1) a `YYYY-MM-DD` truncation of the tag timestamp in the `gh issue
+  list --search` predicate, so GHIs closed hours BEFORE the tag on the same calendar day re-matched,
+  and (2) a `git log --all` cross-validation that couldn't distinguish "shipped this release" from
+  "shipped three tags ago." Replaced both with a `git log <base_ref>..HEAD` walk parsing
+  GitHub-canonical closure keywords (`Closes|Fixes|Resolves #N`, case-insensitive, ±s/d suffixes).
+  The project's `(GHI #N)` paren form in commit subjects is a citation convention, not a closure
+  declaration — design and ceremony commits cite prior GHIs for context without closing them — and
+  no longer inflates the release ledger. Upstream GHI state is not consulted: a locally-committed
+  `Closes #N` ships the GHI by definition; `gh issue close` fires on push. Surfaced by operator
+  during the v0.25.11 ceremony; doctrine: *"we only count what we CLOSE, not what we book."*
+- **#217 — `audit_version_release` accepts an in-flight release manifest as equivalent to a tag.**
+  The GHI #205 naked-bump guard was fail-closing against the very `release: vX.Y.Z` commit that
+  `gz patch release --full` authored, because tags are created by `gh release create` AFTER the
+  bump commit lands. The audit now passes when either a matching `vX.Y.Z` tag exists OR
+  `docs/releases/PATCH-vX.Y.Z.md` has been written — proof that `gz patch release` is mid-ceremony.
+  Naked-bump detection retained: a pyproject bump with no manifest and no tag still fails closed.
+- **#166 — `gz adr report` orphan check parses frontmatter `id:` instead of relying on file-stem
+  parity.** ADR-0.41.0 (stem `ADR-0.41.0-tdd-emission-and-graph-rot-remediation`) was reported as
+  unregistered despite 15 ledger events for its canonical id. Fix mirrors the dual-lookup pattern
+  already in `register.py:150-169`: canonical candidates include both `parsed_id` and `stem_id`.
+- **#165 — `gz adr audit-check` recognizes three proof channels beyond `@covers` decorators.**
+  Previously non-code REQs had to either tag `[doc]` (skipped entirely) or bolt a spurious `@covers`
+  onto an unrelated `.py` file — as happened for REQ-0.25.0-33-05 where a behavioral proof got a
+  fake decorator on `tests/commands/test_arb_cmd.py`. Now: BDD `@REQ-X.Y.Z-NN-MM` scenario tags in
+  `features/**/*.feature` count as coverage for code REQs; `_synthesize_doc_proof_linkage` walks
+  every DOC-kind REQ and attributes coverage to decision-doc text, command docs, governance
+  artifacts, runbook entries, release manifests, or BDD features through the real evidence channel.
+  `[doc]` REQs are now surfaced in the coverage report and must be proven — the "look-differently,
+  not don't-look" contract.
+- **#152 — `gz plan audit` detects scope collisions across sibling ADRs.** OBPI-0.25.0-33 and 9
+  OBPI-0.27.0 briefs all claimed `src/gzkit/arb/` files; both receipts returned PASS and the
+  collision was structurally invisible until operator cross-reference at Stage 4. New
+  `_scan_sibling_adr_collisions` walks sibling ADR packages, computes allowed-paths overlap with
+  directory-prefix semantics (so `src/gzkit/a` doesn't spuriously match `src/gzkit/arb`), and
+  surfaces results as an advisory `DRIFTED — scope-collision` block in the receipt. Advisory only;
+  the receipt still PASSes on collision. Repaired `_extract_allowed_paths` in the same patch:
+  252 of 454 real briefs use `## ALLOWED PATHS` (UPPERCASE) or `## ALLOWED PATHS (Foundational)` —
+  the old case-sensitive match missed them entirely, which would have given the new scanner nothing
+  to work against.
+
+### Governance
+
+- **#157 — Per-increment TDD rhythm codified; test-dump theater and stop-and-ask named as distinct
+  anti-patterns.** `.gzkit/rules/tests.md` gains a binding "per-increment rhythm" section:
+  one test → observed RED → minimum code to GREEN → next increment, flowing until a logical
+  checkpoint. `.gzkit/rules/attestation-enrichment.md` clarifies that ARB encodes `exit_status=1`
+  as a defect while a TDD RED test is *correct* first-run behavior — so Gate 2 TDD claims cite ARB
+  only for the GREEN side; fabricating `exit_status=1` ARB receipts as "RED receipts" is the same
+  post-hoc-false class as the `ty check .` drift GHI #199 closed. The DO IT RIGHT anti-pattern
+  canon in `src/gzkit/templates/agents.md` gains entries for batch-RED/GREEN screenshot theater
+  and stop-and-ask between increments, both citing GHI #157. Tool half (dedicated RED/GREEN
+  receipt stream, new `gz tdd` CLI verb group) parked in `ADR-pool.tdd-receipt-stream` behind the
+  committed feature-ADR backlog.
+
+### Stats
+
+- 6 GHIs closed (#152, #157, #165, #166, #217, #233)
+- 3186 tests total; 9 new tests for GHI #233 (closure-keyword semantics, range anchoring); 4
+  pre-existing `TestPlanAuditGateHook` Windows subprocess failures from GHI #223 unchanged
+- First-party ceremony integrity: `gz patch release` discovery logic is now correctly anchored to
+  its own commit range, verified against the v0.25.10→v0.25.11 window (6 closures, zero duplicates)
+
 ## v0.25.10 (2026-04-18)
 
 **Constitution scaffolder/validator parity, advisory-rules promotion wave,
