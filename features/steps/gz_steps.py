@@ -39,14 +39,16 @@ def _invoke(args: list[str]) -> tuple[int, str]:
 
 @given("the workspace is initialized in heavy mode")
 def step_init_heavy(_context) -> None:  # type: ignore[no-untyped-def]
-    code, output = _invoke(["init", "--mode", "heavy"])
-    assert code == 0, output
+    from tests.commands.common import _quick_init  # noqa: PLC0415
+
+    _quick_init(mode="heavy")
 
 
 @given("the workspace is initialized")
 def step_init_default(_context) -> None:  # type: ignore[no-untyped-def]
-    code, output = _invoke(["init"])
-    assert code == 0, output
+    from tests.commands.common import _quick_init  # noqa: PLC0415
+
+    _quick_init(mode="lite")
 
 
 @given("a heavy ADR exists")
