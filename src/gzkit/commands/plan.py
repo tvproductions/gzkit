@@ -32,6 +32,15 @@ def plan_cmd(
 
     adr_id = f"ADR-{semver}" if not name.startswith("ADR-") else name
     adr_title = title or name.replace("-", " ").title()
+
+    # GHI #222: canonicalize a short-form ADR parent (e.g. `ADR-0.0.17`) to
+    # its registered long-form (`ADR-0.0.17-slug`). If the parent is not yet
+    # registered or is non-ADR-shaped, resolve_artifact_id passes it through.
+    canonical_parent = parent_obpi or ""
+    if canonical_parent:
+        ledger_for_resolve = Ledger(project_root / config.paths.ledger)
+        canonical_parent = ledger_for_resolve.resolve_artifact_id(canonical_parent)
+
     default_scores = default_dimension_scores(lane, semver)
     scorecard = compute_scorecard(
         data_state=(default_scores["data_state"] if score_data_state is None else score_data_state),
@@ -57,7 +66,7 @@ def plan_cmd(
         title=adr_title,
         semver=semver,
         lane=lane,
-        parent=parent_obpi or "",
+        parent=canonical_parent,
         status="Draft",
         date=date.today().isoformat(),
         decomposition_scorecard=scorecard.to_markdown(),
@@ -80,7 +89,7 @@ def plan_cmd(
 
     ledger = Ledger(project_root / config.paths.ledger)
     try:
-        ledger.append(adr_created_event(adr_id, parent_obpi or "", lane))
+        ledger.append(adr_created_event(adr_id, canonical_parent, lane))
     except OSError as exc:
         console.print(
             f"[red]ERROR:[/red] ADR file created at {adr_file} but ledger write failed: {exc}"

@@ -293,6 +293,38 @@ class TestLedger(unittest.TestCase):
             self.assertNotIn("ADR-0.2.1-pool.gz-chores-system", graph)
             self.assertTrue(graph["ADR-0.6.0-pool.gz-chores-system"]["attested"])
 
+    def test_get_artifact_graph_resolves_short_form_parent_to_canonical(self) -> None:
+        """Graph resolves short-form ADR parents to canonical long-form (GHI #222).
+
+        Existing ledger entries can contain `parent: ADR-X.Y.Z` (short form)
+        while the actual parent was registered with its full slug
+        `ADR-X.Y.Z-slug`. The artifact graph must present the canonical
+        long-form parent so downstream consumers (status, frontmatter
+        validator, reconcile) see a single consistent identifier.
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ledger_path = Path(tmpdir) / "ledger.jsonl"
+            ledger = Ledger(ledger_path)
+
+            ledger.append(
+                adr_created_event("ADR-0.0.17-adr-taxonomy-mechanical", "PRD-1", "heavy")
+            )
+            # Child registered with short-form parent — the drift scenario.
+            ledger.append(
+                adr_created_event("ADR-0.0.18-adr-taxonomy-doctrine", "ADR-0.0.17", "lite")
+            )
+            ledger.append(obpi_created_event("OBPI-0.0.17-01-sample", "ADR-0.0.17"))
+
+            graph = ledger.get_artifact_graph()
+            parent_id = "ADR-0.0.17-adr-taxonomy-mechanical"
+            child_id = "ADR-0.0.18-adr-taxonomy-doctrine"
+            obpi_id = "OBPI-0.0.17-01-sample"
+
+            self.assertEqual(graph[child_id]["parent"], parent_id)
+            self.assertEqual(graph[obpi_id]["parent"], parent_id)
+            self.assertIn(child_id, graph[parent_id]["children"])
+            self.assertIn(obpi_id, graph[parent_id]["children"])
+
     def test_get_latest_gate_statuses_resolves_renamed_ids(self) -> None:
         """Gate status query resolves old IDs through rename events."""
         with tempfile.TemporaryDirectory() as tmpdir:

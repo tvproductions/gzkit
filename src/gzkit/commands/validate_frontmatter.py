@@ -259,7 +259,9 @@ def validate_frontmatter_coherence(
     from gzkit.governance.frontmatter_coherence import _is_pool_artifact
 
     artifacts = scan_existing_artifacts(project_root, config.paths.design_root)
-    canon = ledger.canonicalize_id
+    # GHI #222: use graph-aware resolver so short-form ADR parents
+    # (`ADR-X.Y.Z`) compare equal to canonical long-form (`ADR-X.Y.Z-slug`).
+    canon = ledger.resolve_artifact_id
     errors: list[ValidationError] = []
     status_cache: dict[str, str | None] = {}
 

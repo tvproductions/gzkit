@@ -220,6 +220,57 @@ class TestRegisterAdrsCommand(unittest.TestCase):
             self.assertIn('"event":"obpi_created","id":"OBPI-0.7.0-01-first-item"', ledger_content)
             self.assertIn('"parent":"ADR-0.7.0-my-feature"', ledger_content)
 
+    def test_register_adrs_resolves_short_form_adr_parent(self) -> None:
+        """register-adrs stores ADR parent refs canonically (GHI #222).
+
+        When ADR-B declares `parent: ADR-A` (short-form semver only) while
+        ADR-A is registered on disk as `ADR-A-slug`, register-adrs must
+        store the parent in the ledger as the canonical long form
+        `ADR-A-slug` — matching the ADR-id storage convention. The
+        operator-facing doctrine: the ledger canonicalizes every
+        ADR-shaped identifier to full semver+slug; short-form input is
+        resolved at the boundary.
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+
+            parent_dir = Path(config.paths.adrs) / "pre-release" / "ADR-0.7.0-parent-feature"
+            parent_dir.mkdir(parents=True, exist_ok=True)
+            (parent_dir / "ADR-0.7.0-parent-feature.md").write_text(
+                "---\nid: ADR-0.7.0-parent-feature\nparent: PRD-GZKIT-1.0.0\nlane: lite\n---\n\n"
+                "# ADR-0.7.0: Parent Feature\n",
+                encoding="utf-8",
+            )
+
+            child_dir = Path(config.paths.adrs) / "pre-release" / "ADR-0.8.0-child-feature"
+            child_dir.mkdir(parents=True, exist_ok=True)
+            (child_dir / "ADR-0.8.0-child-feature.md").write_text(
+                "---\n"
+                "id: ADR-0.8.0-child-feature\n"
+                "parent: ADR-0.7.0\n"
+                "lane: lite\n"
+                "---\n\n"
+                "# ADR-0.8.0: Child Feature\n",
+                encoding="utf-8",
+            )
+
+            result = runner.invoke(main, ["register-adrs"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("Registered ADR: ADR-0.7.0-parent-feature", result.output)
+            self.assertIn("Registered ADR: ADR-0.8.0-child-feature", result.output)
+
+            ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
+            child_lines = [
+                line
+                for line in ledger_content.splitlines()
+                if '"id":"ADR-0.8.0-child-feature"' in line and '"event":"adr_created"' in line
+            ]
+            self.assertEqual(len(child_lines), 1)
+            self.assertIn('"parent":"ADR-0.7.0-parent-feature"', child_lines[0])
+            self.assertNotIn('"parent":"ADR-0.7.0"', child_lines[0])
+
     def test_register_adrs_warns_on_orphan_obpis(self) -> None:
         """register-adrs warns when ledger OBPIs have no file on disk (GHI #67)."""
         runner = CliRunner()
