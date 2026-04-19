@@ -5,9 +5,9 @@ description: Run the guarded repository sync ritual; pre-commit hooks enforce li
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-04-17
+last_reviewed: 2026-04-19
 metadata:
-  skill-version: "1.2.0"
+  skill-version: "1.2.1"
 ---
 
 # SKILL.md
@@ -78,11 +78,15 @@ These thoughts mean STOP — you are about to push without the guards:
 
 - Force push appearing anywhere in the routine
 - `--no-verify` used on the commit
-- `--apply` run without `--lint --test` on a code-bearing change
 - Lint or test failures bypassed instead of fixed
 - Divergence resolved by reset/force instead of investigation
 - Dry-run run without follow-through apply
 - Sync run on a tree with uncommitted control-surface drift
+
+> The pre-commit hook (ruff + ty + unittest + xenon) is the mandatory gate;
+> explicit `--lint --test` flags are redundant for the normal ritual (see
+> Steps § 3). Omitting them is not a red flag — skipping the hook via
+> `--no-verify` is.
 
 ## Related Skills
 

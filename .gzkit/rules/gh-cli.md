@@ -8,7 +8,12 @@ description: GitHub CLI usage guardrails
 
 # GitHub CLI Guardrails (gzkit)
 
-Use `gh` only when explicitly requested by the user, an active brief, or closeout protocol.
+Use `gh` for (a) defect tracking per `.gzkit/rules/governance-core.md` and
+`.gzkit/rules/behavioral-invariants.md` (filing defect GHIs is always
+authorized — it is not a user-intent gate), (b) ADR closeout per
+`.gzkit/rules/adr-audit.md`, (c) release ceremony, or (d) any active brief
+or explicit user request. The "Prohibited without explicit approval" list
+below still binds regardless of the authorization surface.
 
 ## Allowed commands
 
