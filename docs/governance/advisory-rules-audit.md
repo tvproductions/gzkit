@@ -129,6 +129,7 @@ This audit scores every rule by:
 | 43 | Use context managers for temp files | **Judgment** | Pattern — hard to mechanize reliably |
 | 44 | Subprocess list form (no `shell=True`) | **Mechanical** | ruff S602/S603 |
 | 45 | Runtime UTF-8 config in entrypoint (no env-var prefix) | **Mechanical** | Rule 9 audit `--utf8-prefix` covers this |
+| 45a | Ad-hoc `python -c` / helper scripts processing gz output must configure UTF-8 stdin/stdout (runtime guard covers only `uv run gz`) | **Promotable** | Could regex-scan tracked shell scripts, skills, and docs for `python -c` / `uv run python -c` / `python tools/*.py` invocations that do not prepend `sys.stdout.reconfigure(encoding='utf-8')`. GHI #234 filed the rule-text fix; mechanical promotion tracked under `ADR-pool.cross-platform-scanner` or a follow-up GHI |
 
 ### Defect Fix Routing (`.gzkit/rules/defect-fix-routing.md`)
 
