@@ -1,6 +1,7 @@
 ---
 id: ADR-0.7.0-obpi-first-operations
 status: Validated
+kind: feature
 semver: 0.7.0
 lane: heavy
 parent: PRD-GZKIT-1.0.0

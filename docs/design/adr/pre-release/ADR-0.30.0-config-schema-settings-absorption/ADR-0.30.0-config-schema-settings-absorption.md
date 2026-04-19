@@ -1,6 +1,7 @@
 ---
 id: ADR-0.30.0-config-schema-settings-absorption
 status: Pending
+kind: feature
 semver: 0.30.0
 lane: heavy
 parent: PRD-GZKIT-1.0.0

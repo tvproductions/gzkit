@@ -1,6 +1,7 @@
 ---
 id: ADR-0.25.0-core-infrastructure-pattern-absorption
 status: Validated
+kind: feature
 semver: 0.25.0
 lane: heavy
 parent: PRD-GZKIT-1.0.0

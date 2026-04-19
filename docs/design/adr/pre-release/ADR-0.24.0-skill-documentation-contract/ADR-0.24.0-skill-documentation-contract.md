@@ -1,6 +1,7 @@
 ---
 id: ADR-0.24.0-skill-documentation-contract
 status: Validated
+kind: feature
 semver: 0.24.0
 lane: lite
 parent: PRD-GZKIT-1.0.0

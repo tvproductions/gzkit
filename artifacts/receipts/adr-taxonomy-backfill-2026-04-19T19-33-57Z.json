@@ -1,0 +1,296 @@
+{
+  "timestamp": "2026-04-19T19-33-57Z",
+  "dry_run": false,
+  "files_scanned": 62,
+  "files_modified": 46,
+  "modifications": [
+    {
+      "path": "docs/design/adr/foundation/ADR-0.0.16-frontmatter-ledger-coherence-guard/ADR-0.0.16-frontmatter-ledger-coherence-guard.md",
+      "kind": "foundation",
+      "semver": "0.0.16"
+    },
+    {
+      "path": "docs/design/adr/foundation/ADR-0.0.19-pre-execution-reasoning-walkthrough/ADR-0.0.19-pre-execution-reasoning-walkthrough.md",
+      "kind": "foundation",
+      "semver": "0.0.19"
+    },
+    {
+      "path": "docs/design/adr/foundation/ADR-0.0.3-hexagonal-architecture-tune-up/ADR-0.0.3-hexagonal-architecture-tune-up.md",
+      "kind": "foundation",
+      "semver": "0.0.3"
+    },
+    {
+      "path": "docs/design/adr/foundation/ADR-0.0.4-cli-standards-presentation-foundation/ADR-0.0.4-cli-standards-presentation-foundation.md",
+      "kind": "foundation",
+      "semver": "0.0.4"
+    },
+    {
+      "path": "docs/design/adr/foundation/ADR-0.0.5-evaluation-infrastructure/ADR-0.0.5-evaluation-infrastructure.md",
+      "kind": "foundation",
+      "semver": "0.0.5"
+    },
+    {
+      "path": "docs/design/adr/foundation/ADR-0.0.6-documentation-cross-coverage-enforcement/ADR-0.0.6-documentation-cross-coverage-enforcement.md",
+      "kind": "foundation",
+      "semver": "0.0.6"
+    },
+    {
+      "path": "docs/design/adr/foundation/ADR-0.0.8-feature-toggle-system/ADR-0.0.8-feature-toggle-system.md",
+      "kind": "foundation",
+      "semver": "0.0.8"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.10.0-obpi-runtime-surface/ADR-0.10.0-obpi-runtime-surface.md",
+      "kind": "feature",
+      "semver": "0.10.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.11.0-airlineops-obpi-completion-pipeline-parity/ADR-0.11.0-airlineops-obpi-completion-pipeline-parity.md",
+      "kind": "feature",
+      "semver": "0.11.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.12.0-obpi-pipeline-enforcement-parity/ADR-0.12.0-obpi-pipeline-enforcement-parity.md",
+      "kind": "feature",
+      "semver": "0.12.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.13.0-obpi-pipeline-runtime-surface/ADR-0.13.0-obpi-pipeline-runtime-surface.md",
+      "kind": "feature",
+      "semver": "0.13.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.14.0-multi-agent-instruction-architecture-unification/ADR-0.14.0-multi-agent-instruction-architecture-unification.md",
+      "kind": "feature",
+      "semver": "0.14.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.17.0-agentsmd-tidy-control-surface-schema-and-rules-mir/ADR-0.17.0-agentsmd-tidy-control-surface-schema-and-rules-mir.md",
+      "kind": "feature",
+      "semver": "0.17.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.18.0-subagent-driven-pipeline-execution/ADR-0.18.0-subagent-driven-pipeline-execution.md",
+      "kind": "feature",
+      "semver": "0.18.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.19.0-closeout-audit-processes/ADR-0.19.0-closeout-audit-processes.md",
+      "kind": "feature",
+      "semver": "0.19.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.2.0-gate-verification/ADR-0.2.0-gate-verification.md",
+      "kind": "feature",
+      "semver": "0.2.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.20.0-spec-triangle-sync/ADR-0.20.0-spec-triangle-sync.md",
+      "kind": "feature",
+      "semver": "0.20.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.21.0-tests-for-spec/ADR-0.21.0-tests-for-spec.md",
+      "kind": "feature",
+      "semver": "0.21.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.22.0-task-level-governance/ADR-0.22.0-task-level-governance.md",
+      "kind": "feature",
+      "semver": "0.22.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.24.0-skill-documentation-contract/ADR-0.24.0-skill-documentation-contract.md",
+      "kind": "feature",
+      "semver": "0.24.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/ADR-0.25.0-core-infrastructure-pattern-absorption.md",
+      "kind": "feature",
+      "semver": "0.25.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.26.0-governance-library-module-absorption/ADR-0.26.0-governance-library-module-absorption.md",
+      "kind": "feature",
+      "semver": "0.26.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.27.0-arb-receipt-system-absorption/ADR-0.27.0-arb-receipt-system-absorption.md",
+      "kind": "feature",
+      "semver": "0.27.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.28.0-chores-system-maturity-absorption/ADR-0.28.0-chores-system-maturity-absorption.md",
+      "kind": "feature",
+      "semver": "0.28.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.29.0-task-management-system-absorption/ADR-0.29.0-task-management-system-absorption.md",
+      "kind": "feature",
+      "semver": "0.29.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.3.0-airlineops-canon-reconciliation/ADR-0.3.0-airlineops-canon-reconciliation.md",
+      "kind": "feature",
+      "semver": "0.3.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.30.0-config-schema-settings-absorption/ADR-0.30.0-config-schema-settings-absorption.md",
+      "kind": "feature",
+      "semver": "0.30.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.31.0-new-cli-command-absorption/ADR-0.31.0-new-cli-command-absorption.md",
+      "kind": "feature",
+      "semver": "0.31.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.32.0-overlapping-cli-command-comparison/ADR-0.32.0-overlapping-cli-command-comparison.md",
+      "kind": "feature",
+      "semver": "0.32.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.33.0-specialized-command-absorption/ADR-0.33.0-specialized-command-absorption.md",
+      "kind": "feature",
+      "semver": "0.33.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.34.0-claude-hooks-absorption/ADR-0.34.0-claude-hooks-absorption.md",
+      "kind": "feature",
+      "semver": "0.34.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.35.0-pre-commit-hook-absorption/ADR-0.35.0-pre-commit-hook-absorption.md",
+      "kind": "feature",
+      "semver": "0.35.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.36.0-instruction-file-reconciliation/ADR-0.36.0-instruction-file-reconciliation.md",
+      "kind": "feature",
+      "semver": "0.36.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.37.0-govzero-methodology-doc-absorption/ADR-0.37.0-govzero-methodology-doc-absorption.md",
+      "kind": "feature",
+      "semver": "0.37.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.38.0-templates-scaffolds-agent-contract-absorption/ADR-0.38.0-templates-scaffolds-agent-contract-absorption.md",
+      "kind": "feature",
+      "semver": "0.38.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.39.0-instruction-plugin-registry/ADR-0.39.0-instruction-plugin-registry.md",
+      "kind": "feature",
+      "semver": "0.39.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.4.0-skill-capability-mirroring/ADR-0.4.0-skill-capability-mirroring.md",
+      "kind": "feature",
+      "semver": "0.4.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.40.0-reporter-rendering-infrastructure/ADR-0.40.0-reporter-rendering-infrastructure.md",
+      "kind": "feature",
+      "semver": "0.40.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.41.0-tdd-emission-and-graph-rot-remediation/ADR-0.41.0-tdd-emission-and-graph-rot-remediation.md",
+      "kind": "feature",
+      "semver": "0.41.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.42.0-gz-preflight-health-orchestration/ADR-0.42.0-gz-preflight-health-orchestration.md",
+      "kind": "feature",
+      "semver": "0.42.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.43.0-ghi-triage-closeout/ADR-0.43.0-ghi-triage-closeout.md",
+      "kind": "feature",
+      "semver": "0.43.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.5.0-skill-lifecycle-governance/ADR-0.5.0-skill-lifecycle-governance.md",
+      "kind": "feature",
+      "semver": "0.5.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.6.0-pool-promotion-protocol/ADR-0.6.0-pool-promotion-protocol.md",
+      "kind": "feature",
+      "semver": "0.6.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.7.0-obpi-first-operations/ADR-0.7.0-obpi-first-operations.md",
+      "kind": "feature",
+      "semver": "0.7.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.8.0-gz-chores-system/ADR-0.8.0-gz-chores-system.md",
+      "kind": "feature",
+      "semver": "0.8.0"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.9.0-airlineops-surface-breadth-parity/ADR-0.9.0-airlineops-surface-breadth-parity.md",
+      "kind": "feature",
+      "semver": "0.9.0"
+    }
+  ],
+  "errors": [
+    {
+      "path": "docs/design/adr/foundation/ADR-0.0.1-canonical-govzero-parity/ADR-0.0.1-canonical-govzero-parity.md",
+      "reason": "no parseable frontmatter block"
+    },
+    {
+      "path": "docs/design/adr/foundation/ADR-0.0.10-storage-tiers-simplicity-profile/ADR-0.0.10-storage-tiers-simplicity-profile.md",
+      "reason": "no parseable frontmatter block"
+    },
+    {
+      "path": "docs/design/adr/foundation/ADR-0.0.11-persona-driven-agent-identity-frames/ADR-0.0.11-persona-driven-agent-identity-frames.md",
+      "reason": "no parseable frontmatter block"
+    },
+    {
+      "path": "docs/design/adr/foundation/ADR-0.0.12-agent-role-persona-profiles/ADR-0.0.12-agent-role-persona-profiles.md",
+      "reason": "no parseable frontmatter block"
+    },
+    {
+      "path": "docs/design/adr/foundation/ADR-0.0.13-portable-persona-control-surface/ADR-0.0.13-portable-persona-control-surface.md",
+      "reason": "no parseable frontmatter block"
+    },
+    {
+      "path": "docs/design/adr/foundation/ADR-0.0.14-deterministic-obpi-commands/ADR-0.0.14-deterministic-obpi-commands.md",
+      "reason": "no parseable frontmatter block"
+    },
+    {
+      "path": "docs/design/adr/foundation/ADR-0.0.15-ghi-driven-patch-release-ceremony/ADR-0.0.15-ghi-driven-patch-release-ceremony.md",
+      "reason": "no parseable frontmatter block"
+    },
+    {
+      "path": "docs/design/adr/foundation/ADR-0.0.2-stdlib-cli-and-agent-sync/ADR-0.0.2-stdlib-cli-and-agent-sync.md",
+      "reason": "no parseable frontmatter block"
+    },
+    {
+      "path": "docs/design/adr/foundation/ADR-0.0.7-config-first-resolution-discipline/ADR-0.0.7-config-first-resolution-discipline.md",
+      "reason": "no parseable frontmatter block"
+    },
+    {
+      "path": "docs/design/adr/foundation/ADR-0.0.9-state-doctrine-source-of-truth/ADR-0.0.9-state-doctrine-source-of-truth.md",
+      "reason": "no parseable frontmatter block"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.1.0-enforced-governance-foundation/ADR-0.1.0-enforced-governance-foundation.md",
+      "reason": "no parseable frontmatter block"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.15.0-pydantic-schema-enforcement/ADR-0.15.0-pydantic-schema-enforcement.md",
+      "reason": "no parseable frontmatter block"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.16.0-cms-architecture-formalization/ADR-0.16.0-cms-architecture-formalization.md",
+      "reason": "no parseable frontmatter block"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.23.0-agent-burden-of-proof/ADR-0.23.0-agent-burden-of-proof.md",
+      "reason": "no parseable frontmatter block"
+    }
+  ]
+}

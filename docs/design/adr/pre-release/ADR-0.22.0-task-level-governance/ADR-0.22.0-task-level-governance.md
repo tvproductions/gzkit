@@ -1,6 +1,7 @@
 ---
 id: ADR-0.22.0-task-level-governance
 status: Validated
+kind: feature
 semver: 0.22.0
 lane: heavy
 parent: PRD-GZKIT-1.0.0

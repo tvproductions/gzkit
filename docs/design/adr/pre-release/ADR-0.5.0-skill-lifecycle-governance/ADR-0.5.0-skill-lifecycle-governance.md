@@ -1,6 +1,7 @@
 ---
 id: ADR-0.5.0-skill-lifecycle-governance
 status: Validated
+kind: feature
 semver: 0.5.0
 lane: heavy
 parent: ADR-0.4.0-skill-capability-mirroring

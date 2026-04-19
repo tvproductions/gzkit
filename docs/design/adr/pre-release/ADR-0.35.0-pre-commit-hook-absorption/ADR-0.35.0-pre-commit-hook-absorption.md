@@ -1,6 +1,7 @@
 ---
 id: ADR-0.35.0-pre-commit-hook-absorption
 status: Pending
+kind: feature
 semver: 0.35.0
 lane: heavy
 parent: PRD-GZKIT-1.0.0

@@ -1,6 +1,7 @@
 ---
 id: ADR-0.43.0-ghi-triage-closeout
 status: Proposed
+kind: feature
 semver: 0.43.0
 lane: heavy
 parent: PRD-GZKIT-1.0.0

@@ -1,6 +1,7 @@
 ---
 id: ADR-0.33.0-specialized-command-absorption
 status: Pending
+kind: feature
 semver: 0.33.0
 lane: heavy
 parent: PRD-GZKIT-1.0.0

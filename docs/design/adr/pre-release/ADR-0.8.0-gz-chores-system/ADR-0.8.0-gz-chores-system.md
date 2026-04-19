@@ -1,6 +1,7 @@
 ---
 id: ADR-0.8.0-gz-chores-system
 status: Validated
+kind: feature
 semver: 0.8.0
 lane: heavy
 parent: PRD-GZKIT-1.0.0

@@ -1,6 +1,7 @@
 ---
 id: ADR-0.0.19
 status: Draft
+kind: foundation
 semver: 0.0.19
 lane: heavy
 parent: GHI-232

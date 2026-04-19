@@ -1,0 +1,65 @@
+{
+  "timestamp": "2026-04-19T19-34-36Z",
+  "dry_run": false,
+  "files_scanned": 62,
+  "files_modified": 0,
+  "modifications": [],
+  "errors": [
+    {
+      "path": "docs/design/adr/foundation/ADR-0.0.1-canonical-govzero-parity/ADR-0.0.1-canonical-govzero-parity.md",
+      "reason": "no parseable frontmatter block"
+    },
+    {
+      "path": "docs/design/adr/foundation/ADR-0.0.10-storage-tiers-simplicity-profile/ADR-0.0.10-storage-tiers-simplicity-profile.md",
+      "reason": "no parseable frontmatter block"
+    },
+    {
+      "path": "docs/design/adr/foundation/ADR-0.0.11-persona-driven-agent-identity-frames/ADR-0.0.11-persona-driven-agent-identity-frames.md",
+      "reason": "no parseable frontmatter block"
+    },
+    {
+      "path": "docs/design/adr/foundation/ADR-0.0.12-agent-role-persona-profiles/ADR-0.0.12-agent-role-persona-profiles.md",
+      "reason": "no parseable frontmatter block"
+    },
+    {
+      "path": "docs/design/adr/foundation/ADR-0.0.13-portable-persona-control-surface/ADR-0.0.13-portable-persona-control-surface.md",
+      "reason": "no parseable frontmatter block"
+    },
+    {
+      "path": "docs/design/adr/foundation/ADR-0.0.14-deterministic-obpi-commands/ADR-0.0.14-deterministic-obpi-commands.md",
+      "reason": "no parseable frontmatter block"
+    },
+    {
+      "path": "docs/design/adr/foundation/ADR-0.0.15-ghi-driven-patch-release-ceremony/ADR-0.0.15-ghi-driven-patch-release-ceremony.md",
+      "reason": "no parseable frontmatter block"
+    },
+    {
+      "path": "docs/design/adr/foundation/ADR-0.0.2-stdlib-cli-and-agent-sync/ADR-0.0.2-stdlib-cli-and-agent-sync.md",
+      "reason": "no parseable frontmatter block"
+    },
+    {
+      "path": "docs/design/adr/foundation/ADR-0.0.7-config-first-resolution-discipline/ADR-0.0.7-config-first-resolution-discipline.md",
+      "reason": "no parseable frontmatter block"
+    },
+    {
+      "path": "docs/design/adr/foundation/ADR-0.0.9-state-doctrine-source-of-truth/ADR-0.0.9-state-doctrine-source-of-truth.md",
+      "reason": "no parseable frontmatter block"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.1.0-enforced-governance-foundation/ADR-0.1.0-enforced-governance-foundation.md",
+      "reason": "no parseable frontmatter block"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.15.0-pydantic-schema-enforcement/ADR-0.15.0-pydantic-schema-enforcement.md",
+      "reason": "no parseable frontmatter block"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.16.0-cms-architecture-formalization/ADR-0.16.0-cms-architecture-formalization.md",
+      "reason": "no parseable frontmatter block"
+    },
+    {
+      "path": "docs/design/adr/pre-release/ADR-0.23.0-agent-burden-of-proof/ADR-0.23.0-agent-burden-of-proof.md",
+      "reason": "no parseable frontmatter block"
+    }
+  ]
+}
