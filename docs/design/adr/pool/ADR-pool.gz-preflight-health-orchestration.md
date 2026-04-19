@@ -1,14 +1,17 @@
 ---
-status: Pool
+status: Superseded
 promotes_to: ADR-0.40.0
 date_added: 2026-03-27
+promoted_to: ADR-0.42.0-gz-preflight-health-orchestration
 ---
 
 # ADR-pool.gz-preflight-health-orchestration: Pre-Session Health Orchestration and Governance Design Tooling
+> Promoted to `ADR-0.42.0-gz-preflight-health-orchestration` on 2026-04-19. This pool file is retained as historical intake context.
+
 
 ## Status
 
-Pool
+Superseded
 
 ## Date
 
@@ -44,12 +47,17 @@ The following item was completed before this pool ADR was booked and requires no
 
 ## Target Scope
 
-### gz preflight — Self-Healing Health Orchestrator
+Extend the existing `gz preflight` command from a passive reporter into an active pre-session health orchestrator with tiered auto-repair. The scope decomposes into five OBPIs — each bullet below becomes one OBPI slug at promotion time. Rich detail for each OBPI lives in § Detailed Specification below; OBPI-specify workflows draw objectives and acceptance criteria from that section.
 
-Extend the existing `gz preflight` command from a passive reporter into an active pre-session
-health orchestrator with tiered auto-repair.
+- Check pipeline
+- Auto-repair tier
+- CLI surface
+- Receipt artifact
+- Advisory gate
 
-**Check pipeline (ordered):**
+## Detailed Specification
+
+### Check pipeline (ordered)
 
 1. Stale OBPI receipt detection — receipts from closed/superseded OBPIs blocking active gates
 2. Ledger-markdown alignment — ledger is truth; stale markdown auto-corrected
@@ -58,7 +66,7 @@ health orchestrator with tiered auto-repair.
 5. Schema validation — manifests and governance surfaces (`gz validate --documents --surfaces`)
 6. Dependency readiness — in-flight ADR dependencies blocking promotion
 
-**Repair tiers:**
+### Repair tiers
 
 | Class | Examples | Action |
 |-------|----------|--------|
@@ -66,25 +74,21 @@ health orchestrator with tiered auto-repair.
 | Flagged | Orphan briefs, unknown draft OBPIs | Report with recommended fix |
 | Human-required | Dependency conflicts, heavy-lane attestation gaps | Block and escalate |
 
-**Output contract:**
+### Output contract details
 
-- Default: human-readable preflight report with PASS/WARN/BLOCK per check
-- `--json`: machine-readable report for CI/agent consumption
-- `--fix`: execute deterministic repairs (dry-run by default without this flag)
-- `--adr ADR-X.Y.Z`: scope checks to a single ADR (for mid-session use)
-- Exit 0: all checks PASS; Exit 1: WARN present; Exit 3: BLOCK present
+Default mode emits a human-readable preflight report with PASS/WARN/BLOCK per check. `--json` emits machine-readable report to stdout for CI/agent consumption, with logs on stderr. `--fix` executes deterministic repairs (dry-run default without the flag). `--adr ADR-X.Y.Z` scopes checks to a single ADR for mid-session use. Exit codes: 0 = all PASS, 1 = WARN present, 3 = BLOCK present.
 
-**Receipt artifact:** `artifacts/receipts/preflight-YYYY-MM-DDTHH-MM-SS.json`
+### Receipt artifact path
 
-**Integration points:** Consumes `gz-adr-recon`, `gz validate`, `gz-tidy`, `gz-obpi-sync`
-outputs. Does not replicate their logic — orchestrates and interprets.
+`artifacts/receipts/preflight-YYYY-MM-DDTHH-MM-SS.json`
+
+### Integration points
+
+Consumes `gz-adr-recon`, `gz validate`, `gz-tidy`, `gz-obpi-sync` outputs. Does not replicate their logic — orchestrates and interprets.
 
 ### ADR Overlap with ADR-0.20.0
 
-`gz preflight` will consume `gz drift` (Triangle Sync output from ADR-0.20.0-04) as one of its
-check sources. This ADR is a consumer, not a replacement — ADR-0.20.0 delivers the drift signal;
-this ADR routes it into the preflight health report. Sequencing: this pool ADR should not be
-promoted until ADR-0.20.0 OBPI-04 is complete.
+`gz preflight` will consume `gz drift` (Triangle Sync output from ADR-0.20.0 OBPI-04) as one of its check sources. This ADR is a consumer, not a replacement — ADR-0.20.0 delivers the drift signal; this ADR routes it into the preflight health report. Sequencing dependency was *"do not promote until ADR-0.20.0 OBPI-04 is complete"* — as of 2026-04-19, ADR-0.20.0 OBPI-04 is `attested_completed` (verified via `gz adr status ADR-0.20.0`), so this dependency is cleared.
 
 ---
 
