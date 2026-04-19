@@ -4,7 +4,9 @@ description: Emit ADR receipt events with scoped evidence payloads. Use when rec
 category: adr-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-02-18
+last_reviewed: 2026-04-18
+metadata:
+  skill-version: "1.0.1"
 ---
 
 # gz adr emit-receipt
@@ -26,4 +28,14 @@ Operate the gz adr emit-receipt command surface as a reusable governance workflo
 
 ## Example
 
-Use $gz-adr-emit-receipt to emit a receipt event with evidence JSON..
+```bash
+uv run gz adr emit-receipt ADR-X.Y.Z \
+  --event validated \
+  --attestor "human:Jane Doe" \
+  --evidence-json '{"gate": 5, "tests_passed": true, "coverage_pct": 48.5}'
+```
+
+The `$gz-adr-emit-receipt` token used in some agent integrations
+(e.g. `agents/openai.yaml`) is a slash-command alias that resolves to
+the literal `uv run gz adr emit-receipt ...` invocation above; agents
+without slash-command resolution must invoke the literal CLI directly.

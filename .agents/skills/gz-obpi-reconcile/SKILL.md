@@ -5,7 +5,7 @@ description: OBPI brief reconciliation — Audit briefs against evidence, fix st
 category: obpi-pipeline
 compatibility: GovZero v6 framework with OBPI briefs
 metadata:
-  skill-version: "3.0.2"
+  skill-version: "3.0.3"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   skill-type: "orchestrator"
@@ -124,30 +124,31 @@ For each `OBPI-{id}-*.md` brief:
 
 ```text
 Agent action:
-1. READ brief file
+1. READ brief file via Read tool
+   - Read(file_path="<absolute brief path>")
    - Extract: Status, Lane, Acceptance Criteria, Parent ADR
 
-2. SEARCH for evidence
-   - grep tests/ for @covers tags matching ADR
-   - grep tests/ for OBPI references
-   - Identify test files by keyword heuristics
+2. SEARCH for evidence via Grep tool (cross-platform)
+   - Grep(pattern="@covers.*ADR-X.Y.Z", path="tests/")
+   - Grep(pattern="OBPI-X.Y.Z-NN", path="tests/")
+   - Identify test files by Grep matches; do NOT shell out to `grep`
 
-3. RUN tests (if found)
-   - uv run -m unittest -v {test_file}
+3. RUN tests (if found) via Bash tool
+   - Bash: uv run -m unittest -v {test_module}
    - Record: pass/fail, test count
 
-4. MEASURE coverage
-   - uv run coverage run -m unittest {test_file}
-   - uv run coverage report --include='{module}'
+4. MEASURE coverage via Bash tool
+   - Bash: uv run coverage run -m unittest {test_module}
+   - Bash: uv run coverage report --include='{module}'
    - Record: percentage vs 40% threshold
 
 5. EVALUATE criteria
    - Map each criterion to evidence
    - Determine PASS/FAIL for each
 
-6. WRITE ledger entry
-   - Append JSON line to logs/obpi-audit.jsonl
-   - Include: timestamp, evidence, criteria results, action
+6. WRITE ledger entry via Bash tool (CLI emits the event)
+   - Bash: uv run gz adr emit-receipt ... (or the brief-update path)
+   - Do NOT hand-edit logs/obpi-audit.jsonl
 ```
 
 **Output:** Each brief verified, ledger populated with proof.

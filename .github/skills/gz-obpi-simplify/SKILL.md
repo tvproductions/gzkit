@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-04-03
 metadata:
-  skill-version: "6.0.3"
+  skill-version: "6.0.4"
 ---
 
 # gz-obpi-simplify
@@ -70,10 +70,14 @@ The first token is the OBPI ID. Remaining tokens are an optional focus directive
 
 ## Step 1: Resolve OBPI Scope
 
-1. Find the brief file:
-   ```bash
-   find docs/design/adr -name "OBPI-{id}*.md" -path "*/obpis/*"
+1. Find the brief file using the Glob tool:
+
+   ```text
+   Glob(pattern="docs/design/adr/**/obpis/OBPI-{id}*.md")
    ```
+
+   Glob is the cross-platform native answer; `find` is Bash-only and
+   fails on Windows-native shells.
 2. Read the brief and extract the `## Allowed Paths` section.
 3. Expand those patterns against the working tree to produce the concrete file list.
 4. If the brief has an `### Implementation Summary` section with explicit file paths,

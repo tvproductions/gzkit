@@ -4,7 +4,7 @@ description: Gate-5 audit templates and procedure for ADR verification. GovZero 
 category: adr-audit
 compatibility: GovZero v6 framework; provides audit procedure for COMPLETED→VALIDATED ADR transition
 metadata:
-  skill-version: "6.3.1"
+  skill-version: "6.3.2"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -84,9 +84,14 @@ In these cases, run `uv run gz audit <adr-id>` first to regenerate ledger proof.
 
 ### 1. Plan
 
+Each Bash invocation starts a fresh shell, so do NOT export shell
+variables across calls. Inline the full ADR directory path in every
+command so each Bash call is self-contained. Substitute the real ADR
+directory (e.g. `docs/design/adr/adr-0.0.x/ADR-0.0.16-foo-slug`) for the
+placeholder below.
+
 ```bash
-ADR_DIR=docs/design/adr/adr-x.y.x/ADR-x.y.z-slug
-mkdir -p "${ADR_DIR}/audit/proofs"
+mkdir -p docs/design/adr/adr-x.y.x/ADR-x.y.z-slug/audit/proofs
 ```
 
 - Read ADR prose, extract all claims
@@ -118,10 +123,14 @@ uv run gz adr audit-check <adr-id>
 
 If you need to regenerate proof (staleness, suspicion, etc.), run the validation commands:
 
+Each Bash invocation starts a fresh shell — inline the full ADR
+directory path in every command (substitute the real path for the
+placeholder below):
+
 ```bash
-uv run -m unittest -q > "${ADR_DIR}/audit/proofs/unittest.txt" 2>&1
-uv run mkdocs build -q > "${ADR_DIR}/audit/proofs/mkdocs.txt" 2>&1
-uv run gz gates --adr <adr-id> > "${ADR_DIR}/audit/proofs/gates.txt" 2>&1
+uv run -m unittest -q > docs/design/adr/adr-x.y.x/ADR-x.y.z-slug/audit/proofs/unittest.txt 2>&1
+uv run mkdocs build -q > docs/design/adr/adr-x.y.x/ADR-x.y.z-slug/audit/proofs/mkdocs.txt 2>&1
+uv run gz gates --adr <adr-id> > docs/design/adr/adr-x.y.x/ADR-x.y.z-slug/audit/proofs/gates.txt 2>&1
 ```
 
 Record ✓/✗/⚠ outcomes for each check.
