@@ -23,8 +23,8 @@ def _plan_adr(runner: CliRunner) -> None:
     legitimate template drift here — these tests isolate L3 marker
     independence, not default-template frontmatter content.
     """
-    runner.invoke(main, ["plan", "create", "0.1.0"])
-    adr_path = Path("design/adr/ADR-0.1.0.md")
+    runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+    adr_path = Path("design/adr/pre-release/ADR-0.1.0/ADR-0.1.0.md")
     if adr_path.is_file():
         content = adr_path.read_text(encoding="utf-8")
         stripped = "\n".join(

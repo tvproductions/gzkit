@@ -295,6 +295,12 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
     p_plan_create.add_argument(
         "--baseline-selected", type=int, help="Selected baseline index for scoring"
     )
+    p_plan_create.add_argument(
+        "--kind",
+        choices=["pool", "foundation", "feature"],
+        default=None,
+        help="ADR taxonomy (required)",
+    )
     add_dry_run_flag(p_plan_create)
     p_plan_create.set_defaults(
         func=lambda a: _lazy("plan_cmd")(
@@ -313,6 +319,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
             split_state_anchor=a.split_state_anchor,
             split_testability_ceiling=a.split_testability_ceiling,
             baseline_selected=a.baseline_selected,
+            kind=a.kind,
             dry_run=a.dry_run,
         )
     )

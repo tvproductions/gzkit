@@ -24,8 +24,9 @@ gz plan <name> [OPTIONS]
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
+| `--kind` | `pool` \| `foundation` \| `feature` | — (**required**) | ADR taxonomy: `foundation` requires `--semver 0.0.x`; `feature` requires non-`0.0.x` semver; `pool` writes a flat backlog ADR with no `kind:`/`semver:` frontmatter. |
 | `--obpi` | string | — | Optional parent OBPI ID |
-| `--semver` | string | `0.1.0` | Semantic version |
+| `--semver` | string | `0.1.0` | Semantic version (ignored for `--kind pool`) |
 | `--lane` | `lite` \| `heavy` | `lite` | Governance lane |
 | `--title` | string | — | ADR title |
 | `--score-data-state` | `0\|1\|2` | lane default | Decomposition score: Data/State |
@@ -44,25 +45,32 @@ gz plan <name> [OPTIONS]
 
 ## What It Does
 
-1. Creates an ADR document from template
-2. Computes and writes a deterministic `## Decomposition Scorecard`
-3. Seeds `## Checklist` count from `Final Target OBPI Count`
-4. Records ADR creation in the ledger
+1. Validates `--kind` / `--semver` compatibility **before** any file or ledger write.
+2. Creates an ADR document from the taxonomy-appropriate template.
+3. Routes output by kind:
+   - `foundation` → `design/adr/foundation/<id>/<id>.md` (per-ADR folder)
+   - `feature` → `design/adr/pre-release/<id>/<id>.md` (per-ADR folder)
+   - `pool` → `design/adr/pool/ADR-pool.<slug>.md` (flat)
+4. For `foundation`/`feature`, computes and writes a deterministic `## Decomposition Scorecard`, seeds `## Checklist`, and records ADR creation in the ledger. Pool ADRs are backlog stubs and are only registered after promotion via `gz adr promote`.
 
 ---
 
 ## Example
 
 ```bash
-# Basic usage
-gz plan login-impl
+# Foundation ADR (0.0.x infrastructure)
+gz plan create identity-surfaces --kind foundation --semver 0.0.20 --lane heavy
 
-# With options
-gz plan login-impl --semver 0.2.0 --lane heavy --title "Login Implementation" \
+# Feature ADR (release-carrying capability)
+gz plan create login-impl --kind feature --semver 0.2.0 --lane heavy \
+  --title "Login Implementation" \
   --score-interface 2 --split-surface-boundary --split-state-anchor
 
-# Dry run
-gz plan login-impl --dry-run
+# Pool ADR (backlog item)
+gz plan create exotic-idea --kind pool
+
+# Dry run (validation surfaces any kind/semver mismatch)
+gz plan create login-impl --kind feature --semver 0.2.0 --dry-run
 ```
 
 ---
@@ -70,7 +78,9 @@ gz plan login-impl --dry-run
 ## Output
 
 ```
-Created ADR: design/adr/ADR-0.1.0.md
+Created ADR: design/adr/foundation/ADR-0.0.20/ADR-0.0.20.md
+Created ADR: design/adr/pre-release/ADR-0.2.0/ADR-0.2.0.md
+Created pool ADR: design/adr/pool/ADR-pool.exotic-idea.md
 ```
 
 ---
