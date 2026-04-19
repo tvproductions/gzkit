@@ -1,5 +1,23 @@
 # gzkit Release Notes
 
+## v0.25.12 (2026-04-19)
+
+Ledger canonicalization fix: ADR parent refs are now resolved to full
+semver+slug form at every write/read boundary, closing a cross-surface
+drift between `gz register-adrs`, `gz plan create`, and the validator.
+
+### Governance Fixes
+
+- **#222** — Canonicalized ADR parent refs on write and read. Three surfaces
+  (register, plan, validator) now collapse short-form parent pointers to the
+  ledger's long-form id, so authoring `parent: ADR-0.0.17` no longer drifts
+  from the stored `ADR-0.0.17-adr-taxonomy-mechanical` id and
+  `gz validate --frontmatter` stops oscillating.
+
+### Stats
+
+- 1 GHI closed (src-touching)
+
 ## v0.25.11 (2026-04-18)
 
 **Release ceremony unblocked and correctness-anchored: patch-release discovery now anchors to the
