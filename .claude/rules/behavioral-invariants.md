@@ -60,7 +60,8 @@ intact. This maxim sits next to the Prime Directive for that reason.
 | 6c | Prefer the more thorough fix over the narrower fix | Choosing a partial fix because it's a smaller diff, when the class fix has no concrete named downside |
 | 6d | Verify observed behavior, not assumed behavior | Claiming "the output is tabular" without running the command and pasting the observed output |
 | 6e | Read the code before you change it | Guessing what a function probably returns based on its name; skipping the callers during an edit |
-| 6f | Tests assert semantics, not strings | Pinning current byte-output as "the test" instead of asserting the operator-facing purpose the code is meant to serve |
+
+Invariant 6f ("tests assert semantics, not strings") lives at its canonical home in `.gzkit/rules/tests.md` § Red-Green-Refactor (GHI #227). The invariant is TDD discipline, not general craftsmanship, and restating it here caused F2/F9 drift under 4.7.
 
 ## Process
 
