@@ -288,6 +288,7 @@ def _collect_errors(
     check_skill_alignment: bool = False,
     check_advisory_scorecard: bool = False,
     check_reconcile_freshness: bool = False,
+    check_taxonomy: bool = False,
     frontmatter_adr: str | None = None,
 ) -> list[ValidationError]:
     """Collect validation errors across all requested check types."""
@@ -302,6 +303,7 @@ def _collect_errors(
         "personas": check_personas,
         "frontmatter": check_frontmatter,
         "version": check_version,
+        "taxonomy": check_taxonomy,
     }
     # Scopes that only run when explicitly requested
     explicit_scopes: dict[str, bool] = {
@@ -352,7 +354,15 @@ def _default_scope_runners(
             validate_frontmatter_coherence(project_root, adr_scope=frontmatter_adr)
         ),
         "version": lambda: list(validate_version_consistency(project_root)),
+        "taxonomy": lambda: _taxonomy_runner(project_root),
     }
+
+
+def _taxonomy_runner(project_root: Path) -> list[ValidationError]:
+    """Import trust_audits lazily (avoids circular-import risk at module load)."""
+    from gzkit.governance import trust_audits  # noqa: PLC0415
+
+    return trust_audits.audit_adr_taxonomy(project_root)
 
 
 def _explicit_scope_runners(
@@ -434,6 +444,7 @@ def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
         "documents",
         "personas",
         "version",
+        "taxonomy",
     ]
     # "opt-in" scopes only activate when explicitly requested
     opt_in_scopes = [
@@ -537,6 +548,7 @@ def validate(
     check_skill_alignment: bool = False,
     check_advisory_scorecard: bool = False,
     check_reconcile_freshness: bool = False,
+    check_taxonomy: bool = False,
     as_json: bool = False,
     frontmatter_adr: str | None = None,
     frontmatter_explain: str | None = None,
@@ -583,6 +595,7 @@ def validate(
         check_skill_alignment=check_skill_alignment,
         check_advisory_scorecard=check_advisory_scorecard,
         check_reconcile_freshness=check_reconcile_freshness,
+        check_taxonomy=check_taxonomy,
         frontmatter_adr=frontmatter_adr,
     )
 
@@ -633,6 +646,7 @@ def validate(
         "skill_alignment": check_skill_alignment,
         "advisory_scorecard": check_advisory_scorecard,
         "reconcile_freshness": check_reconcile_freshness,
+        "taxonomy": check_taxonomy,
     }
     scopes = _resolve_scopes(checks)
     frontmatter_only = scopes == ["frontmatter"]

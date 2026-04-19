@@ -396,24 +396,18 @@ class TestPlanAuditCmdScopeCollision(unittest.TestCase):
             root = Path(tmp)
 
             # Target: OBPI-0.25.0-33 claims src/gzkit/arb/
-            target_dir = (
-                root / "docs/design/adr/pre-release/ADR-0.25.0-core/obpis"
-            )
+            target_dir = root / "docs/design/adr/pre-release/ADR-0.25.0-core/obpis"
             target_dir.mkdir(parents=True)
             (target_dir / "OBPI-0.25.0-33-arb-analysis-pattern.md").write_text(
-                "# Brief\n## ALLOWED PATHS\n\n"
-                "- `src/gzkit/arb/` — target for absorbed modules\n",
+                "# Brief\n## ALLOWED PATHS\n\n- `src/gzkit/arb/` — target for absorbed modules\n",
                 encoding="utf-8",
             )
 
             # Sibling: ADR-0.27.0 brief overlaps on src/gzkit/arb/validator.py
-            sibling_dir = (
-                root / "docs/design/adr/pre-release/ADR-0.27.0-arb/obpis"
-            )
+            sibling_dir = root / "docs/design/adr/pre-release/ADR-0.27.0-arb/obpis"
             sibling_dir.mkdir(parents=True)
             (sibling_dir / "OBPI-0.27.0-03-arb-validate.md").write_text(
-                "# Brief\n## ALLOWED PATHS\n\n"
-                "- `src/gzkit/arb/validator.py` — absorbed module\n",
+                "# Brief\n## ALLOWED PATHS\n\n- `src/gzkit/arb/validator.py` — absorbed module\n",
                 encoding="utf-8",
             )
 

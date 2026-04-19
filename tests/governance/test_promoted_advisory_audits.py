@@ -11,10 +11,13 @@ The canonical advisory rules catalogue lives at
 
 from __future__ import annotations
 
+import hashlib
+import tempfile
 import unittest
 from pathlib import Path
 
 from gzkit.governance.trust_audits import (
+    audit_adr_taxonomy,
     audit_advisory_scorecard,
     audit_behave_req_tags,
     audit_class_size,
@@ -26,6 +29,7 @@ from gzkit.governance.trust_audits import (
     audit_utf8_prefix,
     audit_version_release,
 )
+from gzkit.traceability import covers
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
@@ -71,6 +75,178 @@ class PromotedAdvisoryAudits(unittest.TestCase):
         # Reconcile audit is a no-op when no reconcile events exist; it must
         # never hard-fail on current state until the event types land.
         self._assert_clean(audit_reconcile_freshness(_PROJECT_ROOT), "reconcile_freshness")
+
+    @covers("REQ-0.0.17-04-09")
+    @unittest.skip("unskip after ADR-0.0.17 backfill lands")
+    def test_adr_taxonomy_rule_X(self) -> None:
+        # REQ-0.0.17-04-09: lock-in passes on live tree only after backfill.
+        self._assert_clean(audit_adr_taxonomy(_PROJECT_ROOT), "taxonomy")
+
+    @covers("REQ-0.0.17-04-10")
+    def test_taxonomy_scorecard_entry_exists(self) -> None:
+        """REQ-0.0.17-04-10: advisory scorecard cites gz validate --taxonomy."""
+        scorecard = _PROJECT_ROOT / "docs" / "governance" / "advisory-rules-audit.md"
+        text = scorecard.read_text(encoding="utf-8")
+        self.assertIn("gz validate --taxonomy", text)
+        self.assertIn("ADR-0.0.17", text)
+
+
+def _write_adr(root: Path, rel_path: str, frontmatter: dict[str, str]) -> Path:
+    """Write a minimal ADR stub with the given frontmatter fields."""
+    path = root / rel_path
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lines = ["---"]
+    for key, value in frontmatter.items():
+        lines.append(f"{key}: {value}")
+    lines.append("---")
+    lines.append("")
+    lines.append("# Stub ADR")
+    lines.append("")
+    path.write_text("\n".join(lines), encoding="utf-8")
+    return path
+
+
+class TaxonomyAuditNegativeCases(unittest.TestCase):
+    """Deterministic fixtures exercising each violation class."""
+
+    @covers("REQ-0.0.17-04-02")
+    def test_pool_kind_frontmatter_is_violation(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_adr(
+                root,
+                "docs/design/adr/pool/ADR-pool.example.md",
+                {"id": "ADR-pool.example", "kind": "foundation"},
+            )
+            errors = audit_adr_taxonomy(root)
+            self.assertEqual(len(errors), 1, msg=str(errors))
+            self.assertEqual(errors[0].type, "taxonomy")
+            self.assertIn("Pool ADRs derive kind", errors[0].message)
+
+    @covers("REQ-0.0.17-04-03")
+    def test_non_pool_missing_kind_is_violation(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_adr(
+                root,
+                "docs/design/adr/foundation/ADR-0.0.1-example/ADR-0.0.1-example.md",
+                {"id": "ADR-0.0.1", "semver": "0.0.1"},
+            )
+            errors = audit_adr_taxonomy(root)
+            self.assertEqual(len(errors), 1, msg=str(errors))
+            self.assertIn("missing `kind:`", errors[0].message)
+            self.assertIn("foundation", errors[0].message)
+            self.assertIn("feature", errors[0].message)
+
+    @covers("REQ-0.0.17-04-04")
+    def test_foundation_with_non_0_0_x_semver_is_violation(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_adr(
+                root,
+                "docs/design/adr/foundation/ADR-0.5.0-example/ADR-0.5.0-example.md",
+                {"id": "ADR-0.5.0", "kind": "foundation", "semver": "0.5.0"},
+            )
+            errors = audit_adr_taxonomy(root)
+            self.assertEqual(len(errors), 1, msg=str(errors))
+            self.assertIn("`kind: foundation` requires semver `0.0.x`", errors[0].message)
+            self.assertIn("0.5.0", errors[0].message)
+
+    @covers("REQ-0.0.17-04-05")
+    def test_feature_with_0_0_x_semver_is_violation(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_adr(
+                root,
+                "docs/design/adr/foundation/ADR-0.0.5-example/ADR-0.0.5-example.md",
+                {"id": "ADR-0.0.5", "kind": "feature", "semver": "0.0.5"},
+            )
+            errors = audit_adr_taxonomy(root)
+            self.assertEqual(len(errors), 1, msg=str(errors))
+            self.assertIn("`kind: feature` forbids semver `0.0.x`", errors[0].message)
+            self.assertIn("0.0.5", errors[0].message)
+
+    @covers("REQ-0.0.17-04-06")
+    def test_unknown_kind_value_is_violation(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_adr(
+                root,
+                "docs/design/adr/foundation/ADR-0.0.7-example/ADR-0.0.7-example.md",
+                {"id": "ADR-0.0.7", "kind": "doctrine", "semver": "0.0.7"},
+            )
+            errors = audit_adr_taxonomy(root)
+            self.assertEqual(len(errors), 1, msg=str(errors))
+            self.assertIn("Unknown `kind: doctrine`", errors[0].message)
+
+    @covers("REQ-0.0.17-04-07")
+    def test_pool_with_semver_field_is_not_violation(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_adr(
+                root,
+                "docs/design/adr/pool/ADR-pool.example.md",
+                {"id": "ADR-pool.example", "semver": "0.9.0"},
+            )
+            self.assertEqual(audit_adr_taxonomy(root), [])
+
+    @covers("REQ-0.0.17-04-07")
+    def test_pool_with_lane_field_is_not_violation(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_adr(
+                root,
+                "docs/design/adr/pool/ADR-pool.example.md",
+                {"id": "ADR-pool.example", "lane": "heavy"},
+            )
+            self.assertEqual(audit_adr_taxonomy(root), [])
+
+    @covers("REQ-0.0.17-04-01")
+    def test_audit_never_mutates_files(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            paths = [
+                _write_adr(
+                    root,
+                    "docs/design/adr/foundation/ADR-0.0.1-example/ADR-0.0.1-example.md",
+                    {"id": "ADR-0.0.1", "kind": "foundation", "semver": "0.0.1"},
+                ),
+                _write_adr(
+                    root,
+                    "docs/design/adr/pool/ADR-pool.bad.md",
+                    {"id": "ADR-pool.bad", "kind": "foundation"},
+                ),
+                _write_adr(
+                    root,
+                    "docs/design/adr/foundation/ADR-0.0.2-example/ADR-0.0.2-example.md",
+                    {"id": "ADR-0.0.2", "semver": "0.0.2"},
+                ),
+            ]
+            before = {p: hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
+            audit_adr_taxonomy(root)
+            after = {p: hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
+            self.assertEqual(before, after)
+
+    @covers("REQ-0.0.17-04-01")
+    def test_clean_tree_produces_no_errors(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_adr(
+                root,
+                "docs/design/adr/foundation/ADR-0.0.1-example/ADR-0.0.1-example.md",
+                {"id": "ADR-0.0.1", "kind": "foundation", "semver": "0.0.1"},
+            )
+            _write_adr(
+                root,
+                "docs/design/adr/pre-release/ADR-0.5.0-example/ADR-0.5.0-example.md",
+                {"id": "ADR-0.5.0", "kind": "feature", "semver": "0.5.0"},
+            )
+            _write_adr(
+                root,
+                "docs/design/adr/pool/ADR-pool.example.md",
+                {"id": "ADR-pool.example"},
+            )
+            self.assertEqual(audit_adr_taxonomy(root), [])
 
 
 class VersionReleaseAuditChickenAndEgg(unittest.TestCase):

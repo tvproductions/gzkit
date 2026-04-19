@@ -41,9 +41,13 @@ class TestPlanCommand(unittest.TestCase):
             result = runner.invoke(
                 main,
                 [
-                    "plan", "create", "scratch",
-                    "--kind", "foundation",
-                    "--semver", "0.5.0",
+                    "plan",
+                    "create",
+                    "scratch",
+                    "--kind",
+                    "foundation",
+                    "--semver",
+                    "0.5.0",
                     "--dry-run",
                 ],
             )
@@ -65,9 +69,13 @@ class TestPlanCommand(unittest.TestCase):
             result = runner.invoke(
                 main,
                 [
-                    "plan", "create", "scratch",
-                    "--kind", "feature",
-                    "--semver", "0.0.50",
+                    "plan",
+                    "create",
+                    "scratch",
+                    "--kind",
+                    "feature",
+                    "--semver",
+                    "0.0.50",
                     "--dry-run",
                 ],
             )
@@ -110,9 +118,13 @@ class TestPlanCommand(unittest.TestCase):
             result = runner.invoke(
                 main,
                 [
-                    "plan", "create", "new-foundation",
-                    "--kind", "foundation",
-                    "--semver", "0.0.99",
+                    "plan",
+                    "create",
+                    "new-foundation",
+                    "--kind",
+                    "foundation",
+                    "--semver",
+                    "0.0.99",
                 ],
             )
             self.assertEqual(result.exit_code, 0, msg=result.output)
@@ -140,9 +152,13 @@ class TestPlanCommand(unittest.TestCase):
             result = runner.invoke(
                 main,
                 [
-                    "plan", "create", "scratch",
-                    "--kind", "feature",
-                    "--semver", "0.0.99",
+                    "plan",
+                    "create",
+                    "scratch",
+                    "--kind",
+                    "feature",
+                    "--semver",
+                    "0.0.99",
                     "--dry-run",
                 ],
             )
@@ -167,9 +183,13 @@ class TestPlanCommand(unittest.TestCase):
             result = runner.invoke(
                 main,
                 [
-                    "plan", "create", "infra-thing",
-                    "--kind", "foundation",
-                    "--semver", "0.0.42",
+                    "plan",
+                    "create",
+                    "infra-thing",
+                    "--kind",
+                    "foundation",
+                    "--semver",
+                    "0.0.42",
                 ],
             )
             self.assertEqual(result.exit_code, 0, msg=result.output)
@@ -184,9 +204,13 @@ class TestPlanCommand(unittest.TestCase):
             result = runner.invoke(
                 main,
                 [
-                    "plan", "create", "new-feature",
-                    "--kind", "feature",
-                    "--semver", "0.5.0",
+                    "plan",
+                    "create",
+                    "new-feature",
+                    "--kind",
+                    "feature",
+                    "--semver",
+                    "0.5.0",
                 ],
             )
             self.assertEqual(result.exit_code, 0, msg=result.output)
@@ -220,9 +244,13 @@ class TestPlanCommand(unittest.TestCase):
             result = runner.invoke(
                 main,
                 [
-                    "plan", "create", "my-feature",
-                    "--kind", "feature",
-                    "--semver", "0.2.0",
+                    "plan",
+                    "create",
+                    "my-feature",
+                    "--kind",
+                    "feature",
+                    "--semver",
+                    "0.2.0",
                 ],
             )
             self.assertEqual(result.exit_code, 0, msg=result.output)
@@ -244,10 +272,15 @@ class TestPlanCommand(unittest.TestCase):
             result = runner.invoke(
                 main,
                 [
-                    "plan", "create", "child-feature",
-                    "--kind", "feature",
-                    "--semver", "0.4.0",
-                    "--obpi", "ADR-0.3.0",
+                    "plan",
+                    "create",
+                    "child-feature",
+                    "--kind",
+                    "feature",
+                    "--semver",
+                    "0.4.0",
+                    "--obpi",
+                    "ADR-0.3.0",
                 ],
             )
             self.assertEqual(result.exit_code, 0, msg=result.output)

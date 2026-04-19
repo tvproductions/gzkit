@@ -46,12 +46,7 @@ def _scaffold_drifted_adr(root: Path) -> Path:
     adr_dir.mkdir(parents=True, exist_ok=True)
     path = adr_dir / "ADR-0.1.0-test.md"
     path.write_text(
-        "---\n"
-        "id: ADR-0.1.0\n"
-        "parent: PRD-TEST-1.0.0\n"
-        "lane: heavy\n"
-        "status: Completed\n"
-        "---\n# ADR\n",
+        "---\nid: ADR-0.1.0\nparent: PRD-TEST-1.0.0\nlane: heavy\nstatus: Completed\n---\n# ADR\n",
         encoding="utf-8",
     )
     return path

@@ -306,9 +306,7 @@ class TestLedger(unittest.TestCase):
             ledger_path = Path(tmpdir) / "ledger.jsonl"
             ledger = Ledger(ledger_path)
 
-            ledger.append(
-                adr_created_event("ADR-0.0.17-adr-taxonomy-mechanical", "PRD-1", "heavy")
-            )
+            ledger.append(adr_created_event("ADR-0.0.17-adr-taxonomy-mechanical", "PRD-1", "heavy"))
             # Child registered with short-form parent — the drift scenario.
             ledger.append(
                 adr_created_event("ADR-0.0.18-adr-taxonomy-doctrine", "ADR-0.0.17", "lite")
