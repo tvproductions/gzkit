@@ -119,45 +119,36 @@ def _git_subprocess_patcher(
 
 
 def _init_git_repo(path: Path, *, seed_file: str = "README.md") -> str:
-    """Initialize a disposable git repo and return the initial short HEAD SHA."""
-    subprocess.run(
-        ["git", "init", "-b", "main"],
-        cwd=path,
-        check=True,
-        capture_output=True,
-        text=True,
+    """Initialize a disposable git repo and return the initial short HEAD SHA.
+
+    Writes ``.git/config`` directly instead of running ``git config`` twice
+    and parses the short SHA from ``git commit``'s own stdout instead of a
+    follow-up ``rev-parse`` — cutting setup from 6 subprocesses to 3.
+    Each spawn is ~30ms on Windows, so the savings matter for tests that
+    rebuild a repo per-test (GHI #253).
+    """
+    run = lambda args: subprocess.run(  # noqa: E731
+        ["git", *args], cwd=path, check=True, capture_output=True, text=True
     )
-    subprocess.run(
-        ["git", "config", "user.name", "Test User"],
-        cwd=path,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    subprocess.run(
-        ["git", "config", "user.email", "test@example.com"],
-        cwd=path,
-        check=True,
-        capture_output=True,
-        text=True,
+    run(["init", "-b", "main"])
+    # Append the [user] section instead of spawning ``git config`` twice.
+    config_path = path / ".git" / "config"
+    config_path.write_text(
+        config_path.read_text(encoding="utf-8")
+        + "[user]\n\tname = Test User\n\temail = test@example.com\n",
+        encoding="utf-8",
     )
     (path / seed_file).write_text("seed\n", encoding="utf-8")
-    subprocess.run(["git", "add", "."], cwd=path, check=True, capture_output=True, text=True)
-    subprocess.run(
-        ["git", "commit", "-m", "seed"],
-        cwd=path,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    result = subprocess.run(
-        ["git", "rev-parse", "--short=7", "HEAD"],
-        cwd=path,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    return result.stdout.strip()
+    run(["add", "."])
+    # ``git commit`` prints the short SHA on its root-commit line; parsing
+    # that saves the extra ``rev-parse`` subprocess.
+    commit = run(["commit", "-m", "seed"])
+    for line in commit.stdout.splitlines():
+        # Format: ``[main (root-commit) abc1234] seed``
+        if "(root-commit)" in line and "]" in line:
+            token = line.split("(root-commit)", 1)[1].strip().split("]", 1)[0].strip()
+            return token[:7]
+    return run(["rev-parse", "--short=7", "HEAD"]).stdout.strip()
 
 
 def _write_obpi(
