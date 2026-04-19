@@ -5,7 +5,7 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.5.0"
+skill-version: "6.6.0"
 last_reviewed: 2026-04-18
 ---
 
@@ -32,9 +32,7 @@ wrapper/operator ritual around that runtime rather than a second stage engine.
 THE PIPELINE IS NOT COMPLETE UNTIL STAGE 5 FINISHES.
 ```
 
-**There is no "stop and summarize" step.** There is no pause between stages unless Stage 4 is waiting for human attestation. Every stage flows into the next. If you are inside this pipeline and you have not reached the end of Stage 5, you are not done.
-
-**Violating the spirit of this rule is violating the rule.**
+Every stage flows into the next. No "stop and summarize" between stages. No pause except the Stage 4 human attestation in Normal mode. If you have not reached the end of Stage 5, you are not done — and violating the spirit of this rule is violating the rule.
 
 ### Rationalization Prevention
 
@@ -42,18 +40,9 @@ These thoughts mean STOP — you are about to break the pipeline:
 
 | Thought | Reality |
 |---------|---------|
-| "Implementation is done, let me summarize" | Implementation is Stage 2. Stages 3, 4, 5 remain. You are not done. |
-| "All tests pass, the work is complete" | Tests passing is Stage 3. Stages 4, 5 remain. You are not done. |
-| "Let me present what was accomplished" | That is Stage 4. Stage 5 still remains. You are not done. |
-| "I'll let the user handle the rest" | The user invoked the pipeline so they would NOT have to handle the rest. |
-| "The hook blocked me, I'll work around it" | Hook blocks are signals. Diagnose the cause. NEVER create marker files manually. |
-| "This is just a simple implementation" | Simple or complex, the pipeline owns the lifecycle. All 5 stages run. |
-| "I can do the closing steps later" | No. The pipeline runs to completion NOW. Later means never. |
-| "The user said 'implement the plan'" | The plan is for an OBPI. OBPI work = this pipeline. All stages. |
-| "No plan receipt exists, I'll derive tasks from the brief" | No. Enter plan mode, get the plan approved, THEN resume. The brief is not a plan. |
-| "The brief requirements are clear enough to skip planning" | Clarity is not the issue. The plan-audit handoff is a governance checkpoint. You do not get to skip it because you think you understand the work. |
-| "The skill says STOP, so I'll stop and ask permission" | STOP means "stop making source edits now and redirect to plan mode via `EnterPlanMode`". It does NOT mean "end your turn and wait for instructions". Stopping the turn is not compliance — invoking the named tool in the same turn is. |
-| "I'll summarize what I'm about to do and wait for the user to say go" | The user invoked the pipeline; they did not ask for a plan of how you will enter plan mode. Call `EnterPlanMode` inline. The plan itself is presented for approval via `ExitPlanMode` at the end of plan mode, not before entering it. |
+| "Implementation/tests done, let me summarize" | You are between stages. The pipeline runs to Stage 5. Proceed. |
+| "No plan receipt exists — the brief is clear enough to skip planning" | The plan-audit handoff is a governance checkpoint. Call `EnterPlanMode` in this same turn; do not end the turn to ask permission. |
+| "The hook blocked me, I'll work around it" | Hook blocks are signals. Diagnose the cause. NEVER create marker files manually to bypass. |
 
 ### The Plan-Mode Gate
 
@@ -62,16 +51,6 @@ These thoughts mean STOP — you are about to break the pipeline:
 **Stopping the turn to ask "should I enter plan mode?" is a violation, not compliance.** The skill's "STOP" language directs you to stop *making source edits* and *redirect to plan mode*, not to stop your turn and solicit permission. If you catch yourself composing a message that says "Required next step: enter plan mode" or "Want me to proceed with plan mode on the next turn?" — you are rationalizing. Call `EnterPlanMode` in this same turn instead.
 
 This is not optional. This is not something you can "derive informally." The plan-audit handoff exists because agents consistently skip planning when allowed to. You are not the exception.
-
-### Hard Boundaries
-
-After completing each stage, you MUST immediately begin the next stage. No summaries between stages. No "here's what I did" recaps. No waiting for permission to continue (except Stage 4 human gate in Normal mode).
-
-**Stage 2 ends → Stage 3 begins immediately.**
-**Stage 3 ends → Stage 4 begins immediately.**
-**Stage 4 attestation received → Stage 5 begins immediately.**
-
-If you find yourself composing a message that starts with "Here's a summary", "All working", "Implementation complete", or any variation — STOP. You are rationalizing. Proceed to the next stage.
 
 ---
 
