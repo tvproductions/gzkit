@@ -755,8 +755,16 @@ class TestPatchReleaseParserRegistration(unittest.TestCase):
         from gzkit.cli.main import _build_parser
 
         parser = _build_parser()
-        with self.assertRaises(SystemExit) as ctx:
-            parser.parse_args(["patch", "release", "--help"])
+        buf = StringIO()
+        import sys
+
+        old_stdout = sys.stdout
+        sys.stdout = buf
+        try:
+            with self.assertRaises(SystemExit) as ctx:
+                parser.parse_args(["patch", "release", "--help"])
+        finally:
+            sys.stdout = old_stdout
         self.assertEqual(ctx.exception.code, 0)
 
     def test_help_contains_flags_and_example(self) -> None:

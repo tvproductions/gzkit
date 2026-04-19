@@ -2,10 +2,28 @@
 
 from __future__ import annotations
 
+import io
 import unittest
+from contextlib import redirect_stderr, redirect_stdout
 from unittest import mock
 
 from gzkit.hooks import guards
+
+
+def setUpModule() -> None:
+    # The guards emit warnings via _safe_print on the failure paths. These
+    # tests only assert the return code, so route the warning output to a
+    # buffer to keep the test runner output clean (GHI #253 follow-up).
+    global _stdout_ctx, _stderr_ctx
+    _stdout_ctx = redirect_stdout(io.StringIO())
+    _stderr_ctx = redirect_stderr(io.StringIO())
+    _stdout_ctx.__enter__()
+    _stderr_ctx.__enter__()
+
+
+def tearDownModule() -> None:
+    _stderr_ctx.__exit__(None, None, None)
+    _stdout_ctx.__exit__(None, None, None)
 
 
 class TestForbidManualLedgerEdits(unittest.TestCase):

@@ -32,6 +32,61 @@ def _install_hooks(project_root: Path) -> None:
     shutil.copytree(_HOOK_TEMPLATE_HOOKS, dest, dirs_exist_ok=True)
 
 
+class _HookResult:
+    """Subset of ``subprocess.CompletedProcess`` used by hook tests."""
+
+    __slots__ = ("returncode", "stdout", "stderr")
+
+    def __init__(self, returncode: int, stdout: str, stderr: str) -> None:
+        self.returncode = returncode
+        self.stdout = stdout
+        self.stderr = stderr
+
+
+def _run_hook_inprocess(
+    script_path: Path,
+    payload: dict,
+    *,
+    chdir_to: Path | None = None,
+) -> _HookResult:
+    """Execute a generated hook script in-process, mimicking subprocess.run.
+
+    Each hook is a self-contained script that reads a JSON payload from
+    stdin and writes to stdout/stderr, exiting with a status code. Running
+    the script in-process via ``runpy.run_path`` saves ~140ms per call
+    compared to subprocess (Python interpreter startup), which matters when
+    the test-hooks suite exercises ~45 such invocations (GHI #253).
+
+    The script still executes from disk — this tests the same generated
+    artifact as subprocess would, just without paying interpreter startup.
+    """
+    import io
+    import os
+    import runpy
+    from contextlib import redirect_stderr, redirect_stdout
+
+    old_stdin = sys.stdin
+    old_cwd = os.getcwd() if chdir_to else None
+    sys.stdin = io.StringIO(json.dumps(payload))
+    out = io.StringIO()
+    err = io.StringIO()
+    returncode = 0
+    try:
+        if chdir_to is not None:
+            os.chdir(chdir_to)
+        with redirect_stdout(out), redirect_stderr(err):
+            try:
+                runpy.run_path(str(script_path), run_name="__main__")
+            except SystemExit as exc:
+                code = exc.code
+                returncode = int(code) if isinstance(code, int) else 0
+    finally:
+        sys.stdin = old_stdin
+        if old_cwd is not None:
+            os.chdir(old_cwd)
+    return _HookResult(returncode, out.getvalue(), err.getvalue())
+
+
 class TestIsGovernanceArtifact(unittest.TestCase):
     """Tests for governance artifact detection."""
 
@@ -884,15 +939,8 @@ class TestPipelineRouterHook(unittest.TestCase):
         _install_hooks(project_root)
         return project_root / ".claude" / "hooks" / "pipeline-router.py"
 
-    def _run_hook(self, script_path: Path, cwd: Path) -> subprocess.CompletedProcess[str]:
-        payload = {"cwd": str(cwd)}
-        return subprocess.run(
-            [sys.executable, str(script_path)],
-            input=json.dumps(payload),
-            text=True,
-            capture_output=True,
-            check=False,
-        )
+    def _run_hook(self, script_path: Path, cwd: Path) -> _HookResult:
+        return _run_hook_inprocess(script_path, {"cwd": str(cwd)})
 
     def _write_receipt(
         self,
@@ -996,14 +1044,9 @@ class TestPipelineGateHook(unittest.TestCase):
         cwd: Path,
         *,
         file_path: str,
-    ) -> subprocess.CompletedProcess[str]:
-        payload = {"cwd": str(cwd), "tool_input": {"file_path": file_path}}
-        return subprocess.run(
-            [sys.executable, str(script_path)],
-            input=json.dumps(payload),
-            text=True,
-            capture_output=True,
-            check=False,
+    ) -> _HookResult:
+        return _run_hook_inprocess(
+            script_path, {"cwd": str(cwd), "tool_input": {"file_path": file_path}}
         )
 
     def _write_receipt(self, plans_dir: Path, *, obpi_id: str, verdict: str) -> None:
@@ -1193,14 +1236,9 @@ class TestPipelineCompletionReminderHook(unittest.TestCase):
         cwd: Path,
         *,
         command: str,
-    ) -> subprocess.CompletedProcess[str]:
-        payload = {"cwd": str(cwd), "tool_input": {"command": command}}
-        return subprocess.run(
-            [sys.executable, str(script_path)],
-            input=json.dumps(payload),
-            text=True,
-            capture_output=True,
-            check=False,
+    ) -> _HookResult:
+        return _run_hook_inprocess(
+            script_path, {"cwd": str(cwd), "tool_input": {"command": command}}
         )
 
     def _write_marker(self, plans_dir: Path, name: str, payload: dict[str, object]) -> None:
@@ -1404,22 +1442,14 @@ class TestObpiCompletionValidatorHook(unittest.TestCase):
         old_string: str = "",
         new_string: str = "",
         content: str = "",
-    ) -> subprocess.CompletedProcess[str]:
+    ) -> _HookResult:
         tool_input: dict[str, str] = {"file_path": file_path}
         if content:
             tool_input["content"] = content
         else:
             tool_input["old_string"] = old_string
             tool_input["new_string"] = new_string
-        payload = {"tool_input": tool_input}
-        return subprocess.run(
-            [sys.executable, str(script_path)],
-            input=json.dumps(payload),
-            text=True,
-            capture_output=True,
-            check=False,
-            cwd=cwd,
-        )
+        return _run_hook_inprocess(script_path, {"tool_input": tool_input}, chdir_to=cwd)
 
     def _write_obpi_brief(
         self,
