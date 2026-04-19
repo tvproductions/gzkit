@@ -85,9 +85,13 @@ class TestArbCommands(unittest.TestCase):
         self.assertEqual(len(receipts), 1)
 
     def test_arb_step_cmd_rejects_empty_name(self) -> None:
+        import io
+        from contextlib import redirect_stderr
+
         from gzkit.commands.arb import arb_step_cmd
 
-        exit_code = arb_step_cmd(name="", argv=["echo"], quiet=True)
+        with redirect_stderr(io.StringIO()):
+            exit_code = arb_step_cmd(name="", argv=["echo"], quiet=True)
         self.assertEqual(exit_code, 2)
 
     def test_arb_validate_cmd_empty_dir_returns_0(self) -> None:
