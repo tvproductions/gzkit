@@ -37,6 +37,26 @@ def _invoke(args: list[str]) -> tuple[int, str]:
     return 0 if code is None else int(code), output.getvalue()
 
 
+def _init_with_agent_surfaces(mode: str) -> None:
+    """Extend _quick_init with agent-contract scaffolding.
+
+    Scenarios that assert on AGENTS.md content or require the full agent
+    control-surface tree (AGENTS.md, CLAUDE.md, hooks, skill mirrors) need
+    what real ``gz init`` produces. ``_quick_init`` alone is too minimal;
+    the full ``gz init`` CLI path is too slow (~2s per scenario).
+    """
+    from tests.commands.common import _quick_init  # noqa: PLC0415
+
+    from gzkit.config import GzkitConfig
+    from gzkit.skills import scaffold_core_skills
+    from gzkit.sync_surfaces import sync_all
+
+    _quick_init(mode=mode)
+    config = GzkitConfig.load(Path(".gzkit.json"))
+    scaffold_core_skills(Path.cwd(), config)
+    sync_all(Path.cwd(), config)
+
+
 @given("the workspace is initialized in heavy mode")
 def step_init_heavy(_context) -> None:  # type: ignore[no-untyped-def]
     from tests.commands.common import _quick_init  # noqa: PLC0415
@@ -49,6 +69,16 @@ def step_init_default(_context) -> None:  # type: ignore[no-untyped-def]
     from tests.commands.common import _quick_init  # noqa: PLC0415
 
     _quick_init(mode="lite")
+
+
+@given("the workspace is initialized with agent surfaces in heavy mode")
+def step_init_heavy_with_surfaces(_context) -> None:  # type: ignore[no-untyped-def]
+    _init_with_agent_surfaces(mode="heavy")
+
+
+@given("the workspace is initialized with agent surfaces")
+def step_init_default_with_surfaces(_context) -> None:  # type: ignore[no-untyped-def]
+    _init_with_agent_surfaces(mode="lite")
 
 
 @given("a heavy ADR exists")
