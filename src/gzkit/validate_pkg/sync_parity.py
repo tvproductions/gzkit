@@ -122,20 +122,133 @@ def plan_sync_all(project_root: Path, config: GzkitConfig | None = None) -> list
     return sorted(set(planned))
 
 
-def check_sync_parity(
-    project_root: Path, config: GzkitConfig | None = None
-) -> list[ValidationError]:
-    """Detect drift between generated surfaces and the output of ``sync_all()``.
+def snapshot_surfaces(project_root: Path) -> dict[Path, bytes]:
+    """Capture current surface-file bytes without running ``sync_all()``.
 
-    The check runs ``sync_all()`` against ``project_root`` in place and compares
-    pre/post content for every tracked surface file. After comparison, the
-    pre-sync snapshot is restored so the caller sees no net file mutation.
+    Useful when the caller already knows the tree is in a synced state
+    (e.g. immediately after ``gz init`` or a successful sync) and wants
+    to feed that snapshot to ``check_sync_parity(..., expected=...)``
+    without paying a second ``sync_all`` pass.
+    """
+    files = _collect_files(project_root)
+    return dict(_snapshot(files).items())
+
+
+def compute_expected_surfaces(
+    project_root: Path, config: GzkitConfig | None = None
+) -> dict[Path, bytes]:
+    """Run ``sync_all()`` and return the bytes it produces, keyed by absolute path.
+
+    The caller's working tree is not mutated: the sync executes inside the
+    same snapshot-restore envelope used by ``check_sync_parity``. Intended for
+    callers (tests, repeated audits) that will compare many tree states
+    against the same canonical output and want to pay the sync cost once.
     """
     if config is None:
         config = GzkitConfig.load(project_root / ".gzkit.json")
 
     pre_files = _collect_files(project_root)
     snapshot = _snapshot(pre_files)
+    created: set[Path] = set()
+    expected: dict[Path, bytes] = {}
+    try:
+        sync_all(project_root, config)
+        post_files = _collect_files(project_root)
+        created = post_files - pre_files
+        for path in post_files:
+            try:
+                expected[path] = path.read_bytes()
+            except OSError:
+                continue
+    finally:
+        _restore(project_root, snapshot, created)
+    return expected
+
+
+def _diff_against_expected(
+    project_root: Path,
+    current_snapshot: dict[Path, bytes],
+    current_files: set[Path],
+    expected: dict[Path, bytes],
+) -> list[ValidationError]:
+    """Produce drift errors comparing ``current_snapshot`` against ``expected``."""
+    errors: list[ValidationError] = []
+    expected_paths = set(expected)
+
+    shared = current_files & expected_paths
+    created = expected_paths - current_files
+    removed = current_files - expected_paths
+
+    for path in sorted(shared):
+        old = _normalize(current_snapshot.get(path, b""))
+        new = _normalize(expected[path])
+        if old != new:
+            errors.append(
+                ValidationError(
+                    type="surface",
+                    artifact=path.relative_to(project_root).as_posix(),
+                    message=(
+                        "Generated surface is out of sync with canonical state. "
+                        "Run `uv run gz agent sync control-surfaces` to repair."
+                    ),
+                )
+            )
+
+    for path in sorted(created):
+        errors.append(
+            ValidationError(
+                type="surface",
+                artifact=path.relative_to(project_root).as_posix(),
+                message=(
+                    "Generated surface missing — sync_all() would create it. "
+                    "Run `uv run gz agent sync control-surfaces` to repair."
+                ),
+            )
+        )
+
+    for path in sorted(removed):
+        errors.append(
+            ValidationError(
+                type="surface",
+                artifact=path.relative_to(project_root).as_posix(),
+                message=(
+                    "Stale surface — sync_all() would remove it. "
+                    "Run `uv run gz agent sync control-surfaces` to repair."
+                ),
+            )
+        )
+
+    return errors
+
+
+def check_sync_parity(
+    project_root: Path,
+    config: GzkitConfig | None = None,
+    *,
+    expected: dict[Path, bytes] | None = None,
+) -> list[ValidationError]:
+    """Detect drift between generated surfaces and the output of ``sync_all()``.
+
+    By default the check runs ``sync_all()`` against ``project_root`` in place
+    and compares pre/post content for every tracked surface file. After
+    comparison, the pre-sync snapshot is restored so the caller sees no net
+    file mutation.
+
+    If ``expected`` is supplied (produced by ``compute_expected_surfaces``
+    or by ``snapshot_surfaces`` when the caller already knows the tree is
+    synced), the sync step is skipped and the current tree is compared
+    directly against the pre-computed expected state. Intended for callers
+    — tests, repeated audits — that drive many comparisons against the
+    same canonical state and want to pay the sync cost once.
+    """
+    if config is None and expected is None:
+        config = GzkitConfig.load(project_root / ".gzkit.json")
+
+    pre_files = _collect_files(project_root)
+    snapshot = _snapshot(pre_files)
+
+    if expected is not None:
+        return _diff_against_expected(project_root, snapshot, pre_files, expected)
 
     errors: list[ValidationError] = []
     created: set[Path] = set()

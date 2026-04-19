@@ -7,23 +7,24 @@ from pathlib import Path
 from unittest.mock import patch
 
 from gzkit.cli import main
-from gzkit.validate_pkg.sync_parity import check_sync_parity
+from gzkit.validate_pkg.sync_parity import check_sync_parity, snapshot_surfaces
 from tests.commands.common import CliRunner
 
 _uv_sync_patcher = patch("gzkit.commands.init_cmd._run_uv_sync", return_value=None)
 
-# Module-level state: a single ``gz init`` run, reused across every test in this
-# module. Previously each test paid ~1.5s for ``shutil.copytree`` of the init'd
-# tree; we now chdir into the cached tree directly and save/restore only the
-# specific files each mutating test touches (GHI #253).
+# Module-level state: a single ``gz init`` run and a single ``sync_all`` pass to
+# capture the expected surface bytes. Every test then compares its tree against
+# the cached expected state via ``check_sync_parity(expected=...)`` — the
+# expensive ``sync_all`` pass no longer runs per test (GHI #253).
 _tmpctx: tempfile.TemporaryDirectory | None = None
 _project_dir: Path | None = None
 _orig_cwd: Path | None = None
+_expected_surfaces: dict[Path, bytes] = {}
 
 
 def setUpModule() -> None:
-    """Stub ``uv sync`` and run ``gz init`` exactly once for the module."""
-    global _tmpctx, _project_dir, _orig_cwd
+    """Stub ``uv sync``, run ``gz init`` once, and cache expected surface bytes."""
+    global _tmpctx, _project_dir, _orig_cwd, _expected_surfaces
     _uv_sync_patcher.start()
     _orig_cwd = Path.cwd()
     _tmpctx = tempfile.TemporaryDirectory(prefix="gzkit-parity-")
@@ -31,10 +32,14 @@ def setUpModule() -> None:
     _project_dir.mkdir()
     os.chdir(_project_dir)
     CliRunner().invoke(main, ["init"])
+    # ``gz init`` just produced a fully-synced tree, so snapshotting it is
+    # equivalent to (and far cheaper than) running ``sync_all`` again via
+    # ``compute_expected_surfaces``.
+    _expected_surfaces = snapshot_surfaces(_project_dir)
 
 
 def tearDownModule() -> None:
-    global _tmpctx, _project_dir, _orig_cwd
+    global _tmpctx, _project_dir, _orig_cwd, _expected_surfaces
     try:
         if _orig_cwd is not None:
             os.chdir(_orig_cwd)
@@ -44,6 +49,7 @@ def tearDownModule() -> None:
         _tmpctx = None
         _project_dir = None
         _orig_cwd = None
+        _expected_surfaces = {}
         _uv_sync_patcher.stop()
 
 
@@ -72,7 +78,7 @@ class SyncParityCleanTreeTest(_SyncParityBase):
     """A freshly initialized project has no sync parity drift."""
 
     def test_clean_init_reports_no_drift(self) -> None:
-        errors = check_sync_parity(Path.cwd())
+        errors = check_sync_parity(Path.cwd(), expected=_expected_surfaces)
         self.assertEqual(
             [],
             [(e.artifact, e.message) for e in errors],
@@ -93,7 +99,7 @@ class SyncParityContentDriftTest(_SyncParityBase):
             encoding="utf-8",
         )
 
-        errors = check_sync_parity(Path.cwd())
+        errors = check_sync_parity(Path.cwd(), expected=_expected_surfaces)
         drift_artifacts = [e.artifact for e in errors]
         self.assertIn("AGENTS.md", drift_artifacts)
 
@@ -109,7 +115,7 @@ class SyncParityContentDriftTest(_SyncParityBase):
             encoding="utf-8",
         )
 
-        errors = check_sync_parity(Path.cwd())
+        errors = check_sync_parity(Path.cwd(), expected=_expected_surfaces)
         drift_artifacts = [e.artifact for e in errors]
         self.assertTrue(
             any(".claude/hooks" in a for a in drift_artifacts),
@@ -127,7 +133,7 @@ class SyncParityRestoresSnapshotTest(_SyncParityBase):
         drifted = agents_md.read_text(encoding="utf-8") + "\nextra\n"
         agents_md.write_text(drifted, encoding="utf-8")
 
-        errors = check_sync_parity(Path.cwd())
+        errors = check_sync_parity(Path.cwd(), expected=_expected_surfaces)
         self.assertTrue(errors, "expected drift to be reported")
 
         self.assertEqual(
@@ -158,7 +164,7 @@ class SyncParityDateNormalizationTest(_SyncParityBase):
         self.assertNotEqual(stale, content, "test fixture must actually change the date")
         agents_md.write_text(stale, encoding="utf-8")
 
-        errors = check_sync_parity(Path.cwd())
+        errors = check_sync_parity(Path.cwd(), expected=_expected_surfaces)
         agents_errors = [e for e in errors if e.artifact == "AGENTS.md"]
         self.assertEqual(
             [],

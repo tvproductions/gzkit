@@ -4,7 +4,6 @@ import json
 import os
 import shlex
 import shutil
-import subprocess
 import sys
 import tempfile
 import textwrap
@@ -48,6 +47,7 @@ def _run_hook_inprocess(
     payload: dict,
     *,
     chdir_to: Path | None = None,
+    env_overrides: dict[str, str] | None = None,
 ) -> _HookResult:
     """Execute a generated hook script in-process, mimicking subprocess.run.
 
@@ -67,6 +67,11 @@ def _run_hook_inprocess(
 
     old_stdin = sys.stdin
     old_cwd = os.getcwd() if chdir_to else None
+    old_env: dict[str, str | None] = {}
+    if env_overrides:
+        for key, value in env_overrides.items():
+            old_env[key] = os.environ.get(key)
+            os.environ[key] = value
     sys.stdin = io.StringIO(json.dumps(payload))
     out = io.StringIO()
     err = io.StringIO()
@@ -84,6 +89,11 @@ def _run_hook_inprocess(
         sys.stdin = old_stdin
         if old_cwd is not None:
             os.chdir(old_cwd)
+        for key, original in old_env.items():
+            if original is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = original
     return _HookResult(returncode, out.getvalue(), err.getvalue())
 
 
@@ -525,26 +535,23 @@ class TestPlanAuditGateHook(unittest.TestCase):
         cwd: Path,
         *,
         plan_audit_cmd: str | None = None,
-    ) -> subprocess.CompletedProcess[str]:
-        payload = {"cwd": str(cwd)}
-        # GHI-128: isolate the subprocess from the developer's real
-        # ~/.claude/plans/ by pointing GZKIT_CLAUDE_HOME at an empty fake home
-        # under the test's tempdir.
+    ) -> _HookResult:
+        # GHI-128: isolate the hook from the developer's real ~/.claude/plans/
+        # by pointing GZKIT_CLAUDE_HOME at an empty fake home under cwd.
         fake_home = cwd / "_fake_home"
         (fake_home / ".claude" / "plans").mkdir(parents=True, exist_ok=True)
-        env = {**os.environ, "GZKIT_CLAUDE_HOME": str(fake_home)}
-        # GHI #191: by default, stub the self-audit subprocess to /bin/false
-        # so existing block-path tests stay fast (no `uv run gz plan audit`
-        # spawn) and continue to assert the BLOCKED outcome. Self-run-path
-        # tests pass a real fake-gz script via plan_audit_cmd.
-        env["GZKIT_PLAN_AUDIT_CMD"] = plan_audit_cmd or "/bin/false"
-        return subprocess.run(
-            [sys.executable, str(script_path)],
-            input=json.dumps(payload),
-            text=True,
-            capture_output=True,
-            check=False,
-            env=env,
+        # GHI #191: by default, stub the self-audit subprocess to /bin/false so
+        # block-path tests stay fast (no real `gz plan audit` spawn) and still
+        # assert the BLOCKED outcome. Self-run-path tests pass a real fake-gz
+        # script via plan_audit_cmd.
+        env_overrides = {
+            "GZKIT_CLAUDE_HOME": str(fake_home),
+            "GZKIT_PLAN_AUDIT_CMD": plan_audit_cmd or "/bin/false",
+        }
+        return _run_hook_inprocess(
+            script_path,
+            {"cwd": str(cwd)},
+            env_overrides=env_overrides,
         )
 
     def _write_plan(self, plans_dir: Path, name: str, content: str) -> Path:
