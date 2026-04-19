@@ -21,6 +21,7 @@ class TestCoreAdrFrontmatter(unittest.TestCase):
             status="Draft",
             semver="0.1.0",
             lane="heavy",
+            kind="feature",
             parent="",
             date="2026-01-01",
         )

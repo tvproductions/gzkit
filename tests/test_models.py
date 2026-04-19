@@ -10,6 +10,7 @@ from gzkit.models.frontmatter import (
     PrdFrontmatter,
     validate_frontmatter_model,
 )
+from gzkit.traceability import covers
 
 
 class TestAdrFrontmatter(unittest.TestCase):
@@ -21,12 +22,14 @@ class TestAdrFrontmatter(unittest.TestCase):
             status="Draft",
             semver="0.1.0",
             lane="lite",
+            kind="foundation",
             parent="OBPI-core",
             date="2026-01-01",
         )
         self.assertEqual(fm.id, "ADR-0.1.0")
         self.assertEqual(fm.status, "Draft")
         self.assertEqual(fm.lane, "lite")
+        self.assertEqual(fm.kind, "foundation")
 
     def test_extra_fields_allowed(self) -> None:
         fm = AdrFrontmatter(
@@ -34,6 +37,7 @@ class TestAdrFrontmatter(unittest.TestCase):
             status="Draft",
             semver="0.1.0",
             lane="lite",
+            kind="foundation",
             parent="OBPI-core",
             date="2026-01-01",
             custom_field="allowed",  # type: ignore[unknown-argument]
@@ -46,6 +50,7 @@ class TestAdrFrontmatter(unittest.TestCase):
             status="Draft",
             semver="0.1.0",
             lane="lite",
+            kind="foundation",
             parent="OBPI-core",
             date="2026-01-01",
         )
@@ -59,6 +64,7 @@ class TestAdrFrontmatter(unittest.TestCase):
                 status="Draft",
                 semver="0.1.0",
                 lane="lite",
+                kind="foundation",
                 parent="OBPI-core",
                 date="2026-01-01",
             )
@@ -71,6 +77,7 @@ class TestAdrFrontmatter(unittest.TestCase):
                 status="Invalid",  # type: ignore[invalid-argument-type]
                 semver="0.1.0",
                 lane="lite",
+                kind="foundation",
                 parent="OBPI-core",
                 date="2026-01-01",
             )
@@ -83,6 +90,7 @@ class TestAdrFrontmatter(unittest.TestCase):
                 status="Draft",
                 semver="0.1.0",
                 lane="Lite",  # type: ignore[invalid-argument-type]
+                kind="foundation",
                 parent="OBPI-core",
                 date="2026-01-01",
             )
@@ -94,6 +102,7 @@ class TestAdrFrontmatter(unittest.TestCase):
                 status="Draft",
                 semver="0.1.0",
                 lane="lite",
+                kind="foundation",
                 parent="OBPI-core",
                 date="Jan 1 2026",
             )
@@ -109,6 +118,7 @@ class TestAdrFrontmatter(unittest.TestCase):
         }
         self.assertIn("semver", missing_fields)
         self.assertIn("lane", missing_fields)
+        self.assertIn("kind", missing_fields)
         self.assertIn("parent", missing_fields)
         self.assertIn("date", missing_fields)
 
@@ -119,10 +129,45 @@ class TestAdrFrontmatter(unittest.TestCase):
                 status=status,
                 semver="0.1.0",
                 lane="heavy",
+                kind="feature",
                 parent="OBPI-core",
                 date="2026-01-01",
             )
             self.assertEqual(fm.status, status)
+
+    @covers("REQ-0.0.17-01-03")
+    @covers("REQ-0.0.17-01-05")
+    def test_invalid_kind_enum(self) -> None:
+        for bad_value in ("pool", "", "Foundation", "unknown"):
+            with self.assertRaises(PydanticValidationError) as ctx:
+                AdrFrontmatter(
+                    id="ADR-0.1.0",
+                    status="Draft",
+                    semver="0.1.0",
+                    lane="lite",
+                    kind=bad_value,  # type: ignore[invalid-argument-type]
+                    parent="OBPI-core",
+                    date="2026-01-01",
+                )
+            errors = ctx.exception.errors()
+            self.assertTrue(
+                any(e["type"] == "literal_error" and e["loc"] == ("kind",) for e in errors),
+                f"Expected literal_error on kind for value {bad_value!r}, got {errors}",
+            )
+
+    @covers("REQ-0.0.17-01-05")
+    def test_missing_kind(self) -> None:
+        with self.assertRaises(PydanticValidationError) as ctx:
+            AdrFrontmatter(  # type: ignore[missing-argument]
+                id="ADR-0.1.0",
+                status="Draft",
+                semver="0.1.0",
+                lane="lite",
+                parent="OBPI-core",
+                date="2026-01-01",
+            )
+        missing = {str(e["loc"][0]) for e in ctx.exception.errors() if e["type"] == "missing"}
+        self.assertIn("kind", missing)
 
 
 class TestObpiFrontmatter(unittest.TestCase):
@@ -257,6 +302,7 @@ class TestValidateFrontmatterModel(unittest.TestCase):
             "status": "Draft",
             "semver": "0.1.0",
             "lane": "lite",
+            "kind": "foundation",
             "parent": "OBPI-core",
             "date": "2026-01-01",
         }
@@ -277,6 +323,7 @@ class TestValidateFrontmatterModel(unittest.TestCase):
             "status": "Draft",
             "semver": "0.1.0",
             "lane": "lite",
+            "kind": "foundation",
             "parent": "core",
             "date": "2026-01-01",
         }
@@ -292,6 +339,7 @@ class TestValidateFrontmatterModel(unittest.TestCase):
             "status": "Invalid",
             "semver": "0.1.0",
             "lane": "lite",
+            "kind": "foundation",
             "parent": "core",
             "date": "2026-01-01",
         }
@@ -313,6 +361,32 @@ class TestValidateFrontmatterModel(unittest.TestCase):
             self.assertIn("field", err)
             self.assertEqual(err["type"], "frontmatter")
             self.assertEqual(err["artifact"], "test.md")
+
+    @covers("REQ-0.0.17-01-06")
+    def test_translates_kind_literal_error(self) -> None:
+        fm = {
+            "id": "ADR-0.1.0",
+            "status": "Draft",
+            "semver": "0.1.0",
+            "lane": "lite",
+            "kind": "pool",
+            "parent": "core",
+            "date": "2026-01-01",
+        }
+        result = validate_frontmatter_model(fm, {"$id": "gzkit.adr.v1"}, "test.md")
+        self.assertIsNotNone(result)
+        assert result is not None
+        kind_errors = [e for e in result if e["field"] == "kind"]
+        self.assertEqual(
+            len(kind_errors), 1, f"expected one kind error, got {len(kind_errors)}: {result}"
+        )
+        err = kind_errors[0]
+        self.assertEqual(err["type"], "frontmatter")
+        self.assertEqual(err["artifact"], "test.md")
+        self.assertEqual(err["field"], "kind")
+        self.assertIn("foundation", err["message"])
+        self.assertIn("feature", err["message"])
+        self.assertIn("pool", err["message"])
 
 
 if __name__ == "__main__":

@@ -100,6 +100,7 @@ id: ADR-0.1.0
 status: Draft
 semver: 0.1.0
 lane: lite
+kind: feature
 parent: OBPI-core
 date: 2026-01-01
 ---

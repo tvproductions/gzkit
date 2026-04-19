@@ -25,6 +25,7 @@ class AdrFrontmatter(BaseModel):
     status: Literal["Draft", "Proposed", "Accepted", "Superseded", "Deprecated"]
     semver: str = Field(..., pattern=r"^[0-9]+\.[0-9]+\.[0-9]+$")
     lane: Literal["lite", "heavy"]
+    kind: Literal["foundation", "feature"]
     parent: str
     date: str = Field(..., pattern=r"^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
 

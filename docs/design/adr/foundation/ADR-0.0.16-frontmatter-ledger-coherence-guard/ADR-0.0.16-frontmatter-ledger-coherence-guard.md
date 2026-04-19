@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.16
-status: Completed
+status: Validated
 semver: 0.0.16
 lane: heavy
 parent: GHI-167

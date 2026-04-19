@@ -140,11 +140,31 @@ class TestFrontmatterSchemaAlignment(unittest.TestCase):
     # -- ADR --
 
     @covers("REQ-0.15.0-01-02")
+    @covers("REQ-0.0.17-01-02")
+    @covers("REQ-0.0.17-01-04")
     def test_adr_required_fields_match(self) -> None:
         self._check_required_fields(AdrFrontmatter, "adr")
+        # REQ-0.0.17-01-02 / REQ-0.0.17-01-04: kind MUST be in the schema's
+        # required set, and the helper above MUST have asserted on it.
+        schema = load_schema("adr")
+        schema_required = schema.get("properties", {}).get("frontmatter", {}).get("required", [])
+        self.assertIn("kind", schema_required)
 
+    @covers("REQ-0.0.17-01-01")
+    @covers("REQ-0.0.17-01-04")
     def test_adr_enum_values_match(self) -> None:
         self._check_enum_fields(AdrFrontmatter, "adr")
+        # REQ-0.0.17-01-01 / REQ-0.0.17-01-04: the kind enum MUST be present in
+        # the schema and the helper above MUST have asserted its Literal match.
+        schema = load_schema("adr")
+        kind_schema = (
+            schema.get("properties", {}).get("frontmatter", {}).get("properties", {}).get("kind")
+        )
+        self.assertIsNotNone(kind_schema, "schema is missing 'kind' property")
+        assert kind_schema is not None
+        self.assertEqual(set(kind_schema.get("enum", [])), {"foundation", "feature"})
+        self.assertIn("description", kind_schema)
+        self.assertTrue(kind_schema["description"].strip(), "kind description must be non-empty")
 
     def test_adr_pattern_constraints_match(self) -> None:
         self._check_pattern_fields(AdrFrontmatter, "adr")
