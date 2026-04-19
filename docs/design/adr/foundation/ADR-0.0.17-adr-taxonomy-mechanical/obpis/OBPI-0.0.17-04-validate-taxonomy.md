@@ -220,7 +220,7 @@ $ echo $?
 
 ## Human Attestation
 
-- Attestor: `g0 (redacted-email)`
+- Attestor: `g0`
 - Attestation: attest completed — Confirm decision: gz validate --taxonomy registered as default + explicit scope (--taxonomy flag in parser_maintenance.py); audit_adr_taxonomy walks docs/design/adr/** with stdlib-only frontmatter parse, non-mutating, returns ValidationError list per ADR-0.0.17 § Decision key axis #3 (pool id-derived, foundation ⇒ 0.0.x, feature ⇒ other). 10/10 REQs covered (gz covers OBPI-0.0.17-04 100%); 9 negative-case fixtures deterministic in tempdir; 3231 unittests pass (1 skip = live-tree lock-in deferred to next OBPI backfill, explicit reference in @unittest.skip); 47 live-tree violations surfaced — intended drift-detection, not a gate defect (brief REQ-09 acknowledges post-backfill pass). Brief Allowed Paths corrected in-patch (parser_artifacts.py → parser_maintenance.py where validate parser actually lives). Filed GHI #245 for pre-existing gz obpi precomplete lock-path defect. Receipts: lint arb-ruff-16720a1725db455ba97b627b939e2703; types arb-step-typecheck-3d7b91660fa947ccb7faa4c9a54c888c; tests arb-step-unittest-143457240067483e8c69417c6400fd32; negative-cases arb-step-taxonomy-negative-cases-2661487aa8754f80a3084b912a65f0e6; mkdocs arb-step-mkdocs-003d159458304600b06c29f92e4b2873.
 - Date: 2026-04-19
 
