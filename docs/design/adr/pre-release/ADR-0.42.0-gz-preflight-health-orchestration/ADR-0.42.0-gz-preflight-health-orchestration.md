@@ -1,6 +1,7 @@
 ---
 id: ADR-0.42.0-gz-preflight-health-orchestration
 status: Proposed
+kind: feature
 semver: 0.42.0
 lane: lite
 parent:

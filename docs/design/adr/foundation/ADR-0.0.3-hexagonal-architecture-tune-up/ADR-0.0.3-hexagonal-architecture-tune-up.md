@@ -1,6 +1,7 @@
 ---
 id: ADR-0.0.3-hexagonal-architecture-tune-up
 status: Validated
+kind: foundation
 semver: 0.0.3
 lane: heavy
 parent:

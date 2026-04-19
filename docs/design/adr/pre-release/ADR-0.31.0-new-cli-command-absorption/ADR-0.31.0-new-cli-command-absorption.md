@@ -1,6 +1,7 @@
 ---
 id: ADR-0.31.0-new-cli-command-absorption
 status: Pending
+kind: feature
 semver: 0.31.0
 lane: heavy
 parent: PRD-GZKIT-1.0.0

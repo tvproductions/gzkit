@@ -1,6 +1,7 @@
 ---
 id: ADR-0.26.0-governance-library-module-absorption
 status: Pending
+kind: feature
 semver: 0.26.0
 lane: heavy
 parent: PRD-GZKIT-1.0.0

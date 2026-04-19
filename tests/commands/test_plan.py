@@ -3,6 +3,7 @@ from pathlib import Path
 
 from gzkit.cli import main
 from gzkit.ledger import Ledger
+from gzkit.validate_pkg.document import validate_document
 from tests.commands.common import CliRunner, _quick_init
 
 
@@ -294,3 +295,68 @@ class TestPlanCommand(unittest.TestCase):
             adr_path = Path("design/adr/pre-release/ADR-0.4.0/ADR-0.4.0.md")
             content = adr_path.read_text(encoding="utf-8")
             self.assertIn("parent: ADR-0.3.0-parent-feature", content)
+
+
+class TestPlanTaxonomyRoundtrip(unittest.TestCase):
+    """OBPI-0.0.17-05 — scaffolder→validator round-trip for `gz plan create --kind`.
+
+    Mirrors GHI #186 (PRD) and GHI #216 (constitution) precedents: invoke the
+    scaffolder, assert it succeeds, then run the document validator with the
+    `adr` schema (which loads the taxonomy audit) and assert zero errors.
+
+    @covers REQ-0.0.17-05-05
+    """
+
+    def test_plan_create_foundation_kind_passes_taxonomy_validator(self) -> None:
+        """@covers REQ-0.0.17-05-05 — foundation scaffolder output validates clean."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            result = runner.invoke(
+                main,
+                [
+                    "plan",
+                    "create",
+                    "round-trip-foundation",
+                    "--kind",
+                    "foundation",
+                    "--semver",
+                    "0.0.99",
+                ],
+            )
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            scaffolded = Path("design/adr/foundation/ADR-0.0.99/ADR-0.0.99.md")
+            self.assertTrue(scaffolded.exists(), msg=f"missing {scaffolded}")
+            errors = validate_document(scaffolded, "adr")
+            self.assertEqual(
+                [e.message for e in errors],
+                [],
+                msg="validator rejected freshly-scaffolded foundation ADR",
+            )
+
+    def test_plan_create_feature_kind_passes_taxonomy_validator(self) -> None:
+        """@covers REQ-0.0.17-05-05 — feature scaffolder output validates clean."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            result = runner.invoke(
+                main,
+                [
+                    "plan",
+                    "create",
+                    "round-trip-feature",
+                    "--kind",
+                    "feature",
+                    "--semver",
+                    "0.7.0",
+                ],
+            )
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            scaffolded = Path("design/adr/pre-release/ADR-0.7.0/ADR-0.7.0.md")
+            self.assertTrue(scaffolded.exists(), msg=f"missing {scaffolded}")
+            errors = validate_document(scaffolded, "adr")
+            self.assertEqual(
+                [e.message for e in errors],
+                [],
+                msg="validator rejected freshly-scaffolded feature ADR",
+            )

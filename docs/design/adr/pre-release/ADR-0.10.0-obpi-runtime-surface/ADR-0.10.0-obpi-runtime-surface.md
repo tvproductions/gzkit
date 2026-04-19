@@ -1,6 +1,7 @@
 ---
 id: ADR-0.10.0-obpi-runtime-surface
 status: Validated
+kind: feature
 semver: 0.10.0
 lane: heavy
 parent: PRD-GZKIT-1.0.0

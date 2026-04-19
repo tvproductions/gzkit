@@ -1,6 +1,7 @@
 ---
 id: ADR-0.27.0-arb-receipt-system-absorption
 status: Pending
+kind: feature
 semver: 0.27.0
 lane: heavy
 parent: PRD-GZKIT-1.0.0

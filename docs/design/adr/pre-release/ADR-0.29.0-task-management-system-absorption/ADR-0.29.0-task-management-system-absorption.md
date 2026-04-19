@@ -1,6 +1,7 @@
 ---
 id: ADR-0.29.0-task-management-system-absorption
 status: Pending
+kind: feature
 semver: 0.29.0
 lane: heavy
 parent: PRD-GZKIT-1.0.0

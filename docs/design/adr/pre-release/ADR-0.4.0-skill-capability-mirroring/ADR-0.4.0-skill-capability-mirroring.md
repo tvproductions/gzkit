@@ -1,6 +1,7 @@
 ---
 id: ADR-0.4.0-skill-capability-mirroring
 status: Validated
+kind: feature
 semver: 0.4.0
 lane: heavy
 parent: PRD-GZKIT-1.0.0

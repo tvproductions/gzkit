@@ -1,6 +1,7 @@
 ---
 id: ADR-0.17.0-agentsmd-tidy-control-surface-schema-and-rules-mir
 status: Validated
+kind: feature
 semver: 0.17.0
 lane: heavy
 parent:

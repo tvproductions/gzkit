@@ -1,6 +1,7 @@
 ---
 id: ADR-0.11.0-airlineops-obpi-completion-pipeline-parity
 status: Validated
+kind: feature
 semver: 0.11.0
 lane: heavy
 parent: PRD-GZKIT-1.0.0

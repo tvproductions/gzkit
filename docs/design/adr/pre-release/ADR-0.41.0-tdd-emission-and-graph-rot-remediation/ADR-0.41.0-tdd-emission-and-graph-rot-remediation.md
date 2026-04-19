@@ -1,6 +1,7 @@
 ---
 id: ADR-0.41.0
 status: Pending
+kind: feature
 semver: 0.41.0
 lane: heavy
 parent: GHI-160

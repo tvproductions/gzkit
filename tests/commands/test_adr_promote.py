@@ -8,6 +8,7 @@ from gzkit.ledger import (
     Ledger,
     adr_created_event,
 )
+from gzkit.validate_pkg.document import validate_document
 from tests.commands.common import CliRunner, _quick_init
 
 
@@ -619,3 +620,109 @@ class TestAdrPromoteKindFlag(unittest.TestCase):
             # Backward-compatible existing fields:
             self.assertEqual(event.get("new_id"), "ADR-0.6.0-sample-work")
             self.assertEqual(event.get("reason"), "pool_promotion")
+
+
+class TestAdrPromoteTaxonomyRoundtrip(unittest.TestCase):
+    """OBPI-0.0.17-05 — scaffolder→validator round-trip for `gz adr promote --kind`.
+
+    Mirrors GHI #186 / #216 precedent: invoke the promotion, assert the
+    promoted file exists, then run `validate_document(path, "adr")` and
+    assert zero errors. Uses the seed pool ADR pattern from
+    `TestAdrPromoteKindFlag` to set up the source.
+
+    @covers REQ-0.0.17-05-06
+    """
+
+    @staticmethod
+    def _seed_pool_adr(config: GzkitConfig, adr_id: str = "ADR-pool.sample-work") -> Path:
+        pool_dir = Path(config.paths.adrs) / "pool"
+        pool_dir.mkdir(parents=True, exist_ok=True)
+        pool_file = pool_dir / f"{adr_id}.md"
+        pool_file.write_text(
+            "---\n"
+            f"id: {adr_id}\n"
+            "status: Pool\n"
+            "parent: PRD-GZKIT-1.0.0\n"
+            "lane: heavy\n"
+            "---\n\n"
+            f"# {adr_id}: Sample Work\n\n"
+            "## Status\n\nPool\n\n"
+            "## Intent\n\n"
+            "Turn sample pool work into executable tracked delivery.\n\n"
+            "## Target Scope\n\n"
+            "- Define runtime command contract\n"
+            "- Persist machine-readable stage state\n"
+            "- Expose structured stage outputs\n\n"
+            "## Non-Goals\n\n"
+            "- No external orchestrator\n",
+            encoding="utf-8",
+        )
+        return pool_file
+
+    def _seed_for_promote(self) -> GzkitConfig:
+        _quick_init()
+        config = GzkitConfig.load(Path(".gzkit.json"))
+        self._seed_pool_adr(config)
+        ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+        ledger.append(adr_created_event("ADR-pool.sample-work", "", "heavy"))
+        return config
+
+    def test_promote_to_foundation_passes_taxonomy_validator(self) -> None:
+        """@covers REQ-0.0.17-05-06 — foundation promotion validates clean."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            self._seed_for_promote()
+            result = runner.invoke(
+                main,
+                [
+                    "adr",
+                    "promote",
+                    "ADR-pool.sample-work",
+                    "--semver",
+                    "0.0.18",
+                    "--kind",
+                    "foundation",
+                    "--force",
+                ],
+            )
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            target = Path(
+                "design/adr/foundation/ADR-0.0.18-sample-work/ADR-0.0.18-sample-work.md"
+            )
+            self.assertTrue(target.exists(), msg=result.output)
+            errors = validate_document(target, "adr")
+            self.assertEqual(
+                [e.message for e in errors],
+                [],
+                msg="validator rejected freshly-promoted foundation ADR",
+            )
+
+    def test_promote_to_feature_passes_taxonomy_validator(self) -> None:
+        """@covers REQ-0.0.17-05-06 — feature promotion validates clean."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            self._seed_for_promote()
+            result = runner.invoke(
+                main,
+                [
+                    "adr",
+                    "promote",
+                    "ADR-pool.sample-work",
+                    "--semver",
+                    "0.6.0",
+                    "--kind",
+                    "feature",
+                    "--force",
+                ],
+            )
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            target = Path(
+                "design/adr/pre-release/ADR-0.6.0-sample-work/ADR-0.6.0-sample-work.md"
+            )
+            self.assertTrue(target.exists(), msg=result.output)
+            errors = validate_document(target, "adr")
+            self.assertEqual(
+                [e.message for e in errors],
+                [],
+                msg="validator rejected freshly-promoted feature ADR",
+            )

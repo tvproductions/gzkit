@@ -1,6 +1,7 @@
 ---
 id: ADR-0.32.0-overlapping-cli-command-comparison
 status: Pending
+kind: feature
 semver: 0.32.0
 lane: heavy
 parent: PRD-GZKIT-1.0.0
