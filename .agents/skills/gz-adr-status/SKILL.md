@@ -4,7 +4,7 @@ description: Show the ADR table for summary requests, or show focused lifecycle 
 category: adr-lifecycle
 compatibility: GovZero v6 framework; uses gz CLI status surfaces
 metadata:
-  skill-version: "1.11.0"
+  skill-version: "1.12.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero_layer: "Layer 1 - Evidence Gathering"
@@ -55,6 +55,10 @@ uv run gz adr status ADR-0.3.0 --show-gates
 ```
 
 ## Output Contract
+
+Declared form: **table** (both modes).
+
+Locked by: `tests/commands/test_status.py::TestLifecycleStatusSemantics::test_adr_status_renders_shared_table_via_deterministic_renderer` (single-ADR drilldown) and the shared `adr report` table renderer tests in the same module.
 
 ### Both modes
 

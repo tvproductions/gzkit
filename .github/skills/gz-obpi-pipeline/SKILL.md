@@ -5,7 +5,7 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.6.0"
+skill-version: "6.7.0"
 last_reviewed: 2026-04-18
 ---
 
@@ -286,7 +286,7 @@ uv run gz validate --documents
 uv run mkdocs build --strict
 ```
 
-**Scope discipline (GHI-incoming, 2026-04-17).** At OBPI Stage 3, run only the
+**Scope discipline (GHI #160, #185).** At OBPI Stage 3, run only the
 tests that cover *this* OBPI's REQs (`--obpi` uses the `@covers` graph to
 target them — typically <1s vs ~70s for the full suite). The full unittest
 suite + behave run at ADR closeout, where cross-OBPI interactions are caught.
