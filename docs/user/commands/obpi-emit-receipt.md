@@ -27,8 +27,8 @@ gz obpi emit-receipt <OBPI-ID> --event {completed,validated} --attestor <text> [
   - Each item may also include optional `scope` and `gap_reason`.
   - If it is omitted, gzkit derives a minimal proof-input list from `key_proof`
     and any completed human-attestation evidence.
-- For `--event completed` under Heavy or Foundation (`ADR-0.0.x`) parent ADRs,
-  fails closed unless evidence also includes:
+- For `--event completed` under a `heavy`-lane parent ADR (any kind) or a
+  foundation-kind parent ADR (any lane), fails closed unless evidence also includes:
   - `human_attestation: true`
   - `attestation_text` (string)
   - `attestation_date` (`YYYY-MM-DD`)

@@ -133,3 +133,11 @@ The created ADR contains:
 3. Create OBPIs with `gz specify --parent ADR-... --item N`
 4. Check lifecycle with `gz status` / `gz adr status`
 5. Attest with `gz attest`
+
+---
+
+## See also
+
+- [ADR-0.0.17 — ADR Taxonomy (Mechanical)](../../design/adr/foundation/ADR-0.0.17-adr-taxonomy-mechanical/ADR-0.0.17-adr-taxonomy-mechanical.md) — the mechanical contract this command implements (`kind:` frontmatter, `--kind` flag, kind/semver binding).
+- [ADR-0.0.18 — ADR Taxonomy (Doctrine)](../../design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/ADR-0.0.18-adr-taxonomy-doctrine.md) — operator-facing guidance on *when to choose which* kind (PRD → ADR derivation, pool curation, epic grouping, worked examples).
+- `AGENTS.md` § Kinds (pool, foundation, feature) — the axis summary and mechanical enforcement surfaces.

@@ -41,7 +41,10 @@ This project uses gzkit for governance. Key commands:
 
 Follow the OBPI Acceptance Protocol defined in `AGENTS.md`. Key rule: use
 `uv run gz obpi pipeline <OBPI-ID>` after plan approval; never implement
-freeform. Heavy/Foundation lane work requires explicit human attestation.
+freeform. Heavy-lane work (any kind) requires explicit human attestation;
+foundation-kind ADRs additionally follow the attestation doctrine in
+ADR-0.0.18 regardless of lane. `kind` and `lane` are orthogonal axes
+(see AGENTS.md § Kinds and § Lane Inheritance Rule).
 
 ## Skills
 
