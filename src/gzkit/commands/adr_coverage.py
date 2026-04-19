@@ -6,13 +6,24 @@ from pathlib import Path
 from typing import Any, cast
 
 from gzkit.commands.common import console
+from gzkit.quality import check_product_proof
 from gzkit.traceability import (
     CoverageEntry,
     compute_coverage,
     find_covers_in_source,
+    scan_feature_tree,
     scan_test_tree,
 )
-from gzkit.triangle import ReqId, scan_briefs
+from gzkit.triangle import (
+    DiscoveredReq,
+    EdgeType,
+    LinkageRecord,
+    ReqId,
+    ReqKind,
+    VertexRef,
+    VertexType,
+    scan_briefs,
+)
 
 
 def _extract_adr_semver(adr_id: str) -> str | None:
@@ -21,10 +32,74 @@ def _extract_adr_semver(adr_id: str) -> str | None:
     return match.group(1) if match else None
 
 
+def _synthesize_doc_proof_linkage(
+    discovered: list[DiscoveredReq],
+    project_root: Path,
+) -> list[LinkageRecord]:
+    """Synthesize COVERS records for DOC-kind REQs whose parent OBPI has non-test proof.
+
+    GHI #165 — ``@covers`` is a code annotation; it does not belong on
+    decision-documentation or integration-artifact REQs. A ``[doc]``-tagged REQ
+    is considered covered when its parent OBPI carries any non-test proof
+    channel recognized by :func:`gzkit.quality.check_product_proof` (decision
+    text, command doc, governance artifact, runbook entry, release manifest,
+    etc.). The synthetic records carry ``source.identifier`` like
+    ``brief:<OBPI>:<proof_type>`` so the coverage report attributes the
+    evidence to its real channel rather than silently skipping it.
+    """
+    obpi_brief_paths: dict[str, Path] = {}
+    obpi_doc_reqs: dict[str, list[DiscoveredReq]] = {}
+    for dreq in discovered:
+        if dreq.entity.kind != ReqKind.DOC:
+            continue
+        obpi_id = dreq.entity.parent_obpi
+        obpi_brief_paths[obpi_id] = Path(dreq.source_path)
+        obpi_doc_reqs.setdefault(obpi_id, []).append(dreq)
+
+    if not obpi_brief_paths:
+        return []
+
+    proof = check_product_proof("ADR-synthetic", obpi_brief_paths, project_root)
+    records: list[LinkageRecord] = []
+    for status in proof.obpi_proofs:
+        if not status.has_proof:
+            continue
+        brief_path = obpi_brief_paths.get(status.obpi_id)
+        if brief_path is None:
+            continue
+        source_id = f"brief:{status.obpi_id}:{status.proof_type}"
+        for dreq in obpi_doc_reqs.get(status.obpi_id, []):
+            records.append(
+                LinkageRecord(
+                    source=VertexRef(
+                        vertex_type=VertexType.TEST,
+                        identifier=source_id,
+                        location=str(brief_path),
+                    ),
+                    target=VertexRef(
+                        vertex_type=VertexType.SPEC,
+                        identifier=str(dreq.entity.id),
+                    ),
+                    edge_type=EdgeType.COVERS,
+                    evidence_path=str(brief_path),
+                )
+            )
+    return records
+
+
 def _compute_adr_coverage(
     project_root: Path, adr_id: str, adr_dir: Path | None = None
 ) -> dict[str, Any]:
-    """Compute requirement coverage for an ADR's REQs (advisory, non-blocking)."""
+    """Compute requirement coverage for an ADR's REQs (advisory, non-blocking).
+
+    Consults every proof channel appropriate to the REQ kind (GHI #165):
+
+    - CODE REQs: ``@covers`` decorators/comments in ``tests/**/*.py`` and
+      ``@REQ-...`` scenario tags in ``features/**/*.feature``.
+    - DOC REQs: decision text, command doc, governance artifact, runbook
+      entry, release manifest, or other non-test proof on the parent OBPI
+      (see :func:`_synthesize_doc_proof_linkage`).
+    """
     empty: dict[str, Any] = {
         "total_reqs": 0,
         "covered_reqs": 0,
@@ -40,12 +115,18 @@ def _compute_adr_coverage(
     if adr_dir is None:
         adr_dir = project_root / "docs" / "design" / "adr"
     tests_dir = project_root / "tests"
-    if not adr_dir.is_dir() or not tests_dir.is_dir():
+    features_dir = project_root / "features"
+    if not adr_dir.is_dir():
         return empty
 
     discovered = scan_briefs(adr_dir)
-    linkage_records = scan_test_tree(tests_dir)
-    report = compute_coverage(discovered, linkage_records)
+    linkage_records: list[LinkageRecord] = []
+    if tests_dir.is_dir():
+        linkage_records.extend(scan_test_tree(tests_dir))
+    if features_dir.is_dir():
+        linkage_records.extend(scan_feature_tree(features_dir))
+    linkage_records.extend(_synthesize_doc_proof_linkage(discovered, project_root))
+    report = compute_coverage(discovered, linkage_records, include_doc=True)
 
     prefix = f"REQ-{semver}-"
     adr_entries = [e for e in report.entries if e.req_id.startswith(prefix)]

@@ -1171,6 +1171,118 @@ class TestComputeAdrCoverage(unittest.TestCase):
         self.assertEqual(result["covered_reqs"], 2)
         self.assertEqual(result["uncovered"], [])
 
+    def test_bdd_feature_tag_counts_as_coverage(self):
+        """@covers GHI #165 — a BDD @REQ scenario tag covers a REQ without @covers decorator."""
+        features_dir = self.root / "features"
+        features_dir.mkdir()
+        (features_dir / "demo.feature").write_text(
+            textwrap.dedent("""\
+                Feature: Demo
+
+                  @REQ-0.15.0-03-02
+                  Scenario: behavioral proof
+                    Given something
+                    Then it works
+            """),
+            encoding="utf-8",
+        )
+        from gzkit.commands.adr_audit import _compute_adr_coverage
+
+        result = _compute_adr_coverage(self.root, "ADR-0.15.0", self.adr_dir)
+        self.assertEqual(result["covered_reqs"], 2)
+        self.assertEqual(result["uncovered"], [])
+
+
+class TestComputeAdrCoverageDocProofChannels(unittest.TestCase):
+    """@covers GHI #165 — doc-kind REQs are covered by non-@covers proof channels."""
+
+    def setUp(self):
+        self._tmpdir = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmpdir.name)
+        self.adr_dir = self.root / "docs" / "design" / "adr"
+        adr_pkg = self.adr_dir / "ADR-0.15.0"
+        self.obpis = adr_pkg / "obpis"
+        self.obpis.mkdir(parents=True)
+
+    def tearDown(self):
+        self._tmpdir.cleanup()
+
+    def _write_obpi(self, path: Path, body: str, *, with_decision: bool = False) -> None:
+        decision = (
+            "\n## Decision\n\n**Absorb** the pattern because it is proven.\n"
+            if with_decision
+            else ""
+        )
+        path.write_text(
+            "---\n"
+            "id: OBPI-0.15.0-03-demo\n"
+            "parent: ADR-0.15.0\n"
+            "item: 3\n"
+            "lane: Lite\n"
+            "status: Accepted\n"
+            "---\n\n"
+            "# OBPI-0.15.0-03: Demo\n\n"
+            f"{decision}"
+            "## Acceptance Criteria\n\n"
+            f"{body}",
+            encoding="utf-8",
+        )
+
+    def test_decision_doc_covers_doc_reqs_without_at_covers(self):
+        """A [doc] REQ in an OBPI with Decision text is covered via decision-doc proof."""
+        self._write_obpi(
+            self.obpis / "OBPI-0.15.0-03-demo.md",
+            "- [ ] REQ-0.15.0-03-01: [doc] Decision recorded.\n",
+            with_decision=True,
+        )
+        from gzkit.commands.adr_audit import _compute_adr_coverage
+
+        result = _compute_adr_coverage(self.root, "ADR-0.15.0", self.adr_dir)
+        self.assertEqual(result["total_reqs"], 1)
+        self.assertEqual(result["covered_reqs"], 1)
+        self.assertEqual(result["uncovered"], [])
+
+    def test_doc_req_without_any_proof_is_uncovered(self):
+        """A [doc] REQ with no decision/product proof is surfaced as uncovered (no don't-look)."""
+        self._write_obpi(
+            self.obpis / "OBPI-0.15.0-03-demo.md",
+            "- [ ] REQ-0.15.0-03-01: [doc] Decision recorded.\n",
+            with_decision=False,
+        )
+        from gzkit.commands.adr_audit import _compute_adr_coverage
+
+        result = _compute_adr_coverage(self.root, "ADR-0.15.0", self.adr_dir)
+        self.assertEqual(result["total_reqs"], 1)
+        self.assertEqual(result["covered_reqs"], 0)
+        self.assertEqual(result["uncovered"][0]["req_id"], "REQ-0.15.0-03-01")
+
+    def test_product_proof_command_doc_covers_doc_reqs(self):
+        """A [doc] REQ whose OBPI lists a substantive command doc is covered via product proof."""
+        brief = self.obpis / "OBPI-0.15.0-03-demo.md"
+        brief.write_text(
+            "---\n"
+            "id: OBPI-0.15.0-03-demo\n"
+            "parent: ADR-0.15.0\n"
+            "item: 3\n"
+            "lane: Lite\n"
+            "status: Accepted\n"
+            "---\n\n"
+            "# OBPI-0.15.0-03: Demo\n\n"
+            "## ALLOWED PATHS\n\n"
+            "- `docs/user/commands/demo.md`\n\n"
+            "## Acceptance Criteria\n\n"
+            "- [ ] REQ-0.15.0-03-01: [doc] Command documented.\n",
+            encoding="utf-8",
+        )
+        cmd_doc = self.root / "docs" / "user" / "commands" / "demo.md"
+        cmd_doc.parent.mkdir(parents=True, exist_ok=True)
+        cmd_doc.write_text("# gz demo\n\n" + ("Substantive content. " * 20), encoding="utf-8")
+        from gzkit.commands.adr_audit import _compute_adr_coverage
+
+        result = _compute_adr_coverage(self.root, "ADR-0.15.0", self.adr_dir)
+        self.assertEqual(result["total_reqs"], 1)
+        self.assertEqual(result["covered_reqs"], 1)
+
 
 class TestScanFeatureTree(unittest.TestCase):
     """Tests for scan_feature_tree — GHI #185 behave @REQ-tag scanner."""
