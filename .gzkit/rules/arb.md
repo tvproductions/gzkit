@@ -7,9 +7,9 @@ description: ARB (Agent Self-Reporting) middleware QA workflow
 
 # ARB (Agent Self-Reporting) Middleware
 
-**Version:** 1.1
+**Version:** 1.2
 **Status:** Active
-**Last reviewed:** 2026-04-14 (ARB absorbed from airlineops under OBPI-0.25.0-33)
+**Last reviewed:** 2026-04-18 (align typecheck example with GHI #199 canon; GHI #225)
 
 ARB is a QA middleware layer that wraps real verification steps (lint, type check, tests, etc.) and emits structured JSON receipts for deterministic validation and governance auditing.
 
@@ -53,13 +53,18 @@ This allows agents and humans to:
 
 ## Available Commands
 
+> Canonical QA invocations (lint, typecheck, tests, coverage, docs) are locked
+> by the table in `.gzkit/rules/attestation-enrichment.md` (§ Receipt-ID
+> Requirement). The examples below must stay aligned with that table — if they
+> drift, the canonical table wins and this file is the defect.
+
 ### Wrap a QA Tool (Generic)
 
 ```bash
 uv run gz arb ruff
 uv run gz arb ruff --fix
 uv run gz arb step --name unittest -- uv run -m unittest -q
-uv run gz arb ty check . --exclude 'features/**'
+uv run gz arb typecheck
 uv run gz arb coverage run -m unittest discover -s tests -t .
 ```
 
