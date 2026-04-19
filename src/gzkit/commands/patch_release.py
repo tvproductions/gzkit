@@ -141,42 +141,55 @@ def _get_latest_tag(project_root: Path) -> tuple[str | None, str | None]:
     return tag_name, date_str.strip()
 
 
-def _discover_ghis(project_root: Path, since_date: str | None) -> list[GhiRecord]:
-    """Find closed GHIs via ``gh issue list``.
+def _discover_ghis(project_root: Path, base_ref: str | None) -> list[GhiRecord]:
+    """Find closed GHIs referenced by commits in ``<base_ref>..HEAD``.
 
-    When *since_date* is ``None`` (no tags), all closed GHIs are returned.
+    GHI #233 doctrine: a GHI ships in v_n if and only if its closure commit
+    is in the release range. Close-time windows are post-hoc reconstruction
+    and double-count GHIs shipped in the prior tag. This discovery:
+
+    1. Walks ``git log <base_ref>..HEAD`` and extracts GHI references from
+       commit messages (``#N``, ``(GHI #N)``, ``Closes #N``).
+    2. For each referenced GHI, calls ``gh issue view N`` to pull metadata.
+    3. Filters out GHIs that are not currently ``state=CLOSED`` — an
+       in-flight GHI mentioned in a commit but not yet closed is not
+       release-ready.
+
+    When *base_ref* is ``None`` (no prior tag), walks all history.
     """
-    cmd: list[str] = [
-        "gh",
-        "issue",
-        "list",
-        "--state",
-        "closed",
-        "--json",
-        "number,title,closedAt,labels,url",
-        "--limit",
-        "200",
-    ]
-    if since_date is not None:
-        cmd.extend(["--search", f"closed:>={since_date[:10]}"])
-
-    rc, stdout, _err = run_exec(cmd, cwd=project_root)
-    if rc != 0 or not stdout.strip():
+    in_range_refs = _collect_ghi_refs_in_range(project_root, base_ref)
+    if not in_range_refs:
         return []
 
-    try:
-        items = json.loads(stdout)
-    except json.JSONDecodeError:
-        return []
-
+    # A commit in ``<base_ref>..HEAD`` with a closure marker is authoritative:
+    # shipping the release will close the GHI on push. Do not filter by
+    # current GitHub state — a locally-committed fix awaiting push still has
+    # ``state=OPEN`` upstream but will be closed by the release. Trust the
+    # commit's closure declaration (GHI #233 doctrine: we count what we
+    # CLOSE at the commit level, not what GitHub currently says about state).
     records: list[GhiRecord] = []
-    for item in items:
+    for number in sorted(in_range_refs):
+        cmd = [
+            "gh",
+            "issue",
+            "view",
+            str(number),
+            "--json",
+            "number,title,closedAt,labels,state,url",
+        ]
+        rc, stdout, _err = run_exec(cmd, cwd=project_root)
+        if rc != 0 or not stdout.strip():
+            continue
+        try:
+            item = json.loads(stdout)
+        except json.JSONDecodeError:
+            continue
         labels = [lbl["name"] for lbl in item.get("labels", []) if isinstance(lbl, dict)]
         records.append(
             GhiRecord(
                 number=item["number"],
                 title=item.get("title", ""),
-                closed_at=item.get("closedAt", ""),
+                closed_at=item.get("closedAt") or "",
                 labels=labels,
                 url=item.get("url", ""),
             )
@@ -184,25 +197,67 @@ def _discover_ghis(project_root: Path, since_date: str | None) -> list[GhiRecord
     return records
 
 
-def _ghi_has_src_commits(project_root: Path, ghi_number: int) -> bool:
-    """Check whether any commits referencing *ghi_number* modified ``src/gzkit/``."""
-    rc, stdout, _err = git_cmd(
-        project_root,
-        "log",
-        "--all",
-        "--grep",
-        f"#{ghi_number}",
-        "--format=%H",
-        "--",
-        "src/gzkit/",
-    )
+# GitHub-canonical closure keywords only. The project's ``(GHI #N)`` paren
+# form in commit subjects is a *citation* convention — authors use it for
+# design commits that reference a GHI for context without closing it
+# (commit ecaf9b41 subject ``docs(adr): author ... (GHI #218)`` is design
+# scope; the GHI was closed separately, not by that commit). Matching
+# paren-form as closure would re-include every GHI cited in prose and
+# defeat the GHI #233 fix. Prose-only ``(GHI #N):`` list-item markers in
+# ceremony commit bodies (e.g. ``61c32d14`` commit body: ``(GHI #219):
+# REQ-02/03/05...``) are also citations, not closures.
+_GHI_CLOSURE_PATTERN = re.compile(
+    r"(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+#(\d+)",
+    re.IGNORECASE,
+)
+
+
+def _collect_ghi_refs_in_range(project_root: Path, base_ref: str | None) -> set[int]:
+    """Extract GHI numbers referenced by commits in ``<base_ref>..HEAD``.
+
+    When *base_ref* is ``None`` (no tags), walks all history. This is the
+    release-range anchor for patch-release discovery (GHI #233): a GHI ships
+    in v_n if and only if its closure commit is in the ``v_(n-1)..HEAD``
+    range. Close-time windows are post-hoc reconstruction and double-count
+    GHIs shipped in the prior tag.
+    """
+    log_args = ["log", "--format=%H%n%B%x00"]
+    if base_ref is not None:
+        log_args.append(f"{base_ref}..HEAD")
+    rc, stdout, _err = git_cmd(project_root, *log_args)
+    if rc != 0 or not stdout:
+        return set()
+
+    refs: set[int] = set()
+    for match in _GHI_CLOSURE_PATTERN.finditer(stdout):
+        refs.add(int(match.group(1)))
+    return refs
+
+
+def _ghi_has_src_commits(project_root: Path, ghi_number: int, base_ref: str | None) -> bool:
+    """Check whether commits referencing *ghi_number* modified ``src/gzkit/``.
+
+    Scoped to ``<base_ref>..HEAD`` when a prior tag exists, otherwise falls
+    back to ``--all``. Per GHI #233: release discovery must anchor on the
+    commit range, not repo-wide history, so a GHI whose closure commit
+    landed in a prior tag does not re-qualify for the next release.
+    """
+    log_args: list[str] = ["log"]
+    if base_ref is None:
+        log_args.append("--all")
+    else:
+        log_args.append(f"{base_ref}..HEAD")
+    log_args.extend(["--grep", f"#{ghi_number}", "--format=%H", "--", "src/gzkit/"])
+    rc, stdout, _err = git_cmd(project_root, *log_args)
     return rc == 0 and bool(stdout.strip())
 
 
-def _classify_ghi(project_root: Path, ghi: GhiRecord) -> GhiQualification:
-    """Classify a GHI by cross-validating runtime label and src diff."""
+def _classify_ghi(
+    project_root: Path, ghi: GhiRecord, base_ref: str | None
+) -> GhiQualification:
+    """Classify a GHI by cross-validating runtime label and src diff in range."""
     has_label = "runtime" in ghi.labels
-    has_diff = _ghi_has_src_commits(project_root, ghi.number)
+    has_diff = _ghi_has_src_commits(project_root, ghi.number, base_ref)
 
     if has_label and has_diff:
         status: GhiStatus = "qualified"
@@ -519,8 +574,8 @@ def patch_release_cmd(*, dry_run: bool, as_json: bool, full: bool = False) -> No
     _ensure_gh_available(project_root)
 
     tag, tag_date = _get_latest_tag(project_root)
-    ghis = _discover_ghis(project_root, tag_date)
-    qualifications = [_classify_ghi(project_root, ghi) for ghi in ghis]
+    ghis = _discover_ghis(project_root, tag)
+    qualifications = [_classify_ghi(project_root, ghi, tag) for ghi in ghis]
 
     current_version = _read_current_project_version(project_root)
     proposed_version = compute_patch_increment(current_version) if current_version else None
