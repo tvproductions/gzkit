@@ -27,11 +27,26 @@ Gate 2 is named TDD. This is what TDD means — follow it.
 
 **Derivation rule:** Test cases derive from OBPI brief acceptance criteria, not from the implementation. Tests verify the spec was met, not that the code does what it does. When adding tests outside a pipeline run, locate the governing OBPI brief and derive from its requirements.
 
+**The per-increment rhythm (binding):**
+
+TDD in this repo runs **along the way**, continuously, as the development rhythm — not as a demo presented at the end. The unit of discipline is one behavior increment: one test, one observed RED, minimum code to GREEN, next increment. Increments flow without per-step operator approval until a logical checkpoint (brief completion, phase boundary, ceremony step boundary). The operator contributes refactor orientation and observations **opportunistically**, not as a synchronous gate between every increment.
+
+Two shapes that look like TDD but are not:
+
+- **Test-dump theater:** author all tests for a patch in one pass, run them as a batch (single "RED screenshot"), write all implementation in one pass, run them as a batch (single "GREEN screenshot"), and present the batched result as "TDD verified." This is test-dump shape, not TDD rhythm — the per-increment observation loop that makes TDD work never fires.
+- **Stop-and-ask between every increment:** completing a RED→GREEN pair and pausing for operator sign-off before starting the next increment, even when no architectural question is on the table. This conflates "collaborative refactor input" (welcomed opportunistically) with "turn-by-turn synchronous approval" (not how TDD runs here). Keep moving until a real checkpoint or a real ambiguity appears.
+
 **Anti-patterns:**
 - Writing tests after implementation that confirm what the code already does (implementation-derived tests)
 - Writing tests "alongside" without seeing them fail first (skipping Red)
 - Writing all tests at once before any implementation (test-dump, not TDD)
+- Batching all tests to get one "RED screenshot" then batching all code to get one "GREEN screenshot" — test-dump theater that mimics TDD shape while skipping per-increment observation (GHI #157)
+- Stopping after each RED→GREEN pair to solicit operator approval before the next increment — TDD runs along the way, not turn-by-turn (GHI #157)
 - Refactoring while tests are still failing (mixing Green and Refactor)
+
+**RED evidence and the receipt-stream gap:**
+
+RED observations are **governance events**, not QA-step outcomes. An ARB step receipt with `exit_status=1` is semantically a failure; a TDD RED test that fails on first run is the intended, correct outcome. ARB is therefore not the right home for RED evidence — `gz arb validate`, `gz arb advise`, and `gz arb patterns` would treat intentional REDs as defects. Until the dedicated RED/GREEN receipt stream lands (tracked under `ADR-pool.tdd-receipt-stream`, GHI #157), Gate 2 TDD claims cite ARB receipts only for the GREEN side (`arb-step-unittest-*`) and rely on per-increment observation-pasted-into-commit-body for the RED side. Do not author ARB receipts with `exit_status=1` as "RED receipts" — that pollutes the ARB corpus and is explicitly the defect GHI #157 traces.
 
 ## TASK-Driven Workflow (GHI-160 Phase 6)
 

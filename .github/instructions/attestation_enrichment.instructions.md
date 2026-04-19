@@ -68,6 +68,19 @@ same command `gz typecheck` and `gz closeout` invoke. Do not author heavy-lane
 type-check receipts via `gz arb ty check <custom-scope>`; the receipt will
 drift from the gate and the attestation claim will be post-hoc false.
 
+**TDD RED evidence is not ARB-shaped (GHI #157).** ARB step receipts encode
+`exit_status=0` as success and `exit_status=1` as failure. A TDD RED test is
+the inverse — a first-run failure is the *correct* outcome and a first-run
+pass is the defect signal. Until the dedicated RED/GREEN receipt stream lands
+(tracked under `ADR-pool.tdd-receipt-stream`), Gate 2 TDD claims cite ARB
+receipts only for the GREEN side (`arb-step-unittest-*`); the RED side is
+recorded as per-increment observed-output pasted into the commit body or
+OBPI verification section, under the same observed-evidence discipline as
+`.gzkit/rules/tool-skill-runbook-alignment.md`. Do not fabricate `arb-step-*`
+receipts with `exit_status=1` to stand in for RED — ARB's validator and
+advisor corpora will treat them as defects, and the attestation claim will
+be post-hoc false in the same class as the `ty check .` drift above.
+
 Receipt IDs should appear inline in the enrichment, e.g.
 `(lint: receipt arb-2026-04-14T12-34-56-ruff)`. The citing agent must also
 have verified that the receipt exists and its status matches the claim —
