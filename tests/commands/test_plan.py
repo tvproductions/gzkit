@@ -34,3 +34,37 @@ class TestPlanCommand(unittest.TestCase):
             graph = ledger.get_artifact_graph()
             self.assertIn("ADR-0.2.0", graph)
             self.assertEqual(graph["ADR-0.2.0"]["type"], "adr")
+
+    def test_plan_canonicalizes_short_form_adr_parent(self) -> None:
+        """plan resolves a short-form ADR parent to the registered long form (GHI #222)."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            from gzkit.ledger import adr_created_event
+
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(adr_created_event("ADR-0.3.0-parent-feature", "PRD-1", "lite"))
+
+            result = runner.invoke(
+                main,
+                [
+                    "plan",
+                    "create",
+                    "child-feature",
+                    "--semver",
+                    "0.4.0",
+                    "--obpi",
+                    "ADR-0.3.0",
+                ],
+            )
+            self.assertEqual(result.exit_code, 0)
+
+            fresh_ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            graph = fresh_ledger.get_artifact_graph()
+            child = graph.get("ADR-0.4.0")
+            self.assertIsNotNone(child)
+            self.assertEqual(child["parent"], "ADR-0.3.0-parent-feature")
+
+            adr_path = Path("design/adr/ADR-0.4.0.md")
+            content = adr_path.read_text(encoding="utf-8")
+            self.assertIn("parent: ADR-0.3.0-parent-feature", content)

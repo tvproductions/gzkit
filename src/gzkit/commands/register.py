@@ -206,9 +206,28 @@ def _collect_adrs_to_register(
         raw_lane = metadata.get("lane", default_lane).lower()
         resolved_lane = raw_lane if raw_lane in {"lite", "heavy"} else default_lane
         to_register.append((adr_id, parent, resolved_lane))
-    to_register.sort(key=lambda item: item[0])
+
+    # GHI #222: canonicalize ADR parent refs against the full pool of on-disk
+    # and already-registered ADRs. If an ADR declares `parent: ADR-X.Y.Z` but
+    # the registered form is `ADR-X.Y.Z-slug`, resolve to the long form so the
+    # ledger stores the canonical identifier — matching the id-storage
+    # convention and preventing frontmatter/ledger drift.
+    all_adr_ids = eligible_parent_ids | known_adrs
+    resolved_to_register: list[tuple[str, str, str]] = []
+    for adr_id, parent, adr_lane in to_register:
+        if parent.startswith("ADR-") and parent not in all_adr_ids:
+            resolved = _resolve_short_form_parent(parent, all_adr_ids)
+            if resolved:
+                console.print(
+                    f"[yellow]Warning:[/yellow] {adr_id} uses short-form "
+                    f"parent '{parent}', resolved to '{resolved}'"
+                )
+                parent = resolved
+        resolved_to_register.append((adr_id, parent, adr_lane))
+
+    resolved_to_register.sort(key=lambda item: item[0])
     stale_pool_files.sort(key=lambda item: item[0])
-    return to_register, eligible_parent_ids, stale_pool_files
+    return resolved_to_register, eligible_parent_ids, stale_pool_files
 
 
 def _resolve_short_form_parent(

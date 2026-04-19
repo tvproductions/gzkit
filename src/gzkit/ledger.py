@@ -270,6 +270,26 @@ class Ledger:
         rename_map = self._build_rename_map(events)
         return self._canonicalize_with_map(artifact_id, rename_map)
 
+    def resolve_artifact_id(self, artifact_id: str) -> str:
+        """Resolve an artifact ID through rename-map then short-form→long-form (GHI #222).
+
+        After rename-map collapse, if the result is a short-form ADR id
+        (``ADR-X.Y.Z``) and exactly one graph key starts with ``ADR-X.Y.Z-``,
+        return the long form. Ambiguous prefixes return unchanged. Non-ADR
+        ids and already-canonical ids pass through.
+        """
+        canonical = self.canonicalize_id(artifact_id)
+        if not canonical.startswith("ADR-"):
+            return canonical
+        graph = self.get_artifact_graph()
+        if canonical in graph:
+            return canonical
+        prefix = f"{canonical}-"
+        matches = [k for k in graph if k.startswith(prefix)]
+        if len(matches) == 1:
+            return matches[0]
+        return canonical
+
     def get_latest_gate_statuses(self, adr_id: str) -> dict[int, str]:
         """Get the latest recorded gate status for an ADR.
 
@@ -493,6 +513,32 @@ class Ledger:
         cls._apply_obpi_receipt_metadata(graph, canonical_id, event)
         cls._apply_obpi_withdrawn_metadata(graph, canonical_id, event)
 
+    @staticmethod
+    def _resolve_short_form_parents(graph: dict[str, dict[str, Any]]) -> None:
+        """Rewrite short-form ADR parents to canonical long-form (GHI #222).
+
+        When a node's ``parent`` is set to a short-form id like ``ADR-0.0.17``
+        but the actual parent is registered in the graph as
+        ``ADR-0.0.17-adr-taxonomy-mechanical``, rewrite the parent reference
+        to the long form and reattach the parent→child relationship. Only
+        applied when the short form has exactly one long-form candidate —
+        ambiguous prefixes are left unchanged.
+        """
+        graph_keys = set(graph.keys())
+        for canonical_id, info in graph.items():
+            parent = info.get("parent")
+            if not parent or not parent.startswith("ADR-") or parent in graph_keys:
+                continue
+            prefix = f"{parent}-"
+            matches = [k for k in graph_keys if k.startswith(prefix)]
+            if len(matches) != 1:
+                continue
+            resolved = matches[0]
+            info["parent"] = resolved
+            children = graph[resolved]["children"]
+            if canonical_id not in children:
+                children.append(canonical_id)
+
     def get_artifact_graph(self) -> dict[str, dict[str, Any]]:
         """Build a graph of artifacts and their relationships.
 
@@ -517,6 +563,8 @@ class Ledger:
             self._ensure_artifact_entry(graph, event, canonical_id, canonical_parent)
             self._record_parent_child_relationship(graph, canonical_parent, canonical_id)
             self._apply_graph_event_metadata(graph, canonical_id, event)
+
+        self._resolve_short_form_parents(graph)
 
         self._cached_graph = graph
         return graph
