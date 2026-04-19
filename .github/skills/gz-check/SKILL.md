@@ -8,7 +8,7 @@ owner: gzkit-governance
 last_reviewed: 2026-04-12
 model: haiku
 metadata:
-  skill-version: "1.3.0"
+  skill-version: "1.4.0"
 ---
 
 # gz check
@@ -48,14 +48,23 @@ Unified quality gate for all code verification. Replaces the individual
 
 ## Claude Surface Check
 
-When running in Claude Code as a pre-merge or pre-attestation check, verify:
+When running in Claude Code as a pre-merge or pre-attestation check, run the
+following — each item is a concrete tool invocation, not a prose claim:
 
-1. **No hook errors at session start** — if any appeared, they must be resolved
-   before attestation. Use `@claude-code-guide` to diagnose broken hooks.
-2. **Generated surfaces match canonical source** — `.claude/skills/` mirrors
-   `.gzkit/skills/`, `.claude/rules/` mirrors `.gzkit/rules/` (when rules-as-content
-   is implemented per ADR-0.16.0).
-3. **CLAUDE.md is under budget** — under 200 lines for optimal adherence.
+1. **No hook errors at session start** — review the session start banner for
+   hook failures. If any appear, invoke `@claude-code-guide` to diagnose
+   against current Anthropic documentation. Do not proceed to attestation
+   while hook errors are unresolved.
+2. **Generated surfaces match canonical source** — run
+   `uv run gz validate --surfaces`. Exit code 0 means `.claude/skills/`
+   mirrors `.gzkit/skills/` and `.claude/rules/` mirrors `.gzkit/rules/`.
+   Non-zero exit means run `uv run gz agent sync control-surfaces` and
+   re-validate.
+3. **CLAUDE.md is under budget** — read `CLAUDE.md` with the Read tool and
+   check that the final line number reported is ≤ 200. Read returns
+   numbered lines so the count is observable without invoking `wc`. If
+   over budget, trim before attestation (200-line ceiling for optimal
+   adherence).
 
 ## Full Quality Evidence Sequence
 
