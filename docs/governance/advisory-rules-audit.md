@@ -37,6 +37,7 @@ This audit scores every rule by:
 | 4 | Do not let reconciliation remain a maintenance chore | **Mechanical** | Enforced by `gz validate --reconcile-freshness` (GHI #213) — flags when the latest reconcile ledger event is older than HEAD by more than 24h |
 | 5 | Do not let AirlineOps parity become perpetual catch-up | **Judgment** | Requires a metric ("perpetual") that depends on external repo state |
 | 6 | Do not let derived views silently become source-of-truth | **Mechanical** | Enforced by `gz validate --frontmatter`, `--event-handlers`, `--validator-fields`. Trust doctrine operationalizes this rule |
+| 6a | ADR taxonomy — kind/semver/id-prefix consistency | **Mechanical** | Enforced by `gz validate --taxonomy` (GHI #218 / ADR-0.0.17) — non-pool ADRs carry `kind: foundation` (semver `0.0.x`) or `kind: feature` (any other semver); pool ADRs (id prefix `ADR-pool.`) derive kind from the id and carry no `kind:` frontmatter |
 
 ### Local Agent Rules (`CLAUDE.md` § Local Agent Rules)
 

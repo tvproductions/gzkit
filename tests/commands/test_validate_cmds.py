@@ -5,6 +5,7 @@ from pathlib import Path
 from gzkit.cli import main
 from gzkit.config import GzkitConfig
 from gzkit.ledger import Ledger, adr_created_event, obpi_created_event
+from gzkit.traceability import covers
 from tests.commands.common import CliRunner, _init_git_repo, _quick_init
 
 
@@ -430,3 +431,57 @@ class TestFrontmatterCoherence(unittest.TestCase):
             self.assertEqual(len(payload["errors"]), 1)
             self.assertEqual(payload["errors"][0]["type"], "frontmatter")
             self.assertEqual(payload["errors"][0]["field"], "lane")
+
+
+class TestValidateTaxonomyFlag(unittest.TestCase):
+    """Dispatch tests for `gz validate --taxonomy` (REQ-0.0.17-04-08)."""
+
+    def _write_adr(self, rel: str, frontmatter: dict[str, str]) -> None:
+        path = Path(rel)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        lines = ["---"]
+        for key, value in frontmatter.items():
+            lines.append(f"{key}: {value}")
+        lines.append("---")
+        lines.append("")
+        lines.append("# Stub")
+        path.write_text("\n".join(lines), encoding="utf-8")
+
+    @covers("REQ-0.0.17-04-08")
+    def test_validate_taxonomy_flag_clean_on_empty_tree(self) -> None:
+        """--taxonomy exits 0 when no non-pool ADRs are present."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            result = runner.invoke(main, ["validate", "--taxonomy"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("taxonomy", result.output.lower())
+
+    @covers("REQ-0.0.17-04-08")
+    def test_validate_taxonomy_detects_missing_kind(self) -> None:
+        """--taxonomy flags a non-pool ADR without the kind field."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            self._write_adr(
+                "docs/design/adr/foundation/ADR-0.0.99-example/ADR-0.0.99-example.md",
+                {"id": "ADR-0.0.99", "semver": "0.0.99"},
+            )
+            result = runner.invoke(main, ["validate", "--taxonomy"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("taxonomy", result.output.lower())
+            self.assertIn("missing `kind:`", result.output)
+
+    @covers("REQ-0.0.17-04-08")
+    def test_validate_taxonomy_detects_pool_kind_frontmatter(self) -> None:
+        """--taxonomy flags a pool ADR that carries a kind field."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            self._write_adr(
+                "docs/design/adr/pool/ADR-pool.example.md",
+                {"id": "ADR-pool.example", "kind": "foundation"},
+            )
+            result = runner.invoke(main, ["validate", "--taxonomy"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("Pool ADRs derive kind", result.output)

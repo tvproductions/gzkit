@@ -1045,7 +1045,146 @@ def audit_reconcile_freshness(project_root: Path) -> list[ValidationError]:
     return []
 
 
+# ---------------------------------------------------------------------------
+# Audit: ADR taxonomy — kind / semver / id-prefix coherence (ADR-0.0.17)
+# ---------------------------------------------------------------------------
+
+
+_FOUNDATION_SEMVER_RE = re.compile(r"^0\.0\.\d+$")
+_POOL_ID_PREFIX = "ADR-pool."
+
+
+def audit_adr_taxonomy(project_root: Path) -> list[ValidationError]:
+    """Fail on ADRs that violate the pool/foundation/feature taxonomy.
+
+    Enforces ADR-0.0.17 § Decision: pool kind is derived from the
+    ``ADR-pool.*`` id prefix; non-pool ADRs carry ``kind: foundation`` or
+    ``kind: feature`` in frontmatter; ``foundation`` requires semver
+    ``0.0.x``; ``feature`` requires any other semver. Never mutates files.
+    """
+    adr_root = project_root / "docs" / "design" / "adr"
+    if not adr_root.is_dir():
+        return []
+    errors: list[ValidationError] = []
+    for adr_md in sorted(adr_root.rglob("ADR-*.md")):
+        # Skip nested obpi / brief / audit artefacts — same convention as
+        # _validate_decomposition in validate_cmd.py.
+        if "obpis" in adr_md.parts or "briefs" in adr_md.parts or "audit" in adr_md.parts:
+            continue
+        frontmatter = _parse_adr_frontmatter(adr_md)
+        if frontmatter is None:
+            continue
+        rel = adr_md.relative_to(project_root).as_posix()
+        adr_id = frontmatter.get("id", "")
+        kind = frontmatter.get("kind")
+        semver = frontmatter.get("semver")
+        is_pool = isinstance(adr_id, str) and adr_id.startswith(_POOL_ID_PREFIX)
+
+        if is_pool:
+            if kind is not None:
+                errors.append(
+                    ValidationError(
+                        type="taxonomy",
+                        artifact=rel,
+                        message=(
+                            "Pool ADRs derive kind from the `ADR-pool.*` id "
+                            "prefix; remove the `kind:` frontmatter field."
+                        ),
+                    )
+                )
+            continue
+
+        if kind is None:
+            errors.append(
+                ValidationError(
+                    type="taxonomy",
+                    artifact=rel,
+                    message=(
+                        "Non-pool ADR is missing `kind:` frontmatter. Add "
+                        "`kind: foundation` for an app/system invariant ADR "
+                        "(semver `0.0.x`) or `kind: feature` for a capability "
+                        "ADR (semver `0.y.z` and up). See ADR-0.0.17 / ADR-0.0.18."
+                    ),
+                )
+            )
+            continue
+
+        if kind not in ("foundation", "feature"):
+            errors.append(
+                ValidationError(
+                    type="taxonomy",
+                    artifact=rel,
+                    message=(
+                        f"Unknown `kind: {kind}`. Expected `foundation` or "
+                        "`feature` (pool kind is id-derived, not frontmatter)."
+                    ),
+                )
+            )
+            continue
+
+        if kind == "foundation" and not (
+            isinstance(semver, str) and _FOUNDATION_SEMVER_RE.match(semver)
+        ):
+            errors.append(
+                ValidationError(
+                    type="taxonomy",
+                    artifact=rel,
+                    message=(
+                        f"`kind: foundation` requires semver `0.0.x`; got "
+                        f"`{semver}`. Foundation ADRs are app/system invariants "
+                        "and never impact release versioning."
+                    ),
+                )
+            )
+        elif kind == "feature" and isinstance(semver, str) and _FOUNDATION_SEMVER_RE.match(semver):
+            errors.append(
+                ValidationError(
+                    type="taxonomy",
+                    artifact=rel,
+                    message=(
+                        f"`kind: feature` forbids semver `0.0.x`; got `{semver}`. "
+                        "Feature ADRs carry release-impacting semver (`0.y.z` and up)."
+                    ),
+                )
+            )
+    return errors
+
+
+def _parse_adr_frontmatter(path: Path) -> dict[str, str] | None:
+    """Read a flat YAML frontmatter block as a ``str -> str`` mapping.
+
+    Stdlib-only to match every sibling audit in this module (no PyYAML
+    import widens the trust surface for a flat key/value block).
+    """
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (UnicodeDecodeError, OSError):
+        return None
+    lines = text.splitlines()
+    if not lines or lines[0].strip() != "---":
+        return None
+    end = None
+    for i in range(1, len(lines)):
+        if lines[i].strip() == "---":
+            end = i
+            break
+    if end is None:
+        return None
+    fields: dict[str, str] = {}
+    for raw in lines[1:end]:
+        if ":" not in raw:
+            continue
+        key, _, value = raw.partition(":")
+        key = key.strip()
+        value = value.strip()
+        if value.startswith('"') and value.endswith('"') and len(value) >= 2:
+            value = value[1:-1]
+        fields[key] = value
+    return fields
+
+
 __all__ = [
+    "audit_adr_taxonomy",
     "audit_advisory_scorecard",
     "audit_behave_req_tags",
     "audit_class_size",

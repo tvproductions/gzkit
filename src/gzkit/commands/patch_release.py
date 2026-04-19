@@ -252,9 +252,7 @@ def _ghi_has_src_commits(project_root: Path, ghi_number: int, base_ref: str | No
     return rc == 0 and bool(stdout.strip())
 
 
-def _classify_ghi(
-    project_root: Path, ghi: GhiRecord, base_ref: str | None
-) -> GhiQualification:
+def _classify_ghi(project_root: Path, ghi: GhiRecord, base_ref: str | None) -> GhiQualification:
     """Classify a GHI by cross-validating runtime label and src diff in range."""
     has_label = "runtime" in ghi.labels
     has_diff = _ghi_has_src_commits(project_root, ghi.number, base_ref)

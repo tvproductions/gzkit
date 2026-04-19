@@ -9,6 +9,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--instructions] [--briefs] [--personas]
             [--interviews] [--decomposition]
             [--requirements] [--commit-trailers]
+            [--taxonomy]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
 ```
 
@@ -39,6 +40,25 @@ bypass pattern observed across GHI-141 through GHI-156.
 
 Non-code commits (docs-only, config-only) and commits with a valid
 trailer pass the check. The scope scans HEAD only.
+
+### `--taxonomy`
+
+Enforces the ADR taxonomy contract from ADR-0.0.17: every non-pool ADR
+carries `kind: foundation` or `kind: feature` in frontmatter, `foundation`
+ADRs use `0.0.x` semver, `feature` ADRs use any other semver, and pool
+ADRs (id prefix `ADR-pool.`) carry no `kind:` field (their kind is
+derived from the id prefix). Runs under bare `gz validate` as a default
+scope and is also accessible as a discrete flag for focused invocation.
+
+Violations include:
+
+- Pool ADR carrying a `kind:` field.
+- Non-pool ADR missing `kind:`.
+- `kind: foundation` paired with a non-`0.0.x` semver.
+- `kind: feature` paired with a `0.0.x` semver.
+- Any `kind:` value other than `foundation` or `feature` on a non-pool ADR.
+
+The audit never mutates files.
 
 ### `--surfaces`
 

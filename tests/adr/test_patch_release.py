@@ -190,9 +190,7 @@ class TestDiscoverGhis(unittest.TestCase):
     def test_empty_range_returns_empty(self) -> None:
         from gzkit.commands.patch_release import _discover_ghis
 
-        with patch(
-            "gzkit.commands.patch_release._collect_ghi_refs_in_range", return_value=set()
-        ):
+        with patch("gzkit.commands.patch_release._collect_ghi_refs_in_range", return_value=set()):
             ghis = _discover_ghis(_PROJECT_ROOT, "v0.25.10")
 
         self.assertEqual(ghis, [])
@@ -364,8 +362,7 @@ class TestCollectGhiRefsInRange(unittest.TestCase):
 
         mock_git.return_value = (
             0,
-            "abc1\nfix: one (GHI #42)\n\nCloses #42\n\x00"
-            "abc2\nfix: followup\n\nFixes #42\n\x00",
+            "abc1\nfix: one (GHI #42)\n\nCloses #42\n\x00abc2\nfix: followup\n\nFixes #42\n\x00",
             "",
         )
         refs = _collect_ghi_refs_in_range(_PROJECT_ROOT, "v1.0.0")

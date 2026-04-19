@@ -55,9 +55,13 @@ class TestAdrPromoteCommand(unittest.TestCase):
             result = runner.invoke(
                 main,
                 [
-                    "adr", "promote", "ADR-pool.sample-work",
-                    "--semver", "0.6.0",
-                    "--kind", "feature",
+                    "adr",
+                    "promote",
+                    "ADR-pool.sample-work",
+                    "--semver",
+                    "0.6.0",
+                    "--kind",
+                    "feature",
                     "--dry-run",
                 ],
             )
@@ -82,9 +86,13 @@ class TestAdrPromoteCommand(unittest.TestCase):
             result = runner.invoke(
                 main,
                 [
-                    "adr", "promote", "ADR-pool.sample-work",
-                    "--semver", "0.6.0",
-                    "--kind", "feature",
+                    "adr",
+                    "promote",
+                    "ADR-pool.sample-work",
+                    "--semver",
+                    "0.6.0",
+                    "--kind",
+                    "feature",
                     "--force",
                 ],
             )
@@ -150,9 +158,13 @@ class TestAdrPromoteCommand(unittest.TestCase):
             result = runner.invoke(
                 main,
                 [
-                    "adr", "promote", "ADR-pool.missing-scope",
-                    "--semver", "0.6.0",
-                    "--kind", "feature",
+                    "adr",
+                    "promote",
+                    "ADR-pool.missing-scope",
+                    "--semver",
+                    "0.6.0",
+                    "--kind",
+                    "feature",
                 ],
             )
             self.assertNotEqual(result.exit_code, 0)
@@ -176,9 +188,13 @@ class TestAdrPromoteCommand(unittest.TestCase):
             result = runner.invoke(
                 main,
                 [
-                    "adr", "promote", "ADR-0.6.0",
-                    "--semver", "0.6.1",
-                    "--kind", "feature",
+                    "adr",
+                    "promote",
+                    "ADR-0.6.0",
+                    "--semver",
+                    "0.6.1",
+                    "--kind",
+                    "feature",
                 ],
             )
             self.assertNotEqual(result.exit_code, 0)
@@ -197,9 +213,13 @@ class TestAdrPromoteCommand(unittest.TestCase):
             result = runner.invoke(
                 main,
                 [
-                    "adr", "promote", "ADR-pool.sample-work",
-                    "--semver", "0.6.0",
-                    "--kind", "feature",
+                    "adr",
+                    "promote",
+                    "ADR-pool.sample-work",
+                    "--semver",
+                    "0.6.0",
+                    "--kind",
+                    "feature",
                 ],
             )
             self.assertEqual(result.exit_code, 3, msg=result.output)
@@ -280,9 +300,7 @@ class TestAdrPromoteKindFlag(unittest.TestCase):
             self.assertEqual(result.exit_code, 1, msg=result.output)
             self.assertIn("foundation", result.output)
             self.assertIn("feature", result.output)
-            target = (
-                Path("design/adr/pre-release/ADR-0.6.0-sample-work/ADR-0.6.0-sample-work.md")
-            )
+            target = Path("design/adr/pre-release/ADR-0.6.0-sample-work/ADR-0.6.0-sample-work.md")
             self.assertFalse(target.exists(), "no promotion artifact may exist on rejection")
 
     def test_kind_pool_rejected_with_exit_one(self) -> None:
@@ -293,9 +311,13 @@ class TestAdrPromoteKindFlag(unittest.TestCase):
             result = runner.invoke(
                 main,
                 [
-                    "adr", "promote", "ADR-pool.sample-work",
-                    "--semver", "0.6.0",
-                    "--kind", "pool",
+                    "adr",
+                    "promote",
+                    "ADR-pool.sample-work",
+                    "--semver",
+                    "0.6.0",
+                    "--kind",
+                    "pool",
                 ],
             )
             self.assertEqual(result.exit_code, 1, msg=result.output)
@@ -311,9 +333,13 @@ class TestAdrPromoteKindFlag(unittest.TestCase):
             result = runner.invoke(
                 main,
                 [
-                    "adr", "promote", "ADR-pool.sample-work",
-                    "--semver", "0.6.0",
-                    "--kind", "foundation",
+                    "adr",
+                    "promote",
+                    "ADR-pool.sample-work",
+                    "--semver",
+                    "0.6.0",
+                    "--kind",
+                    "foundation",
                 ],
             )
             self.assertEqual(result.exit_code, 1, msg=result.output)
@@ -329,9 +355,13 @@ class TestAdrPromoteKindFlag(unittest.TestCase):
             result = runner.invoke(
                 main,
                 [
-                    "adr", "promote", "ADR-pool.sample-work",
-                    "--semver", "0.0.18",
-                    "--kind", "feature",
+                    "adr",
+                    "promote",
+                    "ADR-pool.sample-work",
+                    "--semver",
+                    "0.0.18",
+                    "--kind",
+                    "feature",
                 ],
             )
             self.assertEqual(result.exit_code, 1, msg=result.output)
@@ -347,9 +377,13 @@ class TestAdrPromoteKindFlag(unittest.TestCase):
             result = runner.invoke(
                 main,
                 [
-                    "adr", "promote", "ADR-pool.sample-work",
-                    "--semver", "0.0.18",
-                    "--kind", "foundation",
+                    "adr",
+                    "promote",
+                    "ADR-pool.sample-work",
+                    "--semver",
+                    "0.0.18",
+                    "--kind",
+                    "foundation",
                     "--dry-run",
                 ],
             )
@@ -363,9 +397,13 @@ class TestAdrPromoteKindFlag(unittest.TestCase):
             result = runner.invoke(
                 main,
                 [
-                    "adr", "promote", "ADR-pool.sample-work",
-                    "--semver", "0.6.0",
-                    "--kind", "feature",
+                    "adr",
+                    "promote",
+                    "ADR-pool.sample-work",
+                    "--semver",
+                    "0.6.0",
+                    "--kind",
+                    "feature",
                     "--dry-run",
                 ],
             )
@@ -385,9 +423,13 @@ class TestAdrPromoteKindFlag(unittest.TestCase):
             result = runner.invoke(
                 main,
                 [
-                    "adr", "promote", "ADR-pool.sample-work",
-                    "--semver", "0.6.0",
-                    "--kind", "foundation",
+                    "adr",
+                    "promote",
+                    "ADR-pool.sample-work",
+                    "--semver",
+                    "0.6.0",
+                    "--kind",
+                    "foundation",
                 ],
             )
             self.assertEqual(result.exit_code, 1, msg=result.output)
@@ -403,9 +445,13 @@ class TestAdrPromoteKindFlag(unittest.TestCase):
             result = runner.invoke(
                 main,
                 [
-                    "adr", "promote", "ADR-pool.sample-work",
-                    "--semver", "0.0.18",
-                    "--kind", "feature",
+                    "adr",
+                    "promote",
+                    "ADR-pool.sample-work",
+                    "--semver",
+                    "0.0.18",
+                    "--kind",
+                    "feature",
                     "--force",
                 ],
             )
@@ -421,9 +467,13 @@ class TestAdrPromoteKindFlag(unittest.TestCase):
             result = runner.invoke(
                 main,
                 [
-                    "adr", "promote", "ADR-pool.sample-work",
-                    "--semver", "0.0.18",
-                    "--kind", "foundation",
+                    "adr",
+                    "promote",
+                    "ADR-pool.sample-work",
+                    "--semver",
+                    "0.0.18",
+                    "--kind",
+                    "foundation",
                     "--force",
                 ],
             )
@@ -442,9 +492,13 @@ class TestAdrPromoteKindFlag(unittest.TestCase):
             result = runner.invoke(
                 main,
                 [
-                    "adr", "promote", "ADR-pool.sample-work",
-                    "--semver", "0.6.0",
-                    "--kind", "feature",
+                    "adr",
+                    "promote",
+                    "ADR-pool.sample-work",
+                    "--semver",
+                    "0.6.0",
+                    "--kind",
+                    "feature",
                     "--force",
                 ],
             )
@@ -462,9 +516,13 @@ class TestAdrPromoteKindFlag(unittest.TestCase):
             result = runner.invoke(
                 main,
                 [
-                    "adr", "promote", "ADR-pool.sample-work",
-                    "--semver", "0.6.0",
-                    "--kind", "feature",
+                    "adr",
+                    "promote",
+                    "ADR-pool.sample-work",
+                    "--semver",
+                    "0.6.0",
+                    "--kind",
+                    "feature",
                     "--force",
                 ],
             )
@@ -485,15 +543,21 @@ class TestAdrPromoteKindFlag(unittest.TestCase):
             result = runner.invoke(
                 main,
                 [
-                    "adr", "promote", "ADR-pool.sample-work",
-                    "--semver", "0.0.18",
-                    "--kind", "foundation",
+                    "adr",
+                    "promote",
+                    "ADR-pool.sample-work",
+                    "--semver",
+                    "0.0.18",
+                    "--kind",
+                    "foundation",
                     "--force",
                 ],
             )
             self.assertEqual(result.exit_code, 0, msg=result.output)
             self.assertTrue(
-                Path("design/adr/foundation/ADR-0.0.18-sample-work/ADR-0.0.18-sample-work.md").exists()
+                Path(
+                    "design/adr/foundation/ADR-0.0.18-sample-work/ADR-0.0.18-sample-work.md"
+                ).exists()
             )
 
     def test_feature_lands_in_pre_release_bucket(self) -> None:
@@ -504,15 +568,21 @@ class TestAdrPromoteKindFlag(unittest.TestCase):
             result = runner.invoke(
                 main,
                 [
-                    "adr", "promote", "ADR-pool.sample-work",
-                    "--semver", "0.6.0",
-                    "--kind", "feature",
+                    "adr",
+                    "promote",
+                    "ADR-pool.sample-work",
+                    "--semver",
+                    "0.6.0",
+                    "--kind",
+                    "feature",
                     "--force",
                 ],
             )
             self.assertEqual(result.exit_code, 0, msg=result.output)
             self.assertTrue(
-                Path("design/adr/pre-release/ADR-0.6.0-sample-work/ADR-0.6.0-sample-work.md").exists()
+                Path(
+                    "design/adr/pre-release/ADR-0.6.0-sample-work/ADR-0.6.0-sample-work.md"
+                ).exists()
             )
 
     # --- REQ-0.0.17-03-07: ledger event extras ---
@@ -525,9 +595,13 @@ class TestAdrPromoteKindFlag(unittest.TestCase):
             result = runner.invoke(
                 main,
                 [
-                    "adr", "promote", "ADR-pool.sample-work",
-                    "--semver", "0.6.0",
-                    "--kind", "feature",
+                    "adr",
+                    "promote",
+                    "ADR-pool.sample-work",
+                    "--semver",
+                    "0.6.0",
+                    "--kind",
+                    "feature",
                     "--force",
                 ],
             )

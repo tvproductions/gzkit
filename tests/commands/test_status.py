@@ -1137,9 +1137,7 @@ class TestOrphanedAdrWarning(unittest.TestCase):
             )
 
             ledger = Ledger(project_root / ".gzkit" / "ledger.jsonl")
-            ledger.append(
-                adr_created_event("ADR-0.5.0-skill-lifecycle", "PRD-TEST-1.0.0", "lite")
-            )
+            ledger.append(adr_created_event("ADR-0.5.0-skill-lifecycle", "PRD-TEST-1.0.0", "lite"))
 
             result = runner.invoke(main, ["adr", "report"])
             self.assertEqual(result.exit_code, 0)

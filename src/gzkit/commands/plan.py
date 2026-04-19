@@ -28,9 +28,7 @@ def _next_available_foundation_semver(foundation_root: Path) -> str:
     return f"0.0.{max_n + 1}" if max_n >= 0 else "0.0.1"
 
 
-def _render_pool_adr(
-    *, name: str, title: str, parent: str, lane: str
-) -> tuple[str, str, str]:
+def _render_pool_adr(*, name: str, title: str, parent: str, lane: str) -> tuple[str, str, str]:
     """Render a pool ADR. Returns (adr_id, relative_dir, content)."""
     slug = name if name.startswith("ADR-pool.") else f"ADR-pool.{name}"
     content = render_template(
@@ -72,12 +70,8 @@ def plan_cmd(
 
     # REQ-0.0.17-02-01 — --kind is required; name both criteria in the error.
     if kind is None:
-        console.print(
-            "[red]ERROR:[/red] --kind is required. Choose one of:"
-        )
-        console.print(
-            "  [bold]foundation[/bold] — infrastructure ADR; requires --semver 0.0.x"
-        )
+        console.print("[red]ERROR:[/red] --kind is required. Choose one of:")
+        console.print("  [bold]foundation[/bold] — infrastructure ADR; requires --semver 0.0.x")
         console.print(
             "  [bold]feature[/bold]    — release-carrying end-user capability; "
             "requires --semver NOT matching 0.0.x"
