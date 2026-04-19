@@ -2,8 +2,9 @@
 
 - **Status:** Pool
 - **Lane:** Heavy
-- **Date:** 2026-04-05
+- **Date:** 2026-04-05 (original) / 2026-04-19 (CAP-08 MODE per-invocation surface added — see Amendment History)
 - **Origin:** SPEC-agent-capability-uplift Candidate B2
+- **Amendments:** 2026-04-19 — added CAP-08 MODE subsection (per-invocation intent surface orthogonal to the OBPI-lifetime Tier) and enabler linkage to `ADR-pool.tdd-receipt-stream`; all original CAP-08 tier text, CAP-09/10/21/22 text, Non-Goals, Promotion Criteria, Origin preserved.
 
 ## Intent
 
@@ -19,6 +20,34 @@ Define a 4-tier agent autonomy model that governs how much an agent can deviate 
 - **Tier 2 (Tactical):** Minor implementation adjustments allowed (ordering, naming); structural changes require approval
 - **Tier 3 (Strategic):** Agent may propose and execute alternative approaches within OBPI scope; must document rationale
 - **Tier 4 (Autonomous):** Agent may replan within ADR scope; human reviews at gate boundaries only
+
+#### CAP-08 addendum (2026-04-19): MODE per-invocation intent surface
+
+Tier is set at OBPI plan time and holds for the OBPI lifecycle (per Non-Goals below). MODE is a **complementary, finer-grained surface** that declares the operator's intent for a single session or skill invocation. Tier remains the structural ceiling; MODE cannot escalate authority beyond Tier, only declare current-turn intent within it.
+
+**MODE declarations (operator-framed, per-invocation):**
+
+| MODE | Authority | Typical use |
+|---|---|---|
+| `READ-ONLY` | No `Write`, `Edit`, `NotebookEdit`, or file-mutating tool calls; no `gz` subcommands with side effects; agent may Read, Grep, Glob, Bash (non-mutating), and report findings | Status checks, investigations, audits, exploratory reads |
+| `PLAN-FIRST` | No file mutation or side-effectful `gz` subcommands until plan is presented and operator approves; plan mode / `EnterPlanMode` tooling where available | Implementation planning, scope negotiation |
+| `IMPLEMENT` | Full Tier-authority; agent may mutate within Tier's deviation allowance and the active brief's Allowed Paths | Normal implementation work |
+
+**Why MODE is orthogonal to Tier:**
+
+- **Tier** answers: *"For this OBPI, how much deviation from the plan is allowed before human approval?"* (structural, OBPI-lifetime)
+- **MODE** answers: *"For this turn/session, does the operator want the agent to act, plan, or only read?"* (intentional, per-invocation)
+
+A Tier-4 Autonomous OBPI invoked under `MODE: READ-ONLY` still yields no mutation that turn — Tier ceiling is untouched but intent bounds current authority below the ceiling. Conversely, `MODE: IMPLEMENT` on a Tier-1 Mechanical OBPI still allows only mechanical execution; MODE declares intent but cannot raise Tier.
+
+**Mechanical backstop (design intent, not pre-promotion decision):**
+
+- MODE declaration emits a `mode_declared` event to the governance-event receipt stream (`ADR-pool.tdd-receipt-stream` — 2026-04-19 generalization, kind registry).
+- Agent action that violates declared MODE emits a `mode_violation` event (or the MODE pair resolves as unpaired `mode_declared` with no matching `mode_resolved`, depending on pairing tension resolution in the stream ADR).
+- Harness hook layer (`ADR-pool.harness-aware-execution-modes` Mode 2) can mechanically reject `Write`/`Edit` tool calls under `MODE: READ-ONLY`, closing the class of "rogue implementation on a read-only request" at the PreToolUse boundary.
+- Behavioral circuit breakers (`ADR-pool.skill-behavioral-hardening`) consume the event sequence for anti-rationalization audits.
+
+**Promotion independence consideration:** The 4-tier Tier model depends on pipeline-lifecycle stability (current Prerequisite) and is explicitly a post-1.0 concern (per Notes). The MODE surface has **no such prerequisite** — it operates at the session/skill granularity that already exists, and the 2026-04-19 evidence (insights report: 30 misunderstood-request events across 197 sessions) argues for it being promotable independently of the tier work. Promotion sequencing is a promotion-time decision; this addendum does not bind it.
 
 ### CAP-09: Goal-Backward Verification
 
@@ -65,6 +94,7 @@ Infer and execute the next governance action from current state, eliminating the
 - No autonomous tier promotion — tier assignment is a human governance decision
 - No retroactive tier changes — tier is set at plan time and holds for the OBPI lifecycle
 - `gz next` does not skip human gates — it surfaces them, never bypasses them
+- **MODE does not override Tier (2026-04-19).** MODE declares current-turn intent within Tier's structural ceiling; it cannot raise authority above the Tier assigned at OBPI plan time. A `MODE: IMPLEMENT` declaration on a Tier-1 Mechanical OBPI still grants only mechanical-execution authority.
 
 ## Dependencies
 
@@ -72,6 +102,9 @@ Infer and execute the next governance action from current state, eliminating the
 - **Complements:** ADR-pool.controlled-agency-recovery (recovery protocol for tier violations)
 - **Complements:** ADR-pool.structured-blocker-envelopes (stall detection produces blocker envelopes)
 - **Prerequisite:** Stable pipeline lifecycle (ADR-0.12.0 series)
+- **Enabler (2026-04-19, CAP-08 MODE only):** `ADR-pool.tdd-receipt-stream` — generalized governance-event receipt stream where `mode_declared` / `mode_resolved` / `mode_violation` events live. MODE subsection depends on the stream for its audit surface; the rest of this ADR does not.
+- **Consumer/enforcer (2026-04-19):** `ADR-pool.harness-aware-execution-modes` Mode 2 hook authority may mechanically reject tool calls that violate declared MODE at the PreToolUse boundary.
+- **Consumer (2026-04-19):** `ADR-pool.skill-behavioral-hardening` consumes MODE event sequences for anti-rationalization circuit breakers.
 
 ## Promotion Criteria
 
@@ -96,7 +129,33 @@ This pool ADR can be promoted when all are true:
 - CAP-10 and CAP-21 are independent and could be promoted separately as lighter-weight ADRs.
 - CAP-22 (`gz next`) is also independent and could be promoted as a standalone Lite-lane ADR — it requires only ledger reads and a decision table, no new governance machinery.
 - Post-1.0 concern per Architecture Planning Memo (2026-03-29) — foundations must lock first.
+- **CAP-08 MODE subsection (2026-04-19) may be separately promotable.** It has no pipeline-lifecycle prerequisite, addresses a foundation-class defect (the 4.7 "rogue implementation on read-only request" pattern flagged in the 2026-04-19 insights report, ~30 misunderstood-request events across 197 sessions), and depends only on the governance-event receipt stream. Splitting it from the post-1.0 tier work is an option; this ADR does not pre-decide.
 
 ## See Also
 
 - [SPEC-agent-capability-uplift](../../briefs/SPEC-agent-capability-uplift.md) — **Candidate B2** (CAP-08, CAP-09, CAP-10, CAP-21). This pool ADR captures the execution intelligence capabilities that have no existing pool ADR coverage.
+- [ADR-pool.tdd-receipt-stream](ADR-pool.tdd-receipt-stream.md) — enabler for CAP-08 MODE event surface (2026-04-19 generalization).
+- [ADR-pool.harness-aware-execution-modes](ADR-pool.harness-aware-execution-modes.md) — Mode 2 hooks may mechanically enforce declared MODE at PreToolUse.
+- [ADR-pool.skill-behavioral-hardening](ADR-pool.skill-behavioral-hardening.md) — circuit breakers consume MODE event sequences.
+
+---
+
+## Amendment History
+
+### 2026-04-19 — CAP-08 MODE per-invocation intent surface
+
+**Motivation.** The `/insights` 2026-04-19 session quantified a recurring behavioral defect: ~30 misunderstood-request events and ~42 wrong-approach events across 197 sessions (341 hours), with the "worst session" being a case where Claude autonomously began OBPI-01 implementation on a status-check request. The existing CAP-08 Tier model operates at OBPI-lifetime granularity and does not address per-invocation intent framing — the case where the operator's current-turn intent (read-only inspection) differs from the OBPI's assigned authority ceiling (e.g., Tier-3 Strategic). MODE fills that gap.
+
+**What the amendment preserves.** The 4-tier CAP-08 model verbatim (Mechanical / Tactical / Strategic / Autonomous). All four original Non-Goals. All CAP-09, CAP-10, CAP-21, CAP-22 content. Origin (SPEC-agent-capability-uplift Candidate B2). All Dependencies. All Promotion Criteria. All Inspired By references. All original Notes.
+
+**What the amendment adds.**
+
+- CAP-08 addendum subsection with MODE declaration table (READ-ONLY / PLAN-FIRST / IMPLEMENT), orthogonal-to-Tier framing, mechanical-backstop sketch, and promotion-independence consideration.
+- Non-Goal entry making the Tier-ceiling-override prohibition explicit for MODE.
+- Dependencies entries for `tdd-receipt-stream` (enabler for event surface), `harness-aware-execution-modes` (consumer/enforcer), `skill-behavioral-hardening` (consumer).
+- Note about potential independent promotion of CAP-08 MODE ahead of the full post-1.0 tier bundle.
+- See Also entries for the three related pool ADRs.
+
+**What it does NOT do.** It does not modify the 4-tier definitions; does not make MODE adjustable after plan time (MODE is per-invocation and operator-declared, not retroactively tier-changing); does not commit to a specific mechanical-backstop implementation (hook vs. CLI check vs. skill-layer rejection remain promotion-time decisions); does not force CAP-08 MODE to promote together with the tier model.
+
+**Tracking.** Follow-on GHI will index this amendment once `ADR-pool.adr-amendment-tracking` is promoted.
