@@ -2,10 +2,12 @@
 
 import json
 import os
+import shlex
 import shutil
 import subprocess
 import sys
 import tempfile
+import textwrap
 import unittest
 from pathlib import Path
 
@@ -750,8 +752,12 @@ class TestPlanAuditGateHook(unittest.TestCase):
         plans_dir: Path,
         verdict: str = "PASS",
         succeed: bool = True,
-    ) -> Path:
-        """Create a fake gz binary that mimics 'plan audit' receipt emission.
+    ) -> str:
+        """Create a cross-platform fake gz fixture that mimics 'plan audit'.
+
+        Emits a Python script invoked via ``sys.executable`` so the fixture
+        runs on Windows (where bash shebangs are not honored) as well as
+        POSIX platforms (GHI #223).
 
         When ``succeed=True`` the script writes a per-OBPI receipt at
         ``plans_dir/.plan-audit-receipt-<obpi>.json`` with the requested
@@ -759,24 +765,47 @@ class TestPlanAuditGateHook(unittest.TestCase):
         exits 1, mirroring an audit that itself failed (e.g. brief missing).
         Argv shape mirrors ``gz plan audit OBPI-X``: the OBPI id is the
         last argument the hook passes.
+
+        Returns the shell-safe GZKIT_PLAN_AUDIT_CMD string the hook's
+        ``shlex.split`` resolves back to ``[sys.executable, fake_gz_path]``.
         """
-        fake_gz = project_root / "fake-gz.sh"
-        body = "#!/bin/bash\n"
+        fake_gz = project_root / "fake-gz.py"
         if succeed:
-            body += (
-                f'OBPI="${{!#}}"\n'
-                f'mkdir -p "{plans_dir}"\n'
-                f'cat > "{plans_dir}/.plan-audit-receipt-${{OBPI}}.json" <<EOF\n'
-                f'{{"obpi_id": "${{OBPI}}", "verdict": "{verdict}", '
-                f'"timestamp": "2026-04-18T00:00:00Z"}}\n'
-                f"EOF\n"
-                "exit 0\n"
+            body = textwrap.dedent(
+                f"""\
+                import json
+                import sys
+                from pathlib import Path
+
+                obpi = sys.argv[-1]
+                plans_dir = Path({str(plans_dir)!r})
+                plans_dir.mkdir(parents=True, exist_ok=True)
+                receipt = plans_dir / f".plan-audit-receipt-{{obpi}}.json"
+                receipt.write_text(
+                    json.dumps(
+                        {{
+                            "obpi_id": obpi,
+                            "verdict": {verdict!r},
+                            "timestamp": "2026-04-18T00:00:00Z",
+                        }}
+                    )
+                    + "\\n",
+                    encoding="utf-8",
+                )
+                sys.exit(0)
+                """
             )
         else:
-            body += 'echo "audit alignment gap (fixture)" >&2\nexit 1\n'
-        fake_gz.write_text(body)
-        fake_gz.chmod(0o755)
-        return fake_gz
+            body = textwrap.dedent(
+                """\
+                import sys
+
+                print("audit alignment gap (fixture)", file=sys.stderr)
+                sys.exit(1)
+                """
+            )
+        fake_gz.write_text(body, encoding="utf-8")
+        return shlex.join([sys.executable, str(fake_gz)])
 
     def test_self_audits_when_receipt_missing_and_allows_on_pass(self) -> None:
         """GHI #191: hook self-runs gz plan audit when receipt missing; allows on PASS."""
@@ -787,7 +816,7 @@ class TestPlanAuditGateHook(unittest.TestCase):
             self._write_plan(plans_dir, "active.md", "Implement OBPI-0.12.0-02\n")
             fake_gz = self._make_fake_gz(project_root, plans_dir=plans_dir, verdict="PASS")
 
-            result = self._run_hook(script_path, project_root, plan_audit_cmd=str(fake_gz))
+            result = self._run_hook(script_path, project_root, plan_audit_cmd=fake_gz)
 
             self.assertEqual(result.returncode, 0, msg=result.stderr)
             self.assertIn("self-running", result.stderr)
@@ -809,7 +838,7 @@ class TestPlanAuditGateHook(unittest.TestCase):
             os.utime(stale_receipt, (1_700_000_100, 1_700_000_100))
             fake_gz = self._make_fake_gz(project_root, plans_dir=plans_dir, verdict="PASS")
 
-            result = self._run_hook(script_path, project_root, plan_audit_cmd=str(fake_gz))
+            result = self._run_hook(script_path, project_root, plan_audit_cmd=fake_gz)
 
             self.assertEqual(result.returncode, 0, msg=result.stderr)
             self.assertIn("self-audit succeeded", result.stderr)
@@ -823,7 +852,7 @@ class TestPlanAuditGateHook(unittest.TestCase):
             self._write_plan(plans_dir, "active.md", "Implement OBPI-0.12.0-02\n")
             fake_gz = self._make_fake_gz(project_root, plans_dir=plans_dir, succeed=False)
 
-            result = self._run_hook(script_path, project_root, plan_audit_cmd=str(fake_gz))
+            result = self._run_hook(script_path, project_root, plan_audit_cmd=fake_gz)
 
             self.assertEqual(result.returncode, 2)
             self.assertIn("BLOCKED:", result.stderr)
@@ -839,7 +868,7 @@ class TestPlanAuditGateHook(unittest.TestCase):
             self._write_plan(plans_dir, "active.md", "Implement OBPI-0.12.0-02\n")
             fake_gz = self._make_fake_gz(project_root, plans_dir=plans_dir, verdict="FAIL")
 
-            result = self._run_hook(script_path, project_root, plan_audit_cmd=str(fake_gz))
+            result = self._run_hook(script_path, project_root, plan_audit_cmd=fake_gz)
 
             # FAIL receipt is still a 'valid' receipt per the gate's contract
             # (PASS or FAIL are both decisions); allow ExitPlanMode so the
