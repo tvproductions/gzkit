@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import Any, cast
 
 from gzkit.commands.adr_promote_utils import (
-    _adr_bucket_for_semver,
     _mark_pool_adr_promoted,
     _parse_semver_triplet,
     _pool_title_from_content,
@@ -19,6 +18,7 @@ from gzkit.commands.adr_promote_utils import (
 )
 from gzkit.commands.common import (
     GzCliError,
+    _upsert_frontmatter_value,
     console,
     ensure_initialized,
     get_project_root,
@@ -37,6 +37,56 @@ from gzkit.ledger import (
     obpi_created_event,
 )
 
+# REQ-0.0.17-03-02 / -03 — kind/semver binding regex.
+# Duplicated from gzkit.commands.plan (denied path); follow-up GHI to extract
+# to gzkit.commands.common after OBPI-0.0.17-04 lands.
+_FOUNDATION_SEMVER_RE = re.compile(r"^0\.0\.\d+$")
+
+
+def _adr_bucket_for_kind(kind: str) -> str:
+    """Return canonical ADR directory bucket from kind (post-OBPI-0.0.17-01).
+
+    REQ-0.0.17-03-06: foundation -> foundation/, feature -> pre-release/.
+    """
+    return "foundation" if kind == "foundation" else "pre-release"
+
+
+def _validate_promotion_kind_semver(kind: str | None, semver: str) -> None:
+    """Validate --kind and its binding to --semver. Exits 1 on failure.
+
+    REQ-0.0.17-03-01 -- --kind required; pool rejected (pool is the source).
+    REQ-0.0.17-03-02 -- foundation requires 0.0.x semver.
+    REQ-0.0.17-03-03 -- feature rejects 0.0.x semver.
+    """
+    if kind is None:
+        console.print("[red]ERROR:[/red] --kind is required for promotion. Choose one of:")
+        console.print("  [bold]foundation[/bold] -- infrastructure ADR; requires --semver 0.0.x")
+        console.print(
+            "  [bold]feature[/bold]    -- release-carrying capability; "
+            "requires --semver NOT matching 0.0.x"
+        )
+        raise SystemExit(1)
+    if kind == "pool":
+        console.print(
+            "[red]ERROR:[/red] --kind pool is not a valid promotion target. "
+            "Pool is the [bold]source[/bold] kind being promoted from. "
+            "Use --kind foundation (for 0.0.x) or --kind feature (for 0.y.z and up)."
+        )
+        raise SystemExit(1)
+    if kind == "foundation" and not _FOUNDATION_SEMVER_RE.match(semver):
+        console.print(
+            f"[red]ERROR:[/red] --kind foundation requires --semver matching 0.0.x "
+            f"(got {semver!r}). If this is release-carrying work, use --kind feature."
+        )
+        raise SystemExit(1)
+    if kind == "feature" and _FOUNDATION_SEMVER_RE.match(semver):
+        console.print(
+            f"[red]ERROR:[/red] --kind feature rejects 0.0.x semver (got {semver!r}). "
+            "Feature ADRs carry release-carrying semver (0.y.z and up). "
+            "If this is infrastructure work, use --kind foundation."
+        )
+        raise SystemExit(1)
+
 
 def _build_adr_promotion_plan(
     project_root: Path,
@@ -51,6 +101,7 @@ def _build_adr_promotion_plan(
     title: str | None,
     parent: str | None,
     lane: str | None,
+    kind: str,
     target_status: str,
 ) -> dict[str, Any]:
     """Construct validated promotion plan and rendered file content."""
@@ -61,7 +112,7 @@ def _build_adr_promotion_plan(
         msg = f"Target ADR already exists in ledger: {target_adr_id}"
         raise GzCliError(msg)
 
-    target_bucket = _adr_bucket_for_semver(semver)
+    target_bucket = _adr_bucket_for_kind(kind)
     target_dir = project_root / config.paths.adrs / target_bucket / target_adr_id
     target_file = target_dir / f"{target_adr_id}.md"
     if target_file.exists():
@@ -87,6 +138,8 @@ def _build_adr_promotion_plan(
         status=promoted_status,
         promote_date=promote_date,
     )
+    # REQ-0.0.17-03-05: stamp kind: into promoted ADR frontmatter (post-OBPI-0.0.17-01 schema).
+    promoted_content = _upsert_frontmatter_value(promoted_content, "kind", kind)
     checklist_items = parse_checklist_items(promoted_content)
     if not checklist_items:
         msg = f"Promotion did not produce executable checklist items for {target_adr_id}."
@@ -117,6 +170,8 @@ def _build_adr_promotion_plan(
         "target_bucket": target_bucket,
         "target_dir": target_dir,
         "target_file": target_file,
+        "target_kind": kind,
+        "target_semver": semver,
         "promoted_parent": promoted_parent,
         "promoted_lane": promoted_lane,
         "promoted_status": promoted_status,
@@ -181,13 +236,15 @@ def _apply_adr_promotion(ledger: Ledger, promotion_plan: dict[str, Any]) -> None
     for plan in cast(list[dict[str, Any]], promotion_plan["obpi_plans"]):
         cast(Path, plan["obpi_file"]).write_text(cast(str, plan["content"]), encoding="utf-8")
     pool_file.write_text(cast(str, promotion_plan["updated_pool_content"]), encoding="utf-8")
-    ledger.append(
-        artifact_renamed_event(
-            old_id=cast(str, promotion_plan["pool_adr_id"]),
-            new_id=cast(str, promotion_plan["target_adr_id"]),
-            reason="pool_promotion",
-        )
+    rename_event = artifact_renamed_event(
+        old_id=cast(str, promotion_plan["pool_adr_id"]),
+        new_id=cast(str, promotion_plan["target_adr_id"]),
+        reason="pool_promotion",
     )
+    # REQ-0.0.17-03-07: kind + semver in extras (additive, backward-compatible).
+    rename_event.extra["kind"] = cast(str, promotion_plan["target_kind"])
+    rename_event.extra["semver"] = cast(str, promotion_plan["target_semver"])
+    ledger.append(rename_event)
     for plan in cast(list[dict[str, Any]], promotion_plan["obpi_plans"]):
         ledger.append(
             obpi_created_event(
@@ -244,12 +301,17 @@ def adr_promote_cmd(
     title: str | None,
     parent: str | None,
     lane: str | None,
+    kind: str | None,
     target_status: str,
     as_json: bool,
     dry_run: bool,
     force: bool = False,
 ) -> None:
     """Promote a pool ADR into canonical ADR package structure."""
+    # REQ-0.0.17-03-01/-02/-03/-04: validate kind/semver atomically before any I/O.
+    _validate_promotion_kind_semver(kind, semver)
+    assert kind is not None and kind != "pool"  # noqa: S101 — narrowed by validator above
+
     config = ensure_initialized()
     project_root = get_project_root()
     ledger = Ledger(project_root / config.paths.ledger)
@@ -270,6 +332,7 @@ def adr_promote_cmd(
         title=title,
         parent=parent,
         lane=lane,
+        kind=kind,
         target_status=target_status,
     )
     result = _adr_promotion_result(project_root, promotion_plan, dry_run)
