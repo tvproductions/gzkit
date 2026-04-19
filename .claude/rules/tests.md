@@ -6,56 +6,62 @@ paths:
 
 # Test Policy (canonical)
 
-These are instructions to you — the executing agent — when writing, running,
-or evaluating tests. TDD discipline is the most commonly rationalized-away
-practice in this codebase. Every anti-pattern below has been observed in
-production agent sessions. Read accordingly.
+> **Flag defects, never excuse them.** If a test reveals a defect in code, config, or test infrastructure — flag it. Never rationalize a failing or skipped test as "pre-existing" or "not in scope". Fix it or file a GHI.
 
-> **Flag defects, never excuse them.** If a test reveals a defect in code, config, or test infrastructure — flag it as a defect. Never rationalize a failing or skipped test as "pre-existing" or "not in scope". Fix it or file a GHI.
+## General Rules (binding)
 
-## Red-Green-Refactor (TDD Discipline)
+- Use **stdlib `unittest`**; no pytest.
+- Prefer **table-driven** tests with deterministic seeds; no network/external services.
+- **Smoke/BVT <=60s**; cover current-scope surfaces only.
+- Fixtures: local, small, reproducible; avoid huge goldens.
+- **Database isolation:** unit tests MUST use `tempfile` temp DBs; NEVER use live/production databases.
+- **Cleanup:** NEVER use raw `shutil.rmtree()` in tearDown. Use `tempfile.TemporaryDirectory()` context manager.
 
-Gate 2 is named TDD. This is what TDD means — follow it.
+## Coverage Floor (binding)
 
-**Red-Green-Refactor is a repeating cycle per behavior increment:**
+- **Minimum line coverage: 40.00%**
+- Before closing any brief, verify coverage has not regressed.
 
-- **Red:** Write a test for a behavior required by the OBPI brief (`REQ-*` identifier). Run it. Watch it fail for the right reason — the function does not exist yet, or the behavior is not implemented yet. A test that passes on first run is not Red.
-- **Green:** Write the **simplest code** that makes the test pass. Green does not mean perfect — it means the test passes. Do not overbuild.
-- **Refactor:** Improve the code's structure without changing its behavior. The passing tests protect you. Renaming, deduplication, simplification — all valid. Adding new behavior is not refactoring — that starts a new Red.
+## Run / Verify
 
-**The rhythm:** first define the behavior, then make it work, then make it clean.
+```bash
+uv run ruff check . --fix && uv run ruff format .
+uv run -m unittest -v
+```
 
-**Derivation rule:** Test cases derive from OBPI brief acceptance criteria, not from the implementation. Tests verify the spec was met, not that the code does what it does. When adding tests outside a pipeline run, locate the governing OBPI brief and derive from its requirements.
+- All tests PASS; smoke suite <=60s.
+- Coverage >=40.00%.
 
-**Tests assert semantics, not strings (canonical home for invariant 6f).** A test's job is to pin the operator-facing purpose the code is meant to serve, not the bytes the code currently happens to emit. Pinning current byte-output as "the test" codifies drift rather than catching it — the #141 follow-up (GHI #149/#150/#151) is the canonical case where tests asserted the currently-observed string while the routing skill's Output Contract declared a different form. Assertions must derive from the REQ or the skill's declared contract, not from a run of the code. If the test passes today because the current output happens to match and would pass tomorrow even if the output drifted into a different semantic shape, the test is wrong.
+## Red-Green-Refactor (TDD Discipline — binding)
 
-**The per-increment rhythm (binding):**
+Gate 2 is named TDD. Red-Green-Refactor is a repeating cycle per behavior increment:
 
-TDD in this repo runs **along the way**, continuously, as the development rhythm — not as a demo presented at the end. The unit of discipline is one behavior increment: one test, one observed RED, minimum code to GREEN, next increment. Increments flow without per-step operator approval until a logical checkpoint (brief completion, phase boundary, ceremony step boundary). The operator contributes refactor orientation and observations **opportunistically**, not as a synchronous gate between every increment.
+- **Red:** Write a test for a behavior required by the OBPI brief (`REQ-*` identifier). Run it. Watch it fail for the right reason. A test that passes on first run is not Red.
+- **Green:** Write the **simplest code** that makes the test pass.
+- **Refactor:** Improve the code's structure without changing its behavior. Adding new behavior is not refactoring — that starts a new Red.
 
-Two shapes that look like TDD but are not:
+**Derivation rule:** Test cases derive from OBPI brief acceptance criteria, not from the implementation. When adding tests outside a pipeline run, locate the governing OBPI brief and derive from its requirements.
 
-- **Test-dump theater:** author all tests for a patch in one pass, run them as a batch (single "RED screenshot"), write all implementation in one pass, run them as a batch (single "GREEN screenshot"), and present the batched result as "TDD verified." This is test-dump shape, not TDD rhythm — the per-increment observation loop that makes TDD work never fires.
-- **Stop-and-ask between every increment:** completing a RED→GREEN pair and pausing for operator sign-off before starting the next increment, even when no architectural question is on the table. This conflates "collaborative refactor input" (welcomed opportunistically) with "turn-by-turn synchronous approval" (not how TDD runs here). Keep moving until a real checkpoint or a real ambiguity appears.
+**Tests assert semantics, not strings (canonical home for invariant 6f).** A test's job is to pin the operator-facing purpose the code is meant to serve, not the bytes the code currently happens to emit. Assertions must derive from the REQ or the skill's declared contract, not from a run of the code. If the test passes today because the current output happens to match and would pass tomorrow even if the output drifted into a different semantic shape, the test is wrong.
 
-**Anti-patterns:**
-- Writing tests after implementation that confirm what the code already does (implementation-derived tests)
+**Per-increment rhythm:** TDD runs **along the way**, continuously. Unit of discipline: one test, one observed RED, minimum code to GREEN, next increment. Increments flow without per-step operator approval until a logical checkpoint (brief completion, phase boundary, ceremony step boundary).
+
+### TDD anti-patterns
+
+- Writing tests after implementation that confirm what the code already does
 - Writing tests "alongside" without seeing them fail first (skipping Red)
 - Writing all tests at once before any implementation (test-dump, not TDD)
-- Batching all tests to get one "RED screenshot" then batching all code to get one "GREEN screenshot" — test-dump theater that mimics TDD shape while skipping per-increment observation (GHI #157)
-- Stopping after each RED→GREEN pair to solicit operator approval before the next increment — TDD runs along the way, not turn-by-turn (GHI #157)
+- Batching all tests for one "RED screenshot" then batching all code for one "GREEN screenshot" (GHI #157)
+- Stopping after each RED→GREEN pair to solicit operator approval before the next increment (GHI #157)
 - Refactoring while tests are still failing (mixing Green and Refactor)
 
-**RED evidence and the receipt-stream gap:**
+### RED evidence
 
-RED observations are **governance events**, not QA-step outcomes. An ARB step receipt with `exit_status=1` is semantically a failure; a TDD RED test that fails on first run is the intended, correct outcome. ARB is therefore not the right home for RED evidence — `gz arb validate`, `gz arb advise`, and `gz arb patterns` would treat intentional REDs as defects. Until the dedicated RED/GREEN receipt stream lands (tracked under `ADR-pool.tdd-receipt-stream`, GHI #157), Gate 2 TDD claims cite ARB receipts only for the GREEN side (`arb-step-unittest-*`) and rely on per-increment observation-pasted-into-commit-body for the RED side. Do not author ARB receipts with `exit_status=1` as "RED receipts" — that pollutes the ARB corpus and is explicitly the defect GHI #157 traces.
+Do not author ARB receipts with `exit_status=1` as "RED receipts" — ARB treats intentional REDs as defects. Until the dedicated RED/GREEN receipt stream lands (`ADR-pool.tdd-receipt-stream`, GHI #157), Gate 2 TDD claims cite ARB receipts only for the GREEN side (`arb-step-unittest-*`); RED is recorded as per-increment observation pasted into the commit body or OBPI verification section.
 
-## TASK-Driven Workflow (GHI-160 Phase 6)
+## TASK-Driven Workflow (binding — GHI #160 Phase 6)
 
-Every code-change GHI decomposes into TASKs via `gz task`, and every commit
-touching `src/**` or `tests/**` must carry a `Task:` trailer. The
-four-tier chain `task → req → obpi → adr` is the only way to trace a code
-change back to governance intent.
+Every code-change GHI decomposes into TASKs via `gz task`, and every commit touching `src/**` or `tests/**` carries a governance-intent trailer.
 
 **Binding steps for any GHI-originated code fix:**
 
@@ -66,99 +72,55 @@ change back to governance intent.
 5. Complete the TASK: `gz task complete TASK-X.Y.Z-NN-MM-PP`.
 6. Decorate the new tests with `@covers(REQ-X.Y.Z-NN-MM)`.
 
+**Governance-intent trailers (GHI #201):** A src/tests-touching commit MUST carry one of:
+
+- `Task: TASK-X.Y.Z-NN-MM-PP` — hand-crafted work scoped to a single TASK.
+- `Ceremony: <name>` — chore/sync commits bundling work from multiple governance anchors (e.g. `Ceremony: gz-git-sync`, `Ceremony: obpi-reconcile`, `Ceremony: adr-closeout`). `gz git-sync` emits this automatically.
+
 **Verification:**
 
 ```bash
-uv run gz validate --commit-trailers   # flags HEAD commits missing governance-intent trailer
-uv run gz validate --requirements      # flags OBPIs with bare REQUIREMENTS sections
+uv run gz validate --commit-trailers
+uv run gz validate --requirements
 ```
 
-**Governance-intent trailers (GHI #201):** A src/tests-touching commit MUST
-carry one of:
+### TASK anti-patterns
 
-- `Task: TASK-X.Y.Z-NN-MM-PP` — for hand-crafted work scoped to a single
-  TASK (the canonical four-tier binding).
-- `Ceremony: <name>` — for chore/sync commits that bundle work from
-  multiple governance anchors (e.g. `Ceremony: gz-git-sync`,
-  `Ceremony: obpi-reconcile`, `Ceremony: adr-closeout`). The ceremony
-  name itself is the audit anchor; sub-work is traced through the OBPI,
-  ADR, or defect fixes the ceremony consumed.
+- Skipping `gz task start` and writing a `Task:` trailer from memory
+- Using a single TASK for multiple unrelated REQ fixes
+- Orphan test files (no `@covers`) — invisible to `gz covers`
+- Using `Ceremony:` as a blanket bypass for task-scoped hand edits
 
-`gz git-sync` emits `Ceremony: gz-git-sync` automatically. Hand-rolled
-ceremony commits must include the trailer explicitly.
-
-**Anti-patterns:**
-- Skipping `gz task start` and writing a Task: trailer from memory — the
-  ledger state-machine enforcement is the proof, the trailer is the link.
-- Using a single TASK for multiple unrelated REQ fixes — breaks the
-  REQ-granularity of the coverage graph.
-- Orphan test files (no `@covers`) — invisible to `gz covers`.
-- Using `Ceremony:` as a blanket bypass for task-scoped hand edits —
-  ceremony trailers are for genuine multi-anchor chore/sync commits, not
-  for avoiding task discipline on a single focused change.
-
-## General Rules
-
-- Use **stdlib `unittest`**; no pytest.
-- Prefer **table-driven** tests with deterministic seeds; no network/external services.
-- **Smoke/BVT <=60s**; cover current-scope surfaces only.
-- Fixtures: local, small, reproducible; avoid huge goldens.
-- **Database isolation**: Unit tests MUST use `tempfile` temp DBs; NEVER use live/production databases.
-
-## Two runners, one test surface (GHI #181, #182)
-
-gzkit does not have a separate "integration tier" under `unittest`. There
-are two runners and they play different roles:
+## Two runners, one test surface
 
 | Runner | Location | Purpose | Contract |
 |--------|----------|---------|----------|
 | `unittest` | `tests/` | Pure Python behavior, command contracts | Mocked subprocess boundaries; deterministic; fast |
 | `behave` | `features/` | End-to-end CLI and governance scenarios | Real operator flows, Gherkin-readable |
 
-`gz test` runs `unittest` over `tests/` and then `behave` over `features/`.
-Both gates must pass for `gz check`.
+`gz test` runs `unittest` over `tests/` then `behave` over `features/`. Both gates must pass for `gz check`.
 
-### Unit-tier contract
+### Unit-tier contract (binding)
 
 A test under `tests/` must:
 
-- Mock every subprocess boundary it touches. The canonical helpers in
-  `tests/commands/common.py` are:
+- Mock every subprocess boundary it touches. Canonical helpers in `tests/commands/common.py`:
   - `_uv_sync_patcher` — stubs `gzkit.commands.init_cmd._run_uv_sync`
-  - `_git_subprocess_patcher` — stubs `gzkit.utils.git_cmd` at every
-    import site used by `gz git-sync`
-  - `_quick_init(mode)` — 5x faster replacement for
-    `runner.invoke(main, ["init"])` when the test is not exercising
-    `gz init` itself
+  - `_git_subprocess_patcher` — stubs `gzkit.utils.git_cmd` at every import site used by `gz git-sync`
+  - `_quick_init(mode)` — 5x faster replacement for `runner.invoke(main, ["init"])` when the test is not exercising `gz init` itself
 - Complete in < 200ms on a typical workstation
-- Be deterministic across repeated runs without filesystem cleanup races
+- Be deterministic across repeated runs
 - Use `tempfile` temp DBs; NEVER touch live/production databases
 
-Tests that exercise `gz init` directly (e.g. `tests/commands/test_init.py`)
-keep `_uv_sync_patcher` module-level — `gz init` itself is the subject, but
-its `uv sync` subprocess child is always mocked. Tests that touch real git
-state (e.g. closeout-ceremony fixtures) may use `_init_git_repo` from the
-common helper; this is a deliberate exception for tests where the real git
-history is load-bearing and the mocking overhead exceeds the subprocess
-cost.
+Tests that exercise `gz init` directly keep `_uv_sync_patcher` module-level. Tests that touch real git state (e.g. closeout-ceremony fixtures) may use `_init_git_repo` from the common helper — a deliberate exception where real git history is load-bearing.
 
 ### End-to-end coverage lives in behave
 
-If a scenario requires real `git` subprocess semantics, real `uv sync`, or
-a real `gz init` template-rendering round trip for its assertion, it
-belongs in `features/*.feature`. The behave runner's step definitions
-(`features/steps/`) handle subprocess setup explicitly, and the Gherkin
-surface keeps the operator intent visible. Adding a third tier under
-`unittest` (the mistake GHI #182 closes) obscures the boundary and
-duplicates behave's role.
+If a scenario requires real `git` subprocess semantics, real `uv sync`, or a real `gz init` template-rendering round trip, it belongs in `features/*.feature`.
 
-### Behave scenario tagging (REQ coverage — GHI #185)
+### Behave scenario tagging (GHI #185)
 
-Behave scenarios that cover a REQ carry `@REQ-X.Y.Z-NN-MM` as a scenario
-tag (one tag per REQ covered, with the leading `@`). This lets
-`gz test --obpi OBPI-X.Y.Z-NN --bdd` filter to exactly the scenarios
-covering that OBPI's requirements — the same scope discipline as
-`@covers` decorators on unit tests.
+Behave scenarios covering a REQ carry `@REQ-X.Y.Z-NN-MM` as a scenario tag (one per REQ, with leading `@`). This lets `gz test --obpi OBPI-X.Y.Z-NN --bdd` filter to exactly the scenarios covering that OBPI's requirements.
 
 ```gherkin
   @REQ-0.0.16-02-03
@@ -169,52 +131,19 @@ covering that OBPI's requirements — the same scope discipline as
     Then the exit code is 3
 ```
 
-Feature-level `# @covers REQ-...` comments remain supported for narrative
-authorship but are too coarse for OBPI-scoped filtering — use
-scenario-level `@REQ-*` tags for mechanical coverage derivation.
+Feature-level `# @covers REQ-...` comments remain supported for narrative authorship but are too coarse for OBPI-scoped filtering.
 
-### Canonical history
+### Runner anti-patterns
 
-- **GHI #181** (landed in `e22ac553`): introduced `tests/integration/` as
-  a second `unittest` tier to isolate 83 subprocess-wrapping tests from
-  the unit tier. Fast fix for the symptom (`gz test` from 90s to 30s),
-  but labeled the wrong class of failure.
-- **GHI #182** (this rewrite): per the DO IT RIGHT maxim in
-  `.gzkit/rules/behavioral-invariants.md` § 6a/6c, the thorough fix is
-  per-test triage — every test under the old `tests/integration/` was
-  either (a) already mockable at the Python level and relocated back to
-  `tests/commands/` with `_git_subprocess_patcher` / `_uv_sync_patcher` /
-  `_quick_init`, or (b) genuinely E2E and the operator flow it covers
-  belongs in `features/`. The triage decisions are recorded in
-  `artifacts/audits/ghi-182-triage.md`. `tests/integration/`, the
-  `load_tests` gating protocol, and the `gz test --integration` flag are
-  removed.
-
-### Anti-patterns
-
-- Adding a third tier (`--integration`, `--e2e`, `--slow`) to `gz test` —
-  the runner boundary (`unittest` vs `behave`) is the gate
-- Spawning real `git` or `uv sync` in a `tests/` module without a
-  documented justification — mock it with `_git_subprocess_patcher` /
-  `_uv_sync_patcher` first
-- Using `runner.invoke(main, ["init"])` when `_quick_init` would produce
-  equivalent fixture state 5x faster
-- Porting a subprocess-spawning test to behave without checking whether
-  `features/` already covers the scenario — behave duplication is the
-  same defect one layer down
+- Adding a third tier (`--integration`, `--e2e`, `--slow`) to `gz test` — the runner boundary is the gate
+- Spawning real `git` or `uv sync` in a `tests/` module without documented justification — mock it with `_git_subprocess_patcher` / `_uv_sync_patcher` first
+- Using `runner.invoke(main, ["init"])` when `_quick_init` would produce equivalent fixture state 5x faster
+- Porting a subprocess-spawning test to behave without checking whether `features/` already covers the scenario
 - Deleting a test without verifying its coverage is preserved elsewhere
 
-## DB Isolation (Django-like philosophy)
+## Patterns
 
-- Never touch live/production DBs from tests.
-- Prefer shared in-memory SQLite DB for speed and isolation.
-- Always pass `sqlite_path`/`db_path` to functions under test.
-
-## Cross-Platform Test Cleanup (Windows-Critical)
-
-**BINDING RULE:** Never use raw `shutil.rmtree()` in test tearDown.
-
-### Pattern 1: Context Manager (Preferred)
+### Temp-dir context manager (preferred)
 
 ```python
 class TestSomething(unittest.TestCase):
@@ -226,17 +155,13 @@ class TestSomething(unittest.TestCase):
             self.assertEqual(result, expected)
 ```
 
-## Coverage Floor
+## Rationale
 
-- **Minimum line coverage: 40.00%**
-- Before closing any brief, verify coverage has not regressed.
+### Canonical history of the two-runner boundary
 
-## Run
+- **GHI #181** (landed in `e22ac553`): introduced `tests/integration/` as a second `unittest` tier to isolate 83 subprocess-wrapping tests from the unit tier. Fast fix for the symptom (`gz test` from 90s to 30s), but labeled the wrong class of failure.
+- **GHI #182**: per the DO IT RIGHT maxim (`.gzkit/rules/behavioral-invariants.md` § 6a/6c), the thorough fix is per-test triage — every test under the old `tests/integration/` was either (a) already mockable at the Python level and relocated back to `tests/commands/` with `_git_subprocess_patcher` / `_uv_sync_patcher` / `_quick_init`, or (b) genuinely E2E and moved to `features/`. Triage decisions recorded in `artifacts/audits/ghi-182-triage.md`. `tests/integration/`, the `load_tests` gating protocol, and `gz test --integration` are removed.
 
-- `uv run ruff check . --fix && uv run ruff format .`
-- `uv run -m unittest -v`
+### Why TDD rhythm matters
 
-## Verify
-
-- All tests PASS; smoke suite <=60s.
-- Coverage >=40.00%.
+TDD discipline is the most commonly rationalized-away practice in this codebase. Every anti-pattern above has been observed in production agent sessions. The per-increment rhythm keeps the observation loop firing; batched "test-dump theater" mimics TDD shape while skipping the part that makes it work (GHI #157).
