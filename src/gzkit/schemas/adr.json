@@ -9,7 +9,7 @@
     "frontmatter": {
       "type": "object",
       "description": "Required YAML frontmatter fields",
-      "required": ["id", "status", "semver", "lane", "parent", "date"],
+      "required": ["id", "status", "semver", "lane", "kind", "parent", "date"],
       "properties": {
         "id": {
           "type": "string",
@@ -30,6 +30,11 @@
           "type": "string",
           "enum": ["lite", "heavy"],
           "description": "Governance lane"
+        },
+        "kind": {
+          "type": "string",
+          "enum": ["foundation", "feature"],
+          "description": "ADR taxonomy: foundation ADRs carry semver 0.0.x and govern infrastructure; feature ADRs carry any other semver and deliver end-user capability. Pool ADRs have no kind in frontmatter — kind is derived from the ADR-pool.* id prefix."
         },
         "parent": {
           "type": "string",

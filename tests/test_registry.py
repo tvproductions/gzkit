@@ -110,6 +110,7 @@ class TestValidateArtifact(unittest.TestCase):
             "status": "Draft",
             "semver": "0.1.0",
             "lane": "lite",
+            "kind": "feature",
             "parent": "root",
             "date": "2026-01-01",
         }
@@ -189,6 +190,7 @@ class TestGlobalRegistry(unittest.TestCase):
             "status": "Draft",
             "semver": "0.1.0",
             "lane": "lite",
+            "kind": "feature",
             "parent": "root",
             "date": "2026-01-01",
         }
