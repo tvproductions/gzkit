@@ -15,7 +15,11 @@ description: Non-negotiable governance workflow rules
 - Do not edit `.gzkit/ledger.jsonl` manually.
 - Every defect must be fixed now or tracked (`gh issue create --label defect` or `.gzkit/insights/agent-insights.jsonl`).
 
-## Required workflow order
+## Required workflow order (OBPI implementation path)
+
+Scope: planned OBPI implementation under an active ADR. For in-flight defect
+fixes meeting the thresholds in `.gzkit/rules/defect-fix-routing.md`, take the
+direct `fix(<scope>): … (GHI #N)` path instead — this workflow does not apply.
 
 1. `uv run gz state --json`
 2. `uv run gz status --table`
