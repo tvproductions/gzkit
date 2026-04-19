@@ -98,6 +98,8 @@ This maxim sits next to the Prime Directive because ownership and completeness w
 - Adding a hardcoded "QA command block" to a ceremony step because "ceremonies have QA commands" without asking what role that block plays in that specific step's operator moment
 - Writing a test file that mocks the data structure the real code consumes, then asserting on the mock, without ever running the real path end-to-end
 - Reading an error message and reaching for "skip this one case" as the fix, when the error message is actually reporting a whole class of cases that the code never considered
+- Batching all tests before any implementation, running them together for a single "RED screenshot," then writing all the code and running them together for a single "GREEN screenshot" — test-dump theater that mimics the shape of TDD while skipping the per-increment observation loop that makes TDD work (GHI #157)
+- Stopping after each RED→GREEN pair to solicit operator approval before the next increment — TDD here runs along the way, not turn-by-turn; operator refactor orientation arrives opportunistically, not as a synchronous gate (GHI #157)
 
 Every item in that list is drawn from defects observed in this codebase within the window GHI-141 through GHI-156. The pattern is consistent: the author wrote code that *looked* right, committed it, and moved on — because the loop did not include reading, tracing, testing the real path, or running the observed command. **Close the loop.** Do it right.
 
