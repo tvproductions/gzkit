@@ -278,7 +278,7 @@ Paired with `uv run gz test` → 2893 unit tests OK, 17/17 behave features passe
   `TestValidateReferencedFiles`, `TestValidateHandoffDocument`,
   `TestHandoffAbsorptionBrief`
 - Date completed: 2026-04-14
-- Attestation status: Attested by Jeffry (redacted-email) at Stage 4 gate
+- Attestation status: Attested by Jeffry at Stage 4 gate
 - Defects noted: Brief's original `gzkit equivalent` pointer at
   `pipeline_dispatch.py / lock_manager.py / interview_cmd.py` was factually
   incorrect; corrected in `### Comparison Target Correction` section above.
@@ -286,7 +286,7 @@ Paired with `uv run gz test` → 2893 unit tests OK, 17/17 behave features passe
 
 ## Human Attestation
 
-- Attestor: `Jeffry (redacted-email)`
+- Attestor: `Jeffry`
 - Attestation: attest completed — Absorb decision for airlineops/opsdev/governance/handoff_validation.py (312L). Ported to src/gzkit/handoff_validation.py (320L) with dual @covers lineage and CRLF normalization on all 7 validators. 55 tests green, 5/5 REQs covered, 2893 unit tests OK, 17/17 behave features. Gate 4 N/A (library function, no operator-visible CLI change). ARB receipts unavailable — OBPI-0.25.0-33 is arb-analysis.
   `airlineops/opsdev/governance/handoff_validation.py` (312L). Ported to
   `src/gzkit/handoff_validation.py` (320L) with dual `@covers` lineage
