@@ -5,7 +5,7 @@ description: Execute the ADR closeout ceremony protocol for human attestation. G
 category: adr-audit
 compatibility: GovZero v6 framework; provides runbook walkthrough for human ADR attestation
 metadata:
-  skill-version: "7.4.0"
+  skill-version: "7.5.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -353,33 +353,20 @@ State is persisted at `.gzkit/ceremonies/<ADR-ID>.json` by the CLI. Structure:
 
 ---
 
-## MUST Rules
+## Ceremony Rules
 
-1. **MUST** drive the ceremony through CLI commands (`--ceremony`, `--next`, `--attest`) — never reimplement step logic in prose
-2. **MUST** present CLI output to the human without interpreting or claiming outcomes
-3. **MUST** use the Evidence Summary Template before requesting attestation
-4. **MUST** use only runbook/manpage-documented gzkit commands for the walkthrough
-5. **MUST** run walkthrough commands one at a time, wait for acknowledgment
-6. **MUST** wait for explicit human attestation before closing — acknowledgment is not attestation
-7. **MUST** run `uv run gz closeout ADR-X.Y.Z` for the closeout pipeline — never manually record attestation
-8. **MUST** review and close related GitHub Issues after attestation
-9. **MUST** run `uv run gz git-sync --apply` before `gh release create` (non-Foundation) and after ceremony completion
-10. **MUST** follow the Rejection Loop-Back procedure when the human requests corrections
+One-sided directives. Each row states the required behavior and names the failure shape it prevents (GHI #227: halved from 20 mirror-pair rows).
 
----
-
-## MUST NOT Rules
-
-1. **MUST NOT** manually reimplement ceremony step logic — the CLI state machine is authoritative
-2. **MUST NOT** manually skip or add steps — the CLI handles Foundation skips and step ordering
-3. **MUST NOT** claim outcomes or interpret evidence — present, do not conclude
-4. **MUST NOT** use ad-hoc Python scripts, raw SQL, or heredoc code
-5. **MUST NOT** flood multiple walkthrough commands without waiting for acknowledgment
-6. **MUST NOT** infer attestation from silence, "looks good", or implicit approval
-7. **MUST NOT** auto-close an ADR based on passing checks
-8. **MUST NOT** advance past a failed walkthrough command without fixing or escalating
-9. **MUST NOT** work around CLI errors by reimplementing step logic in prose
-10. **MUST NOT** record "Completed - Partial" when the human wants fixes — that is a rejection, not a partial completion
+1. **Drive the ceremony through CLI commands** (`--ceremony`, `--next`, `--attest`). The CLI state machine is authoritative — never reimplement step logic in prose, ad-hoc Python, raw SQL, or heredoc code, and never manually skip or add steps (the CLI handles Foundation skips and ordering).
+2. **Present CLI output without interpreting or concluding.** Evidence is presented; outcomes are not claimed. Passing checks are evidence, not a verdict.
+3. **Use the Evidence Summary Template** before requesting attestation. Every field populated; no freeform substitution.
+4. **Use only runbook/manpage-documented gzkit commands** for the walkthrough — no undocumented flags, no improvised invocations.
+5. **Run walkthrough commands one at a time and wait for acknowledgment** between each. Do not flood the operator with batched output.
+6. **Wait for explicit human attestation.** Silence, "ok", or "looks good" is not attestation; ask "Completed, Completed-Partial, or Dropped?" and never auto-close based on passing checks.
+7. **Record attestation only through `uv run gz closeout ADR-X.Y.Z`.** Never hand-edit the ledger, never substitute "Completed - Partial" for what the human intended as a rejection (follow the Rejection Loop-Back procedure).
+8. **Stop on any failed walkthrough command.** Fix the root cause or escalate; do not advance, and do not work around CLI errors by reimplementing the step in prose.
+9. **Review and close related GitHub Issues after attestation.** Unlinked closure leaves evidence orphaned.
+10. **Run `uv run gz git-sync --apply` before `gh release create` (non-Foundation) and after ceremony completion.** An unsynced attestation is a dangling ceremony.
 
 ---
 
