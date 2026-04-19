@@ -186,6 +186,12 @@ def _register_adr_parsers(commands: argparse._SubParsersAction) -> None:
         help="Target ADR lane override (defaults to pool ADR lane metadata)",
     )
     p_adr_promote.add_argument(
+        "--kind",
+        choices=["pool", "foundation", "feature"],
+        default=None,
+        help="Target taxonomy: foundation (0.0.x) or feature (0.y.z). pool rejected.",
+    )
+    p_adr_promote.add_argument(
         "--status",
         dest="target_status",
         choices=["draft", "proposed"],
@@ -206,6 +212,7 @@ def _register_adr_parsers(commands: argparse._SubParsersAction) -> None:
             title=a.title,
             parent=a.parent,
             lane=a.lane,
+            kind=a.kind,
             target_status=a.target_status,
             as_json=a.as_json,
             dry_run=a.dry_run,

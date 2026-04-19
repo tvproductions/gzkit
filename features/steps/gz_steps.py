@@ -17,7 +17,13 @@ from behave import given, then, when
 from gzkit.cli import main
 from gzkit.config import GzkitConfig
 from gzkit.events import EventAnchor
-from gzkit.ledger import Ledger, gate_checked_event, obpi_created_event, obpi_receipt_emitted_event
+from gzkit.ledger import (
+    Ledger,
+    adr_created_event,
+    gate_checked_event,
+    obpi_created_event,
+    obpi_receipt_emitted_event,
+)
 
 
 def _invoke(args: list[str]) -> tuple[int, str]:
@@ -207,3 +213,51 @@ def step_json_path_equals(context, path: str, expected: str) -> None:  # type: i
     for segment in path.split("."):
         value = value[segment]
     assert str(value) == expected, context.output
+
+
+@then('the file "{path}" does not exist')
+def step_file_not_exists(_context, path: str) -> None:  # type: ignore[no-untyped-def]
+    assert not Path(path).exists(), f"Expected {path} to NOT exist"
+
+
+@then('ledger event "{event}" has field "{key}" equal to "{value}"')
+def step_ledger_event_field(_context, event: str, key: str, value: str) -> None:  # type: ignore[no-untyped-def]
+    ledger_text = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
+    matches = [
+        json.loads(line)
+        for line in ledger_text.splitlines()
+        if line.strip() and json.loads(line).get("event") == event
+    ]
+    assert matches, f"No ledger event named {event!r} in:\n{ledger_text}"
+    last = matches[-1]
+    actual = last.get(key)
+    assert str(actual) == value, (
+        f"Event {event!r} field {key!r}={actual!r}, expected {value!r}\nFull event: {last}"
+    )
+
+
+@given('a pool ADR "{adr_id}" with target scope exists')
+def step_seed_pool_adr_with_scope(_context, adr_id: str) -> None:  # type: ignore[no-untyped-def]
+    config = GzkitConfig.load(Path(".gzkit.json"))
+    pool_dir = Path(config.paths.adrs) / "pool"
+    pool_dir.mkdir(parents=True, exist_ok=True)
+    pool_file = pool_dir / f"{adr_id}.md"
+    pool_file.write_text(
+        "---\n"
+        f"id: {adr_id}\n"
+        "status: Pool\n"
+        "parent: PRD-GZKIT-1.0.0\n"
+        "lane: heavy\n"
+        "---\n\n"
+        f"# {adr_id}: Sample Work\n\n"
+        "## Status\n\nPool\n\n"
+        "## Intent\n\nTurn sample pool work into executable tracked delivery.\n\n"
+        "## Target Scope\n\n"
+        "- Define runtime command contract\n"
+        "- Persist machine-readable stage state\n"
+        "- Expose structured stage outputs\n\n"
+        "## Non-Goals\n\n- No external orchestrator\n",
+        encoding="utf-8",
+    )
+    ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+    ledger.append(adr_created_event(adr_id, "", "heavy"))
