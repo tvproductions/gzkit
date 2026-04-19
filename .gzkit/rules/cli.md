@@ -8,7 +8,7 @@ description: CLI contract doctrine and design principles
 # CLI Contract Doctrine
 
 **Baseline:** [clig.dev](https://clig.dev/) — Human-first CLI design principles.
-**Machine-readable:** `config/cli_doctrine.json`
+**Mechanical check:** `uv run gz cli audit` (see § Core Principles — Consistency).
 **Heavy Lane Trigger:** Any CLI contract change (subcommands, flags, exit codes, output schemas).
 
 ---
