@@ -57,7 +57,7 @@ intact. This maxim sits next to the Prime Directive for that reason.
 |---|-----------|-------------------|
 | 6a | Fix the class of failure, not the instance | Patching one symptom ("skip index.md") when the whole class needs validation ("validate every derived verb against the parser") |
 | 6b | No vibe coding | Editing a file without reading its callers; writing code that "looks right" without tracing the data flow |
-| 6c | Prefer the more thorough fix over the narrower fix | Choosing a partial fix because it's a smaller diff, when the class fix has no concrete named downside |
+| 6c | Choose fix scope per `.gzkit/rules/defect-fix-routing.md` thresholds, not intuition | Defaulting to ceremony for a 5-line in-flight defect; defaulting to a direct fix for work that crosses brief boundaries. "Thorough" is the routing table applied correctly, not always the larger scope |
 | 6d | Verify observed behavior, not assumed behavior | Claiming "the output is tabular" without running the command and pasting the observed output |
 | 6e | Read the code before you change it | Guessing what a function probably returns based on its name; skipping the callers during an edit |
 
