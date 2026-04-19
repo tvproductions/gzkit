@@ -1,6 +1,7 @@
 ---
 id: {id}
 status: {status}
+kind: {kind}
 semver: {semver}
 lane: {lane}
 parent: {parent}

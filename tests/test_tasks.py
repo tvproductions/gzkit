@@ -720,7 +720,7 @@ class _TaskCliBase(unittest.TestCase):
         code, out = _invoke(["init"])
         assert code == 0, out
         # Create ADR (expensive — do once)
-        code, out = _invoke(["plan", "create", "0.1.0"])
+        code, out = _invoke(["plan", "create", "0.1.0", "--kind", "feature"])
         assert code == 0, out
         # Seed OBPI and snapshot the ledger
         ledger = Ledger(Path(".gzkit/ledger.jsonl"))
