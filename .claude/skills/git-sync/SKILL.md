@@ -4,10 +4,11 @@ persona: main-session
 description: Run the guarded repository sync ritual; pre-commit hooks enforce lint/test automatically.
 category: agent-operations
 lifecycle_state: active
+disable-model-invocation: true
 owner: gzkit-governance
 last_reviewed: 2026-04-19
 metadata:
-  skill-version: "1.2.1"
+  skill-version: "1.2.2"
 ---
 
 # SKILL.md
