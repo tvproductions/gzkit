@@ -17,7 +17,7 @@ paths:
 | Principle | Rule |
 |-----------|------|
 | Human-first | Optimize for humans; add `--json`/`--plain` for machines |
-| Consistency | Follow UNIX/POSIX patterns; match existing flags |
+| Consistency | Before landing a new flag or subcommand, run `uv run gz cli audit`; it must exit 0 with the new verb covered across manpage, command doc, and index. If coverage is missing, author the missing artifacts in the same patch — the audit is the mechanical check, not operator taste. |
 | Discovery | Comprehensive help with examples; no web docs needed |
 | Robustness | Validate early; fail fast; provide progress indicators |
 

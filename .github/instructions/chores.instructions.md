@@ -12,7 +12,7 @@ applyTo: "src/gzkit/**, config/**, .github/skills/**"
 | Principle           | Description                                     |
 | ------------------- | ----------------------------------------------- |
 | **Plan-first**      | Generate or refresh a chore plan before any run |
-| **Lite by default** | Fast lane (<=60s), unit tests only              |
+| **Lite by default** | Run `uv run -m unittest -q` (unit tier only); no `behave`, no network, no external services. Duration ceilings are a test-infra contract (see `.gzkit/rules/tests.md` § Smoke/BVT) — not an agent-introspected clock. |
 | **Small diffs**     | Touch only files in scope for the chore         |
 | **CLI evidence**    | Never use raw SQL for attestation               |
 
