@@ -20,7 +20,7 @@ benefit a `fix(...)` commit doesn't already produce.
 |---|---|
 | Diff size | ≤10 source lines (excluding tests + comments) OR ≤2 source files |
 | Scope | Well-bounded to a single named module or surface |
-| Precedent | `git log --oneline --grep='^fix('` shows ≥1 similar-shape direct-fix commit in the last 20 commits |
+| Precedent | `git log --since='60 days ago' --oneline --grep='^fix('` returns ≥3 commits (mechanical count; no subjective shape-matching). If fewer than 3, route to OBPI ceremony or surface the routing to the operator. |
 | Trigger | Defect was surfaced in flight (during execution of a different brief, or during operator use), not as part of new feature work |
 | Coverage | A unit test (TDD red→green) can validate the fix without requiring a new BDD scenario or contract change |
 
