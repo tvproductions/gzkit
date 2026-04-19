@@ -26,6 +26,8 @@ Gate 2 is named TDD. This is what TDD means — follow it.
 
 **Derivation rule:** Test cases derive from OBPI brief acceptance criteria, not from the implementation. Tests verify the spec was met, not that the code does what it does. When adding tests outside a pipeline run, locate the governing OBPI brief and derive from its requirements.
 
+**Tests assert semantics, not strings (canonical home for invariant 6f).** A test's job is to pin the operator-facing purpose the code is meant to serve, not the bytes the code currently happens to emit. Pinning current byte-output as "the test" codifies drift rather than catching it — the #141 follow-up (GHI #149/#150/#151) is the canonical case where tests asserted the currently-observed string while the routing skill's Output Contract declared a different form. Assertions must derive from the REQ or the skill's declared contract, not from a run of the code. If the test passes today because the current output happens to match and would pass tomorrow even if the output drifted into a different semantic shape, the test is wrong.
+
 **The per-increment rhythm (binding):**
 
 TDD in this repo runs **along the way**, continuously, as the development rhythm — not as a demo presented at the end. The unit of discipline is one behavior increment: one test, one observed RED, minimum code to GREEN, next increment. Increments flow without per-step operator approval until a logical checkpoint (brief completion, phase boundary, ceremony step boundary). The operator contributes refactor orientation and observations **opportunistically**, not as a synchronous gate between every increment.
