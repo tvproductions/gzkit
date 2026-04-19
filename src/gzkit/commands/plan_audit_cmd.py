@@ -87,8 +87,10 @@ def plan_audit_cmd(obpi_id: str, as_json: bool) -> None:
     # 6. Sibling-ADR scope-collision scan (GHI #152 — advisory, not gap-producing).
     collisions: list[dict[str, str | list[str]]] = []
     if brief_path and adr_id:
-        allowed_for_scan = target_allowed if target_allowed is not None else (
-            _extract_allowed_paths(brief_path) or []
+        allowed_for_scan = (
+            target_allowed
+            if target_allowed is not None
+            else (_extract_allowed_paths(brief_path) or [])
         )
         if allowed_for_scan:
             collisions = _scan_sibling_adr_collisions(
@@ -147,9 +149,7 @@ def _emit_result(
             for c in collisions:
                 contested = c["contested_paths"]
                 paths = ", ".join(contested) if isinstance(contested, list) else ""
-                console.print(
-                    f"  - {c['sibling_adr']} / {c['sibling_obpi']} -- contested: {paths}"
-                )
+                console.print(f"  - {c['sibling_adr']} / {c['sibling_obpi']} -- contested: {paths}")
         console.print(f"  Receipt: {receipt_path}")
 
     if verdict == "FAIL":
@@ -293,6 +293,48 @@ def _obpi_id_from_brief_name(name: str) -> str:
     return name
 
 
+def _contested_paths_between(target_allowed: list[str], sibling_allowed: list[str]) -> list[str]:
+    """Return specific (non-root-glob) paths contested between two allowed-path sets."""
+    contested: list[str] = []
+    for tp in target_allowed:
+        for sp in sibling_allowed:
+            if _paths_overlap(tp, sp):
+                specific = sp if len(sp) >= len(tp) else tp
+                if specific not in contested:
+                    contested.append(specific)
+    return [p for p in contested if _is_specific_path(p)]
+
+
+def _sibling_obpi_collisions(
+    pkg_dir: Path,
+    sibling_adr: str,
+    target_obpi_id: str,
+    target_allowed: list[str],
+) -> list[dict[str, str | list[str]]]:
+    """Report allowed-path collisions against every sibling OBPI brief under ``pkg_dir``."""
+    obpis_dir = pkg_dir / "obpis"
+    if not obpis_dir.exists():
+        return []
+    collisions: list[dict[str, str | list[str]]] = []
+    for brief in obpis_dir.glob("*.md"):
+        sibling_obpi = _obpi_id_from_brief_name(brief.name)
+        if sibling_obpi == target_obpi_id:
+            continue
+        sibling_allowed = _extract_allowed_paths(brief)
+        if not sibling_allowed:
+            continue
+        specific_contested = _contested_paths_between(target_allowed, sibling_allowed)
+        if specific_contested:
+            collisions.append(
+                {
+                    "sibling_adr": sibling_adr,
+                    "sibling_obpi": sibling_obpi,
+                    "contested_paths": specific_contested,
+                }
+            )
+    return collisions
+
+
 def _scan_sibling_adr_collisions(
     project_root: Path,
     target_adr_id: str,
@@ -325,34 +367,9 @@ def _scan_sibling_adr_collisions(
             sibling_adr = _adr_id_from_dir(pkg_dir.name)
             if sibling_adr is None or sibling_adr == target_adr_id:
                 continue
-            obpis_dir = pkg_dir / "obpis"
-            if not obpis_dir.exists():
-                continue
-            for brief in obpis_dir.glob("*.md"):
-                sibling_obpi = _obpi_id_from_brief_name(brief.name)
-                if sibling_obpi == target_obpi_id:
-                    continue
-                sibling_allowed = _extract_allowed_paths(brief)
-                if not sibling_allowed:
-                    continue
-                contested: list[str] = []
-                for tp in target_allowed:
-                    for sp in sibling_allowed:
-                        if _paths_overlap(tp, sp):
-                            # Report the more-specific of the two as the
-                            # contested path for operator signal.
-                            specific = sp if len(sp) >= len(tp) else tp
-                            if specific not in contested:
-                                contested.append(specific)
-                specific_contested = [p for p in contested if _is_specific_path(p)]
-                if specific_contested:
-                    collisions.append(
-                        {
-                            "sibling_adr": sibling_adr,
-                            "sibling_obpi": sibling_obpi,
-                            "contested_paths": specific_contested,
-                        }
-                    )
+            collisions.extend(
+                _sibling_obpi_collisions(pkg_dir, sibling_adr, target_obpi_id, target_allowed)
+            )
     return collisions
 
 

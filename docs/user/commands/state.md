@@ -7,7 +7,7 @@ Query ledger artifact relationships and derived ADR semantics.
 ## Usage
 
 ```bash
-gz state [--json] [--blocked] [--ready] [--repair]
+gz state [--json] [--blocked] [--ready] [--include-withdrawn] [--repair]
 ```
 
 ---
@@ -16,6 +16,7 @@ gz state [--json] [--blocked] [--ready] [--repair]
 
 - `--blocked`: show unattested artifacts.
 - `--ready`: show ADRs that are genuinely ready for attestation.
+- `--include-withdrawn`: include withdrawn OBPIs (hidden by default).
 
 `--ready` means:
 
@@ -23,6 +24,16 @@ gz state [--json] [--blocked] [--ready] [--repair]
 - prerequisite gates required by lane are satisfied.
 
 It is not just "pending attestation".
+
+### Withdrawn OBPI filtering
+
+By default, `gz state` omits OBPIs marked `withdrawn` from the emitted
+graph and scrubs their IDs from each parent ADR's `children` list so
+derived status surfaces (e.g. `gz state --json`, `gz adr status`) do not
+conflate withdrawn ceremonies with active decomposition. The ledger is
+never mutated — `obpi_withdrawn` events remain as legitimate append-only
+history and `--include-withdrawn` restores the full view for audits.
+This implements the preferred resolution in GHI #221.
 
 ---
 
@@ -106,6 +117,7 @@ Task data does not appear when no tasks exist (backward compatible).
 ```bash
 uv run gz state --ready
 uv run gz state --ready --json
+uv run gz state --include-withdrawn --json
 uv run gz state --repair
 uv run gz state --repair --json
 ```

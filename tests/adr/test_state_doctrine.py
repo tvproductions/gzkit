@@ -13,7 +13,12 @@ from unittest.mock import MagicMock, patch
 
 from rich.console import Console
 
-from gzkit.commands.state import _derive_expected_status, _scan_obpi_briefs, state_repair
+from gzkit.commands.state import (
+    _derive_expected_status,
+    _scan_obpi_briefs,
+    state,
+    state_repair,
+)
 
 _quiet_console = Console(file=StringIO())
 
@@ -221,6 +226,78 @@ class TestStateRepairIdempotency(unittest.TestCase):
                 output = mock_print.call_args[0][0]
                 data = json.loads(output)
                 self.assertEqual(len(data["changes"]), 0)
+
+
+@patch("gzkit.commands.state.console", _quiet_console)
+class TestStateWithdrawnFilter(unittest.TestCase):
+    """GHI #221: withdrawn OBPIs are hidden from gz state --json by default."""
+
+    def _graph_with_withdrawn(self) -> dict:
+        return {
+            "ADR-0.0.16": {
+                "type": "adr",
+                "attested": True,
+                "children": [
+                    "OBPI-0.0.16-01",
+                    "OBPI-0.0.16-06",
+                ],
+            },
+            "OBPI-0.0.16-01": {
+                "type": "obpi",
+                "parent": "ADR-0.0.16",
+                "ledger_completed": True,
+                "withdrawn": False,
+                "children": [],
+            },
+            "OBPI-0.0.16-06": {
+                "type": "obpi",
+                "parent": "ADR-0.0.16",
+                "ledger_completed": False,
+                "withdrawn": True,
+                "children": [],
+            },
+        }
+
+    def _invoke(self, include_withdrawn: bool) -> dict:
+        with (
+            tempfile.TemporaryDirectory() as tmp,
+            patch("gzkit.commands.state.ensure_initialized") as mock_init,
+            patch("gzkit.commands.state.get_project_root") as mock_root,
+            patch("gzkit.commands.state.Ledger") as mock_ledger_cls,
+        ):
+            config = MagicMock()
+            config.paths.ledger = ".gzkit/ledger.jsonl"
+            config.paths.design_root = "docs/design"
+            config.mode = "lite"
+            mock_init.return_value = config
+            mock_root.return_value = Path(tmp)
+            mock_ledger = MagicMock()
+            mock_ledger.get_artifact_graph.return_value = self._graph_with_withdrawn()
+            mock_ledger.canonicalize_id.side_effect = lambda x: x
+            mock_ledger_cls.return_value = mock_ledger
+
+            with patch("builtins.print") as mock_print:
+                state(
+                    as_json=True,
+                    blocked=False,
+                    ready=False,
+                    include_withdrawn=include_withdrawn,
+                )
+                return json.loads(mock_print.call_args[0][0])
+
+    def test_withdrawn_obpi_hidden_by_default(self) -> None:
+        data = self._invoke(include_withdrawn=False)
+        self.assertNotIn("OBPI-0.0.16-06", data)
+        self.assertIn("OBPI-0.0.16-01", data)
+
+    def test_withdrawn_id_scrubbed_from_parent_children(self) -> None:
+        data = self._invoke(include_withdrawn=False)
+        self.assertEqual(data["ADR-0.0.16"]["children"], ["OBPI-0.0.16-01"])
+
+    def test_include_withdrawn_restores_entry_and_child_ref(self) -> None:
+        data = self._invoke(include_withdrawn=True)
+        self.assertIn("OBPI-0.0.16-06", data)
+        self.assertIn("OBPI-0.0.16-06", data["ADR-0.0.16"]["children"])
 
 
 if __name__ == "__main__":
