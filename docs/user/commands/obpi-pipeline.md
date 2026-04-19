@@ -33,8 +33,9 @@ Current command contract:
   brief, adds Heavy-lane docs/BDD checks, clears active markers on success, and
   prints the follow-up `--from=ceremony` command
 - `--from=ceremony` reruns Stage 1, prints the ceremony/accounting checklist,
-  requires explicit human attestation only for Heavy/Foundation completion
-  paths, and clears active markers on exit
+  requires explicit human attestation for `heavy`-lane completion paths (any
+  kind) and for foundation-kind completion paths (any lane), and clears active
+  markers on exit
 
 The active marker files are also the machine-readable stage-state contract while
 the pipeline is running. They are runtime-managed and should not be edited or

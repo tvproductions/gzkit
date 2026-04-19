@@ -193,6 +193,25 @@ Skill behavior is standardized and synchronized by `gz agent sync control-surfac
   humans or external systems. Documentation/process/template-only changes stay
   Lite unless they change one of those external surfaces.
 
+### Kinds (pool, foundation, feature)
+
+`kind` describes *what the ADR is about*; `lane` describes *external-contract exposure*. The two axes are orthogonal — any kind can be any lane.
+
+| Kind | Semver convention | Content |
+|------|-------------------|---------|
+| `pool` | none (flat backlog; id prefix `ADR-pool.<slug>`) | Backlog/waiting-area items awaiting promotion |
+| `foundation` | `0.0.x` | App/system invariants, identity-shaping facts, conditions, concepts, and semantics |
+| `feature` | `0.y.z` and up | Active/committed (or queued) release-carrying capability |
+
+Mechanical enforcement surfaces (landed under ADR-0.0.17):
+
+- `kind:` frontmatter field on every non-pool ADR, validated against the schema enum `{foundation, feature}` (`src/gzkit/schemas/adr.json`).
+- `gz plan create --kind {pool,foundation,feature}` scaffolds the correct shape and validates kind/semver consistency at authoring time.
+- `gz adr promote --kind {foundation,feature}` expresses promotion intent and writes `kind:` into the promoted ADR frontmatter.
+- `gz validate --taxonomy` enforces kind/semver binding: `foundation` ⇒ `0.0.x`, `feature` ⇒ non-`0.0.x`, `pool` ⇒ no `kind`/`semver` frontmatter.
+
+For operator-facing guidance on *when to choose which* kind (PRD → ADR derivation, pool curation, epic grouping, worked examples), see [ADR-0.0.18](docs/design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/ADR-0.0.18-adr-taxonomy-doctrine.md).
+
 ### OBPI Decomposition Mandate
 
 Agent MUST right-size implementation units. Apply the decomposition protocol
@@ -203,7 +222,7 @@ and scorecard defined in the
 
 ## OBPI Acceptance Protocol
 
-**Agent MUST NOT mark an OBPI brief as `Completed` without explicit human attestation when parent ADR lane is Heavy or Foundational (0.0.x).**
+**Agent MUST NOT mark an OBPI brief as `Completed` without explicit human attestation when the parent ADR lane is `heavy`.** Attestation rigor attaches to **lane**, not kind — any `heavy`-lane ADR (foundation or feature) gates OBPI completion on Gate 5 human attestation. Foundation-kind ADRs additionally follow the attestation doctrine in [ADR-0.0.18](docs/design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/ADR-0.0.18-adr-taxonomy-doctrine.md) regardless of lane (a `lite`-lane foundation ADR that codifies an app-system invariant still warrants the walkthrough discipline, because doctrine drift is invariant drift).
 
 **Pipeline mandate:** After plan approval for OBPI work, agents MUST start the
 canonical runtime surface `uv run gz obpi pipeline <OBPI-ID>` instead of
@@ -219,12 +238,16 @@ skill (`uv run gz obpi pipeline <OBPI-ID>`). Read it before presenting evidence.
 
 ### Lane Inheritance Rule
 
+`kind` and `lane` are orthogonal axes (see § Kinds). Attestation inheritance is keyed on **lane**:
+
 | Parent ADR Lane | OBPI Attestation Requirement |
 |-----------------|------------------------------|
-| Heavy/Foundation | Human attestation required before `Completed` |
-| Lite | May be self-closeable after evidence is presented |
+| `heavy` | Human attestation required before `Completed` (any kind) |
+| `lite` | May be self-closeable after evidence is presented |
 
-An OBPI inside a Heavy or Foundation ADR inherits the parent's attestation rigor, regardless of the OBPI's own lane designation.
+An OBPI inside a `heavy`-lane ADR inherits that lane's attestation rigor, regardless of the OBPI's own lane designation.
+
+**Foundation-kind rigor (applies across lanes).** Foundation-kind ADRs codify app/system invariants and identity-shaping semantics. They warrant the attestation walkthrough discipline in [ADR-0.0.18](docs/design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/ADR-0.0.18-adr-taxonomy-doctrine.md) regardless of lane, because doctrine drift is invariant drift. A `lite`-lane foundation ADR is still self-closeable at the brief level, but ADR closeout follows the foundation walkthrough protocol.
 
 ## Execution Rules
 

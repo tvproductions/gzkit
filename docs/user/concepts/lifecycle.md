@@ -61,7 +61,7 @@ CLI attestation tokens remain stable, but presentations map to canonical terms:
    `uv run gz git-sync --apply --lint --test`
 4. Record OBPI-scoped receipts using `gz obpi emit-receipt`
    Completed receipts are fail-closed when required value narrative/key proof evidence is missing.
-   Heavy/Foundation parent ADRs additionally require explicit human-attestation evidence.
+   Heavy-lane parent ADRs (any kind) additionally require explicit human-attestation evidence. Foundation-kind ADRs follow the attestation walkthrough discipline in [ADR-0.0.18](../../design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/ADR-0.0.18-adr-taxonomy-doctrine.md) regardless of lane.
 5. Reconcile OBPI completeness at ADR boundary (`gz obpi reconcile`, `gz adr audit-check`)
 6. Perform ADR closeout and attestation (`gz closeout`, `gz attest`)
    `gz closeout` remains blocked until linked OBPIs are closeout-ready.

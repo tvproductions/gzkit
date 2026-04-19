@@ -124,4 +124,4 @@ The created brief contains:
 3. Create and author an OBPI brief with `gz specify --parent ADR-... --author`
 4. Re-run authored validation if you edit the brief further: `gz obpi validate --authored <path>`
 6. Execute the OBPI through the pipeline: `gz obpi pipeline OBPI-...`
-7. Attest with `gz attest` (Heavy/Foundation lane)
+7. Attest with `gz attest` (required for `heavy`-lane or foundation-kind parent ADRs)
