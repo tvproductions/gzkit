@@ -54,8 +54,35 @@ def _enrich_obpi_with_tasks(
         info["task_summary"] = counts
 
 
-def state(as_json: bool, blocked: bool, ready: bool) -> None:
-    """Query ledger state and artifact relationships."""
+def _hide_withdrawn_obpis(graph: dict[str, dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """Strip withdrawn OBPIs from graph and from each parent's children (GHI #221).
+
+    The ledger is never mutated; this acts on the derived graph copy.
+    """
+    withdrawn_ids = {
+        artifact_id
+        for artifact_id, info in graph.items()
+        if info.get("type") == "obpi" and info.get("withdrawn")
+    }
+    if not withdrawn_ids:
+        return graph
+    filtered = {k: v for k, v in graph.items() if k not in withdrawn_ids}
+    for info in filtered.values():
+        children = info.get("children")
+        if isinstance(children, list) and any(c in withdrawn_ids for c in children):
+            info["children"] = [c for c in children if c not in withdrawn_ids]
+    return filtered
+
+
+def state(as_json: bool, blocked: bool, ready: bool, include_withdrawn: bool = False) -> None:
+    """Query ledger state and artifact relationships.
+
+    Withdrawn OBPIs (recorded via ``obpi_withdrawn`` events) are hidden from
+    the graph by default so status surfaces do not conflate withdrawn
+    ceremonies with active decomposition (GHI #221). The ledger is
+    untouched — withdrawn events remain as legitimate history. Pass
+    ``include_withdrawn=True`` / ``--include-withdrawn`` to see them.
+    """
     config = ensure_initialized()
     project_root = get_project_root()
 
@@ -65,6 +92,9 @@ def state(as_json: bool, blocked: bool, ready: bool) -> None:
     for _artifact_id, info in graph.items():
         if info.get("type") == "adr":
             info.update(Ledger.derive_adr_semantics(info))
+
+    if not include_withdrawn:
+        graph = _hide_withdrawn_obpis(graph)
 
     # Filter if requested
     if blocked:

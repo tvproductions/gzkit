@@ -67,7 +67,12 @@ def _state_handler(a: argparse.Namespace) -> None:
 
         state_repair(as_json=a.as_json)
     else:
-        _lazy("state")(as_json=a.as_json, blocked=a.blocked, ready=a.ready)
+        _lazy("state")(
+            as_json=a.as_json,
+            blocked=a.blocked,
+            ready=a.ready,
+            include_withdrawn=a.include_withdrawn,
+        )
 
 
 def _closeout_dispatch(a: argparse.Namespace) -> None:
@@ -338,6 +343,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
                 "gz state --json",
                 "gz state --blocked",
                 "gz state --ready",
+                "gz state --include-withdrawn",
                 "gz state --repair",
                 "gz state --repair --json",
             ]
@@ -347,6 +353,11 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
     p_state.add_argument("--blocked", action="store_true", help="Show only blocked artifacts")
     p_state.add_argument(
         "--ready", action="store_true", help="Show only ready-to-proceed artifacts"
+    )
+    p_state.add_argument(
+        "--include-withdrawn",
+        action="store_true",
+        help="Include withdrawn OBPIs (hidden by default; ledger history preserved)",
     )
     p_state.add_argument(
         "--repair",
