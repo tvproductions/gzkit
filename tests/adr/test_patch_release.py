@@ -114,48 +114,284 @@ _SAMPLE_GH_OUTPUT = json.dumps(
 class TestDiscoverGhis(unittest.TestCase):
     """Verify GHI discovery via gh CLI."""
 
-    @patch("gzkit.commands.patch_release.run_exec", return_value=(0, _SAMPLE_GH_OUTPUT, ""))
-    def test_normal_discovery(self, mock_exec: object) -> None:
+    def test_returns_only_ghis_referenced_in_range(self) -> None:
+        """Anchor discovery on the commit range, not close-time windows (GHI #233).
+
+        A GHI whose closure commit is NOT in ``<base_ref>..HEAD`` must not
+        re-qualify for the next release, even if its close timestamp falls
+        within a broad date-based search window. ``gh issue list`` returns
+        four closed GHIs; only GHIs #10 and #11 are referenced by commits
+        in the range. Discovery returns exactly those two.
+        """
         from gzkit.commands.patch_release import _discover_ghis
 
-        ghis = _discover_ghis(_PROJECT_ROOT, "2026-04-01T00:00:00+00:00")
-        self.assertEqual(len(ghis), 2)
-        self.assertEqual(ghis[0].number, 42)
-        self.assertIn("runtime", ghis[0].labels)
-        self.assertEqual(ghis[1].number, 43)
-        # Verify --search was passed
-        cmd = mock_exec.call_args[0][0]
-        self.assertIn("--search", cmd)
+        in_range_refs = {10, 11}
 
-    @patch("gzkit.commands.patch_release.run_exec", return_value=(0, _SAMPLE_GH_OUTPUT, ""))
-    def test_no_tags_omits_search(self, mock_exec: object) -> None:
+        def _gh_view_side_effect(cmd: list[str], cwd: Path) -> tuple[int, str, str]:
+            # _discover_ghis uses `gh issue view N --json ...` per ref
+            if "view" in cmd and "issue" in cmd:
+                number = int(cmd[cmd.index("view") + 1])
+                payload = {
+                    "number": number,
+                    "title": f"GHI #{number}",
+                    "closedAt": "2026-04-02T10:00:00Z",
+                    "state": "CLOSED",
+                    "labels": [{"name": "runtime"}],
+                    "url": f"https://github.com/owner/repo/issues/{number}",
+                }
+                return (0, json.dumps(payload), "")
+            return (0, "", "")
+
+        with (
+            patch(
+                "gzkit.commands.patch_release._collect_ghi_refs_in_range",
+                return_value=in_range_refs,
+            ),
+            patch(
+                "gzkit.commands.patch_release.run_exec",
+                side_effect=_gh_view_side_effect,
+            ),
+        ):
+            ghis = _discover_ghis(_PROJECT_ROOT, "v0.25.10")
+
+        self.assertEqual({g.number for g in ghis}, {10, 11})
+
+    def test_includes_locally_closed_ghis_still_open_upstream(self) -> None:
+        """A commit with ``Closes #N`` ships that GHI regardless of upstream state.
+
+        Local commits that declare closure ship the GHI by definition —
+        ``gh issue close`` fires when the commit is pushed via the auto-close
+        integration. Filtering by upstream ``state=OPEN`` would block the
+        release ceremony from shipping its own closures before they reach
+        origin (GHI #233).
+        """
         from gzkit.commands.patch_release import _discover_ghis
 
-        ghis = _discover_ghis(_PROJECT_ROOT, None)
-        self.assertEqual(len(ghis), 2)
-        cmd = mock_exec.call_args[0][0]
-        self.assertNotIn("--search", cmd)
+        def _gh_view_side_effect(cmd: list[str], cwd: Path) -> tuple[int, str, str]:
+            number = int(cmd[cmd.index("view") + 1])
+            state = "CLOSED" if number == 42 else "OPEN"
+            payload = _gh_view_payload(number, labels=["runtime"], state=state)
+            return (0, json.dumps(payload), "")
 
-    @patch("gzkit.commands.patch_release.run_exec", return_value=(0, "[]", ""))
-    def test_empty_result(self, _mock: object) -> None:
+        with (
+            patch(
+                "gzkit.commands.patch_release._collect_ghi_refs_in_range",
+                return_value={42, 43},
+            ),
+            patch(
+                "gzkit.commands.patch_release.run_exec",
+                side_effect=_gh_view_side_effect,
+            ),
+        ):
+            ghis = _discover_ghis(_PROJECT_ROOT, "v0.25.10")
+
+        self.assertEqual({g.number for g in ghis}, {42, 43})
+
+    def test_empty_range_returns_empty(self) -> None:
         from gzkit.commands.patch_release import _discover_ghis
 
-        ghis = _discover_ghis(_PROJECT_ROOT, "2026-04-01")
+        with patch(
+            "gzkit.commands.patch_release._collect_ghi_refs_in_range", return_value=set()
+        ):
+            ghis = _discover_ghis(_PROJECT_ROOT, "v0.25.10")
+
         self.assertEqual(ghis, [])
 
-    @patch("gzkit.commands.patch_release.run_exec", return_value=(1, "", "error"))
-    def test_gh_failure_returns_empty(self, _mock: object) -> None:
+    def test_gh_view_failure_skips_ghi(self) -> None:
+        """Partial failures don't fail the whole discovery — skip and continue."""
         from gzkit.commands.patch_release import _discover_ghis
 
-        ghis = _discover_ghis(_PROJECT_ROOT, "2026-04-01")
-        self.assertEqual(ghis, [])
+        def _gh_view_side_effect(cmd: list[str], cwd: Path) -> tuple[int, str, str]:
+            number = int(cmd[cmd.index("view") + 1])
+            if number == 42:
+                return (1, "", "not found")
+            return (
+                0,
+                json.dumps(
+                    {
+                        "number": number,
+                        "title": f"GHI #{number}",
+                        "closedAt": "2026-04-02T10:00:00Z",
+                        "state": "CLOSED",
+                        "labels": [],
+                        "url": "",
+                    }
+                ),
+                "",
+            )
 
-    @patch("gzkit.commands.patch_release.run_exec", return_value=(0, "NOT JSON", ""))
-    def test_malformed_json_returns_empty(self, _mock: object) -> None:
-        from gzkit.commands.patch_release import _discover_ghis
+        with (
+            patch(
+                "gzkit.commands.patch_release._collect_ghi_refs_in_range",
+                return_value={42, 43},
+            ),
+            patch(
+                "gzkit.commands.patch_release.run_exec",
+                side_effect=_gh_view_side_effect,
+            ),
+        ):
+            ghis = _discover_ghis(_PROJECT_ROOT, "v0.25.10")
 
-        ghis = _discover_ghis(_PROJECT_ROOT, "2026-04-01")
-        self.assertEqual(ghis, [])
+        self.assertEqual({g.number for g in ghis}, {43})
+
+
+# ---------------------------------------------------------------------------
+# Test: _collect_ghi_refs_in_range (GHI #233)
+# ---------------------------------------------------------------------------
+
+
+class TestCollectGhiRefsInRange(unittest.TestCase):
+    """Verify GHI reference extraction from commit messages in a git range.
+
+    Anchors release discovery to commits in ``<base_ref>..HEAD`` instead of
+    GitHub close-time heuristics. A GHI ships in v_n if and only if its
+    closure commit is in the release range — "count what we CLOSE, not
+    what we book" (operator doctrine, GHI #233).
+
+    @covers GHI-233
+    """
+
+    _MULTI_COMMIT_LOG = (
+        "e5051ce1\n"
+        "fix(rules): codify per-increment TDD rhythm and RED/GREEN receipt gap (GHI #157)\n"
+        "\n"
+        "Closes #157\n"
+        "\x00"
+        "5da94713\n"
+        "fix(audit-check): consume BDD tags (GHI #165)\n"
+        "\n"
+        "Closes #165\n"
+        "\x00"
+        "40355893\n"
+        "fix(plan-audit): detect sibling-ADR scope collisions (GHI #152)\n"
+        "\n"
+        "Closes #152\n"
+        "\x00"
+        "ecaf9b41\n"
+        "docs(adr): author ADR-0.0.17 + ADR-0.0.18 (GHI #218)\n"
+        "\n"
+        "Prepares ADR taxonomy foundations. Refs #218.\n"
+        "\x00"
+    )
+
+    @patch("gzkit.commands.patch_release.git_cmd")
+    def test_parses_closure_keywords_only(self, mock_git: object) -> None:
+        """Only GitHub closure keywords count; paren-form ``(GHI #N)`` alone
+        is a citation convention (design commits cite GHIs without closing)."""
+        from gzkit.commands.patch_release import _collect_ghi_refs_in_range
+
+        mock_git.return_value = (0, self._MULTI_COMMIT_LOG, "")
+        refs = _collect_ghi_refs_in_range(_PROJECT_ROOT, "v0.25.10")
+
+        # #152, #157, #165 have explicit `Closes #N`; #218 is paren-only
+        # (design commit, not a closure) and must NOT be in the set.
+        self.assertEqual(refs, {152, 157, 165})
+        # Verify the git log was scoped to the range
+        call_args = mock_git.call_args[0]
+        self.assertIn("log", call_args)
+        range_arg = next((a for a in call_args if a == "v0.25.10..HEAD"), None)
+        self.assertEqual(range_arg, "v0.25.10..HEAD")
+
+    @patch("gzkit.commands.patch_release.git_cmd", return_value=(0, "", ""))
+    def test_empty_range_returns_empty_set(self, _mock: object) -> None:
+        from gzkit.commands.patch_release import _collect_ghi_refs_in_range
+
+        refs = _collect_ghi_refs_in_range(_PROJECT_ROOT, "v0.25.10")
+        self.assertEqual(refs, set())
+
+    @patch("gzkit.commands.patch_release.git_cmd", return_value=(1, "", "fatal"))
+    def test_git_error_returns_empty_set(self, _mock: object) -> None:
+        from gzkit.commands.patch_release import _collect_ghi_refs_in_range
+
+        refs = _collect_ghi_refs_in_range(_PROJECT_ROOT, "v0.25.10")
+        self.assertEqual(refs, set())
+
+    @patch("gzkit.commands.patch_release.git_cmd")
+    def test_none_base_ref_walks_all_history(self, mock_git: object) -> None:
+        from gzkit.commands.patch_release import _collect_ghi_refs_in_range
+
+        mock_git.return_value = (0, "abc1234\nfix: one (GHI #10)\n\nCloses #10\n\x00", "")
+        refs = _collect_ghi_refs_in_range(_PROJECT_ROOT, None)
+
+        self.assertEqual(refs, {10})
+        call_args = mock_git.call_args[0]
+        self.assertNotIn("v0.25.10..HEAD", call_args)
+
+    @patch("gzkit.commands.patch_release.git_cmd")
+    def test_ignores_prose_references_counts_only_closure_refs(self, mock_git: object) -> None:
+        """Prose citations like 'similar to #186' must not inflate the release ledger.
+
+        Only closure markers count: ``(GHI #N)`` parenthesized subject/body
+        form, or ``Closes|Fixes|Resolves #N`` GitHub keywords. Bare ``#N``
+        mentions in discussion prose are not closures (GHI #233 root cause —
+        commit bodies on this project routinely cite prior GHIs for context).
+        """
+        from gzkit.commands.patch_release import _collect_ghi_refs_in_range
+
+        mock_git.return_value = (
+            0,
+            "abc1\n"
+            "fix(scope): real closure (GHI #300)\n"
+            "\n"
+            "This fixes the class of failure from #200 and #201 that was\n"
+            "similar to #202. Closes #300\n"
+            "\x00",
+            "",
+        )
+        refs = _collect_ghi_refs_in_range(_PROJECT_ROOT, "v1.0.0")
+        self.assertEqual(refs, {300})
+        for not_closed in (200, 201, 202):
+            self.assertNotIn(not_closed, refs)
+
+    @patch("gzkit.commands.patch_release.git_cmd")
+    def test_accepts_fixes_and_resolves_closure_keywords(self, mock_git: object) -> None:
+        from gzkit.commands.patch_release import _collect_ghi_refs_in_range
+
+        mock_git.return_value = (
+            0,
+            "abc1\nfix: a (GHI #10)\n\nFixes #10\n\x00"
+            "abc2\nfix: b\n\nResolves #11\n\x00"
+            "abc3\nfix: c\n\nfixed #12\n\x00"
+            "abc4\nfix: d\n\nclosed #13\n\x00",
+            "",
+        )
+        refs = _collect_ghi_refs_in_range(_PROJECT_ROOT, "v1.0.0")
+        self.assertEqual(refs, {10, 11, 12, 13})
+
+    @patch("gzkit.commands.patch_release.git_cmd")
+    def test_dedupes_repeated_refs(self, mock_git: object) -> None:
+        from gzkit.commands.patch_release import _collect_ghi_refs_in_range
+
+        mock_git.return_value = (
+            0,
+            "abc1\nfix: one (GHI #42)\n\nCloses #42\n\x00"
+            "abc2\nfix: followup\n\nFixes #42\n\x00",
+            "",
+        )
+        refs = _collect_ghi_refs_in_range(_PROJECT_ROOT, "v1.0.0")
+        self.assertEqual(refs, {42})
+
+    @patch("gzkit.commands.patch_release.git_cmd")
+    def test_paren_form_alone_is_not_a_closure(self, mock_git: object) -> None:
+        """`(GHI #N)` is a project citation convention; only GitHub closure
+        keywords (Closes/Fixes/Resolves) declare the commit closes the GHI.
+
+        Design-scope commits like `docs(adr): ... (GHI #218)` cite GHIs for
+        context; they must not be counted as closures (GHI #233).
+        """
+        from gzkit.commands.patch_release import _collect_ghi_refs_in_range
+
+        mock_git.return_value = (
+            0,
+            "abc1\ndocs(adr): author (GHI #218)\n\nReferences #218 for context.\n\x00"
+            "abc2\nceremony(adr): ...\n\n"
+            "  2. Brittle regression tests (GHI #220): replaced\n"
+            "  3. OBPI-04 brief command wording (GHI #219): REQ-02/03/05\n"
+            "\x00",
+            "",
+        )
+        refs = _collect_ghi_refs_in_range(_PROJECT_ROOT, "v1.0.0")
+        self.assertEqual(refs, set())
 
 
 # ---------------------------------------------------------------------------
@@ -164,25 +400,49 @@ class TestDiscoverGhis(unittest.TestCase):
 
 
 class TestGhiHasSrcCommits(unittest.TestCase):
-    """Verify commit-to-src/gzkit/ diff detection."""
+    """Verify commit-to-src/gzkit/ diff detection scoped to the release range.
+
+    @covers GHI-233 (range-scoped, not --all)
+    """
 
     @patch("gzkit.commands.patch_release.git_cmd", return_value=(0, "abc1234", ""))
     def test_commits_touching_src(self, _mock: object) -> None:
         from gzkit.commands.patch_release import _ghi_has_src_commits
 
-        self.assertTrue(_ghi_has_src_commits(_PROJECT_ROOT, 42))
+        self.assertTrue(_ghi_has_src_commits(_PROJECT_ROOT, 42, "v0.25.10"))
 
     @patch("gzkit.commands.patch_release.git_cmd", return_value=(0, "", ""))
     def test_no_commits(self, _mock: object) -> None:
         from gzkit.commands.patch_release import _ghi_has_src_commits
 
-        self.assertFalse(_ghi_has_src_commits(_PROJECT_ROOT, 42))
+        self.assertFalse(_ghi_has_src_commits(_PROJECT_ROOT, 42, "v0.25.10"))
 
     @patch("gzkit.commands.patch_release.git_cmd", return_value=(1, "", "error"))
     def test_git_error(self, _mock: object) -> None:
         from gzkit.commands.patch_release import _ghi_has_src_commits
 
-        self.assertFalse(_ghi_has_src_commits(_PROJECT_ROOT, 42))
+        self.assertFalse(_ghi_has_src_commits(_PROJECT_ROOT, 42, "v0.25.10"))
+
+    @patch("gzkit.commands.patch_release.git_cmd", return_value=(0, "abc", ""))
+    def test_range_scoped_not_all(self, mock_git: object) -> None:
+        """Scope query to <base_ref>..HEAD; never --all. (GHI #233 root cause)"""
+        from gzkit.commands.patch_release import _ghi_has_src_commits
+
+        _ghi_has_src_commits(_PROJECT_ROOT, 42, "v0.25.10")
+
+        call_args = mock_git.call_args[0]
+        self.assertIn("v0.25.10..HEAD", call_args)
+        self.assertNotIn("--all", call_args)
+
+    @patch("gzkit.commands.patch_release.git_cmd", return_value=(0, "abc", ""))
+    def test_none_base_ref_walks_all_history(self, mock_git: object) -> None:
+        """When no prior tag exists, fall back to --all."""
+        from gzkit.commands.patch_release import _ghi_has_src_commits
+
+        _ghi_has_src_commits(_PROJECT_ROOT, 42, None)
+
+        call_args = mock_git.call_args[0]
+        self.assertIn("--all", call_args)
 
 
 # ---------------------------------------------------------------------------
@@ -214,7 +474,7 @@ class TestClassifyGhi(unittest.TestCase):
                     "gzkit.commands.patch_release._ghi_has_src_commits",
                     return_value=has_diff,
                 ):
-                    result = _classify_ghi(_PROJECT_ROOT, ghi)
+                    result = _classify_ghi(_PROJECT_ROOT, ghi, "v0.25.10")
 
                 self.assertEqual(result.status, expected_status)
                 self.assertEqual(result.has_runtime_label, "runtime" in labels)
@@ -231,7 +491,7 @@ class TestClassifyGhi(unittest.TestCase):
 
         ghi = GhiRecord(number=55, title="Labeled", closed_at="2026-04-01", labels=["runtime"])
         with patch("gzkit.commands.patch_release._ghi_has_src_commits", return_value=False):
-            result = _classify_ghi(_PROJECT_ROOT, ghi)
+            result = _classify_ghi(_PROJECT_ROOT, ghi, "v0.25.10")
         self.assertIn("no commits touching src/gzkit/", result.warning)
 
     def test_diff_only_warning_text(self) -> None:
@@ -240,7 +500,7 @@ class TestClassifyGhi(unittest.TestCase):
 
         ghi = GhiRecord(number=56, title="Diffed", closed_at="2026-04-01", labels=[])
         with patch("gzkit.commands.patch_release._ghi_has_src_commits", return_value=True):
-            result = _classify_ghi(_PROJECT_ROOT, ghi)
+            result = _classify_ghi(_PROJECT_ROOT, ghi, "v0.25.10")
         self.assertIn("no 'runtime' label", result.warning)
 
 
@@ -249,14 +509,32 @@ class TestClassifyGhi(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 
-def _build_mock_git_cmd(tag_output: str, tag_date: str, src_commits: dict[int, bool]):
-    """Build a side_effect function for git_cmd mock."""
+def _build_mock_git_cmd(
+    tag_output: str,
+    tag_date: str,
+    src_commits: dict[int, bool],
+    range_refs: set[int] | None = None,
+):
+    """Build a side_effect function for git_cmd mock.
+
+    Post-GHI #233: discovery anchors on the commit range. ``range_refs`` is
+    the set of GHI numbers the range log should expose. Defaults to the
+    keys of ``src_commits`` so most tests need only declare the src-diff
+    matrix.
+    """
+    if range_refs is None:
+        range_refs = set(src_commits.keys())
+    range_log = "".join(
+        f"abc{n}\nfix: example (GHI #{n})\n\nCloses #{n}\n\x00" for n in sorted(range_refs)
+    )
 
     def _side_effect(root: Path, *args: str) -> tuple[int, str, str]:
         if args[0] == "tag":
             return (0, tag_output, "")
         if args[0] == "log" and "--format=%aI" in args:
             return (0, tag_date, "")
+        if args[0] == "log" and "--format=%H%n%B%x00" in args:
+            return (0, range_log, "")
         if args[0] == "log" and "--grep" in args:
             ghi_num_str = args[args.index("--grep") + 1].lstrip("#")
             has = src_commits.get(int(ghi_num_str), False)
@@ -266,44 +544,63 @@ def _build_mock_git_cmd(tag_output: str, tag_date: str, src_commits: dict[int, b
     return _side_effect
 
 
+def _build_mock_run_exec(auth_ok: bool = True, view_payloads: dict[int, dict] | None = None):
+    """Build a side_effect function for run_exec mock (post-GHI #233).
+
+    Dispatches on command shape instead of a fixed sequence:
+
+    - ``gh auth status`` → auth response
+    - ``gh issue view N --json ...`` → per-GHI payload from ``view_payloads``
+
+    ``view_payloads`` keys are GHI numbers; values are the JSON payload dict
+    (must include ``state``, ``number``, ``title``, ``closedAt``, ``labels``,
+    ``url``). A missing key returns exit 1 (not found).
+    """
+    payloads = view_payloads or {}
+
+    def _side_effect(cmd: list[str], cwd: Path) -> tuple[int, str, str]:
+        if "auth" in cmd and "status" in cmd:
+            return (0, "Logged in", "") if auth_ok else (1, "", "not logged in")
+        if "issue" in cmd and "view" in cmd:
+            number = int(cmd[cmd.index("view") + 1])
+            if number not in payloads:
+                return (1, "", f"issue #{number} not found")
+            return (0, json.dumps(payloads[number]), "")
+        return (0, "", "")
+
+    return _side_effect
+
+
+def _gh_view_payload(
+    number: int,
+    *,
+    labels: list[str] | None = None,
+    state: str = "CLOSED",
+    title: str | None = None,
+) -> dict:
+    """Construct a gh issue view JSON payload for tests."""
+    return {
+        "number": number,
+        "title": title or f"GHI #{number}",
+        "closedAt": "2026-04-02T10:00:00Z" if state == "CLOSED" else "",
+        "state": state,
+        "labels": [{"name": lbl} for lbl in (labels or [])],
+        "url": f"https://github.com/owner/repo/issues/{number}",
+    }
+
+
 class TestPatchReleaseDryRun(unittest.TestCase):
     """Integration: dry-run renders all qualification statuses.
 
     @covers REQ-0.0.15-02-04
     """
 
-    _GH_OUTPUT = json.dumps(
-        [
-            {
-                "number": 10,
-                "title": "Fix crash",
-                "closedAt": "2026-04-02T10:00:00Z",
-                "labels": [{"name": "runtime"}],
-                "url": "",
-            },
-            {
-                "number": 11,
-                "title": "Update readme",
-                "closedAt": "2026-04-02T11:00:00Z",
-                "labels": [{"name": "docs"}],
-                "url": "",
-            },
-            {
-                "number": 12,
-                "title": "Refactor parser",
-                "closedAt": "2026-04-02T12:00:00Z",
-                "labels": [],
-                "url": "",
-            },
-            {
-                "number": 13,
-                "title": "Add logging",
-                "closedAt": "2026-04-02T13:00:00Z",
-                "labels": [{"name": "runtime"}],
-                "url": "",
-            },
-        ]
-    )
+    _VIEW_PAYLOADS = {
+        10: _gh_view_payload(10, labels=["runtime"], title="Fix crash"),
+        11: _gh_view_payload(11, labels=["docs"], title="Update readme"),
+        12: _gh_view_payload(12, labels=[], title="Refactor parser"),
+        13: _gh_view_payload(13, labels=["runtime"], title="Add logging"),
+    }
 
     @patch("gzkit.commands.patch_release.get_project_root", return_value=_PROJECT_ROOT)
     @patch("gzkit.commands.patch_release.run_exec")
@@ -314,10 +611,7 @@ class TestPatchReleaseDryRun(unittest.TestCase):
     ) -> None:
         from gzkit.commands.patch_release import patch_release_cmd
 
-        mock_exec.side_effect = [
-            (0, "Logged in", ""),  # gh auth status
-            (0, self._GH_OUTPUT, ""),  # gh issue list
-        ]
+        mock_exec.side_effect = _build_mock_run_exec(view_payloads=self._VIEW_PAYLOADS)
         mock_git.side_effect = _build_mock_git_cmd(
             tag_output="v0.0.14",
             tag_date="2026-04-01T00:00:00+00:00",
@@ -341,17 +635,7 @@ class TestPatchReleaseJson(unittest.TestCase):
     @covers REQ-0.0.15-02-04
     """
 
-    _GH_OUTPUT = json.dumps(
-        [
-            {
-                "number": 20,
-                "title": "Fix bug",
-                "closedAt": "2026-04-02T10:00:00Z",
-                "labels": [{"name": "runtime"}],
-                "url": "",
-            },
-        ]
-    )
+    _VIEW_PAYLOADS = {20: _gh_view_payload(20, labels=["runtime"], title="Fix bug")}
 
     @patch("gzkit.commands.patch_release.get_project_root", return_value=_PROJECT_ROOT)
     @patch("gzkit.commands.patch_release.run_exec")
@@ -368,10 +652,7 @@ class TestPatchReleaseJson(unittest.TestCase):
     ) -> None:
         from gzkit.commands.patch_release import patch_release_cmd
 
-        mock_exec.side_effect = [
-            (0, "Logged in", ""),
-            (0, self._GH_OUTPUT, ""),
-        ]
+        mock_exec.side_effect = _build_mock_run_exec(view_payloads=self._VIEW_PAYLOADS)
         mock_git.side_effect = _build_mock_git_cmd(
             tag_output="v0.0.14",
             tag_date="2026-04-01T00:00:00+00:00",
@@ -409,21 +690,9 @@ class TestPatchReleaseJson(unittest.TestCase):
     ) -> None:
         from gzkit.commands.patch_release import patch_release_cmd
 
-        gh_output = json.dumps(
-            [
-                {
-                    "number": 30,
-                    "title": "Labeled only",
-                    "closedAt": "2026-04-02T10:00:00Z",
-                    "labels": [{"name": "runtime"}],
-                    "url": "",
-                },
-            ]
+        mock_exec.side_effect = _build_mock_run_exec(
+            view_payloads={30: _gh_view_payload(30, labels=["runtime"], title="Labeled only")}
         )
-        mock_exec.side_effect = [
-            (0, "Logged in", ""),
-            (0, gh_output, ""),
-        ]
         mock_git.side_effect = _build_mock_git_cmd(
             tag_output="v0.0.14",
             tag_date="2026-04-01T00:00:00+00:00",
@@ -460,21 +729,9 @@ class TestPatchReleaseNoTags(unittest.TestCase):
     ) -> None:
         from gzkit.commands.patch_release import patch_release_cmd
 
-        gh_output = json.dumps(
-            [
-                {
-                    "number": 1,
-                    "title": "First fix",
-                    "closedAt": "2026-04-01T10:00:00Z",
-                    "labels": [{"name": "runtime"}],
-                    "url": "",
-                },
-            ]
+        mock_exec.side_effect = _build_mock_run_exec(
+            view_payloads={1: _gh_view_payload(1, labels=["runtime"], title="First fix")}
         )
-        mock_exec.side_effect = [
-            (0, "Logged in", ""),
-            (0, gh_output, ""),
-        ]
         mock_git.side_effect = _build_mock_git_cmd(
             tag_output="",
             tag_date="",
@@ -487,10 +744,6 @@ class TestPatchReleaseNoTags(unittest.TestCase):
         self.assertIsNone(payload["tag"])
         self.assertEqual(payload["ghi_count"], 1)
         self.assertIn("No git tags found", payload["warnings"][0])
-        # Verify --search was NOT passed to gh
-        gh_call = mock_exec.call_args_list[1]
-        cmd = gh_call[0][0]
-        self.assertNotIn("--search", cmd)
 
 
 # ---------------------------------------------------------------------------
@@ -1083,17 +1336,7 @@ class TestPatchReleaseCmdManifest(unittest.TestCase):
     @covers REQ-0.0.15-04-03
     """
 
-    _GH_OUTPUT = json.dumps(
-        [
-            {
-                "number": 50,
-                "title": "Fix widget",
-                "closedAt": "2026-04-02T10:00:00Z",
-                "labels": [{"name": "runtime"}],
-                "url": "https://github.com/owner/repo/issues/50",
-            },
-        ]
-    )
+    _VIEW_PAYLOADS = {50: _gh_view_payload(50, labels=["runtime"], title="Fix widget")}
 
     @patch("gzkit.commands.patch_release.get_project_root")
     @patch("gzkit.commands.patch_release.run_exec")
@@ -1129,10 +1372,7 @@ class TestPatchReleaseCmdManifest(unittest.TestCase):
             ledger_instance = unittest.mock.MagicMock()
             mock_ledger_cls.return_value = ledger_instance
 
-            mock_exec.side_effect = [
-                (0, "Logged in", ""),
-                (0, self._GH_OUTPUT, ""),
-            ]
+            mock_exec.side_effect = _build_mock_run_exec(view_payloads=self._VIEW_PAYLOADS)
             mock_git.side_effect = _build_mock_git_cmd(
                 tag_output="v0.0.14",
                 tag_date="2026-04-01T00:00:00+00:00",
