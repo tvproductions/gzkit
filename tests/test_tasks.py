@@ -700,43 +700,71 @@ def _invoke(args: list[str]) -> tuple[int, str]:
     return 0 if code is None else int(code), output.getvalue()
 
 
-class _TaskCliBase(unittest.TestCase):
-    """Base class that sets up an isolated workspace with an OBPI in the ledger.
+from tests.commands.common import (  # noqa: E402
+    start_init_subprocess_patches,
+    stop_init_subprocess_patches,
+)
 
-    Expensive operations (``gz init``, ``gz plan create``) run once per class
-    in ``setUpClass``.  Each test gets a fresh ledger restored from the base
-    snapshot so mutations in one test don't leak into another.
+# Module-level workspace: a single ``gz init`` + ``gz plan create`` run shared
+# across every ``_TaskCliBase`` subclass (GHI #253). Previously setUpClass ran
+# full init for each of 8 classes (~3.5s each = ~28s total); now one module
+# setUp runs it once. Each test restores the ledger from a cached base so
+# tests remain isolated.
+_module_tmp_ctx: tempfile.TemporaryDirectory | None = None
+_module_orig_cwd: Path | None = None
+_module_workspace: Path | None = None
+_module_base_ledger: str = ""
+
+
+def setUpModule() -> None:
+    import os
+
+    global _module_tmp_ctx, _module_orig_cwd, _module_workspace, _module_base_ledger
+    start_init_subprocess_patches()
+    _module_tmp_ctx = tempfile.TemporaryDirectory(prefix="gzkit-task-test-")
+    _module_workspace = Path(_module_tmp_ctx.name)
+    _module_orig_cwd = Path.cwd()
+    os.chdir(_module_workspace)
+    code, out = _invoke(["init"])
+    assert code == 0, out
+    code, out = _invoke(["plan", "create", "0.1.0", "--kind", "feature"])
+    assert code == 0, out
+    ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+    ledger.append(obpi_created_event("OBPI-0.1.0-01", "ADR-0.1.0"))
+    _module_base_ledger = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
+
+
+def tearDownModule() -> None:
+    import os
+
+    global _module_tmp_ctx, _module_orig_cwd, _module_workspace, _module_base_ledger
+    try:
+        if _module_orig_cwd is not None:
+            os.chdir(_module_orig_cwd)
+    finally:
+        if _module_tmp_ctx is not None:
+            _module_tmp_ctx.cleanup()
+        _module_tmp_ctx = None
+        _module_orig_cwd = None
+        _module_workspace = None
+        _module_base_ledger = ""
+        stop_init_subprocess_patches()
+
+
+class _TaskCliBase(unittest.TestCase):
+    """Base class rooted in the shared module workspace.
+
+    Each test restores the ledger to the module-level base snapshot so
+    mutations don't leak between tests, but no per-class ``gz init`` runs.
     """
 
-    @classmethod
-    def setUpClass(cls) -> None:
-        import os
-
-        cls._tmp_ctx = tempfile.TemporaryDirectory(prefix="gzkit-task-test-")
-        cls._tmpdir = cls._tmp_ctx.name
-        cls._orig_cwd = Path.cwd()
-        os.chdir(cls._tmpdir)
-        # Initialize workspace (expensive — do once)
-        code, out = _invoke(["init"])
-        assert code == 0, out
-        # Create ADR (expensive — do once)
-        code, out = _invoke(["plan", "create", "0.1.0", "--kind", "feature"])
-        assert code == 0, out
-        # Seed OBPI and snapshot the ledger
-        ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-        ledger.append(obpi_created_event("OBPI-0.1.0-01", "ADR-0.1.0"))
-        cls._base_ledger = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
-
     def setUp(self) -> None:
-        # Restore ledger to base state so tests are isolated
-        Path(".gzkit/ledger.jsonl").write_text(self._base_ledger, encoding="utf-8")
-
-    @classmethod
-    def tearDownClass(cls) -> None:
         import os
 
-        os.chdir(cls._orig_cwd)
-        cls._tmp_ctx.cleanup()
+        assert _module_workspace is not None
+        if Path.cwd() != _module_workspace:
+            os.chdir(_module_workspace)
+        Path(".gzkit/ledger.jsonl").write_text(_module_base_ledger, encoding="utf-8")
 
     def _seed_task_started(self, task_id: str = "TASK-0.1.0-01-01-01") -> None:
         """Emit a task_started event so the task is in_progress."""
