@@ -2,6 +2,7 @@
 
 import json
 import unittest
+from unittest.mock import patch
 
 from gzkit.cli.main import main
 from tests.commands.common import CliRunner
@@ -15,13 +16,30 @@ class TestCliAuditCrossCoverage(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
+        # ``gz cli audit`` runs the full cross-coverage scanner every time
+        # and is ~1.5s per invocation. Share the expensive scanner call
+        # across both JSON and human renderings so setUp pays the scan
+        # once instead of twice (GHI #253).
         runner = CliRunner()
-        # Run JSON audit once, share across all JSON tests
-        json_result = runner.invoke(main, ["cli", "audit", "--json"])
-        cls._json_data = json.loads(json_result.output)
-        # Run human audit once
-        human_result = runner.invoke(main, ["cli", "audit"])
-        cls._human_output = human_result.output
+        from gzkit.doc_coverage.scanner import check_surfaces_report  # noqa: PLC0415
+
+        original = check_surfaces_report
+
+        cached_report: dict[str, object] = {}
+
+        def _cached_scanner(project_root, *args, **kwargs):
+            if "report" not in cached_report:
+                cached_report["report"] = original(project_root, *args, **kwargs)
+            return cached_report["report"]
+
+        with patch(
+            "gzkit.doc_coverage.scanner.check_surfaces_report",
+            side_effect=_cached_scanner,
+        ):
+            json_result = runner.invoke(main, ["cli", "audit", "--json"])
+            cls._json_data = json.loads(json_result.output)
+            human_result = runner.invoke(main, ["cli", "audit"])
+            cls._human_output = human_result.output
 
     def test_cli_audit_json_includes_cross_coverage(self) -> None:
         """JSON output must include a cross_coverage key with CoverageReport shape."""
