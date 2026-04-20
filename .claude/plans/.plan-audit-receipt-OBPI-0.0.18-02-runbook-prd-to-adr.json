@@ -1,0 +1,250 @@
+{
+  "obpi_id": "OBPI-0.0.18-02-runbook-prd-to-adr",
+  "timestamp": "2026-04-20T10:01:04.776093+00:00",
+  "verdict": "PASS",
+  "plan_file": "tranquil-stirring-pinwheel.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.39.0",
+      "sibling_obpi": "OBPI-0.39.0-06-migration-tooling",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.41.0",
+      "sibling_obpi": "OBPI-0.41.0-04-tdd-runbook-and-manpage",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.23.0",
+      "sibling_obpi": "OBPI-0.23.0-03-reviewer-agent",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.3.0",
+      "sibling_obpi": "OBPI-0.3.0-05-parity-scan-path-hardening",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.3.0",
+      "sibling_obpi": "OBPI-0.3.0-02-divergent-skill-reconciliation",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-33-arb-analysis-pattern",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.18.0",
+      "sibling_obpi": "OBPI-0.18.0-08-wire-req-verification-dispatch",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.18.0",
+      "sibling_obpi": "OBPI-0.18.0-06-wire-implementer-dispatch",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.18.0",
+      "sibling_obpi": "OBPI-0.18.0-05-pipeline-runtime-integration",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.18.0",
+      "sibling_obpi": "OBPI-0.18.0-07-wire-two-stage-review",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.24.0",
+      "sibling_obpi": "OBPI-0.24.0-01-documentation-taxonomy",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.24.0",
+      "sibling_obpi": "OBPI-0.24.0-04-runbook-skill-entries",
+      "contested_paths": [
+        "docs/user/runbook.md",
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.20.0",
+      "sibling_obpi": "OBPI-0.20.0-05-advisory-gate-integration",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.13.0",
+      "sibling_obpi": "OBPI-0.13.0-01-runtime-command-contract",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.13.0",
+      "sibling_obpi": "OBPI-0.13.0-05-runtime-engine-integration",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.21.0",
+      "sibling_obpi": "OBPI-0.21.0-05-operator-docs-and-migration",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.17",
+      "sibling_obpi": "OBPI-0.0.17-06-agents-md-correction",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.8",
+      "sibling_obpi": "OBPI-0.0.8-08-operator-docs",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.9",
+      "sibling_obpi": "OBPI-0.0.9-06-marker-migration-path",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.9",
+      "sibling_obpi": "OBPI-0.0.9-03-state-repair-command",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.9",
+      "sibling_obpi": "OBPI-0.0.9-01-three-layer-model-documentation",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.14",
+      "sibling_obpi": "OBPI-0.0.14-03-pipeline-skill-migration",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.19",
+      "sibling_obpi": "OBPI-0.0.19-05-docs-bdd-closeout",
+      "contested_paths": [
+        "docs/user/runbook.md",
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.10",
+      "sibling_obpi": "OBPI-0.0.10-01-three-tier-model-and-pool-archive",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.10",
+      "sibling_obpi": "OBPI-0.0.10-03-storage-catalog-and-escalation-governance",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.10",
+      "sibling_obpi": "OBPI-0.0.10-04-git-clone-recovery",
+      "contested_paths": [
+        "docs/user/runbook.md",
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.10",
+      "sibling_obpi": "OBPI-0.0.10-02-identity-surfaces",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.13",
+      "sibling_obpi": "OBPI-0.0.13-03-manifest-schema-persona-sync",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.13",
+      "sibling_obpi": "OBPI-0.0.13-06-cross-project-validation",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.11",
+      "sibling_obpi": "OBPI-0.0.11-01-persona-research-synthesis",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.11",
+      "sibling_obpi": "OBPI-0.0.11-02-persona-control-surface-definition",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.11",
+      "sibling_obpi": "OBPI-0.0.11-05-supersede-pool-persona-context",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.11",
+      "sibling_obpi": "OBPI-0.0.11-04-agents-md-persona-section",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.11",
+      "sibling_obpi": "OBPI-0.0.11-03-trait-composition-model",
+      "contested_paths": [
+        "docs/governance/governance_runbook.md"
+      ]
+    }
+  ]
+}
