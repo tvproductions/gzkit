@@ -522,6 +522,109 @@ Use [`/gz-check`](skills/gz-check.md) to run all quality checks in one pass, or 
 
 ---
 
+## PRD → ADR Derivation
+
+Given a PRD and a Constitution, how do you decide which ADRs to write, what
+kind each one should be, and what to defer into the pool? The PRD names goals
+and invariants; the Constitution names the rails those goals run on; ADRs are
+the decisions that translate those into concrete architecture. Three kinds
+exist — [foundation](concepts/adr-taxonomy.md#foundation),
+[feature](concepts/adr-taxonomy.md#feature), and
+[pool](concepts/adr-taxonomy.md#pool) — and the heuristic below routes each
+decision to the right kind. See
+[`docs/user/concepts/adr-taxonomy.md`](concepts/adr-taxonomy.md) for the
+canonical definitions, the kind-versus-lane orthogonality, and the kind /
+semver binding.
+
+### Heuristic
+
+| Question you can answer "yes" to | Kind | Semver |
+|----------------------------------|------|--------|
+| Does this decision shape what the app **is** — an identity-shaping invariant or load-bearing semantic that later work will rely on? | **foundation** | `0.0.x` |
+| Does this decision ship a **named capability** to users (a command, a ceremony, a surface they can point at)? | **feature** | `0.y.z` and up |
+| Is this decision **visible but not yet committed** — sponsor unknown, acceptance criteria unclear, dependencies unresolved? | **pool** | (no semver) |
+
+Kind is independent of lane. Any kind can be Lite or Heavy — that axis tracks
+external-contract exposure, not decision character. A foundation ADR that
+codifies an app invariant is Lite when it touches no external contract, and
+Heavy when it reshapes one. See the
+[kind / lane orthogonality table](concepts/adr-taxonomy.md#kind-lane-orthogonality)
+for the full matrix.
+
+### Worked example: PRD-GZKIT-1.0.0
+
+Take three goals from [`docs/design/prd/PRD-GZKIT-1.0.0.md`](../design/prd/PRD-GZKIT-1.0.0.md)
+and run them through the heuristic:
+
+- **"Support Lite (Gates 1-2) and Heavy (Gates 1-5) lanes"** — the Gate model
+  and the state tiers that feed it shape what gzkit *is* as a governance
+  tool; every ADR downstream inherits the distinction. This is a **foundation**
+  concern, landed in
+  [`ADR-0.0.9-state-doctrine-source-of-truth`](../design/adr/foundation/ADR-0.0.9-state-doctrine-source-of-truth/ADR-0.0.9-state-doctrine-source-of-truth.md)
+  at semver `0.0.9` — no release-versioning impact, but feature work across
+  the system depends on the invariant it names.
+- **"Scaffold and validate governance artifacts"** — this is a named capability
+  shipping to users. The GHI-driven patch release ceremony (`uv run gz patch
+  release --full`) is a **feature** ADR, landed in
+  [`ADR-0.0.15-ghi-driven-patch-release-ceremony`](../design/adr/foundation/ADR-0.0.15-ghi-driven-patch-release-ceremony/ADR-0.0.15-ghi-driven-patch-release-ceremony.md).
+  Note: the `ADR-0.0.15` identifier uses foundation-range semver only because
+  this ceremony landed pre-1.0 without forcing a minor bump; the frontmatter
+  `kind:` field is the canonical signal, not the semver range alone.
+  Post-1.0, a capability like this would bind to a non-`0.0.x` feature range.
+- **"AI runtime foundations for future agent control"** — the concern is
+  visible (future agent runtime needs governance surfaces) but the shape,
+  owner, and acceptance are not. This is a **pool** entry,
+  [`ADR-pool.ai-runtime-foundations`](../design/adr/pool/ADR-pool.ai-runtime-foundations.md),
+  documented intent awaiting a sponsor who will attest completion. An
+  operator reading the pool entry alone knows the concern exists without
+  being forced to commit to a shape.
+
+An adopter reading the three entries above should be able to trace the
+decomposition from the PRD alone: each goal has a home, each home has a
+named kind, each kind carries a semver expectation. If the trace breaks —
+you cannot point to the ADR that grounds a PRD goal, or the ADR's kind
+does not match the goal's character — the decomposition is incomplete.
+
+### Anti-pattern: foundation-first, features-on-top
+
+Foundation ADRs should not be created defensively or speculatively to
+"establish the layer." A foundation ADR earns its place by naming an
+invariant that actual feature or pool work needs to rely on. If nothing
+downstream consults the invariant you are about to codify, you do not have
+a foundation decision — you have a preference.
+
+Foundation-first drift produces ADRs that declare invariants nobody
+violates and that no feature consults. The cost compounds: every adopter
+reading the foundation layer parses decisions that never shaped anything
+downstream, and the doctrine surface grows faster than the intent beneath
+it. Write foundation ADRs when the feature or pool layer forces one — not
+before.
+
+The inverse is not a virtue either: shipping a feature that tacitly
+depends on an unstated invariant is a foundation ADR you failed to author.
+When a feature ADR's Consequences section keeps reaching for "this assumes
+X" without a foundation ADR to point at, X is the foundation decision that
+wants to be named.
+
+### The pool's role
+
+The [pool](concepts/adr-taxonomy.md#pool) is the answer to "I can see the
+concern but I can't commit to it yet." Pooling is cheap; promotion is
+deliberate. Not every pool entry will be promoted, and that is fine — a
+pool entry that sat for a year is documented intent that had not yet
+earned promotion. It is not a defect; it is the system behaving as
+intended.
+
+Pool promotion criteria, retirement criteria, and curation cadence are
+authored separately in the forthcoming pool curation policy (at
+`docs/governance/pool-curation.md`, authored under OBPI-0.0.18-03). The
+short version: promotion requires a sponsor (an operator willing to attest
+completion), clear acceptance criteria, and no dependency on unresolved
+foundation ADRs. Pool entries that cannot meet those criteria stay in the
+pool — which is the point of having a pool.
+
+---
+
 ## Governance Planning Commands
 
 Skill shortcuts for governance planning — these provide guided workflows beyond the raw CLI:
