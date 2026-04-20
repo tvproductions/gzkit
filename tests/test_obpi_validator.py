@@ -53,17 +53,12 @@ class TestObpiValidator(unittest.TestCase):
         ledger.append(project_init_event("test-project", "lite"))
 
         subprocess.run(["git", "init", "-b", "main"], cwd=root, check=True, capture_output=True)
-        subprocess.run(
-            ["git", "config", "user.email", "test@example.com"],
-            cwd=root,
-            check=True,
-            capture_output=True,
-        )
-        subprocess.run(
-            ["git", "config", "user.name", "Test User"],
-            cwd=root,
-            check=True,
-            capture_output=True,
+        # Append the [user] section directly instead of ``git config`` x2.
+        config_path = root / ".git" / "config"
+        config_path.write_text(
+            config_path.read_text(encoding="utf-8")
+            + "[user]\n\tname = Test User\n\temail = test@example.com\n",
+            encoding="utf-8",
         )
         subprocess.run(["git", "add", "-A"], cwd=root, check=True, capture_output=True)
         subprocess.run(
