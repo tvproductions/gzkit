@@ -172,6 +172,13 @@ def _diff_against_expected(
     expected: dict[Path, bytes],
 ) -> list[ValidationError]:
     """Produce drift errors comparing ``current_snapshot`` against ``expected``."""
+    # Normalize every path to resolved form so set intersections and relative_to
+    # work across macOS /var ↔ /private/var symlink mismatches (expected may
+    # have been snapshotted from an unresolved path by the caller).
+    project_root = project_root.resolve()
+    current_snapshot = {p.resolve(): b for p, b in current_snapshot.items()}
+    current_files = {p.resolve() for p in current_files}
+    expected = {p.resolve(): b for p, b in expected.items()}
     errors: list[ValidationError] = []
     expected_paths = set(expected)
 
@@ -241,6 +248,11 @@ def check_sync_parity(
     — tests, repeated audits — that drive many comparisons against the
     same canonical state and want to pay the sync cost once.
     """
+    # Resolve to canonical form so Path.relative_to(project_root) works on
+    # macOS where /var is a symlink to /private/var: _collect_files walks a
+    # resolved tree while Path.cwd() can hand back the unresolved prefix.
+    project_root = project_root.resolve()
+
     if config is None and expected is None:
         config = GzkitConfig.load(project_root / ".gzkit.json")
 

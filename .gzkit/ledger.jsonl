@@ -3499,3 +3499,4 @@
 {"schema":"gzkit.ledger.v1","event":"gate_checked","id":"ADR-0.0.17-adr-taxonomy-mechanical","ts":"2026-04-20T00:39:27.471097+00:00","gate":4,"status":"pass","command":"uv run -m behave features/","returncode":0}
 {"schema":"gzkit.ledger.v1","event":"attested","id":"ADR-0.0.17-adr-taxonomy-mechanical","ts":"2026-04-20T00:39:27.482394+00:00","status":"completed","by":"Jeffry Babb"}
 {"schema":"gzkit.ledger.v1","event":"lifecycle_transition","id":"ADR-0.0.17-adr-taxonomy-mechanical","ts":"2026-04-20T00:39:27.482750+00:00","content_type":"adr","from_state":"Proposed","to_state":"Completed"}
+{"schema":"gzkit.ledger.v1","event":"patch-release","id":"v0.25.13","ts":"2026-04-20T02:42:49.161246+00:00","version":"0.25.13","previous_version":"0.25.12","tag":"v0.25.12","ghi_summary":[],"manifest_path":"docs/releases/PATCH-v0.25.13.md"}
