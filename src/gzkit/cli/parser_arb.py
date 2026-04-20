@@ -13,6 +13,19 @@ from typing import Any
 
 from gzkit.cli.helpers import add_json_flag, build_epilog
 
+# Lazy handler manifest used by doc-coverage scanner to resolve docstrings.
+# Map each arb_*_cmd handler to its source module.
+_LAZY_HANDLERS: dict[str, str] = {
+    "arb_ruff_cmd": "gzkit.commands.arb",
+    "arb_step_cmd": "gzkit.commands.arb",
+    "arb_ty_cmd": "gzkit.commands.arb",
+    "arb_typecheck_cmd": "gzkit.commands.arb",
+    "arb_coverage_cmd": "gzkit.commands.arb",
+    "arb_validate_cmd": "gzkit.commands.arb",
+    "arb_advise_cmd": "gzkit.commands.arb",
+    "arb_patterns_cmd": "gzkit.commands.arb",
+}
+
 
 def _arb(name: str) -> Any:
     """Resolve an ``arb_*_cmd`` handler lazily so ``gz --help`` stays fast."""

@@ -188,3 +188,45 @@ Validated: surfaces, documents
 
 ✓ All validations passed (2 scopes).
 ```
+## 2026-04-19T19:58:28-05:00
+- Status: PASS
+- Chore: repository-structure-normalization
+- Title: Repository Structure Normalization
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uv run -m unittest -q` => rc=0 (52.18s) -- exit 0 == 0
+  - [PASS] `uv run gz validate --documents --surfaces` => rc=0 (1.13s) -- exit 0 == 0
+
+```text
+[uv run -m unittest -q] stderr:
+----------------------------------------------------------------------
+Ran 3243 tests in 51.377s
+
+OK (skipped=1)
+[uv run gz validate --documents --surfaces] stdout:
+Validated: surfaces, documents
+
+✓ All validations passed (2 scopes).
+```
+## 2026-04-19T21:11:08-05:00
+- Status: PASS
+- Chore: repository-structure-normalization
+- Title: Repository Structure Normalization
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uv run -m unittest -q` => rc=0 (51.91s) -- exit 0 == 0
+  - [PASS] `uv run gz validate --documents --surfaces` => rc=0 (1.12s) -- exit 0 == 0
+
+```text
+[uv run -m unittest -q] stderr:
+----------------------------------------------------------------------
+Ran 3243 tests in 51.124s
+
+OK (skipped=1)
+[uv run gz validate --documents --surfaces] stdout:
+Validated: surfaces, documents
+
+✓ All validations passed (2 scopes).
+```

@@ -182,3 +182,57 @@ Ran 2359 tests in 33.738s
 
 OK
 ```
+## 2026-04-19T19:47:04-05:00
+- Status: FAIL
+- Chore: complexity-reduction-xenon
+- Title: Complexity Reduction (Xenon C/C/C)
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uv run -m unittest -q` => rc=0 (52.10s) -- exit 0 == 0
+  - [FAIL] `uvx xenon --max-absolute C --max-modules C --max-average C src/` => rc=1 (1.90s) -- exit 1 != 0
+
+```text
+[uv run -m unittest -q] stderr:
+----------------------------------------------------------------------
+Ran 3243 tests in 51.287s
+
+OK (skipped=1)
+[uvx xenon --max-absolute C --max-modules C --max-average C src/] stderr:
+Installed 11 packages in 59ms
+ERROR:xenon:block "src\gzkit\commands\plan.py:47 plan_cmd" has a rank of D
+```
+## 2026-04-19T20:41:45-05:00
+- Status: PASS
+- Chore: complexity-reduction-xenon
+- Title: Complexity Reduction (Xenon C/C/C)
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uv run -m unittest -q` => rc=0 (50.78s) -- exit 0 == 0
+  - [PASS] `uvx xenon --max-absolute C --max-modules C --max-average C src/` => rc=0 (0.81s) -- exit 0 == 0
+
+```text
+[uv run -m unittest -q] stderr:
+----------------------------------------------------------------------
+Ran 3243 tests in 49.970s
+
+OK (skipped=1)
+```
+## 2026-04-19T20:59:17-05:00
+- Status: PASS
+- Chore: complexity-reduction-xenon
+- Title: Complexity Reduction (Xenon C/C/C)
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uv run -m unittest -q` => rc=0 (52.53s) -- exit 0 == 0
+  - [PASS] `uvx xenon --max-absolute C --max-modules C --max-average C src/` => rc=0 (0.86s) -- exit 0 == 0
+
+```text
+[uv run -m unittest -q] stderr:
+----------------------------------------------------------------------
+Ran 3243 tests in 51.706s
+
+OK (skipped=1)
+```

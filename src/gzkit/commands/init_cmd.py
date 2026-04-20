@@ -506,10 +506,10 @@ def init(mode: str, force: bool, dry_run: bool, *, no_skeleton: bool = False) ->
 
 
 def _canonicalize_prd_id(name: str) -> tuple[str, str]:
-    """Normalize a user-supplied PRD name to the canonical ``PRD-<UPPER>-<semver>`` form.
+    r"""Normalize a user-supplied PRD name to the canonical ``PRD-<UPPER>-<semver>`` form.
 
     The validator schema at ``src/gzkit/schemas/prd.json`` requires
-    ``^PRD-[A-Z0-9]+-[0-9]+\\.[0-9]+\\.[0-9]+$``. This function guarantees the
+    ``^PRD-[A-Z0-9]+-[0-9]+\.[0-9]+\.[0-9]+$``. This function guarantees the
     scaffolder and validator agree on the id format (GHI #186).
 
     Returns ``(prd_id, semver)``.
@@ -564,10 +564,10 @@ def prd(name: str, title: str | None, dry_run: bool) -> None:
 
 
 def _canonicalize_constitution_id(name: str) -> tuple[str, str]:
-    """Normalize a user-supplied constitution name to ``CONSTITUTION-<UPPER>-<semver>``.
+    r"""Normalize a user-supplied constitution name to ``CONSTITUTION-<UPPER>-<semver>``.
 
     The validator schema at ``src/gzkit/schemas/constitution.json`` requires
-    ``^CONSTITUTION-[A-Z0-9]+-[0-9]+\\.[0-9]+\\.[0-9]+$``. This function guarantees
+    ``^CONSTITUTION-[A-Z0-9]+-[0-9]+\.[0-9]+\.[0-9]+$``. This function guarantees
     the scaffolder and validator agree on id format (GHI #216 / GZKIT-BOOTSTRAP-008).
 
     Returns ``(constitution_id, semver)``.

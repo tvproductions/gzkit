@@ -44,6 +44,142 @@ def _render_pool_adr(*, name: str, title: str, parent: str, lane: str) -> tuple[
     return slug, "pool", content
 
 
+def _validate_kind_and_semver(kind: str | None, semver: str, adrs_root: Path) -> None:
+    """Enforce --kind required + kind/semver consistency. Exit 1 on violation.
+
+    Covers REQ-0.0.17-02-01 (kind required), -02/-03/-06 (kind/semver binding).
+    """
+    if kind is None:
+        console.print("[red]ERROR:[/red] --kind is required. Choose one of:")
+        console.print("  [bold]foundation[/bold] — infrastructure ADR; requires --semver 0.0.x")
+        console.print(
+            "  [bold]feature[/bold]    — release-carrying end-user capability; "
+            "requires --semver NOT matching 0.0.x"
+        )
+        console.print("  [bold]pool[/bold]       — backlog ADR; no semver required")
+        sys.exit(1)
+
+    if kind == "foundation" and not _FOUNDATION_SEMVER_RE.match(semver):
+        next_available = _next_available_foundation_semver(adrs_root / "foundation")
+        console.print(
+            f"[red]ERROR:[/red] --kind foundation requires --semver matching 0.0.x "
+            f"(got {semver!r}). Next available foundation semver: "
+            f"[bold]{next_available}[/bold]."
+        )
+        sys.exit(1)
+    if kind == "feature" and _FOUNDATION_SEMVER_RE.match(semver):
+        console.print(
+            f"[red]ERROR:[/red] --kind feature rejects 0.0.x semver (got {semver!r}). "
+            "Feature ADRs carry release-carrying semver (0.y.z and up). "
+            "If this is infrastructure work, use --kind foundation; "
+            "if it is a backlog item, use --kind pool."
+        )
+        sys.exit(1)
+
+
+def _build_scorecard_and_checklist(
+    *,
+    lane: str,
+    semver: str,
+    score_data_state: int | None,
+    score_logic_engine: int | None,
+    score_interface: int | None,
+    score_observability: int | None,
+    score_lineage: int | None,
+    split_single_narrative: bool,
+    split_surface_boundary: bool,
+    split_state_anchor: bool,
+    split_testability_ceiling: bool,
+    baseline_selected: int | None,
+) -> tuple[object, str]:
+    """Compute the scorecard from CLI flags, defaulting any score left as None."""
+    defaults = default_dimension_scores(lane, semver)
+    scorecard = compute_scorecard(
+        data_state=(defaults["data_state"] if score_data_state is None else score_data_state),
+        logic_engine=(
+            defaults["logic_engine"] if score_logic_engine is None else score_logic_engine
+        ),
+        interface=defaults["interface"] if score_interface is None else score_interface,
+        observability=(
+            defaults["observability"] if score_observability is None else score_observability
+        ),
+        lineage=defaults["lineage"] if score_lineage is None else score_lineage,
+        split_single_narrative=1 if split_single_narrative else 0,
+        split_surface_boundary=1 if split_surface_boundary else 0,
+        split_state_anchor=1 if split_state_anchor else 0,
+        split_testability_ceiling=1 if split_testability_ceiling else 0,
+        baseline_selected=baseline_selected,
+    )
+    checklist_seed = build_checklist_seed(semver, scorecard.final_target_obpi_count)
+    return scorecard, checklist_seed
+
+
+def _render_adr_by_kind(
+    *,
+    kind: str,
+    name: str,
+    adr_title: str,
+    semver: str,
+    lane: str,
+    canonical_parent: str,
+    scorecard: object,
+    checklist_seed: str,
+    adrs_root: Path,
+) -> tuple[str, Path]:
+    """Render the ADR markdown and resolve its on-disk path. Returns (adr_id, adr_file)."""
+    if kind == "pool":
+        adr_id, rel_dir, content = _render_pool_adr(
+            name=name, title=adr_title, parent=canonical_parent, lane=lane
+        )
+        adr_dir = adrs_root / rel_dir
+    else:
+        adr_id = f"ADR-{semver}" if not name.startswith("ADR-") else name
+        content = render_template(
+            "adr",
+            id=adr_id,
+            title=adr_title,
+            semver=semver,
+            lane=lane,
+            parent=canonical_parent,
+            kind=kind,
+            status="Draft",
+            date=date.today().isoformat(),
+            decomposition_scorecard=scorecard.to_markdown(),  # ty: ignore[unresolved-attribute]
+            checklist=checklist_seed,
+        )
+        sub = "foundation" if kind == "foundation" else "pre-release"
+        adr_dir = adrs_root / sub / adr_id
+
+    adr_file = adr_dir / f"{adr_id}.md"
+    adr_dir.mkdir(parents=True, exist_ok=True)
+    adr_file.write_text(content, encoding="utf-8")
+    return adr_id, adr_file
+
+
+def _register_adr_in_ledger(
+    *, adr_id: str, canonical_parent: str, lane: str, adr_file: Path, ledger_path: Path
+) -> None:
+    """Append adr_created event and verify registration. Exit 2 on failure."""
+    ledger = Ledger(ledger_path)
+    try:
+        ledger.append(adr_created_event(adr_id, canonical_parent, lane))
+    except OSError as exc:
+        console.print(
+            f"[red]ERROR:[/red] ADR file created at {adr_file} but ledger write failed: {exc}"
+        )
+        console.print("Run [bold]gz register-adrs --all[/bold] to recover.")
+        sys.exit(2)
+
+    graph = ledger.get_artifact_graph()
+    if adr_id in graph:
+        return
+    if ledger.canonicalize_id(adr_id) in graph:
+        return
+    console.print(f"[yellow]WARNING:[/yellow] ADR file written but {adr_id} not found in ledger.")
+    console.print("Run [bold]gz register-adrs --all[/bold] to recover.")
+    sys.exit(2)
+
+
 def plan_cmd(
     name: str,
     parent_obpi: str | None,
@@ -68,124 +204,80 @@ def plan_cmd(
     project_root = get_project_root()
     adrs_root = project_root / config.paths.adrs
 
-    # REQ-0.0.17-02-01 — --kind is required; name both criteria in the error.
-    if kind is None:
-        console.print("[red]ERROR:[/red] --kind is required. Choose one of:")
-        console.print("  [bold]foundation[/bold] — infrastructure ADR; requires --semver 0.0.x")
-        console.print(
-            "  [bold]feature[/bold]    — release-carrying end-user capability; "
-            "requires --semver NOT matching 0.0.x"
-        )
-        console.print("  [bold]pool[/bold]       — backlog ADR; no semver required")
-        sys.exit(1)
-
-    # REQ-0.0.17-02-02, -03, -06 — validate kind/semver BEFORE any render/write.
-    if kind == "foundation" and not _FOUNDATION_SEMVER_RE.match(semver):
-        next_available = _next_available_foundation_semver(adrs_root / "foundation")
-        console.print(
-            f"[red]ERROR:[/red] --kind foundation requires --semver matching 0.0.x "
-            f"(got {semver!r}). Next available foundation semver: "
-            f"[bold]{next_available}[/bold]."
-        )
-        sys.exit(1)
-    if kind == "feature" and _FOUNDATION_SEMVER_RE.match(semver):
-        console.print(
-            f"[red]ERROR:[/red] --kind feature rejects 0.0.x semver (got {semver!r}). "
-            "Feature ADRs carry release-carrying semver (0.y.z and up). "
-            "If this is infrastructure work, use --kind foundation; "
-            "if it is a backlog item, use --kind pool."
-        )
-        sys.exit(1)
+    _validate_kind_and_semver(kind, semver, adrs_root)
+    # After _validate_kind_and_semver, kind is guaranteed non-None.
+    assert kind is not None
 
     adr_title = title or name.replace("-", " ").title()
 
-    # GHI #222: canonicalize a short-form ADR parent to its registered long form.
     canonical_parent = parent_obpi or ""
     if canonical_parent:
         ledger_for_resolve = Ledger(project_root / config.paths.ledger)
         canonical_parent = ledger_for_resolve.resolve_artifact_id(canonical_parent)
 
-    # Compute scorecard/checklist for all kinds (pool still benefits from the seed).
-    default_scores = default_dimension_scores(lane, semver)
-    scorecard = compute_scorecard(
-        data_state=(default_scores["data_state"] if score_data_state is None else score_data_state),
-        logic_engine=(
-            default_scores["logic_engine"] if score_logic_engine is None else score_logic_engine
-        ),
-        interface=default_scores["interface"] if score_interface is None else score_interface,
-        observability=(
-            default_scores["observability"] if score_observability is None else score_observability
-        ),
-        lineage=default_scores["lineage"] if score_lineage is None else score_lineage,
-        split_single_narrative=1 if split_single_narrative else 0,
-        split_surface_boundary=1 if split_surface_boundary else 0,
-        split_state_anchor=1 if split_state_anchor else 0,
-        split_testability_ceiling=1 if split_testability_ceiling else 0,
+    scorecard, checklist_seed = _build_scorecard_and_checklist(
+        lane=lane,
+        semver=semver,
+        score_data_state=score_data_state,
+        score_logic_engine=score_logic_engine,
+        score_interface=score_interface,
+        score_observability=score_observability,
+        score_lineage=score_lineage,
+        split_single_narrative=split_single_narrative,
+        split_surface_boundary=split_surface_boundary,
+        split_state_anchor=split_state_anchor,
+        split_testability_ceiling=split_testability_ceiling,
         baseline_selected=baseline_selected,
     )
-    checklist_seed = build_checklist_seed(semver, scorecard.final_target_obpi_count)
-
-    # REQ-0.0.17-02-04, -05, -07 — render + route by kind.
-    if kind == "pool":
-        adr_id, rel_dir, content = _render_pool_adr(
-            name=name, title=adr_title, parent=canonical_parent, lane=lane
-        )
-        adr_dir = adrs_root / rel_dir
-        adr_file = adr_dir / f"{adr_id}.md"
-    else:
-        adr_id = f"ADR-{semver}" if not name.startswith("ADR-") else name
-        content = render_template(
-            "adr",
-            id=adr_id,
-            title=adr_title,
-            semver=semver,
-            lane=lane,
-            parent=canonical_parent,
-            kind=kind,
-            status="Draft",
-            date=date.today().isoformat(),
-            decomposition_scorecard=scorecard.to_markdown(),
-            checklist=checklist_seed,
-        )
-        sub = "foundation" if kind == "foundation" else "pre-release"
-        adr_dir = adrs_root / sub / adr_id
-        adr_file = adr_dir / f"{adr_id}.md"
 
     if dry_run:
+        if kind == "pool":
+            sub = "pool"
+        elif kind == "foundation":
+            sub = "foundation"
+        else:
+            sub = "pre-release"
+        adr_id_preview = (
+            (name if name.startswith("ADR-pool.") else f"ADR-pool.{name}")
+            if kind == "pool"
+            else (f"ADR-{semver}" if not name.startswith("ADR-") else name)
+        )
+        adr_file_preview = (
+            adrs_root
+            / sub
+            / (
+                f"{adr_id_preview}.md"
+                if kind == "pool"
+                else f"{adr_id_preview}/{adr_id_preview}.md"
+            )
+        )
         console.print("[yellow]Dry run:[/yellow] no files will be written.")
-        console.print(f"  Would create ADR: {adr_file}")
+        console.print(f"  Would create ADR: {adr_file_preview}")
         if kind != "pool":
-            console.print(f"  Would append ledger event: adr_created ({adr_id})")
+            console.print(f"  Would append ledger event: adr_created ({adr_id_preview})")
         return
 
-    adr_dir.mkdir(parents=True, exist_ok=True)
-    adr_file.write_text(content, encoding="utf-8")
+    adr_id, adr_file = _render_adr_by_kind(
+        kind=kind,
+        name=name,
+        adr_title=adr_title,
+        semver=semver,
+        lane=lane,
+        canonical_parent=canonical_parent,
+        scorecard=scorecard,
+        checklist_seed=checklist_seed,
+        adrs_root=adrs_root,
+    )
 
-    # Pool ADRs are backlog items — they are not registered in the ledger's ADR
-    # graph until promotion via `gz adr promote` (OBPI-0.0.17-03).
     if kind == "pool":
         console.print(f"Created pool ADR: {adr_file}")
         return
 
-    ledger = Ledger(project_root / config.paths.ledger)
-    try:
-        ledger.append(adr_created_event(adr_id, canonical_parent, lane))
-    except OSError as exc:
-        console.print(
-            f"[red]ERROR:[/red] ADR file created at {adr_file} but ledger write failed: {exc}"
-        )
-        console.print("Run [bold]gz register-adrs --all[/bold] to recover.")
-        sys.exit(2)
-
-    # Verify registration — catch silent ledger corruption
-    graph = ledger.get_artifact_graph()
-    if adr_id not in graph:
-        canonical = ledger.canonicalize_id(adr_id)
-        if canonical not in graph:
-            console.print(
-                f"[yellow]WARNING:[/yellow] ADR file written but {adr_id} not found in ledger."
-            )
-            console.print("Run [bold]gz register-adrs --all[/bold] to recover.")
-            sys.exit(2)
-
+    _register_adr_in_ledger(
+        adr_id=adr_id,
+        canonical_parent=canonical_parent,
+        lane=lane,
+        adr_file=adr_file,
+        ledger_path=project_root / config.paths.ledger,
+    )
     console.print(f"Created ADR: {adr_file}")

@@ -162,6 +162,7 @@ def run_ruff_via_arb(
 
     Returns:
         Tuple of (exit_status, receipt_path).
+
     """
     targets = paths or ["."]
     cmd = ["ruff", "check", *targets, "--output-format", "json"]

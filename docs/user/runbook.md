@@ -135,7 +135,10 @@ uv run gz arb ruff src tests
 uv run gz arb typecheck
 uv run gz arb step --name unittest -- uv run -m unittest -q
 uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
+uv run gz arb coverage run -m unittest discover -s tests -t .
 uv run gz arb validate --limit 20
+uv run gz arb advise --limit 10       # optional: review frequent-rule advice
+uv run gz arb patterns --compact      # optional: scan for recurring anti-patterns
 
 # 5) Complete OBPI atomically (attestation + brief + receipt in one transaction)
 #    Cite the ARB receipt IDs from step 4b in --attestation-text per

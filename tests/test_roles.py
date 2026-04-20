@@ -268,7 +268,7 @@ class TestModelImmutability(unittest.TestCase):
     def test_role_definition_is_frozen(self) -> None:
         role = get_role("Implementer")
         with self.assertRaises(ValidationError):
-            role.name = "Hacker"  # type: ignore[misc]
+            role.name = "Hacker"  # ty: ignore[invalid-assignment]
 
     def test_handoff_result_is_frozen(self) -> None:
         result = HandoffResult(status=HandoffStatus.DONE)

@@ -150,9 +150,7 @@ def run_backfill(
             continue
         if not dry_run:
             adr.write_text(mod["new_text"], encoding="utf-8")
-        modifications.append(
-            {"path": mod["path"], "kind": mod["kind"], "semver": mod["semver"]}
-        )
+        modifications.append({"path": mod["path"], "kind": mod["kind"], "semver": mod["semver"]})
 
     receipt: dict[str, Any] = {
         "timestamp": timestamp,

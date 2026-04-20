@@ -176,3 +176,127 @@ Ran 2359 tests in 33.765s
 
 OK
 ```
+## 2026-04-19T19:53:12-05:00
+- Status: FAIL
+- Chore: hardcoded-root-eradication
+- Title: Config-First Enforcement (Anti-Vibe-Code)
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `grep -rn "Path(__file__).*parents" src/gzkit/eval/` => rc=1 (0.03s) -- output clean of 'parents'
+  - [PASS] `grep -rn "Path(__file__).*parents" src/gzkit/hooks/` => rc=1 (0.06s) -- output clean of 'parents'
+  - [PASS] `uv run gz lint` => rc=0 (0.72s) -- exit 0 == 0
+  - [FAIL] `uv run gz check-config-paths` => rc=1 (0.51s) -- exit 1 != 0
+
+```text
+[uv run gz lint] stdout:
+Running linters...
+All checks passed!
+
+ADR path contract check passed.
+No Path(__file__).parents[N] violations found.
+Lint passed.
+[uv run gz check-config-paths] stdout:
+Config-path audit failed.
+[uv run gz check-config-paths] stderr:
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\Jeff\source\repos\va\gzkit\.venv\Scripts\gz.exe\__main__.py", line 10, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "C:\Users\Jeff\source\repos\va\gzkit\src\gzkit\cli\main.py", line 166, in main
+    console.print(f"[red]Unexpected error: {exc}[/red]")
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Jeff\source\repos\va\gzkit\.venv\Lib\site-packages\rich\console.py", line 1698, in print
+    renderables = self._collect_renderables(
+        objects,
+    ...<5 lines>...
+        highlight=highlight,
+    )
+  File "C:\Users\Jeff\source\repos\va\gzkit\.venv\Lib\site-packages\rich\console.py", line 1558, in _collect_renderables
+    self.render_str(
+    ~~~~~~~~~~~~~~~^
+        renderable,
+        ^^^^^^^^^^^
+    ...<3 lines>...
+        highlighter=_highlighter,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Jeff\source\repos\va\gzkit\.venv\Lib\site-packages\rich\console.py", line 1448, in render_str
+    rich_text = render_markup(
+        text,
+    ...<2 lines>...
+        emoji_variant=self._emoji_variant,
+    )
+  File "C:\Users\Jeff\source\repos\va\gzkit\.venv\Lib\site-packages\rich\markup.py", line 167, in render
+    raise MarkupError(
+        f"closing tag '{tag.markup}' at position {position} doesn't match any open tag"
+    ) from None
+rich.errors.MarkupError: closing tag '[/green]' at position 36 doesn't match any open tag
+```
+## 2026-04-19T20:15:22-05:00
+- Status: PASS
+- Chore: hardcoded-root-eradication
+- Title: Config-First Enforcement (Anti-Vibe-Code)
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `grep -rn "Path(__file__).*parents" src/gzkit/eval/` => rc=1 (0.01s) -- output clean of 'parents'
+  - [PASS] `grep -rn "Path(__file__).*parents" src/gzkit/hooks/` => rc=1 (0.01s) -- output clean of 'parents'
+  - [PASS] `uv run gz lint` => rc=0 (0.73s) -- exit 0 == 0
+  - [PASS] `uv run gz check-config-paths` => rc=0 (0.51s) -- exit 0 == 0
+  - [PASS] `uv run -m unittest -q` => rc=0 (51.99s) -- exit 0 == 0
+  - [PASS] `grep -rn "Path(__file__).*parents\[" src/gzkit/ --include=*.py --exclude=quality.py` => rc=2 (0.01s) -- output clean of 'parents['
+
+```text
+[uv run gz lint] stdout:
+Running linters...
+All checks passed!
+
+ADR path contract check passed.
+No Path(__file__).parents[N] violations found.
+Lint passed.
+[uv run gz check-config-paths] stdout:
+Config-path audit passed.
+[uv run -m unittest -q] stderr:
+----------------------------------------------------------------------
+Ran 3243 tests in 51.176s
+
+OK (skipped=1)
+[grep -rn "Path(__file__).*parents\[" src/gzkit/ --include=*.py --exclude=quality.py] stderr:
+grep: Invalid regular expression
+```
+## 2026-04-19T21:05:43-05:00
+- Status: PASS
+- Chore: hardcoded-root-eradication
+- Title: Config-First Enforcement (Anti-Vibe-Code)
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `grep -rn "Path(__file__).*parents" src/gzkit/eval/` => rc=1 (0.01s) -- output clean of 'parents'
+  - [PASS] `grep -rn "Path(__file__).*parents" src/gzkit/hooks/` => rc=1 (0.02s) -- output clean of 'parents'
+  - [PASS] `uv run gz lint` => rc=0 (0.72s) -- exit 0 == 0
+  - [PASS] `uv run gz check-config-paths` => rc=0 (0.52s) -- exit 0 == 0
+  - [PASS] `uv run -m unittest -q` => rc=0 (51.74s) -- exit 0 == 0
+  - [PASS] `grep -rn "Path(__file__).*parents\[" src/gzkit/ --include=*.py --exclude=quality.py` => rc=2 (0.01s) -- output clean of 'parents['
+
+```text
+[uv run gz lint] stdout:
+Running linters...
+All checks passed!
+
+ADR path contract check passed.
+No Path(__file__).parents[N] violations found.
+Lint passed.
+[uv run gz check-config-paths] stdout:
+Config-path audit passed.
+[uv run -m unittest -q] stderr:
+----------------------------------------------------------------------
+Ran 3243 tests in 50.929s
+
+OK (skipped=1)
+[grep -rn "Path(__file__).*parents\[" src/gzkit/ --include=*.py --exclude=quality.py] stderr:
+grep: Invalid regular expression
+```

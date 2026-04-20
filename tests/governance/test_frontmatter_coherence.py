@@ -313,11 +313,11 @@ class ReconciliationLogicTests(unittest.TestCase):
                 mid_ledger.append(adr_created_event("ADR-0.1.99", "PRD-TEST-1.0.0", "lite"))
                 return original(project_root)
 
-            fc._enumerate_pool_artifacts = _inject_mutation  # type: ignore[assignment]
+            fc._enumerate_pool_artifacts = _inject_mutation  # ty: ignore[invalid-assignment]
             try:
                 receipt = fc.reconcile_frontmatter(root, dry_run=True)
             finally:
-                fc._enumerate_pool_artifacts = original  # type: ignore[assignment]
+                fc._enumerate_pool_artifacts = original
 
             # Starting-cursor preserved: the cursor on the receipt matches what
             # was computed before the mid-run mutation.
@@ -369,12 +369,12 @@ class ReconciliationLogicTests(unittest.TestCase):
                     raise OSError("simulated disk full after first file")
                 original_rewriter(path, edits)
 
-            fc._rewrite_governed_keys_in_place = _flaky_rewriter  # type: ignore[assignment]
+            fc._rewrite_governed_keys_in_place = _flaky_rewriter  # ty: ignore[invalid-assignment]
             try:
                 with self.assertRaises(OSError):
                     fc.reconcile_frontmatter(root, dry_run=False)
             finally:
-                fc._rewrite_governed_keys_in_place = original_rewriter  # type: ignore[assignment]
+                fc._rewrite_governed_keys_in_place = original_rewriter
 
             # A receipt file should have been emitted despite the exception.
             receipts_dir = root / "artifacts" / "receipts" / "frontmatter-coherence"

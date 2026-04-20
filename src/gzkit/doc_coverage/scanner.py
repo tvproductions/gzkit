@@ -38,8 +38,10 @@ def _extract_string_arg(call: ast.Call, index: int = 0) -> str | None:
 def _extract_handler_name(set_defaults_call: ast.Call) -> str | None:
     """Extract function name from set_defaults(func=lambda a: HANDLER(...)).
 
-    Also supports the lazy form ``lambda a: _lazy("HANDLER")(...)`` used by
-    parser modules that defer handler imports until first invocation.
+    Also supports lazy-resolver forms like ``lambda a: _lazy("HANDLER")(...)``
+    and ``lambda a: _arb("HANDLER")(...)`` used by parser modules that defer
+    handler imports until first invocation. Any single-underscore-prefixed
+    identifier with a single string argument is treated as a lazy resolver.
     """
     for kw in set_defaults_call.keywords:
         if kw.arg != "func":
@@ -57,8 +59,8 @@ def _extract_handler_name(set_defaults_call: ast.Call) -> str | None:
         if (
             isinstance(func, ast.Call)
             and isinstance(func.func, ast.Name)
-            and func.func.id == "_lazy"
-            and func.args
+            and func.func.id.startswith("_")
+            and len(func.args) == 1
             and isinstance(func.args[0], ast.Constant)
             and isinstance(func.args[0].value, str)
         ):
@@ -416,20 +418,26 @@ def find_orphaned_docs(
     # Build a slug set from discovered names so hyphenated commands like
     # "adr audit-check" match their manpage slug "adr-audit-check".
     discovered_slugs = {name.replace(" ", "-") for name in discovered_names}
+    # Parent-verb landing pages (e.g. arb.md, plan.md) are not leaf commands
+    # but document the subcommand group. A slug that matches the first word
+    # of any discovered "<parent> <sub>" command is a parent-verb page, not
+    # an orphan.
+    parent_verbs = {name.split(" ", 1)[0] for name in discovered_names if " " in name}
     commands_dir = project_root / "docs" / "user" / "commands"
     if commands_dir.exists():
         for md_file in sorted(commands_dir.glob("*.md")):
             if md_file.name == "index.md":
                 continue
             slug = md_file.stem  # filename without .md
-            if slug not in discovered_slugs:
-                orphans.append(
-                    OrphanedDoc(
-                        surface="manpage",
-                        reference=str(md_file.relative_to(project_root)),
-                        detail=f"Manpage '{md_file.name}' has no matching discovered command",
-                    )
+            if slug in discovered_slugs or slug in parent_verbs:
+                continue
+            orphans.append(
+                OrphanedDoc(
+                    surface="manpage",
+                    reference=str(md_file.relative_to(project_root)),
+                    detail=f"Manpage '{md_file.name}' has no matching discovered command",
                 )
+            )
 
     return orphans
 

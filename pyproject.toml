@@ -79,3 +79,17 @@ dev = [
     "ruff>=0.15",
     "ty>=0.0.31",
 ]
+
+# GHI #256: scope coverage to src/gzkit so ephemeral tempdir sources under
+# .claude/hooks/, features/, etc. don't pollute .coverage with missing-source
+# errors after tests clean up their isolated filesystems.
+[tool.coverage.run]
+source = ["src/gzkit"]
+branch = false
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]

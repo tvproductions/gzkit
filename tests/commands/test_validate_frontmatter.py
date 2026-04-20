@@ -6,6 +6,7 @@ derive the REQ → test graph.
 """
 
 import json
+import sys
 import time
 import unittest
 from pathlib import Path
@@ -264,6 +265,11 @@ class TestFrontmatterGuard(unittest.TestCase):
         # Skip if this test runner is not inside the gzkit project
         if not (project_root / ".gzkit" / "ledger.jsonl").is_file():
             self.skipTest("No gzkit ledger present — not inside the gzkit repo")
+        # GHI #256: coverage instrumentation adds ~2-3x overhead, so the 1.0s
+        # budget is not meaningful under coverage. Skip when a trace function
+        # is active (coverage sets one; so does sys.settrace debuggers).
+        if sys.gettrace() is not None:
+            self.skipTest("trace function active (coverage/debugger) — budget not meaningful")
 
         start = time.perf_counter()
         validate_frontmatter_coherence(project_root)

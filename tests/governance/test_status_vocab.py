@@ -95,7 +95,7 @@ class StatusVocabMappingTests(unittest.TestCase):
         from gzkit.governance.status_vocab import STATUS_VOCAB_MAPPING
 
         with self.assertRaises(TypeError):
-            STATUS_VOCAB_MAPPING["Draft"] = "x"  # type: ignore[index]
+            STATUS_VOCAB_MAPPING["Draft"] = "x"  # ty: ignore[invalid-assignment]
 
     @covers("REQ-0.0.16-05-01")
     def test_canonicalize_status_case_insensitive(self) -> None:

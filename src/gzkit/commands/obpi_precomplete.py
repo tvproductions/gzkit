@@ -48,7 +48,7 @@ class CheckResult:
 
 
 def obpi_precomplete_cmd(*, obpi_id: str, as_json: bool = False) -> int:
-    """Handler for ``gz obpi precomplete``.
+    """Handle ``gz obpi precomplete``.
 
     Exit codes (per .claude/rules/cli.md):
       0 = all preconditions met (safe to invoke gz obpi complete)
