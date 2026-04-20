@@ -1,5 +1,53 @@
 # gzkit Release Notes
 
+## v0.25.13 (2026-04-20)
+
+Foundation ADR completion and test-suite rehabilitation: ADR-0.0.17
+(adr-taxonomy-mechanical) closed out, BDD suite restored from 32 failing
+scenarios to 129/129 passing in 6s, unittest runtime trimmed, complexity
+regression in plan_cmd cleared, email PII scrubbed across briefs/ledger.
+
+### Foundation & Governance
+
+- **ADR-0.0.17** — adr-taxonomy-mechanical closeout completed; mechanical
+  side of the taxonomy split (Foundation / Pool / Feature) now landed.
+- **ADR-0.0.19** — pre-execution reasoning walkthrough booked (#232).
+- **#242** — ADR-0.0.17/0.0.18 OBPIs implemented after v0.25.12 re-pause.
+- **ADR promotions**: preflight → 0.42.0, ghi-triage → 0.43.0.
+
+### Test Suite
+
+- **#252** — BDD suite restored: 32/129 failing and >4 min runtime
+  → 129/129 passing in 6.0s. Switched behave setup to `_quick_init`
+  (~60× speedup) and scaffolded agent surfaces for scenarios that assert
+  on `gz init` output.
+- **#253** — Unittest runtime cut via template/scanner caching, hoisting
+  repeated `gz init` calls to module scope, reducing `_init_git_repo`
+  from 6 → 3 subprocesses, and caching `check_sync_parity` expected
+  surfaces.
+- **#251** — Closeout-proof BDD fixture fixed (missing `--kind feature`
+  after OBPI-0.0.17-02).
+
+### Code Quality
+
+- **#255** — `plan_cmd` xenon complexity reduced from rank D (27) to
+  within the C-rank ceiling.
+
+### Privacy
+
+- Email address scrubbed from briefs and ledger.
+- PII/email rule added to AGENTS.md local agent rules.
+
+### Documentation
+
+- `gz plan` parent-verb manpage added.
+
+### Stats
+
+- 5 GHIs closed (#242, #251, #252, #253, #255)
+- 1 Foundation ADR completed (ADR-0.0.17)
+- 1 Foundation ADR booked (ADR-0.0.19)
+
 ## v0.25.12 (2026-04-19)
 
 Ledger canonicalization fix: ADR parent refs are now resolved to full
