@@ -5,7 +5,7 @@ description: Execute the ADR closeout ceremony protocol for human attestation. G
 category: adr-audit
 compatibility: GovZero v6 framework; provides runbook walkthrough for human ADR attestation
 metadata:
-  skill-version: "7.5.0"
+  skill-version: "7.6.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -13,7 +13,8 @@ metadata:
   govzero_layer: "Layer 2 - Ledger Consumption"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-04-08
+last_reviewed: 2026-04-20
+model: opus
 ---
 
 # gz-adr-closeout-ceremony
