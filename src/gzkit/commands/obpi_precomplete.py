@@ -175,12 +175,12 @@ def _check_lock_held(project_root: Path, obpi_id: str) -> CheckResult:
     """OBPI lock MUST exist before `gz obpi complete` runs."""
     short_match = _OBPI_SHORT_PATTERN.match(obpi_id)
     short = short_match.group(0) if short_match else obpi_id
-    locks_dir = project_root / ".gzkit" / "locks"
+    locks_dir = project_root / ".gzkit" / "locks" / "obpi"
     if not locks_dir.is_dir():
         return CheckResult(
             name="lock_held",
             ok=False,
-            message="No .gzkit/locks/ directory",
+            message="No .gzkit/locks/obpi/ directory",
             remediation=f"Run `uv run gz obpi lock claim {obpi_id}`.",
         )
     candidates = sorted(locks_dir.glob(f"{short}*.json")) + sorted(

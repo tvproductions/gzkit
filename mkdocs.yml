@@ -66,6 +66,7 @@ nav:
     - Gates: user/concepts/gates.md
     - Lanes: user/concepts/lanes.md
     - Lifecycle: user/concepts/lifecycle.md
+    - ADR Taxonomy: user/concepts/adr-taxonomy.md
     - OBPIs: user/concepts/obpis.md
     - Closeout Ceremony: user/concepts/closeout.md
     - Daily Workflow: user/concepts/workflow.md
