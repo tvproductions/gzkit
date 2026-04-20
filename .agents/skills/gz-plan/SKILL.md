@@ -2,9 +2,11 @@
 name: gz-plan
 description: Create ADR artifacts for planned change. Use when recording architecture intent and lane-specific scope.
 category: adr-lifecycle
+metadata:
+  skill-version: "1.0.0"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-02-18
+last_reviewed: 2026-04-20
 ---
 
 # gz plan
@@ -22,9 +24,15 @@ Operate the gz plan command surface as a reusable governance workflow.
     *   **1:1 Synchronization**: The resulting Feature Checklist in the ADR MUST remain in 1:1 synchronization with the generated OBPI brief files. No drift is permitted.
 3. Present the assessment results and the resulting OBPI checklist to the user for approval.
 4. Ask the user up to 20 non-obvious, clarifying questions to discover edge cases, dependencies, and potential regressions regarding the planned change. Do not generate the ADR until these questions are answered.
-3. Once the scope and edge cases are clearly defined, confirm target context, IDs, and lane assumptions.
-4. Run `uv run gz plan` with the required options.
-5. Summarize results, including evidence and any follow-up gates.
+5. Once the scope and edge cases are clearly defined, confirm target context, IDs, and lane assumptions.
+6. **Ask the operator for `--kind` explicitly.** `gz plan create` has no default kind — the operator must choose. Present the concise heuristic verbatim and wait for an answer; do not guess, do not propose a default.
+
+    > **What kind of ADR is this?** `foundation` (app/system invariant, always 0.0.x) / `feature` (release-carrying capability) / `pool` (noted, not committed).
+    >
+    > Heuristic: Does this decision shape what the app IS (identity/invariant)? → `foundation`. Does this decision ship a named capability to users? → `feature`. Is this decision noted but not committed? → `pool`. For deeper context see `docs/user/concepts/adr-taxonomy.md`.
+
+7. Run `uv run gz plan` with the required options, passing the operator's chosen `--kind` through verbatim.
+8. Summarize results, including evidence and any follow-up gates.
 
 ## Validation
 

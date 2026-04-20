@@ -5,7 +5,7 @@ description: Create and book a GovZero ADR with its OBPI briefs. Enforces minor-
 category: adr-lifecycle
 compatibility: Requires GovZero v6 framework; provides governance rules internally for portable use across repositories
 metadata:
-  skill-version: "6.0.3"
+  skill-version: "6.1.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), linkage (ADR/OBPI/GHI), minor-release (odometer discipline)"
@@ -127,7 +127,8 @@ The agent conducts the Q&A conversationally, then records answers deterministica
 
 1. **Skip deducible fields.** ID, title, lane, semver — if already known from
    context, state them and move on. Don't waste the human's time on mechanical
-   fields the agent can fill.
+   fields the agent can fill. **`--kind` is not deducible** — it is a
+   substantive design question (see Tier 1), always asked, never guessed.
 
 2. **For each substantive question, draft first, then ask.** By the time an ADR
    is being created, there's usually conversation context — a design discussion,
@@ -170,6 +171,7 @@ them or confirm from context. The interview's value comes from two tiers:
 
 **Tier 1 — ADR Pro-Forma (required, populate the template):**
 
+- **What kind of ADR is this?** — `foundation` (app/system invariant, always 0.0.x) / `feature` (release-carrying capability) / `pool` (noted, not committed). Heuristic: Does this decision shape what the app IS (identity/invariant)? → `foundation`. Does this decision ship a named capability to users? → `feature`. Is this decision noted but not committed? → `pool`. For deeper context see `docs/user/concepts/adr-taxonomy.md`. `gz plan create` and `gz adr promote` require `--kind` with **no default** — the operator must choose. Never pre-fill; never propose a default.
 - **What problem are we solving?** — forces concrete articulation of the need
 - **What did we decide?** — forces specificity beyond "we'll add a field"
 - **What alternatives were considered?** — forces decision justification
