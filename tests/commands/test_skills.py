@@ -1,4 +1,7 @@
 import json
+import os
+import shutil
+import tempfile
 import unittest
 from datetime import date, timedelta
 from pathlib import Path
@@ -12,14 +15,65 @@ from tests.commands.common import (
     stop_init_subprocess_patches,
 )
 
+# Module-level cache: run ``gz init`` once into a template dir. Each test
+# copytrees the template into its own workspace instead of paying the init
+# cost per test (GHI #253). ~130ms per init × 15 tests -> 1 × 130ms + 15 ×
+# ~40ms copytree = ~0.7s saved.
+_TEMPLATE_CTX: tempfile.TemporaryDirectory | None = None
+_TEMPLATE_DIR: Path | None = None
+_ORIG_CWD: Path | None = None
+
 
 def setUpModule() -> None:
-    """Stub the init subprocess boundaries (uv sync + ruff format)."""
+    """Stub init subprocesses and build a cached init'd project template."""
+    global _TEMPLATE_CTX, _TEMPLATE_DIR, _ORIG_CWD
     start_init_subprocess_patches()
+    _TEMPLATE_CTX = tempfile.TemporaryDirectory(prefix="gzkit-skills-tpl-")
+    _TEMPLATE_DIR = Path(_TEMPLATE_CTX.name) / "project"
+    _TEMPLATE_DIR.mkdir()
+    _ORIG_CWD = Path.cwd()
+    os.chdir(_TEMPLATE_DIR)
+    try:
+        CliRunner().invoke(main, ["init"])
+    finally:
+        os.chdir(_ORIG_CWD)
 
 
 def tearDownModule() -> None:
+    global _TEMPLATE_CTX, _TEMPLATE_DIR, _ORIG_CWD
+    if _TEMPLATE_CTX is not None:
+        _TEMPLATE_CTX.cleanup()
+    _TEMPLATE_CTX = None
+    _TEMPLATE_DIR = None
+    _ORIG_CWD = None
     stop_init_subprocess_patches()
+
+
+class _InitFromTemplate:
+    """Context manager: copytree cached init'd tree into a fresh tempdir.
+
+    Drop-in for ``runner.isolated_filesystem()`` followed by
+    ``runner.invoke(main, ["init"])`` — the result is the same post-init
+    state, minus the ~130ms init cost.
+    """
+
+    def __init__(self) -> None:
+        self._tmpctx: tempfile.TemporaryDirectory | None = None
+        self._orig_cwd: Path | None = None
+
+    def __enter__(self) -> None:
+        assert _TEMPLATE_DIR is not None
+        self._tmpctx = tempfile.TemporaryDirectory(prefix="gzkit-skills-test-")
+        dest = Path(self._tmpctx.name) / "project"
+        shutil.copytree(_TEMPLATE_DIR, dest)
+        self._orig_cwd = Path.cwd()
+        os.chdir(dest)
+
+    def __exit__(self, *exc: object) -> None:
+        if self._orig_cwd is not None:
+            os.chdir(self._orig_cwd)
+        if self._tmpctx is not None:
+            self._tmpctx.cleanup()
 
 
 class TestSkillCommands(unittest.TestCase):
@@ -65,8 +119,7 @@ class TestSkillCommands(unittest.TestCase):
     def test_skill_list(self) -> None:
         """skill list shows scaffolded skills."""
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             result = runner.invoke(main, ["skill", "list"])
             self.assertEqual(result.exit_code, 0)
             # Should show core skills from init
@@ -88,8 +141,7 @@ class TestSkillCommands(unittest.TestCase):
     def test_skill_list_hides_retired_by_default(self) -> None:
         """skill list matches AGENTS catalog semantics — retired skills hidden."""
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             self._mark_skill_retired("lint")
             result = runner.invoke(main, ["skill", "list"])
             self.assertEqual(result.exit_code, 0)
@@ -99,8 +151,7 @@ class TestSkillCommands(unittest.TestCase):
     def test_skill_list_all_shows_retired_with_label(self) -> None:
         """skill list --all surfaces retired skills with an explicit label."""
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             self._mark_skill_retired("lint")
             result = runner.invoke(main, ["skill", "list", "--all"])
             self.assertEqual(result.exit_code, 0)
@@ -110,8 +161,7 @@ class TestSkillCommands(unittest.TestCase):
     def test_skill_list_json_default_filters_retired(self) -> None:
         """skill list --json excludes retired skills by default."""
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             self._mark_skill_retired("lint")
             result = runner.invoke(main, ["skill", "list", "--json"])
             self.assertEqual(result.exit_code, 0)
@@ -124,8 +174,7 @@ class TestSkillCommands(unittest.TestCase):
     def test_skill_list_json_all_includes_lifecycle(self) -> None:
         """skill list --json --all includes every skill and its lifecycle_state."""
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             self._mark_skill_retired("lint")
             result = runner.invoke(main, ["skill", "list", "--all", "--json"])
             self.assertEqual(result.exit_code, 0)
@@ -139,8 +188,7 @@ class TestSkillCommands(unittest.TestCase):
     def test_skill_new(self) -> None:
         """skill new creates skill."""
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             result = runner.invoke(main, ["skill", "new", "my-skill"])
             self.assertEqual(result.exit_code, 0)
             skill_file = Path(".gzkit/skills/my-skill/SKILL.md")
@@ -153,17 +201,14 @@ class TestSkillCommands(unittest.TestCase):
 
     def test_init_scaffolds_adr_create_and_removes_adr_manager(self) -> None:
         """core skill scaffolding uses gz-adr-create hard cutover."""
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             self.assertTrue(Path(".gzkit/skills/gz-adr-create/SKILL.md").exists())
             self.assertFalse(Path(".gzkit/skills/gz-adr-manager").exists())
 
     def test_skill_audit_passes_after_init(self) -> None:
         """skill audit passes for freshly initialized project."""
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             result = runner.invoke(main, ["skill", "audit"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("passed", result.output.lower())
@@ -171,8 +216,7 @@ class TestSkillCommands(unittest.TestCase):
     def test_skill_audit_warning_is_non_blocking_without_strict(self) -> None:
         """Stale mirror-only skills emit non-blocking warnings by default."""
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             self._write_stale_mirror_skill()
             result = runner.invoke(main, ["skill", "audit"])
             self.assertEqual(result.exit_code, 0)
@@ -183,8 +227,7 @@ class TestSkillCommands(unittest.TestCase):
     def test_skill_audit_strict_fails_on_non_blocking_warnings(self) -> None:
         """Strict mode escalates warnings to failure."""
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             self._write_stale_mirror_skill()
             result = runner.invoke(main, ["skill", "audit", "--strict"])
             self.assertNotEqual(result.exit_code, 0)
@@ -194,8 +237,7 @@ class TestSkillCommands(unittest.TestCase):
     def test_skill_audit_json_includes_issue_codes_and_blocking_counts(self) -> None:
         """JSON payload includes additive policy fields for machine consumers."""
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             self._write_stale_mirror_skill()
             result = runner.invoke(main, ["skill", "audit", "--json"])
             self.assertEqual(result.exit_code, 0)
@@ -218,8 +260,7 @@ class TestSkillCommands(unittest.TestCase):
     def test_skill_audit_rejects_non_positive_max_review_age_days(self) -> None:
         """Non-positive max review age is rejected as invalid input."""
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             result = runner.invoke(main, ["skill", "audit", "--max-review-age-days", "0"])
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("positive integer", result.output.lower())
@@ -227,8 +268,7 @@ class TestSkillCommands(unittest.TestCase):
     def test_skill_audit_max_review_age_override_relaxes_stale_failure(self) -> None:
         """Override can relax stale-review blocking checks when policy allows."""
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             stale_date = (date.today() - timedelta(days=120)).isoformat()
             self._set_skill_last_reviewed_all_roots("lint", stale_date)
 
@@ -242,8 +282,7 @@ class TestSkillCommands(unittest.TestCase):
     def test_skill_audit_manpage_coverage_warns_when_index_exists(self) -> None:
         """Manpage coverage warns for active skills without manpages when index exists."""
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             # Create the skills index to enable manpage checks
             index_dir = Path("docs/user/skills")
             index_dir.mkdir(parents=True, exist_ok=True)
@@ -259,8 +298,7 @@ class TestSkillCommands(unittest.TestCase):
     def test_check_command_passes_with_non_blocking_skill_audit_warning(self) -> None:
         """Aggregate check remains pass when skill audit warning is non-blocking."""
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             ok = QualityResult(success=True, command="cmd", stdout="", stderr="", returncode=0)
             warning_skill_audit = QualityResult(
                 success=True,

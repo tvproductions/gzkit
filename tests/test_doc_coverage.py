@@ -896,11 +896,30 @@ class TestRunDocCoverage(unittest.TestCase):
     def setUpClass(cls) -> None:
         import contextlib
         import io
+        from unittest.mock import patch
 
         from gzkit.doc_coverage.runner import run_doc_coverage
 
         cls.project_root = Path(__file__).resolve().parent.parent
-        with contextlib.redirect_stdout(io.StringIO()):
+        # run_doc_coverage twice (human + JSON) both do the same ~1.5s
+        # cross-coverage scan internally. Cache the scanner call so setUp
+        # pays the scan once instead of twice (GHI #253).
+        from gzkit.doc_coverage.scanner import check_surfaces_report as _real_scan
+
+        cached: dict[str, object] = {}
+
+        def _cached_scan(project_root, *args, **kwargs):
+            if "report" not in cached:
+                cached["report"] = _real_scan(project_root, *args, **kwargs)
+            return cached["report"]
+
+        with (
+            contextlib.redirect_stdout(io.StringIO()),
+            patch(
+                "gzkit.doc_coverage.runner.check_surfaces_report",
+                side_effect=_cached_scan,
+            ),
+        ):
             cls._result_human = run_doc_coverage(cls.project_root, json_output=False)
             cls._result_json = run_doc_coverage(cls.project_root, json_output=True)
 

@@ -10,6 +10,8 @@ evidence aggregated from the ledger.
 """
 
 import json
+import os
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -29,7 +31,93 @@ from gzkit.ledger import (
 from gzkit.quality import QualityResult
 from gzkit.templates import load_template
 from gzkit.traceability import covers
-from tests.commands.common import CliRunner, _init_git_repo, _quick_init
+from tests.commands.common import (
+    CliRunner,
+    _init_git_repo,
+    _quick_init,
+    start_init_subprocess_patches,
+    stop_init_subprocess_patches,
+)
+
+# Module-level cached templates (GHI #253): most tests in this module start
+# from either a bare ``init_git_repo + _quick_init`` state or an attested-ADR
+# state. Caching these once and copytree-ing per test saves ~45ms per test.
+_TEMPLATE_CTX: tempfile.TemporaryDirectory | None = None
+_BARE_TEMPLATE: Path | None = None
+_ATTESTED_TEMPLATE: Path | None = None
+
+
+def setUpModule() -> None:
+    global _TEMPLATE_CTX, _BARE_TEMPLATE, _ATTESTED_TEMPLATE
+    start_init_subprocess_patches()
+    _TEMPLATE_CTX = tempfile.TemporaryDirectory(prefix="gzkit-audit-pl-")
+    root = Path(_TEMPLATE_CTX.name)
+    _BARE_TEMPLATE = root / "bare"
+    _BARE_TEMPLATE.mkdir()
+    _ATTESTED_TEMPLATE = root / "attested"
+    _ATTESTED_TEMPLATE.mkdir()
+
+    orig = Path.cwd()
+    # Build bare template: git init + quick init.
+    os.chdir(_BARE_TEMPLATE)
+    try:
+        _init_git_repo(Path.cwd())
+        _quick_init()
+    finally:
+        os.chdir(orig)
+
+    # Build attested template on top of bare: copytree + plan create + events.
+    shutil.copytree(_BARE_TEMPLATE, _ATTESTED_TEMPLATE, dirs_exist_ok=True)
+    os.chdir(_ATTESTED_TEMPLATE)
+    try:
+        CliRunner().invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+        ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+        ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
+        ledger.append(attested_event("ADR-0.1.0", "completed", "Test User"))
+    finally:
+        os.chdir(orig)
+
+
+def tearDownModule() -> None:
+    global _TEMPLATE_CTX, _BARE_TEMPLATE, _ATTESTED_TEMPLATE
+    if _TEMPLATE_CTX is not None:
+        _TEMPLATE_CTX.cleanup()
+    _TEMPLATE_CTX = None
+    _BARE_TEMPLATE = None
+    _ATTESTED_TEMPLATE = None
+    stop_init_subprocess_patches()
+
+
+class _CopyTemplate:
+    """Context manager: copytree a cached template into a fresh tempdir."""
+
+    def __init__(self, template: Path) -> None:
+        self._template = template
+        self._tmpctx: tempfile.TemporaryDirectory | None = None
+        self._orig_cwd: Path | None = None
+
+    def __enter__(self) -> None:
+        self._tmpctx = tempfile.TemporaryDirectory(prefix="gzkit-audit-pl-test-")
+        dest = Path(self._tmpctx.name) / "project"
+        shutil.copytree(self._template, dest)
+        self._orig_cwd = Path.cwd()
+        os.chdir(dest)
+
+    def __exit__(self, *exc: object) -> None:
+        if self._orig_cwd is not None:
+            os.chdir(self._orig_cwd)
+        if self._tmpctx is not None:
+            self._tmpctx.cleanup()
+
+
+def _bare_workspace() -> _CopyTemplate:
+    assert _BARE_TEMPLATE is not None
+    return _CopyTemplate(_BARE_TEMPLATE)
+
+
+def _attested_workspace() -> _CopyTemplate:
+    assert _ATTESTED_TEMPLATE is not None
+    return _CopyTemplate(_ATTESTED_TEMPLATE)
 
 
 def _make_qr(success: bool = True, command: str = "test", returncode: int = 0) -> QualityResult:
@@ -42,25 +130,13 @@ def _make_qr(success: bool = True, command: str = "test", returncode: int = 0) -
     )
 
 
-def _setup_attested_adr(runner: CliRunner) -> None:
-    """Create an ADR that has been attested (ready for audit)."""
-    _init_git_repo(Path.cwd())
-    _quick_init()
-    runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
-    ledger = Ledger(Path(".gzkit/ledger.jsonl"))
-    ledger.append(gate_checked_event("ADR-0.1.0", 2, "pass", "test", 0))
-    ledger.append(attested_event("ADR-0.1.0", "completed", "Test User"))
-
-
 class TestAuditAttestationGuard(unittest.TestCase):
     """Audit blocks when ADR is not attested (REQ-01, REQ-09)."""
 
     @covers("REQ-0.19.0-02-01")
     def test_audit_blocks_without_attestation(self):
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            _init_git_repo(Path.cwd())
-            _quick_init()
+        with _bare_workspace():
             runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
             result = runner.invoke(main, ["audit", "ADR-0.1.0"])
             self.assertEqual(result.exit_code, 1)
@@ -75,8 +151,7 @@ class TestAuditArtifacts(unittest.TestCase):
     def test_audit_creates_artifacts(self, mock_run):
         mock_run.return_value = _make_qr()
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            _setup_attested_adr(runner)
+        with _attested_workspace():
             result = runner.invoke(main, ["audit", "ADR-0.1.0"])
             self.assertEqual(result.exit_code, 0, result.output)
             adr_dir = next(Path("design/adr").rglob("ADR-0.1.0*.md")).parent
@@ -95,8 +170,7 @@ class TestAuditReceiptEmission(unittest.TestCase):
     def test_validation_receipt_in_ledger(self, mock_run):
         mock_run.return_value = _make_qr()
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            _setup_attested_adr(runner)
+        with _attested_workspace():
             result = runner.invoke(main, ["audit", "ADR-0.1.0"])
             self.assertEqual(result.exit_code, 0, result.output)
             ledger_text = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
@@ -113,8 +187,7 @@ class TestAuditStatusTransition(unittest.TestCase):
     def test_adr_transitions_to_validated(self, mock_run):
         mock_run.return_value = _make_qr()
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            _setup_attested_adr(runner)
+        with _attested_workspace():
             result = runner.invoke(main, ["audit", "ADR-0.1.0"])
             self.assertEqual(result.exit_code, 0, result.output)
             ledger_text = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
@@ -130,8 +203,7 @@ class TestAuditFailureNoTransition(unittest.TestCase):
     def test_no_transition_on_failure(self, mock_run):
         mock_run.return_value = _make_qr(success=False, returncode=1)
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            _setup_attested_adr(runner)
+        with _attested_workspace():
             result = runner.invoke(main, ["audit", "ADR-0.1.0"])
             self.assertEqual(result.exit_code, 1)
             ledger_text = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
@@ -146,8 +218,7 @@ class TestAuditFailureNoTransition(unittest.TestCase):
     def test_artifacts_still_written_on_failure(self, mock_run):
         mock_run.return_value = _make_qr(success=False, returncode=1)
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            _setup_attested_adr(runner)
+        with _attested_workspace():
             runner.invoke(main, ["audit", "ADR-0.1.0"])
             adr_dir = next(Path("design/adr").rglob("ADR-0.1.0*.md")).parent
             self.assertTrue((adr_dir / "audit" / "AUDIT.md").exists())
@@ -159,8 +230,7 @@ class TestAuditDryRun(unittest.TestCase):
     @covers("REQ-0.19.0-02-06")
     def test_dry_run_shows_receipt_and_transition_plan(self):
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            _setup_attested_adr(runner)
+        with _attested_workspace():
             result = runner.invoke(main, ["audit", "ADR-0.1.0", "--dry-run"])
             self.assertEqual(result.exit_code, 0, result.output)
             self.assertIn("Dry run", result.output)
@@ -172,8 +242,7 @@ class TestAuditDryRun(unittest.TestCase):
     @covers("REQ-0.19.0-07-03")
     def test_dry_run_json_includes_receipt_and_transition(self):
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            _setup_attested_adr(runner)
+        with _attested_workspace():
             result = runner.invoke(main, ["audit", "ADR-0.1.0", "--dry-run", "--json"])
             self.assertEqual(result.exit_code, 0, result.output)
             data = json.loads(result.output)
@@ -189,8 +258,7 @@ class TestAuditJsonOutput(unittest.TestCase):
     def test_json_contains_all_fields(self, mock_run):
         mock_run.return_value = _make_qr()
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            _setup_attested_adr(runner)
+        with _attested_workspace():
             result = runner.invoke(main, ["audit", "ADR-0.1.0", "--json"])
             self.assertEqual(result.exit_code, 0, result.output)
             data = json.loads(result.output)
@@ -389,8 +457,7 @@ class TestAuditEnrichmentJsonKeys(unittest.TestCase):
     def test_json_output_contains_enrichment_keys(self, mock_run):
         mock_run.return_value = _make_qr()
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            _setup_attested_adr(runner)
+        with _attested_workspace():
             result = runner.invoke(main, ["audit", "ADR-0.1.0", "--json"])
             self.assertEqual(result.exit_code, 0, result.output)
             data = json.loads(result.output)
@@ -403,8 +470,7 @@ class TestAuditEnrichmentJsonKeys(unittest.TestCase):
     def test_json_output_preserves_existing_keys(self, mock_run):
         mock_run.return_value = _make_qr()
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            _setup_attested_adr(runner)
+        with _attested_workspace():
             result = runner.invoke(main, ["audit", "ADR-0.1.0", "--json"])
             self.assertEqual(result.exit_code, 0, result.output)
             data = json.loads(result.output)
@@ -419,8 +485,7 @@ class TestAuditEnrichmentJsonKeys(unittest.TestCase):
     def test_attestation_record_has_correct_fields(self, mock_run):
         mock_run.return_value = _make_qr()
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            _setup_attested_adr(runner)
+        with _attested_workspace():
             result = runner.invoke(main, ["audit", "ADR-0.1.0", "--json"])
             self.assertEqual(result.exit_code, 0, result.output)
             data = json.loads(result.output)
@@ -435,8 +500,7 @@ class TestAuditEnrichmentJsonKeys(unittest.TestCase):
     def test_gate_results_list_has_correct_structure(self, mock_run):
         mock_run.return_value = _make_qr()
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            _setup_attested_adr(runner)
+        with _attested_workspace():
             result = runner.invoke(main, ["audit", "ADR-0.1.0", "--json"])
             self.assertEqual(result.exit_code, 0, result.output)
             data = json.loads(result.output)
@@ -460,8 +524,7 @@ class TestAuditGeneratedLedgerEvent(unittest.TestCase):
         """Successful audit appends audit_generated with correct fields."""
         mock_run.return_value = _make_qr()
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            _setup_attested_adr(runner)
+        with _attested_workspace():
             result = runner.invoke(main, ["audit", "ADR-0.1.0"])
             self.assertEqual(result.exit_code, 0, result.output)
             ledger_text = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
@@ -482,8 +545,7 @@ class TestAuditGeneratedLedgerEvent(unittest.TestCase):
         """Failed verification records passed=False in audit_generated event."""
         mock_run.return_value = _make_qr(success=False, returncode=1)
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            _setup_attested_adr(runner)
+        with _attested_workspace():
             runner.invoke(main, ["audit", "ADR-0.1.0"])
             ledger_text = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             events = [json.loads(line) for line in ledger_text.strip().splitlines()]
@@ -495,8 +557,7 @@ class TestAuditGeneratedLedgerEvent(unittest.TestCase):
     def test_dry_run_no_audit_generated_event(self):
         """--dry-run does NOT append audit_generated event."""
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            _setup_attested_adr(runner)
+        with _attested_workspace():
             result = runner.invoke(main, ["audit", "ADR-0.1.0", "--dry-run"])
             self.assertEqual(result.exit_code, 0, result.output)
             ledger_text = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
@@ -506,9 +567,7 @@ class TestAuditGeneratedLedgerEvent(unittest.TestCase):
     def test_attestation_blocker_no_audit_generated_event(self):
         """Attestation blocker (exit 1) does NOT append audit_generated event."""
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            _init_git_repo(Path.cwd())
-            _quick_init()
+        with _bare_workspace():
             runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
             # No attestation — should block
             result = runner.invoke(main, ["audit", "ADR-0.1.0"])
