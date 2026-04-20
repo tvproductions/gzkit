@@ -143,6 +143,10 @@ Evidence accumulates in `audit/proofs/` as OBPIs complete. Expected artifacts:
 
 ## Attestation Block
 
+| Term | Status | Attested By | Date | Reason |
+|------|--------|-------------|------|--------|
+| 0.0.17 | Completed | g0 | 2026-04-19 | completed |
+
 - Scope: ADR-0.0.17 mechanical taxonomy
 - Lane: heavy
 - Date attested: pending

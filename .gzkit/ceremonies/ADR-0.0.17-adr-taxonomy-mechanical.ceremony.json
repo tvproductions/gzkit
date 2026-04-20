@@ -1,9 +1,9 @@
 {
   "adr_id": "ADR-0.0.17-adr-taxonomy-mechanical",
-  "current_step": 7,
+  "current_step": 11,
   "is_foundation": true,
   "started_at": "2026-04-19T21:11:58Z",
-  "updated_at": "2026-04-19T22:14:06Z",
+  "updated_at": "2026-04-20T00:40:22Z",
   "step_history": [
     {
       "step": 1,
@@ -38,6 +38,16 @@
     {
       "step": 7,
       "presented_at": "2026-04-19T21:42:08Z",
+      "acknowledged_at": "2026-04-20T00:39:37Z"
+    },
+    {
+      "step": 8,
+      "presented_at": "2026-04-20T00:39:37Z",
+      "acknowledged_at": "2026-04-20T00:40:22Z"
+    },
+    {
+      "step": 11,
+      "presented_at": "2026-04-20T00:40:22Z",
       "acknowledged_at": null
     }
   ],
@@ -48,7 +58,7 @@
   ],
   "walkthrough_index": 0,
   "attestation": "attest completed — ADR-0.0.17 taxonomy mechanical enforcement delivered: kind frontmatter required on non-pool ADRs (OBPI-01); gz plan create --kind and gz adr promote --kind enforce kind/semver binding at authoring and promotion (OBPI-02, 03); gz validate --taxonomy locks the tree (OBPI-04); existing ADRs backfilled idempotently with round-trip receipt (OBPI-05); AGENTS.md corrected to document kind/lane orthogonality and the four-combo matrix (OBPI-06). All 6 OBPIs attested_completed. Quality gates clean: lint arb-ruff-468acfb84a7845dd9106286bdaa8832b; types arb-step-typecheck-601eb87e8bb04655b79935402c97093e; tests arb-step-unittest-f59b1ea6479d4bc6b01c0a5f7aea2a6b; docs arb-step-mkdocs-372cabd44d91458cb752d66b4c9d8d93. Docs alignment gap closed in-ceremony by authoring docs/user/commands/plan.md (gz plan parent-verb manpage). Open issues documented: #242 (RHEA external tracker, resolved by this delivery), #249 (residual Heavy/Foundation bucketing in docs/governance — scope boundary, out-of-ADR).",
-  "completed_at": null,
+  "completed_at": "2026-04-20T00:40:22Z",
   "attempt": 1,
   "paused_at": "2026-04-19T22:14:06Z"
 }
