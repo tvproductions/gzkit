@@ -1798,4 +1798,115 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)
             self.assertIn("ADR-0.1.0", payload)
+
+
+class TestStatusEpicFilter(unittest.TestCase):
+    """Epic grouping filter for pool ADRs — OBPI-0.0.18-04."""
+
+    @staticmethod
+    def _write_pool_adr(config: GzkitConfig, slug: str, *, epic: str | None = None) -> None:
+        pool_dir = Path(config.paths.adrs) / "pool"
+        pool_dir.mkdir(parents=True, exist_ok=True)
+        frontmatter = f"---\nid: ADR-pool.{slug}\n"
+        if epic is not None:
+            frontmatter += f"epic: {epic}\n"
+        frontmatter += "---\n\n# ADR-pool." + slug + "\n"
+        (pool_dir / f"ADR-pool.{slug}.md").write_text(frontmatter)
+
+    @covers("REQ-0.0.18-04-05")
+    def test_status_epic_flag_documented_in_help(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            result = runner.invoke(main, ["status", "--help"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("--epic", result.output)
+            self.assertIn("filename", result.output.lower())
+            self.assertIn("frontmatter", result.output.lower())
+
+    @covers("REQ-0.0.18-04-01")
+    @covers("REQ-0.0.18-04-03")
+    @covers("REQ-0.0.18-04-07")
+    def test_status_epic_filter_matches_filename_prefix(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            self._write_pool_adr(config, "auth-login")
+            self._write_pool_adr(config, "auth-oauth")
+            self._write_pool_adr(config, "billing-invoice")
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            for adr_id in (
+                "ADR-pool.auth-login",
+                "ADR-pool.auth-oauth",
+                "ADR-pool.billing-invoice",
+            ):
+                ledger.append(adr_created_event(adr_id, "", "lite"))
+
+            result = runner.invoke(main, ["status", "--epic", "auth", "--json"])
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            ids = set(payload["adrs"].keys())
+            self.assertEqual(ids, {"ADR-pool.auth-login", "ADR-pool.auth-oauth"})
+
+    @covers("REQ-0.0.18-04-02")
+    @covers("REQ-0.0.18-04-03")
+    def test_status_epic_filter_matches_frontmatter_field(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            self._write_pool_adr(config, "claude-code", epic="vendor-alignment")
+            self._write_pool_adr(config, "other-thing")
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(adr_created_event("ADR-pool.claude-code", "", "lite"))
+            ledger.append(adr_created_event("ADR-pool.other-thing", "", "lite"))
+
+            result = runner.invoke(main, ["status", "--epic", "vendor-alignment", "--json"])
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            ids = set(payload["adrs"].keys())
+            self.assertEqual(ids, {"ADR-pool.claude-code"})
+
+    @covers("REQ-0.0.18-04-02")
+    def test_status_epic_filter_warns_on_mismatch(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            self._write_pool_adr(config, "auth-login", epic="billing")
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(adr_created_event("ADR-pool.auth-login", "", "lite"))
+
+            result = runner.invoke(main, ["status", "--epic", "auth", "--json"])
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            self.assertIn("ADR-pool.auth-login", payload["adrs"])
+            warnings = payload.get("warnings", [])
+            self.assertTrue(
+                any("auth-login" in w and "billing" in w for w in warnings),
+                f"Expected mismatch warning in {warnings!r}",
+            )
+
+    @covers("REQ-0.0.18-04-04")
+    def test_status_epic_filter_empty_result_exits_zero(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            result = runner.invoke(main, ["status", "--epic", "nonexistent", "--json"])
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            self.assertEqual(payload["adrs"], {})
+
+    @covers("REQ-0.0.18-04-06")
+    def test_status_default_behavior_unchanged_without_epic_flag(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            result = runner.invoke(main, ["status", "--json"])
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            self.assertIn("ADR-0.1.0", payload["adrs"])
+            self.assertNotIn("warnings", payload)
             self.assertNotIn("ADR-0.2.0", payload)

@@ -29,6 +29,30 @@ earned promotion yet.
 Pool ADRs use the flat backlog id prefix `ADR-pool.<slug>` and have no semver
 and no `kind:` frontmatter field. They live in `docs/design/adr/pool/`.
 
+#### Epic grouping (optional)
+
+Related pool ADRs may be grouped into an **epic** — a named theme that ties
+adjacent backlog entries together without promoting any of them. Epic
+membership is advisory and additive; the pool remains a flat backlog whether
+or not epics are used.
+
+Two paths establish epic membership, either or both may be used:
+
+- **Filename convention** — `ADR-pool.<epic-slug>-<adr-slug>.md`. The first
+  hyphen-delimited token after `ADR-pool.` is the epic-slug. Example:
+  `ADR-pool.auth-oauth.md` belongs to the `auth` epic.
+- **Frontmatter field** — an optional `epic: <slug>` entry in the pool ADR's
+  YAML frontmatter. This is the escape hatch for multi-token epic names that
+  the single-token filename convention cannot express (e.g. `epic:
+  vendor-alignment` on a file named `ADR-pool.claude-code.md`).
+
+The `gz status --epic <slug>` filter matches either path and restricts output
+to the epic's members. When the filename-derived and frontmatter-derived
+epic-slugs disagree on the same pool ADR, `gz status` emits a non-fatal
+warning — operators should reconcile the disagreement, but it never blocks
+reporting. Epic membership has no effect on promotion, retirement, or any
+other ADR lifecycle mechanics; it is purely a browsing aid for pool curation.
+
 ### Foundation
 
 A foundation ADR codifies an app/system invariant — an identity-shaping fact,

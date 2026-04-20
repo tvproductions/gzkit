@@ -395,8 +395,16 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
         action="store_true",
         help="Show detailed gate-level QC breakdown (internal diagnostics).",
     )
+    p_status.add_argument(
+        "--epic",
+        metavar="SLUG",
+        default=None,
+        help=("Filter pool ADRs by epic (filename prefix or frontmatter 'epic:')."),
+    )
     p_status.set_defaults(
-        func=lambda a: _lazy("status")(as_json=a.as_json, show_gates=a.show_gates, as_table=a.table)
+        func=lambda a: _lazy("status")(
+            as_json=a.as_json, show_gates=a.show_gates, as_table=a.table, epic=a.epic
+        )
     )
 
     p_closeout = commands.add_parser(

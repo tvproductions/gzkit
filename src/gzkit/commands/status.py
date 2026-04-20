@@ -47,6 +47,7 @@ from gzkit.commands.status_render import (
 )
 from gzkit.commands.task import _load_tasks_for_obpi
 from gzkit.config import GzkitConfig
+from gzkit.core.validation_rules import parse_frontmatter as _parse_md_frontmatter
 from gzkit.ledger import (
     Ledger,
     resolve_adr_lane,
@@ -223,12 +224,79 @@ def _collect_adr_statuses(
     return adrs
 
 
+def _filename_derived_epic(adr_id: str) -> str | None:
+    """Return the first hyphen-delimited token after ``ADR-pool.``, or None."""
+    prefix = "ADR-pool."
+    if not adr_id.startswith(prefix):
+        return None
+    remainder = adr_id[len(prefix) :]
+    if not remainder:
+        return None
+    return remainder.split("-", 1)[0]
+
+
+def _filter_adrs_by_epic(
+    project_root: Path,
+    config: GzkitConfig,
+    adrs: dict[str, dict[str, Any]],
+    epic_slug: str | None,
+) -> tuple[dict[str, dict[str, Any]], list[str]]:
+    """Filter ADRs to pool entries matching ``epic_slug``.
+
+    Matching is OR'd: a pool ADR matches when EITHER its filename-derived
+    epic-slug OR its frontmatter ``epic:`` field equals ``epic_slug``.
+    Returns the filtered mapping plus an advisory-warning list.
+    """
+    if epic_slug is None:
+        return adrs, []
+
+    pool_root = project_root / config.paths.adrs / "pool"
+    warnings: list[str] = []
+    filtered: dict[str, dict[str, Any]] = {}
+
+    for adr_id, entry in adrs.items():
+        if not _is_pool_adr_id(adr_id):
+            continue
+
+        filename_epic = _filename_derived_epic(adr_id)
+        frontmatter_epic: str | None = None
+        pool_file = pool_root / f"{adr_id}.md"
+        if pool_file.exists():
+            try:
+                fm, _body = _parse_md_frontmatter(pool_file.read_text(encoding="utf-8"))
+            except OSError:
+                fm = {}
+            raw_epic = fm.get("epic")
+            if isinstance(raw_epic, str) and raw_epic.strip():
+                frontmatter_epic = raw_epic.strip()
+
+        if (
+            filename_epic is not None
+            and frontmatter_epic is not None
+            and filename_epic != frontmatter_epic
+        ):
+            warnings.append(
+                f"{adr_id}: filename-derived epic '{filename_epic}' "
+                f"disagrees with frontmatter epic '{frontmatter_epic}'"
+            )
+
+        if filename_epic == epic_slug or frontmatter_epic == epic_slug:
+            filtered[adr_id] = entry
+
+    return filtered, warnings
+
+
 # ---------------------------------------------------------------------------
 # Command entry points
 # ---------------------------------------------------------------------------
 
 
-def status(as_json: bool, show_gates: bool, as_table: bool) -> None:
+def status(
+    as_json: bool,
+    show_gates: bool,
+    as_table: bool,
+    epic: str | None = None,
+) -> None:
     """Display OBPI progress, lifecycle, and gate readiness across ADRs."""
     config = ensure_initialized()
     project_root = get_project_root()
@@ -237,21 +305,30 @@ def status(as_json: bool, show_gates: bool, as_table: bool) -> None:
     pending = ledger.get_pending_attestations()
     graph = ledger.get_artifact_graph()
     adrs = _collect_adr_statuses(project_root, config, ledger, graph)
+    adrs, epic_warnings = _filter_adrs_by_epic(project_root, config, adrs, epic)
     adrs = dict(sorted(adrs.items(), key=lambda item: _adr_status_sort_key(item[0])))
 
     if as_json:
-        result = {
+        result: dict[str, Any] = {
             "mode": config.mode,
             "adrs": adrs,
             "pending_attestations": pending,
         }
+        if epic is not None:
+            result["warnings"] = epic_warnings
         print(json.dumps(result, indent=2))  # noqa: T201
         return
+
+    for warning in epic_warnings:
+        console.print(f"[yellow]warning: {warning}[/yellow]")
 
     console.print(f"[bold]Lane: {config.mode}[/bold]\n")
 
     if not adrs:
-        console.print("No ADRs found. Create one with 'gz plan'.")
+        if epic is not None:
+            console.print(f"No pool ADRs match epic '{epic}'.")
+        else:
+            console.print("No ADRs found. Create one with 'gz plan'.")
         return
 
     if as_table:

@@ -87,6 +87,21 @@ Cadence is triggered by these events, not by a calendar. A pool that sees no pro
 
 ---
 
+## Epic grouping (optional browsing aid)
+
+Pool entries may optionally declare membership in an **epic** — a named theme that groups related pool ADRs without promoting any of them. Epic grouping is purely a curation and browsing aid; it does not alter the entry/promotion/retirement criteria above.
+
+Two paths establish epic membership (either or both):
+
+- **Filename convention** — `ADR-pool.<epic-slug>-<adr-slug>.md`. The first hyphen-delimited token after `ADR-pool.` is the epic-slug (e.g. `ADR-pool.auth-oauth.md` → epic `auth`).
+- **Frontmatter field** — an optional `epic: <slug>` in the pool ADR's YAML frontmatter. This is the escape hatch for multi-token epic names the single-token filename convention cannot express (e.g. `epic: vendor-alignment` on `ADR-pool.claude-code.md`).
+
+Operators filter the pool by epic using `gz status --epic <slug>`. The filter matches either path and emits an advisory warning when the filename-derived and frontmatter-derived epics disagree on the same pool ADR. See the [ADR Taxonomy concept page](../user/concepts/adr-taxonomy.md#epic-grouping-optional) for the operator-facing doctrine.
+
+Epic membership is **not** a retirement trigger, **not** a promotion gate, and **not** reflected in schema validation. It is a review-time convenience.
+
+---
+
 ## FAQ
 
 ### How long can an ADR stay in the pool?
