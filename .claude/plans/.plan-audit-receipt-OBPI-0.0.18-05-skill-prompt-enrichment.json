@@ -1,0 +1,29 @@
+{
+  "obpi_id": "OBPI-0.0.18-05-skill-prompt-enrichment",
+  "timestamp": "2026-04-20T12:10:43.892804+00:00",
+  "verdict": "PASS",
+  "plan_file": "snuggly-riding-lark.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.16.0",
+      "sibling_obpi": "OBPI-0.16.0-04-template-engine",
+      "contested_paths": [
+        ".claude/skills/gz-plan/SKILL.md",
+        ".claude/skills/gz-adr-create/SKILL.md",
+        ".github/skills/gz-plan/SKILL.md",
+        ".github/skills/gz-adr-create/SKILL.md",
+        ".agents/skills/gz-plan/SKILL.md",
+        ".agents/skills/gz-adr-create/SKILL.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.10",
+      "sibling_obpi": "OBPI-0.0.10-03-storage-catalog-and-escalation-governance",
+      "contested_paths": [
+        ".gzkit/skills/gz-plan/SKILL.md",
+        ".gzkit/skills/gz-adr-create/SKILL.md"
+      ]
+    }
+  ]
+}
