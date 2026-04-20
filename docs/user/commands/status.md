@@ -7,7 +7,7 @@ Display OBPI progress, lifecycle status, and gate readiness across ADRs.
 ## Usage
 
 ```bash
-gz status [--json] [--table] [--show-gates]
+gz status [--json] [--table] [--show-gates] [--epic SLUG]
 ```
 
 ---
@@ -49,6 +49,22 @@ Anchor freshness stays fail-closed in `closeout_blockers`, but a completed OBPI
 keeps its completed runtime state unless non-anchor proof/evidence drift is
 present.
 
+### `--epic SLUG` (pool-ADR filter)
+
+`--epic <slug>` restricts output to pool ADRs (`ADR-pool.*`) that belong to the named epic.
+Matching is OR'd across two paths:
+
+- **Filename-derived.** The first hyphen-delimited token after `ADR-pool.` is the epic-slug.
+  `ADR-pool.auth-login.md` matches `--epic auth`.
+- **Frontmatter-derived.** A pool ADR may set an optional `epic: <slug>` field in its YAML
+  frontmatter. `ADR-pool.claude-code.md` with `epic: vendor-alignment` matches
+  `--epic vendor-alignment` (useful for multi-token epic names that the single-token filename
+  convention cannot express).
+
+When both paths are present and disagree, `gz status --epic <slug>` emits a non-fatal warning
+(stderr in human mode; populated `warnings: []` in `--json` mode). Non-pool ADRs are always
+excluded when `--epic` is set. An epic with no members exits 0 with an empty `adrs` map.
+
 ---
 
 ## JSON Output
@@ -82,6 +98,8 @@ uv run gz status
 uv run gz status --table
 uv run gz status --show-gates
 uv run gz status --json
+uv run gz status --epic auth
+uv run gz status --epic vendor-alignment --json
 ```
 
 When tasks exist for active OBPIs, a task summary row appears showing counts
