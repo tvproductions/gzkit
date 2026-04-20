@@ -1,4 +1,6 @@
 import os
+import shutil
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -10,14 +12,50 @@ from tests.commands.common import (
     stop_init_subprocess_patches,
 )
 
+# Module-level cache: one ``gz init`` shared across tests via copytree
+# (GHI #253). Saves ~130ms per test that needs an init'd workspace.
+_TEMPLATE_CTX: tempfile.TemporaryDirectory | None = None
+_TEMPLATE_DIR: Path | None = None
+
 
 def setUpModule() -> None:
-    """Stub the init subprocess boundaries (uv sync + ruff format)."""
+    """Stub the init subprocess boundaries and build the shared init'd template."""
+    global _TEMPLATE_CTX, _TEMPLATE_DIR
     start_init_subprocess_patches()
+    _TEMPLATE_CTX = tempfile.TemporaryDirectory(prefix="gzkit-sync-tpl-")
+    _TEMPLATE_DIR = Path(_TEMPLATE_CTX.name) / "project"
+    _TEMPLATE_DIR.mkdir()
+    orig = Path.cwd()
+    os.chdir(_TEMPLATE_DIR)
+    try:
+        CliRunner().invoke(main, ["init"])
+    finally:
+        os.chdir(orig)
 
 
 def tearDownModule() -> None:
+    global _TEMPLATE_CTX, _TEMPLATE_DIR
+    if _TEMPLATE_CTX is not None:
+        _TEMPLATE_CTX.cleanup()
+    _TEMPLATE_CTX = None
+    _TEMPLATE_DIR = None
     stop_init_subprocess_patches()
+
+
+class _InitFromTemplate:
+    """Context manager: copytree cached init'd tree into a fresh tempdir."""
+
+    def __enter__(self) -> None:
+        assert _TEMPLATE_DIR is not None
+        self._tmpctx = tempfile.TemporaryDirectory(prefix="gzkit-sync-test-")
+        dest = Path(self._tmpctx.name) / "project"
+        shutil.copytree(_TEMPLATE_DIR, dest)
+        self._orig_cwd = Path.cwd()
+        os.chdir(dest)
+
+    def __exit__(self, *exc: object) -> None:
+        os.chdir(self._orig_cwd)
+        self._tmpctx.cleanup()
 
 
 class TestGitSyncCommand(unittest.TestCase):
@@ -42,8 +80,7 @@ class TestGitSyncCommand(unittest.TestCase):
     def test_git_sync_fails_outside_git_repo(self) -> None:
         """git-sync returns error when cwd is not a git repo."""
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             result = runner.invoke(main, ["git-sync"])
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("not a git repository", result.output.lower())
@@ -51,8 +88,7 @@ class TestGitSyncCommand(unittest.TestCase):
     def test_git_sync_dry_run_in_git_repo(self) -> None:
         """git-sync dry-run works in a local git repo — mocked git subprocess."""
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
 
             with _git_subprocess_patcher():
                 result = runner.invoke(main, ["git-sync"])
@@ -66,8 +102,7 @@ class TestGitSyncCommand(unittest.TestCase):
     def test_git_sync_rejects_skip_that_disables_xenon(self) -> None:
         """git-sync blocks SKIP values that can bypass xenon complexity checks."""
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             original_skip = os.environ.get("SKIP")
             os.environ["SKIP"] = "xenon-complexity"
             try:
@@ -88,8 +123,7 @@ class TestSyncCommand(unittest.TestCase):
     def test_agent_sync_control_surfaces_updates_surfaces(self) -> None:
         """agent sync control-surfaces is the canonical command."""
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             result = runner.invoke(main, ["agent", "sync", "control-surfaces"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("Sync complete", result.output)
@@ -97,8 +131,7 @@ class TestSyncCommand(unittest.TestCase):
     def test_agent_sync_dry_run_reports_complete_write_set(self) -> None:
         """Dry-run output must list every path that sync_all() would touch."""
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             apply_result = runner.invoke(main, ["agent", "sync", "control-surfaces"])
             self.assertEqual(apply_result.exit_code, 0)
             applied = {
@@ -120,8 +153,7 @@ class TestSyncCommand(unittest.TestCase):
     def test_agent_sync_dry_run_does_not_mutate_disk(self) -> None:
         """Dry-run must not modify any file on disk."""
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             before: dict[str, bytes] = {}
             for surface_root in (
                 "AGENTS.md",
@@ -151,8 +183,7 @@ class TestSyncCommand(unittest.TestCase):
     def test_sync_alias_is_removed(self) -> None:
         """sync top-level alias is no longer accepted after hard cutover."""
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             result = runner.invoke(main, ["sync"])
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("invalid choice", result.output.lower())
@@ -160,8 +191,7 @@ class TestSyncCommand(unittest.TestCase):
     def test_agent_control_sync_alias_is_removed(self) -> None:
         """agent-control-sync alias is no longer accepted after hard cutover."""
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             result = runner.invoke(main, ["agent-control-sync"])
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("invalid choice", result.output.lower())
@@ -169,8 +199,7 @@ class TestSyncCommand(unittest.TestCase):
     def test_agent_sync_fails_closed_on_canonical_skill_corruption(self) -> None:
         """Sync blocks mirror propagation when canonical SKILL metadata is invalid."""
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             Path(".gzkit/skills/lint/SKILL.md").write_text("# SKILL.md\n\nbroken\n")
 
             result = runner.invoke(main, ["agent", "sync", "control-surfaces"])
@@ -182,8 +211,7 @@ class TestSyncCommand(unittest.TestCase):
     def test_agent_sync_reports_stale_mirror_recovery_non_destructively(self) -> None:
         """Sync warns on stale mirror-only paths and preserves them for manual cleanup."""
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             stale_skill = Path(".claude/skills/stale-skill")
             stale_skill.mkdir(parents=True, exist_ok=True)
             (stale_skill / "SKILL.md").write_text(
@@ -207,8 +235,7 @@ class TestSyncCommand(unittest.TestCase):
     def test_agent_sync_output_is_deterministic_across_repeated_runs(self) -> None:
         """Repeated sync command output is stable for unchanged inputs."""
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
 
             first = runner.invoke(main, ["agent", "sync", "control-surfaces"])
             second = runner.invoke(main, ["agent", "sync", "control-surfaces"])

@@ -1,5 +1,7 @@
 import json
+import os
 import shutil
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -13,14 +15,50 @@ from tests.commands.common import (
 
 _REAL_PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
+# Module-level cache: one ``gz init`` shared across tests via copytree
+# (GHI #253).
+_TEMPLATE_CTX: tempfile.TemporaryDirectory | None = None
+_TEMPLATE_DIR: Path | None = None
+
 
 def setUpModule() -> None:
-    """Stub the init subprocess boundaries (uv sync + ruff format)."""
+    """Stub init subprocesses and build the shared init'd template."""
+    global _TEMPLATE_CTX, _TEMPLATE_DIR
     start_init_subprocess_patches()
+    _TEMPLATE_CTX = tempfile.TemporaryDirectory(prefix="gzkit-audit-tpl-")
+    _TEMPLATE_DIR = Path(_TEMPLATE_CTX.name) / "project"
+    _TEMPLATE_DIR.mkdir()
+    orig = Path.cwd()
+    os.chdir(_TEMPLATE_DIR)
+    try:
+        CliRunner().invoke(main, ["init"])
+    finally:
+        os.chdir(orig)
 
 
 def tearDownModule() -> None:
+    global _TEMPLATE_CTX, _TEMPLATE_DIR
+    if _TEMPLATE_CTX is not None:
+        _TEMPLATE_CTX.cleanup()
+    _TEMPLATE_CTX = None
+    _TEMPLATE_DIR = None
     stop_init_subprocess_patches()
+
+
+class _InitFromTemplate:
+    """Context manager: copytree cached init'd tree into a fresh tempdir."""
+
+    def __enter__(self) -> None:
+        assert _TEMPLATE_DIR is not None
+        self._tmpctx = tempfile.TemporaryDirectory(prefix="gzkit-audit-test-")
+        dest = Path(self._tmpctx.name) / "project"
+        shutil.copytree(_TEMPLATE_DIR, dest)
+        self._orig_cwd = Path.cwd()
+        os.chdir(dest)
+
+    def __exit__(self, *exc: object) -> None:
+        os.chdir(self._orig_cwd)
+        self._tmpctx.cleanup()
 
 
 class TestConfigAndCliAuditCommands(unittest.TestCase):
@@ -201,8 +239,7 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
 
     def test_check_config_paths_passes_for_valid_layout(self) -> None:
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             Path("src").mkdir(exist_ok=True)
             Path("tests").mkdir(exist_ok=True)
             Path("docs").mkdir(exist_ok=True)
@@ -217,8 +254,7 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
 
     def test_check_config_paths_detects_missing_path(self) -> None:
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             Path("src").mkdir(exist_ok=True)
             Path("tests").mkdir(exist_ok=True)
             Path("docs").mkdir(exist_ok=True)
@@ -237,8 +273,7 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
 
     def test_check_config_paths_rejects_legacy_global_obpi_path(self) -> None:
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             config_path = Path(".gzkit.json")
             config = json.loads(config_path.read_text(encoding="utf-8"))
             config["paths"]["obpis"] = "design/obpis"
@@ -251,8 +286,7 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
 
     def test_check_config_paths_rejects_legacy_global_obpi_files(self) -> None:
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             legacy_file = Path("design/obpis/OBPI-0.1.0-01-legacy.md")
             legacy_file.parent.mkdir(parents=True, exist_ok=True)
             legacy_file.write_text("# legacy\n")
@@ -263,8 +297,7 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
 
     def test_cli_audit_passes_with_synchronized_docs(self) -> None:
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             self._prepare_docs_surface()
             result = runner.invoke(main, ["cli", "audit"])
             self.assertEqual(result.exit_code, 0)
@@ -272,8 +305,7 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
 
     def test_cli_audit_detects_mismatch(self) -> None:
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             self._prepare_docs_surface()
             # Corrupt one heading to trigger mismatch.
             doc_rel = manpage_path_for("closeout")
@@ -284,8 +316,7 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
 
     def test_cli_audit_detects_invalid_readme_quickstart_command(self) -> None:
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             self._prepare_docs_surface()
             Path("README.md").write_text(
                 "\n".join(
@@ -308,8 +339,7 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
 
     def test_parity_check_passes_when_contract_surfaces_are_present(self) -> None:
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             self._prepare_parity_surface()
             result = runner.invoke(main, ["parity", "check"])
             self.assertEqual(result.exit_code, 0)
@@ -317,8 +347,7 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
 
     def test_parity_check_fails_when_discovery_index_missing(self) -> None:
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             self._prepare_parity_surface()
             Path(".github/discovery-index.json").unlink()
             result = runner.invoke(main, ["parity", "check"])
@@ -327,8 +356,7 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
 
     def test_readiness_audit_passes_for_initialized_repository(self) -> None:
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             self._prepare_docs_surface()
             self._prepare_parity_surface()
             self._prepare_readiness_surface()
@@ -338,8 +366,7 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
 
     def test_readiness_audit_fails_when_required_surface_missing(self) -> None:
         runner = CliRunner()
-        with runner.isolated_filesystem():
-            runner.invoke(main, ["init"])
+        with _InitFromTemplate():
             self._prepare_docs_surface()
             self._prepare_parity_surface()
             self._prepare_readiness_surface()
