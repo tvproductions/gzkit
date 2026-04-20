@@ -180,3 +180,35 @@ Ran 2359 tests in 33.681s
 
 OK
 ```
+## 2026-04-19T19:52:02-05:00
+- Status: PASS
+- Chore: evidence-integrity-audit
+- Title: OBPI Evidence Integrity Audit
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uv run -m unittest -q` => rc=0 (50.93s) -- exit 0 == 0
+
+```text
+[uv run -m unittest -q] stderr:
+----------------------------------------------------------------------
+Ran 3243 tests in 50.085s
+
+OK (skipped=1)
+```
+## 2026-04-19T21:03:55-05:00
+- Status: PASS
+- Chore: evidence-integrity-audit
+- Title: OBPI Evidence Integrity Audit
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uv run -m unittest -q` => rc=0 (52.80s) -- exit 0 == 0
+
+```text
+[uv run -m unittest -q] stderr:
+----------------------------------------------------------------------
+Ran 3243 tests in 51.968s
+
+OK (skipped=1)
+```

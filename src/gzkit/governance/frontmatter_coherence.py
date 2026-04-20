@@ -92,6 +92,7 @@ class UnmappedStatusBlocker(Exception):
     """
 
     def __init__(self, artifact: str, term: str) -> None:
+        """Build a blocker exception for ``term`` seen at ``artifact``."""
         self.artifact = artifact
         self.term = term
         super().__init__(
@@ -245,7 +246,7 @@ def _build_file_rewrite(
 
 
 def reconcile_frontmatter(project_root: Path, *, dry_run: bool) -> ReconciliationReceipt:
-    """Main entry point: detect drift via the validator, rewrite to ledger-wins.
+    """Detect drift via the validator, then rewrite to ledger-wins (main entry point).
 
     Pre-flight: every file with drifted ``status:`` must have its current
     frontmatter term in STATUS_VOCAB_MAPPING. Unmapped → UnmappedStatusBlocker
@@ -361,7 +362,7 @@ def _enumerate_pool_artifacts(project_root: Path) -> list[str]:
 
 
 def _status_is_known(term: str) -> bool:
-    """True when ``term`` is case-insensitively present as a key in STATUS_VOCAB_MAPPING."""
+    """Return True when ``term`` is case-insensitively present in STATUS_VOCAB_MAPPING."""
     if not term:
         return False
     lowered = term.lower()

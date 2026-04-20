@@ -267,7 +267,7 @@ class TestExplainFlag(unittest.TestCase):
 
         self.assertTrue(result.is_stale)
         self.assertIsNotNone(result.days_until_removal)
-        self.assertLess(result.days_until_removal, 0)  # type: ignore[arg-type]
+        self.assertLess(result.days_until_removal, 0)  # ty: ignore[no-matching-overload]
 
     @covers("REQ-0.0.8-04-04")
     def test_explain_days_remaining_positive(self) -> None:
@@ -282,7 +282,7 @@ class TestExplainFlag(unittest.TestCase):
 
         self.assertFalse(result.is_stale)
         self.assertIsNotNone(result.days_until_review)
-        self.assertGreater(result.days_until_review, 0)  # type: ignore[arg-type]
+        self.assertGreater(result.days_until_review, 0)  # ty: ignore[no-matching-overload]
 
     @covers("REQ-0.0.8-04-04")
     def test_explain_no_dates_when_absent(self) -> None:

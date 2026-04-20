@@ -15,7 +15,7 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, ".")
-sys.stdout.reconfigure(encoding="utf-8")
+sys.stdout.reconfigure(encoding="utf-8")  # ty: ignore[unresolved-attribute]
 
 
 class TimingResult(unittest.TextTestResult):
@@ -50,10 +50,10 @@ def main() -> int:
         t0 = time.perf_counter()
         res = runner.run(suite)
         wall = time.perf_counter() - t0
-        per = sum(d for _, d in res.timings)  # type: ignore[attr-defined]
+        per = sum(d for _, d in res.timings)  # ty: ignore[unresolved-attribute]
         # Skip load-failure placeholders ("1 test, 0s runtime") — real modules
         # with one test still report > 0 for the test itself.
-        if len(res.timings) == 1 and per < 0.001:  # type: ignore[attr-defined]
+        if len(res.timings) == 1 and per < 0.001:  # ty: ignore[unresolved-attribute]
             continue
         gap = wall - per
         rows.append((gap, wall, per, n_cases, mod))

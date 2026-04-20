@@ -186,3 +186,97 @@ OK
 [uv run gz check-config-paths] stdout:
 Config-path audit passed.
 ```
+## 2026-04-19T19:48:01-05:00
+- Status: FAIL
+- Chore: config-paths-remediation
+- Title: Config Paths Remediation
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uv run -m unittest -q` => rc=0 (51.34s) -- exit 0 == 0
+  - [FAIL] `uv run gz check-config-paths` => rc=1 (0.54s) -- exit 1 != 0
+
+```text
+[uv run -m unittest -q] stderr:
+----------------------------------------------------------------------
+Ran 3243 tests in 50.521s
+
+OK (skipped=1)
+[uv run gz check-config-paths] stdout:
+Config-path audit failed.
+[uv run gz check-config-paths] stderr:
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\Jeff\source\repos\va\gzkit\.venv\Scripts\gz.exe\__main__.py", line 10, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "C:\Users\Jeff\source\repos\va\gzkit\src\gzkit\cli\main.py", line 166, in main
+    console.print(f"[red]Unexpected error: {exc}[/red]")
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Jeff\source\repos\va\gzkit\.venv\Lib\site-packages\rich\console.py", line 1698, in print
+    renderables = self._collect_renderables(
+        objects,
+    ...<5 lines>...
+        highlight=highlight,
+    )
+  File "C:\Users\Jeff\source\repos\va\gzkit\.venv\Lib\site-packages\rich\console.py", line 1558, in _collect_renderables
+    self.render_str(
+    ~~~~~~~~~~~~~~~^
+        renderable,
+        ^^^^^^^^^^^
+    ...<3 lines>...
+        highlighter=_highlighter,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Jeff\source\repos\va\gzkit\.venv\Lib\site-packages\rich\console.py", line 1448, in render_str
+    rich_text = render_markup(
+        text,
+    ...<2 lines>...
+        emoji_variant=self._emoji_variant,
+    )
+  File "C:\Users\Jeff\source\repos\va\gzkit\.venv\Lib\site-packages\rich\markup.py", line 167, in render
+    raise MarkupError(
+        f"closing tag '{tag.markup}' at position {position} doesn't match any open tag"
+    ) from None
+rich.errors.MarkupError: closing tag '[/green]' at position 36 doesn't match any open tag
+```
+## 2026-04-19T20:14:28-05:00
+- Status: PASS
+- Chore: config-paths-remediation
+- Title: Config Paths Remediation
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uv run -m unittest -q` => rc=0 (51.62s) -- exit 0 == 0
+  - [PASS] `uv run gz check-config-paths` => rc=0 (0.52s) -- exit 0 == 0
+
+```text
+[uv run -m unittest -q] stderr:
+----------------------------------------------------------------------
+Ran 3243 tests in 50.822s
+
+OK (skipped=1)
+[uv run gz check-config-paths] stdout:
+Config-path audit passed.
+```
+## 2026-04-19T21:00:11-05:00
+- Status: PASS
+- Chore: config-paths-remediation
+- Title: Config Paths Remediation
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uv run -m unittest -q` => rc=0 (53.16s) -- exit 0 == 0
+  - [PASS] `uv run gz check-config-paths` => rc=0 (0.55s) -- exit 0 == 0
+
+```text
+[uv run -m unittest -q] stderr:
+----------------------------------------------------------------------
+Ran 3243 tests in 52.339s
+
+OK (skipped=1)
+[uv run gz check-config-paths] stdout:
+Config-path audit passed.
+```

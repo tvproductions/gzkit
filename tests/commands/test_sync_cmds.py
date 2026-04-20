@@ -89,7 +89,6 @@ class TestGitSyncCommand(unittest.TestCase):
         """git-sync dry-run works in a local git repo — mocked git subprocess."""
         runner = CliRunner()
         with _InitFromTemplate():
-
             with _git_subprocess_patcher():
                 result = runner.invoke(main, ["git-sync"])
             self.assertEqual(result.exit_code, 0)
@@ -236,7 +235,6 @@ class TestSyncCommand(unittest.TestCase):
         """Repeated sync command output is stable for unchanged inputs."""
         runner = CliRunner()
         with _InitFromTemplate():
-
             first = runner.invoke(main, ["agent", "sync", "control-surfaces"])
             second = runner.invoke(main, ["agent", "sync", "control-surfaces"])
 

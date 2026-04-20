@@ -9,6 +9,9 @@ from unittest import mock
 
 from gzkit.hooks import guards
 
+_stdout_ctx: redirect_stdout[io.StringIO] | None = None
+_stderr_ctx: redirect_stderr[io.StringIO] | None = None
+
 
 def setUpModule() -> None:
     # The guards emit warnings via _safe_print on the failure paths. These
@@ -22,6 +25,7 @@ def setUpModule() -> None:
 
 
 def tearDownModule() -> None:
+    assert _stderr_ctx is not None and _stdout_ctx is not None
     _stderr_ctx.__exit__(None, None, None)
     _stdout_ctx.__exit__(None, None, None)
 

@@ -109,7 +109,7 @@ class TestAdrFrontmatter(unittest.TestCase):
 
     def test_missing_required_field(self) -> None:
         with self.assertRaises(PydanticValidationError) as ctx:
-            AdrFrontmatter(  # type: ignore[missing-argument]
+            AdrFrontmatter(  # ty: ignore[missing-argument]
                 id="ADR-0.1.0",
                 status="Draft",
             )
@@ -158,7 +158,7 @@ class TestAdrFrontmatter(unittest.TestCase):
     @covers("REQ-0.0.17-01-05")
     def test_missing_kind(self) -> None:
         with self.assertRaises(PydanticValidationError) as ctx:
-            AdrFrontmatter(  # type: ignore[missing-argument]
+            AdrFrontmatter(  # ty: ignore[missing-argument]
                 id="ADR-0.1.0",
                 status="Draft",
                 semver="0.1.0",
@@ -270,7 +270,7 @@ class TestPrdFrontmatter(unittest.TestCase):
 
     def test_missing_required_field(self) -> None:
         with self.assertRaises(PydanticValidationError) as ctx:
-            PrdFrontmatter(id="PRD-GZKIT-1.0.0")  # type: ignore[missing-argument]
+            PrdFrontmatter(id="PRD-GZKIT-1.0.0")  # ty: ignore[missing-argument]
         missing_fields = {
             str(e["loc"][0]) for e in ctx.exception.errors() if e["type"] == "missing"
         }

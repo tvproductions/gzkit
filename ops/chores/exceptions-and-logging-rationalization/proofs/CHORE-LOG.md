@@ -186,3 +186,41 @@ OK
 [uvx ruff check src/gzkit --select E722] stdout:
 All checks passed!
 ```
+## 2026-04-19T19:52:59-05:00
+- Status: PASS
+- Chore: exceptions-and-logging-rationalization
+- Title: Exceptions & Logging Rationalization
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uv run -m unittest -q` => rc=0 (51.65s) -- exit 0 == 0
+  - [PASS] `uvx ruff check src/gzkit --select E722` => rc=0 (0.17s) -- exit 0 == 0
+
+```text
+[uv run -m unittest -q] stderr:
+----------------------------------------------------------------------
+Ran 3243 tests in 50.836s
+
+OK (skipped=1)
+[uvx ruff check src/gzkit --select E722] stdout:
+All checks passed!
+```
+## 2026-04-19T21:04:49-05:00
+- Status: PASS
+- Chore: exceptions-and-logging-rationalization
+- Title: Exceptions & Logging Rationalization
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uv run -m unittest -q` => rc=0 (52.76s) -- exit 0 == 0
+  - [PASS] `uvx ruff check src/gzkit --select E722` => rc=0 (0.07s) -- exit 0 == 0
+
+```text
+[uv run -m unittest -q] stderr:
+----------------------------------------------------------------------
+Ran 3243 tests in 51.894s
+
+OK (skipped=1)
+[uvx ruff check src/gzkit --select E722] stdout:
+All checks passed!
+```

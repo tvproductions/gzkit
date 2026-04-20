@@ -139,6 +139,7 @@ def parse_frontmatter(content: str) -> dict:
 
     Raises:
         HandoffValidationError: If frontmatter delimiters are missing or YAML is invalid.
+
     """
     content = content.replace("\r\n", "\n")
     lines = content.split("\n")
@@ -174,6 +175,7 @@ def validate_no_placeholders(content: str) -> list[str]:
 
     Returns:
         List of violation descriptions (empty = clean).
+
     """
     content = content.replace("\r\n", "\n")
     # Strip frontmatter before scanning
@@ -194,6 +196,7 @@ def validate_no_secrets(content: str) -> list[str]:
 
     Returns:
         List of violation descriptions (empty = clean).
+
     """
     content = content.replace("\r\n", "\n")
     violations: list[str] = []
@@ -210,6 +213,7 @@ def validate_sections_present(content: str) -> list[str]:
 
     Returns:
         List of missing section names (empty = all present).
+
     """
     content = content.replace("\r\n", "\n")
     missing: list[str] = []
@@ -229,6 +233,7 @@ def validate_referenced_files(content: str, base_path: Path) -> list[str]:
 
     Returns:
         List of nonexistent file paths (empty = all exist).
+
     """
     content = content.replace("\r\n", "\n")
     body = _strip_frontmatter(content)
@@ -275,6 +280,7 @@ def validate_handoff_document(content: str, base_path: Path) -> list[str]:
 
     Returns:
         List of all violation messages (empty = valid).
+
     """
     content = content.replace("\r\n", "\n")
     errors: list[str] = []

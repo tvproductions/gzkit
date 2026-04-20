@@ -34,7 +34,6 @@ def _find_obpi_briefs(project_root: Path) -> list[Path]:
 
 def _validate_interviews(project_root: Path) -> list[ValidationError]:
     """Check that ADRs with OBPIs have an interview transcript artifact."""
-
     adr_root = project_root / "docs" / "design" / "adr"
     transcript_dir = project_root / ".gzkit" / "transcripts"
     if not adr_root.is_dir():

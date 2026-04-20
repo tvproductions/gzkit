@@ -180,3 +180,75 @@ Ran 2359 tests in 37.320s
 
 OK
 ```
+## 2026-04-19T20:04:23-05:00
+- Status: PASS
+- Chore: test-isolation-compliance
+- Title: Test Isolation & Health Compliance
+- Lane: lite
+- Version: 2.0.0
+- Criteria Results:
+  - [PASS] `uv run python tests/tools/test_health_profiler.py` => rc=0 (51.56s) -- exit 0 == 0
+  - [PASS] `uv run -m unittest -q` => rc=0 (51.89s) -- exit 0 == 0
+
+```text
+[uv run python tests/tools/test_health_profiler.py] stdout:
+Tests: 3243  Wall: 50.7s
+Failures: 0  Errors: 0
+
+Top 5 slowest tests:
+   1.732s  test_check_surfaces_report_returns_valid_report (tests.test_doc_coverage.TestIntegration.test_check_surfaces_report_returns_valid_report)
+   1.032s  test_chores_run_timeout_returns_nonzero (tests.commands.test_chores.TestChoresCommands.test_chores_run_timeout_returns_nonzero)
+   0.619s  test_pydantic_models_rules_25_26 (tests.governance.test_promoted_advisory_audits.PromotedAdvisoryAudits.test_pydantic_models_rules_25_26)
+   0.532s  test_runtime_budget_under_one_second_on_real_repo (tests.commands.test_validate_frontmatter.TestFrontmatterGuard.test_runtime_budget_under_one_second_on_real_repo)
+   0.477s  test_tier_b_rebuild_and_gz_state (tests.adr.test_storage_tiers.TestGitCloneRecovery.test_tier_b_rebuild_and_gz_state)
+
+Top 5 modules by time:
+    3.7s   25 tests  148.0ms/test  tests.test_obpi_validator.TestObpiValidator
+    1.8s    2 tests  875.0ms/test  tests.test_doc_coverage.TestIntegration
+    1.6s   33 tests   49.1ms/test  tests.commands.test_runtime.TestAdrRuntimeCommands
+    1.5s   31 tests   47.7ms/test  tests.test_sync.TestSyncControlSurfaces
+    1.5s   15 tests   97.3ms/test  tests.commands.test_skills.TestSkillCommands
+
+PASSED: All thresholds met.
+[uv run -m unittest -q] stderr:
+----------------------------------------------------------------------
+Ran 3243 tests in 51.078s
+
+OK (skipped=1)
+```
+## 2026-04-19T21:17:10-05:00
+- Status: PASS
+- Chore: test-isolation-compliance
+- Title: Test Isolation & Health Compliance
+- Lane: lite
+- Version: 2.0.0
+- Criteria Results:
+  - [PASS] `uv run python tests/tools/test_health_profiler.py` => rc=0 (50.66s) -- exit 0 == 0
+  - [PASS] `uv run -m unittest -q` => rc=0 (50.94s) -- exit 0 == 0
+
+```text
+[uv run python tests/tools/test_health_profiler.py] stdout:
+Tests: 3243  Wall: 49.9s
+Failures: 0  Errors: 0
+
+Top 5 slowest tests:
+   1.794s  test_check_surfaces_report_returns_valid_report (tests.test_doc_coverage.TestIntegration.test_check_surfaces_report_returns_valid_report)
+   1.037s  test_chores_run_timeout_returns_nonzero (tests.commands.test_chores.TestChoresCommands.test_chores_run_timeout_returns_nonzero)
+   0.580s  test_pydantic_models_rules_25_26 (tests.governance.test_promoted_advisory_audits.PromotedAdvisoryAudits.test_pydantic_models_rules_25_26)
+   0.498s  test_runtime_budget_under_one_second_on_real_repo (tests.commands.test_validate_frontmatter.TestFrontmatterGuard.test_runtime_budget_under_one_second_on_real_repo)
+   0.470s  test_tier_b_rebuild_and_gz_state (tests.adr.test_storage_tiers.TestGitCloneRecovery.test_tier_b_rebuild_and_gz_state)
+
+Top 5 modules by time:
+    3.6s   25 tests  143.2ms/test  tests.test_obpi_validator.TestObpiValidator
+    1.8s    2 tests  910.0ms/test  tests.test_doc_coverage.TestIntegration
+    1.6s   33 tests   47.0ms/test  tests.commands.test_runtime.TestAdrRuntimeCommands
+    1.5s   14 tests  110.0ms/test  tests.commands.test_validate_cmds.TestValidateCommand
+    1.5s   25 tests   60.4ms/test  tests.commands.test_status.TestStatusCommand
+
+PASSED: All thresholds met.
+[uv run -m unittest -q] stderr:
+----------------------------------------------------------------------
+Ran 3243 tests in 50.152s
+
+OK (skipped=1)
+```

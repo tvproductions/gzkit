@@ -266,7 +266,7 @@ def _paths_overlap(a: str, b: str) -> bool:
 
 
 def _is_specific_path(path: str) -> bool:
-    """A path is specific enough to yield useful collision signal.
+    """Return True when the path is specific enough to yield useful collision signal.
 
     Root-level globs like ``src/``, ``tests/``, ``docs/``, or two-component
     paths like ``src/gzkit/`` are too broad -- every brief targets one of

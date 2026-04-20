@@ -204,6 +204,7 @@ def _is_path_covered_by_manifest(literal: str, manifest_paths: set[str]) -> bool
 
 _PATH_SEGMENT_RE = (
     r"^(?:src|tests|docs|data|config|ops|artifacts|\.gzkit|\.claude|\.github|\.agents)"
+    r"(?:/[\w.\-]+)+/?$"
 )
 
 
@@ -303,7 +304,7 @@ def check_config_paths_cmd(as_json: bool) -> None:
     else:
         console.print("[red]Config-path audit failed.[/red]")
         for issue in issues:
-            console.print(f"  - {issue['path']}: {issue['issue']}")
+            console.print(f"  - {issue['path']}: {issue['issue']}", markup=False)
 
     if issues:
         raise SystemExit(1)

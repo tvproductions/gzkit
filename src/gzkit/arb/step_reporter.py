@@ -60,6 +60,7 @@ def run_step_via_arb(
 
     Raises:
         ValueError: If name is empty or cmd is empty.
+
     """
     step_name = (name or "").strip()
     if not step_name:

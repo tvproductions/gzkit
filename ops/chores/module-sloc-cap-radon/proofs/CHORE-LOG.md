@@ -180,3 +180,35 @@ Ran 2359 tests in 33.601s
 
 OK
 ```
+## 2026-04-19T19:55:06-05:00
+- Status: PASS
+- Chore: module-sloc-cap-radon
+- Title: Module SLOC Cap (Radon)
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uv run -m unittest -q` => rc=0 (50.47s) -- exit 0 == 0
+
+```text
+[uv run -m unittest -q] stderr:
+----------------------------------------------------------------------
+Ran 3243 tests in 49.662s
+
+OK (skipped=1)
+```
+## 2026-04-19T21:07:22-05:00
+- Status: PASS
+- Chore: module-sloc-cap-radon
+- Title: Module SLOC Cap (Radon)
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uv run -m unittest -q` => rc=0 (49.25s) -- exit 0 == 0
+
+```text
+[uv run -m unittest -q] stderr:
+----------------------------------------------------------------------
+Ran 3243 tests in 48.431s
+
+OK (skipped=1)
+```

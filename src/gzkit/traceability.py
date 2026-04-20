@@ -377,7 +377,7 @@ def _scan_feature_source(feature_path: pathlib.Path, source: str) -> list[Linkag
 
 
 def _is_tag_only_line(stripped: str) -> bool:
-    """True if the line contains only ``@...`` tokens (whitespace-separated)."""
+    """Return True when the line contains only ``@...`` tokens (whitespace-separated)."""
     tokens = stripped.split()
     return all(token.startswith("@") for token in tokens)
 

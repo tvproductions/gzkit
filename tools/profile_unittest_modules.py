@@ -12,7 +12,7 @@ import time
 import unittest
 from collections import defaultdict
 
-sys.stdout.reconfigure(encoding="utf-8")
+sys.stdout.reconfigure(encoding="utf-8")  # ty: ignore[unresolved-attribute]
 
 
 class TimingResult(unittest.TextTestResult):
@@ -44,7 +44,7 @@ def main() -> int:
     result = runner.run(suite)
     total = time.perf_counter() - t0
 
-    timings: list[tuple[str, float]] = result.timings  # type: ignore[attr-defined]
+    timings: list[tuple[str, float]] = result.timings  # ty: ignore[unresolved-attribute]
     timings.sort(key=lambda x: x[1], reverse=True)
 
     # Per-module aggregate

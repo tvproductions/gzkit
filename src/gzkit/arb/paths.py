@@ -34,6 +34,7 @@ def receipts_root(
 
     Raises:
         OSError: If the directory cannot be created.
+
     """
     override = os.environ.get(_ENV_OVERRIDE)
     if override:

@@ -90,6 +90,7 @@ def validate_receipts(
 
     Returns:
         Validation summary.
+
     """
     receipts_dir = root or receipts_root()
     scanned = 0

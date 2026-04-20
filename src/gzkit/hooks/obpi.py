@@ -58,9 +58,9 @@ _FENCED_BLOCK_PATTERN = re.compile(r"```[a-z]*\n(.*?)\n```", flags=re.DOTALL)
 
 
 def extract_gz_command_chains(content: str) -> list[list[str]]:
-    """Extract every `gz <verb> [<verb>...]` chain from brief code segments.
+    r"""Extract every `gz <verb> [<verb>...]` chain from brief code segments.
 
-    Scans inline code (\\`...\\`) and fenced code blocks (\\`\\`\\`...\\`\\`\\`)
+    Scans inline code (\`...\`) and fenced code blocks (\`\`\`...\`\`\`)
     only — prose mentions are ignored by design (brief authors quote
     prescriptive commands; prose references are descriptive). Used by
     ObpiValidator._validate_command_shapes to verify each chain resolves

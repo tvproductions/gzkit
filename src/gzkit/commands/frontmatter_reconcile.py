@@ -24,7 +24,7 @@ from gzkit.governance.frontmatter_coherence import (
 
 
 def frontmatter_reconcile_cmd(*, dry_run: bool = False, as_json: bool = False) -> int:
-    """Handler for ``gz frontmatter reconcile``.
+    """Handle ``gz frontmatter reconcile``.
 
     Exit codes (per .claude/rules/cli.md):
       0 = success

@@ -179,3 +179,97 @@ PASSED: 68 commands discovered, 68 checked, all required surfaces present.
 [uv run -m gzkit.doc_coverage.runner] stderr:
 <frozen runpy>:128: RuntimeWarning: 'gzkit.doc_coverage.runner' found in sys.modules after import of package 'gzkit.doc_coverage', but prior to execution of 'gzkit.doc_coverage.runner'; this may result in unpredictable behaviour
 ```
+## 2026-04-19T19:51:06-05:00
+- Status: FAIL
+- Chore: doc-coverage
+- Title: Documentation Cross-Coverage Enforcement
+- Lane: heavy
+- Version: 1.0.0
+- Criteria Results:
+  - [FAIL] `uv run -m gzkit.doc_coverage.runner` => rc=1 (1.82s) -- exit 1 != 0
+
+```text
+[uv run -m gzkit.doc_coverage.runner] stdout:
+Documentation Coverage Gap Report
+========================================
+
+  Command: arb advise
+    MISSING: docstring -- No handler name resolved
+    MISSING: index_entry -- 'arb-advise.md' not in index
+    MISSING: manpage -- Missing arb-advise.md
+    MISSING: operator_runbook -- 'gz arb advise' not found in runbook.md
+  Command: arb coverage
+    MISSING: docstring -- No handler name resolved
+    MISSING: index_entry -- 'arb-coverage.md' not in index
+    MISSING: manpage -- Missing arb-coverage.md
+    MISSING: operator_runbook -- 'gz arb coverage' not found in runbook.md
+  Command: arb patterns
+    MISSING: docstring -- No handler name resolved
+    MISSING: index_entry -- 'arb-patterns.md' not in index
+    MISSING: manpage -- Missing arb-patterns.md
+    MISSING: operator_runbook -- 'gz arb patterns' not found in runbook.md
+  Command: arb ruff
+    MISSING: docstring -- No handler name resolved
+    MISSING: index_entry -- 'arb-ruff.md' not in index
+    MISSING: manpage -- Missing arb-ruff.md
+  Command: arb step
+    MISSING: docstring -- No handler name resolved
+    MISSING: index_entry -- 'arb-step.md' not in index
+    MISSING: manpage -- Missing arb-step.md
+  Command: arb ty
+    MISSING: docstring -- No handler name resolved
+    MISSING: index_entry -- 'arb-ty.md' not in index
+    MISSING: manpage -- Missing arb-ty.md
+  Command: arb typecheck
+    MISSING: docstring -- No handler name resolved
+    MISSING: index_entry -- 'arb-typecheck.md' not in index
+    MISSING: manpage -- Missing arb-typecheck.md
+  Command: arb validate
+    MISSING: docstring -- No handler name resolved
+    MISSING: index_entry -- 'arb-validate.md' not in index
+    MISSING: manpage -- Missing arb-validate.md
+
+  Orphaned documentation:
+    - [manpage] docs\user\commands\arb.md: Manpage 'arb.md' has no matching discovered command
+    - [manpage] docs\user\commands\plan.md: Manpage 'plan.md' has no matching discovered command
+
+FAILED: 29 issues found across 8 commands.
+[uv run -m gzkit.doc_coverage.runner] stderr:
+<frozen runpy>:128: RuntimeWarning: 'gzkit.doc_coverage.runner' found in sys.modules after import of package 'gzkit.doc_coverage', but prior to execution of 'gzkit.doc_coverage.runner'; this may result in unpredictable behaviour
+```
+## 2026-04-19T20:49:33-05:00
+- Status: PASS
+- Chore: doc-coverage
+- Title: Documentation Cross-Coverage Enforcement
+- Lane: heavy
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uv run -m gzkit.doc_coverage.runner` => rc=0 (1.95s) -- exit 0 == 0
+
+```text
+[uv run -m gzkit.doc_coverage.runner] stdout:
+Documentation Coverage Gap Report
+========================================
+
+PASSED: 85 commands discovered, 85 checked, all required surfaces present.
+[uv run -m gzkit.doc_coverage.runner] stderr:
+<frozen runpy>:128: RuntimeWarning: 'gzkit.doc_coverage.runner' found in sys.modules after import of package 'gzkit.doc_coverage', but prior to execution of 'gzkit.doc_coverage.runner'; this may result in unpredictable behaviour
+```
+## 2026-04-19T21:03:02-05:00
+- Status: PASS
+- Chore: doc-coverage
+- Title: Documentation Cross-Coverage Enforcement
+- Lane: heavy
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uv run -m gzkit.doc_coverage.runner` => rc=0 (1.97s) -- exit 0 == 0
+
+```text
+[uv run -m gzkit.doc_coverage.runner] stdout:
+Documentation Coverage Gap Report
+========================================
+
+PASSED: 85 commands discovered, 85 checked, all required surfaces present.
+[uv run -m gzkit.doc_coverage.runner] stderr:
+<frozen runpy>:128: RuntimeWarning: 'gzkit.doc_coverage.runner' found in sys.modules after import of package 'gzkit.doc_coverage', but prior to execution of 'gzkit.doc_coverage.runner'; this may result in unpredictable behaviour
+```

@@ -686,9 +686,7 @@ class TestAdrPromoteTaxonomyRoundtrip(unittest.TestCase):
                 ],
             )
             self.assertEqual(result.exit_code, 0, msg=result.output)
-            target = Path(
-                "design/adr/foundation/ADR-0.0.18-sample-work/ADR-0.0.18-sample-work.md"
-            )
+            target = Path("design/adr/foundation/ADR-0.0.18-sample-work/ADR-0.0.18-sample-work.md")
             self.assertTrue(target.exists(), msg=result.output)
             errors = validate_document(target, "adr")
             self.assertEqual(
@@ -716,9 +714,7 @@ class TestAdrPromoteTaxonomyRoundtrip(unittest.TestCase):
                 ],
             )
             self.assertEqual(result.exit_code, 0, msg=result.output)
-            target = Path(
-                "design/adr/pre-release/ADR-0.6.0-sample-work/ADR-0.6.0-sample-work.md"
-            )
+            target = Path("design/adr/pre-release/ADR-0.6.0-sample-work/ADR-0.6.0-sample-work.md")
             self.assertTrue(target.exists(), msg=result.output)
             errors = validate_document(target, "adr")
             self.assertEqual(
