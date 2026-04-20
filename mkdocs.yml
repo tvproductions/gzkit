@@ -164,6 +164,7 @@ nav:
     - Pipeline Marker Migration Path: governance/pipeline-marker-migration-path.md
     - Documentation Taxonomy: governance/documentation-taxonomy.md
     - Feature Flags: governance/feature-flags.md
+    - Pool Curation Policy: governance/pool-curation.md
     - Parity Intake Rubric: governance/parity-intake-rubric.md
     - Charter: governance/GovZero/charter.md
     - ADR Lifecycle: governance/GovZero/adr-lifecycle.md

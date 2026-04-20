@@ -1,12 +1,9 @@
 {
   "obpi_id": "OBPI-0.0.18-03-pool-curation-policy",
-  "timestamp": "2026-04-20T10:00:49.348768+00:00",
-  "verdict": "FAIL",
-  "plan_file": null,
-  "gaps_found": 1,
-  "gaps": [
-    "No plan file found for OBPI-0.0.18-03-pool-curation-policy in .claude/plans/ or ~/.claude/plans/"
-  ],
+  "timestamp": "2026-04-20T11:08:58.370422+00:00",
+  "verdict": "PASS",
+  "plan_file": "tingly-wishing-taco.md",
+  "gaps_found": 0,
   "scope_collisions": [
     {
       "sibling_adr": "ADR-0.39.0",
