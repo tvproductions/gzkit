@@ -1,0 +1,46 @@
+{
+  "obpi_id": "OBPI-0.0.18-01-concepts-page",
+  "timestamp": "2026-04-20T09:14:10.447975+00:00",
+  "verdict": "PASS",
+  "plan_file": "joyful-moseying-pie.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.39.0",
+      "sibling_obpi": "OBPI-0.39.0-06-migration-tooling",
+      "contested_paths": [
+        "docs/user/concepts/adr-taxonomy.md",
+        "docs/user/index.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.3.0",
+      "sibling_obpi": "OBPI-0.3.0-02-divergent-skill-reconciliation",
+      "contested_paths": [
+        "docs/user/index.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.10.0",
+      "sibling_obpi": "OBPI-0.10.0-01-obpi-runtime-contract-and-state-model",
+      "contested_paths": [
+        "docs/user/concepts/adr-taxonomy.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.17",
+      "sibling_obpi": "OBPI-0.0.17-06-agents-md-correction",
+      "contested_paths": [
+        "docs/user/concepts/adr-taxonomy.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.10",
+      "sibling_obpi": "OBPI-0.0.10-04-git-clone-recovery",
+      "contested_paths": [
+        "docs/user/concepts/adr-taxonomy.md",
+        "docs/user/index.md"
+      ]
+    }
+  ]
+}

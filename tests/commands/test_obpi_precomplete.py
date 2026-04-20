@@ -166,7 +166,7 @@ class TestPrecompleteLockCheck(unittest.TestCase):
         with runner.isolated_filesystem():
             _quick_init()
             root = Path.cwd()
-            locks_dir = root / ".gzkit" / "locks"
+            locks_dir = root / ".gzkit" / "locks" / "obpi"
             locks_dir.mkdir(parents=True, exist_ok=True)
             (locks_dir / "OBPI-0.1.0-01.json").write_text(
                 json.dumps({"agent": "test-agent", "claimed_at": "2026-04-18T00:00:00Z"}),
@@ -286,8 +286,8 @@ class TestPrecompleteCliEndToEnd(unittest.TestCase):
             ledger.append(obpi_created_event("OBPI-0.1.0-01", "ADR-0.1.0"))
             _scaffold_authored_brief(root, "ADR-0.1.0", "OBPI-0.1.0-01")
             # Seed lock
-            (root / ".gzkit" / "locks").mkdir(parents=True, exist_ok=True)
-            (root / ".gzkit" / "locks" / "OBPI-0.1.0-01.json").write_text(
+            (root / ".gzkit" / "locks" / "obpi").mkdir(parents=True, exist_ok=True)
+            (root / ".gzkit" / "locks" / "obpi" / "OBPI-0.1.0-01.json").write_text(
                 json.dumps({"agent": "test-agent"}), encoding="utf-8"
             )
             # Seed ARB receipt
