@@ -618,9 +618,12 @@ def sync_all(project_root: Path, config: GzkitConfig | None = None) -> list[str]
                 "copilot",
             )
             updated.extend(rendered)
-        else:
-            sync_copilot_instructions(project_root, config)
-            updated.append(config.paths.copilot_instructions)
+
+        # Copilot reads both the master instructions file AND per-rule files;
+        # the master file must regenerate from templates/copilot.md regardless of
+        # whether per-rule files are also rendered. (GHI #247)
+        sync_copilot_instructions(project_root, config)
+        updated.append(config.paths.copilot_instructions)
 
         sync_discovery_index(project_root, config)
         updated.append(config.paths.discovery_index)
