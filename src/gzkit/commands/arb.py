@@ -1,8 +1,8 @@
 """gz arb CLI — ARB (Agent Self-Reporting) middleware dispatcher.
 
 Wraps QA commands (ruff, ty, unittest, coverage, etc.) and emits validated
-JSON receipts for attestation evidence. See `.gzkit/rules/arb.md` for the
-rule contract and `src/gzkit/arb/` for the implementation.
+JSON receipts for attestation evidence. See `.gzkit/rules/attestation-enrichment.md`
+for the rule contract and `src/gzkit/arb/` for the implementation.
 
 @covers REQ-0.25.0-33-01
 @covers REQ-0.25.0-33-02

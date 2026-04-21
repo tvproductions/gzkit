@@ -55,4 +55,4 @@ gz arb coverage report --fail-under=40
 
 - [`gz arb`](arb.md) — ARB parent reference
 - [`gz test`](test.md) — unwrapped test runner
-- Rule: `.gzkit/rules/arb.md`
+- Rule: `.gzkit/rules/attestation-enrichment.md`

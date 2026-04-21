@@ -1,0 +1,214 @@
+---
+id: agent-contract
+paths:
+  - "**"
+description: Always-loaded agent contract — positive invariants (Do) and negative constraints (Do not) in one file
+---
+
+# Agent Contract (Do / Do not)
+
+**Version:** 1.0 (merged from `behavioral-invariants.md` + `constraints.md` 2026-04-21 to close the dual-framing co-load drift Pass A row 3 surfaced)
+
+Positive invariants (Do) and negative constraints (Do not) form **one contract**. Read both framings together — they are two views of the same rule set, kept side-by-side so the positive and negative faces stay in sync.
+
+These are instructions to you — the executing agent. They load into every context window on every path. When you are unsure how to behave, the contract takes precedence over inferred conventions. Read it as commitments you have made, not policies someone wrote about you.
+
+The source-of-truth remains `AGENTS.md` and the individual topic rules — this file is a compact, always-loaded cross-reference, not a replacement.
+
+---
+
+## Do — Behavioral invariants
+
+### Ownership
+
+Source: `AGENTS.md` § Prime Directive
+
+| # | Invariant | Violation Pattern |
+|---|-----------|-------------------|
+| 1 | Own the work completely | Deferring to human, saying "I'll leave that to you" |
+| 2 | Complete all work fully — including defects surfaced in adjacent files. **Scope boundary:** applies to defects discovered in flight (broken adjacent file, stale doc example, drifted manpage your code change just invalidated). Does NOT license tangential refactors, style improvements to consistent code, speculative abstraction, or deleting unrelated dead code. Test: "did my primary change break this, or is it independently broken and I just noticed?" If yes to either, fix or file. If neither, leave it alone. | Fixing the primary issue but ignoring broken adjacent files / doing "while I'm here" cleanup outside the defect-surfacing path |
+| 3 | Never say "out of scope" / "skip for now" / "leave as TODO" | Labeling discovered defects as someone else's problem |
+| 4 | Scope expansion is not scope creep — when the expansion traces to a defect. **Scope boundary:** same test as Invariant 2. Expansion is licensed by defect discovery; not by proximity. Every changed line traces to either the user's request or a defect the change surfaced. | Refusing to update 3 docs because "only 1 was in the brief" / expanding scope into unrelated cleanup |
+| 5 | Flag defects, never excuse them | Rationalizing failures as "pre-existing" or "template drift" |
+| 6 | Every defect must be trackable | Noticing a defect, fixing nothing, filing nothing |
+
+### Craftsmanship — DO IT RIGHT
+
+Source: `AGENTS.md` § DO IT RIGHT (Craftsmanship Maxim)
+
+**The most thorough and comprehensive fix is always preferred.** Ownership without craftsmanship produces confident-wrong-direction work — the agent "owns" a fix that patches the observed symptom and leaves the class-of-failure intact. This maxim sits next to the Prime Directive for that reason.
+
+| # | Invariant | Violation Pattern |
+|---|-----------|-------------------|
+| 6a | Fix the class of failure, not the instance | Patching one symptom ("skip index.md") when the whole class needs validation ("validate every derived verb against the parser") |
+| 6b | No vibe coding | Editing a file without reading its callers; writing code that "looks right" without tracing the data flow |
+| 6c | Choose fix scope per `.gzkit/rules/defect-fix-routing.md` thresholds, not intuition | Defaulting to ceremony for a 5-line in-flight defect; defaulting to a direct fix for work that crosses brief boundaries. "Thorough" is the routing table applied correctly, not always the larger scope |
+| 6d | Verify observed behavior, not assumed behavior | Claiming "the output is tabular" without running the command and pasting the observed output |
+| 6e | Read the code before you change it | Guessing what a function probably returns based on its name; skipping the callers during an edit |
+| 6g | Verify the runtime surface before recommending an incantation | Recommending `claude --model ...` as a CLI flag when the actual surface is the `/model` slash command; pattern-matching a plausible command from training memory and presenting it as operational guidance without verifying it (GHI #263) |
+| 6h | When reporting why a rule was violated, quote the rule and the conflicting directive verbatim | Producing a post-hoc "competing directives" narrative without verbatim quotes; reframing a clean mechanical-rule violation as ambiguity to soften the failure (GHI #261). Phrases like "competing directives," "pulled against," "no clear resolution" without verbatim quotes are red flags — absence of quotable conflict text means the conflict is invented |
+
+Invariant 6f ("tests assert semantics, not strings") lives at its canonical home in `.gzkit/rules/tests.md` § Red-Green-Refactor (GHI #227). The invariant is TDD discipline, not general craftsmanship, and restating it here caused F2/F9 drift under 4.7.
+
+#### Rationale for Invariants 6g and 6h
+
+Both are instances of reporting-pathway drift (`.gzkit/rules/attestation-enrichment.md` § Rationale, citing Lindsey et al. 2025): the explanation pathway and the execution pathway are structurally separate, and a model can produce a plausible explanation of reasoning it did not perform. 6g covers the failure at recommendation time (inventing an incantation from training memory); 6h covers the failure at post-mortem time (inventing a directive conflict to rationalize a clean violation). The mitigation for both is the same — produce verbatim grounding (the observed command's actual output, the rule text verbatim) before presenting the claim, not after being challenged.
+
+### Process
+
+Source: `AGENTS.md` § Behavior Rules
+
+| # | Invariant | Violation Pattern |
+|---|-----------|-------------------|
+| 7 | Read AGENTS.md before starting work | Proceeding on assumptions without checking the contract |
+| 8 | Follow the gate covenant (Lite: 1-2; Heavy: 1-5) | Shipping without running gates, or skipping Gate 5 attestation |
+| 9 | Record governance events via CLI, never manually | Editing `ledger.jsonl` directly or skipping event emission |
+| 10 | Preserve human intent across context boundaries | Drifting from the brief's requirements during long sessions |
+| 10a | When a skill step names a tool to invoke, invoke it in the same turn | Ending the turn with "Required next step: enter plan mode" instead of calling `EnterPlanMode`; treating "STOP" in a skill as "end your turn" rather than "stop making source edits and redirect to the named tool" |
+
+### Judgment
+
+Source: `AGENTS.md` § Behavior Rules
+
+| # | Invariant | Violation Pattern |
+|---|-----------|-------------------|
+| 11 | If <90% sure, ask the human | Confident-wrong-direction runs that burn context and produce discarded work |
+| 12 | Surface assumptions explicitly before implementing | Building on unstated assumptions that the human would have corrected |
+| 13 | On inconsistencies: STOP, name confusion, present tradeoff, wait | Silently picking one interpretation and hoping it's right |
+| 14 | Push back when an approach has clear problems | Sycophantic agreement with a plan that has obvious flaws |
+
+### Efficiency
+
+Source: `AGENTS.md` § Behavior Rules
+
+| # | Invariant | Violation Pattern |
+|---|-----------|-------------------|
+| 15 | Offload research, exploration, and log analysis to subagents | Burning main context window on grep-heavy investigation |
+| 16 | Include a "Why" parameter when spawning subagents | Subagent returns noise because it had no filter for relevance |
+
+---
+
+## Do not — Negative constraints
+
+> Positive specs leave an implied gap. Negative constraints close that gap.
+
+When you notice yourself reasoning toward one of these actions, stop — the constraint exists because agents routinely rationalize exactly the path you are considering.
+
+### TDD discipline
+
+Source: `.gzkit/rules/tests.md` — *Most frequently violated constraint category.*
+
+| Constraint | Observed Trigger |
+|------------|-----------------|
+| Do not write tests after implementation that confirm what the code already does | Agent writes code first, then writes tests that pass immediately |
+| Do not write tests "alongside" without seeing them fail first | Agent claims TDD but never runs a failing test |
+| Do not batch all tests before any implementation | Agent writes 8 tests, then implements everything — test-dump, not TDD |
+| Do not refactor while tests are still failing | Agent mixes Green and Refactor in one pass |
+| Do not derive test cases from the implementation | Agent reads the code to decide what to test instead of reading the brief |
+
+### Data models
+
+Source: `.gzkit/rules/models.md`
+
+- Do not use stdlib `dataclass` for governance data — use Pydantic `BaseModel`
+- Do not use Pydantic without `ConfigDict`
+- Do not use `Optional`/`List` — use `| None` and `list[]`
+
+### Surface sync
+
+Source: `.gzkit/rules/skill-surface-sync.md`
+
+- Do not edit `.claude/rules/` directly — sync overwrites it from `.gzkit/rules/`
+- Do not edit `.claude/skills/` directly — edit `.gzkit/skills/` and sync
+- Do not edit a skill without bumping its `skill-version`
+- Do not manually copy skill files between surfaces — use the sync command
+- Do not skip sync because "both files look the same"
+
+### Documentation covenant
+
+Source: `.gzkit/rules/gate5-runbook-code-covenant.md`
+
+- Do not leave placeholder output examples
+- Do not update code without docs when command output changes
+- Do not declare completion without explicit human attestation for heavy/foundation scope
+
+### Pipeline lifecycle
+
+Source: `.gzkit/skills/gz-obpi-pipeline/SKILL.md` — *Second most frequently violated.*
+
+| Constraint | Observed Trigger |
+|------------|-----------------|
+| Do not summarize after Stage 2 or 3 and stop | Agent presents "implementation complete" after Stage 2 |
+| Do not treat "tests passing" as completion | Agent stops at Stage 3, equating green tests with done |
+| Do not let the user "handle the rest" | Agent defers Stages 4-5 to the human |
+| Do not work around hook blocks | Agent creates marker files to bypass pipeline-gate |
+| Do not derive tasks from the brief without a plan receipt | Agent skips plan mode because it "already understands the work" |
+| Do not skip planning because the brief "seems clear enough" | Agent reasons its way out of the governance checkpoint |
+| Do not bundle two briefs' worth of work into one implementation pass, even when they are related — the brief boundary is the gate's only reliable firing point | Agent absorbs an adjacent OBPI into the current pass because "it's basically the same change" |
+
+### OBPI completion
+
+Source: `.gzkit/skills/gz-obpi-brief/assets/OBPI_BRIEF-template.md`
+
+- Do not invent files outside the ALLOWED PATHS list
+- Do not assume config keys exist — verify in `.gzkit.json` or `.gzkit/manifest.json`
+- Do not reference test data not present in `fixtures/**` or `data/**`
+- Do not commit `TODO`, `FIXME`, `@skip`, or incomplete implementations
+- Do not stage private/hidden work — all work must be visible
+- Do not mark a Heavy lane OBPI as completed before human attestation
+
+### ADR closeout
+
+Source: `.gzkit/skills/gz-adr-closeout-ceremony/SKILL.md`
+
+- Do not let agents decide completion — the human attests
+- Do not accept vague acknowledgment ("ok", "looks good") as attestation
+- Do not skip the walkthrough because OBPIs individually passed
+- Do not work around CLI errors with prose or ad-hoc code — fix root cause
+- Do not leave ceremony state uncommitted — sync the repo after attestation
+
+### ADR creation
+
+Source: `.gzkit/skills/gz-adr-create/SKILL.md`
+
+- Do not create ADR files first then "backfill" interview answers
+- Do not fabricate interview answers without asking the human
+- Do not skip the interview because "the intent is already clear"
+- Do not run the interview after OBPI co-creation
+- Do not leave ADR table showing "Pending" OBPIs with no actual brief files
+
+### State doctrine
+
+Source: `docs/governance/state-doctrine.md`
+
+- Do not read YAML frontmatter `status: Completed` as proof of completion — read the ledger
+- Do not use pipeline marker existence as gate evidence — markers are L3, use ledger events
+- Do not manually edit `.gzkit/ledger.jsonl` — use `gz` commands to emit events
+- Do not treat reconciliation as optional maintenance — drift accumulates
+- Do not block a gate check on a missing L3 artifact — only L1/L2 evidence can block gates
+
+### Storage tiers
+
+Source: `docs/governance/storage-tiers.md`
+
+- Do not let Tier B cache accumulate non-derivable state
+- Do not let external services become prerequisites for `gz` commands
+- Do not duplicate Tier A data in Tier B with potential divergence
+- Do not store config in environment variables — config must be in git
+
+### Architectural boundaries
+
+Source: `CLAUDE.md` (Architecture Planning Memo)
+
+- Do not promote post-1.0 pool ADRs into active work
+- Do not add more pool ADRs to the runtime track
+- Do not build the graph engine without locking state doctrine first
+- Do not let reconciliation remain a maintenance chore
+- Do not let AirlineOps parity become perpetual catch-up
+- Do not let derived views silently become source-of-truth
+
+---
+
+## Attribution
+
+Consolidation pattern adapted from "Core Operating Behaviors" in [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) (MIT).

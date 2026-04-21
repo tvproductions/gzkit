@@ -149,7 +149,7 @@ def audit_type_ignores(project_root: Path) -> list[ValidationError]:
 
 
 def audit_cli_alignment(project_root: Path) -> list[ValidationError]:
-    """Fail on unresolvable ``gz <verb>`` strings in features and operator docs (GHI #198)."""
+    """Enforce `.gzkit/rules/governance-core.md` § Operator-doc verb resolution (GHI #198)."""
     sources: list[Path] = []
     features_root = project_root / "features"
     if features_root.is_dir():

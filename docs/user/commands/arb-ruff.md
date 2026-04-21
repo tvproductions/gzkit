@@ -58,4 +58,4 @@ gz arb ruff --soft-fail src
 
 - [`gz arb`](arb.md) — ARB parent reference
 - [`gz lint`](lint.md) — unwrapped lint runner
-- Rule: `.gzkit/rules/arb.md`
+- Rule: `.gzkit/rules/attestation-enrichment.md`

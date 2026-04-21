@@ -125,6 +125,6 @@ Skipping any of these steps means the new layer is advisory rather than mechanic
 - `docs/governance/layer-three-derived-views.md` — L3 view inventory with canonical producers and current audit coverage (GHI #214)
 - `.gzkit/rules/tool-skill-runbook-alignment.md` — an early form of the same pattern applied to skill/CLI/doc alignment; Invariants 1–3 are exactly the skill-layer analog of T1–T3
 - `CLAUDE.md` § Architectural Boundaries — memo rule 6 ("derived views silently become source-of-truth") is this doctrine's storage-tier complement
-- `.gzkit/rules/arb.md` — ARB receipt middleware; the provenance enforcement from Invariant T3 lives here
+- `.gzkit/rules/attestation-enrichment.md` — ARB receipt middleware and canonical invocations; the provenance enforcement from Invariant T3 lives here (ARB rule absorbed into this home on 2026-04-21)
 - [2026-04-18 ADR-0.0.16 session transcript] — original forensic record; GHIs #193, #197, #198, #199, #200, #201 close the instance taxonomy above
 - GHIs #202–#215 — the advisory-rules promotion wave that landed scorecard self-testing, pool-ADR isolation, skill alignment Invariant 1, and the hook-level ledger/sync guards

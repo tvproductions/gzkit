@@ -50,4 +50,4 @@ gz arb patterns --json
 
 - [`gz arb`](arb.md) — ARB parent reference
 - [`gz arb advise`](arb-advise.md) — per-rule recommendations
-- Rule: `.gzkit/rules/arb.md`
+- Rule: `.gzkit/rules/attestation-enrichment.md`

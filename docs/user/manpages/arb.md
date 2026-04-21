@@ -125,9 +125,8 @@ Each receipt is a JSON file named by `run_id`. Schemas live under `data/schemas/
 
 - `gz check` — full quality pass (lint, typecheck, test, drift)
 - `gz drift` — spec-test-code drift scanner
-- `.gzkit/rules/arb.md` — ARB rule and concept reference
-- `.gzkit/rules/attestation-enrichment.md` — attestation receipt contract
+- `.gzkit/rules/attestation-enrichment.md` — canonical home for ARB middleware, canonical invocations, receipt-ID discipline, and the attestation receipt contract
 
 ## HISTORY
 
-Absorbed from `airlineops/src/opsdev/arb/` under OBPI-0.25.0-33 (2026-04-14), which closed a governance vacuum where `.gzkit/rules/arb.md` documented a fully-working `gz arb` surface that did not exist in gzkit. See the ADR-0.25.0 closeout record for the forensic trace.
+Absorbed from `airlineops/src/opsdev/arb/` under OBPI-0.25.0-33 (2026-04-14), which closed a governance vacuum where the former `.gzkit/rules/arb.md` documented a fully-working `gz arb` surface that did not exist in gzkit. See the ADR-0.25.0 closeout record for the forensic trace. The `.gzkit/rules/arb.md` file itself was merged into `.gzkit/rules/attestation-enrichment.md` on 2026-04-21 under Phase 1 of the control-surface consolidation, to close the duplicate-lane-matrix drift Pass A of the control-surface audit surfaced.
