@@ -18,6 +18,7 @@ from gzkit.commands.common import (
     GzCliError,
     _is_pool_adr_id,
     _upsert_frontmatter_value,
+    console,
 )
 from gzkit.decomposition import (
     DecompositionScorecard,
@@ -146,10 +147,30 @@ def _optional_pool_section(pool_content: str, section_title: str) -> str | None:
 
 
 def _parse_top_level_markdown_bullets(section_content: str) -> list[str]:
-    """Extract top-level markdown bullet items from a section body."""
+    """Extract top-level markdown bullet items from a section body.
+
+    Bullets nested inside an H3 (``###``) subsection of the section are
+    explicitly skipped — only bullets attached directly to the section's
+    top level count as promotion scope (GHI #241).
+    """
     bullets: list[str] = []
     current: list[str] | None = None
+    in_subsection = False
     for raw_line in section_content.splitlines():
+        if raw_line.startswith("### "):
+            if current:
+                bullets.append(re.sub(r"\s+", " ", " ".join(current)).strip())
+                current = None
+            in_subsection = True
+            continue
+        if raw_line.startswith("## "):
+            if current:
+                bullets.append(re.sub(r"\s+", " ", " ".join(current)).strip())
+                current = None
+            in_subsection = False
+            continue
+        if in_subsection:
+            continue
         bullet_match = re.match(r"^(?P<indent>\s*)-\s+(?P<body>.+)$", raw_line.rstrip())
         if bullet_match and not bullet_match.group("indent"):
             if current:
@@ -168,6 +189,74 @@ def _parse_top_level_markdown_bullets(section_content: str) -> list[str]:
     if current:
         bullets.append(re.sub(r"\s+", " ", " ".join(current)).strip())
     return bullets
+
+
+_BOLD_PREFIX_BULLET_RE = re.compile(
+    r"^\*\*(?P<slug>[a-z0-9][a-z0-9-]*)\*\*\s*(?:[—\-–]\s*(?P<desc>.+))?$",
+    re.IGNORECASE,
+)
+
+_TABLE_ROW_RE = re.compile(r"^\s*\|(?P<cells>.+)\|\s*$")
+_TABLE_ALIGN_RE = re.compile(r"^\s*:?-+:?\s*$")
+
+
+def _parse_decomposition_table(pool_content: str) -> list[tuple[str, str]] | None:
+    """Parse ``## Proposed OBPI Decomposition`` table into (slug, description) rows.
+
+    Returns ``None`` when the section is absent or contains no table (GHI #241).
+    The table must have at least ``Slug`` and ``Description`` columns; a leading
+    ``#`` column is tolerated and ignored. Extra columns (e.g. ``Lane``) are
+    ignored.
+    """
+    section = extract_markdown_section(pool_content, "Proposed OBPI Decomposition")
+    if section is None or not section.strip():
+        return None
+
+    header_cells: list[str] | None = None
+    rows: list[tuple[str, str]] = []
+    for raw_line in section.splitlines():
+        match = _TABLE_ROW_RE.match(raw_line)
+        if not match:
+            continue
+        cells = [cell.strip() for cell in match.group("cells").split("|")]
+        if all(_TABLE_ALIGN_RE.match(cell) for cell in cells):
+            continue
+        if header_cells is None:
+            header_cells = [cell.lower() for cell in cells]
+            continue
+        try:
+            slug_idx = header_cells.index("slug")
+            desc_idx = header_cells.index("description")
+        except ValueError:
+            return None
+        if slug_idx >= len(cells) or desc_idx >= len(cells):
+            continue
+        slug = cells[slug_idx].strip()
+        description = cells[desc_idx].strip()
+        if not slug:
+            continue
+        if not ADR_SLUG_RE.match(slug):
+            continue
+        rows.append((slug, description or slug))
+
+    return rows or None
+
+
+def _extract_bold_prefix_bullet(item: str) -> tuple[str, str] | None:
+    """Return (slug, description) when bullet uses ``**slug** — narrative`` form.
+
+    Accepts em-dash (``—``), en-dash (``–``), or hyphen (``-``) as the separator.
+    Returns ``None`` when the bullet does not match the convention.
+    """
+    normalized = re.sub(r"\s+", " ", item).strip()
+    match = _BOLD_PREFIX_BULLET_RE.match(normalized)
+    if not match:
+        return None
+    slug = match.group("slug").strip().lower()
+    if not ADR_SLUG_RE.match(slug):
+        return None
+    description = (match.group("desc") or "").strip()
+    return slug, description or slug
 
 
 # ---------------------------------------------------------------------------
@@ -210,19 +299,53 @@ def _promotion_scorecard(target_count: int) -> DecompositionScorecard:
 def _promoted_checklist_from_pool(
     pool_content: str, semver: str
 ) -> tuple[list[str], str, DecompositionScorecard]:
-    """Derive executable ADR checklist items from pool target scope."""
-    target_scope = _required_pool_section(pool_content, "Target Scope")
-    scope_items = []
-    for item in _parse_top_level_markdown_bullets(target_scope):
-        normalized = item.rstrip(":").strip()
-        if normalized:
-            scope_items.append(normalized)
-    if not scope_items:
-        msg = (
-            "Pool ADR is not ready for promotion: '## Target Scope' must contain top-level "
-            "actionable bullet items."
-        )
-        raise GzCliError(msg)
+    """Derive executable ADR checklist items from pool target scope.
+
+    Resolution order (GHI #241):
+
+    1. ``## Proposed OBPI Decomposition`` table — preferred. Slug column
+       drives the OBPI name; Description column becomes the checklist text.
+    2. ``- **slug** — narrative`` bold-prefix bullets in ``## Target Scope``.
+    3. Legacy narrative-only bullets — accepted with a deprecation warning
+       that names the two newer contracts.
+
+    Bullets nested under ``### H3`` subsections within ``## Target Scope``
+    are ignored by (2) and (3) — only direct top-level bullets count.
+    """
+    _required_pool_section(pool_content, "Target Scope")
+
+    table_rows = _parse_decomposition_table(pool_content)
+    scope_items: list[str]
+    if table_rows:
+        scope_items = [f"**{slug}** — {description}" for slug, description in table_rows]
+    else:
+        target_scope = extract_markdown_section(pool_content, "Target Scope") or ""
+        bullets = [
+            item.rstrip(":").strip()
+            for item in _parse_top_level_markdown_bullets(target_scope)
+            if item.strip()
+        ]
+        if not bullets:
+            msg = (
+                "Pool ADR is not ready for promotion: '## Target Scope' must contain "
+                "top-level actionable bullet items (or a '## Proposed OBPI Decomposition' "
+                "table)."
+            )
+            raise GzCliError(msg)
+
+        bold_hits = [(_extract_bold_prefix_bullet(item), item) for item in bullets]
+        if all(match is not None for match, _ in bold_hits):
+            scope_items = [raw for _match, raw in bold_hits]
+        else:
+            console.print(
+                "[yellow]WARN:[/yellow] Pool ADR '## Target Scope' uses legacy "
+                "narrative-only bullets. This shape is deprecated and will emit "
+                "long, narrative-leaking OBPI slugs. Migrate to either:\n"
+                "  (a) a '## Proposed OBPI Decomposition' table with Slug + "
+                "Description columns, or\n"
+                "  (b) bullets shaped as '- **<slug>** — <narrative>'."
+            )
+            scope_items = bullets
 
     checklist = "\n".join(
         f"- [ ] OBPI-{semver}-{index:02d}: {item}"

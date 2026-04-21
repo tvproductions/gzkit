@@ -45,8 +45,21 @@ def _extract_semver(adr_id: str) -> str | None:
     return m.group(1) if m else None
 
 
+_BOLD_PREFIX_SLUG_RE = re.compile(r"^\s*\*\*(?P<slug>[a-z0-9][a-z0-9-]*)\*\*", re.IGNORECASE)
+
+
 def _slugify_obpi_name(value: str) -> str:
-    """Convert checklist text into a stable OBPI slug suffix."""
+    """Convert checklist text into a stable OBPI slug suffix.
+
+    When the checklist text begins with a ``**<slug>**`` bold prefix — as
+    emitted by pool promotions that honor the decomposition table or the
+    ``- **slug** — narrative`` bullet convention (GHI #241) — the bold
+    prefix is used verbatim as the slug. Otherwise the full text is
+    slugified as before.
+    """
+    bold_match = _BOLD_PREFIX_SLUG_RE.match(value)
+    if bold_match:
+        return bold_match.group("slug").lower()
     stripped = re.sub(r"`([^`]*)`", r"\1", value)
     slug = re.sub(r"[^a-zA-Z0-9]+", "-", stripped).strip("-").lower()
     return slug or "scope-item"
