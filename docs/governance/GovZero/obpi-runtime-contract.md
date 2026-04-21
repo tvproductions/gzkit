@@ -115,7 +115,7 @@ carry `obpi_id` and timestamp fields, and must ignore unknown future keys.
 | `pending` | No completed proof has been recorded yet. |
 | `in_progress` | Some proof or brief evidence exists, but completion requirements are not satisfied. |
 | `completed` | Lite-compatible completion proof is present. |
-| `attested_completed` | Heavy/Foundation-compatible completion proof is present with attestation evidence. |
+| `attested_completed` | Heavy-lane (any kind) or foundation-kind (any lane) completion proof is present with attestation evidence. |
 | `validated` | A validated receipt exists on top of completed proof. |
 | `drift` | Ledger/brief evidence disagree, or anchor-aware reconciliation found explicit blockers on completed proof. |
 
@@ -146,8 +146,11 @@ tracks the summarized REQ-proof input state.
 - `optional`
 - `required`
 
-Heavy/Foundation completion semantics require attestation proof before an OBPI
-can be treated as `attested_completed`.
+Heavy-lane completion semantics (any kind) and foundation-kind completion
+semantics (any lane) require attestation proof before an OBPI can be treated
+as `attested_completed`. `kind` and `lane` are orthogonal axes; attestation
+rigor keys on lane, with foundation-kind work additionally inheriting
+ADR-0.0.18 walkthrough discipline regardless of lane.
 
 ### `attestation_state`
 
@@ -260,7 +263,7 @@ The canonical derived anchor states are:
   the [OBPI Transaction Contract](obpi-transaction-contract.md).
 - Legacy receipts without explicit `req_proof_inputs` remain consumable through
   fallback normalization.
-- Human attestation remains the authority boundary for Heavy/Foundation
-  completion.
+- Human attestation remains the authority boundary for heavy-lane
+  completion (any kind) and foundation-kind completion (any lane).
 - Status and reconciliation surfaces may render this contract differently, but
   they must consume the same derived semantics.

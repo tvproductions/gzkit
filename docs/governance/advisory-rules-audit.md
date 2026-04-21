@@ -56,7 +56,7 @@ This audit scores every rule by:
 |---|------|-------|-------|
 | 13 | Read AGENTS.md before implementation work | **Judgment** | Pre-work discipline; no compile-time signal |
 | 14 | Use `uv run` for Python command execution | **Mechanical** | Ruff + tests run via `uv run`; CI enforces. Runbook + docs scanned by `gz validate --cli-alignment` for `uv run gz ...` form |
-| 15 | Do not bypass Gate 5 for Heavy/Foundation | **Mechanical** | `gz closeout` pipeline enforces attestation before `Completed` lifecycle event |
+| 15 | Do not bypass Gate 5 for heavy-lane or foundation-kind work | **Mechanical** | `gz closeout` pipeline enforces attestation before `Completed` lifecycle event |
 | 16 | Do not edit `.gzkit/ledger.jsonl` manually | **Mechanical** | Enforced by `.githooks/pre-commit-ledger-guard` (GHI #207) — rejects staged ledger edits that are not strict appends from a registered `gz` command |
 | 17 | Every defect must be trackable (GHI or agent-insights.jsonl) | **Judgment** | Enforcement is cultural; no reliable mechanical signal for "defect noticed but not tracked" |
 
@@ -105,7 +105,7 @@ This audit scores every rule by:
 | 36 | Use stdlib `unittest` (no pytest) | **Mechanical** | `forbid pytest` pre-commit hook |
 | 37 | Two runners: unittest + behave (no tier under unittest) | **Mechanical** | Enforced by `gz validate --test-tiers` (GHI #209) — fails on `tests/{integration,e2e,slow,bdd}/` or forbidden `--integration`/`--e2e`/`--slow`/`--bdd-only` flags re-appearing in `parser_*.py` |
 | 38 | Coverage floor ≥40% | **Mechanical** | Pre-commit hook |
-| 39 | Behave scenarios covering a REQ carry `@REQ-X.Y.Z-NN-MM` tag | **Mechanical** | Enforced by `gz validate --behave-req-tags` (GHI #211) — scans Heavy/Foundation OBPIs for REQ-IDs without matching scenario-level `@REQ-*` tags |
+| 39 | Behave scenarios covering a REQ carry `@REQ-X.Y.Z-NN-MM` tag | **Mechanical** | Enforced by `gz validate --behave-req-tags` (GHI #211) — scans heavy-lane and foundation-kind OBPIs for REQ-IDs without matching scenario-level `@REQ-*` tags |
 
 ### Chores Workflow (`.gzkit/rules/chores.md`)
 
