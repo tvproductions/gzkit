@@ -60,8 +60,14 @@ intact. This maxim sits next to the Prime Directive for that reason.
 | 6c | Choose fix scope per `.gzkit/rules/defect-fix-routing.md` thresholds, not intuition | Defaulting to ceremony for a 5-line in-flight defect; defaulting to a direct fix for work that crosses brief boundaries. "Thorough" is the routing table applied correctly, not always the larger scope |
 | 6d | Verify observed behavior, not assumed behavior | Claiming "the output is tabular" without running the command and pasting the observed output |
 | 6e | Read the code before you change it | Guessing what a function probably returns based on its name; skipping the callers during an edit |
+| 6g | Verify the runtime surface before recommending an incantation | Recommending `claude --model ...` as a CLI flag when the actual surface is the `/model` slash command; pattern-matching a plausible command from training memory and presenting it as operational guidance without verifying it (GHI #263) |
+| 6h | When reporting why a rule was violated, quote the rule and the conflicting directive verbatim | Producing a post-hoc "competing directives" narrative without verbatim quotes; reframing a clean mechanical-rule violation as ambiguity to soften the failure (GHI #261). Phrases like "competing directives," "pulled against," "no clear resolution" without verbatim quotes are red flags — absence of quotable conflict text means the conflict is invented |
 
 Invariant 6f ("tests assert semantics, not strings") lives at its canonical home in `.gzkit/rules/tests.md` § Red-Green-Refactor (GHI #227). The invariant is TDD discipline, not general craftsmanship, and restating it here caused F2/F9 drift under 4.7.
+
+### Rationale for Invariants 6g and 6h
+
+Both are instances of reporting-pathway drift (`.gzkit/rules/attestation-enrichment.md` § Rationale, citing Lindsey et al. 2025): the explanation pathway and the execution pathway are structurally separate, and a model can produce a plausible explanation of reasoning it did not perform. 6g covers the failure at recommendation time (inventing an incantation from training memory); 6h covers the failure at post-mortem time (inventing a directive conflict to rationalize a clean violation). The mitigation for both is the same — produce verbatim grounding (the observed command's actual output, the rule text verbatim) before presenting the claim, not after being challenged.
 
 ## Process
 
