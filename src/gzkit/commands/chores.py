@@ -33,6 +33,7 @@ class AcceptanceCriterion(BaseModel):
     expected: int | None = None
     not_contains: str | None = None
     contains: str | None = None
+    path: str | None = None
     description: str | None = None
 
 
@@ -249,6 +250,8 @@ def chores_plan(slug: str) -> None:
             console.print(
                 f"    {idx}. [{c.criterion_type}] `{c.command}` must contain '{c.contains}'{desc}"
             )
+        elif c.criterion_type == "fileExists":
+            console.print(f"    {idx}. [{c.criterion_type}] path: `{c.path}`{desc}")
         else:
             console.print(f"    {idx}. [{c.criterion_type}] `{c.command}`{desc}")
 

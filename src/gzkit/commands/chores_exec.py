@@ -65,6 +65,23 @@ def _parse_criterion(
         blockers.append(f"{context}.type must be one of: {', '.join(sorted(_CRITERION_TYPES))}.")
         return None
 
+    desc_raw = data.get("description")
+    description = desc_raw.strip() if isinstance(desc_raw, str) else None
+
+    if criterion_type == "fileExists":
+        path_raw = data.get("path")
+        if not isinstance(path_raw, str) or not path_raw.strip():
+            blockers.append(f"{context}.path must be a non-empty string for fileExists.")
+            return None
+        path = path_raw.strip()
+        return AcceptanceCriterion(
+            criterion_type=criterion_type,
+            command=f"file-exists: {path}",
+            argv=(),
+            path=path,
+            description=description,
+        )
+
     command = data.get("command")
     if not isinstance(command, str) or not command.strip():
         blockers.append(f"{context}.command must be a non-empty string.")
@@ -78,8 +95,6 @@ def _parse_criterion(
     expected: int | None = None
     not_contains: str | None = None
     contains: str | None = None
-    desc_raw = data.get("description")
-    description = desc_raw.strip() if isinstance(desc_raw, str) else None
 
     if criterion_type == "exitCodeEquals":
         expected_raw = data.get("expected")
@@ -238,6 +253,19 @@ def _evaluate_criterion(
     timeout: int,
 ) -> CriterionResult:
     """Execute one criterion and evaluate the result."""
+    if criterion.criterion_type == "fileExists":
+        path = criterion.path
+        exists = path is not None and (project_root / path).exists()
+        return CriterionResult(
+            criterion=criterion,
+            passed=exists,
+            returncode=0 if exists else 1,
+            duration_seconds=0.0,
+            stdout="",
+            stderr="",
+            detail=f"file exists: {path}" if exists else f"file not found: {path}",
+        )
+
     started = perf_counter()
     try:
         completed = subprocess.run(
@@ -306,10 +334,6 @@ def _evaluate_criterion(
             if passed
             else f"output missing '{criterion.contains}'"
         )
-    elif criterion.criterion_type == "fileExists":
-        target = Path(str(criterion.expected)) if criterion.expected else None
-        passed = target is not None and (project_root / target).exists()
-        detail = f"file {'exists' if passed else 'not found'}: {target}"
     else:
         passed = False
         detail = f"Unknown criterion type: {criterion.criterion_type}"
