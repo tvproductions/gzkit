@@ -22,6 +22,11 @@ from gzkit.commands.ceremony_data import (
     format_doc_table,
     format_summary_table,
 )
+from gzkit.commands.ceremony_intent import (
+    format_intent_pairing_table,
+    pair_intent_with_obpis,
+    parse_intent_items,
+)
 
 if TYPE_CHECKING:
     from gzkit.commands.closeout_ceremony import CeremonyState
@@ -62,6 +67,7 @@ def render_step_2_summary(
     """
     briefs = [extract_brief_metadata(f) for f in obpi_files]
     intent = extract_adr_intent(adr_file)
+    intent_items = parse_intent_items(intent) if intent else []
 
     lines = [
         "I am now in PASSIVE PRESENTER mode. I will not interpret evidence.",
@@ -71,13 +77,17 @@ def render_step_2_summary(
         f"ADR: {adr_file.relative_to(project_root)}",
         f"Lane: {lane}",
         "",
-        "ADR Intent (from parent ADR):",
     ]
 
-    if intent:
+    if intent_items:
+        pairings = pair_intent_with_obpis(intent_items, briefs)
+        lines.append(format_intent_pairing_table(pairings))
+    elif intent:
+        lines.append("ADR Intent (from parent ADR):")
         for intent_line in intent.splitlines():
             lines.append(f"  {intent_line}" if intent_line else "")
     else:
+        lines.append("ADR Intent (from parent ADR):")
         lines.append("  (parent ADR has no `## Intent` section — review the ADR doc directly)")
 
     lines.extend(
