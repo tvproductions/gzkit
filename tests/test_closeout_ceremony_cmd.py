@@ -493,5 +493,143 @@ class TestFlagValidation(unittest.TestCase):
             self.assertNotEqual(result.exit_code, 0)
 
 
+class TestStep5PerDemoCadence(unittest.TestCase):
+    """Step 5 EXECUTE gates ``--next`` per demo command (GHI #260).
+
+    The CLI must present ONE demo command per render at Step 5 and advance
+    ``walkthrough_index`` on ``--next`` until every command has been shown,
+    only then advancing to Step 6 ATTESTATION. Operator-paced execution is
+    the mechanical backstop for the skill's "one command at a time" rule.
+    """
+
+    def _seed_step_5_state(
+        self,
+        commands: list[str],
+        walkthrough_index: int = 0,
+    ) -> None:
+        state = CeremonyState(
+            adr_id="ADR-0.1.0",
+            current_step=CeremonyStep.EXECUTE,
+            is_foundation=False,
+            started_at="2026-04-20T00:00:00Z",
+            updated_at="2026-04-20T00:00:00Z",
+            step_history=[
+                CeremonyStepRecord(
+                    step=CeremonyStep.EXECUTE,
+                    presented_at="2026-04-20T00:00:00Z",
+                ),
+            ],
+            walkthrough_commands=commands,
+            walkthrough_index=walkthrough_index,
+        )
+        save_ceremony_state(Path.cwd(), state)
+
+    @patch("gzkit.commands.closeout_ceremony._adr_closeout_readiness")
+    @covers("REQ-0.23.0-04-15")
+    def test_step_5_renders_one_demo_at_a_time(self, mock_readiness):
+        mock_readiness.return_value = {"blockers": [], "ready": True}
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _init_git_repo(Path.cwd())
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            self._seed_step_5_state(
+                commands=["uv run gz alpha", "uv run gz beta", "uv run gz gamma"],
+            )
+            result = runner.invoke(main, ["closeout", "ADR-0.1.0", "--ceremony"])
+            self.assertEqual(result.exit_code, 0, result.output)
+            self.assertIn("uv run gz alpha", result.output)
+            self.assertNotIn("uv run gz beta", result.output)
+            self.assertNotIn("uv run gz gamma", result.output)
+
+    @patch("gzkit.commands.closeout_ceremony._adr_closeout_readiness")
+    @covers("REQ-0.23.0-04-15")
+    def test_next_advances_walkthrough_index_within_step_5(self, mock_readiness):
+        mock_readiness.return_value = {"blockers": [], "ready": True}
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _init_git_repo(Path.cwd())
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            self._seed_step_5_state(
+                commands=["uv run gz alpha", "uv run gz beta", "uv run gz gamma"],
+            )
+            result = runner.invoke(main, ["closeout", "ADR-0.1.0", "--ceremony", "--next"])
+            self.assertEqual(result.exit_code, 0, result.output)
+            state = load_ceremony_state(Path.cwd(), "ADR-0.1.0")
+            self.assertEqual(state.current_step, CeremonyStep.EXECUTE)
+            self.assertEqual(state.walkthrough_index, 1)
+            self.assertIn("uv run gz beta", result.output)
+            self.assertNotIn("uv run gz alpha", result.output)
+            self.assertNotIn("uv run gz gamma", result.output)
+
+    @patch("gzkit.commands.closeout_ceremony._adr_closeout_readiness")
+    @covers("REQ-0.23.0-04-15")
+    def test_next_on_last_demo_advances_to_attestation(self, mock_readiness):
+        mock_readiness.return_value = {"blockers": [], "ready": True}
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _init_git_repo(Path.cwd())
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            self._seed_step_5_state(
+                commands=["uv run gz alpha", "uv run gz beta", "uv run gz gamma"],
+                walkthrough_index=2,
+            )
+            result = runner.invoke(main, ["closeout", "ADR-0.1.0", "--ceremony", "--next"])
+            self.assertEqual(result.exit_code, 0, result.output)
+            state = load_ceremony_state(Path.cwd(), "ADR-0.1.0")
+            self.assertEqual(state.current_step, CeremonyStep.ATTESTATION)
+
+    @patch("gzkit.commands.closeout_ceremony._adr_closeout_readiness")
+    @covers("REQ-0.23.0-04-15")
+    def test_next_with_single_demo_advances_to_attestation(self, mock_readiness):
+        """Backward compatibility: N=1 command still advances on one --next."""
+        mock_readiness.return_value = {"blockers": [], "ready": True}
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _init_git_repo(Path.cwd())
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            self._seed_step_5_state(commands=["uv run gz adr status ADR-0.1.0"])
+            result = runner.invoke(main, ["closeout", "ADR-0.1.0", "--ceremony", "--next"])
+            self.assertEqual(result.exit_code, 0, result.output)
+            state = load_ceremony_state(Path.cwd(), "ADR-0.1.0")
+            self.assertEqual(state.current_step, CeremonyStep.ATTESTATION)
+
+    @patch("gzkit.commands.closeout_ceremony._adr_closeout_readiness")
+    @covers("REQ-0.23.0-04-15")
+    def test_next_with_zero_demos_advances_to_attestation(self, mock_readiness):
+        mock_readiness.return_value = {"blockers": [], "ready": True}
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _init_git_repo(Path.cwd())
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            self._seed_step_5_state(commands=[])
+            result = runner.invoke(main, ["closeout", "ADR-0.1.0", "--ceremony", "--next"])
+            self.assertEqual(result.exit_code, 0, result.output)
+            state = load_ceremony_state(Path.cwd(), "ADR-0.1.0")
+            self.assertEqual(state.current_step, CeremonyStep.ATTESTATION)
+
+    @patch("gzkit.commands.closeout_ceremony._adr_closeout_readiness")
+    @covers("REQ-0.23.0-04-15")
+    def test_step_5_shows_progress_indicator(self, mock_readiness):
+        mock_readiness.return_value = {"blockers": [], "ready": True}
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _init_git_repo(Path.cwd())
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            self._seed_step_5_state(
+                commands=["uv run gz alpha", "uv run gz beta", "uv run gz gamma"],
+                walkthrough_index=1,
+            )
+            result = runner.invoke(main, ["closeout", "ADR-0.1.0", "--ceremony"])
+            self.assertEqual(result.exit_code, 0, result.output)
+            self.assertIn("2", result.output)
+            self.assertIn("3", result.output)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -183,32 +183,64 @@ def render_step_4_walkthrough(
     return _render_to_text(Group(*elements))
 
 
-def render_step_5_execute(adr_id: str, commands: list[str]) -> str:
-    """Live demo — run commands for direct observation.
+def render_step_5_execute(
+    adr_id: str,
+    commands: list[str],
+    walkthrough_index: int = 0,
+) -> str:
+    """Live demo — present ONE command per render for operator-paced execution.
 
-    The agent should present these one at a time with light framing,
-    waiting for acknowledgment between each command.
+    GHI #260: the CLI gates each demo command behind its own ``--next``. The
+    walkthrough is the operator's observation surface; batching demos into a
+    single render eliminates the per-command ack loop the ceremony depends on.
+
+    ``walkthrough_index`` selects which command this render shows. At index
+    ``len(commands) - 1`` the agent runs the final demo and the next ``--next``
+    advances the ceremony to Step 6 ATTESTATION.
     """
-    lines = [
-        "LIVE DEMO — Test Drive",
-        "",
-        "Present each command one at a time. For each command:",
-        "  1. Explain briefly why this demonstrates value",
-        "  2. Run the command (or offer to let the human run it)",
-        "  3. Wait for human acknowledgment before proceeding",
-        "",
-    ]
-    if commands:
-        lines.append("Commands to demonstrate:")
-        for i, c in enumerate(commands):
-            lines.append(f"  {i + 1}. `{c}`")
-    else:
-        lines.append("No demo commands to run.")
+    if not commands:
+        return "\n".join(
+            [
+                "LIVE DEMO — Test Drive",
+                "",
+                "No demo commands to run.",
+                "",
+                f"Run `gz closeout {adr_id} --ceremony --next` to proceed to attestation.",
+            ]
+        )
 
-    lines.append("")
-    lines.append("After all commands have been observed,")
-    lines.append(f"run `gz closeout {adr_id} --ceremony --next` to proceed to attestation.")
-    return "\n".join(lines)
+    total = len(commands)
+    index = max(0, min(walkthrough_index, total - 1))
+    current = commands[index]
+    position = f"{index + 1} of {total}"
+    remaining = total - index - 1
+    if remaining == 0:
+        advance_hint = (
+            f"After the human acknowledges this final command, run `gz closeout "
+            f"{adr_id} --ceremony --next` to proceed to attestation."
+        )
+    else:
+        advance_hint = (
+            f"After the human acknowledges this command, run `gz closeout "
+            f"{adr_id} --ceremony --next` to present the next demo "
+            f"({remaining} remaining)."
+        )
+
+    return "\n".join(
+        [
+            f"LIVE DEMO — Test Drive ({position})",
+            "",
+            "For this command:",
+            "  1. Explain briefly why it demonstrates value",
+            "  2. Run it (or offer to let the human run it)",
+            "  3. Wait for human acknowledgment before advancing",
+            "",
+            "Command to demonstrate now:",
+            f"  `{current}`",
+            "",
+            advance_hint,
+        ]
+    )
 
 
 def render_step_6_attestation(adr_id: str) -> str:
