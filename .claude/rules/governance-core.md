@@ -31,3 +31,13 @@ uv run gz check-config-paths
 uv run gz validate --documents --surfaces
 uv run mkdocs build --strict
 ```
+
+## Operator-doc verb resolution (binding)
+
+Every `gz <verb>` string appearing in an operator-facing doc must resolve to a registered parser verb. Scope: `docs/**/*.md`, `docs/**/*.feature`, `features/**/*.feature`, `.gzkit/skills/**/SKILL.md`, and runbooks under `docs/user/runbook.md` + `docs/governance/governance_runbook.md`.
+
+A `gz <verb>` reference that points at an unregistered or renamed CLI verb is the same class of defect as an unresolvable import — it breaks the cascade `tool → skill → runbook` that `.gzkit/rules/tool-skill-runbook-alignment.md` depends on. Multi-word subcommands count (`gz adr status`, `gz obpi complete`), not just top-level verbs.
+
+Enforced by `gz validate --cli-alignment`. Exit 3 on any unresolvable reference. Recovery: either register the verb, rename the reference to an existing verb, or file a GHI if the doc is describing a planned-but-unlanded CLI surface (and mark the reference as speculative so the check skips it — see the validator for the exact escape marker).
+
+This section is the canonical rule home; the validator implementation in `src/gzkit/trust_audits.py` (or wherever the scope function lives) is an enforcement artifact of this rule, not the rule itself.

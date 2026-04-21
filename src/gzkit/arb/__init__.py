@@ -3,7 +3,8 @@
 ARB wraps QA commands (ruff, ty, unittest, coverage, etc.) and emits
 schema-validated JSON receipts to `artifacts/receipts/`. These receipts are
 the canonical evidence cited in attestation-enrichment Heavy-lane claims —
-see `.gzkit/rules/arb.md` and `.gzkit/rules/attestation-enrichment.md`.
+see `.gzkit/rules/attestation-enrichment.md` (canonical home for ARB
+middleware, canonical invocations, and receipt-ID discipline).
 
 Absorbed from airlineops/src/opsdev/arb/ under OBPI-0.25.0-33.
 """

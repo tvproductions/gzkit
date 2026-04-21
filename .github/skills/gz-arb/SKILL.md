@@ -78,8 +78,8 @@ uv run gz arb advise --limit 10
 
 ## References
 
-- Rule: `.gzkit/rules/arb.md` (v1.2)
+- Rule: `.gzkit/rules/attestation-enrichment.md` (ARB middleware + canonical invocations + receipt-ID discipline now live in one canonical home; former `arb.md` merged 2026-04-21)
 - Command docs: `docs/user/commands/arb.md`
 - Manpage: `docs/user/manpages/arb.md`
-- Attestation contract: `.claude/rules/attestation-enrichment.md`
+- Attestation contract: `.gzkit/rules/attestation-enrichment.md`
 - Absorption record: OBPI-0.25.0-33 under ADR-0.25.0

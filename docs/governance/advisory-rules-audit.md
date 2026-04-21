@@ -155,13 +155,13 @@ This audit scores every rule by:
 | 52 | Prohibited commands (settings mutations, secret management, force push, un-authorized merges) | **Judgment** | Permission model lives in `.claude/settings.json`; gh-level enforcement is server-side |
 | 53 | Defect tracking: create GHI when fix deferred | **Judgment** | Cultural enforcement; see rule 17 |
 
-### Constraints (`.gzkit/rules/constraints.md`)
+### Agent Contract (`.gzkit/rules/agent-contract.md`)
 
-This file is a cross-reference aggregator; every entry maps to one of the rules scored above. Its meta-rule ("these prohibitions are addressed to you — the executing agent") is itself **judgment** — the document's purpose is behavioral guidance for Claude Code sessions, not a mechanical gate.
+*File consolidated 2026-04-21 — merged from the former `behavioral-invariants.md` (positive invariants — Do) and `constraints.md` (negative constraints — Do not) to close the dual-framing co-load drift that Pass A of the control-surface audit surfaced. One always-on contract file now carries both framings side-by-side.*
 
-### Behavioral Invariants (`.gzkit/rules/behavioral-invariants.md`)
+The `Do not` section is a cross-reference aggregator; every entry maps to one of the rules scored above. Its meta-rule ("these prohibitions are addressed to you — the executing agent") is **judgment** — the document's purpose is behavioral guidance for Claude Code sessions, not a mechanical gate.
 
-Invariants #1–17 in the behavioral invariants doc are primarily **judgment** rules aimed at agent tool use and session behavior:
+The `Do` section (Invariants #1–17) is primarily **judgment** rules aimed at agent tool use and session behavior:
 
 - "Own the work completely" / "Complete all work fully" / "Never say out of scope" — judgment
 - "Fix class of failure, not instance" — judgment (but this audit itself is an instance of applying it)
@@ -170,6 +170,10 @@ Invariants #1–17 in the behavioral invariants doc are primarily **judgment** r
 - "On inconsistencies, STOP, name confusion, present tradeoff, wait" — judgment
 
 **Invariant #10a** ("When a skill step names a tool, invoke it in the same turn") is **promotable** — could be detected via hook analysis, but the signal-to-noise ratio is probably poor.
+
+### ARB middleware (now hosted in `.gzkit/rules/attestation-enrichment.md`)
+
+*File merged 2026-04-21 — the former `.gzkit/rules/arb.md` carried a duplicate lane matrix that drifted from the canonical table in `attestation-enrichment.md`. The unique ARB material (core concept, available commands, receipt schema, exit codes) moved into `attestation-enrichment.md`; the duplicate lane matrix was dropped. The canonical invocations table lives at one home (scorecard rows above still apply; the file path changed but the mechanical enforcement did not).*
 
 ---
 
@@ -232,5 +236,5 @@ This audit is itself a candidate for promotion: the catalog above could be a tes
 - `docs/governance/trust-doctrine.md` — the pattern this scorecard supports
 - `docs/governance/state-doctrine.md` — storage-layer doctrine; complement to trust doctrine
 - `docs/governance/layer-three-derived-views.md` — L3 view inventory and remaining audit gaps (GHI #214)
-- `.gzkit/rules/constraints.md` — the cross-reference index of these rules
+- `.gzkit/rules/agent-contract.md` — the cross-reference index of these rules (Do / Do not framings)
 - `CLAUDE.md` — architectural-boundaries memo (rules 1–6 in scorecard)

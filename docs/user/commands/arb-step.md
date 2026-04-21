@@ -59,4 +59,4 @@ gz arb step --name mkdocs -- uv run mkdocs build --strict
 
 - [`gz arb`](arb.md) — ARB parent reference
 - [`gz arb typecheck`](arb-typecheck.md) — canonical typecheck wrapper
-- Rule: `.gzkit/rules/arb.md`
+- Rule: `.gzkit/rules/attestation-enrichment.md`

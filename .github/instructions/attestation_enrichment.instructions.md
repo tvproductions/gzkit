@@ -3,7 +3,11 @@
 applyTo: "**"
 ---
 
-# Attestation and Commit Message Enrichment
+# Attestation, Commit Enrichment, and ARB Receipts
+
+**Version:** 2.0
+**Status:** Active
+**Last reviewed:** 2026-04-21 (merged arb.md lane matrix in to close the duplicate-matrix drift Pass A row 2 surfaced; single canonical home for ARB lane behavior + canonical invocations + receipt-ID discipline).
 
 ## Pattern (binding)
 
@@ -73,6 +77,67 @@ no absorption of the external reference cli_audit module warranted.
 Receipts: lint arb-2026-04-14T12-34-56-ruff; types arb-2026-04-14T12-35-02-ty;
 tests arb-2026-04-14T12-36-18-unittest; coverage arb-2026-04-14T12-37-44-coverage.
 ```
+
+## ARB Middleware — Core Concept
+
+ARB (Agent Self-Reporting) is a QA middleware layer that wraps real verification steps (lint, type check, tests, etc.) and emits structured JSON receipts. Every claim in the Canonical invocations table above is a thin wrapper over a real tool; the receipt is the deterministic evidence artifact.
+
+ARB intercepts QA command execution and records:
+
+- **Execution metadata** (timestamp, duration, environment)
+- **Input/output** (command, arguments, exit code, stderr/stdout)
+- **Structured findings** (linting violations, type errors, test failures)
+- **Receipt artifacts** (JSON schema-validated, persistent)
+
+This lets agents and humans:
+
+1. Validate QA step outcomes programmatically
+2. Aggregate recurring patterns across runs
+3. File issues with deterministic evidence
+4. Audit compliance and enforcement
+
+## Available commands
+
+The invocations in § Canonical invocations are the binding set. The commands below are the practical surface for producing and consuming receipts.
+
+### Wrap a QA tool
+
+```bash
+uv run gz arb ruff
+uv run gz arb ruff --fix
+uv run gz arb step --name unittest -- uv run -m unittest -q
+uv run gz arb typecheck
+uv run gz arb coverage run -m unittest discover -s tests -t .
+```
+
+### Validate and analyze receipts
+
+```bash
+uv run gz arb validate
+uv run gz arb validate --limit 50
+uv run gz arb advise
+uv run gz arb advise --limit 10
+```
+
+### Extract recurring anti-patterns
+
+```bash
+uv run gz arb patterns
+uv run gz arb patterns --compact
+uv run gz arb patterns --json
+```
+
+## Receipt schema and storage
+
+- **Lint receipt schema:** `data/schemas/arb_lint_receipt.schema.json` (`$id: gzkit.arb.lint_receipt.schema.json`)
+- **Step receipt schema:** `data/schemas/arb_step_receipt.schema.json` (`$id: gzkit.arb.step_receipt.schema.json`)
+- **Storage:** `artifacts/receipts/` (configurable via `arb.receipts_root` in `.gzkit.json`)
+
+## Exit codes
+
+- **0:** Command succeeded; receipt created
+- **1:** Command failed; receipt created with error status
+- **2:** ARB internal error
 
 ## Rationale
 
