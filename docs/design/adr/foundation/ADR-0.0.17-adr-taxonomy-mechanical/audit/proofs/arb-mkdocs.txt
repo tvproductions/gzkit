@@ -1,0 +1,10 @@
+  - user/skills/gz-adr-promote.md
+  - user/skills/gz-adr-recon.md
+  - user/skills/gz-adr-sync.md
+  - user/skills/gz-agent-sync.md
+  - user/skills/gz-check-config-paths.md
+  - user/skills/gz-migrate-semver.md
+  - user/skills/gz-skill-router.md
+  - user/skills/gz-tidy.md
+INFO    -  Documentation built in 2.12 seconds
+arb step name=mkdocs exit_status=0 receipt=/Users/jeff/Documents/Code/gzkit/artifacts/receipts/arb-step-mkdocs-3e1b2b3d9f444f809bcedcabe05be4a3.json

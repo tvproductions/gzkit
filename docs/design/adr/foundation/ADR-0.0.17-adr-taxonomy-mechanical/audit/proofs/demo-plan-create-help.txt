@@ -1,0 +1,5 @@
+                      [--kind {pool,foundation,feature}] [--dry-run]
+                      [--quiet | --verbose] [--debug]
+--
+  --kind {pool,foundation,feature}
+                        ADR taxonomy (required)

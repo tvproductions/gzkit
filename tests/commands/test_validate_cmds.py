@@ -448,8 +448,13 @@ class TestValidateTaxonomyFlag(unittest.TestCase):
         path.write_text("\n".join(lines), encoding="utf-8")
 
     @covers("REQ-0.0.17-04-08")
+    @covers("REQ-0.0.17-05-07")
     def test_validate_taxonomy_flag_clean_on_empty_tree(self) -> None:
-        """--taxonomy exits 0 when no non-pool ADRs are present."""
+        """--taxonomy exits 0 when no non-pool ADRs are present.
+
+        Also pins REQ-0.0.17-05-07 (post-backfill, `gz validate --taxonomy`
+        exits 0 against the canonical tree) — the semantic is the same.
+        """
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
