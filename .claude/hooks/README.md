@@ -24,8 +24,8 @@ Current hook surface in gzkit:
   PreToolUse (`Bash`) hook that warns before `git commit` and
   `git push` when an active OBPI runtime still appears incomplete.
 - `post-edit-ruff.py`
-  PostToolUse (`Write|Edit`) hook that runs `ruff check --fix`
-  and `ruff format` on edited Python files.
+  PostToolUse (`Write|Edit`) hook that runs `ruff check` on
+  edited Python files and surfaces findings to stderr (GHI #239).
 - `ledger-writer.py`
   PostToolUse (`Write|Edit`) hook that records governance
   artifact edits via `gzkit.hooks.core.record_artifact_edit`.

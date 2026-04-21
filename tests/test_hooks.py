@@ -441,7 +441,7 @@ class TestSetupClaudeHooks(unittest.TestCase):
             self.assertIn("Registration Order", readme_text)
             self.assertNotIn("not yet active in", readme_text)
             self.assertNotIn("historical", readme_text)
-            self.assertIn("hook that runs `ruff check --fix`", readme_text)
+            self.assertIn("hook that runs `ruff check`", readme_text)
             self.assertIn("hook that records governance", readme_text)
 
 
@@ -520,6 +520,36 @@ class TestSettingsMergePreservesUserHooks(unittest.TestCase):
                 ".claude/hooks/post-edit-ruff.py",
                 edit_write_hooks[0]["hooks"][0]["command"],
             )
+
+
+class TestPostEditRuffHook(unittest.TestCase):
+    """Tests for the generated post-edit-ruff hook script (GHI #239)."""
+
+    def test_hook_surfaces_lint_findings_to_stderr_on_nonzero_exit(self) -> None:
+        """Generated hook writes ruff output to stderr when ruff exits non-zero.
+
+        The import-colocation rule in AGENTS.md says imports must land with
+        their usage in a single Edit because the post-edit hook might strip
+        unused imports. The backstop for when the agent forgets is a hook
+        that surfaces the resulting F401/F821 warning in the same turn so
+        the agent can correct course. Closes GHI #239.
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+            setup_claude_hooks(project_root, config)
+
+            hook_path = project_root / ".claude" / "hooks" / "post-edit-ruff.py"
+            script = hook_path.read_text(encoding="utf-8")
+
+            # Contract assertions: script must surface non-zero ruff output
+            # to stderr for the agent to see the warning in-turn.
+            self.assertIn("returncode != 0", script)
+            self.assertIn("sys.stderr.write", script)
+            self.assertIn("lint findings", script)
+            # Contract: output is capped so stderr floods don't blow up the
+            # tool-call feedback channel.
+            self.assertIn("MAX_OUTPUT_LINES", script)
 
 
 class TestPlanAuditGateHook(unittest.TestCase):
