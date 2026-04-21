@@ -242,6 +242,42 @@ class TestSyncCommand(unittest.TestCase):
             self.assertEqual(second.exit_code, 0)
             self.assertEqual(first.output, second.output)
 
+    def test_agent_sync_regenerates_copilot_instructions_with_canonical_rules(self) -> None:
+        """copilot-instructions.md regenerates from template even when canonical
+        rules exist (GHI #247). Previously the master file was inside the
+        ``else`` branch and only regenerated when canonical_rules was empty."""
+        runner = CliRunner()
+        with _InitFromTemplate():
+            # Scaffold a minimal canonical rule so canonical_rules is non-empty
+            # — this is the branch that previously skipped the master file.
+            rules_dir = Path(".gzkit/rules")
+            rules_dir.mkdir(parents=True, exist_ok=True)
+            (rules_dir / "sample.md").write_text(
+                "---\n"
+                "id: sample-rule\n"
+                "description: Fixture rule for GHI #247 regression test.\n"
+                "paths:\n"
+                '  - "**"\n'
+                "---\n\n# Sample rule\n",
+                encoding="utf-8",
+            )
+
+            target = Path(".github/copilot-instructions.md")
+            marker = "# DRIFT-SENTINEL GHI-247\n"
+            target.write_text(marker, encoding="utf-8")
+
+            result = runner.invoke(main, ["agent", "sync", "control-surfaces"])
+
+            self.assertEqual(result.exit_code, 0, msg=f"sync failed: {result.output}")
+            regenerated = target.read_text(encoding="utf-8")
+            self.assertNotEqual(
+                regenerated,
+                marker,
+                "copilot-instructions.md was not regenerated from template "
+                "when canonical rules exist (GHI #247 regression).",
+            )
+            self.assertIn(".github/copilot-instructions.md", result.output)
+
 
 class TestBuildSyncCommitMessage(unittest.TestCase):
     """_build_sync_commit_message carries a Ceremony trailer (GHI #201)."""
