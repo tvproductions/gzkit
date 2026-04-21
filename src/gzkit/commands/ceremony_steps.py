@@ -202,14 +202,25 @@ def render_step_5_execute(adr_id: str, commands: list[str]) -> str:
 
 
 def render_step_6_attestation(adr_id: str) -> str:
-    """Request attestation — supports R&R dialogue."""
+    """Request attestation — supports R&R dialogue.
+
+    Prompt ordering honors the gz-adr-closeout-ceremony skill Step 5
+    contract (GHI #250): the agent will now present the structured
+    Evidence Summary, and only then does the operator decide. The
+    previous prompt listed operator moves first and closed with "I
+    await your decision", which read as an operator-driven pattern
+    and contradicted the skill's proactive-evidence directive.
+    """
     return "\n".join(
         [
             "ATTESTATION — Your Verdict",
             "",
-            "The walkthrough is complete. You may now:",
+            "The walkthrough is complete. Per the gz-adr-closeout-ceremony",
+            "skill Step 5 contract, the agent will now present the structured",
+            "Evidence Summary (see the skill template). Once you have the",
+            "summary, you may:",
             "",
-            "  Ask questions — I will answer factually without interpreting evidence",
+            "  Ask questions — the agent answers factually without interpreting",
             "  Request re-runs — ask to see any command output again",
             "  Direct revisions — identify issues to fix before attesting",
             "",
@@ -223,7 +234,8 @@ def render_step_6_attestation(adr_id: str) -> str:
             "",
             f"  gz closeout {adr_id} --ceremony --pause",
             "",
-            "I await your decision.",
+            "Agent: present the Evidence Summary Template now, then await",
+            "the operator's decision.",
         ]
     )
 
