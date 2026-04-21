@@ -524,6 +524,11 @@ Use [`/gz-check`](skills/gz-check.md) to run all quality checks in one pass, or 
 
 ## PRD → ADR Derivation
 
+*Traceability: this section and its canonical concepts page are the landed
+outputs of `OBPI-0.0.18-02-runbook-prd-to-adr` (runbook PRD→ADR derivation
+guidance) and `OBPI-0.0.18-01-concepts-page` (taxonomy concepts page),
+respectively, under [ADR-0.0.18](../design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/ADR-0.0.18-adr-taxonomy-doctrine.md).*
+
 Given a PRD and a Constitution, how do you decide which ADRs to write, what
 kind each one should be, and what to defer into the pool? The PRD names goals
 and invariants; the Constitution names the rails those goals run on; ADRs are

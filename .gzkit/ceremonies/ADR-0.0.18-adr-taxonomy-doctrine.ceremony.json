@@ -1,0 +1,63 @@
+{
+  "adr_id": "ADR-0.0.18-adr-taxonomy-doctrine",
+  "current_step": 11,
+  "is_foundation": true,
+  "started_at": "2026-04-20T22:51:15Z",
+  "updated_at": "2026-04-21T00:03:08Z",
+  "step_history": [
+    {
+      "step": 1,
+      "presented_at": "2026-04-20T22:51:15Z",
+      "acknowledged_at": "2026-04-20T22:53:26Z"
+    },
+    {
+      "step": 2,
+      "presented_at": "2026-04-20T22:53:26Z",
+      "acknowledged_at": "2026-04-20T22:56:47Z"
+    },
+    {
+      "step": 3,
+      "presented_at": "2026-04-20T22:56:47Z",
+      "acknowledged_at": "2026-04-20T22:57:54Z"
+    },
+    {
+      "step": 4,
+      "presented_at": "2026-04-20T22:57:54Z",
+      "acknowledged_at": "2026-04-20T22:57:58Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-04-20T22:57:58Z",
+      "acknowledged_at": "2026-04-20T22:58:10Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-04-20T22:58:10Z",
+      "acknowledged_at": "2026-04-20T23:54:20Z"
+    },
+    {
+      "step": 7,
+      "presented_at": "2026-04-20T23:54:20Z",
+      "acknowledged_at": "2026-04-21T00:00:33Z"
+    },
+    {
+      "step": 8,
+      "presented_at": "2026-04-21T00:00:33Z",
+      "acknowledged_at": "2026-04-21T00:03:08Z"
+    },
+    {
+      "step": 11,
+      "presented_at": "2026-04-21T00:03:08Z",
+      "acknowledged_at": null
+    }
+  ],
+  "walkthrough_commands": [
+    "uv run gz status --help",
+    "uv run gz adr promote --help"
+  ],
+  "walkthrough_index": 0,
+  "attestation": "attest completed — ADR-0.0.18 lands the operator doctrine for ADR taxonomy (pool curation, PRD→ADR derivation, epic grouping, skill-prompt enrichment) across 5 OBPIs all individually attested_completed. Foundation/Lite doctrine ADR; no external contract surface touched. QA gates clean with fresh ARB receipts: lint arb-ruff-1ede81703ac445c5afc11cee166fd660; typecheck arb-step-typecheck-a3cc65a5878f4e8c96dbca443eb5c000; tests arb-step-unittest-697a99ed07ad40d39124fc338b2a007a (3249 pass, 1 skipped); mkdocs arb-step-mkdocs-259dcc633def410ea18a2441c5095b81. gz validate --commit-trailers --requirements passes (2 scopes). Deferred to follow-up: GHI #258 (brief cites ADR-0.0.15 as feature example — content defect in this ADR brief prose, deferred as separate fix); audit-check @covers coverage gap (7/34 REQs, 20.6% — expected for prose-only doctrine without source @covers home, but unreconciled at tooling level). Ceremony-process defects surfaced and filed during this ceremony remain open: GHI #259-263, and GHI #264 (Claude Code docs silent on SKILL.md model-pin revert semantics, filed this session).",
+  "completed_at": "2026-04-21T00:03:08Z",
+  "attempt": 1,
+  "paused_at": "2026-04-20T23:33:08Z"
+}

@@ -110,6 +110,10 @@ Rationale: baseline of 3 for pure-doctrine work, plus a surface-boundary split b
 
 ## Attestation Block
 
+| Term | Status | Attested By | Date | Reason |
+|------|--------|-------------|------|--------|
+| 0.0.18 | Completed | Jeffry | 2026-04-20 | completed |
+
 - Scope: ADR-0.0.18 operator doctrine
 - Lane: lite
 - Kind: foundation (foundation-rigor attestation applies regardless of lane per ADR-0.0.17 decision axis)
