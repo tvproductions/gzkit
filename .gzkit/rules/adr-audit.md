@@ -43,5 +43,5 @@ uv run gz adr emit-receipt ADR-<X.Y.Z> --event validated --attestor "<Human Name
 ## Rules
 
 - Do not run `gz audit` before attestation.
-- If audit-check fails, fix brief evidence first and rerun.
+- If audit-check fails, diagnose whether the flagged REQ is (a) genuinely uncovered — author a REQ-derived test and decorate with `@covers(REQ-X.Y.Z-NN-MM)` — or (b) covered by a test whose assertion drifted from REQ semantics — re-derive the assertion per `.gzkit/rules/tests.md` § "Tests assert semantics, not strings" (Invariant 6f). Never backfill a cosmetic `@covers` decorator to silence audit-check without re-deriving the assertion.
 - Keep `docs/user/runbook.md` and `docs/governance/governance_runbook.md` aligned with runtime behavior.
