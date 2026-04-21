@@ -159,6 +159,7 @@ Gate 2 is named TDD. Red-Green-Refactor is a repeating cycle per behavior increm
 - Batching all tests for one "RED screenshot" then batching all code for one "GREEN screenshot" (GHI #157)
 - Stopping after each RED→GREEN pair to solicit operator approval before the next increment (GHI #157)
 - Refactoring while tests are still failing (mixing Green and Refactor)
+- Backfilling `@covers(REQ-...)` decorators on existing tests to make `gz adr audit-check` pass without re-deriving semantic assertions from the REQ — the decorator is a traceability tag, not an assertion of semantic coverage; cosmetic backfill silences the audit while leaving the semantic gap intact (GHI #272)
 
 ### RED evidence
 

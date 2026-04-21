@@ -4,7 +4,7 @@ description: Gate-5 audit templates and procedure for ADR verification. GovZero 
 category: adr-audit
 compatibility: GovZero v6 framework; provides audit procedure for COMPLETED→VALIDATED ADR transition
 metadata:
-  skill-version: "6.4.0"
+  skill-version: "6.5.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -116,9 +116,24 @@ uv run gz adr audit-check <adr-id>
 
 **If ledger is incomplete or missing:**
 
-- Run: `uv run gz audit <adr-id>`
-- This will audit all briefs and write ledger entries
-- Return to Step 2 after reconciliation
+Audit-check failure has two causes that look identical at the CLI but require
+opposite remediation. Diagnose before editing:
+
+- **(a) Genuinely missing coverage** — no test asserts the flagged REQ's
+  semantics. Remediation: author a REQ-derived test (per the Red→Green→Refactor
+  rhythm in `.gzkit/rules/tests.md` § Red-Green-Refactor), then decorate it with
+  `@covers(REQ-X.Y.Z-NN-MM)`. Re-run `uv run gz audit <adr-id>` to write fresh
+  ledger entries, then return to Step 2.
+- **(b) Coverage-shape drift** — a test exists but pins an obsolete output
+  string or asserts a shape the REQ did not mandate. Remediation: re-derive the
+  assertion from the OBPI brief's REQ semantics per `.gzkit/rules/tests.md`
+  § "Tests assert semantics, not strings" (Invariant 6f, canonical home).
+  **Backfilling a cosmetic `@covers` decorator without re-deriving the
+  assertion is the forbidden anti-pattern** — it silences `gz adr audit-check`
+  while leaving the semantic gap intact.
+
+After remediation, re-run `uv run gz audit <adr-id>` to write fresh ledger
+entries, then return to Step 2.
 
 **Force re-verification (optional):**
 
