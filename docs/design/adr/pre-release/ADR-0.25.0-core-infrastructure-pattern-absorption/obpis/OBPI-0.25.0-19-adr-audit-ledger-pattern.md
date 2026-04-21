@@ -234,7 +234,7 @@ uv run -m unittest tests/test_adr_audit_ledger_confirm.py -v
 - Date: 2026-04-11
 - Attestation: attest completed
 
-## Closing Argument
+### Closing Argument
 
 **Confirm.** airlineops's `adr_audit_ledger.py` is a 249-line Layer 2
 Gate 5 completeness checker that reads a local `obpi-audit.jsonl` to

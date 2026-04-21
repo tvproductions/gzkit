@@ -187,6 +187,6 @@ Expected: Line containing `**Decision: Confirm**` with rationale citing type saf
 - Attestation: attest completed.
 - Date: 2026-04-10
 
-## Closing Argument
+### Closing Argument
 
 Configuration loading is definitively generic infrastructure, and gzkit's `config.py` already owns the pattern comprehensively. The Pydantic-based typed model architecture with frozen immutability, `extra="forbid"` validation, and 3-layer precedence (defaults -> file -> CLI) strictly supersedes airlineops's untyped `dict[str, Any]` approach with `_deep_merge`. No airlineops pattern — deep merge, local override file, or broad error catching — adds value that gzkit does not already deliver through stronger architectural means. **Decision: Confirm.**

@@ -188,6 +188,6 @@ Returns: `**Decision: Exclude** — The manifests module is domain-specific to a
 - Attestation: Attested as completed. Evaluated airlineops manifests.py against gzkit manifest handling. Exclude decision is correct — module is domain-specific to demand-run artifacts with no governance analog. All quality gates pass.
 - Date: 2026-04-10
 
-## Closing Argument
+### Closing Argument
 
 OBPI-0.25.0-15 evaluated airlineops `common/manifests.py` (89 lines) against gzkit's manifest handling across six dimensions: purpose, core function, data model, error handling, cross-platform robustness, and dependencies. The subtraction test conclusively identifies the module as domain-specific: removing airline concerns leaves only trivial SHA256 + JSON primitives previously Excluded in OBPI-0.25.0-03. gzkit's existing Pydantic-based manifest loading and structured validation are more sophisticated for their governance purpose. Decision: **Exclude**.

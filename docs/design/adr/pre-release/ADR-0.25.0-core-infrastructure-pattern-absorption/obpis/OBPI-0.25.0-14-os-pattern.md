@@ -208,6 +208,6 @@ _No defects tracked._
 - Attestation: attest completed
 - Date: 2026-04-10
 
-## Closing Argument
+### Closing Argument
 
 airlineops's `common/os.py` (241 lines) provides UNC/SMB network share handling: `iter_mounts()` enumerates macOS `/Volumes/` mount points, `parse_unc_share()` and `UncShare` parse Windows UNC paths into server/share/remainder triples, `resolve_unc_mount()`/`resolve_unc_path()`/`normalize_unc_path()` resolve and normalize UNC paths to mounted local paths, and `refresh_macos_guest_smb_mount()` refreshes macOS SMB mounts via subprocess calls to `diskutil`, `umount`, and `mount_smbfs`. Every function beyond two trivial platform detection helpers (`is_macos()`, `is_windows()`) serves a deployment scenario where airline servers are accessed via SMB shares on macOS workstations. gzkit works with local files, has no UNC/SMB use case, and its cross-platform needs are comprehensively addressed by `pathlib.Path`, UTF-8 encoding policy, and the existing cross-platform development rule. The subtraction test is unambiguous: this module is pure deployment-environment infrastructure. **Decision: Exclude.**

@@ -180,7 +180,7 @@ uv run -m behave features/core_infrastructure.feature
 - [x] **Gate 4 (BDD):** N/A — Confirm decision, no operator-visible behavior change
 - [ ] **Gate 5 (Human):** Attestation recorded
 
-## Closing Argument
+### Closing Argument
 
 gzkit's traceability surface (`triangle.py` at 372 lines and `traceability.py` at 418 lines — 790+ lines total) surpasses airlineops's heuristic inference module (`adr_traceability.py` at 277 lines) on every governance-relevant dimension. The `@covers` decorator provides auditable, precise test-to-REQ linkage; `compute_coverage()` delivers structured multi-level rollups at REQ, OBPI, and ADR levels; `detect_drift()` catches unlinked specs and orphan tests proactively. The airlineops module's unique capability — heuristic keyword scoring — produces fuzzy confidence values unsuitable for governance compliance, and its domain-specific bonuses (`econ`, `ops`, `market`, `qsi`, `gravity`, `shares`) fail the subtraction test. gzkit's `gz-adr-map` skill and `gz state --json` command provide governance-aware ADR-to-artifact mapping through the central ledger, replacing the need for heuristic inference. No absorption is warranted; gzkit's implementation is the stronger pattern.
 

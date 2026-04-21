@@ -117,6 +117,6 @@ except ImportError:
 - [ ] Gate 3 (Docs): Configuration documented; runbook updated
 - [ ] Gate 5 (Attestation): Human attestation required (Heavy lane)
 
-## Closing Argument
+### Closing Argument
 
 *To be authored at completion from delivered evidence.*

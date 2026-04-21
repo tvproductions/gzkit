@@ -314,7 +314,7 @@ Paired with `uv run gz test` → 2893 unit tests OK, 17/17 behave features passe
 - [x] **Gate 4 (BDD):** **N/A** — library function only; no operator-visible CLI surface change (no external-surface change). Rationale in `## Decision` Gate 4 subsection.
 - [ ] **Gate 5 (Human):** Attestation recorded (pending Stage 4 ceremony)
 
-## Closing Argument
+### Closing Argument
 
 OBPI-0.25.0-32 absorbs `airlineops/opsdev/governance/handoff_validation.py`
 (312 lines) into `src/gzkit/handoff_validation.py` (320 lines after two

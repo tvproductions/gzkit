@@ -211,7 +211,7 @@ _No defects tracked._
 - Attestation: attest completed
 - Date: `2026-04-10`
 
-## Closing Argument
+### Closing Argument
 
 airlineops's `core/hooks.py` (34 lines) is a minimal callback registry for dataset-specific post-load pipeline hooks in the airline data warehouse. The module provides two functions — `register_hook(dataset, name, fn)` and `get_hook(dataset, name)` — backed by a module-level dict keyed by `(dataset_name, hook_name)`. Its only documented usage is in `warehouse/ingest/loader/load_operations.py`, where the `"post_load"` hook runs optional callbacks after airline dataset curation and ledger append. The `dataset` parameter refers to airline datasets (BTS, FAA), and the hook lifecycle is tied to the warehouse ingest pipeline.
 

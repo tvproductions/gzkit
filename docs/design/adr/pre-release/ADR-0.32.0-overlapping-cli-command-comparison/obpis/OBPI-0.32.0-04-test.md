@@ -72,6 +72,6 @@ Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
 - [ ] Gate 3 (Docs): Comparison rationale documented
 - [ ] Gate 5 (Attestation): Human attestation required (Heavy lane)
 
-## Closing Argument
+### Closing Argument
 
 *To be authored at completion from delivered evidence.*

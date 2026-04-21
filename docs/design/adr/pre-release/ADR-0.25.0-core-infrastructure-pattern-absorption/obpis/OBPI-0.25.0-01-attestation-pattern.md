@@ -202,6 +202,6 @@ _No defects tracked._
 - Attestation: Confirmed: gzkit attestation surface is more capable across all dimensions. Comparison is honest and neutral — retains best from both codebases. No absorption warranted.
 - Date: 2026-04-10
 
-## Closing Argument
+### Closing Argument
 
 airlineops's `core/attestation.py` (511 lines) implements AIRAC-cycle-based attestation and ceremony ledgers using Pydantic models and JSONL append-only storage. gzkit's attestation surface (~2000+ lines across 10+ modules) provides multi-level attestation (ADR + OBPI), structured REQ-proof evidence, a composite state machine with drift detection, transactional OBPI completion with rollback, and an 11-step ceremony pipeline. Every generic pattern in airlineops is already subsumed by gzkit. The remaining airlineops-specific constructs (AIRAC cycle organization, operational attestation responses, world-state and contract hashing) are airline-domain-specific and correctly excluded from absorption. **Decision: Confirm.**

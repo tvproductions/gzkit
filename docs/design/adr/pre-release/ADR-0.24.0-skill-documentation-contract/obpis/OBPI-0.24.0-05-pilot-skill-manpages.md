@@ -83,7 +83,7 @@ Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
 - `test -f docs/user/skills/gz-adr-map.md docs/user/skills/gz-adr-create.md docs/user/skills/gz-arb.md docs/user/skills/gz-check.md docs/user/skills/gz-session-handoff.md docs/user/skills/gz-chore-runner.md`
 - `rg -n "^## When to Use$" docs/user/skills/gz-adr-map.md docs/user/skills/gz-adr-create.md docs/user/skills/gz-arb.md docs/user/skills/gz-check.md docs/user/skills/gz-session-handoff.md docs/user/skills/gz-chore-runner.md`
 
-## Closing Argument
+### Closing Argument
 
 ### Implementation Summary
 

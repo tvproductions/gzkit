@@ -288,6 +288,7 @@ def _collect_errors(
     check_advisory_scorecard: bool = False,
     check_reconcile_freshness: bool = False,
     check_taxonomy: bool = False,
+    check_brief_headings: bool = False,
     frontmatter_adr: str | None = None,
 ) -> list[ValidationError]:
     """Collect validation errors across all requested check types."""
@@ -324,6 +325,7 @@ def _collect_errors(
         "skill_alignment": check_skill_alignment,
         "advisory_scorecard": check_advisory_scorecard,
         "reconcile_freshness": check_reconcile_freshness,
+        "brief_headings": check_brief_headings,
     }
     run_all = not any(default_scopes.values()) and not any(explicit_scopes.values())
 
@@ -389,6 +391,7 @@ def _explicit_scope_runners(
         "skill_alignment": lambda: trust_audits.audit_skill_alignment(project_root),
         "advisory_scorecard": lambda: trust_audits.audit_advisory_scorecard(project_root),
         "reconcile_freshness": lambda: trust_audits.audit_reconcile_freshness(project_root),
+        "brief_headings": lambda: trust_audits.audit_brief_headings(project_root),
     }
 
 
@@ -465,6 +468,7 @@ def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
         "skill_alignment",
         "advisory_scorecard",
         "reconcile_freshness",
+        "brief_headings",
     ]
 
     run_all = not any(checks.get(s, False) for s in run_all_scopes + opt_in_scopes)
@@ -548,6 +552,7 @@ def validate(
     check_advisory_scorecard: bool = False,
     check_reconcile_freshness: bool = False,
     check_taxonomy: bool = False,
+    check_brief_headings: bool = False,
     as_json: bool = False,
     frontmatter_adr: str | None = None,
     frontmatter_explain: str | None = None,
@@ -595,6 +600,7 @@ def validate(
         check_advisory_scorecard=check_advisory_scorecard,
         check_reconcile_freshness=check_reconcile_freshness,
         check_taxonomy=check_taxonomy,
+        check_brief_headings=check_brief_headings,
         frontmatter_adr=frontmatter_adr,
     )
 
@@ -646,6 +652,7 @@ def validate(
         "advisory_scorecard": check_advisory_scorecard,
         "reconcile_freshness": check_reconcile_freshness,
         "taxonomy": check_taxonomy,
+        "brief_headings": check_brief_headings,
     }
     scopes = _resolve_scopes(checks)
     frontmatter_only = scopes == ["frontmatter"]

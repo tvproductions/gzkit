@@ -200,6 +200,6 @@ _No defects tracked._
 - Attestation: attest completed
 - Date: 2026-04-11
 
-## Closing Argument
+### Closing Argument
 
 airlineops's `common/console.py` (45 lines) is a `create_console()` factory that detects terminal encoding on Windows via `sys.stdout.encoding` and configures Rich's `legacy_windows` flag to toggle between full Unicode and ASCII fallback. gzkit handles the same concern with a stronger two-layer approach: `_ensure_utf8_console()` in `cli/main.py:93-100` reconfigures both stdout and stderr to UTF-8 at startup — before any Rich output — which forces UTF-8 at the OS stream level rather than adapting per-Console instance. The module-level Console singleton in `commands/common.py:30-33` adds `NO_COLOR` and `FORCE_COLOR` environment variable support that airlineops lacks. Once `_ensure_utf8_console()` runs, the encoding detection in airlineops's factory becomes redundant — Rich sees a UTF-8 stream regardless of the original terminal encoding. The airlineops factory pattern (new Console per call) is appropriate for multi-Console applications but unnecessary for gzkit's CLI where a single shared Console serves all commands. **Decision: Confirm.**

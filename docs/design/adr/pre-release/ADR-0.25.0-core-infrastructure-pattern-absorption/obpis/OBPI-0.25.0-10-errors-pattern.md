@@ -212,6 +212,6 @@ _No defects tracked._
 - Attestation: attest completed
 - Date: 2026-04-10
 
-## Closing Argument
+### Closing Argument
 
 airlineops's `core/errors.py` (53 lines) is a thin UI error rendering facade — not an exception hierarchy as described in the ADR. The module wraps `render_error_panel` from `airlineops.warehouse.bootstrap.common`, taking airline-specific parameters (`dataset` for BTS/FAA dataset names, `period` for data periods, `phase` for processing phases, `exc` for the caught exception) and rendering Rich error panels for warehouse dataset processing failures. It exports only `render_error_panel` and defines zero exception classes, zero error classification, and zero reusable error-handling patterns. gzkit already has `src/gzkit/core/exceptions.py` (96 lines) — a well-structured typed exception hierarchy with six exception classes (`GzkitError`, `ValidationError`, `ResourceNotFoundError`, `PermanentError`, `OperatorError`, `TransientError`, `PolicyBreachError`), exit-code classification aligned to the CLI Standard 4-Code Map, and additional domain exceptions (`GzCliError`, `DatasetValidationError`) in other modules. The subtraction test is unambiguous: every parameter, every delegation target, and every fallback path in the airlineops module is airline-domain-specific. There are no reusable exception patterns to absorb. **Decision: Exclude.**

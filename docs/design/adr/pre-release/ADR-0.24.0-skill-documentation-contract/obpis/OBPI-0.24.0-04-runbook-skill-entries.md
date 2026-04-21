@@ -72,7 +72,7 @@ Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
 - `rg -n "\\]\\(.*skills/.*\\.md\\)" docs/user/runbook.md docs/governance/governance_runbook.md`
 - `rg -n "what the skill does|why it's invoked|workflow" docs/user/runbook.md docs/governance/governance_runbook.md`
 
-## Closing Argument
+### Closing Argument
 
 ### Implementation Summary
 

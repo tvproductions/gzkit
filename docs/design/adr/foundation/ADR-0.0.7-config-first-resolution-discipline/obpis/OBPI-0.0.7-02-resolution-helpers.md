@@ -97,7 +97,7 @@ uv run -m unittest tests.test_manifest_resolution -v
 - [x] **Code Quality:** Lint, format, type checks clean
 - [x] **OBPI Acceptance:** Evidence recorded below
 
-## Closing Argument
+### Closing Argument
 
 The `manifest_path()` helper eliminates ad-hoc path construction from manifest data
 by providing a single resolution function that handles both v1 flat and v2 sectioned

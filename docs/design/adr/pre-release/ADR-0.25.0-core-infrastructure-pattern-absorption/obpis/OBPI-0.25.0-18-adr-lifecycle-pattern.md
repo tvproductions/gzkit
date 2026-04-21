@@ -214,6 +214,6 @@ _No defects tracked._
 - Attestation: attest completed
 - Date: 2026-04-11
 
-## Closing Argument
+### Closing Argument
 
 airlineops's `opsdev/lib/adr.py` (1603 lines) is a monolithic module that combines ADR discovery, index generation, status table generation, title normalization, reconciliation, drift detection, and Rich Console rendering. It derives ADR state from regex-based markdown file parsing — extracting status, dates, titles, and superseded-by references from markdown body text and generating static artifacts (`adr_index.md`, `adr_status.md`). gzkit's ADR lifecycle surface (~1300+ lines across `registry.py`, `sync.py`, `commands/register.py`, `core/models.py`, `ledger.py`, and `commands/adr_report.py`) is architecturally superior in a fundamental way: state is derived from an append-only ledger (JSONL event log), not parsed from variable markdown formatting. This gives gzkit a composite state machine with 7 runtime states, ledger-based reconciliation with receipt verification, dynamic status views that cannot drift from source-of-truth, Pydantic-validated frontmatter via a content type registry, a 5-gate governance system with per-gate tracking, and transactional OBPI completion with rollback. The monolithic airlineops module conflates discovery, parsing, rendering, and reconciliation — concerns that gzkit correctly separates. airlineops's static index generation directly contradicts gzkit's Architectural Boundary #6: "Do not let derived views silently become source-of-truth." **Decision: Confirm.**

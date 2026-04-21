@@ -91,6 +91,6 @@ Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
 
 **Status:** This brief remains `status: Pending` in the frontmatter because the OBPI-0.27.0 pipeline was not run for it. Closing the brief through the hook-enforced completion flow would require duplicating the completion ceremony for the same artifacts. The governance-honest record is: the decision and implementation were executed under OBPI-0.25.0-33, documented here for per-module audit traceability, and will be formally closed alongside the ADR-0.27.0 closeout ceremony (or via a batch `gz obpi complete` pass specifically targeted at the 9 superseded briefs).
 
-## Closing Argument
+### Closing Argument
 
 Absorb executed under OBPI-0.25.0-33 on 2026-04-14. See OBPI-0.25.0-33-arb-analysis-pattern.md § Implementation Summary and § Key Proof for the end-to-end evidence trail.

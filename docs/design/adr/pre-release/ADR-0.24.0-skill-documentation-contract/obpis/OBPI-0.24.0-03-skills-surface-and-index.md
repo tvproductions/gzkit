@@ -72,7 +72,7 @@ Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
 - `rg -n "Skills:" mkdocs.yml`
 - `rg -n "adr-operations|validation|operations" docs/user/skills/index.md`
 
-## Closing Argument
+### Closing Argument
 
 ### Implementation Summary
 

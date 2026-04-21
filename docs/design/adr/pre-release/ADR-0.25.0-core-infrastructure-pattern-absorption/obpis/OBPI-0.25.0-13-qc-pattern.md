@@ -199,6 +199,6 @@ _No defects tracked._
 - Attestation: attest completed
 - Date: 2026-04-10
 
-## Closing Argument
+### Closing Argument
 
 airlineops's `core/qc.py` (18 lines) is a thin facade that re-exports `run_integrity()` from `airlineops.reporter.reports.integrity_check` for warehouse data integrity checks. It takes airline-domain-specific parameters (`dataset`, `db_path`) and has zero conceptual overlap with gzkit's `quality.py` (773 lines), which provides code quality infrastructure: lint, format, typecheck, test orchestration, AST-based custom lint rules, drift advisory, product proof gates, and eval harness. The "QC" label in airlineops refers to operational quality control (data integrity), not code quality. No reusable patterns exist in the 18-line facade — the subtraction test is definitive. **Decision: Exclude.**

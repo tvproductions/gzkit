@@ -280,7 +280,7 @@ Pre-existing tooling drift noticed but out of scope: `uv run gz plan audit` (`sr
 - Attestation: attest completed — Exclude decision recorded with five-point rationale including the tooling-layer vs consumer-layer distinction that decisively disqualifies absorption. See brief Human Attestation section for the full enrichment.
 - Date: 2026-04-13
 
-## Closing Argument
+### Closing Argument
 
 gzkit's ledger surface — `events.py` (470 L typed event models),
 `ledger.py` (598 L `Ledger` class with append/read/query/graph), and

@@ -140,6 +140,6 @@ $ uv run -m behave features/closeout_product_proof.feature
 3 scenarios passed, 0 failed — closeout blocks on missing proof, allows with docstring proof, shows product_proof in JSON
 ```
 
-## Closing Argument
+### Closing Argument
 
 We added `check_product_proof()` to `src/gzkit/quality.py` with three detection mechanisms (runbook keyword match, command doc existence, AST-parsed public docstrings) and integrated it into `closeout_cmd()` as a blocking gate. Operators running `uv run gz closeout ADR-X.Y.Z` now see a per-OBPI product proof table and cannot proceed when any OBPI lacks documentation proof. This matters because previously agents could declare completion without proving their work was documented — the gate makes rubber-stamp closeout impossible.

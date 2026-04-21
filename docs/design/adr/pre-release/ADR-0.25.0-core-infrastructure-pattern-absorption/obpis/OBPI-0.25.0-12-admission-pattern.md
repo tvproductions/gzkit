@@ -232,7 +232,7 @@ _No defects tracked._
 - Attestation: attest completed
 - Date: 2026-04-10
 
-## Closing Argument
+### Closing Argument
 
 The airlineops `core/admission.py` module provides a single-function facade for
 resolving YYYY-MM period tokens via the warehouse cadence configuration. Despite
