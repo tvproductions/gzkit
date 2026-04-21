@@ -5,8 +5,8 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.7.1"
-last_reviewed: 2026-04-19
+skill-version: "6.8.0"
+last_reviewed: 2026-04-20
 ---
 
 # gz-obpi-pipeline
@@ -475,27 +475,56 @@ the reconcile output and ADR status refresh.
    the gate that prevents the reactive-triage class of failure (the original
    OBPI-04 Stage 5 cost ~3 turns to discover the same gaps one at a time).
 
-1. **Complete OBPI atomically** — `uv run gz obpi complete {OBPI-SLUG} --attestor {attestor} --attestation-text "{text}" [--implementation-summary "{summary}"] [--key-proof "{proof}"]`
+1. **Closure-narrative gate (MANDATORY, GHI #267)** — Before invoking `gz obpi complete`, present the resolved Implementation Summary and Key Proof prose to the operator inline, in the exact form that will be written to the brief. This is the brief-narrative analog of the Stage 4 evidence gate: the brief is Layer 1 canon authorship surface, and a future reader six months from now will read the brief, not the ledger event. Empty or placeholder prose is a defect — `gz obpi complete` fails closed on it (exit 1, no ledger event, no brief mutation), but the skill must catch it before the CLI does.
+
+   **Required walkthrough format:**
+
+   ```
+   ## Stage 5: Closure Narrative (preview before gz obpi complete)
+
+   **Implementation Summary** (will be written to ### Implementation Summary):
+
+   <verbatim text — bulleted "- Key: value" form preferred so the
+    `_has_substantive_implementation_summary` check accepts it>
+
+   **Key Proof** (will be written to ### Key Proof):
+
+   <verbatim text — at least one concrete command + observed output,
+    with ARB receipt ID(s) cited inline per attestation-enrichment.md>
+
+   **Source:** [--implementation-summary flag | existing brief body at <line range>]
+   **Source:** [--key-proof flag | existing brief body at <line range>]
+   ```
+
+   In Normal mode: the operator already attested in Stage 4, but the prose is the artifact that survives the ledger event — name it explicitly so the operator can refuse before write. In Exception mode: this is the only operator-visible checkpoint on the prose itself.
+
+   If the operator silently accepts (no objection), proceed. If they reject, return to authoring the brief sections directly, then re-present.
+
+2. **Complete OBPI atomically** — `uv run gz obpi complete {OBPI-SLUG} --attestor {attestor} --attestation-text "{text}" [--implementation-summary "{summary}"] [--key-proof "{proof}"]`
    This single command atomically: validates brief state, writes attestation to the
    ADR-level audit ledger, updates the brief (status, evidence sections, human
    attestation), and emits the completion receipt to the main ledger. If any step
    fails, all changes are rolled back — no partial writes.
    - Normal mode: pass the human's attestation text via `--attestation-text`
    - Exception mode: pass `--attestation-text "self-close-exception"`
-   - Use `--implementation-summary` and `--key-proof` to supply evidence sections
-     (if omitted, the command reads existing content from the brief)
-2. **Release OBPI lock** — `uv run gz obpi lock release {OBPI-SLUG}`
-3. Remove `.claude/plans/.pipeline-active-{OBPI-ID}.json` if it was created.
-4. Remove `.claude/plans/.pipeline-active.json` only when it still points at
+   - Use `--implementation-summary` and `--key-proof` to supply evidence sections.
+     If omitted, the command reads existing content from the brief — but it MUST
+     be substantive (non-empty, non-placeholder, satisfies
+     `_has_substantive_implementation_summary` / `_has_substantive_key_proof`),
+     or the command exits 1 with a recovery hint. The Step 1 walkthrough above
+     is what catches this before the CLI does.
+3. **Release OBPI lock** — `uv run gz obpi lock release {OBPI-SLUG}`
+4. Remove `.claude/plans/.pipeline-active-{OBPI-ID}.json` if it was created.
+5. Remove `.claude/plans/.pipeline-active.json` only when it still points at
    the same OBPI as the per-OBPI marker.
-5. **Git-sync #1** — `uv run gz git-sync --apply`
-   Commits all governance edits from steps 1-4. Tree is now clean.
-6. Run `uv run gz obpi reconcile {OBPI-SLUG}` to confirm receipt and brief agree.
-7. Run `uv run gz adr status {PARENT-ADR} --json` so the parent ADR view
+6. **Git-sync #1** — `uv run gz git-sync --apply`
+   Commits all governance edits from steps 1-5. Tree is now clean.
+7. Run `uv run gz obpi reconcile {OBPI-SLUG}` to confirm receipt and brief agree.
+8. Run `uv run gz adr status {PARENT-ADR} --json` so the parent ADR view
    reflects the reconciled OBPI state.
-8. **Git-sync #2** — `uv run gz git-sync --apply`
-   Commits the reconcile output (step 6) and ADR status refresh (step 7).
-9. Create a session handoff if more OBPIs remain or follow-up work is deferred.
+9. **Git-sync #2** — `uv run gz git-sync --apply`
+   Commits the reconcile output (step 7) and ADR status refresh (step 8).
+10. Create a session handoff if more OBPIs remain or follow-up work is deferred.
 
 ---
 
