@@ -1,0 +1,28 @@
+{
+  "criteria": [
+    {
+      "type": "exitCodeEquals",
+      "command": "test -f ops/chores/control-surface-skill-rule-reachability/proofs/skill-inventory.md",
+      "expected": 0,
+      "description": "Skill inventory artifact present"
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "test -f ops/chores/control-surface-skill-rule-reachability/proofs/reachability-matrix.md",
+      "expected": 0,
+      "description": "Reachability matrix artifact present"
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "test -f ops/chores/control-surface-skill-rule-reachability/proofs/ghi-cross-reference.md",
+      "expected": 0,
+      "description": "GHI cross-reference artifact present"
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "test -f ops/chores/control-surface-skill-rule-reachability/proofs/summary.md",
+      "expected": 0,
+      "description": "Summary artifact present"
+    }
+  ]
+}
