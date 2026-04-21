@@ -3,6 +3,11 @@ import unittest
 from pathlib import Path
 
 from gzkit.cli import main
+from gzkit.commands.adr_promote_utils import (
+    _parse_decomposition_table,
+    _parse_top_level_markdown_bullets,
+    _promoted_checklist_from_pool,
+)
 from gzkit.config import GzkitConfig
 from gzkit.ledger import (
     Ledger,
@@ -721,4 +726,205 @@ class TestAdrPromoteTaxonomyRoundtrip(unittest.TestCase):
                 [e.message for e in errors],
                 [],
                 msg="validator rejected freshly-promoted feature ADR",
+            )
+
+
+class TestDecompositionTableParser(unittest.TestCase):
+    """GHI #241 — parser reads `## Proposed OBPI Decomposition` table when present."""
+
+    def test_parse_decomposition_table_returns_slug_and_description(self) -> None:
+        pool_content = (
+            "# Sample\n\n"
+            "## Target Scope\n\n"
+            "Scope narrative here.\n\n"
+            "## Proposed OBPI Decomposition\n\n"
+            "| # | Slug | Description | Lane |\n"
+            "|---|------|-------------|------|\n"
+            "| 01 | check-pipeline | Implement ordered check pipeline | Lite |\n"
+            "| 02 | auto-repair-tier | Deterministic auto-repair executor | Lite |\n"
+            "| 03 | cli-surface | Flag surface and exit code contract | Heavy |\n"
+        )
+        rows = _parse_decomposition_table(pool_content)
+        self.assertEqual(
+            rows,
+            [
+                ("check-pipeline", "Implement ordered check pipeline"),
+                ("auto-repair-tier", "Deterministic auto-repair executor"),
+                ("cli-surface", "Flag surface and exit code contract"),
+            ],
+        )
+
+    def test_parse_decomposition_table_missing_returns_none(self) -> None:
+        pool_content = "# Sample\n\n## Target Scope\n\n- Do the thing\n"
+        self.assertIsNone(_parse_decomposition_table(pool_content))
+
+    def test_parse_decomposition_table_ignores_narrative_and_alignment_rows(self) -> None:
+        pool_content = (
+            "# Sample\n\n"
+            "## Proposed OBPI Decomposition\n\n"
+            "Brief narrative before the table.\n\n"
+            "| # | Slug | Description |\n"
+            "|---|------|-------------|\n"
+            "| 01 | alpha | First item |\n"
+            "\n"
+            "Trailing note after the table.\n"
+        )
+        rows = _parse_decomposition_table(pool_content)
+        self.assertEqual(rows, [("alpha", "First item")])
+
+
+class TestBoldPrefixBulletParser(unittest.TestCase):
+    """GHI #241 — bullet fallback uses `- **slug** — narrative` for slug extraction."""
+
+    def test_promoted_checklist_uses_bold_prefix_slug(self) -> None:
+        pool_content = (
+            "---\nid: ADR-pool.demo\nstatus: Pool\n---\n\n"
+            "# ADR-pool.demo: Demo\n\n"
+            "## Target Scope\n\n"
+            "- **alpha** — First scope item with narrative\n"
+            "- **beta** — Second scope item with narrative\n"
+        )
+        scope_items, checklist, _scorecard = _promoted_checklist_from_pool(pool_content, "0.6.0")
+        self.assertEqual(len(scope_items), 2)
+        # The checklist must contain a slug-bearing marker the slugifier can honor
+        self.assertIn("**alpha**", checklist)
+        self.assertIn("**beta**", checklist)
+        self.assertNotIn("First scope item with narrative — First scope", checklist)
+
+    def test_bold_prefix_slug_survives_slugify(self) -> None:
+        from gzkit.commands.specify_cmd import _slugify_obpi_name  # noqa: PLC0415
+
+        core_text = "**check-pipeline** — Implement ordered check pipeline with Pydantic models"
+        self.assertEqual(_slugify_obpi_name(core_text), "check-pipeline")
+
+
+class TestNestedSubsectionBulletParser(unittest.TestCase):
+    """GHI #241 — bullets nested inside H3 subsections of Target Scope are ignored."""
+
+    def test_nested_h3_bullets_ignored(self) -> None:
+        section = (
+            "Top-level scope intro.\n\n"
+            "- alpha\n"
+            "- beta\n\n"
+            "### Detailed specification\n\n"
+            "- Should not become an OBPI\n"
+            "- Neither should this\n\n"
+            "### ADR Overlap\n\n"
+            "- Nor this nested bullet\n"
+        )
+        bullets = _parse_top_level_markdown_bullets(section)
+        self.assertEqual(bullets, ["alpha", "beta"])
+
+
+class TestLegacyNarrativeDeprecation(unittest.TestCase):
+    """GHI #241 — legacy narrative-only Target Scope emits a deprecation warning."""
+
+    def test_promote_dry_run_warns_on_legacy_format(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            pool_dir = Path(config.paths.adrs) / "pool"
+            pool_dir.mkdir(parents=True, exist_ok=True)
+            pool_file = pool_dir / "ADR-pool.legacy-shape.md"
+            pool_file.write_text(
+                "---\n"
+                "id: ADR-pool.legacy-shape\n"
+                "status: Pool\n"
+                "parent: PRD-GZKIT-1.0.0\n"
+                "lane: heavy\n"
+                "---\n\n"
+                "# ADR-pool.legacy-shape: Legacy Shape\n\n"
+                "## Intent\n\nTurn legacy narrative into tracked delivery.\n\n"
+                "## Target Scope\n\n"
+                "- Define the runtime contract with lots of narrative prose\n"
+                "- Persist machine-readable state across sessions\n"
+                "- Expose structured outputs for operator workflows\n",
+                encoding="utf-8",
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(adr_created_event("ADR-pool.legacy-shape", "", "heavy"))
+
+            result = runner.invoke(
+                main,
+                [
+                    "adr",
+                    "promote",
+                    "ADR-pool.legacy-shape",
+                    "--semver",
+                    "0.6.0",
+                    "--kind",
+                    "feature",
+                    "--dry-run",
+                ],
+            )
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            normalized = " ".join(result.output.split())
+            self.assertIn("deprecated", normalized.lower())
+            self.assertIn("Proposed OBPI Decomposition", normalized)
+
+
+class TestDecompositionTablePrecedence(unittest.TestCase):
+    """GHI #241 — table-first takes precedence over Target Scope narrative bullets."""
+
+    def test_dry_run_uses_table_slugs_when_table_present(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            pool_dir = Path(config.paths.adrs) / "pool"
+            pool_dir.mkdir(parents=True, exist_ok=True)
+            pool_file = pool_dir / "ADR-pool.table-shape.md"
+            pool_file.write_text(
+                "---\n"
+                "id: ADR-pool.table-shape\n"
+                "status: Pool\n"
+                "parent: PRD-GZKIT-1.0.0\n"
+                "lane: heavy\n"
+                "---\n\n"
+                "# ADR-pool.table-shape: Table Shape\n\n"
+                "## Intent\n\nTable-first decomposition test fixture.\n\n"
+                "## Target Scope\n\n"
+                "- Narrative description of the scope with prose\n"
+                "  that spans multiple lines and mentions many ideas\n"
+                "- Another narrative bullet that would produce a bad slug\n\n"
+                "### Detailed specification\n\n"
+                "- Not a top-level item\n\n"
+                "## Proposed OBPI Decomposition\n\n"
+                "| # | Slug | Description | Lane |\n"
+                "|---|------|-------------|------|\n"
+                "| 01 | check-pipeline | Ordered check pipeline | Lite |\n"
+                "| 02 | auto-repair | Deterministic auto-repair | Lite |\n"
+                "| 03 | cli-surface | Flag surface | Heavy |\n",
+                encoding="utf-8",
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(adr_created_event("ADR-pool.table-shape", "", "heavy"))
+
+            result = runner.invoke(
+                main,
+                [
+                    "adr",
+                    "promote",
+                    "ADR-pool.table-shape",
+                    "--semver",
+                    "0.6.0",
+                    "--kind",
+                    "feature",
+                    "--dry-run",
+                ],
+            )
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            self.assertIn("Would create OBPIs: 3", result.output)
+            self.assertIn(
+                "Would append obpi_created: OBPI-0.6.0-01-check-pipeline",
+                result.output,
+            )
+            self.assertIn(
+                "Would append obpi_created: OBPI-0.6.0-02-auto-repair",
+                result.output,
+            )
+            self.assertIn(
+                "Would append obpi_created: OBPI-0.6.0-03-cli-surface",
+                result.output,
             )

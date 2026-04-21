@@ -5,9 +5,9 @@ description: Promote a pool ADR into canonical ADR package structure. Use when m
 category: adr-lifecycle
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-04-12
+last_reviewed: 2026-04-21
 metadata:
-  skill-version: "1.1.1"
+  skill-version: "1.2.0"
 ---
 
 # gz adr promote
@@ -24,7 +24,47 @@ Operate the gz adr promote command surface to transition pool (backlog) ADRs int
     *   **Step 1: Baseline Structural Template (Rule of Three)**: Scaffold into three baseline layers (Registry, Core Execution, and Lifecycle/Operations).
     *   **Step 2: Refining Overlay (Matrix of Four)**: Apply the four core principles (Single-Narrative, Testability Ceiling, State Anchor, Surface Boundary) to each baseline unit. If a unit violates a principle, it MUST be further decomposed.
     *   **1:1 Synchronization**: The resulting Feature Checklist in the promoted ADR MUST remain in 1:1 synchronization with the generated OBPI brief files. No drift is permitted.
-    *   Promotion is fail-closed unless the pool ADR already contains actionable `## Target Scope` bullets.
+    *   Promotion is fail-closed unless the pool ADR already contains actionable `## Target Scope` bullets (or a `## Proposed OBPI Decomposition` table — see Slug Source Contract below).
+
+### Slug Source Contract (GHI #241)
+
+The promoter resolves OBPI slugs from the pool ADR in this order — author the
+pool to hit the first path that fits:
+
+1.  **`## Proposed OBPI Decomposition` table (preferred).** A markdown table
+    with `Slug` and `Description` columns (a leading `#` column is fine; extra
+    columns like `Lane` are ignored). The `Slug` column drives the OBPI name;
+    the `Description` column becomes the Feature Checklist text.
+
+    ```markdown
+    ## Proposed OBPI Decomposition
+
+    | # | Slug | Description | Lane |
+    |---|------|-------------|------|
+    | 01 | check-pipeline | Implement ordered check pipeline | Lite |
+    | 02 | auto-repair-tier | Deterministic auto-repair executor | Lite |
+    ```
+
+2.  **`- **slug** — narrative` bullets in `## Target Scope`.** When every
+    top-level bullet uses the bold-prefix convention, the bold text becomes
+    the OBPI slug and the em-dash narrative becomes the checklist text.
+
+    ```markdown
+    ## Target Scope
+
+    - **check-pipeline** — Implement ordered check pipeline with Pydantic models
+    - **auto-repair-tier** — Deterministic auto-repair executor
+    ```
+
+3.  **Legacy narrative-only bullets (deprecated).** Still accepted for
+    backward compatibility but emits a deprecation warning on promote. The
+    full bullet text becomes both slug source and checklist text, which
+    produces long, narrative-leaking OBPI slugs. Migrate to path 1 or 2.
+
+Bullets nested under `### H3` subsections within `## Target Scope` are
+**ignored** by paths 2 and 3 — only direct top-level bullets count as scope.
+This means a pool ADR can safely decompose under a clean table (path 1) while
+keeping rich prose in a `### Detailed specification` subsection below.
 4.  **Run the promotion**:
     *   Preview with `--dry-run` if unsure of the layout.
     *   Execute: `uv run gz adr promote <POOL-ADR> --semver <X.Y.Z>`
