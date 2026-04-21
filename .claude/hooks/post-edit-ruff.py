@@ -5,8 +5,10 @@ PostToolUse hook that runs ruff check (lint-only, no fix) on edited
 Python files immediately after each Write/Edit operation.
 
 Reports lint issues without modifying files — avoids the import-removal
-problem where --fix deletes an import before the next Edit adds usage.
-Actual fixing deferred to gz git-sync --lint.
+problem where --fix deletes an import before the next Edit adds usage
+(GHI #239). On non-zero exit, the first N lines of ruff output are
+written to stderr so the agent sees the warning in the same turn and
+can correct course before the import colocation window closes.
 
 Exit codes:
   0 - Always (non-blocking; lint failures do not prevent edits)
@@ -19,6 +21,7 @@ from contextlib import suppress
 from pathlib import Path
 
 TIMEOUT_SECONDS = 8
+MAX_OUTPUT_LINES = 20
 
 
 def main():
@@ -49,11 +52,19 @@ def main():
     posix_path = target.as_posix()
 
     with suppress(FileNotFoundError, subprocess.TimeoutExpired, OSError):
-        subprocess.run(
-            ["uv", "run", "ruff", "check", "--quiet", posix_path],
+        result = subprocess.run(
+            ["uv", "run", "ruff", "check", posix_path],
             capture_output=True,
+            text=True,
+            encoding="utf-8",
             timeout=TIMEOUT_SECONDS,
         )
+        if result.returncode != 0:
+            combined = (result.stdout or "") + (result.stderr or "")
+            lines = combined.splitlines()[:MAX_OUTPUT_LINES]
+            if lines:
+                sys.stderr.write(f"post-edit-ruff: lint findings on {target.name}\n")
+                sys.stderr.write("\n".join(lines) + "\n")
 
     sys.exit(0)
 
