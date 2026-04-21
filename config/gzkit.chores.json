@@ -222,6 +222,27 @@
             "version": "2.0.0",
             "path": "ops/chores/frontmatter-ledger-coherence",
             "lane": "heavy"
+        },
+        {
+            "slug": "control-surface-rule-conflicts",
+            "title": "Control Surface Audit — Rule-Pair Conflict Matrix (Pass A)",
+            "version": "1.0.0",
+            "path": "ops/chores/control-surface-rule-conflicts",
+            "lane": "lite"
+        },
+        {
+            "slug": "control-surface-skill-rule-reachability",
+            "title": "Control Surface Audit — Skill/Rule Reachability Matrix (Pass B)",
+            "version": "1.0.0",
+            "path": "ops/chores/control-surface-skill-rule-reachability",
+            "lane": "lite"
+        },
+        {
+            "slug": "control-surface-rule-vs-check-drift",
+            "title": "Control Surface Audit — Rule Prose vs Promoted Check Parity (Pass C)",
+            "version": "1.0.0",
+            "path": "ops/chores/control-surface-rule-vs-check-drift",
+            "lane": "lite"
         }
     ]
 }
