@@ -1,0 +1,7 @@
+                      [--kind {pool,foundation,feature}]
+                      [--status {draft,proposed}] [--json] [--dry-run]
+                      [--force] [--quiet | --verbose] [--debug]
+--
+  --kind {pool,foundation,feature}
+                        Target taxonomy: foundation (0.0.x) or feature
+                        (0.y.z). pool rejected.

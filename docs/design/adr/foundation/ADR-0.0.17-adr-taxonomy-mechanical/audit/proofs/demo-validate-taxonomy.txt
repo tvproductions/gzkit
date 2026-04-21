@@ -1,0 +1,7 @@
+Validated: taxonomy
+
+✓ All validations passed (1 scopes).
+exit=0
+Validated: taxonomy
+
+✓ All validations passed (1 scopes).

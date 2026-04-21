@@ -1,0 +1,11 @@
+---
+id: ADR-0.0.17-adr-taxonomy-mechanical
+status: Completed
+semver: 0.0.17
+lane: heavy
+parent: GHI-218
+date: 2026-04-18
+kind: foundation
+---
+
+# ADR-0.0.17: ADR Taxonomy — pool / foundation / feature (Mechanical)
