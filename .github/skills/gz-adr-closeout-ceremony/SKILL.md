@@ -5,7 +5,7 @@ description: Execute the ADR closeout ceremony protocol for human attestation. G
 category: adr-audit
 compatibility: GovZero v6 framework; provides runbook walkthrough for human ADR attestation
 metadata:
-  skill-version: "7.6.0"
+  skill-version: "7.6.1"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -223,17 +223,20 @@ When the CLI outputs the ceremony completion summary (CLI Step 11), present it t
 # updates, GHI close comments, release notes (if applicable).
 uv run gz git-sync --apply
 
-# Sync 2 — reconcile output and ADR status refresh after the first sync lands.
-uv run gz adr reconcile ADR-X.Y.Z
+# Sync 2 — capture any residual artifacts from post-closeout hooks or
+# per-OBPI reconciliation sweeps. The closeout pipeline emits derived-state
+# reconciliation atomically with the attestation ledger event, so sync 2 is
+# commonly a no-op. Run it anyway — it is the mechanical check that the
+# working tree is truly clean after closeout.
 uv run gz git-sync --apply
 ```
 
 **Why two syncs:**
 
 1. The first sync makes the human attestation, receipt, and walkthrough evidence durable before any derived state is rebuilt.
-2. The second sync captures the reconciled ADR status (Layer 3 derived state) so `gz status` and downstream consumers see the closure.
+2. The second sync is the mechanical check that no post-closeout hook, per-OBPI `gz obpi reconcile` sweep, or derived-state refresh left uncommitted artifacts. In the common case sync 2 is a no-op because the closeout pipeline emits derived-state reconciliation atomically with the attestation event; sync 2 exists to catch the exceptional case where it did not.
 
-If sync 1 fails, the ceremony is paused — fix the failing gate, re-run sync 1. **Never** skip sync 2: skipping it leaves the ledger and the derived ADR table out of sync, which is the same failure family as #129 (canon green, derived view stale).
+If sync 1 fails, the ceremony is paused — fix the failing gate, re-run sync 1. **Never** skip sync 2: skipping it risks leaving a derived-view artifact uncommitted, which is the same failure family as #129 (canon green, derived view stale).
 
 The ceremony is done.
 
