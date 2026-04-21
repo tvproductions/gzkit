@@ -1,0 +1,14 @@
+ADR audit-check: ADR-0.0.18-adr-taxonomy-doctrine
+PASS All linked OBPIs are completed with evidence.
+  - OBPI-0.0.18-01-concepts-page
+  - OBPI-0.0.18-02-runbook-prd-to-adr
+  - OBPI-0.0.18-03-pool-curation-policy
+  - OBPI-0.0.18-04-epic-grouping
+  - OBPI-0.0.18-05-skill-prompt-enrichment
+
+Coverage: 34/34 REQs covered (100.0%)
+  OBPI-0.0.18-01: 7/7 (100.0%)
+  OBPI-0.0.18-02: 7/7 (100.0%)
+  OBPI-0.0.18-03: 7/7 (100.0%)
+  OBPI-0.0.18-04: 7/7 (100.0%)
+  OBPI-0.0.18-05: 6/6 (100.0%)

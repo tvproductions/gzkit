@@ -105,12 +105,12 @@ Each checkbox carries a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [x] REQ-0.0.18-05-01: Both skills' interview sections prompt for `--kind` with the concise heuristic (foundation / feature / pool) inline.
-- [x] REQ-0.0.18-05-02: Both skills cite `docs/user/concepts/adr-taxonomy.md` by path for deeper context.
-- [x] REQ-0.0.18-05-03: `skill-version` bumped per `.gzkit/rules/skill-surface-sync.md` § Version discipline (gz-plan established at 1.0.0; gz-adr-create 6.0.3 → 6.1.0).
-- [x] REQ-0.0.18-05-04: `uv run gz agent sync control-surfaces` runs clean; canonical and mirrors agree.
-- [x] REQ-0.0.18-05-05: Skill prompts never embed a default for `--kind` — the no-default forcing function (ADR-0.0.17 OBPI-02 REQ-01) is preserved.
-- [x] REQ-0.0.18-05-06: Body language respects the vocabulary locked in ADR-0.0.17 — only `pool`, `foundation`, `feature` in the edited files.
+- [x] REQ-0.0.18-05-01: [doc] Both skills' interview sections prompt for `--kind` with the concise heuristic (foundation / feature / pool) inline.
+- [x] REQ-0.0.18-05-02: [doc] Both skills cite `docs/user/concepts/adr-taxonomy.md` by path for deeper context.
+- [x] REQ-0.0.18-05-03: [doc] `skill-version` bumped per `.gzkit/rules/skill-surface-sync.md` § Version discipline (gz-plan established at 1.0.0; gz-adr-create 6.0.3 → 6.1.0).
+- [x] REQ-0.0.18-05-04: [doc] `uv run gz agent sync control-surfaces` runs clean; canonical and mirrors agree.
+- [x] REQ-0.0.18-05-05: [doc] Skill prompts never embed a default for `--kind` — the no-default forcing function (ADR-0.0.17 OBPI-02 REQ-01) is preserved.
+- [x] REQ-0.0.18-05-06: [doc] Body language respects the vocabulary locked in ADR-0.0.17 — only `pool`, `foundation`, `feature` in the edited files.
 
 ## Evidence
 

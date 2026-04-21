@@ -112,13 +112,13 @@ Each checkbox carries a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.0.18-04-01: The naming convention `ADR-pool.<epic-slug>-<adr-slug>.md` is documented with single-token and multi-token examples in `docs/user/concepts/adr-taxonomy.md` and `docs/governance/pool-curation.md`.
-- [ ] REQ-0.0.18-04-02: The optional `epic:` frontmatter field is documented as advisory. A pool ADR with `epic:` that disagrees with the filename-derived epic-slug triggers a non-error warning in `gz status --epic <slug>` output.
-- [ ] REQ-0.0.18-04-03: `gz status --epic <slug>` matches pool ADRs on EITHER the filename-derived epic-slug OR the frontmatter `epic:` field (OR semantics).
-- [ ] REQ-0.0.18-04-04: `gz status --epic <slug>` with no matching pool ADRs exits 0 and emits an empty `adrs` map (not an error condition).
-- [ ] REQ-0.0.18-04-05: `gz status --help` documents `--epic` with reference to both the filename-prefix and frontmatter-field matching paths.
-- [ ] REQ-0.0.18-04-06: `gz status` default output (without `--epic`) is byte-structurally identical to pre-change behavior.
-- [ ] REQ-0.0.18-04-07: A test fixture with at least three pool ADRs across two epics asserts `gz status --epic <slug>` returns exactly the expected subset.
+- [x] REQ-0.0.18-04-01: The naming convention `ADR-pool.<epic-slug>-<adr-slug>.md` is documented with single-token and multi-token examples in `docs/user/concepts/adr-taxonomy.md` and `docs/governance/pool-curation.md`.
+- [x] REQ-0.0.18-04-02: The optional `epic:` frontmatter field is documented as advisory. A pool ADR with `epic:` that disagrees with the filename-derived epic-slug triggers a non-error warning in `gz status --epic <slug>` output.
+- [x] REQ-0.0.18-04-03: `gz status --epic <slug>` matches pool ADRs on EITHER the filename-derived epic-slug OR the frontmatter `epic:` field (OR semantics).
+- [x] REQ-0.0.18-04-04: `gz status --epic <slug>` with no matching pool ADRs exits 0 and emits an empty `adrs` map (not an error condition).
+- [x] REQ-0.0.18-04-05: `gz status --help` documents `--epic` with reference to both the filename-prefix and frontmatter-field matching paths.
+- [x] REQ-0.0.18-04-06: `gz status` default output (without `--epic`) is byte-structurally identical to pre-change behavior.
+- [x] REQ-0.0.18-04-07: A test fixture with at least three pool ADRs across two epics asserts `gz status --epic <slug>` returns exactly the expected subset.
 
 ## Evidence
 

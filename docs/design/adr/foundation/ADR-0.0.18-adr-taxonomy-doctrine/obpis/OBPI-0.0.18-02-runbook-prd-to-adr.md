@@ -104,13 +104,13 @@ Each checkbox carries a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.0.18-02-01: The new runbook section names the derivation question explicitly: *"Given a PRD and a Constitution, how do I decide which ADRs to write?"*
-- [ ] REQ-0.0.18-02-02: The section documents the foundation-vs-feature-vs-pool heuristic with a decision table.
-- [ ] REQ-0.0.18-02-03: The section walks a worked example end-to-end (PRD-GZKIT-1.0.0 goals decomposed to foundation / feature / pool ADRs with rationale).
-- [ ] REQ-0.0.18-02-04: The section addresses the "foundation-first, features-on-top" anti-pattern.
-- [ ] REQ-0.0.18-02-05: The section names the pool's role and cross-refs OBPI-0.0.18-03's forthcoming pool curation policy.
-- [ ] REQ-0.0.18-02-06: The first mention of each kind links to `docs/user/concepts/adr-taxonomy.md`.
-- [ ] REQ-0.0.18-02-07: `uv run mkdocs build --strict` passes.
+- [x] REQ-0.0.18-02-01: [doc] The new runbook section names the derivation question explicitly: *"Given a PRD and a Constitution, how do I decide which ADRs to write?"*
+- [x] REQ-0.0.18-02-02: [doc] The section documents the foundation-vs-feature-vs-pool heuristic with a decision table.
+- [x] REQ-0.0.18-02-03: [doc] The section walks a worked example end-to-end (PRD-GZKIT-1.0.0 goals decomposed to foundation / feature / pool ADRs with rationale).
+- [x] REQ-0.0.18-02-04: [doc] The section addresses the "foundation-first, features-on-top" anti-pattern.
+- [x] REQ-0.0.18-02-05: [doc] The section names the pool's role and cross-refs OBPI-0.0.18-03's forthcoming pool curation policy.
+- [x] REQ-0.0.18-02-06: [doc] The first mention of each kind links to `docs/user/concepts/adr-taxonomy.md`.
+- [x] REQ-0.0.18-02-07: [doc] `uv run mkdocs build --strict` passes.
 
 ## Evidence
 
