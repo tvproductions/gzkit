@@ -613,13 +613,13 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         "--implementation-summary",
         dest="implementation_summary",
         default=None,
-        help="Implementation summary text (reads existing from brief if omitted)",
+        help=("Implementation summary text (falls back to brief; fails closed if empty)"),
     )
     p_obpi_complete.add_argument(
         "--key-proof",
         dest="key_proof",
         default=None,
-        help="Key proof text (reads existing from brief if omitted)",
+        help="Key proof text (falls back to brief; fails closed if empty)",
     )
     add_json_flag(p_obpi_complete)
     add_dry_run_flag(p_obpi_complete)
