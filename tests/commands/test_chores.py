@@ -329,3 +329,108 @@ class TestChoresCommands(unittest.TestCase):
             result = runner.invoke(main, ["chores", "list"])
             self.assertEqual(result.exit_code, 0)
             self.assertNotIn("vendor-chore", result.output)
+
+
+class TestChoresFileExistsCriterion(unittest.TestCase):
+    """fileExists criterion parses from `path` and evaluates existence (GHI #269)."""
+
+    def _write_file_exists_chore(self, chore_path: str, slug: str, target_path: str) -> None:
+        _write_v2_registry(
+            [
+                {
+                    "slug": slug,
+                    "title": f"File exists: {target_path}",
+                    "version": "1.0.0",
+                    "path": chore_path,
+                    "lane": "lite",
+                }
+            ]
+        )
+        _write_acceptance(
+            chore_path,
+            [{"type": "fileExists", "path": target_path}],
+        )
+
+    def test_fileExists_parses_without_command(self) -> None:
+        """acceptance.json with type=fileExists and path parses without requiring command."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            self._write_file_exists_chore(
+                chore_path="ops/chores/fe-parse",
+                slug="fe-parse",
+                target_path="README.md",
+            )
+            # README.md is created by _quick_init, but parse step does not need it.
+            result = runner.invoke(main, ["chores", "list"])
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            self.assertIn("fe-parse", result.output)
+
+    def test_fileExists_missing_path_reports_blocker(self) -> None:
+        """acceptance.json with type=fileExists but no path fails parse with blocker."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            chore_path = "ops/chores/fe-blocker"
+            _write_v2_registry(
+                [
+                    {
+                        "slug": "fe-blocker",
+                        "title": "Missing path",
+                        "version": "1.0.0",
+                        "path": chore_path,
+                        "lane": "lite",
+                    }
+                ]
+            )
+            _write_acceptance(chore_path, [{"type": "fileExists"}])
+
+            result = runner.invoke(main, ["chores", "list"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("BLOCKERS", result.output)
+            self.assertIn("path", result.output)
+            self.assertIn("fileExists", result.output)
+
+    def test_fileExists_run_passes_when_file_present(self) -> None:
+        """chore run with fileExists criterion passes when the target file exists."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            chore_path = "ops/chores/fe-present"
+            target = "ops/chores/fe-present/sentinel.txt"
+            self._write_file_exists_chore(
+                chore_path=chore_path,
+                slug="fe-present",
+                target_path=target,
+            )
+            Path(target).write_text("present", encoding="utf-8")
+
+            result = runner.invoke(main, ["chores", "run", "fe-present"])
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            self.assertIn("Chore completed", result.output)
+
+            log_path = Path("ops/chores/fe-present/proofs/CHORE-LOG.md")
+            self.assertTrue(log_path.exists())
+            log_content = log_path.read_text(encoding="utf-8")
+            self.assertIn("Status: PASS", log_content)
+
+    def test_fileExists_run_fails_when_file_missing(self) -> None:
+        """chore run with fileExists criterion fails when the target file is missing."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            chore_path = "ops/chores/fe-missing"
+            target = "ops/chores/fe-missing/never-here.txt"
+            self._write_file_exists_chore(
+                chore_path=chore_path,
+                slug="fe-missing",
+                target_path=target,
+            )
+
+            result = runner.invoke(main, ["chores", "run", "fe-missing"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertIn("file not found", result.output)
+
+            log_path = Path("ops/chores/fe-missing/proofs/CHORE-LOG.md")
+            self.assertTrue(log_path.exists())
+            self.assertIn("Status: FAIL", log_path.read_text(encoding="utf-8"))
