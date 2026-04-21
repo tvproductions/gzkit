@@ -44,6 +44,52 @@ uv run gz adr emit-receipt ADR-<X.Y.Z> --event validated --attestor "<Human Name
 - If audit-check fails, fix brief evidence first and rerun.
 - Keep `docs/user/runbook.md` and `docs/governance/governance_runbook.md` aligned with runtime behavior.
 
+# Brief Heading Conventions (gzkit)
+
+OBPI brief evidence sections MUST use H3 (`###`), not H2 (`##`).
+
+## Canonical evidence sections (H3)
+
+| Heading | Consumer |
+|---------|----------|
+| `### Implementation Summary` | `gz obpi complete`, closeout evidence pass |
+| `### Key Proof` | `gz obpi complete`, closeout evidence pass |
+| `### Closing Argument` | `extract_closing_argument`, defense-brief renderer |
+
+`## Acceptance Criteria` (H2) is the canonical top-level brief section and
+is deliberately not in the list above — do not conflate it with the per-pass
+evidence `### ACCEPTANCE` section (which, if present, is H3).
+
+## Why H3, not H2
+
+Ceremony renderers and completion hooks extract these sections by H3 heading
+match. A brief that drifts one of the canonical evidence headings to `##`
+silently passes schema validation (the section exists) but the extractor
+stops at the next H2 boundary and returns an empty body — triggering
+mid-ceremony failures and post-attestation diagnostic noise.
+
+Gate 2 (`## Objective`, `## Acceptance Criteria`, `## ALLOWED PATHS`, etc.)
+remains H2: those are top-level brief structure, not per-pass evidence.
+
+## Mechanical check
+
+```bash
+uv run gz validate --brief-headings
+```
+
+Exits 3 on drift. Recovery: rewrite the heading as H3 and re-run
+completion. Do not "accept both levels" at the hook — the hook is the
+contract; the brief is the defect.
+
+## Related
+
+- GHI #238 — promotion of this rule from hook-level silent failure to a
+  `gz validate --brief-headings` scope.
+- `.gzkit/rules/gate5-runbook-code-covenant.md` — documentation is a
+  first-class deliverable; evidence-section heading drift is the same
+  class of failure as runbook drift.
+- `docs/governance/advisory-rules-audit.md` — scorecard entry.
+
 # GitHub CLI Guardrails (gzkit)
 
 Use `gh` for (a) defect tracking per `.gzkit/rules/governance-core.md` and
