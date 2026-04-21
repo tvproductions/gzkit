@@ -57,37 +57,23 @@ __all__ = [
 ]
 
 
-def adr_audit_check(adr: str, as_json: bool) -> None:
-    """Verify linked OBPIs are complete and contain implementation evidence."""
-    config = ensure_initialized()
-    project_root = get_project_root()
-    ledger = Ledger(project_root / config.paths.ledger)
-
-    adr_input = adr if adr.startswith("ADR-") else f"ADR-{adr}"
-    canonical_adr = ledger.canonicalize_id(adr_input)
-    adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
-    adr_id = resolve_adr_ledger_id(adr_file, adr_id, ledger)
-    _reject_pool_adr_for_lifecycle(adr_id, "audit-checked")
-
-    obpi_files, expected_obpis = _collect_obpi_files_for_adr(project_root, config, ledger, adr_id)
+def _collect_obpi_findings(
+    project_root: Path,
+    obpi_files: dict[str, Path],
+    expected_obpis: list[str],
+    ledger: Ledger,
+) -> tuple[list[dict[str, Any]], list[str]]:
+    """Return (findings, complete_obpi_ids) for OBPI linkage + evidence checks."""
     findings: list[dict[str, Any]] = []
     complete: list[str] = []
 
     if not expected_obpis and not obpi_files:
-        findings.append(
-            {
-                "id": None,
-                "issue": "No OBPI briefs are linked to this ADR.",
-            }
-        )
+        findings.append({"id": None, "issue": "No OBPI briefs are linked to this ADR."})
 
     for expected_id in expected_obpis:
         if expected_id not in obpi_files:
             findings.append(
-                {
-                    "id": expected_id,
-                    "issue": "Linked in ledger but no OBPI file found.",
-                }
+                {"id": expected_id, "issue": "Linked in ledger but no OBPI file found."}
             )
 
     graph = ledger.get_artifact_graph()
@@ -105,21 +91,89 @@ def adr_audit_check(adr: str, as_json: bool) -> None:
             )
         else:
             complete.append(obpi_id)
+    return findings, complete
 
-    adr_dir = project_root / config.paths.adrs
-    coverage = _compute_adr_coverage(project_root, adr_id, adr_dir)
 
-    # REQ coverage is blocking when REQs are defined for the ADR.
-    # Uncovered REQs are findings (not advisory) — they fail the audit.
-    coverage_findings: list[dict[str, Any]] = [
+def _partition_coverage_findings(
+    coverage: dict[str, Any],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
+    """Split coverage ``uncovered`` entries by severity.
+
+    GHI #268 — Advisory uncovered REQs (the default emitted by
+    :func:`_compute_adr_coverage`) surface as warnings and do not block the
+    audit; non-advisory severities are reserved for future per-REQ escalation
+    and retain fail-closed behavior.
+    """
+    findings: list[dict[str, Any]] = [
         {
             "id": u["req_id"],
             "issue": "REQ not covered by any @covers test annotation.",
+            "severity": u.get("severity", "advisory"),
         }
         for u in coverage["uncovered"]
     ]
+    blocking = [cf for cf in findings if cf["severity"] != "advisory"]
+    advisory = [cf for cf in findings if cf["severity"] == "advisory"]
+    return findings, blocking, advisory
 
-    passed = not findings and not coverage_findings
+
+def _render_audit_check_result(
+    adr_id: str,
+    passed: bool,
+    findings: list[dict[str, Any]],
+    complete: list[str],
+    coverage: dict[str, Any],
+    coverage_blocking: list[dict[str, Any]],
+    coverage_advisory: list[dict[str, Any]],
+) -> None:
+    """Print the human-readable audit-check summary."""
+    console.print(f"[bold]ADR audit-check:[/bold] {adr_id}")
+    if passed:
+        console.print("[green]PASS[/green] All linked OBPIs are completed with evidence.")
+        for obpi_id in complete:
+            console.print(f"  - {obpi_id}")
+    else:
+        if findings:
+            console.print("[red]FAIL[/red] OBPI completeness/evidence gaps found:")
+            for finding in findings:
+                finding_id = finding.get("id") or "(none)"
+                console.print(f"  - {finding_id}: {finding.get('issue', '')}")
+        if coverage_blocking:
+            console.print(
+                f"[red]FAIL[/red] {len(coverage_blocking)} REQ(s) missing @covers traceability:"
+            )
+            for cf in coverage_blocking:
+                console.print(f"  - {cf['id']}")
+    if coverage_advisory:
+        console.print(
+            f"[yellow]Advisory[/yellow] {len(coverage_advisory)} REQ(s) without "
+            "@covers traceability (non-blocking):"
+        )
+        for cf in coverage_advisory:
+            console.print(f"  - {cf['id']}")
+    _print_coverage_section(coverage, [])
+
+
+def adr_audit_check(adr: str, as_json: bool) -> None:
+    """Verify linked OBPIs are complete and contain implementation evidence."""
+    config = ensure_initialized()
+    project_root = get_project_root()
+    ledger = Ledger(project_root / config.paths.ledger)
+
+    adr_input = adr if adr.startswith("ADR-") else f"ADR-{adr}"
+    canonical_adr = ledger.canonicalize_id(adr_input)
+    adr_file, adr_id = resolve_adr_file(project_root, config, canonical_adr)
+    adr_id = resolve_adr_ledger_id(adr_file, adr_id, ledger)
+    _reject_pool_adr_for_lifecycle(adr_id, "audit-checked")
+
+    obpi_files, expected_obpis = _collect_obpi_files_for_adr(project_root, config, ledger, adr_id)
+    findings, complete = _collect_obpi_findings(project_root, obpi_files, expected_obpis, ledger)
+
+    adr_dir = project_root / config.paths.adrs
+    coverage = _compute_adr_coverage(project_root, adr_id, adr_dir)
+    coverage_findings, coverage_blocking, coverage_advisory = _partition_coverage_findings(coverage)
+
+    passed = not findings and not coverage_blocking
 
     result = {
         "adr": adr_id,
@@ -129,31 +183,22 @@ def adr_audit_check(adr: str, as_json: bool) -> None:
         "findings": findings,
         "coverage": coverage,
         "coverage_findings": coverage_findings,
+        "coverage_blocking": coverage_blocking,
+        "coverage_advisory": coverage_advisory,
     }
 
     if as_json:
         print(json.dumps(result, indent=2))  # noqa: T201
     else:
-        console.print(f"[bold]ADR audit-check:[/bold] {adr_id}")
-        if passed:
-            console.print("[green]PASS[/green] All linked OBPIs are completed with evidence.")
-            if complete:
-                for obpi_id in complete:
-                    console.print(f"  - {obpi_id}")
-        else:
-            if findings:
-                console.print("[red]FAIL[/red] OBPI completeness/evidence gaps found:")
-                for finding in findings:
-                    finding_id = finding.get("id") or "(none)"
-                    issue = finding.get("issue", "")
-                    console.print(f"  - {finding_id}: {issue}")
-            if coverage_findings:
-                console.print(
-                    f"[red]FAIL[/red] {len(coverage_findings)} REQ(s) missing @covers traceability:"
-                )
-                for cf in coverage_findings:
-                    console.print(f"  - {cf['id']}")
-        _print_coverage_section(coverage, [])
+        _render_audit_check_result(
+            adr_id,
+            passed,
+            findings,
+            complete,
+            coverage,
+            coverage_blocking,
+            coverage_advisory,
+        )
 
     if not passed:
         raise SystemExit(1)

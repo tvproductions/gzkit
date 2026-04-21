@@ -352,6 +352,83 @@ class TestAdrRuntimeCommands(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             self.assertIn("PASS", result.output)
 
+    def test_adr_audit_check_passes_with_advisory_uncovered_reqs(self) -> None:
+        """GHI #268: advisory-severity uncovered REQs do not block the audit.
+
+        A completed Lite-lane OBPI whose acceptance criteria list REQ entries
+        without `@covers` coverage (docs-only pattern) must surface the gap as
+        a non-blocking advisory warning rather than exiting 1 — the severity
+        field on coverage entries is fail-open by design (see
+        `_compute_adr_coverage` docstring).
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            lines = [
+                "---",
+                "id: OBPI-0.1.0-01-demo",
+                "parent: ADR-0.1.0",
+                "item: 1",
+                "lane: Lite",
+                "status: Completed",
+                "---",
+                "",
+                "# OBPI-0.1.0-01-demo: Demo",
+                "",
+                "**Brief Status:** Completed",
+                "",
+                "## Allowed Paths",
+                "- `docs/x.md` - in scope",
+                "",
+                "## Evidence",
+                "",
+                "### Implementation Summary",
+                "- Files created/modified: docs/x.md",
+                "- Validation commands run: uv run -m unittest discover tests",
+                "- Date completed: 2026-04-21",
+                "",
+                "## Key Proof",
+                "uv run gz adr status ADR-0.1.0 --json",
+                "",
+                "## Acceptance Criteria",
+                "- [x] REQ-0.1.0-01-01: Docs invariant A",
+                "- [x] REQ-0.1.0-01-02: Docs invariant B",
+                "",
+            ]
+            obpi_path.write_text("\n".join(lines) + "\n")
+
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0"))
+            ledger.append(
+                obpi_receipt_emitted_event(
+                    obpi_id="OBPI-0.1.0-01-demo",
+                    parent_adr="ADR-0.1.0",
+                    receipt_event="completed",
+                    attestor="human:test",
+                    obpi_completion="completed",
+                    evidence={
+                        "value_narrative": "OBPI completed with canonical receipt evidence.",
+                        "key_proof": "uv run gz adr status ADR-0.1.0 --json",
+                    },
+                )
+            )
+            result = runner.invoke(main, ["adr", "audit-check", "ADR-0.1.0", "--json"])
+            self.assertEqual(
+                result.exit_code,
+                0,
+                f"advisory uncovered REQs should not block the audit:\n{result.output}",
+            )
+            payload = json.loads(result.output)
+            self.assertTrue(payload["passed"])
+            self.assertEqual(payload["coverage"]["uncovered_reqs"], 2)
+            self.assertEqual(payload["coverage_blocking"], [])
+            advisory_ids = sorted(cf["id"] for cf in payload["coverage_advisory"])
+            self.assertEqual(advisory_ids, ["REQ-0.1.0-01-01", "REQ-0.1.0-01-02"])
+
     def test_adr_audit_check_fails_for_incomplete_obpi(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
