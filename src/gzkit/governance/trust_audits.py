@@ -1183,10 +1183,67 @@ def _parse_adr_frontmatter(path: Path) -> dict[str, str] | None:
     return fields
 
 
+_BRIEF_EVIDENCE_H3_HEADINGS = (
+    "Implementation Summary",
+    "Key Proof",
+    "Closing Argument",
+)
+
+
+def audit_brief_headings(project_root: Path) -> list[ValidationError]:
+    """Brief evidence sections must use H3, not H2 (GHI #238).
+
+    OBPI briefs standardise per-completion evidence headings at H3 level.
+    ``gz obpi complete`` and the completion hooks extract
+    ``### Implementation Summary`` and ``### Key Proof`` by exact H3 match;
+    the defense-brief renderer extracts ``### Closing Argument``. A brief
+    that drifts one of these to ``##`` passes schema validation (the section
+    exists) but the extractor stops at the next H2 boundary and yields an
+    empty body — triggering mid-ceremony failures.
+
+    The audit flags any ``## Heading`` whose heading text equals one of the
+    canonical names exactly (after stripping a trailing ``(Lite)`` / ``(Heavy)``
+    parenthetical). Exact match is deliberate: ``## Acceptance Criteria`` is
+    a legitimate top-level H2 brief section and must not be conflated with
+    the per-pass evidence ``### ACCEPTANCE``.
+    """
+    adr_root = project_root / "docs" / "design" / "adr"
+    if not adr_root.is_dir():
+        return []
+    errors: list[ValidationError] = []
+    canonical_forms = {h.casefold() for h in _BRIEF_EVIDENCE_H3_HEADINGS}
+    for brief in sorted(adr_root.rglob("OBPI-*.md")):
+        try:
+            lines = brief.read_text(encoding="utf-8").splitlines()
+        except UnicodeDecodeError:
+            continue
+        rel = brief.relative_to(project_root).as_posix()
+        for lineno, raw in enumerate(lines, start=1):
+            if not raw.startswith("## "):
+                continue
+            heading = raw[3:].split("(")[0].strip().casefold()
+            if heading not in canonical_forms:
+                continue
+            canonical = next(h for h in _BRIEF_EVIDENCE_H3_HEADINGS if h.casefold() == heading)
+            errors.append(
+                ValidationError(
+                    type="brief_headings",
+                    artifact=f"{rel}:{lineno}",
+                    message=(
+                        f"Evidence section `{canonical}` must use H3 "
+                        f"(`### {canonical}`), not H2. Ceremony renderers "
+                        "and completion hooks look for H3 level."
+                    ),
+                )
+            )
+    return errors
+
+
 __all__ = [
     "audit_adr_taxonomy",
     "audit_advisory_scorecard",
     "audit_behave_req_tags",
+    "audit_brief_headings",
     "audit_class_size",
     "audit_cli_alignment",
     "audit_event_handlers",

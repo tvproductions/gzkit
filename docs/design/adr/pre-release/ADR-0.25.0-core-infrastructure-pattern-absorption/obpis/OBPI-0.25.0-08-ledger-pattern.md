@@ -212,6 +212,6 @@ _No defects tracked._
 - Attestation: attest completed
 - Date: 2026-04-09
 
-## Closing Argument
+### Closing Argument
 
 airlineops's `core/ledger.py` (91 lines) is a thin facade that re-exports four functions from `airlineops.warehouse.ingest.ledger`: `resolve_period_path`, `append_event`, `append_load_event`, and `append_error_event`. Every function deals exclusively with airline warehouse ingest concepts — datasets, periods, base months, load results, ETL error events. The facade contains zero logic; it delegates entirely to the ingest subsystem. gzkit's `ledger.py` (598 lines) plus three sub-modules (`ledger_events.py`, `ledger_proof.py`, `ledger_semantics.py`) implements a fundamentally different system: an append-only JSONL governance event ledger with `LedgerEvent` Pydantic models, schema validation, artifact graph construction, rename chain resolution, attestation tracking, closeout lifecycle, and OBPI receipt management. The two modules share only the name "ledger" — their domains, data models, and operational semantics are entirely disjoint. The subtraction test is unambiguous: removing gzkit from the airlineops module leaves a pure airline warehouse ingest facade with no generic patterns worth extracting. **Decision: Exclude.**

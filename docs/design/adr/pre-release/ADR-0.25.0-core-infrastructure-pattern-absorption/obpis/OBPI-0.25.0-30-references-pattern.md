@@ -286,7 +286,7 @@ Before this OBPI, the comparison between `airlineops/src/opsdev/lib/references.p
 - Attestation: attest completed — Exclude decision for airlineops/src/opsdev/lib/references.py (797 L PDF-scan pipeline). Initial framing corrected mid-ceremony after user pushback: gzkit does need a design-references bibliography for SDD/AI-governance literature, but airlineops's specific implementation is PDF-first/pypdf-dependent/APA-journal-article-formatted and mismatches gzkit's URL-first article-centric consumer pattern. Refined 6-point rationale anchored in file:line citations; capability booked as ADR-pool.design-references-bibliography seeded with three Anthropic articles (Project Sustainable Model, Abstractive Red-Teaming, Effective Context Engineering for AI Agents). Zero source/test edits; no pypdf added; gates green.
 - Date: 2026-04-13
 
-## Closing Argument
+### Closing Argument
 
 The capability airlineops's `references.py` hints at — curated
 bibliography management for design references — is legitimately useful to
@@ -317,7 +317,7 @@ subtraction test fails here at a more precise granularity than the
 initial framing suggested: the *capability* generalizes, the *specific
 implementation* does not.
 
-## Implementation Summary
+### Implementation Summary
 
 - Decision: Exclude (with follow-up pool ADR)
 - Files created: `docs/design/adr/pool/ADR-pool.design-references-bibliography.md` (captures the design-references capability need for promotion later)
@@ -326,7 +326,7 @@ implementation* does not.
 - Dependencies added: none (no `pypdf` absorption)
 - Date: 2026-04-13
 
-## Key Proof
+### Key Proof
 
 ```bash
 rg -n 'Decision: Exclude' docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/obpis/OBPI-0.25.0-30-references-pattern.md

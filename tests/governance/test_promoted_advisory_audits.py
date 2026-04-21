@@ -20,6 +20,7 @@ from gzkit.governance.trust_audits import (
     audit_adr_taxonomy,
     audit_advisory_scorecard,
     audit_behave_req_tags,
+    audit_brief_headings,
     audit_class_size,
     audit_pool_adr_isolation,
     audit_pydantic_models,
@@ -89,6 +90,74 @@ class PromotedAdvisoryAudits(unittest.TestCase):
         text = scorecard.read_text(encoding="utf-8")
         self.assertIn("gz validate --taxonomy", text)
         self.assertIn("ADR-0.0.17", text)
+
+    def test_brief_headings_ghi_238(self) -> None:
+        """GHI #238: live tree has no H2 drift for evidence sections."""
+        self._assert_clean(audit_brief_headings(_PROJECT_ROOT), "brief_headings")
+
+    def test_brief_headings_scorecard_entry_exists(self) -> None:
+        """GHI #238: advisory scorecard cites gz validate --brief-headings."""
+        scorecard = _PROJECT_ROOT / "docs" / "governance" / "advisory-rules-audit.md"
+        text = scorecard.read_text(encoding="utf-8")
+        self.assertIn("gz validate --brief-headings", text)
+
+
+class BriefHeadingsAuditNegativeCases(unittest.TestCase):
+    """GHI #238: H2 evidence heading drift is flagged."""
+
+    def test_h2_implementation_summary_flagged(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            brief_dir = root / "docs" / "design" / "adr" / "foundation" / "ADR-x" / "obpis"
+            brief_dir.mkdir(parents=True)
+            brief = brief_dir / "OBPI-x-01.md"
+            brief.write_text(
+                "# OBPI-x-01\n\n"
+                "## Objective\n\nDo things.\n\n"
+                "## Implementation Summary\n\n"
+                "- did things\n",
+                encoding="utf-8",
+            )
+            errors = audit_brief_headings(root)
+            self.assertTrue(errors, "H2 Implementation Summary must flag")
+            self.assertTrue(
+                any("Implementation Summary" in e.message for e in errors),
+                f"error message should name the heading; got {[e.message for e in errors]}",
+            )
+
+    def test_h2_key_proof_flagged(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            brief_dir = root / "docs" / "design" / "adr" / "pool" / "ADR-y" / "obpis"
+            brief_dir.mkdir(parents=True)
+            brief = brief_dir / "OBPI-y-01.md"
+            brief.write_text(
+                "# OBPI-y-01\n\n## Objective\n\nx\n\n## Key Proof\n\nproof\n",
+                encoding="utf-8",
+            )
+            errors = audit_brief_headings(root)
+            self.assertTrue(errors)
+            self.assertTrue(any("Key Proof" in e.message for e in errors))
+
+    def test_h3_implementation_summary_clean(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            brief_dir = root / "docs" / "design" / "adr" / "ADR-z" / "obpis"
+            brief_dir.mkdir(parents=True)
+            brief = brief_dir / "OBPI-z-01.md"
+            brief.write_text(
+                "# OBPI-z-01\n\n"
+                "## Objective\n\nDo things.\n\n"
+                "### Implementation Summary\n\n- did things\n\n"
+                "### Key Proof\n\nproof text\n",
+                encoding="utf-8",
+            )
+            errors = audit_brief_headings(root)
+            self.assertEqual(errors, [])
+
+    def test_no_briefs_dir_returns_empty(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(audit_brief_headings(Path(tmp)), [])
 
 
 def _write_adr(root: Path, rel_path: str, frontmatter: dict[str, str]) -> Path:

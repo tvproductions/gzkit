@@ -129,6 +129,6 @@ rg -n 'Gate 4|N/A|behavioral proof' docs/design/adr/pre-release/ADR-0.26.0-gover
 - [ ] **Gate 4 (BDD):** Behavioral proof present or `N/A` recorded with rationale
 - [ ] **Gate 5 (Human):** Attestation recorded
 
-## Closing Argument
+### Closing Argument
 
 *To be authored at completion from delivered evidence.*

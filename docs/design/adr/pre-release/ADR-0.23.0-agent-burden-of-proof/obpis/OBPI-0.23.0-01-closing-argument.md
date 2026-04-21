@@ -134,7 +134,7 @@ grep "authored at COMPLETION" .github/skills/gz-obpi-brief/assets/OBPI_BRIEF-tem
 # Expected: match found
 ```
 
-## Closing Argument
+### Closing Argument
 
 1. **What was built** — Added `### Closing Argument (Lite)` and `### Closing Argument (Heavy)` sections to `.github/skills/gz-obpi-brief/assets/OBPI_BRIEF-template.md`, with migration comments for briefs started under the old template. Created `tests/test_obpi_template.py` with 6 validation tests.
 

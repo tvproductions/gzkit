@@ -212,6 +212,6 @@ _No defects tracked._
 - Attestation: attest completed
 - Date: 2026-04-09
 
-## Closing Argument
+### Closing Argument
 
 airlineops's `core/dataset_version.py` (246 lines) defines content-addressable dataset version identity for airline data pipelines using `DatasetVersion` with airline-specific fields (`dataset_id` for BTS/FAA datasets, `source_version` for archive releases, `schema_version` and `etl_version` for ETL pipeline components, `content_hash` for processed output, `version_hash` as composite identity). The factory function `create_dataset_version()` composes these airline-specific components into a deterministic identity hash. The serialization helpers are thin Pydantic wrappers that gzkit already uses by convention. Every significant construct beyond ~33 lines of trivial generic primitives (SHA-256 content hashing, deterministic JSON serialization, frozen Pydantic with hash-based equality, semver/hash format validators) is tied to airline data pipeline semantics. The brief's premise that `lifecycle.py` provides "partial coverage" is incorrect — `lifecycle.py` implements governance artifact state transitions, a completely different concern with zero functional overlap. gzkit has no `hashlib` usage, no content-addressable versioning use case, and no dataset identity requirement. The subtraction test is unambiguous: this module is pure airline domain code. **Decision: Exclude.**

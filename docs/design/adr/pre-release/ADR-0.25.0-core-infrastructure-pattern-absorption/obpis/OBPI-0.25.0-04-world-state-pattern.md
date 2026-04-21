@@ -212,6 +212,6 @@ _No defects tracked._
 - Attestation: didn't hurt to try. attest completed
 - Date: 2026-04-09
 
-## Closing Argument
+### Closing Argument
 
 airlineops's `core/world_state.py` (275 lines) defines world-state identity for AIRAC-orchestrated warehouse pipelines using `WorldState` with airline-specific fields (`airac_cycle`, `contract_hash`, `manifest_hash`, `contract_id`, `manifest_root`), queries the airline registrar (`get_active_contract`, `get_active_manifest_root`), scans airline manifest directories for `.manifest.json` files with dataset fields (`dataset_id`, `contract_hash`, `periods`, `package_names`), and computes semantic no-op detection for warehouse pipeline transitions. Every significant construct beyond ~36 lines of trivial generic primitives (frozen Pydantic model with hash-based equality, deterministic JSON→SHA-256, single-line hash comparison) is tied to airline domain semantics. gzkit has no content-addressable snapshot use case, no `hashlib` usage, and its architectural boundaries indicate state doctrine must be locked before building state-tracking infrastructure. The subtraction test is unambiguous: this module is pure airline domain code. **Decision: Exclude.**

@@ -121,7 +121,7 @@ uv run gz lint
 uv run gz typecheck
 ```
 
-## Closing Argument
+### Closing Argument
 
 OBPI-0.0.8-05 delivers the operator-facing CLI surface for the feature flag system. Before this work, operators had no way to inspect flag state from the command line — flags existed only in `data/flags.json` and could be queried only programmatically. Now `gz flags` provides a Rich table of all registered flags with resolved values, precedence sources, and deadline countdowns; `gz flags --stale` filters to overdue flags; and `gz flag explain <key>` gives full single-flag metadata including linked ADR/issue and staleness status. All commands support `--json` for machine-readable output per CLI Doctrine. The implementation is read-only — it never modifies flag values, only inspects them.
 

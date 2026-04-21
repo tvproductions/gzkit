@@ -144,7 +144,7 @@ grep -r "subagent_type\|Agent(" src/gzkit/commands/pipeline.py | grep -i review
 - [x] Agent presents reviewer assessment example output
 - [x] **STOP** — Agent waits for human attestation
 
-## Closing Argument
+### Closing Argument
 
 The pipeline previously had no independent verification of whether delivered work matched OBPI promises. The implementing agent self-certified its own output. This OBPI adds a reviewer agent dispatch (Stage 3.5) that receives the brief, closing argument, changed files, and doc files — then independently assesses promises-met, docs-quality, and closing-argument-quality. The assessment is stored as a `REVIEW-*.md` artifact and presented in the Stage 4 ceremony before human attestation. Evidence: 42 unit tests, 8 BDD scenarios (46 steps), lint/typecheck/docs all clean.
 

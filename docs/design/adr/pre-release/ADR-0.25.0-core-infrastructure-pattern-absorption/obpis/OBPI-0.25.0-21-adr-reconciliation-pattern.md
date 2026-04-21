@@ -185,7 +185,7 @@ uv run -m behave features/core_infrastructure.feature
 - [x] **Gate 4 (BDD):** N/A — Confirm decision, no operator-visible behavior change
 - [ ] **Gate 5 (Human):** Attestation recorded
 
-## Closing Argument
+### Closing Argument
 
 gzkit's reconciliation surface (`ledger_semantics.py`, `ledger_proof.py`, `obpi_reconcile_cmd`, `_build_adr_status_result`, and `parse_wbs_table`) already surpasses airlineops's `adr_recon.py` on every dimension that matters for a governance toolkit: central event-sourced ledger architecture, rich per-OBPI state derivation with anchor analysis and scope drift, per-OBPI auto-fix reconciliation, and ADR-level aggregation with lifecycle and closeout readiness. The airlineops module's signature capability — writing ledger-derived status back to ADR markdown tables — would violate gzkit's state doctrine by making derived views (L3) masquerade as source-of-truth (L1). gzkit's design computes views on demand from the central ledger, which is architecturally correct and more maintainable. No absorption is warranted; gzkit's implementation is the stronger pattern.
 

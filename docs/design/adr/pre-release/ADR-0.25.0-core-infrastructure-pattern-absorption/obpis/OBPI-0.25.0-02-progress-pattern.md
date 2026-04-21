@@ -174,7 +174,7 @@ uv run -m behave features/core_infrastructure.feature
 - [x] **Gate 4 (BDD):** N/A — Confirm decision, no operator-visible behavior change
 - [ ] **Gate 5 (Human):** Attestation recorded
 
-## Closing Argument
+### Closing Argument
 
 gzkit's progress infrastructure (`cli/progress.py` and `cli/formatters.py ProgressContext`) already surpasses airlineops's `core/progress.py` on every dimension that matters for a governance CLI toolkit: output-mode integration, context-manager API, TTY fallback, stderr discipline, and architectural UTF-8 handling. The airlineops module's domain-specific helpers (warehouse progress, download progress, SQLite heartbeat) fail the subtraction test — they are airline-specific patterns, not reusable infrastructure. The imperative `ProgressManager` facade is less Pythonic than gzkit's existing context managers. No absorption is warranted; gzkit's implementation is the stronger pattern.
 

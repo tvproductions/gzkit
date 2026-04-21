@@ -161,7 +161,7 @@ uv run gz closeout ADR-0.23.0 --dry-run
 - [x] Agent presents the updated ceremony flow with a real ADR example
 - [x] **STOP** — Agent waits for human attestation
 
-## Closing Argument
+### Closing Argument
 
 The closeout ceremony was a checklist — agents ticked boxes and declared completion without presenting the substance of what was delivered. The human attestor saw file lists and pass/fail statuses but never the agent's case for why the work matters. This OBPI transforms the ceremony into a defense presentation where the agent must present closing arguments (authored from delivered evidence per OBPI-01), product proof status (validated by the gate from OBPI-02), and an independent reviewer's assessment (dispatched by the pipeline from OBPI-03). If any evidence is missing, the ceremony blocks — the agent cannot proceed to attestation without making its case.
 

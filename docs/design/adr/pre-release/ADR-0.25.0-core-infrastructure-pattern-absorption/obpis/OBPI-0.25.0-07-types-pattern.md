@@ -215,6 +215,6 @@ _No defects tracked._
 - Attestation: attest completed
 - Date: 2026-04-09
 
-## Closing Argument
+### Closing Argument
 
 airlineops's `core/types.py` (40 lines) defines a single `LoadResult` dataclass tracking airline dataset load operation results with 15 fields. Every field is an airline ETL pipeline concept: `dataset` and `period` identify the airline dataset and time window, `sqlite_path`/`staging_table`/`plain_table` map to the airline data warehouse schema, `rows_staging`/`rows_curated` count ETL throughput, `parquet_path` references columnar export artifacts, `transport`/`write_mode` control data movement, and `inserted`/`updated`/`dedup_dropped` track mutation counts. The module's docstring confirms its origin: "Extracted from warehouse ingest module to avoid tight coupling and support upcoming modularization." The module uses `@dataclass` rather than Pydantic `BaseModel`, violating gzkit's data model policy. gzkit has no types module, no `LoadResult` equivalent, no ETL/data pipeline use case, and no warehouse infrastructure. There are zero generic constructs to extract. The subtraction test is unambiguous: this is pure airline domain code. **Decision: Exclude.**

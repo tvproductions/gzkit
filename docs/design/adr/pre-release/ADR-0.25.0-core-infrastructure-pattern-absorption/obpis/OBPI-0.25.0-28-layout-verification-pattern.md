@@ -271,7 +271,7 @@ _No defects tracked._
 - Attestation: attest completed — Exclude decision: airlineops layout_verify.py (143 lines) validates domain-specific config/governance/tree_layout.json with six hardcoded root keys and opsdev-package semantic check; that file and shape do not exist in gzkit. gzkit surface (commands/config_paths.py 310 lines + validate_pkg/manifest.py 116 lines) is a functional superset: schema-driven .gzkit/manifest.json validation via load_schema, dir/file control-surface type checks for ten named surfaces, legacy OBPI path contract enforcement, and unique AST-based source-literal scanning that walks src/gzkit/**/*.py. airlineops still uses Path(__file__).resolve().parents[3] (retired anti-pattern gzkit removed in OBPI-0.0.7-04). Only isolated robustness helper (_is_within() 7-line path escape check) addresses a threat model gzkit lacks since config paths come from trusted in-repo JSON under version control. Subtraction test decisive. Gate 3 green: lint, typecheck, 17 features / 110 scenarios / 584 steps pass, validate --documents, mkdocs --strict. No code or test edits. Contrast OBPI-0.25.0-27 where _safe_print was concretely relevant to Windows pre-commit path; no equivalent narrow hardening candidate exists here.
 - Date: 2026-04-13
 
-## Closing Argument
+### Closing Argument
 
 airlineops's `opsdev/lib/layout_verify.py` (143 lines) provides a single
 capability: validating that a repo's tree layout matches an airline-specific

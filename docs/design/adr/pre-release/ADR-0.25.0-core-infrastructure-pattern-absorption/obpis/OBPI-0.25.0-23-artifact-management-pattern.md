@@ -203,6 +203,6 @@ _No defects tracked._
 - Attestation: attest completed
 - Date: 2026-04-11
 
-## Closing Argument
+### Closing Argument
 
 airlineops's `opsdev/lib/artifacts.py` (232 lines) provides two capabilities: (1) regex-based scanning of Python source files for `artifacts/` path references and `.sqlite` file references, with usage classification as read/write/mkdir/other via context-aware pattern matching (`open()`, `Path()`, `os.makedirs()`, `shutil.*`); and (2) artifact directory cleanup based on a JSON registry allowlist (`config/artifacts_registry.json`) with hardcoded preserved files (`live_ingest_report.json`, `attestations/`). gzkit's artifact management surface (`registry.py`, 220 lines, + `sync.py` scanning utilities) provides governance content type metadata — Pydantic-modeled type definitions with frontmatter validation, lifecycle states, and canonical path patterns — plus governance artifact discovery via rglob and frontmatter extraction. The modules solve fundamentally different problems with zero functional overlap. The airlineops module uses `@dataclass` (gzkit requires Pydantic) and `shutil.rmtree(ignore_errors=True)` (violates gzkit cross-platform policy). The subtraction test is unambiguous: removing gzkit from airlineops leaves physical file management tied to airlineops's `artifacts/` directory convention. **Decision: Exclude.**

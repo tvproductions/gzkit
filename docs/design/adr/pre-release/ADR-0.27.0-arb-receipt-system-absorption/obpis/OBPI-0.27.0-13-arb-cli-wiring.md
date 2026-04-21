@@ -98,6 +98,6 @@ Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
 
 **Status:** `status: Pending` in frontmatter preserved; work executed under OBPI-0.25.0-33.
 
-## Closing Argument
+### Closing Argument
 
 Absorb (narrowed to 7 of 9 possible sub-verbs) executed under OBPI-0.25.0-33 on 2026-04-14. See OBPI-0.25.0-33-arb-analysis-pattern.md § Implementation Summary and § Key Proof for the end-to-end evidence trail. The 4 sub-verbs not yet wired (`tidy`, `expunge`, `github-issues`, `supabase-sync`/`telemetry-sync`) remain pending under their respective ADR-0.27.0 OBPIs (06/07/08/09).

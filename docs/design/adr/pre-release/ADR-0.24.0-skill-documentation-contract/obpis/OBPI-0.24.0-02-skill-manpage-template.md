@@ -70,7 +70,7 @@ Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
 - `rg -n "^## (Purpose|When to Use|What to Expect|Invocation|Supporting Files|Related Skills/Commands)$" docs/user/skills/_TEMPLATE.md`
 - `rg -n "operator|workflow|SKILL\\.md" docs/user/skills/_TEMPLATE.md`
 
-## Closing Argument
+### Closing Argument
 
 ### Implementation Summary
 

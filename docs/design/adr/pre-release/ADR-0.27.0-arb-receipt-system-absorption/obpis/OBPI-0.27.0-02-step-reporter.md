@@ -95,6 +95,6 @@ Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
 
 **Status:** `status: Pending` in frontmatter preserved; work executed under OBPI-0.25.0-33.
 
-## Closing Argument
+### Closing Argument
 
 Absorb executed under OBPI-0.25.0-33 on 2026-04-14. See OBPI-0.25.0-33-arb-analysis-pattern.md § Implementation Summary and § Key Proof for the end-to-end evidence trail.

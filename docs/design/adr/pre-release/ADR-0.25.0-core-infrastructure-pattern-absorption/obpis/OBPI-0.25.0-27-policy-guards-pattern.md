@@ -250,7 +250,7 @@ uv run -m behave features/core_infrastructure.feature
 - [x] **Gate 4 (BDD):** N/A — library-only addition, no operator-visible behavior change
 - [ ] **Gate 5 (Human):** Attestation recorded
 
-## Closing Argument
+### Closing Argument
 
 Both `opsdev/lib/guards.py` and `src/gzkit/hooks/guards.py` scan text files
 for pytest usage and reject it. The two files share byte-identical regex

@@ -229,7 +229,7 @@ _No defects tracked._
 - Attestation: attest completed
 - Date: 2026-04-09
 
-## Closing Argument
+### Closing Argument
 
 The airlineops `core/schema.py` module provides SQLite DDL helpers for the data
 warehouse JSONL-to-SQL ingestion pipeline. gzkit's `schemas/__init__.py` serves

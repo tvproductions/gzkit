@@ -72,7 +72,7 @@ Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
 - `rg -n "Manpages|Runbook entries|Docstrings|Linkage model" docs/governance/documentation-taxonomy.md`
 - `rg -n "documentation-taxonomy\\.md" docs/design/adr/pre-release/ADR-0.24.0-skill-documentation-contract/ADR-0.24.0-skill-documentation-contract.md`
 
-## Closing Argument
+### Closing Argument
 
 ### Implementation Summary
 

@@ -204,6 +204,6 @@ _No defects tracked._
 - Attestation: agree, not everything from airlineops will transfer
 - Date: 2026-04-09
 
-## Closing Argument
+### Closing Argument
 
 airlineops's `core/signature.py` (365 lines) computes dataset signatures for airline-specific dataset families using `DatasetFamily` literal types (bts_db1b, bts_db28dm, bts_asqp, bts_db10, bts_db20, faa, exog), 6 family-specific character extractors, catalog loading from `data/datasets/`, and prefix-based family detection. Every construct beyond two trivial utility functions (`_compute_fingerprint` — JSON sort_keys + SHA256, `_timestamp_utc` — UTC ISO format) is tied to airline dataset semantics. gzkit has no dataset signature use case and no existing hashlib usage. The subtraction test is unambiguous: this module is pure airline domain code. **Decision: Exclude.**

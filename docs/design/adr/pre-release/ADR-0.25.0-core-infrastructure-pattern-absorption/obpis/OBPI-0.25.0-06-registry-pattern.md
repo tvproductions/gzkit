@@ -211,6 +211,6 @@ _No defects tracked._
 - Attestation: attest completed
 - Date: 2026-04-09
 
-## Closing Argument
+### Closing Argument
 
 airlineops's `core/registry.py` (86 lines) defines a `StrategyRegistry` that resolves callable strategy functions from airline profile descriptors using `StrategySpec` (`@dataclass(frozen=True)` with `name`, `fn`, `description`). The convenience getters — `get_bank_window_strategy()`, `get_seasonality_strategy()`, `get_seat_trim_strategy()`, `get_export_hook()` — and the `resolve_strategies()` profile mapper are airline schedule optimization concepts with no governance analogue. gzkit's `ContentTypeRegistry` (217 lines) already implements a more sophisticated registry with Pydantic `ContentType` models, frontmatter validation via `validate_artifact()`, lifecycle states, schema integration, canonical path patterns, and vendor rendering rules across 8 registered governance content types. The two registries share only the generic register/get/list boilerplate (~15 lines), which gzkit already has. The subtraction test is unambiguous: removing gzkit from this module leaves pure airline domain code — strategy resolution for bank windows, seasonality, seat trim, and export hooks. **Decision: Exclude.**

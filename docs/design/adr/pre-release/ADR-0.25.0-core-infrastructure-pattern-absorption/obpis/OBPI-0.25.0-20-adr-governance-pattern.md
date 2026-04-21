@@ -232,7 +232,7 @@ uv run -m unittest tests/test_adr_governance_confirm.py -v
 - Date: 2026-04-11
 - Attestation: attest completed
 
-## Closing Argument
+### Closing Argument
 
 **Confirm.** airlineops's `adr_governance.py` is a 535-line module providing
 evidence audit, autolink, and verification report capabilities via regex-based

@@ -446,6 +446,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         action="store_true",
         help="Enforce ADR kind/semver/id-prefix consistency (ADR-0.0.17)",
     )
+    p_validate.add_argument(
+        "--brief-headings",
+        dest="check_brief_headings",
+        action="store_true",
+        help="Brief evidence sections must be H3, not H2 (GHI #238)",
+    )
     add_json_flag(p_validate)
     p_validate.set_defaults(
         func=lambda a: _lazy("validate")(
@@ -477,6 +483,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_advisory_scorecard=a.check_advisory_scorecard,
             check_reconcile_freshness=a.check_reconcile_freshness,
             check_taxonomy=a.check_taxonomy,
+            check_brief_headings=a.check_brief_headings,
             as_json=a.as_json,
             frontmatter_adr=a.frontmatter_adr,
             frontmatter_explain=a.frontmatter_explain,

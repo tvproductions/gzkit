@@ -270,7 +270,7 @@ uv run -m behave features/core_infrastructure.feature
 - [x] **Gate 4 (BDD):** N/A — library-only addition, no operator-visible behavior change
 - [ ] **Gate 5 (Human):** Attestation recorded
 
-## Closing Argument
+### Closing Argument
 
 gzkit's governance ledger has captured a `{"commit": <short-7>, "tag": <tag>,
 "semver": <X.Y.Z>}` anchor inside every `audit_receipt_emitted` and

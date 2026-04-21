@@ -185,7 +185,7 @@ uv run -m behave features/core_infrastructure.feature
 - [x] **Gate 4 (BDD):** N/A — Confirm decision, no operator-visible behavior change
 - [ ] **Gate 5 (Human):** Attestation recorded
 
-## Closing Argument
+### Closing Argument
 
 gzkit's CLI audit surface spans `commands/cli_audit.py` (226 lines) plus the `doc_coverage/` package (~802 lines across 4 modules), providing AST-driven command discovery without private API access, 5-surface documentation coverage (manpage, index_entry, operator_runbook, governance_runbook, docstring), manifest-driven obligations covering 50+ commands via `config/doc-coverage.json`, README Quick Start validation against the live parser, and orphaned documentation detection — backed by 76 tests across 3 files. airlineops's `opsdev/lib/cli_audit.py` (238 lines) provides parser-internal structural consistency checking: `extract_all_arguments()` walks `parser._actions` to extract argument metadata, `audit_parser()` recursively traverses subparsers via `argparse._SubParsersAction`, and `analyze_consistency()` checks naming conventions and cross-command option conflicts. The airlineops module's unique capabilities — naming convention enforcement and cross-command option conflict detection — solve a narrower problem that gzkit's documentation-coverage approach already subsumes in practice: gzkit validates handler docstrings, command syntax via README parsing, and enforces per-surface obligations declaratively rather than through fragile `parser._actions` introspection. With 76 tests vs 1, frozen Pydantic models vs untyped dicts, and manifest-driven obligations vs ad-hoc checks, gzkit's approach is architecturally superior. **Decision: Confirm.**
 
