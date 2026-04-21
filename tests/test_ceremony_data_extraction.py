@@ -23,6 +23,11 @@ from gzkit.commands.ceremony_data import (
     extract_brief_metadata,
     format_summary_table,
 )
+from gzkit.commands.ceremony_intent import (
+    format_intent_pairing_table,
+    pair_intent_with_obpis,
+    parse_intent_items,
+)
 from gzkit.commands.ceremony_steps import render_step_2_summary
 from gzkit.traceability import covers
 
@@ -291,6 +296,281 @@ class TestRenderStep2ScopeReview(unittest.TestCase):
 
         flat = " ".join(line.strip("│ ") for line in rendered.splitlines())
         self.assertIn("Absorb the attestation pattern", flat)
+
+
+ADR_INTENT_WITH_BULLETS = """\
+---
+id: ADR-0.0.18-adr-taxonomy-doctrine
+semver: 0.0.18
+lane: lite
+---
+
+# ADR-0.0.18
+
+## Intent
+
+ADR-0.0.17 closes the naming gap. Adopters still need guidance on:
+
+1. **PRD → ADR derivation**. How does a PRD decompose into foundation vs feature?
+2. **Pool curation**. When does an idea belong in the pool vs active?
+3. **Epic grouping**. How are epics named, maintained, surfaced?
+4. **Foundation-vs-feature decision guidance**. Worked examples, red flags.
+
+**After this ADR**: `docs/user/concepts/adr-taxonomy.md` is canonical.
+
+## Decision
+
+Land doctrine.
+"""
+
+
+def _obpi_brief(obpi_id: str, title: str, objective: str) -> str:
+    return (
+        f"---\nid: {obpi_id}\nstatus: Completed\nlane: lite\n---\n\n"
+        f"# {obpi_id}: {title}\n\n## Objective\n\n{objective}\n"
+    )
+
+
+class TestParseIntentItems(unittest.TestCase):
+    """GHI #259: parse_intent_items extracts numbered/dash intent bullets."""
+
+    @covers("REQ-0.23.0-04-10")
+    def test_numbered_bold_prefix_items(self) -> None:
+        text = (
+            "Adopters still need guidance on:\n\n"
+            "1. **PRD → ADR derivation**. How does a PRD decompose?\n"
+            "2. **Pool curation**. When does an idea belong in the pool?\n"
+        )
+        items = parse_intent_items(text)
+        self.assertEqual(len(items), 2)
+        self.assertEqual(items[0]["heading"], "PRD → ADR derivation")
+        self.assertIn("How does a PRD decompose", items[0]["body"])
+        self.assertEqual(items[1]["heading"], "Pool curation")
+
+    @covers("REQ-0.23.0-04-10")
+    def test_dash_bold_prefix_items(self) -> None:
+        text = "- **Foo**. First item body.\n- **Bar**. Second item body.\n"
+        items = parse_intent_items(text)
+        self.assertEqual(len(items), 2)
+        self.assertEqual(items[0]["heading"], "Foo")
+        self.assertEqual(items[1]["heading"], "Bar")
+
+    @covers("REQ-0.23.0-04-10")
+    def test_plain_numbered_items_without_bold(self) -> None:
+        text = "1. First concern with prose body.\n2. Second concern with body.\n"
+        items = parse_intent_items(text)
+        self.assertEqual(len(items), 2)
+        self.assertEqual(items[0]["heading"], "First concern with prose body.")
+
+    @covers("REQ-0.23.0-04-10")
+    def test_prose_only_returns_empty(self) -> None:
+        text = "This is a prose-only intent section with no bullets at all.\n"
+        items = parse_intent_items(text)
+        self.assertEqual(items, [])
+
+
+class TestPairIntentWithObpis(unittest.TestCase):
+    """GHI #259: pair_intent_with_obpis matches intent headings to OBPIs."""
+
+    @covers("REQ-0.23.0-04-10")
+    def test_matches_by_slug_keyword(self) -> None:
+        items = [{"heading": "PRD → ADR derivation", "body": ""}]
+        briefs = [
+            {
+                "id": "OBPI-0.0.18-02-runbook-prd-to-adr",
+                "title": "runbook prd to adr",
+                "objective": "Expand runbook with PRD to ADR derivation heuristics.",
+            }
+        ]
+        result = pair_intent_with_obpis(items, briefs)
+        self.assertEqual(len(result), 1)
+        self.assertIn("OBPI-0.0.18-02-runbook-prd-to-adr", result[0]["delivered_by"])
+
+    @covers("REQ-0.23.0-04-10")
+    def test_matches_by_objective_keyword(self) -> None:
+        items = [{"heading": "Pool curation", "body": "When does pool membership apply?"}]
+        briefs = [
+            {
+                "id": "OBPI-0.0.18-03-pool-curation-policy",
+                "title": "pool curation policy",
+                "objective": "Define pool curation policy with criteria and cadence.",
+            }
+        ]
+        result = pair_intent_with_obpis(items, briefs)
+        self.assertIn("OBPI-0.0.18-03-pool-curation-policy", result[0]["delivered_by"])
+
+    @covers("REQ-0.23.0-04-10")
+    def test_multiple_obpis_per_intent(self) -> None:
+        items = [{"heading": "Foundation-vs-feature decision guidance", "body": ""}]
+        briefs = [
+            {
+                "id": "OBPI-0.0.18-01-concepts-page",
+                "title": "concepts page",
+                "objective": "Author the foundation vs feature concepts page.",
+            },
+            {
+                "id": "OBPI-0.0.18-05-skill-prompt-enrichment",
+                "title": "skill prompt enrichment",
+                "objective": ("Enrich skill prompts with foundation vs feature decision guidance."),
+            },
+        ]
+        result = pair_intent_with_obpis(items, briefs)
+        delivered = result[0]["delivered_by"]
+        self.assertIn("OBPI-0.0.18-01-concepts-page", delivered)
+        self.assertIn("OBPI-0.0.18-05-skill-prompt-enrichment", delivered)
+
+    @covers("REQ-0.23.0-04-10")
+    def test_no_match_returns_empty_delivered_by(self) -> None:
+        items = [{"heading": "Completely unrelated topic xyzzy", "body": ""}]
+        briefs = [
+            {
+                "id": "OBPI-0.0.18-01-concepts-page",
+                "title": "concepts",
+                "objective": "authoring work",
+            }
+        ]
+        result = pair_intent_with_obpis(items, briefs)
+        self.assertEqual(result[0]["delivered_by"], [])
+
+
+class TestFormatIntentPairingTable(unittest.TestCase):
+    """GHI #259: renderer produces 2-column table."""
+
+    @covers("REQ-0.23.0-04-10")
+    def test_renders_pairings_with_delivered_by(self) -> None:
+        pairings = [
+            {
+                "heading": "PRD → ADR derivation",
+                "body": "",
+                "delivered_by": ["OBPI-0.0.18-02-runbook-prd-to-adr"],
+            },
+            {
+                "heading": "Pool curation",
+                "body": "",
+                "delivered_by": ["OBPI-0.0.18-03-pool-curation-policy"],
+            },
+        ]
+        out = format_intent_pairing_table(pairings)
+        flat = " ".join(line.strip("│ ") for line in out.splitlines())
+        self.assertIn("PRD → ADR derivation", flat)
+        self.assertIn("02-runbook-prd-to-adr", flat)
+        self.assertIn("Pool curation", flat)
+        self.assertIn("03-pool-curation-policy", flat)
+
+    @covers("REQ-0.23.0-04-10")
+    def test_renders_review_bom_hint_when_no_match(self) -> None:
+        pairings = [{"heading": "X", "body": "", "delivered_by": []}]
+        out = format_intent_pairing_table(pairings)
+        self.assertIn("(review BOM below)", out)
+
+
+class TestRenderStep2WithPairingTable(unittest.TestCase):
+    """GHI #259: Step 2 renders intent ↔ OBPI pairing table when bullets exist."""
+
+    def _write_fixture(self, temp_dir: Path) -> tuple[Path, list[Path], Path]:
+        project_root = temp_dir
+        adr_dir = project_root / "docs" / "design" / "adr" / "foundation" / "ADR-0.0.18"
+        adr_dir.mkdir(parents=True)
+        adr_path = adr_dir / "ADR-0.0.18.md"
+        adr_path.write_text(ADR_INTENT_WITH_BULLETS, encoding="utf-8")
+
+        obpi_dir = adr_dir / "obpis"
+        obpi_dir.mkdir()
+
+        obpis = [
+            (
+                "OBPI-0.0.18-01-concepts-page",
+                "concepts page",
+                "Author the foundation vs feature concepts page with decision guidance.",
+            ),
+            (
+                "OBPI-0.0.18-02-runbook-prd-to-adr",
+                "runbook prd to adr",
+                "Expand runbook with PRD to ADR derivation heuristics.",
+            ),
+            (
+                "OBPI-0.0.18-03-pool-curation-policy",
+                "pool curation policy",
+                "Define pool curation policy.",
+            ),
+            (
+                "OBPI-0.0.18-04-epic-grouping",
+                "epic grouping",
+                "Document epic grouping naming convention.",
+            ),
+        ]
+        paths: list[Path] = []
+        for obpi_id, title, objective in obpis:
+            p = obpi_dir / f"{obpi_id}.md"
+            p.write_text(_obpi_brief(obpi_id, title, objective), encoding="utf-8")
+            paths.append(p)
+
+        return adr_path, paths, project_root
+
+    @covers("REQ-0.23.0-04-10")
+    def test_step2_contains_intent_pairing_headings(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            adr_path, obpi_files, project_root = self._write_fixture(Path(temp_dir))
+            rendered = render_step_2_summary(
+                adr_id="ADR-0.0.18",
+                adr_file=adr_path,
+                obpi_files=obpi_files,
+                lane="lite",
+                project_root=project_root,
+            )
+        flat = " ".join(line.strip("│ ") for line in rendered.splitlines())
+        self.assertIn("ADR Intent", flat)
+        self.assertIn("Delivered by", flat)
+        self.assertIn("PRD → ADR derivation", flat)
+        self.assertIn("Pool curation", flat)
+        self.assertIn("Epic grouping", flat)
+
+    @covers("REQ-0.23.0-04-10")
+    def test_step2_pairs_intent_to_obpis(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            adr_path, obpi_files, project_root = self._write_fixture(Path(temp_dir))
+            rendered = render_step_2_summary(
+                adr_id="ADR-0.0.18",
+                adr_file=adr_path,
+                obpi_files=obpi_files,
+                lane="lite",
+                project_root=project_root,
+            )
+        flat = " ".join(line.strip("│ ") for line in rendered.splitlines())
+        self.assertIn("02-runbook-prd-to-adr", flat)
+        self.assertIn("03-pool-curation-policy", flat)
+        self.assertIn("04-epic-grouping", flat)
+
+    @covers("REQ-0.23.0-04-10")
+    def test_step2_falls_back_to_prose_when_no_bullets(self) -> None:
+        """An ADR with prose-only intent still renders prose (not an empty pairing table)."""
+        content = ADR_INTENT_WITH_BULLETS.replace(
+            "1. **PRD → ADR derivation**. How does a PRD decompose into foundation vs feature?\n"
+            "2. **Pool curation**. When does an idea belong in the pool vs active?\n"
+            "3. **Epic grouping**. How are epics named, maintained, surfaced?\n"
+            "4. **Foundation-vs-feature decision guidance**. Worked examples, red flags.\n",
+            "Just prose here, no bulleted items for the adopters to cross-reference.\n",
+        )
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project_root = Path(temp_dir)
+            adr_dir = project_root / "adr"
+            adr_dir.mkdir()
+            adr_path = adr_dir / "ADR.md"
+            adr_path.write_text(content, encoding="utf-8")
+
+            obpi_dir = adr_dir / "obpis"
+            obpi_dir.mkdir()
+            obpi_path = obpi_dir / "OBPI-X.md"
+            obpi_path.write_text(_obpi_brief("OBPI-X", "x", "Some objective."), encoding="utf-8")
+            rendered = render_step_2_summary(
+                adr_id="ADR",
+                adr_file=adr_path,
+                obpi_files=[obpi_path],
+                lane="lite",
+                project_root=project_root,
+            )
+
+        self.assertIn("Just prose here", rendered)
 
 
 if __name__ == "__main__":
