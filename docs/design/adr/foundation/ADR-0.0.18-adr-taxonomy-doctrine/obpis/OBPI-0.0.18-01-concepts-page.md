@@ -105,13 +105,13 @@ Each checkbox carries a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.0.18-01-01: The page names all three kinds (pool, foundation, feature) with a one-sentence definition each.
-- [ ] REQ-0.0.18-01-02: The page documents kind/lane orthogonality with a 2×2-plus-pool matrix (foundation×lite, foundation×heavy, feature×lite, feature×heavy, pool with no lane).
-- [ ] REQ-0.0.18-01-03: The page documents the kind/semver binding: foundation ⇒ `0.0.x`; feature ⇒ non-`0.0.x`; pool ⇒ no semver.
-- [ ] REQ-0.0.18-01-04: The page documents "foundation never bumps release versioning" as a named invariant, not a convention.
-- [ ] REQ-0.0.18-01-05: The page includes at least one worked example per kind, sourced from gzkit's ADR history.
-- [ ] REQ-0.0.18-01-06: The page cross-links to ADR-0.0.17 (mechanical) and ADR-0.0.18 (this ADR).
-- [ ] REQ-0.0.18-01-07: `uv run mkdocs build --strict` passes; the page renders and internal links resolve.
+- [x] REQ-0.0.18-01-01: [doc] The page names all three kinds (pool, foundation, feature) with a one-sentence definition each.
+- [x] REQ-0.0.18-01-02: [doc] The page documents kind/lane orthogonality with a 2×2-plus-pool matrix (foundation×lite, foundation×heavy, feature×lite, feature×heavy, pool with no lane).
+- [x] REQ-0.0.18-01-03: [doc] The page documents the kind/semver binding: foundation ⇒ `0.0.x`; feature ⇒ non-`0.0.x`; pool ⇒ no semver.
+- [x] REQ-0.0.18-01-04: [doc] The page documents "foundation never bumps release versioning" as a named invariant, not a convention.
+- [x] REQ-0.0.18-01-05: [doc] The page includes at least one worked example per kind, sourced from gzkit's ADR history.
+- [x] REQ-0.0.18-01-06: [doc] The page cross-links to ADR-0.0.17 (mechanical) and ADR-0.0.18 (this ADR).
+- [x] REQ-0.0.18-01-07: [doc] `uv run mkdocs build --strict` passes; the page renders and internal links resolve.
 
 ## Evidence
 
@@ -121,32 +121,16 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Implementation Summary
 
-
-Authored `docs/user/concepts/adr-taxonomy.md` (134 lines) as the canonical
-one-page ADR taxonomy reference documenting the three kinds (pool, foundation,
-feature) with one-sentence definitions; a 2×2-plus-pool kind × lane
-orthogonality matrix; the kind/semver binding table (foundation ⇒ `0.0.x`;
-feature ⇒ non-`0.0.x`; pool ⇒ no semver) citing `gz validate --taxonomy`; a
-named "Foundation never bumps release versioning" invariant with blockquote
-callout; and one worked example per kind (ADR-0.0.9 state-doctrine as
-foundation, ADR-0.6.0 pool-promotion-protocol as feature,
-ADR-pool.ai-runtime-foundations as pool). Registered the page in
-`mkdocs.yml` under the Concepts nav block. Cross-links to ADR-0.0.17 and
-ADR-0.0.18 resolve under `mkdocs build --strict`.
-
-Adjacent defects fixed in-scope per Invariants 2/4:
-
-- Brief authored-readiness sections added (Discovery Checklist, Quality
-  Gates, Acceptance Criteria with REQ IDs) — surfaced by Stage 5 precomplete
-  `brief_readiness` gate.
-- `obpi_precomplete._check_lock_held` path fix — changed `locks_dir` from
-  `.gzkit/locks` to `.gzkit/locks/obpi` to match `obpi_lock.py`'s write path.
-  Direct-fix eligible per `.gzkit/rules/defect-fix-routing.md` (≤10 lines,
-  single file, in-flight trigger).
-
-Brief drift tracked for follow-up GHI: ADR-0.0.18 REQ-05 cited ADR-0.0.15 as
-a feature-kind worked example, but ADR-0.0.15 is 0.0.x (foundation by the
-binding being documented). ADR-0.6.0 substituted to honor the binding.
+- Scope: Authored `docs/user/concepts/adr-taxonomy.md` (134 lines) as the canonical one-page ADR taxonomy reference; registered in `mkdocs.yml` under the Concepts nav block.
+- Kinds: Named all three kinds (pool, foundation, feature) with one-sentence definitions; satisfies REQ-01.
+- Orthogonality: 2×2-plus-pool kind × lane matrix (foundation×lite, foundation×heavy, feature×lite, feature×heavy, pool no-lane); satisfies REQ-02.
+- Binding: Kind/semver binding table (foundation ⇒ `0.0.x`; feature ⇒ non-`0.0.x`; pool ⇒ no semver) with citation of `gz validate --taxonomy`; satisfies REQ-03.
+- Invariant: "Foundation never bumps release versioning" rendered as a named invariant with blockquote callout (not framed as a convention); satisfies REQ-04.
+- Worked examples: One example per kind from gzkit's own history — ADR-0.0.9 state-doctrine (foundation), ADR-0.6.0 pool-promotion-protocol (feature), ADR-pool.ai-runtime-foundations (pool); satisfies REQ-05.
+- Cross-links: Resolved links to ADR-0.0.17 (mechanical) and ADR-0.0.18 (this ADR) under `mkdocs build --strict`; satisfies REQ-06.
+- Build gate: `uv run mkdocs build --strict` exits 0 with the new page + cross-links; satisfies REQ-07.
+- Adjacent defects fixed in-scope per Invariants 2/4: brief authored-readiness sections added (Discovery Checklist, Quality Gates, Acceptance Criteria with REQ IDs) after Stage 5 precomplete `brief_readiness` gate flagged the gap; `obpi_precomplete._check_lock_held` path fix changed `locks_dir` from `.gzkit/locks` to `.gzkit/locks/obpi` to match `obpi_lock.py`'s write path (direct-fix eligible per `.gzkit/rules/defect-fix-routing.md`).
+- Brief drift follow-up: ADR-0.0.18 REQ-05 originally cited ADR-0.0.15 as a feature-kind worked example, but ADR-0.0.15 is 0.0.x (foundation by the binding being documented); substituted ADR-0.6.0 to honor the binding.
 
 ### Key Proof
 

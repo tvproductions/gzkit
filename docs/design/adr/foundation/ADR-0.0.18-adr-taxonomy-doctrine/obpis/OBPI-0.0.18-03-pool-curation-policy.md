@@ -107,13 +107,13 @@ Each checkbox carries a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [x] REQ-0.0.18-03-01: The policy names the pool's role and quotes the canonical "storage/waiting area" phrasing from ADR-0.0.18.
-- [x] REQ-0.0.18-03-02: The policy documents entry criteria as a three-part test: (a) problem visible and named, (b) solution space sketched enough to scaffold a pool file, (c) no sponsor committing in the current release cycle.
-- [x] REQ-0.0.18-03-03: The policy documents promotion criteria as four conditions (sponsor exists, acceptance criteria ready, no unresolved foundation dependencies, capacity in cycle) and cites `gz adr promote` with the kind/semver binding.
-- [x] REQ-0.0.18-03-04: The policy documents retirement criteria as three paths (superseded, rejected on review, dissolved) and states that retirement preserves the file; it does not delete it.
-- [x] REQ-0.0.18-03-05: The policy documents review cadence as three triggers (`gz tidy` sweeps, minor-version closeout boundaries, opportunistic PRD absorption) with an explicit "No harder cadence is prescribed" disclaimer.
-- [x] REQ-0.0.18-03-06: The FAQ answers at least the three named questions — "How long can an ADR stay in the pool?", "Who decides promotion?", and "Can a foundation be created directly without pool?".
-- [x] REQ-0.0.18-03-07: `uv run mkdocs build --strict` passes with the new page registered and all internal cross-links resolving.
+- [x] REQ-0.0.18-03-01: [doc] The policy names the pool's role and quotes the canonical "storage/waiting area" phrasing from ADR-0.0.18.
+- [x] REQ-0.0.18-03-02: [doc] The policy documents entry criteria as a three-part test: (a) problem visible and named, (b) solution space sketched enough to scaffold a pool file, (c) no sponsor committing in the current release cycle.
+- [x] REQ-0.0.18-03-03: [doc] The policy documents promotion criteria as four conditions (sponsor exists, acceptance criteria ready, no unresolved foundation dependencies, capacity in cycle) and cites `gz adr promote` with the kind/semver binding.
+- [x] REQ-0.0.18-03-04: [doc] The policy documents retirement criteria as three paths (superseded, rejected on review, dissolved) and states that retirement preserves the file; it does not delete it.
+- [x] REQ-0.0.18-03-05: [doc] The policy documents review cadence as three triggers (`gz tidy` sweeps, minor-version closeout boundaries, opportunistic PRD absorption) with an explicit "No harder cadence is prescribed" disclaimer.
+- [x] REQ-0.0.18-03-06: [doc] The FAQ answers at least the three named questions — "How long can an ADR stay in the pool?", "Who decides promotion?", and "Can a foundation be created directly without pool?".
+- [x] REQ-0.0.18-03-07: [doc] `uv run mkdocs build --strict` passes with the new page registered and all internal cross-links resolving.
 
 ## Evidence
 

@@ -1,0 +1,17 @@
+                                ADR Overview
+╭────────────┬──────┬───────────┬────────────────┬──────┬──────────┬───────╮
+│ ADR        │ Lane │ Lifecycle │ Closeout Phase │ OBPI │ Closeout │ QC    │
+├────────────┼──────┼───────────┼────────────────┼──────┼──────────┼───────┤
+│ ADR-0.0.18 │ lite │ Completed │ attested       │ 5/5  │ READY    │ READY │
+╰────────────┴──────┴───────────┴────────────────┴──────┴──────────┴───────╯
+                                     OBPIs
+╭────┬─────────────────────────────────────┬────────────────────┬───────┬──────╮
+│ #  │ OBPI ID                             │ State              │ Brief │ Done │
+├────┼─────────────────────────────────────┼────────────────────┼───────┼──────┤
+│ 01 │ OBPI-0.0.18-01-concepts-page        │ attested_completed │       │ yes  │
+│ 02 │ OBPI-0.0.18-02-runbook-prd-to-adr   │ attested_completed │       │ yes  │
+│ 03 │ OBPI-0.0.18-03-pool-curation-policy │ attested_completed │       │ yes  │
+│ 04 │ OBPI-0.0.18-04-epic-grouping        │ attested_completed │       │ yes  │
+│ 05 │ OBPI-0.0.18-05-skill-prompt-enrichm │ attested_completed │       │ yes  │
+│    │ ent                                 │                    │       │      │
+╰────┴─────────────────────────────────────┴────────────────────┴───────┴──────╯

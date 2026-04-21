@@ -1,0 +1,1 @@
+arb ruff exit_status=0 receipt=/Users/jeff/Documents/Code/gzkit/artifacts/receipts/arb-ruff-076bfde7a935452c9706437b5b3efd2b.json

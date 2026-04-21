@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.18-adr-taxonomy-doctrine
-status: Draft
+status: Completed
 semver: 0.0.18
 lane: lite
 parent: ADR-0.0.17
