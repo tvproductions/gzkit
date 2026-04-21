@@ -149,6 +149,8 @@ Gate 2 is named TDD. Red-Green-Refactor is a repeating cycle per behavior increm
 
 **Tests assert semantics, not strings (canonical home for invariant 6f).** A test's job is to pin the operator-facing purpose the code is meant to serve, not the bytes the code currently happens to emit. Assertions must derive from the REQ or the skill's declared contract, not from a run of the code. If the test passes today because the current output happens to match and would pass tomorrow even if the output drifted into a different semantic shape, the test is wrong.
 
+**Output-form fixture carve-out.** Output-form assertions (table markers, JSON shape, plain-text line form) are permitted in fixture tests dedicated to that form, scoped per `.gzkit/rules/tool-skill-runbook-alignment.md` § Invariant 3. Those fixtures pin the rendering contract a routing skill's Output Contract declares; they are not the same surface as REQ-derived unit tests and must not be blended with them. The semantics rule above governs REQ-derived behavior tests; the Invariant 3 fixtures govern the skill→verb rendering contract. Keep them in separate test classes or modules so a semantic refactor never forces a string-shape rewrite and a rendering change never forces a semantic rewrite.
+
 **Per-increment rhythm:** TDD runs **along the way**, continuously. Unit of discipline: one test, one observed RED, minimum code to GREEN, next increment. Increments flow without per-step operator approval until a logical checkpoint (brief completion, phase boundary, ceremony step boundary).
 
 ### TDD anti-patterns
