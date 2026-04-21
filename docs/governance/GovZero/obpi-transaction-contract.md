@@ -155,7 +155,7 @@ has succeeded. If the repo is still dirty, diverged, or otherwise unsynced at
 that point, the workflow must stop before final completion accounting.
 
 Agents may prepare and summarize this evidence. They may not replace human
-attestation for Heavy or Foundation work.
+attestation for heavy-lane work (any kind) or foundation-kind work (any lane).
 
 ---
 
@@ -169,7 +169,7 @@ Typical blocker causes:
 - plan-audit receipt exists but fails alignment or references the wrong OBPI
 - changed-files audit includes a denied path
 - required evidence is absent or placeholder-only
-- Heavy or Foundation completion lacks human attestation evidence
+- heavy-lane or foundation-kind completion lacks human attestation evidence
 - parallel execution would overlap or share a spine surface
 - concurrent/shared-scope execution is needed but no lock surface exists
 

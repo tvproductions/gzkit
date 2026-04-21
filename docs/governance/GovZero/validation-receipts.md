@@ -84,8 +84,9 @@ Records a validation event tied to a specific git commit.
 | `attestor` | string | Yes | Human attestor (must be `human:<name>`, e.g., `human:jeff`). Only humans can attest — agents record evidence via the `agent` field. |
 
 For OBPI-scoped completion receipts (`obpi_receipt_emitted` with `receipt_event=completed`),
-runtime evidence must include value narrative + key proof semantics, and Heavy/Foundation
-parents require explicit human-attestation evidence fields.
+runtime evidence must include value narrative + key proof semantics, and
+heavy-lane parents (any kind) or foundation-kind parents (any lane) require
+explicit human-attestation evidence fields.
 REQ-proof inputs follow the
 [OBPI Runtime Contract](obpi-runtime-contract.md), including required
 `name`/`kind`/`source`/`status` fields and optional `scope` / `gap_reason`.
