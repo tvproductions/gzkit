@@ -8,6 +8,7 @@ from pathlib import Path
 from gzkit.quality import (
     ObpiProofStatus,
     _check_command_doc_proof,
+    _check_concepts_page_proof,
     _check_docstring_proof,
     _check_governance_artifact_proof,
     _check_release_artifact_proof,
@@ -320,6 +321,121 @@ class TestCheckReleaseArtifactProof(unittest.TestCase):
             self.assertFalse(_check_release_artifact_proof(allowed, root))
 
 
+class TestCheckConceptsPageProof(unittest.TestCase):
+    """GHI #265: Foundation-doctrine ADRs that land concepts pages need proof coverage."""
+
+    @covers("REQ-0.23.0-02-01")
+    def test_existing_concepts_page_with_content(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            concepts_dir = root / "docs" / "user" / "concepts"
+            concepts_dir.mkdir(parents=True)
+            page = concepts_dir / "adr-taxonomy.md"
+            page.write_text("# ADR taxonomy\n\n" + "x" * 200, encoding="utf-8")
+            allowed = [
+                "docs/user/concepts/adr-taxonomy.md",
+                "docs/user/index.md",
+            ]
+            self.assertTrue(_check_concepts_page_proof(allowed, root))
+
+    @covers("REQ-0.23.0-02-01")
+    def test_missing_concepts_page(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            allowed = ["docs/user/concepts/adr-taxonomy.md"]
+            self.assertFalse(_check_concepts_page_proof(allowed, root))
+
+    @covers("REQ-0.23.0-02-01")
+    def test_empty_concepts_page(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            concepts_dir = root / "docs" / "user" / "concepts"
+            concepts_dir.mkdir(parents=True)
+            (concepts_dir / "stub.md").write_text("# stub\n", encoding="utf-8")
+            allowed = ["docs/user/concepts/stub.md"]
+            self.assertFalse(_check_concepts_page_proof(allowed, root))
+
+    @covers("REQ-0.23.0-02-01")
+    def test_non_concepts_paths_ignored(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            allowed = ["docs/user/runbook.md", "src/gzkit/quality.py"]
+            self.assertFalse(_check_concepts_page_proof(allowed, root))
+
+
+class TestCheckRunbookProofRelaxed(unittest.TestCase):
+    """GHI #265: runbook.md in allowed paths satisfies proof when runbook has content."""
+
+    @covers("REQ-0.23.0-02-04")
+    def test_runbook_in_allowed_paths_accepts_without_slug_match(self) -> None:
+        """OBPI-02 'runbook-prd-to-adr' with section '## PRD → ADR Derivation'
+        (no literal slug phrase) should pass because runbook.md is in allowed paths."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "docs" / "user").mkdir(parents=True)
+            runbook = root / "docs" / "user" / "runbook.md"
+            runbook.write_text("## PRD → ADR Derivation\n\n" + "x" * 200, encoding="utf-8")
+            brief_dir = root / "briefs"
+            brief_dir.mkdir()
+            brief = brief_dir / "OBPI-0.0.18-02-runbook-prd-to-adr.md"
+            brief.write_text(
+                "## ALLOWED PATHS\n\n- `docs/user/runbook.md`\n\n## NEXT\n",
+                encoding="utf-8",
+            )
+            obpi_files = {"OBPI-0.0.18-02-runbook-prd-to-adr": brief}
+            result = check_product_proof("ADR-0.0.18", obpi_files, root)
+            self.assertTrue(result.success, "runbook-in-allowed-paths should pass")
+            self.assertEqual(result.obpi_proofs[0].proof_type, "runbook")
+
+    @covers("REQ-0.23.0-02-04")
+    def test_empty_runbook_not_sufficient(self) -> None:
+        """An empty runbook file in allowed paths does not satisfy proof."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "docs" / "user").mkdir(parents=True)
+            (root / "docs" / "user" / "runbook.md").write_text("# stub\n", encoding="utf-8")
+            brief_dir = root / "briefs"
+            brief_dir.mkdir()
+            brief = brief_dir / "OBPI-0.0.18-02-runbook-prd-to-adr.md"
+            brief.write_text(
+                "## ALLOWED PATHS\n\n- `docs/user/runbook.md`\n\n## NEXT\n",
+                encoding="utf-8",
+            )
+            obpi_files = {"OBPI-0.0.18-02-runbook-prd-to-adr": brief}
+            result = check_product_proof("ADR-0.0.18", obpi_files, root)
+            self.assertFalse(result.success)
+
+
+class TestConceptsPageIntegration(unittest.TestCase):
+    """GHI #265: concepts_page proof wired into check_product_proof."""
+
+    @covers("REQ-0.23.0-02-01")
+    def test_concepts_page_satisfies_check_product_proof(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            concepts_dir = root / "docs" / "user" / "concepts"
+            concepts_dir.mkdir(parents=True)
+            (concepts_dir / "adr-taxonomy.md").write_text(
+                "# ADR taxonomy\n\n" + "x" * 500, encoding="utf-8"
+            )
+            (root / "docs" / "user" / "runbook.md").write_text("empty\n", encoding="utf-8")
+            brief_dir = root / "briefs"
+            brief_dir.mkdir()
+            brief = brief_dir / "OBPI-0.0.18-01-concepts-page.md"
+            brief.write_text(
+                "## ALLOWED PATHS\n\n"
+                "- `docs/user/concepts/adr-taxonomy.md`\n"
+                "- `docs/user/index.md`\n"
+                "- `mkdocs.yml`\n"
+                "\n## NEXT\n",
+                encoding="utf-8",
+            )
+            obpi_files = {"OBPI-0.0.18-01-concepts-page": brief}
+            result = check_product_proof("ADR-0.0.18", obpi_files, root)
+            self.assertTrue(result.success)
+            self.assertEqual(result.obpi_proofs[0].proof_type, "concepts_page")
+
+
 class TestObpiProofStatus(unittest.TestCase):
     """Tests for ObpiProofStatus model."""
 
@@ -375,6 +491,12 @@ class TestObpiProofStatus(unittest.TestCase):
         status = ObpiProofStatus(obpi_id="OBPI-0.1.0-01", release_artifact_found=True)
         self.assertTrue(status.has_proof)
         self.assertEqual(status.proof_type, "release_artifact")
+
+    @covers("REQ-0.23.0-02-01")
+    def test_has_proof_concepts_page(self) -> None:
+        status = ObpiProofStatus(obpi_id="OBPI-0.1.0-01", concepts_page_found=True)
+        self.assertTrue(status.has_proof)
+        self.assertEqual(status.proof_type, "concepts_page")
 
 
 class TestCheckProductProof(unittest.TestCase):

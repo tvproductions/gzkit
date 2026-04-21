@@ -619,6 +619,9 @@ class ObpiProofStatus(BaseModel):
     release_artifact_found: bool = Field(
         False, description="Release manifest exists in docs/releases/ with substantive content"
     )
+    concepts_page_found: bool = Field(
+        False, description="Concepts page exists in docs/user/concepts/ with substantive content"
+    )
     decision_doc_found: bool = Field(
         False, description="Brief contains a substantive Confirm/Exclude/Absorb decision"
     )
@@ -634,6 +637,7 @@ class ObpiProofStatus(BaseModel):
             or self.test_evidence_found
             or self.bdd_evidence_found
             or self.release_artifact_found
+            or self.concepts_page_found
             or self.decision_doc_found
         )
 
@@ -654,6 +658,8 @@ class ObpiProofStatus(BaseModel):
             return "bdd_evidence"
         if self.release_artifact_found:
             return "release_artifact"
+        if self.concepts_page_found:
+            return "concepts_page"
         if self.decision_doc_found:
             return "decision_doc"
         return "MISSING"
@@ -696,12 +702,52 @@ def _extract_obpi_slug(obpi_id: str) -> str:
     return parts[3] if len(parts) > 3 else obpi_id
 
 
-def _check_runbook_proof(obpi_id: str, slug: str, runbook_text: str) -> bool:
-    """Check if the runbook references this OBPI by ID or slug keywords."""
+def _check_runbook_proof(
+    obpi_id: str,
+    slug: str,
+    runbook_text: str,
+    allowed_paths: list[str] | None = None,
+) -> bool:
+    """Check if the runbook references this OBPI, or is a direct allowed path.
+
+    GHI #265 relaxed the match: OBPI slugs rarely appear verbatim in runbook
+    section headings (``OBPI-0.0.18-02-runbook-prd-to-adr`` wants to credit a
+    section titled ``## PRD → ADR Derivation``). When the OBPI's allowed paths
+    list ``docs/user/runbook.md`` and the runbook has substantive content, the
+    OBPI clearly did runbook work regardless of slug-keyword coincidence. Keep
+    the slug/id match as a short-circuit, fall back to allowed-path presence
+    with a substantive-content bar.
+    """
     if obpi_id in runbook_text:
         return True
     keywords = slug.replace("-", " ")
-    return keywords.lower() in runbook_text.lower()
+    if keywords.lower() in runbook_text.lower():
+        return True
+    return bool(
+        allowed_paths
+        and "docs/user/runbook.md" in allowed_paths
+        and len(runbook_text.strip()) > 100
+    )
+
+
+def _check_concepts_page_proof(allowed_paths: list[str], project_root: Path) -> bool:
+    """Check if any concepts page under ``docs/user/concepts/`` exists with content.
+
+    Added in GHI #265 to give Foundation-doctrine ADRs (concepts pages, doctrine
+    references) a named product-proof path. Foundation ADRs that land operator-
+    facing doctrine under ``docs/user/concepts/`` satisfy proof via this
+    check instead of tripping the closeout blocker.
+    """
+    for path_str in allowed_paths:
+        if not path_str.startswith("docs/user/concepts/"):
+            continue
+        page_path = project_root / path_str
+        if not page_path.is_file():
+            continue
+        content = page_path.read_text(encoding="utf-8").strip()
+        if len(content) > 100:
+            return True
+    return False
 
 
 def _check_command_doc_proof(allowed_paths: list[str], project_root: Path) -> bool:
@@ -852,13 +898,14 @@ def check_product_proof(
         allowed_paths = _extract_allowed_paths(brief_text)
         slug = _extract_obpi_slug(obpi_id)
 
-        runbook_found = _check_runbook_proof(obpi_id, slug, runbook_text)
+        runbook_found = _check_runbook_proof(obpi_id, slug, runbook_text, allowed_paths)
         command_doc_found = _check_command_doc_proof(allowed_paths, project_root)
         docstring_found = _check_docstring_proof(allowed_paths, project_root)
         governance_artifact_found = _check_governance_artifact_proof(allowed_paths, project_root)
         test_evidence_found = _check_test_evidence_proof(allowed_paths, project_root)
         bdd_evidence_found = _check_bdd_evidence_proof(allowed_paths, project_root)
         release_artifact_found = _check_release_artifact_proof(allowed_paths, project_root)
+        concepts_page_found = _check_concepts_page_proof(allowed_paths, project_root)
         decision_doc_found = _check_decision_doc_proof(brief_text)
 
         proofs.append(
@@ -871,6 +918,7 @@ def check_product_proof(
                 test_evidence_found=test_evidence_found,
                 bdd_evidence_found=bdd_evidence_found,
                 release_artifact_found=release_artifact_found,
+                concepts_page_found=concepts_page_found,
                 decision_doc_found=decision_doc_found,
             )
         )
