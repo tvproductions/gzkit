@@ -42,7 +42,7 @@ Author `docs/user/concepts/adr-taxonomy.md` — the canonical one-page reference
 2. REQUIREMENT: The page documents kind/lane orthogonality explicitly with a 2×2-plus-pool matrix (foundation×lite, foundation×heavy, feature×lite, feature×heavy, pool with no lane).
 3. REQUIREMENT: The page documents the kind/semver binding: foundation ⇒ `0.0.x`; feature ⇒ non-`0.0.x`; pool ⇒ no semver.
 4. REQUIREMENT: The page documents the "foundation never bumps release versioning" property as a named invariant, not just a convention.
-5. REQUIREMENT: The page includes at least one worked example for each kind, sourced from gzkit's own ADR history where possible (e.g., ADR-0.0.9 state-doctrine as a foundation example; ADR-0.0.15 GHI-driven patch release as a feature example).
+5. REQUIREMENT: The page includes at least one worked example for each kind, sourced from gzkit's own ADR history where possible (e.g., ADR-0.0.9 state-doctrine as a foundation example; ADR-0.6.0 pool-promotion-protocol as a feature example — use a non-`0.0.x` ADR so the example honors the foundation⇒`0.0.x` / feature⇒non-`0.0.x` binding).
 6. REQUIREMENT: The page cross-links to ADR-0.0.17 (mechanical) and ADR-0.0.18 (this ADR) for source of truth.
 7. REQUIREMENT: `mkdocs build --strict` passes. The page renders correctly and all internal links resolve.
 
