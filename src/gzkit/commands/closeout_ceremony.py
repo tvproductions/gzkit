@@ -246,7 +246,11 @@ def _present_step(
     if step == CeremonyStep.WALKTHROUGH:
         return render_step_4_walkthrough(adr_id, state.walkthrough_commands, obpi_files)
     if step == CeremonyStep.EXECUTE:
-        return render_step_5_execute(adr_id, state.walkthrough_commands)
+        return render_step_5_execute(
+            adr_id,
+            state.walkthrough_commands,
+            state.walkthrough_index,
+        )
     if step == CeremonyStep.ATTESTATION:
         return render_step_6_attestation(adr_id)
     if step == CeremonyStep.CLOSEOUT:
@@ -333,6 +337,35 @@ def _initialize_ceremony(
     _output(as_json, state, output)
 
 
+def _has_more_demos(state: CeremonyState) -> bool:
+    """True when Step 5 has an unpresented demo after ``walkthrough_index``."""
+    commands = state.walkthrough_commands
+    return bool(commands) and state.walkthrough_index < len(commands) - 1
+
+
+def _advance_demo_index(
+    project_root: Path,
+    state: CeremonyState,
+    adr_file: Path,
+    lane: str,
+    manifest: dict[str, Any],
+    obpi_files: list[Path],
+    as_json: bool,
+    now: str,
+) -> None:
+    """Advance the walkthrough_index within Step 5 without changing step."""
+    new_state = state.model_copy(
+        update={
+            "walkthrough_index": state.walkthrough_index + 1,
+            "updated_at": now,
+        }
+    )
+    save_ceremony_state(project_root, new_state)
+    output = _present_step(new_state, project_root, adr_file, lane, manifest, obpi_files)
+    _write_turn_lock(project_root, state.adr_id, CeremonyStep.EXECUTE)
+    _output(as_json, new_state, output)
+
+
 def _advance_ceremony(
     project_root: Path,
     adr_id: str,
@@ -342,7 +375,12 @@ def _advance_ceremony(
     obpi_files: list[Path],
     as_json: bool,
 ) -> None:
-    """Acknowledge current step and advance to the next."""
+    """Acknowledge current step and advance to the next.
+
+    At Step 5 EXECUTE (GHI #260), ``--next`` advances one demo command at a
+    time via ``walkthrough_index``; the ceremony only moves to Step 6
+    ATTESTATION after every command has been presented.
+    """
     state = load_ceremony_state(project_root, adr_id)
     if state is None:
         raise GzCliError(f"No ceremony in progress for {adr_id}. Run --ceremony first.")
@@ -350,6 +388,11 @@ def _advance_ceremony(
         raise GzCliError(f"Ceremony for {adr_id} already completed.")
 
     now = _now_iso()
+
+    if state.current_step == CeremonyStep.EXECUTE and _has_more_demos(state):
+        _advance_demo_index(project_root, state, adr_file, lane, manifest, obpi_files, as_json, now)
+        return
+
     # Acknowledge current step
     history = list(state.step_history)
     if history and history[-1].acknowledged_at is None:

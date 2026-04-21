@@ -5,7 +5,7 @@ description: Execute the ADR closeout ceremony protocol for human attestation. G
 category: adr-audit
 compatibility: GovZero v6 framework; provides runbook walkthrough for human ADR attestation
 metadata:
-  skill-version: "7.6.1"
+  skill-version: "7.7.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -147,11 +147,15 @@ documentation parity. Advance via `--next` after acknowledgment.
 
 ### Step 4: Walkthrough Execution
 
-When the CLI presents walkthrough commands (CLI Steps 4-5), run them one at a time:
+When the CLI presents walkthrough commands (CLI Steps 4-5), run them one at a time. The CLI enforces this cadence at Step 5 EXECUTE: each `--next` advances `walkthrough_index` by one and the renderer presents exactly one demo command per turn (GHI #260).
 
 - Run ONE command, show output, STOP and WAIT for acknowledgment
-- Only proceed to next command after acknowledgment
-- After all walkthrough commands are done, advance via `--next`
+- Advance with `--next` after the human acknowledges — the CLI then presents the next demo
+- The ceremony only moves to Step 6 ATTESTATION after the final demo has been presented and acknowledged
+
+**Auto-mode override.** Auto mode's "prefer action over planning, minimize interruptions" framing does NOT apply inside the walkthrough. Step 5 is an operator-paced observation surface — do not batch demo commands into parallel tool calls to save turns. Rule #5 in § Ceremony Rules below overrides the auto-mode batching default.
+
+**Evidence-gathering ARB checks are separate from the demos.** The Evidence Summary Template (§ below) lists `uv run gz lint`, `uv run gz test --bdd`, `uv run gz typecheck`, and `uv run mkdocs build --strict` as evidence-template population — these are not discovered demo commands and must NOT be interleaved with the per-demo `--next` loop. Run them when gathering evidence for the Step 6 attestation prompt (either right before the prompt or during pre-ceremony preparation), never mixed into the Step 5 one-at-a-time sequence.
 
 **If a walkthrough command fails:** See Error Recovery. Do not skip it. Do not advance past it. Fix it or escalate.
 
@@ -365,7 +369,7 @@ One-sided directives. Each row states the required behavior and names the failur
 2. **Present CLI output without interpreting or concluding.** Evidence is presented; outcomes are not claimed. Passing checks are evidence, not a verdict.
 3. **Use the Evidence Summary Template** before requesting attestation. Every field populated; no freeform substitution.
 4. **Use only runbook/manpage-documented gzkit commands** for the walkthrough — no undocumented flags, no improvised invocations.
-5. **Run walkthrough commands one at a time and wait for acknowledgment** between each. Do not flood the operator with batched output.
+5. **Run walkthrough commands one at a time and wait for acknowledgment** between each. The CLI enforces this at Step 5 EXECUTE by rendering exactly one demo per `--next` via `walkthrough_index` (GHI #260) — do not batch demos into parallel tool calls even in auto mode, and do not interleave the evidence-gathering ARB checks (lint/typecheck/tests/mkdocs) with the per-demo sequence; those belong to the Step 6 Evidence Summary and must be run separately from the demos.
 6. **Wait for explicit human attestation.** Silence, "ok", or "looks good" is not attestation; ask "Completed, Completed-Partial, or Dropped?" and never auto-close based on passing checks.
 7. **Record attestation only through `uv run gz closeout ADR-X.Y.Z`.** Never hand-edit the ledger, never substitute "Completed - Partial" for what the human intended as a rejection (follow the Rejection Loop-Back procedure).
 8. **Stop on any failed walkthrough command.** Fix the root cause or escalate; do not advance, and do not work around CLI errors by reimplementing the step in prose.
