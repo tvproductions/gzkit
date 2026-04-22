@@ -4,3 +4,6 @@ mkdocs-material==9.7.1
 mkdocstrings>=1.0.0
 mkdocstrings-python>=2.0.1
 griffe>=1.15.0
+# pygments 2.20.0 broke html.escape(None) handling and crashes
+# pymdownx.highlight on fenced blocks without explicit filename= (GHI #281).
+pygments<2.20
