@@ -370,11 +370,12 @@ class TestCollectGhiRefsInRange(unittest.TestCase):
 
     @patch("gzkit.commands.patch_release.git_cmd")
     def test_paren_form_alone_is_not_a_closure(self, mock_git: object) -> None:
-        """`(GHI #N)` is a project citation convention; only GitHub closure
-        keywords (Closes/Fixes/Resolves) declare the commit closes the GHI.
+        """`(GHI #N)` is a project citation convention when the subject is not
+        a fix-family Conventional-Commits type.
 
         Design-scope commits like `docs(adr): ... (GHI #218)` cite GHIs for
-        context; they must not be counted as closures (GHI #233).
+        context; they must not be counted as closures (GHI #233). Body-prose
+        list-item citations like `(GHI #219): REQ-...` are also not closures.
         """
         from gzkit.commands.patch_release import _collect_ghi_refs_in_range
 
@@ -384,6 +385,93 @@ class TestCollectGhiRefsInRange(unittest.TestCase):
             "abc2\nceremony(adr): ...\n\n"
             "  2. Brittle regression tests (GHI #220): replaced\n"
             "  3. OBPI-04 brief command wording (GHI #219): REQ-02/03/05\n"
+            "\x00",
+            "",
+        )
+        refs = _collect_ghi_refs_in_range(_PROJECT_ROOT, "v1.0.0")
+        self.assertEqual(refs, set())
+
+    # GHI #280: fix/feat(scope): ... (GHI #N) subject form is the project's
+    # canonical closure convention; the regex must recognize it alongside the
+    # GitHub-canonical Closes/Fixes/Resolves body trailers.
+
+    @patch("gzkit.commands.patch_release.git_cmd")
+    def test_fix_cc_prefix_with_ghi_subject_tail_is_closure(self, mock_git: object) -> None:
+        """`fix(<scope>): <summary> (GHI #N)` subject is a closure (GHI #280)."""
+        from gzkit.commands.patch_release import _collect_ghi_refs_in_range
+
+        mock_git.return_value = (
+            0,
+            "abc1\nfix(validate): reverse --behave-req-tags direction (GHI #276)\n\x00",
+            "",
+        )
+        refs = _collect_ghi_refs_in_range(_PROJECT_ROOT, "v1.0.0")
+        self.assertEqual(refs, {276})
+
+    @patch("gzkit.commands.patch_release.git_cmd")
+    def test_feat_cc_prefix_with_ghi_subject_tail_is_closure(self, mock_git: object) -> None:
+        """`feat(<scope>): <summary> (GHI #N)` subject is a closure (GHI #280)."""
+        from gzkit.commands.patch_release import _collect_ghi_refs_in_range
+
+        mock_git.return_value = (
+            0,
+            "abc1\nfeat(validate): extend --utf8-prefix scope (GHI #275)\n\x00",
+            "",
+        )
+        refs = _collect_ghi_refs_in_range(_PROJECT_ROOT, "v1.0.0")
+        self.assertEqual(refs, {275})
+
+    @patch("gzkit.commands.patch_release.git_cmd")
+    def test_subject_form_multi_ghi_tail_counts_all(self, mock_git: object) -> None:
+        """`fix(...): ... (GHI #N, #M)` closes both GHIs (GHI #280)."""
+        from gzkit.commands.patch_release import _collect_ghi_refs_in_range
+
+        mock_git.return_value = (
+            0,
+            "abc1\nfix(rules): add craftsmanship invariants 6g/6h (GHI #263, #261)\n\x00",
+            "",
+        )
+        refs = _collect_ghi_refs_in_range(_PROJECT_ROOT, "v1.0.0")
+        self.assertEqual(refs, {261, 263})
+
+    @patch("gzkit.commands.patch_release.git_cmd")
+    def test_docs_cc_prefix_with_ghi_tail_is_not_a_closure(self, mock_git: object) -> None:
+        """`docs(<scope>): ... (GHI #N)` is a design citation, not closure (GHI #280)."""
+        from gzkit.commands.patch_release import _collect_ghi_refs_in_range
+
+        mock_git.return_value = (
+            0,
+            "abc1\ndocs(adr): author ADR-0.0.17 + ADR-0.0.18 (GHI #218)\n\x00",
+            "",
+        )
+        refs = _collect_ghi_refs_in_range(_PROJECT_ROOT, "v1.0.0")
+        self.assertEqual(refs, set())
+
+    @patch("gzkit.commands.patch_release.git_cmd")
+    def test_chore_cc_prefix_with_ghi_tail_is_not_a_closure(self, mock_git: object) -> None:
+        """`chore(<scope>): ... (GHI #N)` is not a closure (GHI #280)."""
+        from gzkit.commands.patch_release import _collect_ghi_refs_in_range
+
+        mock_git.return_value = (
+            0,
+            "abc1\nchore(scope): sync artifacts (GHI #100)\n\x00",
+            "",
+        )
+        refs = _collect_ghi_refs_in_range(_PROJECT_ROOT, "v1.0.0")
+        self.assertEqual(refs, set())
+
+    @patch("gzkit.commands.patch_release.git_cmd")
+    def test_body_paren_ghi_citation_without_subject_cc_is_not_closure(
+        self, mock_git: object
+    ) -> None:
+        """Body-prose `(GHI #N): ...` list items remain citations (GHI #280)."""
+        from gzkit.commands.patch_release import _collect_ghi_refs_in_range
+
+        mock_git.return_value = (
+            0,
+            "abc1\nceremony(adr): closeout walkthrough\n\n"
+            "  1. Brittle regression tests (GHI #220): replaced\n"
+            "  2. OBPI-04 brief command wording (GHI #219): REQ-02/03/05\n"
             "\x00",
             "",
         )

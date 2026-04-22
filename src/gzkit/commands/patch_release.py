@@ -197,19 +197,37 @@ def _discover_ghis(project_root: Path, base_ref: str | None) -> list[GhiRecord]:
     return records
 
 
-# GitHub-canonical closure keywords only. The project's ``(GHI #N)`` paren
-# form in commit subjects is a *citation* convention — authors use it for
-# design commits that reference a GHI for context without closing it
-# (commit ecaf9b41 subject ``docs(adr): author ... (GHI #218)`` is design
-# scope; the GHI was closed separately, not by that commit). Matching
-# paren-form as closure would re-include every GHI cited in prose and
-# defeat the GHI #233 fix. Prose-only ``(GHI #N):`` list-item markers in
-# ceremony commit bodies (e.g. ``61c32d14`` commit body: ``(GHI #219):
-# REQ-02/03/05...``) are also citations, not closures.
+# Two closure forms are recognized (GHI #280):
+#
+# 1. GitHub-canonical body trailers: ``Closes #N`` / ``Fixes #N`` / ``Resolves
+#    #N``. Anchored by verb, not by position, so it matches wherever the
+#    trailer lives in the commit body.
+# 2. Project-canonical subject form: ``fix(<scope>): <summary> (GHI #N)`` and
+#    ``feat(<scope>): <summary> (GHI #N)`` (and ``perf``/``refactor``/
+#    ``revert`` Conventional-Commits types that carry code-change intent).
+#    The cc-prefix at subject position is the closure signal — bare ``(GHI
+#    #N)`` in body prose is still a citation (design commits like
+#    ``docs(adr): ... (GHI #218)`` reference a GHI for context without
+#    closing it; ceremony-body list items like ``(GHI #219): REQ-...`` are
+#    also citations, not closures).
+#
+# Non-code cc-prefixes (``docs``, ``chore``, ``ceremony``, ``audit``,
+# ``test``, ``style``, ``build``, ``ci``) are excluded from the subject
+# form on purpose: those commits document or ceremonialize GHI work that
+# was closed by a separate code-change commit. Counting them would
+# double-count and re-introduce the GHI #233 drift the body regex was
+# written to prevent.
 _GHI_CLOSURE_PATTERN = re.compile(
     r"(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+#(\d+)",
     re.IGNORECASE,
 )
+_GHI_SUBJECT_CLOSURE_TYPES = ("fix", "feat", "perf", "refactor", "revert")
+_GHI_SUBJECT_CLOSURE_PATTERN = re.compile(
+    r"^(?:"
+    + "|".join(_GHI_SUBJECT_CLOSURE_TYPES)
+    + r")(?:\([^)]*\))?!?:\s+.*\(GHI\s+(#\d+(?:\s*,\s*#\d+)*)\)\s*$"
+)
+_GHI_NUMBER_PATTERN = re.compile(r"#(\d+)")
 
 
 def _collect_ghi_refs_in_range(project_root: Path, base_ref: str | None) -> set[int]:
@@ -229,8 +247,23 @@ def _collect_ghi_refs_in_range(project_root: Path, base_ref: str | None) -> set[
         return set()
 
     refs: set[int] = set()
-    for match in _GHI_CLOSURE_PATTERN.finditer(stdout):
-        refs.add(int(match.group(1)))
+    for commit_blob in stdout.split("\x00"):
+        commit_blob = commit_blob.strip("\n")
+        if not commit_blob:
+            continue
+        # Format is: SHA\n<subject>\n<body>. Split off SHA, then split
+        # subject from body so the subject-closure regex is anchored to
+        # the first message line only.
+        _sha, _, message = commit_blob.partition("\n")
+        subject, _, body = message.partition("\n")
+
+        subject_match = _GHI_SUBJECT_CLOSURE_PATTERN.match(subject)
+        if subject_match is not None:
+            for num_match in _GHI_NUMBER_PATTERN.finditer(subject_match.group(1)):
+                refs.add(int(num_match.group(1)))
+
+        for match in _GHI_CLOSURE_PATTERN.finditer(body):
+            refs.add(int(match.group(1)))
     return refs
 
 
