@@ -135,6 +135,21 @@ Behave scenarios covering a REQ carry `@REQ-X.Y.Z-NN-MM` as a scenario tag (one 
 
 Feature-level `# @covers REQ-...` comments remain supported for narrative authorship but are too coarse for OBPI-scoped filtering.
 
+**Enforcement direction (canonical, GHI #276):** `gz validate --behave-req-tags`
+enumerates heavy-lane OBPI briefs under `docs/design/adr/**` (excluding
+pool ADRs), extracts REQ-IDs from each brief's `## Acceptance Criteria`
+section, and asserts every REQ carries a matching scenario-level
+`@REQ-X.Y.Z-NN-MM` tag somewhere under `features/**`. The check fires
+OBPI → feature so a heavy OBPI that ships zero scenario coverage at all
+is flagged — the original feature → feature direction (GHI #211) could
+only flag a feature file that forgot to tag a scenario it already had.
+
+Missing coverage is a policy breach (exit 3). Heavy OBPIs that legitimately
+defer BDD (schema-only, template-only, or Gate 4 explicitly N/A) must
+register an entry in `data/behave_coverage_waivers.json` keyed by OBPI ID
+with a rationale — the waiver is the mechanism for "BDD deferred to
+CLI-exposing OBPIs" patterns.
+
 ### Runner anti-patterns
 
 - Adding a third tier (`--integration`, `--e2e`, `--slow`) to `gz test` — the runner boundary is the gate

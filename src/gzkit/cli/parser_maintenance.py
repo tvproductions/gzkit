@@ -420,7 +420,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         "--behave-req-tags",
         dest="check_behave_req_tags",
         action="store_true",
-        help="Heavy/Foundation OBPIs have @REQ-X.Y.Z-NN-MM scenario coverage",
+        help="Heavy OBPI REQs have @REQ-* scenario tags under features/",
     )
     p_validate.add_argument(
         "--skill-alignment",
