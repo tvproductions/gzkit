@@ -265,6 +265,7 @@ def check(as_json: bool = False) -> None:
         run_preflight,
         run_readiness_audit,
         run_skill_audit,
+        run_unscoped_rules_audit,
     )
 
     project_root = get_project_root()
@@ -280,6 +281,7 @@ def check(as_json: bool = False) -> None:
         ("Parity check", run_parity_check),
         ("Readiness audit", run_readiness_audit),
         ("CLI audit", run_cli_audit),
+        ("Unscoped rules", run_unscoped_rules_audit),
         ("Preflight", run_preflight),
     ]
 

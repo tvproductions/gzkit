@@ -171,6 +171,12 @@ The `Do` section (Invariants #1–17) is primarily **judgment** rules aimed at a
 
 **Invariant #10a** ("When a skill step names a tool, invoke it in the same turn") is **promotable** — could be detected via hook analysis, but the signal-to-noise ratio is probably poor.
 
+### Agent Rule Placement Invariant (`ADR-0.0.20`)
+
+| # | Rule | Score | Why |
+|---|------|-------|-----|
+| 47 | `.gzkit/rules/*.md` with `paths: "**"` or missing `paths:` may not live under any vendor-surface rules directory | **Mechanical** | `gz validate --unscoped-rules` — enumerates canonical rule files, parses YAML frontmatter, and fails closed on any file carrying `paths: "**"` or missing `paths:` without an allow-listed exception under `rules.unscoped_allowlist` in `.gzkit/manifest.json`. Runs as part of the `--audits` aggregate and `gz check`. Exit codes per `cli.md` 4-code map: 0 clean, 2 I/O error, 3 policy breach. Allow-list schema enforced via Pydantic (`UnscopedAllowlistEntry`) and `src/gzkit/schemas/manifest.json`. |
+
 ### ARB middleware (now hosted in `.gzkit/rules/attestation-enrichment.md`)
 
 *File merged 2026-04-21 — the former `.gzkit/rules/arb.md` carried a duplicate lane matrix that drifted from the canonical table in `attestation-enrichment.md`. The unique ARB material (core concept, available commands, receipt schema, exit codes) moved into `attestation-enrichment.md`; the duplicate lane matrix was dropped. The canonical invocations table lives at one home (scorecard rows above still apply; the file path changed but the mechanical enforcement did not).*
@@ -183,12 +189,12 @@ Counts updated 2026-04-18 after the GHI #202–#215 promotion wave landed.
 
 | Score | Count | % |
 |-------|-------|---|
-| **Mechanical** | 33 | 59% |
+| **Mechanical** | 34 | 60% |
 | **Promotable** | 5 | 9% |
 | **Judgment** | 18 | 32% |
 | **Ambiguous** | 0 | 0% |
 
-**The mechanical floor rose from 30 % to 59 %** under the #202–#215 promotion wave. Ten advisory rules were mechanized as `gz validate --<scope>` flags; two became pre-commit guards under `gzkit.hooks.guards`. The remaining Promotable band (Invariants 2/3 of the tool-skill-runbook rule, lazy imports, runbook placeholders, etc.) is tracked for follow-up waves.
+**The mechanical floor rose from 30 % to 60 %** under the #202–#215 promotion wave plus ADR-0.0.20's rule-placement invariant. Eleven advisory rules are now mechanized as `gz validate --<scope>` flags; two became pre-commit guards under `gzkit.hooks.guards`. The remaining Promotable band (Invariants 2/3 of the tool-skill-runbook rule, lazy imports, runbook placeholders, etc.) is tracked for follow-up waves.
 
 ---
 
@@ -214,6 +220,7 @@ Each promotion candidate has a tracking GHI. Close the GHI when the promotion la
 | 14 | discoverability | [#215](https://github.com/tvproductions/gzkit/issues/215) | Wire trust-doctrine + scorecard into agent surfaces | `agents.local.md` + mirror sync |
 | 15 | brief-heading-conventions | [#238](https://github.com/tvproductions/gzkit/issues/238) | Brief evidence sections must use H3 (not H2) | `gz validate --brief-headings` |
 | 16 | 45a (scope-boundary subsection) | [#275](https://github.com/tvproductions/gzkit/issues/275) | Fresh-interpreter helpers + non-Python pipes + `tools/**/*.py` reconfigure | `gz validate --utf8-prefix` (extends row 5) |
+| 17 | 47 (ADR-0.0.20) | ADR-0.0.20 | Agent rule placement invariant: no `paths: "**"` under vendor rule dirs | `gz validate --unscoped-rules` |
 
 Invariants 2 and 3 of the tool-skill-runbook rule (rows 29/30 above) remain Promotable — Invariant 1 landed first to establish the waiver shape for the harder body/output-form scans.
 

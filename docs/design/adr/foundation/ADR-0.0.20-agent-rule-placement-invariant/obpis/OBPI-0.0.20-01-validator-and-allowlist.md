@@ -3,7 +3,7 @@ id: OBPI-0.0.20-01-validator-and-allowlist
 parent: ADR-0.0.20-agent-rule-placement-invariant
 item: 1
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.20-01-validator-and-allowlist: Validator and Allow-list Foundation
@@ -208,15 +208,24 @@ uv run gz arb coverage run -m unittest discover -s tests/validators -t .
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+$ uv run gz validate --unscoped-rules
+Validated: unscoped-rules
+✓ 16 rule file(s) checked (3 allowlisted).
+$ echo $?
+0
+
+ARB receipts anchoring this evidence: lint arb-ruff-db63c70cdd70473bb28572498af2c14b; typecheck arb-step-typecheck-823db51d9d6948859d48daa71cfb1826; tests arb-step-unittest-4414c4fd30b9432188bd911bd9d006ad (3498/3498 green); coverage arb-step-coverage-5eac4a61004c4dd0a3ea881806716bd2 (93% on src/gzkit/validators/unscoped_rules.py; floor 40%). Also verified: uv run gz validate --audits composes unscoped_rules across 5 scopes (exit 0), uv run gz validate --advisory-scorecard accepts row 47 (exit 0).
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: src/gzkit/validators/__init__.py, src/gzkit/validators/unscoped_rules.py (137 LOC, 93% cov), tests/validators/__init__.py, tests/validators/test_unscoped_rules.py (30 tests).
+- Files modified: src/gzkit/cli/parser_maintenance.py (flag registration), src/gzkit/commands/validate_cmd.py (dedicated handler + integrated runner), src/gzkit/commands/quality.py + src/gzkit/quality.py (gz check step), src/gzkit/sync_surfaces.py (preserve rules block across manifest regen), src/gzkit/schemas/manifest.json (schema fragment), .gzkit/manifest.json (3 seed allowlist entries), docs/governance/advisory-rules-audit.md (row 47; mechanical 33->34), docs/user/commands/validate.md (new section), tests/commands/test_skills.py (mock added).
+- Tests added: 30 REQ-derived unittests with @covers decoration across all 20 REQs.
+- Date completed: 2026-04-22.
+- Attestation status: Operator-attested Stage 4 Normal-mode ceremony.
+- Defects noted: Four brief Allowed-Paths drifts fixed in-scope per Prime Directive #2. Pre-existing trust_audits.py size-ceiling overrun (1520 lines) observed but out of scope.
 
 ## Tracked Defects
 
@@ -224,14 +233,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a` (Lite lane; OBPI self-closeable)
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `Jeffry Babb`
+- Attestation: attest completed — Normal-mode ceremony: validator substrate lands with 93% coverage on src/gzkit/validators/unscoped_rules.py, 3 allowlist entries seeded pending OBPI-02/03/04 consolidation, gz validate --unscoped-rules exits 0 against live repo, --audits composition and gz check integration verified. Four brief Allowed-Paths drifts flagged and fixed in-scope (parser_validate.py→parser_maintenance.py, validate_cmd.py missing, quality.py missing, sync_surfaces.py manifest-preservation gap). Receipts: lint arb-ruff-db63c70c; types arb-step-typecheck-823db51d; tests arb-step-unittest-4414c4fd; coverage arb-step-coverage-5eac4a61.
+- Date: 2026-04-22
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-22
 
 **Evidence Hash:** -

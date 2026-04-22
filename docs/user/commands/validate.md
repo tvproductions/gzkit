@@ -128,6 +128,35 @@ gz validate --frontmatter --adr ADR-0.1.0
 gz validate --frontmatter --explain ADR-0.1.0
 ```
 
+### `--unscoped-rules`
+
+Enforces the agent-rule placement invariant ([ADR-0.0.20](../../design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/ADR-0.0.20-agent-rule-placement-invariant.md)). Non-path-scoped agent rules (`paths: "**"` or missing `paths:`) may not live under any vendor-surface rules directory — they belong in `AGENTS.md` (root or hierarchical per-directory) at the narrowest appropriate scope.
+
+- Enumerates canonical `.gzkit/rules/*.md` files (mirrors under `.claude/rules/`, `.github/instructions/` etc. are not checked — the sync contract guarantees mirror fidelity).
+- Parses YAML frontmatter and classifies each file as `concrete` (PASS), `missing-paths` (VIOLATION), or `universal-glob` (VIOLATION).
+- Consults `.gzkit/manifest.json#/rules/unscoped_allowlist` for explicit exceptions.
+
+```bash
+# Check the canonical rule files
+gz validate --unscoped-rules
+
+# Machine-readable result (parseable via json.loads, roundtrips through UnscopedRulesResult)
+gz validate --unscoped-rules --json
+
+# List current allow-list entries and exit 0
+gz validate --unscoped-rules --allowlist-only
+```
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | All rule files PASS or ALLOWLISTED | — |
+| 2 | I/O error — missing or malformed `.gzkit/manifest.json`, or unreadable rule file | Restore the manifest from git; fix the file referenced in the error |
+| 3 | Policy breach — one or more non-allowlisted violations | Narrow the file's `paths:` to a concrete glob, fold the content into `AGENTS.md`, or add an explicit allow-list entry under `rules.unscoped_allowlist` in `.gzkit/manifest.json` (entry must include `file`, `rationale` ≥20 chars, `tracking_ref` matching `GHI-\d+` or `ADR-[\d.]+[-\w]*`, and ISO `added_date`) |
+
+No `--fix` variant: recovery is a judgment call (narrow vs. fold vs. allow-list) and the wrong automatic choice is worse than a prompted fix.
+
+Included in `gz validate --audits` and `gz check` aggregate passes — future unscoped rules cannot silently accrete.
+
 ## Exit Codes
 
 Follows the CLI doctrine 4-code map:

@@ -235,6 +235,20 @@
         }
       },
       "additionalProperties": false
+    },
+    "rules": {
+      "type": "object",
+      "description": "Agent-rule governance configuration (ADR-0.0.20)",
+      "properties": {
+        "unscoped_allowlist": {
+          "type": "array",
+          "description": "Exceptions to the agent-rule placement invariant — files permitted to carry paths: '**' or missing paths: frontmatter",
+          "items": {
+            "$ref": "#/$defs/unscopedAllowlistEntry"
+          }
+        }
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": false,
@@ -269,6 +283,32 @@
         "instruction_format": {
           "type": "string",
           "description": "Instruction format: claude-rules, github-instructions, generic"
+        }
+      },
+      "additionalProperties": false
+    },
+    "unscopedAllowlistEntry": {
+      "type": "object",
+      "required": ["file", "rationale", "tracking_ref", "added_date"],
+      "properties": {
+        "file": {
+          "type": "string",
+          "description": "Repo-relative path to the allowlisted rule file"
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 20,
+          "description": "Why this file is permitted to remain unscoped"
+        },
+        "tracking_ref": {
+          "type": "string",
+          "pattern": "^(GHI-\\d+|ADR-[\\d.]+[-\\w]*)$",
+          "description": "GHI or ADR identifier tracking the resolution of this exception"
+        },
+        "added_date": {
+          "type": "string",
+          "format": "date",
+          "description": "ISO date (YYYY-MM-DD) when the entry was added"
         }
       },
       "additionalProperties": false

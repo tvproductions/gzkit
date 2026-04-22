@@ -93,7 +93,7 @@ def generate_manifest(
     if structure is None:
         structure = detect_project_structure(project_root)
 
-    return {
+    manifest: dict[str, Any] = {
         "schema": "gzkit.manifest.v2",
         "structure": {
             "source_root": structure.get("source_root", config.paths.source_root),
@@ -152,6 +152,21 @@ def generate_manifest(
             "heavy": [1, 2, 3, 4, 5],
         },
     }
+
+    # Preserve authored blocks not represented in the template — currently
+    # just `rules.unscoped_allowlist` (ADR-0.0.20). Read-only merge.
+    existing_path = project_root / ".gzkit" / "manifest.json"
+    if existing_path.exists():
+        try:
+            existing = json.loads(existing_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            existing = {}
+        if isinstance(existing, dict):
+            rules_block = existing.get("rules")
+            if isinstance(rules_block, dict):
+                manifest["rules"] = rules_block
+
+    return manifest
 
 
 def write_manifest(project_root: Path, manifest: dict[str, Any]) -> None:
