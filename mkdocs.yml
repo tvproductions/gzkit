@@ -227,6 +227,12 @@ markdown_extensions:
   - pymdownx.superfences
   - pymdownx.highlight:
       anchor_linenums: true
+      # auto_title ensures `title` is always a string. Without it,
+      # pymdownx.highlight passes filename=None to pygments.HtmlFormatter,
+      # which crashes on pygments 2.20.0+ (html.escape(None) fails in the
+      # hardened HTML formatter shipped with pygments/pygments#3071). See
+      # GHI #281.
+      auto_title: true
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - toc:

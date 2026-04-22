@@ -31,11 +31,6 @@ dependencies = [
 docs = [
     "mkdocs==1.6.1",
     "mkdocs-material==9.7.1",
-    # pygments 2.20.0 regressed html.escape(None) handling; pymdownx.highlight
-    # passes filename=None for fenced blocks without an explicit filename=,
-    # crashing `mkdocs build --strict` on every code-block-heavy page
-    # (GHI #281). Pin until pygments or pymdownx fixes upstream.
-    "pygments<2.20",
 ]
 
 [project.scripts]
