@@ -5,14 +5,14 @@ description: Post-authoring quality evaluation for ADRs and OBPIs. Scores ADRs o
 category: adr-lifecycle
 compatibility: GovZero v6 framework; adapted from AirlineOps for gzkit ADR package layouts
 metadata:
-  skill-version: "6.2.0"
+  skill-version: "6.3.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "lifecycle (pre-proposal QC), quality rubric, OBPI decomposition"
   govzero_layer: "Layer 1 - Evidence Gathering"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-04-20
+last_reviewed: 2026-04-22
 model: opus
 ---
 
@@ -196,6 +196,28 @@ Include:
 - Overall verdict (GO / CONDITIONAL GO / NO GO)
 - Action items for any deficiencies
 
+#### Low-Score Footer Guidance
+
+When the ADR's weighted total is `< 3.0` AND the ADR has at least one tracking
+anchor — a `GHI-<N>` parent, a tracking GHI referenced in frontmatter, or at
+least one existing OBPI brief under the ADR — append a footer line to the
+emitted scorecard:
+
+```text
+> Consider: uv run -m gzkit justify <parent-GHI-or-first-OBPI>
+```
+
+Substitute the concrete identifier. If both a tracking GHI and an OBPI exist,
+prefer the GHI (the tracking conversation is broader than any single OBPI's
+scope). If neither exists, do not append — the walkthrough requires a change
+instance to resolve evidence against.
+
+A weighted total below 3.0 is an invariant-11 trigger: the ADR's structural
+weakness means implementing agents will land at <90% confidence on at least one
+OBPI. The pre-execution walkthrough (`gz-justify` skill) surfaces the hidden
+ambiguity before promotion. Skipping this footer on a `< 3.0` ADR is the
+adjacent rationalization pattern the walkthrough exists to close.
+
 ### Step 7: Gate Decision
 
 - **GO:** proceed to human proposal/defense review
@@ -266,3 +288,12 @@ For adversarial review by a separate model:
 - ADR lifecycle: `docs/governance/GovZero/adr-lifecycle.md`
 - GovZero charter: `docs/governance/GovZero/charter.md`
 - Parity origin: `../airlineops/.github/skills/gz-adr-evaluate/SKILL.md`
+
+---
+
+## Related ADRs
+
+- **ADR-0.0.19** — Pre-execution reasoning walkthrough. The Low-Score Footer
+  Guidance section routes operators from a sub-3.0 evaluation into the
+  `gz-justify` walkthrough so invariant 11 (<90% confidence → ask/justify) is
+  surfaced before the ADR is promoted into active work.

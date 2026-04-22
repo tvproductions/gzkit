@@ -5,8 +5,8 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.8.0"
-last_reviewed: 2026-04-20
+skill-version: "6.9.0"
+last_reviewed: 2026-04-22
 ---
 
 # gz-obpi-pipeline
@@ -150,6 +150,22 @@ Exception mode: Stage 4 = SELF-CLOSE (record evidence, proceed)
 **Abort if:** brief not found, brief already `Completed`, or plan receipt verdict is `FAIL`.
 
 **On any abort:** Release lock via `uv run gz obpi lock release {OBPI-SLUG} --force`, then run `/gz-session-handoff` to preserve context.
+
+#### Stage 1→2 Confidence Gate
+
+Before Stage 2 begins, self-report confidence in the planned implementation. Prime Directive **Invariant 11** (`.gzkit/rules/agent-contract.md` § Judgment #11) states: *"If you are less than 90% sure of the direction, ask the human before proceeding."*
+
+When your self-reported confidence in the approved plan is `< 90%` — because the OBPI brief has ambiguous scope boundaries, the plan leaves integration points unresolved, or the anchor evidence feels insufficient — pause Stage 2 and run the pre-execution reasoning walkthrough:
+
+```bash
+uv run -m gzkit justify <current-OBPI-id> --save
+```
+
+The walkthrough renders an 8-section scaffold grounded in gathered evidence (matching rules, ledger events, recent commits, related anchors, regression taxonomy). Fill each `_[To be filled]_` block per the `gz-justify` skill's Procedure — no fabrication, every citation grounded in the gathered evidence. Then validate the filled artifact via `uv run -m gzkit justify validate <file>` and cite the artifact path in the subsequent implementer prompts (Stage 2) and in the Key Proof evidence (Stage 4).
+
+This gate mechanizes what was previously a subjective judgment. If an agent is honest about confidence at this boundary, invariant-11 drift is the single biggest source of wrong-direction work and this is the one moment the pipeline can surface it before implementation begins. Do not rationalize past the gate; the walkthrough takes 3-10 minutes on a clear anchor and 15-30 minutes on an ambiguous one — both costs are order-of-magnitude cheaper than a discarded Stage 2 pass.
+
+At `>= 90%` confidence, skip the walkthrough and proceed directly to Stage 2. The gate is not a ceremony; it is a conditional step that fires only when self-reported confidence falls below the invariant-11 threshold.
 
 ### Stage 2: Implement (skipped by `--from=verify` or `--from=ceremony`)
 
@@ -625,3 +641,10 @@ If a pipeline hook blocks a write, that means the pipeline is not active or evid
 - Governance workflow: `docs/user/concepts/workflow.md`
 - Runbook: `docs/user/runbook.md`
 - Transaction contract: `docs/governance/GovZero/obpi-transaction-contract.md`
+
+## Related ADRs
+
+- **ADR-0.0.19** — Pre-execution reasoning walkthrough. The Stage 1→2
+  Confidence Gate routes operators from a low-confidence Stage 1 into the
+  `gz-justify` walkthrough so invariant 11 is surfaced mechanically instead
+  of relying on subjective judgment at the implementation boundary.

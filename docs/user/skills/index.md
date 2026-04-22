@@ -62,6 +62,7 @@ audience split.
 | [`/gz-obpi-specify`](gz-obpi-specify.md) | Create and author OBPI briefs linked to parent ADR items |
 | [`/gz-obpi-sync`](gz-obpi-sync.md) | Sync OBPI status in ADR table from brief source files |
 | [`/gz-plan-audit`](gz-plan-audit.md) | Pre-flight alignment audit — verify plan aligns with OBPI brief |
+| [`/gz-justify`](gz-justify.md) | Pre-execution reasoning walkthrough for GHIs, OBPIs, and drafts |
 | [`/gz-specify`](gz-specify.md) | Create OBPI briefs linked to parent ADR items |
 
 ---
