@@ -6,11 +6,11 @@
       "surfaces": {
         "manpage": true,
         "index_entry": true,
-        "operator_runbook": false,
-        "governance_runbook": false,
+        "operator_runbook": true,
+        "governance_runbook": true,
         "docstring": true
       },
-      "governance_relevant": false
+      "governance_relevant": true
     },
     "init": {
       "surfaces": {

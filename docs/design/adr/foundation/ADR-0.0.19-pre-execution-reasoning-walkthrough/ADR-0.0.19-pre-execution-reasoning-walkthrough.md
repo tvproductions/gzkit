@@ -130,7 +130,35 @@ Full answer text is available in `adr-interview.json`. Key forcing-function exce
 
 <!-- Links to tests, documentation, and other artifacts that prove completion -->
 
-*Populated at OBPI completion and ADR closeout.*
+### OBPI completion
+
+| OBPI | Brief | Status |
+|------|-------|--------|
+| OBPI-0.0.19-01 | obpis/OBPI-0.0.19-01-anchor-resolution-and-evidence.md | attested_completed |
+| OBPI-0.0.19-02 | obpis/OBPI-0.0.19-02-scaffold-rendering.md | attested_completed |
+| OBPI-0.0.19-03 | obpis/OBPI-0.0.19-03-validate-subcommand.md | attested_completed |
+| OBPI-0.0.19-04 | obpis/OBPI-0.0.19-04-skill-and-upstream-integrations.md | attested_completed |
+| OBPI-0.0.19-05 | obpis/OBPI-0.0.19-05-docs-bdd-closeout.md | attested at closeout |
+
+### Closeout artifacts (OBPI-0.0.19-05)
+
+- Manpage: `docs/user/manpages/gz-justify.md`
+- Command doc: `docs/user/commands/justify.md`
+- Operator runbook entry: `docs/user/runbook.md` § Loop A Step 1b
+- Governance runbook entry: `docs/governance/governance_runbook.md` § Workflow: Create or Promote ADR step 5b
+- BDD coverage: `features/justify.feature` (8 scenarios, all passing)
+- Manpage contract test: `tests/cli/test_justify_manpage.py` (25 tests, all passing)
+- REQ → @covers parity: 12/12 covered (`uv run gz covers OBPI-0.0.19-05`)
+
+### ARB receipts (canonical invocations per `.claude/rules/attestation-enrichment.md`)
+
+| Claim | Receipt ID |
+|-------|-----------|
+| Lint clean (`uv run gz arb ruff`) | `arb-ruff-92a111f577994a6cb309275263073be1` |
+| Type check clean (`uv run gz arb typecheck`) | `arb-step-typecheck-588634d7ca0146319026a6ff0f62066e` |
+| Tests pass (`uv run gz arb step --name unittest -- uv run -m unittest -q`) | `arb-step-unittest-5731d9923b0449248263f81019e33daf` |
+| Coverage floor (`uv run gz arb coverage run -m unittest discover -s tests -t .`) | `arb-step-coverage-dbe59d5c4ae64b9d9f3bfc911643c61d` |
+| Docs build clean (`uv run gz arb step --name mkdocs -- uv run mkdocs build --strict`) | `arb-step-mkdocs-f3f2b71a15de4e8c97a14831c0d1f95d` |
 
 ## Alternatives Considered
 
