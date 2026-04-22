@@ -3,7 +3,7 @@ id: OBPI-0.0.20-02-fold-agent-contract
 parent: ADR-0.0.20-agent-rule-placement-invariant
 item: 2
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.20-02-fold-agent-contract: Fold agent-contract.md into AGENTS.md / CLAUDE.md / docs/governance/
@@ -188,15 +188,36 @@ uv run -m unittest tests.governance.test_agent_contract_fold -v
 
 ### Key Proof
 
+
+uv run gz validate --unscoped-rules
+  Validated: unscoped-rules
+  ✓ 15 rule file(s) checked (2 allowlisted).
+  (exit 0)
+
+uv run gz covers OBPI-0.0.20-02 --json (summary field)
+  total_reqs=13, covered_reqs=13, uncovered_reqs=0, coverage_percent=100.0
+
+uv run -m unittest discover -q    → 3507 tests pass (skipped=1)
+uv run mkdocs build --strict      → Documentation built in 2.05 seconds
+uv run gz validate --advisory-scorecard → ✓ All validations passed
+uv run gz obpi precomplete OBPI-0.0.20-02-fold-agent-contract → READY: all 5 preconditions met
+
+ARB receipts consulted: arb-step-unittest-4414c4fd30b9432188bd911bd9d006ad (most recent full-suite GREEN step; 239 receipts total in corpus).
+
 ### Implementation Summary
 
-- Files modified:
-- Files deleted:
-- Files created:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Migration map: 213-line `.gzkit/rules/agent-contract.md` folded into three destinations — unique invariants (craftsmanship 6c/6g/6h, judgment 12–14, Pipeline-lifecycle and State-doctrine "Never" items) into `AGENTS.md`; Claude-specific invariant 10a into `CLAUDE.md` § Claude Code addendum; pedagogy (anti-pattern canon, TASK-driven workflow, Lindsey 2025 rationale for 6g/6h) into new `docs/governance/agent-contract-rationale.md`.
+- Canonical rule file deleted; vendor mirrors (.claude/rules/, .github/instructions/) auto-cleaned by `gz agent sync control-surfaces`.
+- Manifest allow-list shrunk from 3 → 2 entries (attestation-enrichment.md + defect-fix-routing.md remain, pending OBPI-03 and -04).
+- Inbound references rewritten across 13 live Bucket-1 files (two canonical templates + five canonical rules/skills + four docs + two runbooks). Bucket-3 historical artifacts left untouched per brief.
+- Test harness: `tests/governance/test_agent_contract_fold.py`, 9 tests, all `@covers`-decorated covering all 13 REQs (100% parity).
+- Files created: `docs/governance/agent-contract-rationale.md`, `tests/governance/test_agent_contract_fold.py`, `.claude/plans/OBPI-0.0.20-02-fold-agent-contract.md`.
+- Files deleted: `.gzkit/rules/agent-contract.md` (plus two auto-cleaned mirrors).
+- Tests added: 9.
+- Date completed: 2026-04-22.
+- Attestation status: self-close-lite (Lite lane).
+- Defects noted: none new.
 
 ## Tracked Defects
 
@@ -204,14 +225,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a` (Lite lane; OBPI self-closeable)
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `Jeffry Babb`
+- Attestation: self-close-lite — OBPI-0.0.20-02 folds .gzkit/rules/agent-contract.md into AGENTS.md (unique invariants 6c/6g/6h + judgment 12–14 + pipeline/state-doctrine Never items), CLAUDE.md (invariant 10a), and docs/governance/agent-contract-rationale.md (pedagogy + 6g/6h Lindsey 2025 rationale). Canonical deleted; mirrors auto-cleaned; manifest allow-list shrinks 3→2. 13/13 REQ parity via @covers; 9/9 OBPI tests pass; full suite 3507/3507 pass; gz validate --unscoped-rules exits 0; mkdocs --strict clean.
+- Date: 2026-04-22
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-22
 
 **Evidence Hash:** -

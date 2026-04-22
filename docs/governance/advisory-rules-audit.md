@@ -155,9 +155,11 @@ This audit scores every rule by:
 | 52 | Prohibited commands (settings mutations, secret management, force push, un-authorized merges) | **Judgment** | Permission model lives in `.claude/settings.json`; gh-level enforcement is server-side |
 | 53 | Defect tracking: create GHI when fix deferred | **Judgment** | Cultural enforcement; see rule 17 |
 
-### Agent Contract (`.gzkit/rules/agent-contract.md`)
+### Agent Contract (folded into `AGENTS.md` / `CLAUDE.md` / `docs/governance/agent-contract-rationale.md`)
 
-*File consolidated 2026-04-21 — merged from the former `behavioral-invariants.md` (positive invariants — Do) and `constraints.md` (negative constraints — Do not) to close the dual-framing co-load drift that Pass A of the control-surface audit surfaced. One always-on contract file now carries both framings side-by-side.*
+*File consolidated 2026-04-21 — merged from the former `behavioral-invariants.md` (positive invariants — Do) and `constraints.md` (negative constraints — Do not) to close the dual-framing co-load drift that Pass A of the control-surface audit surfaced.*
+
+*Folded 2026-04-22 under ADR-0.0.20 OBPI-02 — the unique invariants (6c, 6g, 6h, judgment 12–14, Pipeline lifecycle and State doctrine "Never" items) moved into `AGENTS.md`; the Claude-specific invariant 10a moved into `CLAUDE.md` § Claude Code addendum; the pedagogy (anti-pattern canon, TASK-driven workflow, Lindsey 2025 rationale for 6g/6h) moved into `docs/governance/agent-contract-rationale.md`. The canonical `.gzkit/rules/agent-contract.md` rule file was deleted.*
 
 The `Do not` section is a cross-reference aggregator; every entry maps to one of the rules scored above. Its meta-rule ("these prohibitions are addressed to you — the executing agent") is **judgment** — the document's purpose is behavioral guidance for Claude Code sessions, not a mechanical gate.
 
@@ -244,5 +246,6 @@ This audit is itself a candidate for promotion: the catalog above could be a tes
 - `docs/governance/trust-doctrine.md` — the pattern this scorecard supports
 - `docs/governance/state-doctrine.md` — storage-layer doctrine; complement to trust doctrine
 - `docs/governance/layer-three-derived-views.md` — L3 view inventory and remaining audit gaps (GHI #214)
-- `.gzkit/rules/agent-contract.md` — the cross-reference index of these rules (Do / Do not framings)
+- `AGENTS.md` § Prime Directive / § DO IT RIGHT / § Behavior Rules — the cross-reference index of these rules (Do / Do not framings), folded in from the former `.gzkit/rules/agent-contract.md` under ADR-0.0.20 OBPI-02
+- `docs/governance/agent-contract-rationale.md` — pedagogy extracted from the rule file: anti-pattern canon, TASK-driven workflow, 6g/6h rationale
 - `CLAUDE.md` — architectural-boundaries memo (rules 1–6 in scorecard)
