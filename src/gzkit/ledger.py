@@ -179,6 +179,25 @@ class Ledger:
 
         self._invalidate_cache()
 
+    def has_adr_created(self, adr_id: str) -> bool:
+        """Return True if an ``adr_created`` event resolves to ``adr_id``.
+
+        The comparison runs through ``canonicalize_id`` on both sides so a
+        historical bare-semver emission (``ADR-0.0.20``) later renamed to a
+        slugged canonical (``ADR-0.0.20-agent-rule-placement-invariant``)
+        still registers as "already created" when the slugged form is checked.
+
+        Used by emission paths to enforce idempotency and prevent the
+        duplicate ``adr_created`` class surfaced in GHI #279.
+        """
+        target = self.canonicalize_id(adr_id)
+        for event in self.read_all():
+            if event.event != "adr_created":
+                continue
+            if self.canonicalize_id(event.id) == target:
+                return True
+        return False
+
     def read_all(self) -> list[LedgerEvent]:
         """Read all events from the ledger.
 

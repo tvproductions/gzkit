@@ -236,7 +236,13 @@ def interview(document_type: str, from_file: str | None = None) -> None:
     elif document_type == "adr":
         parent = answers.get("parent", "")
         lane = answers.get("lane", "lite")
-        ledger.append(adr_created_event(doc_id, parent, lane))
+        if ledger.has_adr_created(doc_id):
+            console.print(
+                f"[yellow]WARNING:[/yellow] {doc_id} already has an adr_created event; "
+                "skipping duplicate emission."
+            )
+        else:
+            ledger.append(adr_created_event(doc_id, parent, lane))
     else:
         ledger.append(obpi_created_event(doc_id, resolved_obpi_parent))
 

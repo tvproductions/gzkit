@@ -129,7 +129,9 @@ class TestPlanCommand(unittest.TestCase):
                 ],
             )
             self.assertEqual(result.exit_code, 0, msg=result.output)
-            adr_path = Path("design/adr/foundation/ADR-0.0.99/ADR-0.0.99.md")
+            adr_path = Path(
+                "design/adr/foundation/ADR-0.0.99-new-foundation/ADR-0.0.99-new-foundation.md"
+            )
             self.assertTrue(adr_path.exists(), msg=f"expected {adr_path}")
             content = adr_path.read_text(encoding="utf-8")
             lines = content.splitlines()
@@ -194,7 +196,9 @@ class TestPlanCommand(unittest.TestCase):
                 ],
             )
             self.assertEqual(result.exit_code, 0, msg=result.output)
-            adr_path = Path("design/adr/foundation/ADR-0.0.42/ADR-0.0.42.md")
+            adr_path = Path(
+                "design/adr/foundation/ADR-0.0.42-infra-thing/ADR-0.0.42-infra-thing.md"
+            )
             self.assertTrue(adr_path.exists(), msg=f"expected {adr_path}")
 
     def test_plan_create_feature_routes_to_pre_release_dir_per_adr_folder(self) -> None:
@@ -215,7 +219,7 @@ class TestPlanCommand(unittest.TestCase):
                 ],
             )
             self.assertEqual(result.exit_code, 0, msg=result.output)
-            adr_path = Path("design/adr/pre-release/ADR-0.5.0/ADR-0.5.0.md")
+            adr_path = Path("design/adr/pre-release/ADR-0.5.0-new-feature/ADR-0.5.0-new-feature.md")
             self.assertTrue(adr_path.exists(), msg=f"expected {adr_path}")
 
     # --- REQ-0.0.17-02-08: prior behavior preserved (scorecard, ledger, canonicalization) ---
@@ -257,8 +261,8 @@ class TestPlanCommand(unittest.TestCase):
             self.assertEqual(result.exit_code, 0, msg=result.output)
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             graph = ledger.get_artifact_graph()
-            self.assertIn("ADR-0.2.0", graph)
-            self.assertEqual(graph["ADR-0.2.0"]["type"], "adr")
+            self.assertIn("ADR-0.2.0-my-feature", graph)
+            self.assertEqual(graph["ADR-0.2.0-my-feature"]["type"], "adr")
 
     def test_plan_canonicalizes_short_form_adr_parent(self) -> None:
         """@covers REQ-0.0.17-02-08 (GHI #222) — parent canonicalization preserved."""
@@ -288,13 +292,104 @@ class TestPlanCommand(unittest.TestCase):
 
             fresh_ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             graph = fresh_ledger.get_artifact_graph()
-            child = graph.get("ADR-0.4.0")
+            child = graph.get("ADR-0.4.0-child-feature")
             self.assertIsNotNone(child)
             self.assertEqual(child["parent"], "ADR-0.3.0-parent-feature")
 
-            adr_path = Path("design/adr/pre-release/ADR-0.4.0/ADR-0.4.0.md")
+            adr_path = Path(
+                "design/adr/pre-release/ADR-0.4.0-child-feature/ADR-0.4.0-child-feature.md"
+            )
             content = adr_path.read_text(encoding="utf-8")
             self.assertIn("parent: ADR-0.3.0-parent-feature", content)
+
+
+class TestPlanCanonicalIdComposition(unittest.TestCase):
+    """GHI #279 — gz plan create composes canonical slugged ADR ids.
+
+    Before this fix, `gz plan create <slug> --semver X.Y.Z` emitted an
+    `adr_created` event with bare-semver ID `ADR-X.Y.Z` AND scaffolded a
+    bare-semver directory, silently discarding the slug. The bare-ID
+    emission then double-counted against the slugged on-disk form in
+    `gz adr report`.
+    """
+
+    def test_slug_name_produces_canonical_slugged_id(self) -> None:
+        """A real slug in `name` produces ADR-<semver>-<slug> everywhere."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            result = runner.invoke(
+                main,
+                [
+                    "plan",
+                    "create",
+                    "agent-rule-placement-invariant",
+                    "--kind",
+                    "foundation",
+                    "--semver",
+                    "0.0.77",
+                ],
+            )
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+
+            adr_id = "ADR-0.0.77-agent-rule-placement-invariant"
+            adr_path = Path(f"design/adr/foundation/{adr_id}/{adr_id}.md")
+            self.assertTrue(adr_path.exists(), msg=f"expected {adr_path}")
+
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            adr_events = [
+                e for e in ledger.read_all() if e.event == "adr_created" and "0.0.77" in e.id
+            ]
+            self.assertEqual(len(adr_events), 1)
+            self.assertEqual(adr_events[0].id, adr_id)
+
+    def test_semver_literal_name_falls_back_to_bare_id(self) -> None:
+        """A semver-literal `name` (e.g. `0.1.0`) preserves the bare-id shape."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            result = runner.invoke(
+                main,
+                ["plan", "create", "0.1.0", "--kind", "feature", "--semver", "0.1.0"],
+            )
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            self.assertTrue(Path("design/adr/pre-release/ADR-0.1.0/ADR-0.1.0.md").exists())
+
+
+class TestPlanIdempotentAdrCreated(unittest.TestCase):
+    """GHI #279 — gz plan create emission is idempotent per canonical ADR id."""
+
+    def test_duplicate_plan_create_emits_single_adr_created(self) -> None:
+        """Re-running plan create for the same canonical id does not double-emit."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            args = [
+                "plan",
+                "create",
+                "sample-feature",
+                "--kind",
+                "feature",
+                "--semver",
+                "0.6.0",
+            ]
+            first = runner.invoke(main, args)
+            self.assertEqual(first.exit_code, 0, msg=first.output)
+
+            second = runner.invoke(main, args)
+            self.assertEqual(second.exit_code, 0, msg=second.output)
+            self.assertIn("already has an adr_created event", second.output)
+
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            adr_events = [
+                e for e in ledger.read_all() if e.event == "adr_created" and "0.6.0" in e.id
+            ]
+            observed_ids = [e.id for e in adr_events]
+            self.assertEqual(
+                len(adr_events),
+                1,
+                msg=f"expected one adr_created for the canonical id, got {observed_ids}",
+            )
 
 
 class TestPlanTaxonomyRoundtrip(unittest.TestCase):
@@ -325,7 +420,10 @@ class TestPlanTaxonomyRoundtrip(unittest.TestCase):
                 ],
             )
             self.assertEqual(result.exit_code, 0, msg=result.output)
-            scaffolded = Path("design/adr/foundation/ADR-0.0.99/ADR-0.0.99.md")
+            scaffolded = Path(
+                "design/adr/foundation/ADR-0.0.99-round-trip-foundation/"
+                "ADR-0.0.99-round-trip-foundation.md"
+            )
             self.assertTrue(scaffolded.exists(), msg=f"missing {scaffolded}")
             errors = validate_document(scaffolded, "adr")
             self.assertEqual(
@@ -352,7 +450,10 @@ class TestPlanTaxonomyRoundtrip(unittest.TestCase):
                 ],
             )
             self.assertEqual(result.exit_code, 0, msg=result.output)
-            scaffolded = Path("design/adr/pre-release/ADR-0.7.0/ADR-0.7.0.md")
+            scaffolded = Path(
+                "design/adr/pre-release/ADR-0.7.0-round-trip-feature/"
+                "ADR-0.7.0-round-trip-feature.md"
+            )
             self.assertTrue(scaffolded.exists(), msg=f"missing {scaffolded}")
             errors = validate_document(scaffolded, "adr")
             self.assertEqual(

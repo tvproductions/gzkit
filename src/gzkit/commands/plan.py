@@ -11,6 +11,31 @@ from gzkit.ledger import Ledger, adr_created_event
 from gzkit.templates import render_template
 
 _FOUNDATION_SEMVER_RE = re.compile(r"^0\.0\.\d+$")
+_SEMVER_LITERAL_RE = re.compile(r"^\d+\.\d+\.\d+$")
+
+
+def _compose_canonical_adr_id(name: str, semver: str) -> str:
+    """Compose the canonical ADR id from a CLI `name` argument and `semver`.
+
+    Three shapes of `name` are distinguished so bookings emit the fully
+    slugged canonical id whenever one is available:
+
+    - Already-prefixed (``name.startswith("ADR-")``): use verbatim.
+    - Bare-semver literal (``"0.1.0"`` etc.): caller passed the semver as
+      the positional name, no slug is available — fall back to ``ADR-<semver>``.
+    - Anything else (a real slug like ``"agent-rule-placement-invariant"``):
+      compose ``ADR-<semver>-<name>`` so the ledger, the on-disk directory,
+      and the file name all share the same canonical slugged form.
+
+    Bare-semver-only emission is the shape that produced the GHI #279
+    shadow-row defect (bare ``adr_created`` event + slugged on-disk directory
+    = two rows in ``gz adr report``).
+    """
+    if name.startswith("ADR-"):
+        return name
+    if _SEMVER_LITERAL_RE.match(name):
+        return f"ADR-{semver}"
+    return f"ADR-{semver}-{name}"
 
 
 def _next_available_foundation_semver(foundation_root: Path) -> str:
@@ -133,7 +158,7 @@ def _render_adr_by_kind(
         )
         adr_dir = adrs_root / rel_dir
     else:
-        adr_id = f"ADR-{semver}" if not name.startswith("ADR-") else name
+        adr_id = _compose_canonical_adr_id(name, semver)
         content = render_template(
             "adr",
             id=adr_id,
@@ -159,8 +184,20 @@ def _render_adr_by_kind(
 def _register_adr_in_ledger(
     *, adr_id: str, canonical_parent: str, lane: str, adr_file: Path, ledger_path: Path
 ) -> None:
-    """Append adr_created event and verify registration. Exit 2 on failure."""
+    """Append adr_created event and verify registration. Exit 2 on failure.
+
+    Idempotent: if an ``adr_created`` event already resolves to ``adr_id``
+    (via the ledger's rename-aware ``has_adr_created``), the append is
+    skipped with a warning. Prevents the duplicate-emission class surfaced
+    in GHI #279.
+    """
     ledger = Ledger(ledger_path)
+    if ledger.has_adr_created(adr_id):
+        console.print(
+            f"[yellow]WARNING:[/yellow] {adr_id} already has an adr_created event; "
+            "skipping duplicate emission."
+        )
+        return
     try:
         ledger.append(adr_created_event(adr_id, canonical_parent, lane))
     except OSError as exc:
@@ -240,7 +277,7 @@ def plan_cmd(
         adr_id_preview = (
             (name if name.startswith("ADR-pool.") else f"ADR-pool.{name}")
             if kind == "pool"
-            else (f"ADR-{semver}" if not name.startswith("ADR-") else name)
+            else _compose_canonical_adr_id(name, semver)
         )
         adr_file_preview = (
             adrs_root
