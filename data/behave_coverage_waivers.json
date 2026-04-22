@@ -1,0 +1,1512 @@
+{
+  "default_rationale": {
+    "ghi-276-historical": "Preceded OBPI\u2192feature direction for audit_behave_req_tags (GHI #276). Historical heavy-lane OBPI shipped without scenario-level @REQ-* tags; re-authoring attested evidence is itself doctrine drift. New heavy OBPIs must either add scenario tags or add an explicit rationale here."
+  },
+  "schema_version": 1,
+  "waivers": {
+    "OBPI-0.0.11-02-persona-control-surface-definition": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.11-04-agents-md-persona-section": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.12-07-agents-md-persona-reference": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.13-03-manifest-schema-persona-sync": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.13-05-persona-drift-monitoring": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.13-06-cross-project-validation": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.14-01-obpi-lock-command": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.14-02-obpi-complete-command": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.14-03-pipeline-skill-migration": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.15-01-cli-command-scaffold": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.15-05-ceremony-skill": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.15-06-dogfood-fix-version-drift": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.16-01-validate-frontmatter-guard": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Completed"
+    },
+    "OBPI-0.0.16-02-gate-integration": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.16-03-chore-registration": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.16-04-backfill-and-ghi-closure": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Completed"
+    },
+    "OBPI-0.0.16-05-status-vocab-mapping": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Completed"
+    },
+    "OBPI-0.0.17-01-schema-and-model": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Completed"
+    },
+    "OBPI-0.0.17-02-plan-create-kind": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Completed"
+    },
+    "OBPI-0.0.17-03-adr-promote-kind": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Completed"
+    },
+    "OBPI-0.0.17-04-validate-taxonomy": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Completed"
+    },
+    "OBPI-0.0.17-05-backfill-and-roundtrip": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Completed"
+    },
+    "OBPI-0.0.19-01-anchor-resolution-and-evidence": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Draft"
+    },
+    "OBPI-0.0.19-02-scaffold-rendering": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Draft"
+    },
+    "OBPI-0.0.19-03-validate-subcommand": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Draft"
+    },
+    "OBPI-0.0.19-04-skill-and-upstream-integrations": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Draft"
+    },
+    "OBPI-0.0.19-05-docs-bdd-closeout": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Draft"
+    },
+    "OBPI-0.0.3-01-hexagonal-skeleton": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.3-02-domain-extraction": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.3-03-exception-hierarchy": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.3-04-test-fakes-separation": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.3-05-config-precedence-injection": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.3-06-output-formatter": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.3-07-structured-logging-structlog": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.3-08-progress-indication": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.3-09-policy-tests": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.4-01-cli-module-restructure": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.4-02-parser-infrastructure": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.4-03-common-flags-option-factories": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.4-04-help-text-completeness": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.4-05-epilog-templates": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.4-06-output-formatter": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.4-07-exception-hierarchy-exit-codes": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.4-08-runtime-presentation": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.4-09-progress-indication": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.4-10-cli-consistency-tests": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.6-01-ast-scanner": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.6-03-chore-registration-and-enforcement": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.8-01-flag-models-and-registry": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.8-02-flag-service": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.8-03-feature-decisions": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.8-04-diagnostics-and-staleness": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.8-05-cli-surface": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.8-07-config-gates-removal": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.8-08-operator-docs": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.0.9-03-state-repair-command": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.1.0-01": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Completed"
+    },
+    "OBPI-0.1.0-02": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Completed"
+    },
+    "OBPI-0.1.0-03": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Completed"
+    },
+    "OBPI-0.1.0-04": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Completed"
+    },
+    "OBPI-0.1.0-05": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Completed"
+    },
+    "OBPI-0.1.0-06": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Completed"
+    },
+    "OBPI-0.1.0-07": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Completed"
+    },
+    "OBPI-0.1.0-08": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Completed"
+    },
+    "OBPI-0.1.0-09": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Completed"
+    },
+    "OBPI-0.1.0-10": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Completed"
+    },
+    "OBPI-0.10.0-01-obpi-runtime-contract-and-state-model": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.10.0-03-obpi-proof-and-lifecycle-integration": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.11.0-01-obpi-transaction-contract-and-scope-isolation": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.11.0-02-obpi-completion-validator-and-git-sync-gate": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.11.0-03-obpi-completion-recorder-and-anchor-receipts": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.11.0-04-anchor-aware-obpi-drift-and-reconciliation": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.11.0-05-gz-obpi-pipeline-skill-and-mirror-surface": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.12.0-01-canonical-hook-inventory-and-parity-contract": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.12.0-02-plan-exit-audit-gate-parity": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.12.0-03-pipeline-router-and-active-marker-bridge": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.12.0-04-write-time-pipeline-gate": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.12.0-05-completion-reminder-surface": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.12.0-06-settings-registration-and-operator-verification-alignment": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.12.0-07-plan-audit-skill-and-receipt-parity": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.13.0-01-runtime-command-contract": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.13.0-02-persist-stage-state": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.13.0-03-structured-stage-outputs": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.13.0-04-human-gate-boundary": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.13.0-05-runtime-engine-integration": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.14.0-01-canon-shared-instruction-model": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.14.0-02-native-path-scoped-rules": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.14.0-03-root-surface-slimming-and-workflow-relocation": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.14.0-04-instruction-audit-and-drift-detection": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.14.0-05-local-vs-repo-config-and-sync-determinism": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.14.0-06-instruction-evals-and-readiness-checks": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.17.0-01-categorized-skill-catalog": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.17.0-02-rules-mirroring": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.17.0-03-slim-claudemd-template": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.17.0-04-json-schemas-and-validation": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.17.0-05-manifest-update-and-final-sync": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.18.0-02-implementer-subagent-dispatch": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.18.0-05-pipeline-runtime-integration": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.18.0-06-wire-implementer-dispatch": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.18.0-07-wire-two-stage-review": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.18.0-08-wire-req-verification-dispatch": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.2.0-01-gate-verification": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.2.0-02-dry-run-options": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.2.0-03-docs-updates": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.20.0-04-gz-drift-cli-surface": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.20.0-05-advisory-gate-integration": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.21.0-03-gz-covers-cli": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.21.0-04-adr-audit-integration": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.21.0-05-operator-docs-and-migration": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.22.0-04-gz-task-cli": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.22.0-05-status-and-state-integration": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.23.0-03-reviewer-agent": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.25.0-01-attestation-pattern": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.25.0-02-progress-pattern": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.25.0-03-signature-pattern": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.25.0-04-world-state-pattern": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.25.0-05-dataset-version-pattern": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.25.0-06-registry-pattern": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.25.0-07-types-pattern": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.25.0-08-ledger-pattern": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.25.0-09-schema-pattern": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.25.0-10-errors-pattern": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.25.0-11-hooks-pattern": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.25.0-12-admission-pattern": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.25.0-13-qc-pattern": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.25.0-14-os-pattern": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.25.0-15-manifests-pattern": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.25.0-16-config-pattern": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.25.0-17-console-pattern": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.25.0-18-adr-lifecycle-pattern": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.25.0-19-adr-audit-ledger-pattern": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.25.0-20-adr-governance-pattern": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.25.0-21-adr-reconciliation-pattern": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.25.0-22-adr-traceability-pattern": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.25.0-23-artifact-management-pattern": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.25.0-24-cli-audit-pattern": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.25.0-25-docs-validation-pattern": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.25.0-26-drift-detection-pattern": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.25.0-27-policy-guards-pattern": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.25.0-28-layout-verification-pattern": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.25.0-29-ledger-schema-pattern": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.25.0-30-references-pattern": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.25.0-31-validation-receipts-pattern": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.25.0-32-handoff-validation-pattern": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.25.0-33-arb-analysis-pattern": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.26.0-01-adr-management": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.26.0-02-references": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.26.0-03-adr-recon": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.26.0-04-adr-governance": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.26.0-05-ledger-schema": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.26.0-06-drift-detection": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.26.0-07-adr-traceability": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.26.0-08-validation-receipt": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.26.0-09-adr-audit-ledger": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.26.0-10-cli-audit-lib": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.26.0-11-artifacts-lib": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.26.0-12-docs-lib": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.27.0-01-ruff-reporter": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.27.0-02-step-reporter": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.27.0-03-arb-validate": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.27.0-04-arb-advise": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.27.0-05-arb-patterns": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.27.0-06-arb-tidy": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.27.0-07-arb-expunge": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.27.0-08-arb-github-issues": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.27.0-09-arb-supabase-sync": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.27.0-10-arb-paths": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.27.0-11-arb-lint-receipt-schema": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.27.0-12-arb-step-receipt-schema": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.27.0-13-arb-cli-wiring": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.28.0-01-chores-cli": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.28.0-02-chores-cli-core": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.28.0-03-chores-cli-plan": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.28.0-04-chores-cli-run": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.28.0-05-chores-cli-advise": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.28.0-06-chores-cli-audit": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.28.0-07-chores-cli-status": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.28.0-08-chores-cli-ack": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.28.0-09-chores-cli-register": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.28.0-10-chores-executor": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.28.0-11-chores-executor-run": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.28.0-12-chores-executor-log": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.28.0-13-chores-executor-summary": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.28.0-14-chores-executor-recommendations": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.28.0-15-chores-executor-finalize": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.28.0-16-chores-planner": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.28.0-17-chores-parser": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.28.0-18-chores-models": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.28.0-19-chores-config": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.29.0-01-tasks-list": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.29.0-02-tasks-show": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.29.0-03-tasks-sync": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.29.0-04-tasks-verify": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.29.0-05-tasks-test": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.29.0-06-tasks-discover": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.29.0-07-tasks-tidy": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.3.0-01-skills-surface-parity": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.3.0-02-divergent-skill-reconciliation": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.3.0-03-govzero-canonical-doc-surface": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.3.0-04-core-semantics-reconciliation": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.3.0-05-parity-scan-path-hardening": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.30.0-01-config-schema": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.30.0-02-config-doctrine": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.30.0-03-config-chores-json": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.30.0-04-config-git-sync-json": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.30.0-05-config-test-suites-json": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.30.0-06-config-workspace-patterns": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.30.0-07-config-legacy-adapter": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.30.0-08-config-settings-validation": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.31.0-01-sloc-scan": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.31.0-02-complexity-check": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.31.0-03-test-times": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.31.0-04-test-quality": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.31.0-05-metrics-scan": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.31.0-06-metrics-report": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.31.0-07-mutate": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.31.0-08-validate-manpages": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.31.0-09-sync-manpage-docstrings": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.31.0-10-interrogate": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.32.0-01-git-sync": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.32.0-02-lint": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.32.0-03-format": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.32.0-04-test": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.32.0-05-typecheck": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.32.0-06-check-config-paths": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.32.0-07-cli-audit": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.32.0-08-tidy-clean": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.32.0-09-gates": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.32.0-10-implement": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.32.0-11-closeout": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.32.0-12-audit": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.32.0-13-attest": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.32.0-14-status-state": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.32.0-15-adr-status-docs-map-check": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.32.0-16-adr-recon-audit-receipt": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.32.0-17-adr-evidence-autolink-sync": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.32.0-18-adr-eval-report": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.32.0-19-docs-md-tooling": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.32.0-20-sync-repo": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.32.0-21-sync-skills": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.32.0-22-layout-verify": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.32.0-23-cwd-guard": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.32.0-24-yaml-guard": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.32.0-25-hooks-subcommands": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.33.0-01-refs-index": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.33.0-02-refs-citations": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.33.0-03-instrumentation-audit": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.33.0-04-agent-review": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.33.0-05-hygiene": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.33.0-06-curation-inventory": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.33.0-07-curation-guard": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.33.0-08-governance-setup": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.33.0-09-governance-report": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.33.0-10-governance-runners": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.34.0-01-obpi-completion-validator": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.34.0-02-obpi-completion-recorder": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.34.0-03-insight-harvester": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.34.0-04-instruction-router": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.34.0-05-post-edit-ruff": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.34.0-06-pipeline-router": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.34.0-07-plan-audit-gate": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.34.0-08-pipeline-gate": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.34.0-09-session-staleness-check": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.34.0-10-hook-diag": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.34.0-11-dataset-guard": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.34.0-12-pipeline-completion-reminder": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.34.0-13-insight-reminder": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.35.0-01-arb-ruff": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.35.0-02-ruff-format": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.35.0-03-ty-check": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.35.0-04-unittest": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.35.0-05-arb-validate": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.35.0-06-xenon-complexity": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.35.0-07-protect-copilot-instructions": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.35.0-08-forbid-pytest": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.35.0-09-normalize-adr-h1": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.35.0-10-generate-adr-docs": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.35.0-11-forbid-prod-db-in-tests": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.35.0-12-cross-platform-sqlite-guard": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.35.0-13-validate-manpages": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.35.0-14-sync-manpage-docstrings": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.35.0-15-interrogate": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.35.0-16-check-todos-fixmes": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.35.0-17-md-docs": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.35.0-18-repo-canonicalization": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.35.0-19-sync-claude-skills": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.35.0-20-adr-drift-check": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.36.0-01-cli-instructions": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.36.0-02-tests-instructions": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.36.0-03-cross-platform-instructions": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.36.0-04-models-instructions": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.36.0-05-pythonic-instructions": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.36.0-06-gate5-instructions": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.36.0-07-adr-audit-instructions": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.36.0-08-arb-instructions": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.36.0-09-chores-instructions": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.36.0-10-gh-cli-instructions": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.36.0-11-sql-hygiene-instructions": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.36.0-12-warehouse-instructions": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.36.0-13-calendars-instructions": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.37.0-01-charter": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.37.0-02-gzkit-structure": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.37.0-03-governance-registry-design": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.37.0-04-gate5-architecture": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.37.0-05-adr-lifecycle": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.37.0-06-adr-status-doc": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.37.0-07-adr-obpi-ghi-linkage": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.37.0-08-ledger-schema-doc": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.37.0-09-audit-protocol": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.37.0-10-architectural-enforcement": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.37.0-11-handoff-validation": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.37.0-12-session-handoff-obligations": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.37.0-13-session-handoff-schema": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.37.0-14-layered-trust": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.37.0-15-staleness-classification": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.37.0-16-validation-receipts": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.37.0-17-agent-era-prompting": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.37.0-18-release-major": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.37.0-19-release-minor": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.37.0-20-release-patch": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.37.0-21-governance-audits": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.37.0-22-handoff-chaining": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.37.0-23-gzkit-only-docs": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.38.0-01-adr-template": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.38.0-02-obpi-template": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.38.0-03-closeout-template": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.38.0-04-audit-template": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.38.0-05-prd-template": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.38.0-06-constitution-template": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.38.0-07-agents-md-contract": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.38.0-08-skill-template": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.38.0-09-copilot-instructions-generic": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.38.0-10-guards-layout-verify": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.39.0-01-registry-schema-design": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.39.0-02-canonical-template-set": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.39.0-03-project-extension-mechanism": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.39.0-04-conformance-validation": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.39.0-05-contradiction-detection": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.39.0-06-migration-tooling": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Pending"
+    },
+    "OBPI-0.4.0-01-skill-source-centralization": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.4.0-02-agent-native-mirror-contracts": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.4.0-03-sync-determinism-and-recovery": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.4.0-04-mirror-compat-migration": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.40.0-01-reporter-module-scaffold": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.40.0-03-status-report-table-migration": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "pending"
+    },
+    "OBPI-0.40.0-04-list-table-migration": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "pending"
+    },
+    "OBPI-0.40.0-05-ceremony-panel-migration": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "pending"
+    },
+    "OBPI-0.41.0-01-ledger-event-types-for-tdd": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "pending"
+    },
+    "OBPI-0.41.0-02-gz-tdd-cli-verified-emission": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "pending"
+    },
+    "OBPI-0.41.0-03-attestation-enrichment-tdd-integration": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "pending"
+    },
+    "OBPI-0.41.0-04-tdd-runbook-and-manpage": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "pending"
+    },
+    "OBPI-0.41.0-05-ghi-160-retroactive-governance-housing": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "pending"
+    },
+    "OBPI-0.43.0-01-gz-ghi-cli-verbs": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Draft"
+    },
+    "OBPI-0.43.0-02-gz-ghi-fix-skill": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Draft"
+    },
+    "OBPI-0.43.0-03-gz-ghi-triage-skill": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Draft"
+    },
+    "OBPI-0.43.0-04-runbook-and-manpage-docs": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Draft"
+    },
+    "OBPI-0.43.0-05-gz-patch-release-integration": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Draft"
+    },
+    "OBPI-0.5.0-01-skill-taxonomy-and-capability-model": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.5.0-02-parity-verification-policy": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.5.0-03-lifecycle-state-transitions": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.5.0-04-maintenance-and-deprecation-operations": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.5.0-05-obpi-acceptance-protocol-runtime-parity": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.6.0-01-pool-source-contract": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.6.0-02-promotion-command-lineage": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.6.0-03-operator-narratives-and-auditability": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.7.0-01-obpi-completion-validator-gate": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.7.0-02-obpi-completion-recorder-and-anchor": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.7.0-03-ledger-first-obpi-audit-consumption": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.7.0-04-obpi-drift-and-status-reconciliation": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.8.0-01-chores-registry": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.8.0-02-chores-runner": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.8.0-03-chores-lifecycle": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "attested"
+    },
+    "OBPI-0.9.0-03-gzkit-breadth-parity-intake-tranche-plan": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Completed"
+    },
+    "OBPI-0.9.0-04-gzkit-surface-import-and-mirror-sync": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Completed"
+    },
+    "OBPI-0.9.0-05-parity-qc-and-closeout-readiness": {
+      "rationale": "ghi-276-historical",
+      "status_at_landing": "Completed"
+    }
+  }
+}

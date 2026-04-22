@@ -25,6 +25,7 @@ Each audit returns a list of ``ValidationError`` objects so it composes with
 from __future__ import annotations
 
 import ast
+import json
 import re
 import tokenize
 from pathlib import Path
@@ -921,50 +922,156 @@ def audit_pool_adr_isolation(project_root: Path) -> list[ValidationError]:
 
 
 # ---------------------------------------------------------------------------
-# Audit: behave REQ scenario-tag coverage (GHI #211 / rule 39)
+# Audit: behave REQ scenario-tag coverage (GHI #211; reversed per GHI #276)
 # ---------------------------------------------------------------------------
+#
+# Direction: OBPI → feature. Rule 39 and the scorecard assert "Heavy-lane
+# and foundation-kind OBPIs have ``@REQ-X.Y.Z-NN-MM`` scenario coverage."
+# The original (GHI #211) feature → feature scan could flag a feature file
+# that forgot to tag a scenario but could not flag a heavy OBPI that never
+# wrote a feature at all. The reversed direction enumerates heavy OBPI
+# briefs, extracts REQs from the Acceptance Criteria section, and asserts
+# each REQ has a matching scenario-level ``@REQ-*`` tag somewhere under
+# ``features/``. Pool ADRs are excluded (cross-ref ``--pool-adr-isolation``).
+#
+# Waivers live in ``data/behave_coverage_waivers.json`` keyed by OBPI ID.
+# The initial seed captures every heavy OBPI that predates the reversal
+# (GHI #276 closed-OBPI carve-out, same pattern as ``_UTF8_PIPE_WAIVERS``).
+
+_OBPI_ID_IN_FRONTMATTER = re.compile(
+    r"^id:\s*(OBPI-[0-9]+\.[0-9]+\.[0-9]+-[0-9]+[A-Za-z0-9\-.]*)\s*$",
+    re.MULTILINE,
+)
+_LANE_IN_FRONTMATTER = re.compile(r"^lane:\s*([A-Za-z]+)\s*$", re.MULTILINE)
+_ACCEPTANCE_SECTION = re.compile(
+    r"^##\s+Acceptance Criteria\s*$(.*?)(?=^##\s+|\Z)",
+    re.MULTILINE | re.DOTALL,
+)
 
 
-_FEATURE_COVERS_REQ = re.compile(r"#\s*@covers\s+(REQ-\d+\.\d+\.\d+-\d+-\d+)")
+def _load_behave_coverage_waivers(project_root: Path) -> dict[str, str]:
+    """Return ``{OBPI-id: rationale}`` from the sidecar waiver file.
+
+    The sidecar stores rationale codes keyed to a ``default_rationale`` map
+    so the 370+ historical entries compress to one-liners plus one shared
+    message. Keys without a resolvable rationale code still load as waived
+    (rationale falls through to the raw code string) so the audit never
+    blocks on a malformed entry.
+    """
+    waiver_path = project_root / "data" / "behave_coverage_waivers.json"
+    if not waiver_path.is_file():
+        return {}
+    try:
+        payload = json.loads(waiver_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, UnicodeDecodeError, OSError):
+        return {}
+    default_rationale = payload.get("default_rationale", {}) or {}
+    waivers = payload.get("waivers", {}) or {}
+    out: dict[str, str] = {}
+    for obpi_id, entry in waivers.items():
+        if not isinstance(obpi_id, str) or not obpi_id.startswith("OBPI-"):
+            continue
+        rationale_code = ""
+        if isinstance(entry, dict):
+            rationale_code = str(entry.get("rationale", ""))
+        elif isinstance(entry, str):
+            rationale_code = entry
+        out[obpi_id] = default_rationale.get(rationale_code, rationale_code)
+    return out
+
+
+def _extract_heavy_obpi_briefs(project_root: Path) -> list[tuple[Path, str, list[str]]]:
+    """Enumerate heavy-lane OBPI briefs under ``docs/design/adr/``.
+
+    Returns tuples of ``(brief_path, obpi_id, req_ids)``. Pool-ADR briefs
+    (``docs/design/adr/pool/**``) are excluded per the ``--pool-adr-isolation``
+    contract. REQ-IDs are extracted from the ``## Acceptance Criteria``
+    section only — the REQ Coverage and Requirements sections restate the
+    same IDs, and anchoring on Acceptance Criteria matches the brief template
+    and the ``gz adr audit-check`` derivation.
+    """
+    adr_root = project_root / "docs" / "design" / "adr"
+    if not adr_root.is_dir():
+        return []
+    briefs: list[tuple[Path, str, list[str]]] = []
+    for brief in sorted(adr_root.rglob("OBPI-*.md")):
+        if "pool" in brief.parts:
+            continue
+        try:
+            text = brief.read_text(encoding="utf-8")
+        except (UnicodeDecodeError, OSError):
+            continue
+        lane_match = _LANE_IN_FRONTMATTER.search(text)
+        if not lane_match or lane_match.group(1).lower() != "heavy":
+            continue
+        id_match = _OBPI_ID_IN_FRONTMATTER.search(text)
+        if not id_match:
+            continue
+        obpi_id = id_match.group(1)
+        accept_match = _ACCEPTANCE_SECTION.search(text)
+        if not accept_match:
+            continue
+        req_ids = sorted(set(_REQ_ID_IN_BRIEF.findall(accept_match.group(1))))
+        if not req_ids:
+            continue
+        briefs.append((brief, obpi_id, req_ids))
+    return briefs
+
+
+def _collect_scenario_req_tags(project_root: Path) -> set[str]:
+    """Return the set of REQ-IDs carried by scenario-level ``@REQ-*`` tags."""
+    features_root = project_root / "features"
+    if not features_root.is_dir():
+        return set()
+    tagged: set[str] = set()
+    for feat in features_root.rglob("*.feature"):
+        try:
+            text = feat.read_text(encoding="utf-8")
+        except (UnicodeDecodeError, OSError):
+            continue
+        tagged.update(m.group(1) for m in _SCENARIO_REQ_TAG.finditer(text))
+    return tagged
 
 
 def audit_behave_req_tags(project_root: Path) -> list[ValidationError]:
-    """Fail on feature files declaring ``# @covers REQ-*`` without matching scenario tags.
+    """Fail on heavy-lane OBPIs whose REQs lack ``@REQ-*`` scenario tags.
 
-    Rule 39 (``.gzkit/rules/tests.md``): scenarios that cover a REQ carry
-    ``@REQ-X.Y.Z-NN-MM`` as a scenario-level tag. Feature-level
-    ``# @covers REQ-...`` comments remain supported for narrative authorship
-    but are too coarse for OBPI-scoped filtering — every REQ cited in a
-    feature-level covers comment must have a corresponding
-    scenario-level tag somewhere in the same file.
+    Rule 39 (``.gzkit/rules/tests.md`` § Behave scenario tagging) and the
+    advisory scorecard row 39 both assert that heavy-lane and foundation-kind
+    OBPIs carry scenario-level ``@REQ-X.Y.Z-NN-MM`` tags for every REQ in
+    their Acceptance Criteria. The enforcement direction is OBPI → feature:
+    enumerate heavy OBPI briefs, assert each REQ is tagged somewhere under
+    ``features/**``. Missing coverage → policy breach (exit 3) unless the
+    OBPI ID is present in ``data/behave_coverage_waivers.json``.
+
+    Pool-ADR briefs are excluded per the ``--pool-adr-isolation`` contract;
+    pool ADRs do not carry gate obligations and cannot fire Gate 4.
     """
-    features_root = project_root / "features"
-    if not features_root.is_dir():
+    briefs = _extract_heavy_obpi_briefs(project_root)
+    if not briefs:
         return []
-
+    tagged_reqs = _collect_scenario_req_tags(project_root)
+    waivers = _load_behave_coverage_waivers(project_root)
     errors: list[ValidationError] = []
-    for feat in sorted(features_root.rglob("*.feature")):
-        try:
-            text = feat.read_text(encoding="utf-8")
-        except UnicodeDecodeError:
+    for brief_path, obpi_id, req_ids in briefs:
+        if obpi_id in waivers:
             continue
-        declared = set(_FEATURE_COVERS_REQ.findall(text))
-        if not declared:
-            continue
-        tagged = {m.group(1) for m in _SCENARIO_REQ_TAG.finditer(text)}
-        missing = sorted(declared - tagged)
+        missing = [r for r in req_ids if r not in tagged_reqs]
         if not missing:
             continue
-        rel = feat.relative_to(project_root).as_posix()
+        rel = brief_path.relative_to(project_root).as_posix()
         errors.append(
             ValidationError(
                 type="behave_req_tags",
                 artifact=rel,
                 message=(
-                    "Feature-level `# @covers REQ-*` comments require matching "
-                    "scenario-level `@REQ-X.Y.Z-NN-MM` tags. Missing: "
+                    f"Heavy-lane OBPI `{obpi_id}` has REQ-IDs without "
+                    "matching scenario-level `@REQ-X.Y.Z-NN-MM` tags under "
+                    "`features/**`. Missing: "
                     + ", ".join(missing[:5])
                     + (f" (+{len(missing) - 5} more)" if len(missing) > 5 else "")
+                    + ". Add scenario tags or waive in "
+                    "`data/behave_coverage_waivers.json` with rationale."
                 ),
             )
         )

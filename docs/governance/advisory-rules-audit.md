@@ -105,7 +105,7 @@ This audit scores every rule by:
 | 36 | Use stdlib `unittest` (no pytest) | **Mechanical** | `forbid pytest` pre-commit hook |
 | 37 | Two runners: unittest + behave (no tier under unittest) | **Mechanical** | Enforced by `gz validate --test-tiers` (GHI #209) — fails on `tests/{integration,e2e,slow,bdd}/` or forbidden `--integration`/`--e2e`/`--slow`/`--bdd-only` flags re-appearing in `parser_*.py` |
 | 38 | Coverage floor ≥40% | **Mechanical** | Pre-commit hook |
-| 39 | Behave scenarios covering a REQ carry `@REQ-X.Y.Z-NN-MM` tag | **Mechanical** | Enforced by `gz validate --behave-req-tags` (GHI #211) — scans heavy-lane and foundation-kind OBPIs for REQ-IDs without matching scenario-level `@REQ-*` tags |
+| 39 | Behave scenarios covering a REQ carry `@REQ-X.Y.Z-NN-MM` tag | **Mechanical** | Enforced by `gz validate --behave-req-tags` (GHI #211, reversed direction GHI #276) — enumerates heavy-lane OBPI briefs (pool ADRs excluded), extracts REQ-IDs from each brief's Acceptance Criteria, and asserts every REQ has a matching scenario-level `@REQ-*` tag under `features/**`. Heavy OBPIs that defer BDD (schema-only, template-only) register in `data/behave_coverage_waivers.json`. |
 
 ### Chores Workflow (`.gzkit/rules/chores.md`)
 

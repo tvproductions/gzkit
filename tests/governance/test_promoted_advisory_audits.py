@@ -66,6 +66,91 @@ class PromotedAdvisoryAudits(unittest.TestCase):
     def test_behave_req_tags_rule_39(self) -> None:
         self._assert_clean(audit_behave_req_tags(_PROJECT_ROOT), "behave_req_tags")
 
+    def test_behave_req_tags_rule_39_uses_reversed_direction(self) -> None:
+        """GHI #276: audit enumerates heavy OBPIs (not feature files)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            # A heavy OBPI with REQs and no feature coverage at all — the
+            # shape GHI #276 added enforcement for.
+            brief_dir = root / "docs" / "design" / "adr" / "foundation" / "ADR-x" / "obpis"
+            brief_dir.mkdir(parents=True)
+            (brief_dir / "OBPI-9.9.9-01-uncovered.md").write_text(
+                "---\nid: OBPI-9.9.9-01-uncovered\nlane: Heavy\n---\n\n"
+                "## Acceptance Criteria\n\n- [ ] REQ-9.9.9-01-01: something\n",
+                encoding="utf-8",
+            )
+            (root / "features").mkdir()  # no feature files
+            errors = audit_behave_req_tags(root)
+            self.assertTrue(errors, "heavy OBPI with zero BDD coverage must flag")
+            self.assertIn("OBPI-9.9.9-01-uncovered", errors[0].message)
+            self.assertIn("REQ-9.9.9-01-01", errors[0].message)
+
+    def test_behave_req_tags_rule_39_pool_excluded(self) -> None:
+        """Pool-ADR briefs do not carry gate obligations — must not flag."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            brief_dir = root / "docs" / "design" / "adr" / "pool" / "ADR-pool.x" / "obpis"
+            brief_dir.mkdir(parents=True)
+            (brief_dir / "OBPI-9.9.9-01-pool.md").write_text(
+                "---\nid: OBPI-9.9.9-01-pool\nlane: Heavy\n---\n\n"
+                "## Acceptance Criteria\n\n- [ ] REQ-9.9.9-01-01: something\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(audit_behave_req_tags(root), [])
+
+    def test_behave_req_tags_rule_39_lite_skipped(self) -> None:
+        """Lite-lane OBPIs are outside the rule's scope."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            brief_dir = root / "docs" / "design" / "adr" / "foundation" / "ADR-x" / "obpis"
+            brief_dir.mkdir(parents=True)
+            (brief_dir / "OBPI-x-01.md").write_text(
+                "---\nid: OBPI-9.9.9-01-covered\nlane: Lite\n---\n\n"
+                "## Acceptance Criteria\n\n- [ ] REQ-9.9.9-01-01: something\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(audit_behave_req_tags(root), [])
+
+    def test_behave_req_tags_rule_39_waiver_respected(self) -> None:
+        """Sidecar waiver silences a heavy OBPI's missing-coverage violation."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            brief_dir = root / "docs" / "design" / "adr" / "foundation" / "ADR-x" / "obpis"
+            brief_dir.mkdir(parents=True)
+            (brief_dir / "OBPI-9.9.9-01-waived.md").write_text(
+                "---\nid: OBPI-9.9.9-01-waived\nlane: Heavy\n---\n\n"
+                "## Acceptance Criteria\n\n- [ ] REQ-9.9.9-01-01: something\n",
+                encoding="utf-8",
+            )
+            data_dir = root / "data"
+            data_dir.mkdir()
+            (data_dir / "behave_coverage_waivers.json").write_text(
+                '{"schema_version": 1, "default_rationale": {"t": "test"}, '
+                '"waivers": {"OBPI-9.9.9-01-waived": {"rationale": "t"}}}',
+                encoding="utf-8",
+            )
+            self.assertEqual(audit_behave_req_tags(root), [])
+
+    def test_behave_req_tags_rule_39_covered_passes(self) -> None:
+        """Heavy OBPI with every REQ tagged at scenario level must pass."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            brief_dir = root / "docs" / "design" / "adr" / "foundation" / "ADR-x" / "obpis"
+            brief_dir.mkdir(parents=True)
+            (brief_dir / "OBPI-x-01.md").write_text(
+                "---\nid: OBPI-9.9.9-01-covered\nlane: Heavy\n---\n\n"
+                "## Acceptance Criteria\n\n- [ ] REQ-9.9.9-01-01: something\n",
+                encoding="utf-8",
+            )
+            features_dir = root / "features"
+            features_dir.mkdir()
+            (features_dir / "x.feature").write_text(
+                "Feature: x\n\n  @REQ-9.9.9-01-01\n  Scenario: covers it\n"
+                "    Given nothing\n    Then nothing\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(audit_behave_req_tags(root), [])
+
     def test_skill_alignment_invariant_1(self) -> None:
         self._assert_clean(audit_skill_alignment(_PROJECT_ROOT), "skill_alignment")
 
