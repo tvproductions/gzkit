@@ -23,6 +23,7 @@ from gzkit.cli.helpers import (
 )
 
 _LAZY_HANDLERS: dict[str, str] = {
+    "justify_cmd": "gzkit.commands.justify_cmd",
     "adr_audit_check": "gzkit.commands.adr_audit",
     "adr_covers_check": "gzkit.commands.adr_audit",
     "adr_emit_receipt_cmd": "gzkit.commands.adr_audit",
@@ -76,10 +77,74 @@ def _dispatch_adr_report(a: argparse.Namespace) -> None:
 
 
 def register_artifact_parsers(commands: argparse._SubParsersAction) -> None:
-    """Register adr, obpi, and task sub-command groups on *commands*."""
+    """Register adr, obpi, task, and justify sub-command groups on *commands*."""
     _register_adr_parsers(commands)
     _register_obpi_parsers(commands)
     _register_task_parsers(commands)
+    _register_justify_parser(commands)
+
+
+def _register_justify_parser(commands: argparse._SubParsersAction) -> None:
+    """Register the top-level ``gz justify`` verb (ADR-0.0.19, OBPI-02)."""
+    p_justify = commands.add_parser(
+        "justify",
+        help="Produce a pre-execution reasoning scaffold (8 sections)",
+        description=(
+            "Scaffold an 8-section pre-execution reasoning walkthrough for a "
+            "GHI, OBPI, or draft anchor. The CLI never invokes an LLM; the "
+            "scaffold renders deterministically from gathered evidence with "
+            "reasoning blocks marked '_[To be filled]_' for human or agent "
+            "completion."
+        ),
+        epilog=build_epilog(
+            [
+                "gz justify GHI-232",
+                "gz justify GHI-232 --save",
+                "gz justify --draft 'proposal text' --save --draft-slug my-idea",
+            ]
+        ),
+    )
+    p_justify.add_argument(
+        "anchor",
+        nargs="?",
+        default=None,
+        help="Anchor identifier (GHI-<N>, #<N>, OBPI-X.Y.Z-NN); omit with --draft",
+    )
+    p_justify.add_argument(
+        "--save",
+        action="store_true",
+        help="Write scaffold to artifacts/justify/<slug>-<timestamp>.md",
+    )
+    p_justify.add_argument(
+        "--output",
+        default=None,
+        help="Write scaffold to explicit path (must not exist)",
+    )
+    p_justify.add_argument(
+        "--related",
+        default=None,
+        help="Comma-separated list of related anchors for evidence context",
+    )
+    p_justify.add_argument(
+        "--draft",
+        default=None,
+        help="Literal draft text in place of a resolvable anchor",
+    )
+    p_justify.add_argument(
+        "--draft-slug",
+        default=None,
+        help="Slug used to name --save output when combined with --draft",
+    )
+    p_justify.set_defaults(
+        func=lambda a: _lazy("justify_cmd")(
+            anchor=a.anchor,
+            save=a.save,
+            output=a.output,
+            related=a.related,
+            draft=a.draft,
+            draft_slug=a.draft_slug,
+        )
+    )
 
 
 def _register_adr_parsers(commands: argparse._SubParsersAction) -> None:

@@ -92,7 +92,10 @@ class TestPublicApiExport(unittest.TestCase):
             "AnchorRef",
             "AnchorResolutionError",
             "EvidenceBundle",
+            "Walkthrough",
+            "WalkthroughSection",
             "gather_evidence",
+            "render_scaffold",
             "resolve_anchor",
         }
         self.assertEqual(set(pkg.__all__), expected)
