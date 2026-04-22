@@ -3590,3 +3590,4 @@
 {"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/ADR-0.0.20-agent-rule-placement-invariant.md","ts":"2026-04-21T12:31:12.725497+00:00","path":"docs/design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/ADR-0.0.20-agent-rule-placement-invariant.md"}
 {"schema":"gzkit.ledger.v1","event":"adr_eval_completed","id":"ADR-0.0.20","ts":"2026-04-21T12:31:16.950505+00:00","verdict":"GO","adr_weighted_total":4.0,"obpi_count":5,"action_item_count":0}
 {"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-0.0.20-agent-rule-placement-invariant","ts":"2026-04-21T12:31:37.267363+00:00","parent":"PRD-GZKIT-1.0.0","lane":"lite"}
+{"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"AGENTS.md","ts":"2026-04-22T00:04:29.485077+00:00","path":"AGENTS.md"}
