@@ -313,7 +313,7 @@ Two upstream skills route operators here:
 - **`gz-obpi-pipeline`** at the Stage 1→2 Confidence Gate routes the
   agent to `gz justify` when self-reported confidence in the planned
   implementation is below 90%. This gate mechanizes Prime Directive
-  invariant 11 (`.claude/rules/agent-contract.md` § Judgment #11):
+  invariant 11 (`AGENTS.md` § Behavior Rules — Always, item 7):
   *"If you are less than 90% sure of the direction, ask the human
   before proceeding."* The walkthrough is the structured form of
   that ask.

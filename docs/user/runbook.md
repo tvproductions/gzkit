@@ -36,7 +36,7 @@ uv run gz obpi validate --adr ADR-<X.Y.Z> --authored
 
 When self-reported confidence in the planned implementation is below
 the Prime Directive invariant 11 threshold (90% — see
-`.claude/rules/agent-contract.md` § Judgment), or when an upstream
+`AGENTS.md` § Behavior Rules — Always, item 7), or when an upstream
 quality signal recommends it, scaffold an 8-section reasoning
 walkthrough before Step 2 begins. The CLI is deterministic: every byte
 of the scaffold comes from the renderer, never from an LLM.

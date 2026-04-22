@@ -19,7 +19,7 @@ The tradeoff is deliberate, and stating it is the fair thing to do:
 - **Minimalist references optimize for** a solo human + one agent, short session, code-level hygiene. Behavior is the whole product; agent trust is the mechanism; the cost of a missed-principle mistake is one discarded diff.
 - **gzkit optimizes for** multi-agent, multi-session, auditable governance where the proof-of-work must survive the agent that produced it. Ledger-of-truth beats agent-trust; receipts beat narrative recall; structural gates beat goodwill. The cost of a missed-principle mistake is a corrupted artifact graph that reconciliation has to untangle months later.
 
-Both shapes are defensible for their problem class. The four Karpathy principles (Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution) are all present in this contract with stronger mechanical backstops — see `.gzkit/rules/agent-contract.md` § Judgment (#11–14) and § Craftsmanship — DO IT RIGHT (#6a–6e), `.gzkit/rules/tests.md` Red-Green-Refactor, and the ARB receipt requirement in `.gzkit/rules/attestation-enrichment.md`. When in doubt about whether gzkit's surface is worth the cost, the answer is: it is worth the cost for work that must be audited across context boundaries, and it is heavier than necessary for a single trivial edit. Use judgment.
+Both shapes are defensible for their problem class. The four Karpathy principles (Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution) are all present in this contract with stronger mechanical backstops — see § Behavior Rules (Judgment invariants 7–10) and § DO IT RIGHT (#6a–6h) below, `.gzkit/rules/tests.md` Red-Green-Refactor, and the ARB receipt requirement in `.gzkit/rules/attestation-enrichment.md`. When in doubt about whether gzkit's surface is worth the cost, the answer is: it is worth the cost for work that must be audited across context boundaries, and it is heavier than necessary for a single trivial edit. Use judgment.
 
 ## Persona
 
@@ -90,34 +90,20 @@ This maxim sits next to the Prime Directive because ownership and completeness w
 4. **Verify observed behavior, not assumed behavior.** Run the destination command, observe its actual output, paste the output into the attestation or commit body. Narrative reconstruction from memory is not verification. This is the same rule as the attestation-enrichment receipt-ID requirement in `.gzkit/rules/attestation-enrichment.md`: claims without observed evidence are post-hoc reasoning pathways, not verification pathways.
 5. **Read the code before you change it.** Vibe coding's defining move is editing a file without understanding what the file does, based on a guess about what a function probably returns or a class probably is. Read the surface. Trace the callers. Understand the contract. Then change it.
 6. **Tests assert semantics, not strings.** A test that pins the current observed output to a string is not a test of the code's purpose — it's a test of its current state. Write tests that assert the behavior the surface is supposed to produce, not the exact bytes it currently produces. GHI-153 and GHI-155 both slipped past tests because the tests asserted "the table renders without truncation" instead of "the table exposes the OBPI objective for operator review."
+7. **Invariant 6c — choose fix scope per `.gzkit/rules/defect-fix-routing.md` thresholds, not intuition.** Defaulting to ceremony for a 5-line in-flight defect is not "thorough"; defaulting to a direct fix for work that crosses brief boundaries is not "surgical." "Thorough" is the routing table applied correctly. Run the mechanical precedent count (`git log --since='60 days ago' --oneline --grep='^fix('`) before deciding the path (GHI #195).
+8. **Invariant 6g — verify the runtime surface before recommending an incantation.** Pattern-matching a plausible command from training memory and presenting it as operational guidance without running it is vibe coding's recommendation-time face. Recommending `claude --model ...` as a CLI flag when the actual surface is the `/model` slash command is the canonical example. Run the command once, observe the output, paste the observed output — then recommend (GHI #263).
+9. **Invariant 6h — when reporting why a rule was violated, quote the rule and the conflicting directive verbatim.** Producing a post-hoc "competing directives" narrative without verbatim quotes is reporting-pathway drift, not analysis. Phrases like "competing directives," "pulled against," "no clear resolution" without quotable conflict text are red flags — absence of quotable text means the conflict is invented (GHI #261).
 
-### The anti-pattern canon (what vibe coding looks like)
+See `docs/governance/agent-contract-rationale.md` § Rationale for 6g/6h for the Lindsey et al. 2025 reporting-pathway citation underlying 6g and 6h.
 
-- Writing a function that reads `docs/user/commands/*.md` and treats every file as a manpage, without opening the directory and noticing `index.md` is a ToC page
-- Landing a case-sensitive string match (`line.startswith("## Objective")`) in an extractor whose input comes from human-authored markdown files that drift freely in heading case
-- Adding a hardcoded "QA command block" to a ceremony step because "ceremonies have QA commands" without asking what role that block plays in that specific step's operator moment
-- Writing a test file that mocks the data structure the real code consumes, then asserting on the mock, without ever running the real path end-to-end
-- Reading an error message and reaching for "skip this one case" as the fix, when the error message is actually reporting a whole class of cases that the code never considered
-- Batching all tests before any implementation, running them together for a single "RED screenshot," then writing all the code and running them together for a single "GREEN screenshot" — test-dump theater that mimics the shape of TDD while skipping the per-increment observation loop that makes TDD work (GHI #157)
-- Stopping after each RED→GREEN pair to solicit operator approval before the next increment — TDD here runs along the way, not turn-by-turn; operator refactor orientation arrives opportunistically, not as a synchronous gate (GHI #157)
+### Extracted pedagogy
 
-Every item in that list is drawn from defects observed in this codebase within the window GHI-141 through GHI-156. The pattern is consistent: the author wrote code that *looked* right, committed it, and moved on — because the loop did not include reading, tracing, testing the real path, or running the observed command. **Close the loop.** Do it right.
-
-### TASK-driven workflow (binding)
-
-GHI-160 surfaced a second class of rot: code changes that bypassed the TASK registry entirely. Agents wrote fixes, committed them, and moved on without decomposing the work into TASKs, without `Task:` trailers, and without `@covers` decoration on the new tests. The four-tier traceability chain (`task -> req -> obpi -> adr`) was broken at the leaf level for every GHI-originated fix in the GHI-141 through GHI-156 window.
-
-The binding pattern for any code-change GHI:
-
-1. Locate the governing REQ(s) via `gz covers <ADR-ID>`.
-2. For each REQ, start a TASK: `gz task start TASK-X.Y.Z-NN-MM-PP`.
-3. Run the TDD cycle (Red -> Green -> Refactor) per TASK — not batch-then-run.
-4. Commit with the trailer: `Task: TASK-X.Y.Z-NN-MM-PP` as the final line.
-5. `gz task complete TASK-X.Y.Z-NN-MM-PP`.
-6. Decorate new tests with `@covers(REQ-X.Y.Z-NN-MM)`.
-7. Verify with `uv run gz validate --commit-trailers --requirements`.
-
-The validate checks are advisory gates, not ritual. If they flag a commit or brief, the fix is to restore the chain, not to silence the check.
+The anti-pattern canon (what vibe coding looks like, GHI #157) and the
+TASK-driven workflow binding (GHI #160) have moved to
+[`docs/governance/agent-contract-rationale.md`](docs/governance/agent-contract-rationale.md).
+Both remain binding; this section points at their canonical home. The
+invariants above (1–6, 6c, 6g, 6h) are what load per-turn; the pedagogy is
+read at the time of authoring a test, a TASK, or a commit trailer.
 
 ## Behavior Rules
 
@@ -130,6 +116,9 @@ The validate checks are advisory gates, not ritual. If they flag a commit or bri
 5. Aggressively offload online research, codebase exploration, and log analysis to subagents to preserve main context.
 6. When spawning a subagent, always include a 'Why' parameter in the subagent system prompt to help it filter signal from noise.
 7. **If you are less than 90% sure of the direction, ask the human before proceeding.** Confident-wrong-direction runs are the most expensive failure mode — they burn context, produce work that gets discarded, and erode trust. A 30-second clarification question is always cheaper than a 10-minute wrong-direction implementation. This applies to architectural choices, scope interpretation, which files to target, and which upstream source to compare against.
+8. **Surface assumptions explicitly before implementing.** Building on unstated assumptions the human would have corrected is how confident-wrong-direction runs start. Name the assumption; let the human ratify or replace it. (Judgment 12)
+9. **On inconsistencies: STOP, name confusion, present tradeoff, wait.** Silently picking one interpretation and hoping it is right is vibe-coding's judgment-time face. When the brief, ADR, runbook, and code disagree, the disagreement itself is the signal — raise it rather than resolve it unilaterally. (Judgment 13)
+10. **Push back when an approach has clear problems.** Sycophantic agreement with a plan that has obvious flaws is not helpfulness; it is a trust defect. Say "this breaks X" or "this contradicts Y"; cite the rule or the constraint. (Judgment 14)
 
 ### Never
 
@@ -137,6 +126,9 @@ The validate checks are advisory gates, not ritual. If they flag a commit or bri
 2. Modify the ledger directly (use gzkit commands)
 3. Create governance artifacts without proper linkage
 4. Make changes that violate declared invariants
+5. **Do not summarize after Stage 2 or 3 and stop.** The OBPI pipeline runs through Stage 5; "tests passing" or "implementation complete" is not completion. Premature summaries leave OBPIs in a half-finished governance state — implemented but unverified, unattested, unsynced. (Pipeline lifecycle)
+6. **Do not work around hook blocks.** A pipeline hook that blocks a write is signaling missing evidence or inactive pipeline state. Diagnose the cause; never hand-write marker files or ledger entries to bypass the hook. (Pipeline lifecycle)
+7. **Do not read YAML frontmatter `status: Completed` as proof of completion — read the ledger.** Frontmatter is Layer-1 authorship; the ledger is Layer-2 truth. Pipeline markers and derived views (`gz status` output, reconciliation caches) are Layer-3 and never source-of-truth. Every gate decision must trace to Layer-1 (canon) or Layer-2 (ledger). (State doctrine)
 
 ## Pattern Discovery
 

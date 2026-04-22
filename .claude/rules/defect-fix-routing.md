@@ -40,7 +40,7 @@ flight, and shipped without OBPI ceremony.
 
 | Trigger | Why ceremony matters |
 |---|---|
-| Crosses ADR or active-OBPI brief boundaries (touches files governed by a different in-progress OBPI's allowed paths) | Bundling violates the brief-boundary anti-pattern (`.gzkit/rules/agent-contract.md` § Pipeline lifecycle) |
+| Crosses ADR or active-OBPI brief boundaries (touches files governed by a different in-progress OBPI's allowed paths) | Bundling violates the brief-boundary anti-pattern (`AGENTS.md` § Behavior Rules — Never, item 5 "Do not summarize after Stage 2 or 3 and stop") |
 | Adds or changes a CLI surface, schema, public contract, or runtime invariant | Heavy-lane gates (Gate 3 docs, Gate 4 BDD, Gate 5 attestation) need to fire |
 | Operator explicitly directs OBPI route | Operator intent overrides routing thresholds |
 | Fix is part of new feature work (planned increment, not defect closure) | Feature work is the OBPI's purpose; ceremony provides the audit trail |
@@ -74,7 +74,7 @@ does not need an operator pushback to make the same call.
 
 ## Related
 
-- `.gzkit/rules/agent-contract.md` § Pipeline lifecycle (brief-boundary anti-pattern)
-- `.gzkit/rules/agent-contract.md` § Craftsmanship — DO IT RIGHT (6c — prefer the more thorough fix; ceremony is not always more thorough)
+- `AGENTS.md` § Behavior Rules — Never, item 5 (brief-boundary anti-pattern)
+- `AGENTS.md` § DO IT RIGHT, item 7 (6c — prefer the more thorough fix; ceremony is not always more thorough)
 - `.gzkit/skills/gz-obpi-pipeline/SKILL.md` (the ceremony this rule modulates)
 - `.gzkit/skills/gz-obpi-specify/SKILL.md` (the brief authoring this rule modulates)

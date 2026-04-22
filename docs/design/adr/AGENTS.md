@@ -93,7 +93,7 @@ contract; the brief is the defect.
 # GitHub CLI Guardrails (gzkit)
 
 Use `gh` for (a) defect tracking per `.gzkit/rules/governance-core.md` and
-`.gzkit/rules/agent-contract.md` § Ownership (filing defect GHIs is always
+`AGENTS.md` § Prime Directive (filing defect GHIs is always
 authorized — it is not a user-intent gate), (b) ADR closeout per
 `.gzkit/rules/adr-audit.md`, (c) release ceremony, or (d) any active brief
 or explicit user request. The "Prohibited without explicit approval" list

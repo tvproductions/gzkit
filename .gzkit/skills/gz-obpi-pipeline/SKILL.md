@@ -153,7 +153,7 @@ Exception mode: Stage 4 = SELF-CLOSE (record evidence, proceed)
 
 #### Stage 1→2 Confidence Gate
 
-Before Stage 2 begins, self-report confidence in the planned implementation. Prime Directive **Invariant 11** (`.gzkit/rules/agent-contract.md` § Judgment #11) states: *"If you are less than 90% sure of the direction, ask the human before proceeding."*
+Before Stage 2 begins, self-report confidence in the planned implementation. Prime Directive **Invariant 11** (`AGENTS.md` § Behavior Rules — Always, item 7) states: *"If you are less than 90% sure of the direction, ask the human before proceeding."*
 
 When your self-reported confidence in the approved plan is `< 90%` — because the OBPI brief has ambiguous scope boundaries, the plan leaves integration points unresolved, or the anchor evidence feels insufficient — pause Stage 2 and run the pre-execution reasoning walkthrough:
 

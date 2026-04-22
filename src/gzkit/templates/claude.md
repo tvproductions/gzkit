@@ -27,6 +27,19 @@ Governance rules load contextually from `.claude/rules/` (mirrored from
 Skills are auto-discovered from `.claude/skills/`. See AGENTS.md for the
 catalog.
 
+### Invariant 10a — skill-tool-invoke-same-turn
+
+When a skill step names a tool to invoke, invoke it in the same turn. Ending
+the turn with "Required next step: enter plan mode" instead of calling
+`EnterPlanMode` is a violation, not compliance. Treating "STOP" in a skill as
+"end your turn" rather than "stop making source edits and redirect to the
+named tool" is the same failure in a different costume.
+
+This invariant is Claude-specific — it names Claude Code tool surfaces
+(`EnterPlanMode`, `ExitPlanMode`, etc.) and therefore lives here rather than
+in the vendor-neutral AGENTS.md. See AGENTS.md § Behavior Rules — Always
+for the portable judgment invariants (11, 12, 13, 14) that 10a supplements.
+
 ## Compact Instructions
 
 When compacting context (`/compact`), preserve:
