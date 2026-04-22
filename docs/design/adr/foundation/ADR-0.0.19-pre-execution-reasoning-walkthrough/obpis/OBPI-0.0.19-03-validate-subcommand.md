@@ -3,7 +3,7 @@ id: OBPI-0.0.19-03-validate-subcommand
 parent: ADR-0.0.19
 item: 3
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.19-03-validate-subcommand: Validate subcommand (reverse parser)
@@ -207,23 +207,30 @@ Deferred to ADR-level closeout.
 
 ### Key Proof
 
-```bash
-$ uv run -m gzkit justify validate tests/justify/fixtures/walkthrough_complete.md
+
+$ uv run python -m gzkit justify validate tests/justify/fixtures/walkthrough_complete.md
 Walkthrough tests/justify/fixtures/walkthrough_complete.md is complete
 # exit 0
 
-$ uv run -m gzkit justify validate tests/justify/fixtures/walkthrough_incomplete.md
+$ uv run python -m gzkit justify validate tests/justify/fixtures/walkthrough_incomplete.md
 Walkthrough tests/justify/fixtures/walkthrough_incomplete.md is incomplete. Unfilled sections: 2, 5, 8
 # exit 1
-```
+
+$ uv run python -m gzkit justify validate tests/justify/fixtures/walkthrough_malformed.md
+Walkthrough tests/justify/fixtures/walkthrough_malformed.md could not be parsed: line 10: heading ordinal 2 out of order; expected 1
+# exit 2
+
+Receipts: lint arb-ruff-19a0e38bde354f3fb681a0900f8d9af6; types arb-step-typecheck-926e79f68616460aa8fe27fb8376ec8d; tests arb-step-unittest-justify-03-dcec6917f7494b6db188d9d38e172879.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: src/gzkit/justify/parser.py; tests/justify/test_parser.py; tests/commands/test_justify_validate.py; three fixtures under tests/justify/fixtures/
+- Files modified: src/gzkit/justify/__init__.py (re-exports); src/gzkit/justify/cli.py (added handle_validate); src/gzkit/commands/justify_cmd.py (subverb routing); src/gzkit/cli/parser_artifacts.py (registered validate via positional-based dispatch, backward-compatible with gz justify <anchor>)
+- Tests added: 36 OBPI-scoped unit + CLI tests (22 parser + 14 CLI); 100% REQ parity (12/12) via gz covers OBPI-0.0.19-03; OBPI-02 regression suite (16/16) still green
+- Date completed: 2026-04-22
+- Attestation status: OBPI-level self-close under Heavy-lane inheritance; Gate 5 human attestation deferred to ADR-0.0.19 closeout
+- Defects noted: Brief Gate 3 bullet (manpage + command-doc stub updates land here) contradicts Denied Paths; honored denied paths — manpage, command doc, runbook, and BDD land in OBPI-05. REQ-12 (gz cli audit) satisfied via existing AST handler resolution; no docs stubs written in this OBPI.
 
 ## Tracked Defects
 
@@ -231,14 +238,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a` (deferred to ADR-level closeout)
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `g0`
+- Attestation: proceed — Heavy-lane OBPI-level closure under lane inheritance; Gate 5 human attestation deferred to ADR-0.0.19 closeout. Parser + validate subverb land with 100% REQ parity (12/12), 36/36 OBPI-scoped tests pass (22 parser + 14 CLI incl. subprocess smoke + fixture drift guard), Gate 3 cli-audit + mkdocs strict build pass, no regressions in OBPI-02 (16/16). Receipts: lint arb-ruff-19a0e38bde354f3fb681a0900f8d9af6; types arb-step-typecheck-926e79f68616460aa8fe27fb8376ec8d; tests arb-step-unittest-justify-03-dcec6917f7494b6db188d9d38e172879. Flagged: brief Gate 3 bullet conflicts with Denied Paths — docs stubs deferred to OBPI-05 which owns the surface.
+- Date: 2026-04-22
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-22
 
 **Evidence Hash:** -

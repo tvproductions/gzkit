@@ -19,6 +19,11 @@ from gzkit.justify.models import (
     AnchorResolutionError,
     EvidenceBundle,
 )
+from gzkit.justify.parser import (
+    ValidateResult,
+    WalkthroughParseError,
+    parse_walkthrough,
+)
 from gzkit.justify.walkthrough import (
     Walkthrough,
     WalkthroughSection,
@@ -30,9 +35,12 @@ __all__ = [
     "AnchorRef",
     "AnchorResolutionError",
     "EvidenceBundle",
+    "ValidateResult",
     "Walkthrough",
+    "WalkthroughParseError",
     "WalkthroughSection",
     "gather_evidence",
+    "parse_walkthrough",
     "render_scaffold",
     "resolve_anchor",
 ]

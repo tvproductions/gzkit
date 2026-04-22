@@ -85,30 +85,59 @@ def register_artifact_parsers(commands: argparse._SubParsersAction) -> None:
 
 
 def _register_justify_parser(commands: argparse._SubParsersAction) -> None:
-    """Register the top-level ``gz justify`` verb (ADR-0.0.19, OBPI-02)."""
+    """Register the top-level ``gz justify`` verb (ADR-0.0.19).
+
+    Supports two invocation shapes (OBPI-03 introduced the subverb form):
+
+    * ``gz justify <anchor> [--save] [--output] [--related] [--draft] [--draft-slug]``
+      — scaffold rendering (OBPI-02 default behavior).
+    * ``gz justify validate <file> [--json]`` — reverse-parse a filled
+      walkthrough and report structural completeness (OBPI-03).
+
+    Argparse cannot natively mix a positional with subparsers, so we keep a
+    flat parser and dispatch on the first positional: if it is the literal
+    string ``"validate"``, the handler routes to the validate subverb and
+    treats the second positional as ``<file>``; otherwise the first
+    positional is the anchor identifier and the scaffold path runs. This
+    preserves backward-compatibility with ``gz justify GHI-232`` from
+    OBPI-02.
+    """
     p_justify = commands.add_parser(
         "justify",
-        help="Produce a pre-execution reasoning scaffold (8 sections)",
+        help="Produce a reasoning scaffold, or validate a filled walkthrough",
         description=(
             "Scaffold an 8-section pre-execution reasoning walkthrough for a "
-            "GHI, OBPI, or draft anchor. The CLI never invokes an LLM; the "
-            "scaffold renders deterministically from gathered evidence with "
-            "reasoning blocks marked '_[To be filled]_' for human or agent "
-            "completion."
+            "GHI, OBPI, or draft anchor, or validate a filled walkthrough "
+            "markdown file via the 'validate' subverb. The CLI never invokes "
+            "an LLM; the scaffold renders deterministically from gathered "
+            "evidence, and validate reverse-parses filled markdown into the "
+            "same Pydantic model used for rendering. "
+            "Exit codes for 'validate': 0 parseable and complete; 1 "
+            "parseable but incomplete (lists unfilled sections); 2 "
+            "unparseable markdown."
         ),
         epilog=build_epilog(
             [
                 "gz justify GHI-232",
                 "gz justify GHI-232 --save",
                 "gz justify --draft 'proposal text' --save --draft-slug my-idea",
+                "gz justify validate path/to/walkthrough.md",
+                "gz justify validate path/to/walkthrough.md --json",
             ]
         ),
     )
     p_justify.add_argument(
-        "anchor",
+        "anchor_or_subverb",
         nargs="?",
         default=None,
-        help="Anchor identifier (GHI-<N>, #<N>, OBPI-X.Y.Z-NN); omit with --draft",
+        metavar="<anchor>|validate",
+        help="Anchor (GHI/OBPI) or literal 'validate'; omit with --draft",
+    )
+    p_justify.add_argument(
+        "file",
+        nargs="?",
+        default=None,
+        help="Filled walkthrough markdown file (validate subverb only)",
     )
     p_justify.add_argument(
         "--save",
@@ -135,9 +164,18 @@ def _register_justify_parser(commands: argparse._SubParsersAction) -> None:
         default=None,
         help="Slug used to name --save output when combined with --draft",
     )
+    p_justify.add_argument(
+        "--json",
+        action="store_true",
+        dest="json_output",
+        help="(validate subverb) Emit ValidateResult JSON instead of a sentence",
+    )
     p_justify.set_defaults(
         func=lambda a: _lazy("justify_cmd")(
-            anchor=a.anchor,
+            subverb=("validate" if a.anchor_or_subverb == "validate" else None),
+            anchor=(None if a.anchor_or_subverb == "validate" else a.anchor_or_subverb),
+            file=(a.file if a.anchor_or_subverb == "validate" else None),
+            json_output=a.json_output,
             save=a.save,
             output=a.output,
             related=a.related,
