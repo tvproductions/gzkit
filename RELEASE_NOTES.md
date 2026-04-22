@@ -1,5 +1,115 @@
 # gzkit Release Notes
 
+## v0.25.14 (2026-04-22)
+
+Post-4.7 surface-hardening patch: 25 GHIs closed across the validation layer,
+closeout ceremony, OBPI pipeline gates, ADR promotion, chores, agent rules,
+and the patch-release discovery regex itself. This is the first release
+whose GHI manifest reflects the project's canonical `fix(scope): ... (GHI #N)`
+closure convention (GHI #280).
+
+### Patch Release Ceremony
+
+- **#280** — `gz patch release` closure regex now recognizes the project's
+  canonical `fix(<scope>): <summary> (GHI #N)` and `feat(<scope>): …
+  (GHI #N)` subject form alongside GitHub-canonical `Closes #N` trailers.
+  Previously treated as citation-only; discovery at v0.25.13 reported 0
+  GHIs despite 29 in-range closures. Multi-GHI tails `(GHI #N, #M)`
+  supported; non-code cc-prefixes (`docs`, `chore`, `ceremony`, `audit`)
+  still excluded to preserve GHI #233 anti-double-count doctrine.
+
+### Validation Surface
+
+- **#238** — `gz validate --brief-headings` scope added; OBPI brief
+  evidence sections must use H3 (`### Implementation Summary`, etc.), and
+  H3 drift is a policy breach (exit 3).
+- **#275** — `gz validate --utf8-prefix` extended to fresh-interpreter
+  helpers and non-Python pipeline tools (the runtime UTF-8 guard covers
+  only `uv run gz …`; `python -c`, `tools/*.py`, and `jq`/`awk` pipes
+  need explicit handling).
+- **#276** — `gz validate --behave-req-tags` direction reversed to
+  OBPI→feature, so heavy OBPIs that ship zero scenario coverage surface
+  (the original feature→feature direction could only flag a feature file
+  that forgot to tag an existing scenario).
+- **#279** — `gz adr create` and `gz adr report` canonicalize bare-ID
+  vs. slugged-ID ledger events; duplicate `adr_created` emission rejected.
+
+### Closeout Ceremony
+
+- **#249** — Residual Heavy/Foundation bucketing eliminated from
+  `docs/governance/` surfaces (runbook + GovZero runtime-contract docs);
+  ceremony doctrine now uses lane (Lite/Heavy) and kind (pool/foundation/
+  feature) as orthogonal axes.
+- **#250** — Attestation prompt aligned with skill Step 5 proactive
+  contract (no more CLI "I await your decision" vs. skill-direction
+  ambiguity).
+- **#259** — Step 2 renders ADR intent and OBPI delivery side-by-side
+  instead of only listing OBPIs.
+- **#260** — Step 5 walkthrough paced one `--next` at a time per operator
+  decision; speedrun-all-demos anti-pattern fixed.
+- **#262** — Closeout ceremony skill pinned to Opus (previously ran on
+  whichever model defaulted); extended to companion Gate-5 skills.
+- **#265** — `product_proof` checker gained `concepts_page` proof type;
+  Foundation-doctrine ADRs no longer always trip the closeout blocker.
+- **#266** — Nonexistent `gz adr reconcile` verb removed from
+  `gz-adr-closeout-ceremony` skill.
+
+### OBPI Pipeline
+
+- **#267** — `gz obpi complete` now fail-closed on empty
+  `### Implementation Summary` / `### Key Proof` sections; pipeline Stage 5
+  requires prose walkthrough before completion.
+
+### ADR Lifecycle
+
+- **#241** — `gz adr promote` honors the `## Proposed OBPI Decomposition`
+  table and ignores nested bullets in other Target Scope sections.
+- **#258** — OBPI-0.0.18-01 corrected to cite a non-0.0.x ADR as the
+  feature-kind example (0.0.x is foundation, not feature).
+
+### Chores
+
+- **#269** — `fileExists` criterion wired end-to-end; the parser now
+  populates the `expected` path the criterion type declares.
+
+### Agent Contract & Rules
+
+- **#261, #263** — Craftsmanship invariants 6g (verify runtime surface
+  before recommending an incantation) and 6h (quote the rule and
+  conflicting directive verbatim when reporting a violation) added to
+  `.gzkit/rules/agent-contract.md` to prevent reporting-pathway drift.
+- **#270** — `tests.md` "assert semantics, not strings" reconciled with
+  `tool-skill-runbook-alignment.md` Invariant 3 via explicit
+  unit/fixture separation — string-shape assertions live in Invariant-3
+  fixtures; REQ-derived unit tests assert semantics.
+- **#271** — `gz-plan` and `gz-design` Step 1 now cite
+  `defect-fix-routing.md` thresholds.
+- **#272** — `gz-adr-audit` Step 2 remediation disambiguated: genuine
+  coverage gap → author a REQ-derived test; cosmetic @covers backfill
+  is the anti-pattern.
+- **#273** — `gz-adr-closeout-ceremony` Evidence Summary uses the
+  canonical ARB invocations table.
+- **#274** — `reconcile-freshness` bootstrap carve-out named in the
+  CLAUDE.md Architectural Boundaries rule (zero-event history is bootstrap,
+  not drift).
+
+### Hooks & Sync
+
+- **#239** — `PostToolUse` `ruff check --no-fix` hook backstops the
+  import-colocation rule (unused imports removed by the fix-mode hook
+  are now surfaced instead of silently deleted).
+- **#247** — `sync_copilot_instructions` regenerates copilot-instructions.md
+  when canonical rules exist; template edits now propagate.
+
+### Stats
+
+- 25 GHIs closed (16 src-touching, 8 doc/rules-only, 1 patch-release fix)
+- 0 Foundation ADR closeouts (this release ships post-4.7 surface
+  hardening only)
+- 116 GHIs booked since 2026-04-16 (post-4.7 audit window); 161 booked
+  prior — this release discharges the first meaningful patch of the
+  backlog through the now-working discovery path.
+
 ## v0.25.13 (2026-04-20)
 
 Foundation ADR completion and test-suite rehabilitation: ADR-0.0.17
