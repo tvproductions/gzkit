@@ -1,0 +1,63 @@
+{
+  "adr_id": "ADR-0.0.19-pre-execution-reasoning-walkthrough",
+  "current_step": 11,
+  "is_foundation": true,
+  "started_at": "2026-04-22T10:43:24Z",
+  "updated_at": "2026-04-22T11:06:26Z",
+  "step_history": [
+    {
+      "step": 1,
+      "presented_at": "2026-04-22T10:43:24Z",
+      "acknowledged_at": "2026-04-22T10:46:56Z"
+    },
+    {
+      "step": 2,
+      "presented_at": "2026-04-22T10:46:56Z",
+      "acknowledged_at": "2026-04-22T10:47:36Z"
+    },
+    {
+      "step": 3,
+      "presented_at": "2026-04-22T10:47:36Z",
+      "acknowledged_at": "2026-04-22T10:51:41Z"
+    },
+    {
+      "step": 4,
+      "presented_at": "2026-04-22T10:51:41Z",
+      "acknowledged_at": "2026-04-22T10:53:47Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-04-22T10:53:47Z",
+      "acknowledged_at": "2026-04-22T10:58:59Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-04-22T10:58:59Z",
+      "acknowledged_at": "2026-04-22T11:02:56Z"
+    },
+    {
+      "step": 7,
+      "presented_at": "2026-04-22T11:02:56Z",
+      "acknowledged_at": "2026-04-22T11:04:16Z"
+    },
+    {
+      "step": 8,
+      "presented_at": "2026-04-22T11:04:16Z",
+      "acknowledged_at": "2026-04-22T11:06:26Z"
+    },
+    {
+      "step": 11,
+      "presented_at": "2026-04-22T11:06:26Z",
+      "acknowledged_at": null
+    }
+  ],
+  "walkthrough_commands": [
+    "uv run gz justify --help",
+    "uv run gz validate --help"
+  ],
+  "walkthrough_index": 1,
+  "attestation": "attest completed — ADR-0.0.19 pre-execution reasoning walkthrough delivered as an advisory gz justify surface enforcing Prime Directive invariant 11. All 5 heavy-lane OBPIs Completed with recorded attestation; audit-check reports 58/58 REQs covered (100%). ARB receipts: lint arb-ruff-911cc29109fe42029925ea430d9bfe23; typecheck arb-step-typecheck-f938407721c54a72b42790d57176ba72; unittest arb-step-unittest-32bffbf5e45b4fe38ba9219b56782560 (3468 tests, 24.4s); mkdocs arb-step-mkdocs-47d8536091b24f94868eb0d7607272e8. Behave: 8 scenarios / 28 steps pass in features/justify.feature. Docs covenant satisfied (manpage, command doc, operator runbook, governance runbook). GHI #288 open but out of scope (plan-mode gate defect, unrelated).",
+  "completed_at": "2026-04-22T11:06:26Z",
+  "attempt": 1,
+  "paused_at": null
+}

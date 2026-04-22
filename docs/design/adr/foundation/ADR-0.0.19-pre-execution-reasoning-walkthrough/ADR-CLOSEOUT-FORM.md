@@ -25,7 +25,7 @@ Closeout evidence verified:
 | Quality (Typecheck) | Typecheck passes | `uv run gz typecheck` |
 | Gate 3 (Docs) | Docs build | `uv run mkdocs build --strict` |
 | Gate 4 (BDD) | BDD passes | `uv run -m behave features/` |
-| Gate 5 | Human attests | `uv run gz attest ADR-0.0.19-pre-execution-reasoning-walkthrough --status completed` |
+| Gate 5 | Human attests | `uv run gz closeout ADR-0.0.19-pre-execution-reasoning-walkthrough` |
 
 ## OBPI Status
 
@@ -37,6 +37,27 @@ Closeout evidence verified:
 | [OBPI-0.0.19-04-skill-and-upstream-integrations](OBPI-0.0.19-04-skill-and-upstream-integrations.md) | Skill definition and upstream integrations | Completed |
 | [OBPI-0.0.19-05-docs-bdd-closeout](OBPI-0.0.19-05-docs-bdd-closeout.md) | Docs, BDD, and Heavy-lane closeout | Completed |
 
+## Defense Brief
+
+### Closing Arguments
+
+*No closing arguments found.*
+
+### Product Proof
+
+| OBPI | Proof Type | Status |
+|------|-----------|--------|
+| OBPI-0.0.19-01-anchor-resolution-and-evidence | docstring | FOUND |
+| OBPI-0.0.19-02-scaffold-rendering | docstring | FOUND |
+| OBPI-0.0.19-03-validate-subcommand | docstring | FOUND |
+| OBPI-0.0.19-04-skill-and-upstream-integrations | governance_artifact | FOUND |
+| OBPI-0.0.19-05-docs-bdd-closeout | runbook | FOUND |
+
+### Reviewer Assessment
+
+*No reviewer assessments found.*
+
+
 ## Human Attestation
 
 ### Verbatim Attestation
@@ -44,4 +65,4 @@ Closeout evidence verified:
 - `completed`
 
 **Attested by**: Jeffry
-**Timestamp (UTC)**: 2026-04-22T10:35:49Z
+**Timestamp (UTC)**: 2026-04-22T11:04:11Z
