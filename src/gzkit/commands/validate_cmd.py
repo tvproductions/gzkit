@@ -289,6 +289,7 @@ def _collect_errors(
     check_reconcile_freshness: bool = False,
     check_taxonomy: bool = False,
     check_brief_headings: bool = False,
+    check_unscoped_rules: bool = False,
     frontmatter_adr: str | None = None,
 ) -> list[ValidationError]:
     """Collect validation errors across all requested check types."""
@@ -326,6 +327,7 @@ def _collect_errors(
         "advisory_scorecard": check_advisory_scorecard,
         "reconcile_freshness": check_reconcile_freshness,
         "brief_headings": check_brief_headings,
+        "unscoped_rules": check_unscoped_rules,
     }
     run_all = not any(default_scopes.values()) and not any(explicit_scopes.values())
 
@@ -392,7 +394,99 @@ def _explicit_scope_runners(
         "advisory_scorecard": lambda: trust_audits.audit_advisory_scorecard(project_root),
         "reconcile_freshness": lambda: trust_audits.audit_reconcile_freshness(project_root),
         "brief_headings": lambda: trust_audits.audit_brief_headings(project_root),
+        "unscoped_rules": lambda: _unscoped_rules_runner(project_root),
     }
+
+
+def _run_unscoped_rules_scope(project_root: Path, *, as_json: bool, allowlist_only: bool) -> None:
+    """Dedicated handler for `gz validate --unscoped-rules` (exit 0/2/3)."""
+    from gzkit.validators.unscoped_rules import (  # noqa: PLC0415
+        format_allowlist_listing,
+        run_unscoped_rules,
+    )
+
+    result = run_unscoped_rules(project_root)
+
+    if allowlist_only:
+        if as_json:
+            payload = [e.model_dump(mode="json") for e in result.allowlist_entries]
+            print(json.dumps(payload, indent=2))  # noqa: T201
+        else:
+            console.print(format_allowlist_listing(result.allowlist_entries))
+        raise SystemExit(0)
+
+    if as_json:
+        print(result.model_dump_json(indent=2))  # noqa: T201
+        raise SystemExit(result.exit_code)
+
+    console.print("[bold]Validated:[/bold] unscoped-rules\n")
+    if result.exit_code == 0:
+        allowlisted_count = sum(1 for v in result.violations if v.allowlisted)
+        console.print(
+            f"[green]✓ {result.files_checked} rule file(s) checked "
+            f"({allowlisted_count} allowlisted).[/green]"
+        )
+        raise SystemExit(0)
+
+    if result.exit_code == 2:
+        console.print(
+            "[red]❌ Unable to read manifest or rule files — "
+            "missing or malformed .gzkit/manifest.json or rule content.[/red]"
+        )
+        raise SystemExit(2)
+
+    # exit_code == 3: policy breach — list non-allowlisted violations.
+    console.print(
+        f"[red]❌ {result.files_checked} rule file(s) scanned; "
+        f"{sum(1 for v in result.violations if not v.allowlisted)} "
+        "violation(s) require recovery:[/red]\n"
+    )
+    for v in result.violations:
+        if v.allowlisted:
+            continue
+        detected = f" (detected: {v.detected_value!r})" if v.detected_value else ""
+        console.print(f"   [red]→[/red] \\[{v.reason}] {v.file}{detected}")
+    console.print(
+        "\nRecovery: narrow `paths:` to a concrete glob, fold the content into "
+        "AGENTS.md, or add an allowlist entry under `rules.unscoped_allowlist` "
+        "in .gzkit/manifest.json (see ADR-0.0.20)."
+    )
+    raise SystemExit(3)
+
+
+def _unscoped_rules_runner(project_root: Path) -> list[ValidationError]:
+    """Run the unscoped-rules validator and map violations to ValidationError."""
+    from gzkit.validators.unscoped_rules import run_unscoped_rules  # noqa: PLC0415
+
+    result = run_unscoped_rules(project_root)
+    errors: list[ValidationError] = []
+    if result.exit_code == 2:
+        errors.append(
+            ValidationError(
+                type="unscoped-rules",
+                artifact=".gzkit/manifest.json",
+                message="Unscoped-rules validator hit an I/O error "
+                "(missing/malformed manifest or unreadable rule file)",
+            )
+        )
+        return errors
+    for v in result.violations:
+        if v.allowlisted:
+            continue
+        detected = f" (detected: {v.detected_value!r})" if v.detected_value else ""
+        errors.append(
+            ValidationError(
+                type="unscoped-rules",
+                artifact=v.file,
+                message=(
+                    f"Agent rule is unscoped — {v.reason}{detected}. "
+                    "Narrow `paths:` to a concrete glob, fold the content into "
+                    "AGENTS.md, or add an allowlist entry under "
+                    "rules.unscoped_allowlist (see ADR-0.0.20)."
+                ),
+            )
+        )
+    return errors
 
 
 def _run_scope_checks(
@@ -469,6 +563,7 @@ def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
         "advisory_scorecard",
         "reconcile_freshness",
         "brief_headings",
+        "unscoped_rules",
     ]
 
     run_all = not any(checks.get(s, False) for s in run_all_scopes + opt_in_scopes)
@@ -553,6 +648,8 @@ def validate(
     check_reconcile_freshness: bool = False,
     check_taxonomy: bool = False,
     check_brief_headings: bool = False,
+    check_unscoped_rules: bool = False,
+    unscoped_rules_allowlist_only: bool = False,
     as_json: bool = False,
     frontmatter_adr: str | None = None,
     frontmatter_explain: str | None = None,
@@ -570,6 +667,50 @@ def validate(
     if frontmatter_explain:
         check_frontmatter = True
         frontmatter_adr = frontmatter_explain
+
+    # Dedicated --unscoped-rules path owns its own 0/2/3 exit codes.
+    _other_scopes_active = any(
+        [
+            check_manifest,
+            check_documents,
+            check_surfaces,
+            check_ledger,
+            check_instructions,
+            check_briefs,
+            check_personas,
+            check_interviews,
+            check_decomposition,
+            check_requirements,
+            check_commit_trailers,
+            check_frontmatter,
+            check_version,
+            check_type_ignores,
+            check_cli_alignment,
+            check_event_handlers,
+            check_validator_fields,
+            check_utf8_prefix,
+            check_test_tiers,
+            check_pydantic_models,
+            check_class_size,
+            check_version_release,
+            check_pool_adr_isolation,
+            check_behave_req_tags,
+            check_skill_alignment,
+            check_advisory_scorecard,
+            check_reconcile_freshness,
+            check_taxonomy,
+            check_brief_headings,
+        ]
+    )
+    if check_unscoped_rules and not _other_scopes_active:
+        _run_unscoped_rules_scope(
+            project_root, as_json=as_json, allowlist_only=unscoped_rules_allowlist_only
+        )
+        return
+    if unscoped_rules_allowlist_only:
+        # --allowlist-only without --unscoped-rules still prints the listing.
+        _run_unscoped_rules_scope(project_root, as_json=as_json, allowlist_only=True)
+        return
     errors = _collect_errors(
         project_root,
         check_manifest,
@@ -601,6 +742,7 @@ def validate(
         check_reconcile_freshness=check_reconcile_freshness,
         check_taxonomy=check_taxonomy,
         check_brief_headings=check_brief_headings,
+        check_unscoped_rules=check_unscoped_rules,
         frontmatter_adr=frontmatter_adr,
     )
 
@@ -653,6 +795,7 @@ def validate(
         "reconcile_freshness": check_reconcile_freshness,
         "taxonomy": check_taxonomy,
         "brief_headings": check_brief_headings,
+        "unscoped_rules": check_unscoped_rules,
     }
     scopes = _resolve_scopes(checks)
     frontmatter_only = scopes == ["frontmatter"]

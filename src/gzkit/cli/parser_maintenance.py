@@ -452,6 +452,18 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         action="store_true",
         help="Brief evidence sections must be H3, not H2 (GHI #238)",
     )
+    p_validate.add_argument(
+        "--unscoped-rules",
+        dest="check_unscoped_rules",
+        action="store_true",
+        help="Fail on .gzkit/rules/*.md with paths: '**' or missing paths: (ADR-0.0.20)",
+    )
+    p_validate.add_argument(
+        "--allowlist-only",
+        dest="unscoped_rules_allowlist_only",
+        action="store_true",
+        help="With --unscoped-rules: list current allowlist entries and exit 0",
+    )
     add_json_flag(p_validate)
     p_validate.set_defaults(
         func=lambda a: _lazy("validate")(
@@ -484,6 +496,8 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_reconcile_freshness=a.check_reconcile_freshness,
             check_taxonomy=a.check_taxonomy,
             check_brief_headings=a.check_brief_headings,
+            check_unscoped_rules=a.check_unscoped_rules or a.check_audits,
+            unscoped_rules_allowlist_only=a.unscoped_rules_allowlist_only,
             as_json=a.as_json,
             frontmatter_adr=a.frontmatter_adr,
             frontmatter_explain=a.frontmatter_explain,

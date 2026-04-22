@@ -535,6 +535,16 @@ def run_cli_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz cli audit", cwd=project_root)
 
 
+def run_unscoped_rules_audit(project_root: Path) -> QualityResult:
+    """Run the agent-rule placement invariant audit (ADR-0.0.20).
+
+    Fails closed (exit 3) on any `.gzkit/rules/*.md` that carries
+    `paths: "**"` or lacks a `paths:` frontmatter entry without an
+    allow-list exception under `rules.unscoped_allowlist`.
+    """
+    return run_command("uv run gz validate --unscoped-rules", cwd=project_root)
+
+
 def run_preflight(project_root: Path) -> QualityResult:
     """Run preflight scan for stale pipeline markers and orphan receipts.
 

@@ -317,6 +317,7 @@ class TestSkillCommands(unittest.TestCase):
                 patch("gzkit.quality.run_parity_check", return_value=ok),
                 patch("gzkit.quality.run_readiness_audit", return_value=ok),
                 patch("gzkit.quality.run_cli_audit", return_value=ok),
+                patch("gzkit.quality.run_unscoped_rules_audit", return_value=ok),
                 patch("gzkit.quality.run_preflight", return_value=ok),
             ):
                 result = runner.invoke(main, ["check"])
