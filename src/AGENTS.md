@@ -97,6 +97,21 @@ Observed failure class: agent pipes `uv run gz ... --json` through `python -c` t
 
 **Preference order:** gz-native extraction > reconfigured `uv run python` > raw `python -c`. The first closes the class; the second hardens it; the third is the observed failure mode.
 
+### Mechanical check
+
+```bash
+uv run gz validate --utf8-prefix
+```
+
+Scope (GHI #275):
+
+- `PYTHONUTF8=1 uv run gz ...` env-prefix anti-pattern in `docs/**`, `.gzkit/skills/**`, `.claude/skills/**`, `features/**` (GHI #206 original).
+- `gz ... | python[-c] ...` pipelines that omit `sys.stdout.reconfigure(encoding='utf-8')` inside the helper.
+- `gz ... | jq|awk|sed` pipelines (non-Python tools — rule prescribes `--output path.json` file handoff).
+- `tools/**/*.py` entry-point scripts (have `if __name__ == "__main__":` and call `print`) that omit `sys.stdout.reconfigure(encoding='utf-8')` at module load.
+
+Waivers are explicit in `_UTF8_PIPE_WAIVERS` (`src/gzkit/governance/trust_audits.py`) per trust-doctrine T2 — closed-OBPI evidence files are waived rather than rewritten. Exits 3 on unwaived violations.
+
 ---
 
 ## Code Review Checklist
