@@ -3,7 +3,7 @@ id: OBPI-0.0.19-01-anchor-resolution-and-evidence
 parent: ADR-0.0.19
 item: 1
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.19-01-anchor-resolution-and-evidence: Anchor resolution and evidence gathering
@@ -216,21 +216,37 @@ Deferred to ADR-level closeout.
 
 ### Key Proof
 
-```python
-# One-liner demonstrating the library contract
-from gzkit.justify import resolve_anchor, gather_evidence
-anchor = resolve_anchor("OBPI-0.0.19-01")
-bundle = gather_evidence(anchor, related=["GHI-224", "GHI-232"])
-# bundle has matching_rules, ledger_events, recent_commits, related_anchors, warnings
+
+```
+$ uv run python -c "from gzkit.justify import AnchorRef, EvidenceBundle, resolve_anchor, gather_evidence, AnchorKind, AnchorResolutionError; print('OK')"
+OK
+
+$ uv run gz covers OBPI-0.0.19-01 --json | tail -7
+  "summary": {
+    "identifier": "OBPI-0.0.19-01",
+    "total_reqs": 12,
+    "covered_reqs": 12,
+    "uncovered_reqs": 0,
+    "coverage_percent": 100.0
+  }
+
+ARB receipts:
+  lint:    arb-ruff-5f6f745bf683466d84a908c0f67e3b49
+  types:   arb-step-typecheck-8589d2b09f0046e184f98369157279f6
+  tests:   arb-step-unittest-justify-01-0b8b75460d9c48bd8897d860405bda82 (31/31 passed, 23ms)
 ```
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: src/gzkit/justify/__init__.py, src/gzkit/justify/models.py, src/gzkit/justify/anchors.py, src/gzkit/justify/evidence.py, tests/justify/__init__.py, tests/justify/test_models.py, tests/justify/test_anchors.py, tests/justify/test_evidence.py
+- Tests added: 31 (REQ-01..-12 each covered; 12/12 @covers parity at 100%)
+- Public API: AnchorRef, EvidenceBundle, AnchorKind, resolve_anchor, gather_evidence, AnchorResolutionError
+- Concurrency: concurrent.futures.ThreadPoolExecutor(max_workers=5); per-source graceful degradation with warnings tuple
+- Reused utilities: run_exec (src/gzkit/utils.py:15-31); @covers (src/gzkit/traceability.py:119-163); Pydantic ConfigDict(frozen=True, extra='forbid') matching lock_manager.py:18-44 exemplar
+- Date completed: 2026-04-21
+- Attestation status: human-attested (normal mode)
+- Defects noted: GHI #288 filed for plan-mode harness vs plan-audit-gate deadlock (unrelated to this OBPI's scope; surfaced during Stage 1 entry)
 
 ## Tracked Defects
 
@@ -238,14 +254,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a` (deferred to ADR-level closeout)
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `Jeffry Babb`
+- Attestation: attest completed — Library substrate for `gz justify` landed as the pure side-effect-free foundation OBPI-02 consumes. Five-source concurrent ThreadPoolExecutor gather with per-source graceful degradation; Pydantic frozen models matching the lock_manager exemplar; explicit __all__ exposes exactly the six public names required by REQ-11. 31/31 unit tests green; 12/12 REQs @covers parity at 100% (receipt arb-step-unittest-justify-01-0b8b75460d9c48bd8897d860405bda82). Lint clean (arb-ruff-5f6f745bf683466d84a908c0f67e3b49); typecheck clean (arb-step-typecheck-8589d2b09f0046e184f98369157279f6). No stdout/stderr from library; <3s wall-clock on scaled fixture. Filed GHI #288 for the plan-mode harness / plan-audit-gate deadlock surfaced at Stage 1 entry — unrelated to this OBPI's scope.
+- Date: 2026-04-22
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-22
 
 **Evidence Hash:** -
