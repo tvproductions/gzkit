@@ -3,7 +3,7 @@ id: OBPI-0.0.19-04-skill-and-upstream-integrations
 parent: ADR-0.0.19
 item: 4
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.19-04-skill-and-upstream-integrations: Skill definition and upstream integrations
@@ -209,20 +209,22 @@ Deferred to ADR-level closeout.
 
 ### Key Proof
 
-```text
-# Paste a short excerpt of the new skill's Procedure section
-# Paste the new footer line added to gz-adr-evaluate
-# Paste the new Stage 1→2 guidance added to gz-obpi-pipeline
-# Paste the `gz agent sync control-surfaces` exit-0 output
-```
+
+Verification receipts (Stage 3 of this pipeline): lint arb-ruff-008dda0e47384e89bea69e3b8b5cb6d4 exit 0; typecheck arb-step-typecheck-0046b7d5295e4bd798228b12c4f2a317 exit 0 (All checks passed!); unittest arb-step-unittest-justify-04-e0b77ce9cd9545c28f8a799ae0073a8e exit 0 (Ran 10 tests in 0.022s; OK).
+REQ parity: uv run gz covers ADR-0.0.19 --json reports by_obpi[OBPI-0.0.19-04] total_reqs=10 covered_reqs=10 coverage_percent=100.0. Every REQ in the brief's Acceptance Criteria is pinned by @covers(REQ-0.0.19-04-NN)-decorated tests under tests/skills/.
+Neighbor-skill canon (grep-verified): gz-adr-evaluate metadata.skill-version '6.3.0' (was 6.2.0); gz-obpi-pipeline top-level skill-version '6.9.0' (was 6.8.0). Both files carry new ## Related ADRs sections referencing ADR-0.0.19.
+Surface sync: uv run gz agent sync control-surfaces exits 0 and produces .claude/skills/gz-justify/SKILL.md, .github/skills/gz-justify/SKILL.md, .agents/skills/gz-justify/SKILL.md each retaining gz_command: justify. uv run gz validate --surfaces exits 0 with 'All validations passed (1 scopes).'
+CLI contract: verify_gz_chain(['justify']) from gzkit.hooks.obpi:80 returns (True, 'resolved gz justify') so the skill's declared gz_command target resolves to a registered parser verb (Invariant 1).
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: .gzkit/skills/gz-justify/SKILL.md (new canonical skill; frontmatter with gz_command: justify, persona main-session, category obpi-pipeline, metadata.skill-version 6.0.0; 10 H2 sections in the order required by REQ-02; Red Flags table names fabrication); tests/skills/__init__.py; tests/skills/test_gz_justify_skill.py (5 tests pinning REQ-01/02/03/04/09); tests/skills/test_skill_surface_sync_justify.py (5 tests pinning REQ-05/06/07/08/10).
+- Files modified: .gzkit/skills/gz-adr-evaluate/SKILL.md (Low-Score Footer Guidance subsection after Step 6 Scorecard; skill-version 6.2.0 -> 6.3.0; Related ADRs citing ADR-0.0.19); .gzkit/skills/gz-obpi-pipeline/SKILL.md (Stage 1->2 Confidence Gate between Stage 1 Abort block and Stage 2 heading; skill-version 6.8.0 -> 6.9.0; Related ADRs); mirrors under .claude/skills, .github/skills, .agents/skills regenerated via gz agent sync control-surfaces.
+- Tests added: 10 REQ-pinned unit tests under tests/skills/ (all in-process against canon; no live-path mutation; AST self-check enforces REQ-10).
+- Date completed: 2026-04-22.
+- Attestation status: heavy-lane deferred to ADR-0.0.19 closeout per AGENTS.md OBPI Acceptance Protocol lane inheritance.
+- Defects noted: none.
 
 ## Tracked Defects
 
@@ -230,14 +232,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a` (deferred to ADR-level closeout)
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `g0`
+- Attestation: OBPI-0.0.19-04 complete — Heavy-lane Gate 5 deferred to ADR-0.0.19 closeout per lane inheritance. gz-justify canonical skill landed with frontmatter, 10 H2 sections, Red-Flag row naming fabrication, and Related ADRs citing ADR-0.0.19; gz-adr-evaluate Low-Score Footer Guidance and gz-obpi-pipeline Stage 1→2 Confidence Gate both edited with version bumps (6.2.0→6.3.0, 6.8.0→6.9.0) and Related ADRs sections. Surface sync regenerates .claude/.github/.agents mirrors with gz_command: justify intact. 10/10 REQ parity in gz covers; all verification receipts GREEN. Receipts: lint arb-ruff-008dda0e47384e89bea69e3b8b5cb6d4; typecheck arb-step-typecheck-0046b7d5295e4bd798228b12c4f2a317; unittest arb-step-unittest-justify-04-e0b77ce9cd9545c28f8a799ae0073a8e.
+- Date: 2026-04-22
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-22
 
 **Evidence Hash:** -
