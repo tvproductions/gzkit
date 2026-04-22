@@ -948,6 +948,28 @@ class TestLedger(unittest.TestCase):
         self.assertTrue(semantics["completed"])
 
 
+class TestHasAdrCreated(unittest.TestCase):
+    """GHI #279 — Ledger.has_adr_created idempotency helper."""
+
+    def test_detects_direct_adr_created_event(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ledger = Ledger(Path(tmpdir) / "ledger.jsonl")
+            ledger.append(adr_created_event("ADR-0.1.0-alpha", "PRD-1", "lite"))
+            self.assertTrue(ledger.has_adr_created("ADR-0.1.0-alpha"))
+            self.assertFalse(ledger.has_adr_created("ADR-0.2.0-beta"))
+
+    def test_detects_event_through_rename_map(self) -> None:
+        """A bare-semver adr_created plus a rename to slugged form registers as created."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ledger = Ledger(Path(tmpdir) / "ledger.jsonl")
+            ledger.append(adr_created_event("ADR-0.0.20", "PRD-1", "lite"))
+            ledger.append(
+                artifact_renamed_event("ADR-0.0.20", "ADR-0.0.20-agent-rule-placement-invariant")
+            )
+            self.assertTrue(ledger.has_adr_created("ADR-0.0.20-agent-rule-placement-invariant"))
+            self.assertTrue(ledger.has_adr_created("ADR-0.0.20"))
+
+
 class TestTypedEventModels(unittest.TestCase):
     """Tests for typed event models and discriminated union parsing."""
 

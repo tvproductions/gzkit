@@ -370,6 +370,9 @@ def _register_existing_artifacts(
     for meta in adr_metadata:
         adr_id = meta["id"]
         parent = meta.get("parent", prd_ids[0] if prd_ids else "")
+        if ledger.has_adr_created(adr_id):
+            console.print(f"  Skipped ADR (already registered): {adr_id}")
+            continue
         ledger.append(adr_created_event(adr_id, parent, mode))
         console.print(f"  Registered ADR: {adr_id} (parent: {parent or 'none'})")
 
