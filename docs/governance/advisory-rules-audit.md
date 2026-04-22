@@ -130,7 +130,7 @@ This audit scores every rule by:
 | 43 | Use context managers for temp files | **Judgment** | Pattern — hard to mechanize reliably |
 | 44 | Subprocess list form (no `shell=True`) | **Mechanical** | ruff S602/S603 |
 | 45 | Runtime UTF-8 config in entrypoint (no env-var prefix) | **Mechanical** | Rule 9 audit `--utf8-prefix` covers this |
-| 45a | Ad-hoc `python -c` / helper scripts processing gz output must configure UTF-8 stdin/stdout (runtime guard covers only `uv run gz`) | **Promotable** | Could regex-scan tracked shell scripts, skills, and docs for `python -c` / `uv run python -c` / `python tools/*.py` invocations that do not prepend `sys.stdout.reconfigure(encoding='utf-8')`. GHI #234 filed the rule-text fix; mechanical promotion tracked under `ADR-pool.cross-platform-scanner` or a follow-up GHI |
+| 45a | Ad-hoc `python -c` / helper scripts processing gz output must configure UTF-8 stdin/stdout (runtime guard covers only `uv run gz`) | **Mechanical** | Enforced by `gz validate --utf8-prefix` (GHI #275 — scope extended from rule-9 prefix scan to gz-pipe patterns in docs/skills/features + `tools/**/*.py` entry-point AST walk) |
 
 ### Defect Fix Routing (`.gzkit/rules/defect-fix-routing.md`)
 
@@ -213,6 +213,7 @@ Each promotion candidate has a tracking GHI. Close the GHI when the promotion la
 | 13 | 6 (extension) | [#214](https://github.com/tvproductions/gzkit/issues/214) | L3 derived-view inventory | `docs/governance/layer-three-derived-views.md` |
 | 14 | discoverability | [#215](https://github.com/tvproductions/gzkit/issues/215) | Wire trust-doctrine + scorecard into agent surfaces | `agents.local.md` + mirror sync |
 | 15 | brief-heading-conventions | [#238](https://github.com/tvproductions/gzkit/issues/238) | Brief evidence sections must use H3 (not H2) | `gz validate --brief-headings` |
+| 16 | 45a (scope-boundary subsection) | [#275](https://github.com/tvproductions/gzkit/issues/275) | Fresh-interpreter helpers + non-Python pipes + `tools/**/*.py` reconfigure | `gz validate --utf8-prefix` (extends row 5) |
 
 Invariants 2 and 3 of the tool-skill-runbook rule (rows 29/30 above) remain Promotable — Invariant 1 landed first to establish the waiver shape for the harder body/output-form scans.
 

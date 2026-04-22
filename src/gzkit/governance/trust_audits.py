@@ -88,12 +88,57 @@ _DATACLASS_WAIVERS: dict[str, str] = {
     ),
 }
 
+# GHI #275: gz-to-helper pipe lines that predate the extended scan.
+# Keys are ``<relative-path>:<lineno>``; values carry the rationale.
+# New doc additions must either reconfigure (Python) or use --output file
+# handoff (non-Python); existing evidence in closed OBPIs is waived rather
+# than rewritten because those files live under completed audit artifacts.
+_CLOSED_OBPI_WAIVER_RATIONALE = (
+    "Closed-OBPI verification block — rewriting attested evidence is itself "
+    "doctrine drift. New doc additions must reconfigure."
+)
+_UTF8_PIPE_WAIVERS: dict[str, str] = {
+    (
+        "docs/design/adr/foundation/ADR-0.0.17-adr-taxonomy-mechanical"
+        "/obpis/OBPI-0.0.17-02-plan-create-kind.md:165"
+    ): _CLOSED_OBPI_WAIVER_RATIONALE,
+    (
+        "docs/design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine"
+        "/obpis/OBPI-0.0.18-02-runbook-prd-to-adr.md:135"
+    ): _CLOSED_OBPI_WAIVER_RATIONALE,
+    (
+        "docs/design/adr/foundation/ADR-0.0.8-feature-toggle-system"
+        "/obpis/OBPI-0.0.8-05-cli-surface.md:107"
+    ): _CLOSED_OBPI_WAIVER_RATIONALE,
+    (
+        "docs/design/adr/pre-release/ADR-0.18.0-subagent-driven-pipeline-execution"
+        "/obpis/OBPI-0.18.0-05-pipeline-runtime-integration.md:141"
+    ): _CLOSED_OBPI_WAIVER_RATIONALE,
+    (
+        "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption"
+        "/obpis/OBPI-0.25.0-32-handoff-validation-pattern.md:244"
+    ): _CLOSED_OBPI_WAIVER_RATIONALE,
+    "docs/governance/pipeline-marker-migration-path.md:178": (
+        "Migration-path doc describing historical marker semantics; target "
+        "audience is governance maintainers on POSIX shells."
+    ),
+}
+
 _FORBIDDEN_TYPE_IGNORE = re.compile(r"#\s*type:\s*ignore\[")
 _BACKTICKED_INVOCATION = re.compile(r"`gz\s+([a-z][a-z0-9-]*)[^`]*`")
 _QUOTED_INVOCATION = re.compile(r'"gz\s+([a-z][a-z0-9-]*)[^"]*"')
 _STEP_DEF_FIXTURE = re.compile(r'the gz command\s+"([a-z][a-z0-9-]*)')
 _EVENT_TYPE_HEURISTIC = re.compile(r"[a-z][a-z0-9]*(?:_[a-z0-9]+)*")
 _PYTHONUTF8_PREFIX = re.compile(r"PYTHONUTF8=1\s+uv\s+run\s+(?:gz|-m\s+gzkit)")
+# GHI #275: extend utf8_prefix to fresh-interpreter helpers and non-Python tools.
+# A gz pipeline into python -c / python <script> is a fresh interpreter that
+# defaults to cp1252 on Windows legacy consoles. Require explicit reconfigure.
+_GZ_PIPE_PYTHON = re.compile(r"(?:uv\s+run\s+)?gz\s+[^\n|`]*\|\s*(?:uv\s+run\s+)?python\b")
+# A gz pipeline into jq / awk / sed is the file-handoff class: no runtime-level
+# recourse exists (they're non-Python tools), the rule prescribes `--output`
+# handoff instead.
+_GZ_PIPE_NON_PYTHON = re.compile(r"(?:uv\s+run\s+)?gz\s+[^\n|`]*\|\s*(jq|awk|sed)\b")
+_STDOUT_RECONFIGURE = re.compile(r"sys\.stdout\.reconfigure\s*\(\s*encoding\s*=\s*['\"]utf-?8['\"]")
 _REQ_ID_IN_BRIEF = re.compile(r"\bREQ-\d+\.\d+\.\d+-\d+-\d+\b")
 _SCENARIO_REQ_TAG = re.compile(r"^\s*@(REQ-\d+\.\d+\.\d+-\d+-\d+)\b", re.MULTILINE)
 _RULE_HEADING = re.compile(r"^#\s+(.+)$", re.MULTILINE)
@@ -369,12 +414,27 @@ def _collect_ledger_written_fields(source: Path) -> set[str]:
 
 
 def audit_utf8_prefix(project_root: Path) -> list[ValidationError]:
-    """Fail on ``PYTHONUTF8=1 uv run gz ...`` anti-pattern in docs/skills/features.
+    """Enforce ``cross-platform.md`` rule 9 + scope-boundary subsection.
+
+    The original check (GHI #206) flagged the ``PYTHONUTF8=1 uv run gz`` env
+    prefix. GHI #275 extends coverage to the full rule text:
+
+    * ``gz ... | python[-c] ...`` pipelines that skip ``sys.stdout.reconfigure``
+    * ``gz ... | jq|awk|sed`` pipelines (non-Python tools — file handoff only)
+    * ``tools/**/*.py`` entry points that ``print`` without reconfigure
 
     The CLI entrypoint configures UTF-8 at runtime; the env-var prefix is
-    redundant and (per CLAUDE.md local rule 9) must never appear in
-    operator-facing docs or skill examples.
+    redundant, but the runtime guard does not cover fresh-interpreter
+    helpers — those must reconfigure their own stdio.
     """
+    errors: list[ValidationError] = []
+    errors.extend(_scan_doc_pipe_patterns(project_root))
+    errors.extend(_scan_tools_scripts(project_root))
+    return errors
+
+
+def _scan_doc_pipe_patterns(project_root: Path) -> list[ValidationError]:
+    """Scan docs/skills/features for gz-pipe anti-patterns."""
     roots: list[Path] = []
     for rel in ("docs", ".gzkit/skills", ".claude/skills", "features"):
         candidate = project_root / rel
@@ -389,28 +449,117 @@ def audit_utf8_prefix(project_root: Path) -> list[ValidationError]:
                 continue
             # advisory-rules-audit.md documents the anti-pattern by name;
             # skip lines that cite it as prose rather than prescribe it.
+            if path.name == "advisory-rules-audit.md":
+                continue
             try:
                 content = path.read_text(encoding="utf-8")
             except UnicodeDecodeError:
                 continue
+            rel_path = path.relative_to(project_root)
             for lineno, line in enumerate(content.splitlines(), 1):
-                if not _PYTHONUTF8_PREFIX.search(line):
+                artifact = f"{rel_path}:{lineno}"
+                if artifact in _UTF8_PIPE_WAIVERS:
                     continue
-                rel = path.relative_to(project_root)
-                if path.name == "advisory-rules-audit.md":
-                    continue
-                errors.append(
-                    ValidationError(
-                        type="utf8_prefix",
-                        artifact=f"{rel}:{lineno}",
-                        message=(
-                            "`PYTHONUTF8=1` prefix on `uv run gz` is forbidden — "
-                            "the CLI entrypoint configures UTF-8 at runtime "
-                            "(CLAUDE.md local rule 9)."
-                        ),
+                if _PYTHONUTF8_PREFIX.search(line):
+                    errors.append(
+                        ValidationError(
+                            type="utf8_prefix",
+                            artifact=artifact,
+                            message=(
+                                "`PYTHONUTF8=1` prefix on `uv run gz` is forbidden — "
+                                "the CLI entrypoint configures UTF-8 at runtime "
+                                "(CLAUDE.md local rule 9)."
+                            ),
+                        )
                     )
-                )
+                    continue
+                if _GZ_PIPE_PYTHON.search(line) and not _STDOUT_RECONFIGURE.search(line):
+                    errors.append(
+                        ValidationError(
+                            type="utf8_prefix",
+                            artifact=artifact,
+                            message=(
+                                "`gz ... | python ...` is a fresh-interpreter pipe "
+                                "(no runtime UTF-8 guard). Add "
+                                "`sys.stdout.reconfigure(encoding='utf-8')` inside "
+                                "the helper, or waive in `_UTF8_PIPE_WAIVERS` "
+                                "(`.gzkit/rules/cross-platform.md`)."
+                            ),
+                        )
+                    )
+                    continue
+                if _GZ_PIPE_NON_PYTHON.search(line):
+                    errors.append(
+                        ValidationError(
+                            type="utf8_prefix",
+                            artifact=artifact,
+                            message=(
+                                "`gz ... | jq|awk|sed` pipes gz UTF-8 output through a "
+                                "non-Python tool that crashes on cp1252. Use the "
+                                "`--output path.json` handoff pattern "
+                                "(`.gzkit/rules/cross-platform.md` § Windows-safe "
+                                "helper patterns)."
+                            ),
+                        )
+                    )
     return errors
+
+
+def _scan_tools_scripts(project_root: Path) -> list[ValidationError]:
+    """Scan ``tools/**/*.py`` entry points for missing UTF-8 reconfigure."""
+    tools_root = project_root / "tools"
+    if not tools_root.is_dir():
+        return []
+    errors: list[ValidationError] = []
+    for path in sorted(tools_root.rglob("*.py")):
+        try:
+            source = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            continue
+        try:
+            tree = ast.parse(source)
+        except SyntaxError:
+            continue
+        if not _is_entry_point_script(tree):
+            continue
+        if _STDOUT_RECONFIGURE.search(source):
+            continue
+        errors.append(
+            ValidationError(
+                type="utf8_prefix",
+                artifact=str(path.relative_to(project_root)),
+                message=(
+                    "`tools/` entry-point script prints without "
+                    "`sys.stdout.reconfigure(encoding='utf-8')`. Fresh "
+                    "interpreters default to cp1252 on Windows legacy consoles "
+                    "(`.gzkit/rules/cross-platform.md` § Scope boundary of "
+                    "the runtime guard)."
+                ),
+            )
+        )
+    return errors
+
+
+def _is_entry_point_script(tree: ast.Module) -> bool:
+    """True if the module has ``if __name__ == '__main__':`` and calls ``print``."""
+    has_main_guard = False
+    has_print = False
+    for node in ast.walk(tree):
+        if isinstance(node, ast.If):
+            test = node.test
+            if (
+                isinstance(test, ast.Compare)
+                and isinstance(test.left, ast.Name)
+                and test.left.id == "__name__"
+            ):
+                has_main_guard = True
+        if (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "print"
+        ):
+            has_print = True
+    return has_main_guard and has_print
 
 
 # ---------------------------------------------------------------------------
