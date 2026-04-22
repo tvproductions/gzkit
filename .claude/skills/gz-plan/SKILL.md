@@ -3,7 +3,7 @@ name: gz-plan
 description: Create ADR artifacts for planned change. Use when recording architecture intent and lane-specific scope.
 category: adr-lifecycle
 metadata:
-  skill-version: "1.0.0"
+  skill-version: "1.1.0"
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-04-20
@@ -18,6 +18,8 @@ Operate the gz plan command surface as a reusable governance workflow.
 ## Workflow
 
 1. **Spec Developer Phase:** Before planning or generating an ADR, act as a Spec Developer. Review the target context and aggressively spin up `Explore` subagents to search and read relevant code.
+
+    **Pre-flight — defect-fix routing.** If this is an in-flight defect fix per `.gzkit/rules/defect-fix-routing.md` thresholds (≤10 source lines, ≤2 source files, in-flight trigger, ≥3 recent `fix(...)` precedents in the 60-day window, unit-test coverage viable), route to a direct `fix(<scope>): … (GHI #N)` commit instead of scaffolding an ADR. Default-to-ceremony for small in-flight defects is the exact over-application pattern GHI #195 authored the routing rule to prevent.
 2. **Decomposition Protocol (Two-Step):**
     *   **Step 1: Baseline Structural Template (Rule of Three)**: For complex ADRs, scaffold into three baseline layers (Registry, Core Execution, and Lifecycle/Operations).
     *   **Step 2: Refining Overlay (Matrix of Four)**: Apply the four core principles (Single-Narrative, Testability Ceiling, State Anchor, Surface Boundary) to each baseline unit. If a unit violates a principle, it MUST be further decomposed.
