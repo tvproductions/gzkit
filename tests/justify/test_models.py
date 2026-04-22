@@ -92,9 +92,12 @@ class TestPublicApiExport(unittest.TestCase):
             "AnchorRef",
             "AnchorResolutionError",
             "EvidenceBundle",
+            "ValidateResult",
             "Walkthrough",
+            "WalkthroughParseError",
             "WalkthroughSection",
             "gather_evidence",
+            "parse_walkthrough",
             "render_scaffold",
             "resolve_anchor",
         }
