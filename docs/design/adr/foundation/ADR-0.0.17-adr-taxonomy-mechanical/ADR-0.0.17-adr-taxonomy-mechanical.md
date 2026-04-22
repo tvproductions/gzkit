@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.17-adr-taxonomy-mechanical
-status: Completed
+status: Validated
 semver: 0.0.17
 lane: heavy
 parent: GHI-218
