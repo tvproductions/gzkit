@@ -3,7 +3,7 @@ id: OBPI-0.0.19-05-docs-bdd-closeout
 parent: ADR-0.0.19
 item: 5
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.19-05-docs-bdd-closeout: Docs, BDD, and Heavy-lane closeout
@@ -230,19 +230,19 @@ uv run gz audit ADR-0.0.19
 
 ### Key Proof
 
-```bash
-# Paste a short excerpt from gz-justify.md manpage (SYNOPSIS + one example)
-# Paste behave summary line (e.g. "8 scenarios passed, 0 failed")
-# Paste the final attestation reason string with ARB receipt IDs
-```
+
+uv run gz covers OBPI-0.0.19-05 reports OBPI-0.0.19-05 12/12 (100.0%); uv run -m behave features/justify.feature reports 8 scenarios passed 0 failed (28 steps); uv run gz cli audit reports Cross-coverage 86/86 commands fully covered; uv run -m unittest tests.cli.test_justify_manpage -v reports Ran 25 tests OK. ARB receipts: arb-ruff-92a111f577994a6cb309275263073be1; arb-step-typecheck-588634d7ca0146319026a6ff0f62066e; arb-step-unittest-5731d9923b0449248263f81019e33daf; arb-step-coverage-dbe59d5c4ae64b9d9f3bfc911643c61d; arb-step-mkdocs-f3f2b71a15de4e8c97a14831c0d1f95d.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: docs/user/manpages/gz-justify.md; tests/cli/test_justify_manpage.py; tests/cli/__init__.py; features/justify.feature; features/steps/justify_steps.py
+- Files modified: docs/user/commands/justify.md (stub to full operator doc); docs/user/runbook.md (Loop A Step 1b); docs/governance/governance_runbook.md (5b under Create or Promote ADR); config/doc-coverage.json (justify Heavy surfaces); ADR Evidence + ADR-CLOSEOUT-FORM
+- Tests added: 25 unittest cases across 7 test classes; 8 BDD scenarios in features/justify.feature; REQ-to-covers parity 12/12 (100%) via 'uv run gz covers OBPI-0.0.19-05'
+- ARB receipts captured: arb-ruff-92a111f5; arb-step-typecheck-588634d7; arb-step-unittest-5731d992; arb-step-coverage-dbe59d5c; arb-step-mkdocs-f3f2b71a
+- Date completed: 2026-04-22
+- Attestation status: attested_completed (Heavy-lane / foundation-kind)
+- Defects noted: none
 
 ## Tracked Defects
 
@@ -250,14 +250,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when recorded at closeout
-- Attestation: substantive attestation text with ARB receipt IDs
-- Date: YYYY-MM-DD
+- Attestor: `g0`
+- Attestation: attest completed — Heavy-lane closeout for ADR-0.0.19 (gz justify): manpage at docs/user/manpages/gz-justify.md, expanded command doc, Loop A Step 1b runbook entry, governance runbook 5b under Create or Promote ADR cites Prime Directive invariant 11 and both upstream skills (gz-adr-evaluate, gz-obpi-pipeline), 8 BDD scenarios + 25 unit tests (12/12 REQ@covers parity), 5 canonical ARB receipts: lint arb-ruff-92a111f5; types arb-step-typecheck-588634d7; tests arb-step-unittest-5731d992; coverage arb-step-coverage-dbe59d5c; docs arb-step-mkdocs-f3f2b71a.
+- Date: 2026-04-22
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-22
 
 **Evidence Hash:** -

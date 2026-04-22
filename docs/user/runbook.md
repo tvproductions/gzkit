@@ -32,6 +32,39 @@ Legacy parity note: when external docs mention `/gz-adr-manager`, use `/gz-adr-c
 uv run gz obpi validate --adr ADR-<X.Y.Z> --authored
 ```
 
+### Step 1b: Pre-execution reasoning walkthrough (`gz justify`)
+
+When self-reported confidence in the planned implementation is below
+the Prime Directive invariant 11 threshold (90% — see
+`.claude/rules/agent-contract.md` § Judgment), or when an upstream
+quality signal recommends it, scaffold an 8-section reasoning
+walkthrough before Step 2 begins. The CLI is deterministic: every byte
+of the scaffold comes from the renderer, never from an LLM.
+
+| Anchor type | When to invoke | Example |
+|-------------|----------------|---------|
+| GHI issue | Defect fix where root cause is uncertain | `uv run gz justify GHI-<N> --save` |
+| OBPI brief | Heavy-lane OBPI with ambiguous scope or evidence | `uv run gz justify OBPI-<X.Y.Z-NN> --save` |
+| Draft text | Pre-decision exploration before a brief exists | `uv run gz justify --draft "outline" --save --draft-slug <slug>` |
+
+Fill the saved scaffold's `_[To be filled]_` blocks with grounded
+reasoning. Before citing the artifact in OBPI Key Proof or ADR
+Evidence, validate completeness:
+
+```bash
+uv run gz justify validate artifacts/justify/<saved-file>.md
+```
+
+Exit 0 confirms every section is filled. Exit 1 lists which sections
+remain so the operator can finish before attesting. The pipeline's
+Stage 1→2 Confidence Gate routes operators here automatically when
+self-reported confidence is low; this section documents the same
+operator move outside the pipeline.
+
+See [`commands/justify.md`](commands/justify.md) for the full command
+contract and [manpages/gz-justify.md](manpages/gz-justify.md) for the
+exit-code matrix and option reference.
+
 ### Step 2: Execute the OBPI through the staged pipeline
 
 | Skill (preferred) | CLI equivalent |
