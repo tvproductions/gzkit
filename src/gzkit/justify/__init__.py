@@ -1,9 +1,10 @@
-"""gzkit.justify — pre-execution reasoning walkthrough library substrate.
+"""gzkit.justify — pre-execution reasoning walkthrough library + renderer.
 
-This package provides the evidence-gathering substrate for ``gz justify``:
-Pydantic data models, anchor resolvers (GHI/OBPI/draft), and a concurrent
-five-source grounding gather. The CLI surface, templates, and rendering
-live in downstream OBPIs under ADR-0.0.19.
+This package delivers the substrate and rendering layer for ``gz justify``:
+Pydantic data models, GHI/OBPI/draft anchor resolvers, concurrent five-source
+evidence gathering, an 8-section ``Walkthrough`` Pydantic model, and a
+deterministic Jinja2-backed markdown renderer. The CLI subcommand lives in
+``gzkit.commands.justify_cmd`` and dispatches through ``gzkit.justify.cli``.
 
 Public API is limited to the names in ``__all__``. Internal models
 (``RuleCitation``, ``CommitRef``, ``LedgerEvent``) are importable from
@@ -18,12 +19,20 @@ from gzkit.justify.models import (
     AnchorResolutionError,
     EvidenceBundle,
 )
+from gzkit.justify.walkthrough import (
+    Walkthrough,
+    WalkthroughSection,
+    render_scaffold,
+)
 
 __all__ = [
     "AnchorKind",
     "AnchorRef",
     "AnchorResolutionError",
     "EvidenceBundle",
+    "Walkthrough",
+    "WalkthroughSection",
     "gather_evidence",
+    "render_scaffold",
     "resolve_anchor",
 ]

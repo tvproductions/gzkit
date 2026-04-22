@@ -1112,6 +1112,11 @@ _NO_SKILL_VERBS: dict[str, str] = {
         "Subcommand group (`gz frontmatter reconcile/check`); consumed "
         "inside gz-adr-recon and state-doctrine skills."
     ),
+    "justify": (
+        "CLI surface landed in ADR-0.0.19 OBPI-02 ahead of its wielding skill; "
+        "the `gz-justify` skill ships in OBPI-0.0.19-04 per the ADR's "
+        "decomposition plan (skill definition + upstream integrations OBPI)."
+    ),
 }
 
 

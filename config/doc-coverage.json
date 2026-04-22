@@ -2,6 +2,16 @@
   "version": "1.0.0",
   "description": "Per-command documentation obligation manifest for gzkit CLI commands",
   "commands": {
+    "justify": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": false,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
     "init": {
       "surfaces": {
         "manpage": true,

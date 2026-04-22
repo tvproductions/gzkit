@@ -1,0 +1,27 @@
+---
+anchor_id: {{ anchor_id }}
+anchor_kind: {{ walkthrough.anchor.kind }}
+generated_at: {{ walkthrough.generated_at }}
+scaffold_version: {{ walkthrough.scaffold_version }}
+---
+
+# Walkthrough: {{ anchor_id }}
+
+{% for section in walkthrough.sections %}
+## {{ section.ordinal }}. {{ section.heading }}
+
+**Prompt:** *{{ section.prompt }}*
+
+**Evidence:**
+
+{% if section.evidence_citations %}
+{% for cite in section.evidence_citations %}
+- {{ cite }}
+{% endfor %}
+{% else %}
+- _(no citations for this section)_
+{% endif %}
+
+{{ section.reasoning }}
+
+{% endfor %}

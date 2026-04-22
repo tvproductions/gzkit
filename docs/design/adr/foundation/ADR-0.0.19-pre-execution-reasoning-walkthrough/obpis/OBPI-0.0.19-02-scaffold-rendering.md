@@ -3,7 +3,7 @@ id: OBPI-0.0.19-02-scaffold-rendering
 parent: ADR-0.0.19
 item: 2
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.19-02-scaffold-rendering: Scaffold rendering (Pydantic + Jinja2 + CLI)
@@ -212,15 +212,29 @@ Deferred to ADR-level closeout.
 
 ### Key Proof
 
-Paste a rendered scaffold excerpt (first 30 lines of a real invocation) here at OBPI completion.
+
+$ uv run gz justify ADR-0.0.19 ; echo $?
+justify reasons about change instances (GHIs, OBPIs, drafts), not governance packages. Invoke on the tracking GHI or an OBPI under the ADR.
+1
+
+$ uv run gz cli audit | tail -2
+CLI audit passed.
+Cross-coverage: 86/86 commands fully covered.
+
+$ uv run gz covers OBPI-0.0.19-02 --json  # parsed via python, summary excerpt:
+{"identifier":"OBPI-0.0.19-02","total_reqs":12,"covered_reqs":12,"uncovered_reqs":0,"coverage_percent":100.0}
+
+Receipts: lint arb-ruff-e589e56687064f5eb96fbeb6866a2509; types arb-step-typecheck-0b47a303e6cb4ea7b72d1d343da081d4; tests arb-step-unittest-justify-02-e18a117e04fa4485becaf47a39851fd8; coverage arb-step-coverage-10e03300a7f346f1875aa9be1c39595c.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: src/gzkit/justify/walkthrough.py; src/gzkit/justify/templates/__init__.py; src/gzkit/justify/templates/walkthrough.md.j2; src/gzkit/justify/cli.py; src/gzkit/commands/justify_cmd.py; src/gzkit/__main__.py; tests/justify/test_walkthrough.py; tests/justify/fixtures/walkthrough_expected.md; tests/commands/test_justify_cmd.py; docs/user/commands/justify.md
+- Files modified (additive): src/gzkit/cli/parser_artifacts.py (_LAZY_HANDLERS + _register_justify_parser); src/gzkit/justify/__init__.py (9 exports); config/doc-coverage.json (justify entry with runbook surfaces deferred to OBPI-05); docs/user/commands/index.md (one row); src/gzkit/governance/trust_audits.py (_NO_SKILL_VERBS waiver citing OBPI-04 skill deferral); tests/justify/test_models.py (OBPI-01 export surface test updated for scope-expansion)
+- Tests added: 27 walkthrough model+renderer tests (REQ-01..05); 16 CLI handler tests (REQ-06..12). Full suite 3397 tests pass.
+- Date completed: 2026-04-22
+- Attestation status: attest completed from operator; Heavy-lane Gate 5 deferred to ADR-0.0.19 closeout per lane inheritance (brief Gate 5 section).
+- Defects noted: none filed; three in-flight scope-expansion fixes applied (OBPI-01 export test; epilog gz-prefix convention; _NO_SKILL_VERBS waiver)
 
 ## Tracked Defects
 
@@ -228,14 +242,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a` (deferred to ADR-level closeout)
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — CLI + Jinja2 + Pydantic scaffold rendering landed for ADR-0.0.19 OBPI-02; 43/43 OBPI tests pass, 3397/3397 full suite pass, @covers parity 12/12 (100%), gz cli audit 86/86 fully covered; Heavy-lane Gate 5 deferred to ADR-0.0.19 closeout per lane inheritance. Receipts: lint arb-ruff-e589e56687064f5eb96fbeb6866a2509; types arb-step-typecheck-0b47a303e6cb4ea7b72d1d343da081d4; tests arb-step-unittest-justify-02-e18a117e04fa4485becaf47a39851fd8; coverage arb-step-coverage-10e03300a7f346f1875aa9be1c39595c.
+- Date: 2026-04-22
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-22
 
 **Evidence Hash:** -
