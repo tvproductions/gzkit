@@ -18,6 +18,20 @@ from tests.commands.common import CliRunner, _init_git_repo, _quick_init
 class TestAdrRuntimeCommands(unittest.TestCase):
     """Behavioral tests for closeout/audit-check/emit-receipt runtime surfaces."""
 
+    def setUp(self) -> None:
+        # GHI #290: the authenticity gate requires a real TTY + 'ATTEST'
+        # confirmation. CliRunner tests run headlessly, so patch the gate
+        # at every call site for the duration of each test. This is a
+        # test-isolation mechanism, not a production bypass.
+        for target in (
+            "gzkit.commands.adr_audit._enforce_human_attestation_authenticity",
+            "gzkit.commands.obpi_cmd._enforce_human_attestation_authenticity",
+            "gzkit.commands.obpi_complete._enforce_human_attestation_authenticity",
+        ):
+            patcher = patch(target)
+            patcher.start()
+            self.addCleanup(patcher.stop)
+
     @staticmethod
     def _write_obpi(
         path: Path,

@@ -13,9 +13,13 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, cast
 
-from gzkit.commands.adr_audit import _requires_human_obpi_attestation
+from gzkit.commands.adr_audit import (
+    _enforce_human_attestation_authenticity,
+    _requires_human_obpi_attestation,
+)
 from gzkit.commands.closeout_form import _upsert_frontmatter_value
 from gzkit.commands.common import (
+    GzCliError,
     _is_pool_adr_id,
     console,
     ensure_initialized,
@@ -172,6 +176,20 @@ def obpi_complete_cmd(
             obpi_id=obpi_id,
         )
 
+    # 4b. GHI #290 authenticity gate: no human-attestation receipt without TTY
+    # confirmation. Skipped for --dry-run so plans can be previewed headlessly,
+    # but a line in the dry-run output explicitly notes the gate would fire.
+    if requires_human and not dry_run:
+        try:
+            _enforce_human_attestation_authenticity(
+                obpi_id=obpi_id,
+                parent_adr=resolved_parent,
+                attestor=attestor,
+                attestation_text=attestation_text,
+            )
+        except GzCliError as exc:
+            _fail(str(exc), exit_code=3, as_json=as_json, obpi_id=obpi_id)
+
     # 5. Build audit ledger entry and receipt event
     adr_dir = obpi_file.parent.parent
     audit_entry = _build_attestation_audit_entry(
@@ -275,6 +293,11 @@ def _print_dry_run(
         console.print(f"  Lane: {parent_lane}")
         console.print(f"  Attestor: {attestor}")
         console.print(f"  Completion: {completion_term}")
+        if requires_human:
+            console.print(
+                "  [yellow]Gate (GHI #290):[/yellow] live run would require "
+                "interactive TTY + 'ATTEST' confirmation."
+            )
 
 
 def _print_success(

@@ -214,7 +214,7 @@ and scorecard defined in the
 
 ## OBPI Acceptance Protocol
 
-**Agent MUST NOT mark an OBPI brief as `Completed` without explicit human attestation when the parent ADR lane is `heavy`.** Attestation rigor attaches to **lane**, not kind — any `heavy`-lane ADR (foundation or feature) gates OBPI completion on Gate 5 human attestation. Foundation-kind ADRs additionally follow the attestation doctrine in [ADR-0.0.18](docs/design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/ADR-0.0.18-adr-taxonomy-doctrine.md) regardless of lane (a `lite`-lane foundation ADR that codifies an app-system invariant still warrants the walkthrough discipline, because doctrine drift is invariant drift).
+**Agent MUST NOT mark an OBPI brief as `Completed` without explicit human attestation when the parent ADR is `heavy`-lane OR `foundation`-kind.** Attestation rigor attaches to **both axes**: any `heavy`-lane ADR (foundation or feature) gates OBPI completion on Gate 5 human attestation, AND any `foundation`-kind ADR (lite or heavy) gates OBPI completion on Gate 5 human attestation at the brief level — not only at ADR closeout. Foundation-kind ADRs codify app-system invariants, and doctrine drift is invariant drift; the lite lane does not relax this requirement. This doctrine is canonical at [ADR-0.0.18](docs/design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/ADR-0.0.18-adr-taxonomy-doctrine.md) and mechanically enforced by `_requires_human_obpi_attestation` (`src/gzkit/commands/adr_audit.py`). An interactive TTY + `ATTEST` confirmation gate in `gz obpi complete`, `gz obpi emit-receipt`, and `gz adr emit-receipt` closes the agent-synthesized-payload vector surfaced by GHI #290.
 
 **Pipeline mandate:** After plan approval for OBPI work, agents MUST start the
 canonical runtime surface `uv run gz obpi pipeline <OBPI-ID>` instead of
@@ -228,18 +228,22 @@ implementation without runtime invocation is a process defect.
 Ceremony steps and stage sequencing are defined in the `gz-obpi-pipeline`
 skill (`uv run gz obpi pipeline <OBPI-ID>`). Read it before presenting evidence.
 
-### Lane Inheritance Rule
+### Lane & Kind Attestation Matrix
 
-`kind` and `lane` are orthogonal axes (see § Kinds). Attestation inheritance is keyed on **lane**:
+`kind` and `lane` are orthogonal axes (see § Kinds). Attestation inheritance is keyed on **both axes** — either axis alone can force human attestation at the brief level:
 
-| Parent ADR Lane | OBPI Attestation Requirement |
-|-----------------|------------------------------|
-| `heavy` | Human attestation required before `Completed` (any kind) |
-| `lite` | May be self-closeable after evidence is presented |
+| Parent ADR Kind | Parent ADR Lane | Brief-level Human Attestation | Source of truth |
+|-----------------|-----------------|-------------------------------|-----------------|
+| `foundation` | `lite` | **Required** | `_is_foundation_adr` branch |
+| `foundation` | `heavy` | **Required** | both branches |
+| `feature` | `heavy` | **Required** | lane branch |
+| `feature` | `lite` | Self-closeable after evidence | — |
 
-An OBPI inside a `heavy`-lane ADR inherits that lane's attestation rigor, regardless of the OBPI's own lane designation.
+An OBPI inside a `heavy`-lane ADR inherits that lane's attestation rigor, regardless of the OBPI's own lane designation. An OBPI inside a `foundation`-kind ADR inherits the foundation-kind rigor, regardless of lane.
 
-**Foundation-kind rigor (applies across lanes).** Foundation-kind ADRs codify app/system invariants and identity-shaping semantics. They warrant the attestation walkthrough discipline in [ADR-0.0.18](docs/design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/ADR-0.0.18-adr-taxonomy-doctrine.md) regardless of lane, because doctrine drift is invariant drift. A `lite`-lane foundation ADR is still self-closeable at the brief level, but ADR closeout follows the foundation walkthrough protocol.
+**Foundation-kind rigor (applies across lanes, at the brief level).** Foundation-kind ADRs codify app/system invariants and identity-shaping semantics. The attestation walkthrough discipline in [ADR-0.0.18](docs/design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/ADR-0.0.18-adr-taxonomy-doctrine.md) fires at both the **brief level** (each OBPI's `Completed` transition) and at **ADR closeout**, regardless of lane — because doctrine drift is invariant drift. A `lite`-lane foundation OBPI is **not** self-closeable; this was the fabrication vector in GHI #290.
+
+Mechanical enforcement: `_requires_human_obpi_attestation` at `src/gzkit/commands/adr_audit.py` returns `True` whenever the parent ADR matches `^ADR-0\.0\.\d+` (foundation) OR the parent lane is `heavy`. The TTY + `ATTEST` confirmation gate at `_enforce_human_attestation_authenticity` in the same file refuses to emit a `human_attestation: true` receipt from a headless process, closing the synthesis vector. The matrix above is a readable projection of those functions. If the two ever disagree, the code is the source of truth and the matrix is the defect.
 
 ## Execution Rules
 

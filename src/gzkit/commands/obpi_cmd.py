@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any, cast
 
 from gzkit.commands.adr_audit import (
+    _enforce_human_attestation_authenticity,
     _requires_human_obpi_attestation,
     _validate_explicit_req_proof_inputs,
     _validate_obpi_completion_evidence,
@@ -86,6 +87,33 @@ def obpi_withdraw_cmd(obpi: str, reason: str, dry_run: bool) -> None:
     console.print(f"  Reason: {reason}")
 
 
+def _gate_completed_receipt_authenticity(
+    *,
+    obpi_id: str,
+    parent_adr: Any,
+    attestor: str,
+    evidence: dict[str, Any] | None,
+    dry_run: bool,
+) -> None:
+    """GHI #290 authenticity gate wrapper for the emit-receipt path.
+
+    Extracted to keep obpi_emit_receipt_cmd under the complexity ceiling.
+    The lower-level emit-receipt surface must honour the same TTY +
+    confirmation contract as gz obpi complete -- it was the exact path
+    used to fabricate the OBPI-0.0.20-03 receipt. Skipped for --dry-run.
+    """
+    if dry_run or not isinstance(evidence, dict):
+        return
+    if evidence.get("attestation_requirement") != "required":
+        return
+    _enforce_human_attestation_authenticity(
+        obpi_id=obpi_id,
+        parent_adr=parent_adr if isinstance(parent_adr, str) else "",
+        attestor=attestor,
+        attestation_text=cast(str, evidence.get("attestation_text", "")),
+    )
+
+
 def obpi_emit_receipt_cmd(
     obpi: str,
     receipt_event: str,
@@ -140,6 +168,13 @@ def obpi_emit_receipt_cmd(
             parent_adr=parent_adr if isinstance(parent_adr, str) else None,
             parent_lane=parent_lane,
             attestor=attestor,
+        )
+        _gate_completed_receipt_authenticity(
+            obpi_id=obpi_id,
+            parent_adr=parent_adr,
+            attestor=attestor,
+            evidence=evidence,
+            dry_run=dry_run,
         )
     elif evidence is not None:
         evidence = dict(evidence)

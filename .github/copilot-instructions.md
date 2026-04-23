@@ -41,10 +41,12 @@ This project uses gzkit for governance. Key commands:
 
 Follow the OBPI Acceptance Protocol defined in `AGENTS.md`. Key rule: use
 `uv run gz obpi pipeline <OBPI-ID>` after plan approval; never implement
-freeform. Heavy-lane work (any kind) requires explicit human attestation;
-foundation-kind ADRs additionally follow the attestation doctrine in
-ADR-0.0.18 regardless of lane. `kind` and `lane` are orthogonal axes
-(see AGENTS.md § Kinds and § Lane Inheritance Rule).
+freeform. Human attestation is required at the brief level whenever the
+parent ADR is `heavy`-lane OR `foundation`-kind (either axis alone triggers
+it — a `lite`-lane foundation OBPI is NOT self-closeable). `kind` and
+`lane` are orthogonal axes (see AGENTS.md § Kinds and § Lane & Kind
+Attestation Matrix). A TTY + `ATTEST` confirmation gate prevents agent
+subprocesses from synthesizing attestation payloads (GHI #290).
 
 ## Skills
 

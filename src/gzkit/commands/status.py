@@ -398,6 +398,13 @@ def obpi_reconcile_cmd(obpi: str, as_json: bool) -> None:
                 console.print(f"- {blocker}")
         else:
             console.print("[green]PASS[/green] OBPI runtime state and proof evidence are coherent.")
+            if str(result.get("attestation_state", "")) == "recorded":
+                console.print(
+                    "  [dim]Note (GHI #290): coherence verified; the attestation's "
+                    "authenticity is not independently verifiable from the ledger "
+                    "alone. Treat this PASS as 'brief matches ledger', not as proof "
+                    "the human attested.[/dim]"
+                )
 
     if blockers:
         raise SystemExit(1)
