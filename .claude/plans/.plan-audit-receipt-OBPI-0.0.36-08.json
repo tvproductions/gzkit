@@ -1,0 +1,10 @@
+{
+  "obpi_id": "OBPI-0.0.36-08",
+  "timestamp": "2026-04-23T20:52:25.727532+00:00",
+  "verdict": "FAIL",
+  "plan_file": "replicated-leaping-stardust.md",
+  "gaps_found": 1,
+  "gaps": [
+    "ADR directory not found for ADR-0.0.36"
+  ]
+}

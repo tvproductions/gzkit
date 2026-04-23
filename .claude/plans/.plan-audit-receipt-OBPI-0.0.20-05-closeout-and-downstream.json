@@ -1,0 +1,36 @@
+{
+  "obpi_id": "OBPI-0.0.20-05-closeout-and-downstream",
+  "timestamp": "2026-04-23T20:52:44.095706+00:00",
+  "verdict": "PASS",
+  "plan_file": "replicated-leaping-stardust.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.0.9",
+      "sibling_obpi": "OBPI-0.0.9-06-marker-migration-path",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/ADR-CLOSEOUT-FORM.md",
+        "docs/design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/ADR-0.0.20-agent-rule-placement-invariant.md",
+        "docs/design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/EVALUATION_SCORECARD.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.10",
+      "sibling_obpi": "OBPI-0.0.10-01-three-tier-model-and-pool-archive",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/ADR-CLOSEOUT-FORM.md",
+        "docs/design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/ADR-0.0.20-agent-rule-placement-invariant.md",
+        "docs/design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/EVALUATION_SCORECARD.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.10",
+      "sibling_obpi": "OBPI-0.0.10-04-git-clone-recovery",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/ADR-CLOSEOUT-FORM.md",
+        "docs/design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/ADR-0.0.20-agent-rule-placement-invariant.md",
+        "docs/design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/EVALUATION_SCORECARD.md"
+      ]
+    }
+  ]
+}
