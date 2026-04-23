@@ -69,6 +69,8 @@ dependencies:
 
 gzkit must own all reusable agent governance patterns. airlineops's `.github/instructions/` directory has 14 instruction files governing CLI design, testing policy, cross-platform development, data models, code style, documentation covenants, audit procedures, and domain-specific workflows. gzkit's `.claude/rules/` has 11 files covering overlapping ground — but the overlap has never been systematically verified. Content may have diverged, gaps may exist in either direction, and domain-specific files may contain extractable generic patterns. This ADR governs the file-by-file reconciliation to ensure gzkit's agent governance surface is authoritative and complete.
 
+> **Baseline note (2026-04-23, GHI #295):** ADR-0.0.20 deleted three `.gzkit/rules/` files (`agent-contract.md`, `attestation-enrichment.md`, `defect-fix-routing.md`) and consolidated their content into `AGENTS.md` (binding) plus `docs/governance/agent-contract-rationale.md`, `docs/governance/arb-middleware.md`, and `docs/governance/defect-fix-routing.md` (rationale + deep-dive). The `.claude/rules/` mirrors are gone; the `.gzkit/manifest.json` `rules.unscoped_allowlist` is empty. Any reconciliation OBPI under this ADR that targeted those three files (or their `.claude/rules/` mirrors) must retarget to the successor surfaces above. OBPI-0.36.0-08 (arb) was already retargeted under GHI #289/#291 and commit `f262b08a`.
+
 ## Decision
 
 - Each of the 13 comparison pairs (or singles) gets individual OBPI examination
