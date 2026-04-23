@@ -94,7 +94,7 @@ gzkit must own all reusable agent governance patterns. airlineops's `.github/ins
 | 5 | OBPI-0.36.0-05 | Reconcile `pythonic.instructions.md` vs `.claude/rules/pythonic.md` | Heavy | Pending |
 | 6 | OBPI-0.36.0-06 | Reconcile `gate5_runbook_code_covenant.instructions.md` vs `.claude/rules/gate5-runbook-code-covenant.md` | Heavy | Pending |
 | 7 | OBPI-0.36.0-07 | Reconcile `adr_audit.instructions.md` vs `.claude/rules/adr-audit.md` | Heavy | Pending |
-| 8 | OBPI-0.36.0-08 | Reconcile `arb.instructions.md` vs `.claude/rules/arb.md` | Heavy | Pending |
+| 8 | OBPI-0.36.0-08 | Reconcile `arb.instructions.md` vs `AGENTS.md` § Attestation + `docs/governance/arb-middleware.md` (retargeted 2026-04-23, GHI #291) | Heavy | Pending |
 | 9 | OBPI-0.36.0-09 | Reconcile `chores.instructions.md` vs `.claude/rules/chores.md` | Heavy | Pending |
 | 10 | OBPI-0.36.0-10 | Reconcile `gh_cli.instructions.md` vs `.claude/rules/gh-cli.md` | Heavy | Pending |
 | 11 | OBPI-0.36.0-11 | Evaluate `sql_hygiene.instructions.md` for generic pattern extraction | Heavy | Pending |

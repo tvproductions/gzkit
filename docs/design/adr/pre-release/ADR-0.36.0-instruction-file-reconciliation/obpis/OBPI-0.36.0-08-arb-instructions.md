@@ -12,16 +12,24 @@ date: 2026-03-21
 ## ADR ITEM — Level 1 WBS Reference
 
 - Source ADR: `docs/design/adr/pre-release/ADR-0.36.0-instruction-file-reconciliation/ADR-0.36.0-instruction-file-reconciliation.md`
-- OBPI Entry (Level 1 WBS): `OBPI-0.36.0-08 — "Reconcile arb.instructions.md vs .claude/rules/arb.md"`
+- OBPI Entry (Level 1 WBS): `OBPI-0.36.0-08 — "Reconcile arb.instructions.md vs AGENTS.md § Attestation + docs/governance/arb-middleware.md"`
+
+> Retargeted 2026-04-23 under GHI #291. Original target `.claude/rules/arb.md`
+> was absorbed into `.gzkit/rules/attestation-enrichment.md` on 2026-04-21
+> (OBPI-0.25.0-33), then folded on 2026-04-23 under ADR-0.0.20 OBPI-03 into
+> two successor surfaces: binding content in `AGENTS.md § Attestation` and
+> ARB middleware deep-dive in `docs/governance/arb-middleware.md`. This
+> brief's reconciliation now targets those successor surfaces.
 
 ## OBJECTIVE
 
-Compare airlineops's `arb.instructions.md` against gzkit's `.claude/rules/arb.md` to identify content gaps. Both files govern ARB (Agent Self-Reporting) middleware usage: core concept, when to use ARB, available commands, receipt schema, and exit codes. Determine: Absorb or Confirm.
+Compare airlineops's `arb.instructions.md` against gzkit's ARB doctrine as it lives today — binding invariants in `AGENTS.md § Attestation` and the middleware deep-dive in `docs/governance/arb-middleware.md`. Both surfaces together govern ARB (Agent Self-Reporting) middleware usage: core concept, when to use ARB, available commands, receipt schema, and exit codes. Determine: Absorb or Confirm, routing absorption decisions to whichever successor surface matches the content class (binding invariant → `AGENTS.md`; pedagogy → `docs/governance/arb-middleware.md`).
 
 ## SOURCE MATERIAL
 
 - **airlineops:** `.github/instructions/arb.instructions.md`
-- **gzkit equivalent:** `.claude/rules/arb.md`
+- **gzkit binding surface:** `AGENTS.md` § Attestation (pattern, canonical invocations table, lane behavior, applies-to, worked example)
+- **gzkit pedagogy surface:** `docs/governance/arb-middleware.md` (core concept, commands, receipt schema/storage, exit codes, rationale)
 
 ## ASSUMPTIONS
 
@@ -59,7 +67,8 @@ Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
 
 ## ALLOWED PATHS
 
-- `.claude/rules/arb.md` — target for reconciled content
+- `AGENTS.md` — binding successor surface (§ Attestation) for reconciled content that lands as invariant
+- `docs/governance/arb-middleware.md` — pedagogy successor surface for reconciled content that lands as deep-dive
 - `docs/design/adr/pre-release/ADR-0.36.0-instruction-file-reconciliation/` — this ADR and briefs
 
 ## QUALITY GATES (Heavy)
