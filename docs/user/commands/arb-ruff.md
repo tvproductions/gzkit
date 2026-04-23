@@ -50,7 +50,7 @@ gz arb ruff --soft-fail src
 
 - Schema: `gzkit.arb.lint_receipt.v1` (`data/schemas/arb_lint_receipt.schema.json`)
 - Prefix: `arb-ruff-<timestamp>`
-- Canonical for attestation claim "Lint clean" per `.gzkit/rules/attestation-enrichment.md`.
+- Canonical for attestation claim "Lint clean" per `AGENTS.md` § Attestation.
 
 ---
 
@@ -58,4 +58,4 @@ gz arb ruff --soft-fail src
 
 - [`gz arb`](arb.md) — ARB parent reference
 - [`gz lint`](lint.md) — unwrapped lint runner
-- Rule: `.gzkit/rules/attestation-enrichment.md`
+- Rule: `AGENTS.md` § Attestation (binding) / `docs/governance/arb-middleware.md` (deep-dive)

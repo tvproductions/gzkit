@@ -203,9 +203,9 @@ def _check_lock_held(project_root: Path, obpi_id: str) -> CheckResult:
 def _check_arb_receipts_present(project_root: Path) -> CheckResult:
     """ARB receipts (lint/typecheck/unittest) SHOULD be present for Heavy-lane attestation.
 
-    Per .gzkit/rules/attestation-enrichment.md, Heavy-lane attestation
-    without inline receipt IDs is rejected. This check surfaces missing
-    receipts before the operator drafts attestation text.
+    Per AGENTS.md § Attestation, Heavy-lane attestation without inline
+    receipt IDs is rejected. This check surfaces missing receipts before
+    the operator drafts attestation text.
     """
     receipts_dir = project_root / "artifacts" / "receipts"
     if not receipts_dir.is_dir():

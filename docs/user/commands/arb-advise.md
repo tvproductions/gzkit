@@ -50,4 +50,4 @@ gz arb advise --json
 - [`gz arb`](arb.md) — ARB parent reference
 - [`gz arb patterns`](arb-patterns.md) — extract anti-pattern catalog from receipts
 - [`gz arb validate`](arb-validate.md) — schema-validate receipts
-- Rule: `.gzkit/rules/attestation-enrichment.md`
+- Rule: `AGENTS.md` § Attestation (binding) / `docs/governance/arb-middleware.md` (deep-dive)

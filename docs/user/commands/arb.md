@@ -37,7 +37,7 @@ ARB intercepts QA command execution and records:
 - Structured findings (linting violations, type errors, test failures)
 - Receipt artifacts (JSON schema-validated, persistent)
 
-Receipts are written to `artifacts/receipts/` (configurable via `arb.receipts_root` in `.gzkit.json`) and are the canonical attestation evidence cited in Heavy-lane OBPI closeout claims. See `.gzkit/rules/attestation-enrichment.md` for the rule contract (canonical home for ARB middleware, canonical invocations, and receipt-ID discipline).
+Receipts are written to `artifacts/receipts/` (configurable via `arb.receipts_root` in `.gzkit.json`) and are the canonical attestation evidence cited in Heavy-lane OBPI closeout claims. See `AGENTS.md` § Attestation for the binding rule contract (em-dash pattern, canonical invocations, lane behavior) and `docs/governance/arb-middleware.md` for the middleware deep-dive.
 
 ## Examples
 
@@ -111,6 +111,7 @@ All receipts include: `schema`, `run_id`, `timestamp_utc`, `git` (commit/branch/
 
 ## Related
 
-- Rule and attestation contract: `.gzkit/rules/attestation-enrichment.md` (canonical home since 2026-04-21; absorbed the former `arb.md`)
+- Binding rule contract: `AGENTS.md` § Attestation (em-dash pattern, canonical invocations, lane behavior)
+- Middleware deep-dive: `docs/governance/arb-middleware.md` (core concept, command surface, receipt schema, exit codes, rationale)
 - Manpage: `docs/user/manpages/arb.md`
 - Commands index: `docs/user/commands/index.md`

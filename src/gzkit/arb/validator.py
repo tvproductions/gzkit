@@ -181,7 +181,7 @@ def _provenance_error(payload: dict[str, Any]) -> str | None:
         f"non-canonical provenance: step.name='{name}' requires "
         f"step.command={expected!r} but got {observed!r}. "
         "Regenerate the receipt via `gz arb " + name + "` (or the canonical "
-        "invocation listed in .gzkit/rules/attestation-enrichment.md)."
+        "invocation listed in AGENTS.md § Attestation)."
     )
 
 

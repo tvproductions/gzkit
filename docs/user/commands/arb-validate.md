@@ -48,4 +48,4 @@ gz arb validate --json
 
 - [`gz arb`](arb.md) — ARB parent reference
 - [`gz arb advise`](arb-advise.md) — summarize lint patterns across receipts
-- Rule: `.gzkit/rules/attestation-enrichment.md`
+- Rule: `AGENTS.md` § Attestation (binding) / `docs/governance/arb-middleware.md` (deep-dive)

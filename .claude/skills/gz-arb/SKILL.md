@@ -9,7 +9,7 @@ last_reviewed: 2026-04-18
 model: haiku
 gz_command: arb advise
 metadata:
-  skill-version: "1.0.1"
+  skill-version: "1.0.2"
 revived_on: "2026-04-14"
 revived_under: OBPI-0.25.0-33
 revival_note: "ARB surface absorbed from airlineops/opsdev/arb under OBPI-0.25.0-33. The earlier retirement (2026-04-03, 'consolidated into gz-check') was itself drift — gz check never implemented ARB receipt emission, so the rule contract in .gzkit/rules/arb.md was referencing a nonexistent surface. Revival restores parity with the rule."
@@ -19,7 +19,7 @@ revival_note: "ARB surface absorbed from airlineops/opsdev/arb under OBPI-0.25.0
 
 ## Overview
 
-Agent Self-Reporting middleware: wrap QA commands (ruff, ty, unittest, coverage) and emit schema-validated JSON receipts to `artifacts/receipts/`. These receipts are the canonical attestation evidence cited in Heavy-lane OBPI closeout claims per `.gzkit/rules/attestation-enrichment.md`.
+Agent Self-Reporting middleware: wrap QA commands (ruff, ty, unittest, coverage) and emit schema-validated JSON receipts to `artifacts/receipts/`. These receipts are the canonical attestation evidence cited in Heavy-lane OBPI closeout claims per `AGENTS.md` § Attestation.
 
 ## When to Use
 
@@ -31,9 +31,9 @@ Agent Self-Reporting middleware: wrap QA commands (ruff, ty, unittest, coverage)
 ## Workflow
 
 1. **Wrap the QA step via ARB** — pick the appropriate verb. For any claim
-   category named in `.gzkit/rules/attestation-enrichment.md` § Receipt-ID
-   Requirement, use the canonical invocation from that table; those commands
-   are locked by `CANONICAL_STEP_COMMANDS` and divergence is flagged by
+   category named in `AGENTS.md` § Attestation § Canonical invocations,
+   use the canonical invocation from that table; those commands are locked
+   by `CANONICAL_STEP_COMMANDS` and divergence is flagged by
    `gz arb validate` as non-canonical provenance (GHI #199).
    - `uv run gz arb ruff <paths>` — ruff lint (canonical for lint claims)
    - `uv run gz arb typecheck` — wraps `ty check src`, the same target as
@@ -48,14 +48,14 @@ Agent Self-Reporting middleware: wrap QA commands (ruff, ty, unittest, coverage)
 2. **Validate the emitted receipts** — `uv run gz arb validate --limit 20`
 3. **Summarize recent receipts** — `uv run gz arb advise --limit 20`
 4. **Extract recurring patterns** (optional) — `uv run gz arb patterns`
-5. **Cite receipt IDs in the attestation** per `.claude/rules/attestation-enrichment.md`
+5. **Cite receipt IDs in the attestation** per `AGENTS.md` § Attestation
 
 ## Example
 
 ```bash
 # Produce full attestation evidence for Heavy-lane closeout.
 # Each invocation below is the canonical form per
-# .gzkit/rules/attestation-enrichment.md § Receipt-ID Requirement.
+# AGENTS.md § Attestation § Canonical invocations.
 uv run gz arb ruff src tests
 uv run gz arb typecheck
 uv run gz arb step --name unittest -- uv run -m unittest -q
@@ -78,8 +78,8 @@ uv run gz arb advise --limit 10
 
 ## References
 
-- Rule: `.gzkit/rules/attestation-enrichment.md` (ARB middleware + canonical invocations + receipt-ID discipline now live in one canonical home; former `arb.md` merged 2026-04-21)
+- Binding rule: `AGENTS.md` § Attestation (em-dash pattern + canonical invocations + lane behavior + receipt-ID discipline)
+- Deep-dive: `docs/governance/arb-middleware.md` (core concept, command surface, receipt schema, exit codes, rationale)
 - Command docs: `docs/user/commands/arb.md`
 - Manpage: `docs/user/manpages/arb.md`
-- Attestation contract: `.gzkit/rules/attestation-enrichment.md`
 - Absorption record: OBPI-0.25.0-33 under ADR-0.25.0

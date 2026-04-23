@@ -100,7 +100,7 @@ A commit body that asserts the destination's output form without either of the a
 - `.gzkit/rules/cli.md` — CLI contract doctrine (Heavy-lane trigger for subcommand changes)
 - `.gzkit/rules/gate5-runbook-code-covenant.md` — runbook as first-class deliverable tracking code
 - `.gzkit/rules/skill-surface-sync.md` — skill version discipline and mirror-drift prevention
-- `.gzkit/rules/attestation-enrichment.md` — precedent for requiring observed evidence over narrative reconstruction (the ARB receipt requirement is the same shape as the commit-message verification rule above)
+- `AGENTS.md` § Attestation — precedent for requiring observed evidence over narrative reconstruction (the ARB receipt requirement is the same shape as the commit-message verification rule above)
 - GHI #141 — status-adjacent CLI/skill routing drift, the audit that surfaced Invariants 1 and 2
 - GHI #149 — Invariant 3 addition (this section), the forward-looking enforcement
 - GHI #150 — one-time audit sweep of every skill's Output Contract claims against observed runtime output (`artifacts/audits/skill-output-contract-audit-2026-04-14.md`)

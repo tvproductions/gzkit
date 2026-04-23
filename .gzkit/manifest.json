@@ -80,12 +80,6 @@
   "rules": {
     "unscoped_allowlist": [
       {
-        "file": ".gzkit/rules/attestation-enrichment.md",
-        "rationale": "Pending consolidation per OBPI-03",
-        "tracking_ref": "ADR-0.0.20",
-        "added_date": "2026-04-21"
-      },
-      {
         "file": ".gzkit/rules/defect-fix-routing.md",
         "rationale": "Pending consolidation per OBPI-04",
         "tracking_ref": "ADR-0.0.20",

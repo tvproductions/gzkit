@@ -422,7 +422,7 @@ class TestAllowlistListing(unittest.TestCase):
                 added_date=date(2026, 4, 21),
             ),
             UnscopedAllowlistEntry(
-                file=".gzkit/rules/attestation-enrichment.md",
+                file=".gzkit/rules/defect-fix-routing.md",
                 rationale="Pending consolidation per OBPI-03",
                 tracking_ref="ADR-0.0.20",
                 added_date=date(2026, 4, 21),
@@ -432,7 +432,7 @@ class TestAllowlistListing(unittest.TestCase):
         self.assertIn(".gzkit/rules/agent-contract.md", rendered)
         self.assertIn("Pending consolidation per OBPI-02", rendered)
         self.assertIn("ADR-0.0.20", rendered)
-        self.assertIn(".gzkit/rules/attestation-enrichment.md", rendered)
+        self.assertIn(".gzkit/rules/defect-fix-routing.md", rendered)
 
     @covers("REQ-0.0.20-01-09")
     def test_empty_allowlist_renders_cleanly(self) -> None:

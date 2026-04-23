@@ -51,7 +51,7 @@ gz arb step --name mkdocs -- uv run mkdocs build --strict
 - Prefix: `arb-step-<name>-<timestamp>`
 - Canonical for attestation claim "Tests pass" / "Docs build clean" via
   `arb-step-unittest-*` and `arb-step-mkdocs-*` per
-  `.gzkit/rules/attestation-enrichment.md`.
+  `AGENTS.md` § Attestation.
 
 ---
 
@@ -59,4 +59,4 @@ gz arb step --name mkdocs -- uv run mkdocs build --strict
 
 - [`gz arb`](arb.md) — ARB parent reference
 - [`gz arb typecheck`](arb-typecheck.md) — canonical typecheck wrapper
-- Rule: `.gzkit/rules/attestation-enrichment.md`
+- Rule: `AGENTS.md` § Attestation (binding) / `docs/governance/arb-middleware.md` (deep-dive)
