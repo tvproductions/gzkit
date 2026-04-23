@@ -8,7 +8,7 @@ owner: gzkit-governance
 last_reviewed: "2026-04-22"
 gz_command: justify
 metadata:
-  skill-version: "6.0.0"
+  skill-version: "6.0.1"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero_layer: "Layer 1 - Evidence Gathering"
@@ -107,7 +107,7 @@ Invoke `gz justify` at any of the following moments. The upstream skills surface
 - **OBPI pipeline Stage 1→2**, when your self-reported confidence in the planned implementation is <90% (Prime Directive invariant 11). The `gz-obpi-pipeline` skill's Stage 1→2 Confidence Gate routes here.
 - **After a gz-adr-evaluate run lands below 3.0** on an ADR with a tracking GHI or at least one OBPI. The `gz-adr-evaluate` skill appends a footer pointing to `uv run -m gzkit justify <parent-GHI-or-first-OBPI>`.
 - **Before promoting a pool ADR** into active work — run justify on the tracking GHI to surface hidden ambiguity before you commit the lane/kind.
-- **Mid-pipeline, when scope feels ambiguous** — if you are about to guess at whether a change crosses brief boundaries (see `.gzkit/rules/defect-fix-routing.md`), run justify on the in-flight OBPI and fill the scope boundary section before continuing.
+- **Mid-pipeline, when scope feels ambiguous** — if you are about to guess at whether a change crosses brief boundaries (see AGENTS.md § Defect-fix routing), run justify on the in-flight OBPI and fill the scope boundary section before continuing.
 - **At your own discretion**, when a task description contains hedging language ("probably", "should be able to", "I think") or when an operator request is ambiguous. The walkthrough is cheap; the wrong-direction pass is expensive.
 
 Do not use it for governance ceremony steps that already have dedicated skills (plan-audit, OBPI completion, closeout). Those surfaces already produce receipts. `gz justify` is the pre-execution reasoning layer, not a substitute for any of them.

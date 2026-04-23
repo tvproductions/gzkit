@@ -1,6 +1,6 @@
 {
   "obpi_id": "OBPI-0.0.20-03-fold-attestation-enrichment",
-  "timestamp": "2026-04-23T01:55:40.625772+00:00",
+  "timestamp": "2026-04-23T11:36:42.928956+00:00",
   "verdict": "PASS",
   "plan_file": "swift-hatching-puzzle.md",
   "gaps_found": 0,
@@ -997,6 +997,13 @@
       "sibling_obpi": "OBPI-0.36.0-13-calendars-instructions",
       "contested_paths": [
         ".claude/rules/attestation-enrichment.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.36.0",
+      "sibling_obpi": "OBPI-0.36.0-08-arb-instructions",
+      "contested_paths": [
+        "docs/governance/arb-middleware.md"
       ]
     },
     {

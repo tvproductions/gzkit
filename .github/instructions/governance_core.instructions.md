@@ -16,7 +16,7 @@ applyTo: "**/*"
 ## Required workflow order (OBPI implementation path)
 
 Scope: planned OBPI implementation under an active ADR. For in-flight defect
-fixes meeting the thresholds in `.gzkit/rules/defect-fix-routing.md`, take the
+fixes meeting the thresholds in AGENTS.md § Defect-fix routing, take the
 direct `fix(<scope>): … (GHI #N)` path instead — this workflow does not apply.
 
 1. `uv run gz state --json`

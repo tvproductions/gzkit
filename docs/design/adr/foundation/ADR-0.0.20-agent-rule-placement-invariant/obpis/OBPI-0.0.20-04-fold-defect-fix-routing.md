@@ -3,7 +3,7 @@ id: OBPI-0.0.20-04-fold-defect-fix-routing
 parent: ADR-0.0.20-agent-rule-placement-invariant
 item: 4
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.20-04-fold-defect-fix-routing: Fold defect-fix-routing.md into AGENTS.md / docs/governance/defect-fix-routing.md
@@ -176,14 +176,33 @@ uv run -m unittest tests.governance.test_defect_fix_routing_fold -v
 
 ### Key Proof
 
+
+```
+$ uv run gz validate --unscoped-rules
+Validated: unscoped-rules
+✓ 13 rule file(s) checked (0 allowlisted).
+
+$ uv run -m unittest tests.governance.test_defect_fix_routing_fold -v
+...
+Ran 8 tests in 0.298s
+OK
+```
+
+Every REQ-pinned semantic assertion in the new test suite passes. Manifest allow-list is empty. Vendor mirrors removed. All three sibling fold test suites (agent-contract / attestation / defect-fix-routing) green.
+
+Receipts: lint `arb-ruff-5cd59dfd75e74401825a271a08f99a84`; typecheck `arb-step-typecheck-9145d56567bb4040a8d32198e3308493`; governance tests `arb-step-unittest-c711ce7198694d9a8dc594298b967dea`.
+
 ### Implementation Summary
 
-- Files modified:
-- Files deleted:
-- Files created:
-- Tests added:
-- Date completed:
-- Attestation status:
+
+- Files modified: `src/gzkit/templates/agents.md` (added § Defect-fix routing, rewrote Invariant 6c anchor); `.gzkit/manifest.json` (`unscoped_allowlist: []`); `.gzkit/rules/governance-core.md`; 7 `.gzkit/skills/*/SKILL.md` files (all with skill-version patch bump: ghi-close 2.0.0→2.0.1, ghi-author 1.0.0→1.0.1, gz-skill-router 6.0.2→6.0.3, gz-justify 6.0.0→6.0.1, gz-design 1.2.0→1.2.1, gz-plan 1.1.0→1.1.1, gz-obpi-pipeline 6.11.0→6.11.1); `docs/user/skills/ghi-close.md`; `tests/governance/test_attestation_fold.py` (softened co-state assertions to absence per `test_agent_contract_fold` precedent)
+- Files deleted: `.gzkit/rules/defect-fix-routing.md` (canonical)
+- Files created: `docs/governance/defect-fix-routing.md` (pedagogy: binding-content pointer, anti-patterns, GHI #195 origin narrative, related-rules cross-references); `tests/governance/test_defect_fix_routing_fold.py` (8 REQ-pinned tests mirroring attestation-fold template)
+- Tests added: 8 tests in `TestDefectFixRoutingFold`, each `@covers("REQ-0.0.20-04-NN")` derived from Acceptance Criteria; RED pre-migration = 7 failures + 1 error; GREEN post-migration = 8/8 pass in 0.298s
+- Vendor mirrors regenerated via `gz agent sync control-surfaces`; `.claude/rules/defect-fix-routing.md`, `.github/instructions/defect_fix_routing.instructions.md`, `.agents/rules/defect-fix-routing.md` absent
+- Full unittest sweep: 3536 pass (1 skip) in 27s; `gz validate --all` exit 0; `gz validate --unscoped-rules` reports 0 allowlist entries; `mkdocs build --strict` clean
+- Date completed: 2026-04-23
+- Attestation status: operator attested "attest completed" at Stage 4
 
 ## Tracked Defects
 
@@ -191,14 +210,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a` (Lite lane; OBPI self-closeable)
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — Fold `.gzkit/rules/defect-fix-routing.md` (last universal `paths: "**"` rule) into AGENTS.md § Defect-fix routing (threshold tables + decision protocol) and `docs/governance/defect-fix-routing.md` (anti-patterns + GHI #195 origin + related-rules). Canonical deleted; manifest `unscoped_allowlist` now empty (1→0); 10 canonical files + 1 hand-authored skill doc rewritten; vendor mirrors removed via sync. 8 REQ-pinned tests green; full unittest 3536 pass (1 skip); `gz validate --all` exit 0; `gz validate --unscoped-rules` reports 0 allowlisted; `mkdocs build --strict` clean. Receipts: lint arb-ruff-5cd59dfd75e74401825a271a08f99a84; typecheck arb-step-typecheck-9145d56567bb4040a8d32198e3308493; governance-tests arb-step-unittest-c711ce7198694d9a8dc594298b967dea.
+- Date: 2026-04-23
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-23
 
 **Evidence Hash:** -

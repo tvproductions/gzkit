@@ -4,7 +4,7 @@ persona: main-session
 description: Collaborative design dialogue that produces GovZero ADR artifacts. Use when exploring a new feature, capability, or architectural change before implementation — replaces superpowers brainstorming for this project. Triggers on "design X", "let's design", "brainstorm X", "I want to build X", "gz-design".
 category: adr-lifecycle
 metadata:
-  skill-version: "1.2.0"
+  skill-version: "1.2.1"
   govzero-framework-version: "v6"
 lifecycle_state: active
 owner: gzkit-governance
@@ -59,7 +59,7 @@ Present design → User approves → Book artifact → gz-adr-evaluate → Hand 
 
 ### Step 1: Explore Context
 
-**Pre-flight — defect-fix routing.** If this is an in-flight defect fix per `.gzkit/rules/defect-fix-routing.md` thresholds (≤10 source lines, ≤2 source files, in-flight trigger, ≥3 recent `fix(...)` precedents in the 60-day window, unit-test coverage viable), route to a direct `fix(<scope>): … (GHI #N)` commit instead of scaffolding an ADR. Default-to-ceremony for small in-flight defects is the exact over-application pattern GHI #195 authored the routing rule to prevent.
+**Pre-flight — defect-fix routing.** If this is an in-flight defect fix per AGENTS.md § Defect-fix routing thresholds (≤10 source lines, ≤2 source files, in-flight trigger, ≥3 recent `fix(...)` precedents in the 60-day window, unit-test coverage viable), route to a direct `fix(<scope>): … (GHI #N)` commit instead of scaffolding an ADR. Default-to-ceremony for small in-flight defects is the exact over-application pattern GHI #195 authored the routing rule to prevent.
 
 Before asking anything, read the current state:
 
