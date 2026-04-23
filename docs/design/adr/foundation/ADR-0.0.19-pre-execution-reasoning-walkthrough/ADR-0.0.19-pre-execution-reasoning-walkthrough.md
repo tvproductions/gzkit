@@ -14,7 +14,7 @@ date: 2026-04-19
 
 **Active persona:** `main-session` — craftsperson who reads the anchor before proposing a change, treats "confident-wrong-direction" as a first-class defect class rather than a cosmetic misfire, and distinguishes reasoning evidence (why the change should happen) from QA evidence (that the change was built correctly). This ADR formalizes the 8-section walkthrough structure extracted from the 4.7 governance hardening audit (umbrella GHI #224, sub-GHIs #225-#230) and makes it available as a durable skill without collapsing it into an enforced governance gate.
 
-This ADR is a Foundation addition. Foundations are baseline assumptions about good app substrates — the Prime Directive invariant 11 ("if <90% sure, ask the human") has existed in `.gzkit/rules/behavioral-invariants.md` for months but has no mechanical surface; this ADR provides one without imposing universal friction. The 2am-operator rubric is load-bearing: actual 2am use is reading commit bodies, so justify's value is *pre-2am* (before the confident-wrong-direction commit), not during.
+This ADR is a Foundation addition. Foundations are baseline assumptions about good app substrates — the Prime Directive invariant 11 ("if <90% sure, ask the human") lives in `AGENTS.md` § Behavior Rules — Always (item 7) per ADR-0.0.20 OBPI-02 consolidation, with rationale in `docs/governance/agent-contract-rationale.md`. The invariant has no mechanical surface; this ADR provides one without imposing universal friction. The 2am-operator rubric is load-bearing: actual 2am use is reading commit bodies, so justify's value is *pre-2am* (before the confident-wrong-direction commit), not during.
 
 ## Intent
 
