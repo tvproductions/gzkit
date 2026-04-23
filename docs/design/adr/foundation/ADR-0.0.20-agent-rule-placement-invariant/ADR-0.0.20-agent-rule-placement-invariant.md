@@ -249,4 +249,4 @@ Inbound references across ~40 live files (Bucket 1 from blast-radius analysis) g
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.20 | Validated | g0 | 2026-04-23 | All 5 OBPIs `attested_completed`; three rule files deleted; AGENTS.md absorbed ~440 lines of binding content; `gz validate --unscoped-rules` returns 13 files / 0 allowlisted; mechanical anti-regression invariant live; downstream GHIs #295/#296/#297 filed; foundation-kind closeout walkthrough executed per ADR-0.0.18; full test suite 3536/3536; mkdocs strict build clean; vendor mirrors regenerated cleanly. |
+| 0.0.20 | Completed | Jeffry | 2026-04-23 | completed: ADR-0.0.20 closeout — 5/5 OBPIs attested_completed; three .gzkit/rules/ files deleted; AGENTS.md absorbed ~440 lines of binding content; gz validate --unscoped-rules returns 13 files / 0 allowlisted; mechanical anti-regression invariant live; downstream GHIs #295/#296/#297 filed; foundation-kind walkthrough executed per ADR-0.0.18; full test suite 3536/3536; mkdocs --strict clean. |
