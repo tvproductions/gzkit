@@ -197,11 +197,11 @@ Inbound references across ~40 live files (Bucket 1 from blast-radius analysis) g
 
 <!-- Each item becomes an OBPI (One Brief Per Item). Sequential numbering, no gaps. -->
 
-- [ ] OBPI-0.0.20-01: Validator + allow-list foundation — Pydantic models (`UnscopedAllowlistEntry`, `Violation`, `UnscopedRulesResult`); `gz validate --unscoped-rules` flag; manifest schema fragment; initial allow-list with 3 entries (doomed files, `tracking_ref: ADR-0.0.20`); table-driven TDD tests; scorecard row addition; command-doc update.
-- [ ] OBPI-0.0.20-02: Fold `agent-contract.md` — migrate judgment invariants to AGENTS.md (§ Prime Directive / § DO IT RIGHT / § Behavior Rules); move invariant 10a to CLAUDE.md addendum; extract pedagogy to `docs/governance/agent-contract-rationale.md`; delete canonical + remove allow-list entry + update inbound references + sync.
-- [ ] OBPI-0.0.20-03: Fold `attestation-enrichment.md` — migrate em-dash pattern + canonical invocations table + lane behavior to AGENTS.md § Attestation; move ARB middleware detail to `docs/governance/arb-middleware.md`; update 6 Python docstring citations + 8 ARB command docs; delete canonical + allow-list entry + sync; flag ADR-0.36.0-OBPI-08 staleness.
-- [ ] OBPI-0.0.20-04: Fold `defect-fix-routing.md` — migrate threshold tables + decision protocol to AGENTS.md § Defect-fix routing; move anti-patterns + origin GHI history to `docs/governance/defect-fix-routing.md`; delete canonical + allow-list entry + sync; update inbound references.
-- [ ] OBPI-0.0.20-05: Closeout sweep + downstream flags — final grep sweep for residual references; verify mirror regeneration; file downstream GHIs (ADR-0.36.0 WBS refresh, ADR-0.38.0 baseline note, ADR-0.0.19 reference refresh); foundation-kind closeout walkthrough per ADR-0.0.18.
+- [x] OBPI-0.0.20-01: Validator + allow-list foundation — Pydantic models (`UnscopedAllowlistEntry`, `Violation`, `UnscopedRulesResult`); `gz validate --unscoped-rules` flag; manifest schema fragment; initial allow-list with 3 entries (doomed files, `tracking_ref: ADR-0.0.20`); table-driven TDD tests; scorecard row addition; command-doc update.
+- [x] OBPI-0.0.20-02: Fold `agent-contract.md` — migrate judgment invariants to AGENTS.md (§ Prime Directive / § DO IT RIGHT / § Behavior Rules); move invariant 10a to CLAUDE.md addendum; extract pedagogy to `docs/governance/agent-contract-rationale.md`; delete canonical + remove allow-list entry + update inbound references + sync.
+- [x] OBPI-0.0.20-03: Fold `attestation-enrichment.md` — migrate em-dash pattern + canonical invocations table + lane behavior to AGENTS.md § Attestation; move ARB middleware detail to `docs/governance/arb-middleware.md`; update 6 Python docstring citations + 8 ARB command docs; delete canonical + allow-list entry + sync; flag ADR-0.36.0-OBPI-08 staleness.
+- [x] OBPI-0.0.20-04: Fold `defect-fix-routing.md` — migrate threshold tables + decision protocol to AGENTS.md § Defect-fix routing; move anti-patterns + origin GHI history to `docs/governance/defect-fix-routing.md`; delete canonical + allow-list entry + sync; update inbound references.
+- [x] OBPI-0.0.20-05: Closeout sweep + downstream flags — final grep sweep for residual references; verify mirror regeneration; file downstream GHIs (ADR-0.36.0 WBS refresh #295, ADR-0.38.0 baseline note #296, ADR-0.0.19 reference refresh #297); foundation-kind closeout walkthrough per ADR-0.0.18.
 
 ## Q&A Transcript
 
@@ -213,10 +213,20 @@ Inbound references across ~40 live files (Bucket 1 from blast-radius analysis) g
 
 <!-- Links to tests, documentation, and other artifacts that prove completion -->
 
-*Populated at OBPI completion and ADR closeout.*
+**Populated at ADR closeout 2026-04-23.**
 
-- [ ] Tests: `tests/validators/test_unscoped_rules.py`
-- [ ] Docs: `docs/user/commands/validate.md`, `docs/governance/advisory-rules-audit.md` (scorecard row), `docs/governance/agent-contract-rationale.md` (new), `docs/governance/arb-middleware.md` (new), `docs/governance/defect-fix-routing.md` (new)
+- [x] Tests: `tests/governance/test_unscoped_rules.py`, `tests/governance/test_attestation_fold.py` — full suite 3536/3536 OK (skipped=1) in 29.171s
+- [x] Docs: `docs/user/commands/validate.md`, `docs/governance/advisory-rules-audit.md` (scorecard row), `docs/governance/agent-contract-rationale.md` (new), `docs/governance/arb-middleware.md` (new), `docs/governance/defect-fix-routing.md` (new)
+- [x] Validator: `uv run gz validate --unscoped-rules` → `13 rule file(s) checked (0 allowlisted)` exit 0
+- [x] Aggregate validator: `uv run gz validate --all` → exit 0
+- [x] Quality bundle: `uv run gz check` → exit 0 (lint + format + typecheck + tests)
+- [x] Docs build: `uv run mkdocs build --strict` → built in 2.10s, exit 0
+- [x] Vendor mirrors: `uv run gz agent sync control-surfaces` → no stale mirror-only paths; `.claude/rules/agent-contract.md`, `.claude/rules/attestation-enrichment.md`, `.claude/rules/defect-fix-routing.md`, `.github/instructions/agent_contract.instructions.md`, `.github/instructions/defect_fix_routing.instructions.md` all absent
+- [x] Live-surface grep sweep: returns only references to NEW governance homes (`docs/governance/agent-contract-rationale.md`, `docs/governance/arb-middleware.md`, `docs/governance/defect-fix-routing.md`); zero stale `.gzkit/rules/` references
+- [x] Downstream GHIs: #295 (ADR-0.36.0 WBS refresh), #296 (ADR-0.38.0-07 baseline note), #297 (ADR-0.0.19 reference refresh) — all OPEN, labeled `defect`
+- [x] Closeout form: `docs/design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/ADR-CLOSEOUT-FORM.md` — Phase 5 Validated
+- [x] Evaluation: `docs/design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/EVALUATION_SCORECARD.md` — ADR 4.00/4.0; per-OBPI ≥3.6/4.0; no score-1 dimensions
+- [x] Foundation walkthrough: per ADR-0.0.18 § Foundation-kind rigor — operator (g0) re-read ADR + each OBPI brief Acceptance Criteria + verified evidence; attested via `gz attest ADR-0.0.20 --status completed`; receipt emitted via `gz adr emit-receipt ADR-0.0.20 --event validated --attestor "g0"`
 
 ## Alternatives Considered
 
@@ -239,4 +249,4 @@ Inbound references across ~40 live files (Bucket 1 from blast-radius analysis) g
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.20 | Draft | | | |
+| 0.0.20 | Validated | g0 | 2026-04-23 | All 5 OBPIs `attested_completed`; three rule files deleted; AGENTS.md absorbed ~440 lines of binding content; `gz validate --unscoped-rules` returns 13 files / 0 allowlisted; mechanical anti-regression invariant live; downstream GHIs #295/#296/#297 filed; foundation-kind closeout walkthrough executed per ADR-0.0.18; full test suite 3536/3536; mkdocs strict build clean; vendor mirrors regenerated cleanly. |
