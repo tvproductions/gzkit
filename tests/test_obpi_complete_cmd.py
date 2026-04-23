@@ -710,8 +710,11 @@ class TestObpiCompleteCmdHappyPath(unittest.TestCase):
         mock_adr_resolve,
         mock_requires_human,
         mock_anchor,
-        mock_gate,  # noqa: ARG002  (gate patched to no-op)
+        mock_gate,
     ):
+        # Gate returns the resolved attestation_type (GHI #292);
+        # default to the canonical 'human' path for happy-path coverage.
+        mock_gate.return_value = "human"
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             mock_root.return_value = root
@@ -1150,7 +1153,10 @@ class TestAuthenticityGateUnit(unittest.TestCase):
             self.assertIn("aborted", str(ctx.exception).lower())
 
     def test_attest_exact_match_passes(self):
-        from gzkit.commands.adr_audit import _enforce_human_attestation_authenticity
+        from gzkit.commands.adr_audit import (
+            ATTESTATION_TYPE_HUMAN,
+            _enforce_human_attestation_authenticity,
+        )
 
         with (
             patch("gzkit.commands.adr_audit.console", _quiet_console),
@@ -1164,13 +1170,160 @@ class TestAuthenticityGateUnit(unittest.TestCase):
                 return_value="ATTEST",
             ),
         ):
-            # No exception = pass
-            _enforce_human_attestation_authenticity(
+            result = _enforce_human_attestation_authenticity(
                 obpi_id="OBPI-0.0.20-03",
                 parent_adr="ADR-0.0.20",
                 attestor="Jeffry Babb",
                 attestation_text="exact uppercase",
             )
+            self.assertEqual(result, ATTESTATION_TYPE_HUMAN)
+
+
+@covers("OBPI-0.0.14-02")
+class TestAgentRelayedEscapePath(unittest.TestCase):
+    """GHI #292 — --attestor-present escape path for agent+operator co-presence.
+
+    The GHI #290 TTY gate conflated 'headless agent' with 'agent + operator
+    co-present via tool-use Bash'. These tests pin the three branches of the
+    post-#292 gate: TTY path still returns 'human'; non-TTY + --attestor-present
+    + active pipeline marker returns 'agent-relayed-operator-attestation';
+    non-TTY without either signal still fails closed.
+    """
+
+    def _write_marker(self, project_root: Path, obpi_id: str) -> Path:
+        plans_dir = project_root / ".claude" / "plans"
+        plans_dir.mkdir(parents=True, exist_ok=True)
+        marker = plans_dir / f".pipeline-active-{obpi_id}.json"
+        marker.write_text(
+            json.dumps({"obpi_id": obpi_id, "current_stage": "ceremony"}),
+            encoding="utf-8",
+        )
+        return marker
+
+    def test_non_tty_with_attestor_present_and_marker_returns_agent_relayed(self):
+        from gzkit.commands.adr_audit import (
+            ATTESTATION_TYPE_AGENT_RELAYED,
+            _enforce_human_attestation_authenticity,
+        )
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            self._write_marker(project_root, "OBPI-0.0.20-03")
+            with (
+                patch("gzkit.commands.adr_audit.console", _quiet_console),
+                patch(
+                    "gzkit.commands.adr_audit._is_human_attestation_tty_available",
+                    return_value=False,
+                ),
+            ):
+                result = _enforce_human_attestation_authenticity(
+                    obpi_id="OBPI-0.0.20-03",
+                    parent_adr="ADR-0.0.20",
+                    attestor="Jeffry Babb",
+                    attestation_text="agent-relayed under active pipeline marker",
+                    attestor_present=True,
+                    project_root=project_root,
+                )
+                self.assertEqual(result, ATTESTATION_TYPE_AGENT_RELAYED)
+
+    def test_non_tty_with_attestor_present_but_no_marker_raises(self):
+        from gzkit.commands.adr_audit import _enforce_human_attestation_authenticity
+        from gzkit.commands.common import GzCliError
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            # Deliberately do not write a marker.
+            with (
+                patch("gzkit.commands.adr_audit.console", _quiet_console),
+                patch(
+                    "gzkit.commands.adr_audit._is_human_attestation_tty_available",
+                    return_value=False,
+                ),
+            ):
+                with self.assertRaises(GzCliError) as ctx:
+                    _enforce_human_attestation_authenticity(
+                        obpi_id="OBPI-0.0.20-03",
+                        parent_adr="ADR-0.0.20",
+                        attestor="Jeffry Babb",
+                        attestation_text="no marker, should fail",
+                        attestor_present=True,
+                        project_root=project_root,
+                    )
+                self.assertIn("pipeline marker", str(ctx.exception).lower())
+                self.assertIn("gz obpi pipeline", str(ctx.exception))
+
+    def test_non_tty_without_attestor_present_still_raises(self):
+        from gzkit.commands.adr_audit import _enforce_human_attestation_authenticity
+        from gzkit.commands.common import GzCliError
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            # Even with a marker present, without the flag the gate fails closed.
+            self._write_marker(project_root, "OBPI-0.0.20-03")
+            with (
+                patch("gzkit.commands.adr_audit.console", _quiet_console),
+                patch(
+                    "gzkit.commands.adr_audit._is_human_attestation_tty_available",
+                    return_value=False,
+                ),
+            ):
+                with self.assertRaises(GzCliError) as ctx:
+                    _enforce_human_attestation_authenticity(
+                        obpi_id="OBPI-0.0.20-03",
+                        parent_adr="ADR-0.0.20",
+                        attestor="Jeffry Babb",
+                        attestation_text="flag not set",
+                        attestor_present=False,
+                        project_root=project_root,
+                    )
+                self.assertIn("GHI #290", str(ctx.exception))
+                self.assertIn("--attestor-present", str(ctx.exception))
+
+    def test_tty_path_with_attestor_present_still_prompts_attest(self):
+        """TTY path must not be bypassed by --attestor-present; the flag only
+        opens the non-TTY marker-based escape."""
+        from gzkit.commands.adr_audit import (
+            ATTESTATION_TYPE_HUMAN,
+            _enforce_human_attestation_authenticity,
+        )
+        from gzkit.commands.common import GzCliError
+
+        with (
+            patch("gzkit.commands.adr_audit.console", _quiet_console),
+            patch(
+                "gzkit.commands.adr_audit._is_human_attestation_tty_available",
+                return_value=True,
+            ),
+            patch("gzkit.commands.adr_audit.input", create=True, return_value="nope"),
+            self.assertRaises(GzCliError),
+        ):
+            _enforce_human_attestation_authenticity(
+                obpi_id="OBPI-0.0.20-03",
+                parent_adr="ADR-0.0.20",
+                attestor="Jeffry Babb",
+                attestation_text="TTY still prompts",
+                attestor_present=True,
+                project_root=Path("/nonexistent"),
+            )
+
+        # And when the prompt is satisfied, the resolved type is still 'human'.
+        with (
+            patch("gzkit.commands.adr_audit.console", _quiet_console),
+            patch(
+                "gzkit.commands.adr_audit._is_human_attestation_tty_available",
+                return_value=True,
+            ),
+            patch("gzkit.commands.adr_audit.input", create=True, return_value="ATTEST"),
+        ):
+            result = _enforce_human_attestation_authenticity(
+                obpi_id="OBPI-0.0.20-03",
+                parent_adr="ADR-0.0.20",
+                attestor="Jeffry Babb",
+                attestation_text="TTY-typed wins",
+                attestor_present=True,
+                project_root=Path("/nonexistent"),
+            )
+            self.assertEqual(result, ATTESTATION_TYPE_HUMAN)
 
 
 if __name__ == "__main__":

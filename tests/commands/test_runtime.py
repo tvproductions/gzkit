@@ -22,13 +22,16 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         # GHI #290: the authenticity gate requires a real TTY + 'ATTEST'
         # confirmation. CliRunner tests run headlessly, so patch the gate
         # at every call site for the duration of each test. This is a
-        # test-isolation mechanism, not a production bypass.
+        # test-isolation mechanism, not a production bypass. The gate
+        # returns the resolved attestation_type (GHI #292); default to
+        # "human" so callers writing the value into evidence dicts produce
+        # JSON-serializable receipts.
         for target in (
             "gzkit.commands.adr_audit._enforce_human_attestation_authenticity",
             "gzkit.commands.obpi_cmd._enforce_human_attestation_authenticity",
             "gzkit.commands.obpi_complete._enforce_human_attestation_authenticity",
         ):
-            patcher = patch(target)
+            patcher = patch(target, return_value="human")
             patcher.start()
             self.addCleanup(patcher.stop)
 

@@ -274,10 +274,13 @@ def _requires_human_obpi_attestation(parent_adr: str | None, parent_lane: str) -
 
 
 # ---------------------------------------------------------------------------
-# GHI #290 authenticity gate
+# GHI #290 authenticity gate + GHI #292 agent-relayed escape path
 # ---------------------------------------------------------------------------
 
 _GHI_290_AUTHENTICITY_CONFIRMATION = "ATTEST"
+
+ATTESTATION_TYPE_HUMAN = "human"
+ATTESTATION_TYPE_AGENT_RELAYED = "agent-relayed-operator-attestation"
 
 
 def _is_human_attestation_tty_available() -> bool:
@@ -292,66 +295,121 @@ def _is_human_attestation_tty_available() -> bool:
         return False
 
 
+def _active_pipeline_marker_exists(project_root: Path, obpi_id: str) -> bool:
+    """Return True when a project-local pipeline marker exists for ``obpi_id``.
+
+    The marker is ``.claude/plans/.pipeline-active-<obpi_id>.json``. Only an
+    operator-initiated ``gz obpi pipeline`` run writes this file, so its
+    presence is a strong proxy for operator co-presence that a fully-headless
+    CI process cannot forge without also running the pipeline ceremony.
+    """
+    marker = project_root / ".claude" / "plans" / f".pipeline-active-{obpi_id}.json"
+    return marker.is_file()
+
+
 def _enforce_human_attestation_authenticity(
     *,
     obpi_id: str,
     parent_adr: str,
     attestor: str,
     attestation_text: str,
-) -> None:
-    """Enforce the GHI #290 authenticity gate for human-attestation OBPI completions.
+    attestor_present: bool = False,
+    project_root: Path | None = None,
+) -> str:
+    """Enforce the GHI #290 authenticity gate and resolve the attestation path.
 
     The gate closes the vector that allowed a prior agent session to fabricate
-    a `human_attestation: true` receipt for OBPI-0.0.20-03 on 2026-04-23. It
-    requires two independent signals that a human is present:
+    a ``human_attestation: true`` receipt for OBPI-0.0.20-03 on 2026-04-23.
+    It has three branches (GHI #292 adds the third):
 
-    1. stdin AND stdout are attached to a real TTY (headless subprocesses fail).
-    2. The operator types the exact word ``ATTEST`` (uppercase, no quotes) in
-       response to a prompt that echoes the attestor name, OBPI ID, parent ADR,
-       and attestation text back for final review.
+    1. **TTY path (``human``).** stdin AND stdout are attached to a real TTY.
+       The operator reviews the echoed attestation payload and types the
+       exact word ``ATTEST`` (uppercase, no quotes) to confirm. Returns
+       :data:`ATTESTATION_TYPE_HUMAN`.
+    2. **Agent-relayed path (``agent-relayed-operator-attestation``).** No
+       TTY, but ``attestor_present=True`` AND an active pipeline marker
+       exists at ``.claude/plans/.pipeline-active-<obpi_id>.json``. The
+       marker is a co-presence proxy: only an operator-initiated
+       ``gz obpi pipeline`` run writes it. Returns
+       :data:`ATTESTATION_TYPE_AGENT_RELAYED` so the caller can record a
+       taxonomically distinct ledger receipt.
+    3. **Fail-closed.** No TTY and either ``attestor_present=False`` or no
+       pipeline marker. Agent-synthesized attestation from a fully-headless
+       context is prohibited per GHI #290; the function raises
+       :class:`GzCliError`.
 
-    There is no escape flag and no env-var bypass. Unit tests exercise this
-    function by patching ``_is_human_attestation_tty_available`` and ``input``
-    at the module level (see ``tests/test_obpi_complete_cmd.py``).
-
-    Raises ``GzCliError`` with a policy message on any failure. Callers must
-    translate the error to their own exit-code contract (exit 3 for policy
-    breach per ``.claude/rules/cli.md``).
+    Unit tests exercise the three paths by patching
+    ``_is_human_attestation_tty_available``, ``_active_pipeline_marker_exists``,
+    and ``input`` at the module level (see ``tests/test_obpi_complete_cmd.py``).
+    Callers translate :class:`GzCliError` to their own exit-code contract
+    (exit 3 for policy breach per ``.claude/rules/cli.md``).
     """
-    if not _is_human_attestation_tty_available():
-        msg = (
-            "Human attestation required for this OBPI, but the process is not "
-            "attached to an interactive terminal (stdin/stdout is not a TTY). "
-            "Agent-synthesized attestation is prohibited per GHI #290. "
-            "Re-run this command from an interactive shell and type the "
-            "confirmation yourself."
+    if _is_human_attestation_tty_available():
+        console.print("")
+        console.print("[bold yellow]=== Human Attestation Required (GHI #290) ===[/bold yellow]")
+        console.print(f"  OBPI:        {obpi_id}")
+        console.print(f"  Parent ADR:  {parent_adr}")
+        console.print(f"  Attestor:    {attestor}")
+        console.print(f"  Attestation: {attestation_text}")
+        console.print("")
+        console.print(
+            f"Type the word [bold]{_GHI_290_AUTHENTICITY_CONFIRMATION}[/bold] "
+            "(uppercase, no quotes) to confirm you personally attest, "
+            "or anything else to abort:"
         )
-        raise GzCliError(msg)
+        try:
+            response = input("> ").strip()
+        except (EOFError, KeyboardInterrupt) as exc:
+            msg = "Attestation aborted (no confirmation received)."
+            raise GzCliError(msg) from exc
 
-    console.print("")
-    console.print("[bold yellow]=== Human Attestation Required (GHI #290) ===[/bold yellow]")
-    console.print(f"  OBPI:        {obpi_id}")
-    console.print(f"  Parent ADR:  {parent_adr}")
-    console.print(f"  Attestor:    {attestor}")
-    console.print(f"  Attestation: {attestation_text}")
-    console.print("")
-    console.print(
-        f"Type the word [bold]{_GHI_290_AUTHENTICITY_CONFIRMATION}[/bold] "
-        "(uppercase, no quotes) to confirm you personally attest, "
-        "or anything else to abort:"
+        if response != _GHI_290_AUTHENTICITY_CONFIRMATION:
+            msg = (
+                f"Attestation declined (expected "
+                f"{_GHI_290_AUTHENTICITY_CONFIRMATION!r}, got {response!r})."
+            )
+            raise GzCliError(msg)
+        return ATTESTATION_TYPE_HUMAN
+
+    if attestor_present:
+        if project_root is None:
+            msg = (
+                "--attestor-present requires project context to verify the "
+                "pipeline marker; internal caller did not pass project_root."
+            )
+            raise GzCliError(msg)
+        if not _active_pipeline_marker_exists(project_root, obpi_id):
+            msg = (
+                "--attestor-present requires an active pipeline marker at "
+                f".claude/plans/.pipeline-active-{obpi_id}.json, but none was "
+                f"found. Start the pipeline with 'uv run gz obpi pipeline "
+                f"{obpi_id}' first, or re-run this command from an "
+                "interactive shell and type the confirmation yourself."
+            )
+            raise GzCliError(msg)
+        console.print("")
+        console.print(
+            "[bold yellow]=== Agent-Relayed Operator Attestation (GHI #292) ===[/bold yellow]"
+        )
+        console.print(f"  OBPI:        {obpi_id}")
+        console.print(f"  Parent ADR:  {parent_adr}")
+        console.print(f"  Attestor:    {attestor}")
+        console.print(f"  Attestation: {attestation_text}")
+        console.print(
+            "  [dim]Co-presence proxy: active pipeline marker "
+            f".claude/plans/.pipeline-active-{obpi_id}.json[/dim]"
+        )
+        return ATTESTATION_TYPE_AGENT_RELAYED
+
+    msg = (
+        "Human attestation required for this OBPI, but the process is not "
+        "attached to an interactive terminal (stdin/stdout is not a TTY). "
+        "Agent-synthesized attestation is prohibited per GHI #290. "
+        "Re-run this command from an interactive shell and type the "
+        "confirmation yourself, or pass --attestor-present from an active "
+        "'gz obpi pipeline' session (GHI #292)."
     )
-    try:
-        response = input("> ").strip()
-    except (EOFError, KeyboardInterrupt) as exc:
-        msg = "Attestation aborted (no confirmation received)."
-        raise GzCliError(msg) from exc
-
-    if response != _GHI_290_AUTHENTICITY_CONFIRMATION:
-        msg = (
-            f"Attestation declined (expected "
-            f"{_GHI_290_AUTHENTICITY_CONFIRMATION!r}, got {response!r})."
-        )
-        raise GzCliError(msg)
+    raise GzCliError(msg)
 
 
 def _validate_obpi_completed_required_fields(evidence: dict[str, Any]) -> None:
@@ -497,6 +555,7 @@ def adr_emit_receipt_cmd(
     attestor: str,
     evidence_json: str | None,
     dry_run: bool,
+    attestor_present: bool = False,
 ) -> None:
     """Emit an ADR audit receipt event anchored in the ledger."""
     config = ensure_initialized()
@@ -533,19 +592,26 @@ def adr_emit_receipt_cmd(
     # GHI #290 authenticity gate: ADR-level human-attestation receipt events
     # (validated / attested / accepted) are the Gate 5 attestation surface.
     # Without a TTY gate, an agent could synthesize a validated ADR closeout
-    # the same way OBPI-0.0.20-03 was fabricated. Skipped for --dry-run.
+    # the same way OBPI-0.0.20-03 was fabricated. GHI #292 adds
+    # --attestor-present as an agent-relayed escape path; the resolved
+    # attestation_type is written into the evidence dict so the ledger receipt
+    # records which gate path fired. Skipped for --dry-run.
     if not dry_run and _is_human_attestation_receipt_event(receipt_event):
         attestation_text = ""
         if isinstance(evidence, dict):
             candidate = evidence.get("attestation_text") or evidence.get("scope")
             if isinstance(candidate, str):
                 attestation_text = candidate
-        _enforce_human_attestation_authenticity(
+        attestation_type = _enforce_human_attestation_authenticity(
             obpi_id=adr_id,
             parent_adr=adr_id,
             attestor=attestor,
             attestation_text=attestation_text or f"{receipt_event} {adr_id}",
+            attestor_present=attestor_present,
+            project_root=project_root,
         )
+        if isinstance(evidence, dict):
+            evidence["attestation_type"] = attestation_type
 
     if dry_run:
         console.print("[yellow]Dry run:[/yellow] no ledger event will be written.")

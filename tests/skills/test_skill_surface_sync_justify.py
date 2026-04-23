@@ -52,6 +52,17 @@ def _skill_version(fm: dict[str, object]) -> str | None:
     return None
 
 
+def _semver_tuple(version: str) -> tuple[int, ...]:
+    """Parse a dotted semver string into an int-tuple for ordered comparison.
+
+    Lexicographic string comparison flips the order at every decade boundary
+    (``"6.10.0" < "6.9.0"``); semantic-version comparison must compare each
+    component as an integer. Local Agent Rule: 'Order versioned identifiers
+    semantically, never lexicographically.'
+    """
+    return tuple(int(p) for p in version.split("."))
+
+
 class TestGzAdrEvaluateLowScoreFooter(unittest.TestCase):
     """REQ-0.0.19-04-05 — adr-evaluate gains low-score footer block + version bump."""
 
@@ -63,7 +74,7 @@ class TestGzAdrEvaluateLowScoreFooter(unittest.TestCase):
         self.assertIsNotNone(version, "skill-version missing from gz-adr-evaluate")
         assert version is not None
         self.assertTrue(
-            version >= "6.3.0",
+            _semver_tuple(version) >= (6, 3, 0),
             f"gz-adr-evaluate skill-version must be >= 6.3.0 after REQ-05 (got {version})",
         )
 
@@ -100,7 +111,7 @@ class TestGzObpiPipelineConfidenceBlock(unittest.TestCase):
         self.assertIsNotNone(version, "skill-version missing from gz-obpi-pipeline")
         assert version is not None
         self.assertTrue(
-            version >= "6.9.0",
+            _semver_tuple(version) >= (6, 9, 0),
             f"gz-obpi-pipeline skill-version must be >= 6.9.0 after REQ-06 (got {version})",
         )
 

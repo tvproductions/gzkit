@@ -417,6 +417,12 @@ def _register_adr_parsers(commands: argparse._SubParsersAction) -> None:
         "--evidence-json",
         help="JSON with value_narrative, key_proof; Heavy adds attestation fields",
     )
+    p_adr_emit.add_argument(
+        "--attestor-present",
+        dest="attestor_present",
+        action="store_true",
+        help="Agent-relayed operator attestation, gated on active pipeline marker (GHI #292)",
+    )
     add_dry_run_flag(p_adr_emit)
     p_adr_emit.set_defaults(
         func=lambda a: _lazy("adr_emit_receipt_cmd")(
@@ -424,6 +430,7 @@ def _register_adr_parsers(commands: argparse._SubParsersAction) -> None:
             receipt_event=a.receipt_event,
             attestor=a.attestor,
             evidence_json=a.evidence_json,
+            attestor_present=a.attestor_present,
             dry_run=a.dry_run,
         )
     )
@@ -477,6 +484,12 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         "--evidence-json",
         help="JSON with value_narrative, key_proof; Heavy adds attestation fields",
     )
+    p_obpi_emit.add_argument(
+        "--attestor-present",
+        dest="attestor_present",
+        action="store_true",
+        help="Agent-relayed operator attestation, gated on active pipeline marker (GHI #292)",
+    )
     add_dry_run_flag(p_obpi_emit)
     p_obpi_emit.set_defaults(
         func=lambda a: _lazy("obpi_emit_receipt_cmd")(
@@ -484,6 +497,7 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
             receipt_event=a.receipt_event,
             attestor=a.attestor,
             evidence_json=a.evidence_json,
+            attestor_present=a.attestor_present,
             dry_run=a.dry_run,
         )
     )
@@ -724,6 +738,12 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         default=None,
         help="Key proof text (falls back to brief; fails closed if empty)",
     )
+    p_obpi_complete.add_argument(
+        "--attestor-present",
+        dest="attestor_present",
+        action="store_true",
+        help="Agent-relayed operator attestation, gated on active pipeline marker (GHI #292)",
+    )
     add_json_flag(p_obpi_complete)
     add_dry_run_flag(p_obpi_complete)
     p_obpi_complete.set_defaults(
@@ -733,6 +753,7 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
             attestation_text=a.attestation_text,
             implementation_summary=a.implementation_summary,
             key_proof=a.key_proof,
+            attestor_present=a.attestor_present,
             as_json=a.as_json,
             dry_run=a.dry_run,
         )
