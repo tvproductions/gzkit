@@ -1,5 +1,35 @@
 # gzkit Release Notes
 
+## v0.25.15 (2026-04-23)
+
+Closes the OBPI human-attestation authenticity gap and restores agent+operator
+co-presence ergonomics. Two fixes work together: a fail-closed gate that refuses
+agent-synthesized attestation, plus an explicit escape path so an agent can
+relay an operator's already-given attestation without bouncing the operator out
+of the conversation to type the command themselves.
+
+### Governance / Authenticity
+
+- **#290** — Closed the agent-fabrication vector in `gz obpi complete`,
+  `gz obpi emit-receipt`, and `gz adr emit-receipt`. The CLI now refuses to
+  emit a `human_attestation: true` receipt from a non-TTY parent process,
+  preventing programmatic synthesis of operator attestations
+  (`_enforce_human_attestation_authenticity` at `src/gzkit/commands/adr_audit.py:283`).
+- **#292** — Restored agent+operator co-presence ergonomics with the new
+  `--attestor-present` flag. When an active pipeline marker exists at
+  `.claude/plans/.pipeline-active-{OBPI-ID}.json`, the agent can relay the
+  operator's Stage-4 attestation through a non-TTY subprocess. The ledger
+  records `attestation_type: "agent-relayed-operator-attestation"` —
+  taxonomically distinct from TTY-typed `human_attestation: true` so audits
+  count the two streams separately.
+
+### Stats
+
+- 2 GHIs closed (both runtime-affecting; `diff_only` qualification)
+- 1 src/gzkit/ module touched: `adr_audit.py`
+- New CLI flag: `--attestor-present`
+- New ledger taxonomy: `agent-relayed-operator-attestation`
+
 ## v0.25.14 (2026-04-22)
 
 Post-4.7 surface-hardening patch: 25 GHIs closed across the validation layer,
