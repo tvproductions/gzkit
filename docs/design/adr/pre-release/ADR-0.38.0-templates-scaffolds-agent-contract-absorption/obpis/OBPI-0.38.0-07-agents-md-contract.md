@@ -29,6 +29,7 @@ Compare the AGENTS.md contract/template used in airlineops against the AGENTS.md
 - Generic sections (roles, workflows, gates, rules) should be consistent across repos
 - Domain-specific sections are out of scope — only generic governance guidance is compared
 - The contract's effectiveness is measured by agent compliance and artifact quality
+- **Baseline note (2026-04-23, GHI #296):** gzkit's `AGENTS.md` absorbed ~440 lines of binding content from three `.gzkit/rules/` files under ADR-0.0.20 OBPIs 02/03/04: `agent-contract.md` (Prime Directive, DO IT RIGHT, Behavior Rules, Persona, Pattern Discovery, Skills, Gate Covenant, OBPI Acceptance Protocol), `attestation-enrichment.md` (§ Attestation), `defect-fix-routing.md` (§ Defect-fix routing). The comparison must run against this post-consolidation gzkit baseline; do not assume the three rule files exist as separate surfaces. Companion rationale lives in `docs/governance/agent-contract-rationale.md`, `docs/governance/arb-middleware.md`, and `docs/governance/defect-fix-routing.md`.
 
 ## NON-GOALS
 
