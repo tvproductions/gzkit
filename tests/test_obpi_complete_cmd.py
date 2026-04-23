@@ -682,8 +682,14 @@ class TestObpiCompleteCmdJsonOutput(unittest.TestCase):
 
 @covers("OBPI-0.0.14-02")
 class TestObpiCompleteCmdHappyPath(unittest.TestCase):
-    """Test full happy path with mocked dependencies."""
+    """Test full happy path with mocked dependencies.
 
+    The authenticity gate (GHI #290) is patched to a no-op here because this
+    test exercises the full transaction path with human attestation required;
+    the gate itself is tested in TestObpiCompleteAuthenticityGate below.
+    """
+
+    @patch("gzkit.commands.obpi_complete._enforce_human_attestation_authenticity")
     @patch("gzkit.commands.obpi_complete.console", _quiet_console)
     @patch("gzkit.commands.obpi_complete.capture_validation_anchor")
     @patch("gzkit.commands.obpi_complete._requires_human_obpi_attestation")
@@ -704,6 +710,7 @@ class TestObpiCompleteCmdHappyPath(unittest.TestCase):
         mock_adr_resolve,
         mock_requires_human,
         mock_anchor,
+        mock_gate,  # noqa: ARG002  (gate patched to no-op)
     ):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -819,6 +826,351 @@ class TestObpiCompleteCmdRollback(unittest.TestCase):
             if audit_file.exists():
                 content = audit_file.read_text(encoding="utf-8").strip()
                 self.assertEqual(content, "")
+
+
+@covers("OBPI-0.0.14-02")
+class TestObpiCompleteAuthenticityGate(unittest.TestCase):
+    """GHI #290 — gz obpi complete refuses headless human attestation.
+
+    The gate fires whenever `_requires_human_obpi_attestation` returns True
+    and `--dry-run` is not set. It closes the vector used to fabricate the
+    OBPI-0.0.20-03 attestation on 2026-04-23.
+    """
+
+    @patch("gzkit.commands.obpi_complete.console", _quiet_console)
+    @patch("gzkit.commands.adr_audit._is_human_attestation_tty_available")
+    @patch("gzkit.commands.obpi_complete.capture_validation_anchor")
+    @patch("gzkit.commands.obpi_complete._requires_human_obpi_attestation")
+    @patch("gzkit.commands.obpi_complete.resolve_adr_file")
+    @patch("gzkit.commands.obpi_complete.get_project_root")
+    @patch("gzkit.commands.obpi_complete.ensure_initialized")
+    @patch("gzkit.commands.obpi_complete.resolve_obpi_file")
+    @patch("gzkit.commands.obpi_complete.Ledger")
+    def test_non_tty_rejects_human_attestation(
+        self,
+        mock_ledger_cls,
+        mock_resolve,
+        mock_init,
+        mock_root,
+        mock_adr_resolve,
+        mock_requires_human,
+        mock_anchor,
+        mock_tty,
+    ):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            mock_root.return_value = root
+            mock_init.return_value = _mock_config()
+            mock_requires_human.return_value = True
+            mock_anchor.return_value = EventAnchor(commit="abc1234", semver="0.0.14")
+            mock_tty.return_value = False
+
+            adr_dir = root / "adr"
+            obpis_dir = adr_dir / "obpis"
+            obpis_dir.mkdir(parents=True)
+            obpi_file = obpis_dir / "OBPI-0.0.14-02.md"
+            obpi_file.write_text(_MINIMAL_BRIEF, encoding="utf-8")
+            mock_resolve.return_value = (obpi_file, "OBPI-0.0.14-02")
+
+            ledger = _mock_ledger("OBPI-0.0.14-02", "ADR-0.0.14")
+            mock_ledger_cls.return_value = ledger
+            mock_adr_resolve.return_value = (adr_dir / "ADR-0.0.14.md", "ADR-0.0.14")
+
+            with self.assertRaises(SystemExit) as ctx:
+                obpi_complete_cmd(
+                    obpi="OBPI-0.0.14-02",
+                    attestor="Jeffry Babb",
+                    attestation_text="fabricated payload",
+                    implementation_summary="- Files: obpi_complete.py",
+                    key_proof="gz obpi complete exits 0",
+                    as_json=False,
+                    dry_run=False,
+                )
+            self.assertEqual(ctx.exception.code, 3)
+
+            # Brief must not have been mutated.
+            self.assertEqual(obpi_file.read_text(encoding="utf-8"), _MINIMAL_BRIEF)
+            ledger.append.assert_not_called()
+
+    @patch("gzkit.commands.obpi_complete.console", _quiet_console)
+    @patch("gzkit.commands.adr_audit.input", create=True)
+    @patch("gzkit.commands.adr_audit._is_human_attestation_tty_available")
+    @patch("gzkit.commands.obpi_complete.capture_validation_anchor")
+    @patch("gzkit.commands.obpi_complete._requires_human_obpi_attestation")
+    @patch("gzkit.commands.obpi_complete.resolve_adr_file")
+    @patch("gzkit.commands.obpi_complete.get_project_root")
+    @patch("gzkit.commands.obpi_complete.ensure_initialized")
+    @patch("gzkit.commands.obpi_complete.resolve_obpi_file")
+    @patch("gzkit.commands.obpi_complete.Ledger")
+    def test_tty_declined_rejects_human_attestation(
+        self,
+        mock_ledger_cls,
+        mock_resolve,
+        mock_init,
+        mock_root,
+        mock_adr_resolve,
+        mock_requires_human,
+        mock_anchor,
+        mock_tty,
+        mock_input,
+    ):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            mock_root.return_value = root
+            mock_init.return_value = _mock_config()
+            mock_requires_human.return_value = True
+            mock_anchor.return_value = EventAnchor(commit="abc1234", semver="0.0.14")
+            mock_tty.return_value = True
+            mock_input.return_value = "y"  # anything that isn't "ATTEST"
+
+            adr_dir = root / "adr"
+            obpis_dir = adr_dir / "obpis"
+            obpis_dir.mkdir(parents=True)
+            obpi_file = obpis_dir / "OBPI-0.0.14-02.md"
+            obpi_file.write_text(_MINIMAL_BRIEF, encoding="utf-8")
+            mock_resolve.return_value = (obpi_file, "OBPI-0.0.14-02")
+
+            ledger = _mock_ledger("OBPI-0.0.14-02", "ADR-0.0.14")
+            mock_ledger_cls.return_value = ledger
+            mock_adr_resolve.return_value = (adr_dir / "ADR-0.0.14.md", "ADR-0.0.14")
+
+            with self.assertRaises(SystemExit) as ctx:
+                obpi_complete_cmd(
+                    obpi="OBPI-0.0.14-02",
+                    attestor="Jeffry Babb",
+                    attestation_text="real attestation",
+                    implementation_summary="- Files: obpi_complete.py",
+                    key_proof="gz obpi complete exits 0",
+                    as_json=False,
+                    dry_run=False,
+                )
+            self.assertEqual(ctx.exception.code, 3)
+            self.assertEqual(obpi_file.read_text(encoding="utf-8"), _MINIMAL_BRIEF)
+            ledger.append.assert_not_called()
+
+    @patch("gzkit.commands.obpi_complete.console", _quiet_console)
+    @patch("gzkit.commands.adr_audit.input", create=True)
+    @patch("gzkit.commands.adr_audit._is_human_attestation_tty_available")
+    @patch("gzkit.commands.obpi_complete.capture_validation_anchor")
+    @patch("gzkit.commands.obpi_complete._requires_human_obpi_attestation")
+    @patch("gzkit.commands.obpi_complete.resolve_adr_file")
+    @patch("gzkit.commands.obpi_complete.get_project_root")
+    @patch("gzkit.commands.obpi_complete.ensure_initialized")
+    @patch("gzkit.commands.obpi_complete.resolve_obpi_file")
+    @patch("gzkit.commands.obpi_complete.Ledger")
+    def test_tty_confirmed_allows_human_attestation(
+        self,
+        mock_ledger_cls,
+        mock_resolve,
+        mock_init,
+        mock_root,
+        mock_adr_resolve,
+        mock_requires_human,
+        mock_anchor,
+        mock_tty,
+        mock_input,
+    ):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            mock_root.return_value = root
+            mock_init.return_value = _mock_config()
+            mock_requires_human.return_value = True
+            mock_anchor.return_value = EventAnchor(commit="abc1234", semver="0.0.14")
+            mock_tty.return_value = True
+            mock_input.return_value = "ATTEST"
+
+            adr_dir = root / "adr"
+            obpis_dir = adr_dir / "obpis"
+            obpis_dir.mkdir(parents=True)
+            obpi_file = obpis_dir / "OBPI-0.0.14-02.md"
+            obpi_file.write_text(_MINIMAL_BRIEF, encoding="utf-8")
+            mock_resolve.return_value = (obpi_file, "OBPI-0.0.14-02")
+
+            ledger = _mock_ledger("OBPI-0.0.14-02", "ADR-0.0.14")
+            mock_ledger_cls.return_value = ledger
+            mock_adr_resolve.return_value = (adr_dir / "ADR-0.0.14.md", "ADR-0.0.14")
+
+            obpi_complete_cmd(
+                obpi="OBPI-0.0.14-02",
+                attestor="Jeffry Babb",
+                attestation_text="real human attestation",
+                implementation_summary="- Files: obpi_complete.py",
+                key_proof="gz obpi complete exits 0",
+                as_json=False,
+                dry_run=False,
+            )
+
+            updated = obpi_file.read_text(encoding="utf-8")
+            self.assertIn("status: Completed", updated)
+            ledger.append.assert_called_once()
+
+    @patch("gzkit.commands.obpi_complete.console", _quiet_console)
+    @patch("gzkit.commands.adr_audit._is_human_attestation_tty_available")
+    @patch("gzkit.commands.obpi_complete.capture_validation_anchor")
+    @patch("gzkit.commands.obpi_complete._requires_human_obpi_attestation")
+    @patch("gzkit.commands.obpi_complete.resolve_adr_file")
+    @patch("gzkit.commands.obpi_complete.get_project_root")
+    @patch("gzkit.commands.obpi_complete.ensure_initialized")
+    @patch("gzkit.commands.obpi_complete.resolve_obpi_file")
+    @patch("gzkit.commands.obpi_complete.Ledger")
+    def test_dry_run_skips_gate(
+        self,
+        mock_ledger_cls,
+        mock_resolve,
+        mock_init,
+        mock_root,
+        mock_adr_resolve,
+        mock_requires_human,
+        mock_anchor,
+        mock_tty,
+    ):
+        """--dry-run must preview headlessly; the gate fires only on live writes."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            mock_root.return_value = root
+            mock_init.return_value = _mock_config()
+            mock_requires_human.return_value = True
+            mock_anchor.return_value = EventAnchor(commit="abc1234", semver="0.0.14")
+            mock_tty.return_value = False  # headless — would normally fail
+
+            adr_dir = root / "adr"
+            obpis_dir = adr_dir / "obpis"
+            obpis_dir.mkdir(parents=True)
+            obpi_file = obpis_dir / "OBPI-0.0.14-02.md"
+            obpi_file.write_text(_MINIMAL_BRIEF, encoding="utf-8")
+            mock_resolve.return_value = (obpi_file, "OBPI-0.0.14-02")
+
+            ledger = _mock_ledger("OBPI-0.0.14-02", "ADR-0.0.14")
+            mock_ledger_cls.return_value = ledger
+            mock_adr_resolve.return_value = (adr_dir / "ADR-0.0.14.md", "ADR-0.0.14")
+
+            obpi_complete_cmd(
+                obpi="OBPI-0.0.14-02",
+                attestor="Jeffry Babb",
+                attestation_text="dry-run preview",
+                implementation_summary="- Files: obpi_complete.py",
+                key_proof="gz obpi complete exits 0",
+                as_json=False,
+                dry_run=True,
+            )
+            # No state changes
+            self.assertEqual(obpi_file.read_text(encoding="utf-8"), _MINIMAL_BRIEF)
+            ledger.append.assert_not_called()
+
+
+@covers("OBPI-0.0.14-02")
+class TestAuthenticityGateUnit(unittest.TestCase):
+    """Direct unit tests for _enforce_human_attestation_authenticity."""
+
+    def test_non_tty_raises(self):
+        from gzkit.commands.adr_audit import _enforce_human_attestation_authenticity
+        from gzkit.commands.common import GzCliError
+
+        with (
+            patch("gzkit.commands.adr_audit.console", _quiet_console),
+            patch(
+                "gzkit.commands.adr_audit._is_human_attestation_tty_available",
+                return_value=False,
+            ),
+        ):
+            with self.assertRaises(GzCliError) as ctx:
+                _enforce_human_attestation_authenticity(
+                    obpi_id="OBPI-0.0.20-03",
+                    parent_adr="ADR-0.0.20",
+                    attestor="Jeffry Babb",
+                    attestation_text="fabricated",
+                )
+            self.assertIn("TTY", str(ctx.exception))
+            self.assertIn("GHI #290", str(ctx.exception))
+
+    def test_wrong_confirmation_word_raises(self):
+        from gzkit.commands.adr_audit import _enforce_human_attestation_authenticity
+        from gzkit.commands.common import GzCliError
+
+        with (
+            patch("gzkit.commands.adr_audit.console", _quiet_console),
+            patch(
+                "gzkit.commands.adr_audit._is_human_attestation_tty_available",
+                return_value=True,
+            ),
+            patch("gzkit.commands.adr_audit.input", create=True, return_value="attest"),
+        ):
+            with self.assertRaises(GzCliError) as ctx:
+                _enforce_human_attestation_authenticity(
+                    obpi_id="OBPI-0.0.20-03",
+                    parent_adr="ADR-0.0.20",
+                    attestor="Jeffry Babb",
+                    attestation_text="case-sensitive test",
+                )
+            self.assertIn("declined", str(ctx.exception).lower())
+
+    def test_lowercase_y_rejected(self):
+        """A simple [y/N] prompt would be trivially defeatable. Require 'ATTEST'."""
+        from gzkit.commands.adr_audit import _enforce_human_attestation_authenticity
+        from gzkit.commands.common import GzCliError
+
+        with (
+            patch("gzkit.commands.adr_audit.console", _quiet_console),
+            patch(
+                "gzkit.commands.adr_audit._is_human_attestation_tty_available",
+                return_value=True,
+            ),
+            patch("gzkit.commands.adr_audit.input", create=True, return_value="y"),
+            self.assertRaises(GzCliError),
+        ):
+            _enforce_human_attestation_authenticity(
+                obpi_id="OBPI-0.0.20-03",
+                parent_adr="ADR-0.0.20",
+                attestor="Jeffry Babb",
+                attestation_text="y is not enough",
+            )
+
+    def test_eof_aborts(self):
+        from gzkit.commands.adr_audit import _enforce_human_attestation_authenticity
+        from gzkit.commands.common import GzCliError
+
+        def _raise_eof(*_args, **_kwargs):
+            raise EOFError
+
+        with (
+            patch("gzkit.commands.adr_audit.console", _quiet_console),
+            patch(
+                "gzkit.commands.adr_audit._is_human_attestation_tty_available",
+                return_value=True,
+            ),
+            patch("gzkit.commands.adr_audit.input", create=True, side_effect=_raise_eof),
+        ):
+            with self.assertRaises(GzCliError) as ctx:
+                _enforce_human_attestation_authenticity(
+                    obpi_id="OBPI-0.0.20-03",
+                    parent_adr="ADR-0.0.20",
+                    attestor="Jeffry Babb",
+                    attestation_text="eof path",
+                )
+            self.assertIn("aborted", str(ctx.exception).lower())
+
+    def test_attest_exact_match_passes(self):
+        from gzkit.commands.adr_audit import _enforce_human_attestation_authenticity
+
+        with (
+            patch("gzkit.commands.adr_audit.console", _quiet_console),
+            patch(
+                "gzkit.commands.adr_audit._is_human_attestation_tty_available",
+                return_value=True,
+            ),
+            patch(
+                "gzkit.commands.adr_audit.input",
+                create=True,
+                return_value="ATTEST",
+            ),
+        ):
+            # No exception = pass
+            _enforce_human_attestation_authenticity(
+                obpi_id="OBPI-0.0.20-03",
+                parent_adr="ADR-0.0.20",
+                attestor="Jeffry Babb",
+                attestation_text="exact uppercase",
+            )
 
 
 if __name__ == "__main__":
