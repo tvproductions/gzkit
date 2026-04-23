@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any, cast
 
 from gzkit.commands.adr_audit import (
+    ATTESTATION_TYPE_HUMAN,
     _enforce_human_attestation_authenticity,
     _requires_human_obpi_attestation,
 )
@@ -134,6 +135,7 @@ def obpi_complete_cmd(
     key_proof: str | None,
     as_json: bool,
     dry_run: bool,
+    attestor_present: bool = False,
 ) -> None:
     """Atomically complete an OBPI: validate, write evidence, flip status, emit receipt."""
     config = ensure_initialized()
@@ -177,15 +179,20 @@ def obpi_complete_cmd(
         )
 
     # 4b. GHI #290 authenticity gate: no human-attestation receipt without TTY
-    # confirmation. Skipped for --dry-run so plans can be previewed headlessly,
-    # but a line in the dry-run output explicitly notes the gate would fire.
+    # confirmation. GHI #292 adds --attestor-present as an agent-relayed escape
+    # path gated on an active pipeline marker. Skipped for --dry-run so plans
+    # can be previewed headlessly, but a line in the dry-run output explicitly
+    # notes the gate would fire.
+    attestation_type: str = ATTESTATION_TYPE_HUMAN
     if requires_human and not dry_run:
         try:
-            _enforce_human_attestation_authenticity(
+            attestation_type = _enforce_human_attestation_authenticity(
                 obpi_id=obpi_id,
                 parent_adr=resolved_parent,
                 attestor=attestor,
                 attestation_text=attestation_text,
+                attestor_present=attestor_present,
+                project_root=project_root,
             )
         except GzCliError as exc:
             _fail(str(exc), exit_code=3, as_json=as_json, obpi_id=obpi_id)
@@ -199,6 +206,7 @@ def obpi_complete_cmd(
         attestation_text=attestation_text,
         date=today,
         requires_human=requires_human,
+        attestation_type=attestation_type,
     )
     completion_term = "attested_completed" if requires_human else "completed"
     anchor = capture_validation_anchor(project_root, resolved_parent)
@@ -214,6 +222,7 @@ def obpi_complete_cmd(
         evidence["human_attestation"] = True
         evidence["attestation_text"] = attestation_text
         evidence["attestation_date"] = today
+        evidence["attestation_type"] = attestation_type
 
     receipt_event = obpi_receipt_emitted_event(
         obpi_id=obpi_id,
@@ -632,14 +641,21 @@ def _build_attestation_audit_entry(
     attestation_text: str,
     date: str,
     requires_human: bool,
+    attestation_type: str = ATTESTATION_TYPE_HUMAN,
 ) -> dict[str, Any]:
-    """Build the ADR-local audit ledger entry for attestation."""
+    """Build the ADR-local audit ledger entry for attestation.
+
+    ``attestation_type`` is the value resolved by the GHI #290 authenticity
+    gate: ``human`` (TTY+ATTEST) or ``agent-relayed-operator-attestation``
+    (GHI #292 --attestor-present). Ignored when ``requires_human`` is False;
+    self-close paths always record ``self-close-exception``.
+    """
     entry: dict[str, Any] = {
         "type": "obpi-audit",
         "timestamp": datetime.now(UTC).isoformat(),
         "obpi_id": obpi_id,
         "adr_id": adr_id,
-        "attestation_type": "human" if requires_human else "self-close-exception",
+        "attestation_type": attestation_type if requires_human else "self-close-exception",
         "evidence": {
             "human_attestation": requires_human,
             "attestation_text": attestation_text,

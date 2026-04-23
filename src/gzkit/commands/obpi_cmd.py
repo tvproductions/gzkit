@@ -94,24 +94,32 @@ def _gate_completed_receipt_authenticity(
     attestor: str,
     evidence: dict[str, Any] | None,
     dry_run: bool,
+    attestor_present: bool = False,
+    project_root: Path | None = None,
 ) -> None:
     """GHI #290 authenticity gate wrapper for the emit-receipt path.
 
     Extracted to keep obpi_emit_receipt_cmd under the complexity ceiling.
     The lower-level emit-receipt surface must honour the same TTY +
     confirmation contract as gz obpi complete -- it was the exact path
-    used to fabricate the OBPI-0.0.20-03 receipt. Skipped for --dry-run.
+    used to fabricate the OBPI-0.0.20-03 receipt. GHI #292 adds the
+    --attestor-present escape path; the resolved attestation_type is
+    written into the evidence dict so the ledger receipt records which
+    gate path fired. Skipped for --dry-run.
     """
     if dry_run or not isinstance(evidence, dict):
         return
     if evidence.get("attestation_requirement") != "required":
         return
-    _enforce_human_attestation_authenticity(
+    attestation_type = _enforce_human_attestation_authenticity(
         obpi_id=obpi_id,
         parent_adr=parent_adr if isinstance(parent_adr, str) else "",
         attestor=attestor,
         attestation_text=cast(str, evidence.get("attestation_text", "")),
+        attestor_present=attestor_present,
+        project_root=project_root,
     )
+    evidence["attestation_type"] = attestation_type
 
 
 def obpi_emit_receipt_cmd(
@@ -120,6 +128,7 @@ def obpi_emit_receipt_cmd(
     attestor: str,
     evidence_json: str | None,
     dry_run: bool,
+    attestor_present: bool = False,
 ) -> None:
     """Emit an OBPI receipt event anchored in the ledger."""
     config = ensure_initialized()
@@ -175,6 +184,8 @@ def obpi_emit_receipt_cmd(
             attestor=attestor,
             evidence=evidence,
             dry_run=dry_run,
+            attestor_present=attestor_present,
+            project_root=project_root,
         )
     elif evidence is not None:
         evidence = dict(evidence)
