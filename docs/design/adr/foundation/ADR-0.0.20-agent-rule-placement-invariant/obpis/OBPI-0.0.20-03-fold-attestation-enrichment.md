@@ -3,7 +3,7 @@ id: OBPI-0.0.20-03-fold-attestation-enrichment
 parent: ADR-0.0.20-agent-rule-placement-invariant
 item: 3
 lane: Lite
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.20-03-fold-attestation-enrichment: Fold attestation-enrichment.md into AGENTS.md / docs/governance/arb-middleware.md
@@ -200,16 +200,20 @@ uv run -m unittest tests.governance.test_attestation_fold -v
 
 ### Key Proof
 
+
+Canonical .gzkit/rules/attestation-enrichment.md deleted; vendor mirrors (.claude/rules/, .github/instructions/) pruned by gz agent sync control-surfaces; manifest allowlist shrank 2->1 (defect-fix-routing.md remains, pending OBPI-04). AGENTS.md § Attestation contains all 5 canonical invocation rows (Lint/Typecheck/Tests/Coverage/Docs), em-dash pattern, applies-to list (obpi complete, adr emit-receipt, git commit), Lite warn / Heavy fail-closed lane behavior, and worked example. docs/governance/arb-middleware.md contains Core Concept, Available Commands (ruff/step/typecheck/coverage/validate/advise/patterns), Receipt Schema/Storage (arb_lint_receipt.schema.json, arb_step_receipt.schema.json, artifacts/receipts/, arb.receipts_root), Exit Codes (0/1/2), Rationale (receipts-not-narrative, canonical-commands-GHI#199, TDD-RED-not-ARB-shaped-GHI#157). Receipts: lint arb-ruff-ce59a40bf094442483826e125f171bc8; types arb-step-typecheck-5f815a4c50c940ceaea2882ae88325b8; tests arb-step-unittest-3c717762545843c8b20a06efee79059a (3524 pass / 1 skip); mkdocs arb-step-mkdocs-dae4b573ab9940e782646c0bc465cb64; coverage arb-step-coverage-4abbbf184ddc44f8aa0cf87721741cef. gz validate --unscoped-rules exit 0; gz validate --all exit 0; mkdocs build --strict clean. GHI #291 filed (label=defect) citing ADR-0.36.0 OBPI-08 premise broken.
+
 ### Implementation Summary
 
-- Files modified:
-- Files deleted:
-- Files created:
-- Docstring updates:
-- Downstream GHIs filed:
-- Tests added:
-- Date completed:
-- Attestation status:
+
+- Files modified: src/gzkit/templates/agents.md (§ Attestation + 2 citation rewrites); AGENTS.md (regenerated); agents.local.md; .gzkit/manifest.json (allowlist 2->1); 5 Python sources (parser_arb.py, arb/__init__.py, arb/validator.py:184, commands/arb.py, commands/obpi_precomplete.py); .gzkit/rules/tool-skill-runbook-alignment.md; .gzkit/skills/AGENTS.md; .gzkit/skills/gz-arb/SKILL.md (1.0.1->1.0.2); .gzkit/skills/gz-adr-closeout-ceremony/SKILL.md (7.8.0->7.8.1); 8 ARB command docs; docs/user/manpages/arb.md; docs/user/runbook.md; tests/validators/test_unscoped_rules.py (fixture); tests/governance/test_agent_contract_fold.py (cascade-relaxed manifest-count); tests/test_sync_surfaces.py (newline-anchored assertions)
+- Files deleted: .gzkit/rules/attestation-enrichment.md (156 lines, canonical); .claude/rules/attestation-enrichment.md (mirror); .github/instructions/attestation_enrichment.instructions.md (mirror)
+- Files created: docs/governance/arb-middleware.md (ARB middleware deep-dive, 5 sections); tests/governance/test_attestation_fold.py (8 REQ-pinned tests)
+- Docstring updates: 6 files (5 brief-listed Python + src/gzkit/templates/agents.md)
+- Downstream GHIs filed: #291 (ADR-0.36.0 OBPI-08 arb-instructions staleness; label=defect)
+- Tests added: 8 (REQ-pinned, all pass); 17 tests pass when combined with OBPI-02 fold tests
+- Date completed: 2026-04-23
+- Attestation status: Operator-attested Stage 4 Normal-mode ceremony
 
 ## Tracked Defects
 
@@ -217,14 +221,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `n/a` (Lite lane; OBPI self-closeable)
-- Attestation: `n/a`
-- Date: `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — Foundation-kind lite-lane OBPI-0.0.20-03 folded .gzkit/rules/attestation-enrichment.md into AGENTS.md § Attestation (binding) and docs/governance/arb-middleware.md (deep-dive). 156 lines removed from per-turn context. 8 REQ-pinned TDD tests pass; full suite 3524 pass / 1 skip. GHI #291 filed. Receipts: lint arb-ruff-ce59a40bf094442483826e125f171bc8; types arb-step-typecheck-5f815a4c50c940ceaea2882ae88325b8; tests arb-step-unittest-3c717762545843c8b20a06efee79059a; mkdocs arb-step-mkdocs-dae4b573ab9940e782646c0bc465cb64; coverage arb-step-coverage-4abbbf184ddc44f8aa0cf87721741cef.
+- Date: 2026-04-23
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-23
 
 **Evidence Hash:** -

@@ -103,8 +103,10 @@ class TestAgentsPersonaReference(unittest.TestCase):
         """Persona section references but does not inline full persona files."""
         # The full grounding is ~4 sentences; the reference is condensed.
         # Check that the full behavioral anchors section is NOT inlined.
-        self.assertNotIn("## Behavioral Anchors", self.content)
-        self.assertNotIn("## Anti-patterns", self.content)
+        # Anchor on newline so we match H2 headings only, not H3 subsections
+        # (e.g. "### Anti-patterns" under § Attestation contains the H2 substring).
+        self.assertNotIn("\n## Behavioral Anchors", self.content)
+        self.assertNotIn("\n## Anti-patterns", self.content)
 
     @covers("REQ-0.0.12-07-02")
     def test_persona_references_survive_regeneration(self) -> None:

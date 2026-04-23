@@ -3,8 +3,9 @@
 Registers the `gz arb` subcommand group with 7 verbs: ruff, step, ty,
 coverage, validate, advise, patterns.
 
-See `.gzkit/rules/attestation-enrichment.md` for the rule contract
-(canonical home for ARB middleware and receipt-ID discipline).
+See `AGENTS.md` § Attestation for the binding rule contract
+(em-dash pattern, canonical invocations, lane behavior) and
+`docs/governance/arb-middleware.md` for the middleware deep-dive.
 """
 
 from __future__ import annotations

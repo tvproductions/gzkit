@@ -40,7 +40,7 @@ gz arb typecheck
 - Schema: `gzkit.arb.step_receipt.v1`
 - Prefix: `arb-step-typecheck-<timestamp>`
 - Canonical for attestation claim "Type check clean" per
-  `.gzkit/rules/attestation-enrichment.md`.
+  `AGENTS.md` § Attestation.
 
 ---
 

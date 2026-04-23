@@ -196,38 +196,25 @@ class TestAgentContractFold(unittest.TestCase):
 
     @covers("REQ-0.0.20-02-06")
     @covers("REQ-0.0.20-02-12")
-    def test_manifest_allowlist_has_two_entries(self) -> None:
-        """Manifest ``rules.unscoped_allowlist`` must shrink from 3 to 2 entries.
+    def test_manifest_allowlist_removes_agent_contract_entry(self) -> None:
+        """Manifest ``rules.unscoped_allowlist`` must not contain agent-contract.md.
 
-        After OBPI-02 folds ``agent-contract.md``, its allow-list entry is
-        removed. The remaining two entries cover ``attestation-enrichment.md``
-        (OBPI-03) and ``defect-fix-routing.md`` (OBPI-04), each of which
-        awaits its own consolidation.
+        REQ-06's semantic claim is "OBPI-02 removed its allow-list entry",
+        not "the manifest has exactly N entries" — the count cascades as
+        sibling OBPIs (03, 04) fold their own rules. The assertion derived
+        from the REQ is absence of agent-contract.md, which is OBPI-02's
+        contribution; subsequent OBPIs reduce the remaining count further.
         """
         manifest = json.loads(
             (REPO_ROOT / ".gzkit" / "manifest.json").read_text(encoding="utf-8"),
         )
         allowlist = manifest.get("rules", {}).get("unscoped_allowlist", [])
 
-        self.assertEqual(
-            len(allowlist),
-            2,
-            f"expected exactly 2 allow-list entries post-OBPI-02, got {allowlist!r}",
-        )
-
         entry_files = {entry.get("file") for entry in allowlist}
         self.assertNotIn(
             ".gzkit/rules/agent-contract.md",
             entry_files,
             "agent-contract.md allow-list entry must be removed",
-        )
-        self.assertEqual(
-            entry_files,
-            {
-                ".gzkit/rules/attestation-enrichment.md",
-                ".gzkit/rules/defect-fix-routing.md",
-            },
-            f"unexpected remaining allow-list entries: {entry_files!r}",
         )
 
     @covers("REQ-0.0.20-02-07")
@@ -289,12 +276,15 @@ class TestAgentContractFold(unittest.TestCase):
     @covers("REQ-0.0.20-02-09")
     @covers("REQ-0.0.20-02-10")
     @covers("REQ-0.0.20-02-11")
-    def test_unscoped_rules_validator_passes_with_two_allowlist_entries(self) -> None:
+    def test_unscoped_rules_validator_passes_post_fold(self) -> None:
         """``gz validate --unscoped-rules`` exits 0 post-fold.
 
         Calls the validator's public Python API directly (no subprocess)
         to keep the test in the unit tier per ``.gzkit/rules/tests.md``.
-        Asserts result="pass", exit_code=0, and two allow-list entries.
+        Asserts result="pass" and exit_code=0. The absolute count of
+        allow-list entries is not asserted — it cascades down as sibling
+        OBPIs (03, 04) fold their own rules. What REQ-09/10/11 pin is
+        validator pass state after OBPI-02's contribution.
 
         Satisfies REQ-9 (unscoped-rules exits 0), REQ-10 (no drift in the
         validate-all surface the unscoped audit participates in), and
@@ -306,11 +296,6 @@ class TestAgentContractFold(unittest.TestCase):
 
         self.assertEqual(result.result, "pass", f"validator failed: {result!r}")
         self.assertEqual(result.exit_code, 0, f"validator exit_code={result.exit_code}")
-        self.assertEqual(
-            len(result.allowlist_entries),
-            2,
-            f"expected 2 allow-list entries, got {len(result.allowlist_entries)}",
-        )
 
     @covers("REQ-0.0.20-02-13")
     def test_no_new_deps_shell_true_or_dataclass(self) -> None:

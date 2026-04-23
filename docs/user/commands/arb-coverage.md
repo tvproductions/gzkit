@@ -47,7 +47,7 @@ gz arb coverage report --fail-under=40
 - Schema: `gzkit.arb.step_receipt.v1`
 - Prefix: `arb-step-coverage-<timestamp>`
 - Canonical for attestation claim "Coverage floor" per
-  `.gzkit/rules/attestation-enrichment.md`.
+  `AGENTS.md` § Attestation.
 
 ---
 
@@ -55,4 +55,4 @@ gz arb coverage report --fail-under=40
 
 - [`gz arb`](arb.md) — ARB parent reference
 - [`gz test`](test.md) — unwrapped test runner
-- Rule: `.gzkit/rules/attestation-enrichment.md`
+- Rule: `AGENTS.md` § Attestation (binding) / `docs/governance/arb-middleware.md` (deep-dive)

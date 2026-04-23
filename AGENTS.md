@@ -19,7 +19,7 @@ The tradeoff is deliberate, and stating it is the fair thing to do:
 - **Minimalist references optimize for** a solo human + one agent, short session, code-level hygiene. Behavior is the whole product; agent trust is the mechanism; the cost of a missed-principle mistake is one discarded diff.
 - **gzkit optimizes for** multi-agent, multi-session, auditable governance where the proof-of-work must survive the agent that produced it. Ledger-of-truth beats agent-trust; receipts beat narrative recall; structural gates beat goodwill. The cost of a missed-principle mistake is a corrupted artifact graph that reconciliation has to untangle months later.
 
-Both shapes are defensible for their problem class. The four Karpathy principles (Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution) are all present in this contract with stronger mechanical backstops — see § Behavior Rules (Judgment invariants 7–10) and § DO IT RIGHT (#6a–6h) below, `.gzkit/rules/tests.md` Red-Green-Refactor, and the ARB receipt requirement in `.gzkit/rules/attestation-enrichment.md`. When in doubt about whether gzkit's surface is worth the cost, the answer is: it is worth the cost for work that must be audited across context boundaries, and it is heavier than necessary for a single trivial edit. Use judgment.
+Both shapes are defensible for their problem class. The four Karpathy principles (Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution) are all present in this contract with stronger mechanical backstops — see § Behavior Rules (Judgment invariants 7–10) and § DO IT RIGHT (#6a–6h) below, `.gzkit/rules/tests.md` Red-Green-Refactor, and the ARB receipt requirement in § Attestation. When in doubt about whether gzkit's surface is worth the cost, the answer is: it is worth the cost for work that must be audited across context boundaries, and it is heavier than necessary for a single trivial edit. Use judgment.
 
 ## Persona
 
@@ -87,7 +87,7 @@ This maxim sits next to the Prime Directive because ownership and completeness w
 1. **Fix the class of failure, not the instance.** When a symptom surfaces, identify the failure family (what assumption was unstated? what validation was missing? what test never ran the derived path?). Repair the root, not the leaf. If a discovered CLI verb doesn't exist, the fix is not "skip that one verb" — it is "validate every derived verb against the registered parser."
 2. **No vibe coding.** Vibe coding is: writing plausible-looking code without reading the surface it touches, without a failing test first, without tracing the data flow, without running the observed-output check the governance rules require. Vibe-coded work passes review because it looks right. It fails in production because it never was.
 3. **Prefer the more thorough fix over the narrower fix.** When you have two fix options — one that closes the specific symptom and one that closes the whole class — pick the class fix unless the class fix has a concrete, named downside larger than the class of failures it prevents. "Smaller diff" is not a concrete downside. "Faster to land" is not a concrete downside. "Less scary" is not a concrete downside.
-4. **Verify observed behavior, not assumed behavior.** Run the destination command, observe its actual output, paste the output into the attestation or commit body. Narrative reconstruction from memory is not verification. This is the same rule as the attestation-enrichment receipt-ID requirement in `.gzkit/rules/attestation-enrichment.md`: claims without observed evidence are post-hoc reasoning pathways, not verification pathways.
+4. **Verify observed behavior, not assumed behavior.** Run the destination command, observe its actual output, paste the output into the attestation or commit body. Narrative reconstruction from memory is not verification. This is the same rule as the ARB receipt-ID requirement in § Attestation: claims without observed evidence are post-hoc reasoning pathways, not verification pathways.
 5. **Read the code before you change it.** Vibe coding's defining move is editing a file without understanding what the file does, based on a guess about what a function probably returns or a class probably is. Read the surface. Trace the callers. Understand the contract. Then change it.
 6. **Tests assert semantics, not strings.** A test that pins the current observed output to a string is not a test of the code's purpose — it's a test of its current state. Write tests that assert the behavior the surface is supposed to produce, not the exact bytes it currently produces. GHI-153 and GHI-155 both slipped past tests because the tests asserted "the table renders without truncation" instead of "the table exposes the OBPI objective for operator review."
 7. **Invariant 6c — choose fix scope per `.gzkit/rules/defect-fix-routing.md` thresholds, not intuition.** Defaulting to ceremony for a 5-line in-flight defect is not "thorough"; defaulting to a direct fix for work that crosses brief boundaries is not "surgical." "Thorough" is the routing table applied correctly. Run the mechanical precedent count (`git log --since='60 days ago' --oneline --grep='^fix('`) before deciding the path (GHI #195).
@@ -281,12 +281,87 @@ uv run gz state     # Artifact relationships
 uv run gz agent sync control-surfaces  # Regenerate surfaces
 ```
 
+## Attestation
+
+Binding rules for attestation text, commit-message enrichment, and ARB receipt citation.
+
+### Pattern (binding)
+
+```
+<user's verbatim words> — <concrete characterization grounded in session evidence>
+```
+
+The user's words retain provenance; the em-dash enrichment supplies the weight. Pass the user's token through unchanged, then append concrete session-grounded characterization.
+
+### Canonical invocations (binding)
+
+| Claim category | Canonical invocation | Receipt name prefix |
+|----------------|----------------------|---------------------|
+| Lint clean | `uv run gz arb ruff` | `arb-ruff-` |
+| Type check clean | `uv run gz arb typecheck` | `arb-step-typecheck-` |
+| Tests pass | `uv run gz arb step --name unittest -- uv run -m unittest -q` | `arb-step-unittest-` |
+| Coverage floor | `uv run gz arb coverage run -m unittest discover -s tests -t .` | `arb-step-coverage-` |
+| Docs build clean | `uv run gz arb step --name mkdocs -- uv run mkdocs build --strict` | `arb-step-mkdocs-` |
+
+Locked by `CANONICAL_STEP_COMMANDS` in `src/gzkit/arb/validator.py`; `gz arb validate` flags drift as non-canonical provenance. Extend (don't shrink) the table.
+
+### Applies to
+
+- `uv run gz obpi complete --attestation-text ...`
+- `uv run gz adr emit-receipt ... --attestor ...`
+- Any `gz` CLI accepting an attestation string
+- `git commit -m "..."` messages (including HEREDOC form)
+
+### Lane behavior
+
+- **Lite lane:** missing receipt IDs produce a warning; attestation records but is flagged narrative-only.
+- **Heavy lane:** missing receipt IDs are fail-closed; re-run under ARB and re-cite.
+
+If no receipts exist, run the relevant ARB-wrapped commands first, then draft the attestation citing the fresh receipt IDs. Narrative substitutes are not acceptable.
+
+### Enrichment content
+
+Reference concrete session facts:
+
+- Decisions recorded (Absorb/Confirm/Exclude, chosen approach, rejected alternatives)
+- Concrete evidence: test counts, coverage deltas, line counts, files changed
+- File references with paths and line numbers
+- Rationale citing named dimensions, not vague adjectives
+
+Receipt IDs appear inline, e.g. `(lint: receipt arb-2026-04-14T12-34-56-ruff)`. The citing agent must verify the receipt exists and its status matches the claim — fabricating a receipt ID is the same failure as fabricating the claim.
+
+### Anti-patterns
+
+- Passing only the user's brief token without enrichment — loses signal
+- Replacing the user's words with an agent-generated sentence — loses provenance
+- Adding enrichment not grounded in concrete session evidence — fabrication
+- Using vague adjectives ("good", "clean", "comprehensive") without naming the facts
+- Enriching with information from other sessions or unrelated work
+- Authoring `arb-step-*` receipts with `exit_status=1` as "RED receipts" — pollutes the ARB corpus
+
+### Worked example
+
+User says: `attest completed`
+
+Agent passes to `--attestation-text`:
+
+```
+attest completed — Confirm decision: gzkit cli_audit + doc_coverage surface
+architecturally superior (AST vs parser._actions private API, 5-surface
+manifest-driven coverage, 76 vs 1 tests, frozen Pydantic vs dict[str,Any]);
+no absorption of the external reference cli_audit module warranted.
+Receipts: lint arb-2026-04-14T12-34-56-ruff; types arb-2026-04-14T12-35-02-ty;
+tests arb-2026-04-14T12-36-18-unittest; coverage arb-2026-04-14T12-37-44-coverage.
+```
+
+See [`docs/governance/arb-middleware.md`](docs/governance/arb-middleware.md) for ARB middleware deep-dive: core concept, command surface, receipt schema and storage, exit codes, and rationale.
+
 ## Control Surfaces
 
 This file is generated by `gz agent sync control-surfaces`. Do not edit directly.
 
 - **Source**: `.gzkit/manifest.json`
-- **Updated**: 2026-04-22
+- **Updated**: 2026-04-23
 
 ---
 
@@ -297,7 +372,7 @@ This file is generated by `gz agent sync control-surfaces`. Do not edit directly
 - Apply semantic-version ordering in ADR summaries, comparisons, and any operator-facing status narration.
 - When adding imports in an Edit call, always include the code that uses them in the same edit. The post-edit ruff hook removes unused imports immediately — splitting import addition and usage across separate edits causes the import to be deleted before it's referenced.
 - Never prefix `uv run gz` or `uv run -m gzkit` commands with `PYTHONUTF8=1`. The CLI entrypoint handles UTF-8 encoding at runtime.
-- Attestation and commit-message enrichment: pass user words verbatim, append concrete characterization grounded in session evidence. See `.gzkit/rules/attestation-enrichment.md`.
+- Attestation and commit-message enrichment: pass user words verbatim, append concrete characterization grounded in session evidence. See `AGENTS.md` § Attestation.
 - Every version bump is a release. After bumping `pyproject.toml`, `__init__.py`, and the README badge, always create a GitHub release with `gh release create vX.Y.Z --target main --title "vX.Y.Z" --latest --notes "..."`. The release workflow triggers PyPI publish and binary builds from the tag. Never leave a version bump uncommitted without a corresponding release.
 - When scaffolding `.gitignore` files (in `gz init` or any related skill), use [github/gitignore](https://github.com/github/gitignore) as the canonical reference. The Python template lives at `Python.gitignore` in that repo. Fetch it via `gh api repos/github/gitignore/contents/Python.gitignore --jq '.content' | base64 -d`. Keep the scaffolded version focused on what's relevant to gzkit projects, plus gzkit-specific entries (`.claude/settings.local.json`).
 - **Operator PII — never include the operator's personal email in any repo-bound artifact.** This covers commit messages and trailers; file content (source, docs, briefs, ADRs, OBPIs, runbooks, tests); attestation text passed to `gz obpi complete --attestation-text`, `gz obpi complete --attestor`, `gz adr emit-receipt`, `gz attest`, and any other CLI accepting attestor or author identity; ledger entries in `.gzkit/ledger.jsonl`; changelogs, release notes, and co-author trailers. For attestor / author identity fields use the operator's name only (e.g. `g0`). If a CLI requires an email-shaped value, use the operator's GitHub noreply address (`<handle>@users.noreply.github.com`), never the personal address. When in doubt, omit and confirm — recovery from a leak requires a filter-repo rewrite and force-push to `main` (see the 2026-04-19 incident on this repo). This rule overrides any skill, ceremony template, or attestation-enrichment example that would otherwise suggest including the personal email.

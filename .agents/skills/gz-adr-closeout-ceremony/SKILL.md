@@ -5,7 +5,7 @@ description: Execute the ADR closeout ceremony protocol for human attestation. G
 category: adr-audit
 compatibility: GovZero v6 framework; provides runbook walkthrough for human ADR attestation
 metadata:
-  skill-version: "7.8.0"
+  skill-version: "7.8.1"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -155,7 +155,7 @@ When the CLI presents walkthrough commands (CLI Steps 4-5), run them one at a ti
 
 **Auto-mode override.** Auto mode's "prefer action over planning, minimize interruptions" framing does NOT apply inside the walkthrough. Step 5 is an operator-paced observation surface — do not batch demo commands into parallel tool calls to save turns. Rule #5 in § Ceremony Rules below overrides the auto-mode batching default.
 
-**Evidence-gathering ARB checks are separate from the demos.** The Evidence Summary Template (§ below) lists the canonical ARB-wrapped invocations (`uv run gz arb ruff`, `uv run gz arb step --name unittest -- uv run -m unittest -q`, `uv run gz arb typecheck`, `uv run gz arb step --name mkdocs -- uv run mkdocs build --strict`) as evidence-template population — these are not discovered demo commands and must NOT be interleaved with the per-demo `--next` loop. Run them when gathering evidence for the Step 6 attestation prompt (either right before the prompt or during pre-ceremony preparation), never mixed into the Step 5 one-at-a-time sequence. Heavy-lane ceremony fail-closes on missing receipt IDs per `.gzkit/rules/attestation-enrichment.md` § Lane behavior, so bare (non-ARB) invocations do not satisfy the evidence requirement.
+**Evidence-gathering ARB checks are separate from the demos.** The Evidence Summary Template (§ below) lists the canonical ARB-wrapped invocations (`uv run gz arb ruff`, `uv run gz arb step --name unittest -- uv run -m unittest -q`, `uv run gz arb typecheck`, `uv run gz arb step --name mkdocs -- uv run mkdocs build --strict`) as evidence-template population — these are not discovered demo commands and must NOT be interleaved with the per-demo `--next` loop. Run them when gathering evidence for the Step 6 attestation prompt (either right before the prompt or during pre-ceremony preparation), never mixed into the Step 5 one-at-a-time sequence. Heavy-lane ceremony fail-closes on missing receipt IDs per `AGENTS.md` § Attestation § Lane behavior, so bare (non-ARB) invocations do not satisfy the evidence requirement.
 
 **If a walkthrough command fails:** See Error Recovery. Do not skip it. Do not advance past it. Fix it or escalate.
 
@@ -276,7 +276,7 @@ Present this template at Step 5, before requesting attestation. Every field is m
 
 **3. Walkthrough Results**
 
-Cite canonical ARB-wrapped invocations with receipt IDs. Heavy-lane attestation fail-closes on missing receipt IDs per `.gzkit/rules/attestation-enrichment.md` § Lane behavior; bare (non-ARB) commands do not satisfy this requirement. The canonical invocations are locked by `CANONICAL_STEP_COMMANDS` in `src/gzkit/arb/validator.py`.
+Cite canonical ARB-wrapped invocations with receipt IDs. Heavy-lane attestation fail-closes on missing receipt IDs per `AGENTS.md` § Attestation § Lane behavior; bare (non-ARB) commands do not satisfy this requirement. The canonical invocations are locked by `CANONICAL_STEP_COMMANDS` in `src/gzkit/arb/validator.py`.
 
 | Command | Result | Receipt ID | Notes |
 |---------|--------|------------|-------|
