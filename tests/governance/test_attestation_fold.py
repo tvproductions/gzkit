@@ -206,35 +206,24 @@ class TestAttestationFold(unittest.TestCase):
 
     @covers("REQ-0.0.20-03-04")
     @covers("REQ-0.0.20-03-14")
-    def test_manifest_allowlist_has_one_entry(self) -> None:
-        """Manifest ``rules.unscoped_allowlist`` must shrink from 2 to 1 entry.
+    def test_manifest_allowlist_removes_attestation_enrichment_entry(self) -> None:
+        """Manifest ``rules.unscoped_allowlist`` must not contain attestation-enrichment.md.
 
-        After OBPI-03 folds ``attestation-enrichment.md``, its allow-list
-        entry is removed. The remaining one entry covers
-        ``defect-fix-routing.md`` (OBPI-04), which awaits its own
-        consolidation.
+        OBPI-03's REQ-04 semantic is **absence of the attestation-enrichment.md
+        entry** — not "manifest has exactly N entries". The count cascades as
+        sibling OBPIs (04, 05) land; absence is the invariant this OBPI
+        guarantees (matches ``test_agent_contract_fold`` precedent).
         """
         manifest = json.loads(
             (REPO_ROOT / ".gzkit" / "manifest.json").read_text(encoding="utf-8"),
         )
         allowlist = manifest.get("rules", {}).get("unscoped_allowlist", [])
 
-        self.assertEqual(
-            len(allowlist),
-            1,
-            f"expected exactly 1 allow-list entry post-OBPI-03, got {allowlist!r}",
-        )
-
         entry_files = {entry.get("file") for entry in allowlist}
         self.assertNotIn(
             ".gzkit/rules/attestation-enrichment.md",
             entry_files,
             "attestation-enrichment.md allow-list entry must be removed",
-        )
-        self.assertEqual(
-            entry_files,
-            {".gzkit/rules/defect-fix-routing.md"},
-            f"unexpected remaining allow-list entries: {entry_files!r}",
         )
 
     @covers("REQ-0.0.20-03-05")
@@ -299,12 +288,15 @@ class TestAttestationFold(unittest.TestCase):
     @covers("REQ-0.0.20-03-10")
     @covers("REQ-0.0.20-03-11")
     @covers("REQ-0.0.20-03-12")
-    def test_unscoped_rules_validator_passes_with_one_allowlist_entry(self) -> None:
+    def test_unscoped_rules_validator_passes_post_fold(self) -> None:
         """``gz validate --unscoped-rules`` exits 0 post-fold.
 
         Calls the validator's public Python API directly (no subprocess)
         to keep the test in the unit tier per ``.gzkit/rules/tests.md``.
-        Asserts result="pass", exit_code=0, and one allow-list entry.
+        Asserts result="pass" and exit_code=0. The allow-list cardinality
+        is not this OBPI's invariant (it cascades as sibling folds land);
+        absence of the attestation-enrichment entry is covered by
+        ``test_manifest_allowlist_removes_attestation_enrichment_entry``.
 
         Satisfies REQ-09 (unscoped-rules exits 0), REQ-10 (no drift in the
         validate-all surface), REQ-11 (no ARB test regression from
@@ -316,10 +308,13 @@ class TestAttestationFold(unittest.TestCase):
 
         self.assertEqual(result.result, "pass", f"validator failed: {result!r}")
         self.assertEqual(result.exit_code, 0, f"validator exit_code={result.exit_code}")
-        self.assertEqual(
+        # Allow-list cardinality is not this OBPI's invariant; absence of
+        # the attestation-enrichment entry is covered elsewhere. The count
+        # may drop to 0 as sibling fold OBPIs land.
+        self.assertGreaterEqual(
             len(result.allowlist_entries),
-            1,
-            f"expected 1 allow-list entry, got {len(result.allowlist_entries)}",
+            0,
+            f"allow-list unexpectedly negative: {len(result.allowlist_entries)}",
         )
 
     @covers("REQ-0.0.20-03-15")

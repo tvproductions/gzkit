@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-04-19
 metadata:
-  skill-version: "6.0.2"
+  skill-version: "6.0.3"
   govzero-framework-version: "v6"
 ---
 
@@ -54,7 +54,7 @@ Task arrives
     ├── Working on an OBPI?
     │   ├── Decompose ADR into OBPI briefs ─────────→ gz-obpi-specify
     │   ├── Audit plan alignment before coding ─────→ gz-plan-audit
-    │   ├── In-flight defect fix (≤10 lines, ≤2 files) → .gzkit/rules/defect-fix-routing.md (direct fix; skip pipeline)
+    │   ├── In-flight defect fix (≤10 lines, ≤2 files) → AGENTS.md § Defect-fix routing (direct fix; skip pipeline)
     │   ├── Execute the full implementation pipeline → gz-obpi-pipeline
     │   ├── Claim/release OBPI work locks ──────────→ gz-obpi-lock
     │   ├── Review code quality after implementation → gz-obpi-simplify

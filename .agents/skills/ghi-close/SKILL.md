@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-04-23
 metadata:
-  skill-version: "2.0.0"
+  skill-version: "2.0.1"
 ---
 
 # ghi-close
@@ -30,7 +30,7 @@ designed to prevent.
 issues — the terminal state of a well-formed GHI is *closed with evidence*,
 not *analyzed and left open*. This skill is the end-to-end execution path:
 read the GHI, execute the prescribed fix (routed per
-`.gzkit/rules/defect-fix-routing.md`), verify artifacts, close with a
+AGENTS.md § Defect-fix routing), verify artifacts, close with a
 citation comment.
 
 The skill is not an evaluator-only surface. If it terminates without
@@ -52,7 +52,7 @@ Four-phase protocol: **read**, **execute**, **verify**, **close**.
 | Phase | What happens |
 |-------|--------------|
 | Read | Load GHI; extract prescribed fix or fix options from the body |
-| Execute | Apply the fix via the correct route per `.gzkit/rules/defect-fix-routing.md` |
+| Execute | Apply the fix via the correct route per AGENTS.md § Defect-fix routing |
 | Verify | Run the evidence block against the landed artifacts |
 | Close | Emit the citation comment and `gh issue close` |
 
@@ -97,7 +97,7 @@ to produce one. Fix that instinct.
 
 ### Phase 2 — Execute
 
-4. **Route the fix** per `.gzkit/rules/defect-fix-routing.md`:
+4. **Route the fix** per AGENTS.md § Defect-fix routing:
 
    - **Direct fix** (criteria met): proceed inline — apply edits, write the Red test, run Green, commit `fix(<scope>): <summary> (GHI #N)`.
    - **OBPI ceremony** (any ceremony trigger holds): hand off to `gz-obpi-specify` → `gz obpi pipeline` → return here after pipeline Stage 5 for close. The handoff is the execution — do not treat it as an exit.
@@ -216,7 +216,7 @@ These thoughts mean STOP — you are about to either leave a corrupted audit tra
 
 | Thought | Reality |
 |---------|---------|
-| "No fix commit exists yet, so I should stop and report" | Wrong. The skill's job is to *produce* the fix commit. Route per `defect-fix-routing.md` and execute. |
+| "No fix commit exists yet, so I should stop and report" | Wrong. The skill's job is to *produce* the fix commit. Route per AGENTS.md § Defect-fix routing and execute. |
 | "The GHI has two proposed resolutions and I should ask which one" | Only if the options are genuinely balanced. Usually one option preserves reconciliation intent and the other discards it — pick the preserving one per DO IT RIGHT #3 and note the rationale in the close comment. |
 | "The commit clearly fixes it; I don't need to verify tests" | Verification is the point of Phase 3. If tests assert strings instead of semantics, the class is still open. |
 | "I'll close it now and add the evidence later" | The close comment is the evidence. "Later" never comes. |
@@ -252,6 +252,6 @@ These thoughts mean STOP — you are about to either leave a corrupted audit tra
 - `AGENTS.md` § Attestation (ARB receipt discipline for heavy-lane closures)
 - `.claude/rules/gh-cli.md` (allowed `gh` commands)
 - `.claude/rules/tool-skill-runbook-alignment.md` § Commit-message discipline (observed-output evidence)
-- `.gzkit/rules/defect-fix-routing.md` (the routing matrix applied in Phase 2)
+- AGENTS.md § Defect-fix routing (the routing matrix applied in Phase 2)
 - `.gzkit/rules/tests.md` § Tests assert semantics, not strings (test verification in step 7c)
 - `AGENTS.md` § Local Agent Rules (operator PII — never in close comments)

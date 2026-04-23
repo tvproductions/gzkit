@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-04-23
 metadata:
-  skill-version: "1.0.0"
+  skill-version: "1.0.1"
 ---
 
 # ghi-author
@@ -26,7 +26,7 @@ auto-assignment and corrupt cross-references.
 Author a GitHub Issue so a surfaced defect, enhancement, or investigation
 becomes trackable. This is the mechanical counterpart to `AGENTS.md` §
 Prime Directive #6 ("every defect must be trackable") and the upstream of
-`.gzkit/rules/defect-fix-routing.md` (the routing decision consumes the
+AGENTS.md § Defect-fix routing (the routing decision consumes the
 GHI's evidence — it does not substitute for authoring one).
 
 A GHI that exists only in session memory is not a GHI. The ledger-of-truth
@@ -37,7 +37,7 @@ and the ARB receipt chain has no anchor.
 ## Trigger
 
 - A defect surfaces during work on an unrelated brief and cannot be fixed in-scope
-- `.gzkit/rules/defect-fix-routing.md` resolves to "ceremony" or "ambiguous" and the operator needs a trackable artifact before deciding
+- AGENTS.md § Defect-fix routing resolves to "ceremony" or "ambiguous" and the operator needs a trackable artifact before deciding
 - Pre-existing defect discovered during audit, reconcile, or review
 - Template/doc drift, schema inconsistency, or invariant weakness that needs a home
 - Operator says "file a GHI for that" or equivalent
@@ -47,7 +47,7 @@ and the ARB receipt chain has no anchor.
 Produce a GHI whose body contains enough evidence for a future agent or
 reviewer to re-apply the routing matrix without re-investigating. The
 authoring pass does **not** decide direct-fix vs. OBPI ceremony — that is
-`defect-fix-routing.md`'s job at fix time. It does produce the evidence the
+AGENTS.md § Defect-fix routing's job at fix time. It does produce the evidence the
 routing matrix will consume.
 
 ## Prerequisites
@@ -128,7 +128,7 @@ routing matrix will consume.
 
 **Input**: During OBPI-0.0.16-04 implementation, `uv run gz validate --documents` flagged a pool ADR for drifted frontmatter. Pool ADRs are supposed to skip that check per schema.
 
-**Output**: File `defect` GHI titled `validator: frontmatter check does not skip pool ADRs`. Body includes the exact `gz validate` command output, citation of the pool-skip rule in `src/gzkit/schemas/adr.json`, and a scope hint of "≤10 lines, single file, in-flight." Routing decision deferred — operator applies `defect-fix-routing.md` at fix time. Trailer candidate: `fix(validator): skip pool ADRs in validate_frontmatter (GHI #192)`.
+**Output**: File `defect` GHI titled `validator: frontmatter check does not skip pool ADRs`. Body includes the exact `gz validate` command output, citation of the pool-skip rule in `src/gzkit/schemas/adr.json`, and a scope hint of "≤10 lines, single file, in-flight." Routing decision deferred — operator applies AGENTS.md § Defect-fix routing at fix time. Trailer candidate: `fix(validator): skip pool ADRs in validate_frontmatter (GHI #192)`.
 
 ### Example 2 — Enhancement for a working surface
 
@@ -182,5 +182,5 @@ These thoughts mean STOP — you are about to produce a low-quality GHI:
 - `AGENTS.md` § DO IT RIGHT #1 (fix the class, not the instance — the GHI must name the class)
 - `AGENTS.md` § DO IT RIGHT 6h (verbatim quotes, not narrative reconstruction)
 - `.claude/rules/gh-cli.md` (allowed `gh` commands)
-- `.gzkit/rules/defect-fix-routing.md` (the routing decision this GHI's evidence will feed)
+- AGENTS.md § Defect-fix routing (the routing decision this GHI's evidence will feed)
 - `AGENTS.md` § Local Agent Rules (operator PII — never in the GHI body)

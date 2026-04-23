@@ -7,7 +7,7 @@ Do the work described in a GHI, then close it with verifiable evidence.
 ## Purpose
 
 Drives an open GHI to its terminal state: read the GHI, execute the
-prescribed fix (routed per `.gzkit/rules/defect-fix-routing.md`), verify the
+prescribed fix (routed per AGENTS.md § Defect-fix routing), verify the
 landed artifacts, and close the issue with a citation comment. The skill
 refuses to close on narrative alone — every disposition cites a commit SHA,
 ADR ID, OBPI ID, or ARB receipt ID.
@@ -43,7 +43,7 @@ and cites the verifiable artifact. `gh issue close` fires with a
 | File | Role | Read/Write |
 |------|------|------------|
 | `.claude/skills/ghi-close/SKILL.md` | Agent execution instructions | Read |
-| `.gzkit/rules/defect-fix-routing.md` | Routing thresholds for Phase 2 | Read |
+| `AGENTS.md § Defect-fix routing` | Routing thresholds for Phase 2 | Read |
 | `.claude/rules/gh-cli.md` | `gh` CLI guardrails | Read |
 
 ## Related Skills and Commands

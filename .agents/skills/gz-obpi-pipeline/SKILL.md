@@ -5,7 +5,7 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.11.0"
+skill-version: "6.11.1"
 last_reviewed: 2026-04-23
 ---
 
@@ -67,7 +67,7 @@ This is not optional. This is not something you can "derive informally." The pla
 
 - For planning — use Claude Code plan mode instead
 - When no OBPI brief exists for the work
-- For in-flight defect fixes that meet the direct-fix thresholds in `.gzkit/rules/defect-fix-routing.md` (≤10 source lines AND ≤2 source files AND in-flight trigger AND unit-test coverage AND ≥3 recent `fix(…)` precedents). Route those to a direct `fix(<scope>): … (GHI #N)` commit instead of this pipeline. The Iron Law governs ceremony-scoped work; it does not license wrapping a 5-line patch in a 5-stage run.
+- For in-flight defect fixes that meet the direct-fix thresholds in AGENTS.md § Defect-fix routing (≤10 source lines AND ≤2 source files AND in-flight trigger AND unit-test coverage AND ≥3 recent `fix(…)` precedents). Route those to a direct `fix(<scope>): … (GHI #N)` commit instead of this pipeline. The Iron Law governs ceremony-scoped work; it does not license wrapping a 5-line patch in a 5-stage run.
 
 ---
 

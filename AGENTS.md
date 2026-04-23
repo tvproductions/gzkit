@@ -90,7 +90,7 @@ This maxim sits next to the Prime Directive because ownership and completeness w
 4. **Verify observed behavior, not assumed behavior.** Run the destination command, observe its actual output, paste the output into the attestation or commit body. Narrative reconstruction from memory is not verification. This is the same rule as the ARB receipt-ID requirement in § Attestation: claims without observed evidence are post-hoc reasoning pathways, not verification pathways.
 5. **Read the code before you change it.** Vibe coding's defining move is editing a file without understanding what the file does, based on a guess about what a function probably returns or a class probably is. Read the surface. Trace the callers. Understand the contract. Then change it.
 6. **Tests assert semantics, not strings.** A test that pins the current observed output to a string is not a test of the code's purpose — it's a test of its current state. Write tests that assert the behavior the surface is supposed to produce, not the exact bytes it currently produces. GHI-153 and GHI-155 both slipped past tests because the tests asserted "the table renders without truncation" instead of "the table exposes the OBPI objective for operator review."
-7. **Invariant 6c — choose fix scope per `.gzkit/rules/defect-fix-routing.md` thresholds, not intuition.** Defaulting to ceremony for a 5-line in-flight defect is not "thorough"; defaulting to a direct fix for work that crosses brief boundaries is not "surgical." "Thorough" is the routing table applied correctly. Run the mechanical precedent count (`git log --since='60 days ago' --oneline --grep='^fix('`) before deciding the path (GHI #195).
+7. **Invariant 6c — choose fix scope per § Defect-fix routing thresholds, not intuition.** Defaulting to ceremony for a 5-line in-flight defect is not "thorough"; defaulting to a direct fix for work that crosses brief boundaries is not "surgical." "Thorough" is the routing table applied correctly. Run the mechanical precedent count (`git log --since='60 days ago' --oneline --grep='^fix('`) before deciding the path (GHI #195).
 8. **Invariant 6g — verify the runtime surface before recommending an incantation.** Pattern-matching a plausible command from training memory and presenting it as operational guidance without running it is vibe coding's recommendation-time face. Recommending `claude --model ...` as a CLI flag when the actual surface is the `/model` slash command is the canonical example. Run the command once, observe the output, paste the observed output — then recommend (GHI #263).
 9. **Invariant 6h — when reporting why a rule was violated, quote the rule and the conflicting directive verbatim.** Producing a post-hoc "competing directives" narrative without verbatim quotes is reporting-pathway drift, not analysis. Phrases like "competing directives," "pulled against," "no clear resolution" without quotable conflict text are red flags — absence of quotable text means the conflict is invented (GHI #261).
 
@@ -355,6 +355,42 @@ tests arb-2026-04-14T12-36-18-unittest; coverage arb-2026-04-14T12-37-44-coverag
 ```
 
 See [`docs/governance/arb-middleware.md`](docs/governance/arb-middleware.md) for ARB middleware deep-dive: core concept, command surface, receipt schema and storage, exit codes, and rationale.
+
+## Defect-fix routing
+
+When a defect surfaces — pre-implementation, mid-pipeline, or post-attestation — the routing decision (direct `fix(...)` commit vs. full OBPI ceremony) must be made against explicit thresholds, not agent judgment. The default failure mode is **over-applying ceremony**: agents author OBPI briefs for trivial patches because OBPI is the most-rehearsed governance pattern. This wastes session context and operator attention on overhead that produces no audit benefit a `fix(...)` commit doesn't already produce.
+
+### Direct fix is the right route when ALL hold
+
+| Criterion | Threshold |
+|---|---|
+| Diff size | ≤10 source lines (excluding tests + comments) OR ≤2 source files |
+| Scope | Well-bounded to a single named module or surface |
+| Precedent | `git log --since='60 days ago' --oneline --grep='^fix('` returns ≥3 commits (mechanical count; no subjective shape-matching). If fewer than 3, route to OBPI ceremony or surface the routing to the operator. |
+| Trigger | Defect was surfaced in flight (during execution of a different brief, or during operator use), not as part of new feature work |
+| Coverage | A unit test (TDD red→green) can validate the fix without requiring a new BDD scenario or contract change |
+
+### OBPI ceremony is required when ANY hold
+
+| Trigger | Why ceremony matters |
+|---|---|
+| Crosses ADR or active-OBPI brief boundaries (touches files governed by a different in-progress OBPI's allowed paths) | Bundling violates the brief-boundary anti-pattern (§ Behavior Rules — Never, item 5) |
+| Adds or changes a CLI surface, schema, public contract, or runtime invariant | Heavy-lane gates (Gate 3 docs, Gate 4 BDD, Gate 5 attestation) need to fire |
+| Operator explicitly directs OBPI route | Operator intent overrides routing thresholds |
+| Fix is part of new feature work (planned increment, not defect closure) | Feature work is the OBPI's purpose; ceremony provides the audit trail |
+| Diff size or scope exceeds the direct-fix thresholds above | Triggers Heavy-lane review reflexes regardless of intent |
+
+### Decision protocol
+
+When a defect surfaces and both routes are *plausible*:
+
+1. **Compute the routing facts**: estimated diff size, scope (files), recent precedent (`git log --grep='^fix('`), trigger (in-flight vs feature), coverage shape (unit vs integration vs BDD).
+2. **Apply the criteria above** mechanically. Do not skip step 1.
+3. **If criteria resolve to direct fix**: commit `fix(<scope>): <summary> (GHI #N)` with TDD evidence in the commit body. No brief, no ADR amendment, no withdraw dance.
+4. **If criteria resolve to OBPI ceremony**: open the OBPI brief and follow `gz-obpi-pipeline`.
+5. **If ambiguous** (e.g., 8 lines crossing 2 modules with mixed precedent): surface the choice to the operator with the routing facts as evidence; do NOT default to ceremony. Default-to-ceremony is the failure mode this rule exists to close.
+
+See [`docs/governance/defect-fix-routing.md`](docs/governance/defect-fix-routing.md) for baseline precedent examples (GHI #186-#189, #191, #192), the anti-pattern catalog, origin-GHI #195 history, and related-rules cross-references.
 
 ## Control Surfaces
 

@@ -1,0 +1,95 @@
+{
+  "obpi_id": "OBPI-0.0.20-04-fold-defect-fix-routing",
+  "timestamp": "2026-04-23T11:54:41.299997+00:00",
+  "verdict": "PASS",
+  "plan_file": "compressed-painting-kernighan.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.24.0",
+      "sibling_obpi": "OBPI-0.24.0-01-documentation-taxonomy",
+      "contested_paths": [
+        "docs/governance/defect-fix-routing.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.16.0",
+      "sibling_obpi": "OBPI-0.16.0-04-template-engine",
+      "contested_paths": [
+        ".claude/rules/defect-fix-routing.md",
+        ".github/instructions/defect_fix_routing.instructions.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.16.0",
+      "sibling_obpi": "OBPI-0.16.0-02-rules-as-content",
+      "contested_paths": [
+        ".gzkit/rules/defect-fix-routing.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.36.0",
+      "sibling_obpi": "OBPI-0.36.0-11-sql-hygiene-instructions",
+      "contested_paths": [
+        ".claude/rules/defect-fix-routing.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.36.0",
+      "sibling_obpi": "OBPI-0.36.0-13-calendars-instructions",
+      "contested_paths": [
+        ".claude/rules/defect-fix-routing.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.36.0",
+      "sibling_obpi": "OBPI-0.36.0-12-warehouse-instructions",
+      "contested_paths": [
+        ".claude/rules/defect-fix-routing.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.17",
+      "sibling_obpi": "OBPI-0.0.17-06-agents-md-correction",
+      "contested_paths": [
+        "docs/governance/defect-fix-routing.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.9",
+      "sibling_obpi": "OBPI-0.0.9-06-marker-migration-path",
+      "contested_paths": [
+        "docs/governance/defect-fix-routing.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.10",
+      "sibling_obpi": "OBPI-0.0.10-01-three-tier-model-and-pool-archive",
+      "contested_paths": [
+        "docs/governance/defect-fix-routing.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.10",
+      "sibling_obpi": "OBPI-0.0.10-03-storage-catalog-and-escalation-governance",
+      "contested_paths": [
+        "docs/governance/defect-fix-routing.md",
+        ".gzkit/rules/defect-fix-routing.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.10",
+      "sibling_obpi": "OBPI-0.0.10-04-git-clone-recovery",
+      "contested_paths": [
+        "docs/governance/defect-fix-routing.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.10",
+      "sibling_obpi": "OBPI-0.0.10-02-identity-surfaces",
+      "contested_paths": [
+        "docs/governance/defect-fix-routing.md"
+      ]
+    }
+  ]
+}
