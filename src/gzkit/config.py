@@ -98,6 +98,7 @@ class PathConfig(BaseModel):
     copilot_hooks: str = ".github/copilot/hooks"
     skills: str = ".gzkit/skills"
     personas: str = ".gzkit/personas"
+    chores: str = ".gzkit/chores"
 
 
 class ArbConfig(BaseModel):

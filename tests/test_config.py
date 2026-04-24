@@ -33,6 +33,28 @@ class TestPathConfig(unittest.TestCase):
         self.assertEqual(config.codex_skills, ".agents/skills")
         self.assertEqual(config.copilot_skills, ".github/skills")
 
+    def test_paths_chores_default_resolves(self) -> None:
+        """PathConfig.chores defaults to .gzkit/chores.
+
+        @covers REQ-0.0.21-02-01
+        @covers REQ-0.0.21-02-04
+        """
+        config = PathConfig()
+        self.assertEqual(config.chores, ".gzkit/chores")
+        self.assertIsInstance(config.chores, str)
+
+    def test_paths_chores_annotation_matches_siblings(self) -> None:
+        """PathConfig.chores type annotation is str — sibling parity with
+        skills/personas — which is the runtime expression of the static
+        contract gz typecheck exits 0 on.
+
+        @covers REQ-0.0.21-02-05
+        """
+        annotations = PathConfig.__annotations__
+        self.assertEqual(annotations["chores"], str)
+        self.assertEqual(annotations["chores"], annotations["skills"])
+        self.assertEqual(annotations["chores"], annotations["personas"])
+
 
 class TestGzkitConfig(unittest.TestCase):
     """Tests for GzkitConfig."""
@@ -76,6 +98,30 @@ class TestGzkitConfig(unittest.TestCase):
             loaded = GzkitConfig.load(config_path)
             self.assertEqual(loaded.mode, "heavy")
             self.assertEqual(loaded.paths.prd, "my/prd")
+
+    def test_paths_chores_preserves_user_override(self) -> None:
+        """User-supplied paths.chores round-trips through GzkitConfig.load().
+
+        @covers REQ-0.0.21-02-02
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            config_file = Path(tmpdir) / "config.json"
+            config_file.write_text(
+                '{"paths":{"chores":"custom/chores"}}',
+                encoding="utf-8",
+            )
+            config = GzkitConfig.load(config_file)
+            self.assertEqual(config.paths.chores, "custom/chores")
+
+    def test_paths_extra_field_still_rejected(self) -> None:
+        """extra='forbid' on PathConfig still rejects unknown keys.
+
+        @covers REQ-0.0.21-02-03
+        """
+        from pydantic import ValidationError
+
+        with self.assertRaises(ValidationError):
+            GzkitConfig.model_validate({"paths": {"chores_typo": "x"}})
 
     def test_get_path(self) -> None:
         """get_path returns Path object."""

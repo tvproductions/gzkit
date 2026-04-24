@@ -3,7 +3,7 @@ id: OBPI-0.0.21-02-config-schema-paths-chores
 parent: ADR-0.0.21-chores-as-gzkit-surface
 item: 2
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.21-02-config-schema-paths-chores: Config Schema — paths.chores
@@ -149,17 +149,24 @@ uv run gz typecheck
 Before: `PathConfig` knew about skills/personas/ceremonies but not chores — any consumer had to hard-code a path. After: `paths.chores` is addressable with the same shape as siblings.
 
 ### Key Proof
+
 ```bash
 $ uv run python -c "from gzkit.config import GzkitConfig; print(GzkitConfig().paths.chores)"
 .gzkit/chores
 ```
 
+REQ coverage: 5/5 via `gz covers OBPI-0.0.21-02 --json` (`total_reqs=5, covered_reqs=5, coverage_percent=100.0`).
+
+Quality receipts: lint `arb-ruff-078f98e2e8714bbe8d1d8c01f5afc54e`, types `arb-step-typecheck-41c98ead3e794d9d9378d50e5e095537`, tests `arb-step-unittest-686e4fed9b1a4858a92830d045940557` (3550 pass), docs `arb-step-mkdocs-5ba5cd9f8a2a4ef4b9fc10dde7a863ae`.
+
 ### Implementation Summary
-- Files created/modified: `src/gzkit/config.py`, `tests/test_config.py`
-- Tests added: 3
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files modified: `src/gzkit/config.py` (+1 line), `tests/test_config.py` (+4 tests)
+- Tests added: 4 — `test_paths_chores_default_resolves`, `test_paths_chores_annotation_matches_siblings`, `test_paths_chores_preserves_user_override`, `test_paths_extra_field_still_rejected`
+- Production diff: added `chores: str = ".gzkit/chores"` to `PathConfig` at `src/gzkit/config.py:101` adjacent to `skills`/`personas`, preserving bare-`str` sibling style and `ConfigDict(frozen=True, extra="forbid")`
+- Date completed: 2026-04-24
+- Attestation status: operator attested "completed"
+- Defects noted: GHI #302 (gz test --obpi resolver bug, pre-existing, out of scope)
 
 ## Tracked Defects
 
@@ -167,14 +174,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>`
-- Attestation: `<verbatim user words> — <session-grounded enrichment>`
-- Date: YYYY-MM-DD
+- Attestor: `Jeffry Babb`
+- Attestation: attest completed — paths.chores field landed on PathConfig with sibling parity to skills/personas (bare str, frozen, extra='forbid' preserved); 4 REQ-derived tests authored RED then GREEN, 5/5 REQ coverage via gz covers, 3550-test unit suite green, mkdocs strict green, typecheck clean. Receipts: lint arb-ruff-078f98e2e8714bbe8d1d8c01f5afc54e; types arb-step-typecheck-41c98ead3e794d9d9378d50e5e095537; tests arb-step-unittest-686e4fed9b1a4858a92830d045940557; docs arb-step-mkdocs-5ba5cd9f8a2a4ef4b9fc10dde7a863ae. Surfaced pre-existing defect GHI #302 (gz test --obpi resolver).
+- Date: 2026-04-24
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-24
 
 **Evidence Hash:** -
