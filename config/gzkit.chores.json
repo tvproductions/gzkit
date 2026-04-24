@@ -243,6 +243,13 @@
             "version": "1.0.0",
             "path": "ops/chores/control-surface-rule-vs-check-drift",
             "lane": "lite"
+        },
+        {
+            "slug": "dependency-currency",
+            "title": "Dependency Currency (Tooling Stack Drift Scan)",
+            "version": "1.0.0",
+            "path": "ops/chores/dependency-currency",
+            "lane": "lite"
         }
     ]
 }
