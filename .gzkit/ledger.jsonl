@@ -3691,3 +3691,5 @@
 {"schema":"gzkit.ledger.v1","event":"gate_checked","id":"ADR-0.0.20-agent-rule-placement-invariant","ts":"2026-04-24T01:10:52.058986+00:00","gate":2,"status":"pass","command":"uv run gz typecheck","returncode":0}
 {"schema":"gzkit.ledger.v1","event":"attested","id":"ADR-0.0.20-agent-rule-placement-invariant","ts":"2026-04-24T01:10:52.067717+00:00","status":"completed","by":"Jeffry"}
 {"schema":"gzkit.ledger.v1","event":"lifecycle_transition","id":"ADR-0.0.20-agent-rule-placement-invariant","ts":"2026-04-24T01:10:52.067950+00:00","content_type":"adr","from_state":"Proposed","to_state":"Completed"}
+{"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/audit/AUDIT_PLAN.md","ts":"2026-04-24T01:16:13.238100+00:00","path":"docs/design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/audit/AUDIT_PLAN.md"}
+{"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/audit/AUDIT.md","ts":"2026-04-24T01:17:06.261253+00:00","path":"docs/design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/audit/AUDIT.md"}
