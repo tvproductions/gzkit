@@ -123,6 +123,13 @@ _UTF8_PIPE_WAIVERS: dict[str, str] = {
         "Migration-path doc describing historical marker semantics; target "
         "audience is governance maintainers on POSIX shells."
     ),
+    (
+        "docs/design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant"
+        "/audit/proofs/validate-help.txt:53"
+    ): (
+        "Audit-proof captures the --utf8-prefix validator's own help text, "
+        "which describes the anti-pattern it forbids. GHI #299."
+    ),
 }
 
 _FORBIDDEN_TYPE_IGNORE = re.compile(r"#\s*type:\s*ignore\[")
