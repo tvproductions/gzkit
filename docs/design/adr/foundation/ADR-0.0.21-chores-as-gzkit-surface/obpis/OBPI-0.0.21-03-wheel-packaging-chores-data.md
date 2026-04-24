@@ -3,7 +3,7 @@ id: OBPI-0.0.21-03-wheel-packaging-chores-data
 parent: ADR-0.0.21-chores-as-gzkit-surface
 item: 3
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.21-03-wheel-packaging-chores-data: Wheel Packaging of Chore Data
@@ -170,19 +170,34 @@ ls -lh dist/*.whl
 Before: `pip install py-gzkit` delivered a CLI with zero chores; `uv build` produced a wheel whose `unzip -l` showed no `gzkit/chores/` entries. After: canonical chores ship in every wheel; editable install exposes them via `importlib.resources`; pyinstaller binary build carries them to bundled deployments.
 
 ### Key Proof
+
 ```bash
-$ uv build 2>&1 | tail -3
-Successfully built dist/py_gzkit-0.25.16-py3-none-any.whl
-$ uv run python -c "import zipfile, glob; z=zipfile.ZipFile(glob.glob('dist/*.whl')[-1]); print(sum(1 for n in z.namelist() if 'gzkit/chores' in n))"
-103
+$ uv build --wheel 2>&1 | tail -2
+Successfully built dist/py_gzkit-0.25.15-py3-none-any.whl
+
+$ uv run python -c "import zipfile, re; z=zipfile.ZipFile('dist/py_gzkit-0.25.15-py3-none-any.whl'); names=z.namelist(); print('chores:', sum(1 for n in names if 'gzkit/chores/' in n), '| proofs:', sum(1 for n in names if 'proofs' in n), '| pycache:', sum(1 for n in names if '__pycache__' in n), '| slugs with CHORE.md:', len({m.group(1) for n in names for m in [re.match(r'gzkit/chores/([a-z0-9-]+)/CHORE\.md', n)] if m}))"
+chores: 99 | proofs: 0 | pycache: 0 | slugs with CHORE.md: 32
+
+$ uv run pyi-archive_viewer -l ./dist/gz | grep -c CHORE.md
+32
+
+$ uv run pyi-archive_viewer -l ./dist/gz | grep -c acceptance.json
+32
 ```
 
+REQ coverage: 6/6 via `gz covers OBPI-0.0.21-03 --json` (`total_reqs=6, covered_reqs=6, coverage_percent=100.0`). Wheel size delta: 479K → 656K (+37%, no anomalous explosion). Binary archive bundles 98 chore-related entries via `gz.spec` `CHORES` datas block.
+
+Quality receipts: lint `arb-ruff-c9fb17787ccc4f7b8a1a0ba670565768`; types `arb-step-typecheck-b29b37874c5d4b8db70ca51b61ded883`; tests `arb-step-unittest-32ed04f0ffeb4c3d8cb2c0a54a723133` (3560 pass); docs `arb-step-mkdocs-f04f05277c144b0aacc236c3b73d4c27`.
+
 ### Implementation Summary
-- Files created/modified: `pyproject.toml`, `tests/test_packaging.py`
-- Tests added: 3 REQ-derived
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: `tests/test_packaging.py` (9 REQ-derived tests across 4 test classes — wheel build in tempdir + zipfile assertions; importlib.resources live editable check; pyproject + gz.spec static assertions)
+- Files modified: `pyproject.toml` (+11 lines: `[tool.hatch.build.targets.wheel].include` patterns + `.exclude` patterns for `proofs/`/`__pycache__`/`.pyc`; `packages = ["src/gzkit"]` preserved per REQ-03); `gz.spec` (+15 lines: `CHORES_ROOT`/`CHORES` block extending `datas`, restricted to `.md`/`.json` so excluded paths stay out of binary)
+- Tests added: 9 — `test_wheel_ships_chores_registry`, `test_wheel_ships_representative_chore_data`, `test_wheel_excludes_proofs_and_pycache`, `test_pyproject_uses_hatchling_native_syntax`, `test_pyproject_preserves_packages_declaration`, `test_importlib_resources_lists_chore_slugs`, `test_importlib_resources_resolves_registry_json`, `test_gz_spec_extends_datas_with_chores`, `test_pyinstaller_dependency_remains_declared`
+- TDD: 2 RED→GREEN cycles observed (proofs-exclusion: 77 wheel violations → 0; Hatchling-native-syntax: undeclared → declared); 3 baseline-GREEN tests author the contract; 4 follow-on coverage tests for REQ-04/05 satisfy parity gate
+- Date completed: 2026-04-24
+- Attestation status: human-attested ("attest completed")
+- Defects noted (out-of-scope, routes to OBPI-04): cwd-bound resolver in `src/gzkit/commands/chores.py` and `chores_exec.py` still references deleted `config/gzkit.chores.json` — exactly OBPI-04's scope per parent ADR Decision #5
 
 ## Tracked Defects
 
@@ -190,14 +205,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>`
-- Attestation: `<verbatim user words> — <session-grounded enrichment including wheel size delta>`
-- Date: YYYY-MM-DD
+- Attestor: `Jeffry Babb`
+- Attestation: attest completed — OBPI-0.0.21-03-wheel-packaging-chores-data executed: pyproject.toml gained [tool.hatch.build.targets.wheel].include patterns for src/gzkit/chores/**/*.{md,json} and .exclude patterns removing proofs/, __pycache__/, *.pyc; packages = ["src/gzkit"] preserved per REQ-03. gz.spec gained a CHORES_ROOT/CHORES block restricted to .md/.json that extends the PyInstaller datas list. 2 RED→GREEN TDD cycles observed (proofs-exclusion: 77 wheel violations → 0; Hatchling-native syntax: undeclared → declared); 9 REQ-derived tests authored across 4 classes, 6/6 acceptance REQs covered via gz covers OBPI-0.0.21-03 --json (100%). Built wheel ships 99 chore entries (32 slugs × CHORE.md+acceptance.json+README.md plus top-level registry+README) with 0 proofs/0 pycache; PyInstaller binary bundles 32 CHORE.md + 32 acceptance.json verified via pyi-archive_viewer. Wheel size 479K→656K (+37%, no anomalous explosion). 3560-test unit suite green; mkdocs --strict green; typecheck clean; documents validate green. Heavy/foundation receipts: lint arb-ruff-c9fb17787ccc4f7b8a1a0ba670565768; types arb-step-typecheck-b29b37874c5d4b8db70ca51b61ded883; tests arb-step-unittest-32ed04f0ffeb4c3d8cb2c0a54a723133; docs arb-step-mkdocs-f04f05277c144b0aacc236c3b73d4c27. REQ-05 (b) runtime resolver wiring deferred to OBPI-04 per parent ADR Decision #5 (cwd-bound chores.py resolver still references deleted config/gzkit.chores.json — bundling/distribution contract closed by this OBPI; resolver discovery is OBPI-04 scope).
+- Date: 2026-04-24
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-24
 
 **Evidence Hash:** -
