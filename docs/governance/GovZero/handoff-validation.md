@@ -75,7 +75,7 @@ Scans full content for potential leaked credentials:
 | `sk-<20+ chars>` | OpenAI API keys |
 | `ghp_<20+ chars>` | GitHub personal access tokens |
 
-The `sk-` and `ghp_` patterns use negative lookbehind `(?<![a-zA-Z])` to avoid false positives (e.g., `task-management` does not match `sk-`).
+The `sk-` and `ghp_` patterns use negative lookbehind <code>(?&lt;![a-zA-Z])</code> to avoid false positives (e.g., `task-management` does not match `sk-`).
 
 ### 5. Required Sections
 
