@@ -212,3 +212,37 @@ Ran 3243 tests in 49.287s
 
 OK (skipped=1)
 ```
+## 2026-04-24T02:21:36-05:00
+- Status: PASS
+- Chore: skill-authoring-quality
+- Title: Skill Authoring Quality (Agent-First Best Practices)
+- Lane: lite
+- Version: 2.0.0
+- Criteria Results:
+  - [PASS] `uv run -m unittest -q` => rc=0 (25.46s) -- exit 0 == 0
+
+```text
+[uv run -m unittest -q] stdout:
+=== Human Attestation Required (GHI #290) ===
+  OBPI:        OBPI-0.0.14-02
+  Parent ADR:  ADR-0.0.14
+  Attestor:    Jeffry Babb
+  Attestation: real human attestation
+
+Type the word ATTEST (uppercase, no quotes) to confirm you personally attest, or
+anything else to abort:
+
+=== Human Attestation Required (GHI #290) ===
+  OBPI:        OBPI-0.0.14-02
+  Parent ADR:  ADR-0.0.14
+  Attestor:    Jeffry Babb
+  Attestation: real attestation
+
+Type the word ATTEST (uppercase, no quotes) to confirm you personally attest, or
+anything else to abort:
+[uv run -m unittest -q] stderr:
+----------------------------------------------------------------------
+Ran 3547 tests in 25.094s
+
+OK (skipped=1)
+```

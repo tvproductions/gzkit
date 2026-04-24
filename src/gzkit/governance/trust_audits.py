@@ -549,7 +549,7 @@ def _scan_tools_scripts(project_root: Path) -> list[ValidationError]:
 
 
 def _is_entry_point_script(tree: ast.Module) -> bool:
-    """True if the module has ``if __name__ == '__main__':`` and calls ``print``."""
+    """Return ``True`` if the module has ``if __name__ == '__main__':`` and calls ``print``."""
     has_main_guard = False
     has_print = False
     for node in ast.walk(tree):

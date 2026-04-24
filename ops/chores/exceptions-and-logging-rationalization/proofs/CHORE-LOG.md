@@ -224,3 +224,40 @@ OK (skipped=1)
 [uvx ruff check src/gzkit --select E722] stdout:
 All checks passed!
 ```
+## 2026-04-24T02:06:46-05:00
+- Status: PASS
+- Chore: exceptions-and-logging-rationalization
+- Title: Exceptions & Logging Rationalization
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uv run -m unittest -q` => rc=0 (26.32s) -- exit 0 == 0
+  - [PASS] `uvx ruff check src/gzkit --select E722` => rc=0 (0.03s) -- exit 0 == 0
+
+```text
+[uv run -m unittest -q] stdout:
+=== Human Attestation Required (GHI #290) ===
+  OBPI:        OBPI-0.0.14-02
+  Parent ADR:  ADR-0.0.14
+  Attestor:    Jeffry Babb
+  Attestation: real human attestation
+
+Type the word ATTEST (uppercase, no quotes) to confirm you personally attest, or
+anything else to abort:
+
+=== Human Attestation Required (GHI #290) ===
+  OBPI:        OBPI-0.0.14-02
+  Parent ADR:  ADR-0.0.14
+  Attestor:    Jeffry Babb
+  Attestation: real attestation
+
+Type the word ATTEST (uppercase, no quotes) to confirm you personally attest, or
+anything else to abort:
+[uv run -m unittest -q] stderr:
+----------------------------------------------------------------------
+Ran 3547 tests in 25.819s
+
+OK (skipped=1)
+[uvx ruff check src/gzkit --select E722] stdout:
+All checks passed!
+```

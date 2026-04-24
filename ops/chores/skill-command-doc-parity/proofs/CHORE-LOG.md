@@ -249,34 +249,34 @@ CLI audit failed.
   - cross-coverage:arb ty: missing index_entry: 'arb-ty.md' not in index
   - cross-coverage:arb ty: missing docstring: No handler name resolved
   - cross-coverage:arb typecheck: missing manpage: Missing arb-typecheck.md
-  - cross-coverage:arb typecheck: missing index_entry: 'arb-typecheck.md' not 
+  - cross-coverage:arb typecheck: missing index_entry: 'arb-typecheck.md' not
 in index
   - cross-coverage:arb typecheck: missing docstring: No handler name resolved
   - cross-coverage:arb coverage: missing manpage: Missing arb-coverage.md
-  - cross-coverage:arb coverage: missing index_entry: 'arb-coverage.md' not in 
+  - cross-coverage:arb coverage: missing index_entry: 'arb-coverage.md' not in
 index
-  - cross-coverage:arb coverage: missing operator_runbook: 'gz arb coverage' 
+  - cross-coverage:arb coverage: missing operator_runbook: 'gz arb coverage'
 not found in runbook.md
   - cross-coverage:arb coverage: missing docstring: No handler name resolved
   - cross-coverage:arb validate: missing manpage: Missing arb-validate.md
-  - cross-coverage:arb validate: missing index_entry: 'arb-validate.md' not in 
+  - cross-coverage:arb validate: missing index_entry: 'arb-validate.md' not in
 index
   - cross-coverage:arb validate: missing docstring: No handler name resolved
   - cross-coverage:arb advise: missing manpage: Missing arb-advise.md
-  - cross-coverage:arb advise: missing index_entry: 'arb-advise.md' not in 
+  - cross-coverage:arb advise: missing index_entry: 'arb-advise.md' not in
 index
-  - cross-coverage:arb advise: missing operator_runbook: 'gz arb advise' not 
+  - cross-coverage:arb advise: missing operator_runbook: 'gz arb advise' not
 found in runbook.md
   - cross-coverage:arb advise: missing docstring: No handler name resolved
   - cross-coverage:arb patterns: missing manpage: Missing arb-patterns.md
-  - cross-coverage:arb patterns: missing index_entry: 'arb-patterns.md' not in 
+  - cross-coverage:arb patterns: missing index_entry: 'arb-patterns.md' not in
 index
-  - cross-coverage:arb patterns: missing operator_runbook: 'gz arb patterns' 
+  - cross-coverage:arb patterns: missing operator_runbook: 'gz arb patterns'
 not found in runbook.md
   - cross-coverage:arb patterns: missing docstring: No handler name resolved
   - cross-coverage:orphan: orphaned manpage: docs\user\commands\arb.md (Manpage
 'arb.md' has no matching discovered command)
-  - cross-coverage:orphan: orphaned manpage: docs\user\commands\plan.md 
+  - cross-coverage:orphan: orphaned manpage: docs\user\commands\plan.md
 (Manpage 'plan.md' has no matching discovered command)
 
 Cross-coverage: 8/85 commands have gaps.
@@ -290,9 +290,9 @@ Cross-coverage: 8/85 commands have gaps.
   - arb patterns: missing manpage, index_entry, operator_runbook, docstring
 
 Orphaned documentation:
-  - docs\user\commands\arb.md: Manpage 'arb.md' has no matching discovered 
+  - docs\user\commands\arb.md: Manpage 'arb.md' has no matching discovered
 command
-  - docs\user\commands\plan.md: Manpage 'plan.md' has no matching discovered 
+  - docs\user\commands\plan.md: Manpage 'plan.md' has no matching discovered
 command
 ```
 ## 2026-04-19T20:48:30-05:00
@@ -342,6 +342,49 @@ Validated: surfaces, documents
 [uv run -m unittest -q] stderr:
 ----------------------------------------------------------------------
 Ran 3243 tests in 47.689s
+
+OK (skipped=1)
+```
+## 2026-04-24T02:22:37-05:00
+- Status: PASS
+- Chore: skill-command-doc-parity
+- Title: Skill & Command Documentation Parity
+- Lane: heavy
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uv run gz cli audit` => rc=0 (1.37s) -- exit 0 == 0
+  - [PASS] `uv run gz validate --documents --surfaces` => rc=0 (0.32s) -- exit 0 == 0
+  - [PASS] `uv run -m unittest -q` => rc=0 (25.45s) -- exit 0 == 0
+
+```text
+[uv run gz cli audit] stdout:
+CLI audit passed.
+Cross-coverage: 86/86 commands fully covered.
+[uv run gz validate --documents --surfaces] stdout:
+Validated: surfaces, documents
+
+✓ All validations passed (2 scopes).
+[uv run -m unittest -q] stdout:
+=== Human Attestation Required (GHI #290) ===
+  OBPI:        OBPI-0.0.14-02
+  Parent ADR:  ADR-0.0.14
+  Attestor:    Jeffry Babb
+  Attestation: real human attestation
+
+Type the word ATTEST (uppercase, no quotes) to confirm you personally attest, or
+anything else to abort:
+
+=== Human Attestation Required (GHI #290) ===
+  OBPI:        OBPI-0.0.14-02
+  Parent ADR:  ADR-0.0.14
+  Attestor:    Jeffry Babb
+  Attestation: real attestation
+
+Type the word ATTEST (uppercase, no quotes) to confirm you personally attest, or
+anything else to abort:
+[uv run -m unittest -q] stderr:
+----------------------------------------------------------------------
+Ran 3547 tests in 25.030s
 
 OK (skipped=1)
 ```

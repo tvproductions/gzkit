@@ -1207,3 +1207,255 @@ src\gzkit\validate_pkg\sync_parity.py             128     32    75%
 -------------------------------------------------------------------
 TOTAL                                           20485   3245    84%
 ```
+## 2026-04-24T02:03:31-05:00
+- Status: PASS
+- Chore: coverage-40pct
+- Title: Coverage >=40% Baseline
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uv run -m unittest -q` => rc=0 (25.76s) -- exit 0 == 0
+  - [PASS] `uv run coverage run -m unittest discover -s tests -t . -q` => rc=0 (25.90s) -- exit 0 == 0
+  - [PASS] `uv run coverage report --fail-under=40` => rc=0 (0.54s) -- exit 0 == 0
+
+```text
+[uv run -m unittest -q] stdout:
+=== Human Attestation Required (GHI #290) ===
+  OBPI:        OBPI-0.0.14-02
+  Parent ADR:  ADR-0.0.14
+  Attestor:    Jeffry Babb
+  Attestation: real human attestation
+
+Type the word ATTEST (uppercase, no quotes) to confirm you personally attest, or
+anything else to abort:
+
+=== Human Attestation Required (GHI #290) ===
+  OBPI:        OBPI-0.0.14-02
+  Parent ADR:  ADR-0.0.14
+  Attestor:    Jeffry Babb
+  Attestation: real attestation
+
+Type the word ATTEST (uppercase, no quotes) to confirm you personally attest, or
+anything else to abort:
+[uv run -m unittest -q] stderr:
+----------------------------------------------------------------------
+Ran 3547 tests in 25.378s
+
+OK (skipped=1)
+[uv run coverage run -m unittest discover -s tests -t . -q] stdout:
+=== Human Attestation Required (GHI #290) ===
+  OBPI:        OBPI-0.0.14-02
+  Parent ADR:  ADR-0.0.14
+  Attestor:    Jeffry Babb
+  Attestation: real human attestation
+
+Type the word ATTEST (uppercase, no quotes) to confirm you personally attest, or
+anything else to abort:
+
+=== Human Attestation Required (GHI #290) ===
+  OBPI:        OBPI-0.0.14-02
+  Parent ADR:  ADR-0.0.14
+  Attestor:    Jeffry Babb
+  Attestation: real attestation
+
+Type the word ATTEST (uppercase, no quotes) to confirm you personally attest, or
+anything else to abort:
+[uv run coverage run -m unittest discover -s tests -t . -q] stderr:
+----------------------------------------------------------------------
+Ran 3547 tests in 25.422s
+
+OK (skipped=1)
+[uv run coverage report --fail-under=40] stdout:
+Name                                            Stmts   Miss  Cover
+-------------------------------------------------------------------
+src/gzkit/__init__.py                               1      0   100%
+src/gzkit/__main__.py                               3      3     0%
+src/gzkit/adapters/__init__.py                      0      0   100%
+src/gzkit/adapters/config.py                       12      0   100%
+src/gzkit/adr_eval.py                             142     16    89%
+src/gzkit/adr_eval_redteam.py                      43      4    91%
+src/gzkit/adr_eval_scoring.py                     276     26    91%
+src/gzkit/arb/__init__.py                           7      0   100%
+src/gzkit/arb/advisor.py                          118     26    78%
+src/gzkit/arb/paths.py                             15      0   100%
+src/gzkit/arb/patterns.py                         103     10    90%
+src/gzkit/arb/ruff_reporter.py                    114     17    85%
+src/gzkit/arb/step_reporter.py                     53      9    83%
+src/gzkit/arb/validator.py                        115     16    86%
+src/gzkit/cli/__init__.py                          15      1    93%
+src/gzkit/cli/formatters.py                       173     14    92%
+src/gzkit/cli/helpers/__init__.py                   4      0   100%
+src/gzkit/cli/helpers/common_flags.py              15      0   100%
+src/gzkit/cli/helpers/epilog.py                    13      0   100%
+src/gzkit/cli/helpers/exit_codes.py                16      0   100%
+src/gzkit/cli/helpers/standard_options.py          23      0   100%
+src/gzkit/cli/logging.py                           45      1    98%
+src/gzkit/cli/main.py                              92      8    91%
+src/gzkit/cli/parser.py                            19      0   100%
+src/gzkit/cli/parser_arb.py                        60      3    95%
+src/gzkit/cli/parser_artifacts.py                 207      1    99%
+src/gzkit/cli/parser_governance.py                154      2    99%
+src/gzkit/cli/parser_maintenance.py               211      0   100%
+src/gzkit/cli/progress.py                          43      2    95%
+src/gzkit/commands/__init__.py                      0      0   100%
+src/gzkit/commands/adr_audit.py                   274     37    86%
+src/gzkit/commands/adr_coverage.py                221     44    80%
+src/gzkit/commands/adr_promote.py                 189     43    77%
+src/gzkit/commands/adr_promote_utils.py           248     51    79%
+src/gzkit/commands/arb.py                          64     20    69%
+src/gzkit/commands/attest.py                      104      8    92%
+src/gzkit/commands/audit_cmd.py                   163      7    96%
+src/gzkit/commands/ceremony_data.py               224     19    92%
+src/gzkit/commands/ceremony_intent.py              65      1    98%
+src/gzkit/commands/ceremony_steps.py              110     27    75%
+src/gzkit/commands/chores.py                      216     65    70%
+src/gzkit/commands/chores_exec.py                 190     53    72%
+src/gzkit/commands/cli_audit.py                   133     33    75%
+src/gzkit/commands/closeout.py                    262     31    88%
+src/gzkit/commands/closeout_ceremony.py           257     15    94%
+src/gzkit/commands/closeout_form.py               155     26    83%
+src/gzkit/commands/common.py                      339     47    86%
+src/gzkit/commands/config_paths.py                148     16    89%
+src/gzkit/commands/covers.py                       80      3    96%
+src/gzkit/commands/drift.py                        80     10    88%
+src/gzkit/commands/flags.py                        96      8    92%
+src/gzkit/commands/frontmatter_reconcile.py        49     25    49%
+src/gzkit/commands/gates.py                       199     96    52%
+src/gzkit/commands/init_cmd.py                    297     68    77%
+src/gzkit/commands/interview_cmd.py               134    123     8%
+src/gzkit/commands/justify_cmd.py                  10      0   100%
+src/gzkit/commands/obpi_audit_cmd.py              240    197    18%
+src/gzkit/commands/obpi_cmd.py                    224     54    76%
+src/gzkit/commands/obpi_complete.py               234     19    92%
+src/gzkit/commands/obpi_lock.py                    80     11    86%
+src/gzkit/commands/obpi_lock_cmd.py                 2      2     0%
+src/gzkit/commands/obpi_precomplete.py            116      7    94%
+src/gzkit/commands/obpi_stages.py                 135      9    93%
+src/gzkit/commands/parity.py                       54     11    80%
+src/gzkit/commands/patch_release.py               354    133    62%
+src/gzkit/commands/personas.py                     74      7    91%
+src/gzkit/commands/pipeline.py                     93      0   100%
+src/gzkit/commands/plan.py                        113     31    73%
+src/gzkit/commands/plan_audit_cmd.py              215     15    93%
+src/gzkit/commands/preflight.py                    87     11    87%
+src/gzkit/commands/quality.py                     224    161    28%
+src/gzkit/commands/readiness.py                   150     33    78%
+src/gzkit/commands/register.py                    191     17    91%
+src/gzkit/commands/roles.py                        70     30    57%
+src/gzkit/commands/skills_cmd.py                   85      4    95%
+src/gzkit/commands/specify_cmd.py                 364     66    82%
+src/gzkit/commands/state.py                       152      6    96%
+src/gzkit/commands/status.py                      264     28    89%
+src/gzkit/commands/status_obpi.py                 192     39    80%
+src/gzkit/commands/status_obpi_inspect.py         169     19    89%
+src/gzkit/commands/status_render.py               196     19    90%
+src/gzkit/commands/sync.py                        203     99    51%
+src/gzkit/commands/task.py                        132      7    95%
+src/gzkit/commands/tidy.py                         89     38    57%
+src/gzkit/commands/validate_cmd.py                255     78    69%
+src/gzkit/commands/validate_frontmatter.py        151     14    91%
+src/gzkit/commands/version_sync.py                103      2    98%
+src/gzkit/config.py                                88      0   100%
+src/gzkit/core/__init__.py                          0      0   100%
+src/gzkit/core/exceptions.py                       30      0   100%
+src/gzkit/core/lifecycle.py                        36      0   100%
+src/gzkit/core/models.py                          130      3    98%
+src/gzkit/core/scoring.py                         195     25    87%
+src/gzkit/core/validation_rules.py                 41      0   100%
+src/gzkit/decomposition.py                          2      0   100%
+src/gzkit/doc_coverage/__init__.py                  5      0   100%
+src/gzkit/doc_coverage/manifest.py                 33      1    97%
+src/gzkit/doc_coverage/models.py                   43      0   100%
+src/gzkit/doc_coverage/runner.py                   61     21    66%
+src/gzkit/doc_coverage/scanner.py                 272     30    89%
+src/gzkit/eval/__init__.py                          0      0   100%
+src/gzkit/eval/datasets.py                         87     26    70%
+src/gzkit/eval/delta.py                            76      1    99%
+src/gzkit/eval/regression.py                       97      3    97%
+src/gzkit/eval/runner.py                           47      0   100%
+src/gzkit/eval/scorer.py                          153      1    99%
+src/gzkit/events.py                               210     23    89%
+src/gzkit/flags/__init__.py                         6      0   100%
+src/gzkit/flags/decisions.py                       17      0   100%
+src/gzkit/flags/diagnostics.py                     75      1    99%
+src/gzkit/flags/models.py                          52      0   100%
+src/gzkit/flags/registry.py                        47      2    96%
+src/gzkit/flags/service.py                         62      0   100%
+src/gzkit/git_sync.py                              93     11    88%
+src/gzkit/governance/__init__.py                    0      0   100%
+src/gzkit/governance/frontmatter_coherence.py     218     36    83%
+src/gzkit/governance/status_vocab.py               14      0   100%
+src/gzkit/governance/trust_audits.py              646    108    83%
+src/gzkit/handoff_validation.py                   135      2    99%
+src/gzkit/hooks/__init__.py                         3      0   100%
+src/gzkit/hooks/claude.py                         119      6    95%
+src/gzkit/hooks/copilot.py                         19      1    95%
+src/gzkit/hooks/core.py                           173     42    76%
+src/gzkit/hooks/guards.py                         117      5    96%
+src/gzkit/hooks/obpi.py                           367     26    93%
+src/gzkit/hooks/scripts/__init__.py                 0      0   100%
+src/gzkit/hooks/scripts/pipeline.py                 4      0   100%
+src/gzkit/hooks/scripts/quality.py                  2      0   100%
+src/gzkit/hooks/scripts/routing.py                  4      0   100%
+src/gzkit/hooks/scripts/validation.py               4      0   100%
+src/gzkit/instruction_audit.py                    124      7    94%
+src/gzkit/instruction_eval.py                     140     17    88%
+src/gzkit/interview.py                            111     29    74%
+src/gzkit/justify/__init__.py                       6      0   100%
+src/gzkit/justify/anchors.py                       53      4    92%
+src/gzkit/justify/cli.py                          103     10    90%
+src/gzkit/justify/evidence.py                     204     39    81%
+src/gzkit/justify/models.py                        48      0   100%
+src/gzkit/justify/parser.py                       166     13    92%
+src/gzkit/justify/templates/__init__.py             0      0   100%
+src/gzkit/justify/walkthrough.py                   95      0   100%
+src/gzkit/ledger.py                               344     15    96%
+src/gzkit/ledger_events.py                         69      2    97%
+src/gzkit/ledger_proof.py                          50      8    84%
+src/gzkit/ledger_semantics.py                     208     19    91%
+src/gzkit/lifecycle.py                             21      0   100%
+src/gzkit/lock_manager.py                          97      2    98%
+src/gzkit/models/__init__.py                        2      0   100%
+src/gzkit/models/frontmatter.py                     2      0   100%
+src/gzkit/models/persona.py                        76      2    97%
+src/gzkit/personas.py                             233     26    89%
+src/gzkit/pipeline_dispatch.py                    222      2    99%
+src/gzkit/pipeline_markers.py                     335     45    87%
+src/gzkit/pipeline_runtime.py                     138      5    96%
+src/gzkit/pipeline_verification.py                145      1    99%
+src/gzkit/ports/__init__.py                         2      0   100%
+src/gzkit/ports/interfaces.py                      24      9    62%
+src/gzkit/quality.py                              377     48    87%
+src/gzkit/registry.py                              57      0   100%
+src/gzkit/reporter/__init__.py                      3      0   100%
+src/gzkit/reporter/panels.py                       14      0   100%
+src/gzkit/reporter/presets.py                      63      1    98%
+src/gzkit/roles.py                                 79      1    99%
+src/gzkit/rules.py                                265     19    93%
+src/gzkit/schemas/__init__.py                      12      0   100%
+src/gzkit/skills.py                               120     23    81%
+src/gzkit/skills_audit.py                         217     46    79%
+src/gzkit/skills_mirror.py                         93      6    94%
+src/gzkit/sync.py                                 145      7    95%
+src/gzkit/sync_skill_validation.py                152     29    81%
+src/gzkit/sync_skills.py                          272     36    87%
+src/gzkit/sync_skills_validation.py               123    123     0%
+src/gzkit/sync_surfaces.py                        201     15    93%
+src/gzkit/tasks.py                                 79      2    97%
+src/gzkit/templates/__init__.py                    28      2    93%
+src/gzkit/temporal_drift.py                       132      9    93%
+src/gzkit/traceability.py                         269     29    89%
+src/gzkit/triangle.py                             164      5    97%
+src/gzkit/utils.py                                 59     10    83%
+src/gzkit/validate.py                              40     22    45%
+src/gzkit/validate_pkg/__init__.py                  0      0   100%
+src/gzkit/validate_pkg/document.py                 78     25    68%
+src/gzkit/validate_pkg/ledger_check.py            132     30    77%
+src/gzkit/validate_pkg/manifest.py                 36      8    78%
+src/gzkit/validate_pkg/surface.py                  87     33    62%
+src/gzkit/validate_pkg/sync_parity.py             133     32    76%
+src/gzkit/validators/__init__.py                    0      0   100%
+src/gzkit/validators/unscoped_rules.py            136      8    94%
+-------------------------------------------------------------------
+TOTAL                                           21777   3400    84%
+```

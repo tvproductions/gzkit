@@ -66,3 +66,23 @@ sha256:11b67b837a96576111ea05579579d971cd21494fb4d43e8fbcade3a89c278b43
 axonomy-doctrine.md
       status: 'Draft' -> 'Completed'
 ```
+## 2026-04-24T02:06:54-05:00
+- Status: PASS
+- Chore: frontmatter-ledger-coherence
+- Title: Frontmatter-Ledger Reconciliation (ADR-0.0.16 OBPI-03)
+- Lane: heavy
+- Version: 2.0.0
+- Criteria Results:
+  - [PASS] `uv run gz frontmatter reconcile --dry-run` => rc=0 (0.49s) -- exit 0 == 0
+
+```text
+[uv run gz frontmatter reconcile --dry-run] stdout:
+Frontmatter-ledger reconciliation DRY-RUN
+  ledger cursor:
+sha256:b11897a41fa7da9f036a1f3fd6cef639e4457a092c486c1ec40f3c066650acfc
+  started / ended:   2026-04-24T07:06:53.671077+00:00 /
+2026-04-24T07:06:54.012509+00:00
+  files rewritten:   0
+  pool ADRs skipped: 71
+  no drift detected
+```

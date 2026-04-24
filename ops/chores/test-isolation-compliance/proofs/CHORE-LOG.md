@@ -252,3 +252,39 @@ Ran 3243 tests in 50.152s
 
 OK (skipped=1)
 ```
+## 2026-04-24T02:29:09-05:00
+- Status: PASS
+- Chore: test-isolation-compliance
+- Title: Test Isolation & Health Compliance
+- Lane: lite
+- Version: 2.0.0
+- Criteria Results:
+  - [PASS] `uv run python tests/tools/test_health_profiler.py` => rc=0 (25.64s) -- exit 0 == 0
+  - [PASS] `uv run -m unittest -q` => rc=0 (24.90s) -- exit 0 == 0
+
+```text
+[uv run python tests/tools/test_health_profiler.py] stdout:
+Tests: 3547  Wall: 25.3s
+Failures: 0  Errors: 0
+
+Top 5 slowest tests:
+   1.318s  test_cli_audit_exits_zero_after_validate_subverb_lands (tests.commands.test_justify_validate.TestCliAuditCoverage.test_cli_audit_exits_zero_after_validate_subverb_lands)
+   1.156s  test_check_surfaces_report_returns_valid_report (tests.test_doc_coverage.TestIntegration.test_check_surfaces_report_returns_valid_report)
+   1.014s  test_chores_run_timeout_returns_nonzero (tests.commands.test_chores.TestChoresCommands.test_chores_run_timeout_returns_nonzero)
+   0.426s  test_utf8_prefix_rule_9 (tests.governance.test_promoted_advisory_audits.PromotedAdvisoryAudits.test_utf8_prefix_rule_9)
+   0.353s  test_runtime_budget_under_one_second_on_real_repo (tests.commands.test_validate_frontmatter.TestFrontmatterGuard.test_runtime_budget_under_one_second_on_real_repo)
+
+Top 5 modules by time:
+    1.8s   25 tests   70.8ms/test  tests.test_obpi_validator.TestObpiValidator
+    1.3s    1 tests  1320.0ms/test  tests.commands.test_justify_validate.TestCliAuditCoverage
+    1.2s    2 tests  585.0ms/test  tests.test_doc_coverage.TestIntegration
+    1.1s   19 tests   58.9ms/test  tests.governance.test_promoted_advisory_audits.PromotedAdvisoryAudits
+    1.1s   13 tests   83.8ms/test  tests.commands.test_chores.TestChoresCommands
+
+PASSED: All thresholds met.
+[uv run -m unittest -q] stderr:
+----------------------------------------------------------------------
+Ran 3547 tests in 24.527s
+
+OK (skipped=1)
+```

@@ -48,6 +48,7 @@ def resolve_anchor(
         AnchorResolutionError: if a structurally-valid anchor cannot be
             resolved to a concrete artifact (e.g. missing brief, ``gh``
             unavailable, zero/multiple filename matches).
+
     """
     root = project_root if project_root is not None else Path.cwd()
 

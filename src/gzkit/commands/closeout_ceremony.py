@@ -338,7 +338,7 @@ def _initialize_ceremony(
 
 
 def _has_more_demos(state: CeremonyState) -> bool:
-    """True when Step 5 has an unpresented demo after ``walkthrough_index``."""
+    """Return ``True`` when Step 5 has an unpresented demo after ``walkthrough_index``."""
     commands = state.walkthrough_commands
     return bool(commands) and state.walkthrough_index < len(commands) - 1
 

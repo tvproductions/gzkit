@@ -11,6 +11,7 @@ import re
 import unittest
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import cast
 
 import yaml
 
@@ -72,8 +73,9 @@ class TestGzJustifyFrontmatter(unittest.TestCase):
         metadata = fm.get("metadata")
         self.assertIsInstance(metadata, dict)
         assert isinstance(metadata, dict)
-        self.assertRegex(str(metadata.get("skill-version", "")), r"^6\.")
-        self.assertEqual(metadata.get("govzero-framework-version"), "v6")
+        meta = cast(dict[str, object], metadata)
+        self.assertRegex(str(meta.get("skill-version", "")), r"^6\.")
+        self.assertEqual(meta.get("govzero-framework-version"), "v6")
 
 
 class TestGzJustifyBodyShape(unittest.TestCase):

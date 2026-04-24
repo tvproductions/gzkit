@@ -298,7 +298,7 @@ class TestHelpSurface(unittest.TestCase):
             subparsers_action = next(
                 action
                 for action in parser._actions  # noqa: SLF001
-                if getattr(action, "choices", None) and "justify" in action.choices
+                if "justify" in (getattr(action, "choices", None) or ())
             )
         except StopIteration:  # pragma: no cover — registration missing
             self.fail("justify subcommand not registered under top-level parser")

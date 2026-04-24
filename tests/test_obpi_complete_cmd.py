@@ -896,6 +896,7 @@ class TestObpiCompleteAuthenticityGate(unittest.TestCase):
             ledger.append.assert_not_called()
 
     @patch("gzkit.commands.obpi_complete.console", _quiet_console)
+    @patch("gzkit.commands.adr_audit.console", _quiet_console)
     @patch("gzkit.commands.adr_audit.input", create=True)
     @patch("gzkit.commands.adr_audit._is_human_attestation_tty_available")
     @patch("gzkit.commands.obpi_complete.capture_validation_anchor")
@@ -952,6 +953,7 @@ class TestObpiCompleteAuthenticityGate(unittest.TestCase):
             ledger.append.assert_not_called()
 
     @patch("gzkit.commands.obpi_complete.console", _quiet_console)
+    @patch("gzkit.commands.adr_audit.console", _quiet_console)
     @patch("gzkit.commands.adr_audit.input", create=True)
     @patch("gzkit.commands.adr_audit._is_human_attestation_tty_available")
     @patch("gzkit.commands.obpi_complete.capture_validation_anchor")

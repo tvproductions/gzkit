@@ -1,100 +1,100 @@
 {
-  "wall_clock_seconds": 49.9,
-  "test_count": 3243,
+  "wall_clock_seconds": 25.3,
+  "test_count": 3547,
   "failures": 0,
   "errors": 0,
   "top_10_slowest": [
     [
-      1.794,
+      1.318,
+      "test_cli_audit_exits_zero_after_validate_subverb_lands (tests.commands.test_justify_validate.TestCliAuditCoverage.test_cli_audit_exits_zero_after_validate_subverb_lands)"
+    ],
+    [
+      1.156,
       "test_check_surfaces_report_returns_valid_report (tests.test_doc_coverage.TestIntegration.test_check_surfaces_report_returns_valid_report)"
     ],
     [
-      1.037,
+      1.014,
       "test_chores_run_timeout_returns_nonzero (tests.commands.test_chores.TestChoresCommands.test_chores_run_timeout_returns_nonzero)"
     ],
     [
-      0.58,
-      "test_pydantic_models_rules_25_26 (tests.governance.test_promoted_advisory_audits.PromotedAdvisoryAudits.test_pydantic_models_rules_25_26)"
+      0.426,
+      "test_utf8_prefix_rule_9 (tests.governance.test_promoted_advisory_audits.PromotedAdvisoryAudits.test_utf8_prefix_rule_9)"
     ],
     [
-      0.498,
+      0.353,
       "test_runtime_budget_under_one_second_on_real_repo (tests.commands.test_validate_frontmatter.TestFrontmatterGuard.test_runtime_budget_under_one_second_on_real_repo)"
     ],
     [
-      0.47,
+      0.332,
+      "test_pydantic_models_rules_25_26 (tests.governance.test_promoted_advisory_audits.PromotedAdvisoryAudits.test_pydantic_models_rules_25_26)"
+    ],
+    [
+      0.305,
+      "test_no_inbound_references_to_legacy_paths_in_live_files (tests.governance.test_defect_fix_routing_fold.TestDefectFixRoutingFold.test_no_inbound_references_to_legacy_paths_in_live_files)"
+    ],
+    [
+      0.294,
+      "test_no_inbound_references_to_legacy_paths_in_live_files (tests.governance.test_attestation_fold.TestAttestationFold.test_no_inbound_references_to_legacy_paths_in_live_files)"
+    ],
+    [
+      0.28,
+      "test_no_inbound_references_to_legacy_paths_in_live_files (tests.governance.test_agent_contract_fold.TestAgentContractFold.test_no_inbound_references_to_legacy_paths_in_live_files)"
+    ],
+    [
+      0.202,
       "test_tier_b_rebuild_and_gz_state (tests.adr.test_storage_tiers.TestGitCloneRecovery.test_tier_b_rebuild_and_gz_state)"
-    ],
-    [
-      0.387,
-      "test_validate_blocks_merge_head (tests.test_obpi_validator.TestObpiValidator.test_validate_blocks_merge_head)"
-    ],
-    [
-      0.386,
-      "test_validate_commit_trailers_accepts_ceremony_trailer (tests.commands.test_validate_cmds.TestValidateCommand.test_validate_commit_trailers_accepts_ceremony_trailer)"
-    ],
-    [
-      0.354,
-      "test_sync_outputs_deterministic_updated_paths_for_unchanged_inputs (tests.test_sync.TestSyncControlSurfaces.test_sync_outputs_deterministic_updated_paths_for_unchanged_inputs)"
-    ],
-    [
-      0.306,
-      "test_obpi_validate_prints_blockers_for_out_of_scope_changes (tests.commands.test_obpi_validate_cmd.TestObpiValidateCommand.test_obpi_validate_prints_blockers_for_out_of_scope_changes)"
-    ],
-    [
-      0.301,
-      "test_obpi_reconcile_ignores_shared_file_changes_absorbed_by_later_sibling_completion (tests.commands.test_status.TestStatusCommand.test_obpi_reconcile_ignores_shared_file_changes_absorbed_by_later_sibling_completion)"
     ]
   ],
   "top_10_modules": [
     {
       "module": "tests.test_obpi_validator.TestObpiValidator",
       "tests": 25,
-      "total_seconds": 3.58
+      "total_seconds": 1.77
+    },
+    {
+      "module": "tests.commands.test_justify_validate.TestCliAuditCoverage",
+      "tests": 1,
+      "total_seconds": 1.32
     },
     {
       "module": "tests.test_doc_coverage.TestIntegration",
       "tests": 2,
-      "total_seconds": 1.82
+      "total_seconds": 1.17
     },
     {
-      "module": "tests.commands.test_runtime.TestAdrRuntimeCommands",
-      "tests": 33,
-      "total_seconds": 1.55
-    },
-    {
-      "module": "tests.commands.test_validate_cmds.TestValidateCommand",
-      "tests": 14,
-      "total_seconds": 1.54
-    },
-    {
-      "module": "tests.commands.test_status.TestStatusCommand",
-      "tests": 25,
-      "total_seconds": 1.51
-    },
-    {
-      "module": "tests.test_sync.TestSyncControlSurfaces",
-      "tests": 31,
-      "total_seconds": 1.47
-    },
-    {
-      "module": "tests.commands.test_skills.TestSkillCommands",
-      "tests": 15,
-      "total_seconds": 1.43
+      "module": "tests.governance.test_promoted_advisory_audits.PromotedAdvisoryAudits",
+      "tests": 19,
+      "total_seconds": 1.12
     },
     {
       "module": "tests.commands.test_chores.TestChoresCommands",
       "tests": 13,
-      "total_seconds": 1.28
+      "total_seconds": 1.09
     },
     {
-      "module": "tests.commands.test_sync_cmds.TestSyncCommand",
-      "tests": 8,
-      "total_seconds": 1.27
+      "module": "tests.commands.test_runtime.TestAdrRuntimeCommands",
+      "tests": 34,
+      "total_seconds": 0.67
     },
     {
-      "module": "tests.governance.test_promoted_advisory_audits.PromotedAdvisoryAudits",
-      "tests": 12,
-      "total_seconds": 1.27
+      "module": "tests.test_sync.TestSyncControlSurfaces",
+      "tests": 31,
+      "total_seconds": 0.61
+    },
+    {
+      "module": "tests.test_temporal_drift.TestGitHelpersRealRepo",
+      "tests": 7,
+      "total_seconds": 0.58
+    },
+    {
+      "module": "tests.commands.test_validate_cmds.TestValidateCommand",
+      "tests": 14,
+      "total_seconds": 0.56
+    },
+    {
+      "module": "tests.test_temporal_drift.TestDetectDriftOrchestrator",
+      "tests": 6,
+      "total_seconds": 0.55
     }
   ],
   "slow_tests_over_threshold": [],

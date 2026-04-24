@@ -212,3 +212,37 @@ Ran 3243 tests in 48.431s
 
 OK (skipped=1)
 ```
+## 2026-04-24T02:09:49-05:00
+- Status: PASS
+- Chore: module-sloc-cap-radon
+- Title: Module SLOC Cap (Radon)
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uv run -m unittest -q` => rc=0 (25.47s) -- exit 0 == 0
+
+```text
+[uv run -m unittest -q] stdout:
+=== Human Attestation Required (GHI #290) ===
+  OBPI:        OBPI-0.0.14-02
+  Parent ADR:  ADR-0.0.14
+  Attestor:    Jeffry Babb
+  Attestation: real human attestation
+
+Type the word ATTEST (uppercase, no quotes) to confirm you personally attest, or
+anything else to abort:
+
+=== Human Attestation Required (GHI #290) ===
+  OBPI:        OBPI-0.0.14-02
+  Parent ADR:  ADR-0.0.14
+  Attestor:    Jeffry Babb
+  Attestation: real attestation
+
+Type the word ATTEST (uppercase, no quotes) to confirm you personally attest, or
+anything else to abort:
+[uv run -m unittest -q] stderr:
+----------------------------------------------------------------------
+Ran 3547 tests in 25.095s
+
+OK (skipped=1)
+```
