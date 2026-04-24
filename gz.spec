@@ -22,8 +22,23 @@ SCHEMAS = [(str(f), "gzkit/schemas")
            for f in (SRC / "schemas").iterdir()
            if f.suffix == ".json"]
 
+# Bundle canonical chore data (CHORE.md, acceptance.json, README.md per slug
+# plus top-level registry.json + README.md). Excludes per-slug proofs/ runtime
+# evidence and __pycache__/ — same exclusion contract as the wheel build.
+CHORES_ROOT = SRC / "chores"
+CHORES = []
+if CHORES_ROOT.exists():
+    for slug_dir in sorted(p for p in CHORES_ROOT.iterdir()
+                           if p.is_dir() and not p.name.startswith("__")):
+        for f in slug_dir.iterdir():
+            if f.is_file() and f.suffix in {".md", ".json"}:
+                CHORES.append((str(f), f"gzkit/chores/{slug_dir.name}"))
+    for top in CHORES_ROOT.iterdir():
+        if top.is_file() and top.suffix in {".md", ".json"}:
+            CHORES.append((str(top), "gzkit/chores"))
+
 # Collect all non-Python data files that must be bundled
-datas = TEMPLATES + SCHEMAS
+datas = TEMPLATES + SCHEMAS + CHORES
 
 # ── Analysis ─────────────────────────────────────────────────────────
 a = Analysis(
