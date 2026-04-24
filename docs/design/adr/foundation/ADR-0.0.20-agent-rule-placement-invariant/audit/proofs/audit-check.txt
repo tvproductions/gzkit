@@ -1,0 +1,66 @@
+ADR audit-check: ADR-0.0.20-agent-rule-placement-invariant
+PASS All linked OBPIs are completed with evidence.
+  - OBPI-0.0.20-01-validator-and-allowlist
+  - OBPI-0.0.20-02-fold-agent-contract
+  - OBPI-0.0.20-03-fold-attestation-enrichment
+  - OBPI-0.0.20-04-fold-defect-fix-routing
+  - OBPI-0.0.20-05-closeout-and-downstream
+Advisory 25 REQ(s) without @covers traceability (non-blocking):
+  - REQ-0.0.20-01-03
+  - REQ-0.0.20-01-05
+  - REQ-0.0.20-01-10
+  - REQ-0.0.20-01-11
+  - REQ-0.0.20-01-12
+  - REQ-0.0.20-01-13
+  - REQ-0.0.20-01-14
+  - REQ-0.0.20-01-15
+  - REQ-0.0.20-01-16
+  - REQ-0.0.20-01-17
+  - REQ-0.0.20-01-19
+  - REQ-0.0.20-03-13
+  - REQ-0.0.20-05-01
+  - REQ-0.0.20-05-02
+  - REQ-0.0.20-05-03
+  - REQ-0.0.20-05-04
+  - REQ-0.0.20-05-05
+  - REQ-0.0.20-05-06
+  - REQ-0.0.20-05-07
+  - REQ-0.0.20-05-08
+  - REQ-0.0.20-05-09
+  - REQ-0.0.20-05-10
+  - REQ-0.0.20-05-12
+  - REQ-0.0.20-05-14
+  - REQ-0.0.20-05-15
+
+Coverage: 50/75 REQs covered (66.7%)
+  OBPI-0.0.20-01: 9/20 (45.0%)
+  OBPI-0.0.20-02: 13/13 (100.0%)
+  OBPI-0.0.20-03: 15/16 (93.8%)
+  OBPI-0.0.20-04: 11/11 (100.0%)
+  OBPI-0.0.20-05: 2/15 (13.3%)
+Uncovered REQs (25):
+  - REQ-0.0.20-01-03
+  - REQ-0.0.20-01-05
+  - REQ-0.0.20-01-10
+  - REQ-0.0.20-01-11
+  - REQ-0.0.20-01-12
+  - REQ-0.0.20-01-13
+  - REQ-0.0.20-01-14
+  - REQ-0.0.20-01-15
+  - REQ-0.0.20-01-16
+  - REQ-0.0.20-01-17
+  - REQ-0.0.20-01-19
+  - REQ-0.0.20-03-13
+  - REQ-0.0.20-05-01
+  - REQ-0.0.20-05-02
+  - REQ-0.0.20-05-03
+  - REQ-0.0.20-05-04
+  - REQ-0.0.20-05-05
+  - REQ-0.0.20-05-06
+  - REQ-0.0.20-05-07
+  - REQ-0.0.20-05-08
+  - REQ-0.0.20-05-09
+  - REQ-0.0.20-05-10
+  - REQ-0.0.20-05-12
+  - REQ-0.0.20-05-14
+  - REQ-0.0.20-05-15
