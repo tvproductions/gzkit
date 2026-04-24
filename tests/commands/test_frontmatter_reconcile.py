@@ -43,7 +43,7 @@ class TestFrontmatterReconcileCli(unittest.TestCase):
         """Production ``config/gzkit.chores.json`` lists the chore at lane heavy."""
         repo_root = Path(__file__).resolve().parents[2]
         registry = json.loads(
-            (repo_root / "config" / "gzkit.chores.json").read_text(encoding="utf-8")
+            (repo_root / "src" / "gzkit" / "chores" / "registry.json").read_text(encoding="utf-8")
         )
         matches = [
             c for c in registry.get("chores", []) if c.get("slug") == "frontmatter-ledger-coherence"

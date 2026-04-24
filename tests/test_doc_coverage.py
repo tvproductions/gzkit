@@ -948,19 +948,19 @@ class TestChoreRegistration(unittest.TestCase):
         cls.project_root = Path(__file__).resolve().parent.parent
 
     def test_doc_coverage_in_chore_registry(self) -> None:
-        registry_path = self.project_root / "config" / "gzkit.chores.json"
+        registry_path = self.project_root / "src" / "gzkit" / "chores" / "registry.json"
         data = json.loads(registry_path.read_text(encoding="utf-8"))
         slugs = [c["slug"] for c in data["chores"]]
         self.assertIn("doc-coverage", slugs, "doc-coverage chore must be registered")
 
     def test_doc_coverage_chore_frequency(self) -> None:
-        registry_path = self.project_root / "config" / "gzkit.chores.json"
+        registry_path = self.project_root / "src" / "gzkit" / "chores" / "registry.json"
         data = json.loads(registry_path.read_text(encoding="utf-8"))
         entry = next(c for c in data["chores"] if c["slug"] == "doc-coverage")
         self.assertEqual(entry.get("frequency"), "per-release")
 
     def test_doc_coverage_chore_dir_exists(self) -> None:
-        chore_dir = self.project_root / "ops" / "chores" / "doc-coverage"
+        chore_dir = self.project_root / "src" / "gzkit" / "chores" / "doc-coverage"
         self.assertTrue(chore_dir.is_dir(), "Chore directory must exist")
         self.assertTrue((chore_dir / "CHORE.md").exists(), "CHORE.md must exist")
         self.assertTrue((chore_dir / "acceptance.json").exists(), "acceptance.json must exist")

@@ -1,0 +1,149 @@
+{
+  "adr_id": "ADR-0.0.21",
+  "adr_dimensions": [
+    {
+      "dimension": "Problem Clarity",
+      "weight": 0.15,
+      "score": 4,
+      "weighted": 0.6,
+      "findings": []
+    },
+    {
+      "dimension": "Decision Justification",
+      "weight": 0.15,
+      "score": 4,
+      "weighted": 0.6,
+      "findings": []
+    },
+    {
+      "dimension": "Feature Checklist",
+      "weight": 0.15,
+      "score": 4,
+      "weighted": 0.6,
+      "findings": []
+    },
+    {
+      "dimension": "OBPI Decomposition",
+      "weight": 0.15,
+      "score": 4,
+      "weighted": 0.6,
+      "findings": []
+    },
+    {
+      "dimension": "Lane Assignment",
+      "weight": 0.1,
+      "score": 4,
+      "weighted": 0.4,
+      "findings": []
+    },
+    {
+      "dimension": "Scope Discipline",
+      "weight": 0.1,
+      "score": 4,
+      "weighted": 0.4,
+      "findings": []
+    },
+    {
+      "dimension": "Evidence Requirements",
+      "weight": 0.1,
+      "score": 4,
+      "weighted": 0.4,
+      "findings": []
+    },
+    {
+      "dimension": "Architectural Alignment",
+      "weight": 0.1,
+      "score": 4,
+      "weighted": 0.4,
+      "findings": []
+    }
+  ],
+  "adr_weighted_total": 4.0,
+  "obpi_scores": [
+    {
+      "obpi_id": "OBPI-0.0.21-01-physical-migration",
+      "independence": 4,
+      "testability": 4,
+      "value": 4,
+      "size": 4,
+      "clarity": 3,
+      "average": 3.8
+    },
+    {
+      "obpi_id": "OBPI-0.0.21-02-config-schema-paths-chores",
+      "independence": 4,
+      "testability": 4,
+      "value": 4,
+      "size": 4,
+      "clarity": 3,
+      "average": 3.8
+    },
+    {
+      "obpi_id": "OBPI-0.0.21-03-wheel-packaging-chores-data",
+      "independence": 4,
+      "testability": 4,
+      "value": 4,
+      "size": 4,
+      "clarity": 3,
+      "average": 3.8
+    },
+    {
+      "obpi_id": "OBPI-0.0.21-04-resolver-with-fallback",
+      "independence": 4,
+      "testability": 4,
+      "value": 4,
+      "size": 4,
+      "clarity": 3,
+      "average": 3.8
+    },
+    {
+      "obpi_id": "OBPI-0.0.21-05-scaffold-core-chores",
+      "independence": 4,
+      "testability": 4,
+      "value": 4,
+      "size": 3,
+      "clarity": 3,
+      "average": 3.6
+    },
+    {
+      "obpi_id": "OBPI-0.0.21-06-rule-and-doc-updates",
+      "independence": 4,
+      "testability": 4,
+      "value": 4,
+      "size": 2,
+      "clarity": 3,
+      "average": 3.4
+    },
+    {
+      "obpi_id": "OBPI-0.0.21-07-bdd-chores-distribution",
+      "independence": 4,
+      "testability": 4,
+      "value": 4,
+      "size": 4,
+      "clarity": 4,
+      "average": 4.0
+    },
+    {
+      "obpi_id": "OBPI-0.0.21-08-layout-validator",
+      "independence": 4,
+      "testability": 4,
+      "value": 4,
+      "size": 3,
+      "clarity": 3,
+      "average": 3.6
+    },
+    {
+      "obpi_id": "OBPI-0.0.21-09-chores-doctor-command",
+      "independence": 4,
+      "testability": 4,
+      "value": 4,
+      "size": 3,
+      "clarity": 3,
+      "average": 3.6
+    }
+  ],
+  "red_team_results": null,
+  "verdict": "GO",
+  "action_items": [],
+  "timestamp": "2026-04-24T10:56:09.910758+00:00"
+}
