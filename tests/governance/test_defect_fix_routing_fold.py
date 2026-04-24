@@ -51,7 +51,10 @@ BUCKET_3_ROOTS = (
     # Manpage HISTORY section legitimately cites the lineage.
     "docs/user/manpages/arb.md",
     # Historical chore proof records and one-shot audit artifacts.
-    "ops/chores/",
+    # Chores tree relocated from ops/chores/ to src/gzkit/chores/ under
+    # ADR-0.0.21 (OBPI-0.0.21-01-physical-migration). Historical proof
+    # files preserve their legacy-path references by design.
+    "src/gzkit/chores/",
     "artifacts/audits/",
     "tests/governance/test_attestation_fold.py",
     "tests/governance/test_agent_contract_fold.py",

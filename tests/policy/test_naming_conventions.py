@@ -21,6 +21,15 @@ SRC_ROOT = Path(__file__).parent.parent.parent / "src" / "gzkit"
 # Dunder names like __init__ and __main__ are valid by this pattern.
 SNAKE_CASE_RE = re.compile(r"^[a-z_][a-z0-9_]*$")
 
+# Data-package subtrees shipped inside src/gzkit/ whose subdirectory names are
+# operator-facing slugs (kebab-case by design), not Python package names. They
+# are addressed via importlib.resources by slug, never imported as modules.
+# Carve-outs apply to the subdirectory contents, not the carve-out root itself
+# (which must remain a valid Python package name).
+DATA_PACKAGE_CARVEOUTS = (
+    SRC_ROOT / "chores",  # ADR-0.0.21 — chore slugs like 'coverage-40pct'
+)
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -81,12 +90,23 @@ class TestModuleNamingConventions(unittest.TestCase):
 
 
 class TestPackageNamingConventions(unittest.TestCase):
-    """All package directory names under src/gzkit/ must use snake_case."""
+    """All package directory names under src/gzkit/ must use snake_case.
+
+    Directory subtrees listed in ``DATA_PACKAGE_CARVEOUTS`` are exempt from
+    snake_case enforcement below their carve-out root. Those subtrees ship
+    operator-facing slug directories (kebab-case) that are addressed via
+    ``importlib.resources`` by slug, never imported as Python modules. The
+    carve-out root itself must remain snake_case.
+    """
 
     def test_all_package_dirs_are_snake_case(self) -> None:
         """Every package directory under src/gzkit/ must be snake_case."""
         violations: list[str] = []
         for d in _collect_package_dirs(SRC_ROOT):
+            if any(
+                carveout in d.parents or carveout == d.parent for carveout in DATA_PACKAGE_CARVEOUTS
+            ):
+                continue
             name = d.name
             if not _is_snake_case(name):
                 rel = d.relative_to(SRC_ROOT.parent.parent)

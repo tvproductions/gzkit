@@ -1,0 +1,15 @@
+{
+  "obpi_id": "OBPI-0.0.21-01-physical-migration",
+  "parent_adr": "ADR-0.0.21-chores-as-gzkit-surface",
+  "lane": "Heavy",
+  "entry": "full",
+  "execution_mode": "normal",
+  "current_stage": 5,
+  "started_at": "2026-04-24T11:10:00Z",
+  "updated_at": "2026-04-24T11:40:00Z",
+  "receipt_state": "scope-expanded-fixing-tests",
+  "blockers": [],
+  "required_human_action": null,
+  "next_command": "uv run gz git-sync --apply",
+  "resume_point": "stage-5-post-attestation-fixing-collateral"
+}
