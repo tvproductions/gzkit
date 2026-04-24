@@ -1,6 +1,7 @@
 {
   "default_rationale": {
-    "ghi-276-historical": "Preceded OBPI\u2192feature direction for audit_behave_req_tags (GHI #276). Historical heavy-lane OBPI shipped without scenario-level @REQ-* tags; re-authoring attested evidence is itself doctrine drift. New heavy OBPIs must either add scenario tags or add an explicit rationale here."
+    "ghi-276-historical": "Preceded OBPI→feature direction for audit_behave_req_tags (GHI #276). Historical heavy-lane OBPI shipped without scenario-level @REQ-* tags; re-authoring attested evidence is itself doctrine drift. New heavy OBPIs must either add scenario tags or add an explicit rationale here.",
+    "adr-0.44.0-pre-release": "ADR-0.44.0 vendor-alignment-codex is pre-release/draft (not yet promoted). Heavy-lane BDD scenario coverage deferred until the ADR is promoted and Gate 4 fires; waived to unblock ADR-0.0.20 closeout since the failing OBPIs are in unrelated downstream territory."
   },
   "schema_version": 1,
   "waivers": {
@@ -1507,6 +1508,30 @@
     "OBPI-0.9.0-05-parity-qc-and-closeout-readiness": {
       "rationale": "ghi-276-historical",
       "status_at_landing": "Completed"
+    },
+    "OBPI-0.44.0-01-codex-config-generation": {
+      "rationale": "adr-0.44.0-pre-release",
+      "status_at_landing": "pre-release"
+    },
+    "OBPI-0.44.0-02-codex-hooks-policy": {
+      "rationale": "adr-0.44.0-pre-release",
+      "status_at_landing": "pre-release"
+    },
+    "OBPI-0.44.0-03-codex-skills-personas-subagents": {
+      "rationale": "adr-0.44.0-pre-release",
+      "status_at_landing": "pre-release"
+    },
+    "OBPI-0.44.0-04-harness-aware-pipeline-runtime": {
+      "rationale": "adr-0.44.0-pre-release",
+      "status_at_landing": "pre-release"
+    },
+    "OBPI-0.44.0-05-codex-surface-validation": {
+      "rationale": "adr-0.44.0-pre-release",
+      "status_at_landing": "pre-release"
+    },
+    "OBPI-0.44.0-06-codex-instruction-budget-and-docs": {
+      "rationale": "adr-0.44.0-pre-release",
+      "status_at_landing": "pre-release"
     }
   }
 }

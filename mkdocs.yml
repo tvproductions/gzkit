@@ -9,6 +9,7 @@ repo_name: tvproductions/gzkit
 
 theme:
   name: material
+  custom_dir: overrides
   palette:
     # Light mode
     - media: "(prefers-color-scheme: light)"
@@ -241,6 +242,7 @@ markdown_extensions:
   - md_in_html
 
 extra:
+  gzkit_version: !ENV [GZKIT_DOCS_VERSION, "main"]
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/tvproductions/gzkit
