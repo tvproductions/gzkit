@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.20-agent-rule-placement-invariant
-status: Draft
+status: Validated
 kind: foundation
 semver: 0.0.20
 lane: lite
