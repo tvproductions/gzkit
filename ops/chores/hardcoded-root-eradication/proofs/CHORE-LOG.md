@@ -300,3 +300,51 @@ OK (skipped=1)
 [grep -rn "Path(__file__).*parents\[" src/gzkit/ --include=*.py --exclude=quality.py] stderr:
 grep: Invalid regular expression
 ```
+## 2026-04-24T02:07:51-05:00
+- Status: PASS
+- Chore: hardcoded-root-eradication
+- Title: Config-First Enforcement (Anti-Vibe-Code)
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `grep -rn "Path(__file__).*parents" src/gzkit/eval/` => rc=1 (0.00s) -- output clean of 'parents'
+  - [PASS] `grep -rn "Path(__file__).*parents" src/gzkit/hooks/` => rc=1 (0.01s) -- output clean of 'parents'
+  - [PASS] `uv run gz lint` => rc=0 (0.40s) -- exit 0 == 0
+  - [PASS] `uv run gz check-config-paths` => rc=0 (0.29s) -- exit 0 == 0
+  - [PASS] `uv run -m unittest -q` => rc=0 (25.40s) -- exit 0 == 0
+  - [PASS] `grep -rn "Path(__file__).*parents\[" src/gzkit/ --include=*.py --exclude=quality.py` => rc=1 (0.01s) -- output clean of 'parents['
+
+```text
+[uv run gz lint] stdout:
+Running linters...
+All checks passed!
+
+ADR path contract check passed.
+No Path(__file__).parents[N] violations found.
+Lint passed.
+[uv run gz check-config-paths] stdout:
+Config-path audit passed.
+[uv run -m unittest -q] stdout:
+=== Human Attestation Required (GHI #290) ===
+  OBPI:        OBPI-0.0.14-02
+  Parent ADR:  ADR-0.0.14
+  Attestor:    g0
+  Attestation: real human attestation
+
+Type the word ATTEST (uppercase, no quotes) to confirm you personally attest, or
+anything else to abort:
+
+=== Human Attestation Required (GHI #290) ===
+  OBPI:        OBPI-0.0.14-02
+  Parent ADR:  ADR-0.0.14
+  Attestor:    g0
+  Attestation: real attestation
+
+Type the word ATTEST (uppercase, no quotes) to confirm you personally attest, or
+anything else to abort:
+[uv run -m unittest -q] stderr:
+----------------------------------------------------------------------
+Ran 3547 tests in 25.026s
+
+OK (skipped=1)
+```

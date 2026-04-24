@@ -60,6 +60,7 @@ def classify_paths_field(frontmatter_text: str) -> tuple[str, str | None]:
         `"missing"`, `"universal-glob"`, or `"concrete"`. `detected_value`
         is the observed glob when the verdict is `"universal-glob"`, the
         raw scalar when `"concrete"` with a single value, or None.
+
     """
     lines = frontmatter_text.splitlines()
     paths_values: list[str] | None = None

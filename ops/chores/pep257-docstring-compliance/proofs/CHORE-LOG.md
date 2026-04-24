@@ -1233,3 +1233,216 @@ All checks passed!
 warning: `incorrect-blank-line-before-class` (D203) and `no-blank-line-before-class` (D211) are incompatible. Ignoring `incorrect-blank-line-before-class`.
 warning: `multi-line-summary-first-line` (D212) and `multi-line-summary-second-line` (D213) are incompatible. Ignoring `multi-line-summary-second-line`.
 ```
+## 2026-04-24T02:11:28-05:00
+- Status: PASS
+- Chore: pep257-docstring-compliance
+- Title: PEP 257 Docstring Compliance (Style + Coverage)
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uvx interrogate -v -f 85 -c pyproject.toml src/gzkit` => rc=0 (0.26s) -- exit 0 == 0
+  - [PASS] `uvx ruff check src/gzkit --select D` => rc=0 (0.03s) -- exit 0 == 0
+
+```text
+[uvx interrogate -v -f 85 -c pyproject.toml src/gzkit] stdout:
+=========== Coverage for /Users/jeff/Documents/Code/gzkit/src/gzkit/ ===========
+----------------------------------- Summary ------------------------------------
+| Name                                     |  Total |  Miss |  Cover |  Cover% |
+|------------------------------------------|--------|-------|--------|---------|
+| __init__.py                              |      1 |     0 |      1 |    100% |
+| __main__.py                              |      1 |     0 |      1 |    100% |
+| adr_eval.py                              |     13 |     2 |     11 |     85% |
+| adr_eval_redteam.py                      |      4 |     0 |      4 |    100% |
+| adr_eval_scoring.py                      |     17 |    14 |      3 |     18% |
+| config.py                                |     10 |     0 |     10 |    100% |
+| decomposition.py                         |      1 |     0 |      1 |    100% |
+| events.py                                |     43 |    11 |     32 |     74% |
+| git_sync.py                              |      8 |     0 |      8 |    100% |
+| handoff_validation.py                    |     13 |     3 |     10 |     77% |
+| instruction_audit.py                     |      6 |     0 |      6 |    100% |
+| instruction_eval.py                      |     17 |    10 |      7 |     41% |
+| interview.py                             |     11 |     0 |     11 |    100% |
+| ledger.py                                |     36 |     6 |     30 |     83% |
+| ledger_events.py                         |     20 |     0 |     20 |    100% |
+| ledger_proof.py                          |      5 |     0 |      5 |    100% |
+| ledger_semantics.py                      |     22 |     0 |     22 |    100% |
+| lifecycle.py                             |      5 |     0 |      5 |    100% |
+| lock_manager.py                          |     14 |     0 |     14 |    100% |
+| personas.py                              |     18 |     0 |     18 |    100% |
+| pipeline_dispatch.py                     |     26 |     0 |     26 |    100% |
+| pipeline_markers.py                      |     35 |     0 |     35 |    100% |
+| pipeline_runtime.py                      |     16 |     0 |     16 |    100% |
+| pipeline_verification.py                 |     19 |     2 |     17 |     89% |
+| quality.py                               |     44 |     0 |     44 |    100% |
+| registry.py                              |     10 |     0 |     10 |    100% |
+| roles.py                                 |     14 |     0 |     14 |    100% |
+| rules.py                                 |     21 |     0 |     21 |    100% |
+| skills.py                                |     15 |     0 |     15 |    100% |
+| skills_audit.py                          |     20 |     0 |     20 |    100% |
+| skills_mirror.py                         |      7 |     0 |      7 |    100% |
+| sync.py                                  |      7 |     0 |      7 |    100% |
+| sync_skill_validation.py                 |     16 |     0 |     16 |    100% |
+| sync_skills.py                           |     17 |     0 |     17 |    100% |
+| sync_skills_validation.py                |     14 |     0 |     14 |    100% |
+| sync_surfaces.py                         |     17 |     0 |     17 |    100% |
+| tasks.py                                 |     12 |     0 |     12 |    100% |
+| temporal_drift.py                        |     14 |     0 |     14 |    100% |
+| traceability.py                          |     28 |     4 |     24 |     86% |
+| triangle.py                              |     22 |     1 |     21 |     95% |
+| utils.py                                 |      7 |     0 |      7 |    100% |
+| validate.py                              |      3 |     0 |      3 |    100% |
+| adapters/__init__.py                     |      1 |     0 |      1 |    100% |
+| adapters/config.py                       |      5 |     0 |      5 |    100% |
+| arb/__init__.py                          |      1 |     0 |      1 |    100% |
+| arb/advisor.py                           |      7 |     3 |      4 |     57% |
+| arb/paths.py                             |      2 |     0 |      2 |    100% |
+| arb/patterns.py                          |      8 |     1 |      7 |     88% |
+| arb/ruff_reporter.py                     |     12 |    10 |      2 |     17% |
+| arb/step_reporter.py                     |      5 |     3 |      2 |     40% |
+| arb/validator.py                         |      8 |     3 |      5 |     62% |
+| cli/__init__.py                          |      2 |     1 |      1 |     50% |
+| cli/formatters.py                        |     25 |     0 |     25 |    100% |
+| cli/logging.py                           |      5 |     0 |      5 |    100% |
+| cli/main.py                              |      8 |     1 |      7 |     88% |
+| cli/parser.py                            |      7 |     2 |      5 |     71% |
+| cli/parser_arb.py                        |     11 |     8 |      3 |     27% |
+| cli/parser_artifacts.py                  |      8 |     1 |      7 |     88% |
+| cli/parser_governance.py                 |      5 |     1 |      4 |     80% |
+| cli/parser_maintenance.py                |     11 |     1 |     10 |     91% |
+| cli/progress.py                          |      6 |     0 |      6 |    100% |
+| cli/helpers/__init__.py                  |      1 |     0 |      1 |    100% |
+| cli/helpers/common_flags.py              |      2 |     0 |      2 |    100% |
+| cli/helpers/epilog.py                    |      2 |     0 |      2 |    100% |
+| cli/helpers/exit_codes.py                |      2 |     0 |      2 |    100% |
+| cli/helpers/standard_options.py          |      7 |     0 |      7 |    100% |
+| commands/__init__.py                     |      1 |     0 |      1 |    100% |
+| commands/adr_audit.py                    |     17 |     0 |     17 |    100% |
+| commands/adr_coverage.py                 |     12 |     0 |     12 |    100% |
+| commands/adr_promote.py                  |     11 |     0 |     11 |    100% |
+| commands/adr_promote_utils.py            |     20 |     0 |     20 |    100% |
+| commands/arb.py                          |      9 |     0 |      9 |    100% |
+| commands/attest.py                       |      6 |     0 |      6 |    100% |
+| commands/audit_cmd.py                    |      9 |     0 |      9 |    100% |
+| commands/ceremony_data.py                |     18 |     2 |     16 |     89% |
+| commands/ceremony_intent.py              |      6 |     1 |      5 |     83% |
+| commands/ceremony_steps.py               |     12 |     0 |     12 |    100% |
+| commands/chores.py                       |     16 |     0 |     16 |    100% |
+| commands/chores_exec.py                  |      8 |     0 |      8 |    100% |
+| commands/cli_audit.py                    |      7 |     0 |      7 |    100% |
+| commands/closeout.py                     |     16 |     9 |      7 |     44% |
+| commands/closeout_ceremony.py            |     27 |     6 |     21 |     78% |
+| commands/closeout_form.py                |     14 |     1 |     13 |     93% |
+| commands/common.py                       |     29 |     1 |     28 |     97% |
+| commands/config_paths.py                 |     10 |     0 |     10 |    100% |
+| commands/covers.py                       |      6 |     0 |      6 |    100% |
+| commands/drift.py                        |      6 |     0 |      6 |    100% |
+| commands/flags.py                        |      5 |     0 |      5 |    100% |
+| commands/frontmatter_reconcile.py        |      4 |     0 |      4 |    100% |
+| commands/gates.py                        |     14 |     6 |      8 |     57% |
+| commands/init_cmd.py                     |     13 |     0 |     13 |    100% |
+| commands/interview_cmd.py                |      5 |     0 |      5 |    100% |
+| commands/justify_cmd.py                  |      2 |     0 |      2 |    100% |
+| commands/obpi_audit_cmd.py               |     20 |     0 |     20 |    100% |
+| commands/obpi_cmd.py                     |      8 |     0 |      8 |    100% |
+| commands/obpi_complete.py                |     22 |     0 |     22 |    100% |
+| commands/obpi_lock.py                    |      6 |     0 |      6 |    100% |
+| commands/obpi_lock_cmd.py                |      1 |     0 |      1 |    100% |
+| commands/obpi_precomplete.py             |     11 |     0 |     11 |    100% |
+| commands/obpi_stages.py                  |      8 |     0 |      8 |    100% |
+| commands/parity.py                       |      3 |     0 |      3 |    100% |
+| commands/patch_release.py                |     23 |     0 |     23 |    100% |
+| commands/personas.py                     |      5 |     0 |      5 |    100% |
+| commands/pipeline.py                     |      9 |     0 |      9 |    100% |
+| commands/plan.py                         |      9 |     0 |      9 |    100% |
+| commands/plan_audit_cmd.py               |     18 |     0 |     18 |    100% |
+| commands/preflight.py                    |      5 |     0 |      5 |    100% |
+| commands/quality.py                      |     14 |     1 |     13 |     93% |
+| commands/readiness.py                    |     12 |     0 |     12 |    100% |
+| commands/register.py                     |      9 |     0 |      9 |    100% |
+| commands/roles.py                        |      4 |     0 |      4 |    100% |
+| commands/skills_cmd.py                   |      9 |     0 |      9 |    100% |
+| commands/specify_cmd.py                  |     37 |     0 |     37 |    100% |
+| commands/state.py                        |      8 |     0 |      8 |    100% |
+| commands/status.py                       |     14 |     0 |     14 |    100% |
+| commands/status_obpi.py                  |     15 |     4 |     11 |     73% |
+| commands/status_obpi_inspect.py          |     14 |    10 |      4 |     29% |
+| commands/status_render.py                |     12 |     2 |     10 |     83% |
+| commands/sync.py                         |     11 |     0 |     11 |    100% |
+| commands/task.py                         |     10 |     0 |     10 |    100% |
+| commands/tidy.py                         |      6 |     0 |      6 |    100% |
+| commands/validate_cmd.py                 |     19 |     0 |     19 |    100% |
+| commands/validate_frontmatter.py         |     10 |     1 |      9 |     90% |
+| commands/version_sync.py                 |      9 |     0 |      9 |    100% |
+| core/__init__.py                         |      1 |     0 |      1 |    100% |
+| core/exceptions.py                       |     15 |     0 |     15 |    100% |
+| core/lifecycle.py                        |      7 |     0 |      7 |    100% |
+| core/models.py                           |     25 |     0 |     25 |    100% |
+| core/scoring.py                          |     15 |     2 |     13 |     87% |
+| core/validation_rules.py                 |      5 |     0 |      5 |    100% |
+| doc_coverage/__init__.py                 |      1 |     0 |      1 |    100% |
+| doc_coverage/manifest.py                 |      7 |     0 |      7 |    100% |
+| doc_coverage/models.py                   |      8 |     0 |      8 |    100% |
+| doc_coverage/runner.py                   |      4 |     0 |      4 |    100% |
+| doc_coverage/scanner.py                  |     23 |     1 |     22 |     96% |
+| eval/__init__.py                         |      1 |     0 |      1 |    100% |
+| eval/datasets.py                         |      9 |     0 |      9 |    100% |
+| eval/delta.py                            |     11 |     0 |     11 |    100% |
+| eval/regression.py                       |     12 |     0 |     12 |    100% |
+| eval/runner.py                           |      6 |     0 |      6 |    100% |
+| eval/scorer.py                           |     13 |     1 |     12 |     92% |
+| flags/__init__.py                        |      1 |     0 |      1 |    100% |
+| flags/decisions.py                       |      6 |     0 |      6 |    100% |
+| flags/diagnostics.py                     |      6 |     0 |      6 |    100% |
+| flags/models.py                          |      9 |     0 |      9 |    100% |
+| flags/registry.py                        |      3 |     0 |      3 |    100% |
+| flags/service.py                         |     13 |     0 |     13 |    100% |
+| governance/__init__.py                   |      1 |     0 |      1 |    100% |
+| governance/frontmatter_coherence.py      |     23 |     0 |     23 |    100% |
+| governance/status_vocab.py               |      2 |     0 |      2 |    100% |
+| governance/trust_audits.py               |     34 |     9 |     25 |     74% |
+| hooks/__init__.py                        |      1 |     0 |      1 |    100% |
+| hooks/claude.py                          |     10 |     0 |     10 |    100% |
+| hooks/copilot.py                         |      4 |     0 |      4 |    100% |
+| hooks/core.py                            |     13 |     4 |      9 |     69% |
+| hooks/guards.py                          |      9 |     0 |      9 |    100% |
+| hooks/obpi.py                            |     30 |     0 |     30 |    100% |
+| hooks/scripts/__init__.py                |      1 |     0 |      1 |    100% |
+| hooks/scripts/pipeline.py                |      4 |     0 |      4 |    100% |
+| hooks/scripts/quality.py                 |      2 |     0 |      2 |    100% |
+| hooks/scripts/routing.py                 |      4 |     0 |      4 |    100% |
+| hooks/scripts/validation.py              |      4 |     0 |      4 |    100% |
+| justify/__init__.py                      |      1 |     0 |      1 |    100% |
+| justify/anchors.py                       |      5 |     3 |      2 |     40% |
+| justify/cli.py                           |      6 |     3 |      3 |     50% |
+| justify/evidence.py                      |     14 |    12 |      2 |     14% |
+| justify/models.py                        |      8 |     1 |      7 |     88% |
+| justify/parser.py                        |     12 |     3 |      9 |     75% |
+| justify/walkthrough.py                   |     14 |     7 |      7 |     50% |
+| justify/templates/__init__.py            |      1 |     0 |      1 |    100% |
+| models/__init__.py                       |      1 |     0 |      1 |    100% |
+| models/frontmatter.py                    |      1 |     0 |      1 |    100% |
+| models/persona.py                        |      9 |     0 |      9 |    100% |
+| ports/__init__.py                        |      1 |     0 |      1 |    100% |
+| ports/interfaces.py                      |     14 |     0 |     14 |    100% |
+| reporter/__init__.py                     |      1 |     0 |      1 |    100% |
+| reporter/panels.py                       |      2 |     0 |      2 |    100% |
+| reporter/presets.py                      |      7 |     0 |      7 |    100% |
+| schemas/__init__.py                      |      3 |     0 |      3 |    100% |
+| templates/__init__.py                    |      7 |     1 |      6 |     86% |
+| validate_pkg/__init__.py                 |      1 |     0 |      1 |    100% |
+| validate_pkg/document.py                 |      6 |     0 |      6 |    100% |
+| validate_pkg/ledger_check.py             |     10 |     7 |      3 |     30% |
+| validate_pkg/manifest.py                 |      2 |     0 |      2 |    100% |
+| validate_pkg/surface.py                  |      4 |     0 |      4 |    100% |
+| validate_pkg/sync_parity.py              |     10 |     0 |     10 |    100% |
+| validators/__init__.py                   |      1 |     0 |      1 |    100% |
+| validators/unscoped_rules.py             |     11 |     0 |     11 |    100% |
+|------------------------------------------|--------|-------|--------|---------|
+| TOTAL                                    |   1959 |   186 |   1773 |   90.5% |
+---------------- RESULT: PASSED (minimum: 85.0%, actual: 90.5%) ----------------
+[uvx ruff check src/gzkit --select D] stdout:
+All checks passed!
+[uvx ruff check src/gzkit --select D] stderr:
+warning: `incorrect-blank-line-before-class` (D203) and `no-blank-line-before-class` (D211) are incompatible. Ignoring `incorrect-blank-line-before-class`.
+warning: `multi-line-summary-first-line` (D212) and `multi-line-summary-second-line` (D213) are incompatible. Ignoring `multi-line-summary-second-line`.
+```
