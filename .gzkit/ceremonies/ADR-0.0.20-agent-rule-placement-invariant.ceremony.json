@@ -1,0 +1,62 @@
+{
+  "adr_id": "ADR-0.0.20-agent-rule-placement-invariant",
+  "current_step": 11,
+  "is_foundation": true,
+  "started_at": "2026-04-24T00:29:17Z",
+  "updated_at": "2026-04-24T01:11:56Z",
+  "step_history": [
+    {
+      "step": 1,
+      "presented_at": "2026-04-24T00:29:17Z",
+      "acknowledged_at": "2026-04-24T00:34:39Z"
+    },
+    {
+      "step": 2,
+      "presented_at": "2026-04-24T00:34:39Z",
+      "acknowledged_at": "2026-04-24T00:52:32Z"
+    },
+    {
+      "step": 3,
+      "presented_at": "2026-04-24T00:52:32Z",
+      "acknowledged_at": "2026-04-24T01:00:06Z"
+    },
+    {
+      "step": 4,
+      "presented_at": "2026-04-24T01:00:06Z",
+      "acknowledged_at": "2026-04-24T01:00:55Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-04-24T01:00:55Z",
+      "acknowledged_at": "2026-04-24T01:02:49Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-04-24T01:02:49Z",
+      "acknowledged_at": "2026-04-24T01:06:47Z"
+    },
+    {
+      "step": 7,
+      "presented_at": "2026-04-24T01:06:47Z",
+      "acknowledged_at": "2026-04-24T01:10:55Z"
+    },
+    {
+      "step": 8,
+      "presented_at": "2026-04-24T01:10:55Z",
+      "acknowledged_at": "2026-04-24T01:11:56Z"
+    },
+    {
+      "step": 11,
+      "presented_at": "2026-04-24T01:11:56Z",
+      "acknowledged_at": null
+    }
+  ],
+  "walkthrough_commands": [
+    "uv run gz validate --help"
+  ],
+  "walkthrough_index": 0,
+  "attestation": "attest completed — ADR-0.0.20 agent-rule-placement-invariant: 3 always-on rule files (agent-contract.md, attestation-enrichment.md, defect-fix-routing.md) folded into AGENTS.md / CLAUDE.md addendum / docs/governance/; gz validate --unscoped-rules lands as mechanical anti-regression check (13 files checked, 0 allowlisted — target state reached). All 5 OBPIs Completed with recorded attestations. Attestor: g0. Receipts: lint arb-ruff-07e300720d9849638d4710f7e0be7712; typecheck arb-step-typecheck-5b16eb296ae543aebe7356eb6c711353; tests arb-step-unittest-704e003c9ab14f0fbc7715ad4240b838 (3536 tests); mkdocs arb-step-mkdocs-16d46e1bdb1842acb2e62d9932e7a4fa. Mid-ceremony blocker (unrelated ADR-0.44.0 pre-release OBPIs missing scenario @REQ-* tags) resolved via 6 waiver entries under new adr-0.44.0-pre-release rationale in data/behave_coverage_waivers.json; ceremony paused, fix applied, resumed cleanly.",
+  "completed_at": "2026-04-24T01:11:56Z",
+  "attempt": 1,
+  "paused_at": "2026-04-24T01:05:05Z"
+}

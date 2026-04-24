@@ -23,7 +23,7 @@ Closeout evidence verified:
 | Gate 2 (TDD) | Tests pass | `uv run gz test` |
 | Quality (Lint) | Lint passes | `uv run gz lint` |
 | Quality (Typecheck) | Typecheck passes | `uv run gz typecheck` |
-| Gate 5 | Human attests | `uv run gz attest ADR-0.0.20-agent-rule-placement-invariant --status completed` |
+| Gate 5 | Human attests | `uv run gz closeout ADR-0.0.20-agent-rule-placement-invariant` |
 
 ## OBPI Status
 
@@ -35,11 +35,32 @@ Closeout evidence verified:
 | [OBPI-0.0.20-04-fold-defect-fix-routing](OBPI-0.0.20-04-fold-defect-fix-routing.md) | Fold defect-fix-routing.md into AGENTS.md / docs/governance/defect-fix-routing.md | Completed |
 | [OBPI-0.0.20-05-closeout-and-downstream](OBPI-0.0.20-05-closeout-and-downstream.md) | Closeout Sweep + Downstream GHIs + Foundation Walkthrough | Completed |
 
+## Defense Brief
+
+### Closing Arguments
+
+*No closing arguments found.*
+
+### Product Proof
+
+| OBPI | Proof Type | Status |
+|------|-----------|--------|
+| OBPI-0.0.20-01-validator-and-allowlist | command_doc | FOUND |
+| OBPI-0.0.20-02-fold-agent-contract | governance_artifact | FOUND |
+| OBPI-0.0.20-03-fold-attestation-enrichment | docstring | FOUND |
+| OBPI-0.0.20-04-fold-defect-fix-routing | governance_artifact | FOUND |
+| OBPI-0.0.20-05-closeout-and-downstream | closeout_artifact | FOUND |
+
+### Reviewer Assessment
+
+*No reviewer assessments found.*
+
+
 ## Human Attestation
 
 ### Verbatim Attestation
 
-- `completed: ADR-0.0.20 closeout — 5/5 OBPIs attested_completed; three .gzkit/rules/ files deleted; AGENTS.md absorbed ~440 lines of binding content; gz validate --unscoped-rules returns 13 files / 0 allowlisted; mechanical anti-regression invariant live; downstream GHIs #295/#296/#297 filed; foundation-kind walkthrough executed per ADR-0.0.18; full test suite 3536/3536; mkdocs --strict clean.`
+- `completed`
 
 **Attested by**: Jeffry
-**Timestamp (UTC)**: 2026-04-23T21:17:09Z
+**Timestamp (UTC)**: 2026-04-24T01:10:52Z

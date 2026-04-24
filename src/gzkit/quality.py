@@ -635,6 +635,13 @@ class ObpiProofStatus(BaseModel):
     decision_doc_found: bool = Field(
         False, description="Brief contains a substantive Confirm/Exclude/Absorb decision"
     )
+    closeout_artifact_found: bool = Field(
+        False,
+        description=(
+            "Closeout artifact (ADR-CLOSEOUT-FORM.md / EVALUATION_SCORECARD.md) "
+            "exists with substantive content for closeout-kind OBPIs"
+        ),
+    )
 
     @property
     def has_proof(self) -> bool:
@@ -649,6 +656,7 @@ class ObpiProofStatus(BaseModel):
             or self.release_artifact_found
             or self.concepts_page_found
             or self.decision_doc_found
+            or self.closeout_artifact_found
         )
 
     @property
@@ -672,6 +680,8 @@ class ObpiProofStatus(BaseModel):
             return "concepts_page"
         if self.decision_doc_found:
             return "decision_doc"
+        if self.closeout_artifact_found:
+            return "closeout_artifact"
         return "MISSING"
 
 
@@ -840,6 +850,31 @@ def _check_bdd_evidence_proof(allowed_paths: list[str], project_root: Path) -> b
     return False
 
 
+def _check_closeout_artifact_proof(allowed_paths: list[str], project_root: Path) -> bool:
+    """Check if a closeout-kind artifact in allowed paths exists with substantive content.
+
+    Closeout-only OBPIs (whose work is external GHI filings, grep sweeps, and
+    foundation walkthroughs) name ``ADR-CLOSEOUT-FORM.md`` and
+    ``EVALUATION_SCORECARD.md`` under ``docs/design/adr/**/`` in their allowed
+    paths. Those files are the durable artifacts that OBPI produces; without
+    this classifier they trip the product-proof MISSING gate despite being
+    substantive evidence.
+    """
+    for path_str in allowed_paths:
+        if not path_str.startswith("docs/design/adr/"):
+            continue
+        filename = Path(path_str).name
+        if filename not in {"ADR-CLOSEOUT-FORM.md", "EVALUATION_SCORECARD.md"}:
+            continue
+        artifact_path = project_root / path_str
+        if not artifact_path.is_file():
+            continue
+        content = artifact_path.read_text(encoding="utf-8").strip()
+        if len(content) > 100:
+            return True
+    return False
+
+
 def _check_release_artifact_proof(allowed_paths: list[str], project_root: Path) -> bool:
     """Check if any release artifact in docs/releases/ exists with substantive content (#118).
 
@@ -917,6 +952,7 @@ def check_product_proof(
         release_artifact_found = _check_release_artifact_proof(allowed_paths, project_root)
         concepts_page_found = _check_concepts_page_proof(allowed_paths, project_root)
         decision_doc_found = _check_decision_doc_proof(brief_text)
+        closeout_artifact_found = _check_closeout_artifact_proof(allowed_paths, project_root)
 
         proofs.append(
             ObpiProofStatus(
@@ -930,6 +966,7 @@ def check_product_proof(
                 release_artifact_found=release_artifact_found,
                 concepts_page_found=concepts_page_found,
                 decision_doc_found=decision_doc_found,
+                closeout_artifact_found=closeout_artifact_found,
             )
         )
 

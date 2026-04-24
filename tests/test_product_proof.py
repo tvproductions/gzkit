@@ -7,6 +7,7 @@ from pathlib import Path
 
 from gzkit.quality import (
     ObpiProofStatus,
+    _check_closeout_artifact_proof,
     _check_command_doc_proof,
     _check_concepts_page_proof,
     _check_docstring_proof,
@@ -361,6 +362,68 @@ class TestCheckConceptsPageProof(unittest.TestCase):
             root = Path(tmp)
             allowed = ["docs/user/runbook.md", "src/gzkit/quality.py"]
             self.assertFalse(_check_concepts_page_proof(allowed, root))
+
+
+class TestCheckCloseoutArtifactProof(unittest.TestCase):
+    """Closeout-kind OBPIs cite ADR-CLOSEOUT-FORM / EVALUATION_SCORECARD as proof."""
+
+    @covers("REQ-0.0.20-05-11")
+    def test_existing_closeout_form_with_content(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            adr_dir = root / "docs" / "design" / "adr" / "foundation" / "ADR-X"
+            adr_dir.mkdir(parents=True)
+            (adr_dir / "ADR-CLOSEOUT-FORM.md").write_text(
+                "# Closeout\n\n" + "x" * 200, encoding="utf-8"
+            )
+            allowed = ["docs/design/adr/foundation/ADR-X/ADR-CLOSEOUT-FORM.md"]
+            self.assertTrue(_check_closeout_artifact_proof(allowed, root))
+
+    @covers("REQ-0.0.20-05-13")
+    def test_existing_evaluation_scorecard_with_content(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            adr_dir = root / "docs" / "design" / "adr" / "foundation" / "ADR-X"
+            adr_dir.mkdir(parents=True)
+            (adr_dir / "EVALUATION_SCORECARD.md").write_text(
+                "# Scorecard\n\n" + "x" * 200, encoding="utf-8"
+            )
+            allowed = ["docs/design/adr/foundation/ADR-X/EVALUATION_SCORECARD.md"]
+            self.assertTrue(_check_closeout_artifact_proof(allowed, root))
+
+    @covers("REQ-0.0.20-05-11")
+    def test_missing_closeout_artifact(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            allowed = ["docs/design/adr/foundation/ADR-X/ADR-CLOSEOUT-FORM.md"]
+            self.assertFalse(_check_closeout_artifact_proof(allowed, root))
+
+    @covers("REQ-0.0.20-05-11")
+    def test_empty_closeout_artifact(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            adr_dir = root / "docs" / "design" / "adr" / "foundation" / "ADR-X"
+            adr_dir.mkdir(parents=True)
+            (adr_dir / "ADR-CLOSEOUT-FORM.md").write_text("# stub\n", encoding="utf-8")
+            allowed = ["docs/design/adr/foundation/ADR-X/ADR-CLOSEOUT-FORM.md"]
+            self.assertFalse(_check_closeout_artifact_proof(allowed, root))
+
+    @covers("REQ-0.0.20-05-11")
+    def test_non_closeout_filename_ignored(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            adr_dir = root / "docs" / "design" / "adr" / "foundation" / "ADR-X"
+            adr_dir.mkdir(parents=True)
+            (adr_dir / "ADR-X.md").write_text("x" * 200, encoding="utf-8")
+            allowed = ["docs/design/adr/foundation/ADR-X/ADR-X.md"]
+            self.assertFalse(_check_closeout_artifact_proof(allowed, root))
+
+    @covers("REQ-0.0.20-05-11")
+    def test_non_adr_paths_ignored(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            allowed = ["docs/user/runbook.md", "src/gzkit/quality.py"]
+            self.assertFalse(_check_closeout_artifact_proof(allowed, root))
 
 
 class TestCheckRunbookProofRelaxed(unittest.TestCase):
