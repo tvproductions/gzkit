@@ -7,6 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Docs CI](https://img.shields.io/github/actions/workflow/status/tvproductions/gzkit/docs.yml?branch=main&logo=github&label=Docs%20CI)](https://github.com/tvproductions/gzkit/actions/workflows/docs.yml)
 [![Docs](https://img.shields.io/badge/docs-MkDocs-blue.svg?logo=readthedocs)](https://gzkit.org)
+[![Read the Docs](https://img.shields.io/readthedocs/gzkit?logo=readthedocs&label=Read%20the%20Docs)](https://gzkit.readthedocs.io/)
 [![Code Style: Ruff](https://img.shields.io/badge/code%20style-ruff-261230.svg?logo=ruff)](https://github.com/astral-sh/ruff)
 [![Package Manager: uv](https://img.shields.io/badge/package%20manager-uv-de5fe9.svg?logo=astral)](https://github.com/astral-sh/uv)
 
