@@ -11,7 +11,7 @@ status: Draft
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.31-distribution-invariant-doctrine/ADR-0.0.31-distribution-invariant-doctrine.md`
-- **Checklist Item:** #1 — "Author T0 doctrine paragraph in `docs/governance/trust-doctrine.md`, cross-link from this ADR, and add the scorecard entry in `docs/governance/advisory-rules-audit.md` classifying T0 as Promotable"
+- **Checklist Item:** #1 — "Author T0 doctrine paragraph in `docs/governance/trust-doctrine.md` (extend layer table from T1/T2/T3 to T0/T1/T2/T3, paragraph with verbatim failure-mode quote, forward-link to ADR-0.0.32, cross-link from this ADR's Evidence section)"
 
 **Status:** Draft
 
@@ -21,13 +21,14 @@ Land the T0 distribution invariant as authored doctrine in
 `docs/governance/trust-doctrine.md` so that every downstream artifact —
 ADR-0.0.32's mechanical work, future canonical-surface promotions, future
 `gz validate --distribution` enforcement — has a single citable invariant
-to satisfy. Concretely: add a T0 paragraph and table row alongside the
-existing T1/T2/T3 layers; cross-link from ADR-0.0.31's text into the
-trust-doctrine layer table; register T0 in `docs/governance/advisory-rules-audit.md`
-as **Promotable** (the scorecard classification that says: "this rule is
-advisory now, mechanical enforcement is owed and named in ADR-0.0.32").
-Doctrine surface only — no scaffolders, no `pyproject.toml` edits, no
-mechanical enforcement code lands in this OBPI.
+to satisfy. Concretely: add a T0 paragraph and extend the layer table
+from three rows (T1/T2/T3) to four (T0/T1/T2/T3); the paragraph quotes
+the GHI #318 failure mode verbatim; forward-links to ADR-0.0.32 as the
+mechanical enforcement surface; cross-links from ADR-0.0.31's Evidence
+section into the trust-doctrine layer table to close the bidirectional
+link. Doctrine surface only — no scaffolders, no `pyproject.toml` edits,
+no mechanical enforcement code, AND no scorecard or catalog work lands
+in this OBPI (those are OBPI-0.0.31-02 and -03 respectively).
 
 ## Lane
 
@@ -41,11 +42,12 @@ foundation OBPIs are not self-closeable.
 ## Allowed Paths
 
 - `docs/governance/trust-doctrine.md` — add T0 paragraph + extend the layer table from three rows (T1/T2/T3) to four (T0/T1/T2/T3)
-- `docs/governance/advisory-rules-audit.md` — add T0 scorecard entry classified Promotable
-- `docs/design/adr/foundation/ADR-0.0.31-distribution-invariant-doctrine/ADR-0.0.31-distribution-invariant-doctrine.md` — extend Evidence section with cross-link confirmations once the upstream files land
+- `docs/design/adr/foundation/ADR-0.0.31-distribution-invariant-doctrine/ADR-0.0.31-distribution-invariant-doctrine.md` — extend Evidence section with cross-link confirmations once the upstream file lands
 
 ## Denied Paths
 
+- `docs/governance/advisory-rules-audit.md` — scorecard entry belongs to OBPI-0.0.31-02
+- `docs/governance/distribution_invariant_catalog.md` — failure-mode catalog belongs to OBPI-0.0.31-03
 - `src/**` — no source code changes in this OBPI; mechanical enforcement is ADR-0.0.32 scope
 - `pyproject.toml` — wheel includes belong to OBPI-0.0.32-04
 - `tests/**`, `features/**` — no test surface; the validate-side mechanical check belongs to OBPI-0.0.32-05
@@ -58,14 +60,13 @@ foundation OBPIs are not self-closeable.
 2. The trust-doctrine layer table MUST grow from three rows to four; T0 MUST be the first row (upstream of T1) per the doctrine sequencing in ADR-0.0.31 § Decision.
 3. The T0 paragraph MUST quote the GHI #318 failure mode verbatim ("a wheel that ships without a canonical surface is a T0 breach, regardless of whether downstream `gz init` reports success") so future readers trace the doctrine to its origin defect.
 4. The T0 paragraph MUST link forward to ADR-0.0.32 as the citable mechanical enforcement surface; T0 doctrine without a named mechanical sibling is the same advisory-only state the scorecard classifies as Promotable.
-5. The scorecard entry in `docs/governance/advisory-rules-audit.md` MUST classify T0 as **Promotable** (not Mechanical, not Judgment, not Ambiguous), and MUST cite ADR-0.0.32 as the tracking ADR for promotion.
-6. The ADR-0.0.31 file MUST cross-link into the trust-doctrine layer table from its Evidence section so the bidirectional link is closed once both files land.
-7. NO source code, schema, test, or `pyproject.toml` change is permitted in this OBPI. Any such edit is scope creep and STOP-condition.
-8. The Mechanical-enforcement contract subsection in ADR-0.0.31 § Decision MUST be reflected verbatim in the T0 doctrine paragraph (the three-item contract: detect missing data, distinguish authored-but-not-shipped, byte-equivalence on fresh install). Drift between the ADR and the doctrine page is the failure pattern this OBPI exists to prevent.
+5. The ADR-0.0.31 file MUST cross-link into the trust-doctrine layer table from its Evidence section so the bidirectional link is closed once both files land.
+6. NO source code, schema, test, or `pyproject.toml` change is permitted in this OBPI. Any such edit is scope creep and STOP-condition.
+7. The Mechanical-enforcement contract subsection in ADR-0.0.31 § Decision MUST be reflected verbatim in the T0 doctrine paragraph (the three-item contract: detect missing data, distinguish authored-but-not-shipped, byte-equivalence on fresh install). Drift between the ADR and the doctrine page is the failure pattern this OBPI exists to prevent.
+8. The scorecard entry and failure-mode catalog are explicitly OUT OF SCOPE — those land in OBPI-0.0.31-02 and -03 respectively. This OBPI authors the doctrine surface only.
 
 > STOP-on-BLOCKERS:
 > - If `docs/governance/trust-doctrine.md` does not exist or does not currently contain a T1/T2/T3 layer table, STOP — the doctrine page must already establish the layer pattern this OBPI extends.
-> - If `docs/governance/advisory-rules-audit.md` does not contain a Promotable column or row classification, STOP — the scorecard schema must already accept the Promotable classification.
 > - If ADR-0.0.32 has not yet been booked at the time of authoring, STOP — T0 references a forward ADR that must exist before the doctrine paragraph can land cleanly.
 
 ## Discovery Checklist
@@ -84,7 +85,6 @@ foundation OBPIs are not self-closeable.
 - [ ] `AGENTS.md` § Behavior Rules — Never #7 (state-doctrine layering — T0 sits upstream of T1)
 - [ ] `AGENTS.md` § Lane & Kind Attestation Matrix (foundation-kind lite OBPIs require brief-level Gate 5)
 - [ ] `docs/governance/trust-doctrine.md` — current T1/T2/T3 layer table (this OBPI extends it)
-- [ ] `docs/governance/advisory-rules-audit.md` — current Promotable/Mechanical/Judgment/Ambiguous schema (this OBPI adds a row)
 
 **Context:**
 
@@ -96,7 +96,6 @@ foundation OBPIs are not self-closeable.
 **Prerequisites (check existence, STOP if missing):**
 
 - [ ] `docs/governance/trust-doctrine.md` exists and contains the T1/T2/T3 table
-- [ ] `docs/governance/advisory-rules-audit.md` exists and accepts Promotable classification
 - [ ] ADR-0.0.32 booked under `docs/design/adr/foundation/ADR-0.0.32-canonical-surface-packaging/` (forward-link target)
 - [ ] ADR-0.0.31 file exists with `kind: foundation`, `semver: 0.0.31`, `lane: lite`
 
@@ -138,9 +137,9 @@ uv run gz lint
 uv run mkdocs build --strict
 
 grep -q "^## T0 — Distribution\|^### T0 — Distribution" docs/governance/trust-doctrine.md
-grep -q "T0" docs/governance/advisory-rules-audit.md
 grep -q "ADR-0.0.32" docs/governance/trust-doctrine.md
 grep -q "trust-doctrine" docs/design/adr/foundation/ADR-0.0.31-distribution-invariant-doctrine/ADR-0.0.31-distribution-invariant-doctrine.md
+# scorecard entry verification belongs to OBPI-0.0.31-02 verification
 ```
 
 ## Acceptance Criteria
@@ -149,10 +148,9 @@ grep -q "trust-doctrine" docs/design/adr/foundation/ADR-0.0.31-distribution-inva
 - [ ] REQ-0.0.31-01-02: The trust-doctrine layer table grows from three rows to four; T0 is the first (upstream) row
 - [ ] REQ-0.0.31-01-03: The T0 paragraph forward-links to ADR-0.0.32 as the mechanical enforcement surface
 - [ ] REQ-0.0.31-01-04: The Mechanical-enforcement contract from ADR-0.0.31 § Decision (three-item contract) is reflected verbatim in the T0 doctrine paragraph
-- [ ] REQ-0.0.31-01-05: `docs/governance/advisory-rules-audit.md` contains a T0 row classified **Promotable** with ADR-0.0.32 as the tracking ADR
-- [ ] REQ-0.0.31-01-06: ADR-0.0.31 § Evidence section cross-links to `docs/governance/trust-doctrine.md` so the bidirectional link is closed
-- [ ] REQ-0.0.31-01-07: No file outside Allowed Paths is touched in this OBPI's commit set
-- [ ] REQ-0.0.31-01-08: `uv run gz validate --documents` and `uv run mkdocs build --strict` both exit 0 after the edits land
+- [ ] REQ-0.0.31-01-05: ADR-0.0.31 § Evidence section cross-links to `docs/governance/trust-doctrine.md` so the bidirectional link is closed
+- [ ] REQ-0.0.31-01-06: No file outside Allowed Paths is touched in this OBPI's commit set; specifically `docs/governance/advisory-rules-audit.md` (OBPI-0.0.31-02 scope) and `docs/governance/distribution_invariant_catalog.md` (OBPI-0.0.31-03 scope) are NOT touched
+- [ ] REQ-0.0.31-01-07: `uv run gz validate --documents` and `uv run mkdocs build --strict` both exit 0 after the edits land
 
 ## Completion Checklist
 

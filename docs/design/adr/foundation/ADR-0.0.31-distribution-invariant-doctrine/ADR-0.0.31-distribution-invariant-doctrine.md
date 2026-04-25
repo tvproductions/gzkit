@@ -141,19 +141,21 @@ mechanical enforcement).
 - Lineage: 1
 - Dimension Total: 3
 - Baseline Range: 1-2
-- Baseline Selected: 1
-- Split Single-Narrative: 0
+- Baseline Selected: 2
+- Split Single-Narrative: 1
 - Split Surface Boundary: 0
 - Split State Anchor: 0
 - Split Testability Ceiling: 0
-- Split Total: 0
-- Final Target OBPI Count: 1
+- Split Total: 1
+- Final Target OBPI Count: 3
 
 ## Checklist
 
 <!-- Each item becomes an OBPI (One Brief Per Item). Sequential numbering, no gaps. -->
 
-- [ ] OBPI-0.0.31-01: Author T0 doctrine paragraph in `docs/governance/trust-doctrine.md`, cross-link from this ADR, and add the scorecard entry in `docs/governance/advisory-rules-audit.md` classifying T0 as Promotable
+- [ ] OBPI-0.0.31-01: Author T0 doctrine paragraph in `docs/governance/trust-doctrine.md` (extend layer table from T1/T2/T3 to T0/T1/T2/T3, paragraph with verbatim failure-mode quote, forward-link to ADR-0.0.32, cross-link from this ADR's Evidence section)
+- [ ] OBPI-0.0.31-02: Add T0 scorecard entry in `docs/governance/advisory-rules-audit.md` classifying as **Promotable**, citing ADR-0.0.32 as the tracking promotion ADR; reconcile with the existing Promotable→Mechanical promotion-tracking convention (e.g. how previous Promotable entries record the landing GHI/ADR for their mechanical enforcement)
+- [ ] OBPI-0.0.31-03: Author `docs/governance/distribution_invariant_catalog.md` — the T0 failure-mode catalog with worked examples (GHI #318 self-hosting blindness, the chores promotion gap that ADR-0.0.21 implicitly closed before T0 was named, and the canonical "is this a T0 breach?" decision tree future canonical-surface promotions check against)
 
 ## Q&A Transcript
 
