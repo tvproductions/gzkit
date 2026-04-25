@@ -165,6 +165,46 @@ class PromotedAdvisoryAudits(unittest.TestCase):
                 "Pre-implementation briefs must NOT trigger the validator",
             )
 
+    def test_behave_req_tags_rule_39_gz_specify_born_compliant(self) -> None:
+        """GHI #323 acceptance criterion #2: a brief authored via the
+        ``gz specify`` template is born compliant — passes
+        ``gz validate --behave-req-tags`` immediately, without manual
+        waiver edits.
+
+        ``gz specify`` emits new briefs with ``status: Draft`` (verified
+        against the 5 ADR-0.0.30 OBPI scaffolds produced 2026-04-25); the
+        lifecycle filter excludes Draft, so any brief-authoring session
+        produces an artifact that passes the validator on commit. This
+        test pins that contract programmatically by reproducing the
+        ``gz specify`` template shape and asserting validator-clean output.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            brief_dir = root / "docs" / "design" / "adr" / "foundation" / "ADR-x" / "obpis"
+            brief_dir.mkdir(parents=True)
+            # Mirror the canonical gz specify template shape: heavy-lane,
+            # status: Draft, REQ-IDs in Acceptance Criteria.
+            (brief_dir / "OBPI-9.9.9-01-fresh-scaffold.md").write_text(
+                "---\n"
+                "id: OBPI-9.9.9-01-fresh-scaffold\n"
+                "parent: ADR-9.9.9\n"
+                "item: 1\n"
+                "lane: Heavy\n"
+                "status: Draft\n"
+                "---\n\n"
+                "## Acceptance Criteria\n\n"
+                "- [ ] REQ-9.9.9-01-01: scaffolded contract holds\n"
+                "- [ ] REQ-9.9.9-01-02: another requirement\n",
+                encoding="utf-8",
+            )
+            (root / "features").mkdir()  # no feature files yet
+            self.assertEqual(
+                audit_behave_req_tags(root),
+                [],
+                "gz specify-scaffolded brief must be born compliant — no waiver "
+                "edit required, no validator failure on commit (GHI #323 ac #2)",
+            )
+
     def test_behave_req_tags_rule_39_unknown_status_defaults_skip(self) -> None:
         """GHI #323: a brief with an unrecognized status (e.g. a hypothetical
         future-added state) defaults to skip — the inverse filter is the
