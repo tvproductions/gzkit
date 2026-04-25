@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-04-23
 metadata:
-  skill-version: "2.0.1"
+  skill-version: "2.1.0"
 ---
 
 # ghi-close
@@ -37,6 +37,32 @@ The skill is not an evaluator-only surface. If it terminates without
 closing, the reason is a concrete blocker the agent cannot remove
 unilaterally — not a missing pre-existing commit. "No fix landed yet" is
 not an exit condition; it is the *trigger* to author the fix.
+
+### Doctrine — defect remedies are direct fixes, NEVER new OBPIs
+
+A GHI labeled `defect` (or any defect-shape `investigation` / `enhancement`)
+resolves through `fix(<scope>): <summary> (GHI #N)` commits. **OBPIs are
+the unit of planned feature increments authored under an active ADR. They
+are not the closeout vehicle for surfaced defects.** This holds regardless
+of which surface the fix touches — CLI verb, schema, runtime contract,
+foundation rule, validator scope. Surface heat is a *routing fact* that
+shapes the commit body and verification evidence, not a trigger to
+ceremonialize a defect remedy as new feature work.
+
+When the fix scope feels too large for a direct fix, the right move is
+**operator escalation with routing facts** — diff estimate, surfaces
+touched, precedent count from `git log --since='60 days ago' --oneline
+--grep='^fix('`. The right move is **never** "author a new OBPI to make
+the ceremony fit." Authoring an OBPI to close a defect inverts AGENTS.md
+§ Defect-fix routing: it routes ceremony work back onto defect-fix where
+direct-fix already provides the right audit trail (`fix(...)` trailer,
+TDD evidence in commit body, ARB receipts cited inline).
+
+If a GHI's prescribed work is genuinely *new capability* (not a remedy
+for broken behavior), the GHI is mis-labeled. Close it with `withdrawn`
+disposition and redirect to `gz-design` → `gz-plan` →
+`gz-obpi-specify`. That is the only legitimate "OBPI from a GHI" path,
+and it is a route correction, not a fix execution.
 
 ## Trigger
 
@@ -97,11 +123,35 @@ to produce one. Fix that instinct.
 
 ### Phase 2 — Execute
 
-4. **Route the fix** per AGENTS.md § Defect-fix routing:
+4. **Route the fix.** **Defect remedies are direct fixes — full stop.**
+   OBPI authorship is not on this skill's execution path; if you find
+   yourself reaching for `gz-obpi-specify`, that is the doctrine alarm
+   firing.
 
-   - **Direct fix** (criteria met): proceed inline — apply edits, write the Red test, run Green, commit `fix(<scope>): <summary> (GHI #N)`.
-   - **OBPI ceremony** (any ceremony trigger holds): hand off to `gz-obpi-specify` → `gz obpi pipeline` → return here after pipeline Stage 5 for close. The handoff is the execution — do not treat it as an exit.
-   - **Ambiguous**: surface routing facts to the operator (diff estimate, surfaces, precedent count) with a recommendation; proceed once routing is chosen.
+   - **Direct fix (the route for every defect, investigation, or
+     enhancement GHI)**: proceed inline — apply edits, write the Red test,
+     run Green, commit `fix(<scope>): <summary> (GHI #N)`. This holds even
+     when the diff is large, even when the surface is heavy-lane, even
+     when the change touches schemas or runtime contracts. Surface heat
+     and diff size are *facts that shape the commit body and verification
+     evidence*; they are not triggers to ceremonialize the remedy as a
+     planned feature increment.
+   - **Operator escalation (only when scope is genuinely uncertain AND
+     the operator has not already chosen a route)**: surface the routing
+     facts — estimated diff, surfaces touched, precedent count from
+     `git log --since='60 days ago' --oneline --grep='^fix('` — and ask.
+     Do **not** offer "author an OBPI" as one of the choices; the choices
+     are "direct fix now" vs. "split into smaller direct fixes" vs. "wait
+     for an unlanded upstream." OBPI authorship is the inverse of the
+     doctrine and is never the right answer for a defect remedy.
+   - **Route correction via `withdrawn` (only when the GHI is mis-labeled
+     feature work, not a defect at all)**: if the GHI's prescribed work
+     is genuinely *new capability* that should have been authored as a
+     planned increment, close the GHI with `withdrawn` disposition and
+     redirect to `gz-design` → `gz-plan` → `gz-obpi-specify`. This is a
+     route correction, not a fix execution — the GHI never resolves
+     through `ghi-close`'s direct-fix pipeline because it never belonged
+     here.
 
    **Escalation** (only these blockers permit terminating without close):
 
@@ -110,8 +160,9 @@ to produce one. Fix that instinct.
    | Genuinely balanced options with no preservation/discard asymmetry | Present the tradeoff with evidence; operator chooses |
    | Fix requires destroying data, force-push, secret rotation, or other § Executing actions with care triggers | Confirm before acting |
    | Fix depends on an unlanded upstream (another agent's in-flight OBPI, external API change) | Note the dependency in a GHI comment; GHI stays open until upstream lands |
+   | GHI is mis-labeled feature work | Close `withdrawn`, redirect to `gz-design`/`gz-plan` (see route-correction bullet above) |
 
-   "The precedent count is low so I'm unsure" is not a blocker — surface it with the routing facts and proceed on the operator's choice. "The fix is boring" is not a blocker.
+   "The precedent count is low so I'm unsure" is not a blocker — surface it with the routing facts and proceed on the operator's choice. "The fix is boring" is not a blocker. **"The fix is large enough that an OBPI feels safer" is not a blocker — it is the doctrine alarm.**
 
 5. **Apply the fix** in the chosen route. TDD discipline per `.gzkit/rules/tests.md` § Red-Green-Refactor applies to any code change; doc/brief/WBS edits skip the test cycle but still preserve observed-output evidence per `.claude/rules/tool-skill-runbook-alignment.md`.
 
@@ -195,11 +246,13 @@ to produce one. Fix that instinct.
 
 **Process**: Phase 1 classifies as investigation. Phase 2 performs the investigation — instrument, measure, identify cause. If the finding is a defect: file a new `defect` GHI for the fix, commit the investigation artifact if any, close this GHI with `fixed` citing the finding and the follow-up GHI. If the finding is "working as designed": close with `withdrawn` citing the observed rate as correct + the documentation commit that clarifies the expectation.
 
-### Example 5 — Ceremony-required GHI
+### Example 5 — Heavy-surface defect (still direct fix, not OBPI)
 
-**Input**: GHI #<N> describes a schema-breaking fix touching a foundation-kind ADR's rule surface.
+**Input**: GHI #N describes a defect in `gz validate --frontmatter` that fails to detect a specific schema-drift pattern. The fix touches `src/gzkit/governance/trust_audits.py` (validator), `src/gzkit/schemas/adr.json` (schema rule), and adds two new unit tests — roughly 80 lines across 3 files. Heavy-lane surface, foundation-adjacent.
 
-**Process**: Phase 1 classifies as single prescribed fix. Phase 2 routes to OBPI ceremony (heavy-lane trigger fires). Hand off to `gz-obpi-specify` to author the brief, run `gz obpi pipeline <ID>` through Stage 5 (ceremony requires human attestation). Return here post-attestation. Phase 3 verifies the pipeline's closing commits + receipts. Phase 4 closes with `fixed` citing the OBPI ID, commit SHAs, and ARB receipt IDs.
+**Process**: Phase 1 classifies as single prescribed fix. Phase 2 routes to **direct fix despite the heavy-surface scope** — defect remedies are direct fixes regardless of which schema, CLI verb, or runtime contract they touch. The 80-line / 3-file count is a routing fact recorded in the commit body, not a trigger to author an OBPI. Apply edits, write the RED tests, GREEN, commit `fix(validate): detect schema-drift pattern X (GHI #N)`. Phase 3 verifies trailer; class-of-failure (the pattern is closed across all schemas, not just the one observed); test semantics (REQ-derived, not string-shape); heavy-lane ARB receipts. Phase 4 closes with `fixed` disposition citing commit SHAs + receipt IDs.
+
+**Counter-example (when the GHI is mis-labeled feature work)**: GHI #M describes "validator should support dependency-graph cycle detection" — this is new capability, not a remedy for a broken behavior. Phase 2 routes via the `withdrawn` correction path: close with disposition `withdrawn` citing "Re-routing to feature planning. New capability, not defect remedy. Author under `gz-design` → `gz-plan` → `gz-obpi-specify` against the appropriate ADR." This is the only legitimate "defect GHI to OBPI" path, and it is a *route correction*, not an OBPI-as-fix execution.
 
 ## Constraints
 
@@ -225,6 +278,10 @@ These thoughts mean STOP — you are about to either leave a corrupted audit tra
 | "The commit trailer is missing but the fix is obvious" | Missing trailer is a process defect. Amend via a new trailer-bearing commit. |
 | "Won't-fix without operator sign-off is fine for small ones" | Won't-fix is risk acceptance. Unilateral risk acceptance is the scope-creep anti-pattern in a different costume. |
 | "I analyzed the GHI, posted a thorough comment, and left it open — that's the right conservative move" | No. "Thorough analysis then leave it open" is the exact anti-pattern this skill's v2.0.0 rewrite closed. Analysis without execution is busywork. |
+| "This defect touches a heavy-lane surface (CLI/schema/contract), so it needs an OBPI" | **Wrong.** Defect remedies are direct fixes regardless of surface. The "ceremony required" column in `AGENTS.md` § Defect-fix routing applies to *planned new-capability work*, not to closing surfaced defects. Ship the fix as `fix(<scope>): … (GHI #N)` with TDD evidence and (for heavy/foundation) ARB receipts in the close comment. |
+| "The fix is too large for a direct fix; let me author an OBPI to be safe" | **Size is a routing fact, not an OBPI trigger.** A 100-line defect remedy is a 100-line direct fix with a thorough commit body. Authoring an OBPI to ceremonialize a defect closure inverts the routing doctrine — OBPIs are for planned feature increments under an active ADR, not for retrofitting ceremony onto bug fixes. If size is genuinely making you uncertain, escalate to the operator with the routing facts. Do not list "author an OBPI" as one of the choices. |
+| "The GHI body literally says 'OBPI ceremony required'; I should specify an OBPI" | Re-read the body. If it actually prescribes new-capability scope rather than a defect remedy, the GHI is mis-labeled — close `withdrawn` and route to `gz-design`/`gz-plan`. If it prescribes a defect remedy that touches a heavy surface, it is still a direct fix; the GHI body's authoring-time language does not override doctrine. |
+| "I'll spawn `gz-obpi-specify` to author a brief for this defect — it'll be cleaner" | This skill never hands off to `gz-obpi-specify` for defect resolution. The only legitimate path from `ghi-close` to OBPI authorship is the `withdrawn` route correction, which is a *re-route*, not a continuation of fix execution. If you find yourself reaching for `gz-obpi-specify` mid-Phase-2, stop — the doctrine alarm is firing. |
 
 ## Red Flags
 
@@ -236,13 +293,16 @@ These thoughts mean STOP — you are about to either leave a corrupted audit tra
 - Commit claimed to fix but has no `(GHI #N)` trailer and no follow-up amendment
 - Personal email or other PII in the close comment
 - Closing a `heavy`-lane or `foundation`-kind GHI without ARB receipts
+- **Authoring or specifying a new OBPI as the resolution path for a `defect`-labeled GHI** — defect remedies are direct fixes by doctrine (see § Purpose — Doctrine). OBPI authorship for defect closure inverts AGENTS.md § Defect-fix routing and routes ceremony work back onto bug-fix territory where direct-fix already provides the right audit trail
+- Handing off mid-Phase-2 to `gz-obpi-specify` from a `ghi-close` invocation that did not begin with a `withdrawn` route correction — the only legitimate "GHI to OBPI" path is the re-route, never the fix-execution continuation
 
 ## Related Skills
 
 - `ghi-author` — upstream authoring surface
-- `gz-obpi-specify` + `gz-obpi-pipeline` — the ceremony route for Phase 2 when heavy/foundation triggers fire
-- `gz-obpi-reconcile` — when a GHI is absorbed by an OBPI, reconcile propagates the closure to brief evidence
-- `gz-adr-closeout-ceremony` — end-of-ADR pass often triggers GHI-close operations
+- `gz-obpi-specify` + `gz-obpi-pipeline` — **NOT a destination from this skill's fix-execution path.** OBPIs are the unit of planned feature increments under an active ADR; defect remedies route to direct fix per § Purpose — Doctrine. Use these skills only after a `withdrawn` route correction when a GHI is mis-labeled feature work.
+- `gz-design` + `gz-plan` — the proper authoring surface when a GHI's prescribed work turns out to be new capability; reach via the `withdrawn` route correction, never as a continuation of fix execution
+- `gz-obpi-reconcile` — when an OBPI under an active ADR happens to mention a GHI in its evidence (e.g. brief notes "addresses GHI #N"), reconcile propagates the closure to brief evidence; this is downstream of the OBPI's own pipeline, not a Phase-2 route from `ghi-close`
+- `gz-adr-closeout-ceremony` — end-of-ADR pass often triggers `ghi-close` operations on GHIs that surfaced during the ADR's lifetime
 - `git-sync` — the commits that close GHIs flow through sync
 
 ## Related Rules
