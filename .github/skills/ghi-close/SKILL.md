@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-04-23
 metadata:
-  skill-version: "2.1.0"
+  skill-version: "2.2.0"
 ---
 
 # ghi-close
@@ -112,6 +112,7 @@ to produce one. Fix that instinct.
    | Multiple options, no dominant choice | Genuinely balanced tradeoffs with no preservation/discard asymmetry | Escalate (Phase 2, § Escalation) |
    | Investigation (no fix yet) | Label `investigation`; body is diagnostic, not prescriptive | Execute the investigation; close with findings or spawn a defect GHI for the discovered fix |
    | Already-resolved | A commit with `(GHI #N)` trailer exists; GHI forgot to close | Skip to Phase 3 (Verify) |
+   | Forward-reference tracker | GHI's prescribed work is "after upstream X lands, do Y" and the upstream OBPI/ADR now exists (drafted, in-progress, or complete) under an active ADR that absorbs the tracker scope | Close `superseded` citing the upstream OBPI/ADR — do not wait for upstream completion. The existence/authoring of the named OBPI is sufficient; per-step work lands as commits + receipts under the upstream ADR's umbrella, not via this GHI |
 
 3. **Check for pre-existing fix commits.**
 
@@ -159,7 +160,7 @@ to produce one. Fix that instinct.
    |---------|---------------------|
    | Genuinely balanced options with no preservation/discard asymmetry | Present the tradeoff with evidence; operator chooses |
    | Fix requires destroying data, force-push, secret rotation, or other § Executing actions with care triggers | Confirm before acting |
-   | Fix depends on an unlanded upstream (another agent's in-flight OBPI, external API change) | Note the dependency in a GHI comment; GHI stays open until upstream lands |
+   | Fix depends on an unlanded upstream (another agent's in-flight OBPI, external API change) AND no upstream OBPI/ADR has yet absorbed the scope | Note the dependency in a GHI comment; GHI stays open until upstream lands. **Caveat:** if the GHI is a forward-reference tracker and an upstream OBPI/ADR now exists that absorbs the tracker scope (even if not yet Completed), this is the "forward-reference tracker" Phase-1 shape — close `superseded` citing the upstream, do not leave open waiting on completion |
    | GHI is mis-labeled feature work | Close `withdrawn`, redirect to `gz-design`/`gz-plan` (see route-correction bullet above) |
 
    "The precedent count is low so I'm unsure" is not a blocker — surface it with the routing facts and proceed on the operator's choice. "The fix is boring" is not a blocker. **"The fix is large enough that an OBPI feels safer" is not a blocker — it is the doctrine alarm.**
