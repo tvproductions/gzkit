@@ -5,11 +5,31 @@ State is derived from the ledger, not stored separately.
 """
 
 import json
+import re
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, ClassVar
 
 from pydantic import BaseModel, ConfigDict, Field, model_serializer, model_validator
+
+_ADR_SEMVER_RE = re.compile(r"^ADR-(\d+\.\d+\.\d+)(?:-.*)?$")
+
+
+def _extract_bare_adr_semver(adr_id: str) -> str | None:
+    """Return the bare ``ADR-X.Y.Z`` form for any ADR id that carries a semver.
+
+    Returns ``None`` for non-ADR ids, pool ADRs (``ADR-pool.<slug>``), and
+    anything else that does not match the foundation/feature semver shape.
+    The bridge in :meth:`Ledger.has_adr_created` uses this to collapse
+    ``ADR-0.0.22`` and ``ADR-0.0.22-security-sensitivity-doctrine`` into the
+    same identity for idempotency without requiring an explicit
+    ``artifact_renamed`` event between them (GHI #279).
+    """
+    match = _ADR_SEMVER_RE.match(adr_id)
+    if match is None:
+        return None
+    return f"ADR-{match.group(1)}"
+
 
 LEDGER_SCHEMA = "gzkit.ledger.v1"
 
@@ -182,19 +202,35 @@ class Ledger:
     def has_adr_created(self, adr_id: str) -> bool:
         """Return True if an ``adr_created`` event resolves to ``adr_id``.
 
-        The comparison runs through ``canonicalize_id`` on both sides so a
-        historical bare-semver emission (``ADR-0.0.20``) later renamed to a
-        slugged canonical (``ADR-0.0.20-agent-rule-placement-invariant``)
-        still registers as "already created" when the slugged form is checked.
+        Three matching paths, in order of strictness:
+
+        1. ``canonicalize_id`` equality on both sides — handles historical
+           bare-semver emissions (``ADR-0.0.20``) renamed to a slugged
+           canonical via ``artifact_renamed`` events.
+        2. Bare-semver bridge — when one side is ``ADR-X.Y.Z`` and the other
+           is ``ADR-X.Y.Z-<slug>``, treat them as the same ADR even without
+           an explicit ``artifact_renamed`` event. This closes the GHI #279
+           regression on ADR-0.0.22 where a bare-ID ``adr_created`` event
+           was emitted at authoring time and the second slugged emission
+           slipped through because no rename event existed to bridge the
+           two forms.
+
+        The bridge is per-semver: ``ADR-0.0.22`` matches ``ADR-0.0.22-foo``
+        but does not match ``ADR-0.0.23`` or ``ADR-0.0.23-bar``.
 
         Used by emission paths to enforce idempotency and prevent the
         duplicate ``adr_created`` class surfaced in GHI #279.
         """
         target = self.canonicalize_id(adr_id)
+        target_bare = _extract_bare_adr_semver(target)
         for event in self.read_all():
             if event.event != "adr_created":
                 continue
-            if self.canonicalize_id(event.id) == target:
+            event_canonical = self.canonicalize_id(event.id)
+            if event_canonical == target:
+                return True
+            event_bare = _extract_bare_adr_semver(event_canonical)
+            if target_bare is not None and event_bare is not None and target_bare == event_bare:
                 return True
         return False
 

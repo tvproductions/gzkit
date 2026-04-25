@@ -969,6 +969,55 @@ class TestHasAdrCreated(unittest.TestCase):
             self.assertTrue(ledger.has_adr_created("ADR-0.0.20-agent-rule-placement-invariant"))
             self.assertTrue(ledger.has_adr_created("ADR-0.0.20"))
 
+    def test_bridges_bare_to_slugged_without_explicit_rename(self) -> None:
+        """The slugged form must register as already-created when the ledger holds the bare form.
+
+        GHI #279 regression on ADR-0.0.22: a bare-ID `adr_created` for `ADR-0.0.22` lands at
+        authoring time, then a second `adr_created` for `ADR-0.0.22-security-sensitivity-doctrine`
+        slips through because no `artifact_renamed` event bridges the two. has_adr_created must
+        recognize that bare semver `ADR-X.Y.Z` and slugged form `ADR-X.Y.Z-<slug>` refer to the
+        same ADR even without an explicit rename event, so the second emission is rejected as
+        a duplicate.
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ledger = Ledger(Path(tmpdir) / "ledger.jsonl")
+            ledger.append(adr_created_event("ADR-0.0.22", "PRD-1", "heavy"))
+            self.assertTrue(
+                ledger.has_adr_created("ADR-0.0.22-security-sensitivity-doctrine"),
+                msg="slugged form must see the prior bare-ID emission as already-created",
+            )
+
+    def test_bridges_slugged_to_bare_without_explicit_rename(self) -> None:
+        """The bare form must register as already-created when the ledger holds the slugged form.
+
+        Symmetric companion to the bare→slugged bridge: an operator who first emits the slugged
+        canonical form and then later attempts a bare-ID emission must hit the idempotency path,
+        not double-emit. This protects the gz register-adrs route which can attempt to register
+        ADRs by various ID shapes.
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ledger = Ledger(Path(tmpdir) / "ledger.jsonl")
+            ledger.append(
+                adr_created_event("ADR-0.0.22-security-sensitivity-doctrine", "PRD-1", "heavy")
+            )
+            self.assertTrue(
+                ledger.has_adr_created("ADR-0.0.22"),
+                msg="bare form must see the prior slugged emission as already-created",
+            )
+
+    def test_does_not_bridge_across_different_semvers(self) -> None:
+        """The bridge is per-semver — different ADRs must not collide.
+
+        ADR-0.0.22 and ADR-0.0.23 are distinct ADRs; has_adr_created on one must not return True
+        because the other exists. The bridge collapses bare↔slugged for the same semver, not
+        across semvers.
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ledger = Ledger(Path(tmpdir) / "ledger.jsonl")
+            ledger.append(adr_created_event("ADR-0.0.22", "PRD-1", "heavy"))
+            self.assertFalse(ledger.has_adr_created("ADR-0.0.23"))
+            self.assertFalse(ledger.has_adr_created("ADR-0.0.23-other-thing"))
+
 
 class TestTypedEventModels(unittest.TestCase):
     """Tests for typed event models and discriminated union parsing."""

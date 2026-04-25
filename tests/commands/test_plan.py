@@ -343,17 +343,63 @@ class TestPlanCanonicalIdComposition(unittest.TestCase):
             self.assertEqual(len(adr_events), 1)
             self.assertEqual(adr_events[0].id, adr_id)
 
-    def test_semver_literal_name_falls_back_to_bare_id(self) -> None:
-        """A semver-literal `name` (e.g. `0.1.0`) preserves the bare-id shape."""
+    def test_bare_then_slugged_rebook_is_recognized_as_already_created(self) -> None:
+        """Reproduces the ADR-0.0.22 production failure mode (GHI #279 regression).
+
+        Operator first runs `gz plan create 0.0.22 --kind foundation --semver 0.0.22`
+        (semver-as-name path; emits bare-ID `adr_created` for `ADR-0.0.22`), then
+        re-runs `gz plan create security-sensitivity-doctrine --kind foundation
+        --semver 0.0.22`. Without the bare↔slugged bridge in
+        `Ledger.has_adr_created`, the second booking emits a fresh `adr_created`
+        for the slugged form while the bare-ID event remains in the ledger —
+        `gz adr report` then renders two rows for one ADR.
+
+        The bridge collapses both forms for the same semver, so the second
+        booking's idempotency check sees the prior bare emission and skips the
+        duplicate emission with the canonical "already has an adr_created event"
+        warning. The ledger must hold exactly one `adr_created` event across both
+        bookings.
+        """
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            result = runner.invoke(
+            first = runner.invoke(
                 main,
-                ["plan", "create", "0.1.0", "--kind", "feature", "--semver", "0.1.0"],
+                ["plan", "create", "0.0.22", "--kind", "foundation", "--semver", "0.0.22"],
             )
-            self.assertEqual(result.exit_code, 0, msg=result.output)
-            self.assertTrue(Path("design/adr/pre-release/ADR-0.1.0/ADR-0.1.0.md").exists())
+            self.assertEqual(first.exit_code, 0, msg=first.output)
+
+            second = runner.invoke(
+                main,
+                [
+                    "plan",
+                    "create",
+                    "security-sensitivity-doctrine",
+                    "--kind",
+                    "foundation",
+                    "--semver",
+                    "0.0.22",
+                ],
+            )
+            self.assertEqual(second.exit_code, 0, msg=second.output)
+            # Strip newlines because Rich wraps the warning line on narrow terminals
+            # when the ADR id is long (e.g. ADR-0.0.22-security-sensitivity-doctrine).
+            unwrapped = second.output.replace("\n", " ")
+            self.assertIn("already has an adr_created", unwrapped)
+            self.assertIn("skipping duplicate emission", unwrapped)
+
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            adr_events = [
+                e for e in ledger.read_all() if e.event == "adr_created" and "0.0.22" in e.id
+            ]
+            self.assertEqual(
+                len(adr_events),
+                1,
+                msg=(
+                    "expected exactly one adr_created across bare and slugged "
+                    f"bookings; got: {[e.id for e in adr_events]}"
+                ),
+            )
 
 
 class TestPlanIdempotentAdrCreated(unittest.TestCase):

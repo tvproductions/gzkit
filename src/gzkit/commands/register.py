@@ -54,6 +54,10 @@ SEMVER_ID_RENAMES: tuple[tuple[str, str], ...] = (
     ("ADR-0.24.0", "ADR-0.24.0-skill-documentation-contract"),
     ("ADR-0.0.16", "ADR-0.0.16-frontmatter-ledger-coherence-guard"),
     ("ADR-0.0.20", "ADR-0.0.20-agent-rule-placement-invariant"),
+    # GHI #279 regression: bare-ID adr_created landed at 2026-04-25T00:14:04Z before
+    # the slugged form was determined. The slug "security-sensitivity-doctrine"
+    # was established in a second adr_created emission four minutes later.
+    ("ADR-0.0.22", "ADR-0.0.22-security-sensitivity-doctrine"),
     ("ADR-0.41.0", "ADR-0.41.0-tdd-emission-and-graph-rot-remediation"),
     # ADR-0.20.0 promotion slug → brief slug reconciliation.
     (
@@ -332,6 +336,33 @@ def _detect_orphan_obpis(
     return orphans
 
 
+def _emit_adr_created_or_skip(
+    ledger: Ledger,
+    adr_id: str,
+    parent: str,
+    adr_lane: str,
+    known_adrs: set[str],
+) -> None:
+    """Append `adr_created` for this ADR unless an existing event already covers it.
+
+    GHI #279: the rename-aware bridge in `Ledger.has_adr_created` collapses
+    bare `ADR-X.Y.Z` and slugged `ADR-X.Y.Z-<slug>` forms for the same semver,
+    so a prior bare-ID emission blocks the slugged-form duplicate that
+    produced the ADR-0.0.22 shadow row.
+    """
+    if ledger.has_adr_created(adr_id):
+        console.print(
+            f"[yellow]WARNING:[/yellow] {adr_id} already has an adr_created event; "
+            "skipping duplicate emission."
+        )
+        known_adrs.add(ledger.canonicalize_id(adr_id))
+        return
+    ledger.append(adr_created_event(adr_id, parent, adr_lane))
+    known_adrs.add(ledger.canonicalize_id(adr_id))
+    parent_display = parent or "(none)"
+    console.print(f"Registered ADR: {adr_id} (parent: {parent_display}, lane: {adr_lane})")
+
+
 def register_adrs(
     lane: str | None,
     pool_only: bool = False,
@@ -405,10 +436,7 @@ def register_adrs(
         return
 
     for adr_id, parent, adr_lane in to_register:
-        ledger.append(adr_created_event(adr_id, parent, adr_lane))
-        known_adrs.add(ledger.canonicalize_id(adr_id))
-        parent_display = parent or "(none)"
-        console.print(f"Registered ADR: {adr_id} (parent: {parent_display}, lane: {adr_lane})")
+        _emit_adr_created_or_skip(ledger, adr_id, parent, adr_lane, known_adrs)
 
     for obpi_id, parent in to_register_obpis:
         ledger.append(obpi_created_event(obpi_id, parent))
