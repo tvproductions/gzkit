@@ -5,7 +5,7 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.14.1"
+skill-version: "6.14.2"
 last_reviewed: 2026-04-25
 ---
 
@@ -297,18 +297,18 @@ Stage 3 runs two phases: **baseline quality checks** and **REQ-level verificatio
 
 #### Phase 1: Baseline Quality Checks
 
-Run the standard quality checks sequentially (these are always inline, never dispatched):
+Run the standard quality checks sequentially (these are always inline, never dispatched). Each baseline command is ARB-wrapped so a green Stage 3 result emits canonical attestation receipts at parity with `AGENTS.md` § Attestation (GHI #317):
 
 ```bash
-# Always — OBPI-scoped, fast
-uv run gz lint
-uv run gz typecheck
-uv run gz test --obpi {OBPI-SLUG}          # Lite-lane: @covers unit tests only
+# Always — emits arb-ruff-*, arb-step-typecheck-*, arb-step-unittest-* receipts
+uv run gz arb ruff
+uv run gz arb typecheck
+uv run gz arb step --name unittest -- uv run -m unittest -q
 
-# If Heavy lane (covers unit tests + @REQ-tagged behave scenarios)
-uv run gz test --obpi {OBPI-SLUG} --bdd
+# If Heavy lane (emits arb-step-mkdocs-* and arb-step-behave-* receipts)
+uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
+uv run gz arb step --name behave -- uv run -m behave features/
 uv run gz validate --documents
-uv run mkdocs build --strict
 ```
 
 **Scope discipline (GHI #160, #185).** At OBPI Stage 3, run only the
