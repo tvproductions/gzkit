@@ -6,16 +6,21 @@ containing CHORE.md (human workflow) and acceptance.json (machine criteria).
 
 from __future__ import annotations
 
+import importlib.resources
 import json
 import re
 from pathlib import Path
+from typing import Literal
 
+import structlog
 from pydantic import BaseModel, ConfigDict
 from rich.table import Table
 
 from gzkit.commands.common import GzCliError, console, get_project_root
+from gzkit.config import load_config
 
-CHORES_REGISTRY_PATH = Path("config/gzkit.chores.json")
+logger = structlog.get_logger(__name__)
+
 CHORE_SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 ALLOWED_LANES = {"lite", "medium", "heavy"}
 SHELL_OPERATORS_RE = re.compile(r"&&|\|\||[|<>]")
@@ -50,6 +55,16 @@ class ChoreDefinition(BaseModel):
     criteria: tuple[AcceptanceCriterion, ...]
     timeout_seconds: int
     vendor: str | None = None
+    resolution_source: Literal["project", "package"] | None = None
+
+
+class ResolvedPath(BaseModel):
+    """Result of a project-first / package-fallback resolution."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    path: Path
+    source: Literal["project", "package"]
 
 
 class CriterionResult(BaseModel):
@@ -119,20 +134,98 @@ def _filter_registry(
     return {slug: c for slug, c in registry.items() if _chore_matches_harness(c, harness)}
 
 
+def _project_chores_root(project_root: Path) -> Path:
+    """Return ``<project_root>/<config.paths.chores>``."""
+    cfg = load_config()
+    return project_root / cfg.paths.chores
+
+
+def _package_chores_root() -> Path:
+    """Return the package-resource root for ``gzkit.chores``."""
+    return Path(str(importlib.resources.files("gzkit.chores")))
+
+
+def _format_resolution_miss(
+    item_label: str,
+    project_candidate: Path,
+    package_candidate: Path,
+    paths_chores_setting: str,
+) -> str:
+    """Operator-facing message when both project and package paths miss."""
+    return (
+        f"Chore '{item_label}' not found in either resolution path:\n"
+        f"  - project: {project_candidate} "
+        f"(path: {paths_chores_setting}/{item_label})\n"
+        f"  - package: importlib.resources('gzkit.chores')/{item_label} "
+        f"(at {package_candidate})\n"
+        f"Hint: run `gz init` to scaffold {paths_chores_setting}/, "
+        "or verify the slug spelling."
+    )
+
+
+def _resolve_chore_dir(slug: str) -> ResolvedPath:
+    """Resolve a chore directory by slug, project-first with package fallback."""
+    project_root = get_project_root()
+    project_candidate = _project_chores_root(project_root) / slug
+    if (project_candidate / "acceptance.json").is_file():
+        return ResolvedPath(path=project_candidate, source="project")
+
+    package_candidate = _package_chores_root() / slug
+    if (package_candidate / "acceptance.json").is_file():
+        cfg = load_config()
+        logger.info(
+            "chore.resolver.fallback",
+            slug=slug,
+            project_path=str(project_candidate),
+            package_path=str(package_candidate),
+            paths_chores=cfg.paths.chores,
+        )
+        return ResolvedPath(path=package_candidate, source="package")
+
+    cfg = load_config()
+    raise GzCliError(  # noqa: TRY003
+        _format_resolution_miss(slug, project_candidate, package_candidate, cfg.paths.chores)
+    )
+
+
+def _resolve_registry() -> ResolvedPath:
+    """Resolve the chores registry path, project-first with package fallback."""
+    project_root = get_project_root()
+    project_candidate = _project_chores_root(project_root) / "registry.json"
+    if project_candidate.is_file():
+        return ResolvedPath(path=project_candidate, source="project")
+
+    package_candidate = _package_chores_root() / "registry.json"
+    if package_candidate.is_file():
+        cfg = load_config()
+        logger.info(
+            "chore.resolver.fallback",
+            slug="registry",
+            project_path=str(project_candidate),
+            package_path=str(package_candidate),
+            paths_chores=cfg.paths.chores,
+        )
+        return ResolvedPath(path=package_candidate, source="package")
+
+    cfg = load_config()
+    raise GzCliError(  # noqa: TRY003
+        _format_resolution_miss(
+            "registry.json", project_candidate, package_candidate, cfg.paths.chores
+        )
+    )
+
+
 def _load_chores_registry() -> tuple[Path, dict[str, ChoreDefinition]]:
     """Load and validate the v2.0 chores registry."""
     project_root = get_project_root()
-    registry_path = project_root / CHORES_REGISTRY_PATH
+    resolved_registry = _resolve_registry()
+    registry_path = resolved_registry.path
     blockers: list[str] = []
-
-    if not registry_path.exists():
-        blockers.append(f"Missing chores registry: {CHORES_REGISTRY_PATH.as_posix()}")
-        _raise_blockers(blockers)
 
     try:
         payload = json.loads(registry_path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
-        blockers.append(f"Invalid JSON in {CHORES_REGISTRY_PATH.as_posix()}: {exc.msg}")
+        blockers.append(f"Invalid JSON in {registry_path.as_posix()}: {exc.msg}")
         _raise_blockers(blockers)
         return registry_path, {}
 
@@ -198,7 +291,16 @@ def _resolve_chore(slug: str) -> tuple[Path, ChoreDefinition]:
     return registry_path, chore
 
 
-def chores_list() -> None:
+def _explain_source(chore: ChoreDefinition) -> str:
+    """Render the Source column cell for `chores list --explain`."""
+    if chore.resolution_source == "package":
+        return "package (fallback; scaffolder may need re-run)"
+    if chore.resolution_source == "project":
+        return "project"
+    return "missing"
+
+
+def chores_list(*, explain: bool = False) -> None:
     """List chore definitions from registry."""
     _registry_path, registry = _load_chores_registry()
     registry = _filter_registry(registry)
@@ -209,16 +311,21 @@ def chores_list() -> None:
     table.add_column("Vendor")
     table.add_column("Criteria", justify="right")
     table.add_column("Title")
+    if explain:
+        table.add_column("Source")
 
     for chore in sorted(registry.values(), key=lambda item: item.slug):
-        table.add_row(
+        row = [
             chore.slug,
             chore.lane,
             chore.version,
             chore.vendor or "",
             str(len(chore.criteria)),
             chore.title,
-        )
+        ]
+        if explain:
+            row.append(_explain_source(chore))
+        table.add_row(*row)
 
     console.print(table)
 

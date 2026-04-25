@@ -670,12 +670,20 @@ def _register_chores_parsers(commands: argparse._SubParsersAction) -> None:
     chores_commands = p_chores.add_subparsers(dest="chores_command")
     chores_commands.required = True
 
-    chores_commands.add_parser(
+    p_chores_list = chores_commands.add_parser(
         "list",
         help="List chores from registry",
         description="Display all registered chores and their status.",
-        epilog=build_epilog(["gz chores list"]),
-    ).set_defaults(func=lambda a: _lazy("chores_list")())
+        epilog=build_epilog(["gz chores list", "gz chores list --explain"]),
+    )
+    p_chores_list.add_argument(
+        "--explain",
+        action="store_true",
+        help="Show which resolution path (project|package) won per chore.",
+    )
+    p_chores_list.set_defaults(
+        func=lambda a: _lazy("chores_list")(explain=a.explain),
+    )
 
     p_chores_show = chores_commands.add_parser(
         "show",
