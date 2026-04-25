@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-04-25
 metadata:
-  skill-version: "2.3.0"
+  skill-version: "2.4.0"
 ---
 
 # ghi-triage
@@ -36,14 +36,13 @@ uv run python .claude/skills/ghi-triage/scripts/triage.py [args]
 The script lives entirely under `.gzkit/skills/ghi-triage/scripts/` and is
 mirrored to vendor surfaces by `gz agent sync control-surfaces`.
 
-Default output is a **GitHub-flavored markdown table** — renders cleanly
-through Claude Code's markdown pipeline, GitHub PR comments, and any other
-markdown consumer. The short list is wrapped in a fenced code block so it
-copy/pastes verbatim.
+Default output is a **Rich box-drawing table with ANSI color** — the
+script forces terminal mode so the table renders identically whether
+captured by an agent harness or run in a real TTY. The short list is
+emitted as plain text grouped by urgency, ready to copy/paste.
 
-For direct-terminal use (real TTY, ANSI color, box-drawing), pass
-`--format rich` — that path uses Rich and is the right choice when running
-the script outside an agent harness.
+For GitHub-flavored markdown output (PR comments, markdown consumers),
+pass `--format markdown`.
 
 ## What the script does
 

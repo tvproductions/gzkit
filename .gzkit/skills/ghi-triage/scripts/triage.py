@@ -269,23 +269,38 @@ CLASS_STYLE = {
 # --- Rendering ---------------------------------------------------------------
 
 
+def _detect_width() -> int:
+    """Pick a render width by interrogating the runtime context.
+
+    Resolution order:
+      1. GHI_TRIAGE_WIDTH env var (explicit operator override)
+      2. COLUMNS env var (parent shell or harness propagation)
+      3. shutil.get_terminal_size() when stdout is a real TTY (no cap)
+      4. 100 cols (agent-harness display column; no TTY detected)
+    """
+    env_explicit = os.environ.get("GHI_TRIAGE_WIDTH")
+    if env_explicit and env_explicit.isdigit():
+        return int(env_explicit)
+
+    env_cols = os.environ.get("COLUMNS")
+    if env_cols and env_cols.isdigit():
+        return int(env_cols)
+
+    if sys.stdout.isatty():
+        return shutil.get_terminal_size((100, 20)).columns
+
+    return 100
+
+
 def _make_console(width: int | None) -> Console:
     """Force Rich to render a real table even under non-TTY capture.
 
-    Rich detects whether stdout is a TTY and silently downgrades box drawing,
-    color, and column ratios when it isn't (e.g. captured by a tool harness).
-    For triage we always want the full Rich table, so:
-
-    - `force_terminal=True` keeps box characters and ANSI color
-    - explicit `width` defeats the 80-col fallback (env GHI_TRIAGE_WIDTH or --width)
+    Rich downgrades box drawing, color, and column ratios when stdout isn't a
+    TTY. We always want the full Rich table, so `force_terminal=True` keeps
+    the glyphs and the explicit width defeats the 80-col fallback.
     """
     if width is None:
-        env = os.environ.get("GHI_TRIAGE_WIDTH")
-        if env and env.isdigit():
-            width = int(env)
-        else:
-            width = shutil.get_terminal_size((140, 20)).columns
-            width = max(width, 140)
+        width = _detect_width()
     return Console(force_terminal=True, color_system="truecolor", width=width)
 
 
@@ -356,10 +371,10 @@ def main() -> int:
     p.add_argument("--label", default=None, help="Filter by single label")
     p.add_argument(
         "--format",
-        choices=("markdown", "rich"),
-        default="markdown",
-        help="Output format (default: markdown — renders cleanly through "
-        "any markdown consumer; use 'rich' for direct-terminal use).",
+        choices=("rich", "markdown"),
+        default="rich",
+        help="Output format (default: rich — box-drawing table with ANSI "
+        "color; use 'markdown' for GitHub-flavored markdown output).",
     )
     p.add_argument(
         "--width",
