@@ -1,12 +1,12 @@
 ---
-id: OBPI-0.0.32-03-init-update-flag
+id: OBPI-0.0.32-05-init-update-flag
 parent: ADR-0.0.32-canonical-surface-packaging
 item: 3
 lane: Heavy
 status: Draft
 ---
 
-# OBPI-0.0.32-03-init-update-flag: gz init --update Flag
+# OBPI-0.0.32-05-init-update-flag: gz init --update Flag
 
 ## ADR Item
 
@@ -123,8 +123,8 @@ Add a third `gz init` mode — `--update` — that performs version-aware refres
 
 ### Gate 4: BDD (Heavy)
 
-- [ ] Three scenarios in `features/init.feature` tagged with `@REQ-0.0.32-03-NN` per `.gzkit/rules/tests.md` § "Behave scenario tagging"
-- [ ] `uv run -m behave features/init.feature --tags=@REQ-0.0.32-03-01` (and -02, -03) all pass
+- [ ] Three scenarios in `features/init.feature` tagged with `@REQ-0.0.32-05-NN` per `.gzkit/rules/tests.md` § "Behave scenario tagging"
+- [ ] `uv run -m behave features/init.feature --tags=@REQ-0.0.32-05-01` (and -02, -03) all pass
 
 ### Gate 5: Human (Heavy + Foundation — brief-level)
 
@@ -141,21 +141,21 @@ uv run mkdocs build --strict
 uv run gz init --help | grep -- --update
 uv run gz init --update --dry-run /tmp/gz-update-smoke
 
-uv run -m behave features/init.feature --tags=@REQ-0.0.32-03-01
-uv run -m behave features/init.feature --tags=@REQ-0.0.32-03-02
-uv run -m behave features/init.feature --tags=@REQ-0.0.32-03-03
+uv run -m behave features/init.feature --tags=@REQ-0.0.32-05-01
+uv run -m behave features/init.feature --tags=@REQ-0.0.32-05-02
+uv run -m behave features/init.feature --tags=@REQ-0.0.32-05-03
 ```
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.32-03-01: `gz init --update` exists as a documented flag and is mutually exclusive with `--force`
-- [ ] REQ-0.0.32-03-02: Three-state detection (IDENTICAL/STALE/EDITED) is implemented as a pure function with unit-test coverage
-- [ ] REQ-0.0.32-03-03: STALE artifacts are refreshed in place; EDITED artifacts are NOT overwritten and surface as conflicts
-- [ ] REQ-0.0.32-03-04: `--update --dry-run` prints per-artifact action without writing
-- [ ] REQ-0.0.32-03-05: Unresolved conflicts at end-of-run produce exit code 3 with a structured summary
-- [ ] REQ-0.0.32-03-06: Operator-edit marker mechanism (frontmatter / body marker / content hash) is documented in the manpage and composes with existing `skill-version` / `rule-version` markers per `.claude/rules/skill-surface-sync.md`
-- [ ] REQ-0.0.32-03-07: Three behave scenarios exist and pass (`@REQ-0.0.32-03-01/-02/-03`)
-- [ ] REQ-0.0.32-03-08: Manpage `docs/user/manpages/gz-init.md` documents the three modes, marker contract, and exit codes; `mkdocs build --strict` passes
+- [ ] REQ-0.0.32-05-01: `gz init --update` exists as a documented flag and is mutually exclusive with `--force`
+- [ ] REQ-0.0.32-05-02: Three-state detection (IDENTICAL/STALE/EDITED) is implemented as a pure function with unit-test coverage
+- [ ] REQ-0.0.32-05-03: STALE artifacts are refreshed in place; EDITED artifacts are NOT overwritten and surface as conflicts
+- [ ] REQ-0.0.32-05-04: `--update --dry-run` prints per-artifact action without writing
+- [ ] REQ-0.0.32-05-05: Unresolved conflicts at end-of-run produce exit code 3 with a structured summary
+- [ ] REQ-0.0.32-05-06: Operator-edit marker mechanism (frontmatter / body marker / content hash) is documented in the manpage and composes with existing `skill-version` / `rule-version` markers per `.claude/rules/skill-surface-sync.md`
+- [ ] REQ-0.0.32-05-07: Three behave scenarios exist and pass (`@REQ-0.0.32-05-01/-02/-03`)
+- [ ] REQ-0.0.32-05-08: Manpage `docs/user/manpages/gz-init.md` documents the three modes, marker contract, and exit codes; `mkdocs build --strict` passes
 
 ## Completion Checklist
 

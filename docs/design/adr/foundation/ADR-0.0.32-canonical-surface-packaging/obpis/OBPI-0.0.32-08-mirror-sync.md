@@ -1,12 +1,12 @@
 ---
-id: OBPI-0.0.32-06-mirror-sync
+id: OBPI-0.0.32-08-mirror-sync
 parent: ADR-0.0.32-canonical-surface-packaging
 item: 6
 lane: Heavy
 status: Draft
 ---
 
-# OBPI-0.0.32-06-mirror-sync: Mirror Sync Post-Promotion
+# OBPI-0.0.32-08-mirror-sync: Mirror Sync Post-Promotion
 
 ## ADR Item
 
@@ -53,7 +53,7 @@ After OBPI-0.0.32-01 (skills) and OBPI-0.0.32-02 (rules) move canonical content 
 4. The number of files in `.claude/skills/` MUST equal the number of files in `src/gzkit/skills/<slug>/SKILL.md` (61); same for `.claude/rules/` ↔ 14 rule files; same for `.github/skills/` ↔ 61 and `.github/instructions/` ↔ 14.
 5. `.gzkit/manifest.json` MUST refresh on each sync run with the new `Updated:` date and surface counts.
 6. Unit tests MUST cover: (a) canonical-resolution returns content from the package when no project override exists, (b) canonical-resolution returns the project override when one exists, (c) the sync function regenerates mirrors byte-equivalent to canonical, (d) running sync twice in a row produces no diffs.
-7. A behave scenario MUST run sync against a clean post-promotion fixture and assert no-op idempotency on the second run, tagged `@REQ-0.0.32-06-NN`.
+7. A behave scenario MUST run sync against a clean post-promotion fixture and assert no-op idempotency on the second run, tagged `@REQ-0.0.32-08-NN`.
 8. `uv run gz check` MUST exit 0 with the new resolution path.
 9. `gz validate --surfaces` MUST pass post-sync; mirror drift detection (already covered by existing `--surfaces` audit) MUST report clean.
 10. `gz validate --distribution` (from OBPI-0.0.32-05) MUST pass — this OBPI does not introduce on-disk-not-baseline drift.
@@ -125,7 +125,7 @@ After OBPI-0.0.32-01 (skills) and OBPI-0.0.32-02 (rules) move canonical content 
 
 ### Gate 4: BDD (Heavy)
 
-- [ ] `features/agent_sync.feature` (or equivalent) extended with the post-promotion idempotency scenario tagged `@REQ-0.0.32-06-01`
+- [ ] `features/agent_sync.feature` (or equivalent) extended with the post-promotion idempotency scenario tagged `@REQ-0.0.32-08-01`
 
 ### Gate 5: Human (Heavy + Foundation — brief-level)
 
@@ -158,20 +158,20 @@ ls .github/instructions/*.md | wc -l                               # 14
 uv run gz validate --surfaces
 uv run gz validate --distribution
 
-uv run -m behave features/agent_sync.feature --tags=@REQ-0.0.32-06-01
+uv run -m behave features/agent_sync.feature --tags=@REQ-0.0.32-08-01
 ```
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.32-06-01: `gz agent sync control-surfaces` resolves canonical skill content from `src/gzkit/skills/<slug>/SKILL.md` when no project-local override exists; same project-first → package-fallback shape for rules
-- [ ] REQ-0.0.32-06-02: Post-sync mirror trees match canonical sources byte-equivalent (modulo documented vendor transformations)
-- [ ] REQ-0.0.32-06-03: Re-running sync on freshly-synced state produces zero file writes (idempotent)
-- [ ] REQ-0.0.32-06-04: Mirror counts match canonical: `.claude/skills/` = 61; `.claude/rules/` = 14; `.github/skills/` = 61; `.github/instructions/` = 14
-- [ ] REQ-0.0.32-06-05: `.gzkit/manifest.json` refreshes Updated date + surface counts on each sync
-- [ ] REQ-0.0.32-06-06: `gz validate --surfaces` exits 0 post-sync (no mirror drift)
-- [ ] REQ-0.0.32-06-07: `gz validate --distribution` exits 0 post-sync (no on-disk-not-baseline drift)
-- [ ] REQ-0.0.32-06-08: Behave scenario `@REQ-0.0.32-06-01` exercises post-promotion idempotency and passes
-- [ ] REQ-0.0.32-06-09: `uv run gz check` exits 0
+- [ ] REQ-0.0.32-08-01: `gz agent sync control-surfaces` resolves canonical skill content from `src/gzkit/skills/<slug>/SKILL.md` when no project-local override exists; same project-first → package-fallback shape for rules
+- [ ] REQ-0.0.32-08-02: Post-sync mirror trees match canonical sources byte-equivalent (modulo documented vendor transformations)
+- [ ] REQ-0.0.32-08-03: Re-running sync on freshly-synced state produces zero file writes (idempotent)
+- [ ] REQ-0.0.32-08-04: Mirror counts match canonical: `.claude/skills/` = 61; `.claude/rules/` = 14; `.github/skills/` = 61; `.github/instructions/` = 14
+- [ ] REQ-0.0.32-08-05: `.gzkit/manifest.json` refreshes Updated date + surface counts on each sync
+- [ ] REQ-0.0.32-08-06: `gz validate --surfaces` exits 0 post-sync (no mirror drift)
+- [ ] REQ-0.0.32-08-07: `gz validate --distribution` exits 0 post-sync (no on-disk-not-baseline drift)
+- [ ] REQ-0.0.32-08-08: Behave scenario `@REQ-0.0.32-08-01` exercises post-promotion idempotency and passes
+- [ ] REQ-0.0.32-08-09: `uv run gz check` exits 0
 
 ## Completion Checklist
 
@@ -209,7 +209,7 @@ uv run -m behave features/agent_sync.feature --tags=@REQ-0.0.32-06-01
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave scenario output for @REQ-0.0.32-06-01
+# Paste behave scenario output for @REQ-0.0.32-08-01
 ```
 
 ### Gate 5 (Human)

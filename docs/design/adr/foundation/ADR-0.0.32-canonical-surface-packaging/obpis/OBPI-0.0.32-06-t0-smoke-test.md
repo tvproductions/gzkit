@@ -1,12 +1,12 @@
 ---
-id: OBPI-0.0.32-04-t0-smoke-test
+id: OBPI-0.0.32-06-t0-smoke-test
 parent: ADR-0.0.32-canonical-surface-packaging
 item: 4
 lane: Heavy
 status: Draft
 ---
 
-# OBPI-0.0.32-04-t0-smoke-test: T0 Smoke Test + Wheel Includes Audit
+# OBPI-0.0.32-06-t0-smoke-test: T0 Smoke Test + Wheel Includes Audit
 
 ## ADR Item
 
@@ -60,7 +60,7 @@ Author the build-then-install smoke test that mechanically enforces the T0 distr
    }
    ```
 4. The behave scenario MUST execute end-to-end: `uv build` → `uv venv .smoke-venv` → `uv pip install dist/py_gzkit-*.whl` → run `gz init` in a fresh tempdir using the smoke venv's `gz` binary → enumerate `.gzkit/` artifacts → cross-check against `data/distribution_baseline_manifest.json` → assert byte-equivalence (or content-equivalence after project-name substitution where applicable).
-5. The scenario MUST tag with `@REQ-0.0.32-04-NN` per `.gzkit/rules/tests.md` behave-tagging.
+5. The scenario MUST tag with `@REQ-0.0.32-06-NN` per `.gzkit/rules/tests.md` behave-tagging.
 6. The scenario MUST clean up the smoke venv and tempdir on success AND failure (use behave fixtures or hooks).
 7. The scenario MUST exit non-zero if any baseline-manifest entry is missing from the install or if any installed canonical artifact is NOT in the baseline (catches both directions of drift).
 8. `mkdocs build --strict` MUST pass after the new doc + baseline manifest land.
@@ -90,7 +90,7 @@ Author the build-then-install smoke test that mechanically enforces the T0 distr
 
 - [ ] ADR-0.0.31 § Decision — Mechanical-enforcement contract (this OBPI is the smoke-test arm of that contract)
 - [ ] `.gzkit/rules/tests.md` § Two runners — why the smoke test belongs in `features/`, not `tests/`
-- [ ] `.gzkit/rules/tests.md` § Behave scenario tagging — `@REQ-0.0.32-04-NN` requirement
+- [ ] `.gzkit/rules/tests.md` § Behave scenario tagging — `@REQ-0.0.32-06-NN` requirement
 - [ ] `.claude/rules/cross-platform.md` — UTF-8 + subprocess discipline; the smoke test invokes `uv build` and `uv pip install` which must work on Windows + macOS + Linux
 
 **Context — chores precedent + sibling OBPIs:**
@@ -136,7 +136,7 @@ Author the build-then-install smoke test that mechanically enforces the T0 distr
 
 ### Gate 4: BDD (Heavy)
 
-- [ ] `features/distribution_invariant.feature` exists with at least one scenario tagged `@REQ-0.0.32-04-01`
+- [ ] `features/distribution_invariant.feature` exists with at least one scenario tagged `@REQ-0.0.32-06-01`
 - [ ] `uv run -m behave features/distribution_invariant.feature` passes
 
 ### Gate 5: Human (Heavy + Foundation — brief-level)
@@ -158,22 +158,22 @@ unzip -l dist/py_gzkit-*.whl | grep -c "gzkit/templates/.*"           # expect n
 unzip -l dist/py_gzkit-*.whl | grep -c "gzkit/hooks/scripts/"         # expect non-zero (when hooks ship)
 unzip -l dist/py_gzkit-*.whl | grep -c "gzkit/personas/"              # expect non-zero (when personas ship)
 
-uv run -m behave features/distribution_invariant.feature --tags=@REQ-0.0.32-04-01
+uv run -m behave features/distribution_invariant.feature --tags=@REQ-0.0.32-06-01
 
 python -c "import json; m=json.load(open('data/distribution_baseline_manifest.json')); print('surfaces:', list(m['surfaces'].keys()))"
 ```
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.32-04-01: `features/distribution_invariant.feature` exists with the build-install-init smoke scenario tagged `@REQ-0.0.32-04-01`; the scenario passes
-- [ ] REQ-0.0.32-04-02: `pyproject.toml [tool.hatch.build.targets.wheel] include:` covers every canonical surface (skills, rules, templates, hooks, personas)
-- [ ] REQ-0.0.32-04-03: `data/distribution_baseline_manifest.json` exists, validates against a frozen schema, lists every canonical artifact organized by surface
-- [ ] REQ-0.0.32-04-04: The smoke scenario detects DRIFT in both directions — missing baseline entries in install AND extra installed artifacts not in baseline
-- [ ] REQ-0.0.32-04-05: `tests/distribution/test_baseline_manifest.py` covers schema parse, file-resolution, and duplicate detection
-- [ ] REQ-0.0.32-04-06: `docs/governance/distribution_baseline.md` documents baseline-manifest role, refresh discipline, and update-on-surface-promotion procedure; `mkdocs build --strict` passes
-- [ ] REQ-0.0.32-04-07: Smoke-test runtime is documented; if >60s, tagged so `gz test` smoke can exclude it
-- [ ] REQ-0.0.32-04-08: `uv run gz check` exits 0 with the new includes
-- [ ] REQ-0.0.32-04-09: Built wheel contains 61 SKILL.md files + ≥14 rule .md files + canonical templates + canonical hook scripts + canonical personas
+- [ ] REQ-0.0.32-06-01: `features/distribution_invariant.feature` exists with the build-install-init smoke scenario tagged `@REQ-0.0.32-06-01`; the scenario passes
+- [ ] REQ-0.0.32-06-02: `pyproject.toml [tool.hatch.build.targets.wheel] include:` covers every canonical surface (skills, rules, templates, hooks, personas)
+- [ ] REQ-0.0.32-06-03: `data/distribution_baseline_manifest.json` exists, validates against a frozen schema, lists every canonical artifact organized by surface
+- [ ] REQ-0.0.32-06-04: The smoke scenario detects DRIFT in both directions — missing baseline entries in install AND extra installed artifacts not in baseline
+- [ ] REQ-0.0.32-06-05: `tests/distribution/test_baseline_manifest.py` covers schema parse, file-resolution, and duplicate detection
+- [ ] REQ-0.0.32-06-06: `docs/governance/distribution_baseline.md` documents baseline-manifest role, refresh discipline, and update-on-surface-promotion procedure; `mkdocs build --strict` passes
+- [ ] REQ-0.0.32-06-07: Smoke-test runtime is documented; if >60s, tagged so `gz test` smoke can exclude it
+- [ ] REQ-0.0.32-06-08: `uv run gz check` exits 0 with the new includes
+- [ ] REQ-0.0.32-06-09: Built wheel contains 61 SKILL.md files + ≥14 rule .md files + canonical templates + canonical hook scripts + canonical personas
 
 ## Completion Checklist
 
@@ -211,7 +211,7 @@ python -c "import json; m=json.load(open('data/distribution_baseline_manifest.js
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave scenario output for @REQ-0.0.32-04-01
+# Paste behave scenario output for @REQ-0.0.32-06-01
 ```
 
 ### Gate 5 (Human)
