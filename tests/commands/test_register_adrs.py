@@ -3,6 +3,7 @@ from pathlib import Path
 
 from gzkit.cli import main
 from gzkit.config import GzkitConfig
+from gzkit.ledger import Ledger, adr_created_event
 from tests.commands.common import CliRunner, _quick_init
 
 
@@ -433,3 +434,62 @@ class TestRegisterAdrsCommand(unittest.TestCase):
             self.assertIn("Registered ADR: ADR-0.8.0-orphan", result.output)
             self.assertIn("Skipping OBPI-0.9.0-01-wrong-parent.md", result.output)
             self.assertNotIn("Registered OBPI: OBPI-0.9.0-01-wrong-parent", result.output)
+
+
+class TestRegisterAdrsIdempotent(unittest.TestCase):
+    """GHI #279 — gz register-adrs honors has_adr_created idempotency.
+
+    register.py is the fourth `adr_created` emission site (alongside plan.py,
+    init_cmd.py, interview_cmd.py). The original GHI #279 sweep covered the
+    first three but missed register.py. When the ledger already holds a
+    bare-ID `adr_created` for an ADR, registering its on-disk slugged path
+    must NOT emit a second `adr_created` event — the bridge in
+    Ledger.has_adr_created collapses bare↔slugged forms for the same semver
+    so register.py can reuse it.
+    """
+
+    def test_register_skips_emission_when_bare_id_already_in_ledger(self) -> None:
+        """Pre-existing bare-ID adr_created blocks slugged-ID emission via register.
+
+        Reproduces the ADR-0.0.22 production failure: bare-ID emitted at
+        authoring time (e.g. by a now-fixed plan.py path), then operator
+        runs `gz register-adrs` to register the slugged on-disk ADR — this
+        path must see the bare-ID event as already-created and skip.
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+
+            ledger_path = Path(".gzkit/ledger.jsonl")
+            ledger = Ledger(ledger_path)
+            ledger.append(adr_created_event("ADR-0.5.0", "PRD-GZKIT-1.0.0", "heavy"))
+
+            adr_dir = Path(config.paths.adrs) / "pre-release" / "ADR-0.5.0-canonical-feature"
+            adr_dir.mkdir(parents=True, exist_ok=True)
+            adr_file = adr_dir / "ADR-0.5.0-canonical-feature.md"
+            adr_file.write_text(
+                "---\n"
+                "id: ADR-0.5.0-canonical-feature\n"
+                "parent: PRD-GZKIT-1.0.0\n"
+                "lane: heavy\n"
+                "---\n\n"
+                "# ADR-0.5.0: Canonical Feature\n",
+                encoding="utf-8",
+            )
+
+            result = runner.invoke(main, ["register-adrs"])
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+
+            fresh_ledger = Ledger(ledger_path)
+            adr_events = [
+                e for e in fresh_ledger.read_all() if e.event == "adr_created" and "0.5.0" in e.id
+            ]
+            self.assertEqual(
+                len(adr_events),
+                1,
+                msg=(
+                    "expected exactly one adr_created for ADR-0.5.0; "
+                    f"got: {[e.id for e in adr_events]}"
+                ),
+            )
