@@ -5,7 +5,7 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.13.0"
+skill-version: "6.14.0"
 last_reviewed: 2026-04-25
 ---
 
@@ -477,10 +477,34 @@ fires only when the incantation would overflow.
 
 **REQ coverage:** (every row populated; every cell concrete; verified by Stage 3 Phase 1b)
 
+> **Rendering rule (GHI #301, generalizes GHI #293):** The REQ coverage
+> table is the canonical single form — render it as a markdown table and
+> nothing else. Do **not** append a plain-text labeled-list duplicate of
+> the same rows beneath the table. When Claude Code's renderer truncates
+> a cell, the fix is to shorten the cell, not to add a second rendering.
+> When any cell (Mechanism, `@covers` location, Test Coverage) would
+> exceed ~40 characters — long structural assertions like
+> `test ! -e config/gzkit.chores.json`, multi-flag `uv run` invocations,
+> file lists, or SHA-bearing paths — hold a short label in the cell
+> (e.g. `req-01:absence-check`, `req-02:scoped-tests`) and render the
+> full incantation in a single fenced code block beneath the table,
+> keyed by the same label. One render, one form. The labeled-list
+> fallback is the operator-confusion vector the rule exists to prevent.
+
 | REQ | Mechanism | `@covers` location | Test Coverage | Result |
 |-----|-----------|--------------------|---------------|--------|
-| REQ-X.Y.Z-NN-01 | <function/mechanism> | `tests/<file>.py:<line>` or `TestClass.test_method` | <test class> (N tests) | Pass |
+| REQ-X.Y.Z-NN-01 | <function/mechanism, or short label> | `tests/<file>.py:<line>` or `TestClass.test_method` | <test class> (N tests), or short label | Pass |
 | REQ-X.Y.Z-NN-02 | ... | ... | ... | ... |
+
+If any row uses short labels for long cells, expand them in a single fenced block immediately after the table:
+
+```text
+# req-01:absence-check — REQ-X.Y.Z-NN-01 Test Coverage
+test ! -e <path>
+
+# req-02:scoped-tests — REQ-X.Y.Z-NN-02 Test Coverage
+uv run -m unittest tests.<module> -v
+```
 
 The `@covers location` column is **not** optional. If you cannot fill it in for a row, the parity gate in Stage 3 Phase 1b will fail and the pipeline will not advance — fix the gap before continuing.
 
