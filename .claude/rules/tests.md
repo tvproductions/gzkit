@@ -4,11 +4,11 @@ paths:
   - "tests/**"
 ---
 
-<!-- rule-version: 0.2.0 -->
+<!-- rule-version: 0.3.0 -->
 
 # Test Policy (canonical)
 
-> **Rule version:** `0.2.0` — bumped under GHI #310 to add the eval-awareness corollary against audit-named assertion helpers. Prior unversioned content treated as `0.1.0`.
+> **Rule version:** `0.3.0` — bumped under GHI #323 to scope `gz validate --behave-req-tags` to post-implementation briefs only (Completed / Validated); pre-implementation states default to skip via inverse filter. Prior versions: `0.2.0` (GHI #310 eval-awareness corollary), unversioned content treated as `0.1.0`.
 
 > **Flag defects, never excuse them.** If a test reveals a defect in code, config, or test infrastructure — flag it. Never rationalize a failing or skipped test as "pre-existing" or "not in scope". Fix it or file a GHI.
 
@@ -159,10 +159,23 @@ OBPI → feature so a heavy OBPI that ships zero scenario coverage at all
 is flagged — the original feature → feature direction (GHI #211) could
 only flag a feature file that forgot to tag a scenario it already had.
 
-Missing coverage is a policy breach (exit 3). Heavy OBPIs that legitimately
-defer BDD (schema-only, template-only, or Gate 4 explicitly N/A) must
-register an entry in `data/behave_coverage_waivers.json` keyed by OBPI ID
-with a rationale — the waiver is the mechanism for "BDD deferred to
+**Lifecycle scope (canonical, GHI #323):** the validator fires only on
+briefs whose `status:` frontmatter is one of `Completed` or `Validated`
+— the post-implementation states. Pre-implementation states (`Draft`,
+`Pending`, `Proposed`, etc.), terminal-but-not-implemented states
+(`Withdrawn`, `Superseded`), and unknown / future-added states default
+to skip via inverse filter. The rationale is Red-Green-Refactor: BDD
+scenarios land alongside the code they test (at implementation time),
+not at brief-authoring time when the CLI verbs / engines / hooks named
+in the brief do not yet exist. The inverse filter is the structural
+defense against future-added pre-implementation statuses silently
+re-introducing the GHI #323 defect.
+
+Missing coverage on a Completed / Validated brief is a policy breach
+(exit 3). Briefs that legitimately defer BDD even after implementation
+(schema-only, template-only, or Gate 4 explicitly N/A) register an
+entry in `data/behave_coverage_waivers.json` keyed by OBPI ID with a
+rationale — the waiver is the mechanism for "BDD deferred to
 CLI-exposing OBPIs" patterns.
 
 ### Runner anti-patterns

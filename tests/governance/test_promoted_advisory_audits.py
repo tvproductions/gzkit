@@ -75,7 +75,7 @@ class PromotedAdvisoryAudits(unittest.TestCase):
             brief_dir = root / "docs" / "design" / "adr" / "foundation" / "ADR-x" / "obpis"
             brief_dir.mkdir(parents=True)
             (brief_dir / "OBPI-9.9.9-01-uncovered.md").write_text(
-                "---\nid: OBPI-9.9.9-01-uncovered\nlane: Heavy\n---\n\n"
+                "---\nid: OBPI-9.9.9-01-uncovered\nlane: Heavy\nstatus: Completed\n---\n\n"
                 "## Acceptance Criteria\n\n- [ ] REQ-9.9.9-01-01: something\n",
                 encoding="utf-8",
             )
@@ -92,7 +92,7 @@ class PromotedAdvisoryAudits(unittest.TestCase):
             brief_dir = root / "docs" / "design" / "adr" / "pool" / "ADR-pool.x" / "obpis"
             brief_dir.mkdir(parents=True)
             (brief_dir / "OBPI-9.9.9-01-pool.md").write_text(
-                "---\nid: OBPI-9.9.9-01-pool\nlane: Heavy\n---\n\n"
+                "---\nid: OBPI-9.9.9-01-pool\nlane: Heavy\nstatus: Completed\n---\n\n"
                 "## Acceptance Criteria\n\n- [ ] REQ-9.9.9-01-01: something\n",
                 encoding="utf-8",
             )
@@ -105,7 +105,7 @@ class PromotedAdvisoryAudits(unittest.TestCase):
             brief_dir = root / "docs" / "design" / "adr" / "foundation" / "ADR-x" / "obpis"
             brief_dir.mkdir(parents=True)
             (brief_dir / "OBPI-x-01.md").write_text(
-                "---\nid: OBPI-9.9.9-01-covered\nlane: Lite\n---\n\n"
+                "---\nid: OBPI-9.9.9-01-covered\nlane: Lite\nstatus: Completed\n---\n\n"
                 "## Acceptance Criteria\n\n- [ ] REQ-9.9.9-01-01: something\n",
                 encoding="utf-8",
             )
@@ -118,7 +118,7 @@ class PromotedAdvisoryAudits(unittest.TestCase):
             brief_dir = root / "docs" / "design" / "adr" / "foundation" / "ADR-x" / "obpis"
             brief_dir.mkdir(parents=True)
             (brief_dir / "OBPI-9.9.9-01-waived.md").write_text(
-                "---\nid: OBPI-9.9.9-01-waived\nlane: Heavy\n---\n\n"
+                "---\nid: OBPI-9.9.9-01-waived\nlane: Heavy\nstatus: Completed\n---\n\n"
                 "## Acceptance Criteria\n\n- [ ] REQ-9.9.9-01-01: something\n",
                 encoding="utf-8",
             )
@@ -131,6 +131,103 @@ class PromotedAdvisoryAudits(unittest.TestCase):
             )
             self.assertEqual(audit_behave_req_tags(root), [])
 
+    def test_behave_req_tags_rule_39_pre_implementation_excluded(self) -> None:
+        """GHI #323: heavy OBPI briefs in any pre-implementation status
+        (Draft / Pending / Proposed / etc.) are pre-implementation; the CLI
+        verbs / engines / hooks they name do not exist yet, so BDD scenarios
+        definitionally cannot exist. The validator skips these briefs per
+        ``.gzkit/rules/tests.md`` § Red-Green-Refactor (tests at
+        implementation time, not at brief-draft time).
+
+        The filter is INVERSE — only Completed/Validated fire — so future-
+        added pre-implementation states default to skip and do not silently
+        re-introduce the GHI #323 defect.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            brief_dir = root / "docs" / "design" / "adr" / "foundation" / "ADR-x" / "obpis"
+            brief_dir.mkdir(parents=True)
+            statuses = ("Draft", "Pending", "Proposed", "Withdrawn", "Superseded")
+            for idx, status in enumerate(statuses):
+                (brief_dir / f"OBPI-9.9.9-{idx + 1:02d}-{status.lower()}.md").write_text(
+                    "---\n"
+                    f"id: OBPI-9.9.9-{idx + 1:02d}-{status.lower()}\n"
+                    "lane: Heavy\n"
+                    f"status: {status}\n"
+                    "---\n\n"
+                    f"## Acceptance Criteria\n\n- [ ] REQ-9.9.9-{idx + 1:02d}-01: something\n",
+                    encoding="utf-8",
+                )
+            (root / "features").mkdir()  # no feature files
+            self.assertEqual(
+                audit_behave_req_tags(root),
+                [],
+                "Pre-implementation briefs must NOT trigger the validator",
+            )
+
+    def test_behave_req_tags_rule_39_unknown_status_defaults_skip(self) -> None:
+        """GHI #323: a brief with an unrecognized status (e.g. a hypothetical
+        future-added state) defaults to skip — the inverse filter is the
+        structural defense against re-introducing the pre-implementation
+        flagging defect."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            brief_dir = root / "docs" / "design" / "adr" / "foundation" / "ADR-x" / "obpis"
+            brief_dir.mkdir(parents=True)
+            (brief_dir / "OBPI-9.9.9-01-future.md").write_text(
+                "---\n"
+                "id: OBPI-9.9.9-01-future\n"
+                "lane: Heavy\n"
+                "status: ImplementationActive\n"
+                "---\n\n"
+                "## Acceptance Criteria\n\n- [ ] REQ-9.9.9-01-01: something\n",
+                encoding="utf-8",
+            )
+            (root / "features").mkdir()
+            self.assertEqual(audit_behave_req_tags(root), [])
+
+    def test_behave_req_tags_rule_39_missing_status_defaults_skip(self) -> None:
+        """GHI #323: a brief without any ``status:`` field defaults to skip.
+        Briefs predating the lifecycle convention should not silently flag."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            brief_dir = root / "docs" / "design" / "adr" / "foundation" / "ADR-x" / "obpis"
+            brief_dir.mkdir(parents=True)
+            (brief_dir / "OBPI-9.9.9-01-no-status.md").write_text(
+                "---\nid: OBPI-9.9.9-01-no-status\nlane: Heavy\n---\n\n"
+                "## Acceptance Criteria\n\n- [ ] REQ-9.9.9-01-01: something\n",
+                encoding="utf-8",
+            )
+            (root / "features").mkdir()
+            self.assertEqual(audit_behave_req_tags(root), [])
+
+    def test_behave_req_tags_rule_39_completed_and_validated_enforced(self) -> None:
+        """GHI #323: the lifecycle filter is narrow — Completed and
+        Validated briefs without BDD coverage still flag. The two post-
+        implementation states are the only ones the validator fires on."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            brief_dir = root / "docs" / "design" / "adr" / "foundation" / "ADR-x" / "obpis"
+            brief_dir.mkdir(parents=True)
+            for idx, status in enumerate(("Completed", "Validated")):
+                (brief_dir / f"OBPI-9.9.9-{idx + 1:02d}-{status.lower()}.md").write_text(
+                    "---\n"
+                    f"id: OBPI-9.9.9-{idx + 1:02d}-{status.lower()}\n"
+                    "lane: Heavy\n"
+                    f"status: {status}\n"
+                    "---\n\n"
+                    f"## Acceptance Criteria\n\n- [ ] REQ-9.9.9-{idx + 1:02d}-01: something\n",
+                    encoding="utf-8",
+                )
+            (root / "features").mkdir()
+            errors = audit_behave_req_tags(root)
+            self.assertEqual(len(errors), 2, "both Completed and Validated must flag")
+            error_ids = {e.message.split("`")[1] for e in errors}
+            self.assertEqual(
+                error_ids,
+                {"OBPI-9.9.9-01-completed", "OBPI-9.9.9-02-validated"},
+            )
+
     def test_behave_req_tags_rule_39_covered_passes(self) -> None:
         """Heavy OBPI with every REQ tagged at scenario level must pass."""
         with tempfile.TemporaryDirectory() as tmp:
@@ -138,7 +235,7 @@ class PromotedAdvisoryAudits(unittest.TestCase):
             brief_dir = root / "docs" / "design" / "adr" / "foundation" / "ADR-x" / "obpis"
             brief_dir.mkdir(parents=True)
             (brief_dir / "OBPI-x-01.md").write_text(
-                "---\nid: OBPI-9.9.9-01-covered\nlane: Heavy\n---\n\n"
+                "---\nid: OBPI-9.9.9-01-covered\nlane: Heavy\nstatus: Completed\n---\n\n"
                 "## Acceptance Criteria\n\n- [ ] REQ-9.9.9-01-01: something\n",
                 encoding="utf-8",
             )
