@@ -245,5 +245,87 @@ class TestListTemplates(unittest.TestCase):
         self.assertIn("agents", names)
 
 
+class TestObpiDiscoveryChecklistOrder(unittest.TestCase):
+    """Discovery Checklist pins parent-ADR § Decision read first.
+
+    Closes GHI #321. Anthropic Prompt Engineering 101 'order matters'
+    discipline applied to OBPI authoring: the agent must read the
+    structured input (parent ADR § Decision) before the unstructured one
+    (allowed paths, prerequisites). Without this pin agents grep
+    backward from keywords rather than tracing forward from the parent
+    ADR's Decision (Opus 4.7 § 2.3.6.2 failure pattern).
+    """
+
+    def setUp(self) -> None:
+        self.content = load_template("obpi")
+        self.checklist = self._extract_section(self.content, "## Discovery Checklist")
+
+    @staticmethod
+    def _extract_section(content: str, heading: str) -> str:
+        start = content.find(heading)
+        if start < 0:
+            raise AssertionError(f"Heading {heading!r} not found in template")
+        next_h2 = content.find("\n## ", start + len(heading))
+        end = next_h2 if next_h2 > 0 else len(content)
+        return content[start:end]
+
+    def test_parent_adr_decision_pin_appears_before_governance_block(self) -> None:
+        """Parent ADR § Decision read precedes the Governance read block."""
+        decision_pin = self.checklist.find("Parent ADR § Decision")
+        governance_marker = self.checklist.find("Governance")
+        self.assertGreaterEqual(
+            decision_pin,
+            0,
+            "Discovery Checklist must pin Parent ADR § Decision read",
+        )
+        self.assertGreaterEqual(governance_marker, 0)
+        self.assertLess(
+            decision_pin,
+            governance_marker,
+            "Parent ADR § Decision pin must appear before the Governance block",
+        )
+
+    def test_parent_adr_intent_frames_decision_read(self) -> None:
+        """Parent ADR § Intent appears as the why-frame for the Decision read."""
+        decision_pin = self.checklist.find("Parent ADR § Decision")
+        intent_pin = self.checklist.find("Parent ADR § Intent")
+        self.assertGreaterEqual(
+            intent_pin,
+            0,
+            "Discovery Checklist must reference Parent ADR § Intent",
+        )
+        self.assertLess(
+            decision_pin,
+            intent_pin,
+            "Decision pin (item #1) precedes the Intent frame (item #2)",
+        )
+
+    def test_decision_pin_includes_quote_instruction(self) -> None:
+        """The Decision pin instructs the agent to quote the implementing line."""
+        decision_idx = self.checklist.find("Parent ADR § Decision")
+        window = self.checklist[decision_idx : decision_idx + 300]
+        self.assertIn(
+            "quote",
+            window.lower(),
+            "Decision pin must instruct the agent to quote the implementing line",
+        )
+
+    def test_stop_guard_below_decision_pin_references_decision(self) -> None:
+        """A STOP guard below the Decision pin closes the unquoted-Decision failure mode."""
+        decision_idx = self.checklist.find("Parent ADR § Decision")
+        stop_after = self.checklist.find("STOP", decision_idx + 1)
+        self.assertGreater(
+            stop_after,
+            decision_idx,
+            "A STOP guard must follow the Decision pin",
+        )
+        stop_window = self.checklist[stop_after : stop_after + 250]
+        self.assertIn(
+            "Decision",
+            stop_window,
+            "STOP guard must reference the Decision item it pins",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

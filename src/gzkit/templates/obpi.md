@@ -52,17 +52,25 @@ status: Draft
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first. -->
+<!-- What to read before implementation. Complete this checklist first.
+     Order matters: read the structured input (parent ADR § Decision)
+     before the unstructured one (allowed paths, prerequisites). -->
+
+**Parent ADR (read first; order pinned — GHI #321):**
+
+- [ ] **Parent ADR § Decision item — quote the line this OBPI implements** verbatim into the brief's Implementation Summary. The Decision item is the contract; everything else hangs off it.
+- [ ] Parent ADR § Intent — the why-frame for the Decision read above.
+- [ ] Parent ADR file: `{parent_adr_path}`
+
+> **STOP:** If you cannot quote the parent ADR § Decision item that this OBPI implements, STOP and re-read. Do not proceed to Allowed Paths, Prerequisites, or implementation until the Decision quote is in hand.
 
 **Governance (read once, cache):**
 
 - [ ] `.github/discovery-index.json` - repo structure
 - [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
 
 **Context:**
 
-- [ ] Parent ADR: `{parent_adr_path}`
 - [ ] Related OBPIs in same ADR
 
 **Prerequisites (check existence, STOP if missing):**
