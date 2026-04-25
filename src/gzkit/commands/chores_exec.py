@@ -23,6 +23,7 @@ from gzkit.commands.chores import (
     ChoreDefinition,
     CriterionResult,
 )
+from gzkit.commands.common import GzCliError
 
 
 def _parse_command_to_argv(
@@ -129,32 +130,29 @@ def _parse_criterion(
 
 
 def _load_acceptance(
-    project_root: Path,
-    chore_path: str,
+    chore_dir: Path,
     chore_slug: str,
     blockers: list[str],
 ) -> tuple[AcceptanceCriterion, ...]:
-    """Load and validate acceptance.json from a chore directory."""
-    acceptance_file = project_root / chore_path / "acceptance.json"
-    if not acceptance_file.exists():
-        blockers.append(
-            f"Missing acceptance.json for chore '{chore_slug}': {chore_path}/acceptance.json"
-        )
+    """Load and validate acceptance.json from a resolved chore directory."""
+    acceptance_file = chore_dir / "acceptance.json"
+    if not acceptance_file.is_file():
+        blockers.append(f"Missing acceptance.json for chore '{chore_slug}': {acceptance_file}")
         return ()
 
     try:
         payload = json.loads(acceptance_file.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
-        blockers.append(f"Invalid JSON in {chore_path}/acceptance.json: {exc.msg}")
+        blockers.append(f"Invalid JSON in {acceptance_file}: {exc.msg}")
         return ()
 
     if not isinstance(payload, dict):
-        blockers.append(f"{chore_path}/acceptance.json root must be a JSON object.")
+        blockers.append(f"{acceptance_file} root must be a JSON object.")
         return ()
 
     criteria_raw = payload.get("criteria")
     if not isinstance(criteria_raw, list) or not criteria_raw:
-        blockers.append(f"{chore_path}/acceptance.json must have a non-empty 'criteria' array.")
+        blockers.append(f"{acceptance_file} must have a non-empty 'criteria' array.")
         return ()
 
     parsed: list[AcceptanceCriterion] = []
@@ -174,7 +172,12 @@ def _parse_chore_pointer(
     blockers: list[str],
 ) -> ChoreDefinition | None:
     """Parse one v2.0 chore pointer from the registry."""
-    from gzkit.commands.chores import ALLOWED_LANES, CHORE_SLUG_RE, LANE_TIMEOUTS  # noqa: PLC0415
+    from gzkit.commands.chores import (  # noqa: PLC0415
+        ALLOWED_LANES,
+        CHORE_SLUG_RE,
+        LANE_TIMEOUTS,
+        _resolve_chore_dir,
+    )
 
     if not isinstance(raw_chore, dict):
         blockers.append(f"chores[{index}] must be an object.")
@@ -209,16 +212,16 @@ def _parse_chore_pointer(
     if not isinstance(path_raw, str) or not path_raw.strip():
         blockers.append(f"chores[{slug}].path must be a non-empty string.")
         return None
-    chore_path = path_raw.strip()
+    declared_path = path_raw.strip()
 
-    chore_dir = project_root / chore_path
-    if not chore_dir.is_dir():
-        blockers.append(f"Chore directory not found: {chore_path}")
+    try:
+        resolved = _resolve_chore_dir(slug)
+    except GzCliError as exc:
+        blockers.append(str(exc))
         return None
 
     criteria = _load_acceptance(
-        project_root,
-        chore_path,
+        resolved.path,
         slug,
         blockers,
     )
@@ -235,10 +238,11 @@ def _parse_chore_pointer(
         title=title,
         lane=lane,
         version=version,
-        path=chore_path,
+        path=declared_path,
         criteria=criteria,
         timeout_seconds=timeout,
         vendor=vendor,
+        resolution_source=resolved.source,
     )
 
 

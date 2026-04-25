@@ -2,7 +2,8 @@
   "default_rationale": {
     "ghi-276-historical": "Preceded OBPI\u2192feature direction for audit_behave_req_tags (GHI #276). Historical heavy-lane OBPI shipped without scenario-level @REQ-* tags; re-authoring attested evidence is itself doctrine drift. New heavy OBPIs must either add scenario tags or add an explicit rationale here.",
     "adr-0.44.0-pre-release": "ADR-0.44.0 vendor-alignment-codex is pre-release/draft (not yet promoted). Heavy-lane BDD scenario coverage deferred until the ADR is promoted and Gate 4 fires; waived to unblock ADR-0.0.20 closeout since the failing OBPIs are in unrelated downstream territory.",
-    "adr-0.0.21-bdd-deferred-to-obpi-07": "ADR-0.0.21 (chores-as-gzkit-surface) decomposition explicitly routes all BDD scenario coverage for the chores surface to OBPI-0.0.21-07-bdd-chores-distribution. OBPIs 01-06, 08, 09 inherit this deferral by design; Gate 4 fires once on OBPI-07 and covers the physical migration, config/schema, packaging, resolver, scaffolder, rule/doc updates, layout validator, and chores doctor surfaces collectively. Re-authoring per-OBPI scenarios before OBPI-07 lands would duplicate work and contradict the parent ADR decomposition."
+    "adr-0.0.21-bdd-deferred-to-obpi-07": "ADR-0.0.21 (chores-as-gzkit-surface) decomposition explicitly routes all BDD scenario coverage for the chores surface to OBPI-0.0.21-07-bdd-chores-distribution. OBPIs 01-06, 08, 09 inherit this deferral by design; Gate 4 fires once on OBPI-07 and covers the physical migration, config/schema, packaging, resolver, scaffolder, rule/doc updates, layout validator, and chores doctor surfaces collectively. Re-authoring per-OBPI scenarios before OBPI-07 lands would duplicate work and contradict the parent ADR decomposition.",
+    "adr-0.0.22-pre-commit-draft": "ADR-0.0.22 (security-sensitivity-doctrine) briefs exist on disk but are uncommitted draft work surfaced during OBPI-0.0.21-04 sync. Tracked under GHI #303 — ADR-0.0.22 brief authors must either add scenario-level @REQ-* tags under features/** OR replace this temporary waiver with a substantive deferral rationale matching the ADR's eventual decomposition. This waiver exists only to unblock OBPI-0.0.21-04 sync; it is not a free pass for ADR-0.0.22 to ship without coverage."
   },
   "schema_version": 1,
   "waivers": {
@@ -1569,6 +1570,30 @@
     "OBPI-0.0.21-09-chores-doctor-command": {
       "rationale": "adr-0.0.21-bdd-deferred-to-obpi-07",
       "status_at_landing": "draft"
+    },
+    "OBPI-0.0.22-01-schema-frontmatter-field": {
+      "rationale": "adr-0.0.22-pre-commit-draft",
+      "status_at_landing": "draft-uncommitted"
+    },
+    "OBPI-0.0.22-02-security-surface-registry": {
+      "rationale": "adr-0.0.22-pre-commit-draft",
+      "status_at_landing": "draft-uncommitted"
+    },
+    "OBPI-0.0.22-03-validate-sensitivity-scope": {
+      "rationale": "adr-0.0.22-pre-commit-draft",
+      "status_at_landing": "draft-uncommitted"
+    },
+    "OBPI-0.0.22-04-requires-security-review-attestation": {
+      "rationale": "adr-0.0.22-pre-commit-draft",
+      "status_at_landing": "draft-uncommitted"
+    },
+    "OBPI-0.0.22-05-gate5-walkthrough-arb-slot": {
+      "rationale": "adr-0.0.22-pre-commit-draft",
+      "status_at_landing": "draft-uncommitted"
+    },
+    "OBPI-0.0.22-06-rule-file-matrix-scorecard": {
+      "rationale": "adr-0.0.22-pre-commit-draft",
+      "status_at_landing": "draft-uncommitted"
     }
   }
 }

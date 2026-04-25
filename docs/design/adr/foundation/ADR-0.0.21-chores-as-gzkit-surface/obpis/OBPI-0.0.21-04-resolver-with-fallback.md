@@ -3,7 +3,7 @@ id: OBPI-0.0.21-04-resolver-with-fallback
 parent: ADR-0.0.21-chores-as-gzkit-surface
 item: 4
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.21-04-resolver-with-fallback: Resolver with Package-Resource Fallback
@@ -180,20 +180,47 @@ uv run gz typecheck
 Before: `gz chores list` in a freshly-installed project errored with `FileNotFoundError: config/gzkit.chores.json`. After: the same command resolves canonical chores via `importlib.resources` and tells the operator (via `--explain` and log events) that the fallback fired.
 
 ### Key Proof
-```bash
-$ uv run gz chores list --explain 2>&1 | head -5
-Chore                                    Lane    Source
-coverage-40pct                           lite    project
-dependency-currency                      lite    project
-memory-hygiene                           lite    package    (fallback; scaffolder may need re-run)
+
+```text
+$ uv run gz chores list 2>/dev/null  # default surface — pre-OBPI shape preserved (REQ-07)
+                                Chores Registry
+┃ Slug ┃ Lane ┃ Version ┃ Vendor ┃ Criteria ┃ Title ┃
+…
+
+$ uv run gz chores list --explain  # source labels per row (REQ-04, REQ-06)
+… added "Source" column with project / package (fallback; …) / missing values
+
+$ uv run gz chores show nonexistent-slug 2>&1
+BLOCKERS:
+- Chore 'nonexistent-slug' not found in either resolution path:
+    - project: /…/.gzkit/chores/nonexistent-slug (path: .gzkit/chores/nonexistent-slug)
+    - package: importlib.resources('gzkit.chores')/nonexistent-slug (at /…)
+  Hint: run `gz init` to scaffold .gzkit/chores/, or verify the slug spelling.
+
+# Live structured log on every fallback hit (REQ-05):
+chore.resolver.fallback  slug=quality-check  paths_chores=.gzkit/chores
+  project_path=/…/.gzkit/chores/quality-check
+  package_path=/…/src/gzkit/chores/quality-check
 ```
 
+ARB receipts (Heavy-lane attestation):
+
+- lint: `arb-ruff-3f0a3c4f0184463596f440640f3bd9d5`
+- typecheck: `arb-step-typecheck-5ce4e516962641a59591b91bd81b1219`
+- unittest: `arb-step-unittest-06f6452b5c3f43a4afcc5324e1b94b5e` (24/24 pass)
+- mkdocs: `arb-step-mkdocs-a70e104ca2374521ad5915b12e94a8f9`
+
 ### Implementation Summary
-- Files created/modified: `src/gzkit/commands/chores.py`, `src/gzkit/commands/chores_exec.py`, `tests/commands/test_chores.py`
-- Tests added: 4 REQ-derived
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Resolver: replaced legacy `Path("config/gzkit.chores.json")` constant with `_resolve_chore_dir(slug)` and `_resolve_registry()` — both probe `<project_root>/<config.paths.chores>/` first, fall back to `importlib.resources.files("gzkit.chores")`, raise `GzCliError` on both-miss with both paths in the message.
+- Diagnostic: new `_format_resolution_miss` produces the operator-facing error with literal substrings `.gzkit/chores/<slug>` AND `importlib.resources` + `gzkit.chores` (REQ-03).
+- Logging: structlog logger at module level emits `chore.resolver.fallback` with `slug`, `project_path`, `package_path`, `paths_chores` on every fallback hit (REQ-05).
+- CLI surface: `gz chores list --explain` adds a `Source` column labelling each row `project` / `package (fallback; scaffolder may need re-run)` / `missing` (REQ-04, REQ-06). Default surface unchanged (REQ-07 regression protection).
+- Model: `ChoreDefinition.resolution_source: Literal["project","package"]|None` and new `ResolvedPath` Pydantic model (frozen, extra="forbid").
+- Files: `src/gzkit/commands/chores.py`, `src/gzkit/commands/chores_exec.py`, `src/gzkit/cli/parser_maintenance.py`, `tests/commands/test_chores.py`.
+- Tests: 7 new REQ-derived tests in `TestChoreResolver`; bulk path migration of 14 legacy tests from `ops/chores/` → `.gzkit/chores/` to align with the resolver's slug-based probe.
+- REQ parity: 7/7 (100%) per `gz covers OBPI-0.0.21-04 --json`.
+- Tracked defects: registry `path` field drift in `src/gzkit/chores/registry.json` (entries reference removed `ops/chores/` location); pre-existing behave_req_tags failure on untracked ADR-0.0.22 — both routed to GHIs in this same Stage 5.
 
 ## Tracked Defects
 
@@ -201,14 +228,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>`
-- Attestation: `<verbatim user words> — <session-grounded enrichment>`
-- Date: YYYY-MM-DD
+- Attestor: `g0`
+- Attestation: attest completed — Heavy + Foundation OBPI-0.0.21-04 ships the chores resolver: project-first lookup at `<project_root>/<config.paths.chores>/<slug>/`, `importlib.resources.files("gzkit.chores")` fallback, structured `chore.resolver.fallback` log event on every fallback hit, `gz chores list --explain` surfacing per-row source, and a both-paths-named diagnostic on miss. 7 REQ-derived tests authored RED-then-GREEN per increment; 7/7 REQ parity per `gz covers`; 24/24 chores unittest pass; full suite 3565/3566 pass with the single failure pre-existing on the untracked ADR-0.0.22 surface (flagged for GHI). Receipts: lint arb-ruff-3f0a3c4f0184463596f440640f3bd9d5; typecheck arb-step-typecheck-5ce4e516962641a59591b91bd81b1219; tests arb-step-unittest-06f6452b5c3f43a4afcc5324e1b94b5e; docs arb-step-mkdocs-a70e104ca2374521ad5915b12e94a8f9.
+- Date: 2026-04-25
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-25
 
 **Evidence Hash:** -
