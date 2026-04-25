@@ -5,7 +5,7 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.14.0"
+skill-version: "6.14.1"
 last_reviewed: 2026-04-25
 ---
 
@@ -484,7 +484,7 @@ fires only when the incantation would overflow.
 > a cell, the fix is to shorten the cell, not to add a second rendering.
 > When any cell (Mechanism, `@covers` location, Test Coverage) would
 > exceed ~40 characters — long structural assertions like
-> `test ! -e config/gzkit.chores.json`, multi-flag `uv run` invocations,
+> `test -d .gzkit/chores/<slug>/proofs && test -s ...`, multi-flag `uv run` invocations,
 > file lists, or SHA-bearing paths — hold a short label in the cell
 > (e.g. `req-01:absence-check`, `req-02:scoped-tests`) and render the
 > full incantation in a single fenced code block beneath the table,

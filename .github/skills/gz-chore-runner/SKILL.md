@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-04-12
 metadata:
-  skill-version: "1.1.1"
+  skill-version: "1.1.2"
 ---
 
 # chore-runner
@@ -18,14 +18,14 @@ Execute a repository chore using the canonical `gz chores` workflow.
 
 ## Inputs
 
-- `chore_slug`: Chore identifier from `config/gzkit.chores.json`.
+- `chore_slug`: Chore identifier from the chores registry (`uv run gz chores list`).
 - `lane`: The configured lane reported by `gz chores show` (lite, medium, or heavy).
 
 ## Outputs
 
 - Updated repository files (as defined by the chore).
 - Green validation run for the configured lane.
-- Execution log in `ops/chores/{slug}/proofs/CHORE-LOG.md`.
+- Execution log in `.gzkit/chores/{slug}/proofs/CHORE-LOG.md`.
 
 ## Procedure
 
@@ -55,7 +55,7 @@ Execute a repository chore using the canonical `gz chores` workflow.
 
 5. If criteria fail, read the CHORE.md workflow and implement fixes:
 
-   - Read `ops/chores/<chore_slug>/CHORE.md` for the remediation procedure
+   - Read `.gzkit/chores/<chore_slug>/CHORE.md` (project overlay) or the package-shipped canonical at `src/gzkit/chores/<chore_slug>/CHORE.md` for the remediation procedure
    - Apply fixes surgically — minimal diffs, preserve behavior
    - Iterate: fix, validate, repeat
 
@@ -95,7 +95,7 @@ Execute a repository chore using the canonical `gz chores` workflow.
 - Uses `uv run gz chores ...` commands (no ad-hoc variants).
 - Does not introduce new dependencies.
 - Leaves the repo in a validated state for the configured lane.
-- Evidence is saved to `ops/chores/{slug}/proofs/`.
+- Evidence is saved to `.gzkit/chores/{slug}/proofs/`.
 
 ## Common Rationalizations
 
@@ -117,6 +117,6 @@ These thoughts mean STOP — you are about to ship a chore that broke its own di
 - Modifying files outside the chore's declared scope
 - Adding dependencies, scripts, or config keys not part of the chore contract
 - Running `gz chores run` before validation passes
-- No proof file written to `ops/chores/{slug}/proofs/`
+- No proof file written to `.gzkit/chores/{slug}/proofs/`
 - Mixing two chores in one execution (collision)
 - Ad-hoc command variants instead of `uv run gz chores ...`
