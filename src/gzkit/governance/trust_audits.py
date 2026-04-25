@@ -950,10 +950,21 @@ _OBPI_ID_IN_FRONTMATTER = re.compile(
     re.MULTILINE,
 )
 _LANE_IN_FRONTMATTER = re.compile(r"^lane:\s*([A-Za-z]+)\s*$", re.MULTILINE)
+_STATUS_IN_FRONTMATTER = re.compile(r"^status:\s*([A-Za-z]+)\s*$", re.MULTILINE)
 _ACCEPTANCE_SECTION = re.compile(
     r"^##\s+Acceptance Criteria\s*$(.*?)(?=^##\s+|\Z)",
     re.MULTILINE | re.DOTALL,
 )
+
+# Brief lifecycle states whose BDD coverage gate is in scope for the
+# `behave_req_tags` validator. BDD coverage is an implementation-time gate
+# per `.gzkit/rules/tests.md` § Red-Green-Refactor; only briefs in a post-
+# implementation state can have BDD coverage to validate. Pre-implementation
+# states (Draft, Pending, Proposed, etc.) and terminal-but-not-implemented
+# states (Withdrawn, Superseded) are excluded by inverse filter — defaulting
+# to skip means future-added statuses do not silently re-introduce the
+# pre-implementation flagging defect (GHI #323).
+_BDD_GATED_BRIEF_STATUSES = frozenset({"completed", "validated"})
 
 
 def _load_behave_coverage_waivers(project_root: Path) -> dict[str, str]:
@@ -1010,6 +1021,10 @@ def _extract_heavy_obpi_briefs(project_root: Path) -> list[tuple[Path, str, list
             continue
         lane_match = _LANE_IN_FRONTMATTER.search(text)
         if not lane_match or lane_match.group(1).lower() != "heavy":
+            continue
+        status_match = _STATUS_IN_FRONTMATTER.search(text)
+        status_value = status_match.group(1).lower() if status_match else ""
+        if status_value not in _BDD_GATED_BRIEF_STATUSES:
             continue
         id_match = _OBPI_ID_IN_FRONTMATTER.search(text)
         if not id_match:
