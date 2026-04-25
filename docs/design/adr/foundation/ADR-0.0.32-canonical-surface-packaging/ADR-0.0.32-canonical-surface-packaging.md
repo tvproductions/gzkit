@@ -143,21 +143,25 @@ canonical content from the wheel.
 - Baseline Selected: 4
 - Split Single-Narrative: 1
 - Split Surface Boundary: 1
-- Split State Anchor: 0
-- Split Testability Ceiling: 0
-- Split Total: 2
-- Final Target OBPI Count: 6
+- Split State Anchor: 1
+- Split Testability Ceiling: 1
+- Split Total: 4
+- Final Target OBPI Count: 8
 
 ## Checklist
 
-<!-- Each item becomes an OBPI (One Brief Per Item). Sequential numbering, no gaps. -->
+<!-- Each item becomes an OBPI (One Brief Per Item). Sequential numbering, no gaps.
+     Mirrors the ADR-0.0.21 chores precedent — physical migration is its own OBPI,
+     separate from the scaffolder/resolver work that depends on it. -->
 
-- [ ] OBPI-0.0.32-01: Promote `.gzkit/skills/<slug>/SKILL.md` → `src/gzkit/skills/<slug>/SKILL.md` two-surface layout; convert `src/gzkit/skills.py` → `src/gzkit/skills/__init__.py`; refactor `scaffold_core_skills` to copy canonical package content (eliminate stub-template path)
-- [ ] OBPI-0.0.32-02: Author `src/gzkit/rules/` package surface; convert `src/gzkit/rules.py` → `src/gzkit/rules/__init__.py`; build `CORE_RULES` registry, `scaffold_core_rules`; integrate with `init_cmd.py` and `_repair_missing_artifacts`
-- [ ] OBPI-0.0.32-03: Add `gz init --update` flag with version-aware refresh + manpage + behave coverage
-- [ ] OBPI-0.0.32-04: Author T0 smoke test (build wheel, install into temp venv, run `gz init`, assert byte-equivalence against frozen baseline manifest); audit and extend `pyproject.toml [tool.hatch.build.targets.wheel] include:`
-- [ ] OBPI-0.0.32-05: Extend `gz validate --surfaces` (or add `--distribution`) with T0 enforcement — verify every canonical surface in manifest is wheel-deliverable; fail-closed exit 3 on any package-data omission
-- [ ] OBPI-0.0.32-06: Sync mirrors after surfaces promote: `.claude/skills/`, `.claude/rules/`, `.github/skills/`, `.github/instructions/` regenerated from new package surface; verify `gz agent sync control-surfaces` no-ops cleanly post-promotion
+- [ ] OBPI-0.0.32-01: Skills physical migration — `git mv .gzkit/skills/<slug>/SKILL.md src/gzkit/skills/<slug>/SKILL.md` for all 61 canonical skills; convert `src/gzkit/skills.py` → `src/gzkit/skills/__init__.py` preserving every public symbol re-export. Scaffolder refactor explicitly deferred to OBPI-02.
+- [ ] OBPI-0.0.32-02: Skills scaffolder refactor — refactor `scaffold_core_skills` to copy canonical SKILL.md content from `importlib.resources.files("gzkit.skills")`; implement project-first → package-fallback resolution; delete (or document repurposing of) `src/gzkit/templates/skill.md`. Depends on OBPI-01 landing first.
+- [ ] OBPI-0.0.32-03: Rules physical migration — `git mv .gzkit/rules/<slug>.md src/gzkit/rules/<slug>.md` for all 14 canonical rules; convert `src/gzkit/rules.py` → `src/gzkit/rules/__init__.py` preserving every public symbol re-export. Registry + scaffolder + init wiring explicitly deferred to OBPI-04.
+- [ ] OBPI-0.0.32-04: Rules scaffolder authoring — build `CORE_RULES` registry symmetric to `CORE_SKILLS`/`CORE_CHORES`; author `scaffold_core_rules` mirroring `scaffold_core_chores` semantics; integrate with `init_cmd._scaffold_project_skeleton` (fresh init) and `_repair_missing_artifacts` (re-run repair). Depends on OBPI-03 landing first.
+- [ ] OBPI-0.0.32-05: Add `gz init --update` flag with version-aware refresh + three-state detection (IDENTICAL/STALE/EDITED) + manpage + behave coverage
+- [ ] OBPI-0.0.32-06: Author T0 smoke test (build wheel, install into temp venv, run `gz init`, assert byte-equivalence against frozen baseline manifest); audit and extend `pyproject.toml [tool.hatch.build.targets.wheel] include:`; author `data/distribution_baseline_manifest.json`
+- [ ] OBPI-0.0.32-07: Extend `gz validate --surfaces` (or add `--distribution`) with T0 enforcement — verify every canonical surface in manifest is wheel-deliverable; fail-closed exit 3 on any package-data omission; flip T0 scorecard Promotable→Mechanical
+- [ ] OBPI-0.0.32-08: Sync mirrors after surfaces promote: `.claude/skills/`, `.claude/rules/`, `.github/skills/`, `.github/instructions/` regenerated from new package surface; verify `gz agent sync control-surfaces` no-ops cleanly post-promotion
 
 ## Q&A Transcript
 

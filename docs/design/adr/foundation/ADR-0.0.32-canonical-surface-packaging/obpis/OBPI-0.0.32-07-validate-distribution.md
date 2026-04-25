@@ -1,12 +1,12 @@
 ---
-id: OBPI-0.0.32-05-validate-distribution
+id: OBPI-0.0.32-07-validate-distribution
 parent: ADR-0.0.32-canonical-surface-packaging
 item: 5
 lane: Heavy
 status: Draft
 ---
 
-# OBPI-0.0.32-05-validate-distribution: gz validate --distribution Scope
+# OBPI-0.0.32-07-validate-distribution: gz validate --distribution Scope
 
 ## ADR Item
 
@@ -127,7 +127,7 @@ Promote the T0 distribution invariant from advisory doctrine (ADR-0.0.31) to mec
 
 ### Gate 4: BDD (Heavy)
 
-- [ ] At least one scenario in `features/validate.feature` (or equivalent) exercises `gz validate --distribution` against a fixture with each drift class; tagged `@REQ-0.0.32-05-NN`
+- [ ] At least one scenario in `features/validate.feature` (or equivalent) exercises `gz validate --distribution` against a fixture with each drift class; tagged `@REQ-0.0.32-07-NN`
 
 ### Gate 5: Human (Heavy + Foundation — brief-level)
 
@@ -148,22 +148,22 @@ uv run gz validate --distribution                                  # expect exit
 git clean -fd src/gzkit/skills/test-untracked/                      # add an untracked canonical file
 uv run gz validate --distribution                                   # expect exit 3 with ON_DISK_NOT_INCLUDED report
 
-uv run -m behave features/validate.feature --tags=@REQ-0.0.32-05-01
+uv run -m behave features/validate.feature --tags=@REQ-0.0.32-07-01
 ```
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.32-05-01: `gz validate --distribution` (or `--surfaces` extended) exists as a documented scope and appears in `gz validate --help`
-- [ ] REQ-0.0.32-05-02: ON_DISK_NOT_INCLUDED drift class detected; per-violation report names file, glob context, and resolution hint
-- [ ] REQ-0.0.32-05-03: BASELINE_NOT_ON_DISK drift class detected; per-violation report names manifest entry and resolution hint
-- [ ] REQ-0.0.32-05-04: ON_DISK_NOT_BASELINE drift class detected; per-violation report names file and resolution hint
-- [ ] REQ-0.0.32-05-05: Clean state exits 0; any drift exits 3
-- [ ] REQ-0.0.32-05-06: Malformed `pyproject.toml` exits 2 (system error), not 3 (policy breach)
-- [ ] REQ-0.0.32-05-07: Static-only — no `uv build` / `hatch build` subprocess invocations
-- [ ] REQ-0.0.32-05-08: `docs/user/manpages/gz-validate.md` documents the scope, drift classes, exit codes, recovery example
-- [ ] REQ-0.0.32-05-09: T0 scorecard entry flipped Promotable → Mechanical in `docs/governance/advisory-rules-audit.md`
-- [ ] REQ-0.0.32-05-10: `uv run gz check` exits 0 with the new scope registered
-- [ ] REQ-0.0.32-05-11: Behave scenario `@REQ-0.0.32-05-01` exercises at least one drift class against a fixture and passes
+- [ ] REQ-0.0.32-07-01: `gz validate --distribution` (or `--surfaces` extended) exists as a documented scope and appears in `gz validate --help`
+- [ ] REQ-0.0.32-07-02: ON_DISK_NOT_INCLUDED drift class detected; per-violation report names file, glob context, and resolution hint
+- [ ] REQ-0.0.32-07-03: BASELINE_NOT_ON_DISK drift class detected; per-violation report names manifest entry and resolution hint
+- [ ] REQ-0.0.32-07-04: ON_DISK_NOT_BASELINE drift class detected; per-violation report names file and resolution hint
+- [ ] REQ-0.0.32-07-05: Clean state exits 0; any drift exits 3
+- [ ] REQ-0.0.32-07-06: Malformed `pyproject.toml` exits 2 (system error), not 3 (policy breach)
+- [ ] REQ-0.0.32-07-07: Static-only — no `uv build` / `hatch build` subprocess invocations
+- [ ] REQ-0.0.32-07-08: `docs/user/manpages/gz-validate.md` documents the scope, drift classes, exit codes, recovery example
+- [ ] REQ-0.0.32-07-09: T0 scorecard entry flipped Promotable → Mechanical in `docs/governance/advisory-rules-audit.md`
+- [ ] REQ-0.0.32-07-10: `uv run gz check` exits 0 with the new scope registered
+- [ ] REQ-0.0.32-07-11: Behave scenario `@REQ-0.0.32-07-01` exercises at least one drift class against a fixture and passes
 
 ## Completion Checklist
 
@@ -201,7 +201,7 @@ uv run -m behave features/validate.feature --tags=@REQ-0.0.32-05-01
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave scenario output for @REQ-0.0.32-05-01
+# Paste behave scenario output for @REQ-0.0.32-07-01
 ```
 
 ### Gate 5 (Human)
