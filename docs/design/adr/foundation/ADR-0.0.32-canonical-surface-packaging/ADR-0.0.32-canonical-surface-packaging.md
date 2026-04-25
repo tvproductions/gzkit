@@ -139,8 +139,8 @@ canonical content from the wheel.
 - Observability: 1
 - Lineage: 2
 - Dimension Total: 8
-- Baseline Range: 4
-- Baseline Selected: 6
+- Baseline Range: 4-4
+- Baseline Selected: 4
 - Split Single-Narrative: 1
 - Split Surface Boundary: 1
 - Split State Anchor: 0
