@@ -6,7 +6,72 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from gzkit.commands.quality import _test_name_from_record
 from gzkit.quality import QualityResult, run_adr_path_contract_lint, run_command, run_skill_audit
+from gzkit.triangle import EdgeType, LinkageRecord, VertexRef, VertexType
+
+
+class TestObpiTestNameResolution(unittest.TestCase):
+    """`gz test --obpi` must hand unittest dotted names, not file paths (GHI #302)."""
+
+    def test_decorator_form_returns_module_dot_qualname(self) -> None:
+        """Decorator-form @covers yields ``<module>.<TestClass>.<method>``."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            test_file = root / "tests" / "commands" / "test_foo.py"
+            test_file.parent.mkdir(parents=True)
+            test_file.write_text("# placeholder\n", encoding="utf-8")
+
+            record = LinkageRecord(
+                source=VertexRef(
+                    vertex_type=VertexType.TEST,
+                    identifier="TestFoo.test_bar",
+                    location=str(test_file),
+                    line=10,
+                ),
+                target=VertexRef(vertex_type=VertexType.SPEC, identifier="REQ-0.0.21-02-01"),
+                edge_type=EdgeType.COVERS,
+                evidence_path=str(test_file),
+                evidence_line=9,
+            )
+            self.assertEqual(
+                _test_name_from_record(record, root),
+                "tests.commands.test_foo.TestFoo.test_bar",
+            )
+
+    def test_comment_form_returns_dotted_module_only(self) -> None:
+        """Docstring/comment-form @covers (identifier == file path) yields module only."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            test_file = root / "tests" / "test_config.py"
+            test_file.parent.mkdir(parents=True)
+            test_file.write_text("# placeholder\n", encoding="utf-8")
+
+            record = LinkageRecord(
+                source=VertexRef(
+                    vertex_type=VertexType.TEST,
+                    identifier=str(test_file),
+                    location=str(test_file),
+                    line=39,
+                ),
+                target=VertexRef(vertex_type=VertexType.SPEC, identifier="REQ-0.0.21-02-01"),
+                edge_type=EdgeType.COVERS,
+                evidence_path=str(test_file),
+                evidence_line=39,
+            )
+            self.assertEqual(_test_name_from_record(record, root), "tests.test_config")
+
+    def test_missing_location_returns_none(self) -> None:
+        """A record without a source location cannot anchor a unittest name."""
+        record = LinkageRecord(
+            source=VertexRef(vertex_type=VertexType.TEST, identifier="x", location=None, line=None),
+            target=VertexRef(vertex_type=VertexType.SPEC, identifier="REQ-0.0.21-02-01"),
+            edge_type=EdgeType.COVERS,
+            evidence_path=None,
+            evidence_line=None,
+        )
+        with tempfile.TemporaryDirectory() as tmpdir:
+            self.assertIsNone(_test_name_from_record(record, Path(tmpdir)))
 
 
 class TestQualityResult(unittest.TestCase):
