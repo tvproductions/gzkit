@@ -458,6 +458,33 @@ class TestPlanFileDualScan(unittest.TestCase):
 
             self.assertEqual(found, local_plan)
 
+    def test_short_form_query_matches_plan_referencing_short_form(self) -> None:
+        """Plan authored with short-form OBPI ID is found by canonical-slug query (GHI #313).
+
+        plan_audit_cmd canonicalizes the short-form input to the full slug
+        before calling find_plan_for_obpi. Plans authored by Claude Code's
+        plan mode (or by any agent that did not consult the ledger) typically
+        only reference the short form. The match must succeed at the short
+        form so the canonical-slug caller still finds the plan.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp) / "proj"
+            home = Path(tmp) / "home"
+            (project_root / ".claude" / "plans").mkdir(parents=True)
+            global_dir = home / ".claude" / "plans"
+            global_dir.mkdir(parents=True)
+            (global_dir / "glimmering-crafting-hedgehog.md").write_text(
+                "Plan for OBPI-0.0.21-07 -- bdd chores distribution.\n",
+                encoding="utf-8",
+            )
+
+            with patch.dict("os.environ", {"GZKIT_CLAUDE_HOME": str(home)}):
+                found = find_plan_for_obpi(project_root, "OBPI-0.0.21-07-bdd-chores-distribution")
+
+            self.assertIsNotNone(found)
+            assert found is not None
+            self.assertEqual(found.name, "glimmering-crafting-hedgehog.md")
+
 
 class TestValidateBriefForPipeline(unittest.TestCase):
     """Tests for validate_brief_for_pipeline (#29)."""

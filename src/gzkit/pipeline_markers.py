@@ -31,6 +31,22 @@ PIPELINE_RECEIPT_FILE = ".plan-audit-receipt.json"
 PIPELINE_LEGACY_MARKER = ".pipeline-active.json"
 STALE_MARKER_HOURS = 4
 
+_OBPI_SHORT_FORM_RE = re.compile(r"OBPI-\d+\.\d+\.\d+-\d+")
+
+
+def _obpi_short_form(obpi_id: str) -> str:
+    """Return the short form ``OBPI-X.Y.Z-NN`` from any OBPI identifier.
+
+    plan_audit_cmd canonicalizes short-form input to the full slug before
+    plan discovery (GHI #187). Plan files authored by Claude Code's plan
+    mode (or by any agent that did not consult the ledger) typically only
+    reference the short form. Matching on the short form ensures both
+    callers — short-form and canonical-slug — agree on plan identity
+    (GHI #313).
+    """
+    match = _OBPI_SHORT_FORM_RE.search(obpi_id)
+    return match.group(0) if match else obpi_id
+
 
 def pipeline_command(obpi_id: str, start_from: str | None = None) -> str:
     """Return the canonical runtime command for the target OBPI."""
@@ -99,6 +115,7 @@ def find_plan_for_obpi(project_root: Path, obpi_id: str) -> Path | None:
     if not obpi_id:
         return None
 
+    short_form = _obpi_short_form(obpi_id)
     project_local = pipeline_plans_dir(project_root)
     candidates: list[tuple[float, Path]] = []
     for plans_dir in pipeline_plan_search_dirs(project_root):
@@ -109,7 +126,7 @@ def find_plan_for_obpi(project_root: Path, obpi_id: str) -> Path | None:
                 content = plan_path.read_text(encoding="utf-8")
             except OSError:
                 continue
-            if obpi_id not in content:
+            if short_form not in content and obpi_id not in content:
                 continue
             try:
                 mtime = plan_path.stat().st_mtime
