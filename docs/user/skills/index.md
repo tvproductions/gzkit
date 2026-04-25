@@ -104,6 +104,7 @@ audience split.
 |-------|-------------|
 | [`/ghi-author`](ghi-author.md) | Author a GitHub Issue for a defect, enhancement, or investigation surfaced in flight |
 | [`/ghi-close`](ghi-close.md) | Do the work described in a GHI, verify artifacts, and close with evidence |
+| [`/ghi-triage`](ghi-triage.md) | Evaluate and triage all open GitHub Issues with routing + urgency scoring |
 | [`/git-sync`](git-sync.md) | Run the guarded repository sync ritual with lint/test gates |
 | [`/gz-agent-sync`](gz-agent-sync.md) | Synchronize generated control surfaces and skill mirrors |
 | [`/gz-check-config-paths`](gz-check-config-paths.md) | Validate configured and manifest path coherence |
