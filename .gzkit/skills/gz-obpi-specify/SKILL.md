@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-04-12
 metadata:
-  skill-version: "1.4.1"
+  skill-version: "1.5.0"
 ---
 
 # gz-obpi-specify
@@ -106,6 +106,32 @@ reality. Until then, this section governs authoring discipline by hand.
 Tracked as a follow-up to GHI #190.
 
 ---
+
+## Discovery Order Pin (GHI #321)
+
+When authoring a brief semantically, read the parent ADR's structured
+input — § Decision item, then § Intent — **before** anything else (Allowed
+Paths, Prerequisites, Existing Code). The OBPI brief template's Discovery
+Checklist now pins this order: item #1 instructs the agent to **quote the
+parent ADR § Decision item this OBPI implements** verbatim into the brief's
+Implementation Summary, with a STOP guard below the pin: *"If you cannot
+quote the parent ADR § Decision item that this OBPI implements, STOP and
+re-read."*
+
+This is Anthropic Prompt Engineering 101's order-matters discipline applied
+to brief authoring. The failure pattern it closes: an agent grepping
+backward from a keyword to a code path rather than tracing forward from the
+parent ADR's Decision (Opus 4.7 § 2.3.6.2; failure-mode taxonomy
+ADR-0.0.23 *Skipped cheap verification*). When the first authoring step is
+"quote the Decision item," drift between the ADR's Feature Checklist line
+and the OBPI brief is structurally harder to introduce — which secondary-
+benefits the OBPI Decomposition Mandate's 1:1 ADR↔brief sync.
+
+The pin lives in the rendered template (`src/gzkit/templates/obpi.md`).
+A brief that drifts the pinned items out of order, deletes the STOP guard,
+or omits the Decision quote in Implementation Summary is the same class of
+defect as a thin Allowed Paths section: a brief that won't survive pipeline
+execution.
 
 ## When to Use
 
