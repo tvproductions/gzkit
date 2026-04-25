@@ -202,13 +202,13 @@ Aggregate per-project, then aggregate across projects: per-metric percentiles (p
 
 <!-- Each item becomes an OBPI (One Brief Per Item). Sequential numbering, no gaps. -->
 
-- [ ] Selection methodology + criteria + anti-patterns + refresh cadence + project-doctrine-fitness criterion (`.gzkit/rules/complexity-doctrine.md`)
-- [ ] Initial corpus authoring with pinned SHAs and per-project path filters; books the six pool stubs as forward-references (`data/exemplar_corpus.json`)
-- [ ] Measurement pipeline producing raw distribution artifacts (`src/gzkit/complexity/measurement.py`, `docs/governance/complexity/baselines/`)
-- [ ] Distillation pass authoring distilled-characteristics document — agent-driven, human-reviewed and attested/corrected (`docs/governance/complexity/distilled-characteristics-{date}.md`)
-- [ ] Citation contract specifying how downstream foundation ADRs cite the corpus (percentile + absolute-number pairing for portability across refresh)
-- [ ] `gz-complexity-distill` skill (ad-hoc + scheduled invocation, vendor-mirrored)
-- [ ] `gz validate --complexity-doctrine-links` validator (link-integrity scope; closes 2am-Scenario-2 failure mode)
+- [ ] OBPI-0.0.27-01 — Selection methodology + criteria + anti-patterns + refresh cadence + project-doctrine-fitness criterion (`.gzkit/rules/complexity-doctrine.md`)
+- [ ] OBPI-0.0.27-02 — Initial corpus authoring with pinned SHAs and per-project path filters; books the six pool stubs as forward-references (`data/exemplar_corpus.json`)
+- [ ] OBPI-0.0.27-03 — Measurement pipeline producing raw distribution artifacts (`src/gzkit/complexity/measurement.py`, `docs/governance/complexity/baselines/`)
+- [ ] OBPI-0.0.27-04 — Distillation pass authoring distilled-characteristics document — agent-driven, human-reviewed and attested/corrected (`docs/governance/complexity/distilled-characteristics-{date}.md`)
+- [ ] OBPI-0.0.27-05 — Citation contract specifying how downstream foundation ADRs cite the corpus (percentile + absolute-number pairing for portability across refresh)
+- [ ] OBPI-0.0.27-06 — `gz-complexity-distill` skill (ad-hoc + scheduled invocation, vendor-mirrored)
+- [ ] OBPI-0.0.27-07 — `gz validate --complexity-doctrine-links` validator (link-integrity scope; closes 2am-Scenario-2 failure mode)
 
 ## Q&A Transcript
 

@@ -85,7 +85,7 @@ opsdev contains quality tooling commands that are genuinely governance-generic -
 | # | OBPI | Specification Summary | Lane | Status |
 |---|------|----------------------|------|--------|
 | 1 | OBPI-0.31.0-01 | Port `sloc-scan` (159 lines) --- radon-based SLOC analysis | Heavy | Pending |
-| 2 | OBPI-0.31.0-02 | Port `complexity-check` (122 lines) --- xenon cyclomatic complexity | Heavy | Pending |
+| 2 | OBPI-0.31.0-02 | ~~Port `complexity-check` (122 lines) --- xenon cyclomatic complexity~~ → **subsumed by [ADR-0.0.29](../../foundation/ADR-0.0.29-complexity-advisor/ADR-0.0.29-complexity-advisor.md)** | Heavy | Withdrawn (2026-04-25) |
 | 3 | OBPI-0.31.0-03 | Port `test-times` (87 lines) --- per-test duration tracking | Heavy | Pending |
 | 4 | OBPI-0.31.0-04 | Port `test-quality` (495 lines) --- AST-based test quality metrics | Heavy | Pending |
 | 5 | OBPI-0.31.0-05 | Port `metrics scan` (429 lines) --- code quality violation scanning | Heavy | Pending |

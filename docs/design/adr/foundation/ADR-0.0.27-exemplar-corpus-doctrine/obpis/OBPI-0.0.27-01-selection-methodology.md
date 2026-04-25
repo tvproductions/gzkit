@@ -6,256 +6,157 @@ lane: Heavy
 status: Draft
 ---
 
-# OBPI-0.0.27-01-selection-methodology: Selection Methodology
+# OBPI-0.0.27-01-selection-methodology: Selection Methodology Rule File
 
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/ADR-0.0.27-exemplar-corpus-doctrine.md`
-- **Checklist Item:** #1 - "Selection methodology + criteria + anti-patterns + refresh cadence + project-doctrine-fitness criterion (`.gzkit/rules/complexity-doctrine.md`)"
+- **Checklist Item:** #1 — "Selection methodology + criteria + anti-patterns + refresh cadence + project-doctrine-fitness criterion (`.gzkit/rules/complexity-doctrine.md`)"
 
 **Status:** Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-Selection methodology + criteria + anti-patterns + refresh cadence + project-doctrine-fitness criterion (`.gzkit/rules/complexity-doctrine.md`).
+Author `.gzkit/rules/complexity-doctrine.md` codifying the seven selection criteria, seven corpus anti-patterns, distillation cadence triggers, citation contract, and project-doctrine-fitness criterion as a Mechanical-class rule, with the corresponding scorecard entry in `docs/governance/advisory-rules-audit.md`.
 
 ## Lane
 
-**Heavy** - This OBPI changes a command/API/schema/runtime contract surface.
-
-> Heavy is reserved for command/API/schema/runtime-contract changes. Process,
-> documentation, and template-only work stays Lite unless it changes one of
-> those external surfaces.
+**Heavy** — Foundation-kind doctrine introduces a new canonical rule file consumed by downstream foundation ADRs (0.0.28 / 0.0.29 / 0.0.30) and by the link-integrity validator (OBPI-07). Brief-level Gate 5 attestation per ADR-0.0.18.
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `docs/design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/ADR-0.0.27-exemplar-corpus-doctrine.md` — parent ADR for intent and scope
-- `.gzkit/rules/complexity-doctrine.md` — explicitly referenced by the checklist item
+- `.gzkit/rules/complexity-doctrine.md` — new canonical rule file
+- `.claude/rules/complexity-doctrine.md`, `.agents/rules/complexity-doctrine.md`, `.github/instructions/complexity-doctrine.md` — vendor mirrors emitted by `gz agent sync control-surfaces`
+- `docs/governance/advisory-rules-audit.md` — scorecard entry classifying the new rule as Mechanical
+- `tests/governance/test_complexity_doctrine_rule.py` — REQ-derived assertions on rule content
+- `docs/design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/**` — brief evidence updates only
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
-- Paths not listed in Allowed Paths
-- New dependencies
-- CI files, lockfiles
+- `data/exemplar_corpus.json` — corpus authoring is OBPI-02
+- `src/gzkit/complexity/measurement.py` — measurement pipeline is OBPI-03
+- `docs/governance/complexity/distilled-characteristics-*.md` — distillation pass is OBPI-04
+- `.gzkit/skills/gz-complexity-distill/**` — skill is OBPI-06
+- `src/gzkit/governance/trust_audits.py` — link validator is OBPI-07
+- `pyproject.toml` — runtime dep declarations are OBPI-03
+- Any path not listed in Allowed Paths
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: `.gzkit/rules/complexity-doctrine.md` ships with frontmatter `id`, `paths`, `description` per the rule schema (`src/gzkit/rules.py`), plus a body-level `<!-- rule-version: 0.1.0 -->` HTML comment and visible `> **Rule version:** \`0.1.0\`` block quote per `.gzkit/rules/skill-surface-sync.md`.
+2. REQUIREMENT: The rule body declares all seven selection criteria verbatim from ADR-0.0.27 § Decision (longevity ≥ 5 yrs, maintenance health, practitioner reputation NOT GitHub-star count, pure-Python ≥ 80% LOC, author craftsmanship signal, project doctrine fitness, pinned commit SHA).
+3. REQUIREMENT: The rule body declares all seven corpus-selection anti-patterns verbatim from ADR-0.0.27 § Decision.
+4. REQUIREMENT: The rule body declares the cadence: annual calendar default + drift-signal trigger > 25% with 6-month minimum re-distillation interval + judgment trigger for ground-breaking projects.
+5. REQUIREMENT: The rule body declares the citation contract: downstream foundation ADRs cite the distilled-characteristics document (file path + section anchor + corpus revision number); raw distributions and the corpus itself are NOT cited directly.
+6. REQUIREMENT: The rule body declares the project-doctrine-fitness criterion explicitly, citing the pytest-mention demerit lesson from the design dialogue as the canonical failure this criterion closes.
+7. REQUIREMENT: `docs/governance/advisory-rules-audit.md` carries a scorecard entry for `complexity-doctrine` classified as **Mechanical** with citations to ADR-0.0.27 (parent) and OBPI-0.0.27-07 (link-integrity enforcement).
+8. REQUIREMENT: `uv run gz validate --advisory-scorecard` exits 0 after the scorecard entry lands (the audit fails closed on rules without an entry per `AGENTS.md` § Governance doctrine surfaces).
+9. REQUIREMENT: `uv run gz agent sync control-surfaces` propagates the new rule to all four mirrors (`.claude/rules/`, `.agents/rules/`, `.github/instructions/`); diff is empty after sync.
+10. REQUIREMENT: Tests under `tests/governance/test_complexity_doctrine_rule.py` assert the seven criteria, seven anti-patterns, three cadence triggers, and citation contract are each present in the rule body. Each test decorated with `@covers(REQ-0.0.27-01-NN)`. Tests use file-system-loaded rule content, not pinned strings.
+11. REQUIREMENT: TDD discipline — Red-Green-Refactor per assertion increment; never backfill `@covers` to silence audit-check.
+12. REQUIREMENT: NEVER include the operator's personal email in rule content, scorecard entry, commit messages, or test fixtures.
 
-1. REQUIREMENT: **Longevity:** ≥ 5 years active development OR explicitly archived as a reference
-1. REQUIREMENT: **Maintenance health:** active releases in last 12 months OR project explicitly declares done state
-1. REQUIREMENT: **Practitioner reputation:** cited in PEPs, in published reference works (*Fluent Python*, *Effective Python*, *Architecture Patterns with Python*), OR by recurring conference talks (PyCon, EuroPython, PyData). Specifically NOT by GitHub-star count.
-1. REQUIREMENT: **Pure-Python predominance:** Python content is the primary artifact (≥ 80% of LOC). Excludes thin wrappers around C/Rust where the Python part is glue.
-1. REQUIREMENT: **Author craftsmanship signal:** maintainer history shows design discipline (PEP authorship, well-known design talks, mentorship reputation). The most subjective criterion; mitigated by the agent-drafted-then-operator-audited pattern.
-1. REQUIREMENT: **Project doctrine fitness:** the project does not violate gzkit's existing doctrinal commitments. A project whose foundational design choices contradict Stdlib-First or other gzkit canon is excluded regardless of other strengths. The pytest-mention demerit during this session's design dialogue was the canonical failure this criterion closes.
-1. REQUIREMENT: **Pinned to a specific commit SHA at corpus-authoring time** — distributions are reproducible from the SHA.
-1. REQUIREMENT: Framework — sync web (e.g. Django)
-1. REQUIREMENT: Framework — async web (e.g. Starlette)
-1. REQUIREMENT: HTTP library (e.g. httpx)
-1. REQUIREMENT: CLI tooling (e.g. click)
-1. REQUIREMENT: Type-strict data modeling (e.g. attrs)
-1. REQUIREMENT: Stdlib-style core library (selected CPython modules — pathlib, dataclasses, functools, contextlib)
-1. REQUIREMENT: Testing / property-based (e.g. hypothesis — pytest deliberately excluded per Stdlib-First)
-1. REQUIREMENT: Console rendering / TUI (e.g. rich)
-1. REQUIREMENT: Static analysis / type checker (e.g. mypy)
-1. REQUIREMENT: Build / packaging (e.g. flit)
-1. REQUIREMENT: Selecting projects that confirm a pre-decided threshold (post-hoc fitting)
-1. REQUIREMENT: Selecting by GitHub-star count (popularity ≠ design quality)
-1. REQUIREMENT: Selecting only modern projects (loses the 'test of time' signal)
-1. REQUIREMENT: Selecting only legacy projects (misses current best-practice idioms)
-1. REQUIREMENT: Selecting projects all from the same domain (monoculture; over-fits to one idiom)
-1. REQUIREMENT: Agent supplying the project list from training memory without operator audit (the corpus is doctrine and must be operator-witnessed)
-1. REQUIREMENT: Including any project that violates gzkit's existing doctrinal commitments (project doctrine fitness)
-1. REQUIREMENT: `radon cc` — full per-function CC distribution
-1. REQUIREMENT: `radon mi` — per-module Maintainability Index
-1. REQUIREMENT: `radon hal` — Halstead volume, difficulty, effort
-1. REQUIREMENT: `radon raw` — NLOC, LLOC
-1. REQUIREMENT: `lizard` — per-function NLOC, parameter count, nesting depth, CCN
-1. REQUIREMENT: `cohesion` — per-class LCOM4
-1. REQUIREMENT: Agent drafts metric-aggregate prose per metric (median, p75, p90, p95, p99 with inter-project variance commentary)
-1. REQUIREMENT: Operator adds the practitioner-eye observation (which functions cluster at p90 and why; what makes high-percentile complexity defensible)
-1. REQUIREMENT: Joint authoring of actionable characteristics per metric: numeric boundary (corpus percentile + absolute number at that percentile), qualitative band (comfortable craft / investigate / refactor), doctrinal frame (which authority speaks to a violation at this boundary)
-1. REQUIREMENT: Agent proposes classifier rule-table boundary updates against new percentiles; operator audits
-1. REQUIREMENT: Diff against previous distillation: any boundary that moved >10% gets explicit operator narration
-1. REQUIREMENT: Output: `docs/governance/complexity/distilled-characteristics-{date}.md`. Previous documents preserved (never overwritten) — doctrine evolution has a permanent audit trail.
-1. REQUIREMENT: `data/exemplar_corpus.json` (new): registry of pinned project metadata (URL, commit SHA, included paths, excluded paths with rationale, craftsmanship justification). Pydantic model `ExemplarProject` with `ConfigDict(frozen=True, extra='forbid')`. Edits governed by the doctrine itself.
-1. REQUIREMENT: `src/gzkit/complexity/measurement.py` (new): measurement pipeline orchestrating radon/lizard/cohesion against pinned SHAs.
-1. REQUIREMENT: `pyproject.toml`: pinned major versions of `radon`, `lizard`, `cohesion` as runtime dependencies (Stdlib-First named departures with rationale: stdlib does not provide cyclomatic complexity / nesting depth / LCOM4 metrics).
-1. REQUIREMENT: `.gzkit/skills/gz-complexity-distill/` (new): operator-runnable skill carrying corpus list, per-project path filters, methodology rationale, distillation cadence triggers; mirrored to `.claude/skills/`, `.agents/skills/`, `.github/skills/` per skill-surface-sync rules.
-1. REQUIREMENT: `docs/governance/complexity/` (new directory): home for raw baseline artifacts and dated distilled-characteristics documents.
-1. REQUIREMENT: `src/gzkit/governance/trust_audits.py`: add `validate_complexity_doctrine_links` for `gz validate --complexity-doctrine-links` scope; fail-closed (exit 3) on broken cross-references.
-1. REQUIREMENT: `.gzkit/rules/complexity-doctrine.md` (new): canonical rule file declaring corpus methodology, distillation cadence, citation contract.
-1. REQUIREMENT: `docs/governance/advisory-rules-audit.md`: scorecard entry classifying the new rule as Mechanical.
-1. REQUIREMENT: `ADR-pool.attestation-quality-measurement` — activates if attestation fatigue empirically materializes (WWHTBT rejected condition #4)
-1. REQUIREMENT: `ADR-pool.doctrine-amendment-protocol` — codifies how foundation doctrine is amended without breaking citing ADRs (reversibility forcing function)
-1. REQUIREMENT: `ADR-pool.complexity-doctrine-validate-suite` — aggregates additional `gz validate` scopes (`--classifier-schema-frozen`, `--corpus-shas-pinned`, `--distillation-cadence`)
-1. REQUIREMENT: `ADR-pool.canon-pillar-codification` — open question whether five top-level pillars warrant retroactive foundation ADRs (deferred unless ledger demands per-pillar introduction event)
-1. REQUIREMENT: `ADR-pool.complexity-doctrine-meets-chore-system` — future foundation question on chore system as broader doctrine-consumer
-1. REQUIREMENT: `ADR-pool.complexity-guide-obpi-authoring-integration` — future feature question on `gz complexity-guide` integration with OBPI authoring workflow
-1. REQUIREMENT: Does NOT specify the threshold values or trigger semantics — that is ADR-0.0.28's scope.
-1. REQUIREMENT: Does NOT author the complexity advisor or its CLI surface — that is ADR-0.0.29's scope.
-1. REQUIREMENT: Does NOT author the authoring-time guidance surface — that is ADR-0.0.30's scope.
-1. REQUIREMENT: Does NOT vendor or reimplement the radon/lizard/cohesion metric tools — pinned dependency posture is the chosen approach (Q4 of design dialogue).
-1. REQUIREMENT: Does NOT fold the canon-pillar codification question into the cluster — that pool stub is a forward question, not in-scope here.
-1. REQUIREMENT: Does NOT enforce a measurement-tool replacement path — the methodology binds the choice of `radon`/`lizard`/`cohesion` to corpus-amendment ceremony.
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if the rule schema (`RuleFrontmatter` in `src/gzkit/rules.py`) has changed since this OBPI was authored, reconcile the frontmatter shape before drafting.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first. -->
-
-**Governance (read once, cache):**
-
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
-
-**Context:**
-
-- [ ] Parent ADR: `docs/design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/ADR-0.0.27-exemplar-corpus-doctrine.md`
-- [ ] Related OBPIs in same ADR
-
-**Prerequisites (check existence, STOP if missing):**
-
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/ADR-0.0.27-exemplar-corpus-doctrine.md`
-- [ ] Required path exists or is intentionally created in this OBPI: `.gzkit/rules/complexity-doctrine.md`
-- [ ] Parent ADR evidence artifacts referenced by this brief are present
-
-**Existing Code (understand current state):**
-
-- [ ] Existing tests adjacent to the Allowed Paths reviewed before implementation
-- [ ] Parent ADR integration points reviewed for local conventions
+- [ ] Parent ADR § Decision — selection methodology block, anti-patterns block, cadence block, citation contract block
+- [ ] `.gzkit/rules/skill-surface-sync.md` — body-level `<!-- rule-version: ... -->` marker convention
+- [ ] `src/gzkit/rules.py` — current rule frontmatter schema (extra="forbid")
+- [ ] `docs/governance/advisory-rules-audit.md` — scorecard format and classification taxonomy
+- [ ] `AGENTS.md` § Governance doctrine surfaces — `gz validate --advisory-scorecard` semantics
 
 ## Quality Gates
 
-<!-- Which gates apply and how to verify them. -->
-
 ### Gate 1: ADR
+- [ ] Intent recorded; parent checklist item quoted
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
-
-### Gate 2: TDD (Red-Green-Refactor)
-
-- [ ] Tests derived from brief acceptance criteria, not from implementation
-- [ ] Red-Green-Refactor cycle followed per behavior increment
-- [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
+### Gate 2: TDD
+- [ ] RGR cycle per assertion; `uv run gz test` passes
+- [ ] Each test decorated with `@covers(REQ-0.0.27-01-NN)`
 
 ### Code Quality
+- [ ] `uv run gz lint`, `uv run gz typecheck` clean
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+### Gate 3: Docs (Heavy)
+- [ ] `uv run mkdocs build --strict` clean
+- [ ] Runbook entry references the new rule under "Governance doctrine surfaces"
 
-<!-- Heavy lane only: -->
-### Gate 3: Docs (Heavy only)
+### Gate 4: BDD (Heavy)
+- [ ] BDD coverage deferred to OBPI-07 (link validator) — registered in `data/behave_coverage_waivers.json` under OBPI-0.0.27-01 with rationale: "rule-only OBPI; no CLI surface to scenario-test"
 
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
-
-### Gate 4: BDD (Heavy only)
-
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
-
-### Gate 5: Human (Heavy only)
-
-- [ ] Human attestation recorded
+### Gate 5: Human (Heavy + Foundation)
+- [ ] TTY + `ATTEST` confirmation required per ADR-0.0.18 attestation matrix
 
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
-uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
 uv run gz test
-
-# Specific verification for this OBPI
-test -f docs/design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/ADR-0.0.27-exemplar-corpus-doctrine.md
-test -f .gzkit/rules/complexity-doctrine.md
+uv run gz validate --advisory-scorecard
+uv run gz validate --documents --surfaces
+uv run gz agent sync control-surfaces  # diff must be empty
+uv run gz arb step --name unittest -- uv run -m unittest tests/governance/test_complexity_doctrine_rule.py -v
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.0.27-01-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.0.27-01-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.0.27-01-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.0.27-01-01: Given the rule schema, when `.gzkit/rules/complexity-doctrine.md` is loaded, then frontmatter validates and the body-level rule-version marker matches the visible block quote.
+- [ ] REQ-0.0.27-01-02: Given the seven selection criteria from ADR-0.0.27 § Decision, when the rule body is parsed, then each criterion is present and named.
+- [ ] REQ-0.0.27-01-03: Given the seven corpus-selection anti-patterns, when the rule body is parsed, then each anti-pattern is present and named.
+- [ ] REQ-0.0.27-01-04: Given the three cadence triggers (annual calendar, drift-signal > 25%, judgment), when the rule body is parsed, then all three are present with the 6-month minimum re-distillation guard.
+- [ ] REQ-0.0.27-01-05: Given the citation contract, when the rule body is parsed, then the contract names "distilled-characteristics" as the cited artifact and explicitly excludes raw distributions / corpus from direct citation.
+- [ ] REQ-0.0.27-01-06: Given the project-doctrine-fitness criterion, when the rule body is parsed, then the criterion is present and the pytest-mention demerit lesson is cited as the failure class it closes.
+- [ ] REQ-0.0.27-01-07: Given the scorecard at `docs/governance/advisory-rules-audit.md`, when `uv run gz validate --advisory-scorecard` runs, then the validator exits 0 and the `complexity-doctrine` entry is classified Mechanical.
+- [ ] REQ-0.0.27-01-08: Given a clean working tree, when `uv run gz agent sync control-surfaces` runs, then all four vendor mirrors carry identical rule content and the post-sync diff is empty.
 
 ## Completion Checklist
 
-<!-- Verify all gates before marking OBPI accepted. -->
-
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** RGR cycle followed, tests derived from brief, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
-
-> For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
+- [ ] Gate 1: Intent recorded; ADR checklist item quoted
+- [ ] Gate 2: RGR cycle; tests pass with `@covers` decorators
+- [ ] Code Quality: lint/type/format clean
+- [ ] Gate 3: docs build clean
+- [ ] Gate 4: BDD waiver registered with rationale
+- [ ] Gate 5: TTY + `ATTEST` confirmation captured
 
 ## Evidence
 
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
-
 ### Gate 1 (ADR)
-
 - [ ] Intent and scope recorded
 
 ### Gate 2 (TDD — Red-Green-Refactor)
-
 ```text
-# Paste test output here
+# Paste RGR observations + final unittest output
 ```
 
 ### Code Quality
-
 ```text
-# Paste lint/format/type check output here
+# Paste lint/typecheck output
 ```
 
 ### Gate 3 (Docs)
-
 ```text
-# Paste docs-build output here when Gate 3 applies
+# Paste mkdocs --strict output
 ```
 
 ### Gate 4 (BDD)
-
 ```text
-# Paste behave output here when Gate 4 applies
+# Waiver entry: data/behave_coverage_waivers.json — OBPI-0.0.27-01
 ```
 
 ### Gate 5 (Human)
-
 ```text
-# Record attestation text here when required by parent lane
+# Record attestation text + receipt IDs at completion
 ```
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+<!-- Problem before: complexity doctrine had no canonical rule file; thresholds and selection criteria lived only in design-dialogue prose, exposing them to silent drift. Capability now: the rule is the binding canonical source consumed by downstream foundation ADRs and validated by the advisory scorecard audit. -->
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+<!-- Paste the diff hunk showing the seven criteria as named headings and the scorecard entry classification. -->
 
 ### Implementation Summary
 
@@ -265,18 +166,19 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - Attestation status:
 - Defects noted:
 
-## Tracked Defects
+### Closing Argument
 
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
+<!-- One paragraph: why this OBPI's invariant is the right foundation for the cluster and why the chosen mechanical surfaces (rule file + scorecard entry) close the doctrine-drift failure class. -->
+
+## Tracked Defects
 
 _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `<name>` (heavy + foundation requires TTY + ATTEST)
+- Attestation: substantive attestation text
+- Date: YYYY-MM-DD
 
 ---
 

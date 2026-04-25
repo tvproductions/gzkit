@@ -11,251 +11,152 @@ status: Draft
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/ADR-0.0.27-exemplar-corpus-doctrine.md`
-- **Checklist Item:** #2 - "Initial corpus authoring with pinned SHAs and per-project path filters; books the six pool stubs as forward-references (`data/exemplar_corpus.json`)"
+- **Checklist Item:** #2 — "Initial corpus authoring with pinned SHAs and per-project path filters; books the six pool stubs as forward-references (`data/exemplar_corpus.json`)"
 
 **Status:** Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-Initial corpus authoring with pinned SHAs and per-project path filters; books the six pool stubs as forward-references (`data/exemplar_corpus.json`).
+Pin the initial 12-15-project exemplar corpus across the ten archetypal cells with per-project path filters, commit SHAs, and craftsmanship justifications recorded in `data/exemplar_corpus.json`; introduce the `ExemplarProject` Pydantic model with `ConfigDict(frozen=True, extra="forbid")`; book the six cluster pool stubs as forward-references.
 
 ## Lane
 
-**Heavy** - This OBPI changes a command/API/schema/runtime contract surface.
-
-> Heavy is reserved for command/API/schema/runtime-contract changes. Process,
-> documentation, and template-only work stays Lite unless it changes one of
-> those external surfaces.
+**Heavy** — Introduces a new data-contract artifact (`data/exemplar_corpus.json`) consumed by OBPI-03's measurement pipeline. Operator-witnessed nominations per the OBPI-01 methodology; foundation-kind brief-level Gate 5 attestation per ADR-0.0.18.
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `docs/design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/ADR-0.0.27-exemplar-corpus-doctrine.md` — parent ADR for intent and scope
-- `data/exemplar_corpus.json` — explicitly referenced by the checklist item
+- `data/exemplar_corpus.json` — registry of pinned project metadata
+- `src/gzkit/models/exemplar.py` — `ExemplarProject` Pydantic model + corpus loader
+- `src/gzkit/schemas/exemplar_corpus.json` — JSON Schema mirror for validation tooling
+- `tests/models/test_exemplar.py`, `tests/governance/test_exemplar_corpus.py` — REQ-derived assertions
+- `docs/design/adr/pool/ADR-pool.attestation-quality-measurement.md`
+- `docs/design/adr/pool/ADR-pool.doctrine-amendment-protocol.md`
+- `docs/design/adr/pool/ADR-pool.complexity-doctrine-validate-suite.md`
+- `docs/design/adr/pool/ADR-pool.canon-pillar-codification.md`
+- `docs/design/adr/pool/ADR-pool.complexity-doctrine-meets-chore-system.md`
+- `docs/design/adr/pool/ADR-pool.complexity-guide-obpi-authoring-integration.md`
+- `docs/design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/**` — brief evidence updates only
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
-- Paths not listed in Allowed Paths
-- New dependencies
-- CI files, lockfiles
+- `.gzkit/rules/complexity-doctrine.md` — rule file lands in OBPI-01
+- `src/gzkit/complexity/measurement.py` — measurement pipeline is OBPI-03
+- `pyproject.toml` — runtime dep declarations are OBPI-03
+- `docs/governance/complexity/**` — distillation outputs are OBPI-04
+- Any path not listed in Allowed Paths
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: `data/exemplar_corpus.json` lists 12-15 projects (inclusive) covering at least eight of the ten archetypal cells from ADR-0.0.27 § Decision; vacant cells are explicit and rationaled, not silent.
+2. REQUIREMENT: Each entry carries: project name, canonical URL, pinned commit SHA (40-char hex), included paths (glob list), excluded paths with rationale (glob → reason map), archetypal cell, longevity evidence, maintenance-health evidence, practitioner-reputation citation, pure-Python LOC ratio, craftsmanship-signal narrative, and project-doctrine-fitness narrative.
+3. REQUIREMENT: The `ExemplarProject` Pydantic model uses `ConfigDict(frozen=True, extra="forbid")` per `.claude/rules/models.md`. No `dataclass`, no `Optional`/`List`, no implicit defaults.
+4. REQUIREMENT: Every entry passes the seven selection criteria from `.gzkit/rules/complexity-doctrine.md` (OBPI-01 dependency); a project failing any criterion is rejected with the failure recorded in the brief evidence, not silently filtered.
+5. REQUIREMENT: pytest is NOT in the corpus (project-doctrine-fitness; demerit-lesson canon). Pydantic is NOT in the corpus (Rust-core; pure-Python predominance fails). Both exclusions are explicit in the brief evidence.
+6. REQUIREMENT: All six cluster pool stubs land as files under `docs/design/adr/pool/` with the canonical pool-ADR shape (`ADR-pool.<slug>.md`), each carrying a one-paragraph rationale citing this OBPI as the booking event. The six cluster pool stubs are: `attestation-quality-measurement`, `doctrine-amendment-protocol`, `complexity-doctrine-validate-suite`, `canon-pillar-codification`, `complexity-doctrine-meets-chore-system`, `complexity-guide-obpi-authoring-integration`.
+7. REQUIREMENT: A JSON Schema at `src/gzkit/schemas/exemplar_corpus.json` mirrors the Pydantic model and is used by `gz validate --documents` to fail closed on schema drift.
+8. REQUIREMENT: Tests cover: schema validates known-good corpus; schema rejects entries with non-SHA commit fields, missing path filters, or absent rationale; loader returns frozen models; mutation attempts raise; pool-stub files exist with expected shape. Each test decorated with `@covers(REQ-0.0.27-02-NN)`.
+9. REQUIREMENT: Path filters are explicit at the project + module-subset level (e.g. Django excludes ORM query compiler, mypy excludes unification core); whole-project measurement is rejected.
+10. REQUIREMENT: TDD discipline; `tempfile`-backed fixtures; tests do not network out to clone repos (SHAs are recorded; clone-and-measure is OBPI-03's surface).
+11. REQUIREMENT: NEVER include the operator's personal email in corpus entries, pool stubs, or test fixtures.
 
-1. REQUIREMENT: **Longevity:** ≥ 5 years active development OR explicitly archived as a reference
-1. REQUIREMENT: **Maintenance health:** active releases in last 12 months OR project explicitly declares done state
-1. REQUIREMENT: **Practitioner reputation:** cited in PEPs, in published reference works (*Fluent Python*, *Effective Python*, *Architecture Patterns with Python*), OR by recurring conference talks (PyCon, EuroPython, PyData). Specifically NOT by GitHub-star count.
-1. REQUIREMENT: **Pure-Python predominance:** Python content is the primary artifact (≥ 80% of LOC). Excludes thin wrappers around C/Rust where the Python part is glue.
-1. REQUIREMENT: **Author craftsmanship signal:** maintainer history shows design discipline (PEP authorship, well-known design talks, mentorship reputation). The most subjective criterion; mitigated by the agent-drafted-then-operator-audited pattern.
-1. REQUIREMENT: **Project doctrine fitness:** the project does not violate gzkit's existing doctrinal commitments. A project whose foundational design choices contradict Stdlib-First or other gzkit canon is excluded regardless of other strengths. The pytest-mention demerit during this session's design dialogue was the canonical failure this criterion closes.
-1. REQUIREMENT: **Pinned to a specific commit SHA at corpus-authoring time** — distributions are reproducible from the SHA.
-1. REQUIREMENT: Framework — sync web (e.g. Django)
-1. REQUIREMENT: Framework — async web (e.g. Starlette)
-1. REQUIREMENT: HTTP library (e.g. httpx)
-1. REQUIREMENT: CLI tooling (e.g. click)
-1. REQUIREMENT: Type-strict data modeling (e.g. attrs)
-1. REQUIREMENT: Stdlib-style core library (selected CPython modules — pathlib, dataclasses, functools, contextlib)
-1. REQUIREMENT: Testing / property-based (e.g. hypothesis — pytest deliberately excluded per Stdlib-First)
-1. REQUIREMENT: Console rendering / TUI (e.g. rich)
-1. REQUIREMENT: Static analysis / type checker (e.g. mypy)
-1. REQUIREMENT: Build / packaging (e.g. flit)
-1. REQUIREMENT: Selecting projects that confirm a pre-decided threshold (post-hoc fitting)
-1. REQUIREMENT: Selecting by GitHub-star count (popularity ≠ design quality)
-1. REQUIREMENT: Selecting only modern projects (loses the 'test of time' signal)
-1. REQUIREMENT: Selecting only legacy projects (misses current best-practice idioms)
-1. REQUIREMENT: Selecting projects all from the same domain (monoculture; over-fits to one idiom)
-1. REQUIREMENT: Agent supplying the project list from training memory without operator audit (the corpus is doctrine and must be operator-witnessed)
-1. REQUIREMENT: Including any project that violates gzkit's existing doctrinal commitments (project doctrine fitness)
-1. REQUIREMENT: `radon cc` — full per-function CC distribution
-1. REQUIREMENT: `radon mi` — per-module Maintainability Index
-1. REQUIREMENT: `radon hal` — Halstead volume, difficulty, effort
-1. REQUIREMENT: `radon raw` — NLOC, LLOC
-1. REQUIREMENT: `lizard` — per-function NLOC, parameter count, nesting depth, CCN
-1. REQUIREMENT: `cohesion` — per-class LCOM4
-1. REQUIREMENT: Agent drafts metric-aggregate prose per metric (median, p75, p90, p95, p99 with inter-project variance commentary)
-1. REQUIREMENT: Operator adds the practitioner-eye observation (which functions cluster at p90 and why; what makes high-percentile complexity defensible)
-1. REQUIREMENT: Joint authoring of actionable characteristics per metric: numeric boundary (corpus percentile + absolute number at that percentile), qualitative band (comfortable craft / investigate / refactor), doctrinal frame (which authority speaks to a violation at this boundary)
-1. REQUIREMENT: Agent proposes classifier rule-table boundary updates against new percentiles; operator audits
-1. REQUIREMENT: Diff against previous distillation: any boundary that moved >10% gets explicit operator narration
-1. REQUIREMENT: Output: `docs/governance/complexity/distilled-characteristics-{date}.md`. Previous documents preserved (never overwritten) — doctrine evolution has a permanent audit trail.
-1. REQUIREMENT: `data/exemplar_corpus.json` (new): registry of pinned project metadata (URL, commit SHA, included paths, excluded paths with rationale, craftsmanship justification). Pydantic model `ExemplarProject` with `ConfigDict(frozen=True, extra='forbid')`. Edits governed by the doctrine itself.
-1. REQUIREMENT: `src/gzkit/complexity/measurement.py` (new): measurement pipeline orchestrating radon/lizard/cohesion against pinned SHAs.
-1. REQUIREMENT: `pyproject.toml`: pinned major versions of `radon`, `lizard`, `cohesion` as runtime dependencies (Stdlib-First named departures with rationale: stdlib does not provide cyclomatic complexity / nesting depth / LCOM4 metrics).
-1. REQUIREMENT: `.gzkit/skills/gz-complexity-distill/` (new): operator-runnable skill carrying corpus list, per-project path filters, methodology rationale, distillation cadence triggers; mirrored to `.claude/skills/`, `.agents/skills/`, `.github/skills/` per skill-surface-sync rules.
-1. REQUIREMENT: `docs/governance/complexity/` (new directory): home for raw baseline artifacts and dated distilled-characteristics documents.
-1. REQUIREMENT: `src/gzkit/governance/trust_audits.py`: add `validate_complexity_doctrine_links` for `gz validate --complexity-doctrine-links` scope; fail-closed (exit 3) on broken cross-references.
-1. REQUIREMENT: `.gzkit/rules/complexity-doctrine.md` (new): canonical rule file declaring corpus methodology, distillation cadence, citation contract.
-1. REQUIREMENT: `docs/governance/advisory-rules-audit.md`: scorecard entry classifying the new rule as Mechanical.
-1. REQUIREMENT: `ADR-pool.attestation-quality-measurement` — activates if attestation fatigue empirically materializes (WWHTBT rejected condition #4)
-1. REQUIREMENT: `ADR-pool.doctrine-amendment-protocol` — codifies how foundation doctrine is amended without breaking citing ADRs (reversibility forcing function)
-1. REQUIREMENT: `ADR-pool.complexity-doctrine-validate-suite` — aggregates additional `gz validate` scopes (`--classifier-schema-frozen`, `--corpus-shas-pinned`, `--distillation-cadence`)
-1. REQUIREMENT: `ADR-pool.canon-pillar-codification` — open question whether five top-level pillars warrant retroactive foundation ADRs (deferred unless ledger demands per-pillar introduction event)
-1. REQUIREMENT: `ADR-pool.complexity-doctrine-meets-chore-system` — future foundation question on chore system as broader doctrine-consumer
-1. REQUIREMENT: `ADR-pool.complexity-guide-obpi-authoring-integration` — future feature question on `gz complexity-guide` integration with OBPI authoring workflow
-1. REQUIREMENT: Does NOT specify the threshold values or trigger semantics — that is ADR-0.0.28's scope.
-1. REQUIREMENT: Does NOT author the complexity advisor or its CLI surface — that is ADR-0.0.29's scope.
-1. REQUIREMENT: Does NOT author the authoring-time guidance surface — that is ADR-0.0.30's scope.
-1. REQUIREMENT: Does NOT vendor or reimplement the radon/lizard/cohesion metric tools — pinned dependency posture is the chosen approach (Q4 of design dialogue).
-1. REQUIREMENT: Does NOT fold the canon-pillar codification question into the cluster — that pool stub is a forward question, not in-scope here.
-1. REQUIREMENT: Does NOT enforce a measurement-tool replacement path — the methodology binds the choice of `radon`/`lizard`/`cohesion` to corpus-amendment ceremony.
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if OBPI-01's `.gzkit/rules/complexity-doctrine.md` has not landed, STOP — selection criteria must be canonized before nominations are pinned.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first. -->
-
-**Governance (read once, cache):**
-
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
-
-**Context:**
-
-- [ ] Parent ADR: `docs/design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/ADR-0.0.27-exemplar-corpus-doctrine.md`
-- [ ] Related OBPIs in same ADR
-
-**Prerequisites (check existence, STOP if missing):**
-
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/ADR-0.0.27-exemplar-corpus-doctrine.md`
-- [ ] Required path exists or is intentionally created in this OBPI: `data/exemplar_corpus.json`
-- [ ] Parent ADR evidence artifacts referenced by this brief are present
-
-**Existing Code (understand current state):**
-
-- [ ] Existing tests adjacent to the Allowed Paths reviewed before implementation
-- [ ] Parent ADR integration points reviewed for local conventions
+- [ ] OBPI-01 (`.gzkit/rules/complexity-doctrine.md`) — selection criteria + anti-patterns canonized
+- [ ] Parent ADR § Decision — ten archetypal cells, locked per-cell candidates, corpus size target
+- [ ] Handoff `.gzkit/handoffs/2026-04-25-complexity-doctrine-cluster.md` — locked per-cell projects (Django, Starlette, httpx, click, attrs, CPython subsets, hypothesis, rich, mypy, flit)
+- [ ] `.claude/rules/models.md` — Pydantic immutable model patterns
+- [ ] Existing pool ADRs under `docs/design/adr/pool/` — file shape and frontmatter convention
 
 ## Quality Gates
 
-<!-- Which gates apply and how to verify them. -->
-
 ### Gate 1: ADR
+- [ ] Intent recorded; parent checklist item quoted
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
-
-### Gate 2: TDD (Red-Green-Refactor)
-
-- [ ] Tests derived from brief acceptance criteria, not from implementation
-- [ ] Red-Green-Refactor cycle followed per behavior increment
-- [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
+### Gate 2: TDD
+- [ ] RGR cycle per assertion; `uv run gz test` passes
 
 ### Code Quality
+- [ ] Lint/type clean
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+### Gate 3: Docs (Heavy)
+- [ ] `mkdocs build --strict` clean (pool stubs render)
 
-<!-- Heavy lane only: -->
-### Gate 3: Docs (Heavy only)
+### Gate 4: BDD (Heavy)
+- [ ] BDD waiver registered: data-contract-only OBPI; CLI exposure is OBPI-03
 
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
-
-### Gate 4: BDD (Heavy only)
-
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
-
-### Gate 5: Human (Heavy only)
-
-- [ ] Human attestation recorded
+### Gate 5: Human (Heavy + Foundation)
+- [ ] TTY + `ATTEST` confirmation; operator witnesses each nomination's craftsmanship signal
 
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
-uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
 uv run gz test
-
-# Specific verification for this OBPI
-test -f docs/design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/ADR-0.0.27-exemplar-corpus-doctrine.md
-test -f data/exemplar_corpus.json
+uv run gz validate --documents
+uv run gz arb step --name unittest -- uv run -m unittest tests/models/test_exemplar.py tests/governance/test_exemplar_corpus.py -v
+ls docs/design/adr/pool/ADR-pool.{attestation-quality-measurement,doctrine-amendment-protocol,complexity-doctrine-validate-suite,canon-pillar-codification,complexity-doctrine-meets-chore-system,complexity-guide-obpi-authoring-integration}.md
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.0.27-02-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.0.27-02-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.0.27-02-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.0.27-02-01: Given the corpus file, when the loader parses it, then 12-15 entries instantiate as frozen `ExemplarProject` models without validation error.
+- [ ] REQ-0.0.27-02-02: Given an entry with a non-SHA commit field (e.g. branch name, tag), when the schema validates, then validation fails with a named error.
+- [ ] REQ-0.0.27-02-03: Given an entry without per-project path filters or without rationale on excluded paths, when the schema validates, then validation fails.
+- [ ] REQ-0.0.27-02-04: Given the corpus, when archetypal-cell coverage is checked, then at least eight of the ten cells are populated; vacant cells appear in the file as explicit `null` entries with rationale.
+- [ ] REQ-0.0.27-02-05: Given pytest, Pydantic, or any project violating Stdlib-First, when corpus inclusion is checked, then the project is absent and the brief records the rejection.
+- [ ] REQ-0.0.27-02-06: Given the six cluster pool-stub files, when listed under `docs/design/adr/pool/`, then each exists with the canonical pool-ADR shape and cites OBPI-0.0.27-02 as the booking event.
+- [ ] REQ-0.0.27-02-07: Given a frozen `ExemplarProject` instance, when mutation is attempted, then a `ValidationError` is raised.
+- [ ] REQ-0.0.27-02-08: Given the corpus file, when `uv run gz validate --documents` runs, then exit 0 and the JSON Schema mirror validates the file.
 
 ## Completion Checklist
 
-<!-- Verify all gates before marking OBPI accepted. -->
-
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** RGR cycle followed, tests derived from brief, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
-
-> For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
+- [ ] Gate 1: Intent recorded
+- [ ] Gate 2: RGR cycle; tests pass with `@covers`
+- [ ] Code Quality: lint/type clean
+- [ ] Gate 3: mkdocs --strict clean
+- [ ] Gate 4: BDD waiver registered
+- [ ] Gate 5: TTY + `ATTEST` confirmation captured
 
 ## Evidence
 
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
-
 ### Gate 1 (ADR)
-
 - [ ] Intent and scope recorded
 
 ### Gate 2 (TDD — Red-Green-Refactor)
-
 ```text
-# Paste test output here
+# Paste RGR observations + final unittest output
 ```
 
 ### Code Quality
-
 ```text
-# Paste lint/format/type check output here
+# Paste lint/typecheck output
 ```
 
 ### Gate 3 (Docs)
-
 ```text
-# Paste docs-build output here when Gate 3 applies
+# Paste mkdocs --strict output
 ```
 
 ### Gate 4 (BDD)
-
 ```text
-# Paste behave output here when Gate 4 applies
+# Waiver entry: data/behave_coverage_waivers.json — OBPI-0.0.27-02
 ```
 
 ### Gate 5 (Human)
-
 ```text
-# Record attestation text here when required by parent lane
+# Record attestation text + receipt IDs at completion
 ```
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+<!-- Problem before: corpus methodology was rule prose with no pinned authoritative list; nominations could drift session-to-session. Capability now: 12-15 projects pinned at SHA with explicit path filters and craftsmanship justifications, validated by a frozen Pydantic schema, with six forward-reference pool stubs making the citation graph honest from day one. -->
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+<!-- Paste a representative entry from data/exemplar_corpus.json and the listing of six pool-stub files. -->
 
 ### Implementation Summary
 
@@ -265,18 +166,19 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - Attestation status:
 - Defects noted:
 
-## Tracked Defects
+### Closing Argument
 
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
+<!-- One paragraph: why operator-witnessed nominations beat agent-supplied lists, how the per-project path filter closes the corpus-contamination class, and why pool-stub forward-references are the right shape for the citation graph. -->
+
+## Tracked Defects
 
 _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `<name>` (heavy + foundation requires TTY + ATTEST)
+- Attestation: substantive attestation text
+- Date: YYYY-MM-DD
 
 ---
 
