@@ -11,253 +11,154 @@ status: Draft
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/ADR-0.0.27-exemplar-corpus-doctrine.md`
-- **Checklist Item:** #3 - "Measurement pipeline producing raw distribution artifacts (`src/gzkit/complexity/measurement.py`, `docs/governance/complexity/baselines/`)"
+- **Checklist Item:** #3 — "Measurement pipeline producing raw distribution artifacts (`src/gzkit/complexity/measurement.py`, `docs/governance/complexity/baselines/`)"
 
 **Status:** Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-Measurement pipeline producing raw distribution artifacts (`src/gzkit/complexity/measurement.py`, `docs/governance/complexity/baselines/`).
+Implement the measurement pipeline that, given the OBPI-02 corpus, clones each project at its pinned SHA, runs `radon cc/mi/hal/raw`, `lizard`, and `cohesion` against the included paths only, aggregates per-metric percentiles (p50, p75, p90, p95, p99) per project and across projects, and emits dated raw distribution artifacts under `docs/governance/complexity/baselines/{date}/`. Pin `radon`, `lizard`, `cohesion` as runtime dependencies in `pyproject.toml` per Stdlib-First named-departure rationale.
 
 ## Lane
 
-**Heavy** - This OBPI changes a command/API/schema/runtime contract surface.
-
-> Heavy is reserved for command/API/schema/runtime-contract changes. Process,
-> documentation, and template-only work stays Lite unless it changes one of
-> those external surfaces.
+**Heavy** — New runtime dependencies extend the wheel; new measurement contract; new on-disk baseline schema. Foundation-kind brief-level Gate 5 attestation.
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `docs/design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/ADR-0.0.27-exemplar-corpus-doctrine.md` — parent ADR for intent and scope
-- `src/gzkit/complexity/measurement.py` — explicitly referenced by the checklist item
-- `docs/governance/complexity/baselines/` — explicitly referenced by the checklist item
+- `src/gzkit/complexity/__init__.py` — package init
+- `src/gzkit/complexity/measurement.py` — orchestration entrypoint + tool wrappers
+- `src/gzkit/complexity/aggregator.py` — percentile + variance aggregation logic
+- `src/gzkit/complexity/baseline.py` — baseline-artifact serializer (JSON output schema)
+- `src/gzkit/schemas/complexity_baseline.json` — JSON Schema for baseline artifacts
+- `pyproject.toml` — pinned major-version declarations for `radon`, `lizard`, `cohesion`
+- `tests/complexity/test_measurement.py`, `tests/complexity/test_aggregator.py`, `tests/complexity/test_baseline.py`
+- `docs/governance/complexity/baselines/` — directory creation only; first dated baseline lands at OBPI-04 invocation
+- `docs/design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/**` — brief evidence updates only
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
-- Paths not listed in Allowed Paths
-- New dependencies
-- CI files, lockfiles
+- `data/exemplar_corpus.json` — corpus is OBPI-02
+- `.gzkit/rules/complexity-doctrine.md` — rule file is OBPI-01
+- `docs/governance/complexity/distilled-characteristics-*.md` — distillation is OBPI-04
+- `.gzkit/skills/gz-complexity-distill/**` — skill is OBPI-06
+- `src/gzkit/governance/trust_audits.py` — link validator is OBPI-07
+- Any path not listed in Allowed Paths
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: `pyproject.toml` declares `radon>=6.0,<7.0`, `lizard>=1.17,<2.0`, `cohesion>=1.0,<2.0` (or current major-pin equivalents) under runtime dependencies, with each pin's rationale recorded in a comment citing Stdlib-First § "Existing dependencies inherit this rule" — stdlib does not provide cyclomatic complexity / nesting depth / LCOM4 metrics.
+2. REQUIREMENT: `measurement.py` exposes a `measure_corpus(corpus: ExemplarCorpus, output_dir: Path) -> BaselineArtifact` entrypoint that orchestrates per-project measurement and per-project + cross-project aggregation. No graceful degradation: missing tool binary fails closed with exit 3 and a named error.
+3. REQUIREMENT: For each project at its pinned SHA, the pipeline applies the project's `included_paths` glob and respects `excluded_paths` glob — measurement runs ONLY against the filtered path set; whole-project measurement is rejected with a named error.
+4. REQUIREMENT: Aggregation produces per-metric percentiles `p50, p75, p90, p95, p99` per project AND across projects, plus inter-project variance per metric. The seven canonical metrics: `radon_cc`, `radon_mi`, `radon_hal_volume`, `radon_hal_difficulty`, `radon_hal_effort`, `radon_raw_nloc`, `radon_raw_lloc`, `lizard_nloc`, `lizard_param_count`, `lizard_nesting_depth`, `lizard_ccn`, `cohesion_lcom4`.
+5. REQUIREMENT: Baseline artifacts are written to `docs/governance/complexity/baselines/{YYYY-MM-DD}/baseline.json` and `baseline.summary.md`. JSON conforms to `src/gzkit/schemas/complexity_baseline.json`; the schema is `extra="forbid"` equivalent (no unknown fields permitted).
+6. REQUIREMENT: Baseline output is deterministic for a fixed corpus + tool versions: re-running the pipeline against the same corpus + same SHAs + same tool major versions produces byte-identical JSON (sorted keys, fixed numeric formatting, no timestamps inside the metric blocks). Determinism asserted by a test that runs the pipeline twice and `diff`s the outputs.
+7. REQUIREMENT: Tool subprocess invocation uses list-form `subprocess.run` with `encoding="utf-8"` per `.claude/rules/cross-platform.md`; never `shell=True`.
+8. REQUIREMENT: Tests cover: pipeline orchestration with mocked tool output; aggregator percentile correctness against fixed-input fixtures; baseline schema round-trip; determinism (run twice, diff empty); path-filter respect (a project with excluded path X must produce no metrics from X); failure modes (missing tool binary → exit 3; corpus loader error → exit 3; unknown JSON field → schema rejection). Each test decorated with `@covers(REQ-0.0.27-03-NN)`.
+9. REQUIREMENT: Tests do NOT clone real repositories during the unit tier — fixtures stub the clone-and-measure step. Real-clone integration coverage is deferred to a behave scenario gated under a tag waivable per existing waiver registry.
+10. REQUIREMENT: Function size discipline per `.claude/rules/pythonic.md` — measurement.py respects ≤ 50-line functions, ≤ 600-line modules.
+11. REQUIREMENT: TDD discipline; `tempfile`-backed temp dirs for baseline outputs in tests.
+12. REQUIREMENT: NEVER include the operator's personal email in code, fixtures, or docstrings.
 
-1. REQUIREMENT: **Longevity:** ≥ 5 years active development OR explicitly archived as a reference
-1. REQUIREMENT: **Maintenance health:** active releases in last 12 months OR project explicitly declares done state
-1. REQUIREMENT: **Practitioner reputation:** cited in PEPs, in published reference works (*Fluent Python*, *Effective Python*, *Architecture Patterns with Python*), OR by recurring conference talks (PyCon, EuroPython, PyData). Specifically NOT by GitHub-star count.
-1. REQUIREMENT: **Pure-Python predominance:** Python content is the primary artifact (≥ 80% of LOC). Excludes thin wrappers around C/Rust where the Python part is glue.
-1. REQUIREMENT: **Author craftsmanship signal:** maintainer history shows design discipline (PEP authorship, well-known design talks, mentorship reputation). The most subjective criterion; mitigated by the agent-drafted-then-operator-audited pattern.
-1. REQUIREMENT: **Project doctrine fitness:** the project does not violate gzkit's existing doctrinal commitments. A project whose foundational design choices contradict Stdlib-First or other gzkit canon is excluded regardless of other strengths. The pytest-mention demerit during this session's design dialogue was the canonical failure this criterion closes.
-1. REQUIREMENT: **Pinned to a specific commit SHA at corpus-authoring time** — distributions are reproducible from the SHA.
-1. REQUIREMENT: Framework — sync web (e.g. Django)
-1. REQUIREMENT: Framework — async web (e.g. Starlette)
-1. REQUIREMENT: HTTP library (e.g. httpx)
-1. REQUIREMENT: CLI tooling (e.g. click)
-1. REQUIREMENT: Type-strict data modeling (e.g. attrs)
-1. REQUIREMENT: Stdlib-style core library (selected CPython modules — pathlib, dataclasses, functools, contextlib)
-1. REQUIREMENT: Testing / property-based (e.g. hypothesis — pytest deliberately excluded per Stdlib-First)
-1. REQUIREMENT: Console rendering / TUI (e.g. rich)
-1. REQUIREMENT: Static analysis / type checker (e.g. mypy)
-1. REQUIREMENT: Build / packaging (e.g. flit)
-1. REQUIREMENT: Selecting projects that confirm a pre-decided threshold (post-hoc fitting)
-1. REQUIREMENT: Selecting by GitHub-star count (popularity ≠ design quality)
-1. REQUIREMENT: Selecting only modern projects (loses the 'test of time' signal)
-1. REQUIREMENT: Selecting only legacy projects (misses current best-practice idioms)
-1. REQUIREMENT: Selecting projects all from the same domain (monoculture; over-fits to one idiom)
-1. REQUIREMENT: Agent supplying the project list from training memory without operator audit (the corpus is doctrine and must be operator-witnessed)
-1. REQUIREMENT: Including any project that violates gzkit's existing doctrinal commitments (project doctrine fitness)
-1. REQUIREMENT: `radon cc` — full per-function CC distribution
-1. REQUIREMENT: `radon mi` — per-module Maintainability Index
-1. REQUIREMENT: `radon hal` — Halstead volume, difficulty, effort
-1. REQUIREMENT: `radon raw` — NLOC, LLOC
-1. REQUIREMENT: `lizard` — per-function NLOC, parameter count, nesting depth, CCN
-1. REQUIREMENT: `cohesion` — per-class LCOM4
-1. REQUIREMENT: Agent drafts metric-aggregate prose per metric (median, p75, p90, p95, p99 with inter-project variance commentary)
-1. REQUIREMENT: Operator adds the practitioner-eye observation (which functions cluster at p90 and why; what makes high-percentile complexity defensible)
-1. REQUIREMENT: Joint authoring of actionable characteristics per metric: numeric boundary (corpus percentile + absolute number at that percentile), qualitative band (comfortable craft / investigate / refactor), doctrinal frame (which authority speaks to a violation at this boundary)
-1. REQUIREMENT: Agent proposes classifier rule-table boundary updates against new percentiles; operator audits
-1. REQUIREMENT: Diff against previous distillation: any boundary that moved >10% gets explicit operator narration
-1. REQUIREMENT: Output: `docs/governance/complexity/distilled-characteristics-{date}.md`. Previous documents preserved (never overwritten) — doctrine evolution has a permanent audit trail.
-1. REQUIREMENT: `data/exemplar_corpus.json` (new): registry of pinned project metadata (URL, commit SHA, included paths, excluded paths with rationale, craftsmanship justification). Pydantic model `ExemplarProject` with `ConfigDict(frozen=True, extra='forbid')`. Edits governed by the doctrine itself.
-1. REQUIREMENT: `src/gzkit/complexity/measurement.py` (new): measurement pipeline orchestrating radon/lizard/cohesion against pinned SHAs.
-1. REQUIREMENT: `pyproject.toml`: pinned major versions of `radon`, `lizard`, `cohesion` as runtime dependencies (Stdlib-First named departures with rationale: stdlib does not provide cyclomatic complexity / nesting depth / LCOM4 metrics).
-1. REQUIREMENT: `.gzkit/skills/gz-complexity-distill/` (new): operator-runnable skill carrying corpus list, per-project path filters, methodology rationale, distillation cadence triggers; mirrored to `.claude/skills/`, `.agents/skills/`, `.github/skills/` per skill-surface-sync rules.
-1. REQUIREMENT: `docs/governance/complexity/` (new directory): home for raw baseline artifacts and dated distilled-characteristics documents.
-1. REQUIREMENT: `src/gzkit/governance/trust_audits.py`: add `validate_complexity_doctrine_links` for `gz validate --complexity-doctrine-links` scope; fail-closed (exit 3) on broken cross-references.
-1. REQUIREMENT: `.gzkit/rules/complexity-doctrine.md` (new): canonical rule file declaring corpus methodology, distillation cadence, citation contract.
-1. REQUIREMENT: `docs/governance/advisory-rules-audit.md`: scorecard entry classifying the new rule as Mechanical.
-1. REQUIREMENT: `ADR-pool.attestation-quality-measurement` — activates if attestation fatigue empirically materializes (WWHTBT rejected condition #4)
-1. REQUIREMENT: `ADR-pool.doctrine-amendment-protocol` — codifies how foundation doctrine is amended without breaking citing ADRs (reversibility forcing function)
-1. REQUIREMENT: `ADR-pool.complexity-doctrine-validate-suite` — aggregates additional `gz validate` scopes (`--classifier-schema-frozen`, `--corpus-shas-pinned`, `--distillation-cadence`)
-1. REQUIREMENT: `ADR-pool.canon-pillar-codification` — open question whether five top-level pillars warrant retroactive foundation ADRs (deferred unless ledger demands per-pillar introduction event)
-1. REQUIREMENT: `ADR-pool.complexity-doctrine-meets-chore-system` — future foundation question on chore system as broader doctrine-consumer
-1. REQUIREMENT: `ADR-pool.complexity-guide-obpi-authoring-integration` — future feature question on `gz complexity-guide` integration with OBPI authoring workflow
-1. REQUIREMENT: Does NOT specify the threshold values or trigger semantics — that is ADR-0.0.28's scope.
-1. REQUIREMENT: Does NOT author the complexity advisor or its CLI surface — that is ADR-0.0.29's scope.
-1. REQUIREMENT: Does NOT author the authoring-time guidance surface — that is ADR-0.0.30's scope.
-1. REQUIREMENT: Does NOT vendor or reimplement the radon/lizard/cohesion metric tools — pinned dependency posture is the chosen approach (Q4 of design dialogue).
-1. REQUIREMENT: Does NOT fold the canon-pillar codification question into the cluster — that pool stub is a forward question, not in-scope here.
-1. REQUIREMENT: Does NOT enforce a measurement-tool replacement path — the methodology binds the choice of `radon`/`lizard`/`cohesion` to corpus-amendment ceremony.
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if OBPI-02's `data/exemplar_corpus.json` and `ExemplarProject` model have not landed, STOP — the pipeline consumes the corpus contract.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first. -->
-
-**Governance (read once, cache):**
-
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
-
-**Context:**
-
-- [ ] Parent ADR: `docs/design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/ADR-0.0.27-exemplar-corpus-doctrine.md`
-- [ ] Related OBPIs in same ADR
-
-**Prerequisites (check existence, STOP if missing):**
-
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/ADR-0.0.27-exemplar-corpus-doctrine.md`
-- [ ] Required path exists or is intentionally created in this OBPI: `src/gzkit/complexity/measurement.py`
-- [ ] Parent ADR evidence artifacts referenced by this brief are present
-
-**Existing Code (understand current state):**
-
-- [ ] Existing tests adjacent to the Allowed Paths reviewed before implementation
-- [ ] Parent ADR integration points reviewed for local conventions
+- [ ] OBPI-02: `ExemplarProject` model + corpus file shape
+- [ ] Parent ADR § Decision — measurement protocol block (radon/lizard/cohesion subcommands and outputs)
+- [ ] `radon` / `lizard` / `cohesion` upstream documentation for their JSON-or-equivalent output formats
+- [ ] `.claude/rules/cross-platform.md` — subprocess list-form + UTF-8 invariants
+- [ ] `.claude/rules/pythonic.md` — function/module size ceilings
+- [ ] AGENTS.md § STDLIB-FIRST DOCTRINE — named-departure rationale convention
 
 ## Quality Gates
 
-<!-- Which gates apply and how to verify them. -->
-
 ### Gate 1: ADR
+- [ ] Intent recorded; parent checklist item quoted
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
-
-### Gate 2: TDD (Red-Green-Refactor)
-
-- [ ] Tests derived from brief acceptance criteria, not from implementation
-- [ ] Red-Green-Refactor cycle followed per behavior increment
-- [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
+### Gate 2: TDD
+- [ ] RGR cycle per assertion; tests pass
 
 ### Code Quality
+- [ ] Lint/type clean; size limits respected
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+### Gate 3: Docs (Heavy)
+- [ ] `mkdocs build --strict` clean
+- [ ] Manpage / runbook stub for `gz-complexity-distill` invocation deferred to OBPI-06; this OBPI documents the measurement contract in the ADR evidence
 
-<!-- Heavy lane only: -->
-### Gate 3: Docs (Heavy only)
+### Gate 4: BDD (Heavy)
+- [ ] BDD scenario tagged `@REQ-0.0.27-03-NN` covers a measurement run against a small fixture corpus (or registered as waived if real-clone is too heavy for CI)
 
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
-
-### Gate 4: BDD (Heavy only)
-
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
-
-### Gate 5: Human (Heavy only)
-
-- [ ] Human attestation recorded
+### Gate 5: Human (Heavy + Foundation)
+- [ ] TTY + `ATTEST` confirmation
 
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
-uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
 uv run gz test
-
-# Specific verification for this OBPI
-test -f docs/design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/ADR-0.0.27-exemplar-corpus-doctrine.md
-test -f src/gzkit/complexity/measurement.py
-test -f docs/governance/complexity/baselines/
+uv run gz validate --documents
+uv run gz arb step --name unittest -- uv run -m unittest tests/complexity -v
+# Determinism smoke
+uv run python -c "import sys; sys.stdout.reconfigure(encoding='utf-8'); from gzkit.complexity.measurement import measure_corpus; from pathlib import Path; from gzkit.models.exemplar import load_corpus; print(measure_corpus(load_corpus(Path('data/exemplar_corpus.json')), Path('/tmp/baseline-1')))"
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.0.27-03-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.0.27-03-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.0.27-03-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.0.27-03-01: Given the corpus and a target output directory, when `measure_corpus` runs, then a baseline artifact is produced at `{output_dir}/baseline.json` validating against `src/gzkit/schemas/complexity_baseline.json`.
+- [ ] REQ-0.0.27-03-02: Given a project's `excluded_paths`, when measurement runs, then no metric for any path matching the exclusion glob appears in the baseline.
+- [ ] REQ-0.0.27-03-03: Given the same corpus + same tool major versions, when the pipeline runs twice into two output dirs, then `diff baseline-1/baseline.json baseline-2/baseline.json` is empty.
+- [ ] REQ-0.0.27-03-04: Given each canonical metric, when the aggregator runs, then `p50, p75, p90, p95, p99` and inter-project variance are present per metric per project and aggregated across projects.
+- [ ] REQ-0.0.27-03-05: Given a missing `radon`/`lizard`/`cohesion` binary, when the pipeline runs, then it exits with code 3 and a named error; no baseline file is written.
+- [ ] REQ-0.0.27-03-06: Given a baseline JSON containing an unknown field, when validation runs, then the schema rejects it.
+- [ ] REQ-0.0.27-03-07: Given `pyproject.toml`, when parsed, then the three pinned dependencies appear with major-version pins and rationale citing Stdlib-First.
 
 ## Completion Checklist
 
-<!-- Verify all gates before marking OBPI accepted. -->
-
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** RGR cycle followed, tests derived from brief, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
-
-> For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
+- [ ] Gate 1: Intent recorded
+- [ ] Gate 2: RGR cycle; tests pass with `@covers`
+- [ ] Code Quality: lint/type clean; size limits respected
+- [ ] Gate 3: mkdocs --strict clean
+- [ ] Gate 4: BDD scenario or waiver entry
+- [ ] Gate 5: TTY + `ATTEST` captured
 
 ## Evidence
 
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
-
 ### Gate 1 (ADR)
-
 - [ ] Intent and scope recorded
 
 ### Gate 2 (TDD — Red-Green-Refactor)
-
 ```text
-# Paste test output here
+# Paste RGR observations + final unittest output
 ```
 
 ### Code Quality
-
 ```text
-# Paste lint/format/type check output here
+# Paste lint/typecheck output
 ```
 
 ### Gate 3 (Docs)
-
 ```text
-# Paste docs-build output here when Gate 3 applies
+# Paste mkdocs --strict output
 ```
 
 ### Gate 4 (BDD)
-
 ```text
-# Paste behave output here when Gate 4 applies
+# Paste behave output or waiver entry
 ```
 
 ### Gate 5 (Human)
-
 ```text
-# Record attestation text here when required by parent lane
+# Record attestation text + receipt IDs
 ```
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+<!-- Problem before: corpus existed only as a list of pinned projects with no measurement contract; the doctrine had no way to ground numeric thresholds in observation. Capability now: a deterministic measurement pipeline that produces dated baseline artifacts consumed by OBPI-04's distillation pass and re-runnable across distillation cadence cycles. -->
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+<!-- Paste the tail of a representative baseline.json showing per-metric percentiles + inter-project variance for at least three corpus entries. -->
 
 ### Implementation Summary
 
@@ -267,18 +168,19 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - Attestation status:
 - Defects noted:
 
-## Tracked Defects
+### Closing Argument
 
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
+<!-- One paragraph: why determinism is the load-bearing property (re-runnability across years), why fail-closed on missing tools beats graceful degradation (situational doctrine = doctrine drift), why per-project path filters at this layer beat a "measure everything and filter later" alternative. -->
+
+## Tracked Defects
 
 _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `<name>` (heavy + foundation requires TTY + ATTEST)
+- Attestation: substantive attestation text
+- Date: YYYY-MM-DD
 
 ---
 

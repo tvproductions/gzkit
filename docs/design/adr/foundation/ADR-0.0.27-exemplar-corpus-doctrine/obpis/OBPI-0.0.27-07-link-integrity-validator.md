@@ -6,255 +6,164 @@ lane: Heavy
 status: Draft
 ---
 
-# OBPI-0.0.27-07-link-integrity-validator: Link Integrity Validator
+# OBPI-0.0.27-07-link-integrity-validator: gz validate --complexity-doctrine-links
 
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/ADR-0.0.27-exemplar-corpus-doctrine.md`
-- **Checklist Item:** #7 - "`gz validate --complexity-doctrine-links` validator (link-integrity scope; closes 2am-Scenario-2 failure mode)"
+- **Checklist Item:** #7 — "`gz validate --complexity-doctrine-links` validator (link-integrity scope; closes 2am-Scenario-2 failure mode)"
 
 **Status:** Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-`gz validate --complexity-doctrine-links` validator (link-integrity scope; closes 2am-Scenario-2 failure mode).
+Implement `validate_complexity_doctrine_links` in `src/gzkit/governance/trust_audits.py` and register the corresponding `gz validate --complexity-doctrine-links` flag. The validator scans every citation in the four cluster ADRs (0.0.27 / 0.0.28 / 0.0.29 / 0.0.30) and any rule body referencing the distilled-characteristics corpus, parses each citation via OBPI-05's `parse_citation`, and fail-closes (exit 3) when the cited document does not exist or when the cited `corpus_revision` is older than the validator's portability window. Closes the 2am-Scenario-2 failure mode (operator follows an advisor diagnosis to a missing artifact).
 
 ## Lane
 
-**Heavy** - This OBPI changes a command/API/schema/runtime contract surface.
-
-> Heavy is reserved for command/API/schema/runtime-contract changes. Process,
-> documentation, and template-only work stays Lite unless it changes one of
-> those external surfaces.
+**Heavy** — New CLI flag is a contract change per `.gzkit/rules/cli.md`; new validator is a Mechanical-class rule audit per `AGENTS.md` § Governance doctrine surfaces. Foundation-kind brief-level Gate 5 attestation.
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `docs/design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/ADR-0.0.27-exemplar-corpus-doctrine.md` — parent ADR for intent and scope
-- `docs/design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/**` — parent ADR package scope
+- `src/gzkit/governance/trust_audits.py` — add `validate_complexity_doctrine_links` (function-size discipline: split helpers as needed)
+- `src/gzkit/cli/parser_artifacts.py` — register `--complexity-doctrine-links` flag on `gz validate`
+- `src/gzkit/commands/validate.py` (or wherever the validate command dispatcher lives) — wire the flag to the new validator
+- `tests/governance/test_complexity_doctrine_links.py` — REQ-derived assertions
+- `features/complexity_doctrine_links.feature` — BDD scenario tagged with REQ IDs
+- `docs/user/manpages/gz-validate.md` — manpage section for the new flag (per `.gzkit/rules/gate5-runbook-code-covenant.md`)
+- `docs/user/runbook.md` — runbook entry under "Governance doctrine surfaces"
+- `docs/governance/advisory-rules-audit.md` — promote the OBPI-01 entry to "promoted/Mechanical" with this validator as the enforcement artifact
+- `docs/design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/**` — brief evidence updates only
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
-- Paths not listed in Allowed Paths
-- New dependencies
-- CI files, lockfiles
+- `data/exemplar_corpus.json` — corpus is OBPI-02
+- `src/gzkit/complexity/measurement.py` — measurement is OBPI-03
+- `docs/governance/complexity/distilled-characteristics-*.md` — distillation outputs are OBPI-04
+- `src/gzkit/complexity/citation.py` — parser is OBPI-05 (consumed here, not edited)
+- `.gzkit/skills/gz-complexity-distill/**` — skill is OBPI-06
+- ADR-0.0.28 / 0.0.29 / 0.0.30 ADR bodies (validator scans them; does not edit)
+- Any path not listed in Allowed Paths
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. REQUIREMENT: `validate_complexity_doctrine_links` enumerates the in-scope artifacts: ADR-0.0.27 / 0.0.28 / 0.0.29 / 0.0.30 ADR bodies + their OBPI briefs + `.gzkit/rules/complexity-doctrine.md` + any file matching `docs/governance/complexity/**/*.md`; for each file, extracts every citation that matches the canonical citation pattern from OBPI-05.
+2. REQUIREMENT: For each extracted citation, the validator calls `parse_citation` (OBPI-05); a parse failure fails closed with exit 3 and a named error citing the file + line.
+3. REQUIREMENT: For each parsed citation, the validator asserts the cited `distilled_characteristics_path` resolves to an existing file under `docs/governance/complexity/`. A missing file fails closed with exit 3 and a named error.
+4. REQUIREMENT: For each parsed citation, the validator asserts the cited `section_anchor` resolves to a heading in the cited document. An unresolved anchor fails closed with exit 3.
+5. REQUIREMENT: For each parsed citation, the validator calls `is_portable(citation, current_revision)`; a non-portable citation fails closed with exit 3 and a named error directing the operator to the doctrine-amendment-protocol pool stub (`ADR-pool.doctrine-amendment-protocol`).
+6. REQUIREMENT: The CLI flag `--complexity-doctrine-links` is registered on `gz validate` and integrates into `gz validate --all` and `gz check` (so pre-commit / pre-merge gates fire automatically).
+7. REQUIREMENT: A speculative-citation escape marker is supported (per the precedent in `.claude/rules/governance-core.md` § "Operator-doc verb resolution"): a comment-style marker on the line preceding a citation tells the validator to skip that citation (used when an ADR cites a planned-but-unlanded distillation document).
+8. REQUIREMENT: Tests cover: well-formed citations resolve clean (exit 0); a missing distilled-characteristics file fails (exit 3); an unresolved section anchor fails (exit 3); a non-portable corpus_revision fails (exit 3); the speculative marker correctly skips a citation; integration into `gz validate --all` fires the validator; the `gz check` aggregate path includes it. Each test decorated with `@covers(REQ-0.0.27-07-NN)`.
+9. REQUIREMENT: A behave scenario tagged `@REQ-0.0.27-07-{01..04}` covers the four canonical failure paths against fixture cluster ADRs.
+10. REQUIREMENT: Manpage and runbook updates land in the same patch per `.gzkit/rules/gate5-runbook-code-covenant.md`.
+11. REQUIREMENT: Function-size discipline per `.claude/rules/pythonic.md` (≤ 50-line functions); the validator is decomposed into named helpers (citation extraction, parsing, file resolution, anchor resolution, portability check).
+12. REQUIREMENT: TDD discipline; `tempfile`-backed fixtures simulate the cluster ADR layout.
+13. REQUIREMENT: NEVER include the operator's personal email in code, fixtures, manpage, runbook, or commit messages.
 
-1. REQUIREMENT: **Longevity:** ≥ 5 years active development OR explicitly archived as a reference
-1. REQUIREMENT: **Maintenance health:** active releases in last 12 months OR project explicitly declares done state
-1. REQUIREMENT: **Practitioner reputation:** cited in PEPs, in published reference works (*Fluent Python*, *Effective Python*, *Architecture Patterns with Python*), OR by recurring conference talks (PyCon, EuroPython, PyData). Specifically NOT by GitHub-star count.
-1. REQUIREMENT: **Pure-Python predominance:** Python content is the primary artifact (≥ 80% of LOC). Excludes thin wrappers around C/Rust where the Python part is glue.
-1. REQUIREMENT: **Author craftsmanship signal:** maintainer history shows design discipline (PEP authorship, well-known design talks, mentorship reputation). The most subjective criterion; mitigated by the agent-drafted-then-operator-audited pattern.
-1. REQUIREMENT: **Project doctrine fitness:** the project does not violate gzkit's existing doctrinal commitments. A project whose foundational design choices contradict Stdlib-First or other gzkit canon is excluded regardless of other strengths. The pytest-mention demerit during this session's design dialogue was the canonical failure this criterion closes.
-1. REQUIREMENT: **Pinned to a specific commit SHA at corpus-authoring time** — distributions are reproducible from the SHA.
-1. REQUIREMENT: Framework — sync web (e.g. Django)
-1. REQUIREMENT: Framework — async web (e.g. Starlette)
-1. REQUIREMENT: HTTP library (e.g. httpx)
-1. REQUIREMENT: CLI tooling (e.g. click)
-1. REQUIREMENT: Type-strict data modeling (e.g. attrs)
-1. REQUIREMENT: Stdlib-style core library (selected CPython modules — pathlib, dataclasses, functools, contextlib)
-1. REQUIREMENT: Testing / property-based (e.g. hypothesis — pytest deliberately excluded per Stdlib-First)
-1. REQUIREMENT: Console rendering / TUI (e.g. rich)
-1. REQUIREMENT: Static analysis / type checker (e.g. mypy)
-1. REQUIREMENT: Build / packaging (e.g. flit)
-1. REQUIREMENT: Selecting projects that confirm a pre-decided threshold (post-hoc fitting)
-1. REQUIREMENT: Selecting by GitHub-star count (popularity ≠ design quality)
-1. REQUIREMENT: Selecting only modern projects (loses the 'test of time' signal)
-1. REQUIREMENT: Selecting only legacy projects (misses current best-practice idioms)
-1. REQUIREMENT: Selecting projects all from the same domain (monoculture; over-fits to one idiom)
-1. REQUIREMENT: Agent supplying the project list from training memory without operator audit (the corpus is doctrine and must be operator-witnessed)
-1. REQUIREMENT: Including any project that violates gzkit's existing doctrinal commitments (project doctrine fitness)
-1. REQUIREMENT: `radon cc` — full per-function CC distribution
-1. REQUIREMENT: `radon mi` — per-module Maintainability Index
-1. REQUIREMENT: `radon hal` — Halstead volume, difficulty, effort
-1. REQUIREMENT: `radon raw` — NLOC, LLOC
-1. REQUIREMENT: `lizard` — per-function NLOC, parameter count, nesting depth, CCN
-1. REQUIREMENT: `cohesion` — per-class LCOM4
-1. REQUIREMENT: Agent drafts metric-aggregate prose per metric (median, p75, p90, p95, p99 with inter-project variance commentary)
-1. REQUIREMENT: Operator adds the practitioner-eye observation (which functions cluster at p90 and why; what makes high-percentile complexity defensible)
-1. REQUIREMENT: Joint authoring of actionable characteristics per metric: numeric boundary (corpus percentile + absolute number at that percentile), qualitative band (comfortable craft / investigate / refactor), doctrinal frame (which authority speaks to a violation at this boundary)
-1. REQUIREMENT: Agent proposes classifier rule-table boundary updates against new percentiles; operator audits
-1. REQUIREMENT: Diff against previous distillation: any boundary that moved >10% gets explicit operator narration
-1. REQUIREMENT: Output: `docs/governance/complexity/distilled-characteristics-{date}.md`. Previous documents preserved (never overwritten) — doctrine evolution has a permanent audit trail.
-1. REQUIREMENT: `data/exemplar_corpus.json` (new): registry of pinned project metadata (URL, commit SHA, included paths, excluded paths with rationale, craftsmanship justification). Pydantic model `ExemplarProject` with `ConfigDict(frozen=True, extra='forbid')`. Edits governed by the doctrine itself.
-1. REQUIREMENT: `src/gzkit/complexity/measurement.py` (new): measurement pipeline orchestrating radon/lizard/cohesion against pinned SHAs.
-1. REQUIREMENT: `pyproject.toml`: pinned major versions of `radon`, `lizard`, `cohesion` as runtime dependencies (Stdlib-First named departures with rationale: stdlib does not provide cyclomatic complexity / nesting depth / LCOM4 metrics).
-1. REQUIREMENT: `.gzkit/skills/gz-complexity-distill/` (new): operator-runnable skill carrying corpus list, per-project path filters, methodology rationale, distillation cadence triggers; mirrored to `.claude/skills/`, `.agents/skills/`, `.github/skills/` per skill-surface-sync rules.
-1. REQUIREMENT: `docs/governance/complexity/` (new directory): home for raw baseline artifacts and dated distilled-characteristics documents.
-1. REQUIREMENT: `src/gzkit/governance/trust_audits.py`: add `validate_complexity_doctrine_links` for `gz validate --complexity-doctrine-links` scope; fail-closed (exit 3) on broken cross-references.
-1. REQUIREMENT: `.gzkit/rules/complexity-doctrine.md` (new): canonical rule file declaring corpus methodology, distillation cadence, citation contract.
-1. REQUIREMENT: `docs/governance/advisory-rules-audit.md`: scorecard entry classifying the new rule as Mechanical.
-1. REQUIREMENT: `ADR-pool.attestation-quality-measurement` — activates if attestation fatigue empirically materializes (WWHTBT rejected condition #4)
-1. REQUIREMENT: `ADR-pool.doctrine-amendment-protocol` — codifies how foundation doctrine is amended without breaking citing ADRs (reversibility forcing function)
-1. REQUIREMENT: `ADR-pool.complexity-doctrine-validate-suite` — aggregates additional `gz validate` scopes (`--classifier-schema-frozen`, `--corpus-shas-pinned`, `--distillation-cadence`)
-1. REQUIREMENT: `ADR-pool.canon-pillar-codification` — open question whether five top-level pillars warrant retroactive foundation ADRs (deferred unless ledger demands per-pillar introduction event)
-1. REQUIREMENT: `ADR-pool.complexity-doctrine-meets-chore-system` — future foundation question on chore system as broader doctrine-consumer
-1. REQUIREMENT: `ADR-pool.complexity-guide-obpi-authoring-integration` — future feature question on `gz complexity-guide` integration with OBPI authoring workflow
-1. REQUIREMENT: Does NOT specify the threshold values or trigger semantics — that is ADR-0.0.28's scope.
-1. REQUIREMENT: Does NOT author the complexity advisor or its CLI surface — that is ADR-0.0.29's scope.
-1. REQUIREMENT: Does NOT author the authoring-time guidance surface — that is ADR-0.0.30's scope.
-1. REQUIREMENT: Does NOT vendor or reimplement the radon/lizard/cohesion metric tools — pinned dependency posture is the chosen approach (Q4 of design dialogue).
-1. REQUIREMENT: Does NOT fold the canon-pillar codification question into the cluster — that pool stub is a forward question, not in-scope here.
-1. REQUIREMENT: Does NOT enforce a measurement-tool replacement path — the methodology binds the choice of `radon`/`lizard`/`cohesion` to corpus-amendment ceremony.
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: if OBPI-05's `parse_citation` is not present, STOP — the validator depends on the parser surface.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first. -->
-
-**Governance (read once, cache):**
-
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
-- [ ] Parent ADR - understand full context
-
-**Context:**
-
-- [ ] Parent ADR: `docs/design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/ADR-0.0.27-exemplar-corpus-doctrine.md`
-- [ ] Related OBPIs in same ADR
-
-**Prerequisites (check existence, STOP if missing):**
-
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/ADR-0.0.27-exemplar-corpus-doctrine.md`
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/**`
-- [ ] Parent ADR evidence artifacts referenced by this brief are present
-
-**Existing Code (understand current state):**
-
-- [ ] Existing tests adjacent to the Allowed Paths reviewed before implementation
-- [ ] Parent ADR integration points reviewed for local conventions
+- [ ] OBPI-05 parser surface (`src/gzkit/complexity/citation.py`)
+- [ ] OBPI-04 first distilled-characteristics document — concrete artifact for the validator's resolution checks
+- [ ] `src/gzkit/governance/trust_audits.py` — existing validator patterns (e.g. `validate_brief_headings`, `validate_advisory_scorecard`) for shape consistency
+- [ ] `.gzkit/rules/cli.md` — exit-code map (3 = policy breach)
+- [ ] `.claude/rules/governance-core.md` — speculative-marker precedent for skip semantics
+- [ ] `docs/user/manpages/gz-validate.md` — manpage shape for the new flag
 
 ## Quality Gates
 
-<!-- Which gates apply and how to verify them. -->
-
 ### Gate 1: ADR
+- [ ] Intent recorded; parent checklist item quoted
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
-
-### Gate 2: TDD (Red-Green-Refactor)
-
-- [ ] Tests derived from brief acceptance criteria, not from implementation
-- [ ] Red-Green-Refactor cycle followed per behavior increment
-- [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
+### Gate 2: TDD
+- [ ] RGR cycle; tests pass with `@covers`
 
 ### Code Quality
+- [ ] Lint/type clean; size limits respected
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+### Gate 3: Docs (Heavy)
+- [ ] mkdocs --strict clean
+- [ ] Manpage section for `--complexity-doctrine-links` in `docs/user/manpages/gz-validate.md`
+- [ ] Runbook entry under "Governance doctrine surfaces"
 
-<!-- Heavy lane only: -->
-### Gate 3: Docs (Heavy only)
+### Gate 4: BDD (Heavy)
+- [ ] `features/complexity_doctrine_links.feature` covers the four canonical failure paths; scenarios tagged `@REQ-0.0.27-07-{01..04}`
 
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
-
-### Gate 4: BDD (Heavy only)
-
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
-
-### Gate 5: Human (Heavy only)
-
-- [ ] Human attestation recorded
+### Gate 5: Human (Heavy + Foundation)
+- [ ] TTY + `ATTEST` confirmation
 
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. -->
-
 ```bash
-uv run gz validate --documents
 uv run gz lint
 uv run gz typecheck
 uv run gz test
-
-# Specific verification for this OBPI
-test -f docs/design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/ADR-0.0.27-exemplar-corpus-doctrine.md
+uv run gz validate --complexity-doctrine-links
+uv run gz validate --all  # integration check
+uv run gz check
+uv run mkdocs build --strict
+uv run gz arb step --name unittest -- uv run -m unittest tests/governance/test_complexity_doctrine_links.py -v
+uv run -m behave features/complexity_doctrine_links.feature
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.0.27-07-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.0.27-07-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.0.27-07-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.0.27-07-01: Given a cluster ADR with a well-formed citation to an existing distilled-characteristics document, when `gz validate --complexity-doctrine-links` runs, then exit 0.
+- [ ] REQ-0.0.27-07-02: Given a cluster ADR citing a distilled-characteristics file that does not exist on disk, when the validator runs, then exit 3 with a named error citing the file + line.
+- [ ] REQ-0.0.27-07-03: Given a cluster ADR citing an unresolved section anchor in an existing distilled file, when the validator runs, then exit 3 with a named error citing the anchor.
+- [ ] REQ-0.0.27-07-04: Given a cluster ADR citing a non-portable `corpus_revision`, when the validator runs, then exit 3 with a named error directing the operator to the doctrine-amendment-protocol pool stub.
+- [ ] REQ-0.0.27-07-05: Given a citation preceded by the speculative-marker comment, when the validator runs, then that citation is skipped without affecting the exit code.
+- [ ] REQ-0.0.27-07-06: Given `gz validate --all` and `gz check`, when invoked, then the new validator fires as part of the aggregate run.
+- [ ] REQ-0.0.27-07-07: Given the manpage `docs/user/manpages/gz-validate.md`, when the operator reads it, then the `--complexity-doctrine-links` section is present with at least one example invocation.
 
 ## Completion Checklist
 
-<!-- Verify all gates before marking OBPI accepted. -->
-
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** RGR cycle followed, tests derived from brief, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
-
-> For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
+- [ ] Gate 1: Intent recorded
+- [ ] Gate 2: RGR cycle; tests pass with `@covers`
+- [ ] Code Quality: lint/type clean; size limits
+- [ ] Gate 3: mkdocs --strict clean; manpage + runbook updated
+- [ ] Gate 4: behave scenarios pass with REQ tags
+- [ ] Gate 5: TTY + `ATTEST` captured
 
 ## Evidence
 
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
-
 ### Gate 1 (ADR)
-
 - [ ] Intent and scope recorded
 
 ### Gate 2 (TDD — Red-Green-Refactor)
-
 ```text
-# Paste test output here
+# Paste RGR observations + final unittest output
 ```
 
 ### Code Quality
-
 ```text
-# Paste lint/format/type check output here
+# Paste lint/typecheck output
 ```
 
 ### Gate 3 (Docs)
-
 ```text
-# Paste docs-build output here when Gate 3 applies
+# Paste mkdocs --strict output + manpage + runbook diff hunks
 ```
 
 ### Gate 4 (BDD)
-
 ```text
-# Paste behave output here when Gate 4 applies
+# Paste behave output for the four canonical failure paths
 ```
 
 ### Gate 5 (Human)
-
 ```text
-# Record attestation text here when required by parent lane
+# Record attestation text + receipt IDs
 ```
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+<!-- Problem before: an operator at 2am following an advisor diagnosis could land on a citation pointing at a missing or stale distilled-characteristics document and lose the doctrine trail at the worst possible moment. Capability now: every citation in the cluster ADRs and the rule body is mechanically validated; broken or out-of-date references fail-close at gate time, surfacing the defect at next operator session rather than during a midnight diagnosis. -->
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+<!-- Paste the validator output for the four canonical failure paths and the integration into `gz check`. -->
 
 ### Implementation Summary
 
@@ -264,18 +173,19 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - Attestation status:
 - Defects noted:
 
-## Tracked Defects
+### Closing Argument
 
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
+<!-- One paragraph: why fail-closed at validator time beats best-effort at runtime (the 2am operator cannot debug a silent broken citation), why integrating into `gz check` closes the "validator exists but never runs" failure class, and why this is the load-bearing closing OBPI of the cluster — without link integrity, every other invariant in 0.0.27 / 0.0.28 / 0.0.29 / 0.0.30 is exposed to silent drift. -->
+
+## Tracked Defects
 
 _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `<name>` (heavy + foundation requires TTY + ATTEST)
+- Attestation: substantive attestation text
+- Date: YYYY-MM-DD
 
 ---
 

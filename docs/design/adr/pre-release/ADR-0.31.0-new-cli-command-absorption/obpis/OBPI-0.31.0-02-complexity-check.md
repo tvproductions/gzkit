@@ -2,17 +2,31 @@
 id: OBPI-0.31.0-02-complexity-check
 parent: ADR-0.31.0-new-cli-command-absorption
 item: 2
-status: Pending
+status: Withdrawn
 lane: heavy
 date: 2026-03-21
+withdrawn_date: 2026-04-25
+withdrawn_by: complexity-doctrine-cluster
+withdrawn_reason: subsumed-by-ADR-0.0.29
 ---
 
-# OBPI-0.31.0-02: Complexity Check
+# OBPI-0.31.0-02: Complexity Check (WITHDRAWN — subsumed by ADR-0.0.29)
+
+> **Status:** WITHDRAWN on 2026-04-25 — subsumed by [ADR-0.0.29 (Complexity Advisor)](../../../foundation/ADR-0.0.29-complexity-advisor/ADR-0.0.29-complexity-advisor.md) and the broader four-ADR complexity-doctrine cluster (0.0.27 corpus / 0.0.28 thresholds / 0.0.29 advisor / 0.0.30 authoring-guidance).
+>
+> **Why withdrawn:** This OBPI was scoped as a literal port of opsdev's 122-line `complexity-check` wrapper around xenon. The complexity-doctrine cluster supersedes it with empirically-grounded doctrine (corpus → thresholds → advisor → authoring-guidance) and a proper `gz complexity-advise` CLI verb (ADR-0.0.29 OBPI-03) that auto-chains from xenon-as-gate failure rather than re-wrapping xenon. Re-implementing a thin xenon wrapper here would create a competing surface to the cluster and violate the single-canonical-home invariant ADR-0.0.28 codifies.
+>
+> **Replacement surfaces:**
+> - Trigger-time complexity diagnosis: `gz complexity-advise` (ADR-0.0.29 OBPI-03)
+> - Authoring-time complexity hints: `gz complexity-guide` (ADR-0.0.30 OBPI-01)
+> - Xenon-as-gate enforcement: continues to live in the existing `complexity-reduction-xenon` chore, strengthened to consume ADR-0.0.28's `ThresholdTable` (separate work item)
+>
+> **Original brief content retained below for historical reference; do not implement.**
 
 ## ADR ITEM --- Level 1 WBS Reference
 
 - Source ADR: `docs/design/adr/pre-release/ADR-0.31.0-new-cli-command-absorption/ADR-0.31.0-new-cli-command-absorption.md`
-- OBPI Entry (Level 1 WBS): `OBPI-0.31.0-02 --- "Port complexity-check (122 lines) --- xenon cyclomatic complexity"`
+- OBPI Entry (Level 1 WBS): `OBPI-0.31.0-02 --- "Port complexity-check (122 lines) --- xenon cyclomatic complexity"` → subsumed by ADR-0.0.29
 
 ## OBJECTIVE
 
