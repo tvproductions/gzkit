@@ -1,0 +1,974 @@
+{
+  "obpi_id": "OBPI-0.0.21-06-rule-and-doc-updates",
+  "timestamp": "2026-04-25T07:32:26.211508+00:00",
+  "verdict": "PASS",
+  "plan_file": "binary-wiggling-hedgehog.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.9.0",
+      "sibling_obpi": "OBPI-0.9.0-04-gzkit-surface-import-and-mirror-sync",
+      "contested_paths": [
+        "docs/governance/GovZero/gzkit-structure.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.31.0",
+      "sibling_obpi": "OBPI-0.31.0-06-metrics-report",
+      "contested_paths": [
+        "docs/user/manpages/gz-chores.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.31.0",
+      "sibling_obpi": "OBPI-0.31.0-01-sloc-scan",
+      "contested_paths": [
+        "docs/user/manpages/gz-chores.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.31.0",
+      "sibling_obpi": "OBPI-0.31.0-08-validate-manpages",
+      "contested_paths": [
+        "docs/user/manpages/gz-chores.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.31.0",
+      "sibling_obpi": "OBPI-0.31.0-10-interrogate",
+      "contested_paths": [
+        "docs/user/manpages/gz-chores.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.31.0",
+      "sibling_obpi": "OBPI-0.31.0-07-mutate",
+      "contested_paths": [
+        "docs/user/manpages/gz-chores.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.31.0",
+      "sibling_obpi": "OBPI-0.31.0-09-sync-manpage-docstrings",
+      "contested_paths": [
+        "docs/user/manpages/gz-chores.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.31.0",
+      "sibling_obpi": "OBPI-0.31.0-02-complexity-check",
+      "contested_paths": [
+        "docs/user/manpages/gz-chores.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.31.0",
+      "sibling_obpi": "OBPI-0.31.0-04-test-quality",
+      "contested_paths": [
+        "docs/user/manpages/gz-chores.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.31.0",
+      "sibling_obpi": "OBPI-0.31.0-03-test-times",
+      "contested_paths": [
+        "docs/user/manpages/gz-chores.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.31.0",
+      "sibling_obpi": "OBPI-0.31.0-05-metrics-scan",
+      "contested_paths": [
+        "docs/user/manpages/gz-chores.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.39.0",
+      "sibling_obpi": "OBPI-0.39.0-06-migration-tooling",
+      "contested_paths": [
+        "docs/user/runbook.md",
+        "docs/user/manpages/gz-chores.md",
+        "docs/user/concepts/"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.41.0",
+      "sibling_obpi": "OBPI-0.41.0-04-tdd-runbook-and-manpage",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.11.0",
+      "sibling_obpi": "OBPI-0.11.0-01-obpi-transaction-contract-and-scope-isolation",
+      "contested_paths": [
+        "docs/user/concepts/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-03-config-chores-json",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-04-config-git-sync-json",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-01-config-schema",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-02-config-doctrine",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-08-config-settings-validation",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-05-config-test-suites-json",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-07-config-legacy-adapter",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-06-config-workspace-patterns",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.3.0",
+      "sibling_obpi": "OBPI-0.3.0-05-parity-scan-path-hardening",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.3.0",
+      "sibling_obpi": "OBPI-0.3.0-02-divergent-skill-reconciliation",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.3.0",
+      "sibling_obpi": "OBPI-0.3.0-03-govzero-canonical-doc-surface",
+      "contested_paths": [
+        "docs/user/concepts/*.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-23-artifact-management-pattern",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-31-validation-receipts-pattern",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-10-errors-pattern",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-11-hooks-pattern",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-28-layout-verification-pattern",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-04-world-state-pattern",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-06-registry-pattern",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-14-os-pattern",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-29-ledger-schema-pattern",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-12-admission-pattern",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-26-drift-detection-pattern",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-21-adr-reconciliation-pattern",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-03-signature-pattern",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-02-progress-pattern",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-19-adr-audit-ledger-pattern",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-33-arb-analysis-pattern",
+      "contested_paths": [
+        "docs/user/runbook.md",
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-01-attestation-pattern",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-24-cli-audit-pattern",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-13-qc-pattern",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-08-ledger-pattern",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-09-schema-pattern",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-20-adr-governance-pattern",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-05-dataset-version-pattern",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-32-handoff-validation-pattern",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-30-references-pattern",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-27-policy-guards-pattern",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-07-types-pattern",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-22-adr-traceability-pattern",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-17-console-pattern",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-15-manifests-pattern",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-25-docs-validation-pattern",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-18-adr-lifecycle-pattern",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-16-config-pattern",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.33.0",
+      "sibling_obpi": "OBPI-0.33.0-07-curation-guard",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.33.0",
+      "sibling_obpi": "OBPI-0.33.0-06-curation-inventory",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.33.0",
+      "sibling_obpi": "OBPI-0.33.0-02-refs-citations",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.33.0",
+      "sibling_obpi": "OBPI-0.33.0-01-refs-index",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.33.0",
+      "sibling_obpi": "OBPI-0.33.0-03-instrumentation-audit",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.33.0",
+      "sibling_obpi": "OBPI-0.33.0-09-governance-report",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.33.0",
+      "sibling_obpi": "OBPI-0.33.0-05-hygiene",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.33.0",
+      "sibling_obpi": "OBPI-0.33.0-08-governance-setup",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.33.0",
+      "sibling_obpi": "OBPI-0.33.0-10-governance-runners",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.33.0",
+      "sibling_obpi": "OBPI-0.33.0-04-agent-review",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.18.0",
+      "sibling_obpi": "OBPI-0.18.0-08-wire-req-verification-dispatch",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.18.0",
+      "sibling_obpi": "OBPI-0.18.0-06-wire-implementer-dispatch",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.18.0",
+      "sibling_obpi": "OBPI-0.18.0-05-pipeline-runtime-integration",
+      "contested_paths": [
+        "docs/user/runbook.md",
+        "docs/user/concepts/subagent-pipeline.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.18.0",
+      "sibling_obpi": "OBPI-0.18.0-07-wire-two-stage-review",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.24.0",
+      "sibling_obpi": "OBPI-0.24.0-01-documentation-taxonomy",
+      "contested_paths": [
+        "docs/governance/GovZero/gzkit-structure.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.24.0",
+      "sibling_obpi": "OBPI-0.24.0-04-runbook-skill-entries",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.16.0",
+      "sibling_obpi": "OBPI-0.16.0-02-rules-as-content",
+      "contested_paths": [
+        ".gzkit/rules/chores.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.20.0",
+      "sibling_obpi": "OBPI-0.20.0-05-advisory-gate-integration",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.13.0",
+      "sibling_obpi": "OBPI-0.13.0-01-runtime-command-contract",
+      "contested_paths": [
+        "docs/user/runbook.md",
+        "docs/user/concepts/workflow.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.13.0",
+      "sibling_obpi": "OBPI-0.13.0-05-runtime-engine-integration",
+      "contested_paths": [
+        "docs/user/runbook.md",
+        "docs/user/concepts/workflow.md",
+        "docs/user/concepts/lanes.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.21.0",
+      "sibling_obpi": "OBPI-0.21.0-05-operator-docs-and-migration",
+      "contested_paths": [
+        "docs/user/runbook.md",
+        "docs/user/concepts/test-traceability.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.26.0",
+      "sibling_obpi": "OBPI-0.26.0-03-adr-recon",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.26.0",
+      "sibling_obpi": "OBPI-0.26.0-12-docs-lib",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.26.0",
+      "sibling_obpi": "OBPI-0.26.0-05-ledger-schema",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.26.0",
+      "sibling_obpi": "OBPI-0.26.0-11-artifacts-lib",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.26.0",
+      "sibling_obpi": "OBPI-0.26.0-08-validation-receipt",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.26.0",
+      "sibling_obpi": "OBPI-0.26.0-01-adr-management",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.26.0",
+      "sibling_obpi": "OBPI-0.26.0-06-drift-detection",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.26.0",
+      "sibling_obpi": "OBPI-0.26.0-09-adr-audit-ledger",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.26.0",
+      "sibling_obpi": "OBPI-0.26.0-02-references",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.26.0",
+      "sibling_obpi": "OBPI-0.26.0-04-adr-governance",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.26.0",
+      "sibling_obpi": "OBPI-0.26.0-07-adr-traceability",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.26.0",
+      "sibling_obpi": "OBPI-0.26.0-10-cli-audit-lib",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.8.0",
+      "sibling_obpi": "OBPI-0.8.0-01-chores-registry",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.10.0",
+      "sibling_obpi": "OBPI-0.10.0-01-obpi-runtime-contract-and-state-model",
+      "contested_paths": [
+        "docs/user/concepts/"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.38.0",
+      "sibling_obpi": "OBPI-0.38.0-10-guards-layout-verify",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.2.0",
+      "sibling_obpi": "OBPI-0.2.0-03-docs-updates",
+      "contested_paths": [
+        "docs/user/concepts/gates.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-25-hooks-subcommands",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-02-lint",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-16-adr-recon-audit-receipt",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-15-adr-status-docs-map-check",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-04-test",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-24-yaml-guard",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-05-typecheck",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-08-tidy-clean",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-18-adr-eval-report",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-22-layout-verify",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-13-attest",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-03-format",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-23-cwd-guard",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-19-docs-md-tooling",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-20-sync-repo",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-07-cli-audit",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-06-check-config-paths",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-14-status-state",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-21-sync-skills",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-09-gates",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-10-implement",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-12-audit",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-01-git-sync",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-11-closeout",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-17-adr-evidence-autolink-sync",
+      "contested_paths": [
+        "src/gzkit/chores/README.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.37.0",
+      "sibling_obpi": "OBPI-0.37.0-02-gzkit-structure",
+      "contested_paths": [
+        "docs/governance/GovZero/gzkit-structure.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.37.0",
+      "sibling_obpi": "OBPI-0.37.0-23-gzkit-only-docs",
+      "contested_paths": [
+        "docs/governance/GovZero/gzkit-structure.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.17",
+      "sibling_obpi": "OBPI-0.0.17-06-agents-md-correction",
+      "contested_paths": [
+        "docs/user/concepts/",
+        "docs/governance/GovZero/gzkit-structure.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.8",
+      "sibling_obpi": "OBPI-0.0.8-08-operator-docs",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.9",
+      "sibling_obpi": "OBPI-0.0.9-06-marker-migration-path",
+      "contested_paths": [
+        "docs/governance/GovZero/gzkit-structure.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.9",
+      "sibling_obpi": "OBPI-0.0.9-03-state-repair-command",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.14",
+      "sibling_obpi": "OBPI-0.0.14-03-pipeline-skill-migration",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.19",
+      "sibling_obpi": "OBPI-0.0.19-05-docs-bdd-closeout",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.10",
+      "sibling_obpi": "OBPI-0.0.10-01-three-tier-model-and-pool-archive",
+      "contested_paths": [
+        "docs/governance/GovZero/gzkit-structure.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.10",
+      "sibling_obpi": "OBPI-0.0.10-03-storage-catalog-and-escalation-governance",
+      "contested_paths": [
+        ".gzkit/rules/chores.md",
+        "docs/governance/GovZero/gzkit-structure.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.10",
+      "sibling_obpi": "OBPI-0.0.10-04-git-clone-recovery",
+      "contested_paths": [
+        "docs/user/runbook.md",
+        "docs/user/manpages/gz-chores.md",
+        "docs/user/concepts/",
+        "docs/governance/GovZero/gzkit-structure.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.10",
+      "sibling_obpi": "OBPI-0.0.10-02-identity-surfaces",
+      "contested_paths": [
+        "docs/governance/GovZero/gzkit-structure.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.18",
+      "sibling_obpi": "OBPI-0.0.18-01-concepts-page",
+      "contested_paths": [
+        "docs/user/concepts/adr-taxonomy.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.18",
+      "sibling_obpi": "OBPI-0.0.18-04-epic-grouping",
+      "contested_paths": [
+        "docs/user/concepts/adr-taxonomy.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.18",
+      "sibling_obpi": "OBPI-0.0.18-02-runbook-prd-to-adr",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.18",
+      "sibling_obpi": "OBPI-0.0.18-03-pool-curation-policy",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    }
+  ]
+}

@@ -9,7 +9,7 @@ validate.
 
 `/gz-chore-runner` is the operator interface for executing scheduled maintenance,
 refactoring, and code quality work items from the chores registry. Chores are
-small, repeatable maintenance tasks defined in `config/gzkit.chores.json` — things
+small, repeatable maintenance tasks defined under `src/gzkit/chores/` (canonical) and resolved via the project-first → package-fallback resolver introduced by ADR-0.0.21 — things
 like cleaning up deprecated patterns, enforcing naming conventions, or running
 coverage sweeps. This skill orchestrates the full chore lifecycle so you don't
 have to remember the command sequence.
@@ -48,7 +48,7 @@ The skill runs through 6 steps:
    `gz chores run <slug>` to log the result.
 6. **Audit** — `gz chores audit --slug <slug>` verifies the logged result.
 
-Evidence is saved to `ops/chores/{slug}/proofs/`. Typical runtime varies by
+Evidence is saved to `.gzkit/chores/{slug}/proofs/` (project-local; never canonical). Typical runtime varies by
 chore complexity — simple lint chores take minutes, larger refactoring chores
 may take longer.
 
@@ -67,16 +67,16 @@ Heavy actions but you're running Lite validation).
 
 | Argument / Flag | Required | Description |
 |-----------------|----------|-------------|
-| `<chore_slug>` | yes | Chore identifier from `config/gzkit.chores.json` |
+| `<chore_slug>` | yes | Chore identifier from the chores registry (`registry.json`) |
 
 ## Supporting Files
 
 | File | Role | Read/Write |
 |------|------|------------|
 | `.claude/skills/gz-chore-runner/SKILL.md` | Agent execution instructions | Read |
-| `config/gzkit.chores.json` | Chore registry with slugs, lanes, and criteria | Read |
-| `ops/chores/{slug}/CHORE.md` | Per-chore workflow and remediation procedure | Read |
-| `ops/chores/{slug}/proofs/CHORE-LOG.md` | Execution log and evidence | Read/Write |
+| `src/gzkit/chores/registry.json` | Canonical chores registry (project overlay at `.gzkit/chores/registry.json` wins when present) | Read |
+| `src/gzkit/chores/{slug}/CHORE.md` | Per-chore workflow and remediation procedure (canonical; project overlay at `.gzkit/chores/{slug}/CHORE.md`) | Read |
+| `.gzkit/chores/{slug}/proofs/CHORE-LOG.md` | Execution log and evidence (project-local only) | Read/Write |
 
 ## Related Skills and Commands
 

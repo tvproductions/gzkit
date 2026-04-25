@@ -692,13 +692,23 @@ uv run gz register-adrs            # Register existing ADR packages into ledger
 
 Use [`/gz-chore-runner`](skills/gz-chore-runner.md) to run a chore end-to-end (show, plan, advise, execute, validate) through a guided workflow.
 
+Chores resolve project-first → package-fallback (ADR-0.0.21): each slug is
+sought under `<project_root>/.gzkit/chores/<slug>/` first, then falls back to
+the canonical package resource at `importlib.resources.files("gzkit.chores")`.
+Project-local execution evidence is written to `.gzkit/chores/<slug>/proofs/`.
+See [`gz-chores`](manpages/gz-chores.md) for the full manpage.
+
 ```bash
-uv run gz chores list              # List declared chores
-uv run gz chores show <slug>       # Display CHORE.md for one chore
-uv run gz chores advise <slug>     # Dry-run criteria and report status
-uv run gz chores plan <slug>       # Show plan details for one chore
-uv run gz chores run <slug>        # Execute and log one chore
-uv run gz chores audit --all       # Audit log presence for all chores
+uv run gz chores list                # List declared chores
+uv run gz chores list --explain      # Annotate each row with resolution source (project/package/missing)
+uv run gz chores show <slug>         # Display CHORE.md for one chore
+uv run gz chores advise <slug>       # Dry-run criteria and report status
+uv run gz chores plan <slug>         # Show plan details for one chore
+uv run gz chores run <slug>          # Execute and log one chore
+uv run gz chores audit --all         # Audit log presence for all chores
+uv run gz chores doctor              # Repair missing canonical scaffold under .gzkit/chores/
+uv run gz chores doctor --dry-run    # Report-only; no file changes
+uv run gz validate --chores-layout   # Fail closed (exit 3) on stray CHORE.md or acceptance.json
 ```
 
 ### Frontmatter-Ledger Reconciliation
