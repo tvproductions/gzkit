@@ -5,8 +5,8 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.11.1"
-last_reviewed: 2026-04-23
+skill-version: "6.12.0"
+last_reviewed: 2026-04-25
 ---
 
 # gz-obpi-pipeline
@@ -41,16 +41,22 @@ These thoughts mean STOP — you are about to break the pipeline:
 | Thought | Reality |
 |---------|---------|
 | "Implementation/tests done, let me summarize" | You are between stages. The pipeline runs to Stage 5. Proceed. |
-| "No plan receipt exists — the brief is clear enough to skip planning" | The plan-audit handoff is a governance checkpoint. Call `EnterPlanMode` in this same turn; do not end the turn to ask permission. |
+| "No plan receipt exists — the brief is clear enough to skip planning" | The plan-audit handoff is a governance checkpoint. Invoke `/gz-plan-audit <OBPI-ID>` in this same turn (see § The Plan-Mode Gate); do not end the turn to ask permission. |
 | "The hook blocked me, I'll work around it" | Hook blocks are signals. Diagnose the cause. NEVER create marker files manually to bypass. |
 | "`gz obpi complete` refused a non-TTY invocation, so I'll ask the operator to run it themselves" | No. The operator already attested in Stage 4. Pass `--attestor-present` (GHI #292) — the active pipeline marker at `.claude/plans/.pipeline-active-{OBPI-ID}.json` satisfies the co-presence proxy, and the CLI records `attestation_type: "agent-relayed-operator-attestation"`. If `--attestor-present` is refused (missing marker, pre-GHI-#292 CLI), fall back to PTY allocation (`pty.fork`) as documented in Stage 5 Step 2. Handing the invocation back to the operator is still the regression — both paths are strictly preferred. |
 | "The operator said `attest completed` — maybe they want me to explain what to do next" | No. `attest completed` IS the attestation. Run `gz obpi complete` immediately with that phrase (enriched per § Attestation) in `--attestation-text`, allocating a PTY if needed. Do not produce runbook-style instructions for the operator to execute. |
 
 ### The Plan-Mode Gate
 
-**No plan receipt → no implementation.** If Stage 1 finds no `.plan-audit-receipt.json` (or the existing receipt's `obpi_id` does not match this OBPI) and the pipeline was invoked without `--from`, you MUST enter Claude Code's native plan mode before touching any source file. The mechanical action is: **invoke the `EnterPlanMode` tool in the same turn**, then read the OBPI brief, compose a plan, and present it via `ExitPlanMode` for user approval. The plan-audit hook writes the receipt on exit. Only then does Stage 2 begin.
+**No plan receipt → no implementation.** If Stage 1 finds no `.plan-audit-receipt-<OBPI-ID>.json` (or the existing receipt's `obpi_id` does not match this OBPI) and the pipeline was invoked without `--from`, you MUST produce a canonical-name plan and a fresh PASS receipt before touching any source file.
 
-**Stopping the turn to ask "should I enter plan mode?" is a violation, not compliance.** The skill's "STOP" language directs you to stop *making source edits* and *redirect to plan mode*, not to stop your turn and solicit permission. If you catch yourself composing a message that says "Required next step: enter plan mode" or "Want me to proceed with plan mode on the next turn?" — you are rationalizing. Call `EnterPlanMode` in this same turn instead.
+**The mechanical action is: invoke `/gz-plan-audit <OBPI-ID>` in this same turn.** The `gz-plan-audit` skill authors a plan file in the project-local `.claude/plans/` directory under a canonical name and writes the receipt directly. After the receipt is in place, Stage 2 begins.
+
+**Why `/gz-plan-audit` and not `EnterPlanMode` first (GHI #288).** Claude Code's native plan mode pins the plan file to a harness-generated random-name path under `~/.claude/plans/<random>.md` and forbids edits to any other path while plan mode is active. The `plan-audit-gate.py` PreToolUse hook scans both `.claude/plans/` and `~/.claude/plans/` and self-runs `gz plan audit` on `ExitPlanMode`, but a first-run OBPI with no canonical-name plan in the project-local dir can deadlock the harness — the hook fails closed and the agent cannot satisfy both surfaces simultaneously. Routing through `/gz-plan-audit` first sidesteps the deadlock by producing the canonical artifact in the project-local dir up front.
+
+**If you choose to also use native plan mode** (for example, to compose the plan interactively with the operator), enter plan mode *after* `/gz-plan-audit` has written a PASS receipt, and re-run `/gz-plan-audit <OBPI-ID>` after `ExitPlanMode` to refresh the receipt against the harness-named plan. The `plan-audit-gate` hook will then accept the exit because a valid receipt newer than the plan file exists.
+
+**Stopping the turn to ask "should I run plan-audit?" is a violation, not compliance.** The skill's "STOP" language directs you to stop *making source edits* and *redirect to plan-audit*, not to stop your turn and solicit permission. If you catch yourself composing a message that says "Required next step: invoke gz-plan-audit" or "Want me to proceed with plan-audit on the next turn?" — you are rationalizing. Call `/gz-plan-audit <OBPI-ID>` in this same turn instead.
 
 This is not optional. This is not something you can "derive informally." The plan-audit handoff exists because agents consistently skip planning when allowed to. You are not the exception.
 
@@ -120,7 +126,7 @@ Exception mode: Stage 4 = SELF-CLOSE (record evidence, proceed)
 1. Read `.claude/plans/.plan-audit-receipt.json` to find the approved plan
    - If receipt exists and OBPI matches: load the plan file from `.claude/plans/`, extract implementation steps
    - If receipt verdict is `FAIL`: **abort** — plan did not pass audit
-   - If no receipt found AND `--from` flag is NOT set: **STOP — enter plan mode.** Read the OBPI brief, compose a plan in Claude Code's native plan mode, and wait for user approval. Only resume the pipeline after the plan-audit-receipt is written. Do NOT "derive tasks informally" or "proceed without a plan." The plan-audit handoff is a governance checkpoint, not an optimization.
+   - If no receipt found AND `--from` flag is NOT set: **STOP — invoke `/gz-plan-audit <OBPI-ID>` in this same turn** (see § The Plan-Mode Gate for why this comes before native plan mode — GHI #288). The skill authors a canonical-name plan in `.claude/plans/` and writes the receipt directly. Only resume the pipeline after the plan-audit receipt is written. Do NOT "derive tasks informally" or "proceed without a plan." The plan-audit handoff is a governance checkpoint, not an optimization.
    - If no receipt found AND `--from=verify` or `--from=ceremony`: proceed (the user is explicitly resuming a partially-completed pipeline where implementation already happened)
 2. Locate the OBPI brief under:
    - `docs/design/adr/**/obpis/OBPI-{id}-*.md`
