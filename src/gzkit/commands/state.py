@@ -74,7 +74,13 @@ def _hide_withdrawn_obpis(graph: dict[str, dict[str, Any]]) -> dict[str, dict[st
     return filtered
 
 
-def state(as_json: bool, blocked: bool, ready: bool, include_withdrawn: bool = False) -> None:
+def state(
+    as_json: bool,
+    blocked: bool,
+    ready: bool,
+    include_withdrawn: bool = False,
+    full: bool = False,
+) -> None:
     """Query ledger state and artifact relationships.
 
     Withdrawn OBPIs (recorded via ``obpi_withdrawn`` events) are hidden from
@@ -82,6 +88,10 @@ def state(as_json: bool, blocked: bool, ready: bool, include_withdrawn: bool = F
     ceremonies with active decomposition (GHI #221). The ledger is
     untouched — withdrawn events remain as legitimate history. Pass
     ``include_withdrawn=True`` / ``--include-withdrawn`` to see them.
+
+    When ``full=True`` (``--full``) the Rich table renders identity-bearing
+    columns (ID, Parent) with overflow="fold" so attestation evidence and
+    bug reports retain complete artifact IDs (GHI #319).
     """
     config = ensure_initialized()
     project_root = get_project_root()
@@ -118,12 +128,21 @@ def state(as_json: bool, blocked: bool, ready: bool, include_withdrawn: bool = F
         console.print("No artifacts found.")
         return
 
-    # Display as tree
+    _render_artifact_state_table(graph, full=full)
+
+
+def _render_artifact_state_table(graph: dict[str, dict[str, Any]], *, full: bool = False) -> None:
+    """Render the Artifact State table with optional ``--full`` fidelity.
+
+    When ``full`` is True the ID and Parent columns fold long values
+    instead of ellipsizing them (GHI #319).
+    """
     table = Table(title="Artifact State")
-    table.add_column("ID", style="cyan")
-    table.add_column("Type", style="green")
-    table.add_column("Parent")
-    table.add_column("Attested", style="yellow")
+    overflow = "fold" if full else "ellipsis"
+    table.add_column("ID", style="cyan", overflow=overflow, no_wrap=not full)
+    table.add_column("Type", style="green", no_wrap=True)
+    table.add_column("Parent", overflow=overflow, no_wrap=not full)
+    table.add_column("Attested", style="yellow", no_wrap=True)
 
     for artifact_id, info in sorted(graph.items()):
         attested = "[green]Yes[/green]" if info.get("attested") else "[red]No[/red]"

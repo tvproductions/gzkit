@@ -528,7 +528,10 @@ Use [`/gz-check`](skills/gz-check.md) to run all quality checks in one pass, or 
 - `uv run gz adr status ADR-<X.Y.Z> --json`
 - `uv run gz adr promote ADR-pool.<slug> --semver X.Y.Z`
 - `uv run gz status --json`
+- `uv run gz status --show-gates --full` (every linked OBPI rendered as a Rich-table row, no `... and N more` truncation — use for attestation evidence and bug reports per GHI #319)
+- `uv run gz status --table --full` (foundation/feature/pool ADR summary with full IDs, no ellipsis)
 - `uv run gz state --json`
+- `uv run gz state --blocked --full` (artifact graph with full IDs and parent IDs preserved)
 - `uv run gz readiness audit`
 - `uv run gz readiness evaluate`
 - `uv run gz parity check`

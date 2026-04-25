@@ -3,6 +3,9 @@
 from pathlib import Path
 from typing import Any, cast
 
+from rich import box
+from rich.table import Table
+
 from gzkit.commands.common import (
     _is_pool_adr_id,
     console,
@@ -458,8 +461,15 @@ def _render_obpi_row_status(row: dict[str, Any]) -> str:
 def _print_status_obpi_section(
     obpi_rows: list[dict[str, Any]],
     obpi_summary: dict[str, Any],
+    *,
+    full: bool = False,
 ) -> None:
-    """Render OBPI completion block for one ADR status row."""
+    """Render OBPI completion block for one ADR status row.
+
+    When ``full=True``, render every OBPI as a row in a Rich table — no
+    ``... and N more`` truncation, full identity-bearing IDs, and the
+    columns operators need for attestation review (GHI #319).
+    """
     obpi_total = cast(int, obpi_summary.get("total", 0))
     obpi_completed = cast(int, obpi_summary.get("completed", 0))
     obpi_unit_status = cast(str, obpi_summary.get("unit_status", "unscoped"))
@@ -470,6 +480,12 @@ def _print_status_obpi_section(
     if obpi_total == 0:
         console.print("  OBPIs:           none linked")
         return
+
+    if full:
+        console.print(f"  OBPI Open:       {len(obpi_open_rows)} remaining")
+        _render_obpi_detail_table(obpi_rows)
+        return
+
     if not obpi_open_rows:
         console.print("  OBPIs:           all linked OBPIs completed with evidence")
         return
@@ -481,6 +497,44 @@ def _print_status_obpi_section(
     hidden_count = len(obpi_open_rows) - len(preview_rows)
     if hidden_count > 0:
         console.print(f"    - ... and {hidden_count} more")
+
+
+def _render_obpi_detail_table(obpi_rows: list[dict[str, Any]]) -> None:
+    """Render a Rich table of every OBPI row with full identity-bearing fields.
+
+    Columns mirror the GHI #319 recommendation: OBPI ID, runtime state,
+    completed flag, proof state, attestation state, anchor state, and
+    issue text. Long IDs fold across lines instead of ellipsizing.
+    """
+    table = Table(title="OBPIs", box=box.ROUNDED, padding=(0, 1))
+    table.add_column("OBPI", overflow="fold")
+    table.add_column("State", no_wrap=True)
+    table.add_column("Done", no_wrap=True)
+    table.add_column("Proof", no_wrap=True)
+    table.add_column("Attestation", no_wrap=True)
+    table.add_column("Anchor", no_wrap=True)
+    table.add_column("Issue", overflow="fold")
+
+    for row in obpi_rows:
+        obpi_id = cast(str, row.get("id", ""))
+        runtime_state = str(row.get("runtime_state", "pending"))
+        proof_state = str(row.get("proof_state", "missing"))
+        attestation_state = str(row.get("attestation_state", "not_required"))
+        anchor_state = str(row.get("anchor_state", "not_applicable"))
+        issues = cast(list[str], row.get("issue_details", row.get("issues", [])))
+        issue_cell = "; ".join(str(issue) for issue in issues) if issues else "-"
+        done_cell = "yes" if _obpi_row_complete(row) else "no"
+        table.add_row(
+            obpi_id,
+            runtime_state,
+            done_cell,
+            proof_state,
+            attestation_state,
+            anchor_state,
+            issue_cell,
+        )
+
+    console.print(table)
 
 
 def _render_obpi_status_details(result: dict[str, Any]) -> None:
