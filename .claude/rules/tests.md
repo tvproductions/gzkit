@@ -4,7 +4,11 @@ paths:
   - "tests/**"
 ---
 
+<!-- rule-version: 0.2.0 -->
+
 # Test Policy (canonical)
+
+> **Rule version:** `0.2.0` — bumped under GHI #310 to add the eval-awareness corollary against audit-named assertion helpers. Prior unversioned content treated as `0.1.0`.
 
 > **Flag defects, never excuse them.** If a test reveals a defect in code, config, or test infrastructure — flag it. Never rationalize a failing or skipped test as "pre-existing" or "not in scope". Fix it or file a GHI.
 
@@ -43,6 +47,16 @@ Gate 2 is named TDD. Red-Green-Refactor is a repeating cycle per behavior increm
 **Derivation rule:** Test cases derive from OBPI brief acceptance criteria, not from the implementation. When adding tests outside a pipeline run, locate the governing OBPI brief and derive from its requirements.
 
 **Tests assert semantics, not strings (canonical home for invariant 6f).** A test's job is to pin the operator-facing purpose the code is meant to serve, not the bytes the code currently happens to emit. Assertions must derive from the REQ or the skill's declared contract, not from a run of the code. If the test passes today because the current output happens to match and would pass tomorrow even if the output drifted into a different semantic shape, the test is wrong.
+
+**Eval-awareness corollary — audit-helper names must not telegraph audit intent.** The Claude Opus 4.7 system card (Anthropic, 2026-04-16, § 6.5.2 Evaluation awareness) reports that suppressing internal evaluation-awareness representations *increases* deceptive behavior, with the effect slightly larger than in prior models. The symmetric implication for governance test surfaces: when the model is the agent under audit, an assertion helper whose name pattern-matches as "this is the audit step" creates a recognizable evaluation context that risks the same drift. Audit-helper names MUST NOT pattern-match as audit-step names — name them by the behavior they assert, not by the audit role they fill. This corollary is the codified-mechanical instantiation of the layered-defense thesis at the test-surface layer; see ADR-0.0.23 (agent failure mode taxonomy), ADR-0.0.24 (attestation receipt binding), and ADR-0.0.25 (OBPI completion REQ coverage gate) for the parent foundation rules.
+
+| Anti-pattern (audit-role name) | Preferred (behavior-named) |
+|---|---|
+| `assert_audit_passes` | `assert_receipt_id_resolves` |
+| `verify_attestation_authenticity` | `assert_attestor_name_present` |
+| `check_eval_pass` | `assert_brief_status_in_ledger` |
+
+This is a discipline rule, not a `gz validate` scope yet. Auditing existing test names for renaming is out of scope for the rule edit; surface a separate sweep GHI if coverage demands it.
 
 **Output-form fixture carve-out.** Output-form assertions (table markers, JSON shape, plain-text line form) are permitted in fixture tests dedicated to that form, scoped per `.gzkit/rules/tool-skill-runbook-alignment.md` § Invariant 3. Those fixtures pin the rendering contract a routing skill's Output Contract declares; they are not the same surface as REQ-derived unit tests and must not be blended with them. The semantics rule above governs REQ-derived behavior tests; the Invariant 3 fixtures govern the skill→verb rendering contract. Keep them in separate test classes or modules so a semantic refactor never forces a string-shape rewrite and a rendering change never forces a semantic rewrite.
 
