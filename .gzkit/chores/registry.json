@@ -1,0 +1,255 @@
+{
+    "specVersion": "2.0",
+    "description": "Chore registry - points to self-contained chore definitions in ops/chores/",
+    "project": {
+        "name": "gzkit",
+        "root": ".",
+        "choresDir": "ops/chores",
+        "proofsPattern": "ops/chores/{slug}/proofs"
+    },
+    "lanes": {
+        "lite": {
+            "description": "Fast feedback; lint, typecheck, smoke tests (<=120s)",
+            "timeoutSeconds": 120,
+            "allowNetwork": false
+        },
+        "medium": {
+            "description": "Expanded checks; full unittest, light reports; still offline",
+            "timeoutSeconds": 300,
+            "allowNetwork": false
+        },
+        "heavy": {
+            "description": "Contracts/docs changed; full gates incl. coverage & security",
+            "timeoutSeconds": 900,
+            "allowNetwork": true
+        }
+    },
+    "chores": [
+        {
+            "slug": "quality-check",
+            "title": "Run full quality gates",
+            "version": "2.0.0",
+            "path": "ops/chores/quality-check",
+            "lane": "lite"
+        },
+        {
+            "slug": "pool-triage",
+            "title": "Pool ADR Drift Triage (read-only; stopgap for ADR-pool.pool-management)",
+            "version": "0.1.0",
+            "path": "ops/chores/pool-triage",
+            "lane": "lite"
+        },
+        {
+            "slug": "pythonic-refactoring",
+            "title": "Pythonic Refactoring (ruff + ty)",
+            "version": "1.0.0",
+            "path": "ops/chores/pythonic-refactoring",
+            "lane": "lite"
+        },
+        {
+            "slug": "complexity-reduction-xenon",
+            "title": "Complexity Reduction (Xenon C/C/C)",
+            "version": "1.0.0",
+            "path": "ops/chores/complexity-reduction-xenon",
+            "lane": "lite"
+        },
+        {
+            "slug": "module-sloc-cap-radon",
+            "title": "Module SLOC Cap (Radon)",
+            "version": "1.0.0",
+            "path": "ops/chores/module-sloc-cap-radon",
+            "lane": "lite"
+        },
+        {
+            "slug": "pep257-docstring-compliance",
+            "title": "PEP 257 Docstring Compliance (Style + Coverage)",
+            "version": "1.0.0",
+            "path": "ops/chores/pep257-docstring-compliance",
+            "lane": "lite"
+        },
+        {
+            "slug": "coverage-40pct",
+            "title": "Coverage >=40% Baseline",
+            "version": "1.0.0",
+            "path": "ops/chores/coverage-40pct",
+            "lane": "lite"
+        },
+        {
+            "slug": "test-isolation-compliance",
+            "title": "Test Isolation & Health Compliance",
+            "version": "2.0.0",
+            "path": "ops/chores/test-isolation-compliance",
+            "lane": "lite"
+        },
+        {
+            "slug": "cross-platform-test-cleanup",
+            "title": "Cross-Platform Test Cleanup (Windows-Safe Patterns)",
+            "version": "1.0.0",
+            "path": "ops/chores/cross-platform-test-cleanup",
+            "lane": "medium"
+        },
+        {
+            "slug": "exceptions-and-logging-rationalization",
+            "title": "Exceptions & Logging Rationalization",
+            "version": "1.0.0",
+            "path": "ops/chores/exceptions-and-logging-rationalization",
+            "lane": "lite"
+        },
+        {
+            "slug": "config-paths-remediation",
+            "title": "Config Paths Remediation",
+            "version": "1.0.0",
+            "path": "ops/chores/config-paths-remediation",
+            "lane": "lite"
+        },
+        {
+            "slug": "repository-structure-normalization",
+            "title": "Repository Structure Normalization",
+            "version": "1.0.0",
+            "path": "ops/chores/repository-structure-normalization",
+            "lane": "lite"
+        },
+        {
+            "slug": "schema-and-config-drift-audit",
+            "title": "Schema Drift / Config Drift Audit",
+            "version": "1.0.0",
+            "path": "ops/chores/schema-and-config-drift-audit",
+            "lane": "lite"
+        },
+        {
+            "slug": "cli-contract-governance",
+            "title": "CLI Contract Governance (Drift & Evolution)",
+            "version": "1.0.0",
+            "path": "ops/chores/cli-contract-governance",
+            "lane": "heavy"
+        },
+        {
+            "slug": "validate-manpages",
+            "title": "Validate Manpages (Call Stack Alignment)",
+            "version": "1.0.0",
+            "path": "ops/chores/validate-manpages",
+            "lane": "lite"
+        },
+        {
+            "slug": "test-manpage-examples",
+            "title": "Test Manpage Examples (Executable Verification)",
+            "version": "1.0.0",
+            "path": "ops/chores/test-manpage-examples",
+            "lane": "heavy"
+        },
+        {
+            "slug": "sync-manpage-docstrings",
+            "title": "Sync Manpage Docstrings (One-Liner Alignment)",
+            "version": "1.0.0",
+            "path": "ops/chores/sync-manpage-docstrings",
+            "lane": "lite"
+        },
+        {
+            "slug": "skill-manifest-sync",
+            "title": "Skill Manifest Sync",
+            "version": "1.0.0",
+            "path": "ops/chores/skill-manifest-sync",
+            "lane": "lite"
+        },
+        {
+            "slug": "skill-authoring-quality",
+            "title": "Skill Authoring Quality (Agent-First Best Practices)",
+            "version": "2.0.0",
+            "path": "ops/chores/skill-authoring-quality",
+            "lane": "lite"
+        },
+        {
+            "slug": "evidence-integrity-audit",
+            "title": "OBPI Evidence Integrity Audit",
+            "version": "1.0.0",
+            "path": "ops/chores/evidence-integrity-audit",
+            "lane": "lite"
+        },
+        {
+            "slug": "arb-pattern-extraction",
+            "title": "ARB Pattern Extraction (Code Style Feedback Loop)",
+            "version": "1.0.0",
+            "path": "ops/chores/arb-pattern-extraction",
+            "lane": "lite"
+        },
+        {
+            "slug": "skill-trigger-testing",
+            "title": "Skill Trigger & Output Testing",
+            "version": "1.0.0",
+            "path": "ops/chores/skill-trigger-testing",
+            "lane": "lite"
+        },
+        {
+            "slug": "skill-command-doc-parity",
+            "title": "Skill & Command Documentation Parity",
+            "version": "1.0.0",
+            "path": "ops/chores/skill-command-doc-parity",
+            "lane": "heavy"
+        },
+        {
+            "slug": "doc-coverage",
+            "title": "Documentation Cross-Coverage Enforcement",
+            "version": "1.0.0",
+            "path": "ops/chores/doc-coverage",
+            "lane": "heavy",
+            "frequency": "per-release"
+        },
+        {
+            "slug": "hardcoded-root-eradication",
+            "title": "Config-First Enforcement (Anti-Vibe-Code)",
+            "version": "1.0.0",
+            "path": "ops/chores/hardcoded-root-eradication",
+            "lane": "lite"
+        },
+        {
+            "slug": "agents-md-architectural-boundaries",
+            "title": "Add Architectural Boundaries to AGENTS.md",
+            "version": "1.0.0",
+            "path": "ops/chores/agents-md-architectural-boundaries",
+            "lane": "lite"
+        },
+        {
+            "slug": "memory-hygiene",
+            "title": "Audit auto-memory for process drift into governed artifacts",
+            "version": "1.0.0",
+            "path": "ops/chores/memory-hygiene",
+            "lane": "lite",
+            "vendor": "claude"
+        },
+        {
+            "slug": "frontmatter-ledger-coherence",
+            "title": "Frontmatter-Ledger Reconciliation (ADR-0.0.16 OBPI-03)",
+            "version": "2.0.0",
+            "path": "ops/chores/frontmatter-ledger-coherence",
+            "lane": "heavy"
+        },
+        {
+            "slug": "control-surface-rule-conflicts",
+            "title": "Control Surface Audit — Rule-Pair Conflict Matrix (Pass A)",
+            "version": "1.0.0",
+            "path": "ops/chores/control-surface-rule-conflicts",
+            "lane": "lite"
+        },
+        {
+            "slug": "control-surface-skill-rule-reachability",
+            "title": "Control Surface Audit — Skill/Rule Reachability Matrix (Pass B)",
+            "version": "1.0.0",
+            "path": "ops/chores/control-surface-skill-rule-reachability",
+            "lane": "lite"
+        },
+        {
+            "slug": "control-surface-rule-vs-check-drift",
+            "title": "Control Surface Audit — Rule Prose vs Promoted Check Parity (Pass C)",
+            "version": "1.0.0",
+            "path": "ops/chores/control-surface-rule-vs-check-drift",
+            "lane": "lite"
+        },
+        {
+            "slug": "dependency-currency",
+            "title": "Dependency Currency (Tooling Stack Drift Scan)",
+            "version": "1.0.0",
+            "path": "ops/chores/dependency-currency",
+            "lane": "lite"
+        }
+    ]
+}

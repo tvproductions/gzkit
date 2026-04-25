@@ -1,0 +1,19 @@
+{
+  "criteria": [
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run -m unittest -q",
+      "expected": 0
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run coverage run -m unittest discover -s tests -t . -q",
+      "expected": 0
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run coverage report --fail-under=40",
+      "expected": 0
+    }
+  ]
+}
