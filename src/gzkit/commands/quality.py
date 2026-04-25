@@ -76,6 +76,29 @@ def _resolve_obpi_req_ids(project_root, obpi: str) -> set[str]:
     }
 
 
+def _test_name_from_record(record, project_root: pathlib.Path) -> str | None:
+    """Return a unittest-runnable name for a ``@covers`` linkage record.
+
+    Decorator-form records carry a qualified function name in
+    ``source.identifier`` (e.g. ``TestFoo.test_bar``); we return
+    ``<module>.<qualname>``. Comment- and docstring-form records carry the
+    file path itself as ``source.identifier`` (no function context is
+    available from a free-floating ``@covers`` reference), so we return the
+    dotted module path alone — unittest will run every test in the module.
+
+    Returns ``None`` when the record has no source location to anchor a
+    test name against.
+    """
+    location = record.source.location
+    if location is None:
+        return None
+    rel_path = pathlib.Path(location).relative_to(project_root)
+    module = ".".join(rel_path.with_suffix("").parts)
+    if record.source.identifier == location:
+        return module
+    return f"{module}.{record.source.identifier}"
+
+
 def _resolve_obpi_test_names(project_root, obpi: str) -> list[str]:
     """Return unittest-runnable names for tests covering this OBPI's REQs.
 
@@ -103,12 +126,9 @@ def _resolve_obpi_test_names(project_root, obpi: str) -> list[str]:
             continue
         if str(target_req) not in req_ids:
             continue
-        location = rec.source.location
-        if location is None:
-            continue
-        rel_path = pathlib.Path(location).relative_to(project_root)
-        module = ".".join(rel_path.with_suffix("").parts)
-        names.add(f"{module}.{rec.source.identifier}")
+        name = _test_name_from_record(rec, project_root)
+        if name is not None:
+            names.add(name)
 
     return sorted(names)
 
