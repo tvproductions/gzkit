@@ -3,7 +3,7 @@ id: OBPI-0.0.21-07-bdd-chores-distribution
 parent: ADR-0.0.21-chores-as-gzkit-surface
 item: 7
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.21-07-bdd-chores-distribution: BDD — Install-and-Scaffold Scenario
@@ -173,18 +173,29 @@ N/A at unit level; BDD is integration-level proof.
 Before: no Gherkin scenario exercised the distribution pipeline; regression was detectable only by manual `pip install && gz chores list` in a scratch venv. After: the install-and-scaffold behavior is locked by fail-closed BDD.
 
 ### Key Proof
-```bash
+
 $ uv run behave features/chores_distribution.feature 2>&1 | tail -5
-4 features passed, 0 failed, 0 skipped
+1 feature passed, 0 failed, 0 skipped
 4 scenarios passed, 0 failed, 0 skipped
-```
+24 steps passed, 0 failed, 0 skipped
+Took 0min 1.442s
+
+ARB receipts cited inline:
+- lint: arb-ruff-7ce5414825144417b84313489336f81a
+- typecheck: arb-step-typecheck-1fa045beb5c74a3e8f980091da9d6772
+- docs: arb-step-mkdocs-2146943620724b75819251eedd328374
+- behave: arb-step-behave-chores-distribution-d99939bc54b3460db97dd4417306db39
 
 ### Implementation Summary
-- Files created/modified: `features/chores_distribution.feature`, `features/steps/chores_distribution.py` (if needed)
-- Scenarios added: ≥4 with `@REQ-0.0.21-07-NN` tags
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: features/chores_distribution.feature (4 scenarios with 7 @REQ-0.0.21-07-NN scenario tags), features/steps/chores_distribution_steps.py (9 step definitions: subprocess invocation via [sys.executable, "-m", "gzkit"], file edit, registry mutation, output assertions with ANSI stripping)
+- Brief allowlist honored: no writes to src/, tests/, pyproject.toml, docs/, or .gzkit/rules/
+- Scenario coverage: A package-fallback (REQ-02), B project-source via gz init + --explain (REQ-03), C operator-edit preservation via skip_existing (REQ-04), D merge-diff with --yes write (REQ-05); A also carries meta-REQ tags 01/06/07
+- Test runtime: 1.442s for 4 scenarios / 24 steps
+- Pre-existing drift cleared in flight: 16 ruff findings in .gzkit/skills/ghi-triage/scripts/triage.py and 3 vendor mirrors refactored to list-join form; GHI #313 filed for plan-audit-gate hook naming-convention drift
+- Date completed: 2026-04-25
+- Attestation status: human-attested by Jeffry Babb
+- Defects noted: GHI #313 (plan-audit-gate naming drift, pre-existing, not caused by this OBPI)
 
 ## Tracked Defects
 
@@ -192,14 +203,14 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>`
-- Attestation: `<verbatim user words> — <session-grounded enrichment>`
-- Date: YYYY-MM-DD
+- Attestor: `Jeffry Babb`
+- Attestation: attest completed — Heavy-lane + foundation-kind OBPI-0.0.21-07 BDD chores distribution: 4 scenarios authored (features/chores_distribution.feature) with 7 @REQ-0.0.21-07-NN scenario tags; 9 step definitions (features/steps/chores_distribution_steps.py) using subprocess pattern against editable install resolving importlib.resources('gzkit.chores'). All 4 scenarios pass in 1.442s (24 steps green). Brief allowlist honored — no src/, tests/, pyproject.toml, docs/, or .gzkit/rules/ writes. Pre-existing ghi-triage ruff drift cleared in flight; GHI #313 filed for plan-audit-gate hook naming-convention drift. Receipts: lint arb-ruff-7ce5414825144417b84313489336f81a; types arb-step-typecheck-1fa045beb5c74a3e8f980091da9d6772; docs arb-step-mkdocs-2146943620724b75819251eedd328374; bdd arb-step-behave-chores-distribution-d99939bc54b3460db97dd4417306db39.
+- Date: 2026-04-25
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-25
 
 **Evidence Hash:** -
