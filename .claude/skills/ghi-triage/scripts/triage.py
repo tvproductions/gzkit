@@ -365,16 +365,52 @@ def render(
     console.print("")
 
 
+def render_json(issues: list[Issue], precedent: int, duplicates: dict[int, int]) -> str:
+    """Emit triage records for agent consumption.
+
+    The agent uses this to drive per-GHI judgment: full body included so the
+    agent does not re-shell `gh issue view` once per issue.
+    """
+    precedent_ok = precedent >= 3
+    records: list[dict] = []
+    for issue in issues:
+        r = route(issue, precedent_ok, duplicates)
+        u = urgency(issue, r)
+        records.append(
+            {
+                "number": issue.number,
+                "title": issue.title,
+                "labels": issue.labels,
+                "klass": issue.klass,
+                "body": issue.body,
+                "files_mentioned": sorted(issue.unique_paths),
+                "dup_of": duplicates.get(issue.number),
+                "route": ROUTE_LABEL[r],
+                "urgency": u,
+                "rationale": rationale(issue, r, duplicates),
+                "created_at": issue.created_at,
+                "updated_at": issue.updated_at,
+            }
+        )
+    records.sort(key=lambda x: (URGENCY_RANK[x["urgency"]], x["number"]))
+    return json.dumps(
+        {"precedent_60d": precedent, "count": len(issues), "issues": records},
+        indent=2,
+    )
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description="Triage open GHIs")
     p.add_argument("--limit", type=int, default=100)
     p.add_argument("--label", default=None, help="Filter by single label")
     p.add_argument(
         "--format",
-        choices=("rich", "markdown"),
+        choices=("rich", "markdown", "json"),
         default="rich",
-        help="Output format (default: rich — box-drawing table with ANSI "
-        "color; use 'markdown' for GitHub-flavored markdown output).",
+        help="Output format. 'rich' (default) — box-drawing table with ANSI "
+        "color, the human pre-pass. 'markdown' — GitHub-flavored markdown. "
+        "'json' — structured records for agent-driven triage (includes full "
+        "issue bodies and detected file mentions).",
     )
     p.add_argument(
         "--width",
@@ -386,14 +422,19 @@ def main() -> int:
 
     issues = fetch(args.limit, args.label)
     if not issues:
-        print("No open issues.")
+        if args.format == "json":
+            print(json.dumps({"precedent_60d": 0, "count": 0, "issues": []}))
+        else:
+            print("No open issues.")
         return 0
     precedent = fix_precedent_count()
     duplicates = detect_duplicates(issues)
     if args.format == "rich":
         render(issues, precedent, duplicates, width=args.width)
-    else:
+    elif args.format == "markdown":
         print(render_markdown(issues, precedent, duplicates))
+    else:
+        print(render_json(issues, precedent, duplicates))
     return 0
 
 
