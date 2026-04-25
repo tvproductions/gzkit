@@ -296,8 +296,14 @@ def status(
     show_gates: bool,
     as_table: bool,
     epic: str | None = None,
+    full: bool = False,
 ) -> None:
-    """Display OBPI progress, lifecycle, and gate readiness across ADRs."""
+    """Display OBPI progress, lifecycle, and gate readiness across ADRs.
+
+    When ``full=True`` (``--full``), Rich tables preserve identity-bearing
+    IDs (no ellipsis) and the OBPI list under ``--show-gates`` renders as
+    a complete Rich table instead of a 3-row prose preview (GHI #319).
+    """
     config = ensure_initialized()
     project_root = get_project_root()
 
@@ -332,11 +338,11 @@ def status(
         return
 
     if as_table:
-        _render_status_table(adrs, config.mode)
+        _render_status_table(adrs, config.mode, full=full)
         return
 
     for adr_id, info in adrs.items():
-        _render_status_row(adr_id, info, config.mode, show_gates)
+        _render_status_row(adr_id, info, config.mode, show_gates, full=full)
 
 
 def obpi_status_cmd(obpi: str, as_json: bool) -> None:

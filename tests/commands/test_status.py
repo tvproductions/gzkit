@@ -1,7 +1,9 @@
 import json
+import os
 import subprocess
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from gzkit.cli import main
 from gzkit.commands.status_render import TABLE_TITLE_FEATURE  # noqa: F401
@@ -1910,3 +1912,115 @@ class TestStatusEpicFilter(unittest.TestCase):
             self.assertIn("ADR-0.1.0", payload["adrs"])
             self.assertNotIn("warnings", payload)
             self.assertNotIn("ADR-0.2.0", payload)
+
+
+def _seed_adr_with_six_obpis(parent_adr: str = "ADR-0.1.0") -> None:
+    """Seed a feature ADR with six pending OBPI briefs.
+
+    Mirrors the RHEA reproduction case (ADR-0.0.0 with six OBPIs) that
+    triggered GHI #319 — used to exercise --full open-OBPI rendering.
+    """
+    runner_main = main
+    config = GzkitConfig.load(Path(".gzkit.json"))
+    obpi_dir = Path(config.paths.adrs) / "obpis"
+    obpi_dir.mkdir(parents=True, exist_ok=True)
+    for n in range(1, 7):
+        slug = f"OBPI-0.1.0-{n:02d}-pending-item-{n}"
+        path = obpi_dir / f"{slug}.md"
+        path.write_text(
+            "---\n"
+            f"id: {slug}\n"
+            f"parent: {parent_adr}\n"
+            f"item: {n}\n"
+            "lane: Lite\n"
+            "status: Draft\n"
+            "---\n\n"
+            f"# {slug}: Pending\n\n**Brief Status:** Draft\n",
+            encoding="utf-8",
+        )
+        ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+        ledger.append(obpi_created_event(slug, parent_adr))
+    # silence the unused-import warning for `runner_main` — used by callers.
+    _ = runner_main
+
+
+class TestStatusFullFlag(unittest.TestCase):
+    """gz status --full preserves identity-bearing fields per GHI #319."""
+
+    def test_status_table_full_renders_long_adr_id_without_truncation(self) -> None:
+        runner = CliRunner()
+        with (
+            patch.dict(os.environ, {"COLUMNS": "240"}, clear=False),
+            runner.isolated_filesystem(),
+        ):
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            adr_dir = Path(config.paths.adrs)
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            long_id = "ADR-0.0.0-rhea-kernel-organizing-doctrine-extra-long-slug"
+            adr_path = adr_dir / f"{long_id}.md"
+            adr_path.parent.mkdir(parents=True, exist_ok=True)
+            adr_path.write_text(
+                f"---\nid: {long_id}\nlane: lite\nkind: feature\n---\n\n# {long_id}\n",
+                encoding="utf-8",
+            )
+            ledger.append(adr_created_event(long_id, "", "lite"))
+
+            result = runner.invoke(main, ["status", "--table", "--full"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertNotIn("…", result.output)
+            self.assertIn(long_id, result.output)
+
+    def test_status_show_gates_full_renders_all_open_obpis(self) -> None:
+        """`gz status --show-gates --full` lists every open OBPI (no "...and N more")."""
+        runner = CliRunner()
+        with (
+            patch.dict(os.environ, {"COLUMNS": "240"}, clear=False),
+            runner.isolated_filesystem(),
+        ):
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            _seed_adr_with_six_obpis()
+
+            result = runner.invoke(main, ["status", "--show-gates", "--full"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertNotIn("... and ", result.output)
+            for n in range(1, 7):
+                slug = f"OBPI-0.1.0-{n:02d}-pending-item-{n}"
+                self.assertIn(slug, result.output)
+
+    def test_status_show_gates_default_truncates_to_three(self) -> None:
+        """Default (no --full) keeps the legacy "...and N more" preview."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            _seed_adr_with_six_obpis()
+
+            result = runner.invoke(main, ["status", "--show-gates"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("... and ", result.output)
+
+
+class TestStatusFullOutputForm(unittest.TestCase):
+    """Output-form fixture for `gz status --show-gates --full` (Invariant 3)."""
+
+    def test_show_gates_full_renders_obpi_rows_as_rich_table(self) -> None:
+        runner = CliRunner()
+        with (
+            patch.dict(os.environ, {"COLUMNS": "240"}, clear=False),
+            runner.isolated_filesystem(),
+        ):
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "0.1.0", "--kind", "feature"])
+            _seed_adr_with_six_obpis()
+
+            result = runner.invoke(main, ["status", "--show-gates", "--full"])
+            self.assertEqual(result.exit_code, 0)
+            # Rich box-drawing characters confirm a Rich Table rendered
+            # the OBPI list (vs the legacy prose 3-row preview). Rounded
+            # box uses │ for column separators.
+            self.assertIn("│", result.output)
+            self.assertIn("OBPI", result.output)
+            self.assertIn("Attestation", result.output)
+            self.assertIn("Anchor", result.output)

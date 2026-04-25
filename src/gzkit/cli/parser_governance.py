@@ -72,6 +72,7 @@ def _state_handler(a: argparse.Namespace) -> None:
             blocked=a.blocked,
             ready=a.ready,
             include_withdrawn=a.include_withdrawn,
+            full=a.full,
         )
 
 
@@ -359,6 +360,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
             [
                 "gz state --json",
                 "gz state --blocked",
+                "gz state --blocked --full",
                 "gz state --ready",
                 "gz state --include-withdrawn",
                 "gz state --repair",
@@ -381,6 +383,11 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
         action="store_true",
         help="Force-reconcile all frontmatter status from ledger-derived state",
     )
+    p_state.add_argument(
+        "--full",
+        action="store_true",
+        help="Preserve full IDs (no ellipsis); fold long cells.",
+    )
 
     p_state.set_defaults(func=lambda a: _state_handler(a))
 
@@ -393,6 +400,8 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
                 "gz status --table",
                 "gz status --json",
                 "gz status --show-gates",
+                "gz status --show-gates --full",
+                "gz status --table --full",
             ]
         ),
     )
@@ -411,9 +420,18 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
         default=None,
         help=("Filter pool ADRs by epic (filename prefix or frontmatter 'epic:')."),
     )
+    p_status.add_argument(
+        "--full",
+        action="store_true",
+        help="Render every OBPI as a Rich-table row; preserve full IDs.",
+    )
     p_status.set_defaults(
         func=lambda a: _lazy("status")(
-            as_json=a.as_json, show_gates=a.show_gates, as_table=a.table, epic=a.epic
+            as_json=a.as_json,
+            show_gates=a.show_gates,
+            as_table=a.table,
+            epic=a.epic,
+            full=a.full,
         )
     )
 

@@ -143,7 +143,12 @@ def _print_status_task_section(task_summary: dict[str, Any] | None) -> None:
 
 
 def _render_status_row(
-    adr_id: str, info: dict[str, Any], default_mode: str, show_gates: bool
+    adr_id: str,
+    info: dict[str, Any],
+    default_mode: str,
+    show_gates: bool,
+    *,
+    full: bool = False,
 ) -> None:
     """Render one ADR row for text status output."""
     attested = bool(info.get("attested", False))
@@ -155,7 +160,7 @@ def _render_status_row(
     obpi_summary = cast(dict[str, Any], info.get("obpi_summary", {}))
 
     console.print(f"[bold]{adr_id}[/bold] ({lifecycle_status})")
-    _print_status_obpi_section(obpi_rows, obpi_summary)
+    _print_status_obpi_section(obpi_rows, obpi_summary, full=full)
     _print_status_task_section(info.get("task_summary"))
 
     qc_readiness, qc_blockers = _qc_readiness(gates, lane, obpi_summary)
@@ -178,6 +183,7 @@ def _render_status_table(
     default_mode: str,
     *,
     adr_type: str | None = None,
+    full: bool = False,
 ) -> None:
     """Render ADR status as three tables: Foundation, Features, and Pool.
 
@@ -199,17 +205,17 @@ def _render_status_table(
 
     printed = False
     if adr_type in (None, "foundation"):
-        _render_adr_table(TABLE_TITLE_FOUNDATION, foundation, default_mode)
+        _render_adr_table(TABLE_TITLE_FOUNDATION, foundation, default_mode, full=full)
         printed = True
     if adr_type in (None, "feature") and features:
         if printed:
             console.print()
-        _render_adr_table(TABLE_TITLE_FEATURE, features, default_mode)
+        _render_adr_table(TABLE_TITLE_FEATURE, features, default_mode, full=full)
         printed = True
     if adr_type in (None, "pool") and pool:
         if printed:
             console.print()
-        _render_adr_table(TABLE_TITLE_POOL, pool, default_mode)
+        _render_adr_table(TABLE_TITLE_POOL, pool, default_mode, full=full)
     console.print("Checks legend: O=OBPI completion, T=TDD, D=Docs, B=BDD, H=Human attestation")
 
 
@@ -217,10 +223,18 @@ def _render_adr_table(
     title: str,
     rows: list[tuple[str, dict[str, Any]]],
     default_mode: str,
+    *,
+    full: bool = False,
 ) -> None:
-    """Render a single ADR status table with the given title and rows."""
+    """Render a single ADR status table with the given title and rows.
+
+    When ``full=True`` the ADR column folds long IDs across multiple
+    visual lines instead of ellipsizing them — required for attestation
+    and bug-report evidence per GHI #319.
+    """
     table = Table(title=title, box=box.ROUNDED, padding=(0, 0))
-    table.add_column("ADR", overflow="ellipsis")
+    adr_overflow = "fold" if full else "ellipsis"
+    table.add_column("ADR", overflow=adr_overflow)
     table.add_column("Lifecycle", no_wrap=True)
     table.add_column("Lane", no_wrap=True)
     table.add_column("OBPI", justify="right", no_wrap=True)
