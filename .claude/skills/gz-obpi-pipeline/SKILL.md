@@ -5,7 +5,7 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.12.0"
+skill-version: "6.13.0"
 last_reviewed: 2026-04-25
 ---
 
@@ -434,13 +434,40 @@ Include the exact command and its output or expected output.>
 
 **Quality checks:**
 
+> **Rendering rule (GHI #293):** Markdown table cells overflow in Claude
+> Code's renderer when ARB-wrapped invocations embed their nested
+> sub-command (e.g. `uv run gz arb step --name unittest -- uv run -m
+> unittest discover -s tests/governance`). When a Command cell would
+> exceed ~40 characters, hold a short label in the cell (e.g. `arb:unittest`,
+> `arb:ruff`) and render the full incantation in a fenced code block
+> beneath the table. Place the receipt ID in the Result cell. Operators
+> attest against this table — overflow erodes legibility.
+
 | Check | Command | Result |
 |-------|---------|--------|
-| Tests | `uv run gz test` | <N> pass |
-| Lint | `uv run gz lint` | <result> |
-| Typecheck | `uv run gz typecheck` | <result> |
-| OBPI tests | `uv run -m unittest tests.<test_module> -v` | <N/N> pass |
-| <brief-specific> | <command> | <result> |
+| Tests | `arb:unittest` (see below) | <N>/<N> pass — receipt `arb-step-unittest-<id>` |
+| Lint | `arb:ruff` (see below) | clean — receipt `arb-ruff-<id>` |
+| Typecheck | `arb:typecheck` (see below) | clean — receipt `arb-step-typecheck-<id>` |
+| OBPI tests | `arb:unittest-scoped` (see below) | <N>/<N> pass — receipt `arb-step-unittest-<id>` |
+| <brief-specific> | `<short-label>` (see below) | <result> — receipt `<id>` |
+
+```bash
+# arb:unittest — full unittest sweep
+uv run gz arb step --name unittest -- uv run -m unittest -q
+
+# arb:ruff — lint
+uv run gz arb ruff
+
+# arb:typecheck — static type check
+uv run gz arb typecheck
+
+# arb:unittest-scoped — OBPI-scoped tests
+uv run gz arb step --name unittest -- uv run -m unittest tests.<test_module> -v
+```
+
+Short Command cells (under ~40 characters, e.g. `uv run gz lint` or
+`uv run gz test`) may stay inline without a fenced block — the rule
+fires only when the incantation would overflow.
 
 **Files created:**
 - <path> (<description>)
