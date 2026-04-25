@@ -1,8 +1,13 @@
+import inspect
+import json
+import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from gzkit.cli import main
 from gzkit.commands.init_cmd import _normalize_package_name
+from gzkit.config import GzkitConfig
 from tests.commands.common import (
     CliRunner,
     start_init_subprocess_patches,
@@ -291,3 +296,212 @@ class TestNormalizePackageName(unittest.TestCase):
         for input_name, expected in self._CASES:
             with self.subTest(input_name=input_name):
                 self.assertEqual(_normalize_package_name(input_name), expected)
+
+
+class TestScaffoldCoreChores(unittest.TestCase):
+    """Tests for gzkit.chores.scaffold_core_chores (REQ-0.0.21-05-01..03,06,07)."""
+
+    def test_scaffold_core_chores_creates_canonical_slugs(self) -> None:
+        """REQ-05-01: empty project → at least 3 representative slugs land."""
+        from gzkit.chores import scaffold_core_chores  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            config = GzkitConfig()
+            scaffold_core_chores(project_root, config)
+            chores_dir = project_root / config.paths.chores
+            for slug in ("coverage-40pct", "quality-check", "dependency-currency"):
+                slug_dir = chores_dir / slug
+                self.assertTrue(
+                    (slug_dir / "CHORE.md").exists(),
+                    f"missing CHORE.md for {slug}",
+                )
+                self.assertTrue(
+                    (slug_dir / "acceptance.json").exists(),
+                    f"missing acceptance.json for {slug}",
+                )
+                self.assertTrue(
+                    (slug_dir / "README.md").exists(),
+                    f"missing README.md for {slug}",
+                )
+
+    def test_scaffold_core_chores_skip_existing_preserves_operator_edits(self) -> None:
+        """REQ-05-02: skip_existing=True leaves a pre-existing slug untouched."""
+        from gzkit.chores import scaffold_core_chores  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            config = GzkitConfig()
+            chores_dir = project_root / config.paths.chores
+            slug_dir = chores_dir / "coverage-40pct"
+            slug_dir.mkdir(parents=True)
+            custom = "OPERATOR EDIT — do not clobber\n"
+            (slug_dir / "CHORE.md").write_text(custom, encoding="utf-8")
+            scaffold_core_chores(project_root, config, skip_existing=True)
+            self.assertEqual(
+                (slug_dir / "CHORE.md").read_text(encoding="utf-8"),
+                custom,
+            )
+
+    def test_scaffold_core_chores_does_not_copy_proofs(self) -> None:
+        """REQ-05-03a: canonical proofs/ subdirs are never copied to destination."""
+        from gzkit.chores import scaffold_core_chores  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            config = GzkitConfig()
+            scaffold_core_chores(project_root, config)
+            chores_dir = project_root / config.paths.chores
+            stray_proofs = list(chores_dir.glob("*/proofs"))
+            self.assertEqual(stray_proofs, [], f"unexpected proofs dirs: {stray_proofs}")
+
+    def test_scaffold_core_chores_preserves_existing_proofs(self) -> None:
+        """REQ-05-03b/REQ-07: pre-existing proofs/ at destination survive a run."""
+        from gzkit.chores import scaffold_core_chores  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            config = GzkitConfig()
+            chores_dir = project_root / config.paths.chores
+            proofs_dir = chores_dir / "coverage-40pct" / "proofs"
+            proofs_dir.mkdir(parents=True)
+            evidence = proofs_dir / "evidence.txt"
+            evidence_content = "operator-captured proof artifact\n"
+            evidence.write_text(evidence_content, encoding="utf-8")
+            scaffold_core_chores(project_root, config, skip_existing=False)
+            self.assertTrue(evidence.exists())
+            self.assertEqual(evidence.read_text(encoding="utf-8"), evidence_content)
+
+    def test_scaffold_core_chores_signature_matches_brief(self) -> None:
+        """REQ-05-06: signature matches scaffold_core_skills exactly."""
+        from gzkit.chores import scaffold_core_chores  # noqa: PLC0415
+
+        sig = inspect.signature(scaffold_core_chores)
+        params = list(sig.parameters.values())
+        self.assertEqual(params[0].name, "project_root")
+        self.assertEqual(params[0].kind, inspect.Parameter.POSITIONAL_OR_KEYWORD)
+        self.assertEqual(params[1].name, "config")
+        self.assertEqual(params[1].default, None)
+        self.assertEqual(params[2].name, "skip_existing")
+        self.assertEqual(params[2].kind, inspect.Parameter.KEYWORD_ONLY)
+        self.assertEqual(params[2].default, False)
+
+    def test_scaffold_core_chores_returns_one_path_per_scaffolded_slug(self) -> None:
+        """REQ-05-07: returned list has one CHORE.md path per scaffolded slug."""
+        from gzkit.chores import scaffold_core_chores  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            config = GzkitConfig()
+            created = scaffold_core_chores(project_root, config)
+            self.assertGreater(len(created), 0)
+            for path in created:
+                self.assertEqual(path.name, "CHORE.md")
+                self.assertTrue(path.exists())
+
+
+class TestMergeChoresRegistry(unittest.TestCase):
+    """Tests for gzkit.chores.merge_chores_registry (REQ-0.0.21-05-04)."""
+
+    def _seed_local_registry(
+        self,
+        project_root: Path,
+        config: GzkitConfig,
+        slugs: list[str],
+    ) -> Path:
+        chores_dir = project_root / config.paths.chores
+        chores_dir.mkdir(parents=True, exist_ok=True)
+        registry_path = chores_dir / "registry.json"
+        payload = {
+            "specVersion": "2.0",
+            "chores": [
+                {
+                    "slug": s,
+                    "title": s,
+                    "version": "0.0.0",
+                    "path": "x",
+                    "lane": "lite",
+                }
+                for s in slugs
+            ],
+        }
+        registry_path.write_text(json.dumps(payload), encoding="utf-8")
+        return registry_path
+
+    def test_merge_chores_registry_reports_diff_on_canonical_addition(self) -> None:
+        """REQ-05-04: merge surfaces canonical-only slugs in `added`."""
+        from gzkit.chores import merge_chores_registry  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            config = GzkitConfig()
+            self._seed_local_registry(project_root, config, slugs=["only-local-slug"])
+            report = merge_chores_registry(project_root, config, auto_yes=True)
+            self.assertGreater(len(report.added), 0)
+            self.assertIn("only-local-slug", report.unchanged_local)
+            self.assertTrue(report.wrote)
+
+    def test_merge_chores_registry_yes_skips_prompt(self) -> None:
+        """REQ-05-04(e): auto_yes=True bypasses the _confirm prompt."""
+        from gzkit.chores import merge_chores_registry  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            config = GzkitConfig()
+            self._seed_local_registry(project_root, config, slugs=["only-local"])
+            with patch("gzkit.chores._confirm") as mock_confirm:
+                merge_chores_registry(project_root, config, auto_yes=True)
+                mock_confirm.assert_not_called()
+
+    def test_merge_chores_registry_dry_run_never_writes(self) -> None:
+        """REQ-05-04: dry_run=True leaves the local registry byte-identical."""
+        from gzkit.chores import merge_chores_registry  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp)
+            config = GzkitConfig()
+            registry_path = self._seed_local_registry(project_root, config, slugs=["only-local"])
+            before = registry_path.read_bytes()
+            merge_chores_registry(project_root, config, dry_run=True, auto_yes=True)
+            after = registry_path.read_bytes()
+            self.assertEqual(before, after)
+
+
+class TestInitChoresIntegration(unittest.TestCase):
+    """Tests for gz init wiring of scaffold_core_chores (REQ-0.0.21-05-05)."""
+
+    def test_gz_init_invokes_scaffold_core_chores_main_path(self) -> None:
+        """REQ-05-05: main init path calls scaffold_core_chores once."""
+        from gzkit.chores import scaffold_core_chores as real_scaffold  # noqa: PLC0415
+
+        runner = CliRunner()
+        with (
+            runner.isolated_filesystem(),
+            patch(
+                "gzkit.commands.init_cmd.scaffold_core_chores",
+                wraps=real_scaffold,
+            ) as mock_scaffold,
+        ):
+            result = runner.invoke(main, ["init"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertGreaterEqual(mock_scaffold.call_count, 1)
+            first_call = mock_scaffold.call_args_list[0]
+            self.assertNotIn("skip_existing", first_call.kwargs)
+
+    def test_gz_init_repair_invokes_scaffold_core_chores_with_skip_existing(self) -> None:
+        """REQ-05-05: repair path calls scaffold_core_chores with skip_existing=True."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["init"])
+            with patch(
+                "gzkit.commands.init_cmd.scaffold_core_chores",
+                return_value=[],
+            ) as mock_scaffold:
+                result = runner.invoke(main, ["init"])
+                self.assertEqual(result.exit_code, 0)
+                self.assertTrue(
+                    any(
+                        c.kwargs.get("skip_existing") is True for c in mock_scaffold.call_args_list
+                    ),
+                    "no repair-path call with skip_existing=True",
+                )

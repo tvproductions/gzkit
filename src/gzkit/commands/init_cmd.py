@@ -6,6 +6,7 @@ from datetime import date
 from pathlib import Path
 from typing import Literal, cast
 
+from gzkit.chores import merge_chores_registry, scaffold_core_chores
 from gzkit.commands.common import (
     _confirm,
     console,
@@ -227,12 +228,47 @@ def _run_uv_sync(project_root: Path, *, dry_run: bool = False) -> str | None:
     return None
 
 
+def _repair_chores(
+    project_root: Path,
+    config: GzkitConfig,
+    *,
+    dry_run: bool,
+    yes: bool,
+) -> list[str]:
+    """Scaffold canonical chores and merge the registry; return repair messages."""
+    from gzkit.chores import _iter_canonical_chore_slugs  # noqa: PLC0415
+
+    messages: list[str] = []
+    new_chores = scaffold_core_chores(project_root, config, skip_existing=not dry_run)
+    if dry_run:
+        chores_dir = project_root / config.paths.chores
+        for slug_resource in _iter_canonical_chore_slugs():
+            slug = slug_resource.name
+            if not (chores_dir / slug / "CHORE.md").exists():
+                messages.append(f"Would scaffold chore: {slug}")
+    else:
+        for chore_path in new_chores:
+            messages.append(f"Scaffolded new chore: {chore_path.parent.name}")
+
+    merge_report = merge_chores_registry(project_root, config, auto_yes=yes, dry_run=dry_run)
+    if merge_report.added or merge_report.changed:
+        if dry_run:
+            messages.append(
+                "Would merge chores registry: "
+                f"+{len(merge_report.added)}/~{len(merge_report.changed)}"
+            )
+        elif merge_report.wrote:
+            messages.append("Merged chores registry")
+    return messages
+
+
 def _repair_missing_artifacts(
     project_root: Path,
     config: GzkitConfig,
     *,
     no_skeleton: bool = False,
     dry_run: bool = False,
+    yes: bool = False,
 ) -> None:
     """Detect and repair missing artifacts on an already-initialized project.
 
@@ -290,6 +326,9 @@ def _repair_missing_artifacts(
     elif new_skills:
         for skill_path in new_skills:
             repaired.append(f"Scaffolded new skill: {skill_path.parent.name}")
+
+    # Repair chores (scaffold + registry merge)
+    repaired.extend(_repair_chores(project_root, config, dry_run=dry_run, yes=yes))
 
     # Repair manifest
     manifest_path = project_root / config.paths.manifest
@@ -379,7 +418,14 @@ def _register_existing_artifacts(
     return True
 
 
-def init(mode: str, force: bool, dry_run: bool, *, no_skeleton: bool = False) -> None:
+def init(
+    mode: str,
+    force: bool,
+    dry_run: bool,
+    *,
+    no_skeleton: bool = False,
+    yes: bool = False,
+) -> None:
     """Initialize gzkit in the current project."""
     project_root = get_project_root()
     gzkit_dir = project_root / ".gzkit"
@@ -387,7 +433,9 @@ def init(mode: str, force: bool, dry_run: bool, *, no_skeleton: bool = False) ->
     # Already initialized and no --force: run repair instead of erroring
     if gzkit_dir.exists() and not force:
         config = GzkitConfig.load(project_root / ".gzkit.json")
-        _repair_missing_artifacts(project_root, config, no_skeleton=no_skeleton, dry_run=dry_run)
+        _repair_missing_artifacts(
+            project_root, config, no_skeleton=no_skeleton, dry_run=dry_run, yes=yes
+        )
         return
 
     # Detect project structure
@@ -416,6 +464,7 @@ def init(mode: str, force: bool, dry_run: bool, *, no_skeleton: bool = False) ->
         console.print("  Would create .gitignore")
         console.print("  Would generate control surfaces (AGENTS.md, CLAUDE.md, etc.)")
         console.print("  Would set up hooks and scaffold core skills")
+        console.print("  Would scaffold canonical chores into .gzkit/chores/")
         console.print("  Would scaffold default personas")
         console.print("  Would append ledger event: project_init")
         console.print("  Would register existing artifacts (if any)")
@@ -471,6 +520,10 @@ def init(mode: str, force: bool, dry_run: bool, *, no_skeleton: bool = False) ->
     # Scaffold core skills
     skills = scaffold_core_skills(project_root, config)
     console.print(f"  Scaffolded {len(skills)} core skills")
+
+    # Scaffold canonical chores
+    chores = scaffold_core_chores(project_root, config)
+    console.print(f"  Scaffolded {len(chores)} core chores")
 
     # Scaffold default personas
     personas = scaffold_default_personas(project_root)

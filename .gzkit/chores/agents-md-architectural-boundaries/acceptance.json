@@ -1,0 +1,45 @@
+{
+    "criteria": [
+        {
+            "type": "outputContains",
+            "command": "grep -F 'Do not promote post-1.0 pool ADRs into active work' AGENTS.md",
+            "contains": "Do not promote post-1.0",
+            "description": "Boundary 1 present: do not promote post-1.0 pool ADRs"
+        },
+        {
+            "type": "outputContains",
+            "command": "grep -F 'Do not add more pool ADRs to the runtime track' AGENTS.md",
+            "contains": "Do not add more pool ADRs",
+            "description": "Boundary 2 present: do not add more pool ADRs"
+        },
+        {
+            "type": "outputContains",
+            "command": "grep -F 'Do not build the graph engine without locking state doctrine' AGENTS.md",
+            "contains": "Do not build the graph engine",
+            "description": "Boundary 3 present: do not build graph engine before state doctrine"
+        },
+        {
+            "type": "outputContains",
+            "command": "grep -F 'Do not let reconciliation remain a maintenance chore' AGENTS.md",
+            "contains": "Do not let reconciliation",
+            "description": "Boundary 4 present: reconciliation is a core architectural operation"
+        },
+        {
+            "type": "outputContains",
+            "command": "grep -F 'Do not let AirlineOps parity become perpetual catch-up' AGENTS.md",
+            "contains": "Do not let AirlineOps parity",
+            "description": "Boundary 5 present: do not let AirlineOps parity be perpetual catch-up"
+        },
+        {
+            "type": "outputContains",
+            "command": "grep -F 'Do not let derived views silently become source-of-truth' AGENTS.md",
+            "contains": "Do not let derived views",
+            "description": "Boundary 6 present: derived views never source-of-truth"
+        },
+        {
+            "type": "exitCodeEquals",
+            "command": "uv run gz lint",
+            "expected": 0
+        }
+    ]
+}

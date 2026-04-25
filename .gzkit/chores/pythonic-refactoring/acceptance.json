@@ -1,0 +1,19 @@
+{
+  "criteria": [
+    {
+      "type": "exitCodeEquals",
+      "command": "uvx ruff check .",
+      "expected": 0
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "uvx ty check . --exclude features",
+      "expected": 0
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run -m unittest -q",
+      "expected": 0
+    }
+  ]
+}

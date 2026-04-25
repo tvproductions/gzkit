@@ -131,11 +131,21 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
         default=False,
         help="Skip Python project skeleton (pyproject.toml, src/, tests/)",
     )
+    p_init.add_argument(
+        "--yes",
+        action="store_true",
+        default=False,
+        help="Auto-accept registry-merge prompts during repair",
+    )
     add_force_flag(p_init)
     add_dry_run_flag(p_init)
     p_init.set_defaults(
         func=lambda a: _lazy("init")(
-            mode=a.mode, force=a.force, dry_run=a.dry_run, no_skeleton=a.no_skeleton
+            mode=a.mode,
+            force=a.force,
+            dry_run=a.dry_run,
+            no_skeleton=a.no_skeleton,
+            yes=a.yes,
         )
     )
 

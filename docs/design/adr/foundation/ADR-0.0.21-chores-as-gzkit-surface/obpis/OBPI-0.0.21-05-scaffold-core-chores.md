@@ -3,7 +3,7 @@ id: OBPI-0.0.21-05-scaffold-core-chores
 parent: ADR-0.0.21-chores-as-gzkit-surface
 item: 5
 lane: Heavy
-status: Draft
+status: Completed
 ---
 
 # OBPI-0.0.21-05-scaffold-core-chores: Scaffolder for .gzkit/chores/
@@ -127,9 +127,9 @@ mkdir -p /tmp/gz-scaffold-test && cd /tmp/gz-scaffold-test && uv run gz init --d
 uv run gz init 2>&1 | tail -10
 ls .gzkit/chores/ | head
 
-# Repair mode leaves operator edits intact
+# Repair mode leaves operator edits intact (gz init auto-repairs on re-run)
 echo "OPERATOR EDIT" > .gzkit/chores/coverage-40pct/CHORE.md
-uv run gz init --repair
+uv run gz init
 grep "OPERATOR EDIT" .gzkit/chores/coverage-40pct/CHORE.md && echo "preserved"
 
 # Type-check
@@ -185,37 +185,65 @@ uv run gz typecheck
 Before: downstream projects had no `.gzkit/chores/` surface and no way to author project-local chores alongside canonical ones. After: `gz init` scaffolds canonical chores into `.gzkit/chores/` with the same discipline as skills/personas, and repair mode merges registries without clobbering operator edits.
 
 ### Key Proof
+
 ```bash
-$ cd $(mktemp -d) && uv run gz init
-  Scaffolded skill: gz-adr-status
-  Scaffolded chore: coverage-40pct
-  Scaffolded chore: dependency-currency
-  ...
+$ cd $(mktemp -d) && uv run gz init 2>&1 | tail -3
+  Scaffolded 64 core skills
+  Scaffolded 33 core chores
+  Scaffolded 2 default personas
+
 $ ls .gzkit/chores/ | wc -l
-33
+34   # 33 canonical slugs + registry.json
+
+$ echo "OPERATOR EDIT" > .gzkit/chores/coverage-40pct/CHORE.md
+$ uv run gz init 2>&1 | tail -1 && grep "OPERATOR EDIT" .gzkit/chores/coverage-40pct/CHORE.md
+  All artifacts present. Nothing to repair.
+OPERATOR EDIT
 ```
 
+Stage 3 verification (all 11 commands PASS): `uv run gz lint`, `uv run gz typecheck`, `uv run gz test`, dry-run smoke `uv run gz init --dry-run | grep -i chore`, real init smoke, registry presence, operator-edit preservation, `uv run mkdocs build --strict`, full `uv run -m behave features/` suite. Module unittest: `uv run -m unittest tests.commands.test_init` → 34/34 PASS (23 existing + 11 new REQ-derived).
+
 ### Implementation Summary
-- Files created/modified: `src/gzkit/chores.py` (new), `src/gzkit/commands/init_cmd.py`, `tests/commands/test_init.py`
-- Tests added: 5 REQ-derived
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- New module: `src/gzkit/chores/__init__.py` exposes `scaffold_core_chores`, `merge_chores_registry`, `RegistryMergeReport`, and `_iter_canonical_chore_slugs`. Per-slug copy of `{CHORE.md, acceptance.json, README.md}` from `importlib.resources.files("gzkit.chores")` into `<project>/.gzkit/chores/<slug>/`; `proofs/` never copied from canonical, never touched at destination.
+- Registry merge: implements ADR-0.0.21 Decision #6 (canonical-wins-on-shipped-slug, local-wins-on-unknown-slug, diff-print, `_confirm` prompt unless `auto_yes=True`).
+- Wiring: `src/gzkit/commands/init_cmd.py` calls `scaffold_core_chores` at main-init (line 477) and repair (line 295, `skip_existing=not dry_run`). `merge_chores_registry` fires inside repair after per-slug pass. Main-init dry-run prints "Would scaffold canonical chores into .gzkit/chores/".
+- CLI: `src/gzkit/cli/parser_governance.py` adds `--yes` argparse flag plumbed through `init()` → `_repair_missing_artifacts()` → `merge_chores_registry(auto_yes=...)`.
+- Tests: 11 REQ-derived tests in `tests/commands/test_init.py` across 3 classes. Module total: 34/34 PASS.
+- Files created: `src/gzkit/chores/__init__.py`. Files modified: `init_cmd.py`, `parser_governance.py`, `test_init.py`, OBPI brief (Verification CLI fix + Tracked Defects).
+- Date completed: 2026-04-25
+- Attestation status: human-attested via "attest completed" by operator
+- Defects noted: 2 brief drifts (allowlist + verification command), both fixed in-scope and tracked in brief's Tracked Defects section
 
 ## Tracked Defects
 
-_No defects tracked._
+- **Brief allowlist drift (in-flight, fixed via spirit reading).** Allowed
+  Paths listed `src/gzkit/chores.py` as a new module file, but OBPI-01 had
+  already established `src/gzkit/chores/` as a package directory with an
+  empty `__init__.py`. Python cannot host both a `chores.py` file and a
+  `chores/` package — the package wins. The natural home satisfying the
+  `from gzkit.chores import scaffold_core_chores` import contract is the
+  package's `__init__.py`. Implementation added the public API there;
+  the per-slug canonical content (the actual deny-list intent) was
+  not touched. Recommend the brief allowlist read
+  `src/gzkit/chores/__init__.py` rather than `src/gzkit/chores.py` for
+  any future re-derivation.
+- **Brief verification command drift (in-flight, fixed in-scope).** The
+  Verification block prescribed `uv run gz init --repair`, but `gz init`
+  has no `--repair` flag — the repair path is auto-triggered on re-run
+  when `.gzkit/` already exists (`init_cmd.py:388-391`). Verification
+  block updated to use the actual CLI surface (`uv run gz init`).
 
 ## Human Attestation
 
-- Attestor: `<name>`
-- Attestation: `<verbatim user words> — <session-grounded enrichment>`
-- Date: YYYY-MM-DD
+- Attestor: `g0`
+- Attestation: attest completed — Confirm OBPI-0.0.21-05 closes the chores scaffolder gap: gz init now scaffolds 33 canonical chore slugs into .gzkit/chores/ with the same discipline as skills/personas, registry-merge implements ADR-0.0.21 Decision #6 (canonical-wins-on-shipped, local-wins-on-unknown, prompt-via-_confirm), and operator edits + proofs/ are preserved across re-runs. 11 REQ-derived tests pass (TestScaffoldCoreChores 6, TestMergeChoresRegistry 3, TestInitChoresIntegration 2); full test_init module 34/34. Lint, typecheck, mkdocs --strict, behave all PASS. Two brief drifts (allowlist src/gzkit/chores.py vs package reality; verification command gz init --repair non-existent) tracked in brief's Tracked Defects and fixed in scope.
+- Date: 2026-04-25
 
 ---
 
-**Brief Status:** Draft
+**Brief Status:** Completed
 
-**Date Completed:** -
+**Date Completed:** 2026-04-25
 
 **Evidence Hash:** -
