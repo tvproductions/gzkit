@@ -208,18 +208,24 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertIn("Stage 4: Ceremony", result.output)
             self.assertIn("Human attestation required.", result.output)
             self.assertIn("--from=sync", result.output)
-            # Verify the verification commands were executed (first 7 calls)
-            verify_commands = [call.args[0] for call in run_command_mock.call_args_list[:7]]
+            # Verify the verification commands were executed.
+            # Baseline (3) + brief verification block (5) + heavy-lane extras (2).
+            # Baseline + heavy-lane extras are ARB-wrapped so Stage 3 emits canonical
+            # attestation receipts at parity with AGENTS.md § Attestation (GHI #317).
+            verify_commands = [call.args[0] for call in run_command_mock.call_args_list[:10]]
             self.assertEqual(
                 verify_commands,
                 [
+                    "uv run gz arb ruff",
+                    "uv run gz arb typecheck",
+                    "uv run gz arb step --name unittest -- uv run -m unittest -q",
+                    "uv run gz validate --documents",
                     "uv run gz lint",
                     "uv run gz typecheck",
                     "uv run gz test",
-                    "uv run gz validate --documents",
                     "python -c \"print('verify ok')\"",
-                    "uv run mkdocs build --strict",
-                    "uv run -m behave features/",
+                    "uv run gz arb step --name mkdocs -- uv run mkdocs build --strict",
+                    "uv run gz arb step --name behave -- uv run -m behave features/",
                 ],
             )
             marker_path, legacy_path = self._pipeline_paths(Path.cwd())

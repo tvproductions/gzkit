@@ -22,10 +22,15 @@ from gzkit.pipeline_runtime import (
     remove_pipeline_artifacts,
 )
 
+# Canonical ARB-wrapped baseline (GHI #317).
+# The pipeline's Stage 3 verification must produce receipts at parity with the
+# canonical attestation invocations enumerated in AGENTS.md § Attestation, so a
+# green Stage 3 result entitles the agent to cite ARB receipt IDs in the
+# Stage 4 evidence package without re-running the same checks under ARB.
 BASELINE_VERIFICATION = [
-    "uv run gz lint",
-    "uv run gz typecheck",
-    "uv run gz test",
+    "uv run gz arb ruff",
+    "uv run gz arb typecheck",
+    "uv run gz arb step --name unittest -- uv run -m unittest -q",
 ]
 
 
@@ -41,7 +46,12 @@ def _pipeline_verification_commands(obpi_content: str, lane: str) -> list[str]:
                 continue
             commands.append(line)
     if lane == "heavy":
-        commands.extend(["uv run mkdocs build --strict", "uv run -m behave features/"])
+        commands.extend(
+            [
+                "uv run gz arb step --name mkdocs -- uv run mkdocs build --strict",
+                "uv run gz arb step --name behave -- uv run -m behave features/",
+            ]
+        )
 
     deduped: list[str] = []
     seen: set[str] = set()
